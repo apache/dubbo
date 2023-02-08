@@ -24,9 +24,9 @@ import java.io.IOException;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-public class UnsafeStringWriterTest {
+class UnsafeStringWriterTest {
     @Test
-    public void testWrite() {
+    void testWrite() {
         UnsafeStringWriter writer = new UnsafeStringWriter();
         writer.write("a");
         writer.write("abc", 1, 1);
@@ -38,12 +38,12 @@ public class UnsafeStringWriterTest {
     }
 
     @Test
-    public void testNegativeSize() {
+    void testNegativeSize() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> new UnsafeStringWriter(-1));
     }
 
     @Test
-    public void testAppend() {
+    void testAppend() {
         UnsafeStringWriter writer = new UnsafeStringWriter();
         writer.append('a');
         writer.append("abc", 1, 2);
@@ -55,7 +55,7 @@ public class UnsafeStringWriterTest {
     }
 
     @Test
-    public void testAppendNull() {
+    void testAppendNull() {
         UnsafeStringWriter writer = new UnsafeStringWriter();
         writer.append(null);
         writer.append(null, 0, 4);
@@ -66,7 +66,7 @@ public class UnsafeStringWriterTest {
     }
 
     @Test
-    public void testWriteNull() throws IOException {
+    void testWriteNull() throws IOException {
         UnsafeStringWriter writer = new UnsafeStringWriter(3);
         char[] chars = new char[2];
         chars[0] = 'a';
@@ -80,7 +80,7 @@ public class UnsafeStringWriterTest {
     }
 
     @Test
-    public void testWriteCharWithWrongLength() throws IOException {
+    void testWriteCharWithWrongLength() throws IOException {
         Assertions.assertThrows(IndexOutOfBoundsException.class, () -> {
             UnsafeStringWriter writer = new UnsafeStringWriter();
             char[] chars = new char[0];
@@ -89,7 +89,7 @@ public class UnsafeStringWriterTest {
     }
 
     @Test
-    public void testWriteCharWithWrongCombineLength() throws IOException {
+    void testWriteCharWithWrongCombineLength() throws IOException {
         Assertions.assertThrows(IndexOutOfBoundsException.class, () -> {
             UnsafeStringWriter writer = new UnsafeStringWriter();
             char[] chars = new char[1];

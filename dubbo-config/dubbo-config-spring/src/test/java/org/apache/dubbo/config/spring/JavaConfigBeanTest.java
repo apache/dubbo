@@ -44,7 +44,7 @@ import org.springframework.context.annotation.Configuration;
 import java.util.Collection;
 import java.util.Map;
 
-public class JavaConfigBeanTest {
+class JavaConfigBeanTest {
 
     private static final String MY_PROTOCOL_ID = "myProtocol";
     private static final String MY_REGISTRY_ID = "my-registry";
@@ -60,7 +60,7 @@ public class JavaConfigBeanTest {
     }
 
     @Test
-    public void testBean() {
+    void testBean() {
 
         SysProps.setProperty("dubbo.application.owner", "Tom");
         SysProps.setProperty("dubbo.application.qos-enable", "false");

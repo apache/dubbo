@@ -45,7 +45,7 @@ import static org.apache.dubbo.remoting.Constants.CONNECTIONS_KEY;
 import static org.apache.dubbo.rpc.protocol.dubbo.Constants.LAZY_REQUEST_WITH_WARNING_KEY;
 import static org.apache.dubbo.rpc.protocol.dubbo.Constants.SHARE_CONNECTIONS_KEY;
 
-public class ReferenceCountExchangeClientTest {
+class ReferenceCountExchangeClientTest {
 
     public static ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
     Exporter<?> demoExporter;
@@ -87,7 +87,7 @@ public class ReferenceCountExchangeClientTest {
      * test connection sharing
      */
     @Test
-    public void test_share_connect() {
+    void test_share_connect() {
         init(0, 1);
         Assertions.assertEquals(demoClient.getLocalAddress(), helloClient.getLocalAddress());
         Assertions.assertEquals(demoClient, helloClient);
@@ -98,7 +98,7 @@ public class ReferenceCountExchangeClientTest {
      * test connection not sharing
      */
     @Test
-    public void test_not_share_connect() {
+    void test_not_share_connect() {
         init(1, 1);
         Assertions.assertNotSame(demoClient.getLocalAddress(), helloClient.getLocalAddress());
         Assertions.assertNotSame(demoClient, helloClient);
@@ -109,7 +109,7 @@ public class ReferenceCountExchangeClientTest {
      * test using multiple shared connections
      */
     @Test
-    public void test_multi_share_connect() {
+    void test_multi_share_connect() {
         // here a three shared connection is established between a consumer process and a provider process.
         final int shareConnectionNum = 3;
 
@@ -134,7 +134,7 @@ public class ReferenceCountExchangeClientTest {
      * test counter won't count down incorrectly when invoker is destroyed for multiple times
      */
     @Test
-    public void test_multi_destroy() {
+    void test_multi_destroy() {
         init(0, 1);
         DubboAppender.doStart();
         DubboAppender.clear();
@@ -151,7 +151,7 @@ public class ReferenceCountExchangeClientTest {
      * Test against invocation still succeed even if counter has error
      */
     @Test
-    public void test_counter_error() {
+    void test_counter_error() {
         init(0, 1);
         DubboAppender.doStart();
         DubboAppender.clear();

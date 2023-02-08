@@ -36,7 +36,7 @@ import org.springframework.context.annotation.Configuration;
 
 @EnableDubbo(scanBasePackages = "")
 @Configuration
-public class SpringExtensionInjectorTest {
+class SpringExtensionInjectorTest {
 
     @BeforeEach
     public void init() {
@@ -48,7 +48,7 @@ public class SpringExtensionInjectorTest {
     }
 
     @Test
-    public void testSpringInjector() {
+    void testSpringInjector() {
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
         try {
             context.setDisplayName("Context1");

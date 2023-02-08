@@ -24,9 +24,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 
-public class ConsumerConfigTest {
+class ConsumerConfigTest {
     @Test
-    public void testTimeout() throws Exception {
+    void testTimeout() throws Exception {
         try {
             System.clearProperty("sun.rmi.transport.tcp.responseTimeout");
             ConsumerConfig consumer = new ConsumerConfig();
@@ -39,14 +39,14 @@ public class ConsumerConfigTest {
     }
 
     @Test
-    public void testDefault() throws Exception {
+    void testDefault() throws Exception {
         ConsumerConfig consumer = new ConsumerConfig();
         consumer.setDefault(true);
         assertThat(consumer.isDefault(), is(true));
     }
 
     @Test
-    public void testClient() throws Exception {
+    void testClient() throws Exception {
         ConsumerConfig consumer = new ConsumerConfig();
         consumer.setClient("client");
         assertThat(consumer.getClient(), equalTo("client"));

@@ -60,7 +60,7 @@ public class AbortPolicyWithReport extends ThreadPoolExecutor.AbortPolicy {
 
     private final URL url;
 
-    private static volatile long lastPrintTime = 0;
+    protected static volatile long lastPrintTime = 0;
 
     private static final long TEN_MINUTES_MILLS = 10 * 60 * 1000;
 
@@ -68,7 +68,7 @@ public class AbortPolicyWithReport extends ThreadPoolExecutor.AbortPolicy {
 
     private static final String DEFAULT_DATETIME_FORMAT = "yyyy-MM-dd_HH:mm:ss";
 
-    private static Semaphore guard = new Semaphore(1);
+    protected static Semaphore guard = new Semaphore(1);
 
     private static final String USER_HOME = System.getProperty("user.home");
 
@@ -161,8 +161,8 @@ public class AbortPolicyWithReport extends ThreadPoolExecutor.AbortPolicy {
             //try-with-resources
             try (FileOutputStream jStackStream = new FileOutputStream(
                 new File(dumpPath, "Dubbo_JStack.log" + "." + dateStr))) {
-                JVMUtil.jstack(jStackStream);
-            } catch (Throwable t) {
+                jstack(jStackStream);
+            } catch (Exception t) {
                 logger.error(COMMON_UNEXPECTED_CREATE_DUMP, "", "", "dump jStack error", t);
             } finally {
                 guard.release();
@@ -174,7 +174,11 @@ public class AbortPolicyWithReport extends ThreadPoolExecutor.AbortPolicy {
 
     }
 
-    private String getDumpPath() {
+    protected void jstack(FileOutputStream jStackStream) throws Exception {
+        JVMUtil.jstack(jStackStream);
+    }
+
+    protected String getDumpPath() {
         final String dumpPath = url.getParameter(DUMP_DIRECTORY);
         if (StringUtils.isEmpty(dumpPath)) {
             return USER_HOME;

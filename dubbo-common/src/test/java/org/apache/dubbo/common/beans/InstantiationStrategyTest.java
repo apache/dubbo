@@ -31,7 +31,7 @@ import org.apache.dubbo.rpc.model.ScopeModelAccessor;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class InstantiationStrategyTest {
+class InstantiationStrategyTest {
 
     private ScopeModelAccessor scopeModelAccessor = new ScopeModelAccessor() {
         @Override
@@ -41,7 +41,7 @@ public class InstantiationStrategyTest {
     };
 
     @Test
-    public void testCreateBeanWithScopeModelArgument() throws ReflectiveOperationException {
+    void testCreateBeanWithScopeModelArgument() throws ReflectiveOperationException {
         InstantiationStrategy instantiationStrategy = new InstantiationStrategy(scopeModelAccessor);
 
         FooBeanWithFrameworkModel beanWithFrameworkModel = instantiationStrategy.instantiate(FooBeanWithFrameworkModel.class);

@@ -32,7 +32,7 @@ import java.util.Set;
 /**
  * {@link ServiceRepository}
  */
-public class ServiceRepositoryTest {
+class ServiceRepositoryTest {
     private FrameworkModel frameworkModel;
     private ApplicationModel applicationModel;
     private ModuleModel moduleModel;
@@ -50,7 +50,7 @@ public class ServiceRepositoryTest {
     }
 
     @Test
-    public void test() {
+    void test() {
         // verify BuiltinService
         Set<BuiltinServiceDetector> builtinServices
             = applicationModel.getExtensionLoader(BuiltinServiceDetector.class).getSupportedExtensionInstances();

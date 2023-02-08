@@ -17,9 +17,10 @@
 
 package org.apache.dubbo.common.threadpool;
 
-import net.bytebuddy.agent.ByteBuddyAgent;
 import org.apache.dubbo.common.concurrent.AbortPolicy;
 import org.apache.dubbo.common.concurrent.RejectException;
+
+import net.bytebuddy.agent.ByteBuddyAgent;
 import org.junit.jupiter.api.Test;
 
 import java.lang.instrument.Instrumentation;
@@ -28,9 +29,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class MemorySafeLinkedBlockingQueueTest {
+class MemorySafeLinkedBlockingQueueTest {
     @Test
-    public void test() throws Exception {
+    void test() throws Exception {
         ByteBuddyAgent.install();
         final Instrumentation instrumentation = ByteBuddyAgent.getInstrumentation();
         final long objectSize = instrumentation.getObjectSize((Runnable) () -> {
@@ -48,7 +49,7 @@ public class MemorySafeLinkedBlockingQueueTest {
     }
 
     @Test
-    public void testCustomReject() throws Exception {
+    void testCustomReject() throws Exception {
         MemorySafeLinkedBlockingQueue<Runnable> queue = new MemorySafeLinkedBlockingQueue<>(Integer.MAX_VALUE);
         queue.setRejector(new AbortPolicy<>());
         assertThrows(RejectException.class, () -> queue.offer(() -> {

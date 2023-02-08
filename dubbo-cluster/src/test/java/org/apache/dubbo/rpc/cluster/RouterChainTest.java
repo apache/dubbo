@@ -27,7 +27,6 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.cluster.filter.DemoService;
-
 import org.apache.dubbo.rpc.cluster.router.RouterSnapshotSwitcher;
 import org.apache.dubbo.rpc.cluster.router.condition.config.AppStateRouter;
 import org.apache.dubbo.rpc.cluster.router.condition.config.ListenableStateRouter;
@@ -36,6 +35,7 @@ import org.apache.dubbo.rpc.cluster.router.mesh.route.MeshAppRuleListener;
 import org.apache.dubbo.rpc.cluster.router.mesh.route.MeshRuleManager;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -51,13 +51,13 @@ import static org.apache.dubbo.common.constants.CommonConstants.TAG_KEY;
 import static org.apache.dubbo.rpc.cluster.router.mesh.route.MeshRuleConstants.MESH_RULE_DATA_ID_SUFFIX;
 import static org.mockito.Mockito.when;
 
-public class RouterChainTest {
+class RouterChainTest {
 
     /**
      * verify the router and state router loaded by default
      */
     @Test
-    public void testBuildRouterChain() {
+    void testBuildRouterChain() {
         RouterChain<DemoService> routerChain = createRouterChanin();
         Assertions.assertEquals(0, routerChain.getRouters().size());
         Assertions.assertEquals(5, routerChain.getStateRouters().size());
@@ -78,7 +78,7 @@ public class RouterChainTest {
     }
 
     @Test
-    public void testRoute() {
+    void testRoute() {
         RouterChain<DemoService> routerChain = createRouterChanin();
 
         // mockInvoker will be filtered out by MockInvokersSelector

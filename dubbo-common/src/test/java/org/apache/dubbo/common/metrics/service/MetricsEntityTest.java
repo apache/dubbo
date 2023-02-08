@@ -18,6 +18,7 @@
 package org.apache.dubbo.common.metrics.service;
 
 import org.apache.dubbo.common.metrics.model.MetricsCategory;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -25,7 +26,7 @@ import org.junit.jupiter.api.Test;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MetricsEntityTest {
+class MetricsEntityTest {
 
     private static String name;
     private static Map<String, String> tags;
@@ -41,7 +42,7 @@ public class MetricsEntityTest {
     }
 
     @Test
-    public void test() {
+    void test() {
         MetricsEntity entity = new MetricsEntity(name, tags, category, value);
         Assertions.assertEquals(entity.getName(), name);
         Assertions.assertEquals(entity.getTags(), tags);

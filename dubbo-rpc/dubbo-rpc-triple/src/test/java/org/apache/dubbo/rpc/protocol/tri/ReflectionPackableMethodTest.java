@@ -27,6 +27,7 @@ import reactor.core.publisher.Mono;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
+import java.util.concurrent.CompletableFuture;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -34,9 +35,19 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class ReflectionPackableMethodTest {
+class ReflectionPackableMethodTest {
+
+
     @Test
-    public void testMethodWithNoParameters() throws Exception {
+    void testUnaryFuture() throws Exception {
+        Method method = DescriptorService.class.getMethod("unaryFuture");
+        MethodDescriptor descriptor = new ReflectionMethodDescriptor(method);
+        assertEquals(CompletableFuture.class, descriptor.getReturnClass());
+        assertEquals(String.class, descriptor.getReturnTypes()[0]);
+    }
+
+    @Test
+    void testMethodWithNoParameters() throws Exception {
         Method method = DescriptorService.class.getMethod("noParameterMethod");
         MethodDescriptor descriptor = new ReflectionMethodDescriptor(method);
         assertEquals("", descriptor.getParamDesc());
@@ -44,7 +55,7 @@ public class ReflectionPackableMethodTest {
     }
 
     @Test
-    public void testMethodWithNoParametersAndReturnProtobuf() throws Exception {
+    void testMethodWithNoParametersAndReturnProtobuf() throws Exception {
         Method method = DescriptorService.class.getMethod("noParameterAndReturnProtobufMethod");
         MethodDescriptor descriptor = new ReflectionMethodDescriptor(method);
         assertEquals("", descriptor.getParamDesc());
@@ -53,7 +64,7 @@ public class ReflectionPackableMethodTest {
     }
 
     @Test
-    public void testMethodWithNoParametersAndReturnJava() throws Exception {
+    void testMethodWithNoParametersAndReturnJava() throws Exception {
         Method method = DescriptorService.class.getMethod("noParameterAndReturnJavaClassMethod");
         MethodDescriptor descriptor = new ReflectionMethodDescriptor(method);
         assertEquals("", descriptor.getParamDesc());
@@ -62,7 +73,7 @@ public class ReflectionPackableMethodTest {
     }
 
     @Test
-    public void testWrapperBiStream() throws Exception {
+    void testWrapperBiStream() throws Exception {
         Method method = DescriptorService.class.getMethod("wrapBidirectionalStream", StreamObserver.class);
         ReflectionMethodDescriptor descriptor = new ReflectionMethodDescriptor(method);
         Assertions.assertEquals(1, descriptor.getParameterClasses().length);
@@ -71,7 +82,7 @@ public class ReflectionPackableMethodTest {
     }
 
     @Test
-    public void testBiStream() throws Exception {
+    void testBiStream() throws Exception {
         Method method = DescriptorService.class.getMethod("bidirectionalStream", StreamObserver.class);
         ReflectionMethodDescriptor descriptor = new ReflectionMethodDescriptor(method);
         Assertions.assertEquals(1, descriptor.getParameterClasses().length);
@@ -80,7 +91,7 @@ public class ReflectionPackableMethodTest {
     }
 
     @Test
-    public void testIsStream() throws NoSuchMethodException {
+    void testIsStream() throws NoSuchMethodException {
         Method method = DescriptorService.class.getMethod("noParameterMethod");
 
         ReflectionMethodDescriptor md1 = new ReflectionMethodDescriptor(method);
@@ -92,7 +103,7 @@ public class ReflectionPackableMethodTest {
     }
 
     @Test
-    public void testIsUnary() throws NoSuchMethodException {
+    void testIsUnary() throws NoSuchMethodException {
         Method method = DescriptorService.class.getMethod("noParameterMethod");
         MethodDescriptor descriptor = new ReflectionMethodDescriptor(method);
         Assertions.assertEquals(MethodDescriptor.RpcType.UNARY, descriptor.getRpcType());
@@ -103,7 +114,7 @@ public class ReflectionPackableMethodTest {
     }
 
     @Test
-    public void testIsServerStream() throws NoSuchMethodException {
+    void testIsServerStream() throws NoSuchMethodException {
         Method method = DescriptorService.class.getMethod("sayHelloServerStream", HelloReply.class,
                 StreamObserver.class);
         ReflectionMethodDescriptor descriptor = new ReflectionMethodDescriptor(method);
@@ -115,7 +126,7 @@ public class ReflectionPackableMethodTest {
     }
 
     @Test
-    public void testIsNeedWrap() throws NoSuchMethodException {
+    void testIsNeedWrap() throws NoSuchMethodException {
         Method method = DescriptorService.class.getMethod("noParameterMethod");
         MethodDescriptor descriptor = new ReflectionMethodDescriptor(method);
         Assertions.assertTrue(needWrap(descriptor));
@@ -126,7 +137,7 @@ public class ReflectionPackableMethodTest {
     }
 
     @Test
-    public void testIgnoreMethod() throws NoSuchMethodException {
+    void testIgnoreMethod() throws NoSuchMethodException {
         Method method = DescriptorService.class.getMethod("iteratorServerStream", HelloReply.class);
         MethodDescriptor descriptor = new ReflectionMethodDescriptor(method);
         Assertions.assertFalse(needWrap(descriptor));
@@ -147,7 +158,7 @@ public class ReflectionPackableMethodTest {
 
 
     @Test
-    public void testMultiProtoParameter() throws Exception {
+    void testMultiProtoParameter() throws Exception {
         Method method = DescriptorService.class.getMethod("testMultiProtobufParameters", HelloReply.class,
                 HelloReply.class);
         assertThrows(IllegalStateException.class, () -> {
@@ -157,7 +168,7 @@ public class ReflectionPackableMethodTest {
     }
 
     @Test
-    public void testDiffParametersAndReturn() throws Exception {
+    void testDiffParametersAndReturn() throws Exception {
         Method method = DescriptorService.class.getMethod("testDiffParametersAndReturn", HelloReply.class);
         assertThrows(IllegalStateException.class, () -> {
             MethodDescriptor descriptor = new ReflectionMethodDescriptor(method);
@@ -172,7 +183,7 @@ public class ReflectionPackableMethodTest {
     }
 
     @Test
-    public void testErrorServerStream() throws Exception {
+    void testErrorServerStream() throws Exception {
         Method method = DescriptorService.class.getMethod("testErrorServerStream", StreamObserver.class,
                 HelloReply.class);
         assertThrows(IllegalStateException.class, () -> {
@@ -203,7 +214,7 @@ public class ReflectionPackableMethodTest {
     }
 
     @Test
-    public void testErrorBiStream() throws Exception {
+    void testErrorBiStream() throws Exception {
         Method method = DescriptorService.class.getMethod("testErrorBiStream", HelloReply.class, StreamObserver.class);
         assertThrows(IllegalStateException.class, () -> {
             MethodDescriptor descriptor = new ReflectionMethodDescriptor(method);

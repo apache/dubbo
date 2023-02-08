@@ -16,14 +16,14 @@
  */
 package org.apache.dubbo.registry.multicast;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.registry.client.AbstractServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
 
 /**
  * TODO: make multicast protocol support Service Discovery
@@ -47,7 +47,7 @@ public class MulticastServiceDiscovery extends AbstractServiceDiscovery {
     }
 
     @Override
-    public void doUpdate(ServiceInstance serviceInstance) throws RuntimeException {
+    public void doUpdate(ServiceInstance oldServiceInstance, ServiceInstance newServiceInstance) throws RuntimeException {
     }
 
     @Override

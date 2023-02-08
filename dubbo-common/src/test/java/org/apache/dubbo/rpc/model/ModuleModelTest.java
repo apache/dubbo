@@ -28,10 +28,10 @@ import org.junit.jupiter.api.Test;
 /**
  * {@link ModuleModel}
  */
-public class ModuleModelTest {
+class ModuleModelTest {
 
     @Test
-    public void testInitialize() {
+    void testInitialize() {
         FrameworkModel frameworkModel = new FrameworkModel();
         ApplicationModel applicationModel = new ApplicationModel(frameworkModel);
         ModuleModel moduleModel = new ModuleModel(applicationModel);
@@ -55,7 +55,7 @@ public class ModuleModelTest {
     }
 
     @Test
-    public void testModelEnvironment() {
+    void testModelEnvironment() {
         FrameworkModel frameworkModel = new FrameworkModel();
         ApplicationModel applicationModel = new ApplicationModel(frameworkModel);
         ModuleModel moduleModel = new ModuleModel(applicationModel);
@@ -67,7 +67,7 @@ public class ModuleModelTest {
     }
 
     @Test
-    public void testDestroy() {
+    void testDestroy() {
         FrameworkModel frameworkModel = new FrameworkModel();
         ApplicationModel applicationModel = new ApplicationModel(frameworkModel);
         ModuleModel moduleModel = new ModuleModel(applicationModel);

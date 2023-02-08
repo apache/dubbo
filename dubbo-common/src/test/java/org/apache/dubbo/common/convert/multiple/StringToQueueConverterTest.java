@@ -50,7 +50,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  * @since 2.7.6
  */
-public class StringToQueueConverterTest {
+class StringToQueueConverterTest {
 
     private StringToQueueConverter converter;
 
@@ -60,7 +60,7 @@ public class StringToQueueConverterTest {
     }
 
     @Test
-    public void testAccept() {
+    void testAccept() {
 
         assertFalse(converter.accept(String.class, Collection.class));
 
@@ -88,7 +88,7 @@ public class StringToQueueConverterTest {
     }
 
     @Test
-    public void testConvert() {
+    void testConvert() {
 
         Queue values = new ArrayDeque(asList(1.0, 2.0, 3.0));
 
@@ -108,12 +108,12 @@ public class StringToQueueConverterTest {
     }
 
     @Test
-    public void testGetSourceType() {
+    void testGetSourceType() {
         assertEquals(String.class, converter.getSourceType());
     }
 
     @Test
-    public void testGetPriority() {
+    void testGetPriority() {
         assertEquals(Integer.MAX_VALUE - 2, converter.getPriority());
     }
 }

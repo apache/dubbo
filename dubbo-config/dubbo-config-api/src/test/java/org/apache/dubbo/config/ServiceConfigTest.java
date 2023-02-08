@@ -17,6 +17,14 @@
 
 package org.apache.dubbo.config;
 
+import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.config.api.DemoService;
@@ -27,22 +35,22 @@ import org.apache.dubbo.config.mock.MockRegistryFactory2;
 import org.apache.dubbo.config.mock.MockServiceListener;
 import org.apache.dubbo.config.mock.TestProxyFactory;
 import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
+import org.apache.dubbo.metadata.MappingListener;
+import org.apache.dubbo.metadata.ServiceNameMapping;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.service.GenericService;
-
-import com.google.common.collect.Lists;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import java.util.Collections;
-import java.util.Map;
-import java.util.concurrent.CountDownLatch;
+import com.google.common.collect.Lists;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
@@ -59,6 +67,7 @@ import static org.apache.dubbo.remoting.Constants.BIND_IP_KEY;
 import static org.apache.dubbo.remoting.Constants.BIND_PORT_KEY;
 import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.EXPORT_KEY;
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -74,7 +83,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.withSettings;
 
-public class ServiceConfigTest {
+class ServiceConfigTest {
     private Protocol protocolDelegate = Mockito.mock(Protocol.class);
     private Registry registryDelegate = Mockito.mock(Registry.class);
     private Exporter exporter = Mockito.mock(Exporter.class);
@@ -156,7 +165,7 @@ public class ServiceConfigTest {
     }
 
     @Test
-    public void testExport() throws Exception {
+    void testExport() throws Exception {
         service.export();
 
         assertThat(service.getExportedUrls(), hasSize(1));
@@ -179,7 +188,7 @@ public class ServiceConfigTest {
     }
 
     @Test
-    public void testVersionAndGroupConfigFromProvider() {
+    void testVersionAndGroupConfigFromProvider() {
         //Service no configuration version , the Provider configured.
         service.getProvider().setVersion("1.0.0");
         service.getProvider().setGroup("groupA");
@@ -196,7 +205,7 @@ public class ServiceConfigTest {
     }
 
     @Test
-    public void testProxy() throws Exception {
+    void testProxy() throws Exception {
         service2.export();
 
         assertThat(service2.getExportedUrls(), hasSize(1));
@@ -206,7 +215,7 @@ public class ServiceConfigTest {
 
 
     @Test
-    public void testDelayExport() throws Exception {
+    void testDelayExport() throws Exception {
         CountDownLatch latch = new CountDownLatch(1);
         delayService.addServiceListener(new ServiceListener() {
             @Override
@@ -227,12 +236,12 @@ public class ServiceConfigTest {
     }
 
     @Test
-    public void testUnexport() throws Exception {
+    void testUnexport() throws Exception {
         System.setProperty(SHUTDOWN_WAIT_KEY, "0");
         try {
             service.export();
             service.unexport();
-            Thread.sleep(1000);
+//            Thread.sleep(1000);
             Mockito.verify(exporter, Mockito.atLeastOnce()).unexport();
         } finally {
             System.clearProperty(SHUTDOWN_TIMEOUT_KEY);
@@ -240,7 +249,7 @@ public class ServiceConfigTest {
     }
 
     @Test
-    public void testInterfaceClass() throws Exception {
+    void testInterfaceClass() throws Exception {
         ServiceConfig<Greeting> service = new ServiceConfig<>();
         service.setInterface(Greeting.class.getName());
         service.setRef(Mockito.mock(Greeting.class));
@@ -251,7 +260,7 @@ public class ServiceConfigTest {
     }
 
     @Test
-    public void testInterface1() throws Exception {
+    void testInterface1() throws Exception {
         Assertions.assertThrows(IllegalStateException.class, () -> {
             ServiceConfig<DemoService> service = new ServiceConfig<>();
             service.setInterface(DemoServiceImpl.class);
@@ -259,14 +268,14 @@ public class ServiceConfigTest {
     }
 
     @Test
-    public void testInterface2() throws Exception {
+    void testInterface2() throws Exception {
         ServiceConfig<DemoService> service = new ServiceConfig<>();
         service.setInterface(DemoService.class);
         assertThat(service.getInterface(), equalTo(DemoService.class.getName()));
     }
 
     @Test
-    public void testProvider() throws Exception {
+    void testProvider() throws Exception {
         ServiceConfig service = new ServiceConfig();
         ProviderConfig provider = new ProviderConfig();
         service.setProvider(provider);
@@ -274,7 +283,7 @@ public class ServiceConfigTest {
     }
 
     @Test
-    public void testGeneric1() throws Exception {
+    void testGeneric1() throws Exception {
         ServiceConfig service = new ServiceConfig();
         service.setGeneric(GENERIC_SERIALIZATION_DEFAULT);
         assertThat(service.getGeneric(), equalTo(GENERIC_SERIALIZATION_DEFAULT));
@@ -285,7 +294,7 @@ public class ServiceConfigTest {
     }
 
     @Test
-    public void testGeneric2() throws Exception {
+    void testGeneric2() throws Exception {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
             ServiceConfig service = new ServiceConfig();
             service.setGeneric("illegal");
@@ -293,14 +302,14 @@ public class ServiceConfigTest {
     }
 
     @Test
-    public void testApplicationInUrl() {
+    void testApplicationInUrl() {
         service.export();
         assertNotNull(service.toUrl().getApplication());
         Assertions.assertEquals("app", service.toUrl().getApplication());
     }
 
     @Test
-    public void testMetaData() {
+    void testMetaData() {
         // test new instance
         ServiceConfig config = new ServiceConfig();
         Map<String, String> metaData = config.getMetaData();
@@ -321,7 +330,7 @@ public class ServiceConfigTest {
 
 
     @Test
-    public void testExportWithoutRegistryConfig() {
+    void testExportWithoutRegistryConfig() {
         serviceWithoutRegistryConfig.export();
 
         assertThat(serviceWithoutRegistryConfig.getExportedUrls(), hasSize(1));
@@ -344,7 +353,7 @@ public class ServiceConfigTest {
     }
 
     @Test
-    public void testServiceListener() {
+    void testServiceListener() {
         ExtensionLoader<ServiceListener> extensionLoader = ExtensionLoader.getExtensionLoader(ServiceListener.class);
         MockServiceListener mockServiceListener = (MockServiceListener) extensionLoader.getExtension("mock");
         assertNotNull(mockServiceListener);
@@ -360,7 +369,7 @@ public class ServiceConfigTest {
 
 
     @Test
-    public void testMethodConfigWithInvalidArgumentConfig() {
+    void testMethodConfigWithInvalidArgumentConfig() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
             ServiceConfig<DemoServiceImpl> service = new ServiceConfig<>();
 
@@ -383,7 +392,7 @@ public class ServiceConfigTest {
     }
 
     @Test
-    public void testMethodConfigWithConfiguredArgumentTypeAndIndex() {
+    void testMethodConfigWithConfiguredArgumentTypeAndIndex() {
         ServiceConfig<DemoServiceImpl> service = new ServiceConfig<>();
 
         service.setInterface(DemoService.class);
@@ -409,7 +418,7 @@ public class ServiceConfigTest {
     }
 
     @Test
-    public void testMethodConfigWithConfiguredArgumentIndex() {
+    void testMethodConfigWithConfiguredArgumentIndex() {
         ServiceConfig<DemoServiceImpl> service = new ServiceConfig<>();
 
         service.setInterface(DemoService.class);
@@ -434,7 +443,7 @@ public class ServiceConfigTest {
     }
 
     @Test
-    public void testMethodConfigWithConfiguredArgumentType() {
+    void testMethodConfigWithConfiguredArgumentType() {
         ServiceConfig<DemoServiceImpl> service = new ServiceConfig<>();
 
         service.setInterface(DemoService.class);
@@ -459,7 +468,7 @@ public class ServiceConfigTest {
     }
 
     @Test
-    public void testMethodConfigWithUnknownArgumentType() {
+    void testMethodConfigWithUnknownArgumentType() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
             ServiceConfig<DemoServiceImpl> service = new ServiceConfig<>();
 
@@ -483,7 +492,7 @@ public class ServiceConfigTest {
     }
 
     @Test
-    public void testMethodConfigWithUnmatchedArgument() {
+    void testMethodConfigWithUnmatchedArgument() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
             ServiceConfig<DemoServiceImpl> service = new ServiceConfig<>();
 
@@ -507,7 +516,7 @@ public class ServiceConfigTest {
     }
 
     @Test
-    public void testMethodConfigWithInvalidArgumentIndex() {
+    void testMethodConfigWithInvalidArgumentIndex() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
             ServiceConfig<DemoServiceImpl> service = new ServiceConfig<>();
 
@@ -528,5 +537,81 @@ public class ServiceConfigTest {
 
             service.export();
         });
+    }
+
+    @Test
+    void testMappingRetry() {
+        FrameworkModel frameworkModel = new FrameworkModel();
+        ApplicationModel applicationModel = frameworkModel.newApplication();
+        ServiceConfig<DemoService> serviceConfig = new ServiceConfig<>(applicationModel.newModule());
+        serviceConfig.exported();
+        ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
+        AtomicInteger count = new AtomicInteger(0);
+        ServiceNameMapping serviceNameMapping = new ServiceNameMapping() {
+            @Override
+            public boolean map(URL url) {
+                if (count.incrementAndGet() < 5) {
+                    throw new RuntimeException();
+                }
+                return count.get() > 10;
+            }
+
+            @Override
+            public void initInterfaceAppMapping(URL subscribedURL) {
+
+            }
+
+            @Override
+            public Set<String> getAndListen(URL registryURL, URL subscribedURL, MappingListener listener) {
+                return null;
+            }
+
+            @Override
+            public MappingListener stopListen(URL subscribeURL, MappingListener listener) {
+                return null;
+            }
+
+            @Override
+            public void putCachedMapping(String serviceKey, Set<String> apps) {
+
+            }
+
+            @Override
+            public Set<String> getCachedMapping(String mappingKey) {
+                return null;
+            }
+
+            @Override
+            public Set<String> getCachedMapping(URL consumerURL) {
+                return null;
+            }
+
+            @Override
+            public Set<String> getRemoteMapping(URL consumerURL) {
+                return null;
+            }
+
+            @Override
+            public Map<String, Set<String>> getCachedMapping() {
+                return null;
+            }
+
+            @Override
+            public Set<String> removeCachedMapping(String serviceKey) {
+                return null;
+            }
+
+            @Override
+            public void $destroy() {
+
+            }
+        };
+        ApplicationConfig applicationConfig = new ApplicationConfig("app");
+        applicationConfig.setMappingRetryInterval(10);
+        serviceConfig.setApplication(applicationConfig);
+        serviceConfig.mapServiceName(URL.valueOf(""), serviceNameMapping, scheduledExecutorService);
+
+        await().until(() -> count.get() > 10);
+        scheduledExecutorService.shutdown();
     }
 }

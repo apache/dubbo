@@ -42,7 +42,7 @@ import static org.mockito.Mockito.when;
 class TripleInvokerTest {
 
     @Test
-    public void testNewCall() throws NoSuchMethodException {
+    void testNewCall() throws NoSuchMethodException {
         Channel channel = Mockito.mock(Channel.class);
         Connection connection = Mockito.mock(Connection.class);
         ConnectionManager connectionManager = Mockito.mock(ConnectionManager.class);

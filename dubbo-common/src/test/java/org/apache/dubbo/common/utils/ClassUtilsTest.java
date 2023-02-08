@@ -27,9 +27,9 @@ import static org.hamcrest.Matchers.sameInstance;
 import static org.hamcrest.Matchers.startsWith;
 import static org.mockito.Mockito.verify;
 
-public class ClassUtilsTest {
+class ClassUtilsTest {
     @Test
-    public void testForNameWithThreadContextClassLoader() throws Exception {
+    void testForNameWithThreadContextClassLoader() throws Exception {
         ClassLoader oldClassLoader = Thread.currentThread().getContextClassLoader();
         try {
             ClassLoader classLoader = Mockito.mock(ClassLoader.class);
@@ -42,18 +42,18 @@ public class ClassUtilsTest {
     }
 
     @Test
-    public void tetForNameWithCallerClassLoader() throws Exception {
+    void tetForNameWithCallerClassLoader() throws Exception {
         Class c = ClassUtils.forNameWithCallerClassLoader(ClassUtils.class.getName(), ClassUtilsTest.class);
         assertThat(c == ClassUtils.class, is(true));
     }
 
     @Test
-    public void testGetCallerClassLoader() throws Exception {
+    void testGetCallerClassLoader() throws Exception {
         assertThat(ClassUtils.getCallerClassLoader(ClassUtilsTest.class), sameInstance(ClassUtilsTest.class.getClassLoader()));
     }
 
     @Test
-    public void testGetClassLoader1() throws Exception {
+    void testGetClassLoader1() throws Exception {
         ClassLoader oldClassLoader = Thread.currentThread().getContextClassLoader();
         try {
             assertThat(ClassUtils.getClassLoader(ClassUtilsTest.class), sameInstance(oldClassLoader));
@@ -65,31 +65,31 @@ public class ClassUtilsTest {
     }
 
     @Test
-    public void testGetClassLoader2() throws Exception {
+    void testGetClassLoader2() throws Exception {
         assertThat(ClassUtils.getClassLoader(), sameInstance(ClassUtils.class.getClassLoader()));
     }
 
     @Test
-    public void testForName1() throws Exception {
+    void testForName1() throws Exception {
         assertThat(ClassUtils.forName(ClassUtilsTest.class.getName()) == ClassUtilsTest.class, is(true));
     }
 
     @Test
-    public void testForName2() throws Exception {
+    void testForName2() throws Exception {
         assertThat(ClassUtils.forName("byte") == byte.class, is(true));
         assertThat(ClassUtils.forName("java.lang.String[]") == String[].class, is(true));
         assertThat(ClassUtils.forName("[Ljava.lang.String;") == String[].class, is(true));
     }
 
     @Test
-    public void testForName3() throws Exception {
+    void testForName3() throws Exception {
         ClassLoader classLoader = Mockito.mock(ClassLoader.class);
         ClassUtils.forName("a.b.c.D", classLoader);
         verify(classLoader).loadClass("a.b.c.D");
     }
 
     @Test
-    public void testResolvePrimitiveClassName() throws Exception {
+    void testResolvePrimitiveClassName() throws Exception {
         assertThat(ClassUtils.resolvePrimitiveClassName("boolean") == boolean.class, is(true));
         assertThat(ClassUtils.resolvePrimitiveClassName("byte") == byte.class, is(true));
         assertThat(ClassUtils.resolvePrimitiveClassName("char") == char.class, is(true));
@@ -109,13 +109,13 @@ public class ClassUtilsTest {
     }
 
     @Test
-    public void testToShortString() throws Exception {
+    void testToShortString() throws Exception {
         assertThat(ClassUtils.toShortString(null), equalTo("null"));
         assertThat(ClassUtils.toShortString(new ClassUtilsTest()), startsWith("ClassUtilsTest@"));
     }
 
     @Test
-    public void testConvertPrimitive() throws Exception {
+    void testConvertPrimitive() throws Exception {
 
         assertThat(ClassUtils.convertPrimitive(char.class, ""), equalTo(null));
         assertThat(ClassUtils.convertPrimitive(char.class, null), equalTo(null));

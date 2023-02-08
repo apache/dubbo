@@ -66,10 +66,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  * @since 2.7.6
  */
-public class AnnotationUtilsTest {
+class AnnotationUtilsTest {
 
     @Test
-    public void testIsType() throws NoSuchMethodException {
+    void testIsType() throws NoSuchMethodException {
         // null checking
         assertFalse(isType(null));
         // Method checking
@@ -79,7 +79,7 @@ public class AnnotationUtilsTest {
     }
 
     @Test
-    public void testIsSameType() {
+    void testIsSameType() {
         assertTrue(isSameType(A.class.getAnnotation(Service.class), Service.class));
         assertFalse(isSameType(A.class.getAnnotation(Service.class), Deprecated.class));
         assertFalse(isSameType(A.class.getAnnotation(Service.class), null));
@@ -88,13 +88,13 @@ public class AnnotationUtilsTest {
     }
 
     @Test
-    public void testExcludedType() {
+    void testExcludedType() {
         assertFalse(excludedType(Service.class).test(A.class.getAnnotation(Service.class)));
         assertTrue(excludedType(Service.class).test(A.class.getAnnotation(Deprecated.class)));
     }
 
     @Test
-    public void testGetAttribute() {
+    void testGetAttribute() {
         Annotation annotation = A.class.getAnnotation(Service.class);
         assertEquals("java.lang.CharSequence", getAttribute(annotation, "interfaceName"));
         assertEquals(CharSequence.class, getAttribute(annotation, "interfaceClass"));
@@ -106,7 +106,7 @@ public class AnnotationUtilsTest {
     }
 
     @Test
-    public void testGetAttributesMap() {
+    void testGetAttributesMap() {
         Annotation annotation = A.class.getAnnotation(Service.class);
         Map<String, Object> attributes = getAttributes(annotation, false);
         assertEquals("java.lang.CharSequence", attributes.get("interfaceName"));
@@ -126,14 +126,14 @@ public class AnnotationUtilsTest {
     }
 
     @Test
-    public void testGetValue() {
+    void testGetValue() {
         Adaptive adaptive = A.class.getAnnotation(Adaptive.class);
         String[] value = getValue(adaptive);
         assertEquals(asList("a", "b", "c"), asList(value));
     }
 
     @Test
-    public void testGetDeclaredAnnotations() {
+    void testGetDeclaredAnnotations() {
         List<Annotation> annotations = getDeclaredAnnotations(A.class);
         assertADeclaredAnnotations(annotations, 0);
 
@@ -145,7 +145,7 @@ public class AnnotationUtilsTest {
     }
 
     @Test
-    public void testGetAllDeclaredAnnotations() {
+    void testGetAllDeclaredAnnotations() {
         List<Annotation> annotations = getAllDeclaredAnnotations(A.class);
         assertADeclaredAnnotations(annotations, 0);
 
@@ -168,7 +168,7 @@ public class AnnotationUtilsTest {
     }
 
     @Test
-    public void testGetMetaAnnotations() {
+    void testGetMetaAnnotations() {
         List<Annotation> metaAnnotations = getMetaAnnotations(Service.class, a -> isSameType(a, Inherited.class));
         assertEquals(1, metaAnnotations.size());
         assertEquals(Inherited.class, metaAnnotations.get(0).annotationType());
@@ -184,7 +184,7 @@ public class AnnotationUtilsTest {
     }
 
     @Test
-    public void testGetAllMetaAnnotations() {
+    void testGetAllMetaAnnotations() {
         List<Annotation> metaAnnotations = getAllMetaAnnotations(Service5.class);
         int offset = 0;
 
@@ -212,7 +212,7 @@ public class AnnotationUtilsTest {
 
 
     @Test
-    public void testIsAnnotationPresent() {
+    void testIsAnnotationPresent() {
         assertTrue(isAnnotationPresent(A.class, true, Service.class));
         assertTrue(isAnnotationPresent(A.class, true, Service.class, com.alibaba.dubbo.config.annotation.Service.class));
         assertTrue(isAnnotationPresent(A.class, Service.class));
@@ -222,7 +222,7 @@ public class AnnotationUtilsTest {
     }
 
     @Test
-    public void testIsAnyAnnotationPresent() {
+    void testIsAnyAnnotationPresent() {
         assertTrue(isAnyAnnotationPresent(A.class, Service.class, com.alibaba.dubbo.config.annotation.Service.class, Deprecated.class));
         assertTrue(isAnyAnnotationPresent(A.class, Service.class, com.alibaba.dubbo.config.annotation.Service.class));
         assertTrue(isAnyAnnotationPresent(A.class, Service.class, Deprecated.class));
@@ -233,7 +233,7 @@ public class AnnotationUtilsTest {
     }
 
     @Test
-    public void testGetAnnotation() {
+    void testGetAnnotation() {
         assertNotNull(getAnnotation(A.class, "org.apache.dubbo.config.annotation.Service"));
         assertNotNull(getAnnotation(A.class, "com.alibaba.dubbo.config.annotation.Service"));
         assertNotNull(getAnnotation(A.class, "org.apache.dubbo.common.extension.Adaptive"));
@@ -243,7 +243,7 @@ public class AnnotationUtilsTest {
     }
 
     @Test
-    public void testFindAnnotation() {
+    void testFindAnnotation() {
         Service service = findAnnotation(A.class, Service.class);
         assertEquals("java.lang.CharSequence", service.interfaceName());
         assertEquals(CharSequence.class, service.interfaceClass());
@@ -253,7 +253,7 @@ public class AnnotationUtilsTest {
     }
 
     @Test
-    public void testFindMetaAnnotations() {
+    void testFindMetaAnnotations() {
         List<DubboService> services = findMetaAnnotations(B.class, DubboService.class);
         assertEquals(1, services.size());
 
@@ -270,7 +270,7 @@ public class AnnotationUtilsTest {
     }
 
     @Test
-    public void testFindMetaAnnotation() {
+    void testFindMetaAnnotation() {
         DubboService service = findMetaAnnotation(B.class, DubboService.class);
         assertEquals(Cloneable.class, service.interfaceClass());
 

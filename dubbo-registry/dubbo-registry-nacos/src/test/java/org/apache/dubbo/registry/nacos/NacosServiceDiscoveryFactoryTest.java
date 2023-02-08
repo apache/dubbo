@@ -20,7 +20,6 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,7 +27,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Test for NacosServiceDiscoveryFactory
  */
-public class NacosServiceDiscoveryFactoryTest {
+class NacosServiceDiscoveryFactoryTest {
 
     private NacosServiceDiscoveryFactory nacosServiceDiscoveryFactory;
 
@@ -41,8 +40,8 @@ public class NacosServiceDiscoveryFactoryTest {
     }
 
     @Test
-    public void testGetServiceDiscoveryWithCache() {
-        URL url = URL.valueOf("dubbo://test:8080");
+    void testGetServiceDiscoveryWithCache() {
+        URL url = URL.valueOf("dubbo://test:8080?nacos.check=false");
         ServiceDiscovery discovery = nacosServiceDiscoveryFactory.createDiscovery(url);
 
         Assertions.assertTrue(discovery instanceof NacosServiceDiscovery);

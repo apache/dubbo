@@ -25,11 +25,13 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.atomic.AtomicBoolean;
 
-public class ExecutorRepositoryTest {
+import static org.awaitility.Awaitility.await;
+
+class ExecutorRepositoryTest {
     private ApplicationModel applicationModel;
     private ExecutorRepository executorRepository;
 
@@ -45,7 +47,7 @@ public class ExecutorRepositoryTest {
     }
 
     @Test
-    public void testGetExecutor() {
+    void testGetExecutor() {
         testGet(URL.valueOf("dubbo://127.0.0.1:23456/TestService"));
         testGet(URL.valueOf("dubbo://127.0.0.1:23456/TestService?side=consumer"));
 
@@ -67,7 +69,7 @@ public class ExecutorRepositoryTest {
     }
 
     @Test
-    public void testUpdateExecutor() {
+    void testUpdateExecutor() {
         URL url = URL.valueOf("dubbo://127.0.0.1:23456/TestService?threads=5");
         ThreadPoolExecutor executorService = (ThreadPoolExecutor) executorRepository.createExecutorIfAbsent(url);
 
@@ -91,54 +93,39 @@ public class ExecutorRepositoryTest {
     }
 
     @Test
-    public void testSharedExecutor() throws Exception {
+    void testSharedExecutor() throws Exception {
         ExecutorService sharedExecutor = executorRepository.getSharedExecutor();
-        MockTask task1 = new MockTask(2000);
-        MockTask task2 = new MockTask(100);
-        MockTask task3 = new MockTask(200);
-        sharedExecutor.execute(task1);
-        sharedExecutor.execute(task2);
-        sharedExecutor.submit(task3);
-
-        Thread.sleep(150);
-        Assertions.assertTrue(task1.isRunning());
-        Assertions.assertFalse(task1.isDone());
-        Assertions.assertTrue(task2.isRunning());
-        Assertions.assertTrue(task2.isDone());
-        Assertions.assertTrue(task3.isRunning());
-        Assertions.assertFalse(task3.isDone());
-
-        Thread.sleep(200);
-        Assertions.assertTrue(task3.isDone());
-        Assertions.assertFalse(task1.isDone());
-    }
-
-    private static class MockTask implements Runnable {
-        private long waitTimeMS;
-        private AtomicBoolean running = new AtomicBoolean();
-        private AtomicBoolean done = new AtomicBoolean();
-
-        public MockTask(long waitTimeMS) {
-            this.waitTimeMS = waitTimeMS;
-        }
-
-        @Override
-        public void run() {
-            running.set(true);
+        CountDownLatch latch = new CountDownLatch(3);
+        CountDownLatch latch1 = new CountDownLatch(1);
+        sharedExecutor.execute(()->{
+            latch.countDown();
             try {
-                Thread.sleep(waitTimeMS);
+                latch1.await();
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                throw new RuntimeException(e);
             }
-            done.set(true);
-        }
+        });
+        sharedExecutor.execute(()->{
+            latch.countDown();
+            try {
+                latch1.await();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        });
+        sharedExecutor.submit(()->{
+            latch.countDown();
+            try {
+                latch1.await();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        });
 
-        public boolean isDone() {
-            return done.get();
-        }
-
-        public boolean isRunning() {
-            return running.get();
-        }
+        await().until(()->latch.getCount() == 0);
+        Assertions.assertEquals(3, ((ThreadPoolExecutor)sharedExecutor).getActiveCount());
+        latch1.countDown();
+        await().until(()->((ThreadPoolExecutor)sharedExecutor).getActiveCount() == 0);
+        Assertions.assertEquals(3, ((ThreadPoolExecutor)sharedExecutor).getCompletedTaskCount());
     }
 }

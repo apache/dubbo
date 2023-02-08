@@ -16,6 +16,14 @@
  */
 package org.apache.dubbo.config;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.apache.dubbo.common.compiler.support.AdaptiveCompiler;
 import org.apache.dubbo.common.infra.InfraAdapter;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
@@ -24,14 +32,6 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_PROTOCOL_KEY;
@@ -50,6 +50,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.STARTUP_PROBE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXPECTED_EXCEPTION;
 import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP;
 import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP_COMPATIBLE;
+import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP_WHITELIST;
+import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP_WHITELIST_COMPATIBLE;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE_COMPATIBLE;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_HOST;
@@ -150,6 +152,11 @@ public class ApplicationConfig extends AbstractConfig {
     private Boolean qosAcceptForeignIp;
 
     /**
+     * When we disable accept foreign ip, support specify foreign ip in the whitelist
+     */
+    private String qosAcceptForeignIpWhitelist;
+
+    /**
      * Customized parameters
      */
     private Map<String, String> parameters;
@@ -192,6 +199,11 @@ public class ApplicationConfig extends AbstractConfig {
     private Integer metadataServicePort;
 
     /**
+     * The retry interval of service name mapping
+     */
+    private Integer mappingRetryInterval;
+
+    /**
      * used to set extensions of probe in qos
      */
     private String livenessProbe;
@@ -203,6 +215,14 @@ public class ApplicationConfig extends AbstractConfig {
     private String registerMode;
 
     private Boolean enableEmptyProtection;
+
+    private String serializeCheckStatus;
+
+    private Boolean autoTrustSerializeClass;
+
+    private Integer trustSerializeClassLevel;
+
+    private Boolean checkSerializable;
 
     public ApplicationConfig() {
     }
@@ -400,6 +420,15 @@ public class ApplicationConfig extends AbstractConfig {
         this.qosAcceptForeignIp = qosAcceptForeignIp;
     }
 
+    @Parameter(key = ACCEPT_FOREIGN_IP_WHITELIST)
+    public String getQosAcceptForeignIpWhitelist() {
+        return qosAcceptForeignIpWhitelist;
+    }
+
+    public void setQosAcceptForeignIpWhitelist(String qosAcceptForeignIpWhitelist) {
+        this.qosAcceptForeignIpWhitelist = qosAcceptForeignIpWhitelist;
+    }
+
     /**
      * The format is the same as the springboot, including: getQosEnableCompatible(), getQosPortCompatible(), getQosAcceptForeignIpCompatible().
      *
@@ -439,6 +468,15 @@ public class ApplicationConfig extends AbstractConfig {
 
     public void setQosAcceptForeignIpCompatible(Boolean qosAcceptForeignIp) {
         this.setQosAcceptForeignIp(qosAcceptForeignIp);
+    }
+
+    @Parameter(key = ACCEPT_FOREIGN_IP_WHITELIST_COMPATIBLE, excluded = true, attribute = false)
+    public String getQosAcceptForeignIpWhitelistCompatible() {
+        return this.getQosAcceptForeignIpWhitelist();
+    }
+
+    public void setQosAcceptForeignIpWhitelistCompatible(String qosAcceptForeignIpWhitelist) {
+        this.setQosAcceptForeignIpWhitelist(qosAcceptForeignIpWhitelist);
     }
 
     public Map<String, String> getParameters() {
@@ -539,6 +577,14 @@ public class ApplicationConfig extends AbstractConfig {
         this.metadataServicePort = metadataServicePort;
     }
 
+    public Integer getMappingRetryInterval() {
+        return mappingRetryInterval;
+    }
+
+    public void setMappingRetryInterval(Integer mappingRetryInterval) {
+        this.mappingRetryInterval = mappingRetryInterval;
+    }
+
     @Parameter(key = METADATA_SERVICE_PROTOCOL_KEY)
     public String getMetadataServiceProtocol() {
         return metadataServiceProtocol;
@@ -573,6 +619,39 @@ public class ApplicationConfig extends AbstractConfig {
 
     public void setStartupProbe(String startupProbe) {
         this.startupProbe = startupProbe;
+    }
+
+
+    public String getSerializeCheckStatus() {
+        return serializeCheckStatus;
+    }
+
+    public void setSerializeCheckStatus(String serializeCheckStatus) {
+        this.serializeCheckStatus = serializeCheckStatus;
+    }
+
+    public Boolean getAutoTrustSerializeClass() {
+        return autoTrustSerializeClass;
+    }
+
+    public void setAutoTrustSerializeClass(Boolean autoTrustSerializeClass) {
+        this.autoTrustSerializeClass = autoTrustSerializeClass;
+    }
+
+    public Integer getTrustSerializeClassLevel() {
+        return trustSerializeClassLevel;
+    }
+
+    public void setTrustSerializeClassLevel(Integer trustSerializeClassLevel) {
+        this.trustSerializeClassLevel = trustSerializeClassLevel;
+    }
+
+    public Boolean getCheckSerializable() {
+        return checkSerializable;
+    }
+
+    public void setCheckSerializable(Boolean checkSerializable) {
+        this.checkSerializable = checkSerializable;
     }
 
     @Override

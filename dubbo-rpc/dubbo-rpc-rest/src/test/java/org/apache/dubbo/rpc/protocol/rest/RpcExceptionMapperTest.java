@@ -34,7 +34,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
-public class RpcExceptionMapperTest {
+class RpcExceptionMapperTest {
 
     private RpcExceptionMapper exceptionMapper;
 
@@ -44,7 +44,7 @@ public class RpcExceptionMapperTest {
     }
 
     @Test
-    public void testConstraintViolationException() {
+    void testConstraintViolationException() {
         ConstraintViolationException violationException = mock(ConstraintViolationException.class);
         ConstraintViolation violation = mock(ConstraintViolation.class, Answers.RETURNS_DEEP_STUBS);
         given(violationException.getConstraintViolations()).willReturn(Sets.<ConstraintViolation<?>>newSet(violation));
@@ -57,7 +57,7 @@ public class RpcExceptionMapperTest {
     }
 
     @Test
-    public void testNormalException() {
+    void testNormalException() {
         RpcException rpcException = new RpcException();
         Response response = exceptionMapper.toResponse(rpcException);
 

@@ -28,12 +28,12 @@ import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.function.Consumer;
 
-public class SingleProtocolConnectionManagerTest {
+class SingleProtocolConnectionManagerTest {
 
     private ConnectionManager connectionManager = ExtensionLoader.getExtensionLoader(ConnectionManager.class).getExtension(SingleProtocolConnectionManager.NAME);
 
     @Test
-    public void testConnect() throws Exception {
+    void testConnect() throws Exception {
         URL url = URL.valueOf("empty://127.0.0.1:8080?foo=bar");
         Connection connection = connectionManager.connect(url);
         Assertions.assertNotNull(connection);
@@ -51,7 +51,7 @@ public class SingleProtocolConnectionManagerTest {
     }
 
     @Test
-    public void testForEachConnection() throws RemotingException {
+    void testForEachConnection() throws RemotingException {
         URL url = URL.valueOf("empty://127.0.0.1:8080?foo=bar");
         Connection connection = connectionManager.connect(url);
 

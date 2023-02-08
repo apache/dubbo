@@ -27,9 +27,9 @@ import static org.apache.dubbo.remoting.buffer.ChannelBuffers.EMPTY_BUFFER;
 /**
  * {@link ChannelBuffers}
  */
-public class ChannelBuffersTest {
+class ChannelBuffersTest {
     @Test
-    public void testDynamicBuffer() {
+    void testDynamicBuffer() {
         ChannelBuffer channelBuffer = ChannelBuffers.dynamicBuffer();
         Assertions.assertTrue(channelBuffer instanceof DynamicChannelBuffer);
         Assertions.assertEquals(channelBuffer.capacity(), DEFAULT_CAPACITY);
@@ -41,7 +41,7 @@ public class ChannelBuffersTest {
     }
 
     @Test
-    public void testPrefixEquals(){
+    void testPrefixEquals(){
         ChannelBuffer bufA = ChannelBuffers.wrappedBuffer("abcedfaf".getBytes());
         ChannelBuffer bufB = ChannelBuffers.wrappedBuffer("abcedfaa".getBytes());
         Assertions.assertTrue(ChannelBuffers.equals(bufA, bufB));
@@ -50,7 +50,7 @@ public class ChannelBuffersTest {
     }
 
     @Test
-    public void testBuffer() {
+    void testBuffer() {
         ChannelBuffer channelBuffer = ChannelBuffers.buffer(DEFAULT_CAPACITY);
         Assertions.assertTrue(channelBuffer instanceof HeapChannelBuffer);
         channelBuffer = ChannelBuffers.buffer(0);
@@ -58,7 +58,7 @@ public class ChannelBuffersTest {
     }
 
     @Test
-    public void testWrappedBuffer() {
+    void testWrappedBuffer() {
         byte[] bytes = new byte[16];
         ChannelBuffer channelBuffer = ChannelBuffers.wrappedBuffer(bytes, 0, 15);
         Assertions.assertTrue(channelBuffer instanceof HeapChannelBuffer);
@@ -81,7 +81,7 @@ public class ChannelBuffersTest {
     }
 
     @Test
-    public void testDirectBuffer() {
+    void testDirectBuffer() {
         ChannelBuffer channelBuffer = ChannelBuffers.directBuffer(0);
         Assertions.assertEquals(channelBuffer, EMPTY_BUFFER);
 
@@ -90,7 +90,7 @@ public class ChannelBuffersTest {
     }
 
     @Test
-    public void testEqualsHashCodeCompareMethod() {
+    void testEqualsHashCodeCompareMethod() {
         ChannelBuffer buffer1 = ChannelBuffers.buffer(4);
         byte[] bytes1 = new byte[]{1, 2, 3, 4};
         buffer1.writeBytes(bytes1);

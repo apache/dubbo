@@ -29,10 +29,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  *
  * @since 2.7.8
  */
-public class CommonConstantsTest {
+class CommonConstantsTest {
 
     @Test
-    public void test() {
+    void test() {
         assertEquals(',', COMMA_SEPARATOR_CHAR);
         assertEquals("composite", COMPOSITE_METADATA_STORAGE_TYPE);
         assertEquals("service-name-mapping.properties-path", SERVICE_NAME_MAPPING_PROPERTIES_FILE_KEY);

@@ -30,7 +30,7 @@ import java.util.HashMap;
 /**
  * {@link DubboDefaultPropertiesEnvironmentPostProcessor} Test
  */
-public class DubboDefaultPropertiesEnvironmentPostProcessorTest {
+class DubboDefaultPropertiesEnvironmentPostProcessorTest {
 
     private DubboDefaultPropertiesEnvironmentPostProcessor instance =
             new DubboDefaultPropertiesEnvironmentPostProcessor();
@@ -38,12 +38,12 @@ public class DubboDefaultPropertiesEnvironmentPostProcessorTest {
     private SpringApplication springApplication = new SpringApplication();
 
     @Test
-    public void testOrder() {
+    void testOrder() {
         Assert.assertEquals(Ordered.LOWEST_PRECEDENCE, instance.getOrder());
     }
 
     @Test
-    public void testPostProcessEnvironment() {
+    void testPostProcessEnvironment() {
         MockEnvironment environment = new MockEnvironment();
         // Case 1 : Not Any property
         instance.postProcessEnvironment(environment, springApplication);

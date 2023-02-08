@@ -39,7 +39,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_UNEXPECTED_EXCEPTION;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
 
 public class NettyPortUnificationServerHandler extends ByteToMessageDecoder {
 
@@ -71,7 +71,7 @@ public class NettyPortUnificationServerHandler extends ByteToMessageDecoder {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        LOGGER.error(TRANSPORT_UNEXPECTED_EXCEPTION, "", "", "Unexpected exception from downstream before protocol detected.", cause);
+        LOGGER.error(INTERNAL_ERROR, "unknown error in remoting module", "", "Unexpected exception from downstream before protocol detected.", cause);
     }
 
     @Override
@@ -125,7 +125,7 @@ public class NettyPortUnificationServerHandler extends ByteToMessageDecoder {
             Set<String> supported = url.getApplicationModel()
                 .getExtensionLoader(WireProtocol.class)
                 .getSupportedExtensions();
-            LOGGER.error(TRANSPORT_UNEXPECTED_EXCEPTION, "", "", String.format("Can not recognize protocol from downstream=%s . "
+            LOGGER.error(INTERNAL_ERROR, "unknown error in remoting module", "", String.format("Can not recognize protocol from downstream=%s . "
                     + "preface=%s protocols=%s", ctx.channel().remoteAddress(),
                 Bytes.bytes2hex(preface),
                 supported));
@@ -138,7 +138,9 @@ public class NettyPortUnificationServerHandler extends ByteToMessageDecoder {
 
     private void enableSsl(ChannelHandlerContext ctx) {
         ChannelPipeline p = ctx.pipeline();
-        p.addLast("ssl", sslCtx.newHandler(ctx.alloc()));
+        if (sslCtx != null) {
+            p.addLast("ssl", sslCtx.newHandler(ctx.alloc()));
+        }
         p.addLast("unificationA",
             new NettyPortUnificationServerHandler(url, sslCtx, false, protocols,
                 handler, dubboChannels, urlMapper, handlerMapper));

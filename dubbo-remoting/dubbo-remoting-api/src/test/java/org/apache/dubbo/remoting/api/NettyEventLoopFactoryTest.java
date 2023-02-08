@@ -38,7 +38,7 @@ import static org.apache.dubbo.remoting.Constants.NETTY_EPOLL_ENABLE_KEY;
 /**
  * {@link NettyEventLoopFactory}
  */
-public class NettyEventLoopFactoryTest {
+class NettyEventLoopFactoryTest {
 
     @BeforeEach
     public void setUp() {

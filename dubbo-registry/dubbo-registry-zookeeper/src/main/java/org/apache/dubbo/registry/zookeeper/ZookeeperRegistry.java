@@ -157,7 +157,7 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
     public void doRegister(URL url) {
         try {
             checkDestroyed();
-            zkClient.create(toUrlPath(url), url.getParameter(DYNAMIC_KEY, true));
+            zkClient.create(toUrlPath(url), url.getParameter(DYNAMIC_KEY, true), false);
         } catch (Throwable e) {
             throw new RpcException("Failed to register " + url + " to zookeeper " + getUrl() + ", cause: " + e.getMessage(), e);
         }
@@ -193,7 +193,7 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
                     }
                 });
 
-                zkClient.create(root, false);
+                zkClient.create(root, false, true);
 
                 List<String> services = zkClient.addChildListener(root, zkListener);
                 if (CollectionUtils.isNotEmpty(services)) {
@@ -227,7 +227,7 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
                         }
 
                         // create "directories".
-                        zkClient.create(path, false);
+                        zkClient.create(path, false, true);
 
                         // Add children (i.e. service items).
                         List<String> children = zkClient.addChildListener(path, zkListener);

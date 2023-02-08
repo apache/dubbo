@@ -29,10 +29,10 @@ import java.util.Map;
  * {@link DubboAnnotationUtils#convertParameters} Test
  */
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-public class ParameterConvertTest {
+class ParameterConvertTest {
 
     @Test
-    public void test() {
+    void test() {
         /**
          *     (array->map)
          *     ["a","b"] ==> {a=b}

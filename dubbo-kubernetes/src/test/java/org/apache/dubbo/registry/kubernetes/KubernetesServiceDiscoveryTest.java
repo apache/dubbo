@@ -16,6 +16,10 @@
  */
 package org.apache.dubbo.registry.kubernetes;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
@@ -25,6 +29,14 @@ import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedLi
 import org.apache.dubbo.registry.kubernetes.util.KubernetesClientConst;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import io.fabric8.kubernetes.api.model.Endpoints;
 import io.fabric8.kubernetes.api.model.EndpointsBuilder;
@@ -35,23 +47,12 @@ import io.fabric8.kubernetes.api.model.ServiceBuilder;
 import io.fabric8.kubernetes.client.Config;
 import io.fabric8.kubernetes.client.NamespacedKubernetesClient;
 import io.fabric8.kubernetes.client.server.mock.KubernetesServer;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
-import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
 
 import static org.apache.dubbo.registry.kubernetes.util.KubernetesClientConst.NAMESPACE;
+import static org.awaitility.Awaitility.await;
 
 @ExtendWith({MockitoExtension.class})
-public class KubernetesServiceDiscoveryTest {
+class KubernetesServiceDiscoveryTest {
     private static final String SERVICE_NAME = "TestService";
 
     private static final String POD_NAME = "TestServer";
@@ -120,7 +121,7 @@ public class KubernetesServiceDiscoveryTest {
     }
 
     @Test
-    public void testEndpointsUpdate() throws Exception {
+    void testEndpointsUpdate() throws Exception {
         serviceDiscovery.setCurrentHostname(POD_NAME);
         serviceDiscovery.setKubernetesClient(mockClient);
 
@@ -144,7 +145,11 @@ public class KubernetesServiceDiscoveryTest {
                                 .endAddress().endSubset()
                                 .build());
 
-        Thread.sleep(2000);
+        await().until(() -> {
+            ArgumentCaptor<ServiceInstancesChangedEvent> captor = ArgumentCaptor.forClass(ServiceInstancesChangedEvent.class);
+            Mockito.verify(mockListener, Mockito.atLeast(0)).onEvent(captor.capture());
+            return captor.getValue().getServiceInstances().size() == 2;
+        });
         ArgumentCaptor<ServiceInstancesChangedEvent> eventArgumentCaptor =
                 ArgumentCaptor.forClass(ServiceInstancesChangedEvent.class);
         Mockito.verify(mockListener, Mockito.times(2)).onEvent(eventArgumentCaptor.capture());
@@ -154,7 +159,7 @@ public class KubernetesServiceDiscoveryTest {
     }
 
     @Test
-    public void testPodsUpdate() throws Exception {
+    void testPodsUpdate() throws Exception {
         serviceDiscovery.setCurrentHostname(POD_NAME);
         serviceDiscovery.setKubernetesClient(mockClient);
 
@@ -170,9 +175,13 @@ public class KubernetesServiceDiscoveryTest {
         serviceDiscovery.addServiceInstancesChangedListener(mockListener);
 
         serviceInstance = new DefaultServiceInstance(SERVICE_NAME, "Test12345", 12345, ScopeModelUtil.getApplicationModel(serviceDiscovery.getUrl().getScopeModel()));
-        serviceDiscovery.doUpdate(serviceInstance);
+        serviceDiscovery.doUpdate(serviceInstance, serviceInstance);
 
-        Thread.sleep(2000);
+        await().until(() -> {
+            ArgumentCaptor<ServiceInstancesChangedEvent> captor = ArgumentCaptor.forClass(ServiceInstancesChangedEvent.class);
+            Mockito.verify(mockListener, Mockito.atLeast(0)).onEvent(captor.capture());
+            return captor.getValue().getServiceInstances().size() == 1;
+        });
         ArgumentCaptor<ServiceInstancesChangedEvent> eventArgumentCaptor =
                 ArgumentCaptor.forClass(ServiceInstancesChangedEvent.class);
         Mockito.verify(mockListener, Mockito.times(1)).onEvent(eventArgumentCaptor.capture());
@@ -182,7 +191,7 @@ public class KubernetesServiceDiscoveryTest {
     }
 
     @Test
-    public void testServiceUpdate() throws Exception {
+    void testServiceUpdate() throws Exception {
         serviceDiscovery.setCurrentHostname(POD_NAME);
         serviceDiscovery.setKubernetesClient(mockClient);
 
@@ -205,7 +214,11 @@ public class KubernetesServiceDiscoveryTest {
                         .endSpec()
                         .build());
 
-        Thread.sleep(2000);
+        await().until(() -> {
+            ArgumentCaptor<ServiceInstancesChangedEvent> captor = ArgumentCaptor.forClass(ServiceInstancesChangedEvent.class);
+            Mockito.verify(mockListener, Mockito.atLeast(0)).onEvent(captor.capture());
+            return captor.getValue().getServiceInstances().size() == 1;
+        });
         ArgumentCaptor<ServiceInstancesChangedEvent> eventArgumentCaptor =
                 ArgumentCaptor.forClass(ServiceInstancesChangedEvent.class);
         Mockito.verify(mockListener, Mockito.times(1)).onEvent(eventArgumentCaptor.capture());
@@ -215,7 +228,7 @@ public class KubernetesServiceDiscoveryTest {
     }
 
     @Test
-    public void testGetInstance() {
+    void testGetInstance() {
         serviceDiscovery.setCurrentHostname(POD_NAME);
         serviceDiscovery.setKubernetesClient(mockClient);
 
@@ -223,7 +236,7 @@ public class KubernetesServiceDiscoveryTest {
 
         serviceDiscovery.doRegister(serviceInstance);
 
-        serviceDiscovery.doUpdate(serviceInstance);
+        serviceDiscovery.doUpdate(serviceInstance, serviceInstance);
 
         Assertions.assertEquals(1, serviceDiscovery.getServices().size());
         Assertions.assertEquals(1, serviceDiscovery.getInstances(SERVICE_NAME).size());

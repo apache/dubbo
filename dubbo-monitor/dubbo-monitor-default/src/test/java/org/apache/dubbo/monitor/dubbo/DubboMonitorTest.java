@@ -37,6 +37,8 @@ import org.mockito.ArgumentCaptor;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
@@ -51,12 +53,12 @@ import static org.apache.dubbo.monitor.Constants.MAX_CONCURRENT_KEY;
 import static org.apache.dubbo.monitor.Constants.MAX_ELAPSED_KEY;
 import static org.apache.dubbo.monitor.Constants.OUTPUT_KEY;
 import static org.apache.dubbo.monitor.Constants.SUCCESS_KEY;
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.not;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
@@ -65,7 +67,7 @@ import static org.mockito.Mockito.verify;
 /**
  * DubboMonitorTest
  */
-public class DubboMonitorTest {
+class DubboMonitorTest {
 
     private final Invoker<MonitorService> monitorInvoker = new Invoker<MonitorService>() {
         @Override
@@ -105,25 +107,23 @@ public class DubboMonitorTest {
     };
 
     @Test
-    public void testCount() throws Exception {
+    void testCount() throws Exception {
         DubboMonitor monitor = new DubboMonitor(monitorInvoker, monitorService);
         URL statistics = new URLBuilder(DUBBO_PROTOCOL, "10.20.153.10", 0)
-                .addParameter(APPLICATION_KEY, "morgan")
-                .addParameter(INTERFACE_KEY, "MemberService")
-                .addParameter(METHOD_KEY, "findPerson")
-                .addParameter(CONSUMER, "10.20.153.11")
-                .addParameter(SUCCESS_KEY, 1)
-                .addParameter(FAILURE_KEY, 0)
-                .addParameter(ELAPSED_KEY, 3)
-                .addParameter(MAX_ELAPSED_KEY, 3)
-                .addParameter(CONCURRENT_KEY, 1)
-                .addParameter(MAX_CONCURRENT_KEY, 1)
-                .build();
+            .addParameter(APPLICATION_KEY, "morgan")
+            .addParameter(INTERFACE_KEY, "MemberService")
+            .addParameter(METHOD_KEY, "findPerson")
+            .addParameter(CONSUMER, "10.20.153.11")
+            .addParameter(SUCCESS_KEY, 1)
+            .addParameter(FAILURE_KEY, 0)
+            .addParameter(ELAPSED_KEY, 3)
+            .addParameter(MAX_ELAPSED_KEY, 3)
+            .addParameter(CONCURRENT_KEY, 1)
+            .addParameter(MAX_CONCURRENT_KEY, 1)
+            .build();
         monitor.collect(statistics.toSerializableURL());
         monitor.send();
-        while (lastStatistics == null) {
-            Thread.sleep(10);
-        }
+        await().atMost(60, TimeUnit.SECONDS).until(() -> lastStatistics != null);
         Assertions.assertEquals("morgan", lastStatistics.getParameter(APPLICATION_KEY));
         Assertions.assertEquals("dubbo", lastStatistics.getProtocol());
         Assertions.assertEquals("10.20.153.10", lastStatistics.getHost());
@@ -141,20 +141,20 @@ public class DubboMonitorTest {
     }
 
     @Test
-    public void testMonitorFactory() throws Exception {
+    void testMonitorFactory() throws Exception {
         MockMonitorService monitorService = new MockMonitorService();
         URL statistics = new URLBuilder(DUBBO_PROTOCOL, "10.20.153.10", 0)
-                .addParameter(APPLICATION_KEY, "morgan")
-                .addParameter(INTERFACE_KEY, "MemberService")
-                .addParameter(METHOD_KEY, "findPerson")
-                .addParameter(CONSUMER, "10.20.153.11")
-                .addParameter(SUCCESS_KEY, 1)
-                .addParameter(FAILURE_KEY, 0)
-                .addParameter(ELAPSED_KEY, 3)
-                .addParameter(MAX_ELAPSED_KEY, 3)
-                .addParameter(CONCURRENT_KEY, 1)
-                .addParameter(MAX_CONCURRENT_KEY, 1)
-                .build();
+            .addParameter(APPLICATION_KEY, "morgan")
+            .addParameter(INTERFACE_KEY, "MemberService")
+            .addParameter(METHOD_KEY, "findPerson")
+            .addParameter(CONSUMER, "10.20.153.11")
+            .addParameter(SUCCESS_KEY, 1)
+            .addParameter(FAILURE_KEY, 0)
+            .addParameter(ELAPSED_KEY, 3)
+            .addParameter(MAX_ELAPSED_KEY, 3)
+            .addParameter(CONCURRENT_KEY, 1)
+            .addParameter(MAX_CONCURRENT_KEY, 1)
+            .build();
 
         Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
         ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
@@ -171,14 +171,18 @@ public class DubboMonitorTest {
                 }
                 try {
                     monitor.collect(statistics.toSerializableURL());
-                    int i = 0;
-                    while (monitorService.getStatistics() == null && i < 200) {
-                        i++;
-                        Thread.sleep(10);
-                    }
-                    URL result = monitorService.getStatistics();
-                    Assertions.assertEquals(1, result.getParameter(SUCCESS_KEY, 0));
-                    Assertions.assertEquals(3, result.getParameter(ELAPSED_KEY, 0));
+                    await()
+                        .atLeast(10, TimeUnit.MILLISECONDS)
+                        .atMost(60, TimeUnit.SECONDS)
+                        .until(() -> monitorService.getStatistics().stream().anyMatch(s -> s.getParameter(SUCCESS_KEY, 0) == 1));
+
+                    List<URL> statisticsUrls = monitorService.getStatistics();
+                    Optional<URL> url = statisticsUrls.stream()
+                        .filter(s -> s.getParameter(SUCCESS_KEY, 0) == 1)
+                        .findFirst();
+                    Assertions.assertTrue(url.isPresent());
+                    Assertions.assertEquals(1, url.get().getParameter(SUCCESS_KEY, 0));
+                    Assertions.assertEquals(3, url.get().getParameter(ELAPSED_KEY, 0));
                 } finally {
                     monitor.destroy();
                 }
@@ -191,7 +195,7 @@ public class DubboMonitorTest {
     }
 
     @Test
-    public void testAvailable() {
+    void testAvailable() {
         Invoker invoker = mock(Invoker.class);
         MonitorService monitorService = mock(MonitorService.class);
 
@@ -204,19 +208,19 @@ public class DubboMonitorTest {
     }
 
     @Test
-    public void testSum() {
+    void testSum() {
         URL statistics = new URLBuilder(DUBBO_PROTOCOL, "10.20.153.11", 0)
-                .addParameter(APPLICATION_KEY, "morgan")
-                .addParameter(INTERFACE_KEY, "MemberService")
-                .addParameter(METHOD_KEY, "findPerson")
-                .addParameter(CONSUMER, "10.20.153.11")
-                .addParameter(SUCCESS_KEY, 1)
-                .addParameter(FAILURE_KEY, 0)
-                .addParameter(ELAPSED_KEY, 3)
-                .addParameter(MAX_ELAPSED_KEY, 3)
-                .addParameter(CONCURRENT_KEY, 1)
-                .addParameter(MAX_CONCURRENT_KEY, 1)
-                .build();
+            .addParameter(APPLICATION_KEY, "morgan")
+            .addParameter(INTERFACE_KEY, "MemberService")
+            .addParameter(METHOD_KEY, "findPerson")
+            .addParameter(CONSUMER, "10.20.153.11")
+            .addParameter(SUCCESS_KEY, 1)
+            .addParameter(FAILURE_KEY, 0)
+            .addParameter(ELAPSED_KEY, 3)
+            .addParameter(MAX_ELAPSED_KEY, 3)
+            .addParameter(CONCURRENT_KEY, 1)
+            .addParameter(MAX_CONCURRENT_KEY, 1)
+            .build();
         Invoker invoker = mock(Invoker.class);
         MonitorService monitorService = mock(MonitorService.class);
 
@@ -225,7 +229,7 @@ public class DubboMonitorTest {
 
         dubboMonitor.collect(statistics.toSerializableURL());
         dubboMonitor.collect(statistics.addParameter(SUCCESS_KEY, 3).addParameter(CONCURRENT_KEY, 2)
-                .addParameter(INPUT_KEY, 1).addParameter(OUTPUT_KEY, 2).toSerializableURL());
+            .addParameter(INPUT_KEY, 1).addParameter(OUTPUT_KEY, 2).toSerializableURL());
         dubboMonitor.collect(statistics.addParameter(SUCCESS_KEY, 6).addParameter(ELAPSED_KEY, 2).toSerializableURL());
 
         dubboMonitor.send();
@@ -246,7 +250,7 @@ public class DubboMonitorTest {
     }
 
     @Test
-    public void testLookUp() {
+    void testLookUp() {
         Invoker invoker = mock(Invoker.class);
         MonitorService monitorService = mock(MonitorService.class);
 
@@ -256,6 +260,6 @@ public class DubboMonitorTest {
 
         dubboMonitor.lookup(queryUrl);
 
-        verify(monitorService).lookup(eq(queryUrl));
+        verify(monitorService).lookup(queryUrl);
     }
 }

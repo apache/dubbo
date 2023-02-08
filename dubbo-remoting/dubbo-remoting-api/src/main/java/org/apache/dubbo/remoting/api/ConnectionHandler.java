@@ -29,7 +29,7 @@ import io.netty.util.AttributeKey;
 
 import java.util.concurrent.TimeUnit;
 
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_UNEXPECTED_EXCEPTION;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
 
 @ChannelHandler.Sharable
 public class ConnectionHandler extends ChannelInboundHandlerAdapter {
@@ -70,7 +70,7 @@ public class ConnectionHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        log.warn(TRANSPORT_UNEXPECTED_EXCEPTION, "", "", String.format("Channel error:%s", ctx.channel()), cause);
+        log.warn(INTERNAL_ERROR, "unknown error in remoting module", "", String.format("Channel error:%s", ctx.channel()), cause);
         ctx.close();
     }
 

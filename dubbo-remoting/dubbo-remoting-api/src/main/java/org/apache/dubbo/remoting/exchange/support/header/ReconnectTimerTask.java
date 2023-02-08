@@ -23,7 +23,7 @@ import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.Client;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_RECONNECT;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_UNEXPECTED_EXCEPTION;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
 
 /**
  * ReconnectTimerTask
@@ -64,7 +64,7 @@ public class ReconnectTimerTask extends AbstractTimerTask {
                 }
             }
         } catch (Throwable t) {
-            logger.warn(TRANSPORT_UNEXPECTED_EXCEPTION, "", "", "Exception when reconnect to remote channel " + channel.getRemoteAddress(), t);
+            logger.warn(INTERNAL_ERROR, "unknown error in remoting module", "", "Exception when reconnect to remote channel " + channel.getRemoteAddress(), t);
         }
     }
 }

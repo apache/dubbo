@@ -157,7 +157,7 @@ public class DubboCodec extends ExchangeCodec {
                 req.setData(data);
             } catch (Throwable t) {
                 if (log.isWarnEnabled()) {
-                    log.warn("Decode request failed: " + t.getMessage(), t);
+                    log.warn(PROTOCOL_FAILED_DECODE, "", "", "Decode request failed: " + t.getMessage(), t);
                 }
                 // bad request
                 req.setBroken(true);

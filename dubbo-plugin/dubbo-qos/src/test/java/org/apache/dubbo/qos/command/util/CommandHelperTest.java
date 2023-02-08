@@ -16,6 +16,9 @@
  */
 package org.apache.dubbo.qos.command.util;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import org.apache.dubbo.qos.command.GreetingCommand;
 import org.apache.dubbo.qos.command.impl.ChangeTelnet;
 import org.apache.dubbo.qos.command.impl.CountTelnet;
@@ -45,6 +48,8 @@ import org.apache.dubbo.qos.command.impl.PwdTelnet;
 import org.apache.dubbo.qos.command.impl.Quit;
 import org.apache.dubbo.qos.command.impl.Ready;
 import org.apache.dubbo.qos.command.impl.SelectTelnet;
+import org.apache.dubbo.qos.command.impl.SerializeCheckStatus;
+import org.apache.dubbo.qos.command.impl.SerializeWarnedClasses;
 import org.apache.dubbo.qos.command.impl.SetProfilerWarnPercent;
 import org.apache.dubbo.qos.command.impl.ShutdownTelnet;
 import org.apache.dubbo.qos.command.impl.Startup;
@@ -52,11 +57,7 @@ import org.apache.dubbo.qos.command.impl.SwitchLogLevel;
 import org.apache.dubbo.qos.command.impl.SwitchLogger;
 import org.apache.dubbo.qos.command.impl.Version;
 import org.apache.dubbo.rpc.model.FrameworkModel;
-
 import org.junit.jupiter.api.Test;
-
-import java.util.LinkedList;
-import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -65,17 +66,17 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class CommandHelperTest {
+class CommandHelperTest {
     private CommandHelper commandHelper = new CommandHelper(FrameworkModel.defaultModel());
 
     @Test
-    public void testHasCommand() throws Exception {
+    void testHasCommand() throws Exception {
         assertTrue(commandHelper.hasCommand("greeting"));
         assertFalse(commandHelper.hasCommand("not-exiting"));
     }
 
     @Test
-    public void testGetAllCommandClass() throws Exception {
+    void testGetAllCommandClass() throws Exception {
         List<Class<?>> classes = commandHelper.getAllCommandClass();
 
         // update this list when introduce a new command
@@ -115,11 +116,13 @@ public class CommandHelperTest {
         expectedClasses.add(LoggerInfo.class);
         expectedClasses.add(SwitchLogger.class);
         expectedClasses.add(SwitchLogLevel.class);
+        expectedClasses.add(SerializeCheckStatus.class);
+        expectedClasses.add(SerializeWarnedClasses.class);
         assertThat(classes, containsInAnyOrder(expectedClasses.toArray(new Class<?>[0])));
     }
 
     @Test
-    public void testGetCommandClass() throws Exception {
+    void testGetCommandClass() throws Exception {
         assertThat(commandHelper.getCommandClass("greeting"), equalTo(GreetingCommand.class));
         assertNull(commandHelper.getCommandClass("not-exiting"));
     }

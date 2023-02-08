@@ -16,33 +16,37 @@
  */
 package org.apache.dubbo.common.utils;
 
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.resource.GlobalResourcesRepository;
 
 import java.io.IOException;
 import java.lang.ref.SoftReference;
 import java.lang.reflect.Field;
 import java.net.URL;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 
-public class ClassLoaderResourceLoader {
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_IO_EXCEPTION;
 
+public class ClassLoaderResourceLoader {
+    private static ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ClassLoaderResourceLoader.class);
     private static SoftReference<Map<ClassLoader, Map<String, Set<URL>>>> classLoaderResourcesCache = null;
 
     static {
         // register resources destroy listener
-        GlobalResourcesRepository.registerGlobalDisposable(()-> destroy());
+        GlobalResourcesRepository.registerGlobalDisposable(() -> destroy());
     }
 
-    public static Map<ClassLoader, Set<URL>> loadResources(String fileName, List<ClassLoader> classLoaders) throws InterruptedException {
+    public static Map<ClassLoader, Set<URL>> loadResources(String fileName, Collection<ClassLoader> classLoaders) throws InterruptedException {
         Map<ClassLoader, Set<URL>> resources = new ConcurrentHashMap<>();
         CountDownLatch countDownLatch = new CountDownLatch(classLoaders.size());
         for (ClassLoader classLoader : classLoaders) {
@@ -86,7 +90,7 @@ public class ClassLoaderResourceLoader {
                     }
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                logger.error(COMMON_IO_EXCEPTION, "", "", "Exception occurred when reading SPI definitions. SPI path: " + fileName + " ClassLoader name: " + currentClassLoader, e);
             }
             urlCache.put(fileName, set);
         }

@@ -16,14 +16,14 @@
  */
 package org.apache.dubbo.registry.client;
 
+import java.util.List;
+import java.util.Set;
+
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.lang.Prioritized;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.registry.RegistryService;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
-
-import java.util.List;
-import java.util.Set;
 
 import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_DELAY_NOTIFICATION_KEY;
 
@@ -68,6 +68,10 @@ public interface ServiceDiscovery extends RegistryService, Prioritized {
     ServiceInstance getLocalInstance();
 
     MetadataInfo getLocalMetadata();
+
+    default MetadataInfo getLocalMetadata(String revision) {
+        return getLocalMetadata();
+    }
 
     MetadataInfo getRemoteMetadata(String revision);
 

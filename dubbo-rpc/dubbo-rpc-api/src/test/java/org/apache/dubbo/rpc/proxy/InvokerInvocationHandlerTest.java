@@ -28,7 +28,7 @@ import java.lang.reflect.Method;
 
 import static org.mockito.Mockito.when;
 
-public class InvokerInvocationHandlerTest {
+class InvokerInvocationHandlerTest {
 
     private Invoker<?> invoker;
     private InvokerInvocationHandler invokerInvocationHandler;
@@ -42,7 +42,7 @@ public class InvokerInvocationHandlerTest {
     }
 
     @Test
-    public void testInvokeToString() throws Throwable {
+    void testInvokeToString() throws Throwable {
         String methodName = "toString";
 
         when(invoker.toString()).thenReturn(methodName);

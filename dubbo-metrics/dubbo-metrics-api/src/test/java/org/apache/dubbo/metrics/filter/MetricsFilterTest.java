@@ -17,18 +17,6 @@
 
 package org.apache.dubbo.metrics.filter;
 
-import static org.apache.dubbo.common.constants.MetricsConstants.TAG_GROUP_KEY;
-import static org.apache.dubbo.common.constants.MetricsConstants.TAG_INTERFACE_KEY;
-import static org.apache.dubbo.common.constants.MetricsConstants.TAG_METHOD_KEY;
-import static org.apache.dubbo.common.constants.MetricsConstants.TAG_VERSION_KEY;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.mock;
-
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
 import org.apache.dubbo.common.metrics.collector.DefaultMetricsCollector;
 import org.apache.dubbo.common.metrics.model.MetricsKey;
 import org.apache.dubbo.common.metrics.model.sample.MetricSample;
@@ -39,12 +27,26 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class MetricsFilterTest {
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import static org.apache.dubbo.common.constants.CommonConstants.*;
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_GROUP_KEY;
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_METHOD_KEY;
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_VERSION_KEY;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
+
+class MetricsFilterTest {
 
     private ApplicationModel applicationModel;
     private MetricsFilter filter;
@@ -78,7 +80,7 @@ public class MetricsFilterTest {
     }
 
     @Test
-    public void testCollectDisabled() {
+    void testCollectDisabled() {
         given(invoker.invoke(invocation)).willReturn(new AppResponse("success"));
 
         filter.invoke(invoker, invocation);
@@ -87,7 +89,7 @@ public class MetricsFilterTest {
     }
 
     @Test
-    public void testFailedRequests() {
+    void testFailedRequests() {
         collector.setCollectEnabled(true);
         given(invoker.invoke(invocation)).willThrow(new RpcException("failed"));
         initParam();
@@ -114,7 +116,7 @@ public class MetricsFilterTest {
 
 
     @Test
-    public void testBusinessFailedRequests() {
+    void testBusinessFailedRequests() {
         collector.setCollectEnabled(true);
 
         given(invoker.invoke(invocation)).willThrow(new RpcException(RpcException.BIZ_EXCEPTION));
@@ -142,7 +144,7 @@ public class MetricsFilterTest {
     }
 
     @Test
-    public void testSucceedRequests() {
+    void testSucceedRequests() {
         collector.setCollectEnabled(true);
         given(invoker.invoke(invocation)).willReturn(new AppResponse("success"));
         initParam();
@@ -165,7 +167,7 @@ public class MetricsFilterTest {
     }
 
     @Test
-    public void testMissingGroup() {
+    void testMissingGroup() {
         collector.setCollectEnabled(true);
         given(invoker.invoke(invocation)).willReturn(new AppResponse("success"));
         invocation.setTargetServiceUniqueName(INTERFACE_NAME + ":" + VERSION);
@@ -188,7 +190,7 @@ public class MetricsFilterTest {
     }
 
     @Test
-    public void testMissingVersion() {
+    void testMissingVersion() {
         collector.setCollectEnabled(true);
         given(invoker.invoke(invocation)).willReturn(new AppResponse("success"));
         invocation.setTargetServiceUniqueName(GROUP + "/" + INTERFACE_NAME);
@@ -211,7 +213,7 @@ public class MetricsFilterTest {
     }
 
     @Test
-    public void testMissingGroupAndVersion() {
+    void testMissingGroupAndVersion() {
         collector.setCollectEnabled(true);
         given(invoker.invoke(invocation)).willReturn(new AppResponse("success"));
         invocation.setTargetServiceUniqueName(INTERFACE_NAME);
@@ -231,6 +233,31 @@ public class MetricsFilterTest {
         Assertions.assertEquals(tags.get(TAG_METHOD_KEY), METHOD_NAME);
         Assertions.assertNull(tags.get(TAG_GROUP_KEY));
         Assertions.assertNull(tags.get(TAG_VERSION_KEY));
+    }
+
+    @Test
+    void testGenericCall() {
+        collector.setCollectEnabled(true);
+        given(invoker.invoke(invocation)).willReturn(new AppResponse("success"));
+        invocation.setTargetServiceUniqueName(INTERFACE_NAME);
+        invocation.setMethodName(METHOD_NAME);
+        invocation.setParameterTypes(new Class[]{String.class});
+
+        Result result = filter.invoke(invoker, invocation);
+
+        invocation.setMethodName($INVOKE);
+        invocation.setParameterTypesDesc(GENERIC_PARAMETER_DESC);
+        invocation.setArguments(new Object[]{METHOD_NAME, new String[]{"java.lang.String"}, new Object[]{"mock"}});
+
+        filter.onResponse(result, invoker, invocation);
+
+        Map<String, MetricSample> metricsMap = getMetricsMap();
+
+        MetricSample sample = metricsMap.get("requests.processing");
+        Map<String, String> tags = sample.getTags();
+
+        Assertions.assertEquals(tags.get(TAG_INTERFACE_KEY), INTERFACE_NAME);
+        Assertions.assertEquals(tags.get(TAG_METHOD_KEY), METHOD_NAME);
     }
 
     private void initParam() {

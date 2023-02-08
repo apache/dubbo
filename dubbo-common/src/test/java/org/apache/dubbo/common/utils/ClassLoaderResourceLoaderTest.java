@@ -31,10 +31,10 @@ import java.util.Set;
 /**
  * {@link ClassLoaderResourceLoader}
  */
-public class ClassLoaderResourceLoaderTest {
+class ClassLoaderResourceLoaderTest {
 
     @Test
-    public void test() throws InterruptedException {
+    void test() throws InterruptedException {
         DubboInternalLoadingStrategy dubboInternalLoadingStrategy = new DubboInternalLoadingStrategy();
         String directory = dubboInternalLoadingStrategy.directory();
         String type = FooAppProvider.class.getName();

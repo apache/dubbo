@@ -20,13 +20,14 @@ package org.apache.dubbo.metrics.prometheus;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.metrics.MetricsReporter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class PrometheusMetricsReporterFactoryTest {
+class PrometheusMetricsReporterFactoryTest {
 
     @Test
-    public void test() {
+    void test() {
         ApplicationModel applicationModel = ApplicationModel.defaultModel();
         PrometheusMetricsReporterFactory factory = new PrometheusMetricsReporterFactory(applicationModel);
         MetricsReporter reporter = factory.createMetricsReporter(URL.valueOf("prometheus://localhost:9090/"));

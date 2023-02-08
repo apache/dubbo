@@ -47,7 +47,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * @since 2.7.5
  */
 @DisabledForJreRange(min = JRE.JAVA_16)
-public class ZookeeperServiceDiscoveryTest {
+class ZookeeperServiceDiscoveryTest {
 
     private static final String SERVICE_NAME = "A";
 
@@ -78,7 +78,7 @@ public class ZookeeperServiceDiscoveryTest {
     }
 
     @Test
-    public void testRegistration() throws InterruptedException {
+    void testRegistration() throws InterruptedException {
 
         CountDownLatch latch = new CountDownLatch(1);
 

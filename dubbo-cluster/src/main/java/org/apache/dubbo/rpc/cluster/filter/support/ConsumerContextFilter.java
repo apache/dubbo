@@ -33,11 +33,13 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.TimeoutCountDown;
 import org.apache.dubbo.rpc.cluster.filter.ClusterFilter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.util.Map;
 import java.util.Set;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
+import static org.apache.dubbo.common.constants.CommonConstants.ENABLE_TIMEOUT_COUNTDOWN_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIME_COUNTDOWN_KEY;
 
@@ -96,13 +98,21 @@ public class ConsumerContextFilter implements ClusterFilter, ClusterFilter.Liste
             }
 
             // pass default timeout set by end user (ReferenceConfig)
-            Object countDown = context.getObjectAttachment(TIME_COUNTDOWN_KEY);
+            Object countDown = RpcContext.getServerAttachment().getObjectAttachment(TIME_COUNTDOWN_KEY);
             if (countDown != null) {
-                TimeoutCountDown timeoutCountDown = (TimeoutCountDown) countDown;
-                if (timeoutCountDown.isExpired()) {
-                    return AsyncRpcResult.newDefaultAsyncResult(new RpcException(RpcException.TIMEOUT_TERMINATE,
-                        "No time left for making the following call: " + invocation.getServiceName() + "."
-                            + invocation.getMethodName() + ", terminate directly."), invocation);
+                String methodName = RpcUtils.getMethodName(invocation);
+                // When the client has enabled the timeout-countdown function,
+                // the subsequent calls launched by the Server side will be enabled by default,
+                // and support to turn off the function on a node to get rid of the timeout control.
+                if (invoker.getUrl().getMethodParameter(methodName, ENABLE_TIMEOUT_COUNTDOWN_KEY, true)) {
+                    context.setObjectAttachment(TIME_COUNTDOWN_KEY, countDown);
+
+                    TimeoutCountDown timeoutCountDown = (TimeoutCountDown) countDown;
+                    if (timeoutCountDown.isExpired()) {
+                        return AsyncRpcResult.newDefaultAsyncResult(new RpcException(RpcException.TIMEOUT_TERMINATE,
+                            "No time left for making the following call: " + invocation.getServiceName() + "."
+                                + invocation.getMethodName() + ", terminate directly."), invocation);
+                    }
                 }
             }
 
