@@ -21,6 +21,7 @@ import org.apache.dubbo.annotation.permit.Permit;
 import org.apache.dubbo.annotation.util.FileUtils;
 
 import com.sun.tools.javac.code.Symbol;
+import com.sun.tools.javac.processing.JavacRoundEnvironment;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -132,7 +133,7 @@ public class DispatchingAnnotationProcessor extends AbstractProcessor {
 
         try {
             Class annotationSetScannerClass = Class.forName("com.sun.tools.javac.processing.JavacRoundEnvironment$AnnotationSetScanner");
-            Constructor scannerConstructor = Permit.getConstructor(annotationSetScannerClass, Set.class);
+            Constructor scannerConstructor = Permit.getConstructor(annotationSetScannerClass, JavacRoundEnvironment.class, Set.class);
             Object scanner = scannerConstructor.newInstance(result);
 
             Set<? extends Element> rootElements1 = roundEnvironment
