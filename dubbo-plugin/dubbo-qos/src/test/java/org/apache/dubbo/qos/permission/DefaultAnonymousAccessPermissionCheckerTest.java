@@ -78,6 +78,6 @@ class DefaultAnonymousAccessPermissionCheckerTest {
         Assertions.assertTrue(checker.access(commandContext, PermissionLevel.NONE));
         Assertions.assertTrue(checker.access(commandContext, PermissionLevel.PUBLIC));
         Assertions.assertTrue(checker.access(commandContext, PermissionLevel.PROTECTED));
-        Assertions.assertTrue(checker.access(commandContext, PermissionLevel.PRIVATE));
+        Assertions.assertFalse(checker.access(commandContext, PermissionLevel.PRIVATE));
     }
 }

@@ -33,10 +33,11 @@ public class DefaultAnonymousAccessPermissionChecker implements PermissionChecke
         PermissionLevel currentLevel = qosConfiguration.getAnonymousAccessPermissionLevel();
 
         // Local has private permission
-        if (inetAddress.isLoopbackAddress() ||
-            qosConfiguration.getAcceptForeignIpWhitelistPredicate()
-                .test(inetAddress.getHostAddress())) {
+        if (inetAddress.isLoopbackAddress()) {
             currentLevel = PermissionLevel.PRIVATE;
+        } else if (qosConfiguration.getAcceptForeignIpWhitelistPredicate()
+            .test(inetAddress.getHostAddress())) {
+            currentLevel = PermissionLevel.PROTECTED;
         }
 
         return currentLevel.getLevel() >= defaultCmdRequiredPermissionLevel.getLevel();
