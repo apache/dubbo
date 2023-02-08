@@ -104,7 +104,7 @@ public class DispatchingAnnotationProcessor extends AbstractProcessor {
             i.process(elements, apContext);
         }
 
-        return true;
+        return false;
     }
 
     @Override
