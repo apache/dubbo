@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.utils;
+package org.apache.dubbo.aot.generate;
 
 import org.apache.dubbo.common.extension.Adaptive;
 import org.apache.dubbo.common.extension.AdaptiveClassCodeGenerator;
@@ -43,10 +43,8 @@ import java.util.stream.Collectors;
 public class CodeGenerator {
 
     public static void main(String[] args) {
-        URL r = Thread.currentThread().getContextClassLoader().getResource("");
-        String targetClassPath = new File(r.getFile()).getAbsolutePath();
-        String p = Paths.get(targetClassPath).getParent().getParent().toString() + File.separator + "src" + File.separator + "main" + File.separator + "java";
-        System.out.println(p);
+
+        String p = args[1];
 
         List<Class<?>> classes = new ClassFinder().findClassSet("org.apache.dubbo").stream().map(it -> {
             try {
@@ -73,8 +71,8 @@ public class CodeGenerator {
             }
             AdaptiveClassCodeGenerator codeGenerator = new AdaptiveClassCodeGenerator(it, value);
             String code = codeGenerator.generate(true);
-            System.out.println(code);
-            System.out.println("-----:" + it.getPackage());
+//            System.out.println(code);
+//            System.out.println("-----:" + it.getPackage());
             try {
                 String file = p + File.separator + it.getName().replaceAll("\\.", Matcher.quoteReplacement(File.separator));
                 String dir = Paths.get(file).getParent().toString();
@@ -85,7 +83,6 @@ public class CodeGenerator {
                 e.printStackTrace();
             }
         });
-        System.out.println(classes.size());
     }
 
 

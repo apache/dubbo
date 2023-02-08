@@ -175,6 +175,11 @@
             <artifactId>dubbo-native-plugin</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-maven-plugin</artifactId>
+        </dependency>
+
         <!-- plugin -->
         <dependency>
             <groupId>org.apache.dubbo</groupId>

@@ -161,6 +161,7 @@
         <module>dubbo-kubernetes</module>
         <module>dubbo-xds</module>
         <module>dubbo-native-plugin</module>
+        <module>dubbo-maven-plugin</module>
     </modules>
 
     <dependencyManagement>
