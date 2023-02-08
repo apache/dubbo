@@ -21,8 +21,10 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -30,7 +32,6 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.serialize.MultipleSerialization;
 import org.apache.dubbo.common.stream.StreamObserver;
-import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.config.Constants;
 import org.apache.dubbo.remoting.utils.UrlUtils;
@@ -41,6 +42,7 @@ import com.google.protobuf.Message;
 
 import static org.apache.dubbo.common.constants.CommonConstants.$ECHO;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOBUF_MESSAGE_CLASS_NAME;
+import static org.apache.dubbo.rpc.protocol.tri.TripleCustomerProtocolWapper.*;
 import static org.apache.dubbo.rpc.protocol.tri.TripleProtocol.METHOD_ATTR_PACK;
 
 public class ReflectionPackableMethod implements PackableMethod {
@@ -60,6 +62,7 @@ public class ReflectionPackableMethod implements PackableMethod {
     private final UnPack originalUnpack;
 
     public ReflectionPackableMethod(MethodDescriptor method, URL url, String serializeName, boolean isServer) {
+        Class<?>[] actualTypes;
         Class<?>[] actualRequestTypes;
         Class<?> actualResponseType;
         switch (method.getRpcType()) {
@@ -105,8 +108,12 @@ public class ReflectionPackableMethod implements PackableMethod {
             this.responseUnpack = new WrapResponseUnpack(serialization, url, actualResponseType);
 
 
-            this.originalPack = new OriginalPack(serialization, url, actualResponseType, singleArgument, isServer);
-            this.originalUnpack = new OriginalUnpack(serialization, url, actualRequestTypes, actualResponseType, isServer);
+            singleArgument = isServer ? isServer : singleArgument;
+
+            actualTypes = isServer ? new Class[]{actualResponseType} : actualRequestTypes;
+            this.originalPack = new OriginalPack(serialization, url, actualTypes, singleArgument);
+            actualTypes = isServer ? actualRequestTypes : new Class[]{actualResponseType};
+            this.originalUnpack = new OriginalUnpack(serialization, url, actualTypes, isServer);
         }
     }
 
@@ -495,96 +502,104 @@ public class ReflectionPackableMethod implements PackableMethod {
         private final MultipleSerialization multipleSerialization;
         private final URL url;
         private final boolean singleArgument;
-        private final boolean isServer;
-        private Class<?> actualResponseType;
+        private final Class<?>[] actualTypes;
+
         String serialize;
 
         private OriginalPack(MultipleSerialization multipleSerialization,
                              URL url,
-                             Class<?> actualResponseType,
-                             boolean singleArgument,
-                             boolean isServer) {
+                             Class<?>[] actualTypes,
+                             boolean singleArgument) {
             this.url = url;
             this.multipleSerialization = multipleSerialization;
             this.singleArgument = singleArgument;
-            this.isServer = isServer;
-            this.actualResponseType = actualResponseType;
+            this.actualTypes = actualTypes;
         }
 
         @Override
         public byte[] pack(Object obj) throws IOException {
-
-            if (isServer) {
-                //pack Response
-                ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                if(obj != null){
-                    actualResponseType = obj.getClass();
-                }
-                multipleSerialization.serialize(url, serialize, actualResponseType, obj, bos);
-                return bos.toByteArray();
-            }
-
-            //pack Request
             Object[] arguments = singleArgument ? new Object[]{obj} : (Object[]) obj;
-            ArrayList<byte[]> argumentByteList = new ArrayList<>(arguments.length);
+            List<byte[]> argumentByteList = new ArrayList<>(arguments.length);
+
             for (int i = 0; i < arguments.length; i++) {
                 ByteArrayOutputStream bos = new ByteArrayOutputStream();
                 multipleSerialization.serialize(url, serialize, arguments[i].getClass(), arguments[i], bos);
                 argumentByteList.add(bos.toByteArray());
             }
 
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            multipleSerialization.serialize(url, serialize, argumentByteList.getClass(), argumentByteList, bos);
-            return bos.toByteArray();
+            return buildArgumentBytes(argumentByteList);
+        }
+
+        private byte[] buildArgumentBytes(List<byte[]> argumentByteList) {
+            int totalSize = 0;
+            int argTag = makeTag(2, 2);
+
+            totalSize += varIntComputeLength(argTag) * argumentByteList.size();
+            for (byte[] arg : argumentByteList) {
+                totalSize += arg.length + varIntComputeLength(arg.length);
+            }
+
+            ByteBuffer byteBuffer = ByteBuffer.allocate(totalSize);
+            byte[] argTagBytes = varIntEncode(argTag);
+            for (byte[] arg : argumentByteList) {
+                byteBuffer
+                    .put(argTagBytes)
+                    .put(varIntEncode(arg.length))
+                    .put(arg);
+            }
+
+            return byteBuffer.array();
         }
 
     }
 
     private static class OriginalUnpack implements UnPack {
-        private final Map<String, Class<?>> classCache = new ConcurrentHashMap<>();
-
-
         private final MultipleSerialization serialization;
         private final URL url;
-        private final Class<?>[] actualRequestTypes;
-        private final Class<?> actualResponseType;
+        private final Class<?>[] actualTypes;
         private final boolean isServer;
+
         String serialize;
 
-        private OriginalUnpack(MultipleSerialization serialization, URL url, Class<?>[] actualRequestTypes, Class<?> actualResponseType, boolean isServer) {
+        private OriginalUnpack(MultipleSerialization serialization, URL url, Class<?>[] actualTypes, boolean isServer) {
             this.serialization = serialization;
             this.url = url;
             this.isServer = isServer;
-            this.actualRequestTypes = actualRequestTypes;
-            this.actualResponseType = actualResponseType;
+            this.actualTypes = actualTypes;
         }
 
         @Override
         public Object unpack(byte[] data) throws IOException, ClassNotFoundException {
 
-            if (isServer) {
-                //  unpack Request
-                ByteArrayInputStream bais = new ByteArrayInputStream(data);
-                Object obj = serialization.deserialize(url, serialize, ArrayList.class, bais);
-                ArrayList<byte[]> argumentByteList = (ArrayList<byte[]>) obj;
-                Assert.assertTrue(argumentByteList.size() == actualRequestTypes.length, "arguments.length and argumentTypes.length mismatch;");
+            List<byte[]> bytes = revertArgumentBytes(data);
+            Object[] ret = new Object[actualTypes.length];
 
-                Object[] ret = new Object[actualRequestTypes.length];
-                for (int i = 0; i < actualRequestTypes.length; i++) {
-                    byte[] argumentByte = argumentByteList.get(i);
-
-                    ByteArrayInputStream argumentBais = new ByteArrayInputStream(argumentByte);
-                    ret[i] = serialization.deserialize(url, serialize, actualRequestTypes[i], argumentBais);
-                }
-
-                return ret;
+            for (int i = 0; i < actualTypes.length; i++) {
+                ByteArrayInputStream bais = new ByteArrayInputStream(bytes.get(i));
+                ret[i] = serialization.deserialize(url, serialize, actualTypes[i], bais);
             }
 
-            //  unpack Response
-            ByteArrayInputStream bais = new ByteArrayInputStream(data);
-            Object deserialize = serialization.deserialize(url, serialize, actualResponseType, bais);
-            return deserialize;
+            return isServer ? ret : ret[0];
         }
+
+        private List<byte[]> revertArgumentBytes(byte[] data) {
+            ByteBuffer byteBuffer = ByteBuffer.wrap(data);
+            List<byte[]> args = new ArrayList<>();
+            while (byteBuffer.position() < byteBuffer.limit()) {
+                int tag = readRawVarint32(byteBuffer);
+                int fieldNum = extractFieldNumFromTag(tag);
+                if (fieldNum == 2) {
+                    int argLength = readRawVarint32(byteBuffer);
+                    byte[] argBytes = new byte[argLength];
+                    byteBuffer.get(argBytes, 0, argLength);
+                    args.add(argBytes);
+                } else {
+                    throw new RuntimeException("fieldNum should is 2 ");
+                }
+            }
+            return args;
+        }
+
     }
 
     private static Class<?> getClassFromCache(String className, Map<String, Class<?>> classCache, Class<?> expectedClass) {
