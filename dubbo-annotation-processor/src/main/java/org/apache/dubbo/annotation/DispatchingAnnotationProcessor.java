@@ -134,7 +134,7 @@ public class DispatchingAnnotationProcessor extends AbstractProcessor {
         try {
             Class annotationSetScannerClass = Class.forName("com.sun.tools.javac.processing.JavacRoundEnvironment$AnnotationSetScanner");
             Constructor scannerConstructor = Permit.getConstructor(annotationSetScannerClass, JavacRoundEnvironment.class, Set.class);
-            Object scanner = scannerConstructor.newInstance(result);
+            Object scanner = scannerConstructor.newInstance(roundEnvironment, result);
 
             Set<? extends Element> rootElements1 = roundEnvironment
                 .getRootElements()
