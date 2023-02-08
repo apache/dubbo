@@ -22,6 +22,7 @@ import org.apache.dubbo.metrics.model.ApplicationMetric;
 import org.apache.dubbo.metrics.model.MetricsCategory;
 import org.apache.dubbo.metrics.model.MetricsKey;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
+import org.apache.dubbo.metrics.registry.MetricsKeyWrapper;
 import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.metrics.registry.event.RegistryRegisterEvent;
 import org.apache.dubbo.metrics.report.MetricsExport;
@@ -50,18 +51,26 @@ public class RegistryStatComposite implements MetricsExport {
             numStats.put(type, new ConcurrentHashMap<>());
         }
 
-        rtStats.add(new AtomicLongContainer(MetricsKey.REGISTER_METRIC_RT_LAST));
-        rtStats.add(new LongAccumulatorContainer(MetricsKey.REGISTER_METRIC_RT_MIN, new LongAccumulator(Long::min, Long.MAX_VALUE)));
-        rtStats.add(new LongAccumulatorContainer(MetricsKey.REGISTER_METRIC_RT_MAX, new LongAccumulator(Long::max, Long.MIN_VALUE)));
-        rtStats.add(new AtomicLongContainer(MetricsKey.REGISTER_METRIC_RT_SUM, (responseTime, longAccumulator) -> longAccumulator.addAndGet(responseTime)));
-        AtomicLongContainer avgContainer = new AtomicLongContainer(MetricsKey.REGISTER_METRIC_RT_AVG, (k, v) -> v.incrementAndGet());
+        rtStats.addAll(initStats("register"));
+        rtStats.addAll(initStats("subscribe"));
+
+    }
+
+    private List<LongContainer<? extends Number>> initStats(String registryOpType) {
+        List<LongContainer<? extends Number>> soleRtStats = new ArrayList<>();
+        soleRtStats.add(new AtomicLongContainer(new MetricsKeyWrapper(registryOpType, MetricsKey.GENERIC_METRIC_RT_LAST)));
+        soleRtStats.add(new LongAccumulatorContainer(new MetricsKeyWrapper(registryOpType, MetricsKey.GENERIC_METRIC_RT_MIN), new LongAccumulator(Long::min, Long.MAX_VALUE)));
+        soleRtStats.add(new LongAccumulatorContainer(new MetricsKeyWrapper(registryOpType, MetricsKey.GENERIC_METRIC_RT_MAX), new LongAccumulator(Long::max, Long.MIN_VALUE)));
+        soleRtStats.add(new AtomicLongContainer(new MetricsKeyWrapper(registryOpType, MetricsKey.GENERIC_METRIC_RT_SUM), (responseTime, longAccumulator) -> longAccumulator.addAndGet(responseTime)));
+        AtomicLongContainer avgContainer = new AtomicLongContainer(new MetricsKeyWrapper(registryOpType, MetricsKey.GENERIC_METRIC_RT_AVG), (k, v) -> v.incrementAndGet());
         avgContainer.setValueSupplier(applicationName -> {
-            LongContainer<? extends Number> totalContainer = rtStats.stream().filter(longContainer -> longContainer.getMetricsKey() == MetricsKey.REGISTER_METRIC_RT_SUM).findFirst().get();
+            LongContainer<? extends Number> totalContainer = rtStats.stream().filter(longContainer -> longContainer.isKey(MetricsKey.GENERIC_METRIC_RT_SUM)).findFirst().get();
             AtomicLong totalRtTimes = avgContainer.get(applicationName);
             AtomicLong totalRtSum = (AtomicLong) totalContainer.get(applicationName);
             return totalRtSum.get() / totalRtTimes.get();
         });
-        rtStats.add(avgContainer);
+        soleRtStats.add(avgContainer);
+        return soleRtStats;
     }
 
     public void increment(RegistryRegisterEvent.Type type, String applicationName) {
@@ -96,10 +105,9 @@ public class RegistryStatComposite implements MetricsExport {
     public List<GaugeMetricSample> exportRtMetrics() {
         List<GaugeMetricSample> list = new ArrayList<>();
         for (LongContainer<? extends Number> rtContainer : rtStats) {
-            MetricsKey metricsKey = rtContainer.getMetricsKey();
+            MetricsKeyWrapper metricsKeyWrapper = rtContainer.getMetricsKeyWrapper();
             for (Map.Entry<String, ? extends Number> entry : rtContainer.entrySet()) {
-
-                list.add(new GaugeMetricSample(metricsKey, ApplicationMetric.getTagsByName(entry.getKey()), MetricsCategory.RT, () -> rtContainer.getValueSupplier().apply(entry.getKey())));
+                list.add(new GaugeMetricSample(metricsKeyWrapper.targetKey(), metricsKeyWrapper.targetDesc(), ApplicationMetric.getTagsByName(entry.getKey()), MetricsCategory.RT, () -> rtContainer.getValueSupplier().apply(entry.getKey())));
             }
         }
         return list;
@@ -112,21 +120,25 @@ public class RegistryStatComposite implements MetricsExport {
 
     public static class LongContainer<NUMBER extends Number> extends ConcurrentHashMap<String, NUMBER> {
 
-        private final MetricsKey metricsKey;
+        private final MetricsKeyWrapper metricsKeyWrapper;
         private final Function<String, NUMBER> initFunc;
         private final BiConsumer<Long, NUMBER> consumerFunc;
         private Function<String, Long> valueSupplier;
 
 
-        public LongContainer(MetricsKey metricsKey, Supplier<NUMBER> initFunc, BiConsumer<Long, NUMBER> consumerFunc) {
-            this.metricsKey = metricsKey;
+        public LongContainer(MetricsKeyWrapper metricsKeyWrapper, Supplier<NUMBER> initFunc, BiConsumer<Long, NUMBER> consumerFunc) {
+            this.metricsKeyWrapper = metricsKeyWrapper;
             this.initFunc = s -> initFunc.get();
             this.consumerFunc = consumerFunc;
             this.valueSupplier = k -> this.get(k).longValue();
         }
 
-        public MetricsKey getMetricsKey() {
-            return metricsKey;
+        public MetricsKeyWrapper getMetricsKeyWrapper() {
+            return metricsKeyWrapper;
+        }
+
+        public boolean isKey(MetricsKey metricsKey) {
+            return metricsKeyWrapper.isKey(metricsKey);
         }
 
         public Function<String, NUMBER> getInitFunc() {
@@ -148,19 +160,19 @@ public class RegistryStatComposite implements MetricsExport {
 
     public static class AtomicLongContainer extends LongContainer<AtomicLong> {
 
-        public AtomicLongContainer(MetricsKey metricsKey) {
-            super(metricsKey, AtomicLong::new, (responseTime, longAccumulator) -> longAccumulator.set(responseTime));
+        public AtomicLongContainer(MetricsKeyWrapper metricsKeyWrapper) {
+            super(metricsKeyWrapper, AtomicLong::new, (responseTime, longAccumulator) -> longAccumulator.set(responseTime));
         }
 
-        public AtomicLongContainer(MetricsKey metricsKey, BiConsumer<Long, AtomicLong> consumerFunc) {
-            super(metricsKey, AtomicLong::new, consumerFunc);
+        public AtomicLongContainer(MetricsKeyWrapper metricsKeyWrapper, BiConsumer<Long, AtomicLong> consumerFunc) {
+            super(metricsKeyWrapper, AtomicLong::new, consumerFunc);
         }
 
     }
 
     public static class LongAccumulatorContainer extends LongContainer<LongAccumulator> {
-        public LongAccumulatorContainer(MetricsKey metricsKey, LongAccumulator accumulator) {
-            super(metricsKey, () -> accumulator, (responseTime, longAccumulator) -> longAccumulator.accumulate(responseTime));
+        public LongAccumulatorContainer(MetricsKeyWrapper metricsKeyWrapper, LongAccumulator accumulator) {
+            super(metricsKeyWrapper, () -> accumulator, (responseTime, longAccumulator) -> longAccumulator.accumulate(responseTime));
         }
     }
 

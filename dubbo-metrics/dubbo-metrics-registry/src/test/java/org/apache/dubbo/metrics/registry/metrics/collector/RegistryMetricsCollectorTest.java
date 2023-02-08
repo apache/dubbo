@@ -23,6 +23,7 @@ import org.apache.dubbo.metrics.listener.MetricsListener;
 import org.apache.dubbo.metrics.model.MetricsKey;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
+import org.apache.dubbo.metrics.registry.MetricsKeyWrapper;
 import org.apache.dubbo.metrics.registry.collector.RegistryMetricsCollector;
 import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -80,11 +81,11 @@ class RegistryMetricsCollectorTest {
             return number.longValue();
         }));
 
-        Assertions.assertEquals(sampleMap.get(MetricsKey.REGISTER_METRIC_RT_LAST.getName()), 0L);
-        Assertions.assertEquals(sampleMap.get(MetricsKey.REGISTER_METRIC_RT_MIN.getName()), 0L);
-        Assertions.assertEquals(sampleMap.get(MetricsKey.REGISTER_METRIC_RT_MAX.getName()), 10L);
-        Assertions.assertEquals(sampleMap.get(MetricsKey.REGISTER_METRIC_RT_AVG.getName()), 5L);
-        Assertions.assertEquals(sampleMap.get(MetricsKey.REGISTER_METRIC_RT_SUM.getName()), 10L);
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper("register", MetricsKey.GENERIC_METRIC_RT_LAST).targetKey()), 0L);
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper("register", MetricsKey.GENERIC_METRIC_RT_MIN).targetKey()), 0L);
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper("register", MetricsKey.REGISTER_METRIC_RT_MAX).targetKey()), 10L);
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper("register", MetricsKey.REGISTER_METRIC_RT_AVG).targetKey()), 5L);
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper("register", MetricsKey.REGISTER_METRIC_RT_SUM).targetKey()), 10L);
     }
 
     @Test

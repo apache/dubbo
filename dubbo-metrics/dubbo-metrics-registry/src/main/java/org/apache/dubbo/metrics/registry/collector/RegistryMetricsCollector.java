@@ -44,7 +44,7 @@ public class RegistryMetricsCollector implements ApplicationMetricsCollector<Reg
     private Boolean collectEnabled = null;
     private final RegistryStatComposite stats;
     private final MetricsEventMulticaster registryMulticaster;
-    private ApplicationModel applicationModel;
+    private final ApplicationModel applicationModel;
 
     public RegistryMetricsCollector(ApplicationModel applicationModel) {
         this.stats = new RegistryStatComposite();

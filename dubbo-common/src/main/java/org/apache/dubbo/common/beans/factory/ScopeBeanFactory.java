@@ -272,12 +272,12 @@ public class ScopeBeanFactory {
         }
     }
 
-    public boolean containsBean(String name) {
-        return registeredBeanInfos.stream().anyMatch(beanInfo -> name.equals(beanInfo.name));
-    }
-
     @SuppressWarnings("unchecked")
     public <T> List<T> getBeansOfType(Class<T> type) {
-        return (List<T>) registeredBeanInfos.stream().filter(beanInfo -> type.isInstance(beanInfo.instance)).map(beanInfo -> beanInfo.instance).collect(Collectors.toList());
+        List<T> currentBeans = (List<T>) registeredBeanInfos.stream().filter(beanInfo -> type.isInstance(beanInfo.instance)).map(beanInfo -> beanInfo.instance).collect(Collectors.toList());
+        if (parent != null) {
+            currentBeans.addAll(parent.getBeansOfType(type));
+        }
+        return currentBeans;
     }
 }
