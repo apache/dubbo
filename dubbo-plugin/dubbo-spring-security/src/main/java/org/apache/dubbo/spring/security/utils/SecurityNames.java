@@ -15,26 +15,14 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.metrics.event;
+package org.apache.dubbo.spring.security.utils;
 
-/**
- * RequestEvent.
- */
-public class RequestEvent extends MetricsEvent {
-    private Type type;
+final public class SecurityNames {
 
-    public RequestEvent(Object source, Type type) {
-        super(source);
-        this.type = type;
-    }
+    public static final String SECURITY_AUTHENTICATION_CONTEXT_KEY = "security_authentication_context";
 
-    public Type getType() {
-        return type;
-    }
+    public static final String SECURITY_CONTEXT_HOLDER_CLASS_NAME = "org.springframework.security.core.context.SecurityContextHolder";
 
-    public void setType(Type type) {
-        this.type = type;
-    }
-
+    private SecurityNames() {}
 
 }

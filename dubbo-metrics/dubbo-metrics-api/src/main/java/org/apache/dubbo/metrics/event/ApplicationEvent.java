@@ -17,24 +17,20 @@
 
 package org.apache.dubbo.metrics.event;
 
-/**
- * RequestEvent.
- */
-public class RequestEvent extends MetricsEvent {
-    private Type type;
+public class ApplicationEvent extends MetricsEvent{
+    private ApplicationEvent.Type type;
 
-    public RequestEvent(Object source, Type type) {
+    public ApplicationEvent(Object source, ApplicationEvent.Type type) {
         super(source);
         this.type = type;
     }
 
-    public Type getType() {
+    public ApplicationEvent.Type getType() {
         return type;
     }
 
-    public void setType(Type type) {
+    public void setType(ApplicationEvent.Type type) {
         this.type = type;
     }
-
 
 }
