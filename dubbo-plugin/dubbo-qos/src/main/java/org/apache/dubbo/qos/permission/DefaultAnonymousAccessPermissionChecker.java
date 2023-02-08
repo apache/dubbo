@@ -16,13 +16,29 @@
  */
 package org.apache.dubbo.qos.permission;
 
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+
 import org.apache.dubbo.qos.command.CommandContext;
+import org.apache.dubbo.qos.common.QosConfiguration;
 
 public class DefaultAnonymousAccessPermissionChecker implements PermissionChecker {
     public static final DefaultAnonymousAccessPermissionChecker INSTANCE = new DefaultAnonymousAccessPermissionChecker();
 
     @Override
     public boolean access(CommandContext commandContext, PermissionLevel defaultCmdRequiredPermissionLevel) {
-        return commandContext.hasPermission(defaultCmdRequiredPermissionLevel);
+        final InetAddress inetAddress = ((InetSocketAddress) commandContext.getRemote().remoteAddress()).getAddress();
+
+        QosConfiguration qosConfiguration = commandContext.getQosConfiguration();
+        PermissionLevel currentLevel = qosConfiguration.getAnonymousAccessPermissionLevel();
+
+        // Local has private permission
+        if (inetAddress.isLoopbackAddress() ||
+            qosConfiguration.getAcceptForeignIpWhitelistPredicate()
+                .test(inetAddress.getHostAddress())) {
+            currentLevel = PermissionLevel.PRIVATE;
+        }
+
+        return currentLevel.getLevel() >= defaultCmdRequiredPermissionLevel.getLevel();
     }
 }
