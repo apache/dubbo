@@ -143,7 +143,7 @@ public class DispatchingAnnotationProcessor extends AbstractProcessor {
                 .collect(Collectors.toSet());
 
             for (Element element : rootElements1) {
-                Method scanningMethod = Permit.getMethod(annotationSetScannerClass, "scan", Set.class, TypeElement.class);
+                Method scanningMethod = Permit.getMethod(annotationSetScannerClass, "scan", Element.class, TypeElement.class);
                 result = (Set<Element>) scanningMethod.invoke(scanner, element, a);
             }
 
