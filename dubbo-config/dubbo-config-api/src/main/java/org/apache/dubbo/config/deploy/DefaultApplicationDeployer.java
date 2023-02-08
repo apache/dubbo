@@ -17,7 +17,6 @@
 package org.apache.dubbo.config.deploy;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.config.Environment;
