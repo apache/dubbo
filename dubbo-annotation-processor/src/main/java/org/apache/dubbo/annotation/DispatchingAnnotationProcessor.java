@@ -131,7 +131,7 @@ public class DispatchingAnnotationProcessor extends AbstractProcessor {
         Set<Element> result = Collections.emptySet();
 
         try {
-            Class annotationSetScannerClass = Class.forName("com.sun.tools.javac.processing.JavacRoundEnvironment.AnnotationSetScanner");
+            Class annotationSetScannerClass = Class.forName("com.sun.tools.javac.processing.JavacRoundEnvironment$AnnotationSetScanner");
             Constructor scannerConstructor = Permit.getConstructor(annotationSetScannerClass, Set.class);
             Object scanner = scannerConstructor.newInstance(result);
 
