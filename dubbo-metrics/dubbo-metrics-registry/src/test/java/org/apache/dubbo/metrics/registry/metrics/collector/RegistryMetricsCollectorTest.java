@@ -83,9 +83,9 @@ class RegistryMetricsCollectorTest {
 
         Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper("register", MetricsKey.GENERIC_METRIC_RT_LAST).targetKey()), 0L);
         Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper("register", MetricsKey.GENERIC_METRIC_RT_MIN).targetKey()), 0L);
-        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper("register", MetricsKey.REGISTER_METRIC_RT_MAX).targetKey()), 10L);
-        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper("register", MetricsKey.REGISTER_METRIC_RT_AVG).targetKey()), 5L);
-        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper("register", MetricsKey.REGISTER_METRIC_RT_SUM).targetKey()), 10L);
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper("register", MetricsKey.GENERIC_METRIC_RT_MAX).targetKey()), 10L);
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper("register", MetricsKey.GENERIC_METRIC_RT_AVG).targetKey()), 5L);
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper("register", MetricsKey.GENERIC_METRIC_RT_SUM).targetKey()), 10L);
     }
 
     @Test

@@ -53,25 +53,9 @@ public enum MetricsKey {
     REGISTER_METRIC_REQUESTS_SUCCEED("dubbo.registry.register.requests.succeed.total", "Succeed Register Requests"),
     REGISTER_METRIC_REQUESTS_FAILED("dubbo.registry.register.requests.failed.total", "Failed Register Requests"),
 
-    REGISTER_METRIC_RT_LAST("dubbo.register.rt.seconds.last", "Last Response Time"),
-    REGISTER_METRIC_RT_MIN("dubbo.register.rt.seconds.min", "Min Response Time"),
-    REGISTER_METRIC_RT_MAX("dubbo.register.rt.seconds.max", "Max Response Time"),
-    REGISTER_METRIC_RT_SUM("dubbo.register.rt.seconds.sum", "Sum Response Time"),
-    REGISTER_METRIC_RT_AVG("dubbo.register.rt.seconds.avg", "Average Response Time"),
-    REGISTER_METRIC_RT_P99("dubbo.register.rt.seconds.p99", "Response Time P99"),
-    REGISTER_METRIC_RT_P95("dubbo.register.rt.seconds.p95", "Response Time P95"),
-
     SUBSCRIBE_METRIC_REQUESTS("dubbo.registry.subscribe.requests.total", "Total Subscribe Requests"),
     SUBSCRIBE_METRIC_REQUESTS_SUCCEED("dubbo.registry.subscribe.requests.succeed.total", "Succeed Subscribe Requests"),
     SUBSCRIBE_METRIC_REQUESTS_FAILED("dubbo.registry.subscribe.requests.failed.total", "Failed Subscribe Requests"),
-
-    SUBSCRIBE_METRIC_RT_LAST("dubbo.subscribe.rt.seconds.last", "Last Response Time"),
-    SUBSCRIBE_METRIC_RT_MIN("dubbo.subscribe.rt.seconds.min", "Min Response Time"),
-    SUBSCRIBE_METRIC_RT_MAX("dubbo.subscribe.rt.seconds.max", "Max Response Time"),
-    SUBSCRIBE_METRIC_RT_SUM("dubbo.subscribe.rt.seconds.sum", "Sum Response Time"),
-    SUBSCRIBE_METRIC_RT_AVG("dubbo.subscribe.rt.seconds.avg", "Average Response Time"),
-    SUBSCRIBE_METRIC_RT_P99("dubbo.subscribe.rt.seconds.p99", "Response Time P99"),
-    SUBSCRIBE_METRIC_RT_P95("dubbo.subscribe.rt.seconds.p95", "Response Time P95"),
 
     GENERIC_METRIC_RT_LAST("dubbo.%s.rt.seconds.last", "Last Response Time"),
     GENERIC_METRIC_RT_MIN("dubbo.%s.rt.seconds.min", "Min Response Time"),
