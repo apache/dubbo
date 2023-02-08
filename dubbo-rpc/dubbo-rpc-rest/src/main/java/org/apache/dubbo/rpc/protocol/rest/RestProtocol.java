@@ -28,6 +28,7 @@ import javax.ws.rs.WebApplicationException;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.metadata.ParameterTypesComparator;
 import org.apache.dubbo.metadata.rest.RestMethodMetadata;
 import org.apache.dubbo.remoting.http.RequestTemplate;
 import org.apache.dubbo.remoting.http.RestClient;
@@ -140,13 +141,13 @@ public class RestProtocol extends AbstractProxyProtocol {
         refClient.retain();
 
         // resolve metadata
-        Map<String, Map<Class<?>[], RestMethodMetadata>> metadataMap = MetadataResolver.resolveConsumerServiceMetadata(type, url);
+        Map<String, Map<ParameterTypesComparator, RestMethodMetadata>> metadataMap = MetadataResolver.resolveConsumerServiceMetadata(type, url);
 
         Invoker<T> invoker = new AbstractInvoker<T>(type, url, new String[]{INTERFACE_KEY, GROUP_KEY, TOKEN_KEY}) {
             @Override
             protected Result doInvoke(Invocation invocation) {
                 try {
-                    RestMethodMetadata restMethodMetadata = metadataMap.get(invocation.getMethodName()).get(invocation.getParameterTypes());
+                    RestMethodMetadata restMethodMetadata = metadataMap.get(invocation.getMethodName()).get(ParameterTypesComparator.getInstance(invocation.getParameterTypes()));
 
                     RequestTemplate requestTemplate = new RequestTemplate(invocation, restMethodMetadata.getRequest().getMethod(), url.getAddress());
 

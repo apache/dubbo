@@ -20,6 +20,7 @@ import java.util.Map;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.metadata.ParameterTypesComparator;
 import org.apache.dubbo.metadata.rest.RestMethodMetadata;
 import org.apache.dubbo.metadata.rest.ServiceRestMetadata;
 import org.apache.dubbo.metadata.rest.ServiceRestMetadataResolver;
@@ -37,7 +38,7 @@ public class MetadataResolver {
      * @return rest metadata
      * @throws CodeStyleNotSupportException not support type
      */
-    public static Map<String, Map<Class<?>[], RestMethodMetadata>> resolveConsumerServiceMetadata(Class<?> targetClass, URL url) {
+    public static Map<String, Map<ParameterTypesComparator, RestMethodMetadata>> resolveConsumerServiceMetadata(Class<?> targetClass, URL url) {
         ExtensionLoader<ServiceRestMetadataResolver> extensionLoader = url.getOrDefaultApplicationModel().getExtensionLoader(ServiceRestMetadataResolver.class);
 
         for (ServiceRestMetadataResolver serviceRestMetadataResolver : extensionLoader.getSupportedExtensionInstances()) {

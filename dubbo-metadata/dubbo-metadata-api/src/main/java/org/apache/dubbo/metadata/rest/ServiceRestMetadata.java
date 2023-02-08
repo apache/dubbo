@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.metadata.rest;
 
+import org.apache.dubbo.metadata.ParameterTypesComparator;
+
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -51,7 +53,7 @@ public class ServiceRestMetadata implements Serializable {
     private Class codeStyle;
 
     private Map<PathMatcher, RestMethodMetadata> pathToServiceMap;
-    private Map<String, Map<Class<?>[], RestMethodMetadata>> methodToServiceMap;
+    private Map<String, Map<ParameterTypesComparator, RestMethodMetadata>> methodToServiceMap;
 
     public ServiceRestMetadata(String serviceInterface, String version, String group, boolean consumer) {
         this.serviceInterface = serviceInterface;
@@ -145,7 +147,7 @@ public class ServiceRestMetadata implements Serializable {
         this.consumer = consumer;
     }
 
-    public Map<String, Map<Class<?>[], RestMethodMetadata>> getMethodToServiceMap() {
+    public Map<String, Map<ParameterTypesComparator, RestMethodMetadata>> getMethodToServiceMap() {
         return methodToServiceMap;
     }
 
@@ -155,7 +157,7 @@ public class ServiceRestMetadata implements Serializable {
         }
 
         this.methodToServiceMap.computeIfAbsent(restMethodMetadata.getReflectMethod().getName(), k -> new HashMap<>())
-            .put(restMethodMetadata.getReflectMethod().getParameterTypes(), restMethodMetadata);
+            .put(ParameterTypesComparator.getInstance(restMethodMetadata.getReflectMethod().getParameterTypes()), restMethodMetadata);
     }
 
     public Class getCodeStyle() {
