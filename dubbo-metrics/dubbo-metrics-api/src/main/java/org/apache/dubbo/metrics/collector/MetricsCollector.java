@@ -18,7 +18,6 @@
 package org.apache.dubbo.metrics.collector;
 
 import org.apache.dubbo.metrics.model.sample.MetricSample;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.List;
 

@@ -34,7 +34,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 @Activate(group = CONSUMER, order = -1)
 public class ClusterFilter implements Filter, BaseFilter.Listener, ScopeModelAware {
 
-    private DefaultMetricsCollector collector= null;
+    private DefaultMetricsCollector collector=null;
     private final ApplicationModel applicationModel;
 
 

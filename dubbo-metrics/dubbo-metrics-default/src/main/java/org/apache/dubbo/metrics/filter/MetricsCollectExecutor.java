@@ -28,7 +28,6 @@ import static org.apache.dubbo.common.constants.MetricsConstants.METRIC_FILTER_S
 
 public class MetricsCollectExecutor {
 
-
     public static void beforeExecute(String applicationName, DefaultMetricsCollector collector, Invocation invocation) {
         collector.increaseTotalRequests(applicationName, invocation);
         collector.increaseProcessingRequests(applicationName, invocation);

@@ -28,7 +28,6 @@ import org.apache.dubbo.metrics.model.MetricsKey;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.rpc.Invocation;
-import org.apache.dubbo.rpc.RpcContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -114,13 +113,8 @@ public class DefaultMetricsCollector implements MetricsCollector {
     @Override
     public List<MetricSample> collect() {
         List<MetricSample> list = new ArrayList<>();
-        if(RpcContext.getContext().isConsumerSide()){
-            collectRequests(list);
-            collectRT(list);
-        }else{
-            collectConsumerRequests(list);
-            collecConsumertRT(list);
-        }
+        collectRequests(list);
+        collectRT(list);
 
         return list;
     }
@@ -152,33 +146,6 @@ public class DefaultMetricsCollector implements MetricsCollector {
 
     }
 
-    private void collectConsumerRequests(List<MetricSample> list) {
-        doCollect(RequestEvent.Type.TOTAL, MetricsStatHandler::get).filter(e -> !e.isEmpty())
-            .ifPresent(map -> map.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.CONSUMER_METRIC_REQUESTS, k.getTags(), REQUESTS, v::get))));
-
-        doCollect(RequestEvent.Type.SUCCEED, MetricsStatHandler::get).filter(e -> !e.isEmpty())
-            .ifPresent(map -> map.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.CONSUMER_METRIC_REQUESTS_SUCCEED, k.getTags(), REQUESTS, v::get))));
-
-        doCollect(RequestEvent.Type.UNKNOWN_FAILED, MetricsStatHandler::get).filter(e -> !e.isEmpty())
-            .ifPresent(map -> map.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.CONSUMER_METRIC_REQUESTS_FAILED, k.getTags(), REQUESTS, v::get))));
-
-        doCollect(RequestEvent.Type.PROCESSING, MetricsStatHandler::get).filter(e -> !e.isEmpty())
-            .ifPresent(map -> map.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.CONSUMER_METRIC_REQUESTS_PROCESSING, k.getTags(), REQUESTS, v::get))));
-
-        doCollect(RequestEvent.Type.BUSINESS_FAILED, MetricsStatHandler::get).filter(e -> !e.isEmpty())
-            .ifPresent(map -> map.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.CONSUMER_METRIC_REQUEST_BUSINESS_FAILED, k.getTags(), REQUESTS, v::get))));
-
-        doCollect(RequestEvent.Type.REQUEST_TIMEOUT, MetricsStatHandler::get).filter(e -> !e.isEmpty())
-            .ifPresent(map -> map.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.CONSUMER_METRIC_REQUESTS_TIMEOUT, k.getTags(), REQUESTS, v::get))));
-
-        doCollect(RequestEvent.Type.REQUEST_LIMIT, MetricsStatHandler::get).filter(e -> !e.isEmpty())
-            .ifPresent(map -> map.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.CONSUMER_METRIC_REQUESTS_LIMIT, k.getTags(), REQUESTS, v::get))));
-
-        doCollect(RequestEvent.Type.TOTAL_FAILED, MetricsStatHandler::get).filter(e -> !e.isEmpty())
-            .ifPresent(map -> map.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.CONSUMER_METRIC_REQUESTS_TOTAL_FAILED, k.getTags(), REQUESTS, v::get))));
-
-    }
-
     private void collectRT(List<MetricSample> list) {
         this.stats.getLastRT().forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.PROVIDER_METRIC_RT_LAST, k.getTags(), RT, v::get)));
         this.stats.getMinRT().forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.PROVIDER_METRIC_RT_MIN, k.getTags(), RT, v::get)));
@@ -191,21 +158,6 @@ public class DefaultMetricsCollector implements MetricsCollector {
             AtomicLong count = this.stats.getRtCount().get(k);
             avg.set(v.get() / count.get());
             list.add(new GaugeMetricSample(MetricsKey.PROVIDER_METRIC_RT_AVG, k.getTags(), RT, avg::get));
-        });
-    }
-
-    private void collecConsumertRT(List<MetricSample> list) {
-        this.stats.getLastRT().forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.CONSUMER_METRIC_RT_LAST, k.getTags(), RT, v::get)));
-        this.stats.getMinRT().forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.CONSUMER_METRIC_RT_MIN, k.getTags(), RT, v::get)));
-        this.stats.getMaxRT().forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.CONSUMER_METRIC_RT_MAX, k.getTags(), RT, v::get)));
-
-        this.stats.getTotalRT().forEach((k, v) -> {
-            list.add(new GaugeMetricSample(MetricsKey.CONSUMER_METRIC_RT_SUM, k.getTags(), RT, v::get));
-
-            AtomicLong avg = this.stats.getAvgRT().get(k);
-            AtomicLong count = this.stats.getRtCount().get(k);
-            avg.set(v.get() / count.get());
-            list.add(new GaugeMetricSample(MetricsKey.CONSUMER_METRIC_RT_AVG, k.getTags(), RT, avg::get));
         });
     }
 
