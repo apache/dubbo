@@ -34,7 +34,7 @@ import static org.apache.dubbo.spring.security.utils.SecurityNames.SECURITY_CONT
 @Activate(group = CommonConstants.PROVIDER, order = -10000,onClass = SECURITY_CONTEXT_HOLDER_CLASS_NAME)
 public class ContextHolderAuthenticationResolverFilter implements Filter {
 
-    private ObjectMapperCodec MAPPER = new ObjectMapperCodec();
+    private ObjectMapperCodec mapper = new ObjectMapperCodec();
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
@@ -49,7 +49,7 @@ public class ContextHolderAuthenticationResolverFilter implements Filter {
         if (StringUtils.isBlank(authenticationJSON)) {
             return;
         }
-        Authentication authentication = MAPPER.deserialize(authenticationJSON, Authentication.class);
+        Authentication authentication = mapper.deserialize(authenticationJSON, Authentication.class);
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 
