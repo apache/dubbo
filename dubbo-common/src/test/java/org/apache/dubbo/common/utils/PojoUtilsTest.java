@@ -16,20 +16,7 @@
  */
 package org.apache.dubbo.common.utils;
 
-import org.apache.dubbo.common.model.Person;
-import org.apache.dubbo.common.model.SerializablePerson;
-import org.apache.dubbo.common.model.User;
-import org.apache.dubbo.common.model.person.BigPerson;
-import org.apache.dubbo.common.model.person.FullAddress;
-import org.apache.dubbo.common.model.person.PersonInfo;
-import org.apache.dubbo.common.model.person.PersonMap;
-import org.apache.dubbo.common.model.person.PersonStatus;
-import org.apache.dubbo.common.model.person.Phone;
-
-import com.alibaba.fastjson.JSONObject;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
+import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.text.SimpleDateFormat;
@@ -46,6 +33,20 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+
+import org.apache.dubbo.common.model.Person;
+import org.apache.dubbo.common.model.SerializablePerson;
+import org.apache.dubbo.common.model.User;
+import org.apache.dubbo.common.model.person.BigPerson;
+import org.apache.dubbo.common.model.person.FullAddress;
+import org.apache.dubbo.common.model.person.PersonInfo;
+import org.apache.dubbo.common.model.person.PersonMap;
+import org.apache.dubbo.common.model.person.PersonStatus;
+import org.apache.dubbo.common.model.person.Phone;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+import com.alibaba.fastjson.JSONObject;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -793,7 +794,7 @@ class PojoUtilsTest {
         SUNDAY, MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY
     }
 
-    public static class BasicTestData {
+    public static class BasicTestData implements Serializable {
 
         public boolean a;
         public char b;
@@ -865,7 +866,7 @@ class PojoUtilsTest {
 
     }
 
-    public static class Parent {
+    public static class Parent implements Serializable {
         public String gender;
         public String email;
         String name;
@@ -910,7 +911,7 @@ class PojoUtilsTest {
         }
     }
 
-    public static class Child {
+    public static class Child implements Serializable {
         public String gender;
         public int age;
         String toy;
@@ -950,7 +951,7 @@ class PojoUtilsTest {
         }
     }
 
-    public static class TestData {
+    public static class TestData implements Serializable {
         private Map<String, Child> children = new HashMap<String, Child>();
         private List<Child> list = new ArrayList<Child>();
 
@@ -979,7 +980,7 @@ class PojoUtilsTest {
         }
     }
 
-    public static class InnerPojo<T> {
+    public static class InnerPojo<T> implements Serializable {
         private List<T> list;
 
         public List<T> getList() {
@@ -991,7 +992,7 @@ class PojoUtilsTest {
         }
     }
 
-    public static class ListResult<T> {
+    public static class ListResult<T> implements Serializable {
         List<T> result;
 
         public List<T> getResult() {

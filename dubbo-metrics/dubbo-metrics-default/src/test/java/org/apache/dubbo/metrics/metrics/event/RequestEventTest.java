@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.metrics.metrics.event;
 
+import org.apache.dubbo.metrics.event.MetricsEvent;
 import org.apache.dubbo.metrics.event.RequestEvent;
 import org.apache.dubbo.metrics.model.MethodMetric;
 import org.junit.jupiter.api.Assertions;
@@ -27,7 +28,7 @@ class RequestEventTest {
     @Test
     void testNewEvent() {
         MethodMetric metric = new MethodMetric();
-        RequestEvent.Type type = RequestEvent.Type.TOTAL;
+        MetricsEvent.Type type = MetricsEvent.Type.TOTAL;
         RequestEvent event = new RequestEvent(metric, type);
 
         Assertions.assertEquals(event.getSource(), metric);

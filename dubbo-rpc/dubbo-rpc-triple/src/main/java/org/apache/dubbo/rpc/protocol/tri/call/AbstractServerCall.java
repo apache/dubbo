@@ -174,6 +174,10 @@ public abstract class AbstractServerCall implements ServerCall, ServerStream.Lis
 
     @Override
     public final void onComplete() {
+        if (listener == null) {
+            // It will enter here when there is an error in the header
+            return;
+        }
         listener.onComplete();
     }
 

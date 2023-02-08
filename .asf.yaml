@@ -42,3 +42,11 @@ github:
     3.1:
       # only disable force push
       foo: bar
+  labels:
+    - java
+    - microservices
+    - framework
+    - restful
+    - distributed-systems
+    - rpc
+    - dubbo

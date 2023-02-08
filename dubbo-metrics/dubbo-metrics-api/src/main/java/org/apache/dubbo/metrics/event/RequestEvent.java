@@ -36,14 +36,5 @@ public class RequestEvent extends MetricsEvent {
         this.type = type;
     }
 
-    public enum Type {
-        TOTAL,
-        SUCCEED,
-        BUSINESS_FAILED,
-        REQUEST_TIMEOUT,
-        REQUEST_LIMIT,
-        PROCESSING,
-        UNKNOWN_FAILED,
-        TOTAL_FAILED
-    }
+
 }
