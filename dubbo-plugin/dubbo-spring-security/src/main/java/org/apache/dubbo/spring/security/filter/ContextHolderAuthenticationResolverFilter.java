@@ -34,7 +34,7 @@ import static org.apache.dubbo.spring.security.utils.SecurityNames.SECURITY_CONT
 @Activate(group = CommonConstants.PROVIDER, order = -10000,onClass = SECURITY_CONTEXT_HOLDER_CLASS_NAME)
 public class ContextHolderAuthenticationResolverFilter implements Filter {
 
-    private final ObjectMapperCodec MAPPER = new ObjectMapperCodec();
+    private ObjectMapperCodec MAPPER = new ObjectMapperCodec();
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
