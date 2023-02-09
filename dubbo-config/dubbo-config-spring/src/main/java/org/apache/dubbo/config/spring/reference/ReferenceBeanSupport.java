@@ -18,7 +18,6 @@ package org.apache.dubbo.config.spring.reference;
 
 import com.alibaba.spring.util.AnnotationUtils;
 import org.apache.dubbo.common.utils.Assert;
-import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.annotation.ProvidedBy;
 import org.apache.dubbo.config.spring.Constants;
