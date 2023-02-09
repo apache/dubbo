@@ -18,11 +18,15 @@
 package org.apache.dubbo.metrics.registry.event;
 
 import org.apache.dubbo.metrics.event.MetricsEvent;
-import org.apache.dubbo.metrics.event.TimeAble;
+import org.apache.dubbo.metrics.event.TimeCounter;
 import org.apache.dubbo.metrics.model.MetricsKey;
 import org.apache.dubbo.metrics.model.TimePair;
 
-public class RegistryEvent<S> extends MetricsEvent<S> implements TimeAble {
+/**
+ * Registry related events
+ * @param <S> context type
+ */
+public class RegistryEvent<S> extends MetricsEvent<S> implements TimeCounter {
     private Type type;
     private TimePair timePair;
 

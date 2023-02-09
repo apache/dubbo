@@ -64,8 +64,8 @@ public class BaseMetricsEventMulticaster implements MetricsEventMulticaster {
         if (event instanceof EmptyEvent) {
             return;
         }
-        if (event instanceof TimeAble) {
-            ((TimeAble) event).getTimePair().end();
+        if (event instanceof TimeCounter) {
+            ((TimeCounter) event).getTimePair().end();
         }
         for (MetricsListener listener : listeners) {
             if (listener instanceof MetricsLifeListener && listener.isSupport(event)) {
