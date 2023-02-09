@@ -92,6 +92,7 @@
         <!-- Common libs -->
         <!-- <spring_version>4.3.30.RELEASE</spring_version> -->
         <spring_version>5.3.25</spring_version>
+        <spring_security_version>5.8.1</spring_security_version>
         <javassist_version>3.29.2-GA</javassist_version>
         <bytebuddy.version>1.12.22</bytebuddy.version>
         <netty_version>3.2.10.Final</netty_version>
@@ -196,6 +197,13 @@
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-framework-bom</artifactId>
                 <version>${spring_version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.security</groupId>
+                <artifactId>spring-security-bom</artifactId>
+                <version>${spring_security_version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
