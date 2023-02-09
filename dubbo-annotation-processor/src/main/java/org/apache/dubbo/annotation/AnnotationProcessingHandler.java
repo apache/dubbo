@@ -22,7 +22,7 @@ import java.lang.annotation.Annotation;
 import java.util.Set;
 
 /**
- * Info here.
+ * Represents an annotation processing handler, which is invoked by DispatchingAnnotationProcessor.
  */
 public interface AnnotationProcessingHandler {
 
