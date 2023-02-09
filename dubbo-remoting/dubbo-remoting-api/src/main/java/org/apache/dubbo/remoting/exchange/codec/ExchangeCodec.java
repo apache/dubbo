@@ -32,6 +32,7 @@ import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.buffer.ChannelBuffer;
 import org.apache.dubbo.remoting.buffer.ChannelBufferInputStream;
 import org.apache.dubbo.remoting.buffer.ChannelBufferOutputStream;
+import org.apache.dubbo.remoting.exchange.HeartBeatRequest;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.exchange.support.DefaultFuture;
@@ -196,7 +197,9 @@ public class ExchangeCodec extends TelnetCodec {
                     byte[] eventPayload = CodecSupport.getPayload(is);
                     if (CodecSupport.isHeartBeat(eventPayload, proto)) {
                         // heart beat response data is always null;
-                        data = null;
+                        HeartBeatRequest heartBeatRequest = HeartBeatRequest.copyFromRequest(req);
+                        heartBeatRequest.setProto(proto);
+                        return heartBeatRequest;
                     } else {
                         data = decodeEventData(channel, CodecSupport.deserialize(channel.getUrl(), new ByteArrayInputStream(eventPayload), proto), eventPayload);
                     }

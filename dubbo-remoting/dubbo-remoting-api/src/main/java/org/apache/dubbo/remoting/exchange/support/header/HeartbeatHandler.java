@@ -23,6 +23,8 @@ import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
+import org.apache.dubbo.remoting.exchange.HeartBeatRequest;
+import org.apache.dubbo.remoting.exchange.HeartBeatResponse;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.transport.AbstractChannelHandlerDelegate;
@@ -67,8 +69,15 @@ public class HeartbeatHandler extends AbstractChannelHandlerDelegate {
         if (isHeartbeatRequest(message)) {
             Request req = (Request) message;
             if (req.isTwoWay()) {
-                Response res = new Response(req.getId(), req.getVersion());
-                res.setEvent(HEARTBEAT_EVENT);
+                Response res;
+                if (req instanceof HeartBeatRequest) {
+                    res = new HeartBeatResponse(req.getId(), req.getVersion());
+                    res.setEvent(HEARTBEAT_EVENT);
+                    ((HeartBeatResponse) res).setProto(((HeartBeatRequest) req).getProto());
+                } else {
+                    res = new Response(req.getId(), req.getVersion());
+                    res.setEvent(HEARTBEAT_EVENT);
+                }
                 channel.send(res);
                 if (logger.isDebugEnabled()) {
                     int heartbeat = channel.getUrl().getParameter(Constants.HEARTBEAT_KEY, 0);

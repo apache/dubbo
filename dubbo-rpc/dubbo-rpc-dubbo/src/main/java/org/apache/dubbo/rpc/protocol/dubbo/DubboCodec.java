@@ -27,6 +27,8 @@ import org.apache.dubbo.common.serialize.Serialization;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Channel;
+import org.apache.dubbo.remoting.exchange.HeartBeatRequest;
+import org.apache.dubbo.remoting.exchange.HeartBeatResponse;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.exchange.codec.ExchangeCodec;
@@ -143,7 +145,9 @@ public class DubboCodec extends ExchangeCodec {
                     byte[] eventPayload = CodecSupport.getPayload(is);
                     if (CodecSupport.isHeartBeat(eventPayload, proto)) {
                         // heart beat response data is always null;
-                        data = null;
+                        HeartBeatRequest heartBeatRequest = HeartBeatRequest.copyFromRequest(req);
+                        heartBeatRequest.setProto(proto);
+                        return heartBeatRequest;
                     } else {
                         ObjectInput in = CodecSupport.deserialize(channel.getUrl(), new ByteArrayInputStream(eventPayload), proto);
                         data = decodeEventData(channel, in, eventPayload);
@@ -267,6 +271,9 @@ public class DubboCodec extends ExchangeCodec {
 
     @Override
     protected Serialization getSerialization(Channel channel, Response res) {
+        if (res instanceof HeartBeatResponse) {
+            return CodecSupport.getSerializationById(((HeartBeatResponse) res).getProto());
+        }
         if (!(res.getResult() instanceof AppResponse)) {
             return super.getSerialization(channel, res);
         }
