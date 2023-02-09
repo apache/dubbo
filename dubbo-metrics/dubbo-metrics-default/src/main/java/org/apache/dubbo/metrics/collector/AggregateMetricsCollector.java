@@ -35,6 +35,7 @@ import org.apache.dubbo.metrics.model.MethodMetric;
 import org.apache.dubbo.metrics.model.MetricsKey;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
+import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import static org.apache.dubbo.metrics.model.MetricsCategory.QPS;
@@ -143,9 +144,17 @@ public class AggregateMetricsCollector implements MetricsCollector, MetricsListe
     @Override
     public List<MetricSample> collect() {
         List<MetricSample> list = new ArrayList<>();
-        collectRequests(list);
-        collectQPS(list);
-        collectRT(list);
+
+        if(RpcContext.getContext().isConsumerSide()){
+            collectConsumerRequests(list);
+            collectConsumerQPS(list);
+            collectConsumerRT(list);
+
+        }else if(RpcContext.getContext().isProviderSide()){
+            collectRequests(list);
+            collectQPS(list);
+            collectRT(list);
+        }
 
         return list;
     }
@@ -161,14 +170,36 @@ public class AggregateMetricsCollector implements MetricsCollector, MetricsListe
 
     }
 
+    private void collectConsumerRequests(List<MetricSample> list) {
+        totalRequests.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.CONSUMER_METRIC_REQUESTS_TOTAL_AGG, k.getTags(), REQUESTS, v::get)));
+        succeedRequests.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.CONSUMER_METRIC_REQUESTS_SUCCEED_AGG, k.getTags(), REQUESTS, v::get)));
+        unknownFailedRequests.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.CONSUMER_METRIC_REQUESTS_FAILED_AGG, k.getTags(), REQUESTS, v::get)));
+        businessFailedRequests.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.CONSUMER_METRIC_REQUESTS_BUSINESS_FAILED_AGG, k.getTags(), REQUESTS, v::get)));
+        timeoutRequests.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.CONSUMER_METRIC_REQUESTS_TIMEOUT_AGG, k.getTags(), REQUESTS, v::get)));
+        limitRequests.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.CONSUMER_METRIC_REQUESTS_LIMIT_AGG, k.getTags(), REQUESTS, v::get)));
+        totalFailedRequests.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.CONSUMER_METRIC_REQUESTS_TOTAL_FAILED_AGG, k.getTags(), REQUESTS, v::get)));
+
+    }
+
     private void collectQPS(List<MetricSample> list) {
         qps.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.PROVIDER_METRIC_QPS, k.getTags(), QPS, () -> v.get() / v.bucketLivedSeconds())));
+    }
+
+    private void collectConsumerQPS(List<MetricSample> list) {
+        qps.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.CONSUMER_METRIC_QPS, k.getTags(), QPS, () -> v.get() / v.bucketLivedSeconds())));
     }
 
     private void collectRT(List<MetricSample> list) {
         rt.forEach((k, v) -> {
             list.add(new GaugeMetricSample(MetricsKey.PROVIDER_METRIC_RT_P99, k.getTags(), RT, () -> v.quantile(0.99)));
             list.add(new GaugeMetricSample(MetricsKey.PROVIDER_METRIC_RT_P95, k.getTags(), RT, () -> v.quantile(0.95)));
+        });
+    }
+
+    private void collectConsumerRT(List<MetricSample> list) {
+        rt.forEach((k, v) -> {
+            list.add(new GaugeMetricSample(MetricsKey.CONSUMER_METRIC_RT_P99, k.getTags(), RT, () -> v.quantile(0.99)));
+            list.add(new GaugeMetricSample(MetricsKey.CONSUMER_METRIC_RT_P95, k.getTags(), RT, () -> v.quantile(0.95)));
         });
     }
 }

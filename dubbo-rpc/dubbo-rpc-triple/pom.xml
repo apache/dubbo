@@ -92,6 +92,11 @@
             <version>${reactor.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo</artifactId>
+            <version>3.2.0-beta.4</version>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
@@ -113,6 +118,7 @@
                 <artifactId>protobuf-maven-plugin</artifactId>
                 <version>0.6.1</version>
                 <configuration>
+                    <!--suppress UnresolvedMavenProperty -->
                     <protocArtifact>
                         com.google.protobuf:protoc:${protobuf-java.version}:exe:${os.detected.classifier}
                     </protocArtifact>

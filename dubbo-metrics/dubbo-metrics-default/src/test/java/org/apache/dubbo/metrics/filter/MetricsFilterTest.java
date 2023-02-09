@@ -26,11 +26,7 @@ import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
 import org.apache.dubbo.metrics.model.MetricsKey;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
-import org.apache.dubbo.rpc.AppResponse;
-import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.Result;
-import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.*;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -59,10 +55,12 @@ class MetricsFilterTest {
     private static final String GROUP = "mockGroup";
     private static final String VERSION = "1.0.0";
 
+
     @BeforeEach
     public void setup() {
         ApplicationConfig config = new ApplicationConfig();
         config.setName("MockMetrics");
+        RpcContext.getContext().setAttachment("MockMetrics","MockMetrics");
 
         applicationModel = ApplicationModel.defaultModel();
         applicationModel.getApplicationConfigManager().setApplication(config);
