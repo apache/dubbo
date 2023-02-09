@@ -25,4 +25,5 @@ public enum MetricsCategory {
     QPS,
     REQUESTS,
     THREAD_POOL,
+    APPLICATION
 }

@@ -62,6 +62,8 @@ public class ProtocolSecurityWrapper implements Protocol {
             ScopeModel scopeModel = invoker.getUrl().getScopeModel();
             SerializeSecurityConfigurator serializeSecurityConfigurator = ScopeModelUtil.getModuleModel(scopeModel)
                 .getBeanFactory().getBean(SerializeSecurityConfigurator.class);
+            serializeSecurityConfigurator.refreshStatus();
+            serializeSecurityConfigurator.refreshCheck();
 
             Optional.ofNullable(serviceModel)
                 .map(ServiceModel::getServiceModel)
@@ -85,6 +87,8 @@ public class ProtocolSecurityWrapper implements Protocol {
             ScopeModel scopeModel = url.getScopeModel();
             SerializeSecurityConfigurator serializeSecurityConfigurator = ScopeModelUtil.getModuleModel(scopeModel)
                 .getBeanFactory().getBean(SerializeSecurityConfigurator.class);
+            serializeSecurityConfigurator.refreshStatus();
+            serializeSecurityConfigurator.refreshCheck();
 
             Optional.ofNullable(serviceModel)
                 .map(ServiceModel::getServiceModel)

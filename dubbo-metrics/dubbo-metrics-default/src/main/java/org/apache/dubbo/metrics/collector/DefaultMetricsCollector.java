@@ -22,7 +22,6 @@ import org.apache.dubbo.metrics.collector.stat.MetricsStatComposite;
 import org.apache.dubbo.metrics.collector.stat.MetricsStatHandler;
 import org.apache.dubbo.metrics.event.EmptyEvent;
 import org.apache.dubbo.metrics.event.MetricsEvent;
-import org.apache.dubbo.metrics.event.RequestEvent;
 import org.apache.dubbo.metrics.event.SimpleMetricsEventMulticaster;
 import org.apache.dubbo.metrics.listener.MetricsListener;
 import org.apache.dubbo.metrics.model.MetricsKey;
@@ -33,16 +32,18 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.Invocation;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.HashSet;
+
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 
 import static org.apache.dubbo.metrics.model.MetricsCategory.THREAD_POOL;
+import static org.apache.dubbo.metrics.model.MetricsCategory.APPLICATION;
 import static org.apache.dubbo.metrics.model.MetricsCategory.REQUESTS;
 import static org.apache.dubbo.metrics.model.MetricsCategory.RT;
 
@@ -77,56 +78,59 @@ public class DefaultMetricsCollector implements MetricsCollector {
     }
 
     public void increaseTotalRequests(String applicationName, Invocation invocation) {
-        increaseAndPublishEvent(applicationName, RequestEvent.Type.TOTAL, invocation);
+        increaseAndPublishEvent(applicationName, MetricsEvent.Type.TOTAL, invocation);
     }
 
     public void increaseSucceedRequests(String applicationName, Invocation invocation) {
-        increaseAndPublishEvent(applicationName, RequestEvent.Type.SUCCEED, invocation);
+        increaseAndPublishEvent(applicationName, MetricsEvent.Type.SUCCEED, invocation);
     }
 
     public void increaseUnknownFailedRequests(String applicationName, Invocation invocation) {
-        increaseAndPublishEvent(applicationName, RequestEvent.Type.UNKNOWN_FAILED, invocation);
+        increaseAndPublishEvent(applicationName, MetricsEvent.Type.UNKNOWN_FAILED, invocation);
     }
 
     public void businessFailedRequests(String applicationName, Invocation invocation) {
-        increaseAndPublishEvent(applicationName, RequestEvent.Type.BUSINESS_FAILED, invocation);
+        increaseAndPublishEvent(applicationName, MetricsEvent.Type.BUSINESS_FAILED, invocation);
     }
 
     public void timeoutRequests(String applicationName, Invocation invocation) {
-        increaseAndPublishEvent(applicationName,RequestEvent.Type.REQUEST_TIMEOUT, invocation);
+        increaseAndPublishEvent(applicationName,MetricsEvent.Type.REQUEST_TIMEOUT, invocation);
     }
 
     public void limitRequests(String applicationName, Invocation invocation) {
-        increaseAndPublishEvent(applicationName,RequestEvent.Type.REQUEST_LIMIT, invocation);
+        increaseAndPublishEvent(applicationName,MetricsEvent.Type.REQUEST_LIMIT, invocation);
     }
 
     public void increaseProcessingRequests(String applicationName, Invocation invocation) {
-        increaseAndPublishEvent(applicationName,RequestEvent.Type.PROCESSING, invocation);
+        increaseAndPublishEvent(applicationName,MetricsEvent.Type.PROCESSING, invocation);
     }
 
     public void decreaseProcessingRequests(String applicationName, Invocation invocation) {
-        decreaseAndPublishEvent(applicationName,RequestEvent.Type.PROCESSING, invocation);
+        decreaseAndPublishEvent(applicationName,MetricsEvent.Type.PROCESSING, invocation);
     }
 
     public void totalFailedRequests(String applicationName, Invocation invocation) {
-        increaseAndPublishEvent(applicationName,RequestEvent.Type.TOTAL_FAILED, invocation);
+        increaseAndPublishEvent(applicationName,MetricsEvent.Type.TOTAL_FAILED, invocation);
     }
 
-    private void increaseAndPublishEvent(String applicationName, RequestEvent.Type total, Invocation invocation) {
+    private void increaseAndPublishEvent(String applicationName, MetricsEvent.Type total, Invocation invocation) {
         this.eventMulticaster.publishEvent(doExecute(total, statHandler -> statHandler.increase(applicationName,invocation)));
     }
 
-    private void decreaseAndPublishEvent(String applicationName, RequestEvent.Type total, Invocation invocation) {
-        this.eventMulticaster.publishEvent(doExecute(total, statHandler -> statHandler.decrease(applicationName,invocation)));
+    private void decreaseAndPublishEvent(String applicationName, MetricsEvent.Type type, Invocation invocation) {
+        this.eventMulticaster.publishEvent(doExecute(type, statHandler -> statHandler.decrease(applicationName,invocation)));
     }
 
     public void addRT(String applicationName,Invocation invocation, Long responseTime) {
         this.eventMulticaster.publishEvent(stats.addRtAndRetrieveEvent(applicationName,invocation, responseTime));
     }
-
+    public void addApplicationInfo(String applicationName, String version) {
+        doExecute(MetricsEvent.Type.APPLICATION_INFO, statHandler -> statHandler.addApplication(applicationName,version));
+    }
     @Override
     public List<MetricSample> collect() {
         List<MetricSample> list = new ArrayList<>();
+        collectApplication(list);
         collectRequests(list);
         collectRT(list);
         collectThreadPool(list);
@@ -142,29 +146,35 @@ public class DefaultMetricsCollector implements MetricsCollector {
         threadPoolMetricSet.forEach(e -> list.add(new GaugeMetricSample(MetricsKey.THREAD_POOL_QUEUE_SIZE, e.getTags(), THREAD_POOL, e::getQueueSize)));
     }
 
+    private void collectApplication(List<MetricSample> list) {
+        doCollect(MetricsEvent.Type.APPLICATION_INFO, MetricsStatHandler::get).filter(e -> !e.isEmpty())
+            .ifPresent(map -> map.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.APPLICATION_METRIC_INFO, k.getTags(),
+                APPLICATION, v::get))));
+    }
+
     private void collectRequests(List<MetricSample> list) {
-        doCollect(RequestEvent.Type.TOTAL, MetricsStatHandler::get).filter(e -> !e.isEmpty())
+        doCollect(MetricsEvent.Type.TOTAL, MetricsStatHandler::get).filter(e -> !e.isEmpty())
             .ifPresent(map -> map.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.PROVIDER_METRIC_REQUESTS, k.getTags(), REQUESTS, v::get))));
 
-        doCollect(RequestEvent.Type.SUCCEED, MetricsStatHandler::get).filter(e -> !e.isEmpty())
+        doCollect(MetricsEvent.Type.SUCCEED, MetricsStatHandler::get).filter(e -> !e.isEmpty())
             .ifPresent(map -> map.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.PROVIDER_METRIC_REQUESTS_SUCCEED, k.getTags(), REQUESTS, v::get))));
 
-        doCollect(RequestEvent.Type.UNKNOWN_FAILED, MetricsStatHandler::get).filter(e -> !e.isEmpty())
+        doCollect(MetricsEvent.Type.UNKNOWN_FAILED, MetricsStatHandler::get).filter(e -> !e.isEmpty())
             .ifPresent(map -> map.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.PROVIDER_METRIC_REQUESTS_FAILED, k.getTags(), REQUESTS, v::get))));
 
-        doCollect(RequestEvent.Type.PROCESSING, MetricsStatHandler::get).filter(e -> !e.isEmpty())
+        doCollect(MetricsEvent.Type.PROCESSING, MetricsStatHandler::get).filter(e -> !e.isEmpty())
             .ifPresent(map -> map.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.PROVIDER_METRIC_REQUESTS_PROCESSING, k.getTags(), REQUESTS, v::get))));
 
-        doCollect(RequestEvent.Type.BUSINESS_FAILED, MetricsStatHandler::get).filter(e -> !e.isEmpty())
+        doCollect(MetricsEvent.Type.BUSINESS_FAILED, MetricsStatHandler::get).filter(e -> !e.isEmpty())
             .ifPresent(map -> map.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.PROVIDER_METRIC_REQUEST_BUSINESS_FAILED, k.getTags(), REQUESTS, v::get))));
 
-        doCollect(RequestEvent.Type.REQUEST_TIMEOUT, MetricsStatHandler::get).filter(e -> !e.isEmpty())
+        doCollect(MetricsEvent.Type.REQUEST_TIMEOUT, MetricsStatHandler::get).filter(e -> !e.isEmpty())
             .ifPresent(map -> map.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.PROVIDER_METRIC_REQUESTS_TIMEOUT, k.getTags(), REQUESTS, v::get))));
 
-        doCollect(RequestEvent.Type.REQUEST_LIMIT, MetricsStatHandler::get).filter(e -> !e.isEmpty())
+        doCollect(MetricsEvent.Type.REQUEST_LIMIT, MetricsStatHandler::get).filter(e -> !e.isEmpty())
             .ifPresent(map -> map.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.PROVIDER_METRIC_REQUESTS_LIMIT, k.getTags(), REQUESTS, v::get))));
 
-        doCollect(RequestEvent.Type.TOTAL_FAILED, MetricsStatHandler::get).filter(e -> !e.isEmpty())
+        doCollect(MetricsEvent.Type.TOTAL_FAILED, MetricsStatHandler::get).filter(e -> !e.isEmpty())
             .ifPresent(map -> map.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.PROVIDER_METRIC_REQUESTS_TOTAL_FAILED, k.getTags(), REQUESTS, v::get))));
 
     }
@@ -185,19 +195,19 @@ public class DefaultMetricsCollector implements MetricsCollector {
     }
 
     private <
-        T> Optional<T> doCollect(RequestEvent.Type requestType, Function<MetricsStatHandler, T> statExecutor) {
+        T> Optional<T> doCollect(MetricsEvent.Type metricsEventType, Function<MetricsStatHandler, T> statExecutor) {
         if (isCollectEnabled()) {
-            MetricsStatHandler handler = stats.getHandler(requestType);
+            MetricsStatHandler handler = stats.getHandler(metricsEventType);
             T result = statExecutor.apply(handler);
             return Optional.ofNullable(result);
         }
         return Optional.empty();
     }
 
-    private MetricsEvent doExecute(RequestEvent.Type
-                                       requestType, Function<MetricsStatHandler, MetricsEvent> statExecutor) {
+    private MetricsEvent doExecute(MetricsEvent.Type  metricsEventType,
+                                   Function<MetricsStatHandler, MetricsEvent> statExecutor) {
         if (isCollectEnabled()) {
-            MetricsStatHandler handler = stats.getHandler(requestType);
+            MetricsStatHandler handler = stats.getHandler(metricsEventType);
             return statExecutor.apply(handler);
         }
         return EmptyEvent.instance();
