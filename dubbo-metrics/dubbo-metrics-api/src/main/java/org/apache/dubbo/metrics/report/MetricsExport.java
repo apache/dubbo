@@ -28,9 +28,12 @@ import java.util.List;
 public interface MetricsExport {
 
     /**
-     * Initialize metrics reporter.
+     * Cumulative statistics.
      */
     List<GaugeMetricSample> exportNumMetrics();
 
+    /**
+     * Response time statistics at different latitudes
+     */
     List<GaugeMetricSample> exportRtMetrics();
 }

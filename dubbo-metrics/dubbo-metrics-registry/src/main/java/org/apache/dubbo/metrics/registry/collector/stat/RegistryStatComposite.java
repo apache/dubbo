@@ -18,6 +18,7 @@
 package org.apache.dubbo.metrics.registry.collector.stat;
 
 import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
+import org.apache.dubbo.metrics.collector.MetricsCollector;
 import org.apache.dubbo.metrics.model.ApplicationMetric;
 import org.apache.dubbo.metrics.model.MetricsCategory;
 import org.apache.dubbo.metrics.model.MetricsKey;
@@ -37,7 +38,13 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+/**
+ * As a data aggregator, it use internal data containers calculates and classifies
+ * the registry data collected by {@link MetricsCollector MetricsCollector}, and
+ * provides an {@link MetricsExport MetricsExport} interface for exporting standard output formats.
+ */
 public class RegistryStatComposite implements MetricsExport {
+
 
     public Map<RegistryRegisterEvent.Type, Map<String, AtomicLong>> numStats = new ConcurrentHashMap<>();
     public List<LongContainer<? extends Number>> rtStats = new ArrayList<>();
@@ -118,11 +125,28 @@ public class RegistryStatComposite implements MetricsExport {
     }
 
 
+    /**
+     * Collect Number type data
+     *
+     * @param <NUMBER>
+     */
     public static class LongContainer<NUMBER extends Number> extends ConcurrentHashMap<String, NUMBER> {
 
+        /**
+         * Provide the metric type name
+         */
         private final MetricsKeyWrapper metricsKeyWrapper;
+        /**
+         * The initial value corresponding to the key is generally 0 of different data types
+         */
         private final Function<String, NUMBER> initFunc;
+        /**
+         * Statistical data calculation function, which can be self-increment, self-decrement, or more complex avg function
+         */
         private final BiConsumer<Long, NUMBER> consumerFunc;
+        /**
+         * Data output function required by  {@link GaugeMetricSample GaugeMetricSample}
+         */
         private Function<String, Long> valueSupplier;
 
 

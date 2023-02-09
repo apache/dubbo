@@ -19,6 +19,9 @@ package org.apache.dubbo.metrics.registry;
 
 import org.apache.dubbo.metrics.model.MetricsKey;
 
+/**
+ * Let {@link MetricsKey MetricsKey}  output dynamic, custom string content
+ */
 public class MetricsKeyWrapper {
 
     private final String type;

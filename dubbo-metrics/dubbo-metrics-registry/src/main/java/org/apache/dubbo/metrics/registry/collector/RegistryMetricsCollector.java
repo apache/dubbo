@@ -36,7 +36,7 @@ import java.util.Optional;
 
 
 /**
- * Default implementation of {@link MetricsCollector}
+ * Registry implementation of {@link MetricsCollector}
  */
 @Activate
 public class RegistryMetricsCollector implements ApplicationMetricsCollector<RegistryEvent.Type>, MetricsLifeListener<RegistryEvent<?>> {
