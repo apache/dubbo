@@ -149,6 +149,11 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
      */
     private Executor executor;
 
+    /**
+     * Payload max length.
+     */
+    private Integer payload;
+
     public AbstractServiceConfig() {
     }
 
@@ -375,4 +380,11 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
         return executor;
     }
 
+    public Integer getPayload() {
+        return payload;
+    }
+
+    public void setPayload(Integer payload) {
+        this.payload = payload;
+    }
 }
