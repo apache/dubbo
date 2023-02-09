@@ -15,26 +15,25 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.metrics.event;
+package org.apache.dubbo.common.extension;
 
-/**
- * RequestEvent.
- */
-public class RequestEvent extends MetricsEvent {
-    private Type type;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.activate.ActivateExt1;
+import org.junit.jupiter.api.Test;
 
-    public RequestEvent(Object source, Type type) {
-        super(source);
-        this.type = type;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+public class ExtensionLoader_Activate_Test {
+
+    @Test
+    void test_onClass() throws Exception {
+        URL url = URL.valueOf("test://localhost/test");
+        ExtensionLoader<ActivateExt1> loader = ExtensionLoader.getExtensionLoader(ActivateExt1.class);
+        List<ActivateExt1> list = loader.getActivateExtension(url, new String[] {}, "onClass");
+
+        assertTrue(list == null || list.size() == 0);
     }
-
-    public Type getType() {
-        return type;
-    }
-
-    public void setType(Type type) {
-        this.type = type;
-    }
-
 
 }

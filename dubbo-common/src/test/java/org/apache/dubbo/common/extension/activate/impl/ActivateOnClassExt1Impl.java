@@ -15,26 +15,16 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.metrics.event;
+package org.apache.dubbo.common.extension.activate.impl;
 
-/**
- * RequestEvent.
- */
-public class RequestEvent extends MetricsEvent {
-    private Type type;
+import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.common.extension.activate.ActivateExt1;
 
-    public RequestEvent(Object source, Type type) {
-        super(source);
-        this.type = type;
+@Activate(group = {"onClass"},
+    onClass = "org.springframework.security.core.context.SecurityContextHolder")
+public class ActivateOnClassExt1Impl implements ActivateExt1 {
+    @Override
+    public String echo(String msg) {
+        return null;
     }
-
-    public Type getType() {
-        return type;
-    }
-
-    public void setType(Type type) {
-        this.type = type;
-    }
-
-
 }
