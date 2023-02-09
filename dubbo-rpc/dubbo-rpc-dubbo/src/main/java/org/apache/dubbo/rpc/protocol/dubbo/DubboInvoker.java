@@ -53,7 +53,7 @@ import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
  */
 public class DubboInvoker<T> extends AbstractInvoker<T> {
 
-    private final ConnectionPool<ExchangeClient> connectionPool;
+    private final ConnectionPool connectionPool;
 
     private final AtomicPositiveInteger index = new AtomicPositiveInteger();
 
@@ -64,7 +64,7 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
 
     private final int serverShutdownTimeout;
 
-    public DubboInvoker(Class<T> serviceType, URL url, ConnectionPool<ExchangeClient> connectionPool, Set<Invoker<?>> invokers) {
+    public DubboInvoker(Class<T> serviceType, URL url, ConnectionPool connectionPool, Set<Invoker<?>> invokers) {
         super(serviceType, url, new String[]{INTERFACE_KEY, GROUP_KEY, TOKEN_KEY});
         this.connectionPool = connectionPool;
         this.invokers = invokers;
@@ -78,7 +78,7 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
         inv.setAttachment(PATH_KEY, getUrl().getPath());
         inv.setAttachment(VERSION_KEY, version);
 
-        ExchangeClient currentClient = connectionPool.getClient(getUrl());
+        ExchangeClient currentClient = (ExchangeClient) connectionPool.getClient();
 
         try {
             boolean isOneway = RpcUtils.isOneway(getUrl(), invocation);

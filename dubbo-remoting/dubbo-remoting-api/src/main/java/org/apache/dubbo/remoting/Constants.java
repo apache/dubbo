@@ -148,4 +148,7 @@ public interface Constants {
     String CONNECTIONS_KEY = "connections";
 
     int DEFAULT_BACKLOG = 1024;
+
+    String CONNECTION_POOL_KEY = "connection.pool";
+
 }

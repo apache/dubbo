@@ -17,37 +17,31 @@
 package org.apache.dubbo.remoting.api.connection.pool;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.remoting.Client;
+import org.apache.dubbo.remoting.api.connection.ConnectionProvider;
 
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
-public abstract class SingleConnectionPool<Client> extends AbstractConnectionPool<Client> {
+public class SingleConnectionPool extends AbstractConnectionPool {
 
-    public static final String NAME = "single";
+    private volatile Client client;
 
-    private Client client;
+    private static final AtomicReferenceFieldUpdater<SingleConnectionPool, Client> CLIENT_UPDATER
+            = AtomicReferenceFieldUpdater.newUpdater(SingleConnectionPool.class, Client.class, "client");
 
-    private final Lock lock = new ReentrantLock();
-
-    public SingleConnectionPool(URL url) {
-        super(url);
+    public SingleConnectionPool(URL url, ConnectionProvider connectionProvider) {
+        super(url, connectionProvider);
     }
 
     @Override
-    public Client getClient(URL url) {
+    public Client getClient() {
         if (client != null) {
             return client;
         }
-        try {
-            lock.lock();
-            if (client != null) {
-                return client;
-            }
-            client = initConnection(url);
-        } finally {
-            lock.unlock();
-        }
-        return client;
+        //cas and lazy connection
+        CLIENT_UPDATER.compareAndSet(this, null, new LazyClient(getUrl(), getConnectionProvider()));
+
+        return CLIENT_UPDATER.get(this);
     }
 
     @Override

@@ -14,24 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.api.connection.pool;
+package org.apache.dubbo.remoting.api.connection.pool.factory;
 
-import org.apache.dubbo.remoting.Client;
-import org.apache.dubbo.remoting.Constants;
-import org.apache.dubbo.remoting.api.connection.pool.factory.SingleConnectionPoolFactory;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.remoting.api.connection.ConnectionProvider;
+import org.apache.dubbo.remoting.api.connection.pool.ConnectionPool;
+import org.apache.dubbo.remoting.api.connection.pool.SingleConnectionPool;
 
-public interface ConnectionPool {
+public class SingleConnectionPoolFactory implements ConnectionPoolFactory {
 
-    String URL_KEY = Constants.CONNECTION_POOL_KEY;
+    public static final String NAME = "single";
 
-    String DEFAULT = SingleConnectionPoolFactory.NAME;
-
-    Client getClient();
-
-    boolean isAvailable();
-
-    void close();
-
-    void close(int seconds);
-
+    @Override
+    public ConnectionPool getConnectionPool(URL url, ConnectionProvider connectionProvider) {
+        return new SingleConnectionPool(url, connectionProvider);
+    }
 }

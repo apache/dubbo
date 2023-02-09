@@ -72,7 +72,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
 
     private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(TripleInvoker.class);
 
-    private final ConnectionPool<AbstractConnectionClient> connectionPool;
+    private final ConnectionPool connectionPool;
 
     private final ReentrantLock destroyLock = new ReentrantLock();
     private final Set<Invoker<?>> invokers;
@@ -83,7 +83,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
     public TripleInvoker(Class<T> serviceType,
                          URL url,
                          String acceptEncodings,
-                         ConnectionPool<AbstractConnectionClient> connectionPool,
+                         ConnectionPool connectionPool,
                          Set<Invoker<?>> invokers,
                          ExecutorService streamExecutor) {
         super(serviceType, url, new String[]{INTERFACE_KEY, GROUP_KEY, TOKEN_KEY});
@@ -100,7 +100,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
 
     @Override
     protected Result doInvoke(final Invocation invocation) {
-        AbstractConnectionClient connectionClient = connectionPool.getClient(getUrl());
+        AbstractConnectionClient connectionClient = (AbstractConnectionClient) connectionPool.getClient();
 
         if (!connectionClient.isConnected()) {
             CompletableFuture<AppResponse> future = new CompletableFuture<>();

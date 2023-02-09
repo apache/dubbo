@@ -19,17 +19,25 @@ package org.apache.dubbo.remoting.api.connection.pool;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.remoting.Client;
+import org.apache.dubbo.remoting.Constants;
+import org.apache.dubbo.remoting.api.connection.ConnectionProvider;
 
-public abstract class AbstractConnectionPool<Client> implements ConnectionPool<Client> {
+public abstract class AbstractConnectionPool implements ConnectionPool {
 
     protected final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
 
-    public AbstractConnectionPool(URL url){
+    private final URL url;
 
+    private final ConnectionProvider connectionProvider;
+
+    public AbstractConnectionPool(URL url,ConnectionProvider connectionProvider) {
+        this.url = url;
+        this.connectionProvider = connectionProvider;
     }
 
     @Override
-    public Client getClient(URL url) {
+    public Client getClient() {
         return null;
     }
 
@@ -48,13 +56,25 @@ public abstract class AbstractConnectionPool<Client> implements ConnectionPool<C
 
     }
 
-    protected abstract boolean isConnectionAvailable(Client client);
+    protected URL getUrl() {
+        return this.url;
+    }
 
-    protected abstract void closeConnection(Client client);
+    protected ConnectionProvider getConnectionProvider() {
+        return this.connectionProvider;
+    }
 
-    protected abstract void closeConnection(Client client,int seconds);
+    protected boolean isConnectionAvailable(Client client) {
+        return client != null && client.isConnected()
+                && !client.hasAttribute(Constants.CHANNEL_ATTRIBUTE_READONLY_KEY);
+    }
 
-    protected abstract Client initConnection(URL url);
+    protected void closeConnection(Client client) {
+        client.close();
+    }
 
+    protected void closeConnection(Client client, int timeout) {
+        client.close(timeout);
+    }
 
 }
