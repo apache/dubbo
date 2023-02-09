@@ -82,34 +82,42 @@ public class ReferenceBeanSupport {
         if (defaultInterfaceClass != null) {
             ProvidedBy providedbBy = (ProvidedBy) defaultInterfaceClass.getAnnotation(ProvidedBy.class);
             if (providedbBy != null && providedbBy.name() != null && providedbBy.name().length > 0) {
-                String[] providedbByServices = new String[providedbBy.name().length];
-                for (int i = 0; i <  providedbBy.name().length; i++) {
-                    providedbByServices[i] = providedbBy.name()[i];
+                int providedByReferenceLength = providedbBy.name().length;
+                Object providedByServices = attributes.get(ReferenceAttributes.PROVIDED_BY);
+                int providedByInterfaceLength = 0;
+                String[] providedByInterfaceServices = null;
+                if (providedByServices != null) {
+                    providedByInterfaceLength = ((String[]) providedByServices).length;
+                    providedByInterfaceServices = (String[]) providedByServices;
+                }
+                String[] providedbByServices = new String[providedByReferenceLength + providedByInterfaceLength];
+                System.arraycopy(providedbBy.name(), 0, providedbByServices, 0, providedByReferenceLength);
+                if (providedByInterfaceLength > 0) {
+                    System.arraycopy(providedByInterfaceServices, 0, providedbByServices, providedByReferenceLength, providedByInterfaceLength);
                 }
                 attributes.put(ReferenceAttributes.PROVIDED_BY, providedbByServices);
             }
-        }
-        attributes.put(ReferenceAttributes.INTERFACE, interfaceName);
-        attributes.remove(ReferenceAttributes.INTERFACE_NAME);
-        attributes.remove(ReferenceAttributes.INTERFACE_CLASS);
+            attributes.put(ReferenceAttributes.INTERFACE, interfaceName);
+            attributes.remove(ReferenceAttributes.INTERFACE_NAME);
+            attributes.remove(ReferenceAttributes.INTERFACE_CLASS);
 
-        //reset generic value
-        String generic = String.valueOf(defaultInterfaceClass == GenericService.class);
-        String oldGeneric = attributes.containsValue(ReferenceAttributes.GENERIC) ?
-            String.valueOf(attributes.get(ReferenceAttributes.GENERIC)) : "false";
-        if (!StringUtils.isEquals(oldGeneric, generic)) {
-            attributes.put(ReferenceAttributes.GENERIC, generic);
-        }
+            //reset generic value
+            String generic = String.valueOf(defaultInterfaceClass == GenericService.class);
+            String oldGeneric = attributes.containsValue(ReferenceAttributes.GENERIC) ?
+                String.valueOf(attributes.get(ReferenceAttributes.GENERIC)) : "false";
+            if (!StringUtils.isEquals(oldGeneric, generic)) {
+                attributes.put(ReferenceAttributes.GENERIC, generic);
+            }
 
-        //Specially convert @DubboReference attribute name/value to ReferenceConfig property
-        // String[] registry => String registryIds
-        String[] registryIds = (String[]) attributes.get(ReferenceAttributes.REGISTRY);
-        if (registryIds != null) {
-            String value = join(registryIds, ",");
-            attributes.remove(ReferenceAttributes.REGISTRY);
-            attributes.put(ReferenceAttributes.REGISTRY_IDS, value);
+            //Specially convert @DubboReference attribute name/value to ReferenceConfig property
+            // String[] registry => String registryIds
+            String[] registryIds = (String[]) attributes.get(ReferenceAttributes.REGISTRY);
+            if (registryIds != null) {
+                String value = join(registryIds, ",");
+                attributes.remove(ReferenceAttributes.REGISTRY);
+                attributes.put(ReferenceAttributes.REGISTRY_IDS, value);
+            }
         }
-
     }
 
     private static Class<?> getInterfaceClass(String interfaceName, Class defaultInterfaceClass) {
@@ -146,9 +154,9 @@ public class ReferenceBeanSupport {
             value = convertToString(key, value);
 
             beanNameBuilder.append(key)
-                    .append('=')
-                    .append(value)
-                    .append(',');
+                .append('=')
+                .append(value)
+                .append(',');
         }
 
         // replace the latest "," to be ")"
@@ -231,7 +239,7 @@ public class ReferenceBeanSupport {
             }
 
             if (value == null ||
-                    (value instanceof String && StringUtils.isBlank((String) value))
+                (value instanceof String && StringUtils.isBlank((String) value))
             ) {
                 //ignore null or blank string
                 continue;

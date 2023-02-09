@@ -26,7 +26,8 @@ import java.lang.annotation.Target;
 
 /**
  * Class-level annotation used for declaring Dubbo interface.
- * @DubboProvidedbBy("dubbo-samples-xds-provider")
+ * Example:
+ * @ProvidedBy("dubbo-samples-xds-provider")
  * public interface GreetingService {
  *     String sayHello(String name);
  * }

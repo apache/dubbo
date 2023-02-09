@@ -198,21 +198,17 @@ class ReferenceKeyTest {
         Map<String, Object> attributes2= getReferenceAttributes(fieldName2);
         Map<String, Object> attributes3= getReferenceAttributes(fieldName3);
         Map<String, Object> attributes4= getReferenceAttributes(fieldName4);
-        Map<String, Object> attributes5= getReferenceAttributes(fieldName5);
 
-        String serviceName1 =  ((String[])attributes1.get("providedBy"))[0];
-        Assertions.assertEquals("provided-demo-service-interface", serviceName1);
-        String serviceName2 = ((String[]) attributes2.get("providedBy"))[0];
-        Assertions.assertEquals("provided-demo-service2", serviceName2);
-        String serviceName3 = ((String[]) attributes3.get("providedBy"))[0];
-        Assertions.assertEquals("provided-demo-service-interface", serviceName3);
+        Assertions.assertEquals("provided-demo-service-interface", ((String[])attributes1.get("providedBy"))[0]);
+        Assertions.assertEquals("provided-demo-service1", ((String[])attributes1.get("providedBy"))[1]);
+        Assertions.assertEquals("provided-demo-service2", ((String[]) attributes2.get("providedBy"))[0]);
+        Assertions.assertEquals("provided-demo-service-interface", ((String[]) attributes3.get("providedBy"))[0]);
         String[] serviceName4 = (String[]) attributes4.get("providedBy");
         List<String> expectServices = new ArrayList<>();
         expectServices.add("provided-demo-service-interface1");
         expectServices.add("provided-demo-service-interface2");
         Assertions.assertTrue(serviceName4.length == 2 && expectServices.contains(serviceName4[0]) && expectServices.contains(serviceName4[1]));
-        String serviceName5 = ((String[]) attributes5.get("providedBy"))[0];
-        Assertions.assertEquals("provided-demo-service3", serviceName5);
+        Assertions.assertEquals("provided-demo-service3", ((String[]) attributes3.get("providedBy"))[0]);
     }
 
     private String getStackTrace(Throwable ex) {
