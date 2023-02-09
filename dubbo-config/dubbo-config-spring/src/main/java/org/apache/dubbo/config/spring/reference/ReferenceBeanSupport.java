@@ -120,9 +120,6 @@ public class ReferenceBeanSupport {
         }
     }
 
-    private static Class<?> getInterfaceClass(String interfaceName, Class defaultInterfaceClass) {
-        return ClassUtils.resolveClass(interfaceName, defaultInterfaceClass.getClassLoader());
-    }
 
     public static String generateReferenceKey(Map<String, Object> attributes, ApplicationContext applicationContext) {
 
