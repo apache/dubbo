@@ -26,8 +26,19 @@ import java.util.Set;
  */
 public interface AnnotationProcessingHandler {
 
+    /**
+     * Set the annotations that this handler will handle.
+     *
+     * @return annotations to handle
+     */
     Set<Class<? extends Annotation>> getAnnotationsToHandle();
 
+    /**
+     * Formal processing method.
+     *
+     * @param elements the elements that annotated by the annotations of getAnnotationsToHandle()
+     * @param annotationProcessorContext the annotation processor context object (Javac object encapsulation)
+     */
     void process(Set<Element> elements,
                  AnnotationProcessorContext annotationProcessorContext);
 }
