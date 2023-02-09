@@ -140,8 +140,6 @@ public class TripleProtocol extends AbstractProtocol {
         ExecutorService streamExecutor = getOrCreateStreamExecutor(
             url.getOrDefaultApplicationModel(), url);
 
-        url.addParameterIfAbsent(ConnectionPool.URL_KEY, ConnectionPool.DEFAULT);
-
         TripleInvoker<T> invoker = new TripleInvoker<>(type, url, acceptEncodings,
             getConnectionPool(url), invokers, streamExecutor);
         invokers.add(invoker);
@@ -149,7 +147,9 @@ public class TripleProtocol extends AbstractProtocol {
     }
 
     private ConnectionPool getConnectionPool(URL url) {
-        return url.getApplicationModel().getExtensionLoader(ConnectionPoolFactory.class)
+        url.addParameterIfAbsent(ConnectionPool.URL_KEY, ConnectionPool.DEFAULT);
+
+        return url.getOrDefaultApplicationModel().getExtensionLoader(ConnectionPoolFactory.class)
                 .getAdaptiveExtension().getConnectionPool(url, new TripleConnectionProvider(new DefaultPuHandler()));
     }
 

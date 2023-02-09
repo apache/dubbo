@@ -14,14 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.api.connection.pool;
+package org.apache.dubbo.remoting.api.connection;
 
 import org.apache.dubbo.common.Parameters;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Client;
 import org.apache.dubbo.remoting.RemotingException;
-import org.apache.dubbo.remoting.api.connection.ConnectionProvider;
 
 import java.net.InetSocketAddress;
 
@@ -36,6 +35,11 @@ public class LazyClient implements Client {
     public LazyClient(URL url, ConnectionProvider connectionProvider) {
         this.url = url;
         this.connectionProvider = connectionProvider;
+    }
+
+    public Client getTargetClient(){
+        initIfAbsent();
+        return client;
     }
 
     private void initIfAbsent() {

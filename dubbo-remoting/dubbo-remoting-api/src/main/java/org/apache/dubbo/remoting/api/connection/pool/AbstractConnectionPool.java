@@ -23,6 +23,8 @@ import org.apache.dubbo.remoting.Client;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.api.connection.ConnectionProvider;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 public abstract class AbstractConnectionPool implements ConnectionPool {
 
     protected final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
@@ -31,29 +33,58 @@ public abstract class AbstractConnectionPool implements ConnectionPool {
 
     private final ConnectionProvider connectionProvider;
 
-    public AbstractConnectionPool(URL url,ConnectionProvider connectionProvider) {
+    protected final AtomicInteger referenceCount;
+
+    public AbstractConnectionPool(URL url, ConnectionProvider connectionProvider) {
         this.url = url;
         this.connectionProvider = connectionProvider;
+        referenceCount = new AtomicInteger(0);
     }
 
     @Override
     public Client getClient() {
-        return null;
+        if (referenceCount.get() <= 0) {
+            throw new IllegalStateException("client is already closed!");
+        }
+        return doGetClient();
     }
+
+    protected abstract Client doGetClient();
 
     @Override
     public boolean isAvailable() {
-        return false;
+        if (referenceCount.get() <= 0) {
+            return false;
+        }
+        return doIsAvailable();
     }
+
+    protected abstract boolean doIsAvailable();
 
     @Override
     public void close() {
-
+        if (referenceCount.decrementAndGet() <= 0) {
+            doClose();
+        }
     }
 
-    @Override
-    public void close(int seconds) {
+    protected abstract void doClose();
 
+    @Override
+    public void close(int timeout) {
+        if (referenceCount.decrementAndGet() <= 0) {
+            if (timeout <= 0) {
+                doClose();
+            } else {
+                doClose(timeout);
+            }
+        }
+    }
+
+    protected abstract void doClose(int timeout);
+
+    public void reference() {
+        referenceCount.incrementAndGet();
     }
 
     protected URL getUrl() {
@@ -74,7 +105,11 @@ public abstract class AbstractConnectionPool implements ConnectionPool {
     }
 
     protected void closeConnection(Client client, int timeout) {
-        client.close(timeout);
+        if (timeout <= 0) {
+            client.close();
+        } else {
+            client.close(timeout);
+        }
     }
 
 }

@@ -409,7 +409,6 @@ public class DubboProtocol extends AbstractProtocol {
         checkDestroyed();
         optimizeSerialization(url);
 
-        url.addParameterIfAbsent(ConnectionPool.URL_KEY, ConnectionPool.DEFAULT);
         // create rpc invoker.
         DubboInvoker<T> invoker = new DubboInvoker<>(serviceType, url, getConnectionPool(url), invokers);
         invokers.add(invoker);
@@ -418,7 +417,8 @@ public class DubboProtocol extends AbstractProtocol {
     }
 
     private ConnectionPool getConnectionPool(URL url) {
-        return url.getApplicationModel().getExtensionLoader(ConnectionPoolFactory.class)
+        url.addParameterIfAbsent(ConnectionPool.URL_KEY, ConnectionPool.DEFAULT);
+        return url.getOrDefaultApplicationModel().getExtensionLoader(ConnectionPoolFactory.class)
                 .getAdaptiveExtension().getConnectionPool(url, new DubboConnectionProvider(requestHandler));
     }
 

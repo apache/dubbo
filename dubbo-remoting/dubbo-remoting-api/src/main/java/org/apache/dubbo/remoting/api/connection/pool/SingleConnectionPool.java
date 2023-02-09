@@ -19,8 +19,11 @@ package org.apache.dubbo.remoting.api.connection.pool;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.Client;
 import org.apache.dubbo.remoting.api.connection.ConnectionProvider;
+import org.apache.dubbo.remoting.api.connection.LazyClient;
 
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
+
+import static org.apache.dubbo.common.constants.CommonConstants.LAZY_CONNECT_KEY;
 
 public class SingleConnectionPool extends AbstractConnectionPool {
 
@@ -31,38 +34,47 @@ public class SingleConnectionPool extends AbstractConnectionPool {
 
     public SingleConnectionPool(URL url, ConnectionProvider connectionProvider) {
         super(url, connectionProvider);
+        if (!url.getParameter(LAZY_CONNECT_KEY, false)) {
+            initClientIfAbsent();
+            //Trigger the connection
+            ((LazyClient) client).getTargetClient();
+        }
     }
 
-    @Override
-    public Client getClient() {
+    private void initClientIfAbsent() {
         if (client != null) {
-            return client;
+            return;
         }
         //cas and lazy connection
         CLIENT_UPDATER.compareAndSet(this, null, new LazyClient(getUrl(), getConnectionProvider()));
-
-        return CLIENT_UPDATER.get(this);
     }
 
     @Override
-    public boolean isAvailable() {
-        if (client == null) {
-            return false;
-        }
+    public Client doGetClient() {
+        initClientIfAbsent();
+
+        return ((LazyClient) client).getTargetClient();
+    }
+
+    @Override
+    public boolean doIsAvailable() {
+        initClientIfAbsent();
+
         return isConnectionAvailable(client);
     }
 
     @Override
-    public void close() {
+    public void doClose() {
         if (client != null) {
             closeConnection(client);
         }
     }
 
     @Override
-    public void close(int seconds) {
+    public void doClose(int timeout) {
         if (client != null) {
-            closeConnection(client, seconds);
+            closeConnection(client, timeout);
         }
     }
+
 }

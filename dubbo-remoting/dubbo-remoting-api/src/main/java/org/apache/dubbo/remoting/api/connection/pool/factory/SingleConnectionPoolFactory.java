@@ -17,16 +17,28 @@
 package org.apache.dubbo.remoting.api.connection.pool.factory;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.remoting.api.connection.ConnectionProvider;
+import org.apache.dubbo.remoting.api.connection.pool.AbstractConnectionPool;
 import org.apache.dubbo.remoting.api.connection.pool.ConnectionPool;
 import org.apache.dubbo.remoting.api.connection.pool.SingleConnectionPool;
+
+import java.util.concurrent.ConcurrentHashMap;
 
 public class SingleConnectionPoolFactory implements ConnectionPoolFactory {
 
     public static final String NAME = "single";
 
+    private final ConcurrentHashMap<String, ConnectionPool> connectionPoolMap = new ConcurrentHashMap<>();
+
     @Override
     public ConnectionPool getConnectionPool(URL url, ConnectionProvider connectionProvider) {
-        return new SingleConnectionPool(url, connectionProvider);
+        String address = url.getAddress();
+        ConcurrentHashMapUtils.computeIfAbsent(connectionPoolMap, address, s -> new SingleConnectionPool(url, connectionProvider));
+        ConnectionPool connectionPool = connectionPoolMap.get(address);
+
+        ((AbstractConnectionPool)connectionPool).reference();
+
+        return connectionPool;
     }
 }

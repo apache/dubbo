@@ -33,6 +33,6 @@ public class TripleConnectionProvider implements ConnectionProvider {
 
     @Override
     public Client initConnection(URL url) {
-        return PortUnificationExchanger.connect(url, channelHandler);
+        return PortUnificationExchanger.connect(url, new DefaultPuHandler());
     }
 }

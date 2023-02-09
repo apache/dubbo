@@ -57,7 +57,6 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
 
     private final AtomicPositiveInteger index = new AtomicPositiveInteger();
 
-
     private final ReentrantLock destroyLock = new ReentrantLock();
 
     private final Set<Invoker<?>> invokers;
@@ -110,6 +109,10 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
         } catch (RemotingException e) {
             throw new RpcException(RpcException.NETWORK_EXCEPTION, "Failed to invoke remote method: " + invocation.getMethodName() + ", provider: " + getUrl() + ", cause: " + e.getMessage(), e);
         }
+    }
+
+    public ConnectionPool getConnectionPool() {
+        return connectionPool;
     }
 
     @Override
