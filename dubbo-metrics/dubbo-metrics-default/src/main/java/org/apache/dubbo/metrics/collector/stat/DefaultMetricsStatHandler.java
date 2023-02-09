@@ -21,43 +21,54 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiConsumer;
 
+import org.apache.dubbo.metrics.event.EmptyEvent;
+import org.apache.dubbo.metrics.event.MetricsEvent;
+import org.apache.dubbo.metrics.model.ApplicationMetric;
 import org.apache.dubbo.metrics.model.MethodMetric;
+import org.apache.dubbo.rpc.Invocation;
 
 
 public class DefaultMetricsStatHandler implements MetricsStatHandler {
 
-    private final String applicationName;
     private final Map<MethodMetric, AtomicLong> counts = new ConcurrentHashMap<>();
 
-    public DefaultMetricsStatHandler(String applicationName) {
-        this.applicationName = applicationName;
+    private final Map<ApplicationMetric, AtomicLong> applicationMetrics = new ConcurrentHashMap<>();
+
+    public DefaultMetricsStatHandler() {
     }
 
     @Override
-    public void increase(String interfaceName, String methodName, String group, String version) {
-        this.doIncrExecute(interfaceName,methodName,group,version);
+    public MetricsEvent increase(String applicationName, Invocation invocation) {
+        return this.doIncrExecute(applicationName, invocation);
     }
 
-    public void decrease(String interfaceName, String methodName, String group, String version){
-        this.doDecrExecute(interfaceName,methodName,group,version);
+    public MetricsEvent decrease(String applicationName, Invocation invocation) {
+        return this.doDecrExecute(applicationName,invocation);
+    }
+    @Override
+    public MetricsEvent addApplication(String applicationName, String version) {
+        ApplicationMetric applicationMetric = new ApplicationMetric(applicationName, version);
+        AtomicLong count = applicationMetrics.computeIfAbsent(applicationMetric, k -> new AtomicLong(0L));
+        count.incrementAndGet();
+        return EmptyEvent.instance();
+    }
+    protected MetricsEvent doExecute(String applicationName, Invocation invocation, BiConsumer<MethodMetric, Map<MethodMetric, AtomicLong>> execute) {
+        MethodMetric metric = new MethodMetric(applicationName, invocation);
+        execute.accept(metric, counts);
+
+        return this.retrieveMetricsEvent(metric);
     }
 
-    protected void doExecute(String interfaceName, String methodName, String group, String version, BiConsumer<MethodMetric,Map<MethodMetric, AtomicLong>> execute){
-        MethodMetric metric = new MethodMetric(applicationName, interfaceName, methodName, group, version);
-        execute.accept(metric,counts);
-
-        this.doNotify(metric);
-    }
-
-    protected void doIncrExecute(String interfaceName, String methodName, String group, String version){
-        this.doExecute(interfaceName,methodName,group,version,(metric,counts)->{
+    protected MetricsEvent doIncrExecute(String applicationName, Invocation invocation) {
+        return this.doExecute(applicationName, invocation, (metric, counts) -> {
             AtomicLong count = counts.computeIfAbsent(metric, k -> new AtomicLong(0L));
             count.incrementAndGet();
         });
     }
 
-    protected void doDecrExecute(String interfaceName, String methodName, String group, String version){
-        this.doExecute(interfaceName,methodName,group,version,(metric,counts)->{
+
+    protected MetricsEvent doDecrExecute(String applicationName, Invocation invocation) {
+        return this.doExecute(applicationName, invocation, (metric, counts) -> {
             AtomicLong count = counts.computeIfAbsent(metric, k -> new AtomicLong(0L));
             count.decrementAndGet();
         });
@@ -68,5 +79,13 @@ public class DefaultMetricsStatHandler implements MetricsStatHandler {
         return counts;
     }
 
-    public void doNotify(MethodMetric metric){}
+    public MetricsEvent retrieveMetricsEvent(MethodMetric metric) {
+        return EmptyEvent.instance();
+    }
+
+    public Map<ApplicationMetric, AtomicLong> getApplicationMetric() {
+        return applicationMetrics;
+    }
+
+
 }

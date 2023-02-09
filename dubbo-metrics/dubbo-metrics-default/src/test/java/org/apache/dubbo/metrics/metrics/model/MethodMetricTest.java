@@ -18,12 +18,15 @@
 package org.apache.dubbo.metrics.metrics.model;
 
 import org.apache.dubbo.metrics.model.MethodMetric;
+import org.apache.dubbo.rpc.RpcInvocation;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_APPLICATION_NAME;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_GROUP_KEY;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_HOSTNAME;
@@ -41,6 +44,7 @@ class MethodMetricTest {
     private static String methodName;
     private static String group;
     private static String version;
+    private static RpcInvocation invocation;
 
     @BeforeAll
     public static void setup() {
@@ -48,11 +52,15 @@ class MethodMetricTest {
         methodName = "mockMethod";
         group = "mockGroup";
         version = "1.0.0";
+        invocation = new RpcInvocation(methodName, interfaceName, "serviceKey", null, null);
+        invocation.setTargetServiceUniqueName(group + "/" + interfaceName + ":" + version);
+        invocation.setAttachment(GROUP_KEY, group);
+        invocation.setAttachment(VERSION_KEY, version);
     }
 
     @Test
     void test() {
-        MethodMetric metric = new MethodMetric(applicationName, interfaceName, methodName, group, version);
+        MethodMetric metric = new MethodMetric(applicationName, invocation);
         Assertions.assertEquals(metric.getInterfaceName(), interfaceName);
         Assertions.assertEquals(metric.getMethodName(), methodName);
         Assertions.assertEquals(metric.getGroup(), group);
