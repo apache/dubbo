@@ -325,12 +325,13 @@ class MetricsFilterTest {
 
     private Map<String, MetricSample> getMetricsMap() {
         List<MetricSample> samples = collector.collect();
+        List<MetricSample> samples1 = new ArrayList<>();
         for (MetricSample sample : samples) {
             if (sample.getName().contains("dubbo.thread.pool")) {
-                String threadName = sample.getTags().get(MetricsConstants.TAG_THREAD_NAME);
-                sample.setName(threadName + "/" + sample.getName());
+                continue;
             }
+            samples1.add(sample);
         }
-        return samples.stream().collect(Collectors.toMap(MetricSample::getName, Function.identity()));
+        return samples1.stream().collect(Collectors.toMap(MetricSample::getName, Function.identity()));
     }
 }
