@@ -49,7 +49,7 @@ public class DubboConfigDefaultPropertyValueBeanPostProcessor implements BeanPos
     public static final String BEAN_NAME = "dubboConfigDefaultPropertyValueBeanPostProcessor";
 
     @Override
-    public final Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+    public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
         if (ClassUtils.isAssignableValue(AbstractConfig.class, bean)) {
             // ignore auto generate bean name
             if (!beanName.contains("#")) {
