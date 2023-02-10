@@ -79,6 +79,21 @@ header:
     - 'dubbo-test/dubbo-test-common/src/main/java/org/apache/dubbo/test/common/utils/TestSocketUtils.java'
     - 'dubbo-rpc/dubbo-rpc-triple/src/main/java/org/apache/dubbo/rpc/protocol/tri/TriHttp2RemoteFlowController.java'
     - 'dubbo-common/src/main/java/org/apache/dubbo/common/threadpool/serial/SerializingExecutor.java'
+    - 'dubbo-maven-plugin/src/main/java/org/apache/dubbo/maven/plugin/aot/AbstractAotMojo.java'
+    - 'dubbo-maven-plugin/src/main/java/org/apache/dubbo/maven/plugin/aot/AbstractDependencyFilterMojo.java'
+    - 'dubbo-maven-plugin/src/main/java/org/apache/dubbo/maven/plugin/aot/CommandLineBuilder.java'
+    - 'dubbo-maven-plugin/src/main/java/org/apache/dubbo/maven/plugin/aot/DependencyFilter.java'
+    - 'dubbo-maven-plugin/src/main/java/org/apache/dubbo/maven/plugin/aot/Exclude.java'
+    - 'dubbo-maven-plugin/src/main/java/org/apache/dubbo/maven/plugin/aot/ExcludeFilter.java'
+    - 'dubbo-maven-plugin/src/main/java/org/apache/dubbo/maven/plugin/aot/FilterableDependency.java'
+    - 'dubbo-maven-plugin/src/main/java/org/apache/dubbo/maven/plugin/aot/Include.java'
+    - 'dubbo-maven-plugin/src/main/java/org/apache/dubbo/maven/plugin/aot/IncludeFilter.java'
+    - 'dubbo-maven-plugin/src/main/java/org/apache/dubbo/maven/plugin/aot/JavaCompilerPluginConfiguration.java'
+    - 'dubbo-maven-plugin/src/main/java/org/apache/dubbo/maven/plugin/aot/JavaExecutable.java'
+    - 'dubbo-maven-plugin/src/main/java/org/apache/dubbo/maven/plugin/aot/JavaProcessExecutor.java'
+    - 'dubbo-maven-plugin/src/main/java/org/apache/dubbo/maven/plugin/aot/MatchingGroupIdFilter.java'
+    - 'dubbo-maven-plugin/src/main/java/org/apache/dubbo/maven/plugin/aot/RunArguments.java'
+    - 'dubbo-maven-plugin/src/main/java/org/apache/dubbo/maven/plugin/aot/RunProcess.java'
 
   comment: on-failure
 

@@ -79,7 +79,6 @@ public class RunProcess {
 		try {
 			Process process = builder.start();
 			this.process = process;
-			SignalUtils.attachSignalHandler(this::handleSigInt);
 			if (waitForProcess) {
 				try {
 					return process.waitFor();
