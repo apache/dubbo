@@ -120,7 +120,7 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
         org.apache.curator.x.discovery.ServiceInstance<ZookeeperInstance> newInstance = build(newServiceInstance);
         if (!Objects.equals(newInstance.getName(), oldInstance.getName()) ||
             !Objects.equals(newInstance.getId(), oldInstance.getId())) {
-            // ignore if id changed
+            // Ignore if id changed. Should unregister first.
             super.doUpdate(oldServiceInstance, newServiceInstance);
             return;
         }

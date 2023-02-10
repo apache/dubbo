@@ -44,7 +44,7 @@
 
         <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-metrics-api</artifactId>
+            <artifactId>dubbo-metrics-default</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
 
@@ -205,7 +205,7 @@
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>testcontainers</artifactId>
-            <version>1.15.3</version>
+            <version>1.17.6</version>
             <scope>test</scope>
         </dependency>
 

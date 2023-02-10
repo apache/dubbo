@@ -218,12 +218,12 @@ public class FileCacheStore {
         }
 
         @Override
-        public Map<String, String> loadCache(int entrySize) throws IOException {
+        public synchronized Map<String, String> loadCache(int entrySize) throws IOException {
             return Collections.emptyMap();
         }
 
         @Override
-        public void refreshCache(Map<String, String> properties, String comment, long maxFileSize) {
+        public synchronized void refreshCache(Map<String, String> properties, String comment, long maxFileSize) {
             // No-op.
         }
     }

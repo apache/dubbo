@@ -17,16 +17,6 @@
 package org.apache.dubbo.registry.xds.util.protocol;
 
 
-import io.envoyproxy.envoy.config.core.v3.Node;
-import io.envoyproxy.envoy.service.discovery.v3.DiscoveryRequest;
-import io.envoyproxy.envoy.service.discovery.v3.DiscoveryResponse;
-import io.grpc.stub.StreamObserver;
-import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
-import org.apache.dubbo.registry.xds.util.XdsChannel;
-import org.apache.dubbo.rpc.model.ApplicationModel;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -36,23 +26,30 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ERROR_REQUEST_XDS;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_REQUEST;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_INTERRUPTED;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.registry.xds.util.AdsObserver;
+import org.apache.dubbo.registry.xds.util.XdsListener;
 
-public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements XdsProtocol<T> {
+import io.envoyproxy.envoy.config.core.v3.Node;
+import io.envoyproxy.envoy.service.discovery.v3.DiscoveryRequest;
+import io.envoyproxy.envoy.service.discovery.v3.DiscoveryResponse;
+
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_INTERRUPTED;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_REQUEST;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
+
+public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements XdsProtocol<T>, XdsListener {
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(AbstractProtocol.class);
 
-    protected XdsChannel xdsChannel;
+    protected AdsObserver adsObserver;
 
     protected final Node node;
 
@@ -74,18 +71,15 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
     public Map<Set<String>, List<Consumer<Map<String, T>>>> getConsumerObserveMap() {
         return consumerObserveMap;
     }
-    private final ApplicationModel applicationModel;
-
-    public AbstractProtocol(XdsChannel xdsChannel, Node node, int checkInterval, ApplicationModel applicationModel) {
-        this.xdsChannel = xdsChannel;
-        this.node = node;
-        this.checkInterval = checkInterval;
-        this.applicationModel = applicationModel;
-    }
 
     protected Map<String, T> resourcesMap = new ConcurrentHashMap<>();
 
-    protected StreamObserver<DiscoveryRequest> requestObserver;
+    public AbstractProtocol(AdsObserver adsObserver, Node node, int checkInterval) {
+        this.adsObserver = adsObserver;
+        this.node = node;
+        this.checkInterval = checkInterval;
+        adsObserver.addListener(this);
+    }
 
     /**
      * Abstract method to obtain Type-URL from sub-class
@@ -126,7 +120,7 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
     }
 
     private Map<String, T> getResourceFromCache(Set<String> resourceNames) {
-        return resourceNames.stream()
+        return resourceNames.stream().filter(o -> !StringUtils.isEmpty(o))
             .collect(Collectors.toMap(k -> k, this::getCacheResource));
     }
 
@@ -134,9 +128,6 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
         try {
             resourceLock.lock();
             CompletableFuture<Map<String, T>> future = new CompletableFuture<>();
-            if (requestObserver == null) {
-                requestObserver = xdsChannel.createDeltaDiscoveryRequest(new ResponseObserver());
-            }
             observeResourcesName = resourceNames;
             Set<String> consumerObserveResourceNames = new HashSet<>();
             if (resourceNames.isEmpty()) {
@@ -148,7 +139,7 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
             Consumer<Map<String, T>> futureConsumer = future::complete;
             try {
                 writeLock.lock();
-                consumerObserveMap.computeIfAbsent(consumerObserveResourceNames, key -> new ArrayList<>())
+                ConcurrentHashMapUtils.computeIfAbsent((ConcurrentHashMap<Set<String>, List<Consumer<Map<String, T>>>>)consumerObserveMap,consumerObserveResourceNames, key -> new ArrayList<>())
                     .add(futureConsumer);
             } finally {
                 writeLock.unlock();
@@ -156,7 +147,7 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
 
             Set<String> resourceNamesToObserve = new HashSet<>(resourceNames);
             resourceNamesToObserve.addAll(resourcesMap.keySet());
-            requestObserver.onNext(buildDiscoveryRequest(resourceNamesToObserve));
+            adsObserver.request(buildDiscoveryRequest(resourceNamesToObserve));
             logger.info("Send xDS Observe request to remote. Resource count: " + resourceNamesToObserve.size() + ". Resource Type: " + getTypeUrl());
 
             try {
@@ -183,18 +174,12 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
     }
 
     public void observeResource(Set<String> resourceNames, Consumer<Map<String, T>> consumer, boolean isReConnect) {
-        resourceNames = resourceNames == null ? Collections.emptySet() : resourceNames;
         // call once for full data
         if (!isReConnect) {
+            consumer.accept(getResource(resourceNames));
             try {
                 writeLock.lock();
-                Set<String> consumerObserveResourceNames = new HashSet<>();
-                if (resourceNames.isEmpty()) {
-                    consumerObserveResourceNames.add(emptyResourceName);
-                } else {
-                    consumerObserveResourceNames = resourceNames;
-                }
-                consumerObserveMap.compute(consumerObserveResourceNames, (k, v) -> {
+                consumerObserveMap.compute(resourceNames, (k, v) -> {
                     if (v == null) {
                         v = new ArrayList<>();
                     }
@@ -202,7 +187,6 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
                     v.add(consumer);
                     return v;
                 });
-                consumer.accept(getResource(resourceNames));
             } finally {
                 writeLock.unlock();
             }
@@ -216,6 +200,10 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
         }
     }
 
+    public void unobserveResource(Set<String> resourceNames, Consumer<Map<String, T>> consumer) {
+        // TODO
+    }
+
     protected DiscoveryRequest buildDiscoveryRequest(Set<String> resourceNames) {
         return DiscoveryRequest.newBuilder()
             .setNode(node)
@@ -224,108 +212,50 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
             .build();
     }
 
-    protected DiscoveryRequest buildDiscoveryRequest(Set<String> resourceNames, DiscoveryResponse response) {
-        // for ACK
-        return DiscoveryRequest.newBuilder()
-            .setNode(node)
-            .setTypeUrl(response.getTypeUrl())
-            .setVersionInfo(response.getVersionInfo())
-            .setResponseNonce(response.getNonce())
-            .build();
-    }
-
     protected abstract Map<String, T> decodeDiscoveryResponse(DiscoveryResponse response);
 
-    public class ResponseObserver implements StreamObserver<DiscoveryResponse> {
-
-        public ResponseObserver() {
-
-        }
-
-        @Override
-        public void onNext(DiscoveryResponse value) {
-            Map<String, T> newResult = decodeDiscoveryResponse(value);
-            Map<String, T> oldResource = resourcesMap;
-            discoveryResponseListener(oldResource, newResult);
-            resourcesMap = newResult;
-            requestObserver.onNext(buildDiscoveryRequest(Collections.emptySet(), value));
-        }
-
-        public void discoveryResponseListener(Map<String, T> oldResult, Map<String, T> newResult) {
-            Set<String> changedResourceNames = new HashSet<>();
-            oldResult.forEach((key, origin) -> {
-                if (!Objects.equals(origin, newResult.get(key))) {
-                    changedResourceNames.add(key);
-                }
-            });
-            newResult.forEach((key, origin) -> {
-                if (!Objects.equals(origin, oldResult.get(key))) {
-                    changedResourceNames.add(key);
-                }
-            });
-            if (changedResourceNames.isEmpty()) {
-                return;
-            }
-
-            logger.info("Receive resource update notification from xds server. Change resource count: " + changedResourceNames.stream() + ". Type: " + getTypeUrl());
-
-            // call once for full data
-            try {
-                readLock.lock();
-                for (Map.Entry<Set<String>, List<Consumer<Map<String, T>>>> entry : consumerObserveMap.entrySet()) {
-                    if (entry.getKey().stream().noneMatch(changedResourceNames::contains)) {
-                        // none update
-                        continue;
-                    }
-
-                    Map<String, T> dsResultMap = entry.getKey()
-                        .stream()
-                        .collect(Collectors.toMap(k -> k, v -> newResult.get(v)));
-                    entry.getValue().forEach(o -> o.accept(dsResultMap));
-                }
-            } finally {
-                readLock.unlock();
-            }
-        }
-
-        @Override
-        public void onError(Throwable t) {
-            logger.error(REGISTRY_ERROR_REQUEST_XDS, "", "", "xDS Client received error message! detail:", t);
-            if (consumerObserveMap.size() != 0) {
-                triggerReConnectTask();
-            }
-        }
-
-        @Override
-        public void onCompleted() {
-            logger.info("xDS Client completed");
-        }
+    @Override
+    public final void process(DiscoveryResponse discoveryResponse) {
+        Map<String, T> newResult = decodeDiscoveryResponse(discoveryResponse);
+        Map<String, T> oldResource = resourcesMap;
+        discoveryResponseListener(oldResource, newResult);
+        resourcesMap = newResult;
     }
 
-    private void triggerReConnectTask() {
-        AtomicBoolean isConnectFail = new AtomicBoolean(false);
-        ScheduledExecutorService scheduledFuture = applicationModel.getFrameworkModel().getBeanFactory()
-            .getBean(FrameworkExecutorRepository.class).getSharedScheduledExecutor();
-        scheduledFuture.scheduleAtFixedRate(() -> {
-            xdsChannel = new XdsChannel(xdsChannel.getUrl());
-            if (xdsChannel.getChannel() != null) {
-                Set<String> reConnectResourcesNames;
-                try {
-                    readLock.lock();
-                    reConnectResourcesNames = consumerObserveMap.keySet()
-                        .stream()
-                        .flatMap(Set::stream)
-                        .collect(Collectors.toSet());
-                } finally {
-                    readLock.unlock();
-                }
-                getResourceFromRemote(reConnectResourcesNames);
-                if (isConnectFail.get()) {
-                    scheduledFuture.shutdown();
-                }
-            } else {
-                isConnectFail.set(true);
+    private void discoveryResponseListener(Map<String, T> oldResult, Map<String, T> newResult) {
+        Set<String> changedResourceNames = new HashSet<>();
+        oldResult.forEach((key, origin) -> {
+            if (!Objects.equals(origin, newResult.get(key))) {
+                changedResourceNames.add(key);
             }
-        }, checkInterval, checkInterval, TimeUnit.SECONDS);
+        });
+        newResult.forEach((key, origin) -> {
+            if (!Objects.equals(origin, oldResult.get(key))) {
+                changedResourceNames.add(key);
+            }
+        });
+        if (changedResourceNames.isEmpty()) {
+            return;
+        }
+
+        logger.info("Receive resource update notification from xds server. Change resource count: " + changedResourceNames.stream() + ". Type: " + getTypeUrl());
+
+        // call once for full data
+        try {
+            readLock.lock();
+            for (Map.Entry<Set<String>, List<Consumer<Map<String, T>>>> entry : consumerObserveMap.entrySet()) {
+                if (entry.getKey().stream().noneMatch(changedResourceNames::contains)) {
+                    // none update
+                    continue;
+                }
+
+                Map<String, T> dsResultMap = entry.getKey()
+                    .stream()
+                    .collect(Collectors.toMap(k -> k, v -> newResult.get(v)));
+                entry.getValue().forEach(o -> o.accept(dsResultMap));
+            }
+        } finally {
+            readLock.unlock();
+        }
     }
 }

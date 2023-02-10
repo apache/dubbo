@@ -27,6 +27,7 @@ import javax.ws.rs.ProcessingException;
 import javax.ws.rs.WebApplicationException;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.ParameterTypesComparator;
 import org.apache.dubbo.metadata.rest.RestMethodMetadata;
@@ -54,6 +55,15 @@ import org.apache.dubbo.rpc.protocol.rest.message.HttpMessageCodecManager;
 import org.apache.dubbo.rpc.protocol.rest.util.MediaTypeUtil;
 import org.jboss.resteasy.util.GetRestful;
 
+import javax.servlet.ServletContext;
+import javax.ws.rs.ProcessingException;
+import javax.ws.rs.WebApplicationException;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+
+import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERROR_CLOSE_CLIENT;
@@ -69,7 +79,7 @@ public class RestProtocol extends AbstractProxyProtocol {
 
     private final RestServerFactory serverFactory = new RestServerFactory();
 
-    private final Map<String, ReferenceCountedClient<? extends RestClient>> clients = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, ReferenceCountedClient<? extends RestClient>> clients = new ConcurrentHashMap<>();
 
     private final RestClientFactory clientFactory;
 
@@ -91,7 +101,7 @@ public class RestProtocol extends AbstractProxyProtocol {
     protected <T> Runnable doExport(T impl, Class<T> type, URL url) throws RpcException {
         String addr = getAddr(url);
         Class implClass = url.getServiceModel().getProxyObject().getClass();
-        RestProtocolServer server = (RestProtocolServer) serverMap.computeIfAbsent(addr, restServer -> {
+        RestProtocolServer server = (RestProtocolServer) ConcurrentHashMapUtils.computeIfAbsent(serverMap, addr, restServer -> {
             RestProtocolServer s = serverFactory.createServer(url.getParameter(SERVER_KEY, DEFAULT_SERVER));
             s.setAddress(url.getAddress());
             s.start(url);
