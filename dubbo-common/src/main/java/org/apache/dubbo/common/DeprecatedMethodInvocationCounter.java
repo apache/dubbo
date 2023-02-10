@@ -18,7 +18,7 @@ public final class DeprecatedMethodInvocationCounter {
 
     private static final ConcurrentHashMap<String, LongAdder> COUNTERS = new ConcurrentHashMap<>();
 
-    public static void incrementInvocationCount(String methodDefinition) {
+    public static void increaseInvocationCount(String methodDefinition) {
         COUNTERS.putIfAbsent(methodDefinition, new LongAdder());
         LongAdder adder = COUNTERS.get(methodDefinition);
 

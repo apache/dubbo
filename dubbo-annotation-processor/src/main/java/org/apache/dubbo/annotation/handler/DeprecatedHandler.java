@@ -22,10 +22,13 @@ import org.apache.dubbo.annotation.AnnotationProcessorContext;
 import org.apache.dubbo.annotation.constant.DeprecatedHandlerConstants;
 import org.apache.dubbo.annotation.util.ASTUtils;
 
+import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.tree.TreeTranslator;
+import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.ListBuffer;
 
 import javax.lang.model.element.Element;
@@ -58,6 +61,7 @@ public class DeprecatedHandler implements AnnotationProcessingHandler {
 
             ASTUtils.addImportStatement(apContext, classSymbol, "org.apache.dubbo.common.logger", "LoggerFactory");
             ASTUtils.addImportStatement(apContext, classSymbol, "org.apache.dubbo.common.logger", "ErrorTypeAwareLogger");
+            ASTUtils.addImportStatement(apContext, classSymbol, "org.apache.dubbo.common", "DeprecatedMethodInvocationCounter");
 
             JCTree methodTree = apContext.getJavacTrees().getTree(element);
 
@@ -72,9 +76,9 @@ public class DeprecatedHandler implements AnnotationProcessingHandler {
                         return;
                     }
 
-                    JCTree.JCExpressionStatement fullExpressionStatement = generateLoggerStatement(jcMethodDecl, apContext, classSymbol);
+                    // JCTree.JCExpressionStatement fullExpressionStatement = generateLoggerStatement(jcMethodDecl, apContext, classSymbol);
 
-                    insertLoggerInvocation(block, jcMethodDecl, fullExpressionStatement);
+                    insertLoggerInvocation(block, jcMethodDecl, generateCountingStatement(apContext, classSymbol, jcMethodDecl));
                 }
             });
         }
@@ -89,7 +93,7 @@ public class DeprecatedHandler implements AnnotationProcessingHandler {
      * @param classSymbol the enclosing class that will be the logger's name
      * @return generated expression statement
      */
-    private static JCTree.JCExpressionStatement generateLoggerStatement(JCTree.JCMethodDecl originalMethodDecl,
+    private JCTree.JCExpressionStatement generateLoggerStatement(JCTree.JCMethodDecl originalMethodDecl,
                                                                         AnnotationProcessorContext apContext,
                                                                         Symbol.ClassSymbol classSymbol) {
 
@@ -124,12 +128,16 @@ public class DeprecatedHandler implements AnnotationProcessingHandler {
                 apContext.getTreeMaker().Literal(DeprecatedHandlerConstants.POSSIBLE_CAUSE),
                 apContext.getTreeMaker().Literal(DeprecatedHandlerConstants.EXTENDED_MESSAGE),
                 apContext.getTreeMaker().Literal("Deprecated method invoked. The method is "
-                    + classSymbol.getQualifiedName() + "."
-                    + originalMethodDecl.name.toString() + "(" + originalMethodDecl.params.toString() + ")")
+                    + getMethodDefinition(classSymbol, originalMethodDecl))
             )
         );
 
         return apContext.getTreeMaker().Exec(fullStatement);
+    }
+
+    private String getMethodDefinition(Symbol.ClassSymbol classSymbol, JCTree.JCMethodDecl originalMethodDecl) {
+        return classSymbol.getQualifiedName() + "."
+            + originalMethodDecl.name.toString() + "(" + originalMethodDecl.params.toString() + ")";
     }
 
     /**
@@ -139,7 +147,10 @@ public class DeprecatedHandler implements AnnotationProcessingHandler {
      * @param originalMethodDecl the method declaration that will add logger statement
      * @param fullExpressionStatement the logger invocation generated from generateLoggerStatement(...).
      */
-    private static void insertLoggerInvocation(JCTree.JCBlock block, JCTree.JCMethodDecl originalMethodDecl, JCTree.JCExpressionStatement fullExpressionStatement) {
+    private void insertLoggerInvocation(JCTree.JCBlock block,
+                                               JCTree.JCMethodDecl originalMethodDecl,
+                                               JCTree.JCStatement fullExpressionStatement) {
+
         boolean isConstructor = originalMethodDecl.name.toString().equals("<init>");
         ListBuffer<JCTree.JCStatement> statements = new ListBuffer<>();
 
@@ -165,5 +176,72 @@ public class DeprecatedHandler implements AnnotationProcessingHandler {
         }
 
         block.stats = statements.toList();
+    }
+
+    /**
+        Generate a statement like this:
+
+     <pre><code>
+        if (!DeprecatedMethodInvocationCounter.hasThisMethodInvoked("")) {
+            // logger statements.
+            DeprecatedMethodInvocationCounter.increaseInvocationCount("");
+        } else {
+            DeprecatedMethodInvocationCounter.increaseInvocationCount("");
+        }
+     </code></pre>
+     */
+    private JCTree.JCIf generateCountingStatement(AnnotationProcessorContext apContext,
+                   Symbol.ClassSymbol classSymbol,
+                   JCTree.JCMethodDecl originalMethodDecl) {
+
+
+        TreeMaker treeMaker = apContext.getTreeMaker();
+
+        JCTree.JCExpression conditionStatement = treeMaker.Unary(JCTree.Tag.NOT, treeMaker.Apply(
+            // Use definite name to distinguish the java.util.List.
+            com.sun.tools.javac.util.List.nil(),
+
+            apContext.getTreeMaker().Select(
+                apContext.getTreeMaker().Ident(apContext.getNames().fromString("DeprecatedMethodInvocationCounter")),
+                apContext.getNames().fromString("hasThisMethodInvoked")
+            ),
+
+            com.sun.tools.javac.util.List.of(
+                apContext.getTreeMaker().Literal(
+                    getMethodDefinition(classSymbol, originalMethodDecl)
+                )
+            )
+        ));
+
+        JCTree.JCExpression increaseCountStatement = treeMaker.Apply(
+            // Use definite name to distinguish the java.util.List.
+            com.sun.tools.javac.util.List.nil(),
+
+            apContext.getTreeMaker().Select(
+                apContext.getTreeMaker().Ident(apContext.getNames().fromString("DeprecatedMethodInvocationCounter")),
+                apContext.getNames().fromString("increaseInvocationCount")
+            ),
+
+            com.sun.tools.javac.util.List.of(
+                apContext.getTreeMaker().Literal(
+                    getMethodDefinition(classSymbol, originalMethodDecl)
+                )
+            )
+        );
+
+
+        JCTree.JCIf ifStatement = treeMaker.If(
+            conditionStatement,
+
+            treeMaker.Block(
+                Flags.BLOCK,
+                List.of(
+                    generateLoggerStatement(originalMethodDecl, apContext, classSymbol),
+                    treeMaker.Exec(increaseCountStatement)
+                )
+            ), treeMaker.Exec(increaseCountStatement)
+        );
+
+        return ifStatement;
     }
 }
