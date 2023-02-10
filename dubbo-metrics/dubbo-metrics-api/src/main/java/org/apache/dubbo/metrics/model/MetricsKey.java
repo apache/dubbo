@@ -48,6 +48,18 @@ public enum MetricsKey {
     PROVIDER_METRIC_RT_P99("dubbo.provider.rt.seconds.p99", "Response Time P99"),
     PROVIDER_METRIC_RT_P95("dubbo.provider.rt.seconds.p95", "Response Time P95"),
 
+    GENERIC_METRIC_REQUESTS("dubbo.%s.requests.total", "Total %s Requests"),
+    GENERIC_METRIC_REQUESTS_SUCCEED("dubbo.%s.requests.succeed.total", "Succeed %s Requests"),
+    GENERIC_METRIC_REQUESTS_FAILED("dubbo.%s.requests.failed.total", "Failed %s Requests"),
+
+    GENERIC_METRIC_RT_LAST("dubbo.%s.rt.seconds.last", "Last Response Time"),
+    GENERIC_METRIC_RT_MIN("dubbo.%s.rt.seconds.min", "Min Response Time"),
+    GENERIC_METRIC_RT_MAX("dubbo.%s.rt.seconds.max", "Max Response Time"),
+    GENERIC_METRIC_RT_SUM("dubbo.%s.rt.seconds.sum", "Sum Response Time"),
+    GENERIC_METRIC_RT_AVG("dubbo.%s.rt.seconds.avg", "Average Response Time"),
+    GENERIC_METRIC_RT_P99("dubbo.%s.rt.seconds.p99", "Response Time P99"),
+    GENERIC_METRIC_RT_P95("dubbo.%s.rt.seconds.p95", "Response Time P95"),
+
     // consumer metrics key
     ;
 

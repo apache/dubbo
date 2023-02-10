@@ -17,7 +17,7 @@
 
 package org.apache.dubbo.metrics.event;
 
-public class ApplicationEvent extends MetricsEvent{
+public class ApplicationEvent extends MetricsEvent<Object>{
     private ApplicationEvent.Type type;
 
     public ApplicationEvent(Object source, ApplicationEvent.Type type) {

@@ -15,20 +15,26 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.metrics.event;
+package org.apache.dubbo.metrics.model;
 
-/**
- * EmptyEvent, do nothing.
- */
-public class EmptyEvent extends MetricsEvent<Object> {
+public class TimePair {
 
-    private static final EmptyEvent empty = new EmptyEvent(new Object());
+    private final long begin;
+    private long end;
 
-    public EmptyEvent(Object source) {
-        super(source);
+    public TimePair(long currentTimeMillis) {
+        this.begin = currentTimeMillis;
     }
 
-    public static EmptyEvent instance() {
-        return empty;
+    public static TimePair start() {
+        return new TimePair(System.currentTimeMillis());
+    }
+
+    public void end() {
+        this.end = System.currentTimeMillis();
+    }
+
+    public long calc() {
+        return end - begin;
     }
 }

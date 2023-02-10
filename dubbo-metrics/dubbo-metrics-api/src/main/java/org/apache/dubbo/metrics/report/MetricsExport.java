@@ -15,20 +15,25 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.metrics.event;
+package org.apache.dubbo.metrics.report;
+
+import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
+
+import java.util.List;
 
 /**
- * EmptyEvent, do nothing.
+ * Metrics data export.
+ * Export data in a unified format for external collection(e.g. Prometheus).
  */
-public class EmptyEvent extends MetricsEvent<Object> {
+public interface MetricsExport {
 
-    private static final EmptyEvent empty = new EmptyEvent(new Object());
+    /**
+     * Cumulative statistics.
+     */
+    List<GaugeMetricSample> exportNumMetrics();
 
-    public EmptyEvent(Object source) {
-        super(source);
-    }
-
-    public static EmptyEvent instance() {
-        return empty;
-    }
+    /**
+     * Response time statistics at different latitudes
+     */
+    List<GaugeMetricSample> exportRtMetrics();
 }

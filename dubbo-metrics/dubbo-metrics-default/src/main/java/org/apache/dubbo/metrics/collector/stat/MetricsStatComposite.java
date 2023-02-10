@@ -101,10 +101,6 @@ public class MetricsStatComposite {
 
         return new RTEvent(metric, responseTime);
     }
-    public void addApplicationInfo(String applicationName, String version) {
-        MetricsStatHandler metricsStatHandler = stats.get(MetricsEvent.Type.APPLICATION_INFO);
-        metricsStatHandler.addApplication(applicationName, version);
-    }
 
     private void init() {
         stats.put(MetricsEvent.Type.TOTAL, buildMetricsStatHandler(MetricsEvent.Type.TOTAL));

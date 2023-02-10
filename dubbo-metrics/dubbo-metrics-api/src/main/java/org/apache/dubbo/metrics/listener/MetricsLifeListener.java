@@ -15,20 +15,16 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.metrics.event;
+package org.apache.dubbo.metrics.listener;
+
+import org.apache.dubbo.metrics.event.MetricsEvent;
 
 /**
- * EmptyEvent, do nothing.
+ * Metrics Listener.
  */
-public class EmptyEvent extends MetricsEvent<Object> {
+public interface MetricsLifeListener<E extends MetricsEvent<?>> extends MetricsListener<E> {
 
-    private static final EmptyEvent empty = new EmptyEvent(new Object());
+    void onEventFinish(E event);
 
-    public EmptyEvent(Object source) {
-        super(source);
-    }
-
-    public static EmptyEvent instance() {
-        return empty;
-    }
+    void onEventError(E event);
 }

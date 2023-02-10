@@ -17,18 +17,12 @@
 
 package org.apache.dubbo.metrics.event;
 
+import org.apache.dubbo.metrics.model.TimePair;
+
 /**
- * EmptyEvent, do nothing.
+ *  Mark certain types of events, allow automatic recording of start and end times, and provide time pairs
  */
-public class EmptyEvent extends MetricsEvent<Object> {
+public interface TimeCounter {
 
-    private static final EmptyEvent empty = new EmptyEvent(new Object());
-
-    public EmptyEvent(Object source) {
-        super(source);
-    }
-
-    public static EmptyEvent instance() {
-        return empty;
-    }
+    TimePair getTimePair();
 }

@@ -16,16 +16,16 @@
  */
 package org.apache.dubbo.metrics.collector.stat;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.BiConsumer;
-
 import org.apache.dubbo.metrics.event.EmptyEvent;
 import org.apache.dubbo.metrics.event.MetricsEvent;
 import org.apache.dubbo.metrics.model.ApplicationMetric;
 import org.apache.dubbo.metrics.model.MethodMetric;
 import org.apache.dubbo.rpc.Invocation;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.BiConsumer;
 
 
 public class DefaultMetricsStatHandler implements MetricsStatHandler {
@@ -46,8 +46,8 @@ public class DefaultMetricsStatHandler implements MetricsStatHandler {
         return this.doDecrExecute(applicationName,invocation);
     }
     @Override
-    public MetricsEvent addApplication(String applicationName, String version) {
-        ApplicationMetric applicationMetric = new ApplicationMetric(applicationName, version);
+    public MetricsEvent addApplication(String applicationName) {
+        ApplicationMetric applicationMetric = new ApplicationMetric(applicationName);
         AtomicLong count = applicationMetrics.computeIfAbsent(applicationMetric, k -> new AtomicLong(0L));
         count.incrementAndGet();
         return EmptyEvent.instance();

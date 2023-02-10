@@ -17,7 +17,7 @@
 package org.apache.dubbo.config.deploy;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.Version;
+import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.config.ReferenceCache;
@@ -52,6 +52,9 @@ import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.metadata.report.MetadataReportFactory;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
+import org.apache.dubbo.metrics.collector.MetricsCollector;
+import org.apache.dubbo.metrics.event.SimpleMetricsEventMulticaster;
+import org.apache.dubbo.metrics.listener.MetricsListener;
 import org.apache.dubbo.metrics.report.MetricsReporter;
 import org.apache.dubbo.metrics.report.MetricsReporterFactory;
 import org.apache.dubbo.metrics.service.MetricsServiceExporter;
@@ -126,6 +129,8 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     private final Object startLock = new Object();
     private final Object destroyLock = new Object();
     private final Object internalModuleLock = new Object();
+
+    private SimpleMetricsEventMulticaster eventMulticaster;
 
     public DefaultApplicationDeployer(ApplicationModel applicationModel) {
         super(applicationModel);
@@ -358,14 +363,28 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         metricsServiceExporter.init();
     }
 
+    @SuppressWarnings({"rawtypes"})
     private void initMetricsReporter() {
-        DefaultMetricsCollector collector =
-            applicationModel.getFrameworkModel().getBeanFactory().getOrRegisterBean(DefaultMetricsCollector.class);
+        ScopeBeanFactory beanFactory = applicationModel.getFrameworkModel().getBeanFactory();
+        DefaultMetricsCollector collector = beanFactory.getOrRegisterBean(DefaultMetricsCollector.class);
         MetricsConfig metricsConfig = configManager.getMetrics().orElse(null);
+        this.eventMulticaster = beanFactory.getOrRegisterBean(SimpleMetricsEventMulticaster.class);
+
         // TODO compatible with old usage of metrics, remove protocol check after new metrics is ready for use.
         if (metricsConfig != null && PROTOCOL_PROMETHEUS.equals(metricsConfig.getProtocol())) {
             collector.setCollectEnabled(true);
-            collector.addApplicationInfo(applicationModel.getApplicationName(), Version.getVersion());
+
+            List<MetricsListener> metricsListeners = applicationModel.getExtensionLoader(MetricsListener.class)
+                .getActivateExtensions();
+            metricsListeners.forEach(this.eventMulticaster::addListener);
+
+            List<MetricsCollector> customizeCollectors = applicationModel.getExtensionLoader(MetricsCollector.class)
+                .getActivateExtensions();
+            for (MetricsCollector customizeCollector : customizeCollectors) {
+                beanFactory.registerBean(customizeCollector);
+            }
+
+            collector.addApplicationInfo(applicationModel.getApplicationName());
             String protocol = metricsConfig.getProtocol();
             if (StringUtils.isNotEmpty(protocol)) {
                 MetricsReporterFactory metricsReporterFactory = getExtensionLoader(MetricsReporterFactory.class).getAdaptiveExtension();

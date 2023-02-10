@@ -51,7 +51,7 @@ public class DefaultMetricsCollector implements MetricsCollector {
 
     public DefaultMetricsCollector() {
         this.stats = new MetricsStatComposite(this);
-        this.eventMulticaster = SimpleMetricsEventMulticaster.getInstance();
+        this.eventMulticaster = new SimpleMetricsEventMulticaster();
     }
 
     public void setCollectEnabled(Boolean collectEnabled) {
@@ -109,8 +109,9 @@ public class DefaultMetricsCollector implements MetricsCollector {
     public void addRT(String applicationName,Invocation invocation, Long responseTime) {
         this.eventMulticaster.publishEvent(stats.addRtAndRetrieveEvent(applicationName,invocation, responseTime));
     }
-    public void addApplicationInfo(String applicationName, String version) {
-        doExecute(MetricsEvent.Type.APPLICATION_INFO, statHandler -> statHandler.addApplication(applicationName,version));
+
+    public void addApplicationInfo(String applicationName) {
+        doExecute(MetricsEvent.Type.APPLICATION_INFO, statHandler -> statHandler.addApplication(applicationName));
     }
     @Override
     public List<MetricSample> collect() {

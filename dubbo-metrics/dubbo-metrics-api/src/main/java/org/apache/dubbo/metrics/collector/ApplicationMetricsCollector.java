@@ -15,20 +15,20 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.metrics.event;
+package org.apache.dubbo.metrics.collector;
 
 /**
- * EmptyEvent, do nothing.
+ * Application-level collector.
+ * registration center, configuration center and other scenarios
+ *
+ * @Params <T>  metrics type
  */
-public class EmptyEvent extends MetricsEvent<Object> {
+public interface ApplicationMetricsCollector<T> extends MetricsCollector {
 
-    private static final EmptyEvent empty = new EmptyEvent(new Object());
+    void increment(String applicationName, T type);
 
-    public EmptyEvent(Object source) {
-        super(source);
-    }
+    void decrease(String applicationName, T type);
 
-    public static EmptyEvent instance() {
-        return empty;
-    }
+    void addRT(String applicationName, Long responseTime);
 }
+

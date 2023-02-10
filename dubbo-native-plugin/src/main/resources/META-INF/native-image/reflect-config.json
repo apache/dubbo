@@ -2901,5 +2901,15 @@
   {
     "name": "java.util.Collections$UnmodifiableCollection",
     "allPublicMethods": true
+  },
+  {
+    "name": "org.apache.dubbo.metrics.event.SimpleMetricsEventMulticaster",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
   }
 ]
