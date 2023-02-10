@@ -35,6 +35,6 @@ public class ZookeeperDynamicConfigurationFactory extends AbstractDynamicConfigu
 
     @Override
     protected DynamicConfiguration createDynamicConfiguration(URL url) {
-        return new ZookeeperDynamicConfiguration(url, zookeeperTransporter);
+        return new ZookeeperDynamicConfiguration(url, zookeeperTransporter, applicationModel);
     }
 }

@@ -35,6 +35,7 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.metrics.DubboMetrics;
 import org.apache.dubbo.metrics.collector.AggregateMetricsCollector;
+import org.apache.dubbo.metrics.collector.ConfigCenterMetricsCollector;
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
 import org.apache.dubbo.metrics.collector.MetricsCollector;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
@@ -121,9 +122,11 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
 
     private void initCollectors() {
         applicationModel.getBeanFactory().getOrRegisterBean(AggregateMetricsCollector.class);
+        applicationModel.getBeanFactory().getOrRegisterBean(ConfigCenterMetricsCollector.class);
 
         collectors.add(applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class));
         collectors.add(applicationModel.getBeanFactory().getBean(AggregateMetricsCollector.class));
+        collectors.add(applicationModel.getBeanFactory().getBean(ConfigCenterMetricsCollector.class));
     }
 
     public void refreshData() {
