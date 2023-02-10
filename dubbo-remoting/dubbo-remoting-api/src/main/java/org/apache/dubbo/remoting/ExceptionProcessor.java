@@ -77,8 +77,6 @@ public interface ExceptionProcessor {
     /**
      * release resources
      */
-    default void cleanUp() {
-
-    }
+    void cleanUp(Object context);
 
 }

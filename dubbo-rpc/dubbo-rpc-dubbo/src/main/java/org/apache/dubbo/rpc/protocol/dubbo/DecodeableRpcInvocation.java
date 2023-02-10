@@ -152,7 +152,7 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
                 request.setBroken(true);
                 request.setError(e);
             } finally {
-                expProcessor.cleanUp();
+                expProcessor.cleanUp(this);
             }
         }
     }
