@@ -63,6 +63,7 @@ class ChannelWrappedInvoker<T> extends AbstractInvoker<T> {
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     protected Result doInvoke(Invocation invocation) throws Throwable {
         RpcInvocation inv = (RpcInvocation) invocation;
         // use interface's name as service path to export if it's not found on client side
@@ -83,7 +84,7 @@ class ChannelWrappedInvoker<T> extends AbstractInvoker<T> {
                 currentClient.send(request, getUrl().getMethodParameter(invocation.getMethodName(), SENT_KEY, false));
                 return AsyncRpcResult.newDefaultAsyncResult(invocation);
             } else {
-                CompletableFuture<AppResponse> appResponseFuture = currentClient.request(request).thenApply(obj -> (AppResponse) obj);
+                CompletableFuture<AppResponse> appResponseFuture = currentClient.request(request).thenApply(AppResponse.class::cast);
                 return new AsyncRpcResult(appResponseFuture, inv);
             }
         } catch (RpcException e) {
