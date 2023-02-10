@@ -26,8 +26,6 @@
     <artifactId>dubbo-maven-plugin</artifactId>
 
     <properties>
-<!--        <maven.compiler.source>17</maven.compiler.source>-->
-<!--        <maven.compiler.target>17</maven.compiler.target>-->
     </properties>
     <description>Dubbo Maven Plugin</description>
     <packaging>maven-plugin</packaging>

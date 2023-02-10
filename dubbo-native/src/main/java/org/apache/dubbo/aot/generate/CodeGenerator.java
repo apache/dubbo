@@ -27,7 +27,6 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -42,11 +41,12 @@ import java.util.stream.Collectors;
  */
 public class CodeGenerator {
 
+    private static final String PACKAGE_NAME_PREFIX = "org.apache.dubbo";
+
     public static void main(String[] args) {
+        String generatedSources = args[1];
 
-        String p = args[1];
-
-        List<Class<?>> classes = new ClassFinder().findClassSet("org.apache.dubbo").stream().map(it -> {
+        List<Class<?>> classes = new ClassSourceFinder().findClassSet(PACKAGE_NAME_PREFIX).stream().map(it -> {
             try {
                 return Class.forName(it);
             } catch (Throwable e) {
@@ -71,13 +71,11 @@ public class CodeGenerator {
             }
             AdaptiveClassCodeGenerator codeGenerator = new AdaptiveClassCodeGenerator(it, value);
             String code = codeGenerator.generate(true);
-//            System.out.println(code);
-//            System.out.println("-----:" + it.getPackage());
             try {
-                String file = p + File.separator + it.getName().replaceAll("\\.", Matcher.quoteReplacement(File.separator));
+                String file = generatedSources + File.separator + it.getName().replaceAll("\\.", Matcher.quoteReplacement(File.separator));
                 String dir = Paths.get(file).getParent().toString();
                 FileUtils.forceMkdir(new File(dir));
-                code = licensedStr + code + "\n";
+                code = LICENSED_STR + code + "\n";
                 FileUtils.write(new File(file + "$Adaptive.java"), code, Charset.defaultCharset());
             } catch (IOException e) {
                 e.printStackTrace();
@@ -86,7 +84,7 @@ public class CodeGenerator {
     }
 
 
-    private static String licensedStr = "/*\n" +
+    private static final String LICENSED_STR = "/*\n" +
         " * Licensed to the Apache Software Foundation (ASF) under one or more\n" +
         " * contributor license agreements.  See the NOTICE file distributed with\n" +
         " * this work for additional information regarding copyright ownership.\n" +

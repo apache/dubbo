@@ -26,7 +26,7 @@ import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-public class ClassFinder {
+public class ClassSourceFinder {
 
     public Set<String> findClassSet(String packageName) {
         packageName = packageName.replace(".", "/");
@@ -42,7 +42,7 @@ public class ClassFinder {
                         findClassesByFile(packageName, resource.getPath(), result);
                     } else if ("jar".equals(protocol)) {
                         JarFile jar = ((JarURLConnection) resource.openConnection()).getJarFile();
-                        System.out.println("findClassSet jar:"+jar.getName());
+                        System.out.println("findClassSet jar:" + jar.getName());
                         findClassesByJar(packageName, jar, result);
                     }
                 }

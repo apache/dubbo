@@ -1081,9 +1081,7 @@
     "methods": [
       {
         "name": "<init>",
-        "parameterTypes": [
-          "org.apache.dubbo.rpc.model.FrameworkModel"
-        ]
+        "parameterTypes": []
       }
     ]
   },
@@ -1105,9 +1103,7 @@
     "methods": [
       {
         "name": "<init>",
-        "parameterTypes": [
-          "org.apache.dubbo.rpc.model.FrameworkModel"
-        ]
+        "parameterTypes": []
       }
     ]
   },
@@ -1136,7 +1132,30 @@
     ]
   },
   {
+    "name": "org.apache.dubbo.common.utils.SerializeSecurityConfigurator",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": [
+          "org.apache.dubbo.rpc.model.ModuleModel"
+        ]
+      }
+    ]
+  },
+  {
     "name": "org.apache.dubbo.common.utils.SerializeSecurityManager",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": [
+        ]
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.common.utils.DefaultSerializeClassChecker",
     "allPublicMethods": true,
     "methods": [
       {
@@ -1186,7 +1205,9 @@
     "methods": [
       {
         "name": "<init>",
-        "parameterTypes": ["org.apache.dubbo.rpc.model.ApplicationModel"]
+        "parameterTypes": [
+          "org.apache.dubbo.rpc.model.ApplicationModel"
+        ]
       }
     ]
   },
@@ -1415,7 +1436,9 @@
     "methods": [
       {
         "name": "<init>",
-        "parameterTypes": ["org.apache.dubbo.rpc.model.ApplicationModel"]
+        "parameterTypes": [
+          "org.apache.dubbo.rpc.model.ApplicationModel"
+        ]
       }
     ]
   },
@@ -1566,7 +1589,9 @@
     "methods": [
       {
         "name": "<init>",
-        "parameterTypes": ["org.apache.dubbo.rpc.model.ApplicationModel"]
+        "parameterTypes": [
+          "org.apache.dubbo.rpc.model.ApplicationModel"
+        ]
       }
     ]
   },
@@ -2158,7 +2183,9 @@
     "methods": [
       {
         "name": "<init>",
-        "parameterTypes": ["org.apache.dubbo.rpc.model.ApplicationModel"]
+        "parameterTypes": [
+          "org.apache.dubbo.rpc.model.ApplicationModel"
+        ]
       }
     ]
   },
@@ -2232,7 +2259,9 @@
     "methods": [
       {
         "name": "<init>",
-        "parameterTypes": ["org.apache.dubbo.rpc.model.ApplicationModel"]
+        "parameterTypes": [
+          "org.apache.dubbo.rpc.model.ApplicationModel"
+        ]
       }
     ]
   },
@@ -2273,7 +2302,16 @@
     ]
   },
   {
-    "name": "org.apache.dubbo.rpc.filter.GenericImplFilter"
+    "name": "org.apache.dubbo.rpc.filter.GenericImplFilter",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": [
+          "org.apache.dubbo.rpc.model.ModuleModel"
+        ]
+      }
+    ]
   },
   {
     "name": "org.apache.dubbo.rpc.filter.TimeoutFilter",
@@ -2461,9 +2499,6 @@
     "name": "org.apache.dubbo.rpc.filter.GenericFilter"
   },
   {
-    "name": "org.apache.dubbo.rpc.filter.GenericImplFilter"
-  },
-  {
     "name": "org.apache.dubbo.rpc.filter.TimeoutFilter"
   },
   {
@@ -2510,7 +2545,9 @@
     "methods": [
       {
         "name": "<init>",
-        "parameterTypes": ["org.apache.dubbo.rpc.model.FrameworkModel"]
+        "parameterTypes": [
+          "org.apache.dubbo.rpc.model.FrameworkModel"
+        ]
       }
     ]
   },
@@ -2667,7 +2704,9 @@
     "methods": [
       {
         "name": "<init>",
-        "parameterTypes": ["org.apache.zookeeper.client.ZKClientConfig"]
+        "parameterTypes": [
+          "org.apache.zookeeper.client.ZKClientConfig"
+        ]
       },
       {
         "name": "<init>",
@@ -2811,7 +2850,9 @@
     "methods": [
       {
         "name": "<init>",
-        "parameterTypes": ["org.apache.dubbo.rpc.model.FrameworkModel"]
+        "parameterTypes": [
+          "org.apache.dubbo.rpc.model.FrameworkModel"
+        ]
       }
     ]
   },
@@ -2821,7 +2862,9 @@
     "methods": [
       {
         "name": "<init>",
-        "parameterTypes": ["org.apache.dubbo.rpc.model.ModuleModel"]
+        "parameterTypes": [
+          "org.apache.dubbo.rpc.model.ModuleModel"
+        ]
       }
     ]
   },
@@ -2831,7 +2874,9 @@
     "methods": [
       {
         "name": "<init>",
-        "parameterTypes": ["org.apache.dubbo.rpc.model.ModuleModel"]
+        "parameterTypes": [
+          "org.apache.dubbo.rpc.model.ModuleModel"
+        ]
       }
     ]
   },
@@ -2851,7 +2896,7 @@
     "methods": [
       {
         "name": "<init>",
-        "parameterTypes": ["org.apache.dubbo.rpc.model.ApplicationModel"]
+        "parameterTypes": []
       }
     ]
   },
