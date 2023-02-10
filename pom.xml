@@ -325,6 +325,21 @@
                                     <skip>${checkstyle.skip}</skip>
                                     <excludes>
                                         **/JSONWriter.java,
+                                        **/org/apache/dubbo/maven/plugin/aot/AbstractAotMojo.java,
+                                        **/org/apache/dubbo/maven/plugin/aot/AbstractDependencyFilterMojo.java,
+                                        **/org/apache/dubbo/maven/plugin/aot/CommandLineBuilder.java,
+                                        **/org/apache/dubbo/maven/plugin/aot/DependencyFilter.java,
+                                        **/org/apache/dubbo/maven/plugin/aot/Exclude.java,
+                                        **/org/apache/dubbo/maven/plugin/aot/ExcludeFilter.java,
+                                        **/org/apache/dubbo/maven/plugin/aot/FilterableDependency.java,
+                                        **/org/apache/dubbo/maven/plugin/aot/Include.java,
+                                        **/org/apache/dubbo/maven/plugin/aot/IncludeFilter.java,
+                                        **/org/apache/dubbo/maven/plugin/aot/JavaCompilerPluginConfiguration.java,
+                                        **/org/apache/dubbo/maven/plugin/aot/JavaExecutable.java,
+                                        **/org/apache/dubbo/maven/plugin/aot/JavaProcessExecutor.java,
+                                        **/org/apache/dubbo/maven/plugin/aot/MatchingGroupIdFilter.java,
+                                        **/org/apache/dubbo/maven/plugin/aot/RunArguments.java,
+                                        **/org/apache/dubbo/maven/plugin/aot/RunProcess.java,
                                         **/org/apache/dubbo/common/threadpool/serial/SerializingExecutor.java,
                                         **/org/apache/dubbo/common/threadlocal/InternalThreadLocal.java,
                                         **/org/apache/dubbo/common/threadlocal/InternalThreadLocalMap.java,
@@ -751,6 +766,22 @@
                         <exclude>Jenkinsfile</exclude>
                         <exclude>**/codestyle/*</exclude>
                         <exclude>**/resources/META-INF/**</exclude>
+                        <!-- exclude the spring boot files -->
+                        <exclude>**/org/apache/dubbo/maven/plugin/aot/AbstractAotMojo.java</exclude>
+                        <exclude>**/org/apache/dubbo/maven/plugin/aot/AbstractDependencyFilterMojo.java</exclude>
+                        <exclude>**/org/apache/dubbo/maven/plugin/aot/CommandLineBuilder.java</exclude>
+                        <exclude>**/org/apache/dubbo/maven/plugin/aot/DependencyFilter.java</exclude>
+                        <exclude>**/org/apache/dubbo/maven/plugin/aot/Exclude.java</exclude>
+                        <exclude>**/org/apache/dubbo/maven/plugin/aot/ExcludeFilter.java</exclude>
+                        <exclude>**/org/apache/dubbo/maven/plugin/aot/FilterableDependency.java</exclude>
+                        <exclude>**/org/apache/dubbo/maven/plugin/aot/Include.java</exclude>
+                        <exclude>**/org/apache/dubbo/maven/plugin/aot/IncludeFilter.java</exclude>
+                        <exclude>**/org/apache/dubbo/maven/plugin/aot/JavaCompilerPluginConfiguration.java</exclude>
+                        <exclude>**/org/apache/dubbo/maven/plugin/aot/JavaExecutable.java</exclude>
+                        <exclude>**/org/apache/dubbo/maven/plugin/aot/JavaProcessExecutor.java</exclude>
+                        <exclude>**/org/apache/dubbo/maven/plugin/aot/MatchingGroupIdFilter.java</exclude>
+                        <exclude>**/org/apache/dubbo/maven/plugin/aot/RunArguments.java</exclude>
+                        <exclude>**/org/apache/dubbo/maven/plugin/aot/RunProcess.java</exclude>
                         <!-- exclude the grpc files -->
                         <exclude>**/org/apache/dubbo/common/threadpool/serial/SerializingExecutor.java</exclude>
                         <!-- exclude the netty files -->
