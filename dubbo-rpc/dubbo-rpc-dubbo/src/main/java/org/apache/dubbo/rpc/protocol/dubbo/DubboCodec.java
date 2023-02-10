@@ -69,8 +69,8 @@ public class DubboCodec extends ExchangeCodec {
     private static final ErrorTypeAwareLogger log = LoggerFactory.getErrorTypeAwareLogger(DubboCodec.class);
 
     private static final AtomicBoolean decodeInUserThreadLogged = new AtomicBoolean(false);
-    private CallbackServiceCodec callbackServiceCodec;
-    private FrameworkModel frameworkModel;
+    private final CallbackServiceCodec callbackServiceCodec;
+    private final FrameworkModel frameworkModel;
 
     public DubboCodec(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
