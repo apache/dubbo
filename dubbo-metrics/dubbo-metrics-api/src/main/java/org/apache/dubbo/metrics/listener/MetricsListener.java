@@ -21,7 +21,7 @@ import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.metrics.event.MetricsEvent;
 
 /**
- * Metrics Listener.
+ * Listen to the metrics events in different scene, process the corresponding events, support API or spi to add Listener
  */
 @SPI
 public interface MetricsListener<E extends MetricsEvent<?>> {
