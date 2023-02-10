@@ -272,12 +272,7 @@
                 <jacoco.skip>false</jacoco.skip>
             </properties>
         </profile>
-        <!-- check apache license: mvn validate -Prat  -->
-        <profile>
-            <id>rat</id>
-            
-            <!-- Empty for CI compablity. -->
-        </profile>
+        
         <!-- check code style: mvn validate -Pcheckstyle  -->
         <profile>
             <id>checkstyle</id>
