@@ -147,7 +147,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-metrics-api</artifactId>
+            <artifactId>dubbo-metrics-default</artifactId>
             <version>${project.version}</version>
         </dependency>
 

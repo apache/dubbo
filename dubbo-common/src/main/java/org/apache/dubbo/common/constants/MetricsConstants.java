@@ -34,6 +34,8 @@ public interface MetricsConstants {
 
     String TAG_VERSION_KEY = "version";
 
+    String TAG_APPLICATION_VERSION_KEY = "application.version";
+
     String ENABLE_JVM_METRICS_KEY = "enable.jvm.metrics";
 
     String AGGREGATION_COLLECTOR_KEY = "aggregation";

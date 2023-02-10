@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.Executor;
 
@@ -33,6 +34,7 @@ import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.constants.LoggerCodeConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.MD5Utils;
 import org.apache.dubbo.common.utils.StringUtils;
 
@@ -81,7 +83,7 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
     /**
      * The map store the key to {@link NacosConfigListener} mapping
      */
-    private final Map<String, NacosConfigListener> watchListenerMap;
+    private final ConcurrentMap<String, NacosConfigListener> watchListenerMap;
 
     private MD5Utils md5Utils = new MD5Utils();
 
@@ -209,8 +211,7 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
     @Override
     public void addListener(String key, String group, ConfigurationListener listener) {
         String listenerKey = buildListenerKey(key, group);
-        NacosConfigListener nacosConfigListener =
-            watchListenerMap.computeIfAbsent(listenerKey, k -> createTargetListener(key, group));
+        NacosConfigListener nacosConfigListener = ConcurrentHashMapUtils.computeIfAbsent(watchListenerMap, listenerKey, k -> createTargetListener(key, group));
         nacosConfigListener.addListener(listener);
         try {
             configService.addListener(key, group, nacosConfigListener);

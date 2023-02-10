@@ -1,4 +1,4 @@
-<!--
+ <!--
   Licensed to the Apache Software Foundation (ASF) under one or more
   contributor license agreements.  See the NOTICE file distributed with
   this work for additional information regarding copyright ownership.
@@ -185,6 +185,13 @@
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-metrics-default</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-metrics-prometheus</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
@@ -225,6 +232,14 @@
         <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-reactive</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-spring-security</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
             <optional>true</optional>
@@ -420,6 +435,10 @@
             <groupId>com.alibaba.fastjson2</groupId>
             <artifactId>fastjson2</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.tdunning</groupId>
+            <artifactId>t-digest</artifactId>
+        </dependency>
 
         <!-- Temporarily add this part to exclude transitive dependency -->
         <dependency>
@@ -478,11 +497,13 @@
                                     <include>org.apache.dubbo:dubbo-metadata-report-redis</include>
                                     <include>org.apache.dubbo:dubbo-metadata-report-zookeeper</include>
                                     <include>org.apache.dubbo:dubbo-metrics-api</include>
+                                    <include>org.apache.dubbo:dubbo-metrics-default</include>
                                     <include>org.apache.dubbo:dubbo-metrics-prometheus</include>
                                     <include>org.apache.dubbo:dubbo-monitor-api</include>
                                     <include>org.apache.dubbo:dubbo-monitor-default</include>
                                     <include>org.apache.dubbo:dubbo-qos</include>
                                     <include>org.apache.dubbo:dubbo-reactive</include>
+                                    <include>org.apache.dubbo:dubbo-spring-security</include>
                                     <include>org.apache.dubbo:dubbo-registry-api</include>
                                     <include>org.apache.dubbo:dubbo-registry-multicast</include>
                                     <include>org.apache.dubbo:dubbo-registry-multiple</include>
@@ -809,6 +830,14 @@
                                         META-INF/dubbo/internal/org.apache.dubbo.qos.permission.PermissionChecker
                                     </resource>
                                 </transformer>
+
+                                <transformer
+                                    implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>
+                                        META-INF/dubbo/internal/org.apache.dubbo.rpc.PenetrateAttachmentSelector
+                                    </resource>
+                                </transformer>
+
                                 <transformer
                                     implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                     <resource>
@@ -1166,19 +1195,19 @@
                                 <transformer
                                     implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                     <resource>
-                                        META-INF/dubbo/internal/org.apache.dubbo.common.metrics.service.MetricsService
+                                        META-INF/dubbo/internal/org.apache.dubbo.metrics.service.MetricsService
                                     </resource>
                                 </transformer>
                                 <transformer
                                     implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                     <resource>
-                                        META-INF/dubbo/internal/org.apache.dubbo.common.metrics.service.MetricsServiceExporter
+                                        META-INF/dubbo/internal/org.apache.dubbo.metrics.service.MetricsServiceExporter
                                     </resource>
                                 </transformer>
                                 <transformer
                                     implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                     <resource>
-                                        META-INF/dubbo/internal/org.apache.dubbo.common.metrics.MetricsReporterFactory
+                                        META-INF/dubbo/internal/org.apache.dubbo.metrics.report.MetricsReporterFactory
                                     </resource>
                                 </transformer>
                                 <transformer
