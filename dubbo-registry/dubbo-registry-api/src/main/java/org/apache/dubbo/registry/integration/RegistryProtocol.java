@@ -909,23 +909,25 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
                 if (subscribeUrl != null) {
                     Map<URL, Set<NotifyListener>> overrideListeners = getProviderConfigurationListener(subscribeUrl).getOverrideListeners();
                     Set<NotifyListener> listeners = overrideListeners.get(subscribeUrl);
-                    if (listeners.remove(notifyListener)) {
-                        if (!registry.isServiceDiscovery()) {
-                            registry.unsubscribe(subscribeUrl, notifyListener);
-                        }
-                        ApplicationModel applicationModel = getApplicationModel(registerUrl.getScopeModel());
-                        if (applicationModel.getModelEnvironment().getConfiguration().convert(Boolean.class, ENABLE_CONFIGURATION_LISTEN, true)) {
-                            for (ModuleModel moduleModel : applicationModel.getPubModuleModels()) {
-                                if (moduleModel.getServiceRepository().getExportedServices().size() > 0) {
-                                    moduleModel.getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension()
-                                        .removeListener(subscribeUrl.getServiceKey() + CONFIGURATORS_SUFFIX,
-                                            serviceConfigurationListeners.remove(subscribeUrl.getServiceKey()));
+                    if(listeners != null){
+                        if (listeners.remove(notifyListener)) {
+                            if (!registry.isServiceDiscovery()) {
+                                registry.unsubscribe(subscribeUrl, notifyListener);
+                            }
+                            ApplicationModel applicationModel = getApplicationModel(registerUrl.getScopeModel());
+                            if (applicationModel.getModelEnvironment().getConfiguration().convert(Boolean.class, ENABLE_CONFIGURATION_LISTEN, true)) {
+                                for (ModuleModel moduleModel : applicationModel.getPubModuleModels()) {
+                                    if (moduleModel.getServiceRepository().getExportedServices().size() > 0) {
+                                        moduleModel.getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension()
+                                            .removeListener(subscribeUrl.getServiceKey() + CONFIGURATORS_SUFFIX,
+                                                serviceConfigurationListeners.remove(subscribeUrl.getServiceKey()));
+                                    }
                                 }
                             }
                         }
-                    }
-                    if (listeners.isEmpty()) {
-                        overrideListeners.remove(subscribeUrl);
+                        if (listeners.isEmpty()) {
+                            overrideListeners.remove(subscribeUrl);
+                        }
                     }
                 }
             } catch (Throwable t) {
