@@ -38,13 +38,6 @@ import java.util.Map;
 public interface ExceptionProcessor {
 
     /**
-     * The context required for actual processing, generally rpcInvocation
-     *
-     * @param context rpcInvocation or any other process object
-     */
-    void setContext(Object context);
-
-    /**
      * Whether to custom handle error when an exception
      * with the specified parameter is encountered
      *
@@ -72,18 +65,14 @@ public interface ExceptionProcessor {
      *
      * @param pts The actual parameters passed by consumer
      */
-    default void customPts(Class<?>[] pts) {
-
-    }
+    void customPts(Object context, Class<?>[] pts);
 
     /**
      * Custom handling of attachment
      *
      * @param map The actual attachment passed by consumer
      */
-    default void customAttachment(Map<String, Object> map) {
-
-    }
+    void customAttachment(Object context, Map<String, Object> map);
 
     /**
      * release resources

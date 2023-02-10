@@ -131,7 +131,7 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
     }
 
     @Override
-    public void retry(){
+    public void retry() {
 
         String exPs = ApplicationModel.defaultModel().getCurrentConfig().getParameters().get(EXCEPTION_PROCESSOR_KEY);
         if (StringUtils.isEmpty(exPs)) {
@@ -140,7 +140,6 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
 
         ExtensionLoader<ExceptionProcessor> extensionLoader = ApplicationModel.defaultModel().getDefaultModule().getExtensionLoader(ExceptionProcessor.class);
         ExceptionProcessor expProcessor = extensionLoader.getOrDefaultExtension(exPs);
-        expProcessor.setContext(this);
 
         if (channel != null) {
             request.setBroken(false);
@@ -258,11 +257,11 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
             if (getParameterTypes() == null) {
                 setParameterTypes(pts);
             }
-            expProcessor.customPts(pts);
+            expProcessor.customPts(this, pts);
 
             Map<String, Object> map = in.readAttachments();
             if (CollectionUtils.isNotEmptyMap(map)) {
-                expProcessor.customAttachment(map);
+                expProcessor.customAttachment(this, map);
                 addObjectAttachments(map);
             }
 
