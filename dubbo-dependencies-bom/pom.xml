@@ -788,6 +788,11 @@
                 <artifactId>nacos-client</artifactId>
                 <version>${nacos_version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.alibaba.nacos</groupId>
+                <artifactId>nacos-api</artifactId>
+                <version>${nacos_version}</version>
+            </dependency>
             <!-- grpc related dependencies -->
             <dependency>
                 <groupId>io.grpc</groupId>
