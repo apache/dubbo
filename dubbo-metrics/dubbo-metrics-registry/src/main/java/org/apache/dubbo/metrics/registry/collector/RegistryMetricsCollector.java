@@ -72,11 +72,6 @@ public class RegistryMetricsCollector implements ApplicationMetricsCollector<Reg
     }
 
     @Override
-    public void decrease(RegistryEvent.Type type, String applicationName) {
-
-    }
-
-    @Override
     public void addRT(String applicationName, String registryOpType, Long responseTime) {
         stats.calcRt(applicationName, registryOpType, responseTime);
     }

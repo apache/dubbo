@@ -53,17 +53,12 @@ public class RegistryStatComposite implements MetricsExport {
     public static String OP_TYPE_SUBSCRIBE = "subscribe";
 
     public RegistryStatComposite() {
-        initDataStructure();
-    }
-
-    private void initDataStructure() {
         for (RegistryEvent.Type type : RegistryEvent.Type.values()) {
             numStats.put(type, new ConcurrentHashMap<>());
         }
 
         rtStats.addAll(initStats(OP_TYPE_REGISTER));
         rtStats.addAll(initStats(OP_TYPE_SUBSCRIBE));
-
     }
 
     private List<LongContainer<? extends Number>> initStats(String registryOpType) {

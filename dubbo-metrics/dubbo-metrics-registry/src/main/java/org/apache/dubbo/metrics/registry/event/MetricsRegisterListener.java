@@ -18,9 +18,11 @@
 package org.apache.dubbo.metrics.registry.event;
 
 import org.apache.dubbo.metrics.event.MetricsEvent;
-import org.apache.dubbo.metrics.listener.MetricsListener;
+import org.apache.dubbo.metrics.listener.MetricsLifeListener;
 
-public class MetricsRegisterListener implements MetricsListener<MetricsRegisterEvent> {
+import static org.apache.dubbo.metrics.registry.collector.stat.RegistryStatComposite.OP_TYPE_SUBSCRIBE;
+
+public class MetricsRegisterListener implements MetricsLifeListener<MetricsRegisterEvent> {
 
 
     @Override
@@ -36,4 +38,15 @@ public class MetricsRegisterListener implements MetricsListener<MetricsRegisterE
         event.getCollector().increment(MetricsRegisterEvent.Type.R_TOTAL, event.getSource().getApplicationName());
     }
 
+    @Override
+    public void onEventFinish(MetricsRegisterEvent event) {
+        event.getCollector().increment(RegistryEvent.Type.R_SUCCEED, event.getSource().getApplicationName());
+        event.getCollector().addRT(event.getSource().getApplicationName(), OP_TYPE_SUBSCRIBE, event.getTimePair().calc());
+    }
+
+    @Override
+    public void onEventError(MetricsRegisterEvent event) {
+        event.getCollector().increment(RegistryEvent.Type.R_FAILED, event.getSource().getApplicationName());
+        event.getCollector().addRT(event.getSource().getApplicationName(), OP_TYPE_SUBSCRIBE, event.getTimePair().calc());
+    }
 }
