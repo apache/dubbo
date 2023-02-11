@@ -34,15 +34,10 @@ public class MetricsFilter implements Filter, BaseFilter.Listener, ScopeModelAwa
 
     private DefaultMetricsCollector collector = null;
 
-    private ApplicationModel applicationModel;
-
 
     @Override
     public void setApplicationModel(ApplicationModel applicationModel) {
-        this.applicationModel = applicationModel;
         collector = applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class);
-
-        collector.setApplicationName(this.applicationModel.getApplicationName());
     }
 
     @Override

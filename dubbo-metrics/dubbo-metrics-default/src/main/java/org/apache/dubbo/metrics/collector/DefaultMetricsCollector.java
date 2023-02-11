@@ -32,8 +32,6 @@ import org.apache.dubbo.metrics.model.MetricsKey;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.rpc.Invocation;
-import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.ScopeModelAware;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,7 +47,7 @@ import static org.apache.dubbo.metrics.model.MetricsKey.APPLICATION_METRIC_INFO;
  * Default implementation of {@link MetricsCollector}
  */
 public class DefaultMetricsCollector extends SimpleMetricsCountSampler<Invocation,MetricsEvent.Type, MethodMetric>
-    implements MetricsCollector, ScopeModelAware {
+    implements MetricsCollector {
 
     private AtomicBoolean collectEnabled = new AtomicBoolean(false);
     private final SimpleMetricsEventMulticaster eventMulticaster;
@@ -109,13 +107,12 @@ public class DefaultMetricsCollector extends SimpleMetricsCountSampler<Invocatio
     }
 
     public void addApplicationInfo(String applicationName, String version) {
+        this.setApplicationName(applicationName);
+
         applicationSampler.inc(applicationName,MetricsEvent.Type.APPLICATION_INFO);
     }
 
-    @Override
-    public void setApplicationModel(ApplicationModel applicationModel) {
-        setApplicationName(applicationModel.getApplicationName());
-    }
+
     @Override
     public List<MetricSample> collect() {
         List<MetricSample> list = new ArrayList<>();
