@@ -259,7 +259,7 @@ public class DubboProtocol extends AbstractProtocol {
         URL url = channel.getUrl();
         return url.getPort() == address.getPort() &&
             NetUtils.filterLocalHost(channel.getUrl().getIp())
-                    .equals(NetUtils.filterLocalHost(address.getAddress().getHostAddress()));
+                .equals(NetUtils.filterLocalHost(address.getAddress().getHostAddress()));
     }
 
     Invoker<?> getInvoker(Channel channel, Invocation inv) throws RemotingException {
@@ -292,7 +292,7 @@ public class DubboProtocol extends AbstractProtocol {
 
         if (exporter == null) {
             throw new RemotingException(channel, "Not found exported service: " + serviceKey + " in " + exporterMap.keySet() + ", may be version or group mismatch " +
-                    ", channel: consumer: " + channel.getRemoteAddress() + " --> provider: " + channel.getLocalAddress() + ", message:" + getInvocationWithoutData(inv));
+                ", channel: consumer: " + channel.getRemoteAddress() + " --> provider: " + channel.getLocalAddress() + ", message:" + getInvocationWithoutData(inv));
         }
 
         return exporter.getInvoker();
