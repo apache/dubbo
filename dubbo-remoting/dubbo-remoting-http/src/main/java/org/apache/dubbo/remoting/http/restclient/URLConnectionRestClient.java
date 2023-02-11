@@ -16,6 +16,11 @@
  */
 package org.apache.dubbo.remoting.http.restclient;
 
+import org.apache.dubbo.remoting.http.BaseRestClient;
+import org.apache.dubbo.remoting.http.RequestTemplate;
+import org.apache.dubbo.remoting.http.RestResult;
+import org.apache.dubbo.remoting.http.config.HttpClientConfig;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -26,11 +31,6 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.GZIPOutputStream;
-
-import org.apache.dubbo.remoting.http.BaseRestClient;
-import org.apache.dubbo.remoting.http.RequestTemplate;
-import org.apache.dubbo.remoting.http.RestResult;
-import org.apache.dubbo.remoting.http.config.HttpClientConfig;
 
 
 public class URLConnectionRestClient extends BaseRestClient<HttpURLConnection> {
