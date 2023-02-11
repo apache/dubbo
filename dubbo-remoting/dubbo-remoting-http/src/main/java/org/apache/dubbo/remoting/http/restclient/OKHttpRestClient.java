@@ -27,10 +27,10 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
 import okhttp3.internal.http.HttpMethod;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -87,8 +87,9 @@ public class OKHttpRestClient implements RestClient {
                     }
 
                     @Override
-                    public InputStream getBody() throws IOException {
-                        return response.body().byteStream();
+                    public byte[] getBody() throws IOException {
+                        ResponseBody body = response.body();
+                        return body == null ? null : body.bytes();
                     }
 
                     @Override
@@ -97,7 +98,7 @@ public class OKHttpRestClient implements RestClient {
                     }
 
                     @Override
-                    public InputStream getErrorResponse() throws IOException {
+                    public byte[] getErrorResponse() throws IOException {
                         return getBody();
                     }
 

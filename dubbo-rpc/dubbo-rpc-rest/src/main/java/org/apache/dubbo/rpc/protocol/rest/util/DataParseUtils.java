@@ -19,7 +19,6 @@ package org.apache.dubbo.rpc.protocol.rest.util;
 import org.apache.dubbo.common.utils.JsonUtils;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -153,15 +152,13 @@ public class DataParseUtils {
 
     }
 
-    public static Object jsonConvert(Class targetType, InputStream inputStream) throws Exception {
-        String data = StreamUtils.copyToString(inputStream, StandardCharsets.UTF_8);
-        return JsonUtils.getJson().toJavaObject(data, targetType);
+    public static Object jsonConvert(Class targetType, byte[] body) throws Exception {
+        return JsonUtils.getJson().toJavaObject(new String(body, StandardCharsets.UTF_8), targetType);
     }
 
 
-    public static Object multipartFormConvert(InputStream inputStream, Charset charset) throws Exception {
-        String body = StreamUtils.copyToString(inputStream, charset);
-        String[] pairs = tokenizeToStringArray(body, "&");
+    public static Object multipartFormConvert(byte[] body, Charset charset) throws Exception {
+        String[] pairs = tokenizeToStringArray(new String(body, StandardCharsets.UTF_8), "&");
         Object result = MultiValueCreator.createMultiValueMap();
         for (String pair : pairs) {
             int idx = pair.indexOf('=');
@@ -177,9 +174,8 @@ public class DataParseUtils {
         return result;
     }
 
-    public static Object multipartFormConvert(InputStream inputStream) throws Exception {
-
-        return multipartFormConvert(inputStream, Charset.defaultCharset());
+    public static Object multipartFormConvert(byte[] body) throws Exception {
+        return multipartFormConvert(body, Charset.defaultCharset());
     }
 
 

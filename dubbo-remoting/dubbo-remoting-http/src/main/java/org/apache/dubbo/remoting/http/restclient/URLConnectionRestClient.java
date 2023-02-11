@@ -21,8 +21,9 @@ import org.apache.dubbo.remoting.http.RestClient;
 import org.apache.dubbo.remoting.http.RestResult;
 import org.apache.dubbo.remoting.http.config.HttpClientConfig;
 
+import org.apache.commons.io.IOUtils;
+
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -74,8 +75,8 @@ public class URLConnectionRestClient implements RestClient {
                     }
 
                     @Override
-                    public InputStream getBody() throws IOException {
-                        return connection.getInputStream();
+                    public byte[] getBody() throws IOException {
+                        return IOUtils.toByteArray(connection.getInputStream());
                     }
 
                     @Override
@@ -84,8 +85,8 @@ public class URLConnectionRestClient implements RestClient {
                     }
 
                     @Override
-                    public InputStream getErrorResponse() throws IOException {
-                        return connection.getErrorStream();
+                    public byte[] getErrorResponse() throws IOException {
+                        return IOUtils.toByteArray(connection.getErrorStream());
                     }
 
                     @Override
@@ -126,8 +127,8 @@ public class URLConnectionRestClient implements RestClient {
                 }
 
                 @Override
-                public InputStream getBody() throws IOException {
-                    return connection.getInputStream();
+                public byte[] getBody() throws IOException {
+                    return IOUtils.toByteArray(connection.getInputStream());
                 }
 
                 @Override
@@ -136,8 +137,8 @@ public class URLConnectionRestClient implements RestClient {
                 }
 
                 @Override
-                public InputStream getErrorResponse() throws IOException {
-                    return connection.getErrorStream();
+                public byte[] getErrorResponse() throws IOException {
+                    return IOUtils.toByteArray(connection.getErrorStream());
                 }
 
                 @Override

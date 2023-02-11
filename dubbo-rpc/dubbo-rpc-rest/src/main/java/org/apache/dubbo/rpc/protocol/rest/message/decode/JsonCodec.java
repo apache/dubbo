@@ -20,21 +20,20 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.metadata.rest.media.MediaType;
-import org.apache.dubbo.rpc.protocol.rest.message.AbstractMessageCodec;
+import org.apache.dubbo.rpc.protocol.rest.message.HttpMessageCodec;
 import org.apache.dubbo.rpc.protocol.rest.message.MediaTypeMatcher;
 import org.apache.dubbo.rpc.protocol.rest.util.DataParseUtils;
 
 import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 @Activate("json")
-public class JsonCodec extends AbstractMessageCodec {
+public class JsonCodec implements HttpMessageCodec {
 
 
     @Override
-    public Object decode(InputStream inputStream, Class targetType) throws Exception {
-        return DataParseUtils.jsonConvert(targetType, inputStream);
+    public Object decode(byte[] body, Class targetType) throws Exception {
+        return DataParseUtils.jsonConvert(targetType, body);
     }
 
     @Override

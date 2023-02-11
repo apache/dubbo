@@ -19,21 +19,20 @@ package org.apache.dubbo.rpc.protocol.rest.message.decode;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.metadata.rest.media.MediaType;
-import org.apache.dubbo.rpc.protocol.rest.message.AbstractMessageCodec;
+import org.apache.dubbo.rpc.protocol.rest.message.HttpMessageCodec;
 import org.apache.dubbo.rpc.protocol.rest.message.MediaTypeMatcher;
 import org.apache.dubbo.rpc.protocol.rest.util.DataParseUtils;
 
 import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
 import java.util.Map;
 
 @Activate("multiValue")
-public class MultiValueCodec extends AbstractMessageCodec {
+public class MultiValueCodec implements HttpMessageCodec {
 
 
     @Override
-    public Object decode(InputStream inputStream, Class targetType) throws Exception {
-        return DataParseUtils.multipartFormConvert(inputStream);
+    public Object decode(byte[] body, Class targetType) throws Exception {
+        return DataParseUtils.multipartFormConvert(body);
     }
 
     @Override

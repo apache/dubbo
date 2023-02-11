@@ -17,11 +17,8 @@
 package org.apache.dubbo.rpc.protocol.rest.message;
 
 
-import java.io.InputStream;
-
-
 public interface HttpMessageDecode{
 
-    Object decode(InputStream inputStream, Class targetType) throws Exception;
+    Object decode(byte[] body, Class targetType) throws Exception;
 
 }
