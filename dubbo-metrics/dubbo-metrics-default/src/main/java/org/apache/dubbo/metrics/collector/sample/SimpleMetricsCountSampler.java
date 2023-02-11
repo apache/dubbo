@@ -81,7 +81,7 @@ public abstract class SimpleMetricsCountSampler<S, K, M extends Metric>
 
     @Override
     public void addRT(S source, Long rt) {
-        MetricsCountSampleConfigure<S,K,M> sampleConfigure = new MetricsCountSampleConfigure<>();
+        MetricsCountSampleConfigurer<S,K,M> sampleConfigure = new MetricsCountSampleConfigurer<>();
         sampleConfigure.setSource(source);
 
         this.rtConfigure(sampleConfigure);
@@ -148,14 +148,14 @@ public abstract class SimpleMetricsCountSampler<S, K, M extends Metric>
         return this.rtCount;
     }
 
-    protected void rtConfigure(MetricsCountSampleConfigure<S,K,M> configure) {
+    protected void rtConfigure(MetricsCountSampleConfigurer<S,K,M> configure) {
 
     }
 
-    protected abstract void countConfigure(MetricsCountSampleConfigure<S,K,M> sampleConfigure);
+    protected abstract void countConfigure(MetricsCountSampleConfigurer<S,K,M> sampleConfigure);
 
     private void doExecute(S source,K metricsName,Function<AtomicLong,Boolean> counter){
-        MetricsCountSampleConfigure<S,K,M> sampleConfigure = new MetricsCountSampleConfigure<>();
+        MetricsCountSampleConfigurer<S,K,M> sampleConfigure = new MetricsCountSampleConfigurer<>();
         sampleConfigure.setSource(source);
         sampleConfigure.setMetricsName(metricsName);
 

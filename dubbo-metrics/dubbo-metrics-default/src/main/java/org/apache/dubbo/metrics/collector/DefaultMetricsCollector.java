@@ -18,7 +18,7 @@
 package org.apache.dubbo.metrics.collector;
 
 import org.apache.dubbo.common.Version;
-import org.apache.dubbo.metrics.collector.sample.MetricsCountSampleConfigure;
+import org.apache.dubbo.metrics.collector.sample.MetricsCountSampleConfigurer;
 import org.apache.dubbo.metrics.collector.sample.SimpleMetricsCountSampler;
 import org.apache.dubbo.metrics.event.MetricsEvent;
 import org.apache.dubbo.metrics.event.RTEvent;
@@ -169,13 +169,15 @@ public class DefaultMetricsCollector extends SimpleMetricsCountSampler<Invocatio
     }
 
     @Override
-    protected void countConfigure(MetricsCountSampleConfigure<Invocation, MetricsEvent.Type, MethodMetric> sampleConfigure) {
+    protected void countConfigure(
+        MetricsCountSampleConfigurer<Invocation, MetricsEvent.Type, MethodMetric> sampleConfigure) {
         sampleConfigure.configureMetrics(configure -> new MethodMetric(applicationName, configure.getSource()));
         sampleConfigure.configureEventHandler(configure -> eventMulticaster.publishEvent(new RequestEvent(configure.getMetric(), configure.getMetricName())));
     }
 
     @Override
-    public void rtConfigure(MetricsCountSampleConfigure<Invocation, MetricsEvent.Type, MethodMetric> sampleConfigure) {
+    public void rtConfigure(
+        MetricsCountSampleConfigurer<Invocation, MetricsEvent.Type, MethodMetric> sampleConfigure) {
         sampleConfigure.configureMetrics(configure -> new MethodMetric(applicationName, configure.getSource()));
         sampleConfigure.configureEventHandler(configure -> eventMulticaster.publishEvent(new RTEvent(configure.getMetric(), configure.getRt())));
     }
@@ -184,7 +186,7 @@ public class DefaultMetricsCollector extends SimpleMetricsCountSampler<Invocatio
 
         @Override
         protected void countConfigure(
-            MetricsCountSampleConfigure<String, MetricsEvent.Type, ApplicationMetric> sampleConfigure) {
+            MetricsCountSampleConfigurer<String, MetricsEvent.Type, ApplicationMetric> sampleConfigure) {
             sampleConfigure.configureMetrics(configure -> new ApplicationMetric(sampleConfigure.getSource(),
                 Version.getVersion()));
         }

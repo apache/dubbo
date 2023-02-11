@@ -22,7 +22,7 @@ import org.apache.dubbo.metrics.model.Metric;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-public class MetricsCountSampleConfigure<S,K,M extends Metric> {
+public class MetricsCountSampleConfigurer<S,K,M extends Metric> {
 
     public S source;
 
@@ -32,9 +32,9 @@ public class MetricsCountSampleConfigure<S,K,M extends Metric> {
 
     public Long rt;
 
-    public Consumer<MetricsCountSampleConfigure<S,K,M>> fireEventHandler = new Consumer<MetricsCountSampleConfigure<S, K,M>>() {
+    public Consumer<MetricsCountSampleConfigurer<S,K,M>> fireEventHandler = new Consumer<MetricsCountSampleConfigurer<S, K,M>>() {
         @Override
-        public void accept(MetricsCountSampleConfigure<S, K,M> skMetricsCountSampleConfigure) {
+        public void accept(MetricsCountSampleConfigurer<S, K,M> skMetricsCountSampleConfigure) {
 
         }
     };
@@ -43,18 +43,18 @@ public class MetricsCountSampleConfigure<S,K,M extends Metric> {
         this.source = source;
     }
 
-    public MetricsCountSampleConfigure<S,K,M> setMetricsName(K metricName){
+    public MetricsCountSampleConfigurer<S,K,M> setMetricsName(K metricName){
         this.metricName = metricName;
         return this;
     }
 
-    public MetricsCountSampleConfigure<S,K,M> configureMetrics(Function<MetricsCountSampleConfigure<S,K,M>,M> builder){
+    public MetricsCountSampleConfigurer<S,K,M> configureMetrics(Function<MetricsCountSampleConfigurer<S,K,M>,M> builder){
         this.metric = builder.apply(this);
         return this;
     }
 
-    public MetricsCountSampleConfigure<S,K,M>  configureEventHandler(
-        Consumer<MetricsCountSampleConfigure<S,K,M>> fireEventHandler){
+    public MetricsCountSampleConfigurer<S,K,M> configureEventHandler(
+        Consumer<MetricsCountSampleConfigurer<S,K,M>> fireEventHandler){
         this.fireEventHandler = fireEventHandler;
         return this;
     }
@@ -79,7 +79,7 @@ public class MetricsCountSampleConfigure<S,K,M extends Metric> {
         return this.rt;
     }
 
-    public Consumer<MetricsCountSampleConfigure<S, K,M>> getFireEventHandler() {
+    public Consumer<MetricsCountSampleConfigurer<S, K,M>> getFireEventHandler() {
         return fireEventHandler;
     }
 }
