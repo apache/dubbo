@@ -28,60 +28,60 @@ import static org.apache.dubbo.common.constants.MetricsConstants.METRIC_FILTER_S
 
 public class MetricsCollectExecutor {
 
-    public static void beforeExecute(String applicationName, DefaultMetricsCollector collector, Invocation invocation) {
-        collector.increaseTotalRequests(applicationName, invocation);
-        collector.increaseProcessingRequests(applicationName, invocation);
+    public static void beforeExecute(DefaultMetricsCollector collector, Invocation invocation) {
+        collector.increaseTotalRequests(invocation);
+        collector.increaseProcessingRequests(invocation);
         invocation.put(METRIC_FILTER_START_TIME, System.currentTimeMillis());
     }
 
-    public static void postExecute(String applicationName, DefaultMetricsCollector collector, Invocation invocation, Result result) {
+    public static void postExecute(DefaultMetricsCollector collector, Invocation invocation, Result result) {
         if (result.hasException()) {
-            throwExecute(applicationName, collector, invocation, result.getException());
+            throwExecute(collector, invocation, result.getException());
             return;
         }
-        collector.increaseSucceedRequests(applicationName, invocation);
-        endExecute(applicationName, collector, invocation);
+        collector.increaseSucceedRequests(invocation);
+        endExecute(collector, invocation);
     }
 
-    public static void throwExecute(String applicationName, DefaultMetricsCollector collector, Invocation invocation, Throwable throwable) {
+    public static void throwExecute(DefaultMetricsCollector collector, Invocation invocation, Throwable throwable) {
         if (throwable instanceof RpcException) {
             RpcException rpcException = (RpcException) throwable;
             switch (rpcException.getCode()) {
 
                 case RpcException.TIMEOUT_EXCEPTION:
-                    collector.timeoutRequests(applicationName, invocation);
+                    collector.timeoutRequests(invocation);
                     break;
 
                 case RpcException.LIMIT_EXCEEDED_EXCEPTION:
-                    collector.limitRequests(applicationName, invocation);
+                    collector.limitRequests(invocation);
                     break;
 
                 case RpcException.BIZ_EXCEPTION:
-                    collector.businessFailedRequests(applicationName, invocation);
+                    collector.businessFailedRequests(invocation);
                     break;
 
                 default:
-                    collector.increaseUnknownFailedRequests(applicationName, invocation);
+                    collector.increaseUnknownFailedRequests(invocation);
             }
         }
 
-        collector.totalFailedRequests(applicationName, invocation);
+        collector.totalFailedRequests(invocation);
 
-        endExecute(applicationName, collector, invocation, () -> throwable instanceof RpcException && ((RpcException) throwable).isBiz());
+        endExecute(collector, invocation, () -> throwable instanceof RpcException && ((RpcException) throwable).isBiz());
     }
 
-    private static void endExecute(String applicationName, DefaultMetricsCollector collector, Invocation invocation) {
-        endExecute(applicationName, collector, invocation, () -> true);
+    private static void endExecute(DefaultMetricsCollector collector, Invocation invocation) {
+        endExecute(collector, invocation, () -> true);
     }
 
-    private static void endExecute(String applicationName, DefaultMetricsCollector collector, Invocation invocation, Supplier<Boolean> rtStat) {
+    private static void endExecute(DefaultMetricsCollector collector, Invocation invocation, Supplier<Boolean> rtStat) {
         if (rtStat.get()) {
             Long endTime = System.currentTimeMillis();
             Long beginTime = (Long) invocation.get(METRIC_FILTER_START_TIME);
             Long rt = endTime - beginTime;
-            collector.addRT(applicationName, invocation, rt);
+            collector.addRT(invocation, rt);
         }
-        collector.decreaseProcessingRequests(applicationName, invocation);
+        collector.decreaseProcessingRequests(invocation);
     }
 
 }

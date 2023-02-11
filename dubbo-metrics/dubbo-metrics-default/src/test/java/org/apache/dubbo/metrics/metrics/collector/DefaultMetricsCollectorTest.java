@@ -85,11 +85,12 @@ class DefaultMetricsCollectorTest {
     void testRequestsMetrics() {
         DefaultMetricsCollector collector = new DefaultMetricsCollector();
         collector.setCollectEnabled(true);
-        String applicationName = applicationModel.getApplicationName();
-        collector.increaseTotalRequests(applicationName, invocation);
-        collector.increaseProcessingRequests(applicationName, invocation);
-        collector.increaseSucceedRequests(applicationName, invocation);
-        collector.increaseUnknownFailedRequests(applicationName, invocation);
+        collector.setApplicationName(applicationModel.getApplicationName());
+
+        collector.increaseTotalRequests(invocation);
+        collector.increaseProcessingRequests(invocation);
+        collector.increaseSucceedRequests(invocation);
+        collector.increaseUnknownFailedRequests(invocation);
 
         List<MetricSample> samples = collector.collect();
         for (MetricSample sample : samples) {
@@ -105,7 +106,7 @@ class DefaultMetricsCollectorTest {
             Assertions.assertEquals(supplier.get().longValue(), 1);
         }
 
-        collector.decreaseProcessingRequests(applicationName, invocation);
+        collector.decreaseProcessingRequests(invocation);
         samples = collector.collect();
         Map<String, Long> sampleMap = samples.stream().collect(Collectors.toMap(MetricSample::getName, k -> {
             Number number = ((GaugeMetricSample) k).getSupplier().get();
@@ -120,8 +121,11 @@ class DefaultMetricsCollectorTest {
         DefaultMetricsCollector collector = new DefaultMetricsCollector();
         collector.setCollectEnabled(true);
         String applicationName = applicationModel.getApplicationName();
-        collector.addRT(applicationName, invocation, 10L);
-        collector.addRT(applicationName, invocation, 0L);
+
+        collector.setApplicationName(applicationName);
+
+        collector.addRT(invocation, 10L);
+        collector.addRT(invocation, 0L);
 
         List<MetricSample> samples = collector.collect();
         for (MetricSample sample : samples) {
@@ -152,14 +156,14 @@ class DefaultMetricsCollectorTest {
 
         MockListener mockListener = new MockListener();
         collector.addListener(mockListener);
-        String applicationName = applicationModel.getApplicationName();
+        collector.setApplicationName(applicationModel.getApplicationName());
 
-        collector.increaseTotalRequests(applicationName, invocation);
+        collector.increaseTotalRequests(invocation);
         Assertions.assertNotNull(mockListener.getCurEvent());
         Assertions.assertTrue(mockListener.getCurEvent() instanceof RequestEvent);
         Assertions.assertEquals(((RequestEvent) mockListener.getCurEvent()).getType(), MetricsEvent.Type.TOTAL);
 
-        collector.addRT(applicationName, invocation, 5L);
+        collector.addRT(invocation, 5L);
         Assertions.assertTrue(mockListener.getCurEvent() instanceof RTEvent);
         Assertions.assertEquals(((RTEvent) mockListener.getCurEvent()).getRt(), 5L);
     }
