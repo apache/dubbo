@@ -20,8 +20,8 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.Client;
 
 
-public interface ConnectionProvider {
+public interface ConnectionProvider<C extends Client> {
 
-    Client initConnection(URL url);
+    C initConnection(URL url);
 
 }

@@ -23,9 +23,9 @@ import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.api.connection.AbstractConnectionClient;
 import org.apache.dubbo.remoting.api.connection.ConnectionManager;
+import org.apache.dubbo.remoting.api.connection.ConnectionProvider;
 import org.apache.dubbo.remoting.api.connection.pool.ConnectionPool;
 import org.apache.dubbo.remoting.api.connection.pool.factory.ConnectionPoolFactory;
-import org.apache.dubbo.remoting.api.pu.DefaultPuHandler;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ReflectionMethodDescriptor;
@@ -68,9 +68,9 @@ class TripleInvokerTest {
         invocation.setMethodName("test");
         invocation.setArguments(new Object[]{streamObserver, streamObserver});
 
-        url.addParameterIfAbsent(ConnectionPool.URL_KEY, ConnectionPool.DEFAULT);
-        ConnectionPool connectionPool = url.getOrDefaultApplicationModel().getExtensionLoader(ConnectionPoolFactory.class)
-                .getAdaptiveExtension().getConnectionPool(url, new TripleConnectionProvider(new DefaultPuHandler()));
+        url.addParameterIfAbsent(ConnectionPoolFactory.URL_KEY, ConnectionPoolFactory.DEFAULT);
+        ConnectionPool<AbstractConnectionClient> connectionPool = url.getOrDefaultApplicationModel().getExtensionLoader(ConnectionPoolFactory.class)
+                .getAdaptiveExtension().getConnectionPool(url, new MockTripleConnectionProvider(connectionClient));
 
         TripleInvoker<IGreeter> invoker = new TripleInvoker<>(IGreeter.class, url,
                 Identity.MESSAGE_ENCODING, connectionPool, new HashSet<>(), executorService);
@@ -80,6 +80,20 @@ class TripleInvokerTest {
         invoker.invokeUnary(echoMethod, invocation, call);
         invoker.destroy();
         Assertions.assertFalse(invoker.isAvailable());
+    }
+
+    public class MockTripleConnectionProvider implements ConnectionProvider<AbstractConnectionClient> {
+
+        private final AbstractConnectionClient connectionClient;
+
+        public MockTripleConnectionProvider(AbstractConnectionClient connectionClient){
+            this.connectionClient = connectionClient;
+        }
+
+        @Override
+        public AbstractConnectionClient initConnection(URL url) {
+            return connectionClient;
+        }
     }
 
 }

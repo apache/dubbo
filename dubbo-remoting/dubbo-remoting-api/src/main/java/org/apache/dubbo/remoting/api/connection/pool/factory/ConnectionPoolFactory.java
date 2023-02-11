@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Adaptive;
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.remoting.Client;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.api.connection.ConnectionProvider;
 import org.apache.dubbo.remoting.api.connection.pool.ConnectionPool;
@@ -27,7 +28,11 @@ import org.apache.dubbo.remoting.api.connection.pool.ConnectionPool;
 @SPI(value = SingleConnectionPoolFactory.NAME,scope = ExtensionScope.APPLICATION)
 public interface ConnectionPoolFactory {
 
+    String URL_KEY = Constants.CONNECTION_POOL_KEY;
+
+    String DEFAULT = SingleConnectionPoolFactory.NAME;
+
     @Adaptive(Constants.CONNECTION_POOL_KEY)
-    ConnectionPool getConnectionPool(URL url, ConnectionProvider connectionProvider);
+    <C extends Client> ConnectionPool<C> getConnectionPool(URL url, ConnectionProvider<C> connectionProvider);
 
 }

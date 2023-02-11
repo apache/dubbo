@@ -17,16 +17,10 @@
 package org.apache.dubbo.remoting.api.connection.pool;
 
 import org.apache.dubbo.remoting.Client;
-import org.apache.dubbo.remoting.Constants;
-import org.apache.dubbo.remoting.api.connection.pool.factory.SingleConnectionPoolFactory;
 
-public interface ConnectionPool {
+public interface ConnectionPool<C extends Client> {
 
-    String URL_KEY = Constants.CONNECTION_POOL_KEY;
-
-    String DEFAULT = SingleConnectionPoolFactory.NAME;
-
-    Client getClient();
+    C getClient();
 
     boolean isAvailable();
 

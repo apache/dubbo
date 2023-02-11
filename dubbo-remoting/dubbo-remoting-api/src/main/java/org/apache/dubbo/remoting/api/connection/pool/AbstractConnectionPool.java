@@ -25,31 +25,31 @@ import org.apache.dubbo.remoting.api.connection.ConnectionProvider;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-public abstract class AbstractConnectionPool implements ConnectionPool {
+public abstract class AbstractConnectionPool<C extends Client> implements ConnectionPool<C> {
 
     protected final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
 
     private final URL url;
 
-    private final ConnectionProvider connectionProvider;
+    private final ConnectionProvider<C> connectionProvider;
 
     protected final AtomicInteger referenceCount;
 
-    public AbstractConnectionPool(URL url, ConnectionProvider connectionProvider) {
+    public AbstractConnectionPool(URL url, ConnectionProvider<C> connectionProvider) {
         this.url = url;
         this.connectionProvider = connectionProvider;
         referenceCount = new AtomicInteger(0);
     }
 
     @Override
-    public Client getClient() {
+    public C getClient() {
         if (referenceCount.get() <= 0) {
             throw new IllegalStateException("client is already closed!");
         }
         return doGetClient();
     }
 
-    protected abstract Client doGetClient();
+    protected abstract C doGetClient();
 
     @Override
     public boolean isAvailable() {
@@ -91,7 +91,7 @@ public abstract class AbstractConnectionPool implements ConnectionPool {
         return this.url;
     }
 
-    protected ConnectionProvider getConnectionProvider() {
+    protected ConnectionProvider<C> getConnectionProvider() {
         return this.connectionProvider;
     }
 

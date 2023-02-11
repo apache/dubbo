@@ -21,7 +21,6 @@ import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.ChannelHandler;
-import org.apache.dubbo.remoting.Client;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.Transporter;
 import org.apache.dubbo.remoting.api.connection.ConnectionProvider;
@@ -38,7 +37,7 @@ import static org.apache.dubbo.remoting.Constants.DEFAULT_REMOTING_CLIENT;
 import static org.apache.dubbo.remoting.Constants.HEARTBEAT_KEY;
 import static org.apache.dubbo.remoting.Constants.SERVER_KEY;
 
-public class DubboConnectionProvider implements ConnectionProvider {
+public class DubboConnectionProvider implements ConnectionProvider<ExchangeClient> {
 
     private final ExchangeHandler channelHandler;
 
@@ -48,7 +47,7 @@ public class DubboConnectionProvider implements ConnectionProvider {
 
 
     @Override
-    public Client initConnection(URL url) {
+    public ExchangeClient initConnection(URL url) {
         ExchangeClient exchangeClient = initClient(url,channelHandler);
         ReferenceCountExchangeClient client = new ReferenceCountExchangeClient(exchangeClient, DubboCodec.NAME);
         // read configs

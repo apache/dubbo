@@ -416,10 +416,10 @@ public class DubboProtocol extends AbstractProtocol {
         return invoker;
     }
 
-    private ConnectionPool getConnectionPool(URL url) {
-        url.addParameterIfAbsent(ConnectionPool.URL_KEY, ConnectionPool.DEFAULT);
-        return url.getOrDefaultApplicationModel().getExtensionLoader(ConnectionPoolFactory.class)
-                .getAdaptiveExtension().getConnectionPool(url, new DubboConnectionProvider(requestHandler));
+    private ConnectionPool<ExchangeClient> getConnectionPool(URL url) {
+        url.addParameterIfAbsent(ConnectionPoolFactory.URL_KEY, ConnectionPoolFactory.DEFAULT);
+        ConnectionPoolFactory connectionPoolFactory = url.getOrDefaultApplicationModel().getExtensionLoader(ConnectionPoolFactory.class).getAdaptiveExtension();
+        return connectionPoolFactory.getConnectionPool(url, new DubboConnectionProvider(requestHandler));
     }
 
     private ExchangeClient[] getClients(URL url) {

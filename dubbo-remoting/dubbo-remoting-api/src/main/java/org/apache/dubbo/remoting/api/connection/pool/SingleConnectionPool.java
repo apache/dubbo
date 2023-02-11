@@ -19,25 +19,19 @@ package org.apache.dubbo.remoting.api.connection.pool;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.Client;
 import org.apache.dubbo.remoting.api.connection.ConnectionProvider;
-import org.apache.dubbo.remoting.api.connection.LazyClient;
-
-import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
 import static org.apache.dubbo.common.constants.CommonConstants.LAZY_CONNECT_KEY;
 
-public class SingleConnectionPool extends AbstractConnectionPool {
+public class SingleConnectionPool<C extends Client> extends AbstractConnectionPool<C> {
 
-    private volatile Client client;
+    private volatile C client;
 
-    private static final AtomicReferenceFieldUpdater<SingleConnectionPool, Client> CLIENT_UPDATER
-            = AtomicReferenceFieldUpdater.newUpdater(SingleConnectionPool.class, Client.class, "client");
+    private final Object lock = new Object();
 
-    public SingleConnectionPool(URL url, ConnectionProvider connectionProvider) {
+    public SingleConnectionPool(URL url, ConnectionProvider<C> connectionProvider) {
         super(url, connectionProvider);
         if (!url.getParameter(LAZY_CONNECT_KEY, false)) {
             initClientIfAbsent();
-            //Trigger the connection
-            ((LazyClient) client).getTargetClient();
         }
     }
 
@@ -45,15 +39,16 @@ public class SingleConnectionPool extends AbstractConnectionPool {
         if (client != null) {
             return;
         }
-        //cas and lazy connection
-        CLIENT_UPDATER.compareAndSet(this, null, new LazyClient(getUrl(), getConnectionProvider()));
+        synchronized (lock) {
+            client = getConnectionProvider().initConnection(getUrl());
+        }
     }
 
     @Override
-    public Client doGetClient() {
+    public C doGetClient() {
         initClientIfAbsent();
 
-        return ((LazyClient) client).getTargetClient();
+        return client;
     }
 
     @Override

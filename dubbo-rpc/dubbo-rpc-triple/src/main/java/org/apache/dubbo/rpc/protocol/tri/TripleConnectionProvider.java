@@ -18,12 +18,12 @@ package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.ChannelHandler;
-import org.apache.dubbo.remoting.Client;
+import org.apache.dubbo.remoting.api.connection.AbstractConnectionClient;
 import org.apache.dubbo.remoting.api.connection.ConnectionProvider;
 import org.apache.dubbo.remoting.api.pu.DefaultPuHandler;
 import org.apache.dubbo.remoting.exchange.PortUnificationExchanger;
 
-public class TripleConnectionProvider implements ConnectionProvider {
+public class TripleConnectionProvider implements ConnectionProvider<AbstractConnectionClient> {
 
     private final DefaultPuHandler channelHandler;
 
@@ -32,7 +32,7 @@ public class TripleConnectionProvider implements ConnectionProvider {
     }
 
     @Override
-    public Client initConnection(URL url) {
-        return PortUnificationExchanger.connect(url, new DefaultPuHandler());
+    public AbstractConnectionClient initConnection(URL url) {
+        return PortUnificationExchanger.connect(url, channelHandler);
     }
 }

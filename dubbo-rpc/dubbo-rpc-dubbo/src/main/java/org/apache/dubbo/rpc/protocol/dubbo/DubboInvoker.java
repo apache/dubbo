@@ -18,7 +18,6 @@ package org.apache.dubbo.rpc.protocol.dubbo;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
-import org.apache.dubbo.common.utils.AtomicPositiveInteger;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.TimeoutException;
@@ -53,9 +52,7 @@ import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
  */
 public class DubboInvoker<T> extends AbstractInvoker<T> {
 
-    private final ConnectionPool connectionPool;
-
-    private final AtomicPositiveInteger index = new AtomicPositiveInteger();
+    private final ConnectionPool<ExchangeClient> connectionPool;
 
     private final ReentrantLock destroyLock = new ReentrantLock();
 
@@ -63,7 +60,7 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
 
     private final int serverShutdownTimeout;
 
-    public DubboInvoker(Class<T> serviceType, URL url, ConnectionPool connectionPool, Set<Invoker<?>> invokers) {
+    public DubboInvoker(Class<T> serviceType, URL url, ConnectionPool<ExchangeClient> connectionPool, Set<Invoker<?>> invokers) {
         super(serviceType, url, new String[]{INTERFACE_KEY, GROUP_KEY, TOKEN_KEY});
         this.connectionPool = connectionPool;
         this.invokers = invokers;
@@ -71,13 +68,13 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
     }
 
     @Override
-    protected Result doInvoke(final Invocation invocation) throws Throwable {
+    protected Result doInvoke(final Invocation invocation) {
         RpcInvocation inv = (RpcInvocation) invocation;
         final String methodName = RpcUtils.getMethodName(invocation);
         inv.setAttachment(PATH_KEY, getUrl().getPath());
         inv.setAttachment(VERSION_KEY, version);
 
-        ExchangeClient currentClient = (ExchangeClient) connectionPool.getClient();
+        ExchangeClient currentClient = connectionPool.getClient();
 
         try {
             boolean isOneway = RpcUtils.isOneway(getUrl(), invocation);

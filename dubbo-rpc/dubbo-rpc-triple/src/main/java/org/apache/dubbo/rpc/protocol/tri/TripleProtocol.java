@@ -23,6 +23,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.utils.ExecutorUtil;
+import org.apache.dubbo.remoting.api.connection.AbstractConnectionClient;
 import org.apache.dubbo.remoting.api.connection.pool.ConnectionPool;
 import org.apache.dubbo.remoting.api.connection.pool.factory.ConnectionPoolFactory;
 import org.apache.dubbo.remoting.api.pu.DefaultPuHandler;
@@ -146,8 +147,8 @@ public class TripleProtocol extends AbstractProtocol {
         return invoker;
     }
 
-    private ConnectionPool getConnectionPool(URL url) {
-        url.addParameterIfAbsent(ConnectionPool.URL_KEY, ConnectionPool.DEFAULT);
+    private ConnectionPool<AbstractConnectionClient> getConnectionPool(URL url) {
+        url.addParameterIfAbsent(ConnectionPoolFactory.URL_KEY, ConnectionPoolFactory.DEFAULT);
 
         return url.getOrDefaultApplicationModel().getExtensionLoader(ConnectionPoolFactory.class)
                 .getAdaptiveExtension().getConnectionPool(url, new TripleConnectionProvider(new DefaultPuHandler()));
