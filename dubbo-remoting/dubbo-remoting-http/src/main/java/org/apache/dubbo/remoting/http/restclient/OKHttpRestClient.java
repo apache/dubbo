@@ -16,8 +16,8 @@
  */
 package org.apache.dubbo.remoting.http.restclient;
 
-import org.apache.dubbo.remoting.http.BaseRestClient;
 import org.apache.dubbo.remoting.http.RequestTemplate;
+import org.apache.dubbo.remoting.http.RestClient;
 import org.apache.dubbo.remoting.http.RestResult;
 import org.apache.dubbo.remoting.http.config.HttpClientConfig;
 
@@ -38,10 +38,13 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 
-public class OKHttpRestClient extends BaseRestClient<OkHttpClient> {
+public class OKHttpRestClient implements RestClient {
+    private final OkHttpClient okHttpClient;
+    private final HttpClientConfig httpClientConfig;
 
     public OKHttpRestClient(HttpClientConfig clientConfig) {
-        super(clientConfig);
+        this.okHttpClient = createHttpClient(clientConfig);
+        this.httpClientConfig = clientConfig;
     }
 
     @Override
@@ -69,7 +72,7 @@ public class OKHttpRestClient extends BaseRestClient<OkHttpClient> {
 
         CompletableFuture<RestResult> future = new CompletableFuture<>();
 
-        getClient().newCall(builder.build()).enqueue(new Callback() {
+        okHttpClient.newCall(builder.build()).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
                 future.completeExceptionally(e);
@@ -111,7 +114,7 @@ public class OKHttpRestClient extends BaseRestClient<OkHttpClient> {
 
     @Override
     public void close() {
-        getClient().connectionPool().evictAll();
+        okHttpClient.connectionPool().evictAll();
     }
 
     @Override
@@ -121,7 +124,7 @@ public class OKHttpRestClient extends BaseRestClient<OkHttpClient> {
 
     @Override
     public boolean isClosed() {
-        return getClient().retryOnConnectionFailure();
+        return okHttpClient.retryOnConnectionFailure();
     }
 
     public OkHttpClient createHttpClient(HttpClientConfig httpClientConfig) {

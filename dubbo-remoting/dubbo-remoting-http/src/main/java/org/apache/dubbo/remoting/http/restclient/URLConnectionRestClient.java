@@ -16,8 +16,8 @@
  */
 package org.apache.dubbo.remoting.http.restclient;
 
-import org.apache.dubbo.remoting.http.BaseRestClient;
 import org.apache.dubbo.remoting.http.RequestTemplate;
+import org.apache.dubbo.remoting.http.RestClient;
 import org.apache.dubbo.remoting.http.RestResult;
 import org.apache.dubbo.remoting.http.config.HttpClientConfig;
 
@@ -33,10 +33,11 @@ import java.util.zip.DeflaterOutputStream;
 import java.util.zip.GZIPOutputStream;
 
 
-public class URLConnectionRestClient extends BaseRestClient<HttpURLConnection> {
+public class URLConnectionRestClient implements RestClient {
+    private final HttpClientConfig clientConfig;
 
     public URLConnectionRestClient(HttpClientConfig clientConfig) {
-        super(clientConfig);
+        this.clientConfig = clientConfig;
     }
 
     @Override
@@ -164,11 +165,6 @@ public class URLConnectionRestClient extends BaseRestClient<HttpURLConnection> {
     @Override
     public boolean isClosed() {
         return true;
-    }
-
-    public HttpURLConnection createHttpClient(HttpClientConfig httpClientConfig) {
-
-        return null;
     }
 
 }

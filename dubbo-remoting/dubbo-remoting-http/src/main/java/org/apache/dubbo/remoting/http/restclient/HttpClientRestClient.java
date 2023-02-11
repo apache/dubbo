@@ -16,8 +16,8 @@
  */
 package org.apache.dubbo.remoting.http.restclient;
 
-import org.apache.dubbo.remoting.http.BaseRestClient;
 import org.apache.dubbo.remoting.http.RequestTemplate;
+import org.apache.dubbo.remoting.http.RestClient;
 import org.apache.dubbo.remoting.http.RestResult;
 import org.apache.dubbo.remoting.http.config.HttpClientConfig;
 
@@ -43,10 +43,13 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 
-public class HttpClientRestClient extends BaseRestClient<CloseableHttpClient> {
+public class HttpClientRestClient implements RestClient {
+    private final CloseableHttpClient closeableHttpClient;
+    private final HttpClientConfig httpClientConfig;
 
     public HttpClientRestClient(HttpClientConfig clientConfig) {
-        super(clientConfig);
+        closeableHttpClient = createHttpClient();
+        httpClientConfig = clientConfig;
     }
 
     @Override
@@ -73,10 +76,10 @@ public class HttpClientRestClient extends BaseRestClient<CloseableHttpClient> {
             }
         }
 
-        httpRequest.setConfig(getRequestConfig(clientConfig));
+        httpRequest.setConfig(getRequestConfig(httpClientConfig));
 
         CompletableFuture<RestResult> future = new CompletableFuture<>();
-        try (CloseableHttpResponse response = getClient().execute(httpRequest)) {
+        try (CloseableHttpResponse response = closeableHttpClient.execute(httpRequest)) {
             future.complete(new RestResult() {
                 @Override
                 public String getContentType() {
@@ -118,7 +121,7 @@ public class HttpClientRestClient extends BaseRestClient<CloseableHttpClient> {
     @Override
     public void close() {
         try {
-            getClient().close();
+            closeableHttpClient.close();
         } catch (IOException e) {
 
         }
@@ -135,7 +138,7 @@ public class HttpClientRestClient extends BaseRestClient<CloseableHttpClient> {
         return true;
     }
 
-    public CloseableHttpClient createHttpClient(HttpClientConfig httpClientConfig) {
+    public CloseableHttpClient createHttpClient() {
         PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
         return HttpClients.custom().setConnectionManager(connectionManager).build();
     }
