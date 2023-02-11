@@ -29,6 +29,16 @@ public class BaseMetricsEventMulticaster implements MetricsEventMulticaster {
 
     private final List<MetricsListener<?>> listeners = Collections.synchronizedList(new ArrayList<>());
 
+    private boolean available = false;
+
+    public void setAvailable() {
+        this.available = true;
+    }
+
+    public boolean isAvailable() {
+        return available;
+    }
+
     @Override
     public void addListener(MetricsListener<?> listener) {
         listeners.add(listener);
@@ -36,7 +46,10 @@ public class BaseMetricsEventMulticaster implements MetricsEventMulticaster {
 
     @Override
     @SuppressWarnings({"rawtypes", "unchecked"})
-    public void publishEvent(MetricsEvent<?> event) {
+    public void publishEvent(MetricsEvent event) {
+        if (!isAvailable()) {
+            return;
+        }
         if (event instanceof EmptyEvent) {
             return;
         }
@@ -49,18 +62,24 @@ public class BaseMetricsEventMulticaster implements MetricsEventMulticaster {
 
     @Override
     @SuppressWarnings({"unchecked"})
-    public void publishFinishEvent(MetricsEvent<?> event) {
+    public void publishFinishEvent(MetricsEvent event) {
+        if (!isAvailable()) {
+            return;
+        }
         publishTimeEvent(event, metricsLifeListener -> metricsLifeListener.onEventFinish(event));
     }
 
     @Override
     @SuppressWarnings({"unchecked"})
-    public void publishErrorEvent(MetricsEvent<?> event) {
+    public void publishErrorEvent(MetricsEvent event) {
+        if (!isAvailable()) {
+            return;
+        }
         publishTimeEvent(event, metricsLifeListener -> metricsLifeListener.onEventError(event));
     }
 
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    private void publishTimeEvent(MetricsEvent<?> event, Consumer<MetricsLifeListener> consumer) {
+    @SuppressWarnings({"rawtypes"})
+    private void publishTimeEvent(MetricsEvent event, Consumer<MetricsLifeListener> consumer) {
         if (event instanceof EmptyEvent) {
             return;
         }

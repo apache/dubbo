@@ -22,8 +22,11 @@ import org.apache.dubbo.metrics.event.BaseMetricsEventMulticaster;
 public final class RegistryMetricsEventMulticaster extends BaseMetricsEventMulticaster {
 
     public RegistryMetricsEventMulticaster() {
-        super.addListener(new RegisterListener());
-        super.addListener(new SubscribeListener());
+        super.addListener(new MetricsRegisterListener());
+        super.addListener(new MetricsSubscribeListener());
+        super.addListener(new MetricsNotifyListener());
+
+        setAvailable();
     }
 
 }

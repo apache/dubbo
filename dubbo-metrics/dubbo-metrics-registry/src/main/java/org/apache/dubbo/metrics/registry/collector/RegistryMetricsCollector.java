@@ -39,7 +39,7 @@ import java.util.Optional;
  * Registry implementation of {@link MetricsCollector}
  */
 @Activate
-public class RegistryMetricsCollector implements ApplicationMetricsCollector<RegistryEvent.Type>, MetricsLifeListener<RegistryEvent<?>> {
+public class RegistryMetricsCollector implements ApplicationMetricsCollector<RegistryEvent.Type>, MetricsLifeListener<RegistryEvent> {
 
     private Boolean collectEnabled = null;
     private final RegistryStatComposite stats;
@@ -58,7 +58,7 @@ public class RegistryMetricsCollector implements ApplicationMetricsCollector<Reg
         }
     }
 
-    public Boolean isCollectEnabled() {
+    public boolean isCollectEnabled() {
         if (collectEnabled == null) {
             ConfigManager configManager = applicationModel.getApplicationConfigManager();
             configManager.getMetrics().ifPresent(metricsConfig -> setCollectEnabled(metricsConfig.getEnableRegistry()));
@@ -77,8 +77,8 @@ public class RegistryMetricsCollector implements ApplicationMetricsCollector<Reg
     }
 
     @Override
-    public void addRT(String applicationName, Long responseTime) {
-        stats.calcRt(applicationName, responseTime);
+    public void addRT(String applicationName, String registryOpType, Long responseTime) {
+        stats.calcRt(applicationName, registryOpType, responseTime);
     }
 
     @Override
@@ -93,24 +93,25 @@ public class RegistryMetricsCollector implements ApplicationMetricsCollector<Reg
         return list;
     }
 
+
     @Override
-    public boolean isSupport(MetricsEvent<?> event) {
+    public boolean isSupport(MetricsEvent event) {
         return event instanceof RegistryEvent;
     }
 
     @Override
-    public void onEvent(RegistryEvent<?> event) {
+    public void onEvent(RegistryEvent event) {
         registryMulticaster.publishEvent(event);
     }
 
 
     @Override
-    public void onEventFinish(RegistryEvent<?> event) {
+    public void onEventFinish(RegistryEvent event) {
         registryMulticaster.publishFinishEvent(event);
     }
 
     @Override
-    public void onEventError(RegistryEvent<?> event) {
+    public void onEventError(RegistryEvent event) {
         registryMulticaster.publishErrorEvent(event);
     }
 }

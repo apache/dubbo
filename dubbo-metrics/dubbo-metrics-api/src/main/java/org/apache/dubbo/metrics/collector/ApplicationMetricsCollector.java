@@ -26,5 +26,5 @@ public interface ApplicationMetricsCollector<T> extends MetricsCollector {
 
     void decrease(T type, String applicationName);
 
-    void addRT(String applicationName, Long responseTime);
+    void addRT(String applicationName, String registryOpType, Long responseTime);
 }

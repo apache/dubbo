@@ -15,17 +15,29 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.metrics.event;
+package org.apache.dubbo.metrics.registry.event;
 
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.metrics.event.MetricsEvent;
 import org.apache.dubbo.metrics.listener.MetricsListener;
 
-public interface MetricsEventMulticaster {
+/**
+ * The registration center actively pushes Listener, no failure and rt statistics
+ */
+public class MetricsNotifyListener implements MetricsListener<MetricsNotifyEvent> {
 
-    void addListener(MetricsListener<?> listener);
+    protected final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
 
-    void publishEvent(MetricsEvent event);
+    @Override
+    public boolean isSupport(MetricsEvent event) {
+        return event instanceof MetricsNotifyEvent;
+    }
 
-    void publishFinishEvent(MetricsEvent event);
+    @Override
+    public void onEvent(MetricsNotifyEvent event) {
+        event.getCollector().increment(RegistryEvent.Type.N_TOTAL, event.getSource().getApplicationName());
+    }
 
-    void publishErrorEvent(MetricsEvent event);
+
 }

@@ -22,14 +22,14 @@ import org.apache.dubbo.metrics.model.MethodMetric;
 /**
  * BaseMetricsEvent.
  */
-public abstract class MetricsEvent<S> {
+public abstract class MetricsEvent {
 
     /**
      * Metric object. (eg. {@link MethodMetric})
      */
-    protected transient S source;
+    protected transient Object source;
 
-    public MetricsEvent(S source) {
+    public MetricsEvent(Object source) {
         if (source == null) {
             throw new IllegalArgumentException("null source");
         }
@@ -37,7 +37,7 @@ public abstract class MetricsEvent<S> {
         this.source = source;
     }
 
-    public S getSource() {
+    public Object getSource() {
         return source;
     }
 

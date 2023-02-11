@@ -15,17 +15,14 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.metrics.event;
+package org.apache.dubbo.metrics.registry.event;
 
-import org.apache.dubbo.metrics.listener.MetricsListener;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
-public interface MetricsEventMulticaster {
+public class MetricsNotifyEvent extends RegistryEvent {
 
-    void addListener(MetricsListener<?> listener);
+    public MetricsNotifyEvent(ApplicationModel applicationModel) {
+        super(applicationModel, null);
+    }
 
-    void publishEvent(MetricsEvent event);
-
-    void publishFinishEvent(MetricsEvent event);
-
-    void publishErrorEvent(MetricsEvent event);
 }

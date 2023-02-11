@@ -18,13 +18,12 @@
 package org.apache.dubbo.metrics.registry.metrics.collector;
 
 import org.apache.dubbo.config.ApplicationConfig;
-import org.apache.dubbo.metrics.event.MetricsEvent;
-import org.apache.dubbo.metrics.listener.MetricsListener;
 import org.apache.dubbo.metrics.model.MetricsKey;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.metrics.registry.MetricsKeyWrapper;
 import org.apache.dubbo.metrics.registry.collector.RegistryMetricsCollector;
+import org.apache.dubbo.metrics.registry.collector.stat.RegistryStatComposite;
 import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -41,12 +40,11 @@ import static org.apache.dubbo.common.constants.MetricsConstants.TAG_APPLICATION
 
 class RegistryMetricsCollectorTest {
 
-    private FrameworkModel frameworkModel;
     private ApplicationModel applicationModel;
 
     @BeforeEach
     public void setup() {
-        frameworkModel = FrameworkModel.defaultModel();
+        FrameworkModel frameworkModel = FrameworkModel.defaultModel();
         applicationModel = frameworkModel.newApplication();
         ApplicationConfig config = new ApplicationConfig();
         config.setName("MockMetrics");
@@ -67,8 +65,8 @@ class RegistryMetricsCollectorTest {
         RegistryMetricsCollector collector = new RegistryMetricsCollector(applicationModel);
         collector.setCollectEnabled(true);
         String applicationName = applicationModel.getApplicationName();
-        collector.addRT(applicationName, 10L);
-        collector.addRT(applicationName, 0L);
+        collector.addRT(applicationName, RegistryStatComposite.OP_TYPE_REGISTER, 10L);
+        collector.addRT(applicationName, RegistryStatComposite.OP_TYPE_REGISTER, 0L);
 
         List<MetricSample> samples = collector.collect();
         for (MetricSample sample : samples) {
@@ -81,11 +79,11 @@ class RegistryMetricsCollectorTest {
             return number.longValue();
         }));
 
-        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper("register", MetricsKey.GENERIC_METRIC_RT_LAST).targetKey()), 0L);
-        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper("register", MetricsKey.GENERIC_METRIC_RT_MIN).targetKey()), 0L);
-        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper("register", MetricsKey.GENERIC_METRIC_RT_MAX).targetKey()), 10L);
-        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper("register", MetricsKey.GENERIC_METRIC_RT_AVG).targetKey()), 5L);
-        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper("register", MetricsKey.GENERIC_METRIC_RT_SUM).targetKey()), 10L);
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(RegistryStatComposite.OP_TYPE_REGISTER, MetricsKey.GENERIC_METRIC_RT_LAST).targetKey()), 0L);
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(RegistryStatComposite.OP_TYPE_REGISTER, MetricsKey.GENERIC_METRIC_RT_MIN).targetKey()), 0L);
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(RegistryStatComposite.OP_TYPE_REGISTER, MetricsKey.GENERIC_METRIC_RT_MAX).targetKey()), 10L);
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(RegistryStatComposite.OP_TYPE_REGISTER, MetricsKey.GENERIC_METRIC_RT_AVG).targetKey()), 5L);
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(RegistryStatComposite.OP_TYPE_REGISTER, MetricsKey.GENERIC_METRIC_RT_SUM).targetKey()), 10L);
     }
 
     @Test
@@ -96,17 +94,4 @@ class RegistryMetricsCollectorTest {
         collector.increment(RegistryEvent.Type.R_TOTAL, applicationName);
     }
 
-    static class MockListener implements MetricsListener {
-
-        private MetricsEvent curEvent;
-
-        @Override
-        public void onEvent(MetricsEvent event) {
-            curEvent = event;
-        }
-
-        public MetricsEvent getCurEvent() {
-            return curEvent;
-        }
-    }
 }

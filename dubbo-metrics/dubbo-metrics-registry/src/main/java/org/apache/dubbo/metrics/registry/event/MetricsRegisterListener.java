@@ -15,17 +15,25 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.metrics.event;
+package org.apache.dubbo.metrics.registry.event;
 
+import org.apache.dubbo.metrics.event.MetricsEvent;
 import org.apache.dubbo.metrics.listener.MetricsListener;
 
-public interface MetricsEventMulticaster {
+public class MetricsRegisterListener implements MetricsListener<MetricsRegisterEvent> {
 
-    void addListener(MetricsListener<?> listener);
 
-    void publishEvent(MetricsEvent event);
+    @Override
+    public boolean isSupport(MetricsEvent event) {
+        return event instanceof MetricsRegisterEvent;
+    }
 
-    void publishFinishEvent(MetricsEvent event);
+    @Override
+    public void onEvent(MetricsRegisterEvent event) {
+        if (!event.isAvailable()) {
+            return;
+        }
+        event.getCollector().increment(MetricsRegisterEvent.Type.R_TOTAL, event.getSource().getApplicationName());
+    }
 
-    void publishErrorEvent(MetricsEvent event);
 }

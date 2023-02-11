@@ -56,7 +56,7 @@ import org.apache.dubbo.metrics.collector.MetricsCollector;
 import org.apache.dubbo.metrics.event.SimpleMetricsEventMulticaster;
 import org.apache.dubbo.metrics.listener.MetricsListener;
 import org.apache.dubbo.metrics.model.TimePair;
-import org.apache.dubbo.metrics.registry.event.RegistryRegisterEvent;
+import org.apache.dubbo.metrics.registry.event.MetricsRegisterEvent;
 import org.apache.dubbo.metrics.report.MetricsReporter;
 import org.apache.dubbo.metrics.report.MetricsReporterFactory;
 import org.apache.dubbo.metrics.service.MetricsServiceExporter;
@@ -367,15 +367,20 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
     @SuppressWarnings({"rawtypes"})
     private void initMetricsReporter() {
+
         ScopeBeanFactory beanFactory = applicationModel.getFrameworkModel().getBeanFactory();
-        DefaultMetricsCollector collector =
-            beanFactory.getOrRegisterBean(DefaultMetricsCollector.class);
         MetricsConfig metricsConfig = configManager.getMetrics().orElse(null);
         this.eventMulticaster = beanFactory.getOrRegisterBean(SimpleMetricsEventMulticaster.class);
 
         // TODO compatible with old usage of metrics, remove protocol check after new metrics is ready for use.
         if (metricsConfig != null && PROTOCOL_PROMETHEUS.equals(metricsConfig.getProtocol())) {
+
+            DefaultMetricsCollector collector =
+                beanFactory.getOrRegisterBean(DefaultMetricsCollector.class);
             collector.setCollectEnabled(true);
+
+            eventMulticaster.setAvailable();
+
             List<MetricsListener> metricsListeners = applicationModel.getExtensionLoader(MetricsListener.class)
                 .getActivateExtensions();
             metricsListeners.forEach(this.eventMulticaster::addListener);
@@ -839,13 +844,13 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
     private void registerServiceInstance() {
         TimePair timePair = TimePair.start();
-        eventMulticaster.publishEvent(new RegistryRegisterEvent(applicationModel, timePair));
+        eventMulticaster.publishEvent(new MetricsRegisterEvent(applicationModel, timePair));
         try {
             registered = true;
             ServiceInstanceMetadataUtils.registerMetadataAndInstance(applicationModel);
-            eventMulticaster.publishFinishEvent(new RegistryRegisterEvent(applicationModel, timePair));
+            eventMulticaster.publishFinishEvent(new MetricsRegisterEvent(applicationModel, timePair));
         } catch (Exception e) {
-            eventMulticaster.publishErrorEvent(new RegistryRegisterEvent(applicationModel, timePair));
+            eventMulticaster.publishErrorEvent(new MetricsRegisterEvent(applicationModel, timePair));
             logger.error(CONFIG_REGISTER_INSTANCE_ERROR, "configuration server disconnected", "", "Register instance error.", e);
         }
         if (registered) {

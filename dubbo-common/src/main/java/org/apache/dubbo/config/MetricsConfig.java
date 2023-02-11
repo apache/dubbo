@@ -40,6 +40,9 @@ public class MetricsConfig extends AbstractConfig {
      */
     private Boolean enableJvmMetrics;
 
+    /**
+     * Enable registry metrics.
+     */
     private Boolean enableRegistry;
 
     /**

@@ -25,7 +25,7 @@ import org.apache.dubbo.metrics.model.MetricsKey;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.registry.MetricsKeyWrapper;
 import org.apache.dubbo.metrics.registry.event.RegistryEvent;
-import org.apache.dubbo.metrics.registry.event.RegistryRegisterEvent;
+import org.apache.dubbo.metrics.registry.event.MetricsRegisterEvent;
 import org.apache.dubbo.metrics.report.MetricsExport;
 
 import java.util.ArrayList;
@@ -37,17 +37,20 @@ import java.util.concurrent.atomic.LongAccumulator;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 /**
- * As a data aggregator, it use internal data containers calculates and classifies
+ * As a data aggregator, use internal data containers calculates and classifies
  * the registry data collected by {@link MetricsCollector MetricsCollector}, and
  * provides an {@link MetricsExport MetricsExport} interface for exporting standard output formats.
  */
 public class RegistryStatComposite implements MetricsExport {
 
 
-    public Map<RegistryRegisterEvent.Type, Map<String, AtomicLong>> numStats = new ConcurrentHashMap<>();
+    public Map<MetricsRegisterEvent.Type, Map<String, AtomicLong>> numStats = new ConcurrentHashMap<>();
     public List<LongContainer<? extends Number>> rtStats = new ArrayList<>();
+    public static String OP_TYPE_REGISTER = "register";
+    public static String OP_TYPE_SUBSCRIBE = "subscribe";
 
     public RegistryStatComposite() {
         initDataStructure();
@@ -58,17 +61,18 @@ public class RegistryStatComposite implements MetricsExport {
             numStats.put(type, new ConcurrentHashMap<>());
         }
 
-        rtStats.addAll(initStats("register"));
-        rtStats.addAll(initStats("subscribe"));
+        rtStats.addAll(initStats(OP_TYPE_REGISTER));
+        rtStats.addAll(initStats(OP_TYPE_SUBSCRIBE));
 
     }
 
     private List<LongContainer<? extends Number>> initStats(String registryOpType) {
-        List<LongContainer<? extends Number>> soleRtStats = new ArrayList<>();
-        soleRtStats.add(new AtomicLongContainer(new MetricsKeyWrapper(registryOpType, MetricsKey.GENERIC_METRIC_RT_LAST)));
-        soleRtStats.add(new LongAccumulatorContainer(new MetricsKeyWrapper(registryOpType, MetricsKey.GENERIC_METRIC_RT_MIN), new LongAccumulator(Long::min, Long.MAX_VALUE)));
-        soleRtStats.add(new LongAccumulatorContainer(new MetricsKeyWrapper(registryOpType, MetricsKey.GENERIC_METRIC_RT_MAX), new LongAccumulator(Long::max, Long.MIN_VALUE)));
-        soleRtStats.add(new AtomicLongContainer(new MetricsKeyWrapper(registryOpType, MetricsKey.GENERIC_METRIC_RT_SUM), (responseTime, longAccumulator) -> longAccumulator.addAndGet(responseTime)));
+        List<LongContainer<? extends Number>> singleRtStats = new ArrayList<>();
+        singleRtStats.add(new AtomicLongContainer(new MetricsKeyWrapper(registryOpType, MetricsKey.GENERIC_METRIC_RT_LAST)));
+        singleRtStats.add(new LongAccumulatorContainer(new MetricsKeyWrapper(registryOpType, MetricsKey.GENERIC_METRIC_RT_MIN), new LongAccumulator(Long::min, Long.MAX_VALUE)));
+        singleRtStats.add(new LongAccumulatorContainer(new MetricsKeyWrapper(registryOpType, MetricsKey.GENERIC_METRIC_RT_MAX), new LongAccumulator(Long::max, Long.MIN_VALUE)));
+        singleRtStats.add(new AtomicLongContainer(new MetricsKeyWrapper(registryOpType, MetricsKey.GENERIC_METRIC_RT_SUM), (responseTime, longAccumulator) -> longAccumulator.addAndGet(responseTime)));
+        // AvgContainer is a special counter that stores the number of times but outputs function of sum/times
         AtomicLongContainer avgContainer = new AtomicLongContainer(new MetricsKeyWrapper(registryOpType, MetricsKey.GENERIC_METRIC_RT_AVG), (k, v) -> v.incrementAndGet());
         avgContainer.setValueSupplier(applicationName -> {
             LongContainer<? extends Number> totalContainer = rtStats.stream().filter(longContainer -> longContainer.isKey(MetricsKey.GENERIC_METRIC_RT_SUM)).findFirst().get();
@@ -76,11 +80,11 @@ public class RegistryStatComposite implements MetricsExport {
             AtomicLong totalRtSum = (AtomicLong) totalContainer.get(applicationName);
             return totalRtSum.get() / totalRtTimes.get();
         });
-        soleRtStats.add(avgContainer);
-        return soleRtStats;
+        singleRtStats.add(avgContainer);
+        return singleRtStats;
     }
 
-    public void increment(RegistryRegisterEvent.Type type, String applicationName) {
+    public void increment(MetricsRegisterEvent.Type type, String applicationName) {
         if (!numStats.containsKey(type)) {
             return;
         }
@@ -88,11 +92,10 @@ public class RegistryStatComposite implements MetricsExport {
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    public void calcRt(String applicationName, Long responseTime) {
-        for (LongContainer container : rtStats) {
+    public void calcRt(String applicationName, String registryOpType, Long responseTime) {
+        for (LongContainer container : rtStats.stream().filter(longContainer -> longContainer.specifyType(registryOpType)).collect(Collectors.toList())) {
             Number current = (Number) ConcurrentHashMapUtils.computeIfAbsent(container, applicationName, container.getInitFunc());
-            BiConsumer consumerFunc = container.getConsumerFunc();
-            consumerFunc.accept(responseTime, current);
+            container.getConsumerFunc().accept(responseTime, current);
         }
     }
 
@@ -102,7 +105,7 @@ public class RegistryStatComposite implements MetricsExport {
         for (RegistryEvent.Type type : numStats.keySet()) {
             Map<String, AtomicLong> stringAtomicLongMap = numStats.get(type);
             for (String applicationName : stringAtomicLongMap.keySet()) {
-                list.add(convertTargetFormat(applicationName, type, MetricsCategory.REQUESTS, stringAtomicLongMap.get(applicationName)));
+                list.add(convertToSample(applicationName, type, MetricsCategory.REQUESTS, stringAtomicLongMap.get(applicationName)));
             }
         }
         return list;
@@ -120,7 +123,7 @@ public class RegistryStatComposite implements MetricsExport {
         return list;
     }
 
-    public GaugeMetricSample convertTargetFormat(String applicationName, RegistryEvent.Type type, MetricsCategory category, AtomicLong targetNumber) {
+    public GaugeMetricSample convertToSample(String applicationName, RegistryEvent.Type type, MetricsCategory category, AtomicLong targetNumber) {
         return new GaugeMetricSample(type.getMetricsKey(), ApplicationMetric.getTagsByName(applicationName), category, targetNumber::get);
     }
 
@@ -155,6 +158,10 @@ public class RegistryStatComposite implements MetricsExport {
             this.initFunc = s -> initFunc.get();
             this.consumerFunc = consumerFunc;
             this.valueSupplier = k -> this.get(k).longValue();
+        }
+
+        public boolean specifyType(String type) {
+            return type.equals(getMetricsKeyWrapper().getType());
         }
 
         public MetricsKeyWrapper getMetricsKeyWrapper() {

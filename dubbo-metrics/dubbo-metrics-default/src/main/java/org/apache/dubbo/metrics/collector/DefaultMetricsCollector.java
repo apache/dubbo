@@ -31,7 +31,6 @@ import org.apache.dubbo.rpc.Invocation;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 
@@ -45,7 +44,7 @@ import static org.apache.dubbo.metrics.model.MetricsCategory.RT;
  */
 public class DefaultMetricsCollector implements MetricsCollector {
 
-    private AtomicBoolean collectEnabled = new AtomicBoolean(false);
+    private boolean collectEnabled = false;
     private final MetricsStatComposite stats;
     private final SimpleMetricsEventMulticaster eventMulticaster;
 
@@ -55,11 +54,11 @@ public class DefaultMetricsCollector implements MetricsCollector {
     }
 
     public void setCollectEnabled(Boolean collectEnabled) {
-        this.collectEnabled.compareAndSet(isCollectEnabled(), collectEnabled);
+        this.collectEnabled = collectEnabled;
     }
 
-    public Boolean isCollectEnabled() {
-        return collectEnabled.get();
+    public boolean isCollectEnabled() {
+        return collectEnabled;
     }
 
     public void increaseTotalRequests(String applicationName, Invocation invocation) {
@@ -79,39 +78,41 @@ public class DefaultMetricsCollector implements MetricsCollector {
     }
 
     public void timeoutRequests(String applicationName, Invocation invocation) {
-        increaseAndPublishEvent(applicationName,MetricsEvent.Type.REQUEST_TIMEOUT, invocation);
+        increaseAndPublishEvent(applicationName, MetricsEvent.Type.REQUEST_TIMEOUT, invocation);
     }
 
     public void limitRequests(String applicationName, Invocation invocation) {
-        increaseAndPublishEvent(applicationName,MetricsEvent.Type.REQUEST_LIMIT, invocation);
+        increaseAndPublishEvent(applicationName, MetricsEvent.Type.REQUEST_LIMIT, invocation);
     }
 
     public void increaseProcessingRequests(String applicationName, Invocation invocation) {
-        increaseAndPublishEvent(applicationName,MetricsEvent.Type.PROCESSING, invocation);
+        increaseAndPublishEvent(applicationName, MetricsEvent.Type.PROCESSING, invocation);
     }
 
     public void decreaseProcessingRequests(String applicationName, Invocation invocation) {
-        decreaseAndPublishEvent(applicationName,MetricsEvent.Type.PROCESSING, invocation);
+        decreaseAndPublishEvent(applicationName, MetricsEvent.Type.PROCESSING, invocation);
     }
 
     public void totalFailedRequests(String applicationName, Invocation invocation) {
-        increaseAndPublishEvent(applicationName,MetricsEvent.Type.TOTAL_FAILED, invocation);
+        increaseAndPublishEvent(applicationName, MetricsEvent.Type.TOTAL_FAILED, invocation);
     }
 
     private void increaseAndPublishEvent(String applicationName, MetricsEvent.Type total, Invocation invocation) {
-        this.eventMulticaster.publishEvent(doExecute(total, statHandler -> statHandler.increase(applicationName,invocation)));
+        this.eventMulticaster.publishEvent(doExecute(total, statHandler -> statHandler.increase(applicationName, invocation)));
     }
 
     private void decreaseAndPublishEvent(String applicationName, MetricsEvent.Type type, Invocation invocation) {
-        this.eventMulticaster.publishEvent(doExecute(type, statHandler -> statHandler.decrease(applicationName,invocation)));
+        this.eventMulticaster.publishEvent(doExecute(type, statHandler -> statHandler.decrease(applicationName, invocation)));
     }
 
     public void addRT(String applicationName, Invocation invocation, Long responseTime) {
         this.eventMulticaster.publishEvent(stats.addRtAndRetrieveEvent(applicationName, invocation, responseTime));
     }
+
     public void addApplicationInfo(String applicationName) {
         doExecute(MetricsEvent.Type.APPLICATION_INFO, statHandler -> statHandler.addApplication(applicationName));
     }
+
     @Override
     public List<MetricSample> collect() {
         List<MetricSample> list = new ArrayList<>();
@@ -182,7 +183,7 @@ public class DefaultMetricsCollector implements MetricsCollector {
         return Optional.empty();
     }
 
-    private MetricsEvent doExecute(MetricsEvent.Type  metricsEventType,
+    private MetricsEvent doExecute(MetricsEvent.Type metricsEventType,
                                    Function<MetricsStatHandler, MetricsEvent> statExecutor) {
         if (isCollectEnabled()) {
             MetricsStatHandler handler = stats.getHandler(metricsEventType);

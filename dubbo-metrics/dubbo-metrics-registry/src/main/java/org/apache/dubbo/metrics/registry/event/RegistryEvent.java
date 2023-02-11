@@ -21,31 +21,36 @@ import org.apache.dubbo.metrics.event.MetricsEvent;
 import org.apache.dubbo.metrics.event.TimeCounter;
 import org.apache.dubbo.metrics.model.MetricsKey;
 import org.apache.dubbo.metrics.model.TimePair;
+import org.apache.dubbo.metrics.registry.collector.RegistryMetricsCollector;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 /**
  * Registry related events
+ *
  * @param <S> context type
  */
-public class RegistryEvent<S> extends MetricsEvent<S> implements TimeCounter {
-    private Type type;
-    private TimePair timePair;
+public class RegistryEvent extends MetricsEvent implements TimeCounter {
+    private final TimePair timePair;
+    private final RegistryMetricsCollector collector;
+    private final boolean available;
 
-    public RegistryEvent(S source, Type type) {
-        super(source);
-        this.type = type;
-    }
-
-    public RegistryEvent(S source, TimePair timePair) {
-        super(source);
+    public RegistryEvent(ApplicationModel applicationModel, TimePair timePair) {
+        super(applicationModel);
         this.timePair = timePair;
+        this.collector = applicationModel.getBeanFactory().getBean(RegistryMetricsCollector.class);
+        this.available = this.collector != null && collector.isCollectEnabled();
     }
 
-    public Type getType() {
-        return type;
+    public ApplicationModel getSource() {
+        return (ApplicationModel) source;
     }
 
-    public void setType(Type type) {
-        this.type = type;
+    public RegistryMetricsCollector getCollector() {
+        return collector;
+    }
+
+    public boolean isAvailable() {
+        return available;
     }
 
     @Override
@@ -60,7 +65,10 @@ public class RegistryEvent<S> extends MetricsEvent<S> implements TimeCounter {
 
         S_TOTAL(MetricsKey.SUBSCRIBE_METRIC_REQUESTS),
         S_SUCCEED(MetricsKey.SUBSCRIBE_METRIC_REQUESTS_SUCCEED),
-        S_FAILED(MetricsKey.SUBSCRIBE_METRIC_REQUESTS_FAILED);
+        S_FAILED(MetricsKey.SUBSCRIBE_METRIC_REQUESTS_FAILED),
+
+        N_TOTAL(MetricsKey.NOTIFY_METRIC_REQUESTS),
+        ;
 
 
         private final MetricsKey metricsKey;
