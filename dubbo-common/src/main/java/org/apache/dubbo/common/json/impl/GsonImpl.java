@@ -53,7 +53,6 @@ public class GsonImpl extends AbstractJSONImpl {
         return getGson().toJson(obj);
     }
 
-
     private Gson getGson() {
         if (gsonCache == null || !(gsonCache instanceof Gson)) {
             synchronized (this) {

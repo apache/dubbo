@@ -19,13 +19,11 @@ package org.apache.dubbo.common.json.impl;
 import org.apache.dubbo.common.utils.ClassUtils;
 
 import com.alibaba.fastjson.serializer.SerializerFeature;
-import com.alibaba.fastjson.support.config.FastJsonConfig;
 
 import java.lang.reflect.Type;
 import java.util.List;
 
 public class FastJsonImpl extends AbstractJSONImpl {
-    private FastJsonConfig fastJsonConfig = new FastJsonConfig();
 
     @Override
     public boolean isSupport() {
@@ -51,5 +49,4 @@ public class FastJsonImpl extends AbstractJSONImpl {
     public String toJson(Object obj) {
         return com.alibaba.fastjson.JSON.toJSONString(obj, SerializerFeature.DisableCircularReferenceDetect);
     }
-
 }
