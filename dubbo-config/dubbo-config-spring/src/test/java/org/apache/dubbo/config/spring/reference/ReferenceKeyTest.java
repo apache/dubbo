@@ -193,7 +193,6 @@ class ReferenceKeyTest {
         String fieldName2 = "providedByDemoService2";
         String fieldName3 = "providedByDemoServiceInterface";
         String fieldName4 = "multiProvidedByDemoServiceInterface";
-        String fieldName5 = "multiProvidedByDemoService";
         Map<String, Object> attributes1= getReferenceAttributes(fieldName1);
         Map<String, Object> attributes2= getReferenceAttributes(fieldName2);
         Map<String, Object> attributes3= getReferenceAttributes(fieldName3);
@@ -208,7 +207,7 @@ class ReferenceKeyTest {
         expectServices.add("provided-demo-service-interface1");
         expectServices.add("provided-demo-service-interface2");
         Assertions.assertTrue(serviceName4.length == 2 && expectServices.contains(serviceName4[0]) && expectServices.contains(serviceName4[1]));
-        Assertions.assertEquals("provided-demo-service3", ((String[]) attributes3.get("providedBy"))[0]);
+        Assertions.assertEquals("provided-demo-service-interface", ((String[]) attributes3.get("providedBy"))[0]);
     }
 
     private String getStackTrace(Throwable ex) {
