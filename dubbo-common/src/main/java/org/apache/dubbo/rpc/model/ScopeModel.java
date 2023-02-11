@@ -80,7 +80,7 @@ public abstract class ScopeModel implements ExtensionAccessor {
 
     protected final Object instLock = new Object();
 
-    public ScopeModel(ScopeModel parent, ExtensionScope scope, boolean isInternal) {
+    protected ScopeModel(ScopeModel parent, ExtensionScope scope, boolean isInternal) {
         this.parent = parent;
         this.scope = scope;
         this.internalScope = isInternal;

@@ -99,13 +99,6 @@ public class FrameworkModel extends ScopeModel {
         }
     }
 
-    // already get instLock in constructor
-    @Override
-    protected void initialize() {
-        super.initialize();
-
-    }
-
     @Override
     protected void onDestroy() {
         synchronized (instLock) {
