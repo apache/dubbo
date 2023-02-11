@@ -32,9 +32,9 @@ class ModuleModelTest {
 
     @Test
     void testInitialize() {
-        FrameworkModel frameworkModel = new FrameworkModel();
-        ApplicationModel applicationModel = new ApplicationModel(frameworkModel);
-        ModuleModel moduleModel = new ModuleModel(applicationModel);
+        FrameworkModel frameworkModel = FrameworkModel.newModel();
+        ApplicationModel applicationModel = frameworkModel.newApplication();
+        ModuleModel moduleModel = applicationModel.newModule();
         Assertions.assertEquals(moduleModel.getParent(), applicationModel);
         Assertions.assertEquals(moduleModel.getScope(), ExtensionScope.MODULE);
         Assertions.assertEquals(moduleModel.getApplicationModel(), applicationModel);
@@ -56,9 +56,9 @@ class ModuleModelTest {
 
     @Test
     void testModelEnvironment() {
-        FrameworkModel frameworkModel = new FrameworkModel();
-        ApplicationModel applicationModel = new ApplicationModel(frameworkModel);
-        ModuleModel moduleModel = new ModuleModel(applicationModel);
+        FrameworkModel frameworkModel = FrameworkModel.newModel();
+        ApplicationModel applicationModel = frameworkModel.newApplication();
+        ModuleModel moduleModel = applicationModel.newModule();
 
         ModuleEnvironment modelEnvironment = moduleModel.getModelEnvironment();
         Assertions.assertNotNull(modelEnvironment);
@@ -68,9 +68,9 @@ class ModuleModelTest {
 
     @Test
     void testDestroy() {
-        FrameworkModel frameworkModel = new FrameworkModel();
-        ApplicationModel applicationModel = new ApplicationModel(frameworkModel);
-        ModuleModel moduleModel = new ModuleModel(applicationModel);
+        FrameworkModel frameworkModel = FrameworkModel.newModel();
+        ApplicationModel applicationModel = frameworkModel.newApplication();
+        ModuleModel moduleModel = applicationModel.newModule();
 
         MockScopeModelDestroyListener destroyListener = new MockScopeModelDestroyListener();
         moduleModel.addDestroyListener(destroyListener);

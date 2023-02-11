@@ -53,7 +53,7 @@ class DubboSpringInitCustomizerTest {
         ClassPathXmlApplicationContext providerContext1 = null;
         ClassPathXmlApplicationContext providerContext2 = null;
 
-        ApplicationModel applicationModel = new FrameworkModel().newApplication();
+        ApplicationModel applicationModel = FrameworkModel.newModel().newApplication();
         applicationModel.getDefaultModule();
 
         try {

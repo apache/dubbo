@@ -19,13 +19,14 @@ package org.apache.dubbo.qos.command.util;
 import org.apache.dubbo.common.utils.SerializeCheckStatus;
 import org.apache.dubbo.common.utils.SerializeSecurityManager;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 class SerializeCheckUtilsTest {
     @Test
     void testNotify() {
-        FrameworkModel frameworkModel = new FrameworkModel();
+        FrameworkModel frameworkModel = FrameworkModel.newModel();
 
         SerializeSecurityManager ssm = frameworkModel.getBeanFactory().getBean(SerializeSecurityManager.class);
 

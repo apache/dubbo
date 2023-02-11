@@ -16,12 +16,12 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.service;
 
-import io.grpc.health.v1.DubboHealthTriple;
 import org.apache.dubbo.rpc.PathResolver;
 import org.apache.dubbo.rpc.model.FrameworkModel;
-
 import org.apache.dubbo.rpc.model.ModuleServiceRepository;
 import org.apache.dubbo.rpc.stub.StubSuppliers;
+
+import io.grpc.health.v1.DubboHealthTriple;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -32,7 +32,7 @@ class TriBuiltinServiceTest {
 
     @Test
     void testDefaultNotEnable() {
-        FrameworkModel frameworkModel = new FrameworkModel();
+        FrameworkModel frameworkModel = FrameworkModel.newModel();
         TriBuiltinService triBuiltinService = new TriBuiltinService(frameworkModel);
         Assertions.assertFalse(triBuiltinService.enable());
         Assertions.assertNull(triBuiltinService.getHealthStatusManager());
@@ -40,7 +40,7 @@ class TriBuiltinServiceTest {
 
     @Test
     void testForceEnable(){
-        FrameworkModel frameworkModel = new FrameworkModel();
+        FrameworkModel frameworkModel = FrameworkModel.newModel();
         TriBuiltinService triBuiltinService = new TriBuiltinService(frameworkModel);
         triBuiltinService.init();
         String serviceName = DubboHealthTriple.SERVICE_NAME;

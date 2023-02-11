@@ -32,7 +32,7 @@ class ScopeModelTest {
     void testCreateOnDestroy() throws InterruptedException {
         FrameworkModel.destroyAll();
 
-        FrameworkModel frameworkModel = new FrameworkModel();
+        FrameworkModel frameworkModel = FrameworkModel.newModel();
         ApplicationModel applicationModel = frameworkModel.newApplication();
 
         List<Throwable> errors = new ArrayList<>();

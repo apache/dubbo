@@ -50,7 +50,7 @@ class OnlineTest {
 
     @BeforeEach
     public void setUp() {
-        frameworkModel = new FrameworkModel();
+        frameworkModel = FrameworkModel.newModel();
         repository = frameworkModel.newApplication().getDefaultModule().getServiceRepository();
         registerProvider();
     }

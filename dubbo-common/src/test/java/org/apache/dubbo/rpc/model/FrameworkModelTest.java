@@ -29,7 +29,7 @@ class FrameworkModelTest {
     @Test
     void testInitialize() {
         FrameworkModel.destroyAll();
-        FrameworkModel frameworkModel = new FrameworkModel();
+        FrameworkModel frameworkModel = FrameworkModel.newModel();
 
         Assertions.assertNull(frameworkModel.getParent());
         Assertions.assertEquals(frameworkModel.getScope(), ExtensionScope.FRAMEWORK);
@@ -62,7 +62,7 @@ class FrameworkModelTest {
 
     @Test
     void testApplicationModel() {
-        FrameworkModel frameworkModel = new FrameworkModel();
+        FrameworkModel frameworkModel = FrameworkModel.newModel();
 
         ApplicationModel applicationModel = frameworkModel.defaultApplication();
         ApplicationModel internalApplicationModel = frameworkModel.getInternalApplicationModel();
@@ -82,7 +82,7 @@ class FrameworkModelTest {
 
     @Test
     void destroyAll() {
-        FrameworkModel frameworkModel = new FrameworkModel();
+        FrameworkModel frameworkModel = FrameworkModel.newModel();
         frameworkModel.defaultApplication();
         frameworkModel.newApplication();
 

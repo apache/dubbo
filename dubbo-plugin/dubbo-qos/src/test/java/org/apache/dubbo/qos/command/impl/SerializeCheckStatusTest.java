@@ -19,6 +19,7 @@ package org.apache.dubbo.qos.command.impl;
 import org.apache.dubbo.common.utils.SerializeSecurityManager;
 import org.apache.dubbo.qos.command.CommandContext;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -26,7 +27,7 @@ import org.mockito.Mockito;
 class SerializeCheckStatusTest {
     @Test
     void testNotify() {
-        FrameworkModel frameworkModel = new FrameworkModel();
+        FrameworkModel frameworkModel = FrameworkModel.newModel();
 
         SerializeSecurityManager ssm = frameworkModel.getBeanFactory().getBean(SerializeSecurityManager.class);
 

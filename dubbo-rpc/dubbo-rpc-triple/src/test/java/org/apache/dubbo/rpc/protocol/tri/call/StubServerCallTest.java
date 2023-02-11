@@ -62,7 +62,7 @@ class StubServerCallTest {
         String service = "testService";
         String method = "method";
         StubAbstractServerCall call = new StubAbstractServerCall(invoker, tripleServerStream,
-            new FrameworkModel(), "",
+            FrameworkModel.newModel(), "",
             service, method,
             ImmediateEventExecutor.INSTANCE);
         call.onHeader(Collections.emptyMap());

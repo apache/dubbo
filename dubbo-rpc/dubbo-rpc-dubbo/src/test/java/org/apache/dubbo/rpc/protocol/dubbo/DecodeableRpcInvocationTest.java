@@ -65,8 +65,8 @@ class DecodeableRpcInvocationTest {
         Byte proto = CodecSupport.getIDByName(DefaultSerializationSelector.getDefaultRemotingSerialization());
         ChannelBuffer buffer = writeBuffer(url, inv, proto);
 
-        FrameworkModel frameworkModel = new FrameworkModel();
-        ApplicationModel applicationModel = new ApplicationModel(frameworkModel);
+        FrameworkModel frameworkModel = FrameworkModel.newModel();
+        ApplicationModel applicationModel = frameworkModel.newApplication();
         applicationModel.getDefaultModule().getServiceRepository().registerService(DemoService.class.getName(), DemoService.class);
         frameworkModel.getServiceRepository().registerProviderUrl(url);
 

@@ -40,8 +40,8 @@ class FrameworkStatusReportServiceTest {
 
     @Test
     void test() {
-        FrameworkModel frameworkModel = new FrameworkModel();
-        ApplicationModel applicationModel = new ApplicationModel(frameworkModel);
+        FrameworkModel frameworkModel = FrameworkModel.newModel();
+        ApplicationModel applicationModel = frameworkModel.newApplication();
         ApplicationConfig app = new ApplicationConfig("APP");
         applicationModel.getApplicationConfigManager().setApplication(app);
         FrameworkStatusReportService reportService = applicationModel.getBeanFactory().getBean(FrameworkStatusReportService.class);

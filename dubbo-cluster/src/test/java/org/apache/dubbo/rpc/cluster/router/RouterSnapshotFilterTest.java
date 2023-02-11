@@ -30,7 +30,7 @@ class RouterSnapshotFilterTest {
 
     @Test
     void test() {
-        FrameworkModel frameworkModel = new FrameworkModel();
+        FrameworkModel frameworkModel = FrameworkModel.newModel();
         RouterSnapshotSwitcher routerSnapshotSwitcher = frameworkModel.getBeanFactory().getBean(RouterSnapshotSwitcher.class);
         RouterSnapshotFilter routerSnapshotFilter = new RouterSnapshotFilter(frameworkModel);
 

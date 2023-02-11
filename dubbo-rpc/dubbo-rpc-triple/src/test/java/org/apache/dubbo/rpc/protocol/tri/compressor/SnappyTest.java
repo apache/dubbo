@@ -46,7 +46,7 @@ class SnappyTest {
         Compressor compressor = ApplicationModel.defaultModel().getDefaultModule()
             .getExtensionLoader(Compressor.class)
             .getExtension(compressorName);
-        String loadByStatic = Compressor.getCompressor(new FrameworkModel(), compressorName)
+        String loadByStatic = Compressor.getCompressor(FrameworkModel.newModel(), compressorName)
             .getMessageEncoding();
         Assertions.assertEquals(loadByStatic, compressor.getMessageEncoding());
 

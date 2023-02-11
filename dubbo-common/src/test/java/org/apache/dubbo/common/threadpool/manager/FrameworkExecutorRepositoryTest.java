@@ -35,7 +35,7 @@ class FrameworkExecutorRepositoryTest {
 
     @BeforeEach
     public void setup() {
-        frameworkModel = new FrameworkModel();
+        frameworkModel = FrameworkModel.newModel();
         frameworkExecutorRepository = frameworkModel.getBeanFactory().getBean(FrameworkExecutorRepository.class);
     }
 

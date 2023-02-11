@@ -47,11 +47,11 @@ public class ModuleModel extends ScopeModel {
     private volatile ModuleConfigManager moduleConfigManager;
     private volatile ModuleDeployer deployer;
 
-    public ModuleModel(ApplicationModel applicationModel) {
+    protected ModuleModel(ApplicationModel applicationModel) {
         this(applicationModel, false);
     }
 
-    public ModuleModel(ApplicationModel applicationModel, boolean isInternal) {
+    protected ModuleModel(ApplicationModel applicationModel, boolean isInternal) {
         super(applicationModel, ExtensionScope.MODULE, isInternal);
         synchronized (instLock) {
             Assert.notNull(applicationModel, "ApplicationModel can not be null");

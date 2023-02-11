@@ -68,7 +68,10 @@ public class FrameworkModel extends ScopeModel {
 
     private final ApplicationModel internalApplicationModel;
 
-    public FrameworkModel() {
+    /**
+     * Use {@link FrameworkModel#newModel()} to create a new model
+     */
+    private FrameworkModel() {
         super(null, ExtensionScope.FRAMEWORK, false);
         synchronized (instLock) {
             this.setInternalId(String.valueOf(index.getAndIncrement()));
@@ -161,6 +164,17 @@ public class FrameworkModel extends ScopeModel {
             if (allInstances.isEmpty()) {
                 GlobalResourcesRepository.getInstance().destroy();
             }
+        }
+    }
+
+    /**
+     * Create a new framework model
+     *
+     * @return FrameworkModel instance
+     */
+    public static FrameworkModel newModel() {
+        synchronized (globalLock) {
+            return new FrameworkModel();
         }
     }
 

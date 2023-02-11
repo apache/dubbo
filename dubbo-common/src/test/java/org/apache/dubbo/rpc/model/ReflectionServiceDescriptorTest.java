@@ -44,7 +44,7 @@ class ReflectionServiceDescriptorTest {
 
     @Test
     void getFullServiceDefinition() {
-        TypeDefinitionBuilder.initBuilders(new FrameworkModel());
+        TypeDefinitionBuilder.initBuilders(FrameworkModel.newModel());
         Assertions.assertNotNull(service.getFullServiceDefinition("demoService"));
     }
 
