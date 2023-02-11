@@ -64,7 +64,7 @@ public class DefaultMetricsCollector implements MetricsCollector {
     }
 
     public void increaseTotalRequests(String applicationName, Invocation invocation) {
-        increaseAndPublishEvent(applicationName, RequestEvent.Type.TOTAL, invocation);
+        increaseAndPublishEvent(applicationName, MetricsEvent.Type.TOTAL, invocation);
     }
 
     public void increaseSucceedRequests(String applicationName, Invocation invocation) {
@@ -114,15 +114,10 @@ public class DefaultMetricsCollector implements MetricsCollector {
     @Override
     public List<MetricSample> collect() {
         List<MetricSample> list = new ArrayList<>();
-        if(RpcContext.getContext().isProviderSide()){
-            collectRequests(list);
-            collectRT(list);
-        }else {
-            collectConsumerRequests(list);
-            collectConsumerRT(list);
-
-        }
-
+        collectRequests(list);
+        collectRT(list);
+        collectConsumerRequests(list);
+        collectConsumerRT(list);
 
         return list;
     }

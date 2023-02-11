@@ -144,17 +144,12 @@ public class AggregateMetricsCollector implements MetricsCollector, MetricsListe
     @Override
     public List<MetricSample> collect() {
         List<MetricSample> list = new ArrayList<>();
-
-        if(RpcContext.getContext().isConsumerSide()){
-            collectConsumerRequests(list);
-            collectConsumerQPS(list);
-            collectConsumerRT(list);
-
-        }else if(RpcContext.getContext().isProviderSide()){
-            collectRequests(list);
-            collectQPS(list);
-            collectRT(list);
-        }
+        collectConsumerRequests(list);
+        collectConsumerQPS(list);
+        collectConsumerRT(list);
+        collectRequests(list);
+        collectQPS(list);
+        collectRT(list);
 
         return list;
     }

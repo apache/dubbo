@@ -83,12 +83,6 @@
             <artifactId>async-http-client</artifactId>
             <version>${async.http.client.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-common</artifactId>
-            <version>3.2.0-beta.4</version>
-            <scope>compile</scope>
-        </dependency>
     </dependencies>
 
     <profiles>

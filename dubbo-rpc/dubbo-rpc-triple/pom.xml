@@ -92,11 +92,6 @@
             <version>${reactor.version}</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo</artifactId>
-            <version>3.2.0-beta.4</version>
-        </dependency>
     </dependencies>
     <build>
         <plugins>
