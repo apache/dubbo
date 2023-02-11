@@ -18,8 +18,7 @@ package org.apache.dubbo.rpc.protocol.rest.message.decode;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.common.json.JSON;
-import org.apache.dubbo.common.json.factory.JsonFactory;
+import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.metadata.rest.media.MediaType;
 import org.apache.dubbo.rpc.protocol.rest.message.AbstractMessageCodec;
 import org.apache.dubbo.rpc.protocol.rest.message.MediaTypeMatcher;
@@ -46,8 +45,6 @@ public class JsonCodec extends AbstractMessageCodec {
 
     @Override
     public void encode(ByteArrayOutputStream outputStream, Object unSerializedBody, URL url) throws Exception {
-        JsonFactory jsonFactory = url.getApplicationModel().getAdaptiveExtension(JsonFactory.class);
-        JSON json = jsonFactory.createJson(url);
-        outputStream.write(json.toJson(unSerializedBody).getBytes(StandardCharsets.UTF_8));
+        outputStream.write(JsonUtils.getJson().toJson(unSerializedBody).getBytes(StandardCharsets.UTF_8));
     }
 }
