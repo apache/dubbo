@@ -37,6 +37,7 @@ import java.util.HashSet;
 
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
@@ -61,12 +62,6 @@ public class DefaultMetricsCollector implements MetricsCollector {
     public DefaultMetricsCollector() {
         this.stats = new MetricsStatComposite( this);
         this.eventMulticaster = SimpleMetricsEventMulticaster.getInstance();
-        FrameworkModel frameworkModel = FrameworkModel.defaultModel();
-        FrameworkExecutorRepository frameworkExecutorRepository = frameworkModel.getBeanFactory().getBean(FrameworkExecutorRepository.class);
-        String applicationName = frameworkModel.defaultApplication().getApplicationName();
-        threadPoolMetricSet.add(new ThreadPoolMetric(applicationName, "SharedExecutor", ((ThreadPoolExecutor)frameworkExecutorRepository.getSharedExecutor())));
-        threadPoolMetricSet.add(new ThreadPoolMetric(applicationName, "MappingRefreshingExecutor", ((ThreadPoolExecutor)frameworkExecutorRepository.getMappingRefreshingExecutor())));
-        threadPoolMetricSet.add(new ThreadPoolMetric(applicationName, "PoolRouterExecutor", ((ThreadPoolExecutor)frameworkExecutorRepository.getPoolRouterExecutor())));
     }
 
     public void setCollectEnabled(Boolean collectEnabled) {
@@ -127,6 +122,23 @@ public class DefaultMetricsCollector implements MetricsCollector {
     public void addApplicationInfo(String applicationName, String version) {
         doExecute(MetricsEvent.Type.APPLICATION_INFO, statHandler -> statHandler.addApplication(applicationName,version));
     }
+
+    public void addThreadPool(FrameworkModel frameworkModel, String applicationName) {
+        FrameworkExecutorRepository frameworkExecutorRepository =
+            frameworkModel.getBeanFactory().getBean(FrameworkExecutorRepository.class);
+        addThreadPoolExecutor(applicationName, "SharedExecutor", frameworkExecutorRepository.getSharedExecutor());
+        addThreadPoolExecutor(applicationName, "MappingRefreshingExecutor",  frameworkExecutorRepository.getMappingRefreshingExecutor());
+        addThreadPoolExecutor(applicationName, "PoolRouterExecutor", frameworkExecutorRepository.getPoolRouterExecutor());
+    }
+
+    private void addThreadPoolExecutor(String applicationName, String threadPoolName, ExecutorService executorService) {
+        Optional<ExecutorService> executorOptional = Optional.ofNullable(executorService);
+        if (executorOptional.isPresent() && executorOptional.get() instanceof ThreadPoolExecutor ) {
+            threadPoolMetricSet.add(new ThreadPoolMetric(applicationName, threadPoolName,
+                (ThreadPoolExecutor) executorOptional.get()));
+        }
+    }
+
     @Override
     public List<MetricSample> collect() {
         List<MetricSample> list = new ArrayList<>();
