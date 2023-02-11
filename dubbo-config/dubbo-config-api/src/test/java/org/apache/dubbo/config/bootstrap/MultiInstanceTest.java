@@ -128,8 +128,8 @@ class MultiInstanceTest {
     @Test
     void testIsolatedApplications() {
 
-        DubboBootstrap dubboBootstrap1 = DubboBootstrap.newInstance(FrameworkModel.newModel());
-        DubboBootstrap dubboBootstrap2 = DubboBootstrap.newInstance(FrameworkModel.newModel());
+        DubboBootstrap dubboBootstrap1 = DubboBootstrap.newInstance(new FrameworkModel());
+        DubboBootstrap dubboBootstrap2 = DubboBootstrap.newInstance(new FrameworkModel());
         try {
             ApplicationModel applicationModel1 = dubboBootstrap1.getApplicationModel();
             ApplicationModel applicationModel2 = dubboBootstrap2.getApplicationModel();
@@ -198,7 +198,7 @@ class MultiInstanceTest {
     @Test
     void testSharedApplications() {
 
-        FrameworkModel frameworkModel = FrameworkModel.newModel();
+        FrameworkModel frameworkModel = new FrameworkModel();
         DubboBootstrap dubboBootstrap1 = DubboBootstrap.newInstance(frameworkModel);
         DubboBootstrap dubboBootstrap2 = DubboBootstrap.newInstance(frameworkModel);
         try {

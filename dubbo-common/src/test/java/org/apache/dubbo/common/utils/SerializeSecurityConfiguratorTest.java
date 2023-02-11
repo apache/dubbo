@@ -42,7 +42,7 @@ class SerializeSecurityConfiguratorTest {
 
     @Test
     void test() {
-        FrameworkModel frameworkModel = FrameworkModel.newModel();
+        FrameworkModel frameworkModel = new FrameworkModel();
         ApplicationModel applicationModel = frameworkModel.newApplication();
         ModuleModel moduleModel = applicationModel.newModule();
         SerializeSecurityManager ssm = frameworkModel.getBeanFactory().getBean(SerializeSecurityManager.class);
@@ -62,7 +62,7 @@ class SerializeSecurityConfiguratorTest {
 
     @Test
     void testStatus1() {
-        FrameworkModel frameworkModel = FrameworkModel.newModel();
+        FrameworkModel frameworkModel = new FrameworkModel();
         ApplicationModel applicationModel = frameworkModel.newApplication();
         ModuleModel moduleModel = applicationModel.newModule();
         ApplicationConfig applicationConfig = new ApplicationConfig("Test");
@@ -81,7 +81,7 @@ class SerializeSecurityConfiguratorTest {
 
     @Test
     void testStatus2() {
-        FrameworkModel frameworkModel = FrameworkModel.newModel();
+        FrameworkModel frameworkModel = new FrameworkModel();
         ApplicationModel applicationModel = frameworkModel.newApplication();
         ModuleModel moduleModel = applicationModel.newModule();
         ApplicationConfig applicationConfig = new ApplicationConfig("Test");
@@ -100,7 +100,7 @@ class SerializeSecurityConfiguratorTest {
 
     @Test
     void testStatus3() {
-        FrameworkModel frameworkModel = FrameworkModel.newModel();
+        FrameworkModel frameworkModel = new FrameworkModel();
         ApplicationModel applicationModel = frameworkModel.newApplication();
         ModuleModel moduleModel = applicationModel.newModule();
         ApplicationConfig applicationConfig = new ApplicationConfig("Test");
@@ -119,7 +119,7 @@ class SerializeSecurityConfiguratorTest {
 
     @Test
     void testStatus4() {
-        FrameworkModel frameworkModel = FrameworkModel.newModel();
+        FrameworkModel frameworkModel = new FrameworkModel();
         ApplicationModel applicationModel = frameworkModel.newApplication();
         ModuleModel moduleModel = applicationModel.newModule();
         System.setProperty(CommonConstants.CLASS_DESERIALIZE_OPEN_CHECK, "false");
@@ -137,7 +137,7 @@ class SerializeSecurityConfiguratorTest {
 
     @Test
     void testStatus5() {
-        FrameworkModel frameworkModel = FrameworkModel.newModel();
+        FrameworkModel frameworkModel = new FrameworkModel();
         ApplicationModel applicationModel = frameworkModel.newApplication();
         ModuleModel moduleModel = applicationModel.newModule();
         System.setProperty(CommonConstants.CLASS_DESERIALIZE_BLOCK_ALL, "true");
@@ -155,7 +155,7 @@ class SerializeSecurityConfiguratorTest {
 
     @Test
     void testConfig1() {
-        FrameworkModel frameworkModel = FrameworkModel.newModel();
+        FrameworkModel frameworkModel = new FrameworkModel();
         ApplicationModel applicationModel = frameworkModel.newApplication();
         ModuleModel moduleModel = applicationModel.newModule();
         System.setProperty(CLASS_DESERIALIZE_ALLOWED_LIST, "test.package1, test.package2, ,");
@@ -175,7 +175,7 @@ class SerializeSecurityConfiguratorTest {
 
     @Test
     void testConfig2() {
-        FrameworkModel frameworkModel = FrameworkModel.newModel();
+        FrameworkModel frameworkModel = new FrameworkModel();
         ApplicationModel applicationModel = frameworkModel.newApplication();
         ModuleModel moduleModel = applicationModel.newModule();
         System.setProperty(CLASS_DESERIALIZE_BLOCKED_LIST, "test.package1, test.package2, ,");
@@ -195,7 +195,7 @@ class SerializeSecurityConfiguratorTest {
 
     @Test
     void testConfig3() {
-        FrameworkModel frameworkModel = FrameworkModel.newModel();
+        FrameworkModel frameworkModel = new FrameworkModel();
         ApplicationModel applicationModel = frameworkModel.newApplication();
         ModuleModel moduleModel = applicationModel.newModule();
         System.setProperty(CLASS_DESERIALIZE_ALLOWED_LIST, "test.package1, test.package2, ,");
@@ -217,7 +217,7 @@ class SerializeSecurityConfiguratorTest {
 
     @Test
     void testSerializable1() {
-        FrameworkModel frameworkModel = FrameworkModel.newModel();
+        FrameworkModel frameworkModel = new FrameworkModel();
         ApplicationModel applicationModel = frameworkModel.newApplication();
         ApplicationConfig applicationConfig = new ApplicationConfig("Test");
         applicationConfig.setCheckSerializable(false);
@@ -237,7 +237,7 @@ class SerializeSecurityConfiguratorTest {
 
     @Test
     void testSerializable2() {
-        FrameworkModel frameworkModel = FrameworkModel.newModel();
+        FrameworkModel frameworkModel = new FrameworkModel();
         ApplicationModel applicationModel = frameworkModel.newApplication();
         ModuleModel moduleModel = applicationModel.newModule();
 
@@ -254,7 +254,7 @@ class SerializeSecurityConfiguratorTest {
 
     @Test
     void testRegister1() {
-        FrameworkModel frameworkModel = FrameworkModel.newModel();
+        FrameworkModel frameworkModel = new FrameworkModel();
         ApplicationModel applicationModel = frameworkModel.newApplication();
         ModuleModel moduleModel = applicationModel.newModule();
 
@@ -288,7 +288,7 @@ class SerializeSecurityConfiguratorTest {
 
     @Test
     void testRegister2() {
-        FrameworkModel frameworkModel = FrameworkModel.newModel();
+        FrameworkModel frameworkModel = new FrameworkModel();
         ApplicationModel applicationModel = frameworkModel.newApplication();
         ModuleModel moduleModel = applicationModel.newModule();
 
@@ -321,7 +321,7 @@ class SerializeSecurityConfiguratorTest {
 
     @Test
     void testRegister3() {
-        FrameworkModel frameworkModel = FrameworkModel.newModel();
+        FrameworkModel frameworkModel = new FrameworkModel();
         ApplicationModel applicationModel = frameworkModel.newApplication();
         ModuleModel moduleModel = applicationModel.newModule();
         ApplicationConfig applicationConfig = new ApplicationConfig("Test");
@@ -350,7 +350,7 @@ class SerializeSecurityConfiguratorTest {
 
     @Test
     void testRegister4() {
-        FrameworkModel frameworkModel = FrameworkModel.newModel();
+        FrameworkModel frameworkModel = new FrameworkModel();
         ApplicationModel applicationModel = frameworkModel.newApplication();
         ModuleModel moduleModel = applicationModel.newModule();
         ApplicationConfig applicationConfig = new ApplicationConfig("Test");
@@ -370,7 +370,7 @@ class SerializeSecurityConfiguratorTest {
 
     @Test
     void testRegister5() {
-        FrameworkModel frameworkModel = FrameworkModel.newModel();
+        FrameworkModel frameworkModel = new FrameworkModel();
         ApplicationModel applicationModel = frameworkModel.newApplication();
         ModuleModel moduleModel = applicationModel.newModule();
         ApplicationConfig applicationConfig = new ApplicationConfig("Test");

@@ -27,7 +27,7 @@ import org.mockito.Mockito;
 class SerializeWarnedClassesTest {
     @Test
     void test() {
-        FrameworkModel frameworkModel = FrameworkModel.newModel();
+        FrameworkModel frameworkModel = new FrameworkModel();
 
         SerializeSecurityManager ssm = frameworkModel.getBeanFactory().getBean(SerializeSecurityManager.class);
 

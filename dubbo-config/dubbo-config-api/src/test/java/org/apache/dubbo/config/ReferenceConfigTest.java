@@ -1105,7 +1105,7 @@ class ReferenceConfigTest {
 
     @Test
     void testClassLoader() {
-        FrameworkModel frameworkModel = FrameworkModel.newModel();
+        FrameworkModel frameworkModel = new FrameworkModel();
         ApplicationModel applicationModel = frameworkModel.newApplication();
         applicationModel.getApplicationConfigManager().setApplication(new ApplicationConfig("Test"));
 

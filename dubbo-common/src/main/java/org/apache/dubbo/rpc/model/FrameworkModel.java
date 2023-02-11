@@ -71,31 +71,33 @@ public class FrameworkModel extends ScopeModel {
     /**
      * Use {@link FrameworkModel#newModel()} to create a new model
      */
-    private FrameworkModel() {
+    public FrameworkModel() {
         super(null, ExtensionScope.FRAMEWORK, false);
-        synchronized (instLock) {
-            this.setInternalId(String.valueOf(index.getAndIncrement()));
-            // register FrameworkModel instance early
-            allInstances.add(this);
-            if (LOGGER.isInfoEnabled()) {
-                LOGGER.info(getDesc() + " is created");
+        synchronized (globalLock) {
+            synchronized (instLock) {
+                this.setInternalId(String.valueOf(index.getAndIncrement()));
+                // register FrameworkModel instance early
+                allInstances.add(this);
+                if (LOGGER.isInfoEnabled()) {
+                    LOGGER.info(getDesc() + " is created");
+                }
+                initialize();
+
+                TypeDefinitionBuilder.initBuilders(this);
+
+                serviceRepository = new FrameworkServiceRepository(this);
+
+                ExtensionLoader<ScopeModelInitializer> initializerExtensionLoader = this.getExtensionLoader(ScopeModelInitializer.class);
+                Set<ScopeModelInitializer> initializers = initializerExtensionLoader.getSupportedExtensionInstances();
+                for (ScopeModelInitializer initializer : initializers) {
+                    initializer.initializeFrameworkModel(this);
+                }
+
+                internalApplicationModel = new ApplicationModel(this, true);
+                internalApplicationModel.getApplicationConfigManager().setApplication(
+                    new ApplicationConfig(internalApplicationModel, CommonConstants.DUBBO_INTERNAL_APPLICATION));
+                internalApplicationModel.setModelName(CommonConstants.DUBBO_INTERNAL_APPLICATION);
             }
-            initialize();
-
-            TypeDefinitionBuilder.initBuilders(this);
-
-            serviceRepository = new FrameworkServiceRepository(this);
-
-            ExtensionLoader<ScopeModelInitializer> initializerExtensionLoader = this.getExtensionLoader(ScopeModelInitializer.class);
-            Set<ScopeModelInitializer> initializers = initializerExtensionLoader.getSupportedExtensionInstances();
-            for (ScopeModelInitializer initializer : initializers) {
-                initializer.initializeFrameworkModel(this);
-            }
-
-            internalApplicationModel = new ApplicationModel(this, true);
-            internalApplicationModel.getApplicationConfigManager().setApplication(
-                new ApplicationConfig(internalApplicationModel, CommonConstants.DUBBO_INTERNAL_APPLICATION));
-            internalApplicationModel.setModelName(CommonConstants.DUBBO_INTERNAL_APPLICATION);
         }
     }
 
@@ -157,17 +159,6 @@ public class FrameworkModel extends ScopeModel {
             if (allInstances.isEmpty()) {
                 GlobalResourcesRepository.getInstance().destroy();
             }
-        }
-    }
-
-    /**
-     * Create a new framework model
-     *
-     * @return FrameworkModel instance
-     */
-    public static FrameworkModel newModel() {
-        synchronized (globalLock) {
-            return new FrameworkModel();
         }
     }
 

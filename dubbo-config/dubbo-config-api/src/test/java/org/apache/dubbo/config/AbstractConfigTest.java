@@ -521,7 +521,7 @@ class AbstractConfigTest {
 
     @Test
     void testRefreshParametersWithOverrideConfigMode() {
-        FrameworkModel frameworkModel = FrameworkModel.newModel();
+        FrameworkModel frameworkModel = new FrameworkModel();
         try {
             // test OVERRIDE_ALL configMode
             {

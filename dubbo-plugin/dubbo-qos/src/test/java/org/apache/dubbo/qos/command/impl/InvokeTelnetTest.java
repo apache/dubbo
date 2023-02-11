@@ -52,7 +52,7 @@ class InvokeTelnetTest {
     @BeforeEach
     public void setup() {
         DubboBootstrap.reset();
-        frameworkModel = FrameworkModel.newModel();
+        frameworkModel = new FrameworkModel();
         invoke = new InvokeTelnet(frameworkModel);
         select = new SelectTelnet(frameworkModel);
         mockChannel = mock(Channel.class);

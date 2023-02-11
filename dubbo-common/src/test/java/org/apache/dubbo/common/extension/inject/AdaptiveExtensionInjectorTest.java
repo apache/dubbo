@@ -35,7 +35,7 @@ class AdaptiveExtensionInjectorTest {
 
     @Test
     void test() {
-        FrameworkModel frameworkModel = FrameworkModel.newModel();
+        FrameworkModel frameworkModel = new FrameworkModel();
         ExtensionLoader<ExtensionInjector> extensionLoader = frameworkModel.getExtensionLoader(ExtensionInjector.class);
 
         ExtensionInjector adaptiveExtensionInjector = extensionLoader.getAdaptiveExtension();

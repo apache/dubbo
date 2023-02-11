@@ -29,7 +29,7 @@ class LiveTest {
 
     @BeforeEach
     public void setUp() {
-        frameworkModel = FrameworkModel.newModel();
+        frameworkModel = new FrameworkModel();
     }
 
     @AfterEach

@@ -34,7 +34,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KE
 class ConfigurationUtilsTest {
     @Test
     void testCachedProperties() {
-        FrameworkModel frameworkModel = FrameworkModel.newModel();
+        FrameworkModel frameworkModel = new FrameworkModel();
 
         ApplicationModel applicationModel = frameworkModel.newApplication();
         Environment originApplicationEnvironment = applicationModel.getModelEnvironment();

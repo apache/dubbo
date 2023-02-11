@@ -39,7 +39,7 @@ class ServiceRepositoryTest {
 
     @BeforeEach
     public void setUp() {
-        frameworkModel = FrameworkModel.newModel();
+        frameworkModel = new FrameworkModel();
         applicationModel = frameworkModel.newApplication();
         moduleModel = applicationModel.newModule();
     }

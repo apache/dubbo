@@ -26,7 +26,7 @@ import org.junit.jupiter.api.Test;
 class SerializeCheckUtilsTest {
     @Test
     void testNotify() {
-        FrameworkModel frameworkModel = FrameworkModel.newModel();
+        FrameworkModel frameworkModel = new FrameworkModel();
 
         SerializeSecurityManager ssm = frameworkModel.getBeanFactory().getBean(SerializeSecurityManager.class);
 

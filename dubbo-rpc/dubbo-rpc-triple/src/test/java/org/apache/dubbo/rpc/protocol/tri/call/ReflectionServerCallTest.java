@@ -58,7 +58,7 @@ class ReflectionServerCallTest {
         String methodName = "method";
         try {
             ReflectionAbstractServerCall call = new ReflectionAbstractServerCall(invoker, serverStream,
-                FrameworkModel.newModel(), "",
+                new FrameworkModel(), "",
                 service, methodName,
                 Collections.emptyList(),
                 ImmediateEventExecutor.INSTANCE);
@@ -75,7 +75,7 @@ class ReflectionServerCallTest {
             .thenReturn(serviceDescriptor);
 
         ReflectionAbstractServerCall call2 = new ReflectionAbstractServerCall(invoker, serverStream,
-            FrameworkModel.newModel(), "",
+            new FrameworkModel(), "",
             service, methodName,
             Collections.emptyList(),
             ImmediateEventExecutor.INSTANCE);

@@ -43,7 +43,7 @@ class LsTest {
 
     @BeforeEach
     public void setUp() {
-        frameworkModel = FrameworkModel.newModel();
+        frameworkModel = new FrameworkModel();
         repository = frameworkModel.newApplication().getDefaultModule().getServiceRepository();
         registerProvider();
         registerConsumer();

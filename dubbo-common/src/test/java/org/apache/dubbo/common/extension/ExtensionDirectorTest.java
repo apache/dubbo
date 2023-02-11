@@ -89,7 +89,7 @@ class ExtensionDirectorTest {
         // 2. Application scope SPI can be injected ApplicationModel, FrameworkModel, but not ModuleModel
         // 3. Framework scope SPI can be injected FrameworkModel, but not ModuleModel, ApplicationModel
 
-        FrameworkModel frameworkModel = FrameworkModel.newModel();
+        FrameworkModel frameworkModel = new FrameworkModel();
         ApplicationModel applicationModel = frameworkModel.newApplication();
         ModuleModel moduleModel = applicationModel.newModule();
 
@@ -151,7 +151,7 @@ class ExtensionDirectorTest {
         //   └─applicationModel21
         //      └─moduleModel211
 
-        FrameworkModel frameworkModel1 = FrameworkModel.newModel();
+        FrameworkModel frameworkModel1 = new FrameworkModel();
         ApplicationModel applicationModel11 = frameworkModel1.newApplication();
         ModuleModel moduleModel111 = applicationModel11.newModule();
         ModuleModel moduleModel112 = applicationModel11.newModule();
@@ -159,7 +159,7 @@ class ExtensionDirectorTest {
         ApplicationModel applicationModel12 = frameworkModel1.newApplication();
         ModuleModel moduleModel121 = applicationModel12.newModule();
 
-        FrameworkModel frameworkModel2 = FrameworkModel.newModel();
+        FrameworkModel frameworkModel2 = new FrameworkModel();
         ApplicationModel applicationModel21 = frameworkModel2.newApplication();
         ModuleModel moduleModel211 = applicationModel21.newModule();
 
@@ -234,7 +234,7 @@ class ExtensionDirectorTest {
         // 2. Application scope extension can be injected to extensions of Application/Module scope, but not Framework scope
         // 3. Module scope extension can be injected to extensions of Module scope, but not Framework/Application scope
 
-        FrameworkModel frameworkModel = FrameworkModel.newModel();
+        FrameworkModel frameworkModel = new FrameworkModel();
         ApplicationModel applicationModel = frameworkModel.newApplication();
         ModuleModel moduleModel = applicationModel.newModule();
 

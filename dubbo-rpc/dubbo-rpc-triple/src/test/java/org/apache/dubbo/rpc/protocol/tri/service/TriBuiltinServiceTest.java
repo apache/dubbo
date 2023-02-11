@@ -32,7 +32,7 @@ class TriBuiltinServiceTest {
 
     @Test
     void testDefaultNotEnable() {
-        FrameworkModel frameworkModel = FrameworkModel.newModel();
+        FrameworkModel frameworkModel = new FrameworkModel();
         TriBuiltinService triBuiltinService = new TriBuiltinService(frameworkModel);
         Assertions.assertFalse(triBuiltinService.enable());
         Assertions.assertNull(triBuiltinService.getHealthStatusManager());
@@ -40,7 +40,7 @@ class TriBuiltinServiceTest {
 
     @Test
     void testForceEnable(){
-        FrameworkModel frameworkModel = FrameworkModel.newModel();
+        FrameworkModel frameworkModel = new FrameworkModel();
         TriBuiltinService triBuiltinService = new TriBuiltinService(frameworkModel);
         triBuiltinService.init();
         String serviceName = DubboHealthTriple.SERVICE_NAME;

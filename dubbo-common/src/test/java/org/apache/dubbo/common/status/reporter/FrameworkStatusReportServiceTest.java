@@ -40,7 +40,7 @@ class FrameworkStatusReportServiceTest {
 
     @Test
     void test() {
-        FrameworkModel frameworkModel = FrameworkModel.newModel();
+        FrameworkModel frameworkModel = new FrameworkModel();
         ApplicationModel applicationModel = frameworkModel.newApplication();
         ApplicationConfig app = new ApplicationConfig("APP");
         applicationModel.getApplicationConfigManager().setApplication(app);

@@ -63,7 +63,7 @@ class EnvironmentTest {
 
     @Test
     void test() {
-        FrameworkModel frameworkModel = FrameworkModel.newModel();
+        FrameworkModel frameworkModel = new FrameworkModel();
         ApplicationModel applicationModel = frameworkModel.newApplication();
         Environment environment = applicationModel.getModelEnvironment();
 

@@ -34,7 +34,7 @@ class ApplicationModelTest {
 
     @Test
     void testInitialize() {
-        FrameworkModel frameworkModel = FrameworkModel.newModel();
+        FrameworkModel frameworkModel = new FrameworkModel();
         ApplicationModel applicationModel = frameworkModel.newApplication();
 
         Assertions.assertEquals(applicationModel.getParent(), frameworkModel);
@@ -76,7 +76,7 @@ class ApplicationModelTest {
 
     @Test
     void testModule() {
-        FrameworkModel frameworkModel = FrameworkModel.newModel();
+        FrameworkModel frameworkModel = new FrameworkModel();
         ApplicationModel applicationModel = frameworkModel.newApplication();
 
         ModuleModel defaultModule = applicationModel.getDefaultModule();
@@ -100,7 +100,7 @@ class ApplicationModelTest {
         Assertions.assertEquals(ApplicationModel.defaultModel(), applicationModel);
         applicationModel.getFrameworkModel().destroy();
 
-        FrameworkModel frameworkModel = FrameworkModel.newModel();
+        FrameworkModel frameworkModel = new FrameworkModel();
         ApplicationModel applicationModel1 = frameworkModel.newApplication();
         ApplicationModel applicationModel2 = ApplicationModel.ofNullable(applicationModel1);
         Assertions.assertEquals(applicationModel1, applicationModel2);
@@ -109,7 +109,7 @@ class ApplicationModelTest {
 
     @Test
     void testDestroy() {
-        FrameworkModel frameworkModel = FrameworkModel.newModel();
+        FrameworkModel frameworkModel = new FrameworkModel();
         ApplicationModel applicationModel = frameworkModel.newApplication();
 
         applicationModel.getDefaultModule();

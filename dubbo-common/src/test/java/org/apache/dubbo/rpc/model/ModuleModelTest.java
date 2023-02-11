@@ -32,7 +32,7 @@ class ModuleModelTest {
 
     @Test
     void testInitialize() {
-        FrameworkModel frameworkModel = FrameworkModel.newModel();
+        FrameworkModel frameworkModel = new FrameworkModel();
         ApplicationModel applicationModel = frameworkModel.newApplication();
         ModuleModel moduleModel = applicationModel.newModule();
         Assertions.assertEquals(moduleModel.getParent(), applicationModel);
@@ -56,7 +56,7 @@ class ModuleModelTest {
 
     @Test
     void testModelEnvironment() {
-        FrameworkModel frameworkModel = FrameworkModel.newModel();
+        FrameworkModel frameworkModel = new FrameworkModel();
         ApplicationModel applicationModel = frameworkModel.newApplication();
         ModuleModel moduleModel = applicationModel.newModule();
 
@@ -68,7 +68,7 @@ class ModuleModelTest {
 
     @Test
     void testDestroy() {
-        FrameworkModel frameworkModel = FrameworkModel.newModel();
+        FrameworkModel frameworkModel = new FrameworkModel();
         ApplicationModel applicationModel = frameworkModel.newApplication();
         ModuleModel moduleModel = applicationModel.newModule();
 

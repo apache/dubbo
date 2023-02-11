@@ -541,7 +541,7 @@ class ServiceConfigTest {
 
     @Test
     void testMappingRetry() {
-        FrameworkModel frameworkModel = FrameworkModel.newModel();
+        FrameworkModel frameworkModel = new FrameworkModel();
         ApplicationModel applicationModel = frameworkModel.newApplication();
         ServiceConfig<DemoService> serviceConfig = new ServiceConfig<>(applicationModel.newModule());
         serviceConfig.exported();

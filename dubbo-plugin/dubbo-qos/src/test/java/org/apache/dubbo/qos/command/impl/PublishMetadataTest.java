@@ -32,7 +32,7 @@ class PublishMetadataTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        frameworkModel = FrameworkModel.newModel();
+        frameworkModel = new FrameworkModel();
         for (int i = 0; i < 3; i++) {
             ApplicationModel applicationModel = frameworkModel.newApplication();
             applicationModel.getApplicationConfigManager().setApplication(new ApplicationConfig("APP_" + i));
