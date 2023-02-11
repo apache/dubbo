@@ -25,6 +25,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -72,7 +73,7 @@ public class DataParseUtils {
      * @throws Exception
      */
     public static void writeJsonContent(Object object, OutputStream outputStream) throws Exception {
-        JsonUtils.getJson().serializeObject(outputStream, object);
+        outputStream.write(JsonUtils.getJson().toJson(object).getBytes(StandardCharsets.UTF_8));
     }
 
     /**
@@ -153,7 +154,8 @@ public class DataParseUtils {
     }
 
     public static Object jsonConvert(Class targetType, InputStream inputStream) throws Exception {
-        return JsonUtils.getJson().parseObject(inputStream, targetType);
+        String data = StreamUtils.copyToString(inputStream, StandardCharsets.UTF_8);
+        return JsonUtils.getJson().toJavaObject(data, targetType);
     }
 
 

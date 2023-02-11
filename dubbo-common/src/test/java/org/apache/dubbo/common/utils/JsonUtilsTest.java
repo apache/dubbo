@@ -16,17 +16,6 @@
  */
 package org.apache.dubbo.common.utils;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
-
-import org.apache.dubbo.common.json.JSON;
 import org.apache.dubbo.common.json.impl.FastJson2Impl;
 import org.apache.dubbo.common.json.impl.FastJsonImpl;
 import org.apache.dubbo.common.json.impl.GsonImpl;
@@ -34,9 +23,17 @@ import org.apache.dubbo.common.json.impl.JacksonImpl;
 import org.apache.dubbo.common.utils.json.TestEnum;
 import org.apache.dubbo.common.utils.json.TestObjectA;
 import org.apache.dubbo.common.utils.json.TestObjectB;
-import org.apache.dubbo.common.vo.UserVo;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 class JsonUtilsTest {
 
@@ -281,41 +278,5 @@ class JsonUtilsTest {
 
         Thread.currentThread().setContextClassLoader(originClassLoader);
         JsonUtils.setJson(null);
-    }
-
-    @Test
-    public void TestStream() throws Exception {
-        UserVo instance = UserVo.getInstance();
-        byte[] bytes = new byte[4];
-        for (int i = 0; i < bytes.length; i++) {
-            bytes[i] = (byte) i;
-        }
-
-        List<Object> objects = Arrays.asList(instance, 1, "dubbo", bytes);
-
-        List<JSON> jsons = Arrays.asList(new GsonImpl(), new JacksonImpl(), new FastJson2Impl(), new FastJsonImpl());
-
-        for (int i = 0; i < objects.size(); i++) {
-
-            for (JSON json : jsons) {
-
-                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-                Object value = objects.get(i);
-                json.serializeObject(byteArrayOutputStream, value);
-
-                ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
-                Object object1 = json.parseObject(byteArrayInputStream, value.getClass());
-
-                if (value.getClass().isArray()) {
-                    Arrays.equals((byte[]) value, (byte[]) object1);
-                } else {
-                    Assertions.assertEquals(object1, value);
-
-                }
-            }
-
-        }
-
-
     }
 }
