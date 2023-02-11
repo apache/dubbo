@@ -48,7 +48,7 @@ public class RequestTemplate implements Serializable {
     private String address;
     private Object body;
     private byte[] byteBody = new byte[0];
-    private String protocol = "http://";
+    private String protocol = "http";
     private final Invocation invocation;
 
 
@@ -59,7 +59,7 @@ public class RequestTemplate implements Serializable {
     }
 
     public String getURL() {
-        StringBuilder stringBuilder = new StringBuilder(getProtocol() + address);
+        StringBuilder stringBuilder = new StringBuilder(getProtocol() + "://" + address);
 
         stringBuilder.append(getUri());
         return stringBuilder.toString();
