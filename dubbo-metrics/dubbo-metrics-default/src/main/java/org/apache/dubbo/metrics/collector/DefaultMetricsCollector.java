@@ -51,6 +51,7 @@ public class DefaultMetricsCollector implements MetricsCollector {
     public DefaultMetricsCollector() {
         this.stats = new MetricsStatComposite(this);
         this.eventMulticaster = new SimpleMetricsEventMulticaster();
+        eventMulticaster.setAvailable();
     }
 
     public void setCollectEnabled(Boolean collectEnabled) {
