@@ -40,14 +40,6 @@ import org.apache.dubbo.rpc.model.PackableMethod;
 
 import com.google.protobuf.Message;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.lang.reflect.ParameterizedType;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 import static org.apache.dubbo.common.constants.CommonConstants.$ECHO;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOBUF_MESSAGE_CLASS_NAME;
 import static org.apache.dubbo.rpc.protocol.tri.TripleCustomerProtocolWapper.*;
@@ -428,7 +420,7 @@ public class ReflectionPackableMethod implements PackableMethod {
                                 String serialize,
                                 boolean singleArgument) {
             this.url = url;
-            this.serialize = convertHessianToWrapper(serialize);
+            this.serialize = serialize;
             this.multipleSerialization = multipleSerialization;
             this.singleArgument = singleArgument;
         }
@@ -626,20 +618,6 @@ public class ReflectionPackableMethod implements PackableMethod {
             classCache.put(className, clz);
         }
         return clz;
-    }
-
-    /**
-     * Convert hessian version from Dubbo's SPI version(hessian2) to wrapper API version
-     * (hessian4)
-     *
-     * @param serializeType literal type
-     * @return hessian4 if the param is hessian2, otherwise return the param
-     */
-    private static String convertHessianToWrapper(String serializeType) {
-        if (TripleConstant.HESSIAN2.equals(serializeType)) {
-            return TripleConstant.HESSIAN4;
-        }
-        return serializeType;
     }
 
 }
