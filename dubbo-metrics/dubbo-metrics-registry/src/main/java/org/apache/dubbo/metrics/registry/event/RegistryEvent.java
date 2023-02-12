@@ -24,10 +24,10 @@ import org.apache.dubbo.metrics.model.TimePair;
 import org.apache.dubbo.metrics.registry.collector.RegistryMetricsCollector;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import java.util.Map;
+
 /**
  * Registry related events
- *
- * @param <S> context type
  */
 public class RegistryEvent extends MetricsEvent implements TimeCounter {
     private final TimePair timePair;
@@ -67,7 +67,12 @@ public class RegistryEvent extends MetricsEvent implements TimeCounter {
         S_SUCCEED(MetricsKey.SUBSCRIBE_METRIC_REQUESTS_SUCCEED),
         S_FAILED(MetricsKey.SUBSCRIBE_METRIC_REQUESTS_FAILED),
 
+        D_TOTAL(MetricsKey.DIRECTORY_METRIC_NUM),
+        D_VALID(MetricsKey.DIRECTORY_METRIC_NUM_VALID),
+        D_UN_VALID(MetricsKey.DIRECTORY_METRIC_NUM_UN_VALID),
+
         N_TOTAL(MetricsKey.NOTIFY_METRIC_REQUESTS),
+        N_LAST_NUM(MetricsKey.NOTIFY_METRIC_NUM_LAST),
         ;
 
 
@@ -80,6 +85,36 @@ public class RegistryEvent extends MetricsEvent implements TimeCounter {
 
         public MetricsKey getMetricsKey() {
             return metricsKey;
+        }
+    }
+
+    public static class MetricsRegisterEvent extends RegistryEvent {
+
+        public MetricsRegisterEvent(ApplicationModel applicationModel, TimePair timePair) {
+            super(applicationModel, timePair);
+        }
+
+    }
+
+    public static class MetricsSubscribeEvent extends RegistryEvent {
+
+        public MetricsSubscribeEvent(ApplicationModel applicationModel, TimePair timePair) {
+            super(applicationModel, timePair);
+        }
+
+    }
+
+    public static class MetricsNotifyEvent extends RegistryEvent {
+
+        private final Map<String, Integer> lastNumMap;
+
+        public MetricsNotifyEvent(ApplicationModel applicationModel, TimePair timePair, Map<String, Integer> lastNumMap) {
+            super(applicationModel, timePair);
+            this.lastNumMap = lastNumMap;
+        }
+
+        public Map<String, Integer> getLastNotifyNum() {
+            return lastNumMap;
         }
     }
 }

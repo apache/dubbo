@@ -22,6 +22,9 @@ package org.apache.dubbo.metrics.collector;
  */
 public interface ApplicationMetricsCollector<T> extends MetricsCollector {
 
+    /**
+     * Still use Metric Type of Gauge , self-increment
+     */
     void increment(T type, String applicationName);
 
     void addRT(String applicationName, String registryOpType, Long responseTime);

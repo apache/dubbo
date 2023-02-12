@@ -18,6 +18,8 @@
 package org.apache.dubbo.metrics.registry.collector;
 
 import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.config.ReferenceConfig;
+import org.apache.dubbo.config.ReferenceConfigBase;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.metrics.collector.ApplicationMetricsCollector;
 import org.apache.dubbo.metrics.collector.MetricsCollector;
@@ -28,10 +30,16 @@ import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.metrics.registry.collector.stat.RegistryStatComposite;
 import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.metrics.registry.event.RegistryMetricsEventMulticaster;
+import org.apache.dubbo.registry.client.migration.MigrationInvoker;
+import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.cluster.directory.AbstractDirectory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ConsumerModel;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 
@@ -66,6 +74,12 @@ public class RegistryMetricsCollector implements ApplicationMetricsCollector<Reg
         return Optional.ofNullable(collectEnabled).orElse(false);
     }
 
+    public void setNum(RegistryEvent.Type registryType, String applicationName, Map<String, Integer> lastNumMap) {
+        lastNumMap.forEach((serviceKey, num) ->
+            this.stats.setServiceKey(registryType, applicationName, serviceKey, num));
+    }
+
+
     @Override
     public void increment(RegistryEvent.Type registryType, String applicationName) {
         this.stats.increment(registryType, applicationName);
@@ -84,10 +98,31 @@ public class RegistryMetricsCollector implements ApplicationMetricsCollector<Reg
         List<MetricSample> list = new ArrayList<>();
         list.addAll(stats.exportNumMetrics());
         list.addAll(stats.exportRtMetrics());
+        //Dictionary url statistics
+        statsDictionary();
+        list.addAll(stats.exportSkMetrics());
 
         return list;
     }
 
+    private void statsDictionary() {
+        Collection<ConsumerModel> consumerModels = ApplicationModel.allConsumerModels();
+        for (ConsumerModel consumerModel : consumerModels) {
+            ReferenceConfigBase<?> referenceConfig = consumerModel.getReferenceConfig();
+            if (!(referenceConfig instanceof ReferenceConfig)) {
+                continue;
+            }
+            ReferenceConfig config = (ReferenceConfig) referenceConfig;
+            Invoker invoker = config.getInvoker();
+            if (!(invoker instanceof MigrationInvoker)) {
+                continue;
+            }
+            AbstractDirectory directory = (AbstractDirectory) ((MigrationInvoker) invoker).getDirectory();
+            this.stats.setServiceKey(RegistryEvent.Type.D_TOTAL, applicationModel.getApplicationName(), consumerModel.getServiceKey(), directory.getAllInvokers().size());
+            this.stats.setServiceKey(RegistryEvent.Type.D_VALID, applicationModel.getApplicationName(), consumerModel.getServiceKey(), directory.getValidInvokers().size());
+            this.stats.setServiceKey(RegistryEvent.Type.D_UN_VALID, applicationModel.getApplicationName(), consumerModel.getServiceKey(), directory.getDisabledInvokers().size());
+        }
+    }
 
     @Override
     public boolean isSupport(MetricsEvent event) {

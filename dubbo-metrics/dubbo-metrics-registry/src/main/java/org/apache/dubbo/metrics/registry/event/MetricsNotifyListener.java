@@ -20,24 +20,35 @@ package org.apache.dubbo.metrics.registry.event;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.metrics.event.MetricsEvent;
-import org.apache.dubbo.metrics.listener.MetricsListener;
+import org.apache.dubbo.metrics.listener.MetricsLifeListener;
+
+import static org.apache.dubbo.metrics.registry.collector.stat.RegistryStatComposite.OP_TYPE_NOTIFY;
 
 /**
  * The registration center actively pushes Listener, no failure and rt statistics
  */
-public class MetricsNotifyListener implements MetricsListener<MetricsNotifyEvent> {
+public class MetricsNotifyListener implements MetricsLifeListener<RegistryEvent.MetricsNotifyEvent> {
 
     protected final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
 
     @Override
     public boolean isSupport(MetricsEvent event) {
-        return event instanceof MetricsNotifyEvent;
+        return event instanceof RegistryEvent.MetricsNotifyEvent;
     }
 
     @Override
-    public void onEvent(MetricsNotifyEvent event) {
+    public void onEvent(RegistryEvent.MetricsNotifyEvent event) {
         event.getCollector().increment(RegistryEvent.Type.N_TOTAL, event.getSource().getApplicationName());
+        event.getCollector().setNum(RegistryEvent.Type.N_LAST_NUM, event.getSource().getApplicationName(), event.getLastNotifyNum());
     }
 
+    @Override
+    public void onEventFinish(RegistryEvent.MetricsNotifyEvent event) {
+        event.getCollector().addRT(event.getSource().getApplicationName(), OP_TYPE_NOTIFY, event.getTimePair().calc());
+    }
+
+    @Override
+    public void onEventError(RegistryEvent.MetricsNotifyEvent event) {
+    }
 
 }

@@ -53,11 +53,18 @@ public enum MetricsKey {
     REGISTER_METRIC_REQUESTS_SUCCEED("dubbo.registry.register.requests.succeed.total", "Succeed Register Requests"),
     REGISTER_METRIC_REQUESTS_FAILED("dubbo.registry.register.requests.failed.total", "Failed Register Requests"),
 
+    // subscribe metrics key
     SUBSCRIBE_METRIC_REQUESTS("dubbo.registry.subscribe.requests.total", "Total Subscribe Requests"),
     SUBSCRIBE_METRIC_REQUESTS_SUCCEED("dubbo.registry.subscribe.requests.succeed.total", "Succeed Subscribe Requests"),
     SUBSCRIBE_METRIC_REQUESTS_FAILED("dubbo.registry.subscribe.requests.failed.total", "Failed Subscribe Requests"),
 
+    // directory metrics key
+    DIRECTORY_METRIC_NUM("dubbo.registry.directory.num.total", "Total directory urls"),
+    DIRECTORY_METRIC_NUM_VALID("dubbo.registry.directory.num.valid.total", "Valid directory urls"),
+    DIRECTORY_METRIC_NUM_UN_VALID("dubbo.registry.directory.num.un_valid.total", "UnValid directory urls"),
+
     NOTIFY_METRIC_REQUESTS("dubbo.registry.notify.requests.total", "Total Notify Requests"),
+    NOTIFY_METRIC_NUM_LAST("dubbo.registry.notify.num.last", "Last Notify Nums"),
 
     GENERIC_METRIC_RT_LAST("dubbo.%s.rt.seconds.last", "Last Response Time"),
     GENERIC_METRIC_RT_MIN("dubbo.%s.rt.seconds.min", "Min Response Time"),
@@ -68,7 +75,6 @@ public enum MetricsKey {
     GENERIC_METRIC_RT_P95("dubbo.%s.rt.seconds.p95", "Response Time P95"),
 
 
-    // consumer metrics key
     ;
 
     private final String name;

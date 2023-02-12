@@ -29,7 +29,8 @@ import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.MetadataInfo.ServiceInfo;
 import org.apache.dubbo.metrics.event.SimpleMetricsEventMulticaster;
-import org.apache.dubbo.metrics.registry.event.MetricsNotifyEvent;
+import org.apache.dubbo.metrics.model.TimePair;
+import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
@@ -406,8 +407,10 @@ public class ServiceInstancesChangedListener {
 
         ScopeBeanFactory beanFactory = applicationModel.getFrameworkModel().getBeanFactory();
         SimpleMetricsEventMulticaster eventMulticaster = beanFactory.getBean(SimpleMetricsEventMulticaster.class);
-        eventMulticaster.publishEvent(new MetricsNotifyEvent(applicationModel));
 
+        TimePair timePair = TimePair.start();
+        eventMulticaster.publishEvent(new RegistryEvent.MetricsNotifyEvent(applicationModel, timePair, null));
+        Map<String, Integer> lastNumMap = new HashMap<>();
         // 1 different services
         listeners.forEach((serviceKey, listenerSet) -> {
             // 2 multiple subscription listener of the same service
@@ -417,8 +420,11 @@ public class ServiceInstancesChangedListener {
                 List<URL> urls = toUrlsWithEmpty(getAddresses(listenerWithKey.getProtocolServiceKey(), notifyListener.getConsumerUrl()));
                 logger.info("Notify service " + listenerWithKey.getProtocolServiceKey() + " with urls " + urls.size());
                 notifyListener.notify(urls);
+                lastNumMap.put(serviceKey, urls.size());
             }
         });
+        eventMulticaster.publishEvent(new RegistryEvent.MetricsNotifyEvent(applicationModel, timePair, lastNumMap));
+
     }
 
     protected List<URL> toUrlsWithEmpty(List<URL> urls) {

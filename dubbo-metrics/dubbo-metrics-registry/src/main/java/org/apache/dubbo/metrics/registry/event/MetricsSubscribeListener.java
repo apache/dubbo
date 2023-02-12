@@ -22,15 +22,15 @@ import org.apache.dubbo.metrics.listener.MetricsLifeListener;
 
 import static org.apache.dubbo.metrics.registry.collector.stat.RegistryStatComposite.OP_TYPE_SUBSCRIBE;
 
-public class MetricsSubscribeListener implements MetricsLifeListener<RegistrySubscribeEvent> {
+public class MetricsSubscribeListener implements MetricsLifeListener<RegistryEvent.MetricsSubscribeEvent> {
 
     @Override
     public boolean isSupport(MetricsEvent event) {
-        return event instanceof RegistrySubscribeEvent;
+        return event instanceof RegistryEvent.MetricsSubscribeEvent;
     }
 
     @Override
-    public void onEvent(RegistrySubscribeEvent event) {
+    public void onEvent(RegistryEvent.MetricsSubscribeEvent event) {
         if (!event.isAvailable()) {
             return;
         }
@@ -38,13 +38,13 @@ public class MetricsSubscribeListener implements MetricsLifeListener<RegistrySub
     }
 
     @Override
-    public void onEventFinish(RegistrySubscribeEvent event) {
+    public void onEventFinish(RegistryEvent.MetricsSubscribeEvent event) {
         event.getCollector().increment(RegistryEvent.Type.S_SUCCEED, event.getSource().getApplicationName());
         event.getCollector().addRT(event.getSource().getApplicationName(), OP_TYPE_SUBSCRIBE, event.getTimePair().calc());
     }
 
     @Override
-    public void onEventError(RegistrySubscribeEvent event) {
+    public void onEventError(RegistryEvent.MetricsSubscribeEvent event) {
         event.getCollector().increment(RegistryEvent.Type.S_FAILED, event.getSource().getApplicationName());
         event.getCollector().addRT(event.getSource().getApplicationName(), OP_TYPE_SUBSCRIBE, event.getTimePair().calc());
     }
