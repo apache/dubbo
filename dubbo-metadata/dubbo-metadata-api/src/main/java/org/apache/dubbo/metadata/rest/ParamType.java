@@ -17,6 +17,7 @@
 package org.apache.dubbo.metadata.rest;
 
 import org.apache.dubbo.metadata.MetadataConstants;
+import org.apache.dubbo.metadata.rest.tag.org.apache.dubbo.metadata.rest.BodyTag;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +31,7 @@ public enum ParamType {
 
     BODY(addSupportTypes(
         JAXRSClassConstants.REST_EASY_BODY_ANNOTATION_CLASS,
-        SpringMvcClassConstants.REQUEST_BODY_ANNOTATION_CLASS)),
+        SpringMvcClassConstants.REQUEST_BODY_ANNOTATION_CLASS, BodyTag.class)),
     // TODO how to match arg type ?
     REQ_OR_RES(addSupportTypes(MetadataConstants.JAKARTA_SERVLET_REQ_CLASS,
         MetadataConstants.JAKARTA_SERVLET_RES_CLASS,

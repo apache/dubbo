@@ -21,6 +21,7 @@ import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.ParameterTypesComparator;
 import org.apache.dubbo.metadata.rest.RestMethodMetadata;
+import org.apache.dubbo.metadata.rest.media.MediaType;
 import org.apache.dubbo.remoting.http.RequestTemplate;
 import org.apache.dubbo.remoting.http.RestClient;
 import org.apache.dubbo.remoting.http.RestResult;
@@ -151,7 +152,7 @@ public class RestProtocol extends AbstractProxyProtocol {
                 try {
                     RestMethodMetadata restMethodMetadata = metadataMap.get(invocation.getMethodName()).get(ParameterTypesComparator.getInstance(invocation.getParameterTypes()));
 
-                    RequestTemplate requestTemplate = new RequestTemplate(invocation, restMethodMetadata.getRequest().getMethod(), url.getAddress());
+                    RequestTemplate requestTemplate = new RequestTemplate(invocation, restMethodMetadata.getRequest().getMethod(), url.getAddress(),getContextPath(url));
 
                     HttpConnectionCreateContext httpConnectionCreateContext = new HttpConnectionCreateContext();
                     // TODO  dynamic load config
@@ -174,9 +175,19 @@ public class RestProtocol extends AbstractProxyProtocol {
                         } else {
                             AppResponse appResponse = new AppResponse();
                             try {
+                                int responseCode = r.getResponseCode();
+                                MediaType mediaType = MediaType.TEXT_PLAIN;
+                                if (400 < responseCode && responseCode < 500) {
+
+                                } else if (responseCode >= 500) {
+
+                                } else if (responseCode < 400) {
+                                    mediaType = MediaTypeUtil.convertMediaType(r.getContentType());
+                                }
+
+
                                 Object value = HttpMessageCodecManager.httpMessageDecode(r.getBody(),
-                                    restMethodMetadata.getReflectMethod().getReturnType(),
-                                    MediaTypeUtil.convertMediaType(r.getContentType()));
+                                    restMethodMetadata.getReflectMethod().getReturnType(), mediaType);
                                 appResponse.setValue(value);
                                 Map<String, String> headers = r.headers()
                                     .entrySet()
