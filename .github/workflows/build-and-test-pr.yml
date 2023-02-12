@@ -11,6 +11,7 @@ env:
   SHOW_ERROR_DETAIL: 1
   #multi-version size limit
   VERSIONS_LIMIT: 4
+  JACOCO_ENABLE: true
   CANDIDATE_VERSIONS: '
     spring.version:4.3.30.RELEASE;
     spring-boot.version:1.5.22.RELEASE;
@@ -279,6 +280,14 @@ jobs:
           cd test && bash ./build-test-image.sh
       - name: "Run tests"
         run: cd test && bash ./run-tests.sh
+      - name: "merge jacoco resule"
+        run: |
+          cd test/dubbo-test-jacoco-merger && mvn clean compile exec:java -Dexec.mainClass="org.apache.dubbo.test.JacocoMerger" -Dexec.args="${{github.workspace}}"
+      - name: "Upload jacoco"
+        uses: actions/upload-artifact@v3
+        with:
+          name: jacoco-result
+          path: target/jacoco*.exec
       - name: "Upload test result"
         if: always()
         uses: actions/upload-artifact@v3
