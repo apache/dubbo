@@ -406,7 +406,7 @@ public class ServiceInstancesChangedListener {
     protected void notifyAddressChanged() {
 
         ScopeBeanFactory beanFactory = applicationModel.getFrameworkModel().getBeanFactory();
-        SimpleMetricsEventMulticaster eventMulticaster = beanFactory.getBean(SimpleMetricsEventMulticaster.class);
+        SimpleMetricsEventMulticaster eventMulticaster = beanFactory.getOrRegisterBean(SimpleMetricsEventMulticaster.class);
 
         TimePair timePair = TimePair.start();
         eventMulticaster.publishEvent(new RegistryEvent.MetricsNotifyEvent(applicationModel, timePair, null));
