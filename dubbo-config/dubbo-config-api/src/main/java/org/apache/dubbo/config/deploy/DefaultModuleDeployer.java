@@ -17,12 +17,21 @@
 package org.apache.dubbo.config.deploy;
 
 import org.apache.dubbo.common.config.ReferenceCache;
-import org.apache.dubbo.common.deploy.*;
+import org.apache.dubbo.common.deploy.AbstractDeployer;
+import org.apache.dubbo.common.deploy.ApplicationDeployer;
+import org.apache.dubbo.common.deploy.DeployState;
+import org.apache.dubbo.common.deploy.ModuleDeployListener;
+import org.apache.dubbo.common.deploy.ModuleDeployer;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
-import org.apache.dubbo.config.*;
+import org.apache.dubbo.config.ConsumerConfig;
+import org.apache.dubbo.config.ModuleConfig;
+import org.apache.dubbo.config.ProviderConfig;
+import org.apache.dubbo.config.ReferenceConfig;
+import org.apache.dubbo.config.ServiceConfig;
+import org.apache.dubbo.config.ServiceConfigBase;
 import org.apache.dubbo.config.context.ModuleConfigManager;
 import org.apache.dubbo.config.utils.SimpleReferenceCache;
 import org.apache.dubbo.rpc.model.ConsumerModel;
@@ -37,7 +46,12 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.*;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_START_MODEL;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_UNABLE_DESTROY_MODEL;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_REFERENCE_MODEL;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_EXPORT_SERVICE;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_WAIT_EXPORT_REFER;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_REFER_SERVICE;
 
 /**
  * Export/refer services of module
