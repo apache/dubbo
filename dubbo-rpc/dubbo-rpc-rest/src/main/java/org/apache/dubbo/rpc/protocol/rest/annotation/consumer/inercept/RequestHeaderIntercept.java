@@ -24,6 +24,7 @@ import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.HttpConnectionPreB
 import org.apache.dubbo.remoting.http.RequestTemplate;
 import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
 
+import java.util.Collection;
 import java.util.Set;
 
 @Activate(value = RestConstant.REQUEST_HEADER_INTERCEPT,order = 2)
@@ -40,6 +41,12 @@ public class RequestHeaderIntercept implements HttpConnectionPreBuildIntercept {
         Set<String> consumes = restMethodMetadata.getRequest().getConsumes();
 
         requestTemplate.addHeaders(RestConstant.CONTENT_TYPE, consumes);
+
+        Collection<String> headers = requestTemplate.getHeaders(RestConstant.ACCEPT);
+        if (headers == null || headers.isEmpty()) {
+            requestTemplate.addHeader(RestConstant.ACCEPT, RestConstant.DEFAULT_ACCEPT);
+        }
+
 
     }
 

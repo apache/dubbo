@@ -27,7 +27,6 @@ public class RestServerFactory {
 
     private static final HttpBinder httpBinder = FrameworkModel.defaultModel().getAdaptiveExtension(HttpBinder.class);
 
-
     public RestProtocolServer createServer(String name) {
         // TODO move names to Constants
         if ("servlet".equalsIgnoreCase(name) || "jetty".equalsIgnoreCase(name) || "tomcat".equalsIgnoreCase(name)) {
