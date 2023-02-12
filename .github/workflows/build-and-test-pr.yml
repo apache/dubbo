@@ -282,7 +282,7 @@ jobs:
         run: cd test && bash ./run-tests.sh
       - name: "merge jacoco resule"
         run: |
-          cd test/dubbo-test-jacoco-merger && mvn clean compile exec:java -Dexec.mainClass="org.apache.dubbo.test.JacocoMerger" -Dexec.args="${{github.workspace}}"
+          cd test/dubbo-test-jacoco-merger && mvn clean compile exec:java -Dexec.mainClass="org.apache.dubbo.test.JacocoMerge" -Dexec.args="${{github.workspace}}"
       - name: "Upload jacoco"
         uses: actions/upload-artifact@v3
         with:
