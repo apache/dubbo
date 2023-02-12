@@ -17,7 +17,6 @@
 package org.apache.dubbo.config.deploy;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.config.ReferenceCache;
@@ -365,7 +364,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         // TODO compatible with old usage of metrics, remove protocol check after new metrics is ready for use.
         if (metricsConfig != null && PROTOCOL_PROMETHEUS.equals(metricsConfig.getProtocol())) {
             collector.setCollectEnabled(true);
-            collector.addApplicationInfo(applicationModel.getApplicationName(), Version.getVersion());
+            collector.addApplicationInfo(applicationModel.getApplicationName());
             collector.addThreadPool(applicationModel.getFrameworkModel(), applicationModel.getApplicationName());
             String protocol = metricsConfig.getProtocol();
             if (StringUtils.isNotEmpty(protocol)) {
