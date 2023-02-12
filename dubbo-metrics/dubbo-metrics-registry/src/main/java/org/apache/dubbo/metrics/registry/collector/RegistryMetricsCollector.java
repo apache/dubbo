@@ -18,7 +18,6 @@
 package org.apache.dubbo.metrics.registry.collector;
 
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.ReferenceConfigBase;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.metrics.collector.ApplicationMetricsCollector;
@@ -30,9 +29,6 @@ import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.metrics.registry.collector.stat.RegistryStatComposite;
 import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.metrics.registry.event.RegistryMetricsEventMulticaster;
-import org.apache.dubbo.registry.client.migration.MigrationInvoker;
-import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.cluster.directory.AbstractDirectory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 
@@ -106,21 +102,12 @@ public class RegistryMetricsCollector implements ApplicationMetricsCollector<Reg
     }
 
     private void statsDictionary() {
-        Collection<ConsumerModel> consumerModels = ApplicationModel.allConsumerModels();
+        Collection<ConsumerModel> consumerModels = applicationModel.getApplicationServiceRepository().allConsumerModels();
         for (ConsumerModel consumerModel : consumerModels) {
             ReferenceConfigBase<?> referenceConfig = consumerModel.getReferenceConfig();
-            if (!(referenceConfig instanceof ReferenceConfig)) {
-                continue;
-            }
-            ReferenceConfig config = (ReferenceConfig) referenceConfig;
-            Invoker invoker = config.getInvoker();
-            if (!(invoker instanceof MigrationInvoker)) {
-                continue;
-            }
-            AbstractDirectory directory = (AbstractDirectory) ((MigrationInvoker) invoker).getDirectory();
-            this.stats.setServiceKey(RegistryEvent.Type.D_TOTAL, applicationModel.getApplicationName(), consumerModel.getServiceKey(), directory.getAllInvokers().size());
-            this.stats.setServiceKey(RegistryEvent.Type.D_VALID, applicationModel.getApplicationName(), consumerModel.getServiceKey(), directory.getValidInvokers().size());
-            this.stats.setServiceKey(RegistryEvent.Type.D_UN_VALID, applicationModel.getApplicationName(), consumerModel.getServiceKey(), directory.getDisabledInvokers().size());
+            this.stats.setServiceKey(RegistryEvent.Type.D_TOTAL, applicationModel.getApplicationName(), consumerModel.getServiceKey(), referenceConfig.getInvokerNum());
+            this.stats.setServiceKey(RegistryEvent.Type.D_VALID, applicationModel.getApplicationName(), consumerModel.getServiceKey(), referenceConfig.getValidInvokerNum());
+            this.stats.setServiceKey(RegistryEvent.Type.D_UN_VALID, applicationModel.getApplicationName(), consumerModel.getServiceKey(), referenceConfig.getInvokerNum() - referenceConfig.getValidInvokerNum());
         }
     }
 

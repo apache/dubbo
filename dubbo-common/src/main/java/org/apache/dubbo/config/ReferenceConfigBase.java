@@ -371,4 +371,12 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
         getModuleConfigManager().removeConfig(this);
     }
 
+    public int getInvokerNum() {
+        return 0;
+    }
+
+    public int getValidInvokerNum() {
+        return 0;
+    }
+
 }
