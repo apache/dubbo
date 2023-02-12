@@ -63,10 +63,12 @@ public class HttpClientRestClient implements RestClient {
         } else if ("POST".equals(httpMethod)) {
             HttpPost httpPost = new HttpPost(requestTemplate.getURL());
             httpPost.setEntity(new ByteArrayEntity(requestTemplate.getSerializedBody()));
+            httpRequest = httpPost;
         }
 
         Map<String, Collection<String>> allHeaders = requestTemplate.getAllHeaders();
 
+        allHeaders.remove("Content-Length");
         // header
         for (String headerName : allHeaders.keySet()) {
             Collection<String> headerValues = allHeaders.get(headerName);
@@ -79,6 +81,7 @@ public class HttpClientRestClient implements RestClient {
         httpRequest.setConfig(getRequestConfig(httpClientConfig));
 
         CompletableFuture<RestResult> future = new CompletableFuture<>();
+        // TODO  RESOLVE java.net.SocketException: socket closed
         try (CloseableHttpResponse response = closeableHttpClient.execute(httpRequest)) {
             future.complete(new RestResult() {
                 @Override
