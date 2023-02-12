@@ -16,6 +16,14 @@
  */
 package org.apache.dubbo.rpc.cluster.support;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
+
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -33,7 +41,6 @@ import org.apache.dubbo.rpc.cluster.filter.DemoService;
 import org.apache.dubbo.rpc.cluster.loadbalance.LeastActiveLoadBalance;
 import org.apache.dubbo.rpc.cluster.loadbalance.RandomLoadBalance;
 import org.apache.dubbo.rpc.cluster.loadbalance.RoundRobinLoadBalance;
-
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -42,13 +49,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 import static org.apache.dubbo.common.constants.CommonConstants.ENABLE_CONNECTIVITY_VALIDATION;
@@ -204,6 +204,24 @@ class AbstractClusterInvokerTest {
             Invoker invoker = cluster.select(l, null, invokers, null);
             Assertions.assertNull(invoker);
         }
+    }
+
+    @Test
+    void testSelectedInvokers() {
+        cluster = new AbstractClusterInvoker(dic) {
+            @Override
+            protected Result doInvoke(Invocation invocation, List invokers, LoadBalance loadbalance)
+                throws RpcException {
+                checkInvokers(invokers, invocation);
+                Invoker invoker = select(loadbalance, invocation, invokers, null);
+                return invokeWithContext(invoker, invocation);
+            }
+        };
+
+        // invoke
+        cluster.invoke(invocation);
+
+        Assertions.assertEquals(Collections.singletonList(invoker1), invocation.getInvokedInvokers());
     }
 
     @Test

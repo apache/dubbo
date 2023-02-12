@@ -281,7 +281,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         if (!super.isAvailable()) {
             return false;
         }
-        return connectionClient.isAvailable();
+        return connectionClient.isConnected();
     }
 
     @Override

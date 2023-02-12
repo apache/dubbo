@@ -936,6 +936,26 @@
     ]
   },
   {
+    "name": "org.apache.dubbo.common.serialize.hessian2.Hessian2ScopeModelInitializer",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.common.serialize.fastjson2.Fastjson2ScopeModelInitializer",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
     "name": "org.apache.dubbo.common.URL",
     "allDeclaredFields": true
   },
@@ -1057,6 +1077,97 @@
   },
   {
     "name": "org.apache.dubbo.common.serialize.hessian2.Hessian2Serialization",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.common.serialize.hessian2.Hessian2FactoryManager",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": [
+          "org.apache.dubbo.rpc.model.FrameworkModel"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.common.serialize.fastjson2.FastJson2Serialization",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.common.serialize.fastjson2.Fastjson2CreatorManager",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": [
+          "org.apache.dubbo.rpc.model.FrameworkModel"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.common.serialize.fastjson2.Fastjson2SecurityManager",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": [
+          "org.apache.dubbo.rpc.model.FrameworkModel"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.common.utils.SerializeSecurityConfigurator",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": [
+          "org.apache.dubbo.rpc.model.ModuleModel"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.common.utils.SerializeSecurityManager",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": [
+        ]
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.common.utils.DefaultSerializeClassChecker",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": [
+          "org.apache.dubbo.rpc.model.FrameworkModel"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.common.utils.SerializeClassChecker",
     "allPublicMethods": true,
     "methods": [
       {
@@ -2181,7 +2292,16 @@
     ]
   },
   {
-    "name": "org.apache.dubbo.rpc.filter.GenericImplFilter"
+    "name": "org.apache.dubbo.rpc.filter.GenericImplFilter",
+    "allPublicMethods": true,
+    "methods": [
+       {
+         "name": "<init>",
+         "parameterTypes": [
+           "org.apache.dubbo.rpc.model.ModuleModel"
+         ]
+       }
+     ]
   },
   {
     "name": "org.apache.dubbo.rpc.filter.TimeoutFilter",
@@ -2367,9 +2487,6 @@
   },
   {
     "name": "org.apache.dubbo.rpc.filter.GenericFilter"
-  },
-  {
-    "name": "org.apache.dubbo.rpc.filter.GenericImplFilter"
   },
   {
     "name": "org.apache.dubbo.rpc.filter.TimeoutFilter"
@@ -2754,12 +2871,12 @@
     ]
   },
   {
-    "name": "org.apache.dubbo.common.metrics.collector.DefaultMetricsCollector",
+    "name": "org.apache.dubbo.metrics.collector.DefaultMetricsCollector",
     "allPublicMethods": true,
     "methods": [
       {
         "name": "<init>",
-        "parameterTypes": ["org.apache.dubbo.rpc.model.ApplicationModel"]
+        "parameterTypes": []
       }
     ]
   },

@@ -23,6 +23,7 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.store.DataStore;
 import org.apache.dubbo.common.threadpool.ThreadPool;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -93,14 +94,14 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
     @Override
     public synchronized ExecutorService createExecutorIfAbsent(URL url) {
         String executorKey = getExecutorKey(url);
-        Map<String, ExecutorService> executors = data.computeIfAbsent(executorKey, k -> new ConcurrentHashMap<>());
+        ConcurrentMap<String, ExecutorService> executors = ConcurrentHashMapUtils.computeIfAbsent(data, executorKey, k -> new ConcurrentHashMap<>());
 
         String executorCacheKey = getExecutorSecondKey(url);
 
         url = setThreadNameIfAbsent(url, executorCacheKey);
 
         URL finalUrl = url;
-        ExecutorService executor = executors.computeIfAbsent(executorCacheKey, k -> createExecutor(finalUrl));
+        ExecutorService executor = ConcurrentHashMapUtils.computeIfAbsent(executors, executorCacheKey, k -> createExecutor(finalUrl));
         // If executor has been shut down, create a new one
         if (executor.isShutdown() || executor.isTerminated()) {
             executors.remove(executorCacheKey);

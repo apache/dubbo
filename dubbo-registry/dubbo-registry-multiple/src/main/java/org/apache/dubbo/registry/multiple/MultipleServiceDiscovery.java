@@ -22,10 +22,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
@@ -178,7 +180,7 @@ public class MultipleServiceDiscovery implements ServiceDiscovery {
     }
 
     protected static class MultiServiceInstancesChangedListener extends ServiceInstancesChangedListener {
-        private final Map<String, SingleServiceInstancesChangedListener> singleListenerMap;
+        private final ConcurrentMap<String, SingleServiceInstancesChangedListener> singleListenerMap;
 
         public MultiServiceInstancesChangedListener(Set<String> serviceNames, ServiceDiscovery serviceDiscovery) {
             super(serviceNames, serviceDiscovery);
@@ -207,7 +209,7 @@ public class MultipleServiceDiscovery implements ServiceDiscovery {
 
         public SingleServiceInstancesChangedListener getAndComputeIfAbsent(String registryKey,
                                                                            Function<String, SingleServiceInstancesChangedListener> func) {
-            return singleListenerMap.computeIfAbsent(registryKey, func);
+            return ConcurrentHashMapUtils.computeIfAbsent(singleListenerMap, registryKey, func);
         }
     }
 

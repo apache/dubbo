@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.ConfigItem;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 
 import java.util.List;
@@ -106,8 +107,8 @@ public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildLis
 
     @Override
     public List<String> addChildListener(String path, final ChildListener listener) {
-        ConcurrentMap<ChildListener, TargetChildListener> listeners = childListeners.computeIfAbsent(path, k -> new ConcurrentHashMap<>());
-        TargetChildListener targetListener = listeners.computeIfAbsent(listener, k -> createTargetChildListener(path, k));
+        ConcurrentMap<ChildListener, TargetChildListener> listeners = ConcurrentHashMapUtils.computeIfAbsent(childListeners, path, k -> new ConcurrentHashMap<>());
+        TargetChildListener targetListener = ConcurrentHashMapUtils.computeIfAbsent(listeners, listener, k -> createTargetChildListener(path, k));
         return addTargetChildListener(path, targetListener);
     }
 
@@ -118,8 +119,8 @@ public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildLis
 
     @Override
     public void addDataListener(String path, DataListener listener, Executor executor) {
-        ConcurrentMap<DataListener, TargetDataListener> dataListenerMap = listeners.computeIfAbsent(path, k -> new ConcurrentHashMap<>());
-        TargetDataListener targetListener = dataListenerMap.computeIfAbsent(listener, k -> createTargetDataListener(path, k));
+        ConcurrentMap<DataListener, TargetDataListener> dataListenerMap = ConcurrentHashMapUtils.computeIfAbsent(listeners, path, k -> new ConcurrentHashMap<>());
+        TargetDataListener targetListener = ConcurrentHashMapUtils.computeIfAbsent(dataListenerMap, listener, k -> createTargetDataListener(path, k));
         addTargetDataListener(path, targetListener, executor);
     }
 

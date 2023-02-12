@@ -16,29 +16,29 @@
  */
 package org.apache.dubbo.registry.xds.util.protocol.impl;
 
-import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.registry.xds.util.XdsChannel;
-import org.apache.dubbo.registry.xds.util.protocol.AbstractProtocol;
-import org.apache.dubbo.registry.xds.util.protocol.delta.DeltaRoute;
-import org.apache.dubbo.registry.xds.util.protocol.message.RouteResult;
-import org.apache.dubbo.rpc.model.ApplicationModel;
-
-import com.google.protobuf.Any;
-import com.google.protobuf.InvalidProtocolBufferException;
-import io.envoyproxy.envoy.config.core.v3.Node;
-import io.envoyproxy.envoy.config.route.v3.Route;
-import io.envoyproxy.envoy.config.route.v3.RouteAction;
-import io.envoyproxy.envoy.config.route.v3.RouteConfiguration;
-import io.envoyproxy.envoy.service.discovery.v3.DiscoveryResponse;
-import io.envoyproxy.envoy.config.route.v3.VirtualHost;
-import java.util.concurrent.ConcurrentHashMap;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
+
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.registry.xds.util.AdsObserver;
+import org.apache.dubbo.registry.xds.util.protocol.AbstractProtocol;
+import org.apache.dubbo.registry.xds.util.protocol.delta.DeltaRoute;
+import org.apache.dubbo.registry.xds.util.protocol.message.RouteResult;
+
+import com.google.protobuf.Any;
+import com.google.protobuf.InvalidProtocolBufferException;
+
+import io.envoyproxy.envoy.config.core.v3.Node;
+import io.envoyproxy.envoy.config.route.v3.Route;
+import io.envoyproxy.envoy.config.route.v3.RouteAction;
+import io.envoyproxy.envoy.config.route.v3.RouteConfiguration;
+import io.envoyproxy.envoy.config.route.v3.VirtualHost;
+import io.envoyproxy.envoy.service.discovery.v3.DiscoveryResponse;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ERROR_RESPONSE_XDS;
 
@@ -46,8 +46,8 @@ public class RdsProtocol extends AbstractProtocol<RouteResult, DeltaRoute> {
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(RdsProtocol.class);
 
-    public RdsProtocol(XdsChannel xdsChannel, Node node, int pollingTimeout, ApplicationModel applicationModel) {
-        super(xdsChannel, node, pollingTimeout, applicationModel);
+    public RdsProtocol(AdsObserver adsObserver, Node node, int checkInterval) {
+        super(adsObserver, node, checkInterval);
     }
 
     @Override

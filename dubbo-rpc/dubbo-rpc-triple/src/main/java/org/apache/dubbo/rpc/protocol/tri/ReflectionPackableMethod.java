@@ -40,6 +40,14 @@ import org.apache.dubbo.rpc.model.PackableMethod;
 
 import com.google.protobuf.Message;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.lang.reflect.ParameterizedType;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 import static org.apache.dubbo.common.constants.CommonConstants.$ECHO;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOBUF_MESSAGE_CLASS_NAME;
 import static org.apache.dubbo.rpc.protocol.tri.TripleCustomerProtocolWapper.*;
@@ -81,7 +89,7 @@ public class ReflectionPackableMethod implements PackableMethod {
                 break;
             case UNARY:
                 actualRequestTypes = method.getParameterClasses();
-                actualResponseType = method.getReturnClass();
+                actualResponseType = (Class<?>) method.getReturnTypes()[0];
                 break;
             default:
                 throw new IllegalStateException("Can not reach here");
@@ -611,7 +619,7 @@ public class ReflectionPackableMethod implements PackableMethod {
         if (clz == null) {
             try {
                 clz = ClassUtils.forName(className);
-            } catch (Throwable e) {
+            } catch (Exception e) {
                 // To catch IllegalStateException, LinkageError, ClassNotFoundException
                 clz = expectedClass;
             }
