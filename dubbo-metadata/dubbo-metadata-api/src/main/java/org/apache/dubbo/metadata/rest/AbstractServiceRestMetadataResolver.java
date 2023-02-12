@@ -20,7 +20,6 @@ import org.apache.dubbo.common.utils.MethodComparator;
 import org.apache.dubbo.common.utils.ServiceAnnotationResolver;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.apache.dubbo.config.annotation.Service;
-import org.apache.dubbo.metadata.ParameterTypesComparator;
 import org.apache.dubbo.metadata.definition.MethodDefinitionBuilder;
 import org.apache.dubbo.metadata.definition.model.MethodDefinition;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -28,10 +27,17 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import static java.util.Collections.emptyList;
+import static java.util.Collections.sort;
 import static java.util.Collections.unmodifiableMap;
 import static org.apache.dubbo.common.function.ThrowableFunction.execute;
 import static org.apache.dubbo.common.utils.AnnotationUtils.isAnyAnnotationPresent;
@@ -173,21 +179,18 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
 
         List<Method> serviceMethods = new ArrayList<>(getAllMethods(serviceType, excludedDeclaredClass(Object.class)));
 
-        // for method map
-        Map<ParameterTypesComparator, Method> parameterTypesMethodHashMap = new HashMap<>();
-        serviceMethods.stream().forEach(method -> {
-            parameterTypesMethodHashMap.put(ParameterTypesComparator.getInstance(method.getParameterTypes()), method);
-        });
 
         // sort methods
-        // method`s sequence cannot be guaranteed such as   b,c,d -> a,b,c,d
-//        sort(declaredServiceMethods, MethodComparator.INSTANCE);
-//        sort(serviceMethods, MethodComparator.INSTANCE);
+        sort(declaredServiceMethods, MethodComparator.INSTANCE);
+        sort(serviceMethods, MethodComparator.INSTANCE);
 
         for (Method declaredServiceMethod : declaredServiceMethods) {
-            Method serviceMethod = parameterTypesMethodHashMap.get(ParameterTypesComparator.getInstance(declaredServiceMethod.getParameterTypes()));
-            if (overrides(serviceMethod, declaredServiceMethod)) {
-                serviceMethodsMap.put(serviceMethod, declaredServiceMethod);
+            for (Method serviceMethod : serviceMethods) {
+                if (overrides(serviceMethod, declaredServiceMethod)) {
+                    serviceMethodsMap.put(serviceMethod, declaredServiceMethod);
+                    // once method match ,break for decrease loop  times
+                    break;
+                }
             }
         }
         // make them to be read-only
