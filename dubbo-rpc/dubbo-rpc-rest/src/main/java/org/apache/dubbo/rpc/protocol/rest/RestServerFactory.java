@@ -17,19 +17,16 @@
 package org.apache.dubbo.rpc.protocol.rest;
 
 import org.apache.dubbo.remoting.http.HttpBinder;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 /**
  * Only the server that implements servlet container
  * could support something like @Context injection of servlet objects.
- *
  */
 public class RestServerFactory {
 
-    private HttpBinder httpBinder;
+    private static final HttpBinder httpBinder = FrameworkModel.defaultModel().getAdaptiveExtension(HttpBinder.class);
 
-    public void setHttpBinder(HttpBinder httpBinder) {
-        this.httpBinder = httpBinder;
-    }
 
     public RestProtocolServer createServer(String name) {
         // TODO move names to Constants

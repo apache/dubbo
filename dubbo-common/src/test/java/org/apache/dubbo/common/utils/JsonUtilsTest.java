@@ -307,7 +307,7 @@ class JsonUtilsTest {
                 Object object1 = json.parseObject(byteArrayInputStream, value.getClass());
 
                 if (value.getClass().isArray()) {
-                    Arrays.equals((byte[]) value, (byte[]) object1);
+                    Assertions.assertEquals(object1, value);
                 } else {
                     Assertions.assertEquals(object1, value);
 

@@ -14,11 +14,41 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.rest.message;
+package org.apache.dubbo.metadata.rest.api;
+
+import org.apache.dubbo.metadata.rest.User;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.bind.annotation.*;
 
 
-public interface HttpMessageDecode<InputStream>{
 
-    Object decode(InputStream body, Class targetType) throws Exception;
+@RestController
+public class SpringRestServiceImpl implements SpringRestService {
+
+
+    @Override
+    public String param(String param) {
+        return param;
+    }
+
+    @Override
+    public String header(String header) {
+        return header;
+    }
+
+    @Override
+    public User body(User user) {
+        return user;
+    }
+
+    @Override
+    public MultiValueMap multiValue(MultiValueMap map) {
+        return map;
+    }
+
+    @Override
+    public String pathVariable(String a) {
+        return a;
+    }
 
 }

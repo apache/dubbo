@@ -24,7 +24,6 @@ import org.apache.dubbo.common.utils.ClassUtils;
 
 import com.alibaba.fastjson2.JSONWriter;
 
-import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Type;
@@ -73,7 +72,6 @@ public class FastJson2Impl extends AbstractJSONImpl {
 
     @Override
     public <T> void serializeObject(OutputStream outputStream, Object value) throws Exception {
-        ByteArrayOutputStream outnew = new ByteArrayOutputStream();
         SerializeFilter[] globalFilters = this.fastJsonConfig.getSerializeFilters();
         List<SerializeFilter> allFilters = new ArrayList(Arrays.asList(globalFilters));
 
@@ -84,10 +82,8 @@ public class FastJson2Impl extends AbstractJSONImpl {
             allFilters.addAll(filters.getFilters());
             value = fastJsonContainer.getValue();
         }
-        com.alibaba.fastjson2.JSON.writeTo(outnew, value);
+        com.alibaba.fastjson2.JSON.writeTo(outputStream, value);
 
-
-        outnew.writeTo(outputStream);
     }
 }
 

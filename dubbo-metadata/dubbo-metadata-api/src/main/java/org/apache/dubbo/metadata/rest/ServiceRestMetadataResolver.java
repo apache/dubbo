@@ -25,7 +25,7 @@ import org.apache.dubbo.common.extension.SPI;
  *
  * @since 2.7.6
  */
-@SPI(scope = ExtensionScope.FRAMEWORK)
+@SPI(scope = ExtensionScope.APPLICATION)
 public interface ServiceRestMetadataResolver {
 
     /**

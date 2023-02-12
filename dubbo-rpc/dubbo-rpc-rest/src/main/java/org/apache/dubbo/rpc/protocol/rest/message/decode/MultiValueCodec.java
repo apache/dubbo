@@ -23,15 +23,16 @@ import org.apache.dubbo.rpc.protocol.rest.message.HttpMessageCodec;
 import org.apache.dubbo.rpc.protocol.rest.message.MediaTypeMatcher;
 import org.apache.dubbo.rpc.protocol.rest.util.DataParseUtils;
 
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Map;
 
 @Activate("multiValue")
-public class MultiValueCodec implements HttpMessageCodec<byte[]> {
+public class MultiValueCodec implements HttpMessageCodec<InputStream,OutputStream> {
 
 
     @Override
-    public Object decode(byte[] body, Class targetType) throws Exception {
+    public Object decode(InputStream body, Class targetType) throws Exception {
         // TODO java bean  get set convert
         return DataParseUtils.multipartFormConvert(body);
     }

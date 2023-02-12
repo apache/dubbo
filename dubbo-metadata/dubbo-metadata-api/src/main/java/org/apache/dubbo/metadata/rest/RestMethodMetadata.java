@@ -20,12 +20,7 @@ import org.apache.dubbo.metadata.definition.model.MethodDefinition;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 import static java.util.Collections.emptyList;
 
@@ -124,7 +119,7 @@ public class RestMethodMetadata implements Serializable {
 
     public Map<Integer, Collection<String>> getIndexToName() {
         if (indexToName == null) {
-            indexToName = new HashMap<>();
+            indexToName = new LinkedHashMap<>();
         }
         return indexToName;
     }

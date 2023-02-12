@@ -14,11 +14,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.rest.message;
+package org.apache.dubbo.metadata.rest.api;
+
+import org.apache.dubbo.metadata.rest.User;
+
+import javax.ws.rs.core.MultivaluedMap;
+
+public class JaxrsRestServiceImpl implements JaxrsRestService {
 
 
-public interface HttpMessageDecode<InputStream>{
+    @Override
+    public String param(String param) {
+        return param;
+    }
 
-    Object decode(InputStream body, Class targetType) throws Exception;
+    @Override
+    public String header(String header) {
+        return header;
+    }
 
+    @Override
+    public User body(User user) {
+        return user;
+    }
+
+    @Override
+    public MultivaluedMap multiValue(MultivaluedMap map) {
+        return map;
+    }
+
+    @Override
+    public String pathVariable(String a) {
+        return a;
+    }
 }

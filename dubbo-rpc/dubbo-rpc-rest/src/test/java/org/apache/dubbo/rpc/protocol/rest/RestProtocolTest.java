@@ -62,7 +62,7 @@ class RestProtocolTest {
 
     @Test
     void testRestProtocol() {
-        URL url = URL.valueOf("rest://127.0.0.1:" + NetUtils.getAvailablePort() + "/rest/say?version=1.0.0&interface=org.apache.dubbo.rpc.protocol.rest.DemoService");
+        URL url = URL.valueOf("rest://127.0.0.1:" + NetUtils.getAvailablePort() + "/?version=1.0.0&interface=org.apache.dubbo.rpc.protocol.rest.DemoService");
         DemoServiceImpl server = new DemoServiceImpl();
 
         url = this.registerProvider(url, server, DemoService.class);

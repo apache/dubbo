@@ -16,6 +16,14 @@
  */
 package org.apache.dubbo.metadata.rest;
 
+import org.apache.dubbo.common.utils.MethodComparator;
+import org.apache.dubbo.common.utils.ServiceAnnotationResolver;
+import org.apache.dubbo.config.annotation.DubboService;
+import org.apache.dubbo.config.annotation.Service;
+import org.apache.dubbo.metadata.definition.MethodDefinitionBuilder;
+import org.apache.dubbo.metadata.definition.model.MethodDefinition;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -28,14 +36,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import org.apache.dubbo.common.utils.MethodComparator;
-import org.apache.dubbo.common.utils.ServiceAnnotationResolver;
-import org.apache.dubbo.config.annotation.DubboService;
-import org.apache.dubbo.config.annotation.Service;
-import org.apache.dubbo.metadata.definition.MethodDefinitionBuilder;
-import org.apache.dubbo.metadata.definition.model.MethodDefinition;
-import org.apache.dubbo.rpc.model.ApplicationModel;
-
 import static java.util.Collections.emptyList;
 import static java.util.Collections.sort;
 import static java.util.Collections.unmodifiableMap;
@@ -43,6 +43,8 @@ import static org.apache.dubbo.common.function.ThrowableFunction.execute;
 import static org.apache.dubbo.common.utils.AnnotationUtils.isAnyAnnotationPresent;
 import static org.apache.dubbo.common.utils.ClassUtils.forName;
 import static org.apache.dubbo.common.utils.ClassUtils.getAllInterfaces;
+import static org.apache.dubbo.common.utils.MemberUtils.isPrivate;
+import static org.apache.dubbo.common.utils.MemberUtils.isStatic;
 import static org.apache.dubbo.common.utils.MethodUtils.excludedDeclaredClass;
 import static org.apache.dubbo.common.utils.MethodUtils.getAllMethods;
 import static org.apache.dubbo.common.utils.MethodUtils.overrides;
@@ -70,10 +72,13 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
 
     @Override
     public final boolean supports(Class<?> serviceType, boolean consumer) {
+        // for consumer
         if (consumer) {
-            return serviceType.isInterface() && supports0(serviceType);
+            //  it is possible serviceType is impl
+            return supports0(serviceType);
         }
 
+        // for provider
         return isImplementedInterface(serviceType) && isServiceAnnotationPresent(serviceType) && supports0(serviceType);
     }
 
@@ -140,7 +145,7 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
      */
     protected void processAllRestMethodMetadata(ServiceRestMetadata serviceRestMetadata, Class<?> serviceType) {
         Class<?> serviceInterfaceClass = resolveServiceInterfaceClass(serviceRestMetadata, serviceType);
-        Map<Method, Method> serviceMethodsMap = resolveServiceMethodsMap(serviceType, serviceInterfaceClass, serviceRestMetadata.isConsumer());
+        Map<Method, Method> serviceMethodsMap = resolveServiceMethodsMap(serviceType, serviceInterfaceClass);
         for (Map.Entry<Method, Method> entry : serviceMethodsMap.entrySet()) {
             // try the overrider method first
             Method serviceMethod = entry.getKey();
@@ -161,11 +166,19 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
      * @param serviceInterfaceClass the service interface class
      * @return non-null read-only {@link Map}
      */
-    protected Map<Method, Method> resolveServiceMethodsMap(Class<?> serviceType, Class<?> serviceInterfaceClass, boolean consumer) {
+    protected Map<Method, Method> resolveServiceMethodsMap(Class<?> serviceType, Class<?> serviceInterfaceClass) {
         Map<Method, Method> serviceMethodsMap = new LinkedHashMap<>();
         // exclude the public methods declared in java.lang.Object.class
         List<Method> declaredServiceMethods = new ArrayList<>(getAllMethods(serviceInterfaceClass, excludedDeclaredClass(Object.class)));
+
+        // for interface , such as consumer interface
+        if (serviceType.isInterface()) {
+            putInterfaceMethodToMap(serviceMethodsMap, declaredServiceMethods);
+            return unmodifiableMap(serviceMethodsMap);
+        }
+
         List<Method> serviceMethods = new ArrayList<>(getAllMethods(serviceType, excludedDeclaredClass(Object.class)));
+
 
         // sort methods
         sort(declaredServiceMethods, MethodComparator.INSTANCE);
@@ -173,14 +186,26 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
 
         for (Method declaredServiceMethod : declaredServiceMethods) {
             for (Method serviceMethod : serviceMethods) {
-                if (consumer || overrides(serviceMethod, declaredServiceMethod)) {
+                if (overrides(serviceMethod, declaredServiceMethod)) {
                     serviceMethodsMap.put(serviceMethod, declaredServiceMethod);
-                    continue;
+                    // once method match ,break for decrease loop  times
+                    break;
                 }
             }
         }
         // make them to be read-only
         return unmodifiableMap(serviceMethodsMap);
+    }
+
+    private void putInterfaceMethodToMap(Map<Method, Method> serviceMethodsMap, List<Method> declaredServiceMethods) {
+        declaredServiceMethods.stream().forEach(method -> {
+
+            // filter static private default
+            if (isStatic(method) || isPrivate(method) || method.isDefault()) {
+                return;
+            }
+            serviceMethodsMap.put(method, method);
+        });
     }
 
     /**
