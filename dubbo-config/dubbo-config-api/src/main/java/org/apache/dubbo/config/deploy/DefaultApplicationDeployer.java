@@ -720,6 +720,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                     logger.warn(CONFIG_FAILED_START_MODEL, "", "", "wait for internal module startup failed: " + e.getMessage(), e);
                 }
             }
+            hasPreparedInternalModule = true;
         }
     }
 
