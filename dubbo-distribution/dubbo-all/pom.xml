@@ -1104,30 +1104,6 @@
                                 <transformer
                                     implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                     <resource>
-                                        META-INF/dubbo/internal/org.apache.dubbo.rpc.protocol.grpc.interceptors.ClientInterceptor
-                                    </resource>
-                                </transformer>
-                                <transformer
-                                    implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-                                    <resource>
-                                        META-INF/dubbo/internal/org.apache.dubbo.rpc.protocol.grpc.interceptors.GrpcConfigurator
-                                    </resource>
-                                </transformer>
-                                <transformer
-                                    implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-                                    <resource>
-                                        META-INF/dubbo/internal/org.apache.dubbo.rpc.protocol.grpc.interceptors.ServerInterceptor
-                                    </resource>
-                                </transformer>
-                                <transformer
-                                    implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-                                    <resource>
-                                        META-INF/dubbo/internal/org.apache.dubbo.rpc.protocol.grpc.interceptors.ServerTransportFilter
-                                    </resource>
-                                </transformer>
-                                <transformer
-                                    implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-                                    <resource>
                                         META-INF/dubbo/internal/org.apache.dubbo.rpc.protocol.injvm.ParamDeepCopyUtil
                                     </resource>
                                 </transformer>
