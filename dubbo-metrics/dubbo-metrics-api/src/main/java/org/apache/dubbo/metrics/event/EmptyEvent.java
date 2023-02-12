@@ -20,7 +20,7 @@ package org.apache.dubbo.metrics.event;
 /**
  * EmptyEvent, do nothing.
  */
-public class EmptyEvent extends MetricsEvent<Object> {
+public class EmptyEvent extends MetricsEvent{
 
     private static final EmptyEvent empty = new EmptyEvent(new Object());
 

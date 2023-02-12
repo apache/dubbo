@@ -20,7 +20,7 @@ package org.apache.dubbo.metrics.event;
 /**
  * RequestEvent.
  */
-public class RequestEvent extends MetricsEvent<Object> {
+public class RequestEvent extends MetricsEvent {
     private Type type;
 
     public RequestEvent(Object source, Type type) {
