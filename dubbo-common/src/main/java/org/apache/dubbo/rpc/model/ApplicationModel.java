@@ -28,12 +28,7 @@ import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.context.ConfigManager;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -68,8 +63,8 @@ public class ApplicationModel extends ScopeModel {
     private volatile ModuleModel defaultModule;
 
     // internal module index is 0, default module index is 1
-    private AtomicInteger moduleIndex = new AtomicInteger(0);
-    private Object moduleLock = new Object();
+    private final AtomicInteger moduleIndex = new AtomicInteger(0);
+    private final Object moduleLock = new Object();
 
     // --------- static methods ----------//
 
@@ -251,7 +246,7 @@ public class ApplicationModel extends ScopeModel {
         frameworkModel.tryDestroyProtocols();
 
         // 4. destroy application resources
-        for (ModuleModel moduleModel : new ArrayList<>(moduleModels)) {
+        for (ModuleModel moduleModel : moduleModels) {
             if (moduleModel != internalModule) {
                 moduleModel.destroy();
             }
@@ -456,4 +451,5 @@ public class ApplicationModel extends ScopeModel {
     public void setDeployer(ApplicationDeployer deployer) {
         this.deployer = deployer;
     }
+
 }
