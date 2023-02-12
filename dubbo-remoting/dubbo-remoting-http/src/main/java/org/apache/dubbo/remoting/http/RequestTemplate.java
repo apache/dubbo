@@ -24,17 +24,13 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.Invocation;
 
 
 public class RequestTemplate implements Serializable {
-    private static final AtomicLong REQUEST_ID = new AtomicLong();
     private static final long serialVersionUID = 1L;
-    public static final String ACCEPT = "Accept";
-    public static final String DEFAULT_ACCEPT = "*/*";
     public static final String CONTENT_ENCODING = "Content-Encoding";
     private static final String CONTENT_LENGTH = "Content-Length";
     public static final String ENCODING_GZIP = "gzip";
@@ -50,12 +46,18 @@ public class RequestTemplate implements Serializable {
     private byte[] byteBody = new byte[0];
     private String protocol = "http://";
     private final Invocation invocation;
+    private String contextPath = "";
 
 
     public RequestTemplate(Invocation invocation, String httpMethod, String address) {
-        this.invocation = invocation;
+        this(invocation, httpMethod, address, "");
+    }
+
+    public RequestTemplate(Invocation invocation, String httpMethod, String address, String contextPath) {
         this.httpMethod = httpMethod;
         this.address = address;
+        this.invocation = invocation;
+        this.contextPath = contextPath;
     }
 
     public String getURL() {
@@ -66,7 +68,7 @@ public class RequestTemplate implements Serializable {
     }
 
     public String getUri() {
-        StringBuilder stringBuilder = new StringBuilder(path);
+        StringBuilder stringBuilder = new StringBuilder(getContextPath() + path);
         return stringBuilder.append(getQueryString()).toString();
     }
 
@@ -280,5 +282,22 @@ public class RequestTemplate implements Serializable {
 
     public Invocation getInvocation() {
         return invocation;
+    }
+
+    public String getContextPath() {
+        if (contextPath == null || contextPath.length() == 0) {
+            return "";
+        }
+
+        if (contextPath.startsWith("/")) {
+            return contextPath;
+        } else {
+            return "/" + contextPath;
+        }
+
+    }
+
+    public void setContextPath(String contextPath) {
+        this.contextPath = contextPath;
     }
 }

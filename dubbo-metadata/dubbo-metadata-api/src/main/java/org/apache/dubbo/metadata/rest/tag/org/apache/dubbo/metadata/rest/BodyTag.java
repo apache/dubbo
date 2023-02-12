@@ -14,32 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata.rest.media;
+package org.apache.dubbo.metadata.rest.tag.org.apache.dubbo.metadata.rest;
 
-
-public enum MediaType {
-    ALL_VALUE("*/*"),
-    APPLICATION_JSON_VALUE("application/json"),
-    APPLICATION_FORM_URLENCODED_VALUE("application/x-www-form-urlencoded"),
-    TEXT_PLAIN("text/plain"),
-    OCTET_STREAM("application/octet-stream"),
-    ;
-
-    MediaType(String value) {
-        this.value = value;
-    }
-
-    public String value;
-
-    public static String getAllContentType() {
-
-        MediaType[] values = MediaType.values();
-
-        StringBuilder stringBuilder = new StringBuilder();
-
-        for (MediaType mediaType : values) {
-            stringBuilder.append(mediaType.value + " ");
-        }
-        return stringBuilder.toString();
-    }
+public class BodyTag {
 }
