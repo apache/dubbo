@@ -43,6 +43,7 @@ public interface RestConstant {
     String ADD_MUST_ATTTACHMENT = "must-intercept";
     String RPCCONTEXT_INTERCEPT = "rpc-context";
     String SERIALIZE_INTERCEPT = "serialize";
+    String CONTENT_TYPE_INTERCEPT = "content-type";
     String PATH_SEPARATOR = "/";
     String REQUEST_PARAM_INTERCEPT = "param";
     String REQUEST_HEADER_INTERCEPT = "header";
@@ -54,4 +55,6 @@ public interface RestConstant {
     String APPLICATION_JSON_VALUE = "application/json";
     String APPLICATION_FORM_URLENCODED_VALUE = "application/x-www-form-urlencoded";
     String TEXT_PLAIN = "text/plain";
+    String ACCEPT = "Accept";
+    String DEFAULT_ACCEPT = "*/*";
 }

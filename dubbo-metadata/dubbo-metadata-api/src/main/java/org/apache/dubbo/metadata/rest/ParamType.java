@@ -18,31 +18,31 @@ package org.apache.dubbo.metadata.rest;
 
 import org.apache.dubbo.metadata.MetadataConstants;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
 public enum ParamType {
-    HEADER(Arrays.asList(JAXRSClassConstants.HEADER_PARAM_ANNOTATION_CLASS,
+    HEADER(addSupportTypes(JAXRSClassConstants.HEADER_PARAM_ANNOTATION_CLASS,
         SpringMvcClassConstants.REQUEST_HEADER_ANNOTATION_CLASS)),
 
-    PARAM(Arrays.asList(JAXRSClassConstants.QUERY_PARAM_ANNOTATION_CLASS,
+    PARAM(addSupportTypes(JAXRSClassConstants.QUERY_PARAM_ANNOTATION_CLASS,
         SpringMvcClassConstants.REQUEST_PARAM_ANNOTATION_CLASS)),
 
-    BODY(Arrays.asList(
+    BODY(addSupportTypes(
         JAXRSClassConstants.REST_EASY_BODY_ANNOTATION_CLASS,
         SpringMvcClassConstants.REQUEST_BODY_ANNOTATION_CLASS)),
     // TODO how to match arg type ?
-    REQ_OR_RES(Arrays.asList(MetadataConstants.JAKARTA_SERVLET_REQ_CLASS,
+    REQ_OR_RES(addSupportTypes(MetadataConstants.JAKARTA_SERVLET_REQ_CLASS,
         MetadataConstants.JAKARTA_SERVLET_RES_CLASS,
         MetadataConstants.JAVAX_SERVLET_REQ_CLASS,
         MetadataConstants.JAKARTA_SERVLET_RES_CLASS)),
 
-    PATH(Arrays.asList(JAXRSClassConstants.PATH_PARAM_ANNOTATION_CLASS,
+    PATH(addSupportTypes(JAXRSClassConstants.PATH_PARAM_ANNOTATION_CLASS,
         SpringMvcClassConstants.PATH_VARIABLE_ANNOTATION_CLASS)),
 
-    FORM(Arrays.asList(JAXRSClassConstants.FORM_PARAM_ANNOTATION_CLASS)),
+    FORM(addSupportTypes(JAXRSClassConstants.FORM_PARAM_ANNOTATION_CLASS)),
 
-    EMPTY(Arrays.asList());
+    EMPTY(addSupportTypes());
     private List<Class> annotationClasses;
 
 
@@ -52,6 +52,9 @@ public enum ParamType {
 
 
     public boolean supportAnno(Class anno) {
+        if (anno == null) {
+            return false;
+        }
         return this.annotationClasses.contains(anno);
     }
 
@@ -64,5 +67,30 @@ public enum ParamType {
 
         return false;
     }
+
+    /**
+     * exclude null types
+     *
+     * @param classes
+     * @return
+     */
+    private static List<Class> addSupportTypes(Class... classes) {
+
+        ArrayList<Class> types = new ArrayList<>();
+
+        for (Class clazz : classes) {
+
+            if (clazz == null) {
+                continue;
+            }
+
+            types.add(clazz);
+        }
+
+        return types;
+
+
+    }
+
 
 }
