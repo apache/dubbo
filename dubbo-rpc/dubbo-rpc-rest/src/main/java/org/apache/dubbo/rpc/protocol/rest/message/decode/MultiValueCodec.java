@@ -32,6 +32,7 @@ public class MultiValueCodec implements HttpMessageCodec {
 
     @Override
     public Object decode(byte[] body, Class targetType) throws Exception {
+        // TODO java bean  get set convert
         return DataParseUtils.multipartFormConvert(body);
     }
 
