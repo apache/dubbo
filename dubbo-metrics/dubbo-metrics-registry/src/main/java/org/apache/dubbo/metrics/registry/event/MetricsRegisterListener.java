@@ -20,7 +20,7 @@ package org.apache.dubbo.metrics.registry.event;
 import org.apache.dubbo.metrics.event.MetricsEvent;
 import org.apache.dubbo.metrics.listener.MetricsLifeListener;
 
-import static org.apache.dubbo.metrics.registry.collector.stat.RegistryStatComposite.OP_TYPE_SUBSCRIBE;
+import static org.apache.dubbo.metrics.registry.collector.stat.RegistryStatComposite.OP_TYPE_REGISTER;
 
 public class MetricsRegisterListener implements MetricsLifeListener<RegistryEvent.MetricsRegisterEvent> {
 
@@ -41,12 +41,12 @@ public class MetricsRegisterListener implements MetricsLifeListener<RegistryEven
     @Override
     public void onEventFinish(RegistryEvent.MetricsRegisterEvent event) {
         event.getCollector().increment(RegistryEvent.Type.R_SUCCEED, event.getSource().getApplicationName());
-        event.getCollector().addRT(event.getSource().getApplicationName(), OP_TYPE_SUBSCRIBE, event.getTimePair().calc());
+        event.getCollector().addRT(event.getSource().getApplicationName(), OP_TYPE_REGISTER, event.getTimePair().calc());
     }
 
     @Override
     public void onEventError(RegistryEvent.MetricsRegisterEvent event) {
         event.getCollector().increment(RegistryEvent.Type.R_FAILED, event.getSource().getApplicationName());
-        event.getCollector().addRT(event.getSource().getApplicationName(), OP_TYPE_SUBSCRIBE, event.getTimePair().calc());
+        event.getCollector().addRT(event.getSource().getApplicationName(), OP_TYPE_REGISTER, event.getTimePair().calc());
     }
 }

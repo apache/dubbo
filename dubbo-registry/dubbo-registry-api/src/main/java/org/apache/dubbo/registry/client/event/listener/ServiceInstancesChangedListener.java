@@ -423,7 +423,7 @@ public class ServiceInstancesChangedListener {
                 lastNumMap.put(serviceKey, urls.size());
             }
         });
-        eventMulticaster.publishEvent(new RegistryEvent.MetricsNotifyEvent(applicationModel, timePair, lastNumMap));
+        eventMulticaster.publishFinishEvent(new RegistryEvent.MetricsNotifyEvent(applicationModel, timePair, lastNumMap));
 
     }
 

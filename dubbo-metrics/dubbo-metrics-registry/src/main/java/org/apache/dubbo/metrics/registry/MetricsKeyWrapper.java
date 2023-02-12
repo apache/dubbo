@@ -60,4 +60,8 @@ public class MetricsKeyWrapper {
         }
     }
 
+    @Override
+    public String toString() {
+        return targetKey();
+    }
 }

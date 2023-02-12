@@ -202,6 +202,13 @@ public class RegistryStatComposite implements MetricsExport {
         public void setValueSupplier(Function<String, Long> valueSupplier) {
             this.valueSupplier = valueSupplier;
         }
+
+        @Override
+        public String toString() {
+            return "LongContainer{" +
+                "metricsKeyWrapper=" + metricsKeyWrapper +
+                '}';
+        }
     }
 
     public static class AtomicLongContainer extends LongContainer<AtomicLong> {

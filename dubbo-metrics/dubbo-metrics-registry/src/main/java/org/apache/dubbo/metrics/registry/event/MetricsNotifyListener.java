@@ -39,11 +39,11 @@ public class MetricsNotifyListener implements MetricsLifeListener<RegistryEvent.
     @Override
     public void onEvent(RegistryEvent.MetricsNotifyEvent event) {
         event.getCollector().increment(RegistryEvent.Type.N_TOTAL, event.getSource().getApplicationName());
-        event.getCollector().setNum(RegistryEvent.Type.N_LAST_NUM, event.getSource().getApplicationName(), event.getLastNotifyNum());
     }
 
     @Override
     public void onEventFinish(RegistryEvent.MetricsNotifyEvent event) {
+        event.getCollector().setNum(RegistryEvent.Type.N_LAST_NUM, event.getSource().getApplicationName(), event.getLastNotifyNum());
         event.getCollector().addRT(event.getSource().getApplicationName(), OP_TYPE_NOTIFY, event.getTimePair().calc());
     }
 
