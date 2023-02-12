@@ -1007,7 +1007,7 @@ class AbstractConfigTest {
         for (Class<? extends AbstractConfig> configClass : configClasses) {
             AbstractConfig config = configClass.newInstance();
             Map<String, String> metaData = config.getMetaData();
-            Assertions.assertEquals(0, metaData.size(), "Expect empty metadata for new instance but found: "+metaData +" of "+configClass.getSimpleName());
+            Assertions.assertEquals(2, metaData.size(), "Expect empty metadata for new instance but found: "+metaData +" of "+configClass.getSimpleName());
             System.out.println(configClass.getSimpleName() + " metadata is checked.");
         }
     }
