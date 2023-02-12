@@ -16,20 +16,12 @@
  */
 package org.apache.dubbo.remoting.http.restclient;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
-
-import org.apache.dubbo.remoting.http.BaseRestClient;
 import org.apache.dubbo.remoting.http.RequestTemplate;
+import org.apache.dubbo.remoting.http.RestClient;
 import org.apache.dubbo.remoting.http.RestResult;
 import org.apache.dubbo.remoting.http.config.HttpClientConfig;
+
+import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -41,11 +33,23 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
-public class HttpClientRestClient extends BaseRestClient<CloseableHttpClient> {
+
+public class HttpClientRestClient implements RestClient {
+    private final CloseableHttpClient closeableHttpClient;
+    private final HttpClientConfig httpClientConfig;
 
     public HttpClientRestClient(HttpClientConfig clientConfig) {
-        super(clientConfig);
+        closeableHttpClient = createHttpClient();
+        httpClientConfig = clientConfig;
     }
 
     @Override
@@ -59,10 +63,12 @@ public class HttpClientRestClient extends BaseRestClient<CloseableHttpClient> {
         } else if ("POST".equals(httpMethod)) {
             HttpPost httpPost = new HttpPost(requestTemplate.getURL());
             httpPost.setEntity(new ByteArrayEntity(requestTemplate.getSerializedBody()));
+            httpRequest = httpPost;
         }
 
         Map<String, Collection<String>> allHeaders = requestTemplate.getAllHeaders();
 
+        allHeaders.remove("Content-Length");
         // header
         for (String headerName : allHeaders.keySet()) {
             Collection<String> headerValues = allHeaders.get(headerName);
@@ -72,10 +78,11 @@ public class HttpClientRestClient extends BaseRestClient<CloseableHttpClient> {
             }
         }
 
-        httpRequest.setConfig(getRequestConfig(clientConfig));
+        httpRequest.setConfig(getRequestConfig(httpClientConfig));
 
         CompletableFuture<RestResult> future = new CompletableFuture<>();
-        try (CloseableHttpResponse response = getClient().execute(httpRequest)) {
+        // TODO  RESOLVE java.net.SocketException: socket closed
+        try (CloseableHttpResponse response = closeableHttpClient.execute(httpRequest)) {
             future.complete(new RestResult() {
                 @Override
                 public String getContentType() {
@@ -83,8 +90,8 @@ public class HttpClientRestClient extends BaseRestClient<CloseableHttpClient> {
                 }
 
                 @Override
-                public InputStream getBody() throws IOException {
-                    return response.getEntity().getContent();
+                public byte[] getBody() throws IOException {
+                    return IOUtils.toByteArray(response.getEntity().getContent());
                 }
 
                 @Override
@@ -93,7 +100,7 @@ public class HttpClientRestClient extends BaseRestClient<CloseableHttpClient> {
                 }
 
                 @Override
-                public InputStream getErrorResponse() throws IOException {
+                public byte[] getErrorResponse() throws IOException {
                     return getBody();
                 }
 
@@ -117,7 +124,7 @@ public class HttpClientRestClient extends BaseRestClient<CloseableHttpClient> {
     @Override
     public void close() {
         try {
-            getClient().close();
+            closeableHttpClient.close();
         } catch (IOException e) {
 
         }
@@ -134,7 +141,7 @@ public class HttpClientRestClient extends BaseRestClient<CloseableHttpClient> {
         return true;
     }
 
-    public CloseableHttpClient createHttpClient(HttpClientConfig httpClientConfig) {
+    public CloseableHttpClient createHttpClient() {
         PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
         return HttpClients.custom().setConnectionManager(connectionManager).build();
     }

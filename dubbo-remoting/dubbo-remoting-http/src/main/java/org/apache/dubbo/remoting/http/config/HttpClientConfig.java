@@ -17,9 +17,9 @@
 package org.apache.dubbo.remoting.http.config;
 
 public class HttpClientConfig {
-    private int readTimeout = 30;
-    private int writeTimeout = 30;
-    private int connectTimeout = 30;
+    private int readTimeout = 6 * 1000;
+    private int writeTimeout = 6 * 1000;
+    private int connectTimeout = 6 * 1000;
     private int chunkLength = 8196;
 
     private int HTTP_CLIENT_CONNECTION_MANAGER_MAX_PER_ROUTE = 20;

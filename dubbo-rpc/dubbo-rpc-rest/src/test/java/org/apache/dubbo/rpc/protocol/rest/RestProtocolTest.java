@@ -185,7 +185,7 @@ class RestProtocolTest {
         URL url = this.registerProvider(exportUrl, server, DemoService.class);
 
         URL nettyUrl = url.addParameter(SERVER_KEY, "netty")
-                .addParameter(EXTENSION_KEY, "org.apache.dubbo.rpc.protocol.rest.support.LoggingFilter");
+            .addParameter(EXTENSION_KEY, "org.apache.dubbo.rpc.protocol.rest.support.LoggingFilter");
         Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(server, DemoService.class, nettyUrl));
 
         DemoService demoService = this.proxy.getProxy(protocol.refer(DemoService.class, nettyUrl));
@@ -205,7 +205,7 @@ class RestProtocolTest {
 
         // use RpcContextFilter
         URL nettyUrl = url.addParameter(SERVER_KEY, "netty")
-                .addParameter(EXTENSION_KEY, "org.apache.dubbo.rpc.protocol.rest.RpcContextFilter");
+            .addParameter(EXTENSION_KEY, "org.apache.dubbo.rpc.protocol.rest.RpcContextFilter");
         Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(server, DemoService.class, nettyUrl));
 
         DemoService demoService = this.proxy.getProxy(protocol.refer(DemoService.class, nettyUrl));

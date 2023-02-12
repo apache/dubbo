@@ -175,6 +175,7 @@ public class RestProtocol extends AbstractProxyProtocol {
                             try {
                                 int responseCode = r.getResponseCode();
                                 MediaType mediaType = MediaType.TEXT_PLAIN;
+                                // TODO code judge
                                 if (400 < responseCode && responseCode < 500) {
 
                                 } else if (responseCode >= 500) {
