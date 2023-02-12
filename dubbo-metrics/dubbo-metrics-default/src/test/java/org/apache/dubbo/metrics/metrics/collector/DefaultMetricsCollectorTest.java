@@ -34,6 +34,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -55,6 +56,7 @@ class DefaultMetricsCollectorTest {
     private String group;
     private String version;
     private RpcInvocation invocation;
+    public static final  String  DUBBO_THREAD_METRIC_MARK = "dubbo.thread.pool";
 
     @BeforeEach
     public void setup() {
@@ -93,6 +95,9 @@ class DefaultMetricsCollectorTest {
 
         List<MetricSample> samples = collector.collect();
         for (MetricSample sample : samples) {
+            if (sample.getName().contains(DUBBO_THREAD_METRIC_MARK)) {
+                continue;
+            }
             Assertions.assertTrue(sample instanceof GaugeMetricSample);
             GaugeMetricSample gaugeSample = (GaugeMetricSample) sample;
             Map<String, String> tags = gaugeSample.getTags();
@@ -107,7 +112,14 @@ class DefaultMetricsCollectorTest {
 
         collector.decreaseProcessingRequests(applicationName, invocation);
         samples = collector.collect();
-        Map<String, Long> sampleMap = samples.stream().collect(Collectors.toMap(MetricSample::getName, k -> {
+        List<MetricSample> samples1 = new ArrayList<>();
+        for (MetricSample sample : samples) {
+            if (sample.getName().contains(DUBBO_THREAD_METRIC_MARK)) {
+                continue;
+            }
+            samples1.add(sample);
+        }
+        Map<String, Long> sampleMap = samples1.stream().collect(Collectors.toMap(MetricSample::getName, k -> {
             Number number = ((GaugeMetricSample) k).getSupplier().get();
             return number.longValue();
         }));
@@ -125,6 +137,9 @@ class DefaultMetricsCollectorTest {
 
         List<MetricSample> samples = collector.collect();
         for (MetricSample sample : samples) {
+            if (sample.getName().contains(DUBBO_THREAD_METRIC_MARK)) {
+                continue;
+            }
             Map<String, String> tags = sample.getTags();
 
             Assertions.assertEquals(tags.get(TAG_INTERFACE_KEY), interfaceName);
@@ -132,8 +147,14 @@ class DefaultMetricsCollectorTest {
             Assertions.assertEquals(tags.get(TAG_GROUP_KEY), group);
             Assertions.assertEquals(tags.get(TAG_VERSION_KEY), version);
         }
-
-        Map<String, Long> sampleMap = samples.stream().collect(Collectors.toMap(MetricSample::getName, k -> {
+        List<MetricSample> samples1 = new ArrayList<>();
+        for (MetricSample sample : samples) {
+            if (sample.getName().contains(DUBBO_THREAD_METRIC_MARK)) {
+                continue;
+            }
+            samples1.add(sample);
+        }
+        Map<String, Long> sampleMap = samples1.stream().collect(Collectors.toMap(MetricSample::getName, k -> {
             Number number = ((GaugeMetricSample) k).getSupplier().get();
             return number.longValue();
         }));

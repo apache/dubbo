@@ -26,9 +26,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class DubboProtocolServer implements ProtocolServer {
 
-    private RemotingServer server;
+    private final RemotingServer server;
     private String address;
-    private Map<String, Object> attributes = new ConcurrentHashMap<>();
+    private final Map<String, Object> attributes = new ConcurrentHashMap<>();
 
     public DubboProtocolServer(RemotingServer server) {
         this.server = server;

@@ -378,7 +378,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             DefaultMetricsCollector collector =
                 beanFactory.getOrRegisterBean(DefaultMetricsCollector.class);
             collector.setCollectEnabled(true);
-
             eventMulticaster.setAvailable();
 
             List<MetricsListener> metricsListeners = applicationModel.getExtensionLoader(MetricsListener.class)
@@ -391,6 +390,8 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 beanFactory.registerBean(customizeCollector);
             }
             collector.addApplicationInfo(applicationModel.getApplicationName());
+            collector.addThreadPool(applicationModel.getFrameworkModel(), applicationModel.getApplicationName());
+
             String protocol = metricsConfig.getProtocol();
             if (StringUtils.isNotEmpty(protocol)) {
                 MetricsReporterFactory metricsReporterFactory = getExtensionLoader(MetricsReporterFactory.class).getAdaptiveExtension();
