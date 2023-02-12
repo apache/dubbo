@@ -35,7 +35,7 @@ public class HeartBeatRequest extends Request {
         HeartBeatRequest copy = new HeartBeatRequest(request.getId());
         copy.setVersion(request.getVersion());
         copy.setTwoWay(request.isTwoWay());
-        copy.setEvent(copy.isEvent());
+        copy.setEvent(request.isEvent());
         copy.setBroken(request.isBroken());
         copy.setData(request.getData());
         return copy;
