@@ -22,7 +22,7 @@ import org.apache.dubbo.metrics.event.MetricsEvent;
 /**
  * Metrics Listener.
  */
-public interface MetricsLifeListener<E extends MetricsEvent<?>> extends MetricsListener<E> {
+public interface MetricsLifeListener<E extends MetricsEvent> extends MetricsListener<E> {
 
     void onEventFinish(E event);
 

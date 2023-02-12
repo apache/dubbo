@@ -24,9 +24,9 @@ import org.apache.dubbo.metrics.event.MetricsEvent;
  * Metrics Listener.
  */
 @SPI
-public interface MetricsListener<E extends MetricsEvent<?>> {
+public interface MetricsListener<E extends MetricsEvent> {
 
-    default boolean isSupport(MetricsEvent<?> event) {
+    default boolean isSupport(MetricsEvent event) {
         return true;
     }
 

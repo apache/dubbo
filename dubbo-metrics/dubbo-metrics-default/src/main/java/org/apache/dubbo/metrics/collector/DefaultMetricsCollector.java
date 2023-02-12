@@ -31,7 +31,6 @@ import org.apache.dubbo.rpc.Invocation;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 
@@ -45,7 +44,7 @@ import static org.apache.dubbo.metrics.model.MetricsCategory.RT;
  */
 public class DefaultMetricsCollector implements MetricsCollector {
 
-    private AtomicBoolean collectEnabled = new AtomicBoolean(false);
+    private boolean collectEnabled = false;
     private final MetricsStatComposite stats;
     private final SimpleMetricsEventMulticaster eventMulticaster;
 
@@ -55,11 +54,11 @@ public class DefaultMetricsCollector implements MetricsCollector {
     }
 
     public void setCollectEnabled(Boolean collectEnabled) {
-        this.collectEnabled.compareAndSet(isCollectEnabled(), collectEnabled);
+        this.collectEnabled = collectEnabled;
     }
 
-    public Boolean isCollectEnabled() {
-        return collectEnabled.get();
+    public boolean isCollectEnabled() {
+        return collectEnabled;
     }
 
     public void increaseTotalRequests(String applicationName, Invocation invocation) {

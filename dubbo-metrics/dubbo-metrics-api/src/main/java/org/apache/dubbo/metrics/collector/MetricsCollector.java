@@ -29,6 +29,9 @@ import java.util.List;
 @SPI
 public interface MetricsCollector {
 
+    default boolean isCollectEnabled() {
+        return false;
+    }
     /**
      * Collect metrics as {@link MetricSample}
      *

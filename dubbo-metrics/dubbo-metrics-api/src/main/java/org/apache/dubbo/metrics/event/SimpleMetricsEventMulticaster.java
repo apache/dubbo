@@ -28,6 +28,16 @@ import java.util.function.Consumer;
 public class SimpleMetricsEventMulticaster implements MetricsEventMulticaster {
     private final List<MetricsListener<?>> listeners = Collections.synchronizedList(new ArrayList<>());
 
+    private boolean available = false;
+
+    public void setAvailable() {
+        this.available = true;
+    }
+
+    public boolean isAvailable() {
+        return available;
+    }
+
     @Override
     public void addListener(MetricsListener<?> listener) {
         listeners.add(listener);
@@ -35,7 +45,7 @@ public class SimpleMetricsEventMulticaster implements MetricsEventMulticaster {
 
     @Override
     @SuppressWarnings({"rawtypes", "unchecked"})
-    public void publishEvent(MetricsEvent<?> event) {
+    public void publishEvent(MetricsEvent event) {
         if (event instanceof EmptyEvent) {
             return;
         }
@@ -48,18 +58,18 @@ public class SimpleMetricsEventMulticaster implements MetricsEventMulticaster {
 
     @Override
     @SuppressWarnings({"unchecked"})
-    public void publishFinishEvent(MetricsEvent<?> event) {
+    public void publishFinishEvent(MetricsEvent event) {
         publishTimeEvent(event, metricsLifeListener -> metricsLifeListener.onEventFinish(event));
     }
 
     @Override
     @SuppressWarnings({"unchecked"})
-    public void publishErrorEvent(MetricsEvent<?> event) {
+    public void publishErrorEvent(MetricsEvent event) {
         publishTimeEvent(event, metricsLifeListener -> metricsLifeListener.onEventError(event));
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    private void publishTimeEvent(MetricsEvent<?> event, Consumer<MetricsLifeListener> consumer) {
+    private void publishTimeEvent(MetricsEvent event, Consumer<MetricsLifeListener> consumer) {
         if (event instanceof EmptyEvent) {
             return;
         }
