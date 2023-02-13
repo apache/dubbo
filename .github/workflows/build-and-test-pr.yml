@@ -217,7 +217,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: coverage-result
-          path: "**/target/site/jacoco-aggregate/jacoco.xml"
+          path: "**/target/site/**/jacoco.xml"
 
   integration-test-prepare:
     runs-on: ubuntu-latest
