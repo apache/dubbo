@@ -19,6 +19,8 @@ package org.apache.dubbo.metrics.filter.observation;
 import io.micrometer.common.KeyValues;
 import io.micrometer.common.docs.KeyName;
 import io.micrometer.common.lang.Nullable;
+
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.support.RpcUtils;
@@ -46,13 +48,13 @@ class AbstractDefaultDubboObservationConvention {
         String serviceName = StringUtils.hasText(invocation.getServiceName()) ? invocation.getServiceName() : readServiceName(invocation.getTargetServiceUniqueName());
         String methodName = RpcUtils.getMethodName(invocation);
         String method = StringUtils.hasText(methodName) ? methodName : "";
-        return serviceName + "/" + method;
+        return serviceName + CommonConstants.PATH_SEPARATOR + method;
     }
 
     private String readServiceName(String targetServiceUniqueName) {
-        String[] splitByHyphen = targetServiceUniqueName.split("/"); // foo-provider/a.b.c:1.0.0 or a.b.c:1.0.0
+        String[] splitByHyphen = targetServiceUniqueName.split(CommonConstants.PATH_SEPARATOR); // foo-provider/a.b.c:1.0.0 or a.b.c:1.0.0
         String withVersion = splitByHyphen.length == 1 ? targetServiceUniqueName : splitByHyphen[1];
-        String[] splitByVersion = withVersion.split(":"); // a.b.c:1.0.0
+        String[] splitByVersion = withVersion.split(CommonConstants.GROUP_CHAR_SEPARATOR); // a.b.c:1.0.0
         if (splitByVersion.length == 1) {
             return withVersion;
         }
