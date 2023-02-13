@@ -319,4 +319,10 @@ public @interface DubboService {
      * Weather the service is export asynchronously
      */
     boolean exportAsync() default false;
+
+    /**
+     * bean name of service executor(thread pool), used for thread pool isolation between services
+     * @return
+     */
+    String executor() default "";
 }

@@ -17,6 +17,12 @@
 package org.apache.dubbo.rpc.cluster;
 
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
 import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
@@ -35,16 +41,9 @@ import org.apache.dubbo.rpc.cluster.router.mesh.route.MeshAppRuleListener;
 import org.apache.dubbo.rpc.cluster.router.mesh.route.MeshRuleManager;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
 import org.apache.dubbo.rpc.model.FrameworkModel;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TAG_KEY;
@@ -120,7 +119,7 @@ class RouterChainTest {
         Invoker<DemoService> invoker5 = createNormalInvoker(map5);
 
         BitList<Invoker<DemoService>> invokers = new BitList<>(Arrays.asList(mockInvoker, invoker1, invoker2, invoker3, invoker4, invoker5));
-        routerChain.setInvokers(invokers);
+        routerChain.setInvokers(invokers, () -> {});
 
         // mesh rule for MeshStateRouter
         MeshRuleManager meshRuleManager = mockInvoker.getUrl().getOrDefaultModuleModel().getBeanFactory().getBean(MeshRuleManager.class);
@@ -153,7 +152,8 @@ class RouterChainTest {
         RouterSnapshotSwitcher routerSnapshotSwitcher = FrameworkModel.defaultModel().getBeanFactory().getBean(RouterSnapshotSwitcher.class);
         routerSnapshotSwitcher.addEnabledService("org.apache.dubbo.demo.DemoService");
         // route
-        List<Invoker<DemoService>> result = routerChain.route(consumerUrl, invokers, rpcInvocation);
+        List<Invoker<DemoService>> result = routerChain.getSingleChain(consumerUrl, invokers, rpcInvocation)
+            .route(consumerUrl, invokers, rpcInvocation);
         Assertions.assertEquals(result.size(), 1);
         Assertions.assertTrue(result.contains(invoker5));
 
@@ -170,7 +170,8 @@ class RouterChainTest {
         Assertions.assertTrue(snapshot[0].contains(snapshotLog));
 
         RpcContext.getServiceContext().setNeedPrintRouterSnapshot(false);
-        result = routerChain.route(consumerUrl, invokers, rpcInvocation);
+        result = routerChain.getSingleChain(consumerUrl, invokers, rpcInvocation)
+            .route(consumerUrl, invokers, rpcInvocation);
         Assertions.assertEquals(result.size(), 1);
         Assertions.assertTrue(result.contains(invoker5));
 

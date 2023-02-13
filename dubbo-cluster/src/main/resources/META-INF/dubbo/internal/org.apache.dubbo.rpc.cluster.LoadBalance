@@ -5,3 +5,4 @@ consistenthash=org.apache.dubbo.rpc.cluster.loadbalance.ConsistentHashLoadBalanc
 shortestresponse=org.apache.dubbo.rpc.cluster.loadbalance.ShortestResponseLoadBalance
 p2c=org.apache.dubbo.rpc.cluster.loadbalance.PowerOfTwoChoiceWithLeastActive
 adaptiveP2C=org.apache.dubbo.rpc.cluster.loadbalance.AdaptivePowerOfTwoChoice
+adaptive=org.apache.dubbo.rpc.cluster.loadbalance.AdaptiveLoadBalance

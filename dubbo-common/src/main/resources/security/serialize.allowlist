@@ -123,3 +123,4 @@ java.util.TreeSet
 java.util.UUID
 java.util.WeakHashMap
 org.apache.dubbo
+com.alibaba.dubbo

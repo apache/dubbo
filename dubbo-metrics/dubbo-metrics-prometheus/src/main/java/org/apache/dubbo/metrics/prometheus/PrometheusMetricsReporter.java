@@ -27,7 +27,7 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.metrics.AbstractMetricsReporter;
+import org.apache.dubbo.metrics.report.AbstractMetricsReporter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.io.IOException;
@@ -87,6 +87,7 @@ public class PrometheusMetricsReporter extends AbstractMetricsReporter {
             try {
                 prometheusExporterHttpServer = HttpServer.create(new InetSocketAddress(port), 0);
                 prometheusExporterHttpServer.createContext(path, httpExchange -> {
+                    refreshData();
                     String response = prometheusRegistry.scrape();
                     httpExchange.sendResponseHeaders(200, response.getBytes().length);
                     try (OutputStream os = httpExchange.getResponseBody()) {
@@ -124,6 +125,7 @@ public class PrometheusMetricsReporter extends AbstractMetricsReporter {
 
     protected void push(PushGateway pushGateway, String job) {
         try {
+            refreshData();
             pushGateway.pushAdd(prometheusRegistry.getPrometheusRegistry(), job);
         } catch (IOException e) {
             logger.error(COMMON_METRICS_COLLECTOR_EXCEPTION, "", "", "Error occurred when pushing metrics to prometheus: ", e);

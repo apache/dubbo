@@ -16,6 +16,19 @@
  */
 package org.apache.dubbo.registry.client;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Collectors;
+
 import org.apache.dubbo.common.ProtocolServiceKey;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
@@ -25,6 +38,7 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.registry.AddressListener;
@@ -45,18 +59,6 @@ import org.apache.dubbo.rpc.cluster.RouterChain;
 import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
 import org.apache.dubbo.rpc.model.ModuleModel;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DISABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
@@ -86,7 +88,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
     private final Set<String> providerFirstParams;
     private final ModuleModel moduleModel;
     private final ProtocolServiceKey consumerProtocolServiceKey;
-    private final Map<ProtocolServiceKey, URL> customizedConsumerUrlMap = new ConcurrentHashMap<>();
+    private final ConcurrentMap<ProtocolServiceKey, URL> customizedConsumerUrlMap = new ConcurrentHashMap<>();
 
     public ServiceDiscoveryRegistryDirectory(Class<T> serviceType, URL url) {
         super(serviceType, url);
@@ -232,8 +234,9 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
 
         if (invokerUrls.size() == 1 && EMPTY_PROTOCOL.equals(invokerUrls.get(0).getProtocol())) {
             logger.warn(PROTOCOL_UNSUPPORTED, "", "", "Received url with EMPTY protocol, will clear all available addresses.");
-            this.forbidden = true; // Forbid to access
-            routerChain.setInvokers(BitList.emptyList());
+            refreshRouter(BitList.emptyList(), () ->
+                this.forbidden = true // Forbid to access
+            );
             destroyAllInvokers(); // Close all invokers
         } else {
             this.forbidden = false; // Allow accessing
@@ -259,9 +262,9 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
                 return;
             }
             List<Invoker<T>> newInvokers = Collections.unmodifiableList(new ArrayList<>(newUrlInvokerMap.values()));
-            this.setInvokers(multiGroup ? new BitList<>(toMergeInvokerList(newInvokers)) : new BitList<>(newInvokers));
+            BitList<Invoker<T>> finalInvokers = multiGroup ? new BitList<>(toMergeInvokerList(newInvokers)) : new BitList<>(newInvokers);
             // pre-route and build cache
-            routerChain.setInvokers(this.getInvokers());
+            refreshRouter(finalInvokers.clone(), () -> this.setInvokers(finalInvokers));
             this.urlInvokerMap = newUrlInvokerMap;
 
             if (oldUrlInvokerMap != null) {
@@ -275,6 +278,14 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
 
         // notify invokers refreshed
         this.invokersChanged();
+
+        logger.info("Received invokers changed event from registry. " +
+            "Registry type: instance. " +
+            "Service Key: " + getConsumerUrl().getServiceKey() + ". " +
+            "Urls Size : " + invokerUrls.size() + ". " +
+            "Invokers Size : " + getInvokers().size() + ". " +
+            "Available Size: " + getValidInvokers().size() + ". " +
+            "Available Invokers : " + joinValidInvokerAddresses());
     }
 
     /**
@@ -342,7 +353,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
                         }
                         if (enabled) {
                             if (shouldWrap) {
-                                URL newConsumerUrl = customizedConsumerUrlMap.computeIfAbsent(matchedProtocolServiceKey,
+                                URL newConsumerUrl = ConcurrentHashMapUtils.computeIfAbsent(customizedConsumerUrlMap, matchedProtocolServiceKey,
                                     k -> consumerUrl.setProtocol(k.getProtocol())
                                         .addParameter(CommonConstants.GROUP_KEY, k.getGroup())
                                         .addParameter(CommonConstants.VERSION_KEY, k.getVersion()));

@@ -32,3 +32,5 @@ getRecentRouterSnapshot=org.apache.dubbo.qos.command.impl.GetRecentRouterSnapsho
 loggerInfo=org.apache.dubbo.qos.command.impl.LoggerInfo
 switchLogger=org.apache.dubbo.qos.command.impl.SwitchLogger
 switchLogLevel=org.apache.dubbo.qos.command.impl.SwitchLogLevel
+serializeCheckStatus=org.apache.dubbo.qos.command.impl.SerializeCheckStatus
+serializeWarnedClasses=org.apache.dubbo.qos.command.impl.SerializeWarnedClasses

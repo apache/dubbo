@@ -37,6 +37,7 @@ import java.util.concurrent.ExecutorService;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
+import static org.apache.dubbo.config.Constants.SERVER_THREAD_POOL_NAME;
 import static org.apache.dubbo.remoting.Constants.ACCEPTS_KEY;
 import static org.apache.dubbo.remoting.Constants.DEFAULT_ACCEPTS;
 
@@ -44,8 +45,6 @@ import static org.apache.dubbo.remoting.Constants.DEFAULT_ACCEPTS;
  * AbstractServer
  */
 public abstract class AbstractServer extends AbstractEndpoint implements RemotingServer {
-
-    protected static final String SERVER_THREAD_POOL_NAME = "DubboServerHandler";
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(AbstractServer.class);
     private Set<ExecutorService> executors = new ConcurrentHashSet<>();
     private InetSocketAddress localAddress;
@@ -56,7 +55,7 @@ public abstract class AbstractServer extends AbstractEndpoint implements Remotin
 
     public AbstractServer(URL url, ChannelHandler handler) throws RemotingException {
         super(url, handler);
-        executorRepository = url.getOrDefaultApplicationModel().getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
+        executorRepository = ExecutorRepository.getInstance(url.getOrDefaultApplicationModel());
         localAddress = getUrl().toInetSocketAddress();
 
         String bindIp = getUrl().getParameter(Constants.BIND_IP_KEY, getUrl().getHost());
@@ -75,12 +74,14 @@ public abstract class AbstractServer extends AbstractEndpoint implements Remotin
             throw new RemotingException(url.toInetSocketAddress(), null, "Failed to bind " + getClass().getSimpleName()
                 + " on " + bindAddress + ", cause: " + t.getMessage(), t);
         }
-        executors.add(executorRepository.createExecutorIfAbsent(url));
+        executors.add(executorRepository.createExecutorIfAbsent(ExecutorUtil.setThreadName(url, SERVER_THREAD_POOL_NAME)));
     }
 
     protected abstract void doOpen() throws Throwable;
 
     protected abstract void doClose() throws Throwable;
+
+    protected abstract int getChannelsSize();
 
     @Override
     public void reset(URL url) {
@@ -99,7 +100,7 @@ public abstract class AbstractServer extends AbstractEndpoint implements Remotin
             logger.error(INTERNAL_ERROR, "unknown error in remoting module", "", t.getMessage(), t);
         }
 
-        ExecutorService executor = executorRepository.createExecutorIfAbsent(url);
+        ExecutorService executor = executorRepository.createExecutorIfAbsent(ExecutorUtil.setThreadName(url, SERVER_THREAD_POOL_NAME));
         executors.add(executor);
         executorRepository.updateThreadpool(url, executor);
         super.setUrl(getUrl().addParameters(url.getParameters()));
@@ -168,7 +169,7 @@ public abstract class AbstractServer extends AbstractEndpoint implements Remotin
             return;
         }
 
-        if (accepts > 0 && getChannels().size() > accepts) {
+        if (accepts > 0 && getChannelsSize()> accepts) {
             logger.error(INTERNAL_ERROR, "unknown error in remoting module", "", "Close channel " + ch + ", cause: The server " + ch.getLocalAddress() + " connections greater than max config " + accepts);
             ch.close();
             return;
@@ -178,8 +179,7 @@ public abstract class AbstractServer extends AbstractEndpoint implements Remotin
 
     @Override
     public void disconnected(Channel ch) throws RemotingException {
-        Collection<Channel> channels = getChannels();
-        if (channels.isEmpty()) {
+        if (getChannelsSize()==0) {
             logger.warn(INTERNAL_ERROR, "unknown error in remoting module", "", "All clients has disconnected from " + ch.getLocalAddress() + ". You can graceful shutdown now.");
         }
         super.disconnected(ch);

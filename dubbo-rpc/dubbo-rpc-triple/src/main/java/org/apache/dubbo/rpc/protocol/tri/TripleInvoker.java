@@ -17,14 +17,19 @@
 
 package org.apache.dubbo.rpc.protocol.tri;
 
-import io.netty.util.AsciiString;
+import java.util.Arrays;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.locks.ReentrantLock;
+
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.stream.StreamObserver;
-import org.apache.dubbo.remoting.api.Connection;
-import org.apache.dubbo.remoting.api.ConnectionManager;
+import org.apache.dubbo.remoting.api.connection.AbstractConnectionClient;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.CancellationContext;
@@ -47,14 +52,10 @@ import org.apache.dubbo.rpc.protocol.tri.call.TripleClientCall;
 import org.apache.dubbo.rpc.protocol.tri.call.UnaryClientCallListener;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 import org.apache.dubbo.rpc.protocol.tri.observer.ClientCallToObserverAdapter;
+import org.apache.dubbo.rpc.protocol.tri.transport.TripleWriteQueue;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
-import java.util.Arrays;
-import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.locks.ReentrantLock;
+import io.netty.util.AsciiString;
 
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
@@ -70,22 +71,22 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
 
     private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(TripleInvoker.class);
 
-
-    private final Connection connection;
+    private final AbstractConnectionClient connectionClient;
     private final ReentrantLock destroyLock = new ReentrantLock();
     private final Set<Invoker<?>> invokers;
     private final ExecutorService streamExecutor;
     private final String acceptEncodings;
+    private final TripleWriteQueue writeQueue = new TripleWriteQueue();
 
     public TripleInvoker(Class<T> serviceType,
-                         URL url,
-                         String acceptEncodings,
-                         ConnectionManager connectionManager,
-                         Set<Invoker<?>> invokers,
-                         ExecutorService streamExecutor) {
+        URL url,
+        String acceptEncodings,
+        AbstractConnectionClient connectionClient,
+        Set<Invoker<?>> invokers,
+        ExecutorService streamExecutor) {
         super(serviceType, url, new String[]{INTERFACE_KEY, GROUP_KEY, TOKEN_KEY});
         this.invokers = invokers;
-        this.connection = connectionManager.connect(url);
+        this.connectionClient = connectionClient;
         this.acceptEncodings = acceptEncodings;
         this.streamExecutor = streamExecutor;
     }
@@ -97,7 +98,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
 
     @Override
     protected Result doInvoke(final Invocation invocation) {
-        if (!connection.isAvailable()) {
+        if (!connectionClient.isConnected()) {
             CompletableFuture<AppResponse> future = new CompletableFuture<>();
             RpcException exception = TriRpcStatus.UNAVAILABLE.withDescription(
                     String.format("upstream %s is unavailable", getUrl().getAddress()))
@@ -112,8 +113,8 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         final MethodDescriptor methodDescriptor = serviceDescriptor.getMethod(
             invocation.getMethodName(),
             invocation.getParameterTypes());
-        ClientCall call = new TripleClientCall(connection, streamExecutor,
-            getUrl().getOrDefaultFrameworkModel());
+        ClientCall call = new TripleClientCall(connectionClient, streamExecutor,
+            getUrl().getOrDefaultFrameworkModel(), writeQueue);
 
         AsyncRpcResult result;
         try {
@@ -236,6 +237,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
             meta.packableMethod = ReflectionPackableMethod.init(methodDescriptor, url);
         }
         meta.convertNoLowerHeader = TripleProtocol.CONVERT_NO_LOWER_HEADER;
+        meta.ignoreDefaultVersion = TripleProtocol.IGNORE_1_0_0_VERSION;
         meta.method = methodDescriptor;
         meta.scheme = getSchemeFromUrl(url);
         // TODO read compressor from config
@@ -263,7 +265,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         if (!super.isAvailable()) {
             return false;
         }
-        return connection.isAvailable();
+        return connectionClient.isConnected();
     }
 
     @Override
@@ -283,7 +285,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
                     invokers.remove(this);
                 }
                 try {
-                    connection.release();
+                    connectionClient.release();
                 } catch (Throwable t) {
                     logger.warn(PROTOCOL_FAILED_DESTROY_INVOKER, "", "", t.getMessage(), t);
                 }
