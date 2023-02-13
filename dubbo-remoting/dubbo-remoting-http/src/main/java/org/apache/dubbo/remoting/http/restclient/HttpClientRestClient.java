@@ -81,7 +81,6 @@ public class HttpClientRestClient implements RestClient {
         httpRequest.setConfig(getRequestConfig(httpClientConfig));
 
         CompletableFuture<RestResult> future = new CompletableFuture<>();
-        // TODO  RESOLVE java.net.SocketException: socket closed
         try {
             CloseableHttpResponse response = closeableHttpClient.execute(httpRequest);
             future.complete(new RestResult() {
