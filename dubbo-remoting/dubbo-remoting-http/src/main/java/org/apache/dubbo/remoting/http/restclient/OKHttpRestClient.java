@@ -102,6 +102,11 @@ public class OKHttpRestClient extends BaseRestClient<OkHttpClient> {
                     public int getResponseCode() throws IOException {
                         return response.code();
                     }
+
+                    @Override
+                    public String getMessage() throws IOException {
+                        return response.message();
+                    }
                 });
             }
         });

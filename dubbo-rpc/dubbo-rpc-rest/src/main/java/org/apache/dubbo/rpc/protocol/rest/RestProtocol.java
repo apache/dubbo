@@ -51,6 +51,8 @@ import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.HttpConnectionConf
 import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.HttpConnectionCreateContext;
 import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.HttpConnectionPreBuildIntercept;
 import org.apache.dubbo.rpc.protocol.rest.annotation.metadata.MetadataResolver;
+import org.apache.dubbo.rpc.protocol.rest.exception.HttpClientException;
+import org.apache.dubbo.rpc.protocol.rest.exception.RemoteServerInternalException;
 import org.apache.dubbo.rpc.protocol.rest.message.HttpMessageCodecManager;
 import org.apache.dubbo.rpc.protocol.rest.util.MediaTypeUtil;
 import org.jboss.resteasy.util.GetRestful;
@@ -150,7 +152,7 @@ public class RestProtocol extends AbstractProxyProtocol {
                 try {
                     RestMethodMetadata restMethodMetadata = metadataMap.get(invocation.getMethodName()).get(ParameterTypesComparator.getInstance(invocation.getParameterTypes()));
 
-                    RequestTemplate requestTemplate = new RequestTemplate(invocation, restMethodMetadata.getRequest().getMethod(), url.getAddress(),getContextPath(url));
+                    RequestTemplate requestTemplate = new RequestTemplate(invocation, restMethodMetadata.getRequest().getMethod(), url.getAddress(), getContextPath(url));
 
                     HttpConnectionCreateContext httpConnectionCreateContext = new HttpConnectionCreateContext();
                     // TODO  dynamic load config
@@ -175,11 +177,11 @@ public class RestProtocol extends AbstractProxyProtocol {
                             try {
                                 int responseCode = r.getResponseCode();
                                 MediaType mediaType = MediaType.TEXT_PLAIN;
-                                // TODO code judge
+
                                 if (400 < responseCode && responseCode < 500) {
-
+                                    throw new HttpClientException(r.getMessage());
                                 } else if (responseCode >= 500) {
-
+                                    throw new RemoteServerInternalException(r.getMessage());
                                 } else if (responseCode < 400) {
                                     mediaType = MediaTypeUtil.convertMediaType(r.getContentType());
                                 }

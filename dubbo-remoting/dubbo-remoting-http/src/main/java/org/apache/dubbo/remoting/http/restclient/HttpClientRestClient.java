@@ -109,6 +109,11 @@ public class HttpClientRestClient implements RestClient {
                 public int getResponseCode() {
                     return response.getStatusLine().getStatusCode();
                 }
+
+                @Override
+                public String getMessage() throws IOException {
+                    return new String(getErrorResponse());
+                }
             });
         } catch (IOException e) {
             future.completeExceptionally(e);

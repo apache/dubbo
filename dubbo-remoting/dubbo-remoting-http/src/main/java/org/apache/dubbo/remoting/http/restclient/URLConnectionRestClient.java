@@ -91,6 +91,11 @@ public class URLConnectionRestClient extends BaseRestClient<HttpURLConnection> {
                     public int getResponseCode() throws IOException {
                         return connection.getResponseCode();
                     }
+
+                    @Override
+                    public String getMessage() throws IOException {
+                        return new String(getErrorResponse());
+                    }
                 });
                 return future;
             }
@@ -142,6 +147,11 @@ public class URLConnectionRestClient extends BaseRestClient<HttpURLConnection> {
                 @Override
                 public int getResponseCode() throws IOException {
                     return connection.getResponseCode();
+                }
+
+                @Override
+                public String getMessage() throws IOException {
+                    return new String(getErrorResponse());
                 }
             });
         } catch (Exception e) {
