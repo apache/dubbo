@@ -19,12 +19,18 @@ package org.apache.dubbo.rpc.protocol.rest;
 
 import org.apache.dubbo.rpc.RpcContext;
 
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
 import java.util.Map;
-
+@Path("/demoService")
 public class DemoServiceImpl implements DemoService {
     private static Map<String, Object> context;
     private boolean called;
 
+    @POST
+    @Path("/say")
+    @Consumes({MediaType.TEXT_PLAIN})
+    @Override
     public String sayHello(String name) {
         called = true;
         return "Hello, " + name;
@@ -35,12 +41,17 @@ public class DemoServiceImpl implements DemoService {
         return called;
     }
 
+    @GET
+    @Path("/hello")
     @Override
-    public Integer hello(Integer a, Integer b) {
+    public Integer hello(@QueryParam("a") Integer a, @QueryParam("b") Integer b) {
         context = RpcContext.getServerAttachment().getObjectAttachments();
         return a + b;
     }
 
+
+    @GET
+    @Path("/error")
     @Override
     public String error() {
         throw new RuntimeException();
