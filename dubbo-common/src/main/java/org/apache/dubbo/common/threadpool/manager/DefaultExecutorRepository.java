@@ -43,6 +43,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SHARED_EXECUTOR_SERVICE_COMPONENT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
+import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_EXPORT_THREAD_NUM;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_REFER_THREAD_NUM;
@@ -140,9 +141,21 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
         return (ExecutorService) extensionAccessor.getExtensionLoader(ThreadPool.class).getAdaptiveExtension().getExecutor(url);
     }
 
+    private Map<Integer, ExecutorService> getExecutors(URL url) {
+        Map<Integer, ExecutorService> executors;
+        // if it's on the provider side and has user-defined services, use biz service executor first, avoid using internal executor
+        if (PROVIDER_SIDE.equalsIgnoreCase(url.getParameter(SIDE_KEY))
+            && data.containsKey(EXECUTOR_SERVICE_COMPONENT_KEY)) {
+            executors = data.get(EXECUTOR_SERVICE_COMPONENT_KEY);
+        } else {
+            executors = data.get(getExecutorKey(url));
+        }
+        return executors;
+    }
+
     @Override
     public ExecutorService getExecutor(URL url) {
-        Map<Integer, ExecutorService> executors = data.get(getExecutorKey(url));
+        Map<Integer, ExecutorService> executors = getExecutors(url);
 
         /*
          * It's guaranteed that this method is called after {@link #createExecutorIfAbsent(URL)}, so data should already
