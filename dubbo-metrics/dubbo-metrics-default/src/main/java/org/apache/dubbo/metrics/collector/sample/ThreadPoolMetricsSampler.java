@@ -41,9 +41,6 @@ public class ThreadPoolMetricsSampler implements MetricsSampler {
 
     public ThreadPoolMetricsSampler(DefaultMetricsCollector collector) {
         this.collector = collector;
-        try{
-            this.frameworkExecutorRepository = collector.getApplicationModel().getFrameworkModel().getBeanFactory().getBean(FrameworkExecutorRepository.class);
-        }catch(Exception ex){}
     }
 
     @Override
@@ -61,6 +58,12 @@ public class ThreadPoolMetricsSampler implements MetricsSampler {
     }
 
     private void collect() {
+        try{
+            if (this.frameworkExecutorRepository == null) {
+                this.frameworkExecutorRepository = collector.getApplicationModel().getFrameworkModel().getBeanFactory().getBean(FrameworkExecutorRepository.class);
+            }
+        }catch(Exception ex){}
+
         if (frameworkExecutorRepository != null) {
             addThread("SharedExecutor", frameworkExecutorRepository.getSharedExecutor());
             addThread("MappingRefreshingExecutor", frameworkExecutorRepository.getMappingRefreshingExecutor());
