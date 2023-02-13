@@ -28,7 +28,6 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.serialize.Serialization;
 import org.apache.dubbo.common.serialize.support.DefaultSerializationSelector;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.remoting.api.connection.AbstractConnectionClient;
@@ -65,7 +64,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_DESTROY_INVOKER;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_REQUEST;
 import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
-import static org.apache.dubbo.rpc.protocol.tri.TripleConstant.*;
+import static org.apache.dubbo.rpc.protocol.tri.TripleConstant.SERIALIZATION_KEY;
+
 
 /**
  * TripleInvoker
@@ -267,13 +267,6 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
     private String getSerializationContentType(URL url) {
         String serializeType = url.getParameter(SERIALIZATION_KEY, DefaultSerializationSelector.getDefaultRemotingSerialization());
         return serializeType;
-    }
-
-    private String convertHessian(String ser) {
-        if (ser.equals(HESSIAN4)) {
-            return HESSIAN2;
-        }
-        return ser;
     }
 
     @Override

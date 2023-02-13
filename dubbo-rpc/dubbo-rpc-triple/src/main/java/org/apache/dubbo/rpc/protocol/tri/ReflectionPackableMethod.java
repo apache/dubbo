@@ -42,7 +42,7 @@ import com.google.protobuf.Message;
 
 import static org.apache.dubbo.common.constants.CommonConstants.$ECHO;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOBUF_MESSAGE_CLASS_NAME;
-import static org.apache.dubbo.rpc.protocol.tri.TripleCustomerProtocolWapper.*;
+import static org.apache.dubbo.rpc.protocol.tri.TripleCustomerProtocolWapper.makeTag;
 import static org.apache.dubbo.rpc.protocol.tri.TripleProtocol.METHOD_ATTR_PACK;
 
 public class ReflectionPackableMethod implements PackableMethod {
@@ -532,19 +532,19 @@ public class ReflectionPackableMethod implements PackableMethod {
 
         private byte[] buildArgumentBytes(List<byte[]> argumentByteList) {
             int totalSize = 0;
-            int argTag = makeTag(2, 2);
+            int argTag = TripleCustomerProtocolWapper.makeTag(2, 2);
 
-            totalSize += varIntComputeLength(argTag) * argumentByteList.size();
+            totalSize += TripleCustomerProtocolWapper.varIntComputeLength(argTag) * argumentByteList.size();
             for (byte[] arg : argumentByteList) {
-                totalSize += arg.length + varIntComputeLength(arg.length);
+                totalSize += arg.length + TripleCustomerProtocolWapper.varIntComputeLength(arg.length);
             }
 
             ByteBuffer byteBuffer = ByteBuffer.allocate(totalSize);
-            byte[] argTagBytes = varIntEncode(argTag);
+            byte[] argTagBytes = TripleCustomerProtocolWapper.varIntEncode(argTag);
             for (byte[] arg : argumentByteList) {
                 byteBuffer
                     .put(argTagBytes)
-                    .put(varIntEncode(arg.length))
+                    .put(TripleCustomerProtocolWapper.varIntEncode(arg.length))
                     .put(arg);
             }
 
@@ -586,10 +586,10 @@ public class ReflectionPackableMethod implements PackableMethod {
             ByteBuffer byteBuffer = ByteBuffer.wrap(data);
             List<byte[]> args = new ArrayList<>();
             while (byteBuffer.position() < byteBuffer.limit()) {
-                int tag = readRawVarint32(byteBuffer);
-                int fieldNum = extractFieldNumFromTag(tag);
+                int tag = TripleCustomerProtocolWapper.readRawVarint32(byteBuffer);
+                int fieldNum = TripleCustomerProtocolWapper.extractFieldNumFromTag(tag);
                 if (fieldNum == 2) {
-                    int argLength = readRawVarint32(byteBuffer);
+                    int argLength = TripleCustomerProtocolWapper.readRawVarint32(byteBuffer);
                     byte[] argBytes = new byte[argLength];
                     byteBuffer.get(argBytes, 0, argLength);
                     args.add(argBytes);
