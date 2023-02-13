@@ -20,7 +20,7 @@ package org.apache.dubbo.metrics.collector;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.nested.AggregationConfig;
-import org.apache.dubbo.metrics.collector.sample.MethodMetricsCountSampler;
+import org.apache.dubbo.metrics.collector.sample.MethodMetricsSampler;
 import org.apache.dubbo.metrics.event.MetricsEvent;
 import org.apache.dubbo.metrics.model.MetricsKey;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
@@ -94,7 +94,7 @@ class AggregateMetricsCollectorTest {
         AggregateMetricsCollector collector = new AggregateMetricsCollector(applicationModel);
 
         defaultCollector.setApplicationName(applicationName);
-        MethodMetricsCountSampler methodMetricsCountSampler = defaultCollector.getMethodMetricsCountSampler();
+        MethodMetricsSampler methodMetricsCountSampler = defaultCollector.getMethodSampler();
 
         methodMetricsCountSampler.incOnEvent(invocation,MetricsEvent.Type.TOTAL);
         methodMetricsCountSampler.incOnEvent(invocation,MetricsEvent.Type.SUCCEED);
@@ -131,7 +131,7 @@ class AggregateMetricsCollectorTest {
 
         defaultCollector.setApplicationName(applicationModel.getApplicationName());
 
-        MethodMetricsCountSampler methodMetricsCountSampler = defaultCollector.getMethodMetricsCountSampler();
+        MethodMetricsSampler methodMetricsCountSampler = defaultCollector.getMethodSampler();
 
         methodMetricsCountSampler.addRT(invocation, 10L);
 

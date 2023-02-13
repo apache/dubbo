@@ -42,7 +42,7 @@ public class MetricsFilter implements Filter, BaseFilter.Listener, ScopeModelAwa
         collector = applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class);
 
         if (collector != null) {
-            metricsInterceptor = new MethodMetricsInterceptor(collector.getMethodMetricsCountSampler());
+            metricsInterceptor = new MethodMetricsInterceptor(collector.getMethodSampler());
         }
 
     }

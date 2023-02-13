@@ -19,7 +19,7 @@ package org.apache.dubbo.metrics.metrics.collector;
 
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
-import org.apache.dubbo.metrics.collector.sample.MethodMetricsCountSampler;
+import org.apache.dubbo.metrics.collector.sample.MethodMetricsSampler;
 import org.apache.dubbo.metrics.event.MetricsEvent;
 import org.apache.dubbo.metrics.event.RTEvent;
 import org.apache.dubbo.metrics.event.RequestEvent;
@@ -90,7 +90,7 @@ class DefaultMetricsCollectorTest {
         collector.setCollectEnabled(true);
         collector.setApplicationName(applicationModel.getApplicationName());
 
-        MethodMetricsCountSampler methodMetricsCountSampler = collector.getMethodMetricsCountSampler();
+        MethodMetricsSampler methodMetricsCountSampler = collector.getMethodSampler();
 
         methodMetricsCountSampler.incOnEvent(invocation,MetricsEvent.Type.TOTAL);
         methodMetricsCountSampler.incOnEvent(invocation,MetricsEvent.Type.PROCESSING);
@@ -135,7 +135,7 @@ class DefaultMetricsCollectorTest {
     void testRTMetrics() {
         DefaultMetricsCollector collector = new DefaultMetricsCollector();
         collector.setCollectEnabled(true);
-        MethodMetricsCountSampler methodMetricsCountSampler = collector.getMethodMetricsCountSampler();
+        MethodMetricsSampler methodMetricsCountSampler = collector.getMethodSampler();
         String applicationName = applicationModel.getApplicationName();
 
         collector.setApplicationName(applicationName);
@@ -177,7 +177,7 @@ class DefaultMetricsCollectorTest {
     @Test
     void testListener() {
         DefaultMetricsCollector collector = new DefaultMetricsCollector();
-        MethodMetricsCountSampler methodMetricsCountSampler = collector.getMethodMetricsCountSampler();
+        MethodMetricsSampler methodMetricsCountSampler = collector.getMethodSampler();
         collector.setCollectEnabled(true);
 
         MockListener mockListener = new MockListener();

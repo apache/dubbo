@@ -35,11 +35,11 @@ import java.util.concurrent.atomic.AtomicLong;
 import static org.apache.dubbo.metrics.model.MetricsCategory.REQUESTS;
 import static org.apache.dubbo.metrics.model.MetricsCategory.RT;
 
-public class MethodMetricsCountSampler extends SimpleMetricsCountSampler<Invocation, MetricsEvent.Type, MethodMetric>{
+public class MethodMetricsSampler extends SimpleMetricsCountSampler<Invocation, MetricsEvent.Type, MethodMetric>{
 
     private DefaultMetricsCollector collector;
 
-    public MethodMetricsCountSampler(DefaultMetricsCollector collector) {
+    public MethodMetricsSampler(DefaultMetricsCollector collector) {
         this.collector = collector;
     }
 

@@ -18,7 +18,7 @@
 package org.apache.dubbo.metrics.collector;
 
 import org.apache.dubbo.common.Version;
-import org.apache.dubbo.metrics.collector.sample.MethodMetricsCountSampler;
+import org.apache.dubbo.metrics.collector.sample.MethodMetricsSampler;
 import org.apache.dubbo.metrics.collector.sample.MetricsCountSampleConfigurer;
 import org.apache.dubbo.metrics.collector.sample.MetricsSampler;
 import org.apache.dubbo.metrics.collector.sample.SimpleMetricsCountSampler;
@@ -45,17 +45,17 @@ public class DefaultMetricsCollector implements MetricsCollector {
 
     private AtomicBoolean collectEnabled = new AtomicBoolean(false);
     private final SimpleMetricsEventMulticaster eventMulticaster;
-    private MethodMetricsCountSampler methodMetricsCountSampler = new MethodMetricsCountSampler(this);
-    private ThreadPoolMetricsSampler  threadMetricsCountSampler = new ThreadPoolMetricsSampler(this);
-    private String                    applicationName;
+    private       MethodMetricsSampler     methodSampler     = new MethodMetricsSampler(this);
+    private       ThreadPoolMetricsSampler threadPoolSampler = new ThreadPoolMetricsSampler(this);
+    private String                         applicationName;
     private ApplicationModel applicationModel;
     private List<MetricsSampler> samplers = new ArrayList<>();
 
     public DefaultMetricsCollector() {
         this.eventMulticaster = SimpleMetricsEventMulticaster.getInstance();
-        samplers.add(methodMetricsCountSampler);
+        samplers.add(methodSampler);
         samplers.add(applicationSampler);
-        samplers.add(threadMetricsCountSampler);
+        samplers.add(threadPoolSampler);
     }
 
     public void setApplicationName(String applicationName) {
@@ -82,8 +82,8 @@ public class DefaultMetricsCollector implements MetricsCollector {
         return collectEnabled.get();
     }
 
-    public MethodMetricsCountSampler getMethodMetricsCountSampler(){
-        return this.methodMetricsCountSampler;
+    public MethodMetricsSampler getMethodSampler(){
+        return this.methodSampler;
     }
 
     public void collectApplication(ApplicationModel applicationModel) {

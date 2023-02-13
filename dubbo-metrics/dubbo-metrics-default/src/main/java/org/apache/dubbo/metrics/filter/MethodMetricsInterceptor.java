@@ -17,7 +17,7 @@
 
 package org.apache.dubbo.metrics.filter;
 
-import org.apache.dubbo.metrics.collector.sample.MethodMetricsCountSampler;
+import org.apache.dubbo.metrics.collector.sample.MethodMetricsSampler;
 import org.apache.dubbo.metrics.event.MetricsEvent;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Result;
@@ -29,9 +29,9 @@ import static org.apache.dubbo.common.constants.MetricsConstants.METRIC_FILTER_S
 
 public class MethodMetricsInterceptor {
 
-    private MethodMetricsCountSampler sampler;
+    private MethodMetricsSampler sampler;
 
-    public MethodMetricsInterceptor(MethodMetricsCountSampler sampler) {
+    public MethodMetricsInterceptor(MethodMetricsSampler sampler) {
         this.sampler = sampler;
     }
 

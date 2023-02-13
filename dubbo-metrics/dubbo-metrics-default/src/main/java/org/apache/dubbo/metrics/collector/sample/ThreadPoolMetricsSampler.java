@@ -42,7 +42,7 @@ public class ThreadPoolMetricsSampler implements MetricsSampler {
     public ThreadPoolMetricsSampler(DefaultMetricsCollector collector) {
         this.collector = collector;
         try{
-            this.frameworkExecutorRepository = collector.getApplicationModel().getBeanFactory().getBean(FrameworkExecutorRepository.class);
+            this.frameworkExecutorRepository = collector.getApplicationModel().getFrameworkModel().getBeanFactory().getBean(FrameworkExecutorRepository.class);
         }catch(Exception ex){}
     }
 
