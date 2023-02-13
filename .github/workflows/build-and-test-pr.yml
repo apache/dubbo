@@ -344,7 +344,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: "class-file"
-          path: ${{ github.workspace }}/class.zip
+          path: ${{ github.workspace }}
       - name: "Unpack class result"
         run: |
           cd ${{ github.workspace }}/dubbo
