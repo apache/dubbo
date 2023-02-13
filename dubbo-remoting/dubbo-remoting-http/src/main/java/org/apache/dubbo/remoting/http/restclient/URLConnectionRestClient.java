@@ -96,7 +96,7 @@ public class URLConnectionRestClient implements RestClient {
 
                     @Override
                     public String getMessage() throws IOException {
-                        return new String(getErrorResponse());
+                        return connection.getResponseMessage();
                     }
                 });
                 return future;

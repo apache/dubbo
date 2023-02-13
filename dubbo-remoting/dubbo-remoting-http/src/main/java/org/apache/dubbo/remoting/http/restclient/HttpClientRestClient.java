@@ -111,7 +111,7 @@ public class HttpClientRestClient implements RestClient {
 
                 @Override
                 public String getMessage() throws IOException {
-                    return new String(getErrorResponse());
+                    return response.getStatusLine().getReasonPhrase();
                 }
             });
         } catch (IOException e) {
