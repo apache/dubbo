@@ -20,6 +20,7 @@ import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.common.config.ConfigurationCache;
 import org.apache.dubbo.common.convert.ConverterUtil;
 import org.apache.dubbo.common.lang.ShutdownHookCallbacks;
+import org.apache.dubbo.common.ssl.CertManager;
 import org.apache.dubbo.common.status.reporter.FrameworkStatusReportService;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.utils.DefaultSerializeClassChecker;
@@ -46,6 +47,7 @@ public class CommonScopeModelInitializer implements ScopeModelInitializer {
         beanFactory.registerBean(ShutdownHookCallbacks.class);
         beanFactory.registerBean(FrameworkStatusReportService.class);
         beanFactory.registerBean(new ConfigurationCache());
+        beanFactory.registerBean(CertManager.class);
     }
 
     @Override
