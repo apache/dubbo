@@ -371,10 +371,12 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
         getModuleConfigManager().removeConfig(this);
     }
 
+    @Parameter(excluded = true, attribute = false)
     public int getInvokerNum() {
         return 0;
     }
 
+    @Parameter(excluded = true, attribute = false)
     public int getValidInvokerNum() {
         return 0;
     }

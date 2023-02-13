@@ -776,6 +776,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
     }
 
     @Override
+    @Parameter(excluded = true, attribute = false)
     public int getInvokerNum() {
         Invoker<?> invoker = getInvoker();
         if (invoker instanceof MigrationInvoker) {
@@ -786,6 +787,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
     }
 
     @Override
+    @Parameter(excluded = true, attribute = false)
     public int getValidInvokerNum() {
         Invoker<?> invoker = getInvoker();
         if (invoker instanceof MigrationInvoker) {

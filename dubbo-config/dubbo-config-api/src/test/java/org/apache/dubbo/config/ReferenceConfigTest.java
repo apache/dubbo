@@ -815,7 +815,7 @@ class ReferenceConfigTest {
     void testMetaData() {
         ReferenceConfig config = new ReferenceConfig();
         Map<String, String> metaData = config.getMetaData();
-        Assertions.assertEquals(2, metaData.size(), "Expect empty metadata but found: " + metaData);
+        Assertions.assertEquals(0, metaData.size(), "Expect empty metadata but found: " + metaData);
 
         // test merged and override consumer attributes
         ConsumerConfig consumerConfig = new ConsumerConfig();
