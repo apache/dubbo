@@ -14,14 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.rest;
+package org.apache.dubbo.rpc.protocol.rest.mvc;
 
 
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-@RestController()
-@RequestMapping("/demoService")
+@RestController("/demoService")
 public interface DemoService {
     @RequestMapping(value = "/hello", method = RequestMethod.GET)
     Integer hello(@RequestParam Integer a, @RequestParam Integer b);
@@ -29,6 +31,6 @@ public interface DemoService {
     @RequestMapping(value = "/error", method = RequestMethod.GET)
     String error();
 
-    @RequestMapping(value = "/say", method = RequestMethod.POST, consumes = MediaType.TEXT_PLAIN_VALUE)
-    String sayHello(@RequestBody String name);
+    @RequestMapping(value = "/sayHello", method = RequestMethod.POST, consumes = MediaType.TEXT_PLAIN_VALUE)
+    String sayHello(String name);
 }

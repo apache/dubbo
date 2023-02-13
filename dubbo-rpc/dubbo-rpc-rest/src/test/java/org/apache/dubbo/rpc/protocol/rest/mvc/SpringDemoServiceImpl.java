@@ -14,21 +14,42 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.rest;
+package org.apache.dubbo.rpc.protocol.rest.mvc;
 
 
-import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.*;
+import org.apache.dubbo.rpc.RpcContext;
 
-@RestController()
-@RequestMapping("/demoService")
-public interface DemoService {
-    @RequestMapping(value = "/hello", method = RequestMethod.GET)
-    Integer hello(@RequestParam Integer a, @RequestParam Integer b);
+import java.util.Map;
 
-    @RequestMapping(value = "/error", method = RequestMethod.GET)
-    String error();
+public class SpringDemoServiceImpl implements DemoService {
+    private static Map<String, Object> context;
+    private boolean called;
 
-    @RequestMapping(value = "/say", method = RequestMethod.POST, consumes = MediaType.TEXT_PLAIN_VALUE)
-    String sayHello(@RequestBody String name);
+
+    @Override
+    public String sayHello(String name) {
+        called = true;
+        return "Hello, " + name;
+    }
+
+
+    public boolean isCalled() {
+        return called;
+    }
+
+    @Override
+    public Integer hello(Integer a, Integer b) {
+        context = RpcContext.getServerAttachment().getObjectAttachments();
+        return a + b;
+    }
+
+
+    @Override
+    public String error() {
+        throw new RuntimeException();
+    }
+
+    public static Map<String, Object> getAttachments() {
+        return context;
+    }
 }

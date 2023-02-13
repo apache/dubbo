@@ -14,21 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.rest;
+package org.apache.dubbo.rpc.protocol.rest.rest;
+
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
 
 
-import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.*;
+@Path("/demoService")
+public interface RestDemoService {
+    @GET
+    @Path("/hello")
+    Integer hello(@QueryParam("a")Integer a,@QueryParam("b") Integer b);
 
-@RestController()
-@RequestMapping("/demoService")
-public interface DemoService {
-    @RequestMapping(value = "/hello", method = RequestMethod.GET)
-    Integer hello(@RequestParam Integer a, @RequestParam Integer b);
-
-    @RequestMapping(value = "/error", method = RequestMethod.GET)
+    @GET
+    @Path("/error")
     String error();
 
-    @RequestMapping(value = "/say", method = RequestMethod.POST, consumes = MediaType.TEXT_PLAIN_VALUE)
-    String sayHello(@RequestBody String name);
+    @POST
+    @Path("/say")
+    @Consumes({MediaType.TEXT_PLAIN})
+    String sayHello(String name);
+
+    boolean isCalled();
 }
