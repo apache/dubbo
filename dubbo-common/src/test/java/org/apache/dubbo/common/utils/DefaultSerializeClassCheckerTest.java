@@ -41,6 +41,7 @@ class DefaultSerializeClassCheckerTest {
 
     @Test
     void testCommon() throws ClassNotFoundException {
+        FrameworkModel.defaultModel().getBeanFactory().getBean(SerializeSecurityManager.class).setCheckStatus(SerializeCheckStatus.WARN);
         DefaultSerializeClassChecker defaultSerializeClassChecker = DefaultSerializeClassChecker.getInstance();
 
         for (int i = 0; i < 10; i++) {

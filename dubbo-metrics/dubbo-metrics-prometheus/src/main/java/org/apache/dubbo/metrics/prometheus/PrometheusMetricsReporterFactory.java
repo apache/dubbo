@@ -18,8 +18,8 @@
 package org.apache.dubbo.metrics.prometheus;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.metrics.MetricsReporter;
-import org.apache.dubbo.metrics.AbstractMetricsReporterFactory;
+import org.apache.dubbo.metrics.report.MetricsReporter;
+import org.apache.dubbo.metrics.report.AbstractMetricsReporterFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 /**

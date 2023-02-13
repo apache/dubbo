@@ -35,8 +35,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
-import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
-
 /**
  * Dubbo {@link HealthIndicator}
  *
@@ -63,7 +61,7 @@ public class DubboHealthIndicator extends AbstractHealthIndicator {
     @Override
     protected void doHealthCheck(Health.Builder builder) throws Exception {
 
-        ExtensionLoader<StatusChecker> extensionLoader = getExtensionLoader(StatusChecker.class);
+        ExtensionLoader<StatusChecker> extensionLoader = applicationModel.getExtensionLoader(StatusChecker.class);
 
         Map<String, String> statusCheckerNamesMap = resolveStatusCheckerNamesMap();
 

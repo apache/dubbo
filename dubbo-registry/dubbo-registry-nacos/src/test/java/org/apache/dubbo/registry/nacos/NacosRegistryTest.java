@@ -56,7 +56,7 @@ class NacosRegistryTest {
     private static final String serviceInterface = "org.apache.dubbo.registry.nacos.NacosService";
 
     private final URL serviceUrl = URL.valueOf("nacos://127.0.0.1:3333/" + serviceInterface + "?interface=" +
-        serviceInterface + "&notify=false&methods=test1,test2&category=providers&version=1.0.0&group=default");
+        serviceInterface + "&notify=false&methods=test1,test2&category=providers&version=1.0.0&group=default&side=provider");
 
     private NacosRegistryFactory nacosRegistryFactory;
 
@@ -103,7 +103,7 @@ class NacosRegistryTest {
             // ignore
         }
 
-        NacosNamingServiceWrapper nacosNamingServiceWrapper = new NacosNamingServiceWrapper(namingService, 0, 0);
+        NacosNamingServiceWrapper nacosNamingServiceWrapper = new NacosNamingServiceWrapper(new NacosConnectionManager(namingService), 0, 0);
         nacosRegistry = new NacosRegistry(this.registryUrl, nacosNamingServiceWrapper);
 
         Set<URL> registered;
@@ -143,7 +143,7 @@ class NacosRegistryTest {
             // ignore
         }
 
-        NacosNamingServiceWrapper nacosNamingServiceWrapper = new NacosNamingServiceWrapper(namingService, 0, 0);
+        NacosNamingServiceWrapper nacosNamingServiceWrapper = new NacosNamingServiceWrapper(new NacosConnectionManager(namingService), 0, 0);
         nacosRegistry = new NacosRegistry(this.registryUrl, nacosNamingServiceWrapper);
 
         nacosRegistry.register(serviceUrl);
@@ -183,7 +183,7 @@ class NacosRegistryTest {
             // ignore
         }
 
-        NacosNamingServiceWrapper nacosNamingServiceWrapper = new NacosNamingServiceWrapper(namingService, 0, 0);
+        NacosNamingServiceWrapper nacosNamingServiceWrapper = new NacosNamingServiceWrapper(new NacosConnectionManager(namingService), 0, 0);
         nacosRegistry = new NacosRegistry(this.registryUrl, nacosNamingServiceWrapper);
 
         NotifyListener listener = mock(NotifyListener.class);
@@ -222,7 +222,7 @@ class NacosRegistryTest {
         }
 
         NacosNamingServiceWrapper nacosNamingServiceWrapper = new
-            NacosNamingServiceWrapper(namingService, 0, 0);
+            NacosNamingServiceWrapper(new NacosConnectionManager(namingService), 0, 0);
         nacosRegistry = new NacosRegistry(this.registryUrl, nacosNamingServiceWrapper);
 
         NotifyListener listener = mock(NotifyListener.class);
@@ -276,7 +276,7 @@ class NacosRegistryTest {
         }
 
         NacosNamingServiceWrapper nacosNamingServiceWrapper = new
-            NacosNamingServiceWrapper(namingService, 0, 0);
+            NacosNamingServiceWrapper(new NacosConnectionManager(namingService), 0, 0);
         nacosRegistry = new NacosRegistry(this.registryUrl, nacosNamingServiceWrapper);
 
         Set<URL> registered;

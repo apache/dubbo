@@ -40,7 +40,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
-import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_VERSION;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
@@ -58,7 +57,6 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
 
     private final AtomicPositiveInteger index = new AtomicPositiveInteger();
 
-    private final String version;
 
     private final ReentrantLock destroyLock = new ReentrantLock();
 
@@ -73,8 +71,6 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
     public DubboInvoker(Class<T> serviceType, URL url, ExchangeClient[] clients, Set<Invoker<?>> invokers) {
         super(serviceType, url, new String[]{INTERFACE_KEY, GROUP_KEY, TOKEN_KEY});
         this.clients = clients;
-        // get version.
-        this.version = url.getVersion(DEFAULT_VERSION);
         this.invokers = invokers;
         this.serverShutdownTimeout = ConfigurationUtils.getServerShutdownTimeout(getUrl().getScopeModel());
     }

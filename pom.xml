@@ -93,10 +93,10 @@
         <hazelcast_version>3.11.1</hazelcast_version>
         <hamcrest_version>2.2</hamcrest_version>
         <hibernate_validator_version>5.2.4.Final</hibernate_validator_version>
-        <el_api_version>2.2.4</el_api_version>
+        <el_api_version>2.2.5</el_api_version>
         <jaxb_api_version>2.2.7</jaxb_api_version>
-        <cglib_version>2.2</cglib_version>
-        <mockito_version>4.8.0</mockito_version>
+        <cglib_version>2.2.2</cglib_version>
+        <mockito_version>4.11.0</mockito_version>
         <!-- Build args -->
         <argline>-server -Xms256m -Xmx512m -Dfile.encoding=UTF-8
             -Djava.net.preferIPv4Stack=true -XX:MetaspaceSize=64m -XX:MaxMetaspaceSize=128m
@@ -112,25 +112,24 @@
         <java_target_version>1.8</java_target_version>
         <file_encoding>UTF-8</file_encoding>
         <!-- Maven plugins -->
-        <maven_jar_version>3.2.0</maven_jar_version>
-        <maven_surefire_version>3.0.0-M5</maven_surefire_version>
-        <maven_failsafe_version>3.0.0-M5</maven_failsafe_version>
+        <maven_jar_version>3.3.0</maven_jar_version>
+        <maven_surefire_version>3.0.0-M8</maven_surefire_version>
+        <maven_failsafe_version>3.0.0-M8</maven_failsafe_version>
         <maven_deploy_version>2.8.2</maven_deploy_version>
-        <maven_compiler_version>3.8.1</maven_compiler_version>
+        <maven_compiler_version>3.10.1</maven_compiler_version>
         <maven_source_version>3.2.1</maven_source_version>
-        <maven_javadoc_version>3.2.0</maven_javadoc_version>
-        <maven_jetty_version>9.4.38.v20210224</maven_jetty_version>
-        <maven_checkstyle_version>3.1.2</maven_checkstyle_version>
+        <maven_javadoc_version>3.4.1</maven_javadoc_version>
+        <maven_jetty_version>9.4.50.v20221201</maven_jetty_version>
+        <maven_checkstyle_version>3.2.1</maven_checkstyle_version>
         <maven_jacoco_version>0.8.8</maven_jacoco_version>
         <maven_flatten_version>1.3.0</maven_flatten_version>
-        <maven_enforce_version>3.0.0-M3</maven_enforce_version>
-        <apache-rat-plugin.version>0.13</apache-rat-plugin.version>
+        <maven_enforce_version>3.2.1</maven_enforce_version>
         <arguments />
         <checkstyle.skip>true</checkstyle.skip>
         <checkstyle_unix.skip>true</checkstyle_unix.skip>
         <rat.skip>true</rat.skip>
         <jacoco.skip>true</jacoco.skip>
-        <revision>3.1.7-SNAPSHOT</revision>
+        <revision>3.2.0-beta.5-SNAPSHOT</revision>
     </properties>
 
     <modules>
@@ -273,13 +272,7 @@
                 <jacoco.skip>false</jacoco.skip>
             </properties>
         </profile>
-        <!-- check apache license: mvn validate -Prat  -->
-        <profile>
-            <id>rat</id>
-            <properties>
-                <rat.skip>false</rat.skip>
-            </properties>
-        </profile>
+        
         <!-- check code style: mvn validate -Pcheckstyle  -->
         <profile>
             <id>checkstyle</id>
@@ -335,7 +328,9 @@
                                         **/org/apache/dubbo/common/utils/Utf8Utils.java,
                                         **/org/apache/dubbo/common/serialize/protobuf/support/wrapper/MapValue.java,
                                         **/org/apache/dubbo/common/serialize/protobuf/support/wrapper/ThrowablePB.java,
+                                        **/org/apache/dubbo/test/common/utils/TestSocketUtils.java,
                                         **/org/apache/dubbo/triple/TripleWrapper.java,
+                                        **/org/apache/dubbo/rpc/protocol/tri/TriHttp2RemoteFlowController.java,
                                         **/istio/v1/auth/**/*,
                                         **/com/google/rpc/*,
                                         **/generated/**/*,
@@ -508,7 +503,7 @@
             </build>
         </profile>
         <profile>
-            <id>jdk15ge</id>
+            <id>jdk15ge-add-open</id>
             <activation>
                 <jdk>[15,</jdk>
             </activation>
@@ -536,6 +531,29 @@
             </build>
         </profile>
         <profile>
+            <id>jdk15ge-simple</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <useSystemClassLoader>true</useSystemClassLoader>
+                            <forkMode>once</forkMode>
+                            <argLine>${argline} ${jacocoArgLine}
+                            </argLine>
+                            <systemProperties>
+                                <!-- common shared -->
+                            </systemProperties>
+                            <!-- Activate the use of TCP to transmit events to the plugin to fix Corrupted STDOUT issue -->
+                            <forkNode implementation="org.apache.maven.plugin.surefire.extensions.SurefireForkNodeFactory"/>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
             <id>jdk9-compile</id>
             <activation>
                 <jdk>[1.9,)</jdk>
@@ -550,6 +568,31 @@
                     </plugin>
                 </plugins>
             </build>
+        </profile>
+
+        <profile>
+            <id>jacoco089</id>
+            <properties>
+                <maven_jacoco_version>0.8.9-SNAPSHOT</maven_jacoco_version>
+            </properties>
+            <pluginRepositories>
+                <pluginRepository>
+                    <id>apache.snapshots</id>
+                    <name>Apache Snapshot Repository</name>
+                    <url>https://repository.apache.org/snapshots</url>
+                    <releases>
+                        <enabled>false</enabled>
+                    </releases>
+                </pluginRepository>
+                <pluginRepository>
+                    <id>oss.snapshots</id>
+                    <name>Oss Repository</name>
+                    <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+                    <releases>
+                        <enabled>false</enabled>
+                    </releases>
+                </pluginRepository>
+            </pluginRepositories>
         </profile>
     </profiles>
 
@@ -656,83 +699,9 @@
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>org.apache.rat</groupId>
-                <artifactId>apache-rat-plugin</artifactId>
-                <version>${apache-rat-plugin.version}</version>
-                <executions>
-                    <execution>
-                        <id>rat-validate</id>
-                        <phase>validate</phase>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <excludes>
-                        <exclude>**/*.versionsBackup</exclude>
-                        <exclude>**/.idea/</exclude>
-                        <exclude>**/*.iml</exclude>
-                        <exclude>**/*.txt</exclude>
-                        <exclude>**/*.load</exclude>
-                        <exclude>**/*.flex</exclude>
-                        <exclude>**/*.fc</exclude>
-                        <exclude>**/*.properties</exclude>
-                        <exclude>**/*.sh</exclude>
-                        <exclude>**/*.bat</exclude>
-                        <exclude>**/*.md</exclude>
-                        <exclude>.git/</exclude>
-                        <exclude>.tmp/</exclude>
-                        <exclude>.gitignore</exclude>
-                        <!-- ASF jenkins box puts the Maven repo in our root directory. -->
-                        <exclude>.repository/</exclude>
-                        <exclude>**/.settings/*</exclude>
-                        <exclude>**/.classpath</exclude>
-                        <exclude>**/.project</exclude>
-                        <exclude>**/target/**</exclude>
-                        <exclude>**/*.log</exclude>
-                        <exclude>CODE_OF_CONDUCT.md</exclude>
-                        <exclude>.codecov.yml</exclude>
-                        <exclude>.travis.yml</exclude>
-                        <exclude>PULL_REQUEST_TEMPLATE.md</exclude>
-                        <exclude>CONTRIBUTING.md</exclude>
-                        <exclude>README.md</exclude>
-                        <exclude>Jenkinsfile</exclude>
-                        <exclude>**/codestyle/*</exclude>
-                        <exclude>**/resources/META-INF/**</exclude>
-                        <!-- exclude the grpc files -->
-                        <exclude>**/org/apache/dubbo/common/threadpool/serial/SerializingExecutor.java</exclude>
-                        <!-- exclude the netty files -->
-                        <exclude>**/org/apache/dubbo/common/threadlocal/InternalThreadLocal.java</exclude>
-                        <exclude>**/org/apache/dubbo/common/threadlocal/InternalThreadLocalMap.java</exclude>
-                        <exclude>**/org/apache/dubbo/common/timer/TimerTask.java</exclude>
-                        <exclude>**/org/apache/dubbo/common/timer/Timer.java</exclude>
-                        <exclude>**/org/apache/dubbo/common/timer/Timeout.java</exclude>
-                        <exclude>**/org/apache/dubbo/common/timer/HashedWheelTimer.java</exclude>
-                        <!-- exclude the edazdarevic files -->
-                        <exclude>**/org/apache/dubbo/common/utils/CIDRUtils.java</exclude>
-                        <!-- exclude protobuf generated files -->
-                        <exclude>**/org/apache/dubbo/common/serialize/protobuf/support/wrapper/MapValue.java
-                        </exclude>
-                        <exclude>
-                            **/org/apache/dubbo/common/serialize/protobuf/support/wrapper/ThrowablePB.java
-                        </exclude>
-                        <exclude>
-                            **/org/apache/dubbo/common/utils/Utf8Utils.java
-                        </exclude>
-                        <exclude>.github/**</exclude>
-                        <exclude>compiler/**</exclude>
-                        <exclude>**/generated/**</exclude>
-                        <!-- exclude mockito extensions spi files -->
-                        <exclude>**/mockito-extensions/*</exclude>
-                        <exclude>**/*.dubbo.cache</exclude>
-                    </excludes>
-                </configuration>
-            </plugin>
-            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-release-plugin</artifactId>
-                <version>3.0.0-M1</version>
+                <version>3.0.0-M7</version>
                 <configuration>
                     <autoVersionSubmodules>true</autoVersionSubmodules>
                     <useReleaseProfile>false</useReleaseProfile>
@@ -787,7 +756,7 @@
                 </plugin>
                 <plugin>
                     <artifactId>maven-clean-plugin</artifactId>
-                    <version>3.1.0</version>
+                    <version>3.2.0</version>
                 </plugin>
                 <plugin>
                     <groupId>org.ops4j.pax.exam</groupId>
@@ -796,12 +765,12 @@
                 </plugin>
                 <plugin>
                     <artifactId>maven-dependency-plugin</artifactId>
-                    <version>3.1.2</version>
+                    <version>3.5.0</version>
                 </plugin>
                 <plugin>
                     <!-- Do NOT upgrade -->
                     <artifactId>maven-jxr-plugin</artifactId>
-                    <version>2.2</version>
+                    <version>2.5</version>
                 </plugin>
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
@@ -821,7 +790,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-shade-plugin</artifactId>
-                    <version>3.2.4</version>
+                    <version>3.4.1</version>
                     <configuration>
                         <createDependencyReducedPom>false</createDependencyReducedPom>
                     </configuration>

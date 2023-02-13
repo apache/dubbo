@@ -17,12 +17,12 @@ package org.apache.dubbo.config.spring;
 
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.test.common.utils.TestSocketUtils;
 import org.apache.zookeeper.server.ServerConfig;
 import org.apache.zookeeper.server.ZooKeeperServerMain;
 import org.apache.zookeeper.server.quorum.QuorumPeerConfig;
 import org.springframework.context.SmartLifecycle;
 import org.springframework.util.ErrorHandler;
-import org.springframework.util.SocketUtils;
 
 import java.io.File;
 import java.lang.reflect.Method;
@@ -83,7 +83,7 @@ public class EmbeddedZooKeeper implements SmartLifecycle {
      * Construct an EmbeddedZooKeeper with a random port.
      */
     public EmbeddedZooKeeper() {
-        clientPort = SocketUtils.findAvailableTcpPort();
+        clientPort = TestSocketUtils.findAvailableTcpPort();
     }
 
     /**

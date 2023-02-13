@@ -40,7 +40,7 @@ class MigrationRuleTest {
 
     @Test
     void test_parse() {
-        when(mapping.getCachedMapping(any(URL.class))).thenReturn(Collections.emptySet());
+        when(mapping.getMapping(any(URL.class))).thenReturn(Collections.emptySet());
 
         String rule = "key: demo-consumer\n" +
             "step: APPLICATION_FIRST\n" +
@@ -103,13 +103,13 @@ class MigrationRuleTest {
 
         Set<String> services = new HashSet<>();
         services.add("TestApplication");
-        when(mapping.getCachedMapping(any(URL.class))).thenReturn(services);
+        when(mapping.getMapping(any(URL.class))).thenReturn(services);
         assertEquals(0.3f, migrationRule.getThreshold(url));
         assertEquals(20, migrationRule.getProportion(url));
         assertEquals(10, migrationRule.getDelay(url));
         assertEquals(false, migrationRule.getForce(url));
         assertEquals(MigrationStep.FORCE_INTERFACE, migrationRule.getStep(url));
-        when(mapping.getCachedMapping(any(URL.class))).thenReturn(Collections.emptySet());
+        when(mapping.getMapping(any(URL.class))).thenReturn(Collections.emptySet());
 
         ApplicationModel.defaultModel().destroy();
     }

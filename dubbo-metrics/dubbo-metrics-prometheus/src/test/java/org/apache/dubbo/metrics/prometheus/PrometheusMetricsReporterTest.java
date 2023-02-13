@@ -18,11 +18,14 @@
 package org.apache.dubbo.metrics.prometheus;
 
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.nested.PrometheusConfig;
+import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import io.micrometer.prometheus.PrometheusMeterRegistry;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -45,12 +48,15 @@ class PrometheusMetricsReporterTest {
 
     private MetricsConfig metricsConfig;
     private ApplicationModel applicationModel;
+    private FrameworkModel frameworkModel;
 
     @BeforeEach
     public void setup() {
         metricsConfig = new MetricsConfig();
         applicationModel = ApplicationModel.defaultModel();
         metricsConfig.setProtocol(PROTOCOL_PROMETHEUS);
+        frameworkModel = FrameworkModel.defaultModel();
+        frameworkModel.getBeanFactory().getOrRegisterBean(DefaultMetricsCollector.class);
     }
 
     @AfterEach
@@ -61,21 +67,24 @@ class PrometheusMetricsReporterTest {
     @Test
     void testJvmMetrics() {
         metricsConfig.setEnableJvmMetrics(true);
+        String name = "metrics-test";
+        ApplicationModel.defaultModel().getApplicationConfigManager().setApplication(new ApplicationConfig(name));
+
         PrometheusMetricsReporter reporter = new PrometheusMetricsReporter(metricsConfig.toUrl(), applicationModel);
         reporter.init();
 
         PrometheusMeterRegistry prometheusRegistry = reporter.getPrometheusRegistry();
         Double d1 = prometheusRegistry.getPrometheusRegistry().getSampleValue("none_exist_metric");
-        Double d2 = prometheusRegistry.getPrometheusRegistry().getSampleValue("jvm_gc_memory_promoted_bytes_total");
-
+        Double d2 = prometheusRegistry.getPrometheusRegistry().getSampleValue("jvm_gc_memory_promoted_bytes_total",
+            new String[]{"application_name"}, new String[]{name});
         Assertions.assertNull(d1);
         Assertions.assertNotNull(d2);
     }
 
     @Test
     void testExporter() {
-        int port = NetUtils.getAvailablePort();
-
+        int port = 31539;
+//            NetUtils.getAvailablePort();
         PrometheusConfig prometheusConfig = new PrometheusConfig();
         PrometheusConfig.Exporter exporter = new PrometheusConfig.Exporter();
         exporter.setMetricsPort(port);
@@ -85,9 +94,14 @@ class PrometheusMetricsReporterTest {
         metricsConfig.setPrometheus(prometheusConfig);
         metricsConfig.setEnableJvmMetrics(true);
 
+        ApplicationModel.defaultModel().getApplicationConfigManager().setApplication(new ApplicationConfig("metrics-test"));
         PrometheusMetricsReporter reporter = new PrometheusMetricsReporter(metricsConfig.toUrl(), applicationModel);
         reporter.init();
-
+        try {
+            Thread.sleep(60000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             HttpGet request = new HttpGet("http://localhost:" + port + "/metrics");
             CloseableHttpResponse response = client.execute(request);

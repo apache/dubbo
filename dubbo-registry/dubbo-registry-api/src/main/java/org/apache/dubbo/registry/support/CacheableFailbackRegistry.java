@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
@@ -40,6 +41,7 @@ import org.apache.dubbo.common.url.component.ServiceAddressURL;
 import org.apache.dubbo.common.url.component.URLAddress;
 import org.apache.dubbo.common.url.component.URLParam;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.registry.NotifyListener;
@@ -62,6 +64,7 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAI
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_URL_EVICTING;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_NO_PARAMETERS_URL;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_ENABLE_EMPTY_PROTECTION;
 import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
 import static org.apache.dubbo.common.constants.RegistryConstants.ENABLE_EMPTY_PROTECTION_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDERS_CATEGORY;
@@ -81,8 +84,8 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
 
     private static String[] VARIABLE_KEYS = new String[]{ENCODED_TIMESTAMP_KEY, ENCODED_PID_KEY};
 
-    protected Map<String, URLAddress> stringAddress = new ConcurrentHashMap<>();
-    protected Map<String, URLParam> stringParam = new ConcurrentHashMap<>();
+    protected ConcurrentMap<String, URLAddress> stringAddress = new ConcurrentHashMap<>();
+    protected ConcurrentMap<String, URLParam> stringParam = new ConcurrentHashMap<>();
 
     private ScheduledExecutorService cacheRemovalScheduler;
     private int cacheRemovalTaskIntervalInMillis;
@@ -221,7 +224,7 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
         if (urls.isEmpty()) {
             int i = path.lastIndexOf(PATH_SEPARATOR);
             String category = i < 0 ? path : path.substring(i + 1);
-            if (!PROVIDERS_CATEGORY.equals(category) || !getUrl().getParameter(ENABLE_EMPTY_PROTECTION_KEY, true)) {
+            if (!PROVIDERS_CATEGORY.equals(category) || !getUrl().getParameter(ENABLE_EMPTY_PROTECTION_KEY, DEFAULT_ENABLE_EMPTY_PROTECTION)) {
                 if (PROVIDERS_CATEGORY.equals(category)) {
                     logger.warn(REGISTRY_EMPTY_ADDRESS, "", "",
                         "Service " + consumer.getServiceKey() + " received empty address list and empty protection is disabled, will clear current available addresses");
@@ -240,8 +243,8 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
     /**
      * Create DubboServiceAddress object using provider url, consumer url, and extra parameters.
      *
-     * @param rawProvider provider url string
-     * @param consumerURL URL object of consumer
+     * @param rawProvider     provider url string
+     * @param consumerURL     URL object of consumer
      * @param extraParameters extra parameters
      * @return created DubboServiceAddressURL object
      */
@@ -277,10 +280,10 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
         boolean isEncoded = encoded;
 
         // PathURLAddress if it's using dubbo protocol.
-        URLAddress address = stringAddress.computeIfAbsent(rawAddress, k -> URLAddress.parse(k, getDefaultURLProtocol(), isEncoded));
+        URLAddress address = ConcurrentHashMapUtils.computeIfAbsent(stringAddress, rawAddress, k -> URLAddress.parse(k, getDefaultURLProtocol(), isEncoded));
         address.setTimestamp(System.currentTimeMillis());
 
-        URLParam param = stringParam.computeIfAbsent(rawParams, k -> URLParam.parse(k, isEncoded, extraParameters));
+        URLParam param = ConcurrentHashMapUtils.computeIfAbsent(stringParam, rawParams, k -> URLParam.parse(k, isEncoded, extraParameters));
         param.setTimestamp(System.currentTimeMillis());
 
         // create service URL using cached address, param, and consumer URL.

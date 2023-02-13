@@ -2177,7 +2177,7 @@
     "methods": [
       {
         "name": "<init>",
-        "parameterTypes": []
+        "parameterTypes": ["org.apache.dubbo.rpc.model.ApplicationModel"]
       }
     ]
   },
@@ -2251,7 +2251,7 @@
     "methods": [
       {
         "name": "<init>",
-        "parameterTypes": []
+        "parameterTypes": ["org.apache.dubbo.rpc.model.ApplicationModel"]
       }
     ]
   },
@@ -2531,6 +2531,16 @@
   },
   {
     "name": "org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": ["org.apache.dubbo.rpc.model.FrameworkModel"]
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.rpc.AdaptiveMetrics",
     "allPublicMethods": true,
     "methods": [
       {
@@ -2861,12 +2871,12 @@
     ]
   },
   {
-    "name": "org.apache.dubbo.common.metrics.collector.DefaultMetricsCollector",
+    "name": "org.apache.dubbo.metrics.collector.DefaultMetricsCollector",
     "allPublicMethods": true,
     "methods": [
       {
         "name": "<init>",
-        "parameterTypes": ["org.apache.dubbo.rpc.model.ApplicationModel"]
+        "parameterTypes": []
       }
     ]
   },

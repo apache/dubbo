@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.dubbo;
 
 
+import org.apache.dubbo.common.utils.CacheableSupplier;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.serialize.Cleanable;
@@ -45,6 +46,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import static org.apache.dubbo.common.BaseServiceMetadata.keyWithoutGroup;
 import static org.apache.dubbo.common.URL.buildKey;
@@ -60,19 +62,19 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
 
     private static final ErrorTypeAwareLogger log = LoggerFactory.getErrorTypeAwareLogger(DecodeableRpcInvocation.class);
 
-    private Channel channel;
+    private final Channel channel;
 
-    private byte serializationType;
+    private final byte serializationType;
 
-    private InputStream inputStream;
+    private final InputStream inputStream;
 
-    private Request request;
+    private final Request request;
 
     private volatile boolean hasDecoded;
 
     protected final FrameworkModel frameworkModel;
 
-    private CallbackServiceCodec callbackServiceCodec;
+    private final Supplier<CallbackServiceCodec> callbackServiceCodecFactory;
 
     public DecodeableRpcInvocation(FrameworkModel frameworkModel, Channel channel, Request request, InputStream is, byte id) {
         this.frameworkModel = frameworkModel;
@@ -83,7 +85,8 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
         this.request = request;
         this.inputStream = is;
         this.serializationType = id;
-        callbackServiceCodec = new CallbackServiceCodec(frameworkModel);
+        this.callbackServiceCodecFactory = CacheableSupplier.newSupplier(()->
+            new CallbackServiceCodec(frameworkModel));
     }
 
     @Override
@@ -114,7 +117,7 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
 
     @Override
     public Object decode(Channel channel, InputStream input) throws IOException {
-        ObjectInput in = CodecSupport.getSerialization(channel.getUrl(), serializationType)
+        ObjectInput in = CodecSupport.getSerialization(serializationType)
             .deserialize(channel.getUrl(), input);
         this.put(SERIALIZATION_ID_KEY, serializationType);
 
@@ -221,6 +224,7 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
             }
 
             //decode argument ,may be callback
+            CallbackServiceCodec callbackServiceCodec = callbackServiceCodecFactory.get();
             for (int i = 0; i < args.length; i++) {
                 args[i] = callbackServiceCodec.decodeInvocationArgument(channel, this, pts, i, args[i]);
             }
