@@ -112,7 +112,7 @@ class DefaultMetricsCollectorTest {
             return number.longValue();
         }));
 
-        Assertions.assertEquals(sampleMap.get(MetricsKey.PROVIDER_METRIC_REQUESTS_PROCESSING.getName()), 0L);
+        Assertions.assertEquals(sampleMap.get(MetricsKey.METRIC_REQUESTS_PROCESSING.getName()), 0L);
     }
 
     @Test
@@ -138,11 +138,11 @@ class DefaultMetricsCollectorTest {
             return number.longValue();
         }));
 
-        Assertions.assertEquals(sampleMap.get(MetricsKey.PROVIDER_METRIC_RT_LAST.getName()), 0L);
-        Assertions.assertEquals(sampleMap.get(MetricsKey.PROVIDER_METRIC_RT_MIN.getName()), 0L);
-        Assertions.assertEquals(sampleMap.get(MetricsKey.PROVIDER_METRIC_RT_MAX.getName()), 10L);
-        Assertions.assertEquals(sampleMap.get(MetricsKey.PROVIDER_METRIC_RT_AVG.getName()), 5L);
-        Assertions.assertEquals(sampleMap.get(MetricsKey.PROVIDER_METRIC_RT_SUM.getName()), 10L);
+        Assertions.assertEquals(sampleMap.get(MetricsKey.METRIC_RT_LAST.getName()), 0L);
+        Assertions.assertEquals(sampleMap.get(MetricsKey.METRIC_RT_MIN.getName()), 0L);
+        Assertions.assertEquals(sampleMap.get(MetricsKey.METRIC_RT_MAX.getName()), 10L);
+        Assertions.assertEquals(sampleMap.get(MetricsKey.METRIC_RT_AVG.getName()), 5L);
+        Assertions.assertEquals(sampleMap.get(MetricsKey.METRIC_RT_SUM.getName()), 10L);
     }
 
     @Test

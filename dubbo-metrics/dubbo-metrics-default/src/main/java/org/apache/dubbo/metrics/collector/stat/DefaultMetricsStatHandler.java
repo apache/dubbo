@@ -55,7 +55,6 @@ public class DefaultMetricsStatHandler implements MetricsStatHandler {
     protected MetricsEvent doExecute(String applicationName, Invocation invocation, BiConsumer<MethodMetric, Map<MethodMetric, AtomicLong>> execute) {
         MethodMetric metric = new MethodMetric(applicationName, invocation);
         execute.accept(metric, counts);
-
         return this.retrieveMetricsEvent(metric);
     }
 
