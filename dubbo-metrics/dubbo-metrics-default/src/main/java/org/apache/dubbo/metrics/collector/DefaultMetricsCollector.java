@@ -22,7 +22,7 @@ import org.apache.dubbo.metrics.collector.sample.MethodMetricsCountSampler;
 import org.apache.dubbo.metrics.collector.sample.MetricsCountSampleConfigurer;
 import org.apache.dubbo.metrics.collector.sample.MetricsSampler;
 import org.apache.dubbo.metrics.collector.sample.SimpleMetricsCountSampler;
-import org.apache.dubbo.metrics.collector.sample.ThreadMetricsCountSampler;
+import org.apache.dubbo.metrics.collector.sample.ThreadPoolMetricsSampler;
 import org.apache.dubbo.metrics.event.MetricsEvent;
 import org.apache.dubbo.metrics.event.SimpleMetricsEventMulticaster;
 import org.apache.dubbo.metrics.listener.MetricsListener;
@@ -46,8 +46,8 @@ public class DefaultMetricsCollector implements MetricsCollector {
     private AtomicBoolean collectEnabled = new AtomicBoolean(false);
     private final SimpleMetricsEventMulticaster eventMulticaster;
     private MethodMetricsCountSampler methodMetricsCountSampler = new MethodMetricsCountSampler(this);
-    private ThreadMetricsCountSampler threadMetricsCountSampler = new ThreadMetricsCountSampler(this);
-    private String applicationName;
+    private ThreadPoolMetricsSampler  threadMetricsCountSampler = new ThreadPoolMetricsSampler(this);
+    private String                    applicationName;
     private ApplicationModel applicationModel;
     private List<MetricsSampler> samplers = new ArrayList<>();
 

@@ -33,13 +33,13 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 import static org.apache.dubbo.metrics.model.MetricsCategory.THREAD_POOL;
 
-public class ThreadMetricsCountSampler implements MetricsSampler {
+public class ThreadPoolMetricsSampler implements MetricsSampler {
 
     private DefaultMetricsCollector collector;
     private FrameworkExecutorRepository frameworkExecutorRepository;
     private Set<ThreadPoolMetric> threadPoolMetricSet = new HashSet<>();
 
-    public ThreadMetricsCountSampler(DefaultMetricsCollector collector) {
+    public ThreadPoolMetricsSampler(DefaultMetricsCollector collector) {
         this.collector = collector;
         try{
             this.frameworkExecutorRepository = collector.getApplicationModel().getBeanFactory().getBean(FrameworkExecutorRepository.class);
