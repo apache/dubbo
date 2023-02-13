@@ -41,7 +41,7 @@ public class MetricsStatComposite {
     private final ConcurrentMap<MethodMetric, AtomicLong> avgRT = new ConcurrentHashMap<>();
     private final ConcurrentMap<MethodMetric, AtomicLong> totalRT = new ConcurrentHashMap<>();
     private final ConcurrentMap<MethodMetric, AtomicLong> rtCount = new ConcurrentHashMap<>();
-    private DefaultMetricsCollector collector;
+    private final DefaultMetricsCollector collector;
 
     public MetricsStatComposite(DefaultMetricsCollector collector) {
         this.collector = collector;

@@ -54,7 +54,7 @@ import static org.apache.dubbo.metrics.model.MetricsCategory.RT;
  */
 public class DefaultMetricsCollector implements MetricsCollector {
 
-    private AtomicBoolean collectEnabled = new AtomicBoolean(false);
+    private final AtomicBoolean collectEnabled = new AtomicBoolean(false);
     private final Set<ThreadPoolMetric> threadPoolMetricSet = new HashSet<ThreadPoolMetric>();
     private final MetricsStatComposite stats;
     private final SimpleMetricsEventMulticaster eventMulticaster;
