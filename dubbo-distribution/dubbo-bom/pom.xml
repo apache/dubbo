@@ -300,6 +300,12 @@
                 <version>${project.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>org.apache.dubbo</groupId>
+                <artifactId>dubbo-spring-security</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
             <!-- registry -->
             <dependency>
                 <groupId>org.apache.dubbo</groupId>

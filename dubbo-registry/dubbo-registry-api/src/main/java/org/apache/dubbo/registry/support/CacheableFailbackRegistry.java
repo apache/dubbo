@@ -16,6 +16,19 @@
  */
 package org.apache.dubbo.registry.support;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
+
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.URLStrParser;
@@ -35,19 +48,6 @@ import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.ProviderFirstParams;
 import org.apache.dubbo.rpc.model.ScopeModel;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
-
 import static org.apache.dubbo.common.URLStrParser.ENCODED_AND_MARK;
 import static org.apache.dubbo.common.URLStrParser.ENCODED_PID_KEY;
 import static org.apache.dubbo.common.URLStrParser.ENCODED_QUESTION_MARK;
@@ -58,11 +58,10 @@ import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_SEPARATOR_ENCODED;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ADDRESS_INVALID;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_PROPERTY_TYPE_MISMATCH;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_EMPTY_ADDRESS;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_CLEAR_CACHED_URLS;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_URL_EVICTING;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_PROPERTY_TYPE_MISMATCH;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_NO_PARAMETERS_URL;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_ENABLE_EMPTY_PROTECTION;
@@ -180,10 +179,6 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
                 // create DubboServiceAddress object using provider url, consumer url, and extra parameters.
                 ServiceAddressURL cachedURL = createURL(rawProvider, copyOfConsumer, getExtraParameters());
                 if (cachedURL == null) {
-                    // 1-1: Address invalid.
-                    logger.warn(REGISTRY_ADDRESS_INVALID, "mismatch of service group and version settings", "",
-                        "Invalid address, failed to parse into URL " + rawProvider);
-
                     continue;
                 }
                 newURLs.put(rawProvider, cachedURL);
@@ -196,9 +191,6 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
                 if (cachedURL == null) {
                     cachedURL = createURL(rawProvider, copyOfConsumer, getExtraParameters());
                     if (cachedURL == null) {
-                        logger.warn(REGISTRY_ADDRESS_INVALID, "mismatch of service group and version settings", "",
-                            "Invalid address, failed to parse into URL " + rawProvider);
-
                         continue;
                     }
                 }

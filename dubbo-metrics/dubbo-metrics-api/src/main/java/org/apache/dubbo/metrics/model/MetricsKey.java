@@ -48,6 +48,13 @@ public enum MetricsKey {
     PROVIDER_METRIC_RT_P99("dubbo.provider.rt.seconds.p99", "Response Time P99"),
     PROVIDER_METRIC_RT_P95("dubbo.provider.rt.seconds.p95", "Response Time P95"),
 
+    THREAD_POOL_CORE_SIZE("dubbo.thread.pool.core.size","Thread Pool Core Size"),
+    THREAD_POOL_LARGEST_SIZE("dubbo.thread.pool.largest.size","Thread Pool Largest Size"),
+    THREAD_POOL_MAX_SIZE("dubbo.thread.pool.max.size","Thread Pool Max Size"),
+    THREAD_POOL_ACTIVE_SIZE("dubbo.thread.pool.active.size","Thread Pool Active Size"),
+    THREAD_POOL_THREAD_COUNT("dubbo.thread.pool.thread.count","Thread Pool Thread Count"),
+    THREAD_POOL_QUEUE_SIZE("dubbo.thread.pool.queue.size","Thread Pool Queue Size"),
+
     // consumer metrics key
     ;
 
