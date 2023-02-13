@@ -16,11 +16,20 @@
  */
 package org.apache.dubbo.common.serialize.hessian2;
 
+import org.apache.dubbo.common.utils.DefaultSerializeClassChecker;
+
 import com.alibaba.com.caucho.hessian.io.SerializerFactory;
 
 public class Hessian2SerializerFactory extends SerializerFactory {
 
-    public Hessian2SerializerFactory() {
+    private final DefaultSerializeClassChecker defaultSerializeClassChecker;
+
+    public Hessian2SerializerFactory(DefaultSerializeClassChecker defaultSerializeClassChecker) {
+        this.defaultSerializeClassChecker = defaultSerializeClassChecker;
     }
 
+    @Override
+    public Class<?> loadSerializedClass(String className) throws ClassNotFoundException {
+        return defaultSerializeClassChecker.loadClass(getClassLoader(), className);
+    }
 }

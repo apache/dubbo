@@ -16,9 +16,15 @@
  */
 package org.apache.dubbo.registry.xds.util.protocol.impl;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.registry.xds.util.XdsChannel;
+import org.apache.dubbo.registry.xds.util.AdsObserver;
 import org.apache.dubbo.registry.xds.util.protocol.AbstractProtocol;
 import org.apache.dubbo.registry.xds.util.protocol.delta.DeltaEndpoint;
 import org.apache.dubbo.registry.xds.util.protocol.message.Endpoint;
@@ -26,6 +32,7 @@ import org.apache.dubbo.registry.xds.util.protocol.message.EndpointResult;
 
 import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
+
 import io.envoyproxy.envoy.config.core.v3.HealthStatus;
 import io.envoyproxy.envoy.config.core.v3.Node;
 import io.envoyproxy.envoy.config.core.v3.SocketAddress;
@@ -33,18 +40,14 @@ import io.envoyproxy.envoy.config.endpoint.v3.ClusterLoadAssignment;
 import io.envoyproxy.envoy.config.endpoint.v3.LbEndpoint;
 import io.envoyproxy.envoy.service.discovery.v3.DiscoveryResponse;
 
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ERROR_RESPONSE_XDS;
 
 public class EdsProtocol extends AbstractProtocol<EndpointResult, DeltaEndpoint> {
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(EdsProtocol.class);
 
-    public EdsProtocol(XdsChannel xdsChannel, Node node, int pollingPoolSize, int pollingTimeout) {
-        super(xdsChannel, node, pollingPoolSize, pollingTimeout);
+    public EdsProtocol(AdsObserver adsObserver, Node node, int checkInterval) {
+        super(adsObserver, node, checkInterval);
     }
 
     @Override
@@ -52,27 +55,27 @@ public class EdsProtocol extends AbstractProtocol<EndpointResult, DeltaEndpoint>
         return "type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment";
     }
 
+
     @Override
-    protected EndpointResult decodeDiscoveryResponse(DiscoveryResponse response) {
+    protected Map<String, EndpointResult> decodeDiscoveryResponse(DiscoveryResponse response) {
         if (getTypeUrl().equals(response.getTypeUrl())) {
-            Set<Endpoint> set = response.getResourcesList().stream()
+            return response.getResourcesList().stream()
                 .map(EdsProtocol::unpackClusterLoadAssignment)
                 .filter(Objects::nonNull)
-                .flatMap((e) -> decodeResourceToEndpoint(e).stream())
-                .collect(Collectors.toSet());
-            return new EndpointResult(set);
+                .collect(Collectors.toConcurrentMap(ClusterLoadAssignment::getClusterName, this::decodeResourceToEndpoint));
         }
-        return new EndpointResult();
+        return new HashMap<>();
     }
 
-    private static Set<Endpoint> decodeResourceToEndpoint(ClusterLoadAssignment resource) {
-        return resource.getEndpointsList().stream()
-            .flatMap((e) -> e.getLbEndpointsList().stream())
-            .map(EdsProtocol::decodeLbEndpointToEndpoint)
+    private EndpointResult decodeResourceToEndpoint(ClusterLoadAssignment resource) {
+        Set<Endpoint> endpoints = resource.getEndpointsList().stream()
+            .flatMap(e -> e.getLbEndpointsList().stream())
+            .map(e -> decodeLbEndpointToEndpoint(resource.getClusterName(), e))
             .collect(Collectors.toSet());
+        return new EndpointResult(endpoints);
     }
 
-    private static Endpoint decodeLbEndpointToEndpoint(LbEndpoint lbEndpoint) {
+    private static Endpoint decodeLbEndpointToEndpoint(String clusterName, LbEndpoint lbEndpoint) {
         Endpoint endpoint = new Endpoint();
         SocketAddress address = lbEndpoint.getEndpoint().getAddress().getSocketAddress();
         endpoint.setAddress(address.getAddress());

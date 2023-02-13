@@ -23,10 +23,12 @@ import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ScopeModelInitializer;
 
 public class Fastjson2ScopeModelInitializer implements ScopeModelInitializer {
+
     @Override
     public void initializeFrameworkModel(FrameworkModel frameworkModel) {
         ScopeBeanFactory beanFactory = frameworkModel.getBeanFactory();
         beanFactory.registerBean(Fastjson2CreatorManager.class);
+        beanFactory.registerBean(Fastjson2SecurityManager.class);
     }
 
     @Override

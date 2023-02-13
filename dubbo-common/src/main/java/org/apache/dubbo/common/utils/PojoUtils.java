@@ -16,11 +16,6 @@
  */
 package org.apache.dubbo.common.utils;
 
-import org.apache.dubbo.common.config.ConfigurationUtils;
-import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -58,7 +53,12 @@ import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_FAILED_REFLECT;
+import org.apache.dubbo.common.config.ConfigurationUtils;
+import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_REFLECTIVE_OPERATION_FAILED;
 import static org.apache.dubbo.common.utils.ClassUtils.isAssignableFrom;
 
 /**
@@ -410,10 +410,9 @@ public class PojoUtils {
         if (pojo instanceof Map<?, ?> && type != null) {
             Object className = ((Map<Object, Object>) pojo).get("class");
             if (className instanceof String) {
-                SerializeClassChecker.getInstance().validateClass((String) className);
                 if (!CLASS_NOT_FOUND_CACHE.containsKey(className)) {
                     try {
-                        type = ClassUtils.forName((String) className);
+                        type = DefaultSerializeClassChecker.getInstance().loadClass(ClassUtils.getClassLoader(), (String) className);
                     } catch (ClassNotFoundException e) {
                         CLASS_NOT_FOUND_CACHE.put((String) className, NOT_FOUND_VALUE);
                     }
@@ -526,7 +525,7 @@ public class PojoUtils {
                                 } catch (Exception e) {
                                     String exceptionDescription = "Failed to set pojo " + dest.getClass().getSimpleName() + " property " + name
                                         + " value " + value.getClass() + ", cause: " + e.getMessage();
-                                    logger.error(COMMON_FAILED_REFLECT, "", "", exceptionDescription, e);
+                                    logger.error(COMMON_REFLECTIVE_OPERATION_FAILED, "", "", exceptionDescription, e);
                                     throw new RuntimeException(exceptionDescription, e);
                                 }
                             } else if (field != null) {

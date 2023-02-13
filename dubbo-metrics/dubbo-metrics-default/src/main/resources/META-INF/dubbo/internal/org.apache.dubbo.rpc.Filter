@@ -1,0 +1,1 @@
+metrics-beta=org.apache.dubbo.metrics.filter.MetricsFilter

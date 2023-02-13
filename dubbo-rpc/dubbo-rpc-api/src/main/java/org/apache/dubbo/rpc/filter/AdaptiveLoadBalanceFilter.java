@@ -53,7 +53,7 @@ public class AdaptiveLoadBalanceFilter implements Filter, Filter.Listener {
      */
     private volatile ThreadPoolExecutor executor = null;
 
-    private AdaptiveMetrics adaptiveMetrics;
+    private final AdaptiveMetrics adaptiveMetrics;
 
     public AdaptiveLoadBalanceFilter(ApplicationModel scopeModel) {
         adaptiveMetrics = scopeModel.getBeanFactory().getBean(AdaptiveMetrics.class);

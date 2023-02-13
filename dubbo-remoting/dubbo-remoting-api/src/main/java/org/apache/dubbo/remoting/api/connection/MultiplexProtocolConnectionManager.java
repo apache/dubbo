@@ -17,6 +17,7 @@
 package org.apache.dubbo.remoting.api.connection;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
@@ -37,7 +38,7 @@ public class MultiplexProtocolConnectionManager implements ConnectionManager {
 
     @Override
     public AbstractConnectionClient connect(URL url, ChannelHandler handler) {
-        final ConnectionManager manager = protocols.computeIfAbsent(url.getProtocol(), this::createSingleProtocolConnectionManager);
+        final ConnectionManager manager = ConcurrentHashMapUtils.computeIfAbsent(protocols, url.getProtocol(), this::createSingleProtocolConnectionManager);
         return manager.connect(url, handler);
     }
 
