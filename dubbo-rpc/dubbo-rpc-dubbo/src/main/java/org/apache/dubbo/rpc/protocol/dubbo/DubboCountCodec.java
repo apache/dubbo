@@ -34,11 +34,9 @@ import static org.apache.dubbo.rpc.Constants.OUTPUT_KEY;
 
 public final class DubboCountCodec implements Codec2 {
 
-    private DubboCodec codec;
-    private FrameworkModel frameworkModel;
+    private final DubboCodec codec;
 
     public DubboCountCodec(FrameworkModel frameworkModel) {
-        this.frameworkModel = frameworkModel;
         codec = new DubboCodec(frameworkModel);
     }
 
