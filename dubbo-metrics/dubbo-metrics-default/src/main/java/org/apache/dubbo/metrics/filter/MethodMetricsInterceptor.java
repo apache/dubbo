@@ -20,6 +20,7 @@ package org.apache.dubbo.metrics.filter;
 import org.apache.dubbo.metrics.collector.sample.MethodMetricsSampler;
 import org.apache.dubbo.metrics.event.MetricsEvent;
 import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 
@@ -35,7 +36,7 @@ public class MethodMetricsInterceptor {
         this.sampler = sampler;
     }
 
-    public void invoke(Invocation invocation) {
+    public void beforeExecute(Invocation invocation) {
         sampler.incOnEvent(invocation, MetricsEvent.Type.TOTAL);
         sampler.incOnEvent(invocation,MetricsEvent.Type.PROCESSING);
         invocation.put(METRIC_FILTER_START_TIME, System.currentTimeMillis());

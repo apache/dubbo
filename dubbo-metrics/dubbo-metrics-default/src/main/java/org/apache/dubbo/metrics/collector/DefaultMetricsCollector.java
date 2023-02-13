@@ -45,9 +45,9 @@ public class DefaultMetricsCollector implements MetricsCollector {
 
     private AtomicBoolean collectEnabled = new AtomicBoolean(false);
     private final SimpleMetricsEventMulticaster eventMulticaster;
-    private       MethodMetricsSampler     methodSampler     = new MethodMetricsSampler(this);
-    private       ThreadPoolMetricsSampler threadPoolSampler = new ThreadPoolMetricsSampler(this);
-    private String                         applicationName;
+    private MethodMetricsSampler methodSampler = new MethodMetricsSampler(this);
+    private ThreadPoolMetricsSampler threadPoolSampler = new ThreadPoolMetricsSampler(this);
+    private String applicationName;
     private ApplicationModel applicationModel;
     private List<MetricsSampler> samplers = new ArrayList<>();
 

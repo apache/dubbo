@@ -52,9 +52,11 @@ public class MetricsFilter implements Filter, BaseFilter.Listener, ScopeModelAwa
         if (collector == null || !collector.isCollectEnabled()) {
             return invoker.invoke(invocation);
         }
-        metricsInterceptor.invoke(invocation);
+
+        metricsInterceptor.beforeExecute(invocation);
 
         return invoker.invoke(invocation);
+
     }
 
     @Override
