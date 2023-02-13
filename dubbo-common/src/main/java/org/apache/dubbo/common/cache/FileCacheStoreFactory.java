@@ -62,7 +62,7 @@ public final class FileCacheStoreFactory {
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(FileCacheStoreFactory.class);
     private static final ConcurrentMap<String, FileCacheStore> cacheMap = new ConcurrentHashMap<>();
 
-    private static final String SUFFIX = ".dubbo.cache";
+    public static final String SUFFIX = ".dubbo.cache";
     private static final char ESCAPE_MARK = '%';
     private static final Set<Character> LEGAL_CHARACTERS = Collections.unmodifiableSet(new HashSet<Character>() {{
         // - $ . _ 0-9 a-z A-Z
@@ -148,7 +148,7 @@ public final class FileCacheStoreFactory {
      * @param name origin file name
      * @return sanitized version of name
      */
-    private static String safeName(String name) {
+    static String safeName(String name) {
         int len = name.length();
         StringBuilder sb = new StringBuilder(len);
         for (int i = 0; i < len; i++) {
@@ -170,13 +170,20 @@ public final class FileCacheStoreFactory {
      * @return a file object
      */
     private static FileCacheStore getFile(String name, String fileContent, String md5String, boolean enableFileCache, boolean enableAddressShorten) {
-        if (!enableFileCache) {
-            return FileCacheStore.Empty.getInstance(name);
-        }
-
+        FileCacheStore.Builder builder = FileCacheStore.newBuilder();
         try {
-            FileCacheStore.Builder builder = FileCacheStore.newBuilder();
-            tryFileLock(builder, name, md5String);
+            tryFileLock(builder, name, md5String, enableAddressShorten);
+            getFile(builder, name, fileContent, md5String, enableFileCache, enableAddressShorten);
+        } catch (Throwable t) {
+            logger.warn(COMMON_CACHE_PATH_INACCESSIBLE, "inaccessible of cache path", "",
+                "Failed to create file store cache. Local file cache will be disabled. Cache file name: " + name, t);
+            throw new RuntimeException(t);
+        }
+        return builder.build();
+    }
+
+    private static void getFile(FileCacheStore.Builder builder, String name, String fileContent, String md5String, boolean enableFileCache, boolean enableAddressShorten) {
+        try {
             File file = new File(name);
             if (!file.exists()) {
                 Path pathObjectOfFile = file.toPath();
@@ -188,19 +195,20 @@ public final class FileCacheStoreFactory {
                         if (newNameIndex == -1) {
                             logger.warn(COMMON_CACHE_PATH_INACCESSIBLE, "inaccessible of cache path", "",
                                 "Failed to create file store cache. Local file cache will be disabled. Cache file name: " + name, e);
-                            return FileCacheStore.Empty.getInstance(name);
+                            return;
                         }
-                        String md5String16Bit = md5String.substring(12, 24);
+                        String md5String16Bit = md5String.substring(8, 24);
                         String newName = name.substring(0, newNameIndex - 1) + "." + md5String16Bit;
-                        getFile(newName, fileContent, md5String16Bit, enableFileCache, enableAddressShorten);
+                        getFile(builder, newName, fileContent, md5String16Bit, enableFileCache, enableAddressShorten);
+                        return;
                     } else {
                         logger.warn(COMMON_CACHE_PATH_INACCESSIBLE, "inaccessible of cache path", "",
                             "Failed to create file store cache. Local file cache will be disabled. Cache file name: " + name, e);
-                        return FileCacheStore.Empty.getInstance(name);
+                        return ;
                     }
                 }
             }
-            if (!StringUtils.isEmpty(fileContent)) {
+            if (!StringUtils.isEmpty(fileContent) && enableFileCache) {
                 try (FileOutputStream outputFile = new FileOutputStream(file)) {
                     outputFile.write(fileContent.getBytes(StandardCharsets.UTF_8), 0, fileContent.length());
                 }
@@ -208,17 +216,23 @@ public final class FileCacheStoreFactory {
 
             builder.cacheFilePath(name)
                 .cacheFile(file);
-
-            return builder.build();
         } catch (Throwable t) {
-
             logger.warn(COMMON_CACHE_PATH_INACCESSIBLE, "inaccessible of cache path", "",
                 "Failed to create file store cache. Local file cache will be disabled. Cache file name: " + name, t);
-            return FileCacheStore.Empty.getInstance(name);
         }
     }
 
-    private static void tryFileLock(FileCacheStore.Builder builder, String fileName, String md5String) throws PathNotExclusiveException {
+    private static void getFileLock(FileCacheStore.Builder builder, String name,String md5String, boolean enableAddressShorten) {
+        try {
+            tryFileLock(builder, name, md5String, enableAddressShorten);
+        } catch (Throwable t) {
+            logger.warn(COMMON_CACHE_PATH_INACCESSIBLE, "inaccessible of cache path", "",
+                "Failed to create file store cache. Local file cache will be disabled. Cache file name: " + name, t);
+            return;
+        }
+    }
+
+    private static void tryFileLock(FileCacheStore.Builder builder, String fileName, String md5String, boolean enableAddressShorten) throws PathNotExclusiveException {
         File lockFile = new File(fileName + ".lock");
 
         FileLock dirLock = null;
@@ -232,7 +246,7 @@ public final class FileCacheStoreFactory {
         } catch (OverlappingFileLockException ofle) {
             dirLock = null;
         } catch (IOException ioe) {
-            if (!StringUtils.isEmpty(md5String) && md5String.length() == 32) {
+            if (enableAddressShorten && !StringUtils.isEmpty(md5String) && md5String.length() == 32) {
                 int newNameIndex = fileName.indexOf(md5String);
                 if (newNameIndex == -1) {
                     throw new RuntimeException(ioe);
@@ -240,7 +254,8 @@ public final class FileCacheStoreFactory {
                 String md5String16Bit = md5String.substring(8, 24);
                 String newName = fileName.substring(0, newNameIndex - 1) + "." + md5String16Bit;
                 lockFile.deleteOnExit();
-                tryFileLock(builder, newName, md5String16Bit);
+                tryFileLock(builder, newName, md5String16Bit, enableAddressShorten);
+                return;
             } else {
                 throw new RuntimeException(ioe);
             }

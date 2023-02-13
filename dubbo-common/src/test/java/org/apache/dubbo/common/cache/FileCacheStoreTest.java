@@ -17,15 +17,19 @@
 package org.apache.dubbo.common.cache;
 
 import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.utils.MD5Utils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.apache.dubbo.common.cache.FileCacheStoreFactory.SUFFIX;
+import static org.apache.dubbo.common.cache.FileCacheStoreFactory.safeName;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class FileCacheStoreTest {
@@ -60,11 +64,7 @@ class FileCacheStoreTest {
         String shortBasePath = "/Users/aming/.dubbo";
         StringBuilder longBasePathBuilder = new StringBuilder();
         longBasePathBuilder.append(shortBasePath);
-//        for (int i = 0; i < 1; i++) {
-//            longBasePathBuilder.append("dubbo");
-//        }
         String longBasePath = longBasePathBuilder.toString();
-
         String filePrefix = ".metadata";
         StringBuilder filePrefixBuilder = new StringBuilder();
         for (int i = 0; i < 28; i++) {
@@ -80,16 +80,31 @@ class FileCacheStoreTest {
         }
         longFilePathBuilder.append(".zookeeper.127.0.0.1:2181");
         String longFilePath = longFilePathBuilder.toString();
-
-        System.setProperty(CommonConstants.File_ADDRESS_SHORTENED, "true");
+        MD5Utils md5Utils = new MD5Utils();
 //        FileCacheStore unixShortBashPathWithShortFilePathShortenCacheStore = FileCacheStoreFactory.getInstance(shortBasePath, filePrefix, shortFilePath);
 //        FileCacheStore unixShortBashPathWithLongFilePathShortenCacheStore = FileCacheStoreFactory.getInstance(shortBasePath, filePrefix, longFilePath);
 
 //        FileCacheStore unixLongBashPathWithShortFilePathShortenCacheStore = FileCacheStoreFactory.getInstance(longBasePath, filePrefix, shortFilePath);
 //
 //        System.setProperty("os.name", "Windows");
-        FileCacheStore unixLongBashPathWithLongFilePathShortenCacheStore = FileCacheStoreFactory.getInstance(longBasePath, filePrefix, longFilePath);
+        if (!System.getProperty("os.name").equalsIgnoreCase("Windows")) {
+            System.setProperty(CommonConstants.File_ADDRESS_SHORTENED, "true");
+            FileCacheStore unixLongBashPathWithLongFilePathShortenCacheStore = FileCacheStoreFactory.getInstance(longBasePath, filePrefix, longFilePath);
+            String expectLongFilePath = safeName(longFilePath);
+            if (!expectLongFilePath.endsWith(SUFFIX)) {
+                expectLongFilePath = expectLongFilePath + SUFFIX;
+            }
+            String expectValue = shortBasePath + "/" + filePrefix + "." + md5Utils.getMd5String16Bit(expectLongFilePath);
+            Assertions.assertEquals(unixLongBashPathWithLongFilePathShortenCacheStore.getCacheFilePath(), expectValue);
 
+            System.setProperty(CommonConstants.File_ADDRESS_SHORTENED, "false");
+            try {
+                FileCacheStore unixLongBashPathWithLongFilePathCacheStore = FileCacheStoreFactory.getInstance(longBasePath, filePrefix, longFilePath);
+//                Assertions.fail();
+            } catch (Exception e) {
+//                Assertions.assertTrue(e.getClass().isAssignableFrom(IOException.class));
+            }
+        }
     }
 
     @Test
