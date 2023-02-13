@@ -29,15 +29,15 @@ import static org.apache.dubbo.common.constants.MetricsConstants.METRIC_FILTER_S
 
 public class MethodMetricsInterceptor {
 
-    MethodMetricsCountSampler methodMetricsCountSampler;
+    private MethodMetricsCountSampler sampler;
 
-    public MethodMetricsInterceptor(MethodMetricsCountSampler methodMetricsCountSampler) {
-        this.methodMetricsCountSampler = methodMetricsCountSampler;
+    public MethodMetricsInterceptor(MethodMetricsCountSampler sampler) {
+        this.sampler = sampler;
     }
 
     public void invoke(Invocation invocation) {
-        methodMetricsCountSampler.incOnEvent(invocation, MetricsEvent.Type.TOTAL);
-        methodMetricsCountSampler.incOnEvent(invocation,MetricsEvent.Type.PROCESSING);
+        sampler.incOnEvent(invocation, MetricsEvent.Type.TOTAL);
+        sampler.incOnEvent(invocation,MetricsEvent.Type.PROCESSING);
         invocation.put(METRIC_FILTER_START_TIME, System.currentTimeMillis());
     }
 
@@ -46,7 +46,7 @@ public class MethodMetricsInterceptor {
             throwExecute(invocation, result.getException());
             return;
         }
-        methodMetricsCountSampler.incOnEvent(invocation,MetricsEvent.Type.SUCCEED);
+        sampler.incOnEvent(invocation,MetricsEvent.Type.SUCCEED);
         endExecute(invocation);
     }
 
@@ -56,23 +56,23 @@ public class MethodMetricsInterceptor {
             switch (rpcException.getCode()) {
 
                 case RpcException.TIMEOUT_EXCEPTION:
-                    methodMetricsCountSampler.incOnEvent(invocation,MetricsEvent.Type.REQUEST_TIMEOUT);
+                    sampler.incOnEvent(invocation,MetricsEvent.Type.REQUEST_TIMEOUT);
                     break;
 
                 case RpcException.LIMIT_EXCEEDED_EXCEPTION:
-                    methodMetricsCountSampler.incOnEvent(invocation,MetricsEvent.Type.REQUEST_LIMIT);
+                    sampler.incOnEvent(invocation,MetricsEvent.Type.REQUEST_LIMIT);
                     break;
 
                 case RpcException.BIZ_EXCEPTION:
-                    methodMetricsCountSampler.incOnEvent(invocation,MetricsEvent.Type.BUSINESS_FAILED);
+                    sampler.incOnEvent(invocation,MetricsEvent.Type.BUSINESS_FAILED);
                     break;
 
                 default:
-                    methodMetricsCountSampler.incOnEvent(invocation,MetricsEvent.Type.UNKNOWN_FAILED);
+                    sampler.incOnEvent(invocation,MetricsEvent.Type.UNKNOWN_FAILED);
             }
         }
 
-        methodMetricsCountSampler.incOnEvent(invocation,MetricsEvent.Type.TOTAL_FAILED);
+        sampler.incOnEvent(invocation,MetricsEvent.Type.TOTAL_FAILED);
 
         endExecute(invocation, () -> throwable instanceof RpcException && ((RpcException) throwable).isBiz());
     }
@@ -86,9 +86,9 @@ public class MethodMetricsInterceptor {
             Long endTime = System.currentTimeMillis();
             Long beginTime = (Long) invocation.get(METRIC_FILTER_START_TIME);
             Long rt = endTime - beginTime;
-            methodMetricsCountSampler.addRT(invocation, rt);
+            sampler.addRT(invocation, rt);
         }
-        methodMetricsCountSampler.dec(invocation,MetricsEvent.Type.PROCESSING);
+        sampler.dec(invocation,MetricsEvent.Type.PROCESSING);
     }
 
 }
