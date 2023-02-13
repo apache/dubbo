@@ -20,7 +20,6 @@ package org.apache.dubbo.metrics.filter;
 import org.apache.dubbo.metrics.collector.sample.MethodMetricsSampler;
 import org.apache.dubbo.metrics.event.MetricsEvent;
 import org.apache.dubbo.rpc.Invocation;
-import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 
