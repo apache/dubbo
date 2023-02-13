@@ -366,6 +366,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         if (metricsConfig != null && PROTOCOL_PROMETHEUS.equals(metricsConfig.getProtocol())) {
             collector.setCollectEnabled(true);
             collector.addApplicationInfo(applicationModel.getApplicationName(), Version.getVersion());
+            collector.addThreadPool(applicationModel.getFrameworkModel(), applicationModel.getApplicationName());
             String protocol = metricsConfig.getProtocol();
             if (StringUtils.isNotEmpty(protocol)) {
                 MetricsReporterFactory metricsReporterFactory = getExtensionLoader(MetricsReporterFactory.class).getAdaptiveExtension();

@@ -25,7 +25,6 @@ import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -113,12 +112,12 @@ class AggregateMetricsCollectorTest {
             return number.longValue();
         }));
 
-        Assertions.assertEquals(sampleMap.get(MetricsKey.PROVIDER_METRIC_REQUESTS_TOTAL_AGG.getName()), 1L);
-        Assertions.assertEquals(sampleMap.get(MetricsKey.PROVIDER_METRIC_REQUESTS_SUCCEED_AGG.getName()), 1L);
-        Assertions.assertEquals(sampleMap.get(MetricsKey.PROVIDER_METRIC_REQUESTS_FAILED_AGG.getName()), 1L);
-        Assertions.assertEquals(sampleMap.get(MetricsKey.PROVIDER_METRIC_REQUESTS_BUSINESS_FAILED_AGG.getName()), 1L);
+        Assertions.assertEquals(sampleMap.get(MetricsKey.METRIC_REQUESTS_TOTAL_AGG.getName()), 1L);
+        Assertions.assertEquals(sampleMap.get(MetricsKey.METRIC_REQUESTS_SUCCEED_AGG.getName()), 1L);
+        Assertions.assertEquals(sampleMap.get(MetricsKey.METRIC_REQUESTS_FAILED_AGG.getName()), 1L);
+        Assertions.assertEquals(sampleMap.get(MetricsKey.METRIC_REQUESTS_BUSINESS_FAILED_AGG.getName()), 1L);
 
-        Assertions.assertTrue(sampleMap.containsKey(MetricsKey.PROVIDER_METRIC_QPS.getName()));
+        Assertions.assertTrue(sampleMap.containsKey(MetricsKey.METRIC_QPS.getName()));
     }
 
     @Test
@@ -141,7 +140,7 @@ class AggregateMetricsCollectorTest {
             return number.longValue();
         }));
 
-        Assertions.assertTrue(sampleMap.containsKey(MetricsKey.PROVIDER_METRIC_RT_P99.getName()));
-        Assertions.assertTrue(sampleMap.containsKey(MetricsKey.PROVIDER_METRIC_RT_P95.getName()));
+        Assertions.assertTrue(sampleMap.containsKey(MetricsKey.METRIC_RT_P99.getName()));
+        Assertions.assertTrue(sampleMap.containsKey(MetricsKey.METRIC_RT_P95.getName()));
     }
 }
