@@ -93,6 +93,11 @@ public class URLConnectionRestClient implements RestClient {
                     public int getResponseCode() throws IOException {
                         return connection.getResponseCode();
                     }
+
+                    @Override
+                    public String getMessage() throws IOException {
+                        return new String(getErrorResponse());
+                    }
                 });
                 return future;
             }
@@ -144,6 +149,11 @@ public class URLConnectionRestClient implements RestClient {
                 @Override
                 public int getResponseCode() throws IOException {
                     return connection.getResponseCode();
+                }
+
+                @Override
+                public String getMessage() throws IOException {
+                    return new String(getErrorResponse());
                 }
             });
         } catch (Exception e) {

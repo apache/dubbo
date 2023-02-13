@@ -106,6 +106,11 @@ public class OKHttpRestClient implements RestClient {
                     public int getResponseCode() throws IOException {
                         return response.code();
                     }
+
+                    @Override
+                    public String getMessage() throws IOException {
+                        return response.message();
+                    }
                 });
             }
         });

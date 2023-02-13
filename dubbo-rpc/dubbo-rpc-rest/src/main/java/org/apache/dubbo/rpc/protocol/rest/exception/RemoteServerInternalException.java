@@ -14,22 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.http;
+package org.apache.dubbo.rpc.protocol.rest.exception;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
+public class RemoteServerInternalException extends RuntimeException {
 
-public interface RestResult {
-    String getContentType();
-
-    byte[] getBody() throws IOException;
-
-    Map<String, List<String>> headers();
-
-    byte[] getErrorResponse() throws IOException;
-
-    int getResponseCode() throws IOException;
-
-    String getMessage() throws IOException;
+    public RemoteServerInternalException(String message) {
+        super("dubbo http rest protocol remote error :"+message);
+    }
 }
