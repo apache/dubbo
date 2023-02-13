@@ -34,10 +34,17 @@ public class MetricsFilter implements Filter, BaseFilter.Listener, ScopeModelAwa
 
     private DefaultMetricsCollector collector = null;
 
+    private MethodMetricsInterceptor metricsInterceptor;
+
 
     @Override
     public void setApplicationModel(ApplicationModel applicationModel) {
         collector = applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class);
+
+        if (collector != null) {
+            metricsInterceptor = new MethodMetricsInterceptor(collector.getMethodMetricsCountSampler());
+        }
+
     }
 
     @Override
@@ -45,7 +52,7 @@ public class MetricsFilter implements Filter, BaseFilter.Listener, ScopeModelAwa
         if (collector == null || !collector.isCollectEnabled()) {
             return invoker.invoke(invocation);
         }
-        MetricsCollectExecutor.beforeExecute(collector, invocation);
+        metricsInterceptor.invoke(invocation);
 
         return invoker.invoke(invocation);
     }
@@ -55,7 +62,7 @@ public class MetricsFilter implements Filter, BaseFilter.Listener, ScopeModelAwa
         if (collector == null || !collector.isCollectEnabled()) {
             return;
         }
-        MetricsCollectExecutor.postExecute(collector, invocation, result);
+        metricsInterceptor.postExecute(invocation, result);
     }
 
     @Override
@@ -63,7 +70,7 @@ public class MetricsFilter implements Filter, BaseFilter.Listener, ScopeModelAwa
         if (collector == null || !collector.isCollectEnabled()) {
             return;
         }
-        MetricsCollectExecutor.throwExecute(collector, invocation, t);
+        metricsInterceptor.throwExecute(invocation, t);
     }
 
 }

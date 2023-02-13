@@ -20,6 +20,8 @@ package org.apache.dubbo.metrics.collector;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.nested.AggregationConfig;
+import org.apache.dubbo.metrics.collector.sample.MethodMetricsCountSampler;
+import org.apache.dubbo.metrics.event.MetricsEvent;
 import org.apache.dubbo.metrics.model.MetricsKey;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
@@ -79,7 +81,6 @@ class AggregateMetricsCollectorTest {
         invocation.setTargetServiceUniqueName(group + "/" + interfaceName + ":" + version);
         invocation.setAttachment(GROUP_KEY, group);
         invocation.setAttachment(VERSION_KEY, version);
-
     }
 
     @AfterEach
@@ -93,11 +94,12 @@ class AggregateMetricsCollectorTest {
         AggregateMetricsCollector collector = new AggregateMetricsCollector(applicationModel);
 
         defaultCollector.setApplicationName(applicationName);
+        MethodMetricsCountSampler methodMetricsCountSampler = defaultCollector.getMethodMetricsCountSampler();
 
-        defaultCollector.increaseTotalRequests(invocation);
-        defaultCollector.increaseSucceedRequests(invocation);
-        defaultCollector.increaseUnknownFailedRequests(invocation);
-        defaultCollector.businessFailedRequests(invocation);
+        methodMetricsCountSampler.incOnEvent(invocation,MetricsEvent.Type.TOTAL);
+        methodMetricsCountSampler.incOnEvent(invocation,MetricsEvent.Type.SUCCEED);
+        methodMetricsCountSampler.incOnEvent(invocation,MetricsEvent.Type.UNKNOWN_FAILED);
+        methodMetricsCountSampler.incOnEvent(invocation,MetricsEvent.Type.BUSINESS_FAILED);
 
         List<MetricSample> samples = collector.collect();
         for (MetricSample sample : samples) {
@@ -129,7 +131,9 @@ class AggregateMetricsCollectorTest {
 
         defaultCollector.setApplicationName(applicationModel.getApplicationName());
 
-        defaultCollector.addRT(invocation, 10L);
+        MethodMetricsCountSampler methodMetricsCountSampler = defaultCollector.getMethodMetricsCountSampler();
+
+        methodMetricsCountSampler.addRT(invocation, 10L);
 
         List<MetricSample> samples = collector.collect();
         for (MetricSample sample : samples) {

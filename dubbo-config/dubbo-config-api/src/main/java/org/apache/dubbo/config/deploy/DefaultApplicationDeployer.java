@@ -364,8 +364,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         // TODO compatible with old usage of metrics, remove protocol check after new metrics is ready for use.
         if (metricsConfig != null && PROTOCOL_PROMETHEUS.equals(metricsConfig.getProtocol())) {
             collector.setCollectEnabled(true);
-            collector.addApplicationInfo(applicationModel.getApplicationName());
-            collector.addThreadPool(applicationModel.getFrameworkModel(), applicationModel.getApplicationName());
+            collector.collectApplication(applicationModel);
             String protocol = metricsConfig.getProtocol();
             if (StringUtils.isNotEmpty(protocol)) {
                 MetricsReporterFactory metricsReporterFactory = getExtensionLoader(MetricsReporterFactory.class).getAdaptiveExtension();

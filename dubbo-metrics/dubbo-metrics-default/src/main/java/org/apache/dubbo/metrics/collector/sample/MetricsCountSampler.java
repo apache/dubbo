@@ -24,7 +24,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.LongAccumulator;
 
-public interface MetricsCountSampler<S, K,M extends Metric> {
+public interface MetricsCountSampler<S, K,M extends Metric> extends MetricsSampler {
 
     void inc(S source, K metricName);
 
