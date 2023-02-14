@@ -76,7 +76,7 @@ public class DeprecatedHandler implements AnnotationProcessingHandler {
 
     /**
      * Generate an expression statement like this:
-     * <code>LoggerFactory.getErrorTypeAwareLogger(XXX.class).warn("0-X", "", "", "....");
+     * <code>DeprecatedMethodInvocationCounter.onDeprecatedMethodCalled("....");
      *
      * @param originalMethodDecl the method declaration that will add logger statement
      * @param apContext annotation processor context
