@@ -71,11 +71,11 @@ public class ProviderAppConditionStateRouterTest {
 
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("sayHello");
-        List<Invoker<String>> result = router.route(invokers, url, invocation, false, new Holder<>());
+        List<Invoker<String>> result = router.route(invokers.clone(), url, invocation, false, new Holder<>());
         Assertions.assertEquals(1, result.size());
 
         invocation.setMethodName("sayHi");
-        result = router.route(invokers, url, invocation, false, new Holder<>());
+        result = router.route(invokers.clone(), url, invocation, false, new Holder<>());
         Assertions.assertEquals(3, result.size());
     }
 
