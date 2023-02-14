@@ -714,6 +714,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 // wait for internal module startup
                 try {
                     future.get(5, TimeUnit.SECONDS);
+                    hasPreparedInternalModule = true;
                 } catch (Exception e) {
                     logger.warn(CONFIG_FAILED_START_MODEL, "", "", "wait for internal module startup failed: " + e.getMessage(), e);
                 }
@@ -770,7 +771,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 dynamicConfiguration = getDynamicConfiguration(configCenter.toUrl());
             } catch (Exception e) {
                 if (!configCenter.isCheck()) {
-                    logger.warn(CONFIG_FAILED_INIT_CONFIG_CENTER, "", "","The configuration center failed to initialize", e);
+                    logger.warn(CONFIG_FAILED_INIT_CONFIG_CENTER, "", "", "The configuration center failed to initialize", e);
                     configCenter.setInitialized(false);
                     return null;
                 } else {
