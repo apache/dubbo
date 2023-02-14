@@ -16,6 +16,14 @@
  */
 package org.apache.dubbo.common.utils;
 
+import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.model.ModuleModel;
+import org.apache.dubbo.rpc.model.ScopeClassLoaderListener;
+
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.GenericArrayType;
@@ -31,14 +39,6 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.config.ApplicationConfig;
-import org.apache.dubbo.rpc.model.FrameworkModel;
-import org.apache.dubbo.rpc.model.ModuleModel;
-import org.apache.dubbo.rpc.model.ScopeClassLoaderListener;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CLASS_DESERIALIZE_ALLOWED_LIST;
 import static org.apache.dubbo.common.constants.CommonConstants.CLASS_DESERIALIZE_BLOCKED_LIST;
@@ -185,7 +185,7 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
             return;
         }
 
-        Set<Class<?>> markedClass = new HashSet<>();
+        Set<Type> markedClass = new HashSet<>();
         markedClass.add(clazz);
 
         addToAllow(clazz.getName());
@@ -221,7 +221,12 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
         }
     }
 
-    private void checkType(Set<Class<?>> markedClass, Type type) {
+    private void checkType(Set<Type> markedClass, Type type) {
+        if (markedClass.contains(type)) {
+            return;
+        }
+
+        markedClass.add(type);
         if (type instanceof Class) {
             checkClass(markedClass, (Class<?>) type);
         } else if (type instanceof ParameterizedType) {
@@ -249,7 +254,7 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
         }
     }
 
-    private void checkClass(Set<Class<?>> markedClass, Class<?> clazz) {
+    private void checkClass(Set<Type> markedClass, Class<?> clazz) {
         if (markedClass.contains(clazz)) {
             return;
         }
