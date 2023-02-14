@@ -54,7 +54,6 @@ import org.apache.dubbo.metadata.report.MetadataReportInstance;
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
 import org.apache.dubbo.metrics.collector.MetricsCollector;
 import org.apache.dubbo.metrics.event.SimpleMetricsEventMulticaster;
-import org.apache.dubbo.metrics.listener.MetricsListener;
 import org.apache.dubbo.metrics.report.MetricsReporter;
 import org.apache.dubbo.metrics.report.MetricsReporterFactory;
 import org.apache.dubbo.metrics.service.MetricsServiceExporter;
@@ -374,15 +373,14 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         if (metricsConfig != null && PROTOCOL_PROMETHEUS.equals(metricsConfig.getProtocol())) {
             collector.setCollectEnabled(true);
 
-            List<MetricsListener> metricsListeners = applicationModel.getExtensionLoader(MetricsListener.class)
-                .getActivateExtensions();
-            metricsListeners.forEach(this.eventMulticaster::addListener);
 
             List<MetricsCollector> customizeCollectors = applicationModel.getExtensionLoader(MetricsCollector.class)
                 .getActivateExtensions();
             for (MetricsCollector customizeCollector : customizeCollectors) {
                 beanFactory.registerBean(customizeCollector);
             }
+            customizeCollectors.forEach(this.eventMulticaster::addListener);
+
 
             collector.collectApplication(applicationModel);
             String protocol = metricsConfig.getProtocol();
@@ -790,7 +788,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 dynamicConfiguration = getDynamicConfiguration(configCenter.toUrl());
             } catch (Exception e) {
                 if (!configCenter.isCheck()) {
-                    logger.warn(CONFIG_FAILED_INIT_CONFIG_CENTER, "", "","The configuration center failed to initialize", e);
+                    logger.warn(CONFIG_FAILED_INIT_CONFIG_CENTER, "", "", "The configuration center failed to initialize", e);
                     configCenter.setInitialized(false);
                     return null;
                 } else {

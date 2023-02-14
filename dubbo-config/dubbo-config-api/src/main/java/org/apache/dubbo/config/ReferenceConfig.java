@@ -34,12 +34,10 @@ import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.registry.client.metadata.MetadataUtils;
-import org.apache.dubbo.registry.client.migration.MigrationInvoker;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.cluster.Cluster;
-import org.apache.dubbo.rpc.cluster.directory.AbstractDirectory;
 import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
 import org.apache.dubbo.rpc.cluster.support.ClusterUtils;
 import org.apache.dubbo.rpc.cluster.support.registry.ZoneAwareCluster;
@@ -773,27 +771,5 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
 
     public Runnable getDestroyRunner() {
         return this::destroy;
-    }
-
-    @Override
-    @Parameter(excluded = true, attribute = false)
-    public int getInvokerNum() {
-        Invoker<?> invoker = getInvoker();
-        if (invoker instanceof MigrationInvoker) {
-            AbstractDirectory<?> directory = (AbstractDirectory<?>) ((MigrationInvoker<?>) invoker).getDirectory();
-            return directory.getAllInvokers().size();
-        }
-        return super.getInvokerNum();
-    }
-
-    @Override
-    @Parameter(excluded = true, attribute = false)
-    public int getValidInvokerNum() {
-        Invoker<?> invoker = getInvoker();
-        if (invoker instanceof MigrationInvoker) {
-            AbstractDirectory<?> directory = (AbstractDirectory<?>) ((MigrationInvoker<?>) invoker).getDirectory();
-            return directory.getValidInvokers().size();
-        }
-        return super.getValidInvokerNum();
     }
 }

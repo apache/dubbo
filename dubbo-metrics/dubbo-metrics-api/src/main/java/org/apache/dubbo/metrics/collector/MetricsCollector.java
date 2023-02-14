@@ -18,6 +18,8 @@
 package org.apache.dubbo.metrics.collector;
 
 import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.metrics.event.MetricsEvent;
+import org.apache.dubbo.metrics.listener.MetricsListener;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 
 import java.util.List;
@@ -27,7 +29,7 @@ import java.util.List;
  * An interface of collector to collect framework internal metrics.
  */
 @SPI
-public interface MetricsCollector {
+public interface MetricsCollector extends MetricsListener {
 
     default boolean isCollectEnabled() {
         return false;
@@ -38,4 +40,9 @@ public interface MetricsCollector {
      * @return List of MetricSample
      */
     List<MetricSample> collect();
+
+    @Override
+    default void onEvent(MetricsEvent event) {
+
+    }
 }
