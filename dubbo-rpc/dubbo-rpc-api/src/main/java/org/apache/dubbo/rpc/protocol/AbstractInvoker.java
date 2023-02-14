@@ -260,12 +260,10 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
              * must call {@link java.util.concurrent.CompletableFuture#get(long, TimeUnit)} because
              * {@link java.util.concurrent.CompletableFuture#get()} was proved to have serious performance drop.
              */
-            Object timeout = invocation.getObjectAttachmentWithoutConvert(TIMEOUT_KEY);
-            if (timeout instanceof Integer) {
-                asyncResult.get((Integer) timeout, TimeUnit.MILLISECONDS);
-            } else {
-                asyncResult.get(Integer.MAX_VALUE, TimeUnit.MILLISECONDS);
-            }
+            Object timeoutKey = invocation.getObjectAttachmentWithoutConvert(TIMEOUT_KEY);
+            int timeout = convertTimeout(timeoutKey, Integer.MAX_VALUE);
+
+            asyncResult.get(timeout, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new RpcException("Interrupted unexpectedly while waiting for remote result to return! method: " +
@@ -288,6 +286,25 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
         } catch (Throwable e) {
             throw new RpcException(e.getMessage(), e);
         }
+    }
+
+    private static int convertTimeout(Object timeoutKey, int defaultValue) {
+        Integer timeout = null;
+        try {
+            if (timeoutKey instanceof Integer) {
+                timeout = (Integer) timeoutKey;
+            } else if (timeoutKey instanceof String) {
+                timeout = Integer.valueOf((String) timeoutKey);
+            } else if (timeoutKey instanceof Number) {
+                timeout = ((Number) timeoutKey).intValue();
+            }
+        } catch (Exception ignore) {
+            // ignore
+        }
+        if (timeout == null) {
+            timeout = Integer.MAX_VALUE;
+        }
+        return timeout;
     }
 
     // -- Protected api
