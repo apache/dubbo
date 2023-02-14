@@ -17,7 +17,8 @@
 
 package org.apache.dubbo.metrics.filter;
 
-import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
+import org.apache.dubbo.metrics.collector.sample.MethodMetricsSampler;
+import org.apache.dubbo.metrics.event.MetricsEvent;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
@@ -26,62 +27,68 @@ import java.util.function.Supplier;
 
 import static org.apache.dubbo.common.constants.MetricsConstants.METRIC_FILTER_START_TIME;
 
-public class MetricsCollectExecutor {
+public class MethodMetricsInterceptor {
 
-    public static void beforeExecute(String applicationName, DefaultMetricsCollector collector, Invocation invocation) {
-        collector.increaseTotalRequests(applicationName, invocation);
-        collector.increaseProcessingRequests(applicationName, invocation);
+    private MethodMetricsSampler sampler;
+
+    public MethodMetricsInterceptor(MethodMetricsSampler sampler) {
+        this.sampler = sampler;
+    }
+
+    public void beforeExecute(Invocation invocation) {
+        sampler.incOnEvent(invocation, MetricsEvent.Type.TOTAL);
+        sampler.incOnEvent(invocation,MetricsEvent.Type.PROCESSING);
         invocation.put(METRIC_FILTER_START_TIME, System.currentTimeMillis());
     }
 
-    public static void postExecute(String applicationName, DefaultMetricsCollector collector, Invocation invocation, Result result) {
+    public void postExecute(Invocation invocation, Result result) {
         if (result.hasException()) {
-            throwExecute(applicationName, collector, invocation, result.getException());
+            throwExecute(invocation, result.getException());
             return;
         }
-        collector.increaseSucceedRequests(applicationName, invocation);
-        endExecute(applicationName, collector, invocation);
+        sampler.incOnEvent(invocation,MetricsEvent.Type.SUCCEED);
+        endExecute(invocation);
     }
 
-    public static void throwExecute(String applicationName, DefaultMetricsCollector collector, Invocation invocation, Throwable throwable) {
+    public void throwExecute(Invocation invocation, Throwable throwable) {
         if (throwable instanceof RpcException) {
             RpcException rpcException = (RpcException) throwable;
             switch (rpcException.getCode()) {
 
                 case RpcException.TIMEOUT_EXCEPTION:
-                    collector.timeoutRequests(applicationName, invocation);
+                    sampler.incOnEvent(invocation,MetricsEvent.Type.REQUEST_TIMEOUT);
                     break;
 
                 case RpcException.LIMIT_EXCEEDED_EXCEPTION:
-                    collector.limitRequests(applicationName, invocation);
+                    sampler.incOnEvent(invocation,MetricsEvent.Type.REQUEST_LIMIT);
                     break;
 
                 case RpcException.BIZ_EXCEPTION:
-                    collector.businessFailedRequests(applicationName, invocation);
+                    sampler.incOnEvent(invocation,MetricsEvent.Type.BUSINESS_FAILED);
                     break;
 
                 default:
-                    collector.increaseUnknownFailedRequests(applicationName, invocation);
+                    sampler.incOnEvent(invocation,MetricsEvent.Type.UNKNOWN_FAILED);
             }
         }
 
-        collector.totalFailedRequests(applicationName, invocation);
+        sampler.incOnEvent(invocation,MetricsEvent.Type.TOTAL_FAILED);
 
-        endExecute(applicationName, collector, invocation, () -> throwable instanceof RpcException && ((RpcException) throwable).isBiz());
+        endExecute(invocation, () -> throwable instanceof RpcException && ((RpcException) throwable).isBiz());
     }
 
-    private static void endExecute(String applicationName, DefaultMetricsCollector collector, Invocation invocation) {
-        endExecute(applicationName, collector, invocation, () -> true);
+    private void endExecute(Invocation invocation) {
+        endExecute(invocation, () -> true);
     }
 
-    private static void endExecute(String applicationName, DefaultMetricsCollector collector, Invocation invocation, Supplier<Boolean> rtStat) {
+    private void endExecute(Invocation invocation, Supplier<Boolean> rtStat) {
         if (rtStat.get()) {
             Long endTime = System.currentTimeMillis();
             Long beginTime = (Long) invocation.get(METRIC_FILTER_START_TIME);
             Long rt = endTime - beginTime;
-            collector.addRT(applicationName, invocation, rt);
+            sampler.addRT(invocation, rt);
         }
-        collector.decreaseProcessingRequests(applicationName, invocation);
+        sampler.dec(invocation,MetricsEvent.Type.PROCESSING);
     }
 
 }
