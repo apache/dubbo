@@ -78,45 +78,47 @@ public class ReferenceBeanSupport {
             interfaceName = defaultInterfaceClass.getName();
         }
         Assert.notEmptyString(interfaceName, "The interface class or name of reference was not found");
+        ProvidedBy providedbBy = null;
         if (defaultInterfaceClass != null) {
-            ProvidedBy providedbBy = (ProvidedBy) defaultInterfaceClass.getAnnotation(ProvidedBy.class);
-            if (providedbBy != null && providedbBy.name() != null && providedbBy.name().length > 0) {
-                int providedByReferenceLength = providedbBy.name().length;
-                Object providedByServices = attributes.get(ReferenceAttributes.PROVIDED_BY);
-                int providedByInterfaceLength = 0;
-                String[] providedByInterfaceServices = null;
-                if (providedByServices != null) {
-                    providedByInterfaceLength = ((String[]) providedByServices).length;
-                    providedByInterfaceServices = (String[]) providedByServices;
-                }
-                String[] providedbByServices = new String[providedByReferenceLength + providedByInterfaceLength];
-                System.arraycopy(providedbBy.name(), 0, providedbByServices, 0, providedByReferenceLength);
-                if (providedByInterfaceLength > 0) {
-                    System.arraycopy(providedByInterfaceServices, 0, providedbByServices, providedByReferenceLength, providedByInterfaceLength);
-                }
-                attributes.put(ReferenceAttributes.PROVIDED_BY, providedbByServices);
-            }
-            attributes.put(ReferenceAttributes.INTERFACE, interfaceName);
-            attributes.remove(ReferenceAttributes.INTERFACE_NAME);
-            attributes.remove(ReferenceAttributes.INTERFACE_CLASS);
-
-            //reset generic value
-            String generic = String.valueOf(defaultInterfaceClass == GenericService.class);
-            String oldGeneric = attributes.containsValue(ReferenceAttributes.GENERIC) ?
-                String.valueOf(attributes.get(ReferenceAttributes.GENERIC)) : "false";
-            if (!StringUtils.isEquals(oldGeneric, generic)) {
-                attributes.put(ReferenceAttributes.GENERIC, generic);
-            }
-
-            //Specially convert @DubboReference attribute name/value to ReferenceConfig property
-            // String[] registry => String registryIds
-            String[] registryIds = (String[]) attributes.get(ReferenceAttributes.REGISTRY);
-            if (registryIds != null) {
-                String value = join(registryIds, ",");
-                attributes.remove(ReferenceAttributes.REGISTRY);
-                attributes.put(ReferenceAttributes.REGISTRY_IDS, value);
-            }
+            providedbBy = (ProvidedBy) defaultInterfaceClass.getAnnotation(ProvidedBy.class);
         }
+        if (providedbBy != null && providedbBy.name() != null && providedbBy.name().length > 0) {
+            int providedByReferenceLength = providedbBy.name().length;
+            Object providedByServices = attributes.get(ReferenceAttributes.PROVIDED_BY);
+            int providedByInterfaceLength = 0;
+            String[] providedByInterfaceServices = null;
+            if (providedByServices != null) {
+                providedByInterfaceLength = ((String[]) providedByServices).length;
+                providedByInterfaceServices = (String[]) providedByServices;
+            }
+            String[] providedbByServices = new String[providedByReferenceLength + providedByInterfaceLength];
+            System.arraycopy(providedbBy.name(), 0, providedbByServices, 0, providedByReferenceLength);
+            if (providedByInterfaceLength > 0) {
+                System.arraycopy(providedByInterfaceServices, 0, providedbByServices, providedByReferenceLength, providedByInterfaceLength);
+            }
+            attributes.put(ReferenceAttributes.PROVIDED_BY, providedbByServices);
+        }
+        attributes.put(ReferenceAttributes.INTERFACE, interfaceName);
+        attributes.remove(ReferenceAttributes.INTERFACE_NAME);
+        attributes.remove(ReferenceAttributes.INTERFACE_CLASS);
+
+        //reset generic value
+        String generic = String.valueOf(defaultInterfaceClass == GenericService.class);
+        String oldGeneric = attributes.containsValue(ReferenceAttributes.GENERIC) ?
+            String.valueOf(attributes.get(ReferenceAttributes.GENERIC)) : "false";
+        if (!StringUtils.isEquals(oldGeneric, generic)) {
+            attributes.put(ReferenceAttributes.GENERIC, generic);
+        }
+
+        //Specially convert @DubboReference attribute name/value to ReferenceConfig property
+        // String[] registry => String registryIds
+        String[] registryIds = (String[]) attributes.get(ReferenceAttributes.REGISTRY);
+        if (registryIds != null) {
+            String value = join(registryIds, ",");
+            attributes.remove(ReferenceAttributes.REGISTRY);
+            attributes.put(ReferenceAttributes.REGISTRY_IDS, value);
+        }
+
     }
 
 
