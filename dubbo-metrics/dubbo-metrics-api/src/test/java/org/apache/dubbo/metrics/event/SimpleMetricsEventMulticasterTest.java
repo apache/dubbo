@@ -18,6 +18,7 @@
 package org.apache.dubbo.metrics.event;
 
 import org.apache.dubbo.metrics.listener.MetricsLifeListener;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,7 +31,7 @@ public class SimpleMetricsEventMulticasterTest {
 
     @BeforeEach
     public void setup() {
-        eventMulticaster = new SimpleMetricsEventMulticaster();
+        eventMulticaster = new SimpleMetricsEventMulticaster(ApplicationModel.defaultModel());
         obj = new Object[]{new Object()};
         eventMulticaster.addListener(event -> obj[0] = new Object());
         requestEvent = new RequestEvent(obj[0], MetricsEvent.Type.TOTAL);

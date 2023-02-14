@@ -52,8 +52,8 @@ import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.metadata.report.MetadataReportFactory;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
-import org.apache.dubbo.metrics.collector.MetricsCollector;
-import org.apache.dubbo.metrics.event.SimpleMetricsEventMulticaster;
+import org.apache.dubbo.metrics.event.GlobalMetricsEventMulticaster;
+import org.apache.dubbo.metrics.event.MetricsEventMulticaster;
 import org.apache.dubbo.metrics.report.MetricsReporter;
 import org.apache.dubbo.metrics.report.MetricsReporterFactory;
 import org.apache.dubbo.metrics.service.MetricsServiceExporter;
@@ -129,7 +129,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     private final Object destroyLock = new Object();
     private final Object internalModuleLock = new Object();
 
-    private SimpleMetricsEventMulticaster eventMulticaster;
+    private MetricsEventMulticaster eventMulticaster;
 
     public DefaultApplicationDeployer(ApplicationModel applicationModel) {
         super(applicationModel);
@@ -362,26 +362,15 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         metricsServiceExporter.init();
     }
 
-    @SuppressWarnings({"rawtypes"})
     private void initMetricsReporter() {
         ScopeBeanFactory beanFactory = applicationModel.getFrameworkModel().getBeanFactory();
         DefaultMetricsCollector collector = beanFactory.getOrRegisterBean(DefaultMetricsCollector.class);
         MetricsConfig metricsConfig = configManager.getMetrics().orElse(null);
-        this.eventMulticaster = beanFactory.getOrRegisterBean(SimpleMetricsEventMulticaster.class);
+        this.eventMulticaster = beanFactory.getOrRegisterBean(GlobalMetricsEventMulticaster.class);
 
         // TODO compatible with old usage of metrics, remove protocol check after new metrics is ready for use.
         if (metricsConfig != null && PROTOCOL_PROMETHEUS.equals(metricsConfig.getProtocol())) {
             collector.setCollectEnabled(true);
-
-
-            List<MetricsCollector> customizeCollectors = applicationModel.getExtensionLoader(MetricsCollector.class)
-                .getActivateExtensions();
-            for (MetricsCollector customizeCollector : customizeCollectors) {
-                beanFactory.registerBean(customizeCollector);
-            }
-            customizeCollectors.forEach(this.eventMulticaster::addListener);
-
-
             collector.collectApplication(applicationModel);
             String protocol = metricsConfig.getProtocol();
             if (StringUtils.isNotEmpty(protocol)) {
