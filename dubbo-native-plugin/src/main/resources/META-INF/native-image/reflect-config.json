@@ -2903,16 +2903,6 @@
     "allPublicMethods": true
   },
   {
-    "name": "org.apache.dubbo.metrics.event.SimpleMetricsEventMulticaster",
-    "allPublicMethods": true,
-    "methods": [
-      {
-        "name": "<init>",
-        "parameterTypes": []
-      }
-    ]
-  },
-  {
     "name": "org.apache.dubbo.metrics.event.GlobalMetricsEventMulticaster",
     "allPublicMethods": true,
     "methods": [
