@@ -230,8 +230,6 @@ public interface LoggerCodeConstants {
 
     String CLUSTER_FAILED_GROUP_MERGE = "2-20";
 
-    String CLUSTER_INVALID_RULE = "2-21";
-
     // Proxy module. 3-1
     String PROXY_FAILED_CONVERT_URL = "3-1";
 
