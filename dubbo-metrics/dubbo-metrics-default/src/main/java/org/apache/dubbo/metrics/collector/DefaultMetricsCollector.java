@@ -43,13 +43,13 @@ import static org.apache.dubbo.metrics.model.MetricsKey.APPLICATION_METRIC_INFO;
  */
 public class DefaultMetricsCollector implements MetricsCollector {
 
-    private AtomicBoolean collectEnabled = new AtomicBoolean(false);
+    private final AtomicBoolean collectEnabled = new AtomicBoolean(false);
     private final SimpleMetricsEventMulticaster eventMulticaster;
-    private MethodMetricsSampler methodSampler = new MethodMetricsSampler(this);
-    private ThreadPoolMetricsSampler threadPoolSampler = new ThreadPoolMetricsSampler(this);
+    private final MethodMetricsSampler methodSampler = new MethodMetricsSampler(this);
+    private final ThreadPoolMetricsSampler threadPoolSampler = new ThreadPoolMetricsSampler(this);
     private String applicationName;
     private ApplicationModel applicationModel;
-    private List<MetricsSampler> samplers = new ArrayList<>();
+    private final List<MetricsSampler> samplers = new ArrayList<>();
 
     public DefaultMetricsCollector() {
         this.eventMulticaster = SimpleMetricsEventMulticaster.getInstance();
