@@ -16,11 +16,21 @@
  */
 package org.apache.dubbo.rpc.cluster.router.xds;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
+
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.Holder;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.registry.xds.util.PilotExchanger;
 import org.apache.dubbo.registry.xds.util.protocol.message.Endpoint;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -35,15 +45,6 @@ import org.apache.dubbo.rpc.cluster.router.xds.rule.HeaderMatcher;
 import org.apache.dubbo.rpc.cluster.router.xds.rule.HttpRequestMatch;
 import org.apache.dubbo.rpc.cluster.router.xds.rule.PathMatcher;
 import org.apache.dubbo.rpc.cluster.router.xds.rule.XdsRouteRule;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.stream.Collectors;
 
 public class XdsRouter<T> extends AbstractStateRouter<T> implements XdsRouteRuleListener, EdsEndpointListener {
 
@@ -61,8 +62,11 @@ public class XdsRouter<T> extends AbstractStateRouter<T> implements XdsRouteRule
 
     private static final String BINARY_HEADER_SUFFIX = "-bin";
 
+    private final boolean isEnable;
+
     public XdsRouter(URL url) {
         super(url);
+        isEnable = PilotExchanger.isEnabled();
         rdsRouteRuleManager = url.getOrDefaultApplicationModel().getBeanFactory().getBean(RdsRouteRuleManager.class);
         edsEndpointManager = url.getOrDefaultApplicationModel().getBeanFactory().getBean(EdsEndpointManager.class);
         subscribeApplications = new ConcurrentHashSet<>();
@@ -74,8 +78,9 @@ public class XdsRouter<T> extends AbstractStateRouter<T> implements XdsRouteRule
     /**
      * @deprecated only for uts
      */
-    protected XdsRouter(URL url, RdsRouteRuleManager rdsRouteRuleManager, EdsEndpointManager edsEndpointManager) {
+    protected XdsRouter(URL url, RdsRouteRuleManager rdsRouteRuleManager, EdsEndpointManager edsEndpointManager, boolean isEnable) {
         super(url);
+        this.isEnable = isEnable;
         this.rdsRouteRuleManager = rdsRouteRuleManager;
         this.edsEndpointManager = edsEndpointManager;
         subscribeApplications = new ConcurrentHashSet<>();
@@ -88,6 +93,13 @@ public class XdsRouter<T> extends AbstractStateRouter<T> implements XdsRouteRule
     protected BitList<Invoker<T>> doRoute(BitList<Invoker<T>> invokers, URL url, Invocation invocation,
                                           boolean needToPrintMessage, Holder<RouterSnapshotNode<T>> nodeHolder,
                                           Holder<String> messageHolder) throws RpcException {
+        if (!isEnable) {
+            if (needToPrintMessage) {
+                messageHolder.set("Directly Return. Reason: Pilot exchanger has not been initialized, may not in mesh mode.");
+            }
+            return invokers;
+        }
+
         if (CollectionUtils.isEmpty(invokers)) {
             if (needToPrintMessage) {
                 messageHolder.set("Directly Return. Reason: Invokers from previous router is empty.");

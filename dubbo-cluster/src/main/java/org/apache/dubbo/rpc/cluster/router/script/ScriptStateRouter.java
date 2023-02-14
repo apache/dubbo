@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.cluster.router.script;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.Holder;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invocation;
@@ -45,8 +46,8 @@ import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_SCRIPT_EXCEPTION;
@@ -64,7 +65,7 @@ public class ScriptStateRouter<T> extends AbstractStateRouter<T> {
     private static final int SCRIPT_ROUTER_DEFAULT_PRIORITY = 0;
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ScriptStateRouter.class);
 
-    private static final Map<String, ScriptEngine> ENGINES = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<String, ScriptEngine> ENGINES = new ConcurrentHashMap<>();
 
     private final ScriptEngine engine;
 
@@ -93,8 +94,8 @@ public class ScriptStateRouter<T> extends AbstractStateRouter<T> {
             Compilable compilable = (Compilable) engine;
             function = compilable.compile(rule);
         } catch (ScriptException e) {
-            logger.error(CLUSTER_SCRIPT_EXCEPTION,"script route rule invalid","","script route error, rule has been ignored. rule: " + rule +
-                ", url: " + RpcContext.getServiceContext().getUrl(),e);
+            logger.error(CLUSTER_SCRIPT_EXCEPTION, "script route rule invalid", "", "script route error, rule has been ignored. rule: " + rule +
+                ", url: " + RpcContext.getServiceContext().getUrl(), e);
         }
     }
 
@@ -115,7 +116,7 @@ public class ScriptStateRouter<T> extends AbstractStateRouter<T> {
     private ScriptEngine getEngine(URL url) {
         String type = url.getParameter(TYPE_KEY, DEFAULT_SCRIPT_TYPE_KEY);
 
-        return ENGINES.computeIfAbsent(type, t -> {
+        return ConcurrentHashMapUtils.computeIfAbsent(ENGINES, type, t -> {
             ScriptEngine scriptEngine = new ScriptEngineManager().getEngineByName(type);
             if (scriptEngine == null) {
                 throw new IllegalStateException("unsupported route engine type: " + type);
@@ -137,8 +138,8 @@ public class ScriptStateRouter<T> extends AbstractStateRouter<T> {
             try {
                 return function.eval(bindings);
             } catch (ScriptException e) {
-                logger.error(CLUSTER_SCRIPT_EXCEPTION,"Scriptrouter exec script error","","Script route error, rule has been ignored. rule: " + rule + ", method:" +
-                    invocation.getMethodName() + ", url: " + RpcContext.getContext().getUrl(),e);
+                logger.error(CLUSTER_SCRIPT_EXCEPTION, "Scriptrouter exec script error", "", "Script route error, rule has been ignored. rule: " + rule + ", method:" +
+                    invocation.getMethodName() + ", url: " + RpcContext.getContext().getUrl(), e);
                 return invokers;
             }
         }, accessControlContext));

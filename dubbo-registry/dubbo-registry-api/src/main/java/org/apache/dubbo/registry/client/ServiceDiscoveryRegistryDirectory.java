@@ -91,7 +91,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
     private final Set<String> providerFirstParams;
     private final ModuleModel moduleModel;
     private final ProtocolServiceKey consumerProtocolServiceKey;
-    private final Map<ProtocolServiceKey, URL> customizedConsumerUrlMap = new ConcurrentHashMap<>();
+    private final ConcurrentMap<ProtocolServiceKey, URL> customizedConsumerUrlMap = new ConcurrentHashMap<>();
 
     public ServiceDiscoveryRegistryDirectory(Class<T> serviceType, URL url) {
         super(serviceType, url);
@@ -282,9 +282,9 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
 
         if (invokerUrls.size() == 1 && EMPTY_PROTOCOL.equals(invokerUrls.get(0).getProtocol())) {
             logger.warn(PROTOCOL_UNSUPPORTED, "", "", "Received url with EMPTY protocol, will clear all available addresses.");
-            routerChain.setInvokers(BitList.emptyList(), () -> {
-                this.forbidden = true; // Forbid to access
-            });
+            refreshRouter(BitList.emptyList(), () ->
+                this.forbidden = true // Forbid to access
+            );
             destroyAllInvokers(); // Close all invokers
         } else {
             this.forbidden = false; // Allow accessing
@@ -312,7 +312,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
             List<Invoker<T>> newInvokers = Collections.unmodifiableList(new ArrayList<>(newUrlInvokerMap.values()));
             BitList<Invoker<T>> finalInvokers = multiGroup ? new BitList<>(toMergeInvokerList(newInvokers)) : new BitList<>(newInvokers);
             // pre-route and build cache
-            routerChain.setInvokers(finalInvokers.clone(), () -> this.setInvokers(finalInvokers));
+            refreshRouter(finalInvokers.clone(), () -> this.setInvokers(finalInvokers));
             this.urlInvokerMap = newUrlInvokerMap;
 
             if (oldUrlInvokerMap != null) {
@@ -401,7 +401,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
                         }
                         if (enabled) {
                             if (shouldWrap) {
-                                URL newConsumerUrl = customizedConsumerUrlMap.computeIfAbsent(matchedProtocolServiceKey,
+                                URL newConsumerUrl = ConcurrentHashMapUtils.computeIfAbsent(customizedConsumerUrlMap, matchedProtocolServiceKey,
                                     k -> consumerUrl.setProtocol(k.getProtocol())
                                         .addParameter(CommonConstants.GROUP_KEY, k.getGroup())
                                         .addParameter(CommonConstants.VERSION_KEY, k.getVersion()));

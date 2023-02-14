@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.RegistryService;
@@ -102,7 +103,7 @@ public abstract class AbstractRegistryService implements RegistryService {
         if (url == null) {
             throw new IllegalArgumentException("url == null");
         }
-        List<URL> urls = registered.computeIfAbsent(service, k -> new CopyOnWriteArrayList<>());
+        List<URL> urls = ConcurrentHashMapUtils.computeIfAbsent(registered, service, k -> new CopyOnWriteArrayList<>());
         if (!urls.contains(url)) {
             urls.add(url);
         }
@@ -162,7 +163,7 @@ public abstract class AbstractRegistryService implements RegistryService {
         if (listener == null) {
             return;
         }
-        List<NotifyListener> listeners = notifyListeners.computeIfAbsent(service, k -> new CopyOnWriteArrayList<>());
+        List<NotifyListener> listeners = ConcurrentHashMapUtils.computeIfAbsent(notifyListeners, service, k -> new CopyOnWriteArrayList<>());
         if (!listeners.contains(listener)) {
             listeners.add(listener);
         }
@@ -202,7 +203,7 @@ public abstract class AbstractRegistryService implements RegistryService {
 
     protected final void notify(String service, List<URL> urls) {
         if (StringUtils.isEmpty(service)
-                || CollectionUtils.isEmpty(urls)) {
+            || CollectionUtils.isEmpty(urls)) {
             return;
         }
         doNotify(service, urls);

@@ -33,7 +33,7 @@ public class Application {
     public static void main(String[] args) {
         System.setProperty("dubbo.application.logger", "log4j");
         System.setProperty("native", "true");
-        System.setProperty("dubbo.json-framework.prefer","fastjson");
+        System.setProperty("dubbo.json-framework.prefer", "fastjson");
         if (isClassic(args)) {
             runWithRefer();
         } else {
@@ -59,9 +59,11 @@ public class Application {
         reference.setInterface(DemoService.class);
         reference.setGeneric("false");
 
+        ProtocolConfig protocolConfig = new ProtocolConfig(CommonConstants.DUBBO, -1);
+        protocolConfig.setSerialization("fastjson2");
         bootstrap.application(applicationConfig)
             .registry(new RegistryConfig("zookeeper://127.0.0.1:2181"))
-            .protocol(new ProtocolConfig(CommonConstants.DUBBO, -1))
+            .protocol(protocolConfig)
             .reference(reference)
             .start();
 

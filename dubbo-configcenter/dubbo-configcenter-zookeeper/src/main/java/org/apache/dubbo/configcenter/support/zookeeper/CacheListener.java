@@ -18,22 +18,24 @@ package org.apache.dubbo.configcenter.support.zookeeper;
 
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * one path has one zookeeperDataListener
  */
 public class CacheListener {
 
-    private Map<String, ZookeeperDataListener> pathKeyListeners = new ConcurrentHashMap<>();
+    private ConcurrentMap<String, ZookeeperDataListener> pathKeyListeners = new ConcurrentHashMap<>();
 
     public CacheListener() {
     }
 
     public ZookeeperDataListener addListener(String pathKey, ConfigurationListener configurationListener, String key, String group) {
-        ZookeeperDataListener zookeeperDataListener = pathKeyListeners.computeIfAbsent(pathKey,
+        ZookeeperDataListener zookeeperDataListener = ConcurrentHashMapUtils.computeIfAbsent(pathKeyListeners, pathKey,
             _pathKey -> new ZookeeperDataListener(_pathKey, key, group));
         zookeeperDataListener.addListener(configurationListener);
         return zookeeperDataListener;

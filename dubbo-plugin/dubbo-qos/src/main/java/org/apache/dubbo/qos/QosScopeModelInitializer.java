@@ -17,6 +17,7 @@
 package org.apache.dubbo.qos;
 
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
+import org.apache.dubbo.qos.command.util.SerializeCheckUtils;
 import org.apache.dubbo.qos.server.Server;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -28,6 +29,7 @@ public class QosScopeModelInitializer implements ScopeModelInitializer {
     public void initializeFrameworkModel(FrameworkModel frameworkModel) {
         ScopeBeanFactory beanFactory = frameworkModel.getBeanFactory();
         beanFactory.registerBean(Server.class);
+        beanFactory.registerBean(SerializeCheckUtils.class);
     }
 
     @Override

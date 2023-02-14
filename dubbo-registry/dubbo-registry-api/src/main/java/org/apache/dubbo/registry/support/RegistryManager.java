@@ -37,7 +37,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_FETCH_INSTANCE;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_UNEXPECTED_EXCEPTION;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
 
 /**
  * Application Level, used to collect Registries
@@ -107,7 +107,7 @@ public class RegistryManager {
                 try {
                     registry.destroy();
                 } catch (Throwable e) {
-                    LOGGER.warn(REGISTRY_UNEXPECTED_EXCEPTION, "", "", e.getMessage(), e);
+                    LOGGER.warn(INTERNAL_ERROR, "unknown error in registry module", "", e.getMessage(), e);
                 }
             }
             registries.clear();

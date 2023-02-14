@@ -56,7 +56,7 @@ public final class AccessLogData {
     /**
      * This is used to store log data in key val format.
      */
-    private Map<String, Object> data;
+    private final Map<String, Object> data;
 
     /**
      * Default constructor.

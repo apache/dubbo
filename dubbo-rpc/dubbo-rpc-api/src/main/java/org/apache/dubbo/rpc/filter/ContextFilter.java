@@ -62,7 +62,7 @@ import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
  */
 @Activate(group = PROVIDER, order = Integer.MIN_VALUE)
 public class ContextFilter implements Filter, Filter.Listener {
-    private Set<PenetrateAttachmentSelector> supportedSelectors;
+    private final Set<PenetrateAttachmentSelector> supportedSelectors;
 
     public ContextFilter(ApplicationModel applicationModel) {
         ExtensionLoader<PenetrateAttachmentSelector> selectorExtensionLoader = applicationModel.getExtensionLoader(PenetrateAttachmentSelector.class);
@@ -126,7 +126,7 @@ public class ContextFilter implements Filter, Filter.Listener {
 
         // merged from dubbox
         // we may already add some attachments into RpcContext before this filter (e.g. in rest protocol)
-        if (attachments != null) {
+        if (CollectionUtils.isNotEmptyMap(attachments)) {
             if (context.getObjectAttachments().size() > 0) {
                 context.getObjectAttachments().putAll(attachments);
             } else {
@@ -135,7 +135,8 @@ public class ContextFilter implements Filter, Filter.Listener {
         }
 
         if (invocation instanceof RpcInvocation) {
-            ((RpcInvocation) invocation).setInvoker(invoker);
+            RpcInvocation rpcInvocation = (RpcInvocation) invocation;
+            rpcInvocation.setInvoker(invoker);
         }
 
         try {

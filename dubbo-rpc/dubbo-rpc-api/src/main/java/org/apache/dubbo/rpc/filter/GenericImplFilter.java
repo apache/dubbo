@@ -16,6 +16,11 @@
  */
 package org.apache.dubbo.rpc.filter;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Type;
+
 import org.apache.dubbo.common.beanutil.JavaBeanAccessor;
 import org.apache.dubbo.common.beanutil.JavaBeanDescriptor;
 import org.apache.dubbo.common.beanutil.JavaBeanSerializeUtil;
@@ -23,6 +28,7 @@ import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.DefaultSerializeClassChecker;
 import org.apache.dubbo.common.utils.PojoUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.rpc.Constants;
@@ -32,19 +38,15 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Type;
-
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE;
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE_ASYNC;
 import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_PARAMETER_DESC;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_FAILED_REFLECT;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_REFLECTIVE_OPERATION_FAILED;
 import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 
 /**
@@ -58,6 +60,12 @@ public class GenericImplFilter implements Filter, Filter.Listener {
     private static final Class<?>[] GENERIC_PARAMETER_TYPES = new Class<?>[]{String.class, String[].class, Object[].class};
 
     private static final String GENERIC_IMPL_MARKER = "GENERIC_IMPL";
+
+    private final ModuleModel moduleModel;
+
+    public GenericImplFilter(ModuleModel moduleModel) {
+        this.moduleModel = moduleModel;
+    }
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
@@ -172,7 +180,9 @@ public class GenericImplFilter implements Filter, Filter.Listener {
                 com.alibaba.dubbo.rpc.service.GenericException exception = (com.alibaba.dubbo.rpc.service.GenericException) appResponse.getException();
                 try {
                     String className = exception.getExceptionClass();
-                    Class<?> clazz = ReflectUtils.forName(className);
+                    DefaultSerializeClassChecker classChecker = moduleModel.getApplicationModel()
+                        .getFrameworkModel().getBeanFactory().getBean(DefaultSerializeClassChecker.class);
+                    Class<?> clazz = classChecker.loadClass(Thread.currentThread().getContextClassLoader(), className);
                     Throwable targetException = null;
                     Throwable lastException = null;
                     try {
@@ -196,7 +206,7 @@ public class GenericImplFilter implements Filter, Filter.Listener {
                             }
                             field.set(targetException, exception.getExceptionMessage());
                         } catch (Throwable e) {
-                            logger.warn(COMMON_FAILED_REFLECT, "", "", e.getMessage(), e);
+                            logger.warn(COMMON_REFLECTIVE_OPERATION_FAILED, "", "", e.getMessage(), e);
                         }
                         appResponse.setException(targetException);
                     } else if (lastException != null) {

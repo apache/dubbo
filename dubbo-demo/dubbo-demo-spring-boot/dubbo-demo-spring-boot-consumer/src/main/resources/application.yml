@@ -14,9 +14,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-dubbo:
+spring:
   application:
     name: dubbo-springboot-demo-consumer
+
+dubbo:
+  application:
+    name: ${spring.application.name}
   protocol:
     name: dubbo
     port: -1
@@ -27,3 +31,8 @@ dubbo:
     address: zookeeper://127.0.0.1:2181
   metadata-report:
     address: zookeeper://127.0.0.1:2181
+
+logging:
+  pattern:
+    level: '%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]'
+

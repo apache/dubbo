@@ -16,15 +16,23 @@
  */
 package org.apache.dubbo.registry.xds.util.protocol.impl;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.registry.xds.util.XdsChannel;
+import org.apache.dubbo.registry.xds.util.AdsObserver;
 import org.apache.dubbo.registry.xds.util.protocol.AbstractProtocol;
 import org.apache.dubbo.registry.xds.util.protocol.delta.DeltaListener;
 import org.apache.dubbo.registry.xds.util.protocol.message.ListenerResult;
 
 import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
+
 import io.envoyproxy.envoy.config.core.v3.Node;
 import io.envoyproxy.envoy.config.listener.v3.Filter;
 import io.envoyproxy.envoy.config.listener.v3.Listener;
@@ -32,20 +40,13 @@ import io.envoyproxy.envoy.extensions.filters.network.http_connection_manager.v3
 import io.envoyproxy.envoy.extensions.filters.network.http_connection_manager.v3.Rds;
 import io.envoyproxy.envoy.service.discovery.v3.DiscoveryResponse;
 
-import java.util.Collections;
-import java.util.Objects;
-import java.util.Set;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
-
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ERROR_RESPONSE_XDS;
 
 public class LdsProtocol extends AbstractProtocol<ListenerResult, DeltaListener> {
-
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(LdsProtocol.class);
 
-    public LdsProtocol(XdsChannel xdsChannel, Node node, int pollingPoolSize, int pollingTimeout) {
-        super(xdsChannel, node, pollingPoolSize, pollingTimeout);
+    public LdsProtocol(AdsObserver adsObserver, Node node, int checkInterval) {
+        super(adsObserver, node, checkInterval);
     }
 
     @Override
@@ -53,30 +54,28 @@ public class LdsProtocol extends AbstractProtocol<ListenerResult, DeltaListener>
         return "type.googleapis.com/envoy.config.listener.v3.Listener";
     }
 
-    public ListenerResult getListeners() {
+    public Map<String, ListenerResult> getListeners() {
         return getResource(null);
     }
 
-    public void observeListeners(Consumer<ListenerResult> consumer) {
-        observeResource(Collections.emptySet(), consumer);
-    }
-
     @Override
-    protected ListenerResult decodeDiscoveryResponse(DiscoveryResponse response) {
+    protected Map<String, ListenerResult> decodeDiscoveryResponse(DiscoveryResponse response) {
         if (getTypeUrl().equals(response.getTypeUrl())) {
             Set<String> set = response.getResourcesList().stream()
                 .map(LdsProtocol::unpackListener)
                 .filter(Objects::nonNull)
-                .flatMap((e) -> decodeResourceToListener(e).stream())
+                .flatMap(e -> decodeResourceToListener(e).stream())
                 .collect(Collectors.toSet());
-            return new ListenerResult(set);
+            Map<String, ListenerResult> listenerDecodeResult = new ConcurrentHashMap<>();
+            listenerDecodeResult.put(emptyResourceName, new ListenerResult(set));
+            return listenerDecodeResult;
         }
-        return new ListenerResult();
+        return new HashMap<>();
     }
 
     private Set<String> decodeResourceToListener(Listener resource) {
         return resource.getFilterChainsList().stream()
-            .flatMap((e) -> e.getFiltersList().stream())
+            .flatMap(e -> e.getFiltersList().stream())
             .map(Filter::getTypedConfig)
             .map(LdsProtocol::unpackHttpConnectionManager)
             .filter(Objects::nonNull)
