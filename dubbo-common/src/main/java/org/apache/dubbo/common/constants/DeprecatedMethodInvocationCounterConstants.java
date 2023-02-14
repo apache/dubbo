@@ -15,15 +15,21 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.annotation.constant;
+package org.apache.dubbo.common.constants;
 
 /**
- * Constants of Annotation Processor.
+ * Constants of Deprecated Method Invocation Counter.
  */
-public final class DeprecatedHandlerConstants {
-    private DeprecatedHandlerConstants() {
-        throw new UnsupportedOperationException("No instance of DeprecatedHandlerConstants for you! ");
+public final class DeprecatedMethodInvocationCounterConstants {
+    private DeprecatedMethodInvocationCounterConstants() {
+        throw new UnsupportedOperationException("No instance of DeprecatedMethodInvocationCounterConstants for you! ");
     }
 
-    public static final String ERROR_CODE = "0-99";
+    public static final String ERROR_CODE = LoggerCodeConstants.COMMON_DEPRECATED_METHOD_INVOKED;
+
+    public static final String POSSIBLE_CAUSE = "invocation of deprecated method";
+
+    public static final String EXTENDED_MESSAGE = "";
+
+    public static final String LOGGER_MESSAGE_PREFIX = "Deprecated method invoked. The method is ";
 }

@@ -15,21 +15,21 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.eci.extractor;
-
-import org.apache.dubbo.eci.model.MethodDefinition;
-
-import java.util.List;
-import java.util.regex.Pattern;
+package org.apache.dubbo.common.constants;
 
 /**
- * Error code extractor interface.
+ * Constants of Deprecated Method Invocation Counter.
  */
-public interface ErrorCodeExtractor {
+public final class DeprecatedMethodInvocationCounterConstants {
+    private DeprecatedMethodInvocationCounterConstants() {
+        throw new UnsupportedOperationException("No instance of DeprecatedMethodInvocationCounterConstants for you! ");
+    }
 
-    Pattern ERROR_CODE_PATTERN = Pattern.compile("\\d+-\\d+");
+    public static final String ERROR_CODE = "99-0";
 
-    List<String> getErrorCodes(String classFilePath);
+    public static final String POSSIBLE_CAUSE = "invocation of deprecated method";
 
-    List<MethodDefinition> getIllegalLoggerMethodInvocations(String classFilePath);
+    public static final String EXTENDED_MESSAGE = "";
+
+    public static final String LOGGER_MESSAGE_PREFIX = "Deprecated method invoked. The method is ";
 }

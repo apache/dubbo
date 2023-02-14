@@ -36,7 +36,7 @@ import java.util.Map;
 /**
  * Utilities of Javassist.
  */
-class JavassistUtils {
+public class JavassistUtils {
     private static final Map<Class, Field> stringFieldCache = new HashMap<>(2, 1);
 
     private static Method getItemMethodCache = null;
@@ -45,7 +45,7 @@ class JavassistUtils {
         throw new UnsupportedOperationException("No instance of JavassistUtils for you! ");
     }
 
-    static ClassFile openClassFile(String classFilePath) {
+    public static ClassFile openClassFile(String classFilePath) {
         try {
             byte[] clsB = FileUtils.openFileAsByteArray(classFilePath);
             return new ClassFile(new DataInputStream(new ByteArrayInputStream(clsB)));
@@ -94,7 +94,7 @@ class JavassistUtils {
         }
     }
 
-    static List<String> getConstPoolStringItems(ConstPool cp) {
+    public static List<String> getConstPoolStringItems(ConstPool cp) {
         List<Object> objects = getConstPoolItems(cp);
         List<String> stringItems = new ArrayList<>(cp.getSize());
 

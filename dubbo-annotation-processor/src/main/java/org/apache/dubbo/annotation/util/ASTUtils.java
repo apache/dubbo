@@ -70,4 +70,42 @@ public final class ASTUtils {
             });
         }
     }
+
+    /**
+     * Insert statement to head of the method.
+     *
+     * @param block the method body
+     * @param originalMethodDecl the method declaration that will add logger statement
+     * @param fullExpressionStatement the statement to insert.
+     */
+    public static void insertStatementToHeadOfMethod(JCTree.JCBlock block,
+                                                     JCTree.JCMethodDecl originalMethodDecl,
+                                                     JCTree.JCStatement fullExpressionStatement) {
+
+        boolean isConstructor = originalMethodDecl.name.toString().equals("<init>");
+        ListBuffer<JCTree.JCStatement> statements = new ListBuffer<>();
+
+        // In constructor, super(...) or this(...) should be the first statement.
+
+        if (isConstructor && !block.stats.isEmpty()) {
+
+            boolean startsWithSuper = block.stats.get(0).toString().startsWith("super(");
+            boolean startsWithThis = block.stats.get(0).toString().startsWith("this(");
+
+            if (startsWithSuper || startsWithThis) {
+                statements.add(block.stats.get(0));
+                statements.add(fullExpressionStatement);
+                statements.addAll(block.stats.subList(1, block.stats.size()));
+            } else {
+                statements.add(fullExpressionStatement);
+                statements.addAll(block.stats);
+            }
+
+        } else {
+            statements.add(fullExpressionStatement);
+            statements.addAll(block.stats);
+        }
+
+        block.stats = statements.toList();
+    }
 }

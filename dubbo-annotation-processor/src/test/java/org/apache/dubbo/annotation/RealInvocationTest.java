@@ -17,11 +17,10 @@
 
 package org.apache.dubbo.annotation;
 
-import org.apache.dubbo.annotation.constant.DeprecatedHandlerConstants;
 import org.apache.dubbo.annotation.util.FileUtils;
-import org.apache.dubbo.eci.extractor.ErrorCodeExtractor;
-import org.apache.dubbo.eci.extractor.JavassistConstantPoolErrorCodeExtractor;
+import org.apache.dubbo.eci.extractor.JavassistUtils;
 
+import javassist.bytecode.ClassFile;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -35,7 +34,7 @@ import java.util.Map;
 class RealInvocationTest {
 
     /**
-     * [File name, Should the error code exist in the class file? ]
+     * [File name, Should the counter exist in the class file? ]
      */
     private static final Map<String, Boolean> FILES = new HashMap<>(5, 1);
 
@@ -45,7 +44,7 @@ class RealInvocationTest {
         FILES.put("TestInterfaceDeprecatedMethod.java", false);
         FILES.put("TestConstructorMethodParentClass.java", false);
         FILES.put("TestConstructorMethodSubClass.java", true);
-    };
+    }
 
     @Test
     void test() {
@@ -55,11 +54,11 @@ class RealInvocationTest {
 
             Assertions.assertTrue(TestingCommons.compileTheSource(filePath), "Compile failed! ");
 
-            ErrorCodeExtractor errorCodeExtractor = new JavassistConstantPoolErrorCodeExtractor();
-            List<String> codes = errorCodeExtractor.getErrorCodes(filePath.replace(".java", ".class"));
+            String classFilePath = filePath.replace(".java", ".class");
+            ClassFile classFile = JavassistUtils.openClassFile(classFilePath);
+            List<String> stringItems = JavassistUtils.getConstPoolStringItems(classFile.getConstPool());
 
-            Assertions.assertEquals(i.getValue(), codes.contains(DeprecatedHandlerConstants.ERROR_CODE), i.getKey());
+            Assertions.assertEquals(i.getValue(), stringItems.contains("org/apache/dubbo/common/DeprecatedMethodInvocationCounter"));
         }
-
     }
 }
