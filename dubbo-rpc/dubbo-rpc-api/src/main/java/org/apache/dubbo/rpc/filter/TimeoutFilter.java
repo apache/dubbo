@@ -51,7 +51,6 @@ public class TimeoutFilter implements Filter, Filter.Listener {
         if (obj != null) {
             TimeoutCountDown countDown = (TimeoutCountDown) obj;
             if (countDown.isExpired()) {
-                ((AppResponse) appResponse).clear(); // clear response in case of timeout.
                 if (logger.isWarnEnabled()) {
                     logger.warn(PROXY_TIMEOUT_REQUEST, "", "", "invoke timed out. method: " + invocation.getMethodName() +
                         " url is " + invoker.getUrl() + ", invoke elapsed " + countDown.elapsedMillis() + " ms.");
