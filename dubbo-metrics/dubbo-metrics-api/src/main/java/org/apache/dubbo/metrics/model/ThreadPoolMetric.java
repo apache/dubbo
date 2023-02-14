@@ -33,7 +33,7 @@ import static org.apache.dubbo.common.constants.MetricsConstants.TAG_THREAD_NAME
 import static org.apache.dubbo.common.utils.NetUtils.getLocalHost;
 import static org.apache.dubbo.common.utils.NetUtils.getLocalHostName;
 
-public class ThreadPoolMetric {
+public class ThreadPoolMetric implements Metric{
 
     private String applicationName;
 
@@ -91,7 +91,6 @@ public class ThreadPoolMetric {
         tags.put(TAG_PID, ConfigUtils.getPid()+"");
         tags.put(TAG_HOSTNAME, getLocalHostName());
         tags.put(TAG_APPLICATION_NAME, applicationName);
-
         tags.put(TAG_THREAD_NAME, threadPoolName);
         return tags;
     }

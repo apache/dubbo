@@ -384,8 +384,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 beanFactory.registerBean(customizeCollector);
             }
 
-            collector.addApplicationInfo(applicationModel.getApplicationName());
-            collector.addThreadPool(applicationModel.getFrameworkModel(), applicationModel.getApplicationName());
+            collector.collectApplication(applicationModel);
             String protocol = metricsConfig.getProtocol();
             if (StringUtils.isNotEmpty(protocol)) {
                 MetricsReporterFactory metricsReporterFactory = getExtensionLoader(MetricsReporterFactory.class).getAdaptiveExtension();
