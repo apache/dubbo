@@ -27,6 +27,11 @@ import org.apache.dubbo.rpc.support.MockScopeModelDestroyListener;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CountDownLatch;
+
 /**
  * {@link ApplicationModel}
  */
@@ -142,6 +147,29 @@ class ApplicationModelTest {
             Assertions.assertEquals("ApplicationModel is destroyed", e.getMessage(), StringUtils.toString(e));
         }
 
+    }
+
+    @Test
+    void testCopyOnWriteArrayListIteratorAndRemove() throws InterruptedException {
+        List<Integer> cur = new ArrayList<>();
+        for (int i = 0; i < 100000; i++) {
+            cur.add(i);
+        }
+        List<Integer> myList = new CopyOnWriteArrayList<>(cur);
+        List<Thread> threads = new ArrayList<>();
+        for (int i = 0; i < 20; i++) {
+            threads.add(new Thread(() -> {
+                for (Integer number : myList) {
+                    if (number % 2 == 0) {
+                        myList.remove(number);
+                    } else {
+                        System.out.println(number);
+                    }
+                }
+            }));
+        }
+        threads.forEach(Thread::start);
+        new CountDownLatch(1).await();
     }
 
 }
