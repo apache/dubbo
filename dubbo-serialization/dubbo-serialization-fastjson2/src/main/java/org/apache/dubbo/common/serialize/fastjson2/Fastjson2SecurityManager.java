@@ -29,7 +29,6 @@ import org.apache.dubbo.common.utils.SerializeSecurityManager;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import com.alibaba.fastjson2.filter.ContextAutoTypeBeforeHandler;
-import com.alibaba.fastjson2.filter.Filter;
 import com.alibaba.fastjson2.util.TypeUtils;
 
 import static com.alibaba.fastjson2.util.TypeUtils.loadClass;
@@ -37,7 +36,7 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_UNT
 import static org.apache.dubbo.common.utils.SerializeCheckStatus.STRICT;
 
 public class Fastjson2SecurityManager implements AllowClassNotifyListener {
-    private volatile Filter securityFilter;
+    private volatile Handler securityFilter;
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(Fastjson2SecurityManager.class);
 
@@ -77,7 +76,7 @@ public class Fastjson2SecurityManager implements AllowClassNotifyListener {
 
     }
 
-    public Filter getSecurityFilter() {
+    public Handler getSecurityFilter() {
         return securityFilter;
     }
 
