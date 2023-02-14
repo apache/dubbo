@@ -180,6 +180,7 @@ public final class FileCacheStoreFactory {
         } catch (Throwable t) {
             logger.warn(COMMON_CACHE_PATH_INACCESSIBLE, "inaccessible of cache path", "",
                 "Failed to create file store cache. Local file cache will be disabled. Cache file name: " + name, t);
+            return FileCacheStore.Empty.getInstance(name);
         }
         return builder.build();
     }
@@ -221,16 +222,6 @@ public final class FileCacheStoreFactory {
         } catch (Throwable t) {
             logger.warn(COMMON_CACHE_PATH_INACCESSIBLE, "inaccessible of cache path", "",
                 "Failed to create file store cache. Local file cache will be disabled. Cache file name: " + name, t);
-        }
-    }
-
-    private static void getFileLock(FileCacheStore.Builder builder, String name,String md5String, boolean enableAddressShorten) {
-        try {
-            tryFileLock(builder, name, md5String, enableAddressShorten);
-        } catch (Throwable t) {
-            logger.warn(COMMON_CACHE_PATH_INACCESSIBLE, "inaccessible of cache path", "",
-                "Failed to create file store cache. Local file cache will be disabled. Cache file name: " + name, t);
-            return;
         }
     }
 
