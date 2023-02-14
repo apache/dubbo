@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_FAILED_RECEIVE_RULE;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_FAILED_RULE_PARSING;
 import static org.apache.dubbo.rpc.cluster.Constants.RULE_VERSION_V30;
 
 public class Tag {
@@ -45,12 +45,12 @@ public class Tag {
                     try {
                         return PojoUtils.mapToPojo(objectMap, ParamMatch.class);
                     } catch (ReflectiveOperationException e) {
-                        logger.error(CLUSTER_FAILED_RECEIVE_RULE, " Failed to parse tag rule ", String.valueOf(objectMap), "Error occurred when parsing rule component.", e);
+                        logger.error(CLUSTER_FAILED_RULE_PARSING, " Failed to parse tag rule ", String.valueOf(objectMap), "Error occurred when parsing rule component.", e);
                     }
                     return null;
                 }).collect(Collectors.toList()));
             } else {
-                logger.warn("It's recommended to use 'match' instead of 'addresses' for v3.0 tag rule.");
+                logger.warn(CLUSTER_FAILED_RULE_PARSING, "", String.valueOf(map), "It's recommended to use 'match' instead of 'addresses' for v3.0 tag rule.");
             }
         }
 

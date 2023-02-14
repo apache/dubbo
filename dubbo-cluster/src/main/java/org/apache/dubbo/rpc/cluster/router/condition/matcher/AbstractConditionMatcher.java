@@ -17,7 +17,7 @@
 package org.apache.dubbo.rpc.cluster.router.condition.matcher;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.cluster.router.condition.matcher.pattern.ValuePattern;
@@ -30,13 +30,14 @@ import java.util.Set;
 
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METHOD_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_FAILED_EXEC_CONDITION_ROUTER;
 
 /**
  * The abstract implementation of ConditionMatcher, records the match and mismatch patterns of this matcher while at the same time
  * provides the common match logics.
  */
 public abstract class AbstractConditionMatcher implements ConditionMatcher {
-    public static final Logger logger = LoggerFactory.getLogger(AbstractConditionMatcher.class);
+    public static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(AbstractConditionMatcher.class);
     public static final String DOES_NOT_FOUND_VALUE = "dubbo_internal_not_found_argument_condition_value";
     final Set<String> matches = new HashSet<>();
     final Set<String> mismatches = new HashSet<>();
@@ -122,7 +123,8 @@ public abstract class AbstractConditionMatcher implements ConditionMatcher {
             }
         }
         // this should never happen.
-        logger.error("There should at least has one ValueMatcher instance that applies to all patterns, will force to use wildcard matcher now.");
+        logger.error(CLUSTER_FAILED_EXEC_CONDITION_ROUTER, "Executing condition rule value match expression error.", "pattern is " + pattern + ", value is " + value + ", condition type " + (isWhenCondition ? "when" : "then"), "There should at least has one ValueMatcher instance that applies to all patterns, will force to use wildcard matcher now.");
+
         ValuePattern paramValueMatcher = model.getExtensionLoader(ValuePattern.class).getExtension("wildcard");
         return paramValueMatcher.match(pattern, value, url, invocation, isWhenCondition);
     }
