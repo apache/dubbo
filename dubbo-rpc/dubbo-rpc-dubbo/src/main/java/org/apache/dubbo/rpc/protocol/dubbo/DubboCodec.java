@@ -133,26 +133,24 @@ public class DubboCodec extends ExchangeCodec {
             return res;
         } else {
             // decode request.
-            Request req = new Request(id);
-            req.setVersion(Version.getProtocolVersion());
-            req.setTwoWay((flag & FLAG_TWOWAY) != 0);
-            if ((flag & FLAG_EVENT) != 0) {
-                req.setEvent(true);
-            }
+            Request req;
             try {
                 Object data;
-                if (req.isEvent()) {
+                if ((flag & FLAG_EVENT) != 0) {
                     byte[] eventPayload = CodecSupport.getPayload(is);
                     if (CodecSupport.isHeartBeat(eventPayload, proto)) {
                         // heart beat response data is always null;
-                        HeartBeatRequest heartBeatRequest = HeartBeatRequest.copyFromRequest(req);
-                        heartBeatRequest.setProto(proto);
-                        return heartBeatRequest;
+                        req = new HeartBeatRequest(id);
+                        ((HeartBeatRequest) req).setProto(proto);
+                        data = null;
                     } else {
+                        req = new Request(id);
                         ObjectInput in = CodecSupport.deserialize(channel.getUrl(), new ByteArrayInputStream(eventPayload), proto);
                         data = decodeEventData(channel, in, eventPayload);
                     }
+                    req.setEvent(true);
                 } else {
+                    req = new HeartBeatRequest(id);
                     DecodeableRpcInvocation inv;
                     if (isDecodeDataInIoThread(channel)) {
                         inv = new DecodeableRpcInvocation(frameworkModel, channel, req, is, proto);
@@ -169,9 +167,12 @@ public class DubboCodec extends ExchangeCodec {
                     log.warn(PROTOCOL_FAILED_DECODE, "", "", "Decode request failed: " + t.getMessage(), t);
                 }
                 // bad request
+                req = new HeartBeatRequest(id);
                 req.setBroken(true);
                 req.setData(t);
             }
+            req.setVersion(Version.getProtocolVersion());
+            req.setTwoWay((flag & FLAG_TWOWAY) != 0);
 
             return req;
         }

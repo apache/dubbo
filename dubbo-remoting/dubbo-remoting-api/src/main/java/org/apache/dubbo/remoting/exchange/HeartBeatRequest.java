@@ -30,14 +30,4 @@ public class HeartBeatRequest extends Request {
     public void setProto(byte proto) {
         this.proto = proto;
     }
-
-    public static HeartBeatRequest copyFromRequest(Request request) {
-        HeartBeatRequest copy = new HeartBeatRequest(request.getId());
-        copy.setVersion(request.getVersion());
-        copy.setTwoWay(request.isTwoWay());
-        copy.setEvent(request.isEvent());
-        copy.setBroken(request.isBroken());
-        copy.setData(request.getData());
-        return copy;
-    }
 }

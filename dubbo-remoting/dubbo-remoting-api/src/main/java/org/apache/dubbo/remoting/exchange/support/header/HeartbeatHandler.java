@@ -67,17 +67,12 @@ public class HeartbeatHandler extends AbstractChannelHandlerDelegate {
     public void received(Channel channel, Object message) throws RemotingException {
         setReadTimestamp(channel);
         if (isHeartbeatRequest(message)) {
-            Request req = (Request) message;
+            HeartBeatRequest req = (HeartBeatRequest) message;
             if (req.isTwoWay()) {
-                Response res;
-                if (req instanceof HeartBeatRequest) {
-                    res = new HeartBeatResponse(req.getId(), req.getVersion());
-                    res.setEvent(HEARTBEAT_EVENT);
-                    ((HeartBeatResponse) res).setProto(((HeartBeatRequest) req).getProto());
-                } else {
-                    res = new Response(req.getId(), req.getVersion());
-                    res.setEvent(HEARTBEAT_EVENT);
-                }
+                HeartBeatResponse res;
+                res = new HeartBeatResponse(req.getId(), req.getVersion());
+                res.setEvent(HEARTBEAT_EVENT);
+                res.setProto(req.getProto());
                 channel.send(res);
                 if (logger.isDebugEnabled()) {
                     int heartbeat = channel.getUrl().getParameter(Constants.HEARTBEAT_KEY, 0);
@@ -114,7 +109,7 @@ public class HeartbeatHandler extends AbstractChannelHandlerDelegate {
     }
 
     private boolean isHeartbeatRequest(Object message) {
-        return message instanceof Request && ((Request) message).isHeartbeat();
+        return message instanceof HeartBeatRequest && ((Request) message).isHeartbeat();
     }
 
     private boolean isHeartbeatResponse(Object message) {
