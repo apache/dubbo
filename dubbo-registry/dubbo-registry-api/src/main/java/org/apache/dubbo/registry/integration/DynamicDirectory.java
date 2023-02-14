@@ -46,9 +46,9 @@ import org.apache.dubbo.rpc.model.ModuleModel;
 import java.util.List;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_FAILED_SITE_SELECTION;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_DESTROY_SERVICE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_DESTROY_UNREGISTER_URL;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_FAILED_SITE_SELECTION;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONSUMERS_CATEGORY;
 import static org.apache.dubbo.registry.Constants.REGISTER_KEY;
@@ -81,7 +81,7 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
     /**
      * Initialization at construction time, assertion not null, and always assign non-null value
      */
-    protected final URL directoryUrl;
+    protected URL directoryUrl;
     protected final boolean multiGroup;
 
     /**
@@ -232,7 +232,7 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
      */
     @Override
     public URL getConsumerUrl() {
-        return this.consumerUrl;
+        return this.directoryUrl;
     }
 
     /**
@@ -374,4 +374,7 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
     }
 
     protected abstract void destroyAllInvokers();
+
+    protected abstract void refreshOverrideAndInvoker(List<URL> urls);
+
 }

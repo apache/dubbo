@@ -92,7 +92,7 @@ public class TagRouterRule extends AbstractRouterRule {
                     invokers.forEach(invoker -> {
                         boolean isMatch = true;
                         for (ParamMatch matcher : paramMatchers) {
-                            if (!matcher.isMatch(invoker.getUrl().getParameter(matcher.getKey()))) {
+                            if (!matcher.isMatch(invoker.getUrl().getOriginalParameter(matcher.getKey()))) {
                                 isMatch = false;
                                 break;
                             }

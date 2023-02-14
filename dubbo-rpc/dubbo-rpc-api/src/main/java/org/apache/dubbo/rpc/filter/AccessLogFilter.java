@@ -21,6 +21,7 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.utils.ConfigUtils;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Constants;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
@@ -40,12 +41,12 @@ import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FILTER_VALIDATION_EXCEPTION;
-import static org.apache.dubbo.rpc.Constants.ACCESS_LOG_KEY;
 
 /**
  * Record access log for the service.
@@ -61,7 +62,7 @@ import static org.apache.dubbo.rpc.Constants.ACCESS_LOG_KEY;
  * &lt;/logger&gt;
  * </pre></code>
  */
-@Activate(group = PROVIDER, value = ACCESS_LOG_KEY)
+@Activate(group = PROVIDER)
 public class AccessLogFilter implements Filter {
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(AccessLogFilter.class);
@@ -80,6 +81,7 @@ public class AccessLogFilter implements Filter {
     private final Map<String, Queue<AccessLogData>> logEntries = new ConcurrentHashMap<>();
 
     private AtomicBoolean scheduled = new AtomicBoolean();
+    private ScheduledFuture<?> future;
 
     private static final String LINE_SEPARATOR = "line.separator";
 
@@ -100,18 +102,20 @@ public class AccessLogFilter implements Filter {
      */
     @Override
     public Result invoke(Invoker<?> invoker, Invocation inv) throws RpcException {
+        String accessLogKey = invoker.getUrl().getParameter(Constants.ACCESS_LOG_KEY);
+        if (StringUtils.isEmpty(accessLogKey)) {
+            return invoker.invoke(inv);
+        }
+
         if (scheduled.compareAndSet(false, true)) {
-            inv.getModuleModel().getApplicationModel().getFrameworkModel().getBeanFactory()
+            future = inv.getModuleModel().getApplicationModel().getFrameworkModel().getBeanFactory()
                 .getBean(FrameworkExecutorRepository.class).getSharedScheduledExecutor()
                 .scheduleWithFixedDelay(this::writeLogToFile, LOG_OUTPUT_INTERVAL, LOG_OUTPUT_INTERVAL, TimeUnit.MILLISECONDS);
+            logger.info("Access log task started ...");
         }
         Optional<AccessLogData> optionalAccessLogData = Optional.empty();
-        String accessLogKey = null;
         try {
-            accessLogKey = invoker.getUrl().getParameter(Constants.ACCESS_LOG_KEY);
-            if (ConfigUtils.isNotEmpty(accessLogKey)) {
-                optionalAccessLogData = Optional.of(buildAccessLogData(invoker, inv));
-            }
+            optionalAccessLogData = Optional.of(buildAccessLogData(invoker, inv));
         } catch (Throwable t) {
             logger.warn(CONFIG_FILTER_VALIDATION_EXCEPTION, "", "", "Exception in AccessLogFilter of service(" + invoker + " -> " + inv + ")", t);
         }

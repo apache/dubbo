@@ -277,7 +277,7 @@ public class ConditionStateRouter<T> extends AbstractStateRouter<T> {
     }
 
     private boolean doMatch(URL url, URL param, Invocation invocation, Map<String, ConditionMatcher> conditions, boolean isWhenCondition) {
-        Map<String, String> sample = url.toMap();
+        Map<String, String> sample = url.toOriginalMap();
         for (Map.Entry<String, ConditionMatcher> entry : conditions.entrySet()) {
             ConditionMatcher matchPair = entry.getValue();
             if (!matchPair.isMatch(sample, param, invocation, isWhenCondition)) {

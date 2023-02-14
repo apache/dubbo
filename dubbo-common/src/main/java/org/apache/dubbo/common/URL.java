@@ -533,6 +533,10 @@ class URL implements Serializable {
         return path;
     }
 
+    public Map<String, String> getOriginalParameters() {
+        return this.getParameters();
+    }
+
     public Map<String, String> getParameters() {
         return urlParam.getParameters();
     }
@@ -565,6 +569,10 @@ class URL implements Serializable {
 
     public String getParameterAndDecoded(String key, String defaultValue) {
         return decode(getParameter(key, defaultValue));
+    }
+
+    public String getOriginalParameter(String key) {
+        return getParameter(key);
     }
 
     public String getParameter(String key) {
@@ -1098,8 +1106,17 @@ class URL implements Serializable {
         return urlParam.getParameter(key);
     }
 
+    public Map<String, String> toOriginalMap() {
+        Map<String, String> map = new HashMap<>(getOriginalParameters());
+        return addSpecialKeys(map);
+    }
+
     public Map<String, String> toMap() {
         Map<String, String> map = new HashMap<>(getParameters());
+        return addSpecialKeys(map);
+    }
+
+    private Map<String, String> addSpecialKeys(Map<String, String> map) {
         if (getProtocol() != null) {
             map.put(PROTOCOL_KEY, getProtocol());
         }
@@ -1600,8 +1617,16 @@ class URL implements Serializable {
     }
 
     /* add service scope operations, see InstanceAddressURL */
+    public Map<String, String> getOriginalServiceParameters(String service) {
+        return getServiceParameters(service);
+    }
+
     public Map<String, String> getServiceParameters(String service) {
         return getParameters();
+    }
+
+    public String getOriginalServiceParameter(String service, String key) {
+        return this.getServiceParameter(service, key);
     }
 
     public String getServiceParameter(String service, String key) {

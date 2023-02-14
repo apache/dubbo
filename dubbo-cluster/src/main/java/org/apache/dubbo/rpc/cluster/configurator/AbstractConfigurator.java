@@ -147,6 +147,12 @@ public abstract class AbstractConfigurator implements Configurator {
         return url;
     }
 
+    /**
+     * Check if v2.7 configurator rule is set and can be matched.
+     *
+     * @param url the configurator rule url
+     * @return true if v2.7 configurator rule is not set or the rule can be matched.
+     */
     private boolean isV27ConditionMatchOrUnset(URL url) {
         String providers = configuratorUrl.getParameter(OVERRIDE_PROVIDERS_KEY);
         if (StringUtils.isNotEmpty(providers)) {
