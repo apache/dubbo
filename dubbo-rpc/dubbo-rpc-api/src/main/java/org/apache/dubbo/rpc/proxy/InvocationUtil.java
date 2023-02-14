@@ -56,11 +56,21 @@ public class InvocationUtil {
                 return invoker.invoke(rpcInvocation).recreate();
             } finally {
                 Profiler.release(bizProfiler);
-                int timeout;
+                Integer timeout = null;
                 Object timeoutKey = rpcInvocation.getObjectAttachmentWithoutConvert(TIMEOUT_KEY);
-                if (timeoutKey instanceof Integer) {
-                    timeout = (Integer) timeoutKey;
-                } else {
+                try {
+                    if (timeoutKey instanceof Integer) {
+                        timeout = (Integer) timeoutKey;
+                    } else if (timeoutKey instanceof String) {
+                        timeout = Integer.valueOf((String) timeoutKey);
+                    } else if (timeoutKey instanceof Number) {
+                        timeout = ((Number) timeoutKey).intValue();
+                    }
+                } catch (Exception ignore) {
+                    // ignore
+                }
+
+                if (timeout == null) {
                     timeout = url.getMethodPositiveParameter(rpcInvocation.getMethodName(),
                         TIMEOUT_KEY,
                         DEFAULT_TIMEOUT);
