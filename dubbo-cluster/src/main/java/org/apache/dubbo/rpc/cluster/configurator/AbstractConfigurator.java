@@ -162,6 +162,7 @@ public abstract class AbstractConfigurator implements Configurator {
                 if (address.equals(url.getAddress())
                     || address.equals(ANYHOST_VALUE)
                     || address.equals(ANYHOST_VALUE + ":" + ANY_VALUE)
+                    || address.equals(ANYHOST_VALUE + ":" + url.getPort())
                     || address.equals(url.getHost())) {
                     match = true;
                 }
