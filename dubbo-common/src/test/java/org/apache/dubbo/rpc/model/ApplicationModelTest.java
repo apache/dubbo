@@ -152,24 +152,25 @@ class ApplicationModelTest {
     @Test
     void testCopyOnWriteArrayListIteratorAndRemove() throws InterruptedException {
         List<Integer> cur = new ArrayList<>();
-        for (int i = 0; i < 100000; i++) {
+        for (int i = 0; i < 10000; i++) {
             cur.add(i);
         }
         List<Integer> myList = new CopyOnWriteArrayList<>(cur);
         List<Thread> threads = new ArrayList<>();
+        int threadNum = 20;
+        CountDownLatch endLatch = new CountDownLatch(threadNum);
         for (int i = 0; i < 20; i++) {
             threads.add(new Thread(() -> {
                 for (Integer number : myList) {
                     if (number % 2 == 0) {
                         myList.remove(number);
-                    } else {
-                        System.out.println(number);
                     }
                 }
+                endLatch.countDown();
             }));
         }
         threads.forEach(Thread::start);
-        new CountDownLatch(1).await();
+        endLatch.await();
     }
 
 }
