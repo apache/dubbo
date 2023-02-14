@@ -59,8 +59,8 @@ class FileCacheStoreTest {
     }
 
     @Test
-    void testCache2(){
-        String basePath = "/Users/aming/.dubbo";
+    void testCache2() throws Exception {
+        String basePath = getDirectoryOfClassPath();
         String filePrefix = ".metadata";
         String suffix = "dubbo-demo-api-provider-2.zookeeper.127.0.0.1:2181";
         String shortFilePath = filePrefix + "." + suffix;
@@ -72,7 +72,7 @@ class FileCacheStoreTest {
         if (!cacheName.endsWith(SUFFIX)) {
             cacheName = cacheName + SUFFIX;
         }
-        String expectValue1 = basePath + "/" + filePrefix + "." + md5Utils.getMd5(cacheName);
+        String expectValue1 = basePath  + filePrefix + "." + md5Utils.getMd5(cacheName);
         Assertions.assertEquals(fileCacheStore.getCacheFilePath(), expectValue1);
         fileCacheStore.destroy();
 
@@ -89,7 +89,7 @@ class FileCacheStoreTest {
         if (!expectLongFilePath.endsWith(SUFFIX)) {
             expectLongFilePath = expectLongFilePath + SUFFIX;
         }
-        String expectLongPathValue = basePath + "/" + longFilePrefix + "." + md5Utils.getMd5String16Bit(expectLongFilePath);
+        String expectLongPathValue = basePath  + longFilePrefix + "." + md5Utils.getMd5String16Bit(expectLongFilePath);
         Assertions.assertEquals(longfilePathCacheStore.getCacheFilePath(), expectLongPathValue);
         longfilePathCacheStore.destroy();
         System.setProperty(CommonConstants.File_ADDRESS_SHORTENED, "false");

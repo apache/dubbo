@@ -135,13 +135,6 @@ public final class FileCacheStoreFactory {
         }
     }
 
-
-    public static void main(String[] args) {
-        MD5Utils md5Utils = new MD5Utils();
-        System.out.println("/Users/aming/.dubbo/.metadata" + File.separator + md5Utils.getMd5("b5c91baccb83c8786f7e33a84e1c417e"));
-        ;
-    }
-
     /**
      * sanitize a name for valid file or directory name
      *
