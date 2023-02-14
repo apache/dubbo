@@ -229,9 +229,8 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     private void initModuleDeployers() {
         // make sure created default module
         applicationModel.getDefaultModule();
-        // copy modules and initialize avoid ConcurrentModificationException if add new module
-        List<ModuleModel> moduleModels = new ArrayList<>(applicationModel.getModuleModels());
-        for (ModuleModel moduleModel : moduleModels) {
+        // deployer initialize
+        for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
             moduleModel.getDeployer().initialize();
         }
     }
@@ -513,7 +512,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
      */
     private boolean supportsExtension(Class<?> extensionClass, String name) {
         if (isNotEmpty(name)) {
-            ExtensionLoader extensionLoader = getExtensionLoader(extensionClass);
+            ExtensionLoader<?> extensionLoader = getExtensionLoader(extensionClass);
             return extensionLoader.hasExtension(name);
         }
         return false;
@@ -673,7 +672,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         prepareInternalModule();
 
         // filter and start pending modules, ignore new module during starting, throw exception of module start
-        for (ModuleModel moduleModel : new ArrayList<>(applicationModel.getModuleModels())) {
+        for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
             if (moduleModel.getDeployer().isPending()) {
                 moduleModel.getDeployer().start();
             }
@@ -1146,5 +1145,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     private ApplicationConfig getApplication() {
         return configManager.getApplicationOrElseThrow();
     }
+
 
 }
