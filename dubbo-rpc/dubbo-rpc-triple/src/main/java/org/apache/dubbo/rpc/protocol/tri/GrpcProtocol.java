@@ -14,15 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.grpc.interceptors;
 
-import org.apache.dubbo.common.extension.ExtensionScope;
-import org.apache.dubbo.common.extension.SPI;
+package org.apache.dubbo.rpc.protocol.tri;
 
-/**
- * Adapt to the standard Dubbo SPI, so that we can leverage the advantages of Dubbo ExtensionLoader.
- */
-@SPI(scope = ExtensionScope.FRAMEWORK)
-public interface ServerTransportFilter {
-    io.grpc.ServerTransportFilter grpcTransportFilter();
+import org.apache.dubbo.rpc.model.FrameworkModel;
+
+public class GrpcProtocol extends TripleProtocol {
+
+    public GrpcProtocol(FrameworkModel frameworkModel) {
+        super(frameworkModel);
+    }
 }

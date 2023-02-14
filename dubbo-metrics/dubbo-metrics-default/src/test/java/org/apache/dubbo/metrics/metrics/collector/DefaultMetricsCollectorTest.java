@@ -19,6 +19,7 @@ package org.apache.dubbo.metrics.metrics.collector;
 
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
+import org.apache.dubbo.metrics.collector.sample.MethodMetricsSampler;
 import org.apache.dubbo.metrics.event.MetricsEvent;
 import org.apache.dubbo.metrics.event.RTEvent;
 import org.apache.dubbo.metrics.event.RequestEvent;
@@ -87,11 +88,14 @@ class DefaultMetricsCollectorTest {
     void testRequestsMetrics() {
         DefaultMetricsCollector collector = new DefaultMetricsCollector();
         collector.setCollectEnabled(true);
-        String applicationName = applicationModel.getApplicationName();
-        collector.increaseTotalRequests(applicationName, invocation);
-        collector.increaseProcessingRequests(applicationName, invocation);
-        collector.increaseSucceedRequests(applicationName, invocation);
-        collector.increaseUnknownFailedRequests(applicationName, invocation);
+        collector.setApplicationName(applicationModel.getApplicationName());
+
+        MethodMetricsSampler methodMetricsCountSampler = collector.getMethodSampler();
+
+        methodMetricsCountSampler.incOnEvent(invocation,MetricsEvent.Type.TOTAL);
+        methodMetricsCountSampler.incOnEvent(invocation,MetricsEvent.Type.PROCESSING);
+        methodMetricsCountSampler.incOnEvent(invocation,MetricsEvent.Type.SUCCEED);
+        methodMetricsCountSampler.incOnEvent(invocation,MetricsEvent.Type.UNKNOWN_FAILED);
 
         List<MetricSample> samples = collector.collect();
         for (MetricSample sample : samples) {
@@ -110,7 +114,7 @@ class DefaultMetricsCollectorTest {
             Assertions.assertEquals(supplier.get().longValue(), 1);
         }
 
-        collector.decreaseProcessingRequests(applicationName, invocation);
+        methodMetricsCountSampler.dec(invocation,MetricsEvent.Type.PROCESSING);
         samples = collector.collect();
         List<MetricSample> samples1 = new ArrayList<>();
         for (MetricSample sample : samples) {
@@ -131,9 +135,13 @@ class DefaultMetricsCollectorTest {
     void testRTMetrics() {
         DefaultMetricsCollector collector = new DefaultMetricsCollector();
         collector.setCollectEnabled(true);
+        MethodMetricsSampler methodMetricsCountSampler = collector.getMethodSampler();
         String applicationName = applicationModel.getApplicationName();
-        collector.addRT(applicationName, invocation, 10L);
-        collector.addRT(applicationName, invocation, 0L);
+
+        collector.setApplicationName(applicationName);
+
+        methodMetricsCountSampler.addRT(invocation, 10L);
+        methodMetricsCountSampler.addRT(invocation, 0L);
 
         List<MetricSample> samples = collector.collect();
         for (MetricSample sample : samples) {
@@ -169,18 +177,19 @@ class DefaultMetricsCollectorTest {
     @Test
     void testListener() {
         DefaultMetricsCollector collector = new DefaultMetricsCollector();
+        MethodMetricsSampler methodMetricsCountSampler = collector.getMethodSampler();
         collector.setCollectEnabled(true);
 
         MockListener mockListener = new MockListener();
         collector.addListener(mockListener);
-        String applicationName = applicationModel.getApplicationName();
+        collector.setApplicationName(applicationModel.getApplicationName());
 
-        collector.increaseTotalRequests(applicationName, invocation);
+        methodMetricsCountSampler.incOnEvent(invocation,MetricsEvent.Type.TOTAL);
         Assertions.assertNotNull(mockListener.getCurEvent());
         Assertions.assertTrue(mockListener.getCurEvent() instanceof RequestEvent);
         Assertions.assertEquals(((RequestEvent) mockListener.getCurEvent()).getType(), MetricsEvent.Type.TOTAL);
 
-        collector.addRT(applicationName, invocation, 5L);
+        methodMetricsCountSampler.addRT(invocation, 5L);
         Assertions.assertTrue(mockListener.getCurEvent() instanceof RTEvent);
         Assertions.assertEquals(((RTEvent) mockListener.getCurEvent()).getRt(), 5L);
     }

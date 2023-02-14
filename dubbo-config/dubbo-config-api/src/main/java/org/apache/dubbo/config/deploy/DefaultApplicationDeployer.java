@@ -17,7 +17,6 @@
 package org.apache.dubbo.config.deploy;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.config.ReferenceCache;
@@ -365,8 +364,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         // TODO compatible with old usage of metrics, remove protocol check after new metrics is ready for use.
         if (metricsConfig != null && PROTOCOL_PROMETHEUS.equals(metricsConfig.getProtocol())) {
             collector.setCollectEnabled(true);
-            collector.addApplicationInfo(applicationModel.getApplicationName(), Version.getVersion());
-            collector.addThreadPool(applicationModel.getFrameworkModel(), applicationModel.getApplicationName());
+            collector.collectApplication(applicationModel);
             String protocol = metricsConfig.getProtocol();
             if (StringUtils.isNotEmpty(protocol)) {
                 MetricsReporterFactory metricsReporterFactory = getExtensionLoader(MetricsReporterFactory.class).getAdaptiveExtension();
@@ -716,6 +714,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 // wait for internal module startup
                 try {
                     future.get(5, TimeUnit.SECONDS);
+                    hasPreparedInternalModule = true;
                 } catch (Exception e) {
                     logger.warn(CONFIG_FAILED_START_MODEL, "", "", "wait for internal module startup failed: " + e.getMessage(), e);
                 }
@@ -772,7 +771,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 dynamicConfiguration = getDynamicConfiguration(configCenter.toUrl());
             } catch (Exception e) {
                 if (!configCenter.isCheck()) {
-                    logger.warn(CONFIG_FAILED_INIT_CONFIG_CENTER, "", "","The configuration center failed to initialize", e);
+                    logger.warn(CONFIG_FAILED_INIT_CONFIG_CENTER, "", "", "The configuration center failed to initialize", e);
                     configCenter.setInitialized(false);
                     return null;
                 } else {
