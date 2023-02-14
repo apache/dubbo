@@ -366,7 +366,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         ScopeBeanFactory beanFactory = applicationModel.getFrameworkModel().getBeanFactory();
         DefaultMetricsCollector collector = beanFactory.getOrRegisterBean(DefaultMetricsCollector.class);
         MetricsConfig metricsConfig = configManager.getMetrics().orElse(null);
-        this.eventMulticaster = beanFactory.getOrRegisterBean(GlobalMetricsEventMulticaster.class);
+        beanFactory.registerBean(GlobalMetricsEventMulticaster.class);
 
         // TODO compatible with old usage of metrics, remove protocol check after new metrics is ready for use.
         if (metricsConfig != null && PROTOCOL_PROMETHEUS.equals(metricsConfig.getProtocol())) {
