@@ -16,18 +16,19 @@
  */
 package org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.match;
 
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 
 import java.net.UnknownHostException;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_FAILED_EXEC_CONDITION_ROUTER;
 import static org.apache.dubbo.common.utils.NetUtils.matchIpExpression;
 import static org.apache.dubbo.common.utils.UrlUtils.isMatchGlobPattern;
 
 public class AddressMatch {
-    public static final Logger logger = LoggerFactory.getLogger(AddressMatch.class);
+    public static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(AddressMatch.class);
     private String wildcard;
     private String cird;
     private String exact;
@@ -61,7 +62,7 @@ public class AddressMatch {
             try {
                 return input.equals(getCird()) || matchIpExpression(getCird(), input);
             } catch (UnknownHostException e) {
-                logger.error(String.format("Error trying to match cird formatted address %s with input %s in AddressMatch.", getCird(), input), e);
+                logger.error(CLUSTER_FAILED_EXEC_CONDITION_ROUTER, "Executing routing rule match expression error.", "", String.format("Error trying to match cird formatted address %s with input %s in AddressMatch.", getCird(), input), e);
             }
         }
         if (getWildcard() != null && input != null) {
