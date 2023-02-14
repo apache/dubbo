@@ -18,6 +18,7 @@
 package org.apache.dubbo.metrics.model.sample;
 
 import org.apache.dubbo.metrics.model.MetricsCategory;
+import org.apache.dubbo.metrics.model.MetricsKey;
 
 import java.util.Map;
 import java.util.function.Supplier;
@@ -29,14 +30,12 @@ public class GaugeMetricSample extends MetricSample {
 
     private Supplier<Number> supplier;
 
-    public GaugeMetricSample(Map<String, String> tags, MetricsCategory category, Supplier<Number> supplier, String name,
-                             String description) {
-        super(name, description, tags, Type.GAUGE, category);
+    public GaugeMetricSample(MetricsKey metricsKey, Map<String, String> tags, MetricsCategory category, Supplier<Number> supplier) {
+        super(metricsKey.getName(), metricsKey.getDescription(), tags, Type.GAUGE, category);
         this.supplier = supplier;
     }
 
-    public GaugeMetricSample(String name, String description, Map<String, String> tags, MetricsCategory category,
-                             String baseUnit, Supplier<Number> supplier) {
+    public GaugeMetricSample(String name, String description, Map<String, String> tags, MetricsCategory category, String baseUnit, Supplier<Number> supplier) {
         super(name, description, tags, Type.GAUGE, category, baseUnit);
         this.supplier = supplier;
     }
