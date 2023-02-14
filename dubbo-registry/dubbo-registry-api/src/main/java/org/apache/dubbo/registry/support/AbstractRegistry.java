@@ -135,7 +135,7 @@ public abstract class AbstractRegistry implements Registry {
             syncSaveFile = url.getParameter(REGISTRY_FILESAVE_SYNC_KEY, false);
 
             OperatingSystemBeanManager.OS os = OperatingSystemBeanManager.getOS();
-            if (os != Windows || "true".equals(System.getProperty(CommonConstants.File_ADDRESS_SHORTENED, "false"))) {
+            if (os == Windows || "true".equals(System.getProperty(CommonConstants.File_ADDRESS_SHORTENED, "false"))) {
                 String appAndAddressName = url.getApplication() + "-" + url.getAddress().replaceAll(":", "-");
                 MD5Utils md5Utils = new MD5Utils();
 
@@ -289,7 +289,7 @@ public abstract class AbstractRegistry implements Registry {
         } catch (Throwable e) {
             if (e instanceof IOException) {
                 OperatingSystemBeanManager.OS os = OperatingSystemBeanManager.getOS();
-                if (os != Windows || "true".equals(System.getProperty(CommonConstants.File_ADDRESS_SHORTENED, "false"))) {
+                if (os == Windows || "true".equals(System.getProperty(CommonConstants.File_ADDRESS_SHORTENED, "false"))) {
                     if (appAndAddressNameMd5String.length() == 32) {
                         appAndAddressNameMd5String = appAndAddressNameMd5String.substring(8, 24);
                         String defaultFilename = System.getProperty(USER_HOME) + DUBBO_REGISTRY + appAndAddressNameMd5String + CACHE;
