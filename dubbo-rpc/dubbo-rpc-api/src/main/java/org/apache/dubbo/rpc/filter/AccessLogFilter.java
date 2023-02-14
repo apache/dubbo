@@ -42,8 +42,8 @@ import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -83,7 +83,7 @@ public class AccessLogFilter implements Filter {
     private final ConcurrentMap<String, Queue<AccessLogData>> logEntries = new ConcurrentHashMap<>();
 
     private final AtomicBoolean scheduled = new AtomicBoolean();
-    private final AtomicBoolean scheduled = new AtomicBoolean();
+    private ScheduledFuture<?> future;
 
     private static final String LINE_SEPARATOR = "line.separator";
 
@@ -106,6 +106,12 @@ public class AccessLogFilter implements Filter {
     public Result invoke(Invoker<?> invoker, Invocation inv) throws RpcException {
         String accessLogKey = invoker.getUrl().getParameter(Constants.ACCESS_LOG_KEY);
         if (StringUtils.isEmpty(accessLogKey)) {
+            // Notice that disable accesslog of one service may cause the whole application to stop collecting accesslog.
+            // It's recommended to use application level configuration to enable or disable accesslog if dynamically configuration is needed .
+            if (future != null && !future.isCancelled()) {
+                future.cancel(true);
+                logger.info("Access log task cancelled ...");
+            }
             return invoker.invoke(inv);
         }
 
