@@ -170,6 +170,9 @@ public final class FileCacheStoreFactory {
      * @return a file object
      */
     private static FileCacheStore getFile(String name, String fileContent, String md5String, boolean enableFileCache, boolean enableAddressShorten) {
+        if (!enableFileCache) {
+            return FileCacheStore.Empty.getInstance(name);
+        }
         FileCacheStore.Builder builder = FileCacheStore.newBuilder();
         try {
             tryFileLock(builder, name, md5String, enableAddressShorten);
@@ -177,7 +180,6 @@ public final class FileCacheStoreFactory {
         } catch (Throwable t) {
             logger.warn(COMMON_CACHE_PATH_INACCESSIBLE, "inaccessible of cache path", "",
                 "Failed to create file store cache. Local file cache will be disabled. Cache file name: " + name, t);
-            throw new RuntimeException(t);
         }
         return builder.build();
     }
