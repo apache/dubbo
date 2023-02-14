@@ -346,7 +346,7 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
             listeners.forEach(listener -> listener.process(event));
 
             ConfigCenterMetricsCollector collector =
-                applicationModel.getFrameworkModel().getBeanFactory().getOrRegisterBean(ConfigCenterMetricsCollector.class);
+                applicationModel.getBeanFactory().getOrRegisterBean(ConfigCenterMetricsCollector.class);
             collector.increase("nacos", applicationModel.getApplicationName(), event);
         }
 

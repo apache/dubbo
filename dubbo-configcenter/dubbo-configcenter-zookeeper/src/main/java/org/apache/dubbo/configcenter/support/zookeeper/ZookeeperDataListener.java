@@ -77,7 +77,7 @@ public class ZookeeperDataListener implements DataListener {
         }
 
         ConfigCenterMetricsCollector collector =
-            applicationModel.getFrameworkModel().getBeanFactory().getBean(ConfigCenterMetricsCollector.class);
+            applicationModel.getBeanFactory().getBean(ConfigCenterMetricsCollector.class);
         collector.increase("zookeeper", applicationModel.getApplicationName(), configChangeEvent);
     }
 
