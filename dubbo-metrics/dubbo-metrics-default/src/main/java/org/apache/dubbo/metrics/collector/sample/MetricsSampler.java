@@ -14,22 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metrics;
 
-import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.binder.MeterBinder;
+package org.apache.dubbo.metrics.collector.sample;
 
+import org.apache.dubbo.metrics.model.sample.MetricSample;
 
-public class DubboMetrics implements MeterBinder {
+import java.util.List;
 
-    public static volatile MeterRegistry globalRegistry = null;
+public interface MetricsSampler {
 
-    @Override
-    public void bindTo(MeterRegistry registry) {
-        globalRegistry = registry;
-    }
-
-    public void destroy() {
-    }
+    List<MetricSample> sample();
 }
-

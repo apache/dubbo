@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.metrics.model;
 
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.RpcInvocation;
 
@@ -134,7 +135,7 @@ public class MethodMetric implements Metric {
         }
         String group = null;
         String interfaceAndVersion;
-        String[] arr = serviceUniqueName.split("/");
+        String[] arr = serviceUniqueName.split(CommonConstants.PATH_SEPARATOR);
         if (arr.length == 2) {
             group = arr[0];
             interfaceAndVersion = arr[1];
@@ -142,7 +143,7 @@ public class MethodMetric implements Metric {
             interfaceAndVersion = arr[0];
         }
 
-        String[] ivArr = interfaceAndVersion.split(":");
+        String[] ivArr = interfaceAndVersion.split(CommonConstants.GROUP_CHAR_SEPARATOR);
         String interfaceName = ivArr[0];
         String version = ivArr.length == 2 ? ivArr[1] : null;
 
