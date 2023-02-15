@@ -78,7 +78,7 @@ public class CodeGenerator {
                 code = LICENSED_STR + code + "\n";
                 FileUtils.write(new File(file + "$Adaptive.java"), code, Charset.defaultCharset());
             } catch (IOException e) {
-                e.printStackTrace();
+                throw new IllegalStateException("Failed to generated adaptive class sources", e);
             }
         });
     }
