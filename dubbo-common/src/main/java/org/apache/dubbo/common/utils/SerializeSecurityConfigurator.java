@@ -187,6 +187,7 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
 
         Set<Type> markedClass = new HashSet<>();
         markedClass.add(clazz);
+        checkClass(markedClass, clazz);
 
         addToAllow(clazz.getName());
 
@@ -222,14 +223,16 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
     }
 
     private void checkType(Set<Type> markedClass, Type type) {
-        if (markedClass.contains(type)) {
+        if (type instanceof Class) {
+            checkClass(markedClass, (Class<?>) type);
             return;
         }
 
-        markedClass.add(type);
-        if (type instanceof Class) {
-            checkClass(markedClass, (Class<?>) type);
-        } else if (type instanceof ParameterizedType) {
+        if (!markedClass.add(type)) {
+            return;
+        }
+
+        if (type instanceof ParameterizedType) {
             ParameterizedType parameterizedType = (ParameterizedType) type;
             checkClass(markedClass, (Class<?>) parameterizedType.getRawType());
             for (Type actualTypeArgument : parameterizedType.getActualTypeArguments()) {
@@ -255,11 +258,9 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
     }
 
     private void checkClass(Set<Type> markedClass, Class<?> clazz) {
-        if (markedClass.contains(clazz)) {
+        if (!markedClass.add(clazz)) {
             return;
         }
-
-        markedClass.add(clazz);
 
         addToAllow(clazz.getName());
 
