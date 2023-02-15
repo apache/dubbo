@@ -50,7 +50,7 @@ import org.apache.dubbo.config.utils.CompositeReferenceCache;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.metadata.report.MetadataReportFactory;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
-import org.apache.dubbo.metrics.event.MetricsEventMulticaster;
+import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
 import org.apache.dubbo.metrics.report.MetricsReporter;
 import org.apache.dubbo.metrics.report.MetricsReporterFactory;
 import org.apache.dubbo.metrics.service.MetricsServiceExporter;
@@ -126,8 +126,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     private final Object startLock = new Object();
     private final Object destroyLock = new Object();
     private final Object internalModuleLock = new Object();
-
-    private MetricsEventMulticaster eventMulticaster;
 
     public DefaultApplicationDeployer(ApplicationModel applicationModel) {
         super(applicationModel);
@@ -360,10 +358,13 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     }
 
     private void initMetricsReporter() {
+        DefaultMetricsCollector collector =
+            applicationModel.getFrameworkModel().getBeanFactory().getOrRegisterBean(DefaultMetricsCollector.class);
         MetricsConfig metricsConfig = configManager.getMetrics().orElse(null);
-
         // TODO compatible with old usage of metrics, remove protocol check after new metrics is ready for use.
         if (metricsConfig != null && PROTOCOL_PROMETHEUS.equals(metricsConfig.getProtocol())) {
+            collector.setCollectEnabled(true);
+            collector.collectApplication(applicationModel);
             String protocol = metricsConfig.getProtocol();
             if (StringUtils.isNotEmpty(protocol)) {
                 MetricsReporterFactory metricsReporterFactory = getExtensionLoader(MetricsReporterFactory.class).getAdaptiveExtension();
