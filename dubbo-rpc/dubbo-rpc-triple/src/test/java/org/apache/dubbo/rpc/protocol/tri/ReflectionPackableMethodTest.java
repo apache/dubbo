@@ -27,6 +27,7 @@ import reactor.core.publisher.Mono;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
+import java.util.concurrent.CompletableFuture;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -35,6 +36,16 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ReflectionPackableMethodTest {
+
+
+    @Test
+    void testUnaryFuture() throws Exception {
+        Method method = DescriptorService.class.getMethod("unaryFuture");
+        MethodDescriptor descriptor = new ReflectionMethodDescriptor(method);
+        assertEquals(CompletableFuture.class, descriptor.getReturnClass());
+        assertEquals(String.class, descriptor.getReturnTypes()[0]);
+    }
+
     @Test
     void testMethodWithNoParameters() throws Exception {
         Method method = DescriptorService.class.getMethod("noParameterMethod");

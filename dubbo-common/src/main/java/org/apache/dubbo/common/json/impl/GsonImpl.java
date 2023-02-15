@@ -16,13 +16,16 @@
  */
 package org.apache.dubbo.common.json.impl;
 
-import org.apache.dubbo.common.utils.ClassUtils;
+import java.lang.reflect.Type;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.dubbo.common.utils.CollectionUtils;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-
-import java.lang.reflect.Type;
-import java.util.List;
 
 public class GsonImpl extends AbstractJSONImpl {
     // weak reference of com.google.gson.Gson, prevent throw exception when init
@@ -31,8 +34,15 @@ public class GsonImpl extends AbstractJSONImpl {
     @Override
     public boolean isSupport() {
         try {
-            Class<?> aClass = ClassUtils.forName("com.google.gson.Gson");
-            return aClass != null;
+            Map<String, String> map = new HashMap<>();
+            map.put("gson", "test");
+            if (!CollectionUtils.mapEquals(map, toJavaObject(toJson(map), Map.class))) {
+                return false;
+            }
+
+            List<String> list = new LinkedList<>();
+            list.add("gson");
+            return CollectionUtils.equals(list, toJavaList(toJson(list), String.class));
         } catch (Throwable t) {
             return false;
         }

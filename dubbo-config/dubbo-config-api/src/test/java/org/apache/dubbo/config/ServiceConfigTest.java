@@ -543,6 +543,18 @@ class ServiceConfigTest {
     }
 
     @Test
+    void testOverride() {
+        System.setProperty("dubbo.service.version", "TEST");
+        ServiceConfig<DemoService> serviceConfig = new ServiceConfig<>();
+        serviceConfig.setInterface(DemoService.class);
+        serviceConfig.setRef(new DemoServiceImpl());
+        serviceConfig.setVersion("1.0.0");
+        serviceConfig.refresh();
+        Assertions.assertEquals("1.0.0", serviceConfig.getVersion());
+        System.clearProperty("dubbo.service.version");
+    }
+
+    @Test
     void testMappingRetry() {
         FrameworkModel frameworkModel = new FrameworkModel();
         ApplicationModel applicationModel = frameworkModel.newApplication();
