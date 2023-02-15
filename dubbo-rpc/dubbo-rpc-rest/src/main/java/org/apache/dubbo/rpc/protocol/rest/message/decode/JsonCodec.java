@@ -24,11 +24,11 @@ import org.apache.dubbo.rpc.protocol.rest.message.HttpMessageCodec;
 import org.apache.dubbo.rpc.protocol.rest.message.MediaTypeMatcher;
 import org.apache.dubbo.rpc.protocol.rest.util.DataParseUtils;
 
-import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 
 @Activate("json")
-public class JsonCodec implements HttpMessageCodec {
+public class JsonCodec implements HttpMessageCodec<byte[]> {
 
 
     @Override
@@ -43,7 +43,7 @@ public class JsonCodec implements HttpMessageCodec {
 
 
     @Override
-    public void encode(ByteArrayOutputStream outputStream, Object unSerializedBody, URL url) throws Exception {
+    public void encode(OutputStream outputStream, Object unSerializedBody, URL url) throws Exception {
         outputStream.write(JsonUtils.getJson().toJson(unSerializedBody).getBytes(StandardCharsets.UTF_8));
     }
 }

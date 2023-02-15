@@ -17,8 +17,8 @@
 package org.apache.dubbo.rpc.protocol.rest.message;
 
 
-public interface HttpMessageDecode{
+public interface HttpMessageDecode<T>{
 
-    Object decode(byte[] body, Class targetType) throws Exception;
+    Object decode(T body, Class targetType) throws Exception;
 
 }

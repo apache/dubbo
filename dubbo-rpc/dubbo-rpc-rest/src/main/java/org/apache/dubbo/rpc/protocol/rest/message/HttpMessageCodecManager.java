@@ -18,7 +18,7 @@ package org.apache.dubbo.rpc.protocol.rest.message;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.metadata.rest.media.MediaType;
-import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.rest.exception.UnSupportContentTypeException;
 
 import java.io.ByteArrayOutputStream;
@@ -26,7 +26,7 @@ import java.util.Set;
 
 public class HttpMessageCodecManager {
     private static final Set<HttpMessageCodec> httpMessageCodecs =
-        ApplicationModel.defaultModel().getExtensionLoader(HttpMessageCodec.class).getSupportedExtensionInstances();
+        FrameworkModel.defaultModel().getExtensionLoader(HttpMessageCodec.class).getSupportedExtensionInstances();
 
 
     public static Object httpMessageDecode(byte[] body, Class type, MediaType mediaType) throws Exception {

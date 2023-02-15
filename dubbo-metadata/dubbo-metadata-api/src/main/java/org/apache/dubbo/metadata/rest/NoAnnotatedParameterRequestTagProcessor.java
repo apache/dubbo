@@ -16,12 +16,13 @@
  */
 package org.apache.dubbo.metadata.rest;
 
+import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.metadata.rest.media.MediaType;
 
 import java.lang.reflect.Parameter;
 
-@SPI
+@SPI(scope = ExtensionScope.FRAMEWORK)
 public interface NoAnnotatedParameterRequestTagProcessor {
     MediaType consumerContentType();
 

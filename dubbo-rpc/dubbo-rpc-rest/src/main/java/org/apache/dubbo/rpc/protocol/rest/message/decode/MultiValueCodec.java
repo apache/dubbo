@@ -23,11 +23,11 @@ import org.apache.dubbo.rpc.protocol.rest.message.HttpMessageCodec;
 import org.apache.dubbo.rpc.protocol.rest.message.MediaTypeMatcher;
 import org.apache.dubbo.rpc.protocol.rest.util.DataParseUtils;
 
-import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
 import java.util.Map;
 
 @Activate("multiValue")
-public class MultiValueCodec implements HttpMessageCodec {
+public class MultiValueCodec implements HttpMessageCodec<byte[]> {
 
 
     @Override
@@ -42,7 +42,7 @@ public class MultiValueCodec implements HttpMessageCodec {
     }
 
     @Override
-    public void encode(ByteArrayOutputStream outputStream, Object unSerializedBody, URL url) throws Exception {
+    public void encode(OutputStream outputStream, Object unSerializedBody, URL url) throws Exception {
         DataParseUtils.writeFormContent((Map) unSerializedBody, outputStream);
     }
 }

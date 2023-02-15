@@ -23,11 +23,11 @@ import org.apache.dubbo.rpc.protocol.rest.message.HttpMessageCodec;
 import org.apache.dubbo.rpc.protocol.rest.message.MediaTypeMatcher;
 import org.apache.dubbo.rpc.protocol.rest.util.DataParseUtils;
 
-import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 
 @Activate("text")
-public class TextCodec implements HttpMessageCodec {
+public class TextCodec implements HttpMessageCodec<byte[]> {
     @Override
     public Object decode(byte[] body, Class targetType) throws Exception {
         return DataParseUtils.stringTypeConvert(targetType, new String(body, StandardCharsets.UTF_8));
@@ -39,7 +39,7 @@ public class TextCodec implements HttpMessageCodec {
     }
 
     @Override
-    public void encode(ByteArrayOutputStream outputStream, Object unSerializedBody, URL url) throws Exception {
+    public void encode(OutputStream outputStream, Object unSerializedBody, URL url) throws Exception {
         DataParseUtils.writeTextContent(unSerializedBody, outputStream);
     }
 }

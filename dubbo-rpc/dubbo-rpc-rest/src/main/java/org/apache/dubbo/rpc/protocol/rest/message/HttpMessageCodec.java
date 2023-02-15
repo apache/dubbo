@@ -17,11 +17,12 @@
 package org.apache.dubbo.rpc.protocol.rest.message;
 
 
+import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.metadata.rest.media.MediaType;
 
-@SPI
-public interface HttpMessageCodec extends HttpMessageDecode, HttpMessageEncode {
+@SPI(scope = ExtensionScope.FRAMEWORK)
+public interface HttpMessageCodec<T> extends HttpMessageDecode<T>, HttpMessageEncode {
 
     boolean contentTypeSupport(MediaType mediaType);
 }
