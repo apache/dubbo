@@ -20,6 +20,8 @@ import io.micrometer.observation.Observation;
 import io.micrometer.observation.ObservationRegistry;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.metrics.filter.observation.DefaultDubboClientObservationConvention;
+import org.apache.dubbo.metrics.filter.observation.DubboClientContext;
+import org.apache.dubbo.metrics.filter.observation.DubboClientObservationConvention;
 import org.apache.dubbo.metrics.filter.observation.DubboObservation;
 import org.apache.dubbo.rpc.BaseFilter;
 import org.apache.dubbo.rpc.Filter;
@@ -41,11 +43,11 @@ public class ObservationSenderFilter implements ClusterFilter, BaseFilter.Listen
 
     private final ObservationRegistry observationRegistry;
 
-    private final org.apache.dubbo.metrics.filter.observation.DubboClientObservationConvention clientObservationConvention;
+    private final DubboClientObservationConvention clientObservationConvention;
 
     public ObservationSenderFilter(ApplicationModel applicationModel) {
         observationRegistry = applicationModel.getBeanFactory().getBean(ObservationRegistry.class);
-        clientObservationConvention = applicationModel.getBeanFactory().getBean(org.apache.dubbo.metrics.filter.observation.DubboClientObservationConvention.class);
+        clientObservationConvention = applicationModel.getBeanFactory().getBean(DubboClientObservationConvention.class);
     }
 
     @Override
@@ -53,7 +55,7 @@ public class ObservationSenderFilter implements ClusterFilter, BaseFilter.Listen
         if (observationRegistry == null) {
             return invoker.invoke(invocation);
         }
-        org.apache.dubbo.metrics.filter.observation.DubboClientContext senderContext = new org.apache.dubbo.metrics.filter.observation.DubboClientContext(invoker, invocation);
+        DubboClientContext senderContext = new DubboClientContext(invoker, invocation);
         Observation observation = DubboObservation.CLIENT.observation(this.clientObservationConvention, DefaultDubboClientObservationConvention.INSTANCE, () -> senderContext, observationRegistry);
         invocation.put(Observation.class, observation.start());
         return observation.scoped(() -> invoker.invoke(invocation));
