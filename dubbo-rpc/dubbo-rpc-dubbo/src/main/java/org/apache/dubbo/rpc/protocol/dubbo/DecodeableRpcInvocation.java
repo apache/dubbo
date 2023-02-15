@@ -133,7 +133,7 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
     @Override
     public void retry() {
 
-        String exPs = ApplicationModel.defaultModel().getCurrentConfig().getParameters().get(EXCEPTION_PROCESSOR_KEY);
+        String exPs = System.getProperty(EXCEPTION_PROCESSOR_KEY);
         if (StringUtils.isEmpty(exPs)) {
             return;
         }
