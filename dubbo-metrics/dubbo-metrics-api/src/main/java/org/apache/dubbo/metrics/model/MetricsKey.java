@@ -60,14 +60,14 @@ public enum MetricsKey {
     REGISTER_METRIC_REQUESTS_FAILED("dubbo.registry.register.requests.failed.total", "Failed Register Requests"),
 
     // subscribe metrics key
-    SUBSCRIBE_METRIC_REQUESTS("dubbo.registry.subscribe.requests.total", "Total Subscribe Requests"),
-    SUBSCRIBE_METRIC_REQUESTS_SUCCEED("dubbo.registry.subscribe.requests.succeed.total", "Succeed Subscribe Requests"),
-    SUBSCRIBE_METRIC_REQUESTS_FAILED("dubbo.registry.subscribe.requests.failed.total", "Failed Subscribe Requests"),
+    SUBSCRIBE_METRIC_NUM("dubbo.registry.subscribe.num.total", "Total Subscribe Num"),
+    SUBSCRIBE_METRIC_NUM_SUCCEED("dubbo.registry.subscribe.num.succeed.total", "Succeed Subscribe Num"),
+    SUBSCRIBE_METRIC_NUM_FAILED("dubbo.registry.subscribe.num.failed.total", "Failed Subscribe Num"),
 
     // directory metrics key
-    DIRECTORY_METRIC_NUM("dubbo.registry.directory.num.total", "Total directory urls"),
-    DIRECTORY_METRIC_NUM_VALID("dubbo.registry.directory.num.valid.total", "Valid directory urls"),
-    DIRECTORY_METRIC_NUM_UN_VALID("dubbo.registry.directory.num.un_valid.total", "UnValid directory urls"),
+    DIRECTORY_METRIC_NUM("dubbo.registry.directory.num.total", "Total Directory Urls"),
+    DIRECTORY_METRIC_NUM_VALID("dubbo.registry.directory.num.valid.total", "Valid Directory Urls"),
+    DIRECTORY_METRIC_NUM_UN_VALID("dubbo.registry.directory.num.un_valid.total", "UnValid Directory Urls"),
 
     NOTIFY_METRIC_REQUESTS("dubbo.registry.notify.requests.total", "Total Notify Requests"),
     NOTIFY_METRIC_NUM_LAST("dubbo.registry.notify.num.last", "Last Notify Nums"),
