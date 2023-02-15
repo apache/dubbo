@@ -17,7 +17,6 @@
 
 package org.apache.dubbo.rpc.protocol.tri;
 
-import io.netty.util.AsciiString;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
@@ -48,6 +47,8 @@ import org.apache.dubbo.rpc.protocol.tri.call.UnaryClientCallListener;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 import org.apache.dubbo.rpc.protocol.tri.observer.ClientCallToObserverAdapter;
 import org.apache.dubbo.rpc.support.RpcUtils;
+
+import io.netty.util.AsciiString;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -195,7 +196,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
                 "No time left for making the following call: " + invocation.getServiceName() + "."
                     + invocation.getMethodName() + ", terminate directly."), invocation);
         }
-        invocation.setAttachment(TIMEOUT_KEY, timeout);
+        invocation.setAttachment(TIMEOUT_KEY, String.valueOf(timeout));
 
         final AsyncRpcResult result;
         DeadlineFuture future = DeadlineFuture.newFuture(getUrl().getPath(),
