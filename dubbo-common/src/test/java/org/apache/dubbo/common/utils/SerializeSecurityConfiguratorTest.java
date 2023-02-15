@@ -24,6 +24,7 @@ import org.apache.dubbo.rpc.model.ModuleModel;
 
 import com.service.DemoService1;
 import com.service.DemoService2;
+import com.service.DemoService4;
 import com.service.deep1.deep2.deep3.DemoService3;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -252,6 +253,22 @@ class SerializeSecurityConfiguratorTest {
 
     }
 
+    @Test
+    void testGeneric() {
+        FrameworkModel frameworkModel = new FrameworkModel();
+        ApplicationModel applicationModel = frameworkModel.newApplication();
+        ModuleModel moduleModel = applicationModel.newModule();
+
+        SerializeSecurityManager ssm = frameworkModel.getBeanFactory().getBean(SerializeSecurityManager.class);
+
+        SerializeSecurityConfigurator serializeSecurityConfigurator = new SerializeSecurityConfigurator(moduleModel);
+        serializeSecurityConfigurator.onAddClassLoader(moduleModel, Thread.currentThread().getContextClassLoader());
+
+        serializeSecurityConfigurator.registerInterface(DemoService4.class);
+        Assertions.assertTrue(ssm.getAllowedPrefix().contains("com.service.DemoService4"));
+
+        frameworkModel.destroy();
+    }
     @Test
     void testRegister1() {
         FrameworkModel frameworkModel = new FrameworkModel();
