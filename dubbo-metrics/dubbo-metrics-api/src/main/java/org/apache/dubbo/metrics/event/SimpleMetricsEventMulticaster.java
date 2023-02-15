@@ -25,6 +25,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 
+/**
+ *  A simple event publisher that defines lifecycle events and supports rt events
+ */
 public class SimpleMetricsEventMulticaster implements MetricsEventMulticaster {
     private final List<MetricsListener<?>> listeners = Collections.synchronizedList(new ArrayList<>());
 
