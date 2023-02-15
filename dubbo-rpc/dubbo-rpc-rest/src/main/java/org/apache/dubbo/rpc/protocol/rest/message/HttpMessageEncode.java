@@ -19,11 +19,11 @@ package org.apache.dubbo.rpc.protocol.rest.message;
 
 import org.apache.dubbo.common.URL;
 
-import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
 
 
 public interface HttpMessageEncode {
 
-    void encode(ByteArrayOutputStream outputStream, Object unSerializedBody, URL url) throws Exception;
+    void encode(OutputStream outputStream, Object unSerializedBody, URL url) throws Exception;
 
 }

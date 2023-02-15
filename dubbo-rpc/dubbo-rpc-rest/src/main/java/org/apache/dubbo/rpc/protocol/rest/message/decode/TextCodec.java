@@ -19,22 +19,18 @@ package org.apache.dubbo.rpc.protocol.rest.message.decode;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.metadata.rest.media.MediaType;
-import org.apache.dubbo.rpc.protocol.rest.message.AbstractMessageCodec;
+import org.apache.dubbo.rpc.protocol.rest.message.HttpMessageCodec;
 import org.apache.dubbo.rpc.protocol.rest.message.MediaTypeMatcher;
 import org.apache.dubbo.rpc.protocol.rest.util.DataParseUtils;
-import org.apache.dubbo.rpc.protocol.rest.util.StreamUtils;
 
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.nio.charset.Charset;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 
 @Activate("text")
-public class TextCodec extends AbstractMessageCodec {
-
-
+public class TextCodec implements HttpMessageCodec<byte[]> {
     @Override
-    public Object decode(InputStream inputStream, Class targetType) throws Exception {
-        return DataParseUtils.stringTypeConvert(targetType, StreamUtils.copyToString(inputStream, Charset.defaultCharset()));
+    public Object decode(byte[] body, Class targetType) throws Exception {
+        return DataParseUtils.stringTypeConvert(targetType, new String(body, StandardCharsets.UTF_8));
     }
 
     @Override
@@ -43,7 +39,7 @@ public class TextCodec extends AbstractMessageCodec {
     }
 
     @Override
-    public void encode(ByteArrayOutputStream outputStream, Object unSerializedBody, URL url) throws Exception {
+    public void encode(OutputStream outputStream, Object unSerializedBody, URL url) throws Exception {
         DataParseUtils.writeTextContent(unSerializedBody, outputStream);
     }
 }

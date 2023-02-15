@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.metadata.rest;
 
+import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.common.lang.Prioritized;
 
@@ -29,7 +30,7 @@ import java.lang.reflect.Parameter;
  *
  * @since 2.7.6
  */
-@SPI
+@SPI(scope = ExtensionScope.FRAMEWORK)
 public interface AnnotatedMethodParameterProcessor extends Prioritized {
 
     /**

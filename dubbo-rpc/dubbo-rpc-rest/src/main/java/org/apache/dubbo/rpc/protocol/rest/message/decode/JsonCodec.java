@@ -18,23 +18,22 @@ package org.apache.dubbo.rpc.protocol.rest.message.decode;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.common.json.JSON;
-import org.apache.dubbo.common.json.factory.JsonFactory;
+import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.metadata.rest.media.MediaType;
-import org.apache.dubbo.rpc.protocol.rest.message.AbstractMessageCodec;
+import org.apache.dubbo.rpc.protocol.rest.message.HttpMessageCodec;
 import org.apache.dubbo.rpc.protocol.rest.message.MediaTypeMatcher;
 import org.apache.dubbo.rpc.protocol.rest.util.DataParseUtils;
 
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 
 @Activate("json")
-public class JsonCodec extends AbstractMessageCodec {
+public class JsonCodec implements HttpMessageCodec<byte[]> {
 
 
     @Override
-    public Object decode(InputStream inputStream, Class targetType) throws Exception {
-        return DataParseUtils.jsonConvert(targetType, inputStream);
+    public Object decode(byte[] body, Class targetType) throws Exception {
+        return DataParseUtils.jsonConvert(targetType, body);
     }
 
     @Override
@@ -44,9 +43,7 @@ public class JsonCodec extends AbstractMessageCodec {
 
 
     @Override
-    public void encode(ByteArrayOutputStream outputStream, Object unSerializedBody, URL url) throws Exception {
-        JsonFactory jsonFactory = url.getApplicationModel().getAdaptiveExtension(JsonFactory.class);
-        JSON json = jsonFactory.createJson(url);
-        json.serializeObject(outputStream, unSerializedBody);
+    public void encode(OutputStream outputStream, Object unSerializedBody, URL url) throws Exception {
+        outputStream.write(JsonUtils.getJson().toJson(unSerializedBody).getBytes(StandardCharsets.UTF_8));
     }
 }

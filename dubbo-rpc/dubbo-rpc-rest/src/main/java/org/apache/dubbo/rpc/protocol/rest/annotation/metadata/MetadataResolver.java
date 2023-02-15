@@ -39,7 +39,7 @@ public class MetadataResolver {
      * @throws CodeStyleNotSupportException not support type
      */
     public static Map<String, Map<ParameterTypesComparator, RestMethodMetadata>> resolveConsumerServiceMetadata(Class<?> targetClass, URL url) {
-        ExtensionLoader<ServiceRestMetadataResolver> extensionLoader = url.getOrDefaultApplicationModel().getExtensionLoader(ServiceRestMetadataResolver.class);
+        ExtensionLoader<ServiceRestMetadataResolver> extensionLoader = url.getOrDefaultFrameworkModel().getExtensionLoader(ServiceRestMetadataResolver.class);
 
         for (ServiceRestMetadataResolver serviceRestMetadataResolver : extensionLoader.getSupportedExtensionInstances()) {
             if (serviceRestMetadataResolver.supports(targetClass, true)) {
