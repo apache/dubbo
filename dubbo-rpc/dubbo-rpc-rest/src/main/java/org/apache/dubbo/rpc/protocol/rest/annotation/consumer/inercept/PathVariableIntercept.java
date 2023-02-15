@@ -17,6 +17,9 @@
 package org.apache.dubbo.rpc.protocol.rest.annotation.consumer.inercept;
 
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.metadata.rest.ArgInfo;
 import org.apache.dubbo.metadata.rest.PathUtil;
@@ -25,9 +28,6 @@ import org.apache.dubbo.remoting.http.RequestTemplate;
 import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.HttpConnectionCreateContext;
 import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.HttpConnectionPreBuildIntercept;
 import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
-
-import java.util.Arrays;
-import java.util.List;
 
 @Activate(value = RestConstant.PATH_INTERCEPT,order = 4)
 public class PathVariableIntercept implements HttpConnectionPreBuildIntercept {

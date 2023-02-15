@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.rpc.protocol.rest.annotation.metadata;
 
+import java.util.Map;
+
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.metadata.ParameterTypesComparator;
@@ -23,8 +25,6 @@ import org.apache.dubbo.metadata.rest.RestMethodMetadata;
 import org.apache.dubbo.metadata.rest.ServiceRestMetadata;
 import org.apache.dubbo.metadata.rest.ServiceRestMetadataResolver;
 import org.apache.dubbo.rpc.protocol.rest.exception.CodeStyleNotSupportException;
-
-import java.util.Map;
 
 public class MetadataResolver {
     private MetadataResolver() {
@@ -39,7 +39,7 @@ public class MetadataResolver {
      * @throws CodeStyleNotSupportException not support type
      */
     public static Map<String, Map<ParameterTypesComparator, RestMethodMetadata>> resolveConsumerServiceMetadata(Class<?> targetClass, URL url) {
-        ExtensionLoader<ServiceRestMetadataResolver> extensionLoader = url.getOrDefaultFrameworkModel().getExtensionLoader(ServiceRestMetadataResolver.class);
+        ExtensionLoader<ServiceRestMetadataResolver> extensionLoader = url.getOrDefaultApplicationModel().getExtensionLoader(ServiceRestMetadataResolver.class);
 
         for (ServiceRestMetadataResolver serviceRestMetadataResolver : extensionLoader.getSupportedExtensionInstances()) {
             if (serviceRestMetadataResolver.supports(targetClass, true)) {

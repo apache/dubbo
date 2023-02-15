@@ -17,8 +17,8 @@
 package org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.consumer;
 
 
-import org.apache.dubbo.remoting.http.RequestTemplate;
 import org.apache.dubbo.rpc.protocol.rest.annotation.BaseParseContext;
+import org.apache.dubbo.remoting.http.RequestTemplate;
 
 public class ConsumerParseContext extends BaseParseContext {
     private RequestTemplate requestTemplate;
