@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc;
 
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 
 import java.util.Map;
@@ -45,7 +46,7 @@ public class AdaptiveMetrics {
     private final AtomicLong errorReq = new AtomicLong();
     private double ewma = 0;
 
-    public double getLoad(String idKey,int weight,int timeout){
+    public double getLoad(String idKey, int weight, int timeout) {
         AdaptiveMetrics metrics = getStatus(idKey);
 
         //If the time more than 2 times, mandatory selected
@@ -53,13 +54,13 @@ public class AdaptiveMetrics {
             return 0;
         }
 
-        if (metrics.currentTime > 0){
+        if (metrics.currentTime > 0) {
             long multiple = (System.currentTimeMillis() - metrics.currentTime) / timeout + 1;
             if (multiple > 0) {
                 if (metrics.currentProviderTime == metrics.currentTime) {
                     //penalty value
                     metrics.lastLatency = timeout * 2L;
-                }else {
+                } else {
                     metrics.lastLatency = metrics.lastLatency >> multiple;
                 }
                 metrics.ewma = metrics.beta * metrics.ewma + (1 - metrics.beta) * metrics.lastLatency;
@@ -68,49 +69,48 @@ public class AdaptiveMetrics {
         }
 
         long inflight = metrics.consumerReq.get() - metrics.consumerSuccess.get() - metrics.errorReq.get();
-        return metrics.providerCPULoad * (Math.sqrt(metrics.ewma) + 1) * (inflight + 1) / ((((double)metrics.consumerSuccess.get() / (double)(metrics.consumerReq.get() + 1)) * weight) + 1);
+        return metrics.providerCPULoad * (Math.sqrt(metrics.ewma) + 1) * (inflight + 1) / ((((double) metrics.consumerSuccess.get() / (double) (metrics.consumerReq.get() + 1)) * weight) + 1);
     }
 
-    public AdaptiveMetrics getStatus(String idKey){
-        return metricsStatistics.computeIfAbsent(idKey, k -> new AdaptiveMetrics());
+    public AdaptiveMetrics getStatus(String idKey) {
+        return ConcurrentHashMapUtils.computeIfAbsent(metricsStatistics, idKey, k -> new AdaptiveMetrics());
     }
 
-    public void addConsumerReq(String idKey){
+    public void addConsumerReq(String idKey) {
         AdaptiveMetrics metrics = getStatus(idKey);
         metrics.consumerReq.incrementAndGet();
     }
 
-    public void addConsumerSuccess(String idKey){
+    public void addConsumerSuccess(String idKey) {
         AdaptiveMetrics metrics = getStatus(idKey);
         metrics.consumerSuccess.incrementAndGet();
     }
 
-    public void addErrorReq(String idKey){
+    public void addErrorReq(String idKey) {
         AdaptiveMetrics metrics = getStatus(idKey);
         metrics.errorReq.incrementAndGet();
     }
 
-    public void setPickTime(String idKey,long time){
+    public void setPickTime(String idKey, long time) {
         AdaptiveMetrics metrics = getStatus(idKey);
         metrics.pickTime = time;
     }
 
 
-
-    public void setProviderMetrics(String idKey,Map<String,String> metricsMap){
+    public void setProviderMetrics(String idKey, Map<String, String> metricsMap) {
 
         AdaptiveMetrics metrics = getStatus(idKey);
 
-        long serviceTime = Long.parseLong(Optional.ofNullable(metricsMap.get("curTime")).filter(v -> StringUtils.isNumeric(v,false)).orElse("0"));
+        long serviceTime = Long.parseLong(Optional.ofNullable(metricsMap.get("curTime")).filter(v -> StringUtils.isNumeric(v, false)).orElse("0"));
         //If server time is less than the current time, discard
-        if (metrics.currentProviderTime > serviceTime){
+        if (metrics.currentProviderTime > serviceTime) {
             return;
         }
 
         metrics.currentProviderTime = serviceTime;
         metrics.currentTime = serviceTime;
-        metrics.providerCPULoad = Double.parseDouble(Optional.ofNullable(metricsMap.get("load")).filter(v -> StringUtils.isNumeric(v,true)).orElse("0"));
-        metrics.lastLatency = Long.parseLong((Optional.ofNullable(metricsMap.get("rt")).filter(v -> StringUtils.isNumeric(v,false)).orElse("0")));
+        metrics.providerCPULoad = Double.parseDouble(Optional.ofNullable(metricsMap.get("load")).filter(v -> StringUtils.isNumeric(v, true)).orElse("0"));
+        metrics.lastLatency = Long.parseLong((Optional.ofNullable(metricsMap.get("rt")).filter(v -> StringUtils.isNumeric(v, false)).orElse("0")));
 
         metrics.beta = 0.5;
         //Vt =  β * Vt-1 + (1 -  β ) * θt

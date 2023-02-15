@@ -15,16 +15,19 @@
  * limitations under the License.
  */
 package org.apache.dubbo.common.metrics;
+
+import org.apache.dubbo.metrics.report.MetricsReporter;
+import org.apache.dubbo.metrics.report.MetricsReporterFactory;
 import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
-public class MetricsReporterFactory$Adaptive implements org.apache.dubbo.common.metrics.MetricsReporterFactory {
-public org.apache.dubbo.common.metrics.MetricsReporter createMetricsReporter(org.apache.dubbo.common.URL arg0)  {
+public class MetricsReporterFactory$Adaptive implements MetricsReporterFactory {
+public MetricsReporter createMetricsReporter(org.apache.dubbo.common.URL arg0)  {
 if (arg0 == null) throw new IllegalArgumentException("url == null");
 org.apache.dubbo.common.URL url = arg0;
 String extName = ( url.getProtocol() == null ? "nop" : url.getProtocol() );
-if(extName == null) throw new IllegalStateException("Failed to get extension (org.apache.dubbo.common.metrics.MetricsReporterFactory) name from url (" + url.toString() + ") use keys([protocol])");
-ScopeModel scopeModel = ScopeModelUtil.getOrDefault(url.getScopeModel(), org.apache.dubbo.common.metrics.MetricsReporterFactory.class);
-org.apache.dubbo.common.metrics.MetricsReporterFactory extension = (org.apache.dubbo.common.metrics.MetricsReporterFactory)scopeModel.getExtensionLoader(org.apache.dubbo.common.metrics.MetricsReporterFactory.class).getExtension(extName);
+if(extName == null) throw new IllegalStateException("Failed to get extension (MetricsReporterFactory) name from url (" + url.toString() + ") use keys([protocol])");
+ScopeModel scopeModel = ScopeModelUtil.getOrDefault(url.getScopeModel(), MetricsReporterFactory.class);
+MetricsReporterFactory extension = (MetricsReporterFactory)scopeModel.getExtensionLoader(MetricsReporterFactory.class).getExtension(extName);
 return extension.createMetricsReporter(arg0);
 }
 }
