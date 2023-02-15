@@ -80,11 +80,21 @@ public class ProfilerServerFilter implements Filter, BaseFilter.Listener {
     }
 
     private void dumpIfNeed(Invoker<?> invoker, Invocation invocation, ProfilerEntry profiler) {
-        int timeout;
+        Integer timeout = null;
         Object timeoutValue = invocation.getObjectAttachmentWithoutConvert(TIMEOUT_KEY);
-        if (timeoutValue instanceof Integer) {
-            timeout = (Integer) timeoutValue;
-        } else {
+        try {
+            if (timeoutValue instanceof Integer) {
+                timeout = (Integer) timeoutValue;
+            } else if (timeoutValue instanceof String) {
+                timeout = Integer.valueOf((String) timeoutValue);
+            } else if (timeoutValue instanceof Number) {
+                timeout = ((Number) timeoutValue).intValue();
+            }
+        } catch (Exception ignore) {
+            // ignore
+        }
+
+        if (timeout == null) {
             timeout = invoker.getUrl().getMethodPositiveParameter(invocation.getMethodName(), TIMEOUT_KEY, DEFAULT_TIMEOUT);
         }
         long usage = profiler.getEndTime() - profiler.getStartTime();
