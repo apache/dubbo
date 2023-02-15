@@ -17,25 +17,29 @@
 
 package org.apache.dubbo.rpc.protocol.tri;
 
+import com.google.protobuf.Message;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.serialize.MultipleSerialization;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.common.utils.ClassUtils;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.config.Constants;
 import org.apache.dubbo.remoting.utils.UrlUtils;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.PackableMethod;
 
-import com.google.protobuf.Message;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
+import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.$ECHO;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOBUF_MESSAGE_CLASS_NAME;
@@ -388,9 +392,15 @@ public class ReflectionPackableMethod implements PackableMethod {
             } else {
                 arguments = (Object[]) obj;
             }
+            List<Object> params = Arrays.stream(arguments).filter(Objects::nonNull)
+                    .collect(Collectors.toList());
+
+            if (CollectionUtils.isEmpty(params)) {
+                return new byte[0];
+            }
             final TripleCustomerProtocolWapper.TripleRequestWrapper.Builder builder = TripleCustomerProtocolWapper.TripleRequestWrapper.Builder.newBuilder();
             builder.setSerializeType(serialize);
-            for (Object argument : arguments) {
+            for (Object argument : params) {
                 builder.addArgTypes(argument.getClass().getName());
                 ByteArrayOutputStream bos = new ByteArrayOutputStream();
                 multipleSerialization.serialize(url, serialize, argument.getClass(), argument, bos);
