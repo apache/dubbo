@@ -17,9 +17,6 @@
 package org.apache.dubbo.remoting.http;
 
 
-import org.apache.dubbo.remoting.Constants;
-import org.apache.dubbo.rpc.Invocation;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -27,6 +24,9 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.dubbo.remoting.Constants;
+import org.apache.dubbo.rpc.Invocation;
 
 
 public class RequestTemplate implements Serializable {
@@ -44,7 +44,7 @@ public class RequestTemplate implements Serializable {
     private String address;
     private Object body;
     private byte[] byteBody = new byte[0];
-    private String protocol = "http";
+    private String protocol = "http://";
     private final Invocation invocation;
     private String contextPath = "";
 
@@ -61,7 +61,7 @@ public class RequestTemplate implements Serializable {
     }
 
     public String getURL() {
-        StringBuilder stringBuilder = new StringBuilder(getProtocol() + "://" + address);
+        StringBuilder stringBuilder = new StringBuilder(getProtocol() + address);
 
         stringBuilder.append(getUri());
         return stringBuilder.toString();

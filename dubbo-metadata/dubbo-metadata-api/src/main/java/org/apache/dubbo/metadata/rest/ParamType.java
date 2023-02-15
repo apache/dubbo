@@ -17,7 +17,7 @@
 package org.apache.dubbo.metadata.rest;
 
 import org.apache.dubbo.metadata.MetadataConstants;
-import org.apache.dubbo.metadata.rest.tag.BodyTag;
+import org.apache.dubbo.metadata.rest.tag.org.apache.dubbo.metadata.rest.BodyTag;
 
 import java.util.ArrayList;
 import java.util.List;

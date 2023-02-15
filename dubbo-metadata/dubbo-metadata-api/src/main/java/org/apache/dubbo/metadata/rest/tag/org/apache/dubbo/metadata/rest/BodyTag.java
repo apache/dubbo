@@ -14,11 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.rest.message;
+package org.apache.dubbo.metadata.rest.tag.org.apache.dubbo.metadata.rest;
 
-
-public interface HttpMessageDecode<InputStream>{
-
-    Object decode(InputStream body, Class targetType) throws Exception;
-
+public class BodyTag {
 }

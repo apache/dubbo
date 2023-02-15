@@ -22,7 +22,7 @@ import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.metadata.rest.media.MediaType;
 
 @SPI(scope = ExtensionScope.FRAMEWORK)
-public interface HttpMessageCodec<T> extends HttpMessageDecode<T>, HttpMessageEncode {
+public interface HttpMessageCodec<InputStream,OutputStream> extends HttpMessageDecode<InputStream>, HttpMessageEncode<OutputStream> {
 
     boolean contentTypeSupport(MediaType mediaType);
 }

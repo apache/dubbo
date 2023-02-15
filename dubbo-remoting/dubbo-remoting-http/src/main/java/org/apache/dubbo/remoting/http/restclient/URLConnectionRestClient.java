@@ -16,14 +16,8 @@
  */
 package org.apache.dubbo.remoting.http.restclient;
 
-import org.apache.dubbo.remoting.http.RequestTemplate;
-import org.apache.dubbo.remoting.http.RestClient;
-import org.apache.dubbo.remoting.http.RestResult;
-import org.apache.dubbo.remoting.http.config.HttpClientConfig;
-
-import org.apache.commons.io.IOUtils;
-
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -33,12 +27,16 @@ import java.util.concurrent.CompletableFuture;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.GZIPOutputStream;
 
+import org.apache.dubbo.remoting.http.BaseRestClient;
+import org.apache.dubbo.remoting.http.RequestTemplate;
+import org.apache.dubbo.remoting.http.RestResult;
+import org.apache.dubbo.remoting.http.config.HttpClientConfig;
 
-public class URLConnectionRestClient implements RestClient {
-    private final HttpClientConfig clientConfig;
+
+public class URLConnectionRestClient extends BaseRestClient<HttpURLConnection> {
 
     public URLConnectionRestClient(HttpClientConfig clientConfig) {
-        this.clientConfig = clientConfig;
+        super(clientConfig);
     }
 
     @Override
@@ -75,8 +73,8 @@ public class URLConnectionRestClient implements RestClient {
                     }
 
                     @Override
-                    public byte[] getBody() throws IOException {
-                        return IOUtils.toByteArray(connection.getInputStream());
+                    public InputStream getBody() throws IOException {
+                        return connection.getInputStream();
                     }
 
                     @Override
@@ -85,8 +83,8 @@ public class URLConnectionRestClient implements RestClient {
                     }
 
                     @Override
-                    public byte[] getErrorResponse() throws IOException {
-                        return IOUtils.toByteArray(connection.getErrorStream());
+                    public InputStream getErrorResponse() throws IOException {
+                        return connection.getErrorStream();
                     }
 
                     @Override
@@ -132,8 +130,8 @@ public class URLConnectionRestClient implements RestClient {
                 }
 
                 @Override
-                public byte[] getBody() throws IOException {
-                    return IOUtils.toByteArray(connection.getInputStream());
+                public InputStream getBody() throws IOException {
+                    return connection.getInputStream();
                 }
 
                 @Override
@@ -142,8 +140,8 @@ public class URLConnectionRestClient implements RestClient {
                 }
 
                 @Override
-                public byte[] getErrorResponse() throws IOException {
-                    return IOUtils.toByteArray(connection.getErrorStream());
+                public InputStream getErrorResponse() throws IOException {
+                    return connection.getErrorStream();
                 }
 
                 @Override
@@ -153,7 +151,7 @@ public class URLConnectionRestClient implements RestClient {
 
                 @Override
                 public String getMessage() throws IOException {
-                    return new String(getErrorResponse());
+                    return connection.getResponseMessage();
                 }
             });
         } catch (Exception e) {
@@ -176,6 +174,11 @@ public class URLConnectionRestClient implements RestClient {
     @Override
     public boolean isClosed() {
         return true;
+    }
+
+    public HttpURLConnection createHttpClient(HttpClientConfig httpClientConfig) {
+
+        return null;
     }
 
 }

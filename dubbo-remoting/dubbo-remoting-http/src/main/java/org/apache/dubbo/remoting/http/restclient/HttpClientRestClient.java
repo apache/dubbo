@@ -34,6 +34,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -90,8 +91,8 @@ public class HttpClientRestClient implements RestClient {
                 }
 
                 @Override
-                public byte[] getBody() throws IOException {
-                    return IOUtils.toByteArray(response.getEntity().getContent());
+                public InputStream getBody() throws IOException {
+                    return response.getEntity().getContent();
                 }
 
                 @Override
@@ -100,7 +101,7 @@ public class HttpClientRestClient implements RestClient {
                 }
 
                 @Override
-                public byte[] getErrorResponse() throws IOException {
+                public InputStream getErrorResponse() throws IOException {
                     return getBody();
                 }
 
