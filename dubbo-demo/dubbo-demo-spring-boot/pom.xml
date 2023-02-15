@@ -36,7 +36,26 @@
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
         <skip_maven_deploy>true</skip_maven_deploy>
+        <spring-boot.version>2.7.8</spring-boot.version>
         <spring-boot-maven-plugin.version>2.7.8</spring-boot-maven-plugin.version>
     </properties>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring-boot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.micrometer</groupId>
+                <artifactId>micrometer-core</artifactId>
+                <version>1.10.4</version>
+            </dependency>
+        </dependencies>
+
+    </dependencyManagement>
+
 
 </project>

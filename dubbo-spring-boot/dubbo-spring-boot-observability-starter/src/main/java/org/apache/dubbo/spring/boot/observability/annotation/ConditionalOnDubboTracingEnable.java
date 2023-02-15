@@ -14,23 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.spring.boot.observability.annotation;
 
-package org.apache.dubbo.springboot.demo.provider;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 
-import io.micrometer.tracing.Tracer;
-import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-
-import java.util.concurrent.CountDownLatch;
-
-@SpringBootApplication
-@EnableDubbo(scanBasePackages = {"org.apache.dubbo.springboot.demo.provider"})
-public class ProviderApplication {
-    public static void main(String[] args) throws Exception {
-        SpringApplication.run(ProviderApplication.class, args);
-        System.out.println("dubbo service started");
-        new CountDownLatch(1).await();
-    }
+/**
+ * @author shenfeng
+ */
+@Target({ElementType.TYPE,ElementType.METHOD})
+@Retention(RetentionPolicy.RUNTIME)
+@Inherited
+@Documented
+@ConditionalOnProperty(prefix = "dubbo.tracing", name = "enabled", matchIfMissing = true)
+public @interface ConditionalOnDubboTracingEnable {
 }

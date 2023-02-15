@@ -1,0 +1,35 @@
+{
+  "groups": [
+    {
+      "name": "dubbo.tracing",
+      "type": "org.apache.dubbo.spring.boot.observability.config.DubboTracingProperties",
+      "sourceType": "org.apache.dubbo.spring.boot.observability.config.DubboTracingProperties"
+    }
+  ],
+  "properties": [
+    {
+      "name": "dubbo.tracing.baggage",
+      "type": "java.lang.String",
+      "sourceType": "org.apache.dubbo.spring.boot.observability.config.DubboTracingProperties",
+      "defaultValue": "W3C"
+    },
+    {
+      "name": "dubbo.tracing.enable",
+      "type": "java.lang.Boolean",
+      "sourceType": "org.apache.dubbo.spring.boot.observability.config.DubboTracingProperties",
+      "defaultValue": true
+    },
+    {
+      "name": "dubbo.tracing.ratio",
+      "type": "java.lang.Double",
+      "sourceType": "org.apache.dubbo.spring.boot.observability.config.DubboTracingProperties",
+      "defaultValue": 0.01
+    },
+    {
+      "name": "dubbo.tracing.remote-fields",
+      "type": "java.util.List<java.lang.String>",
+      "sourceType": "org.apache.dubbo.spring.boot.observability.config.DubboTracingProperties"
+    }
+  ],
+  "hints": []
+}

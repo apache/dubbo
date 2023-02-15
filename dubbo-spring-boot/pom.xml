@@ -36,6 +36,7 @@
         <module>dubbo-spring-boot-autoconfigure</module>
         <module>dubbo-spring-boot-compatible</module>
         <module>dubbo-spring-boot-starter</module>
+        <module>dubbo-spring-boot-observability-starter</module>
     </modules>
 
     <properties>
@@ -56,6 +57,11 @@
                 <version>${spring-boot.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.micrometer</groupId>
+                <artifactId>micrometer-core</artifactId>
+                <version>1.10.3</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
