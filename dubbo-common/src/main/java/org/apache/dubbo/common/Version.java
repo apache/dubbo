@@ -51,8 +51,8 @@ public final class Version {
     // version 1.0.0 represents Dubbo rpc protocol before v2.6.2
     public static final int LEGACY_DUBBO_PROTOCOL_VERSION = 10000; // 1.0.0
     // Dubbo implementation version.
-    private static final String VERSION;
-    private static final String LATEST_COMMIT_ID;
+    private static String VERSION;
+    private static String LATEST_COMMIT_ID;
 
     /**
      * For protocol compatibility purpose.
@@ -68,13 +68,19 @@ public final class Version {
         Version.checkDuplicate(Version.class);
 
         // get dubbo version and last commit id
-        Properties properties =
-            ConfigUtils.loadProperties(Collections.emptySet(), "META-INF/version");
+        try {
+            Properties properties =
+                ConfigUtils.loadProperties(Collections.emptySet(), "META-INF/version");
 
-        VERSION = Optional.ofNullable(properties.getProperty("git.build.version"))
-            .filter(StringUtils::isNotBlank)
-            .orElseGet(() -> getVersion(Version.class, ""));
-        LATEST_COMMIT_ID = Optional.ofNullable(properties.getProperty("git.commit.id.full")).orElse("");
+            VERSION = Optional.ofNullable(properties.getProperty("git.build.version"))
+                .filter(StringUtils::isNotBlank)
+                .orElseGet(() -> getVersion(Version.class, ""));
+            LATEST_COMMIT_ID = Optional.ofNullable(properties.getProperty("git.commit.id.full")).orElse("");
+        } catch (Throwable e) {
+            logger.warn(COMMON_UNEXPECTED_EXCEPTION, "", "", "continue the old logic, ignore exception " + e.getMessage(), e);
+            VERSION = getVersion(Version.class, "");
+            LATEST_COMMIT_ID = "";
+        }
     }
 
     private Version() {
