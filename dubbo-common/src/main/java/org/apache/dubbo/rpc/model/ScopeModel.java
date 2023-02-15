@@ -243,9 +243,7 @@ public abstract class ScopeModel implements ExtensionAccessor {
     }
 
     public Set<ClassLoader> getClassLoaders() {
-        synchronized (instLock) {
-            return Collections.unmodifiableSet(classLoaders);
-        }
+        return Collections.unmodifiableSet(classLoaders);
     }
 
     public abstract Environment getModelEnvironment();
