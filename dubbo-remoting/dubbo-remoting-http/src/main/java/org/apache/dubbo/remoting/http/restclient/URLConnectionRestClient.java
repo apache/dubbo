@@ -27,6 +27,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.GZIPOutputStream;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.dubbo.remoting.http.BaseRestClient;
 import org.apache.dubbo.remoting.http.RequestTemplate;
 import org.apache.dubbo.remoting.http.RestResult;
@@ -151,7 +152,7 @@ public class URLConnectionRestClient extends BaseRestClient<HttpURLConnection> {
 
                 @Override
                 public String getMessage() throws IOException {
-                    return new String(getErrorResponse());
+                    return connection.getResponseMessage();
                 }
             });
         } catch (Exception e) {
