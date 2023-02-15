@@ -29,6 +29,7 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.support.RpcUtils;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
@@ -80,22 +81,10 @@ public class ProfilerServerFilter implements Filter, BaseFilter.Listener {
     }
 
     private void dumpIfNeed(Invoker<?> invoker, Invocation invocation, ProfilerEntry profiler) {
-        Integer timeout = null;
-        Object timeoutValue = invocation.getObjectAttachmentWithoutConvert(TIMEOUT_KEY);
-        try {
-            if (timeoutValue instanceof Integer) {
-                timeout = (Integer) timeoutValue;
-            } else if (timeoutValue instanceof String) {
-                timeout = Integer.valueOf((String) timeoutValue);
-            } else if (timeoutValue instanceof Number) {
-                timeout = ((Number) timeoutValue).intValue();
-            }
-        } catch (Exception ignore) {
-            // ignore
-        }
+        Long timeout = RpcUtils.convertToNumber(invocation.getObjectAttachmentWithoutConvert(TIMEOUT_KEY));
 
         if (timeout == null) {
-            timeout = invoker.getUrl().getMethodPositiveParameter(invocation.getMethodName(), TIMEOUT_KEY, DEFAULT_TIMEOUT);
+            timeout = (long) invoker.getUrl().getMethodPositiveParameter(invocation.getMethodName(), TIMEOUT_KEY, DEFAULT_TIMEOUT);
         }
         long usage = profiler.getEndTime() - profiler.getStartTime();
         if (((usage / (1000_000L * ProfilerSwitch.getWarnPercent())) > timeout) && timeout != -1) {

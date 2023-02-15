@@ -26,6 +26,7 @@ import org.apache.dubbo.common.profiler.ProfilerSwitch;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.RpcServiceContext;
+import org.apache.dubbo.rpc.support.RpcUtils;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
@@ -56,22 +57,10 @@ public class InvocationUtil {
                 return invoker.invoke(rpcInvocation).recreate();
             } finally {
                 Profiler.release(bizProfiler);
-                Integer timeout = null;
-                Object timeoutKey = rpcInvocation.getObjectAttachmentWithoutConvert(TIMEOUT_KEY);
-                try {
-                    if (timeoutKey instanceof Integer) {
-                        timeout = (Integer) timeoutKey;
-                    } else if (timeoutKey instanceof String) {
-                        timeout = Integer.valueOf((String) timeoutKey);
-                    } else if (timeoutKey instanceof Number) {
-                        timeout = ((Number) timeoutKey).intValue();
-                    }
-                } catch (Exception ignore) {
-                    // ignore
-                }
+                Long timeout = RpcUtils.convertToNumber(rpcInvocation.getObjectAttachmentWithoutConvert(TIMEOUT_KEY));
 
                 if (timeout == null) {
-                    timeout = url.getMethodPositiveParameter(rpcInvocation.getMethodName(),
+                    timeout = (long) url.getMethodPositiveParameter(rpcInvocation.getMethodName(),
                         TIMEOUT_KEY,
                         DEFAULT_TIMEOUT);
                 }
