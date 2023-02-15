@@ -16,18 +16,17 @@
  */
 package org.apache.dubbo.metadata;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.rpc.model.ApplicationModel;
-
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDED_BY;
 import static org.apache.dubbo.common.constants.RegistryConstants.SUBSCRIBED_SERVICE_NAMES_KEY;
@@ -126,6 +125,11 @@ class AbstractServiceNameMappingTest {
         public boolean map(URL url) {
             return false;
         }
+
+        @Override
+        public boolean hasValidMetadataCenter() {
+            return false;
+        }
     }
 
     private class MockServiceNameMapping2 extends AbstractServiceNameMapping {
@@ -156,6 +160,11 @@ class AbstractServiceNameMappingTest {
 
         @Override
         public boolean map(URL url) {
+            return false;
+        }
+
+        @Override
+        public boolean hasValidMetadataCenter() {
             return false;
         }
     }

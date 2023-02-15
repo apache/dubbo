@@ -302,8 +302,13 @@ public class RpcUtils {
         return timeout;
     }
 
-    private static long convertToNumber(Object obj, long defaultTimeout) {
-        long timeout = defaultTimeout;
+    public static Long convertToNumber(Object obj, long defaultTimeout) {
+        Long timeout = convertToNumber(obj);
+        return timeout == null ? defaultTimeout : timeout;
+    }
+
+    public static Long convertToNumber(Object obj) {
+        Long timeout = null;
         try {
             if (obj instanceof String) {
                 timeout = Long.parseLong((String) obj);
