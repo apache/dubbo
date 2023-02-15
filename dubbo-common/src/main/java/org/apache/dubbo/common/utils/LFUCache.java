@@ -85,12 +85,12 @@ public class LFUCache<K, V> {
                 freqTable[0].addLastNode(node);
                 map.put(key, node);
             } else {
-                node = freqTable[0].addLast(key, value);
-                map.put(key, node);
                 curSize++;
                 if (curSize > capacity) {
                     proceedEviction();
                 }
+                node = freqTable[0].addLast(key, value);
+                map.put(key, node);
             }
         } finally {
             lock.unlock();

@@ -14,14 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.grpc.interceptors;
+package org.apache.dubbo.config.spring.api;
 
-import org.apache.dubbo.common.extension.ExtensionScope;
-import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.config.annotation.ProvidedBy;
 
 /**
- * Adapt to the standard Dubbo SPI, so that we can leverage the advantages of Dubbo ExtensionLoader.
+ * DemoService
  */
-@SPI(scope = ExtensionScope.FRAMEWORK)
-public interface ClientInterceptor extends io.grpc.ClientInterceptor {
+@ProvidedBy(name = {"provided-demo-service-interface1", "provided-demo-service-interface2"})
+public interface ProvidedByDemoService3 {
+
+    String sayName(String name);
 }

@@ -14,18 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.grpc.support;
 
-import io.grpc.stub.StreamObserver;
+package org.apache.dubbo.metrics.collector.sample;
 
-public class GrpcGreeterImpl extends DubboGreeterGrpc.GreeterImplBase {
+import org.apache.dubbo.metrics.model.sample.MetricSample;
 
-    @Override
-    public void sayHello(HelloRequest request, StreamObserver<HelloReply> responseObserver) {
-        System.out.println("Executing thread is " + Thread.currentThread().getName());
-        HelloReply reply = HelloReply.newBuilder().setMessage("Hello " + request.getName()).build();
-        responseObserver.onNext(reply);
-        responseObserver.onCompleted();
-    }
+import java.util.List;
 
+public interface MetricsSampler {
+
+    List<MetricSample> sample();
 }

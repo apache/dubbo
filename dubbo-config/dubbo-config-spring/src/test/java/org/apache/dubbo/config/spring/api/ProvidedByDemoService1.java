@@ -14,8 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.grpc;
+package org.apache.dubbo.config.spring.api;
 
-public class GrpcConfig {
+import org.apache.dubbo.config.annotation.ProvidedBy;
 
+/**
+ * DemoService
+ */
+@ProvidedBy(name = "provided-demo-service-interface")
+public interface ProvidedByDemoService1 {
+
+    String sayName(String name);
 }
