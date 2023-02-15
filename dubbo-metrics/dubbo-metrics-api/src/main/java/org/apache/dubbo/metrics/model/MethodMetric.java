@@ -19,11 +19,13 @@ package org.apache.dubbo.metrics.model;
 
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_IP;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_HOSTNAME;
@@ -123,12 +125,14 @@ public class MethodMetric implements Metric {
         String[] ivArr = interfaceAndVersion.split(CommonConstants.GROUP_CHAR_SEPARATOR);
         String interfaceName = ivArr[0];
         String version = ivArr.length == 2 ? ivArr[1] : null;
-        this.side = invocation.getInvoker().getUrl().getSide();
+        Optional<? extends Invoker<?>> invoker = Optional.ofNullable(invocation.getInvoker());
+        this.side = invoker.isPresent() ? invoker.get().getUrl().getSide() : "";
         this.interfaceName = interfaceName;
         this.methodName = methodName;
         this.group = group;
         this.version = version;
     }
+
     public String getApplicationName() {
         return applicationName;
     }
