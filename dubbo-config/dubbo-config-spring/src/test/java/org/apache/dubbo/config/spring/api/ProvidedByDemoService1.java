@@ -14,22 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metrics;
+package org.apache.dubbo.config.spring.api;
 
-import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.binder.MeterBinder;
+import org.apache.dubbo.config.annotation.ProvidedBy;
 
+/**
+ * DemoService
+ */
+@ProvidedBy(name = "provided-demo-service-interface")
+public interface ProvidedByDemoService1 {
 
-public class DubboMetrics implements MeterBinder {
-
-    public static volatile MeterRegistry globalRegistry = null;
-
-    @Override
-    public void bindTo(MeterRegistry registry) {
-        globalRegistry = registry;
-    }
-
-    public void destroy() {
-    }
+    String sayName(String name);
 }
-
