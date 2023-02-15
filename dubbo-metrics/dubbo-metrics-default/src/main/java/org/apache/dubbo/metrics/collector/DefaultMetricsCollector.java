@@ -43,11 +43,11 @@ public class DefaultMetricsCollector implements MetricsCollector {
 
     private boolean collectEnabled = false;
     private final SimpleMetricsEventMulticaster eventMulticaster;
-    private MethodMetricsSampler methodSampler = new MethodMetricsSampler(this);
-    private ThreadPoolMetricsSampler threadPoolSampler = new ThreadPoolMetricsSampler(this);
+    private final MethodMetricsSampler methodSampler = new MethodMetricsSampler(this);
+    private final ThreadPoolMetricsSampler threadPoolSampler = new ThreadPoolMetricsSampler(this);
     private String applicationName;
     private ApplicationModel applicationModel;
-    private List<MetricsSampler> samplers = new ArrayList<>();
+    private final List<MetricsSampler> samplers = new ArrayList<>();
 
     public DefaultMetricsCollector() {
         this.eventMulticaster = new SimpleMetricsEventMulticaster();
@@ -64,11 +64,11 @@ public class DefaultMetricsCollector implements MetricsCollector {
         return this.applicationName;
     }
 
-    public ApplicationModel getApplicationModel(){
+    public ApplicationModel getApplicationModel() {
         return this.applicationModel;
     }
 
-    public SimpleMetricsEventMulticaster getEventMulticaster(){
+    public SimpleMetricsEventMulticaster getEventMulticaster() {
         return this.eventMulticaster;
     }
 
@@ -80,14 +80,14 @@ public class DefaultMetricsCollector implements MetricsCollector {
         return collectEnabled;
     }
 
-    public MethodMetricsSampler getMethodSampler(){
+    public MethodMetricsSampler getMethodSampler() {
         return this.methodSampler;
     }
 
     public void collectApplication(ApplicationModel applicationModel) {
         this.setApplicationName(applicationModel.getApplicationName());
         this.applicationModel = applicationModel;
-        applicationSampler.inc(applicationName,MetricsEvent.Type.APPLICATION_INFO);
+        applicationSampler.inc(applicationName, MetricsEvent.Type.APPLICATION_INFO);
     }
 
     @Override
@@ -104,13 +104,13 @@ public class DefaultMetricsCollector implements MetricsCollector {
         this.eventMulticaster.addListener(listener);
     }
 
-    public SimpleMetricsCountSampler<String,MetricsEvent.Type, ApplicationMetric> applicationSampler = new SimpleMetricsCountSampler<String,MetricsEvent.Type,ApplicationMetric>(){
+    public SimpleMetricsCountSampler<String, MetricsEvent.Type, ApplicationMetric> applicationSampler = new SimpleMetricsCountSampler<String, MetricsEvent.Type, ApplicationMetric>() {
         @Override
         public List<MetricSample> sample() {
             List<MetricSample> samples = new ArrayList<>();
-            this.getCount(MetricsEvent.Type.APPLICATION_INFO).filter(e->!e.isEmpty())
-                    .ifPresent(map -> map.forEach((k, v) -> samples.add(new GaugeMetricSample(APPLICATION_METRIC_INFO, k.getTags(),
-                            APPLICATION, v::get))));
+            this.getCount(MetricsEvent.Type.APPLICATION_INFO).filter(e -> !e.isEmpty())
+                .ifPresent(map -> map.forEach((k, v) -> samples.add(new GaugeMetricSample(APPLICATION_METRIC_INFO, k.getTags(),
+                    APPLICATION, v::get))));
             return samples;
         }
 

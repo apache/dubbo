@@ -36,9 +36,9 @@ import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
 @Activate(group = PROVIDER, order = -1)
 public class ObservationReceiverFilter implements Filter, BaseFilter.Listener, ScopeModelAware {
 
-    private ObservationRegistry observationRegistry = ObservationRegistry.NOOP;
+    private final ObservationRegistry observationRegistry;
 
-    private DubboServerObservationConvention serverObservationConvention = null;
+    private final DubboServerObservationConvention serverObservationConvention;
 
     public ObservationReceiverFilter(ApplicationModel applicationModel) {
         observationRegistry = applicationModel.getBeanFactory().getBean(ObservationRegistry.class);
