@@ -124,6 +124,7 @@
         <maven_jacoco_version>0.8.8</maven_jacoco_version>
         <maven_flatten_version>1.3.0</maven_flatten_version>
         <maven_enforce_version>3.2.1</maven_enforce_version>
+        <maven_git_version>4.9.10</maven_git_version>
         <arguments />
         <checkstyle.skip>true</checkstyle.skip>
         <checkstyle_unix.skip>true</checkstyle_unix.skip>
@@ -799,6 +800,11 @@
                     <groupId>org.eclipse.jetty</groupId>
                     <artifactId>jetty-maven-plugin</artifactId>
                     <version>${maven_jetty_version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>pl.project13.maven</groupId>
+                    <artifactId>git-commit-id-plugin</artifactId>
+                    <version>${maven_git_version}</version>
                 </plugin>
             </plugins>
         </pluginManagement>
