@@ -20,9 +20,9 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.http.RestClient;
-import org.apache.dubbo.remoting.http.factory.AbstractHttpClientFactory;
 import org.apache.dubbo.remoting.http.restclient.OKHttpRestClient;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.remoting.http.factory.AbstractHttpClientFactory;
 
 @Activate(Constants.OK_HTTP)
 public class OkHttpClientFactory extends AbstractHttpClientFactory {

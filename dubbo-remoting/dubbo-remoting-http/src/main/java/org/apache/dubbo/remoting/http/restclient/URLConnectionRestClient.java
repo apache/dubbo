@@ -45,7 +45,7 @@ public class URLConnectionRestClient extends BaseRestClient<HttpURLConnection> {
         CompletableFuture<RestResult> future = new CompletableFuture<>();
 
         try {
-            HttpURLConnection connection = (HttpURLConnection) new URL(requestTemplate.getUri()).openConnection();
+            HttpURLConnection connection = (HttpURLConnection) new URL(requestTemplate.getURL()).openConnection();
             connection.setConnectTimeout(clientConfig.getConnectTimeout());
             connection.setReadTimeout(clientConfig.getReadTimeout());
             connection.setAllowUserInteraction(false);
