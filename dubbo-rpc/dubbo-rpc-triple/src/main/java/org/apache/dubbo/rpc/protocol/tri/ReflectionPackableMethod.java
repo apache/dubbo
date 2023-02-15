@@ -393,12 +393,19 @@ public class ReflectionPackableMethod implements PackableMethod {
             }
             final TripleCustomerProtocolWapper.TripleRequestWrapper.Builder builder = TripleCustomerProtocolWapper.TripleRequestWrapper.Builder.newBuilder();
             builder.setSerializeType(serialize);
+
+            if (arguments != null && arguments.length > 0){
+                return new byte[0];
+            }
+
             for (int i = 0; i < arguments.length; i++) {
                 builder.addArgTypes(actualRequestTypes[i].getName());
                 ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                multipleSerialization.serialize(url, serialize, actualRequestTypes[i], arguments[i], bos);
+                multipleSerialization.serialize(url, serialize, actualRequestTypes[i],
+                        arguments[i], bos);
                 builder.addArgs(bos.toByteArray());
             }
+
             return builder.build().toByteArray();
         }
 
