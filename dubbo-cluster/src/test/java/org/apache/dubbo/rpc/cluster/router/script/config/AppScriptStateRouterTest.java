@@ -28,6 +28,8 @@ import org.apache.dubbo.rpc.cluster.router.state.BitList;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledForJreRange;
+import org.junit.jupiter.api.condition.JRE;
 import org.mockito.Mockito;
 
 import java.util.ArrayList;
@@ -35,12 +37,13 @@ import java.util.List;
 
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_APPLICATION_KEY;
 
+@DisabledForJreRange(min = JRE.JAVA_16)
 public class AppScriptStateRouterTest {
     private static final String LOCAL_HOST = "127.0.0.1";
     private static final String RULE_SUFFIX = ".script-router";
 
     private static GovernanceRuleRepository ruleRepository;
-    private URL url = URL.valueOf("consumer://1.1.1.1/com.foo.BarService");
+    private URL url = URL.valueOf("dubbo://1.1.1.1/com.foo.BarService");
     private String rawRule = "---\n" +
         "configVersion: v3.0\n" +
         "key: demo-provider\n" +
