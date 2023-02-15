@@ -18,7 +18,6 @@ package org.apache.dubbo.rpc.protocol.rest.annotation;
 
 
 import org.apache.dubbo.metadata.rest.ArgInfo;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.consumer.BaseConsumerParamParser;
 import org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.consumer.ConsumerParseContext;

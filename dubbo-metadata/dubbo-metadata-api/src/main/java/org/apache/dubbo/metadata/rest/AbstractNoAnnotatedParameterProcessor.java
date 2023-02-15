@@ -21,7 +21,8 @@ import org.apache.dubbo.metadata.rest.media.MediaType;
 import java.lang.reflect.Parameter;
 import java.util.Set;
 
-import static org.apache.dubbo.common.utils.ClassUtils.*;
+import static org.apache.dubbo.common.utils.ClassUtils.getClassLoader;
+import static org.apache.dubbo.common.utils.ClassUtils.resolveClass;
 
 public abstract class AbstractNoAnnotatedParameterProcessor implements NoAnnotatedParameterRequestTagProcessor {
 

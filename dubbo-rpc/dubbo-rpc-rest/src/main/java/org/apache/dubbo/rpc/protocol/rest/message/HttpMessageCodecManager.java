@@ -21,8 +21,8 @@ import org.apache.dubbo.metadata.rest.media.MediaType;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.rest.exception.UnSupportContentTypeException;
 
-import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Set;
 
 public class HttpMessageCodecManager {
@@ -30,16 +30,16 @@ public class HttpMessageCodecManager {
         FrameworkModel.defaultModel().getExtensionLoader(HttpMessageCodec.class).getSupportedExtensionInstances();
 
 
-    public static Object httpMessageDecode(InputStream inputStream, Class type, MediaType mediaType) throws Exception {
+    public static Object httpMessageDecode(InputStream body, Class type, MediaType mediaType) throws Exception {
         for (HttpMessageCodec httpMessageCodec : httpMessageCodecs) {
             if (httpMessageCodec.contentTypeSupport(mediaType)) {
-                return httpMessageCodec.decode(inputStream, type);
+                return httpMessageCodec.decode(body, type);
             }
         }
         throw new UnSupportContentTypeException("UnSupport content-type :" + mediaType.value);
     }
 
-    public static void httpMessageEncode(ByteArrayOutputStream outputStream, Object unSerializedBody, URL url, MediaType mediaType) throws Exception {
+    public static void httpMessageEncode(OutputStream outputStream, Object unSerializedBody, URL url, MediaType mediaType) throws Exception {
         for (HttpMessageCodec httpMessageCodec : httpMessageCodecs) {
             if (httpMessageCodec.contentTypeSupport(mediaType)) {
                 httpMessageCodec.encode(outputStream, unSerializedBody, url);
