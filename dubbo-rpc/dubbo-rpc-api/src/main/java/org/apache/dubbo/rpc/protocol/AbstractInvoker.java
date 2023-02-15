@@ -261,7 +261,7 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
              * {@link java.util.concurrent.CompletableFuture#get()} was proved to have serious performance drop.
              */
             Object timeoutKey = invocation.getObjectAttachmentWithoutConvert(TIMEOUT_KEY);
-            int timeout = convertTimeout(timeoutKey, Integer.MAX_VALUE);
+            long timeout = RpcUtils.convertToNumber(timeoutKey, Integer.MAX_VALUE);
 
             asyncResult.get(timeout, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
@@ -286,25 +286,6 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
         } catch (Throwable e) {
             throw new RpcException(e.getMessage(), e);
         }
-    }
-
-    private static int convertTimeout(Object timeoutKey, int defaultValue) {
-        Integer timeout = null;
-        try {
-            if (timeoutKey instanceof Integer) {
-                timeout = (Integer) timeoutKey;
-            } else if (timeoutKey instanceof String) {
-                timeout = Integer.valueOf((String) timeoutKey);
-            } else if (timeoutKey instanceof Number) {
-                timeout = ((Number) timeoutKey).intValue();
-            }
-        } catch (Exception ignore) {
-            // ignore
-        }
-        if (timeout == null) {
-            timeout = Integer.MAX_VALUE;
-        }
-        return timeout;
     }
 
     // -- Protected api
