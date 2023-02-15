@@ -394,7 +394,7 @@ public class ReflectionPackableMethod implements PackableMethod {
             final TripleCustomerProtocolWapper.TripleRequestWrapper.Builder builder = TripleCustomerProtocolWapper.TripleRequestWrapper.Builder.newBuilder();
             builder.setSerializeType(serialize);
 
-            if (arguments != null && arguments.length > 0){
+            if (arguments == null || arguments.length == 0){
                 return new byte[0];
             }
 
