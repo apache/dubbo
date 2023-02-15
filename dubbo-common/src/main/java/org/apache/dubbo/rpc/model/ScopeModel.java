@@ -134,51 +134,39 @@ public abstract class ScopeModel implements ExtensionAccessor {
     }
 
     protected void notifyDestroy() {
-        synchronized (instLock) {
-            for (ScopeModelDestroyListener destroyListener : destroyListeners) {
+        for (ScopeModelDestroyListener destroyListener : destroyListeners) {
+            destroyListener.onDestroy(this);
+        }
+    }
+
+    protected void notifyProtocolDestroy() {
+        for (ScopeModelDestroyListener destroyListener : destroyListeners) {
+            if (destroyListener.isProtocol()) {
                 destroyListener.onDestroy(this);
             }
         }
     }
 
-    protected void notifyProtocolDestroy() {
-        synchronized (instLock) {
-            for (ScopeModelDestroyListener destroyListener : destroyListeners) {
-                if (destroyListener.isProtocol()) {
-                    destroyListener.onDestroy(this);
-                }
-            }
-        }
-    }
-
     protected void notifyClassLoaderAdd(ClassLoader classLoader) {
-        synchronized (instLock) {
-            for (ScopeClassLoaderListener classLoaderListener : classLoaderListeners) {
-                classLoaderListener.onAddClassLoader(this, classLoader);
-            }
+        for (ScopeClassLoaderListener classLoaderListener : classLoaderListeners) {
+            classLoaderListener.onAddClassLoader(this, classLoader);
         }
     }
 
     protected void notifyClassLoaderDestroy(ClassLoader classLoader) {
-        synchronized (instLock) {
-            for (ScopeClassLoaderListener classLoaderListener : classLoaderListeners) {
-                classLoaderListener.onRemoveClassLoader(this, classLoader);
-            }
+        for (ScopeClassLoaderListener classLoaderListener : classLoaderListeners) {
+            classLoaderListener.onRemoveClassLoader(this, classLoader);
         }
     }
 
     protected abstract void onDestroy();
 
     public final void addDestroyListener(ScopeModelDestroyListener listener) {
-        synchronized (instLock) {
-            destroyListeners.add(listener);
-        }
+        destroyListeners.add(listener);
     }
 
     public final void addClassLoaderListener(ScopeClassLoaderListener listener) {
-        synchronized (instLock) {
-            classLoaderListeners.add(listener);
-        }
+        classLoaderListeners.add(listener);
     }
 
     public Map<String, Object> getAttributes() {

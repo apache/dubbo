@@ -276,15 +276,11 @@ public class ApplicationModel extends ScopeModel {
     }
 
     public List<ModuleModel> getModuleModels() {
-        synchronized (instLock) {
-            return Collections.unmodifiableList(moduleModels);
-        }
+        return Collections.unmodifiableList(moduleModels);
     }
 
     public List<ModuleModel> getPubModuleModels() {
-        synchronized (instLock) {
-            return Collections.unmodifiableList(pubModuleModels);
-        }
+        return Collections.unmodifiableList(pubModuleModels);
     }
 
     public ModuleModel getDefaultModule() {
