@@ -2230,7 +2230,14 @@
     ]
   },
   {
-    "name": "org.apache.dubbo.rpc.filter.AccessLogFilter"
+    "name": "org.apache.dubbo.rpc.filter.AccessLogFilter",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
   },
   {
     "name": "org.apache.dubbo.rpc.filter.ClassLoaderFilter",
