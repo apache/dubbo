@@ -1,4 +1,3 @@
 # This is a test file
-git.build.version=1.0.0
-git.commit.id.abbrev=82a29fc
-git.commit.id.full=82a29fcd674216fe9bea10b6efef3196929dd7ca
+revision=1.0.0
+git.commit.id=82a29fcd674216fe9bea10b6efef3196929dd7ca

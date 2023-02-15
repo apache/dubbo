@@ -72,10 +72,10 @@ public final class Version {
             Properties properties =
                 ConfigUtils.loadProperties(Collections.emptySet(), "META-INF/version");
 
-            VERSION = Optional.ofNullable(properties.getProperty("git.build.version"))
+            VERSION = Optional.ofNullable(properties.getProperty("revision"))
                 .filter(StringUtils::isNotBlank)
                 .orElseGet(() -> getVersion(Version.class, ""));
-            LATEST_COMMIT_ID = Optional.ofNullable(properties.getProperty("git.commit.id.full")).orElse("");
+            LATEST_COMMIT_ID = Optional.ofNullable(properties.getProperty("git.commit.id")).orElse("");
         } catch (Throwable e) {
             logger.warn(COMMON_UNEXPECTED_EXCEPTION, "", "", "continue the old logic, ignore exception " + e.getMessage(), e);
             VERSION = getVersion(Version.class, "");

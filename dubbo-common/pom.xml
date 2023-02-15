@@ -104,29 +104,32 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>pl.project13.maven</groupId>
-                <artifactId>git-commit-id-plugin</artifactId>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>get-the-git-infos</id>
+                        <id>get-version-infos</id>
+                        <phase>compile</phase>
+                        <configuration>
+                            <failOnError>false</failOnError>
+                            <target>
+                                <property name="version_file"
+                                          value="${project.build.outputDirectory}/META-INF/version"/>
+                                <!-- get the current version of dubbo -->
+                                <echo message="revision=${revision}${line.separator}" file="${version_file}"/>
+                                <echo message="git.commit.id=" file="${version_file}" append="true"/>
+                                <!-- get the latest commit id -->
+                                <exec executable="git" output="${version_file}" error=".git.exec.error" append="true"
+                                      timeout="3000" failifexecutionfails="false">
+                                    <arg line="rev-parse HEAD"/>
+                                </exec>
+                            </target>
+                        </configuration>
                         <goals>
-                            <goal>revision</goal>
+                            <goal>run</goal>
                         </goals>
-                        <phase>initialize</phase>
                     </execution>
                 </executions>
-                <configuration>
-                    <failOnNoGitDirectory>false</failOnNoGitDirectory>
-                    <generateGitPropertiesFile>true</generateGitPropertiesFile>
-                    <failOnUnableToExtractRepoInfo>false</failOnUnableToExtractRepoInfo>
-                    <generateGitPropertiesFilename>${project.build.outputDirectory}/META-INF/version
-                    </generateGitPropertiesFilename>
-                    <includeOnlyProperties>
-                        <includeOnlyProperty>^git.build.(version)$</includeOnlyProperty>
-                        <includeOnlyProperty>^git.commit.id.(abbrev|full)$</includeOnlyProperty>
-                    </includeOnlyProperties>
-                    <commitIdGenerationMode>full</commitIdGenerationMode>
-                </configuration>
             </plugin>
         </plugins>
     </build>
