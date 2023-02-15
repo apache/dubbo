@@ -17,6 +17,11 @@
 
 package org.apache.dubbo.metrics.collector;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
 import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.context.ConfigManager;
@@ -32,11 +37,6 @@ import org.apache.dubbo.metrics.model.MetricsKey;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 import static org.apache.dubbo.metrics.model.MetricsCategory.QPS;
 import static org.apache.dubbo.metrics.model.MetricsCategory.REQUESTS;
@@ -102,7 +102,7 @@ public class AggregateMetricsCollector implements MetricsCollector, MetricsListe
 
     private void onRequestEvent(RequestEvent event) {
         MethodMetric metric = (MethodMetric) event.getSource();
-        MetricsEvent.Type type = event.getType();
+        RequestEvent.Type type = event.getType();
         TimeWindowCounter counter = null;
         switch (type) {
             case TOTAL:
@@ -147,38 +147,44 @@ public class AggregateMetricsCollector implements MetricsCollector, MetricsListe
         collectRequests(list);
         collectQPS(list);
         collectRT(list);
+
         return list;
     }
 
     private void collectRequests(List<MetricSample> list) {
-        totalRequests.forEach((k, v) -> list.add(new GaugeMetricSample(k.getTags(), REQUESTS, v::get,
-            MetricsKey.METRIC_REQUESTS_TOTAL_AGG.getNameByType(k.getSide()), MetricsKey.METRIC_REQUESTS_TOTAL_AGG.getDescription())));
-        succeedRequests.forEach((k, v) -> list.add(new GaugeMetricSample(k.getTags(), REQUESTS, v::get,
-            MetricsKey.METRIC_REQUESTS_SUCCEED_AGG.getNameByType(k.getSide()), MetricsKey.METRIC_REQUESTS_SUCCEED_AGG.getDescription())));
-        unknownFailedRequests.forEach((k, v) -> list.add(new GaugeMetricSample(k.getTags(), REQUESTS, v::get,
-            MetricsKey.METRIC_REQUESTS_FAILED_AGG.getNameByType(k.getSide()), MetricsKey.METRIC_REQUESTS_FAILED_AGG.getDescription())));
-        businessFailedRequests.forEach((k, v) -> list.add(new GaugeMetricSample(k.getTags(), REQUESTS, v::get,
-            MetricsKey.METRIC_REQUESTS_BUSINESS_FAILED_AGG.getNameByType(k.getSide()), MetricsKey.METRIC_REQUESTS_BUSINESS_FAILED_AGG.getDescription())));
-        timeoutRequests.forEach((k, v) -> list.add(new GaugeMetricSample(k.getTags(), REQUESTS, v::get,
-            MetricsKey.METRIC_REQUESTS_TIMEOUT_AGG.getNameByType(k.getSide()), MetricsKey.METRIC_REQUESTS_TIMEOUT_AGG.getDescription())));
-        limitRequests.forEach((k, v) -> list.add(new GaugeMetricSample(k.getTags(), REQUESTS, v::get,
-            MetricsKey.METRIC_REQUESTS_LIMIT_AGG.getNameByType(k.getSide()), MetricsKey.METRIC_REQUESTS_LIMIT_AGG.getDescription())));
-        totalFailedRequests.forEach((k, v) -> list.add(new GaugeMetricSample(k.getTags(), REQUESTS, v::get,
-            MetricsKey.METRIC_REQUESTS_TOTAL_FAILED_AGG.getNameByType(k.getSide()), MetricsKey.METRIC_REQUESTS_TOTAL_FAILED_AGG.getDescription())));
+        totalRequests.forEach((k, v) ->
+            list.add(getGaugeMetricSample(MetricsKey.METRIC_REQUESTS_TOTAL_AGG, k, v)));
+        succeedRequests.forEach((k, v) ->
+            list.add(getGaugeMetricSample(MetricsKey.METRIC_REQUESTS_SUCCEED_AGG, k, v)));
+        unknownFailedRequests.forEach((k, v) ->
+            list.add(getGaugeMetricSample(MetricsKey.METRIC_REQUESTS_FAILED_AGG, k, v)));
+        businessFailedRequests.forEach((k, v) ->
+            list.add(getGaugeMetricSample(MetricsKey.METRIC_REQUESTS_BUSINESS_FAILED_AGG, k, v)));
+        timeoutRequests.forEach((k, v) ->
+            list.add(getGaugeMetricSample(MetricsKey.METRIC_REQUESTS_TIMEOUT_AGG, k, v)));
+        limitRequests.forEach((k, v) ->
+            list.add(getGaugeMetricSample(MetricsKey.METRIC_REQUESTS_LIMIT_AGG, k, v)));
+        totalFailedRequests.forEach((k, v) ->
+            list.add(getGaugeMetricSample(MetricsKey.METRIC_REQUESTS_TOTAL_FAILED_AGG, k, v)));
 
     }
 
+    private GaugeMetricSample getGaugeMetricSample(MetricsKey metricRequestsTotalAgg, MethodMetric k, TimeWindowCounter v) {
+        return new GaugeMetricSample(metricRequestsTotalAgg.getNameByType(k.getSide()),
+            metricRequestsTotalAgg.getDescription(), k.getTags(), REQUESTS, v::get);
+    }
+
     private void collectQPS(List<MetricSample> list) {
-        qps.forEach((k, v) -> list.add(new GaugeMetricSample(k.getTags(), QPS, () -> v.get() / v.bucketLivedSeconds(),
-            MetricsKey.METRIC_QPS.getNameByType(k.getSide()), MetricsKey.METRIC_QPS.getDescription())));
+        qps.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.METRIC_QPS.getNameByType(k.getSide()),
+            MetricsKey.METRIC_QPS.getDescription(), k.getTags(), QPS, () -> v.get() / v.bucketLivedSeconds())));
     }
 
     private void collectRT(List<MetricSample> list) {
         rt.forEach((k, v) -> {
-            list.add(new GaugeMetricSample(k.getTags(), RT, () -> v.quantile(0.99),
-                MetricsKey.METRIC_RT_P99.getNameByType(k.getSide()), MetricsKey.METRIC_RT_P99.getDescription()));
-            list.add(new GaugeMetricSample(k.getTags(), RT, () -> v.quantile(0.95),
-                MetricsKey.METRIC_RT_P95.getNameByType(k.getSide()), MetricsKey.METRIC_RT_P95.getDescription()));
+            list.add(new GaugeMetricSample(MetricsKey.METRIC_RT_P99.getNameByType(k.getSide()),
+                MetricsKey.METRIC_RT_P99.getDescription(), k.getTags(), RT, () -> v.quantile(0.99)));
+            list.add(new GaugeMetricSample(MetricsKey.METRIC_RT_P95.getNameByType(k.getSide()),
+                MetricsKey.METRIC_RT_P95.getDescription(), k.getTags(), RT, () -> v.quantile(0.95)));
         });
     }
 }
