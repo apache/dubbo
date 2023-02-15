@@ -17,17 +17,18 @@
 package org.apache.dubbo.remoting.http;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 
 public interface RestResult {
     String getContentType();
 
-    byte[] getBody() throws IOException;
+    InputStream getBody() throws IOException;
 
     Map<String, List<String>> headers();
 
-    byte[] getErrorResponse() throws IOException;
+    InputStream getErrorResponse() throws IOException;
 
     int getResponseCode() throws IOException;
 
