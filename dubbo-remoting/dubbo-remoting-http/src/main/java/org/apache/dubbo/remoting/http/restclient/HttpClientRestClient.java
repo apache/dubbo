@@ -16,12 +16,20 @@
  */
 package org.apache.dubbo.remoting.http.restclient;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
+
+import org.apache.dubbo.remoting.http.BaseRestClient;
 import org.apache.dubbo.remoting.http.RequestTemplate;
-import org.apache.dubbo.remoting.http.RestClient;
 import org.apache.dubbo.remoting.http.RestResult;
 import org.apache.dubbo.remoting.http.config.HttpClientConfig;
-
-import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -33,24 +41,11 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
-
-public class HttpClientRestClient implements RestClient {
-    private final CloseableHttpClient closeableHttpClient;
-    private final HttpClientConfig httpClientConfig;
+public class HttpClientRestClient extends BaseRestClient<CloseableHttpClient> {
 
     public HttpClientRestClient(HttpClientConfig clientConfig) {
-        closeableHttpClient = createHttpClient();
-        httpClientConfig = clientConfig;
+        super(clientConfig);
     }
 
     @Override
@@ -64,12 +59,10 @@ public class HttpClientRestClient implements RestClient {
         } else if ("POST".equals(httpMethod)) {
             HttpPost httpPost = new HttpPost(requestTemplate.getURL());
             httpPost.setEntity(new ByteArrayEntity(requestTemplate.getSerializedBody()));
-            httpRequest = httpPost;
         }
 
         Map<String, Collection<String>> allHeaders = requestTemplate.getAllHeaders();
 
-        allHeaders.remove("Content-Length");
         // header
         for (String headerName : allHeaders.keySet()) {
             Collection<String> headerValues = allHeaders.get(headerName);
@@ -79,11 +72,10 @@ public class HttpClientRestClient implements RestClient {
             }
         }
 
-        httpRequest.setConfig(getRequestConfig(httpClientConfig));
+        httpRequest.setConfig(getRequestConfig(clientConfig));
 
         CompletableFuture<RestResult> future = new CompletableFuture<>();
-        try {
-            CloseableHttpResponse response = closeableHttpClient.execute(httpRequest);
+        try (CloseableHttpResponse response = getClient().execute(httpRequest)) {
             future.complete(new RestResult() {
                 @Override
                 public String getContentType() {
@@ -130,7 +122,7 @@ public class HttpClientRestClient implements RestClient {
     @Override
     public void close() {
         try {
-            closeableHttpClient.close();
+            getClient().close();
         } catch (IOException e) {
 
         }
@@ -147,7 +139,7 @@ public class HttpClientRestClient implements RestClient {
         return true;
     }
 
-    public CloseableHttpClient createHttpClient() {
+    public CloseableHttpClient createHttpClient(HttpClientConfig httpClientConfig) {
         PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
         return HttpClients.custom().setConnectionManager(connectionManager).build();
     }
