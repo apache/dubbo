@@ -17,14 +17,6 @@
 
 package org.apache.dubbo.config;
 
-import java.util.Collections;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.config.api.DemoService;
@@ -44,13 +36,21 @@ import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.service.GenericService;
+
+import com.google.common.collect.Lists;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import com.google.common.collect.Lists;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
@@ -81,7 +81,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -644,8 +643,8 @@ class ServiceConfigTest {
             }
 
             @Override
-            public Set<String> getMapping(URL consumerURL) {
-                return null;
+            public void initInterfaceAppMapping(URL subscribedURL) {
+
             }
 
             @Override
@@ -664,7 +663,22 @@ class ServiceConfigTest {
             }
 
             @Override
+            public Set<String> getCachedMapping(String mappingKey) {
+                return null;
+            }
+
+            @Override
+            public Set<String> getCachedMapping(URL consumerURL) {
+                return null;
+            }
+
+            @Override
             public Set<String> getRemoteMapping(URL consumerURL) {
+                return null;
+            }
+
+            @Override
+            public Map<String, Set<String>> getCachedMapping() {
                 return null;
             }
 
@@ -683,7 +697,7 @@ class ServiceConfigTest {
         serviceConfig.setApplication(applicationConfig);
         serviceConfig.mapServiceName(URL.valueOf(""), serviceNameMapping, scheduledExecutorService);
 
-        verify(scheduledExecutorService.schedule((Runnable) any(), anyLong(), any()), times(0));
+        verify(scheduledExecutorService, times(0)).schedule((Runnable) any(), anyLong(), any());
 
         scheduledExecutorService.shutdown();
     }
