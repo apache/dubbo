@@ -20,7 +20,7 @@ package org.apache.dubbo.metrics.event;
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.metrics.collector.MetricsCollector;
-import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.List;
 
@@ -30,9 +30,9 @@ import java.util.List;
 public class GlobalMetricsEventMulticaster extends SimpleMetricsEventMulticaster {
 
     @SuppressWarnings({"rawtypes"})
-    public GlobalMetricsEventMulticaster(FrameworkModel frameworkModel) {
-        ScopeBeanFactory beanFactory = frameworkModel.getBeanFactory();
-        ExtensionLoader<MetricsCollector> extensionLoader = frameworkModel.getExtensionLoader(MetricsCollector.class);
+    public GlobalMetricsEventMulticaster(ApplicationModel applicationModel) {
+        ScopeBeanFactory beanFactory = applicationModel.getBeanFactory();
+        ExtensionLoader<MetricsCollector> extensionLoader = applicationModel.getExtensionLoader(MetricsCollector.class);
         if (extensionLoader != null) {
             List<MetricsCollector> customizeCollectors = extensionLoader
                 .getActivateExtensions();
