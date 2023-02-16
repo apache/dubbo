@@ -14,27 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.json.impl;
+package com.service;
 
-import com.alibaba.fastjson.serializer.SerializerFeature;
-
-import java.lang.reflect.Type;
-import java.util.List;
-
-public class FastJsonImpl extends AbstractJSONImpl {
-
-    @Override
-    public <T> T toJavaObject(String json, Type type) {
-        return com.alibaba.fastjson.JSON.parseObject(json, type);
-    }
-
-    @Override
-    public <T> List<T> toJavaList(String json, Class<T> clazz) {
-        return com.alibaba.fastjson.JSON.parseArray(json, clazz);
-    }
-
-    @Override
-    public String toJson(Object obj) {
-        return com.alibaba.fastjson.JSON.toJSONString(obj, SerializerFeature.DisableCircularReferenceDetect);
-    }
+public abstract class DemoService5<T, R, Children extends DemoService5<T, R, Children>> {
 }

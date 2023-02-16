@@ -125,6 +125,11 @@ class AbstractServiceNameMappingTest {
         public boolean map(URL url) {
             return false;
         }
+
+        @Override
+        public boolean hasValidMetadataCenter() {
+            return false;
+        }
     }
 
     private class MockServiceNameMapping2 extends AbstractServiceNameMapping {
@@ -155,6 +160,11 @@ class AbstractServiceNameMappingTest {
 
         @Override
         public boolean map(URL url) {
+            return false;
+        }
+
+        @Override
+        public boolean hasValidMetadataCenter() {
             return false;
         }
     }
