@@ -15,24 +15,14 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.metrics.listener;
+package org.apache.dubbo.metrics.event;
 
-import org.apache.dubbo.metrics.event.MetricsEvent;
+import org.apache.dubbo.metrics.model.TimePair;
 
 /**
- * Metrics Listener.
+ *  Mark certain types of events, allow automatic recording of start and end times, and provide time pairs
  */
-public interface MetricsListener<E extends MetricsEvent> {
+public interface TimeCounter {
 
-    default boolean isSupport(MetricsEvent event) {
-        return true;
-    }
-
-    /**
-     * notify event.
-     *
-     * @param event BaseMetricsEvent
-     */
-    void onEvent(E event);
-
+    TimePair getTimePair();
 }

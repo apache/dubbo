@@ -15,24 +15,20 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.metrics.listener;
-
-import org.apache.dubbo.metrics.event.MetricsEvent;
+package org.apache.dubbo.metrics.collector;
 
 /**
- * Metrics Listener.
+ * Application-level collector.
+ * registration center, configuration center and other scenarios
+ *
+ * @Params <T>  metrics type
  */
-public interface MetricsListener<E extends MetricsEvent> {
+public interface ApplicationMetricsCollector<T> extends MetricsCollector {
 
-    default boolean isSupport(MetricsEvent event) {
-        return true;
-    }
+    void increment(String applicationName, T type);
 
-    /**
-     * notify event.
-     *
-     * @param event BaseMetricsEvent
-     */
-    void onEvent(E event);
+    void decrease(String applicationName, T type);
 
+    void addRT(String applicationName, Long responseTime);
 }
+

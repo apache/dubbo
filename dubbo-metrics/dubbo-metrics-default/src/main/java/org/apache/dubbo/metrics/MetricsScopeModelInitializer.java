@@ -14,37 +14,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config;
 
+package org.apache.dubbo.metrics;
+
+import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
+import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
+import org.apache.dubbo.metrics.event.GlobalMetricsEventMulticaster;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
+import org.apache.dubbo.rpc.model.ScopeModelInitializer;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+public class MetricsScopeModelInitializer implements ScopeModelInitializer {
 
-class ConfigScopeModelInitializerTest {
-    private FrameworkModel frameworkModel;
-    private ApplicationModel applicationModel;
-    private ModuleModel moduleModel;
+    @Override
+    public void initializeFrameworkModel(FrameworkModel frameworkModel) {
 
-    @BeforeEach
-    public void setUp() {
-        frameworkModel = new FrameworkModel();
-        applicationModel = frameworkModel.newApplication();
-        moduleModel = applicationModel.newModule();
     }
 
-    @AfterEach
-    public void reset() {
-        frameworkModel.destroy();
+    @Override
+    public void initializeApplicationModel(ApplicationModel applicationModel) {
+        ScopeBeanFactory beanFactory = applicationModel.getFrameworkModel().getBeanFactory();
+        beanFactory.registerBean(DefaultMetricsCollector.class);
+        beanFactory.registerBean(GlobalMetricsEventMulticaster.class);
     }
 
-    @Test
-    void test(){
-        Assertions.assertNotNull(applicationModel.getDeployer());
-        Assertions.assertNotNull(moduleModel.getDeployer());
+    @Override
+    public void initializeModuleModel(ModuleModel moduleModel) {
+
     }
 }
