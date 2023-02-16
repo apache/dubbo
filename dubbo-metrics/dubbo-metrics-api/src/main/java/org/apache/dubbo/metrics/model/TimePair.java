@@ -15,24 +15,26 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.metrics.listener;
+package org.apache.dubbo.metrics.model;
 
-import org.apache.dubbo.metrics.event.MetricsEvent;
+public class TimePair {
 
-/**
- * Metrics Listener.
- */
-public interface MetricsListener<E extends MetricsEvent> {
+    private final long begin;
+    private long end;
 
-    default boolean isSupport(MetricsEvent event) {
-        return true;
+    public TimePair(long currentTimeMillis) {
+        this.begin = currentTimeMillis;
     }
 
-    /**
-     * notify event.
-     *
-     * @param event BaseMetricsEvent
-     */
-    void onEvent(E event);
+    public static TimePair start() {
+        return new TimePair(System.currentTimeMillis());
+    }
 
+    public void end() {
+        this.end = System.currentTimeMillis();
+    }
+
+    public long calc() {
+        return end - begin;
+    }
 }

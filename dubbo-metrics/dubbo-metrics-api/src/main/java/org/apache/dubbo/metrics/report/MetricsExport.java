@@ -15,24 +15,25 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.metrics.listener;
+package org.apache.dubbo.metrics.report;
 
-import org.apache.dubbo.metrics.event.MetricsEvent;
+import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
+
+import java.util.List;
 
 /**
- * Metrics Listener.
+ * Metrics data export.
+ * Export data in a unified format for external collection(e.g. Prometheus).
  */
-public interface MetricsListener<E extends MetricsEvent> {
-
-    default boolean isSupport(MetricsEvent event) {
-        return true;
-    }
+public interface MetricsExport {
 
     /**
-     * notify event.
-     *
-     * @param event BaseMetricsEvent
+     * Cumulative statistics.
      */
-    void onEvent(E event);
+    List<GaugeMetricSample> exportNumMetrics();
 
+    /**
+     * Response time statistics at different latitudes
+     */
+    List<GaugeMetricSample> exportRtMetrics();
 }

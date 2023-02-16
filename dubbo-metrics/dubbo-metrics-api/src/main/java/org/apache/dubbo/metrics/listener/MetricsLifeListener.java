@@ -22,17 +22,9 @@ import org.apache.dubbo.metrics.event.MetricsEvent;
 /**
  * Metrics Listener.
  */
-public interface MetricsListener<E extends MetricsEvent> {
+public interface MetricsLifeListener<E extends MetricsEvent> extends MetricsListener<E> {
 
-    default boolean isSupport(MetricsEvent event) {
-        return true;
-    }
+    void onEventFinish(E event);
 
-    /**
-     * notify event.
-     *
-     * @param event BaseMetricsEvent
-     */
-    void onEvent(E event);
-
+    void onEventError(E event);
 }
