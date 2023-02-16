@@ -18,22 +18,18 @@
 package org.apache.dubbo.metrics.registry.collector;
 
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.config.ReferenceConfigBase;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.metrics.collector.ApplicationMetricsCollector;
 import org.apache.dubbo.metrics.collector.MetricsCollector;
 import org.apache.dubbo.metrics.event.MetricsEvent;
 import org.apache.dubbo.metrics.event.MetricsEventMulticaster;
-import org.apache.dubbo.metrics.listener.MetricsLifeListener;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.metrics.registry.collector.stat.RegistryStatComposite;
 import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.metrics.registry.event.RegistryMetricsEventMulticaster;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.ConsumerModel;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -43,7 +39,7 @@ import java.util.Optional;
  * Registry implementation of {@link MetricsCollector}
  */
 @Activate
-public class RegistryMetricsCollector implements ApplicationMetricsCollector<RegistryEvent.Type>, MetricsLifeListener<RegistryEvent> {
+public class RegistryMetricsCollector implements ApplicationMetricsCollector<RegistryEvent.Type, RegistryEvent> {
 
     private Boolean collectEnabled = null;
     private final RegistryStatComposite stats;
@@ -77,7 +73,7 @@ public class RegistryMetricsCollector implements ApplicationMetricsCollector<Reg
 
 
     @Override
-    public void increment(RegistryEvent.Type registryType, String applicationName) {
+    public void increment(String applicationName, RegistryEvent.Type registryType) {
         this.stats.increment(registryType, applicationName);
     }
 
@@ -95,21 +91,21 @@ public class RegistryMetricsCollector implements ApplicationMetricsCollector<Reg
         list.addAll(stats.exportNumMetrics());
         list.addAll(stats.exportRtMetrics());
         //Dictionary url statistics
-        statsDictionary();
+//        statsDictionary();
         list.addAll(stats.exportSkMetrics());
 
         return list;
     }
 
-    private void statsDictionary() {
-        Collection<ConsumerModel> consumerModels = applicationModel.getApplicationServiceRepository().allConsumerModels();
-        for (ConsumerModel consumerModel : consumerModels) {
-            ReferenceConfigBase<?> referenceConfig = consumerModel.getReferenceConfig();
-            this.stats.setServiceKey(RegistryEvent.Type.D_TOTAL, applicationModel.getApplicationName(), consumerModel.getServiceKey(), referenceConfig.getInvokerNum());
-            this.stats.setServiceKey(RegistryEvent.Type.D_VALID, applicationModel.getApplicationName(), consumerModel.getServiceKey(), referenceConfig.getValidInvokerNum());
-            this.stats.setServiceKey(RegistryEvent.Type.D_UN_VALID, applicationModel.getApplicationName(), consumerModel.getServiceKey(), referenceConfig.getInvokerNum() - referenceConfig.getValidInvokerNum());
-        }
-    }
+//    private void statsDictionary() {
+//        Collection<ConsumerModel> consumerModels = applicationModel.getApplicationServiceRepository().allConsumerModels();
+//        for (ConsumerModel consumerModel : consumerModels) {
+//            ReferenceConfigBase<?> referenceConfig = consumerModel.getReferenceConfig();
+//            this.stats.setServiceKey(RegistryEvent.Type.D_TOTAL, applicationModel.getApplicationName(), consumerModel.getServiceKey(), referenceConfig.getInvokerNum());
+//            this.stats.setServiceKey(RegistryEvent.Type.D_VALID, applicationModel.getApplicationName(), consumerModel.getServiceKey(), referenceConfig.getValidInvokerNum());
+//            this.stats.setServiceKey(RegistryEvent.Type.D_UN_VALID, applicationModel.getApplicationName(), consumerModel.getServiceKey(), referenceConfig.getInvokerNum() - referenceConfig.getValidInvokerNum());
+//        }
+//    }
 
     @Override
     public boolean isSupport(MetricsEvent event) {
