@@ -73,7 +73,7 @@ public class ReflectionPackableMethod implements PackableMethod {
                 break;
             case UNARY:
                 actualRequestTypes = method.getParameterClasses();
-                actualResponseType = method.getReturnClass();
+                actualResponseType = (Class<?>) method.getReturnTypes()[0];
                 break;
             default:
                 throw new IllegalStateException("Can not reach here");
