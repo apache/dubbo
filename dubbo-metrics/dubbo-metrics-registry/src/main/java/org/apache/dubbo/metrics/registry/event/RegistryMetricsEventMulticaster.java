@@ -17,9 +17,9 @@
 
 package org.apache.dubbo.metrics.registry.event;
 
-import org.apache.dubbo.metrics.event.BaseMetricsEventMulticaster;
+import org.apache.dubbo.metrics.event.SimpleMetricsEventMulticaster;
 
-public final class RegistryMetricsEventMulticaster extends BaseMetricsEventMulticaster {
+public final class RegistryMetricsEventMulticaster extends SimpleMetricsEventMulticaster {
 
     public RegistryMetricsEventMulticaster() {
         super.addListener(new MetricsRegisterListener());
