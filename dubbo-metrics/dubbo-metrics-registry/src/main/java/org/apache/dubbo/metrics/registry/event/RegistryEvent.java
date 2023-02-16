@@ -67,9 +67,11 @@ public class RegistryEvent extends MetricsEvent implements TimeCounter {
         S_SUCCEED(MetricsKey.SUBSCRIBE_METRIC_NUM_SUCCEED),
         S_FAILED(MetricsKey.SUBSCRIBE_METRIC_NUM_FAILED),
 
-        D_TOTAL(MetricsKey.DIRECTORY_METRIC_NUM),
         D_VALID(MetricsKey.DIRECTORY_METRIC_NUM_VALID),
         D_UN_VALID(MetricsKey.DIRECTORY_METRIC_NUM_UN_VALID),
+        D_DISABLE(MetricsKey.DIRECTORY_METRIC_NUM_DISABLE),
+        D_CURRENT(MetricsKey.DIRECTORY_METRIC_NUM_CURRENT, false),
+        D_RECOVER_DISABLE(MetricsKey.DIRECTORY_METRIC_NUM_RECOVER_DISABLE),
 
         N_TOTAL(MetricsKey.NOTIFY_METRIC_REQUESTS),
         N_LAST_NUM(MetricsKey.NOTIFY_METRIC_NUM_LAST),
@@ -77,14 +79,24 @@ public class RegistryEvent extends MetricsEvent implements TimeCounter {
 
 
         private final MetricsKey metricsKey;
+        private final boolean isIncrement;
 
 
         Type(MetricsKey metricsKey) {
+            this(metricsKey, true);
+        }
+
+        Type(MetricsKey metricsKey, boolean isIncrement) {
             this.metricsKey = metricsKey;
+            this.isIncrement = isIncrement;
         }
 
         public MetricsKey getMetricsKey() {
             return metricsKey;
+        }
+
+        public boolean isIncrement() {
+            return isIncrement;
         }
     }
 
@@ -115,6 +127,30 @@ public class RegistryEvent extends MetricsEvent implements TimeCounter {
 
         public Map<String, Integer> getLastNotifyNum() {
             return lastNumMap;
+        }
+    }
+
+    public static class MetricsDirectoryEvent extends RegistryEvent {
+
+        private final RegistryEvent.Type type;
+        private final int size;
+
+        public MetricsDirectoryEvent(ApplicationModel applicationModel, RegistryEvent.Type type) {
+            this(applicationModel, type, 1);
+        }
+
+        public MetricsDirectoryEvent(ApplicationModel applicationModel, RegistryEvent.Type type, int size) {
+            super(applicationModel, TimePair.empty());
+            this.type = type;
+            this.size = size;
+        }
+
+        public RegistryEvent.Type getType() {
+            return type;
+        }
+
+        public int getSize() {
+            return size;
         }
     }
 }

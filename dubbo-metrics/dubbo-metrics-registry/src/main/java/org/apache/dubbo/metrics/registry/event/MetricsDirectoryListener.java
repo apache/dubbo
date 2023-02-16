@@ -17,17 +17,27 @@
 
 package org.apache.dubbo.metrics.registry.event;
 
-import org.apache.dubbo.metrics.event.SimpleMetricsEventMulticaster;
+import org.apache.dubbo.metrics.event.MetricsEvent;
+import org.apache.dubbo.metrics.listener.MetricsListener;
 
-public final class RegistryMetricsEventMulticaster extends SimpleMetricsEventMulticaster {
+public class MetricsDirectoryListener implements MetricsListener<RegistryEvent.MetricsDirectoryEvent> {
 
-    public RegistryMetricsEventMulticaster() {
-        super.addListener(new MetricsRegisterListener());
-        super.addListener(new MetricsSubscribeListener());
-        super.addListener(new MetricsNotifyListener());
-        super.addListener(new MetricsDirectoryListener());
-
-        setAvailable();
+    @Override
+    public boolean isSupport(MetricsEvent event) {
+        return event instanceof RegistryEvent.MetricsDirectoryEvent;
     }
+
+    @Override
+    public void onEvent(RegistryEvent.MetricsDirectoryEvent event) {
+        if (!event.isAvailable()) {
+            return;
+        }
+        if (event.getType().isIncrement()) {
+            event.getCollector().increment(event.getSource().getApplicationName(), event.getType());
+        } else {
+            event.getCollector().setNum(event.getType(), event.getSource().getApplicationName(), event.getSize());
+        }
+    }
+
 
 }
