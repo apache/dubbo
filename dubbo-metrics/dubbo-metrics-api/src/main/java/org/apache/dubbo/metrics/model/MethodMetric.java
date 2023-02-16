@@ -25,8 +25,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import static org.apache.dubbo.common.constants.CommonConstants.*;
+import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_CHAR_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_IP;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_HOSTNAME;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_APPLICATION_NAME;
