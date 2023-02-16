@@ -58,6 +58,7 @@ public class RegistryMetricsCollector implements ApplicationMetricsCollector<Reg
         }
     }
 
+    @Override
     public boolean isCollectEnabled() {
         if (collectEnabled == null) {
             ConfigManager configManager = applicationModel.getApplicationConfigManager();
