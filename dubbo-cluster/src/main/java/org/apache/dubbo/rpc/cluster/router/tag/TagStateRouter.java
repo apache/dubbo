@@ -157,7 +157,7 @@ public class TagStateRouter<T> extends AbstractStateRouter<T> implements Configu
             }
             return filterInvoker(result, invoker -> {
                 String localTag = invoker.getUrl().getParameter(TAG_KEY);
-                return StringUtils.isEmpty(localTag) || !tagRouterRuleCopy.getTagNames().contains(localTag);
+                return StringUtils.isEmpty(localTag);
             });
         }
     }
