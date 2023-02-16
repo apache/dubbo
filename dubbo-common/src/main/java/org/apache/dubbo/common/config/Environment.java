@@ -315,7 +315,7 @@ public class Environment extends LifecycleAdapter implements ApplicationExt {
         return localMigrationRule;
     }
 
-    public void refreshClassLoaders() {
+    public synchronized void refreshClassLoaders() {
         propertiesConfiguration.refresh();
         loadMigrationRule();
         this.globalConfiguration = null;
