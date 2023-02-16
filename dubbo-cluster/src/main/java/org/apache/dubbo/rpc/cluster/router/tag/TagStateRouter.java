@@ -53,7 +53,7 @@ public class TagStateRouter<T> extends AbstractStateRouter<T> implements Configu
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(TagStateRouter.class);
     private static final String RULE_SUFFIX = ".tag-router";
 
-    private TagRouterRule tagRouterRule;
+    private volatile TagRouterRule tagRouterRule;
     private String application;
 
     public TagStateRouter(URL url) {
