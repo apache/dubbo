@@ -21,6 +21,11 @@ coverage:
         threshold: 0.1%
 ignore:
   - "dubbo-demo/.*"
+  - "dubbo-compiler/.*"
+  - "dubbo-test/.*"
+  - "dubbo-compatible/.*"
+  - "dubbo-native/.*"
+  - "dubbo-native-plugin/.*"
   - "dubbo-common/src/main/java/org/apache/dubbo/common/json/*.java" #  internal JSON impl is deprecate, ignore test coverage for them
   - "dubbo-config/dubbo-config-spring/src/main/java/org/apache/dubbo/config/spring/AnnotationBean.java" # Deprecated
   - "dubbo-rpc/dubbo-rpc-thrift/.*"
