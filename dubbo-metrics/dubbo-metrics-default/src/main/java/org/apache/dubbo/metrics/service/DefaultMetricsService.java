@@ -35,10 +35,7 @@ public class DefaultMetricsService implements MetricsService {
 
     protected final List<MetricsCollector> collectors = new ArrayList<>();
 
-    private final ApplicationModel applicationModel;
-
     public DefaultMetricsService(ApplicationModel applicationModel) {
-        this.applicationModel = applicationModel;
         collectors.addAll(applicationModel.getBeanFactory().getBeansOfType(MetricsCollector.class));
     }
 

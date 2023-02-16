@@ -19,13 +19,16 @@ package org.apache.dubbo.metrics.collector;
 
 /**
  * Application-level collector.
+ * registration center, configuration center and other scenarios
+ *
+ * @Params <T>  metrics type
  */
 public interface ApplicationMetricsCollector<T> extends MetricsCollector {
 
-    /**
-     * Still use Metric Type of Gauge , self-increment
-     */
-    void increment(T type, String applicationName);
+    void increment(String applicationName, T type);
 
-    void addRT(String applicationName, String registryOpType, Long responseTime);
+    void decrease(String applicationName, T type);
+
+    void addRT(String applicationName, Long responseTime);
 }
+

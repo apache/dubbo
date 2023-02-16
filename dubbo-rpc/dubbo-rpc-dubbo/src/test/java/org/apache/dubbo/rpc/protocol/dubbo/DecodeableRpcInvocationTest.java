@@ -66,7 +66,7 @@ class DecodeableRpcInvocationTest {
         ChannelBuffer buffer = writeBuffer(url, inv, proto);
 
         FrameworkModel frameworkModel = new FrameworkModel();
-        ApplicationModel applicationModel = new ApplicationModel(frameworkModel);
+        ApplicationModel applicationModel = frameworkModel.newApplication();
         applicationModel.getDefaultModule().getServiceRepository().registerService(DemoService.class.getName(), DemoService.class);
         frameworkModel.getServiceRepository().registerProviderUrl(url);
 

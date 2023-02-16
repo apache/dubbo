@@ -94,7 +94,7 @@
         <spring_version>5.3.25</spring_version>
         <spring_security_version>5.8.1</spring_security_version>
         <javassist_version>3.29.2-GA</javassist_version>
-        <bytebuddy.version>1.12.22</bytebuddy.version>
+        <bytebuddy.version>1.13.0</bytebuddy.version>
         <netty_version>3.2.10.Final</netty_version>
         <netty4_version>4.1.87.Final</netty4_version>
         <mina_version>2.2.1</mina_version>
@@ -107,7 +107,7 @@
         <curator_version>4.3.0</curator_version>
         <curator_test_version>2.12.0</curator_test_version>
         <jedis_version>3.9.0</jedis_version>
-        <consul_version>1.4.2</consul_version>
+        <consul_version>1.4.5</consul_version>
         <consul_process_version>2.2.1</consul_process_version>
         <consul_client_version>1.5.3</consul_client_version>
         <xmemcached_version>1.4.3</xmemcached_version>
@@ -187,7 +187,7 @@
         <portlet_version>2.0</portlet_version>
         <maven_flatten_version>1.1.0</maven_flatten_version>
         <commons_compress_version>1.22</commons_compress_version>
-        <revision>3.2.0-beta.5-SNAPSHOT</revision>
+        <revision>3.2.0-beta.6-SNAPSHOT</revision>
     </properties>
 
     <dependencyManagement>

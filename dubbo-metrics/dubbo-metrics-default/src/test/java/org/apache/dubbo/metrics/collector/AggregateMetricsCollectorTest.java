@@ -20,6 +20,8 @@ package org.apache.dubbo.metrics.collector;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.nested.AggregationConfig;
+import org.apache.dubbo.metrics.collector.sample.MethodMetricsSampler;
+import org.apache.dubbo.metrics.event.MetricsEvent;
 import org.apache.dubbo.metrics.model.MetricsKey;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
@@ -69,7 +71,7 @@ class AggregateMetricsCollectorTest {
         aggregationConfig.setTimeWindowSeconds(120);
         metricsConfig.setAggregation(aggregationConfig);
         applicationModel.getApplicationConfigManager().setMetrics(metricsConfig);
-        applicationModel.getBeanFactory().registerBean(defaultCollector);
+        defaultCollector = applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class);
 
         interfaceName = "org.apache.dubbo.MockInterface";
         methodName = "mockMethod";
@@ -79,7 +81,6 @@ class AggregateMetricsCollectorTest {
         invocation.setTargetServiceUniqueName(group + "/" + interfaceName + ":" + version);
         invocation.setAttachment(GROUP_KEY, group);
         invocation.setAttachment(VERSION_KEY, version);
-
     }
 
     @AfterEach
@@ -91,10 +92,14 @@ class AggregateMetricsCollectorTest {
     void testRequestsMetrics() {
         String applicationName = applicationModel.getApplicationName();
         AggregateMetricsCollector collector = new AggregateMetricsCollector(applicationModel);
-        defaultCollector.increaseTotalRequests(applicationName,invocation);
-        defaultCollector.increaseSucceedRequests(applicationName,invocation);
-        defaultCollector.increaseUnknownFailedRequests(applicationName,invocation);
-        defaultCollector.businessFailedRequests(applicationName,invocation);
+
+        defaultCollector.setApplicationName(applicationName);
+        MethodMetricsSampler methodMetricsCountSampler = defaultCollector.getMethodSampler();
+
+        methodMetricsCountSampler.incOnEvent(invocation, MetricsEvent.Type.TOTAL);
+        methodMetricsCountSampler.incOnEvent(invocation, MetricsEvent.Type.SUCCEED);
+        methodMetricsCountSampler.incOnEvent(invocation, MetricsEvent.Type.UNKNOWN_FAILED);
+        methodMetricsCountSampler.incOnEvent(invocation, MetricsEvent.Type.BUSINESS_FAILED);
 
         List<MetricSample> samples = collector.collect();
         for (MetricSample sample : samples) {
@@ -123,7 +128,12 @@ class AggregateMetricsCollectorTest {
     @Test
     void testRTMetrics() {
         AggregateMetricsCollector collector = new AggregateMetricsCollector(applicationModel);
-        defaultCollector.addRT(applicationModel.getApplicationName(),invocation, 10L);
+
+        defaultCollector.setApplicationName(applicationModel.getApplicationName());
+
+        MethodMetricsSampler methodMetricsCountSampler = defaultCollector.getMethodSampler();
+
+        methodMetricsCountSampler.addRT(invocation, 10L);
 
         List<MetricSample> samples = collector.collect();
         for (MetricSample sample : samples) {

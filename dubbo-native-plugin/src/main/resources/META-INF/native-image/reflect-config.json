@@ -2903,12 +2903,12 @@
     "allPublicMethods": true
   },
   {
-    "name": "org.apache.dubbo.metrics.event.SimpleMetricsEventMulticaster",
+    "name": "org.apache.dubbo.metrics.event.GlobalMetricsEventMulticaster",
     "allPublicMethods": true,
     "methods": [
       {
         "name": "<init>",
-        "parameterTypes": []
+        "parameterTypes": ["org.apache.dubbo.rpc.model.FrameworkModel"]
       }
     ]
   }

@@ -22,7 +22,7 @@ public class TimePair {
     private final long begin;
     private long end;
 
-    private TimePair(long currentTimeMillis) {
+    public TimePair(long currentTimeMillis) {
         this.begin = currentTimeMillis;
     }
 

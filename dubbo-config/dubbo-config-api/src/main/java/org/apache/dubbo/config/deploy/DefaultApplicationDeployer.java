@@ -17,7 +17,6 @@
 package org.apache.dubbo.config.deploy;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.config.ReferenceCache;
@@ -52,11 +51,6 @@ import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.metadata.report.MetadataReportFactory;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
-import org.apache.dubbo.metrics.collector.MetricsCollector;
-import org.apache.dubbo.metrics.event.SimpleMetricsEventMulticaster;
-import org.apache.dubbo.metrics.listener.MetricsListener;
-import org.apache.dubbo.metrics.model.TimePair;
-import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.metrics.report.MetricsReporter;
 import org.apache.dubbo.metrics.report.MetricsReporterFactory;
 import org.apache.dubbo.metrics.service.MetricsServiceExporter;
@@ -81,6 +75,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -131,8 +126,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     private final Object startLock = new Object();
     private final Object destroyLock = new Object();
     private final Object internalModuleLock = new Object();
-
-    private SimpleMetricsEventMulticaster eventMulticaster;
 
     public DefaultApplicationDeployer(ApplicationModel applicationModel) {
         super(applicationModel);
@@ -237,9 +230,8 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     private void initModuleDeployers() {
         // make sure created default module
         applicationModel.getDefaultModule();
-        // copy modules and initialize avoid ConcurrentModificationException if add new module
-        List<ModuleModel> moduleModels = new ArrayList<>(applicationModel.getModuleModels());
-        for (ModuleModel moduleModel : moduleModels) {
+        // deployer initialize
+        for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
             moduleModel.getDeployer().initialize();
         }
     }
@@ -365,33 +357,14 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         metricsServiceExporter.init();
     }
 
-    @SuppressWarnings({"rawtypes"})
     private void initMetricsReporter() {
-
-        ScopeBeanFactory beanFactory = applicationModel.getFrameworkModel().getBeanFactory();
+        DefaultMetricsCollector collector =
+            applicationModel.getFrameworkModel().getBeanFactory().getBean(DefaultMetricsCollector.class);
         MetricsConfig metricsConfig = configManager.getMetrics().orElse(null);
-        this.eventMulticaster = beanFactory.getOrRegisterBean(SimpleMetricsEventMulticaster.class);
-
         // TODO compatible with old usage of metrics, remove protocol check after new metrics is ready for use.
         if (metricsConfig != null && PROTOCOL_PROMETHEUS.equals(metricsConfig.getProtocol())) {
-
-            DefaultMetricsCollector collector =
-                beanFactory.getOrRegisterBean(DefaultMetricsCollector.class);
             collector.setCollectEnabled(true);
-            eventMulticaster.setAvailable();
-
-            List<MetricsListener> metricsListeners = applicationModel.getExtensionLoader(MetricsListener.class)
-                .getActivateExtensions();
-            metricsListeners.forEach(this.eventMulticaster::addListener);
-
-            List<MetricsCollector> customizeCollectors = applicationModel.getExtensionLoader(MetricsCollector.class)
-                .getActivateExtensions();
-            for (MetricsCollector customizeCollector : customizeCollectors) {
-                beanFactory.registerBean(customizeCollector);
-            }
-            collector.addApplicationInfo(applicationModel.getApplicationName());
-            collector.addThreadPool(applicationModel.getFrameworkModel(), applicationModel.getApplicationName());
-
+            collector.collectApplication(applicationModel);
             String protocol = metricsConfig.getProtocol();
             if (StringUtils.isNotEmpty(protocol)) {
                 MetricsReporterFactory metricsReporterFactory = getExtensionLoader(MetricsReporterFactory.class).getAdaptiveExtension();
@@ -540,7 +513,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
      */
     private boolean supportsExtension(Class<?> extensionClass, String name) {
         if (isNotEmpty(name)) {
-            ExtensionLoader extensionLoader = getExtensionLoader(extensionClass);
+            ExtensionLoader<?> extensionLoader = getExtensionLoader(extensionClass);
             return extensionLoader.hasExtension(name);
         }
         return false;
@@ -700,7 +673,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         prepareInternalModule();
 
         // filter and start pending modules, ignore new module during starting, throw exception of module start
-        for (ModuleModel moduleModel : new ArrayList<>(applicationModel.getModuleModels())) {
+        for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
             if (moduleModel.getDeployer().isPending()) {
                 moduleModel.getDeployer().start();
             }
@@ -741,6 +714,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 // wait for internal module startup
                 try {
                     future.get(5, TimeUnit.SECONDS);
+                    hasPreparedInternalModule = true;
                 } catch (Exception e) {
                     logger.warn(CONFIG_FAILED_START_MODEL, "", "", "wait for internal module startup failed: " + e.getMessage(), e);
                 }
@@ -843,15 +817,18 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
     private volatile boolean registered;
 
+    private final AtomicInteger instanceRefreshScheduleTimes = new AtomicInteger(0);
+
+    /**
+     * Indicate that how many threads are updating service
+     */
+    private final AtomicInteger serviceRefreshState = new AtomicInteger(0);
+
     private void registerServiceInstance() {
-        TimePair timePair = TimePair.start();
-        eventMulticaster.publishEvent(new RegistryEvent.MetricsRegisterEvent(applicationModel, timePair));
         try {
             registered = true;
             ServiceInstanceMetadataUtils.registerMetadataAndInstance(applicationModel);
-            eventMulticaster.publishFinishEvent(new RegistryEvent.MetricsRegisterEvent(applicationModel, timePair));
         } catch (Exception e) {
-            eventMulticaster.publishErrorEvent(new RegistryEvent.MetricsRegisterEvent(applicationModel, timePair));
             logger.error(CONFIG_REGISTER_INSTANCE_ERROR, "configuration server disconnected", "", "Register instance error.", e);
         }
         if (registered) {
@@ -862,6 +839,18 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 if (applicationModel.isDestroyed()) {
                     return;
                 }
+
+                // refresh for 30 times (default for 30s) when deployer is not started, prevent submit too many revision
+                if (instanceRefreshScheduleTimes.incrementAndGet() % 30 != 0 && !isStarted()) {
+                    return;
+                }
+
+                // refresh for 5 times (default for 5s) when services are being updated by other threads, prevent submit too many revision
+                // note: should not always wait here
+                if (serviceRefreshState.get() != 0 && instanceRefreshScheduleTimes.get() % 5 != 0) {
+                    return;
+                }
+
                 try {
                     if (!applicationModel.isDestroyed() && registered) {
                         ServiceInstanceMetadataUtils.refreshMetadataAndInstance(applicationModel);
@@ -873,6 +862,16 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 }
             }, 0, ConfigurationUtils.get(applicationModel, METADATA_PUBLISH_DELAY_KEY, DEFAULT_METADATA_PUBLISH_DELAY), TimeUnit.MILLISECONDS);
         }
+    }
+
+    @Override
+    public void increaseServiceRefreshCount() {
+        serviceRefreshState.incrementAndGet();
+    }
+
+    @Override
+    public void decreaseServiceRefreshCount() {
+        serviceRefreshState.decrementAndGet();
     }
 
     private void unregisterServiceInstance() {
@@ -1176,5 +1175,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     private ApplicationConfig getApplication() {
         return configManager.getApplicationOrElseThrow();
     }
+
 
 }

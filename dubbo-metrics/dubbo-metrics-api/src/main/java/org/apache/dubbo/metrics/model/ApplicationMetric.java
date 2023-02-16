@@ -45,7 +45,6 @@ public class ApplicationMetric implements Metric {
         return version;
     }
 
-
     @Override
     public Map<String, String> getTags() {
         return getTagsByName(this.getApplicationName());
@@ -56,7 +55,6 @@ public class ApplicationMetric implements Metric {
         tags.put(TAG_IP, getLocalHost());
         tags.put(TAG_HOSTNAME, getLocalHostName());
         tags.put(TAG_APPLICATION_NAME, applicationName);
-
         tags.put(TAG_APPLICATION_VERSION_KEY, version);
         return tags;
     }
