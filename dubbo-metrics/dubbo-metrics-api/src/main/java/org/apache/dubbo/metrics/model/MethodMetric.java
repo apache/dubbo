@@ -123,7 +123,6 @@ public class MethodMetric implements Metric {
         } else {
             interfaceAndVersion = arr[0];
         }
-
         String[] ivArr = interfaceAndVersion.split(GROUP_CHAR_SEPARATOR);
         String interfaceName = ivArr[0];
         String version = ivArr.length == 2 ? ivArr[1] : null;
