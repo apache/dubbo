@@ -17,6 +17,8 @@
 
 package org.apache.dubbo.metrics.metrics.collector;
 
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
 import org.apache.dubbo.metrics.collector.sample.MethodMetricsSampler;
@@ -27,6 +29,7 @@ import org.apache.dubbo.metrics.listener.MetricsListener;
 import org.apache.dubbo.metrics.model.MetricsKey;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
+import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -56,6 +59,7 @@ class DefaultMetricsCollectorTest {
     private String group;
     private String version;
     private RpcInvocation invocation;
+    private String side;
 
     @BeforeEach
     public void setup() {
@@ -75,6 +79,9 @@ class DefaultMetricsCollectorTest {
         invocation.setTargetServiceUniqueName(group + "/" + interfaceName + ":" + version);
         invocation.setAttachment(GROUP_KEY, group);
         invocation.setAttachment(VERSION_KEY, version);
+        side = CommonConstants.CONSUMER;
+        RpcContext.getServiceContext().setUrl(URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&side="+side));
+
     }
 
     @AfterEach
@@ -116,7 +123,7 @@ class DefaultMetricsCollectorTest {
             return number.longValue();
         }));
 
-        Assertions.assertEquals(sampleMap.get(MetricsKey.METRIC_REQUESTS_PROCESSING.getName()), 0L);
+        Assertions.assertEquals(sampleMap.get(MetricsKey.METRIC_REQUESTS_PROCESSING.getNameByType(side)), 0L);
     }
 
     @Test
@@ -146,11 +153,11 @@ class DefaultMetricsCollectorTest {
             return number.longValue();
         }));
 
-        Assertions.assertEquals(sampleMap.get(MetricsKey.METRIC_RT_LAST.getName()), 0L);
-        Assertions.assertEquals(sampleMap.get(MetricsKey.METRIC_RT_MIN.getName()), 0L);
-        Assertions.assertEquals(sampleMap.get(MetricsKey.METRIC_RT_MAX.getName()), 10L);
-        Assertions.assertEquals(sampleMap.get(MetricsKey.METRIC_RT_AVG.getName()), 5L);
-        Assertions.assertEquals(sampleMap.get(MetricsKey.METRIC_RT_SUM.getName()), 10L);
+        Assertions.assertEquals(sampleMap.get(MetricsKey.METRIC_RT_LAST.getNameByType(side)), 0L);
+        Assertions.assertEquals(sampleMap.get(MetricsKey.METRIC_RT_MIN.getNameByType(side)), 0L);
+        Assertions.assertEquals(sampleMap.get(MetricsKey.METRIC_RT_MAX.getNameByType(side)), 10L);
+        Assertions.assertEquals(sampleMap.get(MetricsKey.METRIC_RT_AVG.getNameByType(side)), 5L);
+        Assertions.assertEquals(sampleMap.get(MetricsKey.METRIC_RT_SUM.getNameByType(side)), 10L);
     }
 
     @Test
