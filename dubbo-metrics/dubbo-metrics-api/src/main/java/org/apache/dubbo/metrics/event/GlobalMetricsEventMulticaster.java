@@ -24,8 +24,12 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.util.List;
 
+/**
+ * Global spi event publisher
+ */
 public class GlobalMetricsEventMulticaster extends SimpleMetricsEventMulticaster {
 
+    @SuppressWarnings({"rawtypes"})
     public GlobalMetricsEventMulticaster(FrameworkModel frameworkModel) {
         ScopeBeanFactory beanFactory = frameworkModel.getBeanFactory();
         ExtensionLoader<MetricsCollector> extensionLoader = frameworkModel.getExtensionLoader(MetricsCollector.class);

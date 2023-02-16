@@ -30,7 +30,7 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
-import org.apache.dubbo.metrics.event.SimpleMetricsEventMulticaster;
+import org.apache.dubbo.metrics.event.GlobalMetricsEventMulticaster;
 import org.apache.dubbo.metrics.model.TimePair;
 import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.registry.AddressListener;
@@ -120,7 +120,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
     @Override
     public void subscribe(URL url) {
         ApplicationModel applicationModel = url.getApplicationModel();
-        SimpleMetricsEventMulticaster eventMulticaster = applicationModel.getFrameworkModel().getBeanFactory().getBean(SimpleMetricsEventMulticaster.class);
+        GlobalMetricsEventMulticaster eventMulticaster = applicationModel.getFrameworkModel().getBeanFactory().getBean(GlobalMetricsEventMulticaster.class);
         TimePair timePair = TimePair.start();
 
         eventMulticaster.publishEvent(new RegistryEvent.MetricsSubscribeEvent(applicationModel, timePair));
