@@ -55,6 +55,7 @@ public class TagStateRouter<T> extends AbstractStateRouter<T> implements Configu
 
     private volatile TagRouterRule tagRouterRule;
     private String application;
+    private volatile BitList<Invoker<T>> invokers = BitList.emptyList();
 
     public TagStateRouter(URL url) {
         super(url);
@@ -253,7 +254,7 @@ public class TagStateRouter<T> extends AbstractStateRouter<T> implements Configu
 
     @Override
     public void notify(BitList<Invoker<T>> invokers) {
-        super.notify(invokers);
+        this.invokers = invokers;
         if (CollectionUtils.isEmpty(invokers)) {
             return;
         }
@@ -288,6 +289,10 @@ public class TagStateRouter<T> extends AbstractStateRouter<T> implements Configu
                 }
             }
         }
+    }
+
+    public BitList<Invoker<T>> getInvokers() {
+        return invokers;
     }
 
     @Override
