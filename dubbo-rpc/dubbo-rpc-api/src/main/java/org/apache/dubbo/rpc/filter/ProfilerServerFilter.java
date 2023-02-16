@@ -24,6 +24,7 @@ import org.apache.dubbo.common.profiler.ProfilerEntry;
 import org.apache.dubbo.common.profiler.ProfilerSwitch;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.BaseFilter;
+import org.apache.dubbo.rpc.Constants;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -31,14 +32,14 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.support.RpcUtils;
-import org.apache.dubbo.rpc.Constants;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
+
+import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROXY_TIMEOUT_RESPONSE;
 
 @Activate(group = PROVIDER, order = Integer.MIN_VALUE)
