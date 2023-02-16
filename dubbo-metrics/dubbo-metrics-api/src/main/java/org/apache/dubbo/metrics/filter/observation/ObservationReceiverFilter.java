@@ -33,12 +33,12 @@ import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
 /**
  * A {@link Filter} that creates an {@link Observation} around the incoming message.
  */
-@Activate(group = PROVIDER, order = -1)
+@Activate(group = PROVIDER, order = -1,onClass = "io.micrometer.observation.NoopObservationRegistry")
 public class ObservationReceiverFilter implements Filter, BaseFilter.Listener, ScopeModelAware {
 
-    private ObservationRegistry observationRegistry = ObservationRegistry.NOOP;
+    private final ObservationRegistry observationRegistry;
 
-    private DubboServerObservationConvention serverObservationConvention = null;
+    private final DubboServerObservationConvention serverObservationConvention;
 
     public ObservationReceiverFilter(ApplicationModel applicationModel) {
         observationRegistry = applicationModel.getBeanFactory().getBean(ObservationRegistry.class);

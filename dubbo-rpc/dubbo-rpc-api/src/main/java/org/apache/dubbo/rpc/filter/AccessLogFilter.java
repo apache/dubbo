@@ -81,7 +81,7 @@ public class AccessLogFilter implements Filter {
 
     private final ConcurrentMap<String, Queue<AccessLogData>> logEntries = new ConcurrentHashMap<>();
 
-    private AtomicBoolean scheduled = new AtomicBoolean();
+    private final AtomicBoolean scheduled = new AtomicBoolean();
 
     private static final String LINE_SEPARATOR = "line.separator";
 
