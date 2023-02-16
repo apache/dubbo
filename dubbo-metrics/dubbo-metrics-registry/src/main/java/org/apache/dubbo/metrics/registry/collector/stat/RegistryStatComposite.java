@@ -82,7 +82,7 @@ public class RegistryStatComposite implements MetricsExport {
     }
 
     public void setApplicationKey(RegistryEvent.Type type, String applicationName, int num) {
-        if (!skStats.containsKey(type)) {
+        if (!numStats.containsKey(type)) {
             return;
         }
         numStats.get(type).computeIfAbsent(applicationName, k -> new AtomicLong(0L)).set(num);
