@@ -19,6 +19,7 @@ package org.apache.dubbo.metrics.registry.metrics.collector;
 
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.metrics.model.MetricsKey;
+import org.apache.dubbo.metrics.model.MetricsKeyWrapper;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.metrics.registry.collector.RegistryMetricsCollector;
@@ -90,7 +91,7 @@ class RegistryMetricsCollectorTest {
         RegistryMetricsCollector collector = new RegistryMetricsCollector(applicationModel);
         collector.setCollectEnabled(true);
         String applicationName = applicationModel.getApplicationName();
-        collector.increment(RegistryEvent.Type.R_TOTAL, applicationName);
+        collector.increment(applicationName,RegistryEvent.Type.R_TOTAL);
     }
 
 }

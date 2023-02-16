@@ -35,18 +35,18 @@ public class MetricsRegisterListener implements MetricsLifeListener<RegistryEven
         if (!event.isAvailable()) {
             return;
         }
-        event.getCollector().increment(RegistryEvent.Type.R_TOTAL, event.getSource().getApplicationName());
+        event.getCollector().increment(event.getSource().getApplicationName(), RegistryEvent.Type.R_TOTAL);
     }
 
     @Override
     public void onEventFinish(RegistryEvent.MetricsRegisterEvent event) {
-        event.getCollector().increment(RegistryEvent.Type.R_SUCCEED, event.getSource().getApplicationName());
+        event.getCollector().increment(event.getSource().getApplicationName(), RegistryEvent.Type.R_SUCCEED);
         event.getCollector().addRT(event.getSource().getApplicationName(), OP_TYPE_REGISTER, event.getTimePair().calc());
     }
 
     @Override
     public void onEventError(RegistryEvent.MetricsRegisterEvent event) {
-        event.getCollector().increment(RegistryEvent.Type.R_FAILED, event.getSource().getApplicationName());
+        event.getCollector().increment(event.getSource().getApplicationName(), RegistryEvent.Type.R_FAILED);
         event.getCollector().addRT(event.getSource().getApplicationName(), OP_TYPE_REGISTER, event.getTimePair().calc());
     }
 }
