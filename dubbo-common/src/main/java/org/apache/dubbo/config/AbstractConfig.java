@@ -612,7 +612,7 @@ public abstract class AbstractConfig implements Serializable {
                 try {
                     String propertyName = extractPropertyName(method.getName());
                     String getterName = calculatePropertyToGetter(propertyName);
-                    getterMethod = this.getClass().getDeclaredMethod(getterName);
+                    getterMethod = this.getClass().getMethod(getterName);
                 } catch (Exception ignore) {
                     continue;
                 }
@@ -740,13 +740,12 @@ public abstract class AbstractConfig implements Serializable {
 
         // loop methods, get override value and set the new value back to method
         List<Method> methods = MethodUtils.getMethods(obj.getClass(), method -> method.getDeclaringClass() != Object.class);
-        Method[] methodsList = this.getClass().getDeclaredMethods();
         for (Method method : methods) {
             if (MethodUtils.isSetter(method)) {
                 String propertyName = extractPropertyName(method.getName());
 
                 // if config mode is OVERRIDE_IF_ABSENT and property has set, skip
-                if (overrideIfAbsent && isPropertySet(methodsList, propertyName)) {
+                if (overrideIfAbsent && isPropertySet(methods, propertyName)) {
                     continue;
                 }
 
@@ -792,7 +791,7 @@ public abstract class AbstractConfig implements Serializable {
                 Map<String, String> oldMap = null;
                 try {
                     String getterName = calculatePropertyToGetter(propertyName);
-                    Method getterMethod = this.getClass().getDeclaredMethod(getterName);
+                    Method getterMethod = this.getClass().getMethod(getterName);
                     Object oldOne = getterMethod.invoke(this);
                     if (oldOne instanceof Map) {
                         oldMap = (Map) oldOne;
@@ -833,7 +832,7 @@ public abstract class AbstractConfig implements Serializable {
         }
     }
 
-    private boolean isPropertySet(Method[] methods, String propertyName) {
+    private boolean isPropertySet(List<Method> methods, String propertyName) {
         try {
             String getterName = calculatePropertyToGetter(propertyName);
             Method getterMethod = findGetMethod(methods, getterName);
@@ -850,7 +849,7 @@ public abstract class AbstractConfig implements Serializable {
         return false;
     }
 
-    private Method findGetMethod(Method[] methods, String methodName) {
+    private Method findGetMethod(List<Method> methods, String methodName) {
         for (Method method : methods) {
             if (method.getName().equals(methodName) && method.getParameterCount() == 0) {
                 return method;

@@ -196,7 +196,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
                 "No time left for making the following call: " + invocation.getServiceName() + "."
                     + invocation.getMethodName() + ", terminate directly."), invocation);
         }
-        invocation.setAttachment(TIMEOUT_KEY, timeout);
+        invocation.setAttachment(TIMEOUT_KEY, String.valueOf(timeout));
 
         final AsyncRpcResult result;
         DeadlineFuture future = DeadlineFuture.newFuture(getUrl().getPath(),
