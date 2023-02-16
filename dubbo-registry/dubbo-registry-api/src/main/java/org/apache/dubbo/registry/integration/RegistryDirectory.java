@@ -120,7 +120,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
     @Override
     public void subscribe(URL url) {
         ApplicationModel applicationModel = url.getApplicationModel();
-        GlobalMetricsEventMulticaster eventMulticaster = applicationModel.getFrameworkModel().getBeanFactory().getBean(GlobalMetricsEventMulticaster.class);
+        GlobalMetricsEventMulticaster eventMulticaster = applicationModel.getBeanFactory().getBean(GlobalMetricsEventMulticaster.class);
         TimePair timePair = TimePair.start();
 
         eventMulticaster.publishEvent(new RegistryEvent.MetricsSubscribeEvent(applicationModel, timePair));

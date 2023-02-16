@@ -186,7 +186,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         this.reconnectTaskPeriod = configuration.getInt(RECONNECT_TASK_PERIOD, DEFAULT_RECONNECT_TASK_PERIOD);
         setRouterChain(routerChain);
 
-        eventMulticaster = applicationModel.getFrameworkModel().getBeanFactory().getBean(GlobalMetricsEventMulticaster.class);
+        eventMulticaster = applicationModel.getBeanFactory().getBean(GlobalMetricsEventMulticaster.class);
     }
 
     @Override
