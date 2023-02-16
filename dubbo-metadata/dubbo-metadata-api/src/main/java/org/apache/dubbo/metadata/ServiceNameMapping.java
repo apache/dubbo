@@ -48,6 +48,8 @@ public interface ServiceNameMapping extends Destroyable {
      */
     boolean map(URL url);
 
+    boolean hasValidMetadataCenter();
+
     /**
      * Get the default extension of {@link ServiceNameMapping}
      *

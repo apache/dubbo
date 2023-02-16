@@ -75,7 +75,7 @@ class AggregateMetricsCollectorTest {
         aggregationConfig.setTimeWindowSeconds(120);
         metricsConfig.setAggregation(aggregationConfig);
         applicationModel.getApplicationConfigManager().setMetrics(metricsConfig);
-        applicationModel.getBeanFactory().registerBean(defaultCollector);
+        defaultCollector = applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class);
 
         interfaceName = "org.apache.dubbo.MockInterface";
         methodName = "mockMethod";

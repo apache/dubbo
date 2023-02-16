@@ -36,5 +36,15 @@
             <artifactId>dubbo-metrics-api</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-tracing-integration-test</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>

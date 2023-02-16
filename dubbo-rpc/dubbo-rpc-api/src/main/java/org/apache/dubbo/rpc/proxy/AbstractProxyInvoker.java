@@ -86,8 +86,8 @@ public abstract class AbstractProxyInvoker<T> implements Invoker<T> {
 
     @Override
     public Result invoke(Invocation invocation) throws RpcException {
+        ProfilerEntry originEntry = null;
         try {
-            ProfilerEntry originEntry = null;
             if (ProfilerSwitch.isEnableSimpleProfiler()) {
                 Object fromInvocation = invocation.get(Profiler.PROFILER_KEY);
                 if (fromInvocation instanceof ProfilerEntry) {
@@ -98,18 +98,6 @@ public abstract class AbstractProxyInvoker<T> implements Invoker<T> {
             }
 
             Object value = doInvoke(proxy, invocation.getMethodName(), invocation.getParameterTypes(), invocation.getArguments());
-
-            if (ProfilerSwitch.isEnableSimpleProfiler()) {
-                Object fromInvocation = invocation.get(Profiler.PROFILER_KEY);
-                if (fromInvocation instanceof ProfilerEntry) {
-                    ProfilerEntry profiler = Profiler.release((ProfilerEntry) fromInvocation);
-                    invocation.put(Profiler.PROFILER_KEY, profiler);
-                }
-            }
-            Profiler.removeBizProfiler();
-            if (originEntry != null) {
-                Profiler.setToBizProfiler(originEntry);
-            }
 
             CompletableFuture<Object> future = wrapWithFuture(value, invocation);
             CompletableFuture<AppResponse> appResponseFuture = future.handle((obj, t) -> {
@@ -133,7 +121,20 @@ public abstract class AbstractProxyInvoker<T> implements Invoker<T> {
             return AsyncRpcResult.newDefaultAsyncResult(null, e.getTargetException(), invocation);
         } catch (Throwable e) {
             throw new RpcException("Failed to invoke remote proxy method " + invocation.getMethodName() + " to " + getUrl() + ", cause: " + e.getMessage(), e);
+        } finally {
+            if (ProfilerSwitch.isEnableSimpleProfiler()) {
+                Object fromInvocation = invocation.get(Profiler.PROFILER_KEY);
+                if (fromInvocation instanceof ProfilerEntry) {
+                    ProfilerEntry profiler = Profiler.release((ProfilerEntry) fromInvocation);
+                    invocation.put(Profiler.PROFILER_KEY, profiler);
+                }
+            }
+            Profiler.removeBizProfiler();
+            if (originEntry != null) {
+                Profiler.setToBizProfiler(originEntry);
+            }
         }
+
     }
 
     private CompletableFuture<Object> wrapWithFuture(Object value, Invocation invocation) {
