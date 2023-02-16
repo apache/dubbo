@@ -98,7 +98,7 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
                         + invocation.getMethodName() + ", terminate directly."), invocation);
             }
 
-            invocation.setAttachment(TIMEOUT_KEY, timeout);
+            invocation.setAttachment(TIMEOUT_KEY, String.valueOf(timeout));
             if (isOneway) {
                 boolean isSent = getUrl().getMethodParameter(methodName, Constants.SENT_KEY, false);
                 currentClient.send(inv, isSent);
