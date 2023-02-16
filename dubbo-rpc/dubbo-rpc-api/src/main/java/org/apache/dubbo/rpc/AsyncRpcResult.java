@@ -61,7 +61,7 @@ public class AsyncRpcResult implements Result {
 
     private Executor executor;
 
-    private Invocation invocation;
+    private final Invocation invocation;
     private final boolean async;
 
     private CompletableFuture<AppResponse> responseFuture;

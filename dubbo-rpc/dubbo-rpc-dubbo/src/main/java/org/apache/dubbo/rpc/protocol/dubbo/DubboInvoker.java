@@ -101,7 +101,7 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
                         + invocation.getMethodName() + ", terminate directly."), invocation);
             }
 
-            invocation.setAttachment(TIMEOUT_KEY, timeout);
+            invocation.setAttachment(TIMEOUT_KEY, String.valueOf(timeout));
 
             Integer payload = getUrl().getParameter(PAYLOAD, Integer.class);
 
