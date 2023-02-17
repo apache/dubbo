@@ -22,8 +22,11 @@ import org.apache.dubbo.metadata.rest.PathMatcher;
 import org.apache.dubbo.metadata.rest.RestMethodMetadata;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.http.HttpBinder;
+import org.apache.dubbo.rpc.Exporter;
+import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.ProtocolServer;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.protocol.AbstractExporter;
 import org.apache.dubbo.rpc.protocol.AbstractProxyProtocol;
 import org.apache.dubbo.rpc.protocol.rest.annotation.metadata.MetadataResolver;
 
@@ -46,7 +49,9 @@ import javax.servlet.ServletContext;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.WebApplicationException;
 import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
@@ -54,8 +59,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATT
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERROR_CLOSE_CLIENT;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERROR_CLOSE_SERVER;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.*;
 import static org.apache.dubbo.remoting.Constants.CONNECTIONS_KEY;
 import static org.apache.dubbo.remoting.Constants.CONNECT_TIMEOUT_KEY;
 import static org.apache.dubbo.remoting.Constants.DEFAULT_CONNECT_TIMEOUT;
@@ -92,24 +96,64 @@ public class RestProtocol extends AbstractProxyProtocol {
         return DEFAULT_PORT;
     }
 
+
     @Override
-    protected <T> Runnable doExport(T impl, Class<T> type, URL url) throws RpcException {
-        String addr = getAddr(url);
-        Class implClass = url.getServiceModel().getProxyObject().getClass();
+    @SuppressWarnings("unchecked")
+    public <T> Exporter<T> export(final Invoker<T> invoker) throws RpcException {
+        URL url = invoker.getUrl();
+        final String uri = serviceKey(url);
+        Exporter<T> exporter = (Exporter<T>) exporterMap.get(uri);
+        if (exporter != null) {
+            // When modifying the configuration through override, you need to re-expose the newly modified service.
+            if (Objects.equals(exporter.getInvoker().getUrl(), invoker.getUrl())) {
+                return exporter;
+            }
+        }
 
-        // TODO directly change server  to netty server
-        RestProtocolServer server = (RestProtocolServer) serverMap.computeIfAbsent(addr, restServer -> {
-
-            String serverKey = url.getParameter(SERVER_KEY,DEFAULT_SERVER);
-
-            RestProtocolServer s = serverFactory.createServer(serverKey);
-            s.setAddress(url.getAddress());
-            s.start(url);
-            return s;
-        });
 
         // TODO  addAll metadataMap to RPCInvocationBuilder metadataMap
-        Map<PathMatcher, RestMethodMetadata> metadataMap = MetadataResolver.resolveProviderServiceMetadata(implClass);
+        Map<PathMatcher, RestMethodMetadata> metadataMap = MetadataResolver.resolveProviderServiceMetadata(invoker.getInterface());
+
+
+        String addr = getAddr(url);
+
+        HttpRestServer<T> tHttpRestServer = new HttpRestServer<>(invoker, metadataMap, addr);
+
+//        // TODO directly change server  to netty server
+        serverMap.put(addr, tHttpRestServer);
+//        RestProtocolServer server = (RestProtocolServer) serverMap.computeIfAbsent(addr, restServer -> {
+//
+//            String serverKey = url.getParameter(SERVER_KEY, DEFAULT_SERVER);
+//
+//            RestProtocolServer s = serverFactory.createServer(serverKey);
+//            s.setAddress(url.getAddress());
+//            s.start(url);
+//            return s;
+//        });
+
+
+        final Runnable runnable = doExport(proxyFactory.getProxy(invoker, true), invoker.getInterface(), invoker.getUrl());
+        exporter = new AbstractExporter<T>(invoker) {
+            @Override
+            public void afterUnExport() {
+                exporterMap.remove(uri);
+                if (runnable != null) {
+                    try {
+                        runnable.run();
+                    } catch (Throwable t) {
+                        logger.warn(PROTOCOL_UNSUPPORTED, "", "", t.getMessage(), t);
+                    }
+                }
+            }
+        };
+        exporterMap.put(uri, exporter);
+        return exporter;
+    }
+
+
+    @Override
+    protected <T> Runnable doExport(T impl, Class<T> type, URL url) throws RpcException {
+
 
         // TODO  remove
 //        String contextPath = getContextPath(url);
@@ -137,7 +181,6 @@ public class RestProtocol extends AbstractProxyProtocol {
 
 //        server.deploy(resourceDef, impl, contextPath);
 
-        final RestProtocolServer s = server; // TODO NettyServer
         return () -> {
             // TODO due to dubbo's current architecture,
             // it will be called from registry protocol in the shutdown process and won't appear in logs
@@ -340,6 +383,40 @@ public class RestProtocol extends AbstractProxyProtocol {
             if (connectionManager != null) {
                 connectionManager.close();
             }
+        }
+    }
+
+    public static class InvokerAndMetadataPair<T> {
+
+        Invoker<T> invoker;
+
+        RestMethodMetadata restMethodMetadata;
+
+        public InvokerAndMetadataPair(Invoker<T> invoker, RestMethodMetadata restMethodMetadata) {
+            this.invoker = invoker;
+            this.restMethodMetadata = restMethodMetadata;
+
+        }
+
+        public static <T> InvokerAndMetadataPair<T> getInstance(Invoker<T> invoker, RestMethodMetadata restMethodMetadata) {
+
+            return new InvokerAndMetadataPair<>(invoker, restMethodMetadata);
+        }
+
+        public Invoker<T> getInvoker() {
+            return invoker;
+        }
+
+        public void setInvoker(Invoker<T> invoker) {
+            this.invoker = invoker;
+        }
+
+        public RestMethodMetadata getRestMethodMetadata() {
+            return restMethodMetadata;
+        }
+
+        public void setRestMethodMetadata(RestMethodMetadata restMethodMetadata) {
+            this.restMethodMetadata = restMethodMetadata;
         }
     }
 }
