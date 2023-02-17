@@ -19,7 +19,6 @@ package org.apache.dubbo.metrics.model;
 
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
 
 import java.util.HashMap;
@@ -29,7 +28,6 @@ import java.util.Optional;
 
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_CHAR_SEPARATOR;
-import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_IP;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_HOSTNAME;
