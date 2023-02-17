@@ -18,12 +18,14 @@
 package org.apache.dubbo.metrics.model;
 
 import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_CHAR_SEPARATOR;
@@ -126,7 +128,8 @@ public class MethodMetric implements Metric {
         String[] ivArr = interfaceAndVersion.split(GROUP_CHAR_SEPARATOR);
         String interfaceName = ivArr[0];
         String version = ivArr.length == 2 ? ivArr[1] : null;
-        this.side = RpcContext.getServiceContext().isConsumerSide() ? CONSUMER_SIDE : PROVIDER_SIDE;
+        Optional<? extends Invoker<?>> invoker = Optional.ofNullable(invocation.getInvoker());
+        this.side = invoker.isPresent() ? invoker.get().getUrl().getSide() : PROVIDER_SIDE;
         this.interfaceName = interfaceName;
         this.methodName = methodName;
         this.group = group;

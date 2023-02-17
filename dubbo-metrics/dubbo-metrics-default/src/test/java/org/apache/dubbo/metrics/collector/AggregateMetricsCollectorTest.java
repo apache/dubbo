@@ -22,6 +22,7 @@ import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.nested.AggregationConfig;
+import org.apache.dubbo.metrics.TestInvoker;
 import org.apache.dubbo.metrics.collector.sample.MethodMetricsSampler;
 import org.apache.dubbo.metrics.event.MetricsEvent;
 import org.apache.dubbo.metrics.model.MetricsKey;
@@ -86,6 +87,7 @@ class AggregateMetricsCollectorTest {
         invocation.setAttachment(GROUP_KEY, group);
         invocation.setAttachment(VERSION_KEY, version);
         side = CommonConstants.CONSUMER;
+        invocation.setInvoker(new TestInvoker(side));
         RpcContext.getServiceContext().setUrl(URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&side=" + side));
 
     }
