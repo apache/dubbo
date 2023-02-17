@@ -20,15 +20,19 @@ package org.apache.dubbo.metrics.event;
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.metrics.collector.MetricsCollector;
-import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.List;
 
+/**
+ * Global spi event publisher
+ */
 public class GlobalMetricsEventMulticaster extends SimpleMetricsEventMulticaster {
 
-    public GlobalMetricsEventMulticaster(FrameworkModel frameworkModel) {
-        ScopeBeanFactory beanFactory = frameworkModel.getBeanFactory();
-        ExtensionLoader<MetricsCollector> extensionLoader = frameworkModel.getExtensionLoader(MetricsCollector.class);
+    @SuppressWarnings({"rawtypes"})
+    public GlobalMetricsEventMulticaster(ApplicationModel applicationModel) {
+        ScopeBeanFactory beanFactory = applicationModel.getBeanFactory();
+        ExtensionLoader<MetricsCollector> extensionLoader = applicationModel.getExtensionLoader(MetricsCollector.class);
         if (extensionLoader != null) {
             List<MetricsCollector> customizeCollectors = extensionLoader
                 .getActivateExtensions();

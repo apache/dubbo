@@ -84,7 +84,6 @@ public class MetadataMetricsCollector implements ApplicationMetricsCollector<Met
         List<MetricSample> list = new ArrayList<>();
         list.addAll(stats.exportNumMetrics());
         list.addAll(stats.exportRtMetrics());
-        list.addAll(stats.exportSkMetrics());
 
         return list;
     }

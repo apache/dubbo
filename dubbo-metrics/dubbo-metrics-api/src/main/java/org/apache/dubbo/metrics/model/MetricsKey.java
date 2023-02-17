@@ -73,9 +73,9 @@ public enum MetricsKey {
     METADATA_PUSH_METRIC_FAILED("dubbo.metadata.push.num.failed.total", "Failed Push Num"),
 
     // metadata subscribe metrics key
-    METADATA_SUBSCRIBE_METRIC_NUM("dubbo.metadata.subscribe.num.total", "Total Subscribe Num"),
-    METADATA_SUBSCRIBE_METRIC_NUM_SUCCEED("dubbo.registry.subscribe.num.succeed.total", "Succeed Subscribe Num"),
-    METADATA_SUBSCRIBE_METRIC_NUM_FAILED("dubbo.registry.subscribe.num.failed.total", "Failed Subscribe Num"),
+    METADATA_SUBSCRIBE_METRIC_NUM("dubbo.metadata.subscribe.num.total", "Total Metadata Subscribe Num"),
+    METADATA_SUBSCRIBE_METRIC_NUM_SUCCEED("dubbo.registry.subscribe.num.succeed.total", "Succeed Metadata Subscribe Num"),
+    METADATA_SUBSCRIBE_METRIC_NUM_FAILED("dubbo.registry.subscribe.num.failed.total", "Failed Metadata Subscribe Num"),
 
     // consumer metrics key
     ;
