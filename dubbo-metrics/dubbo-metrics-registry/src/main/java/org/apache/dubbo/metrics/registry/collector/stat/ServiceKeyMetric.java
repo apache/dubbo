@@ -30,7 +30,7 @@ import static org.apache.dubbo.common.utils.NetUtils.getLocalHost;
 import static org.apache.dubbo.common.utils.NetUtils.getLocalHostName;
 
 /**
- * Metric class for method.
+ * Metric class for service.
  */
 public class ServiceKeyMetric implements Metric {
     private final String applicationName;
