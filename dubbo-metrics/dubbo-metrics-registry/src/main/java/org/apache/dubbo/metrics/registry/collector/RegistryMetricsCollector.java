@@ -95,22 +95,10 @@ public class RegistryMetricsCollector implements ApplicationMetricsCollector<Reg
         List<MetricSample> list = new ArrayList<>();
         list.addAll(stats.exportNumMetrics());
         list.addAll(stats.exportRtMetrics());
-        //Dictionary url statistics
-//        statsDictionary();
         list.addAll(stats.exportSkMetrics());
 
         return list;
     }
-
-//    private void statsDictionary() {
-//        Collection<ConsumerModel> consumerModels = applicationModel.getApplicationServiceRepository().allConsumerModels();
-//        for (ConsumerModel consumerModel : consumerModels) {
-//            ReferenceConfigBase<?> referenceConfig = consumerModel.getReferenceConfig();
-//            this.stats.setServiceKey(RegistryEvent.Type.D_TOTAL, applicationModel.getApplicationName(), consumerModel.getServiceKey(), referenceConfig.getInvokerNum());
-//            this.stats.setServiceKey(RegistryEvent.Type.D_VALID, applicationModel.getApplicationName(), consumerModel.getServiceKey(), referenceConfig.getValidInvokerNum());
-//            this.stats.setServiceKey(RegistryEvent.Type.D_UN_VALID, applicationModel.getApplicationName(), consumerModel.getServiceKey(), referenceConfig.getInvokerNum() - referenceConfig.getValidInvokerNum());
-//        }
-//    }
 
     @Override
     public boolean isSupport(MetricsEvent event) {
