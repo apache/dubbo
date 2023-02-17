@@ -23,7 +23,7 @@ public enum MetricsKey {
     // provider metrics key
     PROVIDER_METRIC_REQUESTS("dubbo.provider.requests.total", "Total Requests"),
     PROVIDER_METRIC_REQUESTS_SUCCEED("dubbo.provider.requests.succeed.total", "Succeed Requests"),
-    PROVIDER_METRIC_REQUEST_BUSINESS_FAILED("dubbo.provider.requests.business.failed.total","Failed Business Requests"),
+    PROVIDER_METRIC_REQUEST_BUSINESS_FAILED("dubbo.provider.requests.business.failed.total", "Failed Business Requests"),
     PROVIDER_METRIC_REQUESTS_PROCESSING("dubbo.provider.requests.processing", "Processing Requests"),
     PROVIDER_METRIC_REQUESTS_TIMEOUT("dubbo.provider.requests.timeout.total", "Total Timeout Failed Requests"),
     PROVIDER_METRIC_REQUESTS_LIMIT("dubbo.provider.requests.limit.total", "Total Limit Failed Requests"),
@@ -60,12 +60,22 @@ public enum MetricsKey {
     GENERIC_METRIC_RT_P99("dubbo.%s.rt.seconds.p99", "Response Time P99"),
     GENERIC_METRIC_RT_P95("dubbo.%s.rt.seconds.p95", "Response Time P95"),
 
-    THREAD_POOL_CORE_SIZE("dubbo.thread.pool.core.size","Thread Pool Core Size"),
-    THREAD_POOL_LARGEST_SIZE("dubbo.thread.pool.largest.size","Thread Pool Largest Size"),
-    THREAD_POOL_MAX_SIZE("dubbo.thread.pool.max.size","Thread Pool Max Size"),
-    THREAD_POOL_ACTIVE_SIZE("dubbo.thread.pool.active.size","Thread Pool Active Size"),
-    THREAD_POOL_THREAD_COUNT("dubbo.thread.pool.thread.count","Thread Pool Thread Count"),
-    THREAD_POOL_QUEUE_SIZE("dubbo.thread.pool.queue.size","Thread Pool Queue Size"),
+    THREAD_POOL_CORE_SIZE("dubbo.thread.pool.core.size", "Thread Pool Core Size"),
+    THREAD_POOL_LARGEST_SIZE("dubbo.thread.pool.largest.size", "Thread Pool Largest Size"),
+    THREAD_POOL_MAX_SIZE("dubbo.thread.pool.max.size", "Thread Pool Max Size"),
+    THREAD_POOL_ACTIVE_SIZE("dubbo.thread.pool.active.size", "Thread Pool Active Size"),
+    THREAD_POOL_THREAD_COUNT("dubbo.thread.pool.thread.count", "Thread Pool Thread Count"),
+    THREAD_POOL_QUEUE_SIZE("dubbo.thread.pool.queue.size", "Thread Pool Queue Size"),
+
+    // metadata push metrics key
+    METADATA_PUSH_METRIC("dubbo.metadata.push.num.total", "Total Push Num"),
+    METADATA_PUSH_METRIC_SUCCEED("dubbo.metadata.push.num.succeed.total", "Succeed Push Num"),
+    METADATA_PUSH_METRIC_FAILED("dubbo.metadata.push.num.failed.total", "Failed Push Num"),
+
+    // metadata subscribe metrics key
+    METADATA_SUBSCRIBE_METRIC_NUM("dubbo.metadata.subscribe.num.total", "Total Subscribe Num"),
+    METADATA_SUBSCRIBE_METRIC_NUM_SUCCEED("dubbo.registry.subscribe.num.succeed.total", "Succeed Subscribe Num"),
+    METADATA_SUBSCRIBE_METRIC_NUM_FAILED("dubbo.registry.subscribe.num.failed.total", "Failed Subscribe Num"),
 
     // consumer metrics key
     ;
