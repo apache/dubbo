@@ -20,7 +20,7 @@ package org.apache.dubbo.metrics.metrics.collector;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.config.ApplicationConfig;
-import org.apache.dubbo.metrics.TestInvoker;
+import org.apache.dubbo.metrics.TestMetricsInvoker;
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
 import org.apache.dubbo.metrics.collector.sample.MethodMetricsSampler;
 import org.apache.dubbo.metrics.event.MetricsEvent;
@@ -82,7 +82,7 @@ class DefaultMetricsCollectorTest {
         invocation.setAttachment(VERSION_KEY, version);
         side = CommonConstants.CONSUMER;
 
-        invocation.setInvoker(new TestInvoker(side));
+        invocation.setInvoker(new TestMetricsInvoker(side));
         RpcContext.getServiceContext().setUrl(URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&side="+side));
 
     }
