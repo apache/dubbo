@@ -65,6 +65,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * provider OpenTelemetry when you are using Boot <3.0 or you are not using spring-boot-starter-actuator
+ * @author shenfeng
+ */
 @AutoConfiguration(before = DubboMicrometerTracingAutoConfiguration.class, afterName = "org.springframework.boot.actuate.autoconfigure.tracing.OpenTelemetryAutoConfiguration")
 @ConditionalOnDubboTracingEnable
 @ConditionalOnClass({OtelTracer.class, SdkTracerProvider.class, OpenTelemetry.class})
@@ -180,7 +184,6 @@ public class OpenTelemetryAutoConfiguration {
 
         @Bean
         @ConditionalOnMissingBean
-        //todo test;
         @ConditionalOnProperty(prefix = "dubbo.tracing", name = "baggage", havingValue = "W3C",
             matchIfMissing = true)
         TextMapPropagator w3cTextMapPropagatorWithBaggage(OtelCurrentTraceContext otelCurrentTraceContext) {
@@ -192,7 +195,7 @@ public class OpenTelemetryAutoConfiguration {
 
         @Bean
         @ConditionalOnMissingBean
-        @ConditionalOnProperty(prefix = "dubbo.tracing", name = "baggage", havingValue = "B3")
+        @ConditionalOnProperty(prefix = "dubbo.tracing", name = "propagation", havingValue = "B3")
         TextMapPropagator b3BaggageTextMapPropagator(OtelCurrentTraceContext otelCurrentTraceContext) {
             List<String> remoteFields = this.tracingProperties.getRemoteFields();
             return TextMapPropagator.composite(B3Propagator.injectingSingleHeader(),

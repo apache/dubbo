@@ -27,29 +27,27 @@ import java.util.List;
  */
 @ConfigurationProperties(prefix = "dubbo.tracing")
 public class DubboTracingProperties {
-    private boolean enable = true;
-    private String baggage = "W3C";
-    /**
-     *
-     */
+    private boolean enabled = true;
+
+    private String propagation = "W3C";
     private double ratio = 0.01;
 
     private List<String> remoteFields = new ArrayList<>();
 
-    public boolean isEnable() {
-        return enable;
+    public boolean isEnabled() {
+        return enabled;
     }
 
-    public void setEnable(boolean enable) {
-        this.enable = enable;
+    public void setEnabled(boolean enable) {
+        this.enabled = enable;
     }
 
-    public String getBaggage() {
-        return baggage;
+    public String getPropagation() {
+        return propagation;
     }
 
-    public void setBaggage(String baggage) {
-        this.baggage = baggage;
+    public void setPropagation(String propagation) {
+        this.propagation = propagation;
     }
 
     public double getRatio() {

@@ -8,13 +8,13 @@
   ],
   "properties": [
     {
-      "name": "dubbo.tracing.baggage",
+      "name": "dubbo.tracing.propagation",
       "type": "java.lang.String",
       "sourceType": "org.apache.dubbo.spring.boot.observability.config.DubboTracingProperties",
       "defaultValue": "W3C"
     },
     {
-      "name": "dubbo.tracing.enable",
+      "name": "dubbo.tracing.enabled",
       "type": "java.lang.Boolean",
       "sourceType": "org.apache.dubbo.spring.boot.observability.config.DubboTracingProperties",
       "defaultValue": true

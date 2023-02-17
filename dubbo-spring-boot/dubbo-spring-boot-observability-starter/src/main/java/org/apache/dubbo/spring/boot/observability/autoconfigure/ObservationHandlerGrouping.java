@@ -27,7 +27,8 @@ import java.util.List;
 
 /**
  * Groups {@link ObservationHandler ObservationHandlers} by type.
- * copy form {@link org.springframework.boot.actuate.autoconfigure.observation.ObservationHandlerGrouping}
+ * copy from {@link org.springframework.boot.actuate.autoconfigure.observation.ObservationHandlerGrouping}
+ * this class is available starting from Boot 3.0. It's not available if you're using Boot < 3.0
  *
  * @author Andy Wilkinson
  */

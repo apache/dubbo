@@ -44,6 +44,8 @@ import java.util.Arrays;
 
 
 /**
+ * Register observationRegistry to ApplicationModel.
+ * Create observationRegistry when you are using Boot <3.0 or you are not using spring-boot-starter-actuator
  * @author shenfeng
  */
 @AutoConfiguration(after =DubboMicrometerTracingAutoConfiguration.class,afterName = "org.springframework.boot.actuate.autoconfigure.observation.ObservationAutoConfiguration")
@@ -54,7 +56,7 @@ public class DubboObservationAutoConfiguration implements BeanFactoryAware, Smar
         this.applicationModel = applicationModel;
     }
 
-    private ApplicationModel applicationModel;
+    private final ApplicationModel applicationModel;
 
     private BeanFactory beanFactory;
 
