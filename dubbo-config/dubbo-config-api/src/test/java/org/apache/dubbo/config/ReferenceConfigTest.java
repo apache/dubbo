@@ -481,9 +481,17 @@ class ReferenceConfigTest {
         referenceConfig.init();
         Assertions.assertTrue(referenceConfig.getInvoker() instanceof MockClusterInvoker);
         Invoker<?> withFilter = ((MockClusterInvoker<?>) referenceConfig.getInvoker()).getDirectory().getAllInvokers().get(0);
-        Assertions.assertTrue(withFilter instanceof ListenerInvokerWrapper || withFilter instanceof FilterChainBuilder.CallbackRegistrationInvoker);
+        Assertions.assertTrue(withFilter instanceof ListenerInvokerWrapper
+            || withFilter instanceof FilterChainBuilder.CallbackRegistrationInvoker);
         if (withFilter instanceof ListenerInvokerWrapper) {
             Assertions.assertTrue(((ListenerInvokerWrapper<?>) withFilter).getInvoker() instanceof InjvmInvoker);
+        }
+        if (withFilter instanceof FilterChainBuilder.CallbackRegistrationInvoker) {
+            Invoker filterInvoker = ((FilterChainBuilder.CallbackRegistrationInvoker) withFilter).getFilterInvoker();
+            FilterChainBuilder.CopyOfFilterChainNode filterInvoker1 = (FilterChainBuilder.CopyOfFilterChainNode) filterInvoker;
+            ListenerInvokerWrapper originalInvoker = (ListenerInvokerWrapper) filterInvoker1.getOriginalInvoker();
+            Invoker invoker = originalInvoker.getInvoker();
+            Assertions.assertTrue(invoker instanceof InjvmInvoker);
         }
         URL url = withFilter.getUrl();
         Assertions.assertEquals("application1", url.getParameter("application"));
