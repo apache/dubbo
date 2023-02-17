@@ -69,7 +69,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_CLUSTER_DOMAIN;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_MESH_PORT;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.MESH_ENABLE;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
@@ -420,10 +419,6 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
 
     @SuppressWarnings({"unchecked"})
     private T createProxy(Map<String, String> referenceParameters) {
-        URL curUrl;
-        if (shouldJvmRefer(referenceParameters)) {
-            curUrl = createInvokerForLocal(referenceParameters);
-        } else {
             urls.clear();
 
             meshModeHandleUrl(referenceParameters);
@@ -437,13 +432,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                     aggregateUrlFromRegistry(referenceParameters);
                 }
             }
-            curUrl = createInvokerForRemote();
-        }
-        if (invoker != null && curUrl != null) {
-            List<Invoker<?>> invokers = new ArrayList<>();
-            invokers.add(invoker);
-            invoker = Cluster.getCluster(getScopeModel(), "scope").join(new StaticDirectory(curUrl, invokers), true);
-        }
+           createInvoker();
 
         if (logger.isInfoEnabled()) {
             logger.info("Referred dubbo service: [" + referenceParameters.get(INTERFACE_KEY) + "]." +
@@ -530,27 +519,6 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         return true;
     }
 
-    /**
-     * Make a local reference, create a local invoker.
-     *
-     * @param referenceParameters
-     */
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    private URL createInvokerForLocal(Map<String, String> referenceParameters) {
-        URL url = new ServiceConfigURL(LOCAL_PROTOCOL, LOCALHOST_VALUE, 0, interfaceClass.getName(), referenceParameters);
-        url = url.setScopeModel(getScopeModel());
-        url = url.setServiceModel(consumerModel);
-        Invoker<?> withFilter = protocolSPI.refer(interfaceClass, url);
-        // Local Invoke ( Support Cluster Filter / Filter )
-        List<Invoker<?>> invokers = new ArrayList<>();
-        invokers.add(withFilter);
-        invoker = Cluster.getCluster(url.getScopeModel(), Cluster.DEFAULT).join(new StaticDirectory(url, invokers), true);
-
-        if (logger.isInfoEnabled()) {
-            logger.info("Using in jvm service " + interfaceClass.getName());
-        }
-        return url;
-    }
 
     /**
      * Parse the directly configured url.
@@ -603,10 +571,10 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
 
 
     /**
-     * Make a remote reference, create a remote reference invoker
+     * \create a reference invoker
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private URL createInvokerForRemote() {
+    private void createInvoker() {
         if (urls.size() == 1) {
             URL curUrl = urls.get(0);
             invoker = protocolSPI.refer(interfaceClass, curUrl);
@@ -616,7 +584,6 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                 List<Invoker<?>> invokers = new ArrayList<>();
                 invokers.add(invoker);
                 invoker = Cluster.getCluster(getScopeModel(), Cluster.DEFAULT).join(new StaticDirectory(curUrl, invokers), true);
-                return curUrl;
             }
         } else {
             List<Invoker<?>> invokers = new ArrayList<>();
@@ -639,7 +606,6 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                 // The invoker wrap sequence would be: ZoneAwareClusterInvoker(StaticDirectory) -> FailoverClusterInvoker
                 // (RegistryDirectory, routing happens here) -> Invoker
                 invoker = Cluster.getCluster(registryUrl.getScopeModel(), cluster, false).join(new StaticDirectory(registryUrl, invokers), false);
-                return registryUrl;
             } else {
                 // not a registry url, must be direct invoke.
                 if (CollectionUtils.isEmpty(invokers)) {
@@ -648,10 +614,8 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                 URL curUrl = invokers.get(0).getUrl();
                 String cluster = curUrl.getParameter(CLUSTER_KEY, Cluster.DEFAULT);
                 invoker = Cluster.getCluster(getScopeModel(), cluster).join(new StaticDirectory(curUrl, invokers), true);
-                return curUrl;
             }
         }
-        return null;
     }
 
     private void checkInvokerAvailable() throws IllegalStateException {

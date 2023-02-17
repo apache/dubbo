@@ -100,10 +100,8 @@ public class ScopeClusterInvoker<T> implements ClusterInvoker<T> {
         String scope = getUrl().getParameter(SCOPE_KEY);
         if (!SCOPE_REMOTE.equalsIgnoreCase(scope)) {
             // Avoid duplicate creation
-            Invoker<T> tInvoker = getDirectory().getAllInvokers().get(0);
-            if ("injvm".equalsIgnoreCase(tInvoker.getUrl().getProtocol())) {
+            if ("injvm".equalsIgnoreCase(getUrl().getProtocol())) {
                 localFlag = true;
-                injvmInvoker = tInvoker;
             }
             if (!localFlag) {
                 // TODO If the local service has not been exposed, it will waste
