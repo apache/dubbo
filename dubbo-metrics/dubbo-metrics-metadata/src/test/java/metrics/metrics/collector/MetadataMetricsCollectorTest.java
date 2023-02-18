@@ -58,19 +58,30 @@ class MetadataMetricsCollectorTest {
 
         TimePair timePair = TimePair.start();
         GlobalMetricsEventMulticaster eventMulticaster = applicationModel.getBeanFactory().getOrRegisterBean(GlobalMetricsEventMulticaster.class);
-        MetadataMetricsCollector collector = applicationModel.getBeanFactory().getBean(MetadataMetricsCollector.class);
+        MetadataMetricsCollector collector = applicationModel.getBeanFactory().getOrRegisterBean(MetadataMetricsCollector.class);
+        eventMulticaster.addListener(collector);
         collector.setCollectEnabled(true);
 
         eventMulticaster.publishEvent(new MetadataEvent.PushEvent(applicationModel, timePair));
 
         List<MetricSample> metricSamples = collector.collect();
-        System.out.println(metricSamples);
 
         // push success +1
         Assertions.assertEquals(metricSamples.size(), 1);
         Assertions.assertTrue(metricSamples.get(0) instanceof GaugeMetricSample);
         Assertions.assertEquals(metricSamples.get(0).getName(), "dubbo.metadata.push.num.total");
         Assertions.assertEquals(((GaugeMetricSample) metricSamples.get(0)).getSupplier().get(), 1L);
+
+        eventMulticaster.publishFinishEvent(new MetadataEvent.PushEvent(applicationModel, timePair));
+
+        // push finish rt +1
+        metricSamples = collector.collect();
+
+        //num(total+success) + rt(5) = 7
+        Assertions.assertEquals(metricSamples.size(), 7);
+        System.out.println(metricSamples);
+
+
     }
 
 //    @Test
