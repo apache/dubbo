@@ -42,51 +42,50 @@ public class ModuleModel extends ScopeModel {
     public static final String NAME = "ModuleModel";
 
     private final ApplicationModel applicationModel;
-    private ModuleEnvironment moduleEnvironment;
-    private ModuleServiceRepository serviceRepository;
-    private ModuleConfigManager moduleConfigManager;
-    private ModuleDeployer deployer;
+    private volatile ModuleServiceRepository serviceRepository;
+    private volatile ModuleEnvironment moduleEnvironment;
+    private volatile ModuleConfigManager moduleConfigManager;
+    private volatile ModuleDeployer deployer;
     private boolean lifeCycleManagedExternally = false;
 
-    public ModuleModel(ApplicationModel applicationModel) {
+    protected ModuleModel(ApplicationModel applicationModel) {
         this(applicationModel, false);
     }
 
-    public ModuleModel(ApplicationModel applicationModel, boolean isInternal) {
+    protected ModuleModel(ApplicationModel applicationModel, boolean isInternal) {
         super(applicationModel, ExtensionScope.MODULE, isInternal);
-        Assert.notNull(applicationModel, "ApplicationModel can not be null");
-        this.applicationModel = applicationModel;
-        applicationModel.addModule(this, isInternal);
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info(getDesc() + " is created");
-        }
+        synchronized (instLock) {
+            Assert.notNull(applicationModel, "ApplicationModel can not be null");
+            this.applicationModel = applicationModel;
+            applicationModel.addModule(this, isInternal);
+            if (LOGGER.isInfoEnabled()) {
+                LOGGER.info(getDesc() + " is created");
+            }
 
-        initialize();
-        Assert.notNull(getServiceRepository(), "ModuleServiceRepository can not be null");
-        Assert.notNull(getConfigManager(), "ModuleConfigManager can not be null");
-        Assert.assertTrue(getConfigManager().isInitialized(), "ModuleConfigManager can not be initialized");
+            initialize();
 
-        // notify application check state
-        ApplicationDeployer applicationDeployer = applicationModel.getDeployer();
-        if (applicationDeployer != null) {
-            applicationDeployer.notifyModuleChanged(this, DeployState.PENDING);
-        }
-    }
+            this.serviceRepository = new ModuleServiceRepository(this);
 
-    @Override
-    protected void initialize() {
-        super.initialize();
-        this.serviceRepository = new ModuleServiceRepository(this);
+            initModuleExt();
 
-        initModuleExt();
+            ExtensionLoader<ScopeModelInitializer> initializerExtensionLoader = this.getExtensionLoader(ScopeModelInitializer.class);
+            Set<ScopeModelInitializer> initializers = initializerExtensionLoader.getSupportedExtensionInstances();
+            for (ScopeModelInitializer initializer : initializers) {
+                initializer.initializeModuleModel(this);
+            }
+            Assert.notNull(getServiceRepository(), "ModuleServiceRepository can not be null");
+            Assert.notNull(getConfigManager(), "ModuleConfigManager can not be null");
+            Assert.assertTrue(getConfigManager().isInitialized(), "ModuleConfigManager can not be initialized");
 
-        ExtensionLoader<ScopeModelInitializer> initializerExtensionLoader = this.getExtensionLoader(ScopeModelInitializer.class);
-        Set<ScopeModelInitializer> initializers = initializerExtensionLoader.getSupportedExtensionInstances();
-        for (ScopeModelInitializer initializer : initializers) {
-            initializer.initializeModuleModel(this);
+            // notify application check state
+            ApplicationDeployer applicationDeployer = applicationModel.getDeployer();
+            if (applicationDeployer != null) {
+                applicationDeployer.notifyModuleChanged(this, DeployState.PENDING);
+            }
         }
     }
 
+    // already synchronized in constructor
     private void initModuleExt() {
         Set<ModuleExt> exts = this.getExtensionLoader(ModuleExt.class).getSupportedExtensionInstances();
         for (ModuleExt ext : exts) {
@@ -96,39 +95,41 @@ public class ModuleModel extends ScopeModel {
 
     @Override
     protected void onDestroy() {
-        // 1. remove from applicationModel
-        applicationModel.removeModule(this);
+        synchronized (instLock) {
+            // 1. remove from applicationModel
+            applicationModel.removeModule(this);
 
-        // 2. set stopping
-        if (deployer != null) {
-            deployer.preDestroy();
+            // 2. set stopping
+            if (deployer != null) {
+                deployer.preDestroy();
+            }
+
+            // 3. release services
+            if (deployer != null) {
+                deployer.postDestroy();
+            }
+
+            // destroy other resources
+            notifyDestroy();
+
+            if (serviceRepository != null) {
+                serviceRepository.destroy();
+                serviceRepository = null;
+            }
+
+            if (moduleEnvironment != null) {
+                moduleEnvironment.destroy();
+                moduleEnvironment = null;
+            }
+
+            if (moduleConfigManager != null) {
+                moduleConfigManager.destroy();
+                moduleConfigManager = null;
+            }
+
+            // destroy application if none pub module
+            applicationModel.tryDestroy();
         }
-
-        // 3. release services
-        if (deployer != null) {
-            deployer.postDestroy();
-        }
-
-        // destroy other resources
-        notifyDestroy();
-
-        if (serviceRepository != null) {
-            serviceRepository.destroy();
-            serviceRepository = null;
-        }
-
-        if (moduleEnvironment != null) {
-            moduleEnvironment.destroy();
-            moduleEnvironment = null;
-        }
-
-        if (moduleConfigManager != null) {
-            moduleConfigManager.destroy();
-            moduleConfigManager = null;
-        }
-
-        // destroy application if none pub module
-        applicationModel.tryDestroy();
     }
 
     public ApplicationModel getApplicationModel() {

@@ -58,7 +58,7 @@ class InvokeTelnetTest {
         mockChannel = mock(Channel.class);
         mockCommandContext = mock(CommandContext.class);
         given(mockCommandContext.getRemote()).willReturn(mockChannel);
-        ApplicationModel applicationModel = new ApplicationModel(frameworkModel);
+        ApplicationModel applicationModel = frameworkModel.newApplication();
         repository = applicationModel.getDefaultModule().getServiceRepository();
     }
 

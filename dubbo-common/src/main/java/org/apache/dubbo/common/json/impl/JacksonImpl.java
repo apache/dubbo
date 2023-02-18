@@ -16,29 +16,17 @@
  */
 package org.apache.dubbo.common.json.impl;
 
-import java.lang.reflect.Type;
-import java.util.List;
-
-import org.apache.dubbo.common.utils.ClassUtils;
-
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
+import java.lang.reflect.Type;
+import java.util.List;
+
 public class JacksonImpl extends AbstractJSONImpl {
 
     private volatile Object jacksonCache = null;
-
-    @Override
-    public boolean isSupport() {
-        try {
-            Class<?> aClass = ClassUtils.forName("com.fasterxml.jackson.databind.json.JsonMapper");
-            return aClass != null;
-        } catch (Throwable t) {
-            return false;
-        }
-    }
 
     @Override
     public <T> T toJavaObject(String json, Type type) {
