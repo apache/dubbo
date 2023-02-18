@@ -54,7 +54,7 @@ class MetadataMetricsCollectorTest {
     }
 
     @Test
-    void testPushMetrics() {
+    void testPushMetrics() throws InterruptedException {
 
         TimePair timePair = TimePair.start();
         GlobalMetricsEventMulticaster eventMulticaster = applicationModel.getBeanFactory().getOrRegisterBean(GlobalMetricsEventMulticaster.class);
@@ -81,7 +81,15 @@ class MetadataMetricsCollectorTest {
         Assertions.assertEquals(metricSamples.size(), 7);
         System.out.println(metricSamples);
 
+        timePair = TimePair.start();
+        eventMulticaster.publishEvent(new MetadataEvent.PushEvent(applicationModel, timePair));
+        Thread.sleep(50);
+        // push error rt +1
+        eventMulticaster.publishErrorEvent(new MetadataEvent.PushEvent(applicationModel, timePair));
+        metricSamples = collector.collect();
 
+        //num(total+success+error) + rt(5)
+        Assertions.assertEquals(metricSamples.size(), 8);
     }
 
 //    @Test
@@ -126,26 +134,7 @@ class MetadataMetricsCollectorTest {
 //        Assertions.assertEquals(sampleMap.get(MetricsKey.PROVIDER_METRIC_RT_AVG.getName()), 5L);
 //        Assertions.assertEquals(sampleMap.get(MetricsKey.PROVIDER_METRIC_RT_SUM.getName()), 10L);
 //    }
-//
-//    @Test
-//    void testListener() {
-//        DefaultMetricsCollector collector = new DefaultMetricsCollector();
-//        MethodMetricsSampler methodMetricsCountSampler = collector.getMethodSampler();
-//        collector.setCollectEnabled(true);
-//
-//        MockListener mockListener = new MockListener();
-//        collector.addListener(mockListener);
-//        collector.setApplicationName(applicationModel.getApplicationName());
-//
-//        methodMetricsCountSampler.incOnEvent(invocation,MetricsEvent.Type.TOTAL);
-//        Assertions.assertNotNull(mockListener.getCurEvent());
-//        Assertions.assertTrue(mockListener.getCurEvent() instanceof RequestEvent);
-//        Assertions.assertEquals(((RequestEvent) mockListener.getCurEvent()).getType(), MetricsEvent.Type.TOTAL);
-//
-//        methodMetricsCountSampler.addRT(invocation, 5L);
-//        Assertions.assertTrue(mockListener.getCurEvent() instanceof RTEvent);
-//        Assertions.assertEquals(((RTEvent) mockListener.getCurEvent()).getRt(), 5L);
-//    }
+
 
 
 }
