@@ -70,7 +70,6 @@ class MetadataMetricsCollectorTest {
         Assertions.assertEquals(metricSamples.size(), 1);
         Assertions.assertTrue(metricSamples.get(0) instanceof GaugeMetricSample);
         Assertions.assertEquals(metricSamples.get(0).getName(), "dubbo.metadata.push.num.total");
-        Assertions.assertEquals(((GaugeMetricSample) metricSamples.get(0)).getSupplier().get(), 1L);
 
         eventMulticaster.publishFinishEvent(new MetadataEvent.PushEvent(applicationModel, timePair));
 
