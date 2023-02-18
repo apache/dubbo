@@ -22,7 +22,7 @@ import org.apache.dubbo.metrics.event.SimpleMetricsEventMulticaster;
 public final class MetadataMetricsEventMulticaster extends SimpleMetricsEventMulticaster {
 
     public MetadataMetricsEventMulticaster() {
-        super.addListener(new MetricsMetadataPushListener());
+        super.addListener(new MetricsPushListener());
         super.addListener(new MetricsSubscribeListener());
 
         setAvailable();

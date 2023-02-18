@@ -26,14 +26,11 @@ public class MetricsSubscribeListener implements MetricsLifeListener<MetadataEve
 
     @Override
     public boolean isSupport(MetricsEvent event) {
-        return event instanceof MetadataEvent.SubscribeEvent;
+        return event instanceof MetadataEvent.SubscribeEvent && ((MetadataEvent) event).isAvailable();
     }
 
     @Override
     public void onEvent(MetadataEvent.SubscribeEvent event) {
-        if (!event.isAvailable()) {
-            return;
-        }
         event.getCollector().increment(event.getSource().getApplicationName(), MetadataEvent.Type.S_TOTAL);
     }
 

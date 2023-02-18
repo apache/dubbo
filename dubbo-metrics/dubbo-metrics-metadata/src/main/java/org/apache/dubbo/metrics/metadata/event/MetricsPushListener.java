@@ -22,19 +22,16 @@ import org.apache.dubbo.metrics.listener.MetricsLifeListener;
 
 import static org.apache.dubbo.metrics.metadata.collector.stat.MetadataStatComposite.OP_TYPE_PUSH;
 
-public class MetricsMetadataPushListener implements MetricsLifeListener<MetadataEvent.PushEvent> {
+public class MetricsPushListener implements MetricsLifeListener<MetadataEvent.PushEvent> {
 
 
     @Override
     public boolean isSupport(MetricsEvent event) {
-        return event instanceof MetadataEvent.PushEvent;
+        return event instanceof MetadataEvent.PushEvent && ((MetadataEvent) event).isAvailable();
     }
 
     @Override
     public void onEvent(MetadataEvent.PushEvent event) {
-        if (!event.isAvailable()) {
-            return;
-        }
         event.getCollector().increment(event.getSource().getApplicationName(), MetadataEvent.Type.P_TOTAL);
     }
 

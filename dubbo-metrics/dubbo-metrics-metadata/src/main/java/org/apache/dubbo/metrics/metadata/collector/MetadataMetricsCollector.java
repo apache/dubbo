@@ -79,7 +79,7 @@ public class MetadataMetricsCollector implements ApplicationMetricsCollector<Met
     @Override
     public List<MetricSample> collect() {
         if (!isCollectEnabled()) {
-            new ArrayList<>();
+           return new ArrayList<>();
         }
         List<MetricSample> list = new ArrayList<>();
         list.addAll(stats.exportNumMetrics());
