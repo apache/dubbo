@@ -71,7 +71,7 @@ class AggregateMetricsCollectorTest {
         aggregationConfig.setTimeWindowSeconds(120);
         metricsConfig.setAggregation(aggregationConfig);
         applicationModel.getApplicationConfigManager().setMetrics(metricsConfig);
-        applicationModel.getBeanFactory().registerBean(defaultCollector);
+        defaultCollector = applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class);
 
         interfaceName = "org.apache.dubbo.MockInterface";
         methodName = "mockMethod";
@@ -96,10 +96,10 @@ class AggregateMetricsCollectorTest {
         defaultCollector.setApplicationName(applicationName);
         MethodMetricsSampler methodMetricsCountSampler = defaultCollector.getMethodSampler();
 
-        methodMetricsCountSampler.incOnEvent(invocation,MetricsEvent.Type.TOTAL);
-        methodMetricsCountSampler.incOnEvent(invocation,MetricsEvent.Type.SUCCEED);
-        methodMetricsCountSampler.incOnEvent(invocation,MetricsEvent.Type.UNKNOWN_FAILED);
-        methodMetricsCountSampler.incOnEvent(invocation,MetricsEvent.Type.BUSINESS_FAILED);
+        methodMetricsCountSampler.incOnEvent(invocation, MetricsEvent.Type.TOTAL);
+        methodMetricsCountSampler.incOnEvent(invocation, MetricsEvent.Type.SUCCEED);
+        methodMetricsCountSampler.incOnEvent(invocation, MetricsEvent.Type.UNKNOWN_FAILED);
+        methodMetricsCountSampler.incOnEvent(invocation, MetricsEvent.Type.BUSINESS_FAILED);
 
         List<MetricSample> samples = collector.collect();
         for (MetricSample sample : samples) {

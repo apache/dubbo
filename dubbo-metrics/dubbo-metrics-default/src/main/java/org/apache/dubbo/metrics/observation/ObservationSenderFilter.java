@@ -14,11 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metrics.filter.observation;
+package org.apache.dubbo.metrics.observation;
 
 import io.micrometer.observation.Observation;
 import io.micrometer.observation.ObservationRegistry;
 import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.metrics.filter.observation.DefaultDubboClientObservationConvention;
+import org.apache.dubbo.metrics.filter.observation.DubboClientContext;
+import org.apache.dubbo.metrics.filter.observation.DubboClientObservationConvention;
+import org.apache.dubbo.metrics.filter.observation.DubboObservation;
 import org.apache.dubbo.rpc.BaseFilter;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
@@ -34,12 +38,12 @@ import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 /**
  * A {@link Filter} that creates an {@link Observation} around the outgoing message.
  */
-@Activate(group = CONSUMER, order = -1)
+@Activate(group = CONSUMER, order = -1,onClass = "io.micrometer.observation.NoopObservationRegistry")
 public class ObservationSenderFilter implements ClusterFilter, BaseFilter.Listener, ScopeModelAware {
 
-    private ObservationRegistry observationRegistry = ObservationRegistry.NOOP;
+    private final ObservationRegistry observationRegistry;
 
-    private DubboClientObservationConvention clientObservationConvention = null;
+    private final DubboClientObservationConvention clientObservationConvention;
 
     public ObservationSenderFilter(ApplicationModel applicationModel) {
         observationRegistry = applicationModel.getBeanFactory().getBean(ObservationRegistry.class);
