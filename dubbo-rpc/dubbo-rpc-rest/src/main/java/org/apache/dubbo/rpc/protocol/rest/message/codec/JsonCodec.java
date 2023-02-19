@@ -49,6 +49,16 @@ public class JsonCodec implements HttpMessageCodec<byte[], OutputStream> {
         return MediaTypeMatcher.APPLICATION_JSON.mediaSupport(mediaType) && !unSupportClasses.contains(targetType);
     }
 
+    @Override
+    public boolean typeSupport(Class targetType) {
+        return !unSupportClasses.contains(targetType);
+    }
+
+    @Override
+    public MediaType contentType() {
+        return MediaType.APPLICATION_JSON_VALUE;
+    }
+
 
     @Override
     public void encode(OutputStream outputStream, Object unSerializedBody, URL url) throws Exception {

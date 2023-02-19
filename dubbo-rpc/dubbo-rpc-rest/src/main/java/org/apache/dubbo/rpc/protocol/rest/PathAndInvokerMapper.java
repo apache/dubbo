@@ -13,10 +13,12 @@ public class PathAndInvokerMapper {
     private static final Map<PathMatcher, Pair<Invoker, RestMethodMetadata>> pathToServiceMap = new ConcurrentHashMap<>();
 
 
-    public static void addPathAndInvoker(Map<PathMatcher, RestMethodMetadata> metadataMap, Invoker invoker) {
+    public static void addPathAndInvoker(Map<PathMatcher, RestMethodMetadata> metadataMap, Invoker invoker, String contextPath) {
 
         metadataMap.entrySet().stream().forEach(entry -> {
-            pathToServiceMap.put(entry.getKey(), Pair.make(invoker, entry.getValue()));
+            PathMatcher pathMatcher = entry.getKey();
+            pathMatcher.setContextPath(contextPath);
+            pathToServiceMap.put(pathMatcher, Pair.make(invoker, entry.getValue()));
         });
     }
 

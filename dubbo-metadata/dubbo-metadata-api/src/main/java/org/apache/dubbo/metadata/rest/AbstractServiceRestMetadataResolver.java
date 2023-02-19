@@ -79,7 +79,8 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
         }
 
         // for provider
-        return isImplementedInterface(serviceType) && isServiceAnnotationPresent(serviceType) && supports0(serviceType);
+        // for xml config bean  && isServiceAnnotationPresent(serviceType)
+        return isImplementedInterface(serviceType) && supports0(serviceType);
     }
 
     protected final boolean isImplementedInterface(Class<?> serviceType) {

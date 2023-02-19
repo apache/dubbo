@@ -17,6 +17,7 @@
 package org.apache.dubbo.metadata.rest;
 
 
+import java.util.Arrays;
 import java.util.Objects;
 
 public class PathMatcher {
@@ -27,14 +28,22 @@ public class PathMatcher {
     private Integer port;
     private String[] pathSplits;
     private boolean hasPathVariable;
+    private String contextPath;
 
 
     public PathMatcher(String path) {
-        this(path, null, null, 0);
+        this(path, null, null, null);
     }
 
     public PathMatcher(String path, String version, String group, Integer port) {
         this.path = path;
+        dealPathVariable(path);
+        this.version = version;
+        this.group = group;
+        this.port = (port == null || port == -1 || port == 0) ? null : port;
+    }
+
+    private void dealPathVariable(String path) {
         this.pathSplits = path.split(SEPARATOR);
 
         for (String pathSplit : pathSplits) {
@@ -44,9 +53,6 @@ public class PathMatcher {
                 break;
             }
         }
-        this.version = version;
-        this.group = group;
-        this.port = port;
     }
 
     public void setPath(String path) {
@@ -63,6 +69,20 @@ public class PathMatcher {
 
     public void setPort(Integer port) {
         this.port = port;
+    }
+
+    public void setContextPath(String contextPath) {
+
+
+        contextPath = contextPathFormat(contextPath);
+
+
+        this.contextPath = contextPath;
+
+        setPath(contextPath + path);
+
+        dealPathVariable(path);
+
     }
 
 
@@ -134,13 +154,32 @@ public class PathMatcher {
     }
 
 
+    private String contextPathFormat(String path) {
+
+
+        if (path == null || path.equals(SEPARATOR) || path.length() == 0) {
+            return "";
+        }
+
+        if (path.startsWith(SEPARATOR)) {
+            return path;
+        } else {
+            return SEPARATOR + path;
+        }
+
+    }
+
+
     @Override
     public String toString() {
-        return "PathMather{" +
+        return "PathMatcher{" +
             "path='" + path + '\'' +
             ", version='" + version + '\'' +
             ", group='" + group + '\'' +
-            ", port='" + port + '\'' +
+            ", port=" + port +
+            ", pathSplits=" + Arrays.toString(pathSplits) +
+            ", hasPathVariable=" + hasPathVariable +
+            ", contextPath='" + contextPath + '\'' +
             '}';
     }
 }

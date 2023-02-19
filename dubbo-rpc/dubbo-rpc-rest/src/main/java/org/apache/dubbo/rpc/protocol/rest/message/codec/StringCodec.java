@@ -38,6 +38,16 @@ public class StringCodec implements HttpMessageCodec<byte[], OutputStream> {
         return String.class.equals(targetType);
     }
 
+    @Override
+    public boolean typeSupport(Class targetType) {
+        return String.class.equals(targetType);
+    }
+
+    @Override
+    public MediaType contentType() {
+        return MediaType.TEXT_PLAIN;
+    }
+
 
     @Override
     public void encode(OutputStream outputStream, Object unSerializedBody, URL url) throws Exception {

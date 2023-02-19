@@ -37,6 +37,16 @@ public class ByteArrayCodec implements HttpMessageCodec<byte[], OutputStream> {
         return byte[].class.equals(targetType);
     }
 
+    @Override
+    public boolean typeSupport(Class targetType) {
+        return byte[].class.equals(targetType);
+    }
+
+    @Override
+    public MediaType contentType() {
+        return MediaType.OCTET_STREAM;
+    }
+
 
     @Override
     public void encode(OutputStream outputStream, Object unSerializedBody, URL url) throws Exception {
