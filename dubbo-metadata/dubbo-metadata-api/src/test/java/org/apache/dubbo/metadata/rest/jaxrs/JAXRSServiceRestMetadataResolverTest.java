@@ -18,7 +18,12 @@ package org.apache.dubbo.metadata.rest.jaxrs;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.JsonUtils;
-import org.apache.dubbo.metadata.rest.*;
+import org.apache.dubbo.metadata.rest.ClassPathServiceRestMetadataReader;
+import org.apache.dubbo.metadata.rest.DefaultRestService;
+import org.apache.dubbo.metadata.rest.RestMethodMetadata;
+import org.apache.dubbo.metadata.rest.RestService;
+import org.apache.dubbo.metadata.rest.ServiceRestMetadata;
+import org.apache.dubbo.metadata.rest.StandardRestService;
 import org.apache.dubbo.metadata.rest.api.JaxrsRestService;
 import org.apache.dubbo.metadata.rest.api.JaxrsRestServiceImpl;
 import org.apache.dubbo.metadata.rest.api.SpringRestService;

@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.common.json;
 
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
@@ -50,14 +48,5 @@ public interface JSON {
     List<Map<String, ?>> checkObjectList(List<?> rawList);
 
     List<String> checkStringList(List<?> rawList);
-
-    <T> T parseObject(byte[] bytes, Class<T> clazz);
-
-    <T> T parseObject(InputStream inputStream, Class<T> clazz) throws Exception;
-
-
-    // TODO unit  test
-    <T> void serializeObject(OutputStream outputStream, Object o) throws Exception;
-
 
 }

@@ -18,7 +18,12 @@ package org.apache.dubbo.metadata.rest.springmvc;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.JsonUtils;
-import org.apache.dubbo.metadata.rest.*;
+import org.apache.dubbo.metadata.rest.ClassPathServiceRestMetadataReader;
+import org.apache.dubbo.metadata.rest.DefaultRestService;
+import org.apache.dubbo.metadata.rest.RestMethodMetadata;
+import org.apache.dubbo.metadata.rest.RestService;
+import org.apache.dubbo.metadata.rest.ServiceRestMetadata;
+import org.apache.dubbo.metadata.rest.StandardRestService;
 import org.apache.dubbo.metadata.rest.api.SpringRestService;
 import org.apache.dubbo.metadata.rest.api.SpringRestServiceImpl;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -47,15 +52,15 @@ class SpringMvcServiceRestMetadataResolverTest {
     @Test
     void testSupports() {
         // Spring MVC RestService class
-        assertTrue(instance.supports(SpringRestService.class));
+        assertTrue(instance.supports(SpringRestService.class, true));
         // JAX-RS RestService class
-        assertFalse(instance.supports(StandardRestService.class));
+        assertFalse(instance.supports(StandardRestService.class, true));
         // Default RestService class
-        assertFalse(instance.supports(DefaultRestService.class));
+        assertFalse(instance.supports(DefaultRestService.class, true));
         // No annotated RestService class
-        assertFalse(instance.supports(RestService.class));
+        assertFalse(instance.supports(RestService.class, true));
         // null
-        assertFalse(instance.supports(null));
+        assertFalse(instance.supports(null, true));
     }
 
     @Test
