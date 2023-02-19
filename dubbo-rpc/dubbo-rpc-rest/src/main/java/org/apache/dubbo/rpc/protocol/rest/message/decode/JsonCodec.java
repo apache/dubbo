@@ -29,11 +29,11 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 
 @Activate("json")
-public class JsonCodec implements HttpMessageCodec<InputStream,OutputStream> {
+public class JsonCodec implements HttpMessageCodec<byte[],OutputStream> {
 
 
     @Override
-    public Object decode(InputStream body, Class targetType) throws Exception {
+    public Object decode(byte[] body, Class targetType) throws Exception {
         return DataParseUtils.jsonConvert(targetType, body);
     }
 

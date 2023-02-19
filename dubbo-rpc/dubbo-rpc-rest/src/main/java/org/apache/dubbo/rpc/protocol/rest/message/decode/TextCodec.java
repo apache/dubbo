@@ -22,18 +22,16 @@ import org.apache.dubbo.metadata.rest.media.MediaType;
 import org.apache.dubbo.rpc.protocol.rest.message.HttpMessageCodec;
 import org.apache.dubbo.rpc.protocol.rest.message.MediaTypeMatcher;
 import org.apache.dubbo.rpc.protocol.rest.util.DataParseUtils;
-import org.apache.dubbo.rpc.protocol.rest.util.StreamUtils;
 
-import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 @Activate("text")
-public class TextCodec implements HttpMessageCodec<InputStream,OutputStream> {
+public class TextCodec implements HttpMessageCodec<byte[],OutputStream> {
 
     @Override
-    public Object decode(InputStream inputStream, Class targetType) throws Exception {
-        return DataParseUtils.stringTypeConvert(targetType, StreamUtils.copyToString(inputStream, Charset.defaultCharset()));
+    public Object decode(byte[] body, Class targetType) throws Exception {
+        return DataParseUtils.stringTypeConvert(targetType, new String(body, StandardCharsets.UTF_8));
     }
 
 
