@@ -20,8 +20,9 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.rest.PathMatcher;
 import org.apache.dubbo.metadata.rest.RestMethodMetadata;
-import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.http.HttpBinder;
+import org.apache.dubbo.remoting.http.servlet.BootstrapListener;
+import org.apache.dubbo.remoting.http.servlet.ServletManager;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.ProtocolServer;
@@ -48,8 +49,6 @@ import org.jboss.resteasy.util.GetRestful;
 import javax.servlet.ServletContext;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.WebApplicationException;
-import java.lang.reflect.Method;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -60,10 +59,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.*;
-import static org.apache.dubbo.remoting.Constants.CONNECTIONS_KEY;
-import static org.apache.dubbo.remoting.Constants.CONNECT_TIMEOUT_KEY;
-import static org.apache.dubbo.remoting.Constants.DEFAULT_CONNECT_TIMEOUT;
-import static org.apache.dubbo.remoting.Constants.SERVER_KEY;
+import static org.apache.dubbo.remoting.Constants.*;
 import static org.apache.dubbo.rpc.protocol.rest.Constants.EXTENSION_KEY;
 
 public class RestProtocol extends AbstractProxyProtocol {
@@ -114,22 +110,7 @@ public class RestProtocol extends AbstractProxyProtocol {
         // TODO  addAll metadataMap to RPCInvocationBuilder metadataMap
         Map<PathMatcher, RestMethodMetadata> metadataMap = MetadataResolver.resolveProviderServiceMetadata(invoker.getInterface());
 
-
-        String addr = getAddr(url);
-
-        HttpRestServer<T> tHttpRestServer = new HttpRestServer<>(invoker, metadataMap, addr);
-
-//        // TODO directly change server  to netty server
-        serverMap.put(addr, tHttpRestServer);
-//        RestProtocolServer server = (RestProtocolServer) serverMap.computeIfAbsent(addr, restServer -> {
-//
-//            String serverKey = url.getParameter(SERVER_KEY, DEFAULT_SERVER);
-//
-//            RestProtocolServer s = serverFactory.createServer(serverKey);
-//            s.setAddress(url.getAddress());
-//            s.start(url);
-//            return s;
-//        });
+        PathAndInvokerMapper.addPathAndInvoker(metadataMap, invoker);
 
 
         final Runnable runnable = doExport(proxyFactory.getProxy(invoker, true), invoker.getInterface(), invoker.getUrl());
@@ -154,32 +135,48 @@ public class RestProtocol extends AbstractProxyProtocol {
     @Override
     protected <T> Runnable doExport(T impl, Class<T> type, URL url) throws RpcException {
 
+        String addr = getAddr(url);
+
+
+        RestProtocolServer server = (RestProtocolServer) serverMap.computeIfAbsent(addr, restServer -> {
+
+            String serverKey = url.getParameter(SERVER_KEY, DEFAULT_SERVER);
+
+            RestProtocolServer s = serverFactory.createServer(serverKey);
+            s.setAddress(url.getAddress());
+            s.start(url);
+            return s;
+        });
+
+
+        Class implClass = url.getServiceModel().getProxyObject().getClass();
+
 
         // TODO  remove
-//        String contextPath = getContextPath(url);
-//        if ("servlet".equalsIgnoreCase(url.getParameter(SERVER_KEY, DEFAULT_SERVER))) {
-//            ServletContext servletContext = ServletManager.getInstance().getServletContext(ServletManager.EXTERNAL_SERVER_PORT);
-//            if (servletContext == null) {
-//                throw new RpcException("No servlet context found. Since you are using server='servlet', " +
-//                    "make sure that you've configured " + BootstrapListener.class.getName() + " in web.xml");
-//            }
-//            String webappPath = servletContext.getContextPath();
-//            if (StringUtils.isNotEmpty(webappPath)) {
-//                webappPath = webappPath.substring(1);
-//                if (!contextPath.startsWith(webappPath)) {
-//                    throw new RpcException("Since you are using server='servlet', " +
-//                        "make sure that the 'contextpath' property starts with the path of external webapp");
-//                }
-//                contextPath = contextPath.substring(webappPath.length());
-//                if (contextPath.startsWith("/")) {
-//                    contextPath = contextPath.substring(1);
-//                }
-//            }
-//        }
-//
-//        final Class resourceDef = GetRestful.getRootResourceClass(implClass) != null ? implClass : type;
+        String contextPath = getContextPath(url);
+        if ("servlet".equalsIgnoreCase(url.getParameter(SERVER_KEY, DEFAULT_SERVER))) {
+            ServletContext servletContext = ServletManager.getInstance().getServletContext(ServletManager.EXTERNAL_SERVER_PORT);
+            if (servletContext == null) {
+                throw new RpcException("No servlet context found. Since you are using server='servlet', " +
+                    "make sure that you've configured " + BootstrapListener.class.getName() + " in web.xml");
+            }
+            String webappPath = servletContext.getContextPath();
+            if (StringUtils.isNotEmpty(webappPath)) {
+                webappPath = webappPath.substring(1);
+                if (!contextPath.startsWith(webappPath)) {
+                    throw new RpcException("Since you are using server='servlet', " +
+                        "make sure that the 'contextpath' property starts with the path of external webapp");
+                }
+                contextPath = contextPath.substring(webappPath.length());
+                if (contextPath.startsWith("/")) {
+                    contextPath = contextPath.substring(1);
+                }
+            }
+        }
 
-//        server.deploy(resourceDef, impl, contextPath);
+        final Class resourceDef = GetRestful.getRootResourceClass(implClass) != null ? implClass : type;
+
+        server.deploy(resourceDef, impl, contextPath);
 
         return () -> {
             // TODO due to dubbo's current architecture,
@@ -386,37 +383,4 @@ public class RestProtocol extends AbstractProxyProtocol {
         }
     }
 
-    public static class InvokerAndMetadataPair<T> {
-
-        Invoker<T> invoker;
-
-        RestMethodMetadata restMethodMetadata;
-
-        public InvokerAndMetadataPair(Invoker<T> invoker, RestMethodMetadata restMethodMetadata) {
-            this.invoker = invoker;
-            this.restMethodMetadata = restMethodMetadata;
-
-        }
-
-        public static <T> InvokerAndMetadataPair<T> getInstance(Invoker<T> invoker, RestMethodMetadata restMethodMetadata) {
-
-            return new InvokerAndMetadataPair<>(invoker, restMethodMetadata);
-        }
-
-        public Invoker<T> getInvoker() {
-            return invoker;
-        }
-
-        public void setInvoker(Invoker<T> invoker) {
-            this.invoker = invoker;
-        }
-
-        public RestMethodMetadata getRestMethodMetadata() {
-            return restMethodMetadata;
-        }
-
-        public void setRestMethodMetadata(RestMethodMetadata restMethodMetadata) {
-            this.restMethodMetadata = restMethodMetadata;
-        }
-    }
 }

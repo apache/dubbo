@@ -17,42 +17,41 @@
 package org.apache.dubbo.rpc.protocol.rest;
 
 import org.apache.dubbo.metadata.rest.ArgInfo;
-import org.apache.dubbo.metadata.rest.PathMatcher;
 import org.apache.dubbo.metadata.rest.RestMethodMetadata;
+import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.protocol.rest.annotation.ParamParserManager;
 import org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.provider.ProviderParseContext;
 import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
-import org.apache.dubbo.rpc.protocol.rest.exception.PathNoFoundException;
 import org.apache.dubbo.rpc.protocol.rest.request.RequestFacadeFactory;
 import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
+import org.apache.dubbo.rpc.protocol.rest.util.Pair;
 
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 
 public class RPCInvocationBuilder {
-
-    private static final Map<PathMatcher, RestMethodMetadata> pathToServiceMap = new ConcurrentHashMap<>();
 
 
     private static final ParamParserManager paramParser = new ParamParserManager();
 
 
-    public static RpcInvocation build(Object request, Object response) {
+    public static Pair<RpcInvocation, Invoker> build(Object servletRequest, Object response) {
 
+        RequestFacade request = RequestFacadeFactory.createRequestFacade(servletRequest);
 
-        RpcInvocation rpcInvocation = createBaseRpcInvocation(request);
+        Pair<Invoker, RestMethodMetadata> invokerRestMethodMetadataPair = getRestMethodMetadata(request);
+
+        RpcInvocation rpcInvocation = createBaseRpcInvocation(request, invokerRestMethodMetadataPair);
 
         ProviderParseContext parseContext = createParseContext(request, response, rpcInvocation);
 
         Object[] args = paramParser.providerParamParse(parseContext);
         rpcInvocation.setArguments(args);
 
-        return rpcInvocation;
+        return Pair.make(rpcInvocation, invokerRestMethodMetadataPair.getFirst());
 
     }
 
@@ -72,9 +71,9 @@ public class RPCInvocationBuilder {
         return parseContext;
     }
 
-    private static RpcInvocation createBaseRpcInvocation(Object servletRequest) {
+    private static RpcInvocation createBaseRpcInvocation(RequestFacade request, Pair<Invoker, RestMethodMetadata> invokerRestMethodMetadataPair) {
         RpcInvocation rpcInvocation = new RpcInvocation();
-        RequestFacade request = RequestFacadeFactory.createRequestFacade(servletRequest);
+
 
         int localPort = request.getLocalPort();
         String localAddr = request.getLocalAddr();
@@ -88,8 +87,7 @@ public class RPCInvocationBuilder {
         String VERSION = request.getHeader(RestConstant.VERSION);
 
 
-        RestMethodMetadata serviceRestMetadata = getRestMethodMetadata(request.getRequestURI(), VERSION, GROUP, localPort);
-
+        RestMethodMetadata serviceRestMetadata = invokerRestMethodMetadataPair.getSecond();
         String METHOD = serviceRestMetadata.getMethod().getName();
         String[] PARAMETER_TYPES_DESC = serviceRestMetadata.getMethod().getParameterTypes();
 
@@ -110,16 +108,13 @@ public class RPCInvocationBuilder {
     }
 
 
-    private static RestMethodMetadata getRestMethodMetadata(String path, String version, String group, int port) {
+    private static Pair<Invoker, RestMethodMetadata> getRestMethodMetadata(RequestFacade request) {
+        int port = request.getLocalPort();
+        String path = request.getRequestURI();
+        String version = request.getHeader(RestConstant.VERSION);
+        String group = request.getHeader(RestConstant.GROUP);
 
-        PathMatcher pathMather = new PathMatcher(path, version, group, port);
-
-        if (!pathToServiceMap.containsKey(pathMather)) {
-            throw new PathNoFoundException("rest service Path no found, current path info:" + pathMather);
-        }
-
-
-        return pathToServiceMap.get(pathMather);
+        return PathAndInvokerMapper.getRestMethodMetadata(path, version, group, port);
     }
 
 
