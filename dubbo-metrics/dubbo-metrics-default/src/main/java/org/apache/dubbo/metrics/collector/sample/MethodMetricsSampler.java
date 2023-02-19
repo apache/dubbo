@@ -77,6 +77,10 @@ public class MethodMetricsSampler extends SimpleMetricsCountSampler<Invocation, 
         count(list, MetricsEvent.Type.REQUEST_TIMEOUT, MetricsKey.PROVIDER_METRIC_REQUESTS_TIMEOUT);
         count(list, MetricsEvent.Type.REQUEST_LIMIT, MetricsKey.PROVIDER_METRIC_REQUESTS_LIMIT);
         count(list, MetricsEvent.Type.TOTAL_FAILED, MetricsKey.PROVIDER_METRIC_REQUESTS_TOTAL_FAILED);
+
+        count(list, MetricsEvent.Type.NETWORK_EXCEPTION, MetricsKey.PROVIDER_METRIC_REQUESTS_NETWORK_FAILED);
+        count(list, MetricsEvent.Type.NO_PROVIDER, MetricsKey.PROVIDER_METRIC_REQUESTS_NO_PROVIDER_FAILED);
+        count(list, MetricsEvent.Type.CODEC_EXCEPTION, MetricsKey.PROVIDER_METRIC_REQUESTS_CODEC_FAILED);
     }
 
     private void collectRT(List<MetricSample> list) {

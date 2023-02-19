@@ -86,6 +86,10 @@ public class DefaultMetricsCollector implements MetricsCollector {
         return this.methodSampler;
     }
 
+    public ThreadPoolMetricsSampler getThreadPoolSampler() {
+        return this.threadPoolSampler;
+    }
+
     public void collectApplication(ApplicationModel applicationModel) {
         this.setApplicationName(applicationModel.getApplicationName());
         this.applicationModel = applicationModel;

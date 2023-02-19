@@ -100,6 +100,10 @@ class AggregateMetricsCollectorTest {
         methodMetricsCountSampler.incOnEvent(invocation,MetricsEvent.Type.SUCCEED);
         methodMetricsCountSampler.incOnEvent(invocation,MetricsEvent.Type.UNKNOWN_FAILED);
         methodMetricsCountSampler.incOnEvent(invocation,MetricsEvent.Type.BUSINESS_FAILED);
+        methodMetricsCountSampler.incOnEvent(invocation,MetricsEvent.Type.NETWORK_EXCEPTION);
+        methodMetricsCountSampler.incOnEvent(invocation,MetricsEvent.Type.NO_PROVIDER);
+        methodMetricsCountSampler.incOnEvent(invocation,MetricsEvent.Type.CODEC_EXCEPTION);
+
 
         List<MetricSample> samples = collector.collect();
         for (MetricSample sample : samples) {
@@ -123,6 +127,11 @@ class AggregateMetricsCollectorTest {
         Assertions.assertEquals(sampleMap.get(MetricsKey.PROVIDER_METRIC_REQUESTS_BUSINESS_FAILED_AGG.getName()), 1L);
 
         Assertions.assertTrue(sampleMap.containsKey(MetricsKey.PROVIDER_METRIC_QPS.getName()));
+
+        Assertions.assertTrue(sampleMap.containsKey(MetricsKey.PROVIDER_METRIC_REQUESTS_NETWORK_TOTAL_FAILED_AGG.getName()));
+        Assertions.assertTrue(sampleMap.containsKey(MetricsKey.PROVIDER_METRIC_REQUESTS_CODEC_TOTAL_FAILED_AGG.getName()));
+        Assertions.assertTrue(sampleMap.containsKey(MetricsKey.PROVIDER_METRIC_REQUESTS_NO_PROVIDER_TOTAL_FAILED_AGG.getName()));
+
     }
 
     @Test

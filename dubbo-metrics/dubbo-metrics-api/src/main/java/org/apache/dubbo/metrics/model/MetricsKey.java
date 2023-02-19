@@ -29,7 +29,8 @@ public enum MetricsKey {
     PROVIDER_METRIC_REQUESTS_LIMIT("dubbo.provider.requests.limit.total", "Total Limit Failed Requests"),
     PROVIDER_METRIC_REQUESTS_FAILED("dubbo.provider.requests.unknown.failed.total", "Unknown Failed Requests"),
     PROVIDER_METRIC_REQUESTS_TOTAL_FAILED("dubbo.provider.requests.failed.total", "Total Failed Requests"),
-
+    PROVIDER_METRIC_REQUESTS_NETWORK_FAILED("dubbo.provider.requests.network.failed.total", "Total Network Failed Requests"),
+    PROVIDER_METRIC_REQUESTS_CODEC_FAILED("dubbo.provider.requests.codec.failed.total", "Total Codec Network Failed Requests"),
 
     PROVIDER_METRIC_REQUESTS_TOTAL_AGG("dubbo.provider.requests.total.aggregate", "Aggregated Total Requests"),
     PROVIDER_METRIC_REQUESTS_SUCCEED_AGG("dubbo.provider.requests.succeed.aggregate", "Aggregated Succeed Requests"),
@@ -38,6 +39,8 @@ public enum MetricsKey {
     PROVIDER_METRIC_REQUESTS_TIMEOUT_AGG("dubbo.provider.requests.timeout.failed.aggregate", "Aggregated timeout Failed Requests"),
     PROVIDER_METRIC_REQUESTS_LIMIT_AGG("dubbo.provider.requests.limit.aggregate", "Aggregated limit Requests"),
     PROVIDER_METRIC_REQUESTS_TOTAL_FAILED_AGG("dubbo.provider.requests.failed.total.aggregate", "Aggregated failed total Requests"),
+    PROVIDER_METRIC_REQUESTS_NETWORK_TOTAL_FAILED_AGG("dubbo.provider.requests.network.failed.total.aggregate", "Aggregated Network Failed Total Requests"),
+    PROVIDER_METRIC_REQUESTS_CODEC_TOTAL_FAILED_AGG("dubbo.provider.requests.codec.failed.total.aggregate", "Aggregated Codec Failed Total Requests"),
 
     PROVIDER_METRIC_QPS("dubbo.provider.qps.seconds", "Query Per Seconds"),
     PROVIDER_METRIC_RT_LAST("dubbo.provider.rt.seconds.last", "Last Response Time"),
@@ -56,6 +59,8 @@ public enum MetricsKey {
     THREAD_POOL_QUEUE_SIZE("dubbo.thread.pool.queue.size","Thread Pool Queue Size"),
 
     // consumer metrics key
+    PROVIDER_METRIC_REQUESTS_NO_PROVIDER_FAILED("dubbo.consumer.requests.no.provider.failed.total", "Total NoProvider Network Failed Requests"),
+    PROVIDER_METRIC_REQUESTS_NO_PROVIDER_TOTAL_FAILED_AGG("dubbo.consumer.requests.non-service.failed.total.aggregate", "Aggregated Codec Failed Total Requests"),
     ;
 
     private final String name;

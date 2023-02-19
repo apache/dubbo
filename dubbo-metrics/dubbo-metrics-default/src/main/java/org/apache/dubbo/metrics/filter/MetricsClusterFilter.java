@@ -14,61 +14,55 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metrics.filter;
 
+package org.apache.dubbo.metrics.filter;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
+import org.apache.dubbo.metrics.event.MetricsEvent;
 import org.apache.dubbo.rpc.BaseFilter;
-import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.cluster.filter.ClusterFilter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
+import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 
-import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
+@Activate(group = CONSUMER)
+public class MetricsClusterFilter implements ClusterFilter, BaseFilter.Listener, ScopeModelAware {
 
-@Activate(group = PROVIDER, order = -1)
-public class MetricsFilter implements Filter, BaseFilter.Listener, ScopeModelAware {
-
-    private DefaultMetricsCollector collector = null;
-    private MethodMetricsInterceptor metricsInterceptor;
+    private DefaultMetricsCollector collector;
 
     @Override
     public void setApplicationModel(ApplicationModel applicationModel) {
-        collector = applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class);
-
-        if (collector != null) {
-            metricsInterceptor = new MethodMetricsInterceptor(collector.getMethodSampler());
-        }
+        this.collector = applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class);
     }
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
-        if (collector == null || !collector.isCollectEnabled()) {
-            return invoker.invoke(invocation);
-        }
-
-        metricsInterceptor.beforeMethod(invocation);
-
         return invoker.invoke(invocation);
     }
 
     @Override
     public void onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
-        if (collector == null || !collector.isCollectEnabled()) {
-            return;
-        }
-        metricsInterceptor.afterMethod(invocation, result);
+        handleMethodException(result.getException(), invocation);
     }
 
     @Override
     public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
+        handleMethodException(t, invocation);
+    }
+
+    private void handleMethodException(Throwable t, Invocation invocation) {
         if (collector == null || !collector.isCollectEnabled()) {
             return;
         }
-        metricsInterceptor.handleMethodException(invocation, t);
+        if (t != null && t instanceof RpcException) {
+            RpcException e = (RpcException) t;
+            if (e.isForbidden()) {
+                collector.getMethodSampler().incOnEvent(invocation, MetricsEvent.Type.NO_PROVIDER);
+            }
+        }
     }
-
 }
