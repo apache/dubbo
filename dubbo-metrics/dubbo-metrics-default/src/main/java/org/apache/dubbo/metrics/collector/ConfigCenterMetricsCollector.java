@@ -1,5 +1,6 @@
 package org.apache.dubbo.metrics.collector;
 
+import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
 import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
 import org.apache.dubbo.metrics.model.ConfigCenterMetric;
 import org.apache.dubbo.metrics.model.MetricsKey;
@@ -26,8 +27,17 @@ public class ConfigCenterMetricsCollector extends DefaultMetricsCollector {
     public ConfigCenterMetricsCollector() {
     }
 
-    public void increaseUpdated(String type, String applicationName, ConfigChangedEvent event) {
-        ConfigCenterMetric metric = new ConfigCenterMetric(applicationName, event.getKey(), event.getGroup(), type, event.getChangeType().name());
+    public void increase4Initialized(String key, String group, String protocol, String applicationName, int count) {
+        if (count <= 0) {
+            return;
+        }
+        ConfigCenterMetric metric = new ConfigCenterMetric(applicationName, key, group, protocol, ConfigChangeType.ADDED.name());
+        AtomicLong aLong = updatedMetrics.computeIfAbsent(metric, k -> new AtomicLong(0L));
+        aLong.addAndGet(count);
+    }
+
+    public void increaseUpdated(String protocol, String applicationName, ConfigChangedEvent event) {
+        ConfigCenterMetric metric = new ConfigCenterMetric(applicationName, event.getKey(), event.getGroup(), protocol, event.getChangeType().name());
         AtomicLong count = updatedMetrics.computeIfAbsent(metric, k -> new AtomicLong(0L));
         count.incrementAndGet();
     }
@@ -41,7 +51,7 @@ public class ConfigCenterMetricsCollector extends DefaultMetricsCollector {
     }
 
     private void collect(List<MetricSample> list) {
-        updatedMetrics.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.CONFIGCENTER_METRIC_UPDATED_TOTAL, k.getTags(), CONFIGCENTER, v::get)));
+        updatedMetrics.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.CONFIGCENTER_METRIC_TOTAL, k.getTags(), CONFIGCENTER, v::get)));
     }
 
 }
