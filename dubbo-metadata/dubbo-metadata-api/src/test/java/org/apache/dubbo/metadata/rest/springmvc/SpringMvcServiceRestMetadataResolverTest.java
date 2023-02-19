@@ -23,6 +23,7 @@ import org.apache.dubbo.metadata.rest.RestService;
 import org.apache.dubbo.metadata.rest.ServiceRestMetadata;
 import org.apache.dubbo.metadata.rest.SpringRestService;
 import org.apache.dubbo.metadata.rest.StandardRestService;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import org.junit.jupiter.api.Test;
 
@@ -39,7 +40,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 class SpringMvcServiceRestMetadataResolverTest {
 
-    private SpringMvcServiceRestMetadataResolver instance = new SpringMvcServiceRestMetadataResolver();
+    private SpringMvcServiceRestMetadataResolver instance = new SpringMvcServiceRestMetadataResolver(ApplicationModel.defaultModel());
 
     @Test
     void testSupports() {

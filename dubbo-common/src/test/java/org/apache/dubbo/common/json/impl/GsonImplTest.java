@@ -16,10 +16,7 @@
  */
 package org.apache.dubbo.common.json.impl;
 
-import java.lang.reflect.Type;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
-
+import com.google.gson.Gson;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -27,7 +24,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.MockedConstruction;
 import org.mockito.Mockito;
 
-import com.google.gson.Gson;
+import java.lang.reflect.Type;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 
 public class GsonImplTest {
 
@@ -75,7 +74,7 @@ public class GsonImplTest {
         Assertions.assertFalse(new GsonImpl().isSupport());
         gsonInit.set(null);
 
-        gsonInit.set(g -> Mockito.when(g.fromJson(Mockito.eq("[\"gson\"]"), (Type) Mockito.any())).thenReturn(null));
+        gsonInit.set(g -> Mockito.when(g.fromJson(Mockito.eq("[\"json\"]"), (Type) Mockito.any())).thenReturn(null));
         Assertions.assertFalse(new GsonImpl().isSupport());
         gsonInit.set(null);
     }

@@ -16,14 +16,15 @@
  */
 package org.apache.dubbo.rpc.cluster.directory;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
+
 import org.apache.dubbo.rpc.AttachmentsAdapter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.model.ServiceModel;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Consumer;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
@@ -122,9 +123,7 @@ class MockDirInvocation implements Invocation {
 
     @Override
     public void setObjectAttachmentIfAbsent(String key, Object value) {
-        if (attachments.get(key) == null) {
-            attachments.put(key, value);
-        }
+        attachments.putIfAbsent(key, value);
     }
 
     public Invoker<?> getInvoker() {
@@ -167,6 +166,16 @@ class MockDirInvocation implements Invocation {
 
     public String getAttachment(String key, String defaultValue) {
         return (String) getObjectAttachment(key, defaultValue);
+    }
+
+    @Override
+    public void addInvokedInvoker(Invoker<?> invoker) {
+
+    }
+
+    @Override
+    public List<Invoker<?>> getInvokedInvokers() {
+        return null;
     }
 
     @Override

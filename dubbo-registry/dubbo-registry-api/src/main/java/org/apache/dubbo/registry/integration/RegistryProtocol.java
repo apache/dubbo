@@ -29,6 +29,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
+import org.apache.dubbo.common.deploy.ApplicationDeployer;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
@@ -122,6 +123,7 @@ import static org.apache.dubbo.remoting.Constants.CHECK_KEY;
 import static org.apache.dubbo.remoting.Constants.CODEC_KEY;
 import static org.apache.dubbo.remoting.Constants.CONNECTIONS_KEY;
 import static org.apache.dubbo.remoting.Constants.EXCHANGER_KEY;
+import static org.apache.dubbo.remoting.Constants.PREFER_SERIALIZATION_KEY;
 import static org.apache.dubbo.remoting.Constants.SERIALIZATION_KEY;
 import static org.apache.dubbo.rpc.Constants.DEPRECATED_KEY;
 import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
@@ -140,7 +142,7 @@ import static org.apache.dubbo.rpc.model.ScopeModelUtil.getApplicationModel;
  */
 public class RegistryProtocol implements Protocol, ScopeModelAware {
     public static final String[] DEFAULT_REGISTER_PROVIDER_KEYS = {
-        APPLICATION_KEY, CODEC_KEY, EXCHANGER_KEY, SERIALIZATION_KEY, CLUSTER_KEY, CONNECTIONS_KEY, DEPRECATED_KEY,
+        APPLICATION_KEY, CODEC_KEY, EXCHANGER_KEY, SERIALIZATION_KEY, PREFER_SERIALIZATION_KEY, CLUSTER_KEY, CONNECTIONS_KEY, DEPRECATED_KEY,
         GROUP_KEY, LOADBALANCE_KEY, MOCK_KEY, PATH_KEY, TIMEOUT_KEY, TOKEN_KEY, VERSION_KEY, WARMUP_KEY,
         WEIGHT_KEY, DUBBO_VERSION_KEY, RELEASE_KEY, SIDE_KEY, IPV6_KEY
     };
@@ -209,7 +211,13 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
     }
 
     private void register(Registry registry, URL registeredProviderUrl) {
-        registry.register(registeredProviderUrl);
+        ApplicationDeployer deployer = registeredProviderUrl.getOrDefaultApplicationModel().getDeployer();
+        try {
+            deployer.increaseServiceRefreshCount();
+            registry.register(registeredProviderUrl);
+        } finally {
+            deployer.decreaseServiceRefreshCount();
+        }
     }
 
     private void registerStatedUrl(URL registryUrl, URL registeredProviderUrl, boolean registered) {
@@ -735,7 +743,14 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
             this.configurators = Configurator.toConfigurators(classifyUrls(matchedUrls, UrlUtils::isConfigurator))
                 .orElse(configurators);
 
-            doOverrideIfNecessary();
+            ApplicationDeployer deployer = subscribeUrl.getOrDefaultApplicationModel().getDeployer();
+
+            try {
+                deployer.increaseServiceRefreshCount();
+                doOverrideIfNecessary();
+            } finally {
+                deployer.decreaseServiceRefreshCount();
+            }
         }
 
         public synchronized void doOverrideIfNecessary() {
@@ -801,10 +816,13 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         private URL providerUrl;
         private OverrideListener notifyListener;
 
+        private final ModuleModel moduleModel;
+
         public ServiceConfigurationListener(ModuleModel moduleModel, URL providerUrl, OverrideListener notifyListener) {
             super(moduleModel);
             this.providerUrl = providerUrl;
             this.notifyListener = notifyListener;
+            this.moduleModel = moduleModel;
             if (moduleModel.getModelEnvironment().getConfiguration().convert(Boolean.class, ENABLE_CONFIGURATION_LISTEN, true)) {
                 this.initWith(DynamicConfiguration.getRuleKey(providerUrl) + CONFIGURATORS_SUFFIX);
             }
@@ -816,7 +834,13 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
 
         @Override
         protected void notifyOverrides() {
-            notifyListener.doOverrideIfNecessary();
+            ApplicationDeployer deployer = this.moduleModel.getApplicationModel().getDeployer();
+            try {
+                deployer.increaseServiceRefreshCount();
+                notifyListener.doOverrideIfNecessary();
+            } finally {
+                deployer.decreaseServiceRefreshCount();
+            }
         }
     }
 
@@ -824,8 +848,11 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
 
         private final Map<URL, Set<NotifyListener>> overrideListeners = new ConcurrentHashMap<>();
 
+        private final ModuleModel moduleModel;
+
         public ProviderConfigurationListener(ModuleModel moduleModel) {
             super(moduleModel);
+            this.moduleModel = moduleModel;
             if (moduleModel.getModelEnvironment().getConfiguration().convert(Boolean.class, ENABLE_CONFIGURATION_LISTEN, true)) {
                 this.initWith(moduleModel.getApplicationModel().getApplicationName() + CONFIGURATORS_SUFFIX);
             }
@@ -844,11 +871,17 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
 
         @Override
         protected void notifyOverrides() {
-            overrideListeners.values().forEach(listeners -> {
-                for (NotifyListener listener : listeners) {
-                    ((OverrideListener) listener).doOverrideIfNecessary();
-                }
-            });
+            ApplicationDeployer deployer = this.moduleModel.getApplicationModel().getDeployer();
+            try {
+                deployer.increaseServiceRefreshCount();
+                overrideListeners.values().forEach(listeners -> {
+                    for (NotifyListener listener : listeners) {
+                        ((OverrideListener) listener).doOverrideIfNecessary();
+                    }
+                });
+            } finally {
+                deployer.decreaseServiceRefreshCount();
+            }
         }
 
         public Map<URL, Set<NotifyListener>> getOverrideListeners() {

@@ -106,7 +106,7 @@ class DubboTelnetDecodeTest {
             MockHandler mockHandler = new MockHandler(null,
                     new MultiMessageHandler(
                             new DecodeHandler(
-                                    new HeaderExchangeHandler(new ExchangeHandlerAdapter() {
+                                    new HeaderExchangeHandler(new ExchangeHandlerAdapter(FrameworkModel.defaultModel()) {
                                         @Override
                                         public CompletableFuture<Object> reply(ExchangeChannel channel, Object msg) {
                                             if (checkDubboDecoded(msg)) {
@@ -157,7 +157,7 @@ class DubboTelnetDecodeTest {
             },
                     new MultiMessageHandler(
                             new DecodeHandler(
-                                    new HeaderExchangeHandler(new ExchangeHandlerAdapter() {
+                                    new HeaderExchangeHandler(new ExchangeHandlerAdapter(FrameworkModel.defaultModel()) {
                                         @Override
                                         public CompletableFuture<Object> reply(ExchangeChannel channel, Object msg) {
                                             return getDefaultFuture();
@@ -220,7 +220,7 @@ class DubboTelnetDecodeTest {
             },
                     new MultiMessageHandler(
                             new DecodeHandler(
-                                    new HeaderExchangeHandler(new ExchangeHandlerAdapter() {
+                                    new HeaderExchangeHandler(new ExchangeHandlerAdapter(FrameworkModel.defaultModel()) {
                                         @Override
                                         public CompletableFuture<Object> reply(ExchangeChannel channel, Object msg) {
                                             if (checkDubboDecoded(msg)) {
@@ -292,7 +292,7 @@ class DubboTelnetDecodeTest {
             },
                     new MultiMessageHandler(
                             new DecodeHandler(
-                                    new HeaderExchangeHandler(new ExchangeHandlerAdapter() {
+                                    new HeaderExchangeHandler(new ExchangeHandlerAdapter(FrameworkModel.defaultModel()) {
                                         @Override
                                         public CompletableFuture<Object> reply(ExchangeChannel channel, Object msg) {
                                             return getDefaultFuture();
@@ -359,7 +359,7 @@ class DubboTelnetDecodeTest {
             MockHandler mockHandler = new MockHandler(null,
                     new MultiMessageHandler(
                             new DecodeHandler(
-                                    new HeaderExchangeHandler(new ExchangeHandlerAdapter() {
+                                    new HeaderExchangeHandler(new ExchangeHandlerAdapter(FrameworkModel.defaultModel()) {
                                         @Override
                                         public CompletableFuture<Object> reply(ExchangeChannel channel, Object msg) {
                                             if (checkDubboDecoded(msg)) {
@@ -430,7 +430,7 @@ class DubboTelnetDecodeTest {
             },
                     new MultiMessageHandler(
                             new DecodeHandler(
-                                    new HeaderExchangeHandler(new ExchangeHandlerAdapter() {
+                                    new HeaderExchangeHandler(new ExchangeHandlerAdapter(FrameworkModel.defaultModel()) {
                                         @Override
                                         public CompletableFuture<Object> reply(ExchangeChannel channel, Object msg) {
                                             if (checkDubboDecoded(msg)) {

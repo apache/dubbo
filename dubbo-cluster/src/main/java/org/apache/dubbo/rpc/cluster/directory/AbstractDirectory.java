@@ -16,27 +16,6 @@
  */
 package org.apache.dubbo.rpc.cluster.directory;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.Version;
-import org.apache.dubbo.common.config.Configuration;
-import org.apache.dubbo.common.config.ConfigurationUtils;
-import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
-import org.apache.dubbo.common.utils.ConcurrentHashSet;
-import org.apache.dubbo.common.utils.NetUtils;
-import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.rpc.Invocation;
-import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.RpcContext;
-import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.cluster.Directory;
-import org.apache.dubbo.rpc.cluster.Router;
-import org.apache.dubbo.rpc.cluster.RouterChain;
-import org.apache.dubbo.rpc.cluster.router.state.BitList;
-import org.apache.dubbo.rpc.cluster.support.ClusterUtils;
-import org.apache.dubbo.rpc.model.ApplicationModel;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -50,6 +29,30 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.Version;
+import org.apache.dubbo.common.config.Configuration;
+import org.apache.dubbo.common.config.ConfigurationUtils;
+import org.apache.dubbo.common.constants.LoggerCodeConstants;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
+import org.apache.dubbo.common.utils.ConcurrentHashSet;
+import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.RpcContext;
+import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.cluster.Directory;
+import org.apache.dubbo.rpc.cluster.Router;
+import org.apache.dubbo.rpc.cluster.RouterChain;
+import org.apache.dubbo.rpc.cluster.SingleRouterChain;
+import org.apache.dubbo.rpc.cluster.router.state.BitList;
+import org.apache.dubbo.rpc.cluster.support.ClusterUtils;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_RECONNECT_TASK_PERIOD;
@@ -185,27 +188,48 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         }
 
         BitList<Invoker<T>> availableInvokers;
-        // use clone to avoid being modified at doList().
-        if (invokersInitialized) {
-            availableInvokers = validInvokers.clone();
-        } else {
-            availableInvokers = invokers.clone();
-        }
+        SingleRouterChain<T> singleChain = null;
+        try {
+            try {
+                if (routerChain != null) {
+                    routerChain.getLock().readLock().lock();
+                }
+                // use clone to avoid being modified at doList().
+                if (invokersInitialized) {
+                    availableInvokers = validInvokers.clone();
+                } else {
+                    availableInvokers = invokers.clone();
+                }
 
-        List<Invoker<T>> routedResult = doList(availableInvokers, invocation);
-        if (routedResult.isEmpty()) {
-            // 2-2 - No provider available.
+                if (routerChain != null) {
+                    singleChain = routerChain.getSingleChain(getConsumerUrl(), availableInvokers, invocation);
+                    singleChain.getLock().readLock().lock();
+                }
+            } finally {
+                if (routerChain != null) {
+                    routerChain.getLock().readLock().unlock();
+                }
+            }
 
-            logger.warn(CLUSTER_NO_VALID_PROVIDER, "provider server or registry center crashed", "",
-                "No provider available after connectivity filter for the service " + getConsumerUrl().getServiceKey()
-                + " All validInvokers' size: " + validInvokers.size()
-                + " All routed invokers' size: " + routedResult.size()
-                + " All invokers' size: " + invokers.size()
-                + " from registry " + getUrl().getAddress()
-                + " on the consumer " + NetUtils.getLocalHost()
-                + " using the dubbo version " + Version.getVersion() + ".");
+            List<Invoker<T>> routedResult = doList(singleChain, availableInvokers, invocation);
+            if (routedResult.isEmpty()) {
+                // 2-2 - No provider available.
+
+                logger.warn(CLUSTER_NO_VALID_PROVIDER, "provider server or registry center crashed", "",
+                    "No provider available after connectivity filter for the service " + getConsumerUrl().getServiceKey()
+                        + " All validInvokers' size: " + validInvokers.size()
+                        + " All routed invokers' size: " + routedResult.size()
+                        + " All invokers' size: " + invokers.size()
+                        + " from registry " + getUrl().getAddress()
+                        + " on the consumer " + NetUtils.getLocalHost()
+                        + " using the dubbo version " + Version.getVersion() + ".");
+            }
+            return Collections.unmodifiableList(routedResult);
+        } finally {
+            if (singleChain != null) {
+                singleChain.getLock().readLock().unlock();
+            }
         }
-        return Collections.unmodifiableList(routedResult);
     }
 
     @Override
@@ -260,6 +284,9 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
             invokersToReconnect.add(invoker);
             // 3. try start check connectivity task
             checkConnectivity();
+
+            logger.info("The invoker " + invoker.getUrl() + " has been added to invalidate list due to connectivity problem. " +
+                "Will trying to reconnect to it in the background.");
         }
     }
 
@@ -373,6 +400,21 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         }
     }
 
+    protected final void refreshRouter(BitList<Invoker<T>> newlyInvokers, Runnable switchAction) {
+        try {
+            routerChain.setInvokers(newlyInvokers.clone(), switchAction);
+        } catch (Throwable t) {
+            logger.error(LoggerCodeConstants.INTERNAL_ERROR, "", "", "Error occurred when refreshing router chain. " +
+                "The addresses from notification: " +
+                newlyInvokers.stream()
+                    .map(Invoker::getUrl)
+                    .map(URL::getAddress)
+                    .collect(Collectors.joining(", ")), t);
+
+            throw t;
+        }
+    }
+
     /**
      * for ut only
      */
@@ -432,6 +474,18 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         }
     }
 
-    protected abstract List<Invoker<T>> doList(BitList<Invoker<T>> invokers, Invocation invocation) throws RpcException;
+    protected abstract List<Invoker<T>> doList(SingleRouterChain<T> singleRouterChain,
+                                               BitList<Invoker<T>> invokers, Invocation invocation) throws RpcException;
 
+    protected String joinValidInvokerAddresses() {
+        BitList<Invoker<T>> validInvokers = getValidInvokers().clone();
+        if (validInvokers.isEmpty()) {
+            return "empty";
+        }
+        return validInvokers.stream()
+            .limit(5)
+            .map(Invoker::getUrl)
+            .map(URL::getAddress)
+            .collect(Collectors.joining(","));
+    }
 }

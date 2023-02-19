@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.cluster.router.state;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -31,7 +32,7 @@ public abstract class CacheableStateRouterFactory implements StateRouterFactory 
 
     @Override
     public <T> StateRouter<T> getRouter(Class<T> interfaceClass, URL url) {
-        return routerMap.computeIfAbsent(url.getServiceKey(), k -> createRouter(interfaceClass, url));
+        return ConcurrentHashMapUtils.computeIfAbsent(routerMap, url.getServiceKey(), k -> createRouter(interfaceClass, url));
     }
 
     protected abstract <T> StateRouter<T> createRouter(Class<T> interfaceClass, URL url);

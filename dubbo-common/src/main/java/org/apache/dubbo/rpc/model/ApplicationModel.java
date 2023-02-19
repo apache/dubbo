@@ -28,7 +28,6 @@ import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.context.ConfigManager;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -155,7 +154,7 @@ public class ApplicationModel extends ScopeModel {
             frameworkModel.tryDestroyProtocols();
 
             // 4. destroy application resources
-            for (ModuleModel moduleModel : new ArrayList<>(moduleModels)) {
+            for (ModuleModel moduleModel : moduleModels) {
                 if (moduleModel != internalModule) {
                     moduleModel.destroy();
                 }
@@ -221,7 +220,7 @@ public class ApplicationModel extends ScopeModel {
     }
 
     public ExecutorRepository getApplicationExecutorRepository() {
-        return this.getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
+        return ExecutorRepository.getInstance(this);
     }
 
     public ApplicationConfig getCurrentConfig() {

@@ -17,14 +17,15 @@
 
 package com.alibaba.dubbo.rpc;
 
-import com.alibaba.dubbo.common.Constants;
-import com.alibaba.dubbo.common.URL;
-
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+
+import com.alibaba.dubbo.common.Constants;
+import com.alibaba.dubbo.common.URL;
 
 public class RpcInvocation implements Invocation, Serializable {
 
@@ -196,6 +197,16 @@ public class RpcInvocation implements Invocation, Serializable {
             return defaultValue;
         }
         return value;
+    }
+
+    @Override
+    public void addInvokedInvoker(org.apache.dubbo.rpc.Invoker<?> invoker) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public List<org.apache.dubbo.rpc.Invoker<?>> getInvokedInvokers() {
+        throw new UnsupportedOperationException();
     }
 
     @Override

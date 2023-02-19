@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.qos.command.annotation;
 
+import org.apache.dubbo.qos.permission.PermissionLevel;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -55,4 +57,12 @@ public @interface Cmd {
      * @return command order in help
      */
     int sort() default 0;
+
+    /**
+     * Command required access permission level
+     *
+     * @return command permission level
+     */
+    PermissionLevel requiredPermissionLevel() default PermissionLevel.PROTECTED;
+
 }
