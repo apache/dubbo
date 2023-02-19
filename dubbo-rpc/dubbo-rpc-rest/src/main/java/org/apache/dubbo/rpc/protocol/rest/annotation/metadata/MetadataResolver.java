@@ -54,4 +54,19 @@ public class MetadataResolver {
     }
 
 
+
+
+    public static Map<PathMatcher, RestMethodMetadata> resolveProviderServiceMetadata(Class serviceImpl) {
+
+
+        for (ServiceRestMetadataResolver serviceRestMetadataResolver : serviceRestMetadataResolvers) {
+            boolean supports = serviceRestMetadataResolver.supports(serviceImpl);
+            if (supports) {
+                ServiceRestMetadata resolve = serviceRestMetadataResolver.resolve(serviceImpl);
+                return resolve.getPathToServiceMap();
+            }
+        }
+        throw new CodeStyleNotSupportException("service is:" + serviceImpl + ",just support rest or spring-web annotation");
+    }
+
 }

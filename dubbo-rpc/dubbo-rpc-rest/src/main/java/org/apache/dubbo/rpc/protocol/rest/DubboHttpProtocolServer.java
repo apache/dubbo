@@ -22,9 +22,9 @@ import org.apache.dubbo.remoting.http.HttpHandler;
 import org.apache.dubbo.remoting.http.HttpServer;
 import org.apache.dubbo.remoting.http.servlet.BootstrapListener;
 import org.apache.dubbo.remoting.http.servlet.ServletManager;
-import org.apache.dubbo.rpc.RpcContext;
-import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.*;
 
+import org.apache.dubbo.rpc.protocol.rest.util.Pair;
 import org.jboss.resteasy.plugins.server.servlet.HttpServletDispatcher;
 import org.jboss.resteasy.spi.ResteasyDeployment;
 
@@ -59,7 +59,7 @@ public class DubboHttpProtocolServer extends BaseRestProtocolServer {
         }
         if (servletContext == null) {
             throw new RpcException("No servlet context found. If you are using server='servlet', " +
-                    "make sure that you've configured " + BootstrapListener.class.getName() + " in web.xml");
+                "make sure that you've configured " + BootstrapListener.class.getName() + " in web.xml");
         }
 
         servletContext.setAttribute(ResteasyDeployment.class.getName(), deployment);
@@ -87,6 +87,16 @@ public class DubboHttpProtocolServer extends BaseRestProtocolServer {
         public void handle(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
             RpcContext.getServiceContext().setRemoteAddress(request.getRemoteAddr(), request.getRemotePort());
             dispatcher.service(request, response);
+
+            Pair<RpcInvocation, Invoker> build = RPCInvocationBuilder.build(request, response);
+
+            Invoker invoker = build.getSecond();
+
+            Result invoke = invoker.invoke(build.getFirst());
+
+
+
+
         }
     }
 

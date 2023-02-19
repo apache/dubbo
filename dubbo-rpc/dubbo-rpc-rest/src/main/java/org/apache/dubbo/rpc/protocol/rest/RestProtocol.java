@@ -59,12 +59,24 @@ import org.apache.dubbo.rpc.protocol.rest.message.HttpMessageCodecManager;
 import org.apache.dubbo.rpc.protocol.rest.util.MediaTypeUtil;
 import org.jboss.resteasy.util.GetRestful;
 
-import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import javax.servlet.ServletContext;
+import javax.ws.rs.ProcessingException;
+import javax.ws.rs.WebApplicationException;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+
+import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERROR_CLOSE_CLIENT;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERROR_CLOSE_SERVER;
+import static org.apache.dubbo.remoting.Constants.CONNECTIONS_KEY;
+import static org.apache.dubbo.remoting.Constants.CONNECT_TIMEOUT_KEY;
+import static org.apache.dubbo.remoting.Constants.DEFAULT_CONNECT_TIMEOUT;
 import static org.apache.dubbo.remoting.Constants.SERVER_KEY;
-import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
+import static org.apache.dubbo.rpc.protocol.rest.Constants.EXTENSION_KEY;
 
 public class RestProtocol extends AbstractProxyProtocol {
 
@@ -92,17 +104,67 @@ public class RestProtocol extends AbstractProxyProtocol {
         return DEFAULT_PORT;
     }
 
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T> Exporter<T> export(final Invoker<T> invoker) throws RpcException {
+        URL url = invoker.getUrl();
+        final String uri = serviceKey(url);
+        Exporter<T> exporter = (Exporter<T>) exporterMap.get(uri);
+        if (exporter != null) {
+            // When modifying the configuration through override, you need to re-expose the newly modified service.
+            if (Objects.equals(exporter.getInvoker().getUrl(), invoker.getUrl())) {
+                return exporter;
+            }
+        }
+
+
+        // TODO  addAll metadataMap to RPCInvocationBuilder metadataMap
+        Map<PathMatcher, RestMethodMetadata> metadataMap = MetadataResolver.resolveProviderServiceMetadata(invoker.getInterface());
+
+        PathAndInvokerMapper.addPathAndInvoker(metadataMap, invoker);
+
+
+        final Runnable runnable = doExport(proxyFactory.getProxy(invoker, true), invoker.getInterface(), invoker.getUrl());
+        exporter = new AbstractExporter<T>(invoker) {
+            @Override
+            public void afterUnExport() {
+                exporterMap.remove(uri);
+                if (runnable != null) {
+                    try {
+                        runnable.run();
+                    } catch (Throwable t) {
+                        logger.warn(PROTOCOL_UNSUPPORTED, "", "", t.getMessage(), t);
+                    }
+                }
+            }
+        };
+        exporterMap.put(uri, exporter);
+        return exporter;
+    }
+
+
     @Override
     protected <T> Runnable doExport(T impl, Class<T> type, URL url) throws RpcException {
+
         String addr = getAddr(url);
-        Class implClass = url.getServiceModel().getProxyObject().getClass();
-        RestProtocolServer server = (RestProtocolServer) ConcurrentHashMapUtils.computeIfAbsent(serverMap, addr, restServer -> {
-            RestProtocolServer s = serverFactory.createServer(url.getParameter(SERVER_KEY, DEFAULT_SERVER));
+
+
+        RestProtocolServer server = (RestProtocolServer) serverMap.computeIfAbsent(addr, restServer -> {
+
+            String serverKey = url.getParameter(SERVER_KEY, DEFAULT_SERVER);
+
+            RestProtocolServer s = serverFactory.createServer(serverKey);
             s.setAddress(url.getAddress());
             s.start(url);
             return s;
         });
 
+
+        Class implClass = url.getServiceModel().getProxyObject().getClass();
+
+
+        // TODO  remove
         String contextPath = getContextPath(url);
         if ("servlet".equalsIgnoreCase(url.getParameter(SERVER_KEY, DEFAULT_SERVER))) {
             ServletContext servletContext = ServletManager.getInstance().getServletContext(ServletManager.EXTERNAL_SERVER_PORT);
@@ -128,11 +190,10 @@ public class RestProtocol extends AbstractProxyProtocol {
 
         server.deploy(resourceDef, impl, contextPath);
 
-        final RestProtocolServer s = server;
         return () -> {
             // TODO due to dubbo's current architecture,
             // it will be called from registry protocol in the shutdown process and won't appear in logs
-            s.undeploy(resourceDef);
+//            s.undeploy(resourceDef);
         };
     }
 
