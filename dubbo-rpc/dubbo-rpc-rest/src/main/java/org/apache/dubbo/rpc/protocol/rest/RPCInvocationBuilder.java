@@ -29,6 +29,7 @@ import org.apache.dubbo.rpc.protocol.rest.util.Pair;
 
 
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 
 
@@ -38,9 +39,8 @@ public class RPCInvocationBuilder {
     private static final ParamParserManager paramParser = new ParamParserManager();
 
 
-    public static Pair<RpcInvocation, Invoker> build(Object servletRequest, Object servletResponse) {
+    public static Pair<RpcInvocation, Invoker> build(RequestFacade request, Object servletRequest, Object servletResponse) {
 
-        RequestFacade request = RequestFacadeFactory.createRequestFacade(servletRequest);
 
         Pair<Invoker, RestMethodMetadata> invokerRestMethodMetadataPair = getRestMethodMetadata(request);
 
@@ -100,6 +100,18 @@ public class RPCInvocationBuilder {
         rpcInvocation.setAttachment(RestConstant.LOCAL_ADDR, localAddr);
         rpcInvocation.setAttachment(RestConstant.REMOTE_PORT, remotePort);
         rpcInvocation.setAttachment(RestConstant.LOCAL_PORT, localPort);
+
+        Enumeration<String> attachments = request.getHeaders(RestConstant.DUBBO_ATTACHMENT_HEADER);
+
+        while (attachments != null && attachments.hasMoreElements()) {
+            String s = attachments.nextElement();
+
+            String[] split = s.split("=");
+
+            rpcInvocation.setAttachment(split[0], split[1]);
+        }
+
+
         // TODO set path,version,group and so on
         return rpcInvocation;
     }

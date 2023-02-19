@@ -24,6 +24,8 @@ import org.apache.dubbo.remoting.http.servlet.BootstrapListener;
 import org.apache.dubbo.remoting.http.servlet.ServletManager;
 import org.apache.dubbo.rpc.*;
 
+import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
+import org.apache.dubbo.rpc.protocol.rest.request.RequestFacadeFactory;
 import org.apache.dubbo.rpc.protocol.rest.util.Pair;
 import org.jboss.resteasy.plugins.server.servlet.HttpServletDispatcher;
 import org.jboss.resteasy.spi.ResteasyDeployment;
@@ -84,20 +86,21 @@ public class DubboHttpProtocolServer extends BaseRestProtocolServer {
     private class RestHandler implements HttpHandler {
 
         @Override
-        public void handle(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-            RpcContext.getServiceContext().setRemoteAddress(request.getRemoteAddr(), request.getRemotePort());
-            dispatcher.service(request, response);
+        public void handle(HttpServletRequest servletRequest, HttpServletResponse servletResponse) throws IOException, ServletException {
 
-            Pair<RpcInvocation, Invoker> build = RPCInvocationBuilder.build(request, response);
+            RequestFacade request = RequestFacadeFactory.createRequestFacade(servletRequest);
+            RpcContext.getServiceContext().setRemoteAddress(request.getRemoteAddr(), request.getRemotePort());
+//            dispatcher.service(request, servletResponse);
+
+            Pair<RpcInvocation, Invoker> build = RPCInvocationBuilder.build(request, servletRequest, servletResponse);
 
             Invoker invoker = build.getSecond();
 
             Result invoke = invoker.invoke(build.getFirst());
 
+
+
             // TODO write response
-
-
-
 
 
         }

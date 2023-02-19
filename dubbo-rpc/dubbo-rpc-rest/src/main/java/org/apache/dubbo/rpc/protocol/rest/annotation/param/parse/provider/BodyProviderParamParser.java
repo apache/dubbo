@@ -16,17 +16,16 @@
  */
 package org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.provider;
 
-import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.serialize.ObjectInput;
-import org.apache.dubbo.common.serialize.Serialization;
 import org.apache.dubbo.metadata.rest.ArgInfo;
 import org.apache.dubbo.metadata.rest.ParamType;
-import org.apache.dubbo.remoting.transport.CodecSupport;
+import org.apache.dubbo.metadata.rest.media.MediaType;
 import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
+import org.apache.dubbo.rpc.protocol.rest.message.HttpMessageCodecManager;
 import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
+import org.apache.dubbo.rpc.protocol.rest.util.MediaTypeUtil;
 
 import java.io.InputStream;
 
@@ -44,17 +43,16 @@ public class BodyProviderParamParser extends ProviderParamParser {
         RequestFacade request = parseContext.getRequestFacade();
 
         try {
-            String serialization = parseContext.getRequestFacade().getHeader(RestConstant.SERIALIZATION_KEY);
-             //TODO MAP<String,String> convert
+            String contentType = parseContext.getRequestFacade().getHeader(RestConstant.CONTENT_TYPE);
+            //TODO MAP<String,String> convert
             // TODO  url builder
-            URL url = null;
+
             // TODO json utils no stream convert
             // TODO add form parse
             InputStream inputStream = request.getInputStream();
-            Serialization serializationById = CodecSupport.getSerializationById((Byte.parseByte(serialization)));
-            ObjectInput deserialize = serializationById.deserialize(url, inputStream);
-            Object o = deserialize.readObject(argInfo.getParamType());
-            parseContext.setValueByIndex(argInfo.getIndex(), o);
+            MediaType mediaType = MediaTypeUtil.convertMediaType(contentType);
+            Object param = HttpMessageCodecManager.httpMessageDecode(inputStream, argInfo.getParamType(), mediaType);
+            parseContext.setValueByIndex(argInfo.getIndex(), param);
         } catch (Exception e) {
             logger.error("BodyProviderParamParser parse error: {}", e);
         }
