@@ -21,7 +21,6 @@ import com.alibaba.fastjson.serializer.SerializeFilter;
 import com.alibaba.fastjson.support.config.FastJsonConfig;
 import com.alibaba.fastjson.support.spring.FastJsonContainer;
 import com.alibaba.fastjson.support.spring.PropertyPreFilters;
-import org.apache.dubbo.common.utils.ClassUtils;
 
 import com.alibaba.fastjson.serializer.SerializerFeature;
 
@@ -35,16 +34,6 @@ import java.util.List;
 
 public class FastJsonImpl extends AbstractJSONImpl {
     private FastJsonConfig fastJsonConfig = new FastJsonConfig();
-
-    @Override
-    public boolean isSupport() {
-        try {
-            Class<?> aClass = ClassUtils.forName("com.alibaba.fastjson.JSON");
-            return aClass != null;
-        } catch (Throwable t) {
-            return false;
-        }
-    }
 
     @Override
     public <T> T toJavaObject(String json, Type type) {

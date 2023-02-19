@@ -22,10 +22,11 @@ import io.micrometer.core.instrument.binder.MeterBinder;
 
 public class DubboMetrics implements MeterBinder {
 
-    public static volatile  MeterRegistry globalRegistry = null;
+    public static volatile MeterRegistry globalRegistry = null;
+
     @Override
     public void bindTo(MeterRegistry registry) {
-        this.globalRegistry = registry;
+        globalRegistry = registry;
     }
 
     public void destroy() {
