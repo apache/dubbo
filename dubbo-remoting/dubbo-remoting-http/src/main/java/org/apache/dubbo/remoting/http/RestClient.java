@@ -16,9 +16,9 @@
  */
 package org.apache.dubbo.remoting.http;
 
-import java.util.concurrent.CompletableFuture;
-
 import org.apache.dubbo.remoting.RemotingException;
+
+import java.util.concurrent.CompletableFuture;
 
 
 public interface RestClient {
