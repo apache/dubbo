@@ -57,9 +57,9 @@ public class MetadataEvent extends MetricsEvent implements TimeCounter {
     }
 
     public enum Type {
-        P_TOTAL(MetricsKey.METADATA_PUSH_METRIC),
-        P_SUCCEED(MetricsKey.METADATA_PUSH_METRIC_SUCCEED),
-        P_FAILED(MetricsKey.METADATA_PUSH_METRIC_FAILED),
+        P_TOTAL(MetricsKey.METADATA_PUSH_METRIC_NUM),
+        P_SUCCEED(MetricsKey.METADATA_PUSH_METRIC_NUM_SUCCEED),
+        P_FAILED(MetricsKey.METADATA_PUSH_METRIC_NUM_FAILED),
 
         S_TOTAL(MetricsKey.METADATA_SUBSCRIBE_METRIC_NUM),
         S_SUCCEED(MetricsKey.METADATA_SUBSCRIBE_METRIC_NUM_SUCCEED),

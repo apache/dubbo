@@ -68,14 +68,14 @@ public enum MetricsKey {
     THREAD_POOL_QUEUE_SIZE("dubbo.thread.pool.queue.size", "Thread Pool Queue Size"),
 
     // metadata push metrics key
-    METADATA_PUSH_METRIC("dubbo.metadata.push.num.total", "Total Push Num"),
-    METADATA_PUSH_METRIC_SUCCEED("dubbo.metadata.push.num.succeed.total", "Succeed Push Num"),
-    METADATA_PUSH_METRIC_FAILED("dubbo.metadata.push.num.failed.total", "Failed Push Num"),
+    METADATA_PUSH_METRIC_NUM("dubbo.metadata.push.num.total", "Total Push Num"),
+    METADATA_PUSH_METRIC_NUM_SUCCEED("dubbo.metadata.push.num.succeed.total", "Succeed Push Num"),
+    METADATA_PUSH_METRIC_NUM_FAILED("dubbo.metadata.push.num.failed.total", "Failed Push Num"),
 
     // metadata subscribe metrics key
     METADATA_SUBSCRIBE_METRIC_NUM("dubbo.metadata.subscribe.num.total", "Total Metadata Subscribe Num"),
-    METADATA_SUBSCRIBE_METRIC_NUM_SUCCEED("dubbo.registry.subscribe.num.succeed.total", "Succeed Metadata Subscribe Num"),
-    METADATA_SUBSCRIBE_METRIC_NUM_FAILED("dubbo.registry.subscribe.num.failed.total", "Failed Metadata Subscribe Num"),
+    METADATA_SUBSCRIBE_METRIC_NUM_SUCCEED("dubbo.metadata.subscribe.num.succeed.total", "Succeed Metadata Subscribe Num"),
+    METADATA_SUBSCRIBE_METRIC_NUM_FAILED("dubbo.metadata.subscribe.num.failed.total", "Failed Metadata Subscribe Num"),
 
     // consumer metrics key
     ;
