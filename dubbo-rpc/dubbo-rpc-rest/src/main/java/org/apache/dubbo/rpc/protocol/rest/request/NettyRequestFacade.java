@@ -16,23 +16,44 @@
  */
 package org.apache.dubbo.rpc.protocol.rest.request;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufInputStream;
+import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultHttpRequest;
+import io.netty.handler.codec.http.HttpContent;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.util.Enumeration;
-import java.util.Map;
+import java.io.*;
+import java.util.*;
 
 public class NettyRequestFacade extends RequestFacade<DefaultHttpRequest> {
+    protected Map<String, List<String>> headers = new HashMap<>();
 
+    private ChannelHandlerContext context;
 
-    public NettyRequestFacade(Object request) {
+    public NettyRequestFacade(Object request, ChannelHandlerContext context) {
 
         super((DefaultHttpRequest) request);
+        initHeaders();
+        this.context = context;
     }
 
+
+    @Override
+    protected void initHeaders() {
+        for (Map.Entry<String, String> header : request.headers()) {
+
+            String key = header.getKey();
+
+            List<String> tmpHeaders = headers.get(header);
+
+            if (tmpHeaders == null) {
+                tmpHeaders = new ArrayList<>();
+                headers.put(key, tmpHeaders);
+            }
+
+            tmpHeaders.add(header.getValue());
+        }
+    }
 
     @Override
     public Object getParts() throws Exception {
@@ -56,27 +77,69 @@ public class NettyRequestFacade extends RequestFacade<DefaultHttpRequest> {
 
     @Override
     public String getHeader(String name) {
-        return null;
+
+        List<String> values = headers.get(name);
+
+        if (values == null || values.isEmpty()) {
+            return null;
+        } else {
+            return values.get(0);
+        }
+
     }
 
     @Override
     public Enumeration<String> getHeaders(String name) {
-        return null;
+
+        List<String> list = headers.get(name);
+
+        if (list == null) {
+            list = new ArrayList<>();
+        }
+
+
+        List<String> finalList = list;
+
+        return new Enumeration<String>() {
+            @Override
+            public boolean hasMoreElements() {
+                return finalList.iterator().hasNext();
+            }
+
+            @Override
+            public String nextElement() {
+                return finalList.iterator().next();
+            }
+        };
     }
+
 
     @Override
     public Enumeration<String> getHeaderNames() {
-        return null;
+
+        Set<String> strings = headers.keySet();
+
+        return new Enumeration<String>() {
+            @Override
+            public boolean hasMoreElements() {
+                return strings.iterator().hasNext();
+            }
+
+            @Override
+            public String nextElement() {
+                return strings.iterator().next();
+            }
+        };
     }
 
     @Override
     public int getIntHeader(String name) {
-        return 0;
+        return Integer.parseInt(getHeader(name));
     }
 
     @Override
     public String getMethod() {
-        return null;
+        return request.method().name();
     }
 
     @Override
@@ -236,7 +299,7 @@ public class NettyRequestFacade extends RequestFacade<DefaultHttpRequest> {
 
     @Override
     public String getRemoteAddr() {
-        return null;
+        return context.channel().remoteAddress().toString();
     }
 
     @Override
@@ -286,6 +349,12 @@ public class NettyRequestFacade extends RequestFacade<DefaultHttpRequest> {
 
     @Override
     public InputStream getInputStream() throws IOException {
-        return null;
+        ByteBuf byteBuf = ((HttpContent) request).content();
+
+        if (byteBuf.readableBytes() > 0) {
+
+            return new ByteBufInputStream(byteBuf.retain());
+        }
+        return new ByteArrayInputStream(new byte[0]);
     }
 }

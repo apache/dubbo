@@ -248,7 +248,7 @@ public class JakartaServletRequestFacade extends RequestFacade<HttpServletReques
 
 
     public String getRemoteHost() {
-        return getRemoteHost();
+        return request.getRemoteHost();
     }
 
 

@@ -17,21 +17,29 @@
 package org.apache.dubbo.rpc.protocol.rest.request;
 
 
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-import java.util.Enumeration;
-import java.util.Map;
+import java.util.*;
 
 
-public abstract class RequestFacade<T> implements Request{
+public abstract class RequestFacade<T> implements Request {
+
 
     protected T request;
 
     public RequestFacade(T request) {
         this.request = request;
+        initHeaders();
+    }
+
+
+
+
+    protected  void initHeaders(){
+
+
     }
 
     public T getRequest() {

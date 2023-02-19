@@ -102,7 +102,7 @@ public class RPCInvocationBuilder {
         Enumeration<String> attachments = request.getHeaders(RestConstant.DUBBO_ATTACHMENT_HEADER);
 
         while (attachments != null && attachments.hasMoreElements()) {
-            String s = attachments.nextElement();
+            String s =  attachments.nextElement();
 
             String[] split = s.split("=");
 

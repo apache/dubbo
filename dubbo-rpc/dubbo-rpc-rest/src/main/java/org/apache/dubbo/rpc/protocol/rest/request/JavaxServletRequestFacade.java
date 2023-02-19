@@ -240,7 +240,7 @@ public class JavaxServletRequestFacade extends RequestFacade<HttpServletRequest>
 
 
     public String getRemoteHost() {
-        return getRemoteHost();
+        return request.getRemoteHost();
     }
 
 
