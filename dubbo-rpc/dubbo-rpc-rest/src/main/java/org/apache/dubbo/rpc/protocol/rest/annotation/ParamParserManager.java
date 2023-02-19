@@ -5,6 +5,8 @@ import org.apache.dubbo.metadata.rest.ArgInfo;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.consumer.BaseConsumerParamParser;
 import org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.consumer.ConsumerParseContext;
+import org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.provider.BaseProviderParamParser;
+import org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.provider.ProviderParseContext;
 
 import java.util.List;
 import java.util.Set;
@@ -14,6 +16,9 @@ public class ParamParserManager {
 
     private static final Set<BaseConsumerParamParser> consumerParamParsers =
         FrameworkModel.defaultModel().getExtensionLoader(BaseConsumerParamParser.class).getSupportedExtensionInstances();
+
+    private static final Set<BaseProviderParamParser> providerParamParsers =
+        FrameworkModel.defaultModel().getExtensionLoader(BaseProviderParamParser.class).getSupportedExtensionInstances();
 
     /**
      * provider  Design Description:
@@ -25,12 +30,12 @@ public class ParamParserManager {
      * <p>
      * args=toArray(new Object[0]);
      */
-    public Object[] providerParamParse(ParseContext parseContext) {
+    public Object[] providerParamParse(ProviderParseContext parseContext) {
 
         List<Object> args = parseContext.getArgs();
 
         for (int i = 0; i < args.size(); i++) {
-            for (ParamParser paramParser : paramParsers) {
+            for (ParamParser paramParser : providerParamParsers) {
 
                 paramParser.parse(parseContext, parseContext.getArgInfoByIndex(i));
             }

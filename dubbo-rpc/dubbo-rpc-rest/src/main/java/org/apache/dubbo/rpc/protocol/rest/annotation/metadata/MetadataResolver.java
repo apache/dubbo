@@ -21,6 +21,7 @@ import java.util.Map;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.metadata.ParameterTypesComparator;
+import org.apache.dubbo.metadata.rest.PathMatcher;
 import org.apache.dubbo.metadata.rest.RestMethodMetadata;
 import org.apache.dubbo.metadata.rest.ServiceRestMetadata;
 import org.apache.dubbo.metadata.rest.ServiceRestMetadataResolver;
@@ -56,13 +57,14 @@ public class MetadataResolver {
 
 
 
-    public static Map<PathMatcher, RestMethodMetadata> resolveProviderServiceMetadata(Class serviceImpl) {
+    public static Map<PathMatcher, RestMethodMetadata> resolveProviderServiceMetadata(Class serviceImpl, URL url) {
+        ExtensionLoader<ServiceRestMetadataResolver> extensionLoader = url.getOrDefaultApplicationModel().getExtensionLoader(ServiceRestMetadataResolver.class);
 
-
-        for (ServiceRestMetadataResolver serviceRestMetadataResolver : serviceRestMetadataResolvers) {
+        for (ServiceRestMetadataResolver serviceRestMetadataResolver : extensionLoader.getSupportedExtensionInstances()) {
             boolean supports = serviceRestMetadataResolver.supports(serviceImpl);
             if (supports) {
-                ServiceRestMetadata resolve = serviceRestMetadataResolver.resolve(serviceImpl);
+                ServiceRestMetadata serviceRestMetadata = new ServiceRestMetadata(url.getServiceInterface(), url.getVersion(), url.getGroup(), false);
+                ServiceRestMetadata resolve = serviceRestMetadataResolver.resolve(serviceImpl, serviceRestMetadata);
                 return resolve.getPathToServiceMap();
             }
         }
