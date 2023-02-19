@@ -18,11 +18,10 @@ package org.apache.dubbo.common.json.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.serializer.SerializeFilter;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.alibaba.fastjson.support.config.FastJsonConfig;
 import com.alibaba.fastjson.support.spring.FastJsonContainer;
 import com.alibaba.fastjson.support.spring.PropertyPreFilters;
-
-import com.alibaba.fastjson.serializer.SerializerFeature;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;

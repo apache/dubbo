@@ -20,7 +20,6 @@ import com.alibaba.fastjson.serializer.SerializeFilter;
 import com.alibaba.fastjson.support.config.FastJsonConfig;
 import com.alibaba.fastjson.support.spring.FastJsonContainer;
 import com.alibaba.fastjson.support.spring.PropertyPreFilters;
-
 import com.alibaba.fastjson2.JSONWriter;
 
 import java.io.InputStream;
