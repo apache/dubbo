@@ -21,14 +21,14 @@ import static org.apache.dubbo.metrics.model.MetricsCategory.CONFIGCENTER;
  */
 public class ConfigCenterMetricsCollector extends DefaultMetricsCollector {
 
-    private final Map<ConfigCenterMetric, AtomicLong> metrics = new ConcurrentHashMap<>();
+    private final Map<ConfigCenterMetric, AtomicLong> updatedMetrics = new ConcurrentHashMap<>();
 
     public ConfigCenterMetricsCollector() {
     }
 
-    public void increase(String type, String applicationName, ConfigChangedEvent event) {
+    public void increaseUpdated(String type, String applicationName, ConfigChangedEvent event) {
         ConfigCenterMetric metric = new ConfigCenterMetric(applicationName, event.getKey(), event.getGroup(), type, event.getChangeType().name());
-        AtomicLong count = metrics.computeIfAbsent(metric, k -> new AtomicLong(0L));
+        AtomicLong count = updatedMetrics.computeIfAbsent(metric, k -> new AtomicLong(0L));
         count.incrementAndGet();
     }
 
@@ -41,7 +41,7 @@ public class ConfigCenterMetricsCollector extends DefaultMetricsCollector {
     }
 
     private void collect(List<MetricSample> list) {
-        metrics.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.CONFIGCENTER_METRIC_UPDATED_TOTAL, k.getTags(), CONFIGCENTER, v::get)));
+        updatedMetrics.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.CONFIGCENTER_METRIC_UPDATED_TOTAL, k.getTags(), CONFIGCENTER, v::get)));
     }
 
 }

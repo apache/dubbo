@@ -252,7 +252,7 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
 
                 ConfigCenterMetricsCollector collector =
                     applicationModel.getBeanFactory().getBean(ConfigCenterMetricsCollector.class);
-                collector.increase("apollo", applicationModel.getApplicationName(), event);
+                collector.increaseUpdated("apollo", applicationModel.getApplicationName(), event);
             }
         }
 
