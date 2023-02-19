@@ -22,6 +22,7 @@ import org.apache.dubbo.remoting.transport.CodecSupport;
 import org.apache.dubbo.remoting.utils.UrlUtils;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.support.ProtocolUtils;
 
 import static org.apache.dubbo.rpc.Constants.INVOCATION_KEY;
 import static org.apache.dubbo.rpc.Constants.SERIALIZATION_ID_KEY;
@@ -29,6 +30,9 @@ import static org.apache.dubbo.rpc.Constants.SERIALIZATION_ID_KEY;
 public class DubboCodecSupport {
 
     public static Serialization getRequestSerialization(URL url, Invocation invocation) {
+        if ("$invoke".equals(invocation.getMethodName()) && ProtocolUtils.isProtobufGenericSerialization(url.getParameter("generic"))) {
+            return url.getOrDefaultFrameworkModel().getExtensionLoader(Serialization.class).getExtension("generic-protobuf-json");
+        }
         Object serializationTypeObj = invocation.get(SERIALIZATION_ID_KEY);
         if (serializationTypeObj != null) {
             return CodecSupport.getSerializationById((byte) serializationTypeObj);
