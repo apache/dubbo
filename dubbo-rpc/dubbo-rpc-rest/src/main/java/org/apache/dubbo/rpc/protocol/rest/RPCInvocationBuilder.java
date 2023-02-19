@@ -16,21 +16,18 @@
  */
 package org.apache.dubbo.rpc.protocol.rest;
 
-import org.apache.dubbo.metadata.rest.ArgInfo;
 import org.apache.dubbo.metadata.rest.RestMethodMetadata;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.protocol.rest.annotation.ParamParserManager;
 import org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.provider.ProviderParseContext;
 import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
-import org.apache.dubbo.rpc.protocol.rest.request.RequestFacadeFactory;
 import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
 import org.apache.dubbo.rpc.protocol.rest.util.Pair;
 
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
-import java.util.List;
 
 
 public class RPCInvocationBuilder {
@@ -44,11 +41,12 @@ public class RPCInvocationBuilder {
 
         Pair<Invoker, RestMethodMetadata> invokerRestMethodMetadataPair = getRestMethodMetadata(request);
 
-        RpcInvocation rpcInvocation = createBaseRpcInvocation(request, invokerRestMethodMetadataPair);
+        RpcInvocation rpcInvocation = createBaseRpcInvocation(request, invokerRestMethodMetadataPair.getSecond());
 
         ProviderParseContext parseContext = createParseContext(request, servletRequest, servletResponse, invokerRestMethodMetadataPair.getSecond());
 
         Object[] args = paramParser.providerParamParse(parseContext);
+
         rpcInvocation.setArguments(args);
 
         return Pair.make(rpcInvocation, invokerRestMethodMetadataPair.getFirst());
@@ -60,15 +58,15 @@ public class RPCInvocationBuilder {
         parseContext.setResponse(servletResponse);
         parseContext.setRequest(servletRequest);
 
-
-        parseContext.setArgs(new ArrayList<>(restMethodMetadata.getArgInfos().size()));
+        Object[] objects = new Object[restMethodMetadata.getArgInfos().size()];
+        parseContext.setArgs(Arrays.asList(objects));
         parseContext.setArgInfos(restMethodMetadata.getArgInfos());
 
 
         return parseContext;
     }
 
-    private static RpcInvocation createBaseRpcInvocation(RequestFacade request, Pair<Invoker, RestMethodMetadata> invokerRestMethodMetadataPair) {
+    private static RpcInvocation createBaseRpcInvocation(RequestFacade request, RestMethodMetadata restMethodMetadata) {
         RpcInvocation rpcInvocation = new RpcInvocation();
 
 
@@ -83,10 +81,10 @@ public class RPCInvocationBuilder {
         String PATH = request.getHeader(RestConstant.PATH);
         String VERSION = request.getHeader(RestConstant.VERSION);
 
+        String METHOD = restMethodMetadata.getMethod().getName();
+        String[] PARAMETER_TYPES_DESC = restMethodMetadata.getMethod().getParameterTypes();
 
-        RestMethodMetadata serviceRestMetadata = invokerRestMethodMetadataPair.getSecond();
-        String METHOD = serviceRestMetadata.getMethod().getName();
-        String[] PARAMETER_TYPES_DESC = serviceRestMetadata.getMethod().getParameterTypes();
+        rpcInvocation.setParameterTypes(restMethodMetadata.getReflectMethod().getParameterTypes());
 
 
         rpcInvocation.setMethodName(METHOD);

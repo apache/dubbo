@@ -32,15 +32,15 @@ public class ParamParserManager {
      */
     public Object[] providerParamParse(ProviderParseContext parseContext) {
 
-        List<Object> args = parseContext.getArgs();
+        List<ArgInfo> args = parseContext.getArgInfos();
 
         for (int i = 0; i < args.size(); i++) {
             for (ParamParser paramParser : providerParamParsers) {
 
-                paramParser.parse(parseContext, parseContext.getArgInfoByIndex(i));
+                paramParser.parse(parseContext, args.get(i));
             }
         }
-        return args.toArray(new Object[0]);
+        return parseContext.getArgs().toArray(new Object[0]);
     }
 
 

@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.rest;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.metadata.rest.media.MediaType;
 import org.apache.dubbo.remoting.http.HttpBinder;
 import org.apache.dubbo.remoting.http.HttpHandler;
 import org.apache.dubbo.remoting.http.HttpServer;
@@ -24,8 +25,11 @@ import org.apache.dubbo.remoting.http.servlet.BootstrapListener;
 import org.apache.dubbo.remoting.http.servlet.ServletManager;
 import org.apache.dubbo.rpc.*;
 
+import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
+import org.apache.dubbo.rpc.protocol.rest.message.HttpMessageCodecManager;
 import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
 import org.apache.dubbo.rpc.protocol.rest.request.RequestFacadeFactory;
+import org.apache.dubbo.rpc.protocol.rest.util.MediaTypeUtil;
 import org.apache.dubbo.rpc.protocol.rest.util.Pair;
 import org.jboss.resteasy.plugins.server.servlet.HttpServletDispatcher;
 import org.jboss.resteasy.spi.ResteasyDeployment;
@@ -83,7 +87,7 @@ public class DubboHttpProtocolServer extends BaseRestProtocolServer {
         return deployment;
     }
 
-    private class RestHandler implements HttpHandler {
+    private class RestHandler implements HttpHandler<HttpServletRequest, HttpServletResponse> {
 
         @Override
         public void handle(HttpServletRequest servletRequest, HttpServletResponse servletResponse) throws IOException, ServletException {
@@ -98,6 +102,25 @@ public class DubboHttpProtocolServer extends BaseRestProtocolServer {
 
             Result invoke = invoker.invoke(build.getFirst());
 
+            // TODO handling  exceptions
+            if (invoke.hasException()) {
+                servletResponse.setStatus(500);
+            } else {
+
+                servletResponse.setStatus(200);
+                Object value = invoke.getValue();
+                String accept = request.getHeader(RestConstant.ACCEPT);
+
+                MediaType mediaType = MediaTypeUtil.convertMediaType(accept);
+
+                try {
+                    HttpMessageCodecManager.httpMessageEncode(servletResponse.getOutputStream(), value, invoker.getUrl(), mediaType);
+                } catch (Exception e) {
+                    servletResponse.setStatus(500);
+                }
+
+
+            }
 
 
             // TODO write response
