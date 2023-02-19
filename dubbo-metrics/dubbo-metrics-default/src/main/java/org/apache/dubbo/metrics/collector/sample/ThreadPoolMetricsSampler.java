@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 package org.apache.dubbo.metrics.collector.sample;
-
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
@@ -24,7 +23,6 @@ import org.apache.dubbo.metrics.model.MetricsKey;
 import org.apache.dubbo.metrics.model.ThreadPoolMetric;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -33,7 +31,6 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
-
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_METRICS_COLLECTOR_EXCEPTION;
 import static org.apache.dubbo.metrics.model.MetricsCategory.THREAD_POOL;
 

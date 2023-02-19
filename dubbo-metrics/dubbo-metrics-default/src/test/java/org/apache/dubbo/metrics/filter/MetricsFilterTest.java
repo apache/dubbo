@@ -273,7 +273,7 @@ class MetricsFilterTest {
                 metricsClusterFilter.invoke(invoker, invocation);
             } catch (Exception e) {
                 Assertions.assertTrue(e instanceof RpcException);
-                filter.onError(e, invoker, invocation);
+                metricsClusterFilter.onError(e, invoker, invocation);
             }
         }
         Map<String, MetricSample> metricsMap = getMetricsMap();

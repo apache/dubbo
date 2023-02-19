@@ -71,8 +71,8 @@ public enum MetricsKey {
     THREAD_POOL_QUEUE_SIZE("dubbo.thread.pool.queue.size","Thread Pool Queue Size"),
 
     // consumer metrics key
-    PROVIDER_METRIC_REQUESTS_NO_PROVIDER_FAILED("dubbo.consumer.requests.no.provider.failed.total", "Total NoProvider Network Failed Requests"),
-    PROVIDER_METRIC_REQUESTS_NO_PROVIDER_TOTAL_FAILED_AGG("dubbo.consumer.requests.non-service.failed.total.aggregate", "Aggregated Codec Failed Total Requests"),
+    PROVIDER_METRIC_REQUESTS_NO_PROVIDER_FAILED("dubbo.consumer.requests.no.provider.failed.total", "Total NoProvider Failed Requests"),
+    PROVIDER_METRIC_REQUESTS_NO_PROVIDER_TOTAL_FAILED_AGG("dubbo.consumer.requests.no.provider.failed.total.aggregate", "Aggregated noProvider Failed Requests"),
     ;
 
     private final String name;
