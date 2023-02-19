@@ -94,6 +94,9 @@ public class DubboHttpProtocolServer extends BaseRestProtocolServer {
 
             Result invoke = invoker.invoke(build.getFirst());
 
+            // TODO write response
+
+
 
 
 

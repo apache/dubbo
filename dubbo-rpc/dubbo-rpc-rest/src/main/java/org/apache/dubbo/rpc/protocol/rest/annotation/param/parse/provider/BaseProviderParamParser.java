@@ -17,10 +17,11 @@
 package org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.provider;
 
 
+import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.rpc.protocol.rest.annotation.ParamParser;
 
-@SPI()
+@SPI(scope = ExtensionScope.FRAMEWORK)
 public interface BaseProviderParamParser extends ParamParser<ProviderParseContext> {
 
 }

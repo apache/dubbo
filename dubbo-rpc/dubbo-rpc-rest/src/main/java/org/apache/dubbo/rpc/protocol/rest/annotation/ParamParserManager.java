@@ -45,7 +45,7 @@ public class ParamParserManager {
 
 
     /**
-     * provider  Design Description:
+     * consumer  Design Description:
      * <p>
      * Object[] args=new Object[0];
      * List<Object> argsList=new ArrayList<>;</>

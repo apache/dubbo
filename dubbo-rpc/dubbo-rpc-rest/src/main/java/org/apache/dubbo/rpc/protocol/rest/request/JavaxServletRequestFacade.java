@@ -235,7 +235,7 @@ public class JavaxServletRequestFacade extends RequestFacade<HttpServletRequest>
 
 
     public String getRemoteAddr() {
-        return getRemoteAddr();
+        return request.getRemoteAddr();
     }
 
 

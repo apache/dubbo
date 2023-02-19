@@ -243,7 +243,7 @@ public class JakartaServletRequestFacade extends RequestFacade<HttpServletReques
 
 
     public String getRemoteAddr() {
-        return getRemoteAddr();
+        return request.getRemoteAddr();
     }
 
 

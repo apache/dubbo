@@ -38,7 +38,7 @@ public class RPCInvocationBuilder {
     private static final ParamParserManager paramParser = new ParamParserManager();
 
 
-    public static Pair<RpcInvocation, Invoker> build(Object servletRequest, Object response) {
+    public static Pair<RpcInvocation, Invoker> build(Object servletRequest, Object servletResponse) {
 
         RequestFacade request = RequestFacadeFactory.createRequestFacade(servletRequest);
 
@@ -46,7 +46,7 @@ public class RPCInvocationBuilder {
 
         RpcInvocation rpcInvocation = createBaseRpcInvocation(request, invokerRestMethodMetadataPair);
 
-        ProviderParseContext parseContext = createParseContext(request, response, rpcInvocation);
+        ProviderParseContext parseContext = createParseContext(request, servletRequest, servletResponse, invokerRestMethodMetadataPair.getSecond());
 
         Object[] args = paramParser.providerParamParse(parseContext);
         rpcInvocation.setArguments(args);
@@ -55,17 +55,14 @@ public class RPCInvocationBuilder {
 
     }
 
-    private static ProviderParseContext createParseContext(Object request, Object response, RpcInvocation rpcInvocation) {
-        ProviderParseContext parseContext = new ProviderParseContext(RequestFacadeFactory.createRequestFacade(request));
-        parseContext.setResponse(response);
-        parseContext.setRequest(request);
+    private static ProviderParseContext createParseContext(RequestFacade request, Object servletRequest, Object servletResponse, RestMethodMetadata restMethodMetadata) {
+        ProviderParseContext parseContext = new ProviderParseContext(request);
+        parseContext.setResponse(servletResponse);
+        parseContext.setRequest(servletRequest);
 
-        // TODO create  List<ArgInfo> according to consumer method definition related header
 
-        List<ArgInfo> argInfos = new ArrayList<>();
-
-        //
-        parseContext.setArgInfos(argInfos);
+        parseContext.setArgs(new ArrayList<>(restMethodMetadata.getArgInfos().size()));
+        parseContext.setArgInfos(restMethodMetadata.getArgInfos());
 
 
         return parseContext;
@@ -109,10 +106,10 @@ public class RPCInvocationBuilder {
 
 
     private static Pair<Invoker, RestMethodMetadata> getRestMethodMetadata(RequestFacade request) {
-        int port = request.getLocalPort();
         String path = request.getRequestURI();
         String version = request.getHeader(RestConstant.VERSION);
         String group = request.getHeader(RestConstant.GROUP);
+        int port = request.getIntHeader(RestConstant.REST_PORT);
 
         return PathAndInvokerMapper.getRestMethodMetadata(path, version, group, port);
     }
