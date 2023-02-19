@@ -42,12 +42,12 @@ public class MetadataMetricsCollector implements ApplicationMetricsCollector<Met
 
     private Boolean collectEnabled = null;
     private final MetadataStatComposite stats;
-    private final MetricsEventMulticaster registryMulticaster;
+    private final MetricsEventMulticaster metadataEventMulticaster;
     private final ApplicationModel applicationModel;
 
     public MetadataMetricsCollector(ApplicationModel applicationModel) {
         this.stats = new MetadataStatComposite();
-        this.registryMulticaster = new MetadataMetricsEventMulticaster();
+        this.metadataEventMulticaster = new MetadataMetricsEventMulticaster();
         this.applicationModel = applicationModel;
     }
 
@@ -95,17 +95,17 @@ public class MetadataMetricsCollector implements ApplicationMetricsCollector<Met
 
     @Override
     public void onEvent(MetadataEvent event) {
-        registryMulticaster.publishEvent(event);
+        metadataEventMulticaster.publishEvent(event);
     }
 
 
     @Override
     public void onEventFinish(MetadataEvent event) {
-        registryMulticaster.publishFinishEvent(event);
+        metadataEventMulticaster.publishFinishEvent(event);
     }
 
     @Override
     public void onEventError(MetadataEvent event) {
-        registryMulticaster.publishErrorEvent(event);
+        metadataEventMulticaster.publishErrorEvent(event);
     }
 }
