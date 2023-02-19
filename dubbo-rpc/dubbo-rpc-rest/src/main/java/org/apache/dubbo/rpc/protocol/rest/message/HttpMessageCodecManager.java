@@ -30,7 +30,7 @@ public class HttpMessageCodecManager {
         FrameworkModel.defaultModel().getExtensionLoader(HttpMessageCodec.class).getSupportedExtensionInstances();
 
 
-    public static Object httpMessageDecode(InputStream body, Class type, MediaType mediaType) throws Exception {
+    public static Object httpMessageDecode(byte[] body, Class type, MediaType mediaType) throws Exception {
         for (HttpMessageCodec httpMessageCodec : httpMessageCodecs) {
             if (httpMessageCodec.contentTypeSupport(mediaType)) {
                 return httpMessageCodec.decode(body, type);
