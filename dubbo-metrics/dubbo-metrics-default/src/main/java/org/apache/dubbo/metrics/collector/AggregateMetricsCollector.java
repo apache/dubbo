@@ -52,6 +52,7 @@ public class AggregateMetricsCollector implements MetricsCollector, MetricsListe
     private int timeWindowSeconds;
     private final Map<MetricsEvent.Type, ConcurrentHashMap<MethodMetric, TimeWindowCounter>> methodTypeCounter = new ConcurrentHashMap<>();
     private final ConcurrentMap<MethodMetric, TimeWindowQuantile> rt = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<MethodMetric, TimeWindowCounter> qps = new ConcurrentHashMap<>();
     private final ApplicationModel applicationModel;
     private static final Integer DEFAULT_COMPRESSION = 100;
     private static final Integer DEFAULT_BUCKET_NUM = 10;
@@ -101,6 +102,10 @@ public class AggregateMetricsCollector implements MetricsCollector, MetricsListe
         }
         TimeWindowCounter windowCounter = ConcurrentHashMapUtils.computeIfAbsent(counter, metric, methodMetric -> new TimeWindowCounter(bucketNum, timeWindowSeconds));
 
+        if (type == MetricsEvent.Type.TOTAL) {
+            TimeWindowCounter qpsCounter = ConcurrentHashMapUtils.computeIfAbsent(qps, metric, methodMetric -> new TimeWindowCounter(bucketNum, timeWindowSeconds));
+            qpsCounter.increment();
+        }
         windowCounter.increment();
     }
 
@@ -137,8 +142,7 @@ public class AggregateMetricsCollector implements MetricsCollector, MetricsListe
     }
 
     private void collectQPS(List<MetricSample> list) {
-        ConcurrentHashMap<MethodMetric, TimeWindowCounter> methodTimeWindowCounter = methodTypeCounter.get(MetricsEvent.Type.TOTAL);
-        methodTimeWindowCounter.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.PROVIDER_METRIC_QPS, k.getTags(), QPS, () -> v.get() / v.bucketLivedSeconds())));
+        qps.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.PROVIDER_METRIC_QPS, k.getTags(), QPS, () -> v.get() / v.bucketLivedSeconds())));
     }
 
     private void collectRT(List<MetricSample> list) {
