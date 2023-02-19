@@ -25,7 +25,7 @@ public final class DeprecatedMethodInvocationCounterConstants {
         throw new UnsupportedOperationException("No instance of DeprecatedMethodInvocationCounterConstants for you! ");
     }
 
-    public static final String ERROR_CODE = "99-0";
+    public static final String ERROR_CODE = "0-99";
 
     public static final String POSSIBLE_CAUSE = "invocation of deprecated method";
 
