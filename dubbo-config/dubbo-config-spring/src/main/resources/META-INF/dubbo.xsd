@@ -456,6 +456,31 @@
                 <xsd:documentation><![CDATA[ The preferred protocol to use, set protocol name. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
+        <xsd:attribute name="mapping-retry-interval" type="xsd:integer">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The retry interval of service name mapping. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="serialize-check-status" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The check level of serialize check. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="auto-trust-serialize-class" type="xsd:boolean">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Whether trust class for serialization by scanning. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="trust-serialize-class-level" type="xsd:integer">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The trust package level of serialize class scanning. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="check-serializable" type="xsd:boolean">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Whether restrict the serialized should implement Serializable interface. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
     </xsd:complexType>
 
     <xsd:complexType name="moduleType">

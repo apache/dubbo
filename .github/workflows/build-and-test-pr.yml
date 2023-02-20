@@ -70,16 +70,7 @@ jobs:
       - name: "Build Dubbo with Maven"
         run: |
           cd ./dubbo
-          ./mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast clean source:jar install -Pjacoco,rat,checkstyle -Dmaven.wagon.httpconnectionManager.ttlSeconds=120 -Dmaven.wagon.http.retryHandler.count=5 -Dmaven.test.skip=true -Dmaven.test.skip.exec=true -DembeddedZookeeperPath=${{ github.workspace }}/.tmp/zookeeper
-      - name: "Pack rat file if failure"
-        if: failure()
-        run: 7z a ${{ github.workspace }}/rat.zip *rat.txt -r
-      - name: "Upload rat file if failure"
-        if: failure()
-        uses: actions/upload-artifact@v3
-        with:
-          name: "rat-file"
-          path: ${{ github.workspace }}/rat.zip
+          ./mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast clean source:jar install -Pjacoco,checkstyle -Dmaven.wagon.httpconnectionManager.ttlSeconds=120 -Dmaven.wagon.http.retryHandler.count=5 -Dmaven.test.skip=true -Dmaven.test.skip.exec=true -DembeddedZookeeperPath=${{ github.workspace }}/.tmp/zookeeper
       - name: "Pack checkstyle file if failure"
         if: failure()
         run: 7z a ${{ github.workspace }}/checkstyle.zip *checkstyle* -r
@@ -198,12 +189,12 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           source ${{ github.workspace }}/.tmp/decrypted-sonarcloud-token
-          ./mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast clean test verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Pjacoco -Dsonar.host.url=https://sonarcloud.io -Dsonar.organization=apache -Dsonar.projectKey=apache_dubbo -Dmaven.wagon.httpconnectionManager.ttlSeconds=120 -Dmaven.wagon.http.retryHandler.count=5 -DskipTests=false -DskipIntegrationTests=false -Dcheckstyle.skip=false -Dcheckstyle_unix.skip=false -Drat.skip=false -Dmaven.javadoc.skip=true -DembeddedZookeeperPath=${{ github.workspace }}/.tmp/zookeeper -Dsonar.coverage.jacoco.xmlReportPaths=dubbo-test/dubbo-dependencies-all/target/site/jacoco-aggregate/jacoco.xml -Dsonar.login=${SONAR_TOKEN}
+          ./mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast clean test verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Pjacoco -Dsonar.host.url=https://sonarcloud.io -Dsonar.organization=apache -Dsonar.projectKey=apache_dubbo -DtrimStackTrace=false -Dmaven.wagon.httpconnectionManager.ttlSeconds=120 -Dmaven.wagon.http.retryHandler.count=5 -DskipTests=false -DskipIntegrationTests=false -Dcheckstyle.skip=false -Dcheckstyle_unix.skip=false -Drat.skip=false -Dmaven.javadoc.skip=true -DembeddedZookeeperPath=${{ github.workspace }}/.tmp/zookeeper -Dsonar.coverage.jacoco.xmlReportPaths=dubbo-test/dubbo-dependencies-all/target/site/jacoco-aggregate/jacoco.xml -Dsonar.login=${SONAR_TOKEN}
       - name: "Test with Maven without SonarCloud Scan"
         if: ${{ github.repository != 'apache/dubbo' }}
         timeout-minutes: 70
         run: |
-          ./mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast clean test verify -Dmaven.wagon.httpconnectionManager.ttlSeconds=120 -Pjacoco -Dmaven.wagon.http.retryHandler.count=5 -DskipTests=false -DskipIntegrationTests=false -Dcheckstyle.skip=false -Dcheckstyle_unix.skip=false -Drat.skip=false -Dmaven.javadoc.skip=true -DembeddedZookeeperPath=${{ github.workspace }}/.tmp/zookeeper
+          ./mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast clean test verify -Dmaven.wagon.httpconnectionManager.ttlSeconds=120 -Pjacoco -DtrimStackTrace=false -Dmaven.wagon.http.retryHandler.count=5 -DskipTests=false -DskipIntegrationTests=false -Dcheckstyle.skip=false -Dcheckstyle_unix.skip=false -Drat.skip=false -Dmaven.javadoc.skip=true -DembeddedZookeeperPath=${{ github.workspace }}/.tmp/zookeeper
       - name: "Upload coverage to Codecov"
         uses: codecov/codecov-action@v3
 
@@ -229,7 +220,7 @@ jobs:
     needs: [build-source, integration-test-prepare]
     name: "Integration Test on ubuntu-latest (JobId: ${{matrix.job_id}})"
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 90
     env:
       JAVA_VER: 8
       TEST_CASE_FILE: jobs/testjob_${{matrix.job_id}}.txt
@@ -329,13 +320,57 @@ jobs:
           ./mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast -T 2C clean install -DskipTests=true -DskipIntegrationTests=true -Dcheckstyle.skip=true -Dcheckstyle_unix.skip=true -Drat.skip=true -Dmaven.javadoc.skip=true
       - name: "Run Error Code Inspecting"
         env:
-          "dubbo.eci.report-as-error": false
+          DUBBO_ECI_REPORT_AS_ERROR: true
         run: |
           cd ${{ github.workspace }}/dubbo-test-tools/dubbo-error-code-inspector
-          ../mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast -T 2C package exec:java -Dmaven.test.skip=true -Dmaven.test.skip.exec=true -Ddubbo.eci.path=${{ github.workspace }}/dubbo
+          ../mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast -T 2C package exec:java -Ddubbo.eci.report-as-error=${DUBBO_ECI_REPORT_AS_ERROR} -Dmaven.test.skip=true -Dmaven.test.skip.exec=true -Ddubbo.eci.path=${{ github.workspace }}/dubbo
 
       - name: "Upload error code inspection result"
+        # always() should not be used here, since we don't need to handle the 'canceled' situation.
+        if: ${{ success() || failure() }}
         uses: actions/upload-artifact@v3
         with:
           name: "error-inspection-result"
           path: ${{ github.workspace }}/dubbo-test-tools/dubbo-error-code-inspector/error-inspection-result.txt
+
+  native-image-inspecting:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          path: "./dubbo"
+
+      - name: "Setup GraalVM environment"
+        uses: graalvm/setup-graalvm@v1
+        with:
+          version: '22.3.0'
+          java-version: '17'
+          components: 'native-image'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          native-image-job-reports: 'true'
+
+      - name: "Setup Zookeeper environment"
+        run: |
+          wget https://dlcdn.apache.org/zookeeper/zookeeper-3.7.1/apache-zookeeper-3.7.1-bin.tar.gz
+          tar -zxvf apache-zookeeper-3.7.1-bin.tar.gz
+          mv apache-zookeeper-3.7.1-bin/conf/zoo_sample.cfg apache-zookeeper-3.7.1-bin/conf/zoo.cfg
+          apache-zookeeper-3.7.1-bin/bin/zkServer.sh start
+
+      - name: "Check environment"
+        run: |
+          java --version
+          native-image --version
+
+      - name: "Compile Dubbo (Linux)"
+        run: |
+          cd ${{ github.workspace }}/dubbo
+          ./mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast -T 2C clean install -DskipTests=true -DskipIntegrationTests=true -Dcheckstyle.skip=true -Dcheckstyle_unix.skip=true -Drat.skip=true -Dmaven.javadoc.skip=true
+
+      - name: "Compile and run Dubbo demo for native (Linux)"
+        run: |
+          cd ${{ github.workspace }}/dubbo/dubbo-demo/dubbo-demo-native/dubbo-demo-native-provider
+          ${{ github.workspace }}/dubbo/mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast -T 2C clean package -P native -Dmaven.test.skip=true
+          nohup ./target/demo-native-provider &
+          cd ${{ github.workspace }}/dubbo/dubbo-demo/dubbo-demo-native/dubbo-demo-native-consumer
+          ${{ github.workspace }}/dubbo/mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast -T 2C clean package -P native -Dmaven.test.skip=true
+          ./target/demo-native-consumer

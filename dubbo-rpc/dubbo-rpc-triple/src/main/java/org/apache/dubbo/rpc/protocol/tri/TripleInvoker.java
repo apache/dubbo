@@ -33,7 +33,6 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.TimeoutCountDown;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
@@ -56,15 +55,11 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
-import static org.apache.dubbo.common.constants.CommonConstants.ENABLE_TIMEOUT_COUNTDOWN_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_ATTACHMENT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.TIME_COUNTDOWN_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_DESTROY_INVOKER;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_REQUEST;
 import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
@@ -195,13 +190,13 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
                                ClientCall call) {
         ExecutorService callbackExecutor = getCallbackExecutor(getUrl(), invocation);
 
-        int timeout = calculateTimeout(invocation, invocation.getMethodName());
+        int timeout = RpcUtils.calculateTimeout(getUrl(), invocation, invocation.getMethodName(), 3000);
         if (timeout <= 0) {
             return AsyncRpcResult.newDefaultAsyncResult(new RpcException(RpcException.TIMEOUT_TERMINATE,
                 "No time left for making the following call: " + invocation.getServiceName() + "."
                     + invocation.getMethodName() + ", terminate directly."), invocation);
         }
-        invocation.setAttachment(TIMEOUT_KEY, timeout);
+        invocation.setAttachment(TIMEOUT_KEY, String.valueOf(timeout));
 
         final AsyncRpcResult result;
         DeadlineFuture future = DeadlineFuture.newFuture(getUrl().getPath(),
@@ -299,26 +294,4 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
             }
         }
     }
-
-    private int calculateTimeout(Invocation invocation, String methodName) {
-        Object countdown = RpcContext.getClientAttachment().getObjectAttachment(TIME_COUNTDOWN_KEY);
-        int timeout;
-        if (countdown == null) {
-            timeout = (int) RpcUtils.getTimeout(getUrl(), methodName,
-                RpcContext.getClientAttachment(), invocation, 3000);
-            if (getUrl().getMethodParameter(methodName, ENABLE_TIMEOUT_COUNTDOWN_KEY, false)) {
-                invocation.setObjectAttachment(TIMEOUT_ATTACHMENT_KEY,
-                    timeout); // pass timeout to remote server
-            }
-        } else {
-            TimeoutCountDown timeoutCountDown = (TimeoutCountDown) countdown;
-            timeout = (int) timeoutCountDown.timeRemaining(TimeUnit.MILLISECONDS);
-            invocation.setObjectAttachment(TIMEOUT_ATTACHMENT_KEY,
-                timeout);// pass timeout to remote server
-        }
-
-        invocation.getObjectAttachments().remove(TIME_COUNTDOWN_KEY);
-        return timeout;
-    }
-
 }

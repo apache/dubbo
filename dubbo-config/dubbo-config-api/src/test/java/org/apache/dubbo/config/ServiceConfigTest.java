@@ -27,10 +27,14 @@ import org.apache.dubbo.config.mock.MockRegistryFactory2;
 import org.apache.dubbo.config.mock.MockServiceListener;
 import org.apache.dubbo.config.mock.TestProxyFactory;
 import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
+import org.apache.dubbo.metadata.MappingListener;
+import org.apache.dubbo.metadata.ServiceNameMapping;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.service.GenericService;
 
 import com.google.common.collect.Lists;
@@ -42,7 +46,11 @@ import org.mockito.Mockito;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
@@ -59,6 +67,7 @@ import static org.apache.dubbo.remoting.Constants.BIND_IP_KEY;
 import static org.apache.dubbo.remoting.Constants.BIND_PORT_KEY;
 import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.EXPORT_KEY;
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -71,7 +80,10 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.withSettings;
 
 class ServiceConfigTest {
@@ -528,5 +540,177 @@ class ServiceConfigTest {
 
             service.export();
         });
+    }
+
+    @Test
+    void testOverride() {
+        System.setProperty("dubbo.service.version", "TEST");
+        ServiceConfig<DemoService> serviceConfig = new ServiceConfig<>();
+        serviceConfig.setInterface(DemoService.class);
+        serviceConfig.setRef(new DemoServiceImpl());
+        serviceConfig.setVersion("1.0.0");
+        serviceConfig.refresh();
+        Assertions.assertEquals("1.0.0", serviceConfig.getVersion());
+        System.clearProperty("dubbo.service.version");
+    }
+
+    @Test
+    void testMappingRetry() {
+        FrameworkModel frameworkModel = new FrameworkModel();
+        ApplicationModel applicationModel = frameworkModel.newApplication();
+        ServiceConfig<DemoService> serviceConfig = new ServiceConfig<>(applicationModel.newModule());
+        serviceConfig.exported();
+        ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
+        AtomicInteger count = new AtomicInteger(0);
+        ServiceNameMapping serviceNameMapping = new ServiceNameMapping() {
+            @Override
+            public boolean map(URL url) {
+                if (count.incrementAndGet() < 5) {
+                    throw new RuntimeException();
+                }
+                return count.get() > 10;
+            }
+
+            @Override
+            public boolean hasValidMetadataCenter() {
+                return true;
+            }
+
+            @Override
+            public void initInterfaceAppMapping(URL subscribedURL) {
+
+            }
+
+            @Override
+            public Set<String> getAndListen(URL registryURL, URL subscribedURL, MappingListener listener) {
+                return null;
+            }
+
+            @Override
+            public MappingListener stopListen(URL subscribeURL, MappingListener listener) {
+                return null;
+            }
+
+            @Override
+            public void putCachedMapping(String serviceKey, Set<String> apps) {
+
+            }
+
+            @Override
+            public Set<String> getCachedMapping(String mappingKey) {
+                return null;
+            }
+
+            @Override
+            public Set<String> getCachedMapping(URL consumerURL) {
+                return null;
+            }
+
+            @Override
+            public Set<String> getRemoteMapping(URL consumerURL) {
+                return null;
+            }
+
+            @Override
+            public Map<String, Set<String>> getCachedMapping() {
+                return null;
+            }
+
+            @Override
+            public Set<String> removeCachedMapping(String serviceKey) {
+                return null;
+            }
+
+            @Override
+            public void $destroy() {
+
+            }
+        };
+        ApplicationConfig applicationConfig = new ApplicationConfig("app");
+        applicationConfig.setMappingRetryInterval(10);
+        serviceConfig.setApplication(applicationConfig);
+        serviceConfig.mapServiceName(URL.valueOf(""), serviceNameMapping, scheduledExecutorService);
+
+        await().until(() -> count.get() > 10);
+        scheduledExecutorService.shutdown();
+    }
+    
+    @Test
+    void testMappingNoRetry() {
+        FrameworkModel frameworkModel = new FrameworkModel();
+        ApplicationModel applicationModel = frameworkModel.newApplication();
+        ServiceConfig<DemoService> serviceConfig = new ServiceConfig<>(applicationModel.newModule());
+        serviceConfig.exported();
+        ScheduledExecutorService scheduledExecutorService = Mockito.spy(Executors.newScheduledThreadPool(1));
+        AtomicInteger count = new AtomicInteger(0);
+        ServiceNameMapping serviceNameMapping = new ServiceNameMapping() {
+            @Override
+            public boolean map(URL url) {
+                return false;
+            }
+
+            @Override
+            public boolean hasValidMetadataCenter() {
+                return false;
+            }
+
+            @Override
+            public void initInterfaceAppMapping(URL subscribedURL) {
+
+            }
+
+            @Override
+            public Set<String> getAndListen(URL registryURL, URL subscribedURL, MappingListener listener) {
+                return null;
+            }
+
+            @Override
+            public MappingListener stopListen(URL subscribeURL, MappingListener listener) {
+                return null;
+            }
+
+            @Override
+            public void putCachedMapping(String serviceKey, Set<String> apps) {
+
+            }
+
+            @Override
+            public Set<String> getCachedMapping(String mappingKey) {
+                return null;
+            }
+
+            @Override
+            public Set<String> getCachedMapping(URL consumerURL) {
+                return null;
+            }
+
+            @Override
+            public Set<String> getRemoteMapping(URL consumerURL) {
+                return null;
+            }
+
+            @Override
+            public Map<String, Set<String>> getCachedMapping() {
+                return null;
+            }
+
+            @Override
+            public Set<String> removeCachedMapping(String serviceKey) {
+                return null;
+            }
+
+            @Override
+            public void $destroy() {
+
+            }
+        };
+        ApplicationConfig applicationConfig = new ApplicationConfig("app");
+        applicationConfig.setMappingRetryInterval(10);
+        serviceConfig.setApplication(applicationConfig);
+        serviceConfig.mapServiceName(URL.valueOf(""), serviceNameMapping, scheduledExecutorService);
+
+        verify(scheduledExecutorService, times(0)).schedule((Runnable) any(), anyLong(), any());
+
+        scheduledExecutorService.shutdown();
     }
 }

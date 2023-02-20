@@ -16,9 +16,19 @@
  */
 package org.apache.dubbo.registry.nacos;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.registry.NotifyListener;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.alibaba.nacos.api.common.Constants;
 import com.alibaba.nacos.api.exception.NacosException;
@@ -26,16 +36,6 @@ import com.alibaba.nacos.api.naming.NamingService;
 import com.alibaba.nacos.api.naming.pojo.Instance;
 import com.alibaba.nacos.api.naming.pojo.ListView;
 import com.alibaba.nacos.client.naming.NacosNamingService;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
@@ -69,7 +69,7 @@ class NacosRegistryTest {
 
         int nacosServerPort = NetUtils.getAvailablePort();
 
-        this.registryUrl = URL.valueOf("nacos://localhost:" + nacosServerPort);
+        this.registryUrl = URL.valueOf("nacos://localhost:" + nacosServerPort + "?nacos.check=false");
 
         this.nacosRegistryFactory = new NacosRegistryFactory();
 
@@ -103,7 +103,7 @@ class NacosRegistryTest {
             // ignore
         }
 
-        NacosNamingServiceWrapper nacosNamingServiceWrapper = new NacosNamingServiceWrapper(namingService);
+        NacosNamingServiceWrapper nacosNamingServiceWrapper = new NacosNamingServiceWrapper(namingService, 0, 0);
         nacosRegistry = new NacosRegistry(this.registryUrl, nacosNamingServiceWrapper);
 
         Set<URL> registered;
@@ -143,7 +143,7 @@ class NacosRegistryTest {
             // ignore
         }
 
-        NacosNamingServiceWrapper nacosNamingServiceWrapper = new NacosNamingServiceWrapper(namingService);
+        NacosNamingServiceWrapper nacosNamingServiceWrapper = new NacosNamingServiceWrapper(namingService, 0, 0);
         nacosRegistry = new NacosRegistry(this.registryUrl, nacosNamingServiceWrapper);
 
         nacosRegistry.register(serviceUrl);
@@ -183,7 +183,7 @@ class NacosRegistryTest {
             // ignore
         }
 
-        NacosNamingServiceWrapper nacosNamingServiceWrapper = new NacosNamingServiceWrapper(namingService);
+        NacosNamingServiceWrapper nacosNamingServiceWrapper = new NacosNamingServiceWrapper(namingService, 0, 0);
         nacosRegistry = new NacosRegistry(this.registryUrl, nacosNamingServiceWrapper);
 
         NotifyListener listener = mock(NotifyListener.class);
@@ -222,7 +222,7 @@ class NacosRegistryTest {
         }
 
         NacosNamingServiceWrapper nacosNamingServiceWrapper = new
-            NacosNamingServiceWrapper(namingService);
+            NacosNamingServiceWrapper(namingService, 0, 0);
         nacosRegistry = new NacosRegistry(this.registryUrl, nacosNamingServiceWrapper);
 
         NotifyListener listener = mock(NotifyListener.class);
@@ -276,7 +276,7 @@ class NacosRegistryTest {
         }
 
         NacosNamingServiceWrapper nacosNamingServiceWrapper = new
-            NacosNamingServiceWrapper(namingService);
+            NacosNamingServiceWrapper(namingService, 0, 0);
         nacosRegistry = new NacosRegistry(this.registryUrl, nacosNamingServiceWrapper);
 
         Set<URL> registered;

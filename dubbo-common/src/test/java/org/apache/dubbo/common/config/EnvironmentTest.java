@@ -64,7 +64,7 @@ class EnvironmentTest {
     @Test
     void test() {
         FrameworkModel frameworkModel = new FrameworkModel();
-        ApplicationModel applicationModel = new ApplicationModel(frameworkModel);
+        ApplicationModel applicationModel = frameworkModel.newApplication();
         Environment environment = applicationModel.getModelEnvironment();
 
         // test getPrefixedConfiguration

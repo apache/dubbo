@@ -100,7 +100,7 @@ public abstract class AbstractMethodConfig extends AbstractConfig {
     protected Integer forks;
 
     public AbstractMethodConfig() {
-        super(ApplicationModel.defaultModel().getDefaultModule());
+        super();
     }
 
     public AbstractMethodConfig(ModuleModel moduleModel) {
@@ -109,7 +109,12 @@ public abstract class AbstractMethodConfig extends AbstractConfig {
 
     @Override
     public ModuleModel getScopeModel() {
-        return (ModuleModel) scopeModel;
+        return (ModuleModel) super.getScopeModel();
+    }
+
+    @Override
+    protected ScopeModel getDefaultModel() {
+        return ApplicationModel.defaultModel().getDefaultModule();
     }
 
     @Override

@@ -182,6 +182,9 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
         String grpcMessage = getGrpcMessage(rpcStatus);
         grpcMessage = TriRpcStatus.encodeMessage(TriRpcStatus.limitSizeTo1KB(grpcMessage));
         headers.set(TripleHeaderEnum.MESSAGE_KEY.getHeader(), grpcMessage);
+        if (!getGrpcStatusDetailEnabled()) {
+            return headers;
+        }
         Status.Builder builder = Status.newBuilder().setCode(rpcStatus.code.code)
             .setMessage(grpcMessage);
         Throwable throwable = rpcStatus.cause;
@@ -371,7 +374,11 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
                 }
             }
 
-            Map<String, Object> requestMetadata = headersToMap(headers);
+            Map<String, Object> requestMetadata = headersToMap(headers, () -> {
+                return Optional.ofNullable(headers.get(TripleHeaderEnum.TRI_HEADER_CONVERT.getHeader()))
+                    .map(CharSequence::toString)
+                    .orElse(null);
+            });
             boolean hasStub = pathResolver.hasNativeStub(path);
             if (hasStub) {
                 listener = new StubAbstractServerCall(invoker, TripleServerStream.this,

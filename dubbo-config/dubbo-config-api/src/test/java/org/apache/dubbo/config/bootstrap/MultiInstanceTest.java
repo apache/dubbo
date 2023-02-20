@@ -308,6 +308,7 @@ class MultiInstanceTest {
 
     @Test
     void testMultiProviderApplicationsStopOneByOne() {
+        FrameworkModel.destroyAll();
 
         String version1 = "1.0";
         String version2 = "2.0";
@@ -738,7 +739,7 @@ class MultiInstanceTest {
 
 
             // consumer app
-            ApplicationModel consumerApplicationModel = new ApplicationModel(FrameworkModel.defaultModel());
+            ApplicationModel consumerApplicationModel = ApplicationModel.defaultModel();
             ReferenceConfig<DemoService> referenceConfig = new ReferenceConfig<>();
             referenceConfig.setScopeModel(consumerApplicationModel.getDefaultModule());
             referenceConfig.setApplication(new ApplicationConfig("consumer-app"));

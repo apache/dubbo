@@ -25,20 +25,24 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.InvokeMode;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.TimeoutCountDown;
 import org.apache.dubbo.rpc.service.GenericService;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE;
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE_ASYNC;
+import static org.apache.dubbo.common.constants.CommonConstants.ENABLE_TIMEOUT_COUNTDOWN_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_PARAMETER_DESC;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_ATTACHMENT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_ATTACHMENT_KEY_LOWER;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_FAILED_REFLECT;
+import static org.apache.dubbo.common.constants.CommonConstants.TIME_COUNTDOWN_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_REFLECTIVE_OPERATION_FAILED;
 import static org.apache.dubbo.rpc.Constants.$ECHO;
 import static org.apache.dubbo.rpc.Constants.$ECHO_PARAMETER_DESC;
 import static org.apache.dubbo.rpc.Constants.ASYNC_KEY;
@@ -67,7 +71,7 @@ public class RpcUtils {
                 }
             }
         } catch (Throwable t) {
-            logger.warn(COMMON_FAILED_REFLECT, "", "", t.getMessage(), t);
+            logger.warn(COMMON_REFLECTIVE_OPERATION_FAILED, "", "", t.getMessage(), t);
         }
         return null;
     }
@@ -97,7 +101,7 @@ public class RpcUtils {
                 }
             }
         } catch (Throwable t) {
-            logger.warn(COMMON_FAILED_REFLECT, "", "", t.getMessage(), t);
+            logger.warn(COMMON_REFLECTIVE_OPERATION_FAILED, "", "", t.getMessage(), t);
         }
         return null;
     }
@@ -276,8 +280,35 @@ public class RpcUtils {
         return timeout;
     }
 
-    private static long convertToNumber(Object obj, long defaultTimeout) {
-        long timeout = defaultTimeout;
+    public static int calculateTimeout(URL url, Invocation invocation, String methodName, long defaultTimeout) {
+        Object countdown = RpcContext.getClientAttachment().getObjectAttachment(TIME_COUNTDOWN_KEY);
+        int timeout = (int) defaultTimeout;
+        if (countdown == null) {
+            if (url != null) {
+                timeout = (int) RpcUtils.getTimeout(url, methodName, RpcContext.getClientAttachment(), invocation, defaultTimeout);
+                if (url.getMethodParameter(methodName, ENABLE_TIMEOUT_COUNTDOWN_KEY, false)) {
+                    // pass timeout to remote server
+                    invocation.setObjectAttachment(TIMEOUT_ATTACHMENT_KEY, timeout);
+                }
+            }
+        } else {
+            TimeoutCountDown timeoutCountDown = (TimeoutCountDown) countdown;
+            timeout = (int) timeoutCountDown.timeRemaining(TimeUnit.MILLISECONDS);
+            // pass timeout to remote server
+            invocation.setObjectAttachment(TIMEOUT_ATTACHMENT_KEY, timeout);
+        }
+
+        invocation.getObjectAttachments().remove(TIME_COUNTDOWN_KEY);
+        return timeout;
+    }
+
+    public static Long convertToNumber(Object obj, long defaultTimeout) {
+        Long timeout = convertToNumber(obj);
+        return timeout == null ? defaultTimeout : timeout;
+    }
+
+    public static Long convertToNumber(Object obj) {
+        Long timeout = null;
         try {
             if (obj instanceof String) {
                 timeout = Long.parseLong((String) obj);

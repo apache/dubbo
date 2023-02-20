@@ -15,10 +15,10 @@ env:
   SHOW_ERROR_DETAIL: 1
   #multi-version size limit
   VERSIONS_LIMIT: 4
+  ALL_REMOTE_VERSION: true
   CANDIDATE_VERSIONS: '
-    spring.version:4.3.30.RELEASE;
-    spring-boot.version:1.5.22.RELEASE;
-    spring-boot.version:2.4.1;
+    spring.version:5.3.24;
+    spring-boot.version:2.7.6;
     '
 
 jobs:
@@ -58,16 +58,7 @@ jobs:
       - name: "Build Dubbo with Maven"
         run: |
           cd ./dubbo
-          ./mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast clean source:jar install -Pjacoco,rat,checkstyle -Dmaven.wagon.httpconnectionManager.ttlSeconds=120 -Dmaven.wagon.http.retryHandler.count=5 -Dmaven.test.skip=true -Dmaven.test.skip.exec=true -DembeddedZookeeperPath=${{ github.workspace }}/.tmp/zookeeper
-      - name: "Pack rat file if failure"
-        if: failure()
-        run: 7z a ${{ github.workspace }}/rat.zip *rat.txt -r
-      - name: "Upload rat file if failure"
-        if: failure()
-        uses: actions/upload-artifact@v2
-        with:
-          name: "rat-file"
-          path: ${{ github.workspace }}/rat.zip
+          ./mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast clean source:jar install -Pjacoco,checkstyle -Dmaven.wagon.httpconnectionManager.ttlSeconds=120 -Dmaven.wagon.http.retryHandler.count=5 -Dmaven.test.skip=true -Dmaven.test.skip.exec=true -DembeddedZookeeperPath=${{ github.workspace }}/.tmp/zookeeper
       - name: "Pack checkstyle file if failure"
         if: failure()
         run: 7z a ${{ github.workspace }}/checkstyle.zip *checkstyle* -r
@@ -212,7 +203,7 @@ jobs:
   integration-test-prepare:
     runs-on: ubuntu-latest
     env:
-      JOB_COUNT: 3
+      JOB_COUNT: 5
     steps:
       - uses: actions/checkout@v3
         with:
@@ -222,7 +213,7 @@ jobs:
         run: |
           bash ./test/scripts/prepare-test.sh
       - name: "Upload test list"
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: test-list
           path: test/jobs
@@ -231,14 +222,15 @@ jobs:
     needs: [build-source, integration-test-prepare]
     name: "Integration Test on ubuntu-latest (JobId: ${{matrix.job_id}})"
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 90
     env:
-      JAVA_VER: 8
+      JAVA_VER: ${{matrix.jdk}}
       TEST_CASE_FILE: jobs/testjob_${{matrix.job_id}}.txt
     strategy:
       fail-fast: false
       matrix:
-        job_id: [1, 2, 3]
+        jdk: [ 8, 11 ]
+        job_id: [1, 2, 3, 4, 5]
     steps:
       - uses: actions/checkout@v3
         with:
@@ -261,15 +253,14 @@ jobs:
             ${{ runner.os }}-dubbo-snapshot-${{ github.sha }}
             ${{ runner.os }}-dubbo-snapshot-
       - name: "Download test list"
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: test-list
           path: test/jobs/
-      - name: "Set up JDK 8"
-        uses: actions/setup-java@v3
+      - name: "Set up JDK ${{matrix.jdk}}"
+        uses: actions/setup-java@v1
         with:
-          java-version: 8
-          distribution: 'zulu'
+          java-version: ${{matrix.jdk}}
       - name: "Init Candidate Versions"
         run: |
           DUBBO_VERSION="${{needs.build-source.outputs.version}}"
@@ -282,9 +273,9 @@ jobs:
         run: cd test && bash ./run-tests.sh
       - name: "Upload test result"
         if: always()
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
-          name: test-result
+          name: test-result-${{matrix.jdk}}
           path: test/jobs/*-result*
 
   integration-test-result:
@@ -292,20 +283,22 @@ jobs:
     if: always()
     runs-on: ubuntu-latest
     env:
-      JAVA_VER: 8
+      JAVA_VER: ${{matrix.jdk}}
+    strategy:
+      matrix:
+        jdk: [ 8, 11 ]
     steps:
       - uses: actions/checkout@v3
         with:
           repository: 'apache/dubbo-samples'
           ref: master
       - name: "Download test result"
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
-          name: test-result
+          name: test-result-${{matrix.jdk}}
           path: test/jobs/
       - name: "Merge test result"
         run: ./test/scripts/merge-test-results.sh
-
 
   error-code-inspecting:
     runs-on: ubuntu-latest
@@ -332,13 +325,57 @@ jobs:
           ./mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast -T 2C clean install -DskipTests=true -DskipIntegrationTests=true -Dcheckstyle.skip=true -Dcheckstyle_unix.skip=true -Drat.skip=true -Dmaven.javadoc.skip=true
       - name: "Run Error Code Inspecting"
         env:
-          "dubbo.eci.report-as-error": false
+          DUBBO_ECI_REPORT_AS_ERROR: true
         run: |
           cd ${{ github.workspace }}/dubbo-test-tools/dubbo-error-code-inspector
-          ../mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast -T 2C package exec:java -Dmaven.test.skip=true -Dmaven.test.skip.exec=true -Ddubbo.eci.path=${{ github.workspace }}/dubbo
+          ../mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast -T 2C package exec:java -Ddubbo.eci.report-as-error=${DUBBO_ECI_REPORT_AS_ERROR} -Dmaven.test.skip=true -Dmaven.test.skip.exec=true -Ddubbo.eci.path=${{ github.workspace }}/dubbo
 
       - name: "Upload error code inspection result"
+        # always() should not be used here, since we don't need to handle the 'canceled' situation.
+        if: ${{ success() || failure() }}
         uses: actions/upload-artifact@v2
         with:
           name: "error-inspection-result"
           path: ${{ github.workspace }}/dubbo-test-tools/dubbo-error-code-inspector/error-inspection-result.txt
+
+  native-image-inspecting:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          path: "./dubbo"
+
+      - name: "Setup GraalVM environment"
+        uses: graalvm/setup-graalvm@v1
+        with:
+          version: '22.3.0'
+          java-version: '17'
+          components: 'native-image'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          native-image-job-reports: 'true'
+
+      - name: "Setup Zookeeper environment"
+        run: |
+          wget https://dlcdn.apache.org/zookeeper/zookeeper-3.7.1/apache-zookeeper-3.7.1-bin.tar.gz
+          tar -zxvf apache-zookeeper-3.7.1-bin.tar.gz
+          mv apache-zookeeper-3.7.1-bin/conf/zoo_sample.cfg apache-zookeeper-3.7.1-bin/conf/zoo.cfg
+          apache-zookeeper-3.7.1-bin/bin/zkServer.sh start
+
+      - name: "Check environment"
+        run: |
+          java --version
+          native-image --version
+
+      - name: "Compile Dubbo (Linux)"
+        run: |
+          cd ${{ github.workspace }}/dubbo
+          ./mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast -T 2C clean install -DskipTests=true -DskipIntegrationTests=true -Dcheckstyle.skip=true -Dcheckstyle_unix.skip=true -Drat.skip=true -Dmaven.javadoc.skip=true
+
+      - name: "Compile and run Dubbo demo for native (Linux)"
+        run: |
+          cd ${{ github.workspace }}/dubbo/dubbo-demo/dubbo-demo-native/dubbo-demo-native-provider
+          ${{ github.workspace }}/dubbo/mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast -T 2C clean package -P native -Dmaven.test.skip=true
+          nohup ./target/demo-native-provider &
+          cd ${{ github.workspace }}/dubbo/dubbo-demo/dubbo-demo-native/dubbo-demo-native-consumer
+          ${{ github.workspace }}/dubbo/mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast -T 2C clean package -P native -Dmaven.test.skip=true
+          ./target/demo-native-consumer

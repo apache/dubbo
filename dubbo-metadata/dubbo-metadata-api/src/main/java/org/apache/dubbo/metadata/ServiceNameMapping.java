@@ -16,6 +16,11 @@
  */
 package org.apache.dubbo.metadata;
 
+import java.util.Arrays;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.RegistryConstants;
 import org.apache.dubbo.common.extension.SPI;
@@ -28,6 +33,7 @@ import org.apache.dubbo.rpc.service.Destroyable;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.TreeSet;
+
 
 import static java.util.Collections.emptySet;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
@@ -47,6 +53,8 @@ public interface ServiceNameMapping extends Destroyable {
      * Map the specified Dubbo service interface, group, version and protocol to current Dubbo service name
      */
     boolean map(URL url);
+
+    boolean hasValidMetadataCenter();
 
     /**
      * Get the default extension of {@link ServiceNameMapping}

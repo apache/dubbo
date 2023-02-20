@@ -240,8 +240,8 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
     @Override
     protected void postProcessAfterScopeModelChanged(ScopeModel oldScopeModel, ScopeModel newScopeModel) {
         super.postProcessAfterScopeModelChanged(oldScopeModel, newScopeModel);
-        if (this.consumer != null && this.consumer.getScopeModel() != scopeModel) {
-            this.consumer.setScopeModel(scopeModel);
+        if (this.consumer != null && this.consumer.getScopeModel() != getScopeModel()) {
+            this.consumer.setScopeModel(getScopeModel());
         }
     }
 

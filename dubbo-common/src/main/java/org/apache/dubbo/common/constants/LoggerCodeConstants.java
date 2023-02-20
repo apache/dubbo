@@ -18,14 +18,27 @@
 package org.apache.dubbo.common.constants;
 
 /**
- * constants for logger
+ * <p>Constants of Error Codes used in logger.
+ *
+ * <p>Format: <i>[Category]-[Code]</i>, where:
+ * <li>[Category] is the category code which identifies the module.
+ * <li>[Code] is the detailed code.
+ * <li>Every blanks should be filled with positive number.
+ *
+ * <br /><br />
+ * <p>Hint:
+ * <li>Synchronize this file across different branches. (Use merge and cherry-pick.)
+ * <li>Double-check the usage in different branches before deleting any of the error code.
+ * <li>If applicable, use error code that already appears in this file.
+ * <li>If it's required to add an error code, find an error code that's marked by 'Absent', and rename it. (so that no code is wasted)
+ * <li>Update the corresponding file in dubbo-website repository.
  */
 public interface LoggerCodeConstants {
 
-    // common module
+    // Common module
     String COMMON_THREAD_POOL_EXHAUSTED = "0-1";
 
-    String COMMON_PROPERTY_MISSPELLING = "0-2";
+    String COMMON_PROPERTY_TYPE_MISMATCH = "0-2";
 
     String COMMON_CACHE_PATH_INACCESSIBLE = "0-3";
 
@@ -37,7 +50,7 @@ public interface LoggerCodeConstants {
 
     String COMMON_CLASS_NOT_FOUND = "0-7";
 
-    String COMMON_FAILED_REFLECT = "0-8";
+    String COMMON_REFLECTIVE_OPERATION_FAILED = "0-8";
 
     String COMMON_FAILED_NOTIFY_EVENT = "0-9";
 
@@ -75,9 +88,15 @@ public interface LoggerCodeConstants {
 
     String COMMON_METADATA_PROCESSOR = "0-26";
 
-    // registry module
+    String COMMON_ISOLATED_EXECUTOR_CONFIGURATION_ERROR = "0-27";
+
+    // Registry module
+
     String REGISTRY_ADDRESS_INVALID = "1-1";
 
+    /**
+     * Absent. Merged with 0-2.
+     */
     String REGISTRY_ABSENCE = "1-2";
 
     String REGISTRY_FAILED_URL_EVICTING = "1-3";
@@ -120,10 +139,19 @@ public interface LoggerCodeConstants {
 
     String REGISTRY_UNABLE_ACCESS_KUBERNETES = "1-22";
 
+    /**
+     * Absent. Original '1-23' is changed to '81-3'.
+     */
     String REGISTRY_FAILED_DOWNLOAD_FILE = "1-23";
 
+    /**
+     * Absent. Original '1-24' is changed to '81-1'.
+     */
     String REGISTRY_FAILED_START_ZOOKEEPER = "1-24";
 
+    /**
+     * Absent. Original '1-25' is changed to '81-2'.
+     */
     String REGISTRY_FAILED_STOP_ZOOKEEPER = "1-25";
 
     String REGISTRY_FAILED_GENERATE_CERT_ISTIO = "1-26";
@@ -146,6 +174,9 @@ public interface LoggerCodeConstants {
 
     String REGISTRY_ZOOKEEPER_EXCEPTION = "1-35";
 
+    /**
+     * Absent. Merged with 99-0.
+     */
     String REGISTRY_UNEXPECTED_EXCEPTION = "1-36";
 
     String REGISTRY_NACOS_EXCEPTION = "1-37";
@@ -154,7 +185,11 @@ public interface LoggerCodeConstants {
 
     String REGISTRY_FAILED_LOAD_METADATA = "1-39";
 
-    // cluster module
+    String REGISTRY_ROUTER_WAIT_LONG = "1-40";
+
+    String REGISTRY_ISTIO_EXCEPTION = "1-41";
+
+    // Cluster module 2-x
     String CLUSTER_FAILED_SITE_SELECTION = "2-1";
 
     String CLUSTER_NO_VALID_PROVIDER = "2-2";
@@ -195,12 +230,15 @@ public interface LoggerCodeConstants {
 
     String CLUSTER_FAILED_GROUP_MERGE = "2-20";
 
-    // proxy module
+    // Proxy module. 3-1
     String PROXY_FAILED_CONVERT_URL = "3-1";
 
     String PROXY_FAILED_EXPORT_SERVICE = "3-2";
 
-    String PROXY_FAILED_JAVASSIST = "3-3";
+    /**
+     * Absent. Merged with 3-8.
+     */
+    String PROXY_33 = "3-3";
 
     String PROXY_TIMEOUT_REQUEST = "3-4";
 
@@ -210,7 +248,9 @@ public interface LoggerCodeConstants {
 
     String PROXY_TIMEOUT_RESPONSE = "3-7";
 
-    // protocol module
+    String PROXY_FAILED = "3-8";
+
+    // Protocol module.
     String PROTOCOL_UNSUPPORTED = "4-1";
 
     String PROTOCOL_FAILED_INIT_SERIALIZATION_OPTIMIZER = "4-2";
@@ -251,7 +291,9 @@ public interface LoggerCodeConstants {
 
     String PROTOCOL_FAILED_DECODE = "4-20";
 
-    // config module
+    String PROTOCOL_UNTRUSTED_SERIALIZE_CLASS = "4-21";
+
+    // Config module
     String CONFIG_FAILED_CONNECT_REGISTRY = "5-1";
 
     String CONFIG_FAILED_SHUTDOWN_HOOK = "5-2";
@@ -288,11 +330,14 @@ public interface LoggerCodeConstants {
 
     String CONFIG_FAILED_NOTIFY_EVENT = "5-18";
 
+    /**
+     * Absent. Changed to 81-4.
+     */
     String CONFIG_ZOOKEEPER_SERVER_ERROR = "5-19";
 
     String CONFIG_STOP_DUBBO_ERROR = "5-20";
 
-    String CONFIG_FAILED_EXECUTE_DESTORY = "5-21";
+    String CONFIG_FAILED_EXECUTE_DESTROY = "5-21";
 
     String CONFIG_FAILED_INIT_CONFIG_CENTER = "5-22";
 
@@ -332,13 +377,16 @@ public interface LoggerCodeConstants {
 
     String CONFIG_DUBBO_BEAN_NOT_FOUND = "5-40";
 
-    // transport module
+    // Transport module
     String TRANSPORT_FAILED_CONNECT_PROVIDER = "6-1";
 
     String TRANSPORT_CLIENT_CONNECT_TIMEOUT = "6-2";
 
     String TRANSPORT_FAILED_CLOSE = "6-3";
 
+    /**
+     * Absent. Merged to 99-0.
+     */
     String TRANSPORT_UNEXPECTED_EXCEPTION = "6-4";
 
     String TRANSPORT_FAILED_DISCONNECT_PROVIDER = "6-5";
@@ -378,7 +426,22 @@ public interface LoggerCodeConstants {
 
     String QOS_UNEXPECTED_EXCEPTION = "7-6";
 
+    String QOS_PERMISSION_DENY_EXCEPTION = "7-7";
+
+    // Testing module (8[X], where [X] is number of the module to be tested.)
+    String TESTING_REGISTRY_FAILED_TO_START_ZOOKEEPER = "81-1";
+
+    String TESTING_REGISTRY_FAILED_TO_STOP_ZOOKEEPER = "81-2";
+
+    String TESTING_REGISTRY_FAILED_TO_DOWNLOAD_ZK_FILE = "81-3";
+
+    String TESTING_INIT_ZOOKEEPER_SERVER_ERROR = "81-4";
+
     // Internal unknown error.
+
+    /**
+     * Unknown internal error. (99-0)
+     */
     String INTERNAL_ERROR = "99-0";
 
     String INTERNAL_INTERRUPTED = "99-1";

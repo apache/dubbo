@@ -22,7 +22,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import java.util.NoSuchElementException;
 
 import static org.apache.dubbo.common.config.ConfigurationUtils.isEmptyValue;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_PROPERTY_MISSPELLING;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_PROPERTY_TYPE_MISMATCH;
 
 /**
  * Configuration interface, to fetch the value for the specified key.
@@ -74,7 +74,7 @@ public interface Configuration {
             return convert(Integer.class, key, defaultValue);
         } catch (NumberFormatException e) {
             // 0-2 Property type mismatch.
-            interfaceLevelLogger.error(COMMON_PROPERTY_MISSPELLING, "typo in property value",
+            interfaceLevelLogger.error(COMMON_PROPERTY_TYPE_MISMATCH, "typo in property value",
                 "This property requires an integer value.",
                 "Actual Class: " + getClass().getName(), e);
 
