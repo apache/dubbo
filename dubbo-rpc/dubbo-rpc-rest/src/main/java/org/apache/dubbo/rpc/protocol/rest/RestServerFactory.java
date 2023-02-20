@@ -21,7 +21,6 @@ import org.apache.dubbo.remoting.http.HttpBinder;
 /**
  * Only the server that implements servlet container
  * could support something like @Context injection of servlet objects.
- *
  */
 public class RestServerFactory {
 
@@ -32,10 +31,9 @@ public class RestServerFactory {
     }
 
     public RestProtocolServer createServer(String name) {
-        // TODO move names to Constants
-        if ("servlet".equalsIgnoreCase(name) || "jetty".equalsIgnoreCase(name) || "tomcat".equalsIgnoreCase(name)) {
+        if (Constants.SERVLET.equalsIgnoreCase(name) || Constants.JETTY.equalsIgnoreCase(name) || Constants.TOMCAT.equalsIgnoreCase(name)) {
             return new DubboHttpProtocolServer(httpBinder);
-        } else if ("netty".equalsIgnoreCase(name)) {
+        } else if (Constants.NETTY.equalsIgnoreCase(name)) {
             return new NettyRestProtocolServer();
         } else {
             throw new IllegalArgumentException("Unrecognized server name: " + name);

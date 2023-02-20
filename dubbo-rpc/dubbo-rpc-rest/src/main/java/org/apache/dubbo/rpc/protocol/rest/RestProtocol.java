@@ -52,6 +52,7 @@ import java.util.concurrent.TimeUnit;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERROR_CLOSE_CLIENT;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERROR_CLOSE_SERVER;
@@ -64,7 +65,7 @@ import static org.apache.dubbo.rpc.protocol.rest.Constants.EXTENSION_KEY;
 public class RestProtocol extends AbstractProxyProtocol {
 
     private static final int DEFAULT_PORT = 80;
-    private static final String DEFAULT_SERVER = "jetty";
+    private static final String DEFAULT_SERVER = Constants.JETTY;
 
     private static final int HTTPCLIENTCONNECTIONMANAGER_MAXPERROUTE = 20;
     private static final int HTTPCLIENTCONNECTIONMANAGER_MAXTOTAL = 20;
@@ -103,7 +104,7 @@ public class RestProtocol extends AbstractProxyProtocol {
         });
 
         String contextPath = getContextPath(url);
-        if ("servlet".equalsIgnoreCase(url.getParameter(SERVER_KEY, DEFAULT_SERVER))) {
+        if (Constants.SERVLET.equalsIgnoreCase(url.getParameter(SERVER_KEY, DEFAULT_SERVER))) {
             ServletContext servletContext = ServletManager.getInstance().getServletContext(ServletManager.EXTERNAL_SERVER_PORT);
             if (servletContext == null) {
                 throw new RpcException("No servlet context found. Since you are using server='servlet', " +
@@ -117,7 +118,7 @@ public class RestProtocol extends AbstractProxyProtocol {
                         "make sure that the 'contextpath' property starts with the path of external webapp");
                 }
                 contextPath = contextPath.substring(webappPath.length());
-                if (contextPath.startsWith("/")) {
+                if (contextPath.startsWith(PATH_SEPARATOR)) {
                     contextPath = contextPath.substring(1);
                 }
             }
@@ -160,7 +161,7 @@ public class RestProtocol extends AbstractProxyProtocol {
         }
 
         // TODO protocol
-        ResteasyWebTarget target = resteasyClient.target("http://" + url.getAddress() + "/" + getContextPath(url));
+        ResteasyWebTarget target = resteasyClient.target("http://" + url.getAddress() + PATH_SEPARATOR + getContextPath(url));
         return target.proxy(serviceType);
     }
 
@@ -269,7 +270,7 @@ public class RestProtocol extends AbstractProxyProtocol {
             if (contextPath.endsWith(url.getParameter(INTERFACE_KEY))) {
                 contextPath = contextPath.substring(0, contextPath.lastIndexOf(url.getParameter(INTERFACE_KEY)));
             }
-            return contextPath.endsWith("/") ? contextPath.substring(0, contextPath.length() - 1) : contextPath;
+            return contextPath.endsWith(PATH_SEPARATOR) ? contextPath.substring(0, contextPath.length() - 1) : contextPath;
         } else {
             return "";
         }
