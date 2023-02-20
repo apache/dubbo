@@ -129,7 +129,7 @@
         <checkstyle_unix.skip>true</checkstyle_unix.skip>
         <rat.skip>true</rat.skip>
         <jacoco.skip>true</jacoco.skip>
-        <revision>3.2.0-beta.6-SNAPSHOT</revision>
+        <revision>3.3.0-beta.1-SNAPSHOT</revision>
     </properties>
 
     <modules>
@@ -272,7 +272,7 @@
                 <jacoco.skip>false</jacoco.skip>
             </properties>
         </profile>
-        
+
         <!-- check code style: mvn validate -Pcheckstyle  -->
         <profile>
             <id>checkstyle</id>
