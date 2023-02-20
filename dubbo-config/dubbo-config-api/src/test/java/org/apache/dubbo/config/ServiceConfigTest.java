@@ -576,10 +576,6 @@ class ServiceConfigTest {
                 return true;
             }
 
-            @Override
-            public void initInterfaceAppMapping(URL subscribedURL) {
-
-            }
 
             @Override
             public Set<String> getAndListen(URL registryURL, URL subscribedURL, MappingListener listener) {
@@ -597,22 +593,12 @@ class ServiceConfigTest {
             }
 
             @Override
-            public Set<String> getCachedMapping(String mappingKey) {
-                return null;
-            }
-
-            @Override
-            public Set<String> getCachedMapping(URL consumerURL) {
+            public Set<String> getMapping(URL consumerURL) {
                 return null;
             }
 
             @Override
             public Set<String> getRemoteMapping(URL consumerURL) {
-                return null;
-            }
-
-            @Override
-            public Map<String, Set<String>> getCachedMapping() {
                 return null;
             }
 
@@ -655,11 +641,6 @@ class ServiceConfigTest {
             }
 
             @Override
-            public void initInterfaceAppMapping(URL subscribedURL) {
-
-            }
-
-            @Override
             public Set<String> getAndListen(URL registryURL, URL subscribedURL, MappingListener listener) {
                 return null;
             }
@@ -675,12 +656,7 @@ class ServiceConfigTest {
             }
 
             @Override
-            public Set<String> getCachedMapping(String mappingKey) {
-                return null;
-            }
-
-            @Override
-            public Set<String> getCachedMapping(URL consumerURL) {
+            public Set<String> getMapping(URL consumerURL) {
                 return null;
             }
 
@@ -689,10 +665,6 @@ class ServiceConfigTest {
                 return null;
             }
 
-            @Override
-            public Map<String, Set<String>> getCachedMapping() {
-                return null;
-            }
 
             @Override
             public Set<String> removeCachedMapping(String serviceKey) {
