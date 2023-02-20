@@ -112,7 +112,7 @@
                         <id>get-version-infos</id>
                         <phase>compile</phase>
                         <configuration>
-                            <failOnError>false</failOnError>
+                            <failOnError>true</failOnError>
                             <target>
                                 <property name="version_file"
                                           value="${project.build.outputDirectory}/META-INF/version"/>
