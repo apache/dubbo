@@ -24,7 +24,7 @@ public class PathMatcher {
     private String path;
     private String version;
     private String group;
-    private int port;
+    private Integer port;
     private String[] pathSplits;
     private boolean hasPathVariable;
 
@@ -33,7 +33,7 @@ public class PathMatcher {
         this(path, null, null, 0);
     }
 
-    public PathMatcher(String path, String version, String group, int port) {
+    public PathMatcher(String path, String version, String group, Integer port) {
         this.path = path;
         this.pathSplits = path.split(SEPARATOR);
 
@@ -61,7 +61,7 @@ public class PathMatcher {
         this.group = group;
     }
 
-    public void setPort(int port) {
+    public void setPort(Integer port) {
         this.port = port;
     }
 
