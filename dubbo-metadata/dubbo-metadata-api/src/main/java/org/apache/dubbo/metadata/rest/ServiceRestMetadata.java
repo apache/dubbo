@@ -52,8 +52,8 @@ public class ServiceRestMetadata implements Serializable {
      */
     private Class codeStyle;
 
-    private Map<PathMatcher, RestMethodMetadata> pathToServiceMap;
-    private Map<String, Map<ParameterTypesComparator, RestMethodMetadata>> methodToServiceMap;
+    private Map<PathMatcher, RestMethodMetadata> pathToServiceMap = new HashMap<>();
+    private Map<String, Map<ParameterTypesComparator, RestMethodMetadata>> methodToServiceMap = new HashMap<>();
 
     public ServiceRestMetadata(String serviceInterface, String version, String group, boolean consumer) {
         this.serviceInterface = serviceInterface;
