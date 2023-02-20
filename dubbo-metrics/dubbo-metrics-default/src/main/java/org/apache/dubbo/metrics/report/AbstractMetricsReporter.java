@@ -29,6 +29,7 @@ import io.micrometer.core.instrument.binder.system.ProcessorMetrics;
 import io.micrometer.core.instrument.binder.system.UptimeMetrics;
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.common.constants.MetricsConstants;
 import org.apache.dubbo.common.lang.ShutdownHookCallbacks;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
@@ -121,12 +122,10 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
     }
 
     private void initCollectors() {
-        applicationModel.getBeanFactory().getOrRegisterBean(AggregateMetricsCollector.class);
-        applicationModel.getBeanFactory().getOrRegisterBean(ConfigCenterMetricsCollector.class);
-
-        collectors.add(applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class));
-        collectors.add(applicationModel.getBeanFactory().getBean(AggregateMetricsCollector.class));
-        collectors.add(applicationModel.getBeanFactory().getBean(ConfigCenterMetricsCollector.class));
+        ScopeBeanFactory beanFactory = applicationModel.getBeanFactory();
+        beanFactory.getOrRegisterBean(AggregateMetricsCollector.class);
+        List<MetricsCollector> otherCollectors = beanFactory.getBeansOfType(MetricsCollector.class);
+        collectors.addAll(otherCollectors);
     }
 
     public void refreshData() {

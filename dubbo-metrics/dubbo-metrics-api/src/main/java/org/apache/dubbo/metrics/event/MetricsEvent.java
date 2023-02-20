@@ -55,5 +55,6 @@ public abstract class MetricsEvent {
         UNKNOWN_FAILED,
         TOTAL_FAILED,
         APPLICATION_INFO
+
     }
 }

@@ -16,24 +16,25 @@
  */
 package org.apache.dubbo.common.utils;
 
+import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.model.ModuleModel;
+
+import com.service.DemoService1;
+import com.service.DemoService2;
+import com.service.DemoService4;
+import com.service.deep1.deep2.deep3.DemoService3;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
-
-import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.config.ApplicationConfig;
-import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.FrameworkModel;
-import org.apache.dubbo.rpc.model.ModuleModel;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
-import com.service.DemoService1;
-import com.service.DemoService2;
-import com.service.deep1.deep2.deep3.DemoService3;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CLASS_DESERIALIZE_ALLOWED_LIST;
 import static org.apache.dubbo.common.constants.CommonConstants.CLASS_DESERIALIZE_BLOCKED_LIST;
@@ -252,6 +253,22 @@ class SerializeSecurityConfiguratorTest {
 
     }
 
+    @Test
+    void testGeneric() {
+        FrameworkModel frameworkModel = new FrameworkModel();
+        ApplicationModel applicationModel = frameworkModel.newApplication();
+        ModuleModel moduleModel = applicationModel.newModule();
+
+        SerializeSecurityManager ssm = frameworkModel.getBeanFactory().getBean(SerializeSecurityManager.class);
+
+        SerializeSecurityConfigurator serializeSecurityConfigurator = new SerializeSecurityConfigurator(moduleModel);
+        serializeSecurityConfigurator.onAddClassLoader(moduleModel, Thread.currentThread().getContextClassLoader());
+
+        serializeSecurityConfigurator.registerInterface(DemoService4.class);
+        Assertions.assertTrue(ssm.getAllowedPrefix().contains("com.service.DemoService4"));
+
+        frameworkModel.destroy();
+    }
     @Test
     void testRegister1() {
         FrameworkModel frameworkModel = new FrameworkModel();

@@ -124,13 +124,12 @@
         <maven_jacoco_version>0.8.8</maven_jacoco_version>
         <maven_flatten_version>1.3.0</maven_flatten_version>
         <maven_enforce_version>3.2.1</maven_enforce_version>
-        <apache-rat-plugin.version>0.15</apache-rat-plugin.version>
         <arguments />
         <checkstyle.skip>true</checkstyle.skip>
         <checkstyle_unix.skip>true</checkstyle_unix.skip>
         <rat.skip>true</rat.skip>
         <jacoco.skip>true</jacoco.skip>
-        <revision>3.2.0-beta.5-SNAPSHOT</revision>
+        <revision>3.2.0-beta.6-SNAPSHOT</revision>
     </properties>
 
     <modules>
@@ -273,13 +272,7 @@
                 <jacoco.skip>false</jacoco.skip>
             </properties>
         </profile>
-        <!-- check apache license: mvn validate -Prat  -->
-        <profile>
-            <id>rat</id>
-            <properties>
-                <rat.skip>false</rat.skip>
-            </properties>
-        </profile>
+        
         <!-- check code style: mvn validate -Pcheckstyle  -->
         <profile>
             <id>checkstyle</id>
@@ -448,6 +441,7 @@
                             <charset>UTF-8</charset>
                             <encoding>UTF-8</encoding>
                             <docencoding>UTF-8</docencoding>
+                            <source>${maven_source_version}</source>
                             <links>
                                 <link>http://docs.oracle.com/javase/8/docs/api</link>
                             </links>
@@ -703,81 +697,6 @@
                     <source>${java_source_version}</source>
                     <target>${java_target_version}</target>
                     <encoding>${file_encoding}</encoding>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.rat</groupId>
-                <artifactId>apache-rat-plugin</artifactId>
-                <version>${apache-rat-plugin.version}</version>
-                <executions>
-                    <execution>
-                        <id>rat-validate</id>
-                        <phase>validate</phase>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <excludes>
-                        <exclude>**/*.versionsBackup</exclude>
-                        <exclude>**/.idea/</exclude>
-                        <exclude>**/*.iml</exclude>
-                        <exclude>**/*.txt</exclude>
-                        <exclude>**/*.load</exclude>
-                        <exclude>**/*.flex</exclude>
-                        <exclude>**/*.fc</exclude>
-                        <exclude>**/*.properties</exclude>
-                        <exclude>**/*.sh</exclude>
-                        <exclude>**/*.bat</exclude>
-                        <exclude>**/*.md</exclude>
-                        <exclude>.git/</exclude>
-                        <exclude>.tmp/</exclude>
-                        <exclude>.gitignore</exclude>
-                        <!-- ASF jenkins box puts the Maven repo in our root directory. -->
-                        <exclude>.repository/</exclude>
-                        <exclude>**/.settings/*</exclude>
-                        <exclude>**/.classpath</exclude>
-                        <exclude>**/.project</exclude>
-                        <exclude>**/target/**</exclude>
-                        <exclude>**/*.log</exclude>
-                        <exclude>CODE_OF_CONDUCT.md</exclude>
-                        <exclude>.codecov.yml</exclude>
-                        <exclude>.travis.yml</exclude>
-                        <exclude>PULL_REQUEST_TEMPLATE.md</exclude>
-                        <exclude>CONTRIBUTING.md</exclude>
-                        <exclude>README.md</exclude>
-                        <exclude>Jenkinsfile</exclude>
-                        <exclude>**/codestyle/*</exclude>
-                        <exclude>**/resources/META-INF/**</exclude>
-                        <!-- exclude the grpc files -->
-                        <exclude>**/org/apache/dubbo/common/threadpool/serial/SerializingExecutor.java</exclude>
-                        <!-- exclude the netty files -->
-                        <exclude>**/org/apache/dubbo/common/threadlocal/InternalThreadLocal.java</exclude>
-                        <exclude>**/org/apache/dubbo/common/threadlocal/InternalThreadLocalMap.java</exclude>
-                        <exclude>**/org/apache/dubbo/common/timer/TimerTask.java</exclude>
-                        <exclude>**/org/apache/dubbo/common/timer/Timer.java</exclude>
-                        <exclude>**/org/apache/dubbo/common/timer/Timeout.java</exclude>
-                        <exclude>**/org/apache/dubbo/common/timer/HashedWheelTimer.java</exclude>
-                        <!-- exclude the edazdarevic files -->
-                        <exclude>**/org/apache/dubbo/common/utils/CIDRUtils.java</exclude>
-                        <!-- exclude protobuf generated files -->
-                        <exclude>**/org/apache/dubbo/common/serialize/protobuf/support/wrapper/MapValue.java
-                        </exclude>
-                        <exclude>
-                            **/org/apache/dubbo/common/serialize/protobuf/support/wrapper/ThrowablePB.java
-                        </exclude>
-                        <exclude>
-                            **/org/apache/dubbo/common/utils/Utf8Utils.java
-                        </exclude>
-                        <exclude>**/org/apache/dubbo/rpc/protocol/tri/TriHttp2RemoteFlowController.java</exclude>
-                        <exclude>.github/**</exclude>
-                        <exclude>compiler/**</exclude>
-                        <exclude>**/generated/**</exclude>
-                        <!-- exclude mockito extensions spi files -->
-                        <exclude>**/mockito-extensions/*</exclude>
-                        <exclude>**/*.dubbo.cache</exclude>
-                    </excludes>
                 </configuration>
             </plugin>
             <plugin>
