@@ -17,7 +17,6 @@
 
 package org.apache.dubbo.metrics.collector;
 
-import org.apache.dubbo.common.Version;
 import org.apache.dubbo.metrics.collector.sample.MethodMetricsSampler;
 import org.apache.dubbo.metrics.collector.sample.MetricsCountSampleConfigurer;
 import org.apache.dubbo.metrics.collector.sample.MetricsSampler;
@@ -33,7 +32,6 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.metrics.model.MetricsCategory.APPLICATION;
 import static org.apache.dubbo.metrics.model.MetricsKey.APPLICATION_METRIC_INFO;
@@ -43,7 +41,7 @@ import static org.apache.dubbo.metrics.model.MetricsKey.APPLICATION_METRIC_INFO;
  */
 public class DefaultMetricsCollector implements MetricsCollector {
 
-    private final AtomicBoolean collectEnabled = new AtomicBoolean(false);
+    private boolean collectEnabled = false;
     private final SimpleMetricsEventMulticaster eventMulticaster;
     private final MethodMetricsSampler methodSampler = new MethodMetricsSampler(this);
     private final ThreadPoolMetricsSampler threadPoolSampler = new ThreadPoolMetricsSampler(this);
@@ -52,7 +50,7 @@ public class DefaultMetricsCollector implements MetricsCollector {
     private final List<MetricsSampler> samplers = new ArrayList<>();
 
     public DefaultMetricsCollector() {
-        this.eventMulticaster = SimpleMetricsEventMulticaster.getInstance();
+        this.eventMulticaster = new SimpleMetricsEventMulticaster();
         samplers.add(methodSampler);
         samplers.add(applicationSampler);
         samplers.add(threadPoolSampler);
@@ -75,11 +73,11 @@ public class DefaultMetricsCollector implements MetricsCollector {
     }
 
     public void setCollectEnabled(Boolean collectEnabled) {
-        this.collectEnabled.compareAndSet(isCollectEnabled(), collectEnabled);
+        this.collectEnabled = collectEnabled;
     }
 
-    public Boolean isCollectEnabled() {
-        return collectEnabled.get();
+    public boolean isCollectEnabled() {
+        return collectEnabled;
     }
 
     public MethodMetricsSampler getMethodSampler() {
@@ -119,8 +117,7 @@ public class DefaultMetricsCollector implements MetricsCollector {
         @Override
         protected void countConfigure(
             MetricsCountSampleConfigurer<String, MetricsEvent.Type, ApplicationMetric> sampleConfigure) {
-            sampleConfigure.configureMetrics(configure -> new ApplicationMetric(sampleConfigure.getSource(),
-                Version.getVersion()));
+            sampleConfigure.configureMetrics(configure -> new ApplicationMetric(sampleConfigure.getSource()));
         }
     };
 }

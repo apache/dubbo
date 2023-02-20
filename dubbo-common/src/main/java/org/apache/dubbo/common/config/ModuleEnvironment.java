@@ -220,7 +220,7 @@ public class ModuleEnvironment extends Environment implements ModuleExt {
     }
 
     @Override
-    public void refreshClassLoaders() {
+    public synchronized void refreshClassLoaders() {
         orderedPropertiesConfiguration.refresh();
         applicationDelegate.refreshClassLoaders();
     }

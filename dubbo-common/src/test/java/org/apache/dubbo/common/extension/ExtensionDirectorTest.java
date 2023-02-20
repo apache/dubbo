@@ -90,8 +90,8 @@ class ExtensionDirectorTest {
         // 3. Framework scope SPI can be injected FrameworkModel, but not ModuleModel, ApplicationModel
 
         FrameworkModel frameworkModel = new FrameworkModel();
-        ApplicationModel applicationModel = new ApplicationModel(frameworkModel);
-        ModuleModel moduleModel = new ModuleModel(applicationModel);
+        ApplicationModel applicationModel = frameworkModel.newApplication();
+        ModuleModel moduleModel = applicationModel.newModule();
 
         ExtensionDirector moduleExtensionDirector = moduleModel.getExtensionDirector();
         ExtensionDirector appExtensionDirector = applicationModel.getExtensionDirector();
@@ -152,16 +152,16 @@ class ExtensionDirectorTest {
         //      └─moduleModel211
 
         FrameworkModel frameworkModel1 = new FrameworkModel();
-        ApplicationModel applicationModel11 = new ApplicationModel(frameworkModel1);
-        ModuleModel moduleModel111 = new ModuleModel(applicationModel11);
-        ModuleModel moduleModel112 = new ModuleModel(applicationModel11);
+        ApplicationModel applicationModel11 = frameworkModel1.newApplication();
+        ModuleModel moduleModel111 = applicationModel11.newModule();
+        ModuleModel moduleModel112 = applicationModel11.newModule();
 
-        ApplicationModel applicationModel12 = new ApplicationModel(frameworkModel1);
-        ModuleModel moduleModel121 = new ModuleModel(applicationModel12);
+        ApplicationModel applicationModel12 = frameworkModel1.newApplication();
+        ModuleModel moduleModel121 = applicationModel12.newModule();
 
         FrameworkModel frameworkModel2 = new FrameworkModel();
-        ApplicationModel applicationModel21 = new ApplicationModel(frameworkModel2);
-        ModuleModel moduleModel211 = new ModuleModel(applicationModel21);
+        ApplicationModel applicationModel21 = frameworkModel2.newApplication();
+        ModuleModel moduleModel211 = applicationModel21.newModule();
 
         // test model references
         Collection<ApplicationModel> applicationsOfFw1 = frameworkModel1.getApplicationModels();
@@ -235,8 +235,8 @@ class ExtensionDirectorTest {
         // 3. Module scope extension can be injected to extensions of Module scope, but not Framework/Application scope
 
         FrameworkModel frameworkModel = new FrameworkModel();
-        ApplicationModel applicationModel = new ApplicationModel(frameworkModel);
-        ModuleModel moduleModel = new ModuleModel(applicationModel);
+        ApplicationModel applicationModel = frameworkModel.newApplication();
+        ModuleModel moduleModel = applicationModel.newModule();
 
         // check module service
         TestModuleService moduleService = (TestModuleService) moduleModel.getExtensionDirector()
