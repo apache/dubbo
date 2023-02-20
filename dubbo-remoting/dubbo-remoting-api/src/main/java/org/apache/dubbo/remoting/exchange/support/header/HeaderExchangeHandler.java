@@ -101,7 +101,7 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
                 // Give ExceptionProcessors a chance to retry request handle or custom exception information.
                 String exPs = System.getProperty(EXCEPTION_PROCESSOR_KEY);
                 if (StringUtils.isNotBlank(exPs)) {
-                    ExtensionLoader<ExceptionProcessor> extensionLoader = ApplicationModel.defaultModel().getDefaultModule().getExtensionLoader(ExceptionProcessor.class);
+                    ExtensionLoader<ExceptionProcessor> extensionLoader = channel.getUrl().getOrDefaultFrameworkMode().getExtensionLoader(ExceptionProcessor.class);
                     ExceptionProcessor expProcessor = extensionLoader.getOrDefaultExtension(exPs);
                     boolean handleError = expProcessor.shouldHandleError(error);
                     if (handleError) {
