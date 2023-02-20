@@ -37,7 +37,6 @@ public abstract class BaseRestProtocolServer implements RestProtocolServer {
     public void start(URL url) {
         getDeployment().getMediaTypeMappings().put("json", "application/json");
         getDeployment().getMediaTypeMappings().put("xml", "text/xml");
-//        server.getDeployment().getMediaTypeMappings().put("xml", "application/xml");
         getDeployment().getProviderClasses().add(RpcContextFilter.class.getName());
         // TODO users can override this mapper, but we just rely on the current priority strategy of resteasy
         getDeployment().getProviderClasses().add(RpcExceptionMapper.class.getName());

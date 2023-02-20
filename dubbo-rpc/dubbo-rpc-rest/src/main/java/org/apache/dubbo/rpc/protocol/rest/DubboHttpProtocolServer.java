@@ -42,7 +42,6 @@ public class DubboHttpProtocolServer extends BaseRestProtocolServer {
     private final ResteasyDeployment deployment = new ResteasyDeployment();
     private final HttpBinder httpBinder;
     private HttpServer httpServer;
-//    private boolean isExternalServer;
 
     public DubboHttpProtocolServer(HttpBinder httpBinder) {
         this.httpBinder = httpBinder;
