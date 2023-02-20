@@ -41,4 +41,14 @@ public class AnotherUserRestServiceImpl implements AnotherUserRestService {
 
         return "context";
     }
+
+    @Override
+    public byte[] bytes(byte[] bytes) {
+        return bytes;
+    }
+
+    @Override
+    public int number(int number) {
+        return number;
+    }
 }

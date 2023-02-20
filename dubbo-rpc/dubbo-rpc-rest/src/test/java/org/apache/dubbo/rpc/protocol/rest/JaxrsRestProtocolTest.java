@@ -40,6 +40,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
 import java.util.Map;
 
 import static org.apache.dubbo.remoting.Constants.SERVER_KEY;
@@ -99,6 +100,17 @@ class JaxrsRestProtocolTest {
         User result = client.getUser(123l);
 
         Assertions.assertEquals(result.getId(), 123l);
+
+        result.setName("dubbo");
+        Assertions.assertEquals("dubbo", client.registerUser(result));
+
+        Assertions.assertEquals("context", client.getContext());
+
+        byte[] bytes = {1, 2, 3, 4};
+        Assertions.assertTrue(Arrays.equals(bytes, client.bytes(bytes)));
+
+        Assertions.assertEquals(1, client.number(1));
+
         invoker.destroy();
         exporter.unexport();
     }

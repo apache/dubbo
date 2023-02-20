@@ -37,4 +37,12 @@ public interface AnotherUserRestService {
     @GET
     @Path("context")
     String getContext();
+
+    @POST
+    @Path("bytes")
+    byte[] bytes(byte[] bytes);
+
+    @POST
+    @Path("number")
+    int number(int number);
 }

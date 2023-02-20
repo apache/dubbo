@@ -14,35 +14,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.rest.message.decode;
+package org.apache.dubbo.rpc.protocol.rest.message.codec;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.metadata.rest.media.MediaType;
 import org.apache.dubbo.rpc.protocol.rest.message.HttpMessageCodec;
-import org.apache.dubbo.rpc.protocol.rest.message.MediaTypeMatcher;
-import org.apache.dubbo.rpc.protocol.rest.util.DataParseUtils;
 
 import java.io.OutputStream;
-import java.util.Map;
 
-@Activate("multiValue")
-public class MultiValueCodec implements HttpMessageCodec<byte[],OutputStream> {
+@Activate("byteArray")
+public class ByteArrayCodec implements HttpMessageCodec<byte[], OutputStream> {
 
 
     @Override
     public Object decode(byte[] body, Class targetType) throws Exception {
-        // TODO java bean  get set convert
-        return DataParseUtils.multipartFormConvert(body);
+        return body;
     }
 
     @Override
-    public boolean contentTypeSupport(MediaType mediaType) {
-        return MediaTypeMatcher.MULTI_VALUE.mediaSupport(mediaType);
+    public boolean contentTypeSupport(MediaType mediaType, Class targetType) {
+        return byte[].class.equals(targetType);
     }
+
 
     @Override
     public void encode(OutputStream outputStream, Object unSerializedBody, URL url) throws Exception {
-        DataParseUtils.writeFormContent((Map) unSerializedBody, outputStream);
+        outputStream.write((byte[]) unSerializedBody);
     }
 }
