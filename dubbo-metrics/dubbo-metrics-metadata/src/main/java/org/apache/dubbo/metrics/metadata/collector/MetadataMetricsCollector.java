@@ -38,7 +38,7 @@ import java.util.Optional;
  * Registry implementation of {@link MetricsCollector}
  */
 @Activate
-public class MetadataMetricsCollector implements ApplicationMetricsCollector<MetadataEvent.Type,MetadataEvent> {
+public class MetadataMetricsCollector implements ApplicationMetricsCollector<MetadataEvent.Type, MetadataEvent> {
 
     private Boolean collectEnabled = null;
     private final MetadataStatComposite stats;
@@ -78,10 +78,10 @@ public class MetadataMetricsCollector implements ApplicationMetricsCollector<Met
 
     @Override
     public List<MetricSample> collect() {
-        if (!isCollectEnabled()) {
-           return new ArrayList<>();
-        }
         List<MetricSample> list = new ArrayList<>();
+        if (!isCollectEnabled()) {
+            return list;
+        }
         list.addAll(stats.exportNumMetrics());
         list.addAll(stats.exportRtMetrics());
 
