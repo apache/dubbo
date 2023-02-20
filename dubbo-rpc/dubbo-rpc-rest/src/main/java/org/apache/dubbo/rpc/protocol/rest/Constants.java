@@ -35,4 +35,7 @@ public interface Constants {
     String TOMCAT = "tomcat";
 
     String NETTY = "netty";
+
+    // exception mapper
+    String EXCEPTION_MAPPER_KEY = "exception.mapper";
 }
