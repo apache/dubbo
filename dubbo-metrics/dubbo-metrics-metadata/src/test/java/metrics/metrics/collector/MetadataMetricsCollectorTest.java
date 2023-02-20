@@ -17,6 +17,8 @@
 
 package metrics.metrics.collector;
 
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.metrics.event.GlobalMetricsEventMulticaster;
 import org.apache.dubbo.metrics.metadata.collector.MetadataMetricsCollector;
@@ -45,6 +47,7 @@ import static org.apache.dubbo.metrics.metadata.collector.stat.MetadataStatCompo
 class MetadataMetricsCollectorTest {
 
     private ApplicationModel applicationModel;
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(MetadataMetricsCollectorTest.class);
 
     @BeforeEach
     public void setup() {
@@ -106,11 +109,13 @@ class MetadataMetricsCollectorTest {
             return number.longValue();
         }));
 
+        System.out.println("sampleMap=" + sampleMap);
+        logger.error("sampleMap1=" + sampleMap);
         Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_PUSH, MetricsKey.GENERIC_METRIC_RT_LAST).targetKey()), lastTimePair.calc());
         Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_PUSH, MetricsKey.GENERIC_METRIC_RT_MIN).targetKey()), Math.min(c1, c2));
         Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_PUSH, MetricsKey.GENERIC_METRIC_RT_MAX).targetKey()), Math.max(c1, c2));
         Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_PUSH, MetricsKey.GENERIC_METRIC_RT_AVG).targetKey()), (c1 + c2) / 2);
-        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_PUSH, MetricsKey.GENERIC_METRIC_RT_SUM).targetKey()), (c1 + c2));
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_PUSH, MetricsKey.GENERIC_METRIC_RT_SUM).targetKey()), c1 + c2);
     }
 
     @Test
@@ -161,7 +166,7 @@ class MetadataMetricsCollectorTest {
         Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_SUBSCRIBE, MetricsKey.GENERIC_METRIC_RT_MIN).targetKey()), Math.min(c1, c2));
         Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_SUBSCRIBE, MetricsKey.GENERIC_METRIC_RT_MAX).targetKey()), Math.max(c1, c2));
         Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_SUBSCRIBE, MetricsKey.GENERIC_METRIC_RT_AVG).targetKey()), (c1 + c2) / 2);
-        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_SUBSCRIBE, MetricsKey.GENERIC_METRIC_RT_SUM).targetKey()), (c1 + c2));
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_SUBSCRIBE, MetricsKey.GENERIC_METRIC_RT_SUM).targetKey()), c1 + c2);
     }
 
 
