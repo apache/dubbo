@@ -18,8 +18,6 @@
 package org.apache.dubbo.rpc.cluster.support.wrapper;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -29,7 +27,10 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.protocol.injvm.InjvmExporterListener;
 import org.apache.dubbo.rpc.protocol.injvm.InjvmProtocol;
+
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_VALUE;
 import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
@@ -38,26 +39,23 @@ import static org.apache.dubbo.rpc.Constants.SCOPE_REMOTE;
 import static org.apache.dubbo.rpc.Constants.SCOPE_LOCAL;
 
 /**
- * Judge whether to use local calls at runtime to avoid the problem that local calls cannot be used due to delayed
- * exposure of local services. In the future, rules will be added to make the switch between local calls and remote calls more flexible.
+ * A ClusterInvoker that selects between local and remote invokers at runtime.
  */
-public class ScopeClusterInvoker<T> implements ClusterInvoker<T> {
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(MockClusterInvoker.class);
-
-    private final Directory<T> directory;
-
-    private final Invoker<T> invoker;
-
-    private Invoker<T> injvmInvoker;
+public class ScopeClusterInvoker<T> implements ClusterInvoker<T>, InjvmExporterListener {
 
     private Protocol protocolSPI;
-
+    private final Directory<T> directory;
+    private final Invoker<T> invoker;
+    private final AtomicBoolean isExported = new AtomicBoolean(false);
+    private volatile Invoker<T> injvmInvoker;
     private boolean localFlag;
+    private InjvmProtocol injvmProtocol;
 
 
     public ScopeClusterInvoker(Directory<T> directory, Invoker<T> invoker) {
         this.directory = directory;
         this.invoker = invoker;
+        this.localFlag = SCOPE_LOCAL.equalsIgnoreCase(directory.getUrl().getParameter(SCOPE_KEY));
     }
 
     @Override
@@ -98,21 +96,33 @@ public class ScopeClusterInvoker<T> implements ClusterInvoker<T> {
     @Override
     public Result invoke(Invocation invocation) throws RpcException {
         String scope = getUrl().getParameter(SCOPE_KEY);
+
         if (!SCOPE_REMOTE.equalsIgnoreCase(scope)) {
             // Avoid duplicate creation
-            if ("injvm".equalsIgnoreCase(getUrl().getProtocol())) {
-                localFlag = true;
+            if (injvmProtocol == null) {
+                createInjvmProtocol();
             }
-            if (!localFlag) {
-                // TODO If the local service has not been exposed, it will waste
-                //  performance to carry out unnecessary verification all the time. Need improvement
-                localFlag = InjvmProtocol.getInjvmProtocol(getUrl().getScopeModel()).isInjvmRefer(getUrl());
+            if (protocolSPI == null) {
+                protocolSPI = ApplicationModel.defaultModel().getExtensionLoader(Protocol.class).getAdaptiveExtension();
             }
-            if (localFlag || SCOPE_LOCAL.equalsIgnoreCase(scope)) {
+            if (isExported.get() && !localFlag) {
+                localFlag = injvmProtocol.isInjvmRefer(getUrl());
+            }
+            if (!isExported.get() && SCOPE_LOCAL.equalsIgnoreCase(scope)) {
+                throw new RpcException("InjvmInvoker has not been exposed yet!");
+            }
+            if (localFlag) {
                 return selectInjvmInvoker().invoke(invocation);
             }
         }
-        return this.invoker.invoke(invocation);
+        return invoker.invoke(invocation);
+    }
+
+    private void createInjvmProtocol() {
+        injvmProtocol = InjvmProtocol.getInjvmProtocol(getUrl().getScopeModel());
+        if (injvmProtocol.attach(injvmProtocol.invokerCacheKey(getUrl()), this, getUrl())) {
+            notifyExporter();
+        }
     }
 
 
@@ -123,19 +133,30 @@ public class ScopeClusterInvoker<T> implements ClusterInvoker<T> {
         if (!localFlag) {
             throw new RpcException("This call cannot be called as a remote call.");
         }
-        URL url = new ServiceConfigURL(LOCAL_PROTOCOL, LOCALHOST_VALUE, 0, getDirectory().getInterface().getName(), getUrl().getParameters());
-        url = url.setScopeModel(getUrl().getScopeModel());
-        url = url.setServiceModel(getUrl().getServiceModel());
-        if (protocolSPI == null) {
-            protocolSPI = ApplicationModel.defaultModel().getExtensionLoader(Protocol.class).getAdaptiveExtension();
+        if (injvmInvoker == null) {
+            synchronized (this) {
+                if (injvmInvoker == null) {
+                    injvmInvoker = createInjvmInvoker();
+                }
+            }
         }
-        Invoker<T> invoker = protocolSPI.refer(getDirectory().getInterface(), url);
-        if (invoker != null) {
-            injvmInvoker = invoker;
+        if (injvmInvoker != null) {
             return injvmInvoker;
         } else {
             throw new RpcException("Failed to create local call Invoker.");
         }
     }
 
+    private Invoker<T> createInjvmInvoker() {
+        URL url = new ServiceConfigURL(LOCAL_PROTOCOL, LOCALHOST_VALUE, 0, getDirectory().getInterface().getName(), getUrl().getParameters());
+        url = url.setScopeModel(getUrl().getScopeModel());
+        url = url.setServiceModel(getUrl().getServiceModel());
+        return protocolSPI.refer(getDirectory().getInterface(), url);
+    }
+
+
+    @Override
+    public void notifyExporter() {
+        isExported.compareAndSet(false, true);
+    }
 }

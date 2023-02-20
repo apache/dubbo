@@ -28,6 +28,7 @@ import org.apache.dubbo.rpc.protocol.AbstractProtocol;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static org.apache.dubbo.common.constants.CommonConstants.BROADCAST_CLUSTER;
 import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
@@ -45,6 +46,8 @@ public class InjvmProtocol extends AbstractProtocol {
     public static final String NAME = LOCAL_PROTOCOL;
 
     public static final int DEFAULT_PORT = 0;
+
+    private final Map<String, InjvmExporterListener> listeners = new ConcurrentHashMap<>();
 
     public static InjvmProtocol getInjvmProtocol(ScopeModel scopeModel) {
         return (InjvmProtocol) scopeModel.getExtensionLoader(Protocol.class).getExtension(InjvmProtocol.NAME, false);
@@ -69,7 +72,7 @@ public class InjvmProtocol extends AbstractProtocol {
         if (result == null) {
             return null;
         } else if (ProtocolUtils.isGeneric(
-                result.getInvoker().getUrl().getParameter(GENERIC_KEY))) {
+            result.getInvoker().getUrl().getParameter(GENERIC_KEY))) {
             return null;
         } else {
             return result;
@@ -83,12 +86,37 @@ public class InjvmProtocol extends AbstractProtocol {
 
     @Override
     public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
-        return new InjvmExporter<T>(invoker, invoker.getUrl().getServiceKey(), exporterMap);
+        URL url = invoker.getUrl();
+        InjvmExporter<T> injvmExporter = new InjvmExporter<>(invoker, url.getServiceKey(), exporterMap);
+        InjvmExporterListener listener = listeners.get(invokerCacheKey(url));
+        if (listener != null) {
+            listener.notifyExporter();
+        }
+        return injvmExporter;
     }
 
     @Override
     public <T> Invoker<T> protocolBindingRefer(Class<T> serviceType, URL url) throws RpcException {
         return new InjvmInvoker<T>(serviceType, url, url.getServiceKey(), exporterMap);
+    }
+
+    public boolean attach(String interfaceName, InjvmExporterListener listener,URL url) {
+        listeners.putIfAbsent(interfaceName, listener);
+        return getExporter(exporterMap, url) != null;
+    }
+
+    public String invokerCacheKey(URL url) {
+        StringBuilder buf = new StringBuilder(32);
+        buf.append(url.getServiceInterface()).append("/");
+        String group = url.getGroup();
+        if (group != null && group.length() > 0) {
+            buf.append(group).append("/");
+        }
+        String version = url.getVersion();
+        if (version != null && version.length() > 0) {
+            buf.append(version).append("/");
+        }
+        return buf.toString();
     }
 
     public boolean isInjvmRefer(URL url) {
