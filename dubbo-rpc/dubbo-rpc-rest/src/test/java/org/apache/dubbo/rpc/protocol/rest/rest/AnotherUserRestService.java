@@ -23,26 +23,30 @@ import javax.ws.rs.core.MediaType;
 
 @Path("u")
 @Consumes({MediaType.APPLICATION_JSON, MediaType.TEXT_XML})
-@Produces({MediaType.APPLICATION_JSON})
 public interface AnotherUserRestService {
 
     @GET
     @Path("{id : \\d+}")
+    @Produces({MediaType.APPLICATION_JSON})
     User getUser(@PathParam("id") Long id);
 
     @POST
     @Path("register")
-    String registerUser(User user);
+    @Produces("text/xml; charset=UTF-8")
+    RegistrationResult registerUser(User user);
 
     @GET
     @Path("context")
+    @Produces({MediaType.APPLICATION_JSON})
     String getContext();
 
     @POST
     @Path("bytes")
+    @Produces({MediaType.APPLICATION_JSON})
     byte[] bytes(byte[] bytes);
 
     @POST
     @Path("number")
-    int number(int number);
+    @Produces({MediaType.APPLICATION_JSON})
+    Long number(Long number);
 }

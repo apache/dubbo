@@ -99,17 +99,17 @@ class JaxrsRestProtocolTest {
         AnotherUserRestService client = proxy.getProxy(invoker);
         User result = client.getUser(123l);
 
-        Assertions.assertEquals(result.getId(), 123l);
+        Assertions.assertEquals(123l, result.getId());
 
         result.setName("dubbo");
-        Assertions.assertEquals("dubbo", client.registerUser(result));
+        Assertions.assertEquals(123l, client.registerUser(result).getId());
 
         Assertions.assertEquals("context", client.getContext());
 
         byte[] bytes = {1, 2, 3, 4};
         Assertions.assertTrue(Arrays.equals(bytes, client.bytes(bytes)));
 
-        Assertions.assertEquals(1, client.number(1));
+        Assertions.assertEquals(1l, client.number(1l));
 
         invoker.destroy();
         exporter.unexport();
