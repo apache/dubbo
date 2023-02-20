@@ -272,7 +272,7 @@
                 <jacoco.skip>false</jacoco.skip>
             </properties>
         </profile>
-        
+
         <!-- check code style: mvn validate -Pcheckstyle  -->
         <profile>
             <id>checkstyle</id>
