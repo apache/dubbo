@@ -437,7 +437,7 @@
             <dependency>
                 <groupId>com.squareup.okhttp3</groupId>
                 <artifactId>mockwebserver</artifactId>
-                <version>${okhttp.version}</version>
+                <version>${okhttp_version}</version>
             </dependency>
 
             <dependency>

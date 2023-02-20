@@ -22,6 +22,7 @@ public enum MediaType {
     APPLICATION_JSON_VALUE("application/json"),
     APPLICATION_FORM_URLENCODED_VALUE("application/x-www-form-urlencoded"),
     TEXT_PLAIN("text/plain"),
+    TEXT_XML("text/xml"),
     OCTET_STREAM("application/octet-stream"),
     ;
 

@@ -16,38 +16,29 @@
  */
 package org.apache.dubbo.rpc.protocol.rest.rest;
 
-import org.apache.dubbo.rpc.protocol.rest.User;
+import javax.xml.bind.annotation.XmlRootElement;
+import java.io.Serializable;
 
+/**
+ * DTO to customize the returned message
+ */
+@XmlRootElement
+public class RegistrationResult implements Serializable {
 
-public class AnotherUserRestServiceImpl implements AnotherUserRestService {
+    private Long id;
 
-
-    @Override
-    public User getUser(Long id) {
-
-        User user = new User();
-        user.setId(id);
-        return user;
+    public RegistrationResult() {
     }
 
-    @Override
-    public RegistrationResult registerUser(User user) {
-        return new RegistrationResult(user.getId());
+    public RegistrationResult(Long id) {
+        this.id = id;
     }
 
-    @Override
-    public String getContext() {
-
-        return "context";
+    public Long getId() {
+        return id;
     }
 
-    @Override
-    public byte[] bytes(byte[] bytes) {
-        return bytes;
-    }
-
-    @Override
-    public Long number(Long number) {
-        return number;
+    public void setId(Long id) {
+        this.id = id;
     }
 }
