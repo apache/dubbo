@@ -13,6 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+codecov:
+  require_ci_to_pass: false
+  notify:
+    wait_for_ci: false
 coverage:
   status:
     # pull-requests only
@@ -20,7 +24,12 @@ coverage:
       default:
         threshold: 0.1%
 ignore:
-  - "dubbo-demo/.*"
-  - "dubbo-common/src/main/java/org/apache/dubbo/common/json/*.java" #  internal JSON impl is deprecate, ignore test coverage for them
-  - "dubbo-config/dubbo-config-spring/src/main/java/org/apache/dubbo/config/spring/AnnotationBean.java" # Deprecated
-  - "dubbo-rpc/dubbo-rpc-thrift/.*"
+  - "**/dubbo-demo/**"
+  - "**/dubbo-compiler/**"
+  - "**/dubbo-test/**"
+  - "**/dubbo-compatible/**"
+  - "**/dubbo-native/**"
+  - "**/dubbo-native-plugin/**"
+  - "**/dubbo-common/src/main/java/org/apache/dubbo/common/json/*.java" #  internal JSON impl is deprecate, ignore test coverage for them
+  - "**/dubbo-config/dubbo-config-spring/src/main/java/org/apache/dubbo/config/spring/AnnotationBean.java" # Deprecated
+  - "**/dubbo-rpc/dubbo-rpc-thrift/**"
