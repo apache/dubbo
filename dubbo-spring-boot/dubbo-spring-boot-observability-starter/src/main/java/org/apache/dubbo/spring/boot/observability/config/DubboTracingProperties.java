@@ -25,44 +25,170 @@ import java.util.List;
 /**
  * @author shenfeng
  */
-@ConfigurationProperties(prefix = "dubbo.tracing")
+@ConfigurationProperties("dubbo.tracing")
 public class DubboTracingProperties {
+
+    /**
+     * Whether auto-configuration of tracing is enabled.
+     */
     private boolean enabled = true;
 
-    private String propagation = "W3C";
-    private double ratio = 0.01;
+    /**
+     * Sampling configuration.
+     */
+    private final Sampling sampling = new Sampling();
 
-    private List<String> remoteFields = new ArrayList<>();
+    /**
+     * Baggage configuration.
+     */
+    private final Baggage baggage = new Baggage();
+
+    /**
+     * Propagation configuration.
+     */
+    private final Propagation propagation = new Propagation();
 
     public boolean isEnabled() {
-        return enabled;
+        return this.enabled;
     }
 
-    public void setEnabled(boolean enable) {
-        this.enabled = enable;
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 
-    public String getPropagation() {
-        return propagation;
+    public Sampling getSampling() {
+        return this.sampling;
     }
 
-    public void setPropagation(String propagation) {
-        this.propagation = propagation;
+    public Baggage getBaggage() {
+        return this.baggage;
     }
 
-    public double getRatio() {
-        return ratio;
+    public Propagation getPropagation() {
+        return this.propagation;
     }
 
-    public void setRatio(double ratio) {
-        this.ratio = ratio;
+    public static class Sampling {
+
+        /**
+         * Probability in the range from 0.0 to 1.0 that a trace will be sampled.
+         */
+        private float probability = 0.10f;
+
+        public float getProbability() {
+            return this.probability;
+        }
+
+        public void setProbability(float probability) {
+            this.probability = probability;
+        }
+
     }
 
-    public List<String> getRemoteFields() {
-        return remoteFields;
+    public static class Baggage {
+
+        /**
+         * Whether to enable Micrometer Tracing baggage propagation.
+         */
+        private boolean enabled = true;
+
+        /**
+         * Correlation configuration.
+         */
+        private Correlation correlation = new Correlation();
+
+        /**
+         * List of fields that are referenced the same in-process as it is on the wire.
+         * For example, the field "x-vcap-request-id" would be set as-is including the
+         * prefix.
+         */
+        private List<String> remoteFields = new ArrayList<>();
+
+        public boolean isEnabled() {
+            return this.enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+
+        public Correlation getCorrelation() {
+            return this.correlation;
+        }
+
+        public void setCorrelation(Correlation correlation) {
+            this.correlation = correlation;
+        }
+
+        public List<String> getRemoteFields() {
+            return this.remoteFields;
+        }
+
+        public void setRemoteFields(List<String> remoteFields) {
+            this.remoteFields = remoteFields;
+        }
+
+        public static class Correlation {
+
+            /**
+             * Whether to enable correlation of the baggage context with logging contexts.
+             */
+            private boolean enabled = true;
+
+            /**
+             * List of fields that should be correlated with the logging context. That
+             * means that these fields would end up as key-value pairs in e.g. MDC.
+             */
+            private List<String> fields = new ArrayList<>();
+
+            public boolean isEnabled() {
+                return this.enabled;
+            }
+
+            public void setEnabled(boolean enabled) {
+                this.enabled = enabled;
+            }
+
+            public List<String> getFields() {
+                return this.fields;
+            }
+
+            public void setFields(List<String> fields) {
+                this.fields = fields;
+            }
+
+        }
+
     }
 
-    public void setRemoteFields(List<String> remoteFields) {
-        this.remoteFields = remoteFields;
+    public static class Propagation {
+
+        /**
+         * Tracing context propagation type.
+         */
+        private PropagationType type = PropagationType.W3C;
+
+        public PropagationType getType() {
+            return this.type;
+        }
+
+        public void setType(PropagationType type) {
+            this.type = type;
+        }
+
+        public enum PropagationType {
+
+            /**
+             * B3 propagation type.
+             */
+            B3,
+
+            /**
+             * W3C propagation type.
+             */
+            W3C
+
+        }
+
     }
 }
