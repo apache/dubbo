@@ -23,6 +23,8 @@ import org.apache.dubbo.remoting.exchange.Request;
 
 import java.util.Map;
 
+import static org.apache.dubbo.common.extension.ExtensionScope.FRAMEWORK;
+
 /**
  * <p>Interface for handling exceptions in specific spi-extended classes.
  *

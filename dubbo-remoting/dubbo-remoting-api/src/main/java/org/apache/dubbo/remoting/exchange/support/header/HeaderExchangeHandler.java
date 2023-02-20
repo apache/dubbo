@@ -35,7 +35,6 @@ import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.exchange.support.DefaultFuture;
 import org.apache.dubbo.remoting.exchange.support.MultiMessage;
 import org.apache.dubbo.remoting.transport.ChannelHandlerDelegate;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.net.InetSocketAddress;
 import java.util.Optional;
@@ -101,7 +100,7 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
                 // Give ExceptionProcessors a chance to retry request handle or custom exception information.
                 String exPs = System.getProperty(EXCEPTION_PROCESSOR_KEY);
                 if (StringUtils.isNotBlank(exPs)) {
-                    ExtensionLoader<ExceptionProcessor> extensionLoader = channel.getUrl().getOrDefaultFrameworkMode().getExtensionLoader(ExceptionProcessor.class);
+                    ExtensionLoader<ExceptionProcessor> extensionLoader = channel.getUrl().getOrDefaultFrameworkModel().getExtensionLoader(ExceptionProcessor.class);
                     ExceptionProcessor expProcessor = extensionLoader.getOrDefaultExtension(exPs);
                     boolean handleError = expProcessor.shouldHandleError(error);
                     if (handleError) {
