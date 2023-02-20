@@ -34,7 +34,7 @@ import java.util.Map;
  *
  * @since 3.2.0
  */
-@SPI
+@SPI(scope = FRAMEWORK)
 public interface ExceptionProcessor {
 
     /**
