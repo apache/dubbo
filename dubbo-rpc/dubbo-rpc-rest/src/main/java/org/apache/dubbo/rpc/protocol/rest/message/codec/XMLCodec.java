@@ -26,12 +26,10 @@ import org.xml.sax.InputSource;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
-import javax.xml.transform.stream.StreamSource;
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
+import javax.xml.parsers.SAXParserFactory;
+import javax.xml.transform.Source;
+import javax.xml.transform.sax.SAXSource;
+import java.io.*;
 
 @Activate("xml")
 public class XMLCodec implements HttpMessageCodec<byte[], OutputStream> {
@@ -40,16 +38,18 @@ public class XMLCodec implements HttpMessageCodec<byte[], OutputStream> {
     @Override
     public Object decode(byte[] body, Class targetType) throws Exception {
 
-        try (InputStream entityStream = new ByteArrayInputStream(body);) {
-            Unmarshaller unmarshaller = JAXBContext.newInstance(targetType).createUnmarshaller();
-            InputSource is = new InputSource(entityStream);
-            is.setEncoding(StandardCharsets.UTF_8.name());
-            StreamSource source = new StreamSource(new InputStreamReader(entityStream, StandardCharsets.UTF_8));
-            source.setInputStream(entityStream);
-            return unmarshaller.unmarshal(source);
-        } catch (Throwable throwable) {
-            throw throwable;
-        }
+
+        SAXParserFactory spf = SAXParserFactory.newInstance();
+        spf.setFeature("http://xml.org/sax/features/external-general-entities", false);
+        spf.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+        spf.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+
+        // Do unmarshall operation
+        Source xmlSource = new SAXSource(spf.newSAXParser().getXMLReader(), new InputSource(new StringReader(new String(body))));
+
+        JAXBContext context = JAXBContext.newInstance(targetType);
+        Unmarshaller unmarshaller = context.createUnmarshaller();
+        return unmarshaller.unmarshal(xmlSource);
 
     }
 
@@ -65,4 +65,6 @@ public class XMLCodec implements HttpMessageCodec<byte[], OutputStream> {
         marshaller.marshal(unSerializedBody, outputStream);
         outputStream.write((byte[]) unSerializedBody);
     }
+
+
 }
