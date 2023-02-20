@@ -43,7 +43,7 @@ public class ServiceRestMetadata implements Serializable {
 
     private Set<RestMethodMetadata> meta;
 
-    private int port;
+    private Integer port;
 
     private boolean consumer;
 
@@ -127,11 +127,11 @@ public class ServiceRestMetadata implements Serializable {
 
     }
 
-    public int getPort() {
+    public Integer getPort() {
         return port;
     }
 
-    public void setPort(int port) {
+    public void setPort(Integer port) {
         this.port = port;
         Map<PathMatcher, RestMethodMetadata> pathToServiceMap = getPathToServiceMap();
         for (PathMatcher pathMather : pathToServiceMap.keySet()) {
