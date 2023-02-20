@@ -23,7 +23,6 @@ import org.apache.dubbo.rpc.protocol.rest.message.HttpMessageCodec;
 import org.apache.dubbo.rpc.protocol.rest.message.MediaTypeMatcher;
 import org.apache.dubbo.rpc.protocol.rest.util.DataParseUtils;
 
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Map;
 

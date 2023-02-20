@@ -21,7 +21,6 @@ import org.apache.dubbo.metadata.rest.media.MediaType;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.rest.exception.UnSupportContentTypeException;
 
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Set;
 
