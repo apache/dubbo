@@ -14,22 +14,44 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.apache.dubbo.common.serialize;
+package org.apache.dubbo.metrics;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionScope;
-import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.Result;
+import org.apache.dubbo.rpc.RpcException;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+public class TestMetricsInvoker implements Invoker {
 
-@SPI(scope = ExtensionScope.FRAMEWORK)
-public interface MultipleSerialization {
+    private String side;
 
-    void serialize(URL url, String serializeType, Class<?> clz, Object obj, OutputStream os) throws IOException;
+    public TestMetricsInvoker(String side) {
+        this.side = side;
+    }
 
-    Object deserialize(URL url, String serializeType, Class<?> clz, InputStream os) throws IOException, ClassNotFoundException;
+    @Override
+    public Class getInterface() {
+        return null;
+    }
 
+    @Override
+    public Result invoke(Invocation invocation) throws RpcException {
+        return null;
+    }
+
+    @Override
+    public URL getUrl() {
+        return URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&side="+side);
+    }
+
+    @Override
+    public boolean isAvailable() {
+        return true;
+    }
+
+    @Override
+    public void destroy() {
+
+    }
 }
