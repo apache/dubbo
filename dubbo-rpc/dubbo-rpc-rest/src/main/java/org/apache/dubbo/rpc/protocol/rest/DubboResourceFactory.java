@@ -28,11 +28,11 @@ import org.jboss.resteasy.spi.ResteasyProviderFactory;
 public class DubboResourceFactory implements ResourceFactory {
 
     private final Object resourceInstance;
-    private final Class scannableClass;
+    private final Class<?> scannableClass;
 //    private PropertyInjector propertyInjector;
 //    private String context = null;
 
-    public DubboResourceFactory(Object resourceInstance, Class scannableClass) {
+    public DubboResourceFactory(Object resourceInstance, Class<?> scannableClass) {
         this.resourceInstance = resourceInstance;
         this.scannableClass = scannableClass;
     }

@@ -114,15 +114,15 @@ public class DubboHttpProtocolServer extends BaseRestProtocolServer {
         }
 
         @Override
-        public Enumeration getInitParameterNames() {
-            return new Enumeration() {
+        public Enumeration<String> getInitParameterNames() {
+            return new Enumeration<String>() {
                 @Override
                 public boolean hasMoreElements() {
                     return false;
                 }
 
                 @Override
-                public Object nextElement() {
+                public String nextElement() {
                     return null;
                 }
             };

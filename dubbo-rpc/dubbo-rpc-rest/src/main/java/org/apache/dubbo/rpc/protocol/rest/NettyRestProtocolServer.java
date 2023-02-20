@@ -46,6 +46,7 @@ public class NettyRestProtocolServer extends BaseRestProtocolServer {
     private final NettyJaxrsServer server = new NettyJaxrsServer();
 
     @Override
+    @SuppressWarnings("rawtypes")
     protected void doStart(URL url) {
         String bindIp = url.getParameter(BIND_IP_KEY, url.getHost());
         if (!url.isAnyHost() && NetUtils.isValidLocalHost(bindIp)) {
