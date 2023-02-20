@@ -27,8 +27,8 @@ import org.jboss.resteasy.spi.ResteasyProviderFactory;
  */
 public class DubboResourceFactory implements ResourceFactory {
 
-    private Object resourceInstance;
-    private Class scannableClass;
+    private final Object resourceInstance;
+    private final Class scannableClass;
 //    private PropertyInjector propertyInjector;
 //    private String context = null;
 

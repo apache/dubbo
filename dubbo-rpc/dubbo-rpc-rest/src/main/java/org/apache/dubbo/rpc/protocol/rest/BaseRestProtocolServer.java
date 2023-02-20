@@ -31,7 +31,7 @@ public abstract class BaseRestProtocolServer implements RestProtocolServer {
 
     private String address;
 
-    private Map<String, Object> attributes = new ConcurrentHashMap<>();
+    private final Map<String, Object> attributes = new ConcurrentHashMap<>();
 
     @Override
     public void start(URL url) {
@@ -48,7 +48,7 @@ public abstract class BaseRestProtocolServer implements RestProtocolServer {
     }
 
     @Override
-    public void deploy(Class resourceDef, Object resourceInstance, String contextPath) {
+    public void deploy(Class<?> resourceDef, Object resourceInstance, String contextPath) {
         if (StringUtils.isEmpty(contextPath)) {
             getDeployment().getRegistry().addResourceFactory(new DubboResourceFactory(resourceInstance, resourceDef));
         } else {
@@ -57,7 +57,7 @@ public abstract class BaseRestProtocolServer implements RestProtocolServer {
     }
 
     @Override
-    public void undeploy(Class resourceDef) {
+    public void undeploy(Class<?> resourceDef) {
         getDeployment().getRegistry().removeRegistrations(resourceDef);
     }
 

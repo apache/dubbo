@@ -39,7 +39,7 @@ public class RpcExceptionMapper implements ExceptionMapper<RpcException> {
 
     protected Response handleConstraintViolationException(ConstraintViolationException cve) {
         ViolationReport report = new ViolationReport();
-        for (ConstraintViolation cv : cve.getConstraintViolations()) {
+        for (ConstraintViolation<?> cv : cve.getConstraintViolations()) {
             report.addConstraintViolation(new RestConstraintViolation(
                     cv.getPropertyPath().toString(),
                     cv.getMessage(),

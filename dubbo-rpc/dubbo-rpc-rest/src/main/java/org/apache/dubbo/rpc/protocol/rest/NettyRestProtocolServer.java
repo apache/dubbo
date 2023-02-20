@@ -52,7 +52,7 @@ public class NettyRestProtocolServer extends BaseRestProtocolServer {
             server.setHostname(bindIp);
         }
         server.setPort(url.getParameter(BIND_PORT_KEY, url.getPort()));
-        Map<ChannelOption, Object> channelOption = new HashMap<ChannelOption, Object>();
+        Map<ChannelOption, Object> channelOption = new HashMap<>();
         channelOption.put(ChannelOption.SO_KEEPALIVE, url.getParameter(KEEP_ALIVE_KEY, DEFAULT_KEEP_ALIVE));
         server.setChildChannelOptions(channelOption);
         server.setExecutorThreadCount(url.getParameter(THREADS_KEY, DEFAULT_THREADS));

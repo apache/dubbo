@@ -288,7 +288,7 @@ public class RestProtocol extends AbstractProxyProtocol {
         }
     }
 
-    protected class ConnectionMonitor extends Thread {
+    protected static class ConnectionMonitor extends Thread {
         private volatile boolean shutdown;
         /**
          * The lifecycle of {@code PoolingHttpClientConnectionManager} instance is bond with ReferenceCountedClient
