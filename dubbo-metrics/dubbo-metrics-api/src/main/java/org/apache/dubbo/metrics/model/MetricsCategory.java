@@ -26,4 +26,6 @@ public enum MetricsCategory {
     REQUESTS,
     APPLICATION,
     CONFIGCENTER,
+    REGISTRY,
+    THREAD_POOL
 }

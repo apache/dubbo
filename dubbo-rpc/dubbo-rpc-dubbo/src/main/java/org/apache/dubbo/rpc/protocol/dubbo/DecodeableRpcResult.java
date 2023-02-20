@@ -47,15 +47,15 @@ public class DecodeableRpcResult extends AppResponse implements Codec, Decodeabl
 
     private static final ErrorTypeAwareLogger log = LoggerFactory.getErrorTypeAwareLogger(DecodeableRpcResult.class);
 
-    private Channel channel;
+    private final Channel channel;
 
-    private byte serializationType;
+    private final byte serializationType;
 
-    private InputStream inputStream;
+    private final InputStream inputStream;
 
-    private Response response;
+    private final Response response;
 
-    private Invocation invocation;
+    private final Invocation invocation;
 
     private volatile boolean hasDecoded;
 
