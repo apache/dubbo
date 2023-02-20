@@ -39,13 +39,17 @@ public class XMLCodec implements HttpMessageCodec<byte[], OutputStream> {
 
     @Override
     public Object decode(byte[] body, Class targetType) throws Exception {
-        Unmarshaller unmarshaller = JAXBContext.newInstance(targetType).createUnmarshaller();
-        InputStream entityStream = new ByteArrayInputStream(body);
-        InputSource is = new InputSource(entityStream);
-        is.setEncoding(StandardCharsets.UTF_8.name());
-        StreamSource source = new StreamSource(new InputStreamReader(entityStream, StandardCharsets.UTF_8));
-        source.setInputStream(entityStream);
-        return unmarshaller.unmarshal(source);
+
+        try (InputStream entityStream = new ByteArrayInputStream(body);) {
+            Unmarshaller unmarshaller = JAXBContext.newInstance(targetType).createUnmarshaller();
+            InputSource is = new InputSource(entityStream);
+            is.setEncoding(StandardCharsets.UTF_8.name());
+            StreamSource source = new StreamSource(new InputStreamReader(entityStream, StandardCharsets.UTF_8));
+            source.setInputStream(entityStream);
+            return unmarshaller.unmarshal(source);
+        } catch (Throwable throwable) {
+            throw throwable;
+        }
 
     }
 
