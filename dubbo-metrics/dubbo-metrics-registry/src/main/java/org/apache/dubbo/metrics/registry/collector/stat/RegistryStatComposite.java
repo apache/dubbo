@@ -72,7 +72,7 @@ public class RegistryStatComposite implements MetricsExport {
         // AvgContainer is a special counter that stores the number of times but outputs function of sum/times
         AtomicLongContainer avgContainer = new AtomicLongContainer(new MetricsKeyWrapper(registryOpType, MetricsKey.GENERIC_METRIC_RT_AVG), (k, v) -> v.incrementAndGet());
         avgContainer.setValueSupplier(applicationName -> {
-            LongContainer<? extends Number> totalContainer = rtStats.stream().filter(longContainer -> longContainer.isKey(MetricsKey.GENERIC_METRIC_RT_SUM)).findFirst().get();
+            LongContainer<? extends Number> totalContainer = rtStats.stream().filter(longContainer -> longContainer.isKeyWrapper(MetricsKey.GENERIC_METRIC_RT_SUM, registryOpType)).findFirst().get();
             AtomicLong totalRtTimes = avgContainer.get(applicationName);
             AtomicLong totalRtSum = (AtomicLong) totalContainer.get(applicationName);
             return totalRtSum.get() / totalRtTimes.get();
@@ -190,8 +190,8 @@ public class RegistryStatComposite implements MetricsExport {
             return metricsKeyWrapper;
         }
 
-        public boolean isKey(MetricsKey metricsKey) {
-            return metricsKeyWrapper.isKey(metricsKey);
+        public boolean isKeyWrapper(MetricsKey metricsKey, String registryOpType) {
+            return metricsKeyWrapper.isKey(metricsKey,registryOpType);
         }
 
         public Function<String, NUMBER> getInitFunc() {
