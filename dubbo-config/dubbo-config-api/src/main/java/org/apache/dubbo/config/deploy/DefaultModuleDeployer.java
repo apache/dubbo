@@ -64,18 +64,18 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
 
     private final List<CompletableFuture<?>> asyncReferringFutures = new ArrayList<>();
 
-    private List<ServiceConfigBase<?>> exportedServices = new ArrayList<>();
+    private final List<ServiceConfigBase<?>> exportedServices = new ArrayList<>();
 
-    private ModuleModel moduleModel;
+    private final ModuleModel moduleModel;
 
-    private FrameworkExecutorRepository frameworkExecutorRepository;
-    private ExecutorRepository executorRepository;
+    private final FrameworkExecutorRepository frameworkExecutorRepository;
+    private final ExecutorRepository executorRepository;
 
     private final ModuleConfigManager configManager;
 
     private final SimpleReferenceCache referenceCache;
 
-    private ApplicationDeployer applicationDeployer;
+    private final ApplicationDeployer applicationDeployer;
     private CompletableFuture startFuture;
     private Boolean background;
     private Boolean exportAsync;
@@ -452,18 +452,14 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
         return moduleModel.getConfigManager().getProviders()
             .stream()
             .map(ProviderConfig::getExportBackground)
-            .filter(k -> k != null && k)
-            .findAny()
-            .isPresent();
+            .anyMatch(k -> k != null && k);
     }
 
     private boolean isReferBackground() {
         return moduleModel.getConfigManager().getConsumers()
             .stream()
             .map(ConsumerConfig::getReferBackground)
-            .filter(k -> k != null && k)
-            .findAny()
-            .isPresent();
+            .anyMatch(k -> k != null && k);
     }
 
     @Override

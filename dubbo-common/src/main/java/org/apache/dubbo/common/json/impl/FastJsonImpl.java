@@ -16,24 +16,12 @@
  */
 package org.apache.dubbo.common.json.impl;
 
-import org.apache.dubbo.common.utils.ClassUtils;
-
 import com.alibaba.fastjson.serializer.SerializerFeature;
 
 import java.lang.reflect.Type;
 import java.util.List;
 
 public class FastJsonImpl extends AbstractJSONImpl {
-
-    @Override
-    public boolean isSupport() {
-        try {
-            Class<?> aClass = ClassUtils.forName("com.alibaba.fastjson.JSON");
-            return aClass != null;
-        } catch (Throwable t) {
-            return false;
-        }
-    }
 
     @Override
     public <T> T toJavaObject(String json, Type type) {

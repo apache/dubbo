@@ -1,0 +1,1 @@
+dubbo-metrics-init=org.apache.dubbo.metrics.MetricsScopeModelInitializer
