@@ -17,7 +17,6 @@
 package org.apache.dubbo.metadata;
 
 import java.util.Arrays;
-import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -29,11 +28,6 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 import org.apache.dubbo.rpc.service.Destroyable;
-
-import java.util.Arrays;
-import java.util.Set;
-import java.util.TreeSet;
-
 
 import static java.util.Collections.emptySet;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
