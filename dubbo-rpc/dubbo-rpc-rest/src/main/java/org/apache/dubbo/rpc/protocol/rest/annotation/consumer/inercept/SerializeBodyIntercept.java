@@ -18,8 +18,9 @@ package org.apache.dubbo.rpc.protocol.rest.annotation.consumer.inercept;
 
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.LoggerCodeConstants;
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.metadata.rest.media.MediaType;
 import org.apache.dubbo.remoting.http.RequestTemplate;
@@ -35,7 +36,7 @@ import java.util.Collection;
 @Activate(value = RestConstant.SERIALIZE_INTERCEPT, order = Integer.MAX_VALUE)
 public class SerializeBodyIntercept implements HttpConnectionPreBuildIntercept {
 
-    private static final Logger logger = LoggerFactory.getLogger(SerializeBodyIntercept.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(SerializeBodyIntercept.class);
 
     @Override
     public void intercept(HttpConnectionCreateContext connectionCreateContext) {
@@ -55,8 +56,7 @@ public class SerializeBodyIntercept implements HttpConnectionPreBuildIntercept {
             HttpMessageCodecManager.httpMessageEncode(outputStream, unSerializedBody, url, mediaType);
             requestTemplate.serializeBody(outputStream.toByteArray());
         } catch (Exception e) {
-
-            logger.error("Rest  SerializeBodyIntercept serialize error: {}", e);
+            logger.error(LoggerCodeConstants.PROTOCOL_ERROR_DESERIALIZE, "", "", "Rest SerializeBodyIntercept serialize error: {}", e);
         }
 
 

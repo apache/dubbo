@@ -140,7 +140,7 @@
         <prometheus_client.version>0.16.0</prometheus_client.version>
         <reactive.version>1.0.4</reactive.version>
         <reactor.version>3.5.2</reactor.version>
-        <okhttp_version>3.14.9</okhttp_version>
+        <okhttp_version>4.10.0</okhttp_version>
 
         <rs_api_version>2.1.1</rs_api_version>
         <resteasy_version>3.15.3.Final</resteasy_version>
@@ -433,6 +433,11 @@
                 <groupId>com.squareup.okhttp3</groupId>
                 <artifactId>okhttp</artifactId>
                 <version>${okhttp_version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.squareup.okhttp3</groupId>
+                <artifactId>mockwebserver</artifactId>
+                <version>${okhttp.version}</version>
             </dependency>
 
             <dependency>

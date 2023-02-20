@@ -24,11 +24,14 @@ import org.apache.dubbo.metadata.rest.RestMethodMetadata;
 import org.apache.dubbo.metadata.rest.RestService;
 import org.apache.dubbo.metadata.rest.ServiceRestMetadata;
 import org.apache.dubbo.metadata.rest.StandardRestService;
+import org.apache.dubbo.metadata.rest.PathUtil;
+import org.apache.dubbo.metadata.rest.api.AnotherUserRestService;
 import org.apache.dubbo.metadata.rest.api.JaxrsRestService;
 import org.apache.dubbo.metadata.rest.api.JaxrsRestServiceImpl;
 import org.apache.dubbo.metadata.rest.api.SpringRestService;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -128,6 +131,27 @@ class JAXRSServiceRestMetadataResolverTest {
         for (int i = 0; i < jsons.size(); i++) {
             assertEquals(jsons.get(i), jsonsTmp.get(i));
         }
+
+    }
+
+
+    @Test
+    public void testJaxrsPathPattern() {
+        Class service = AnotherUserRestService.class;
+        ServiceRestMetadata jaxrsRestMetadata = new ServiceRestMetadata();
+        jaxrsRestMetadata.setServiceInterface(service.getName());
+        ServiceRestMetadata jaxrsMetadata = instance.resolve(service, jaxrsRestMetadata);
+
+        RestMethodMetadata[] objects = jaxrsMetadata.getMeta().toArray(new RestMethodMetadata[0]);
+        RestMethodMetadata object = null;
+        for (RestMethodMetadata obj : objects) {
+            if ("getUser".equals(obj.getReflectMethod().getName())) {
+                object = obj;
+            }
+        }
+
+
+        Assertions.assertEquals("/u/1", PathUtil.resolvePathVariable("u/{id : \\d+}", object.getArgInfos(), Arrays.asList(1)));
 
     }
 }

@@ -57,7 +57,7 @@ public class PathUtil {
 
 
         for (ArgInfo pathArgInfo : pathArgInfos) {
-            strings.set(pathArgInfo.getUrlSplitIndex(), (String) args.get(pathArgInfo.getIndex()));
+            strings.set(pathArgInfo.getUrlSplitIndex(), String.valueOf(args.get(pathArgInfo.getIndex())));
         }
 
 
@@ -126,8 +126,17 @@ public class PathUtil {
             return "{" + value + "}";
         }
 
+        public String getLeftPatten() {
+            return "{" + value;
+        }
+
+        public String getRightPatten() {
+            return "}";
+        }
+
         public boolean match(String value) {
-            return getPatten().equals(value);
+            return getPatten().equals(value)// for : {id}
+                || (value.startsWith(getLeftPatten()) && value.endsWith(getRightPatten()));// for : {id: \d+}
         }
 
 
