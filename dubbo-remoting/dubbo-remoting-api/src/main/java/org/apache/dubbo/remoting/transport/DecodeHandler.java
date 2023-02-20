@@ -39,7 +39,7 @@ public class DecodeHandler extends AbstractChannelHandlerDelegate {
 
     @Override
     public void received(Channel channel, Object message) throws RemotingException {
-        doRecveived(message);
+        doReceived(message);
 
 
         try {
@@ -56,7 +56,7 @@ public class DecodeHandler extends AbstractChannelHandlerDelegate {
         }
     }
 
-    private void doRecveived(Object message) {
+    private void doReceived(Object message) {
         if (message instanceof Decodeable) {
             decode(message);
         }
