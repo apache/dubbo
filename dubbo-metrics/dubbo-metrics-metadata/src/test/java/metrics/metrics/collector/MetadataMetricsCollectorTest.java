@@ -47,7 +47,6 @@ import static org.apache.dubbo.metrics.metadata.collector.stat.MetadataStatCompo
 class MetadataMetricsCollectorTest {
 
     private ApplicationModel applicationModel;
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(MetadataMetricsCollectorTest.class);
 
     @BeforeEach
     public void setup() {
@@ -71,7 +70,6 @@ class MetadataMetricsCollectorTest {
         TimePair timePair = TimePair.start();
         GlobalMetricsEventMulticaster eventMulticaster = applicationModel.getBeanFactory().getOrRegisterBean(GlobalMetricsEventMulticaster.class);
         MetadataMetricsCollector collector = applicationModel.getBeanFactory().getOrRegisterBean(MetadataMetricsCollector.class);
-        eventMulticaster.addListener(collector);
         collector.setCollectEnabled(true);
 
         eventMulticaster.publishEvent(new MetadataEvent.PushEvent(applicationModel, timePair));
@@ -109,8 +107,6 @@ class MetadataMetricsCollectorTest {
             return number.longValue();
         }));
 
-        System.out.println("sampleMap=" + sampleMap);
-        logger.error("sampleMap1=" + sampleMap);
         Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_PUSH, MetricsKey.GENERIC_METRIC_RT_LAST).targetKey()), lastTimePair.calc());
         Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_PUSH, MetricsKey.GENERIC_METRIC_RT_MIN).targetKey()), Math.min(c1, c2));
         Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_PUSH, MetricsKey.GENERIC_METRIC_RT_MAX).targetKey()), Math.max(c1, c2));
@@ -124,7 +120,6 @@ class MetadataMetricsCollectorTest {
         TimePair timePair = TimePair.start();
         GlobalMetricsEventMulticaster eventMulticaster = applicationModel.getBeanFactory().getOrRegisterBean(GlobalMetricsEventMulticaster.class);
         MetadataMetricsCollector collector = applicationModel.getBeanFactory().getOrRegisterBean(MetadataMetricsCollector.class);
-        eventMulticaster.addListener(collector);
         collector.setCollectEnabled(true);
 
         eventMulticaster.publishEvent(new MetadataEvent.SubscribeEvent(applicationModel, timePair));
