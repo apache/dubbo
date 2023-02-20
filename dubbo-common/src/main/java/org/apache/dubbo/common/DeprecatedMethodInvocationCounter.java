@@ -60,7 +60,7 @@ public final class DeprecatedMethodInvocationCounter {
     }
 
     private static void increaseInvocationCount(String methodDefinition) {
-        COUNTERS.putIfAbsent(methodDefinition, new LongAdder());
+        COUNTERS.computeIfAbsent(methodDefinition, k -> new LongAdder());
         LongAdder adder = COUNTERS.get(methodDefinition);
 
         adder.increment();
