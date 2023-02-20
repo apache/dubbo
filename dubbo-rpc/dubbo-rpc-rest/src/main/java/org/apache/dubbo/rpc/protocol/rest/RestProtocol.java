@@ -138,14 +138,14 @@ public class RestProtocol extends AbstractProxyProtocol {
 
     @Override
     protected <T> T doRefer(Class<T> serviceType, URL url) throws RpcException {
-        ReferenceCountedClient referenceCountedClient = ConcurrentHashMapUtils.computeIfAbsent(clients, url.getAddress(), _key -> {
-            // TODO more configs to add
-            return createReferenceCountedClient(url);
-        });
-
-        if (referenceCountedClient.isDestroyed()) {
-            referenceCountedClient = createReferenceCountedClient(url);
-            clients.put(url.getAddress(), referenceCountedClient);
+        ReferenceCountedClient referenceCountedClient = clients.get(url.getAddress());
+        if (referenceCountedClient == null || referenceCountedClient.isDestroyed()) {
+            synchronized (clients) {
+                referenceCountedClient = clients.get(url.getAddress());
+                if (referenceCountedClient == null || referenceCountedClient.isDestroyed()) {
+                    referenceCountedClient = ConcurrentHashMapUtils.computeIfAbsent(clients, url.getAddress(), _key -> createReferenceCountedClient(url));
+                }
+            }
         }
         referenceCountedClient.retain();
 
