@@ -25,8 +25,7 @@ import org.apache.dubbo.common.ssl.AuthPolicy;
 import org.apache.dubbo.common.ssl.Cert;
 import org.apache.dubbo.common.ssl.CertProvider;
 import org.apache.dubbo.common.ssl.ProviderCert;
-
-import org.apache.commons.io.IOUtils;
+import org.apache.dubbo.common.utils.IOUtils;
 
 import java.io.IOException;
 import java.util.Objects;
