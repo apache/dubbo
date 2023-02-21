@@ -19,6 +19,7 @@ package org.apache.dubbo.registry.client.metadata;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -29,6 +30,7 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.metadata.AbstractServiceNameMapping;
 import org.apache.dubbo.metadata.MappingListener;
 import org.apache.dubbo.metadata.MetadataService;
@@ -39,6 +41,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_PROPERTY_TYPE_MISMATCH;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
 import static org.apache.dubbo.registry.Constants.CAS_RETRY_TIMES_KEY;
@@ -73,6 +76,15 @@ public class MetadataServiceNameMapping extends AbstractServiceNameMapping {
      */
     @Override
     public boolean map(URL url) {
+        Optional<ApplicationConfig> application = applicationModel.getApplicationConfigManager().getApplication();
+        if(application.isPresent()) {
+            String metadataType = application.get().getMetadataType();
+            if (!REMOTE_METADATA_STORAGE_TYPE.equals(metadataType)) {
+                //local mode it return true
+                return true;
+            }
+        }
+
         if (CollectionUtils.isEmpty(applicationModel.getApplicationConfigManager().getMetadataConfigs())) {
             logger.warn(COMMON_PROPERTY_TYPE_MISMATCH, "", "", "No valid metadata config center found for mapping report.");
             return false;
