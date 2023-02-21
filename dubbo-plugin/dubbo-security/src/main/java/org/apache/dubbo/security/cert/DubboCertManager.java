@@ -22,7 +22,6 @@ import org.apache.dubbo.auth.v1alpha1.DubboCertificateServiceGrpc;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
-import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
@@ -61,16 +60,6 @@ public class DubboCertManager {
     private final FrameworkModel frameworkModel;
     private volatile Channel channel;
     private volatile CertPair certPair;
-
-    public static boolean isSupported() {
-        try {
-            ClassUtils.forName("io.grpc.Channel");
-            ClassUtils.forName("org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequestBuilder");
-            return true;
-        } catch (Throwable t) {
-            return false;
-        }
-    }
 
     public DubboCertManager(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
