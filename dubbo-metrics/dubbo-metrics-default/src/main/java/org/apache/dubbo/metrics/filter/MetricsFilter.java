@@ -27,9 +27,10 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
 
+import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
 
-@Activate(group = PROVIDER, order = -1)
+@Activate(group = {CONSUMER, PROVIDER}, order = -1)
 public class MetricsFilter implements Filter, BaseFilter.Listener, ScopeModelAware {
 
     private DefaultMetricsCollector collector = null;
