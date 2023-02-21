@@ -97,7 +97,7 @@ public class ObjectMapperCodec {
             jacksonModuleClassNameList.add("org.springframework.boot.jackson.JsonMixinModule");
 
             loadModuleIfPresent(jacksonModuleClassNameList);
-        }catch(Exception ex){
+        }catch(Throwable ex){
 
         }
 
