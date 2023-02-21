@@ -36,7 +36,7 @@ public class SSLConfigCertProvider implements CertProvider {
 
     @Override
     public boolean isSupport(URL address) {
-        return true;
+        return address.getOrDefaultApplicationModel().getApplicationConfigManager().getSsl().isPresent();
     }
 
     @Override
