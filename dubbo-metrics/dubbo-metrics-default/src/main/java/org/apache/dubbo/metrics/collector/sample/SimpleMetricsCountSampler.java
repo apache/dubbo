@@ -20,12 +20,17 @@ package org.apache.dubbo.metrics.collector.sample;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.metrics.model.Metric;
+import org.apache.dubbo.metrics.model.MetricsKey;
+import org.apache.dubbo.metrics.model.sample.MetricSample;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicLongArray;
 import java.util.concurrent.atomic.LongAccumulator;
 import java.util.function.Function;
 
@@ -38,18 +43,19 @@ import java.util.function.Function;
 public abstract class SimpleMetricsCountSampler<S, K, M extends Metric>
     implements MetricsCountSampler<S, K, M> {
 
-    private final ConcurrentMap<M, AtomicLong>      lastRT = new ConcurrentHashMap<>();
-    private final ConcurrentMap<M, LongAccumulator> minRT  = new ConcurrentHashMap<>();
-    private final ConcurrentMap<M, LongAccumulator> maxRT  = new ConcurrentHashMap<>();
-    private final ConcurrentMap<M, AtomicLong>      avgRT   = new ConcurrentHashMap<>();
-    private final ConcurrentMap<M, AtomicLong>      totalRT = new ConcurrentHashMap<>();
-    private final ConcurrentMap<M, AtomicLong>      rtCount = new ConcurrentHashMap<>();
+    private final ConcurrentMap<M, AtomicLong> EMPTY_COUNT = new ConcurrentHashMap<>();
 
-    private Map<K, ConcurrentMap<M, AtomicLong>> metricCounter = new ConcurrentHashMap<>();
+    private final ConcurrentMap<M, LongAccumulator> minRT = new ConcurrentHashMap<>();
+    private final ConcurrentMap<M, LongAccumulator> maxRT = new ConcurrentHashMap<>();
+
+    // lastRT, totalRT, rtCount, avgRT share a container, can utilize the system cache line
+    private final ConcurrentMap<M, AtomicLongArray> RTArray = new ConcurrentHashMap<>();
+
+    private final Map<K, ConcurrentMap<M, AtomicLong>> metricCounter = new ConcurrentHashMap<>();
 
     @Override
     public void inc(S source, K metricName) {
-        doExecute(source,metricName,counter->{
+        doExecute(source, metricName, counter -> {
             counter.incrementAndGet();
             return false;
         });
@@ -57,7 +63,7 @@ public abstract class SimpleMetricsCountSampler<S, K, M extends Metric>
 
     @Override
     public void dec(S source, K metricName) {
-        doExecute(source,metricName,counter->{
+        doExecute(source, metricName, counter -> {
             counter.decrementAndGet();
             return false;
         });
@@ -65,7 +71,7 @@ public abstract class SimpleMetricsCountSampler<S, K, M extends Metric>
 
     @Override
     public void incOnEvent(S source, K metricName) {
-        doExecute(source,metricName,counter->{
+        doExecute(source, metricName, counter -> {
             counter.incrementAndGet();
             return true;
         });
@@ -73,7 +79,7 @@ public abstract class SimpleMetricsCountSampler<S, K, M extends Metric>
 
     @Override
     public void decOnEvent(S source, K metricName) {
-        doExecute(source,metricName,counter->{
+        doExecute(source, metricName, counter -> {
             counter.decrementAndGet();
             return true;
         });
@@ -81,15 +87,26 @@ public abstract class SimpleMetricsCountSampler<S, K, M extends Metric>
 
     @Override
     public void addRT(S source, Long rt) {
-        MetricsCountSampleConfigurer<S,K,M> sampleConfigure = new MetricsCountSampleConfigurer<>();
+        MetricsCountSampleConfigurer<S, K, M> sampleConfigure = new MetricsCountSampleConfigurer<>();
         sampleConfigure.setSource(source);
 
         this.rtConfigure(sampleConfigure);
 
         M metric = sampleConfigure.getMetric();
 
-        AtomicLong last = ConcurrentHashMapUtils.computeIfAbsent(lastRT, metric, k -> new AtomicLong());
-        last.set(rt);
+        AtomicLongArray rtArray = ConcurrentHashMapUtils.computeIfAbsent(RTArray, metric, k -> new AtomicLongArray(4));
+
+        // set lastRT
+        rtArray.set(0, rt);
+
+        // add to totalRT
+        rtArray.addAndGet(1, rt);
+
+        // add to rtCount
+        rtArray.incrementAndGet(2);
+
+        // calc avgRT. In order to reduce the amount of calculation, calculated when collect
+        //rtArray.set(3, Math.floorDiv(rtArray.get(1), rtArray.get(2)));
 
         LongAccumulator min = ConcurrentHashMapUtils.computeIfAbsent(minRT, metric, k -> new LongAccumulator(Long::min, Long.MAX_VALUE));
         min.accumulate(rt);
@@ -97,65 +114,49 @@ public abstract class SimpleMetricsCountSampler<S, K, M extends Metric>
         LongAccumulator max = ConcurrentHashMapUtils.computeIfAbsent(maxRT, metric, k -> new LongAccumulator(Long::max, Long.MIN_VALUE));
         max.accumulate(rt);
 
-        AtomicLong total = ConcurrentHashMapUtils.computeIfAbsent(totalRT, metric, k -> new AtomicLong());
-        total.addAndGet(rt);
-
-        AtomicLong count = ConcurrentHashMapUtils.computeIfAbsent(rtCount, metric, k -> new AtomicLong());
-        count.incrementAndGet();
-
-        ConcurrentHashMapUtils.computeIfAbsent(avgRT, metric, key -> new AtomicLong());
-
         sampleConfigure.setRt(rt);
 
         sampleConfigure.getFireEventHandler().accept(sampleConfigure);
-
     }
 
     @Override
     public Optional<ConcurrentMap<M, AtomicLong>> getCount(K metricName) {
         return Optional.ofNullable(metricCounter.get(metricName) == null ?
-            new ConcurrentHashMap<>() :
+            EMPTY_COUNT :
             metricCounter.get(metricName));
     }
 
     @Override
-    public ConcurrentMap<M, AtomicLong> getLastRT() {
-        return this.lastRT;
+    public <R extends MetricSample> List<R> collectRT(MetricSampleFactory<M, R> factory) {
+        final List<R> rtMetricSamples = new ArrayList<>();
+        RTArray.forEach((k, v) -> {
+            // lastRT
+            rtMetricSamples.add(factory.newInstance(MetricsKey.METRIC_RT_LAST, k, v.get(0)));
+            // totalRT
+            long totalRT = v.get(1);
+            long rtCount = v.get(2);
+            rtMetricSamples.add(factory.newInstance(MetricsKey.METRIC_RT_SUM, k, totalRT));
+            // avgRT
+            rtMetricSamples.add(factory.newInstance(MetricsKey.METRIC_RT_AVG, k, Math.floorDiv(totalRT, rtCount)));
+        });
+
+        this.minRT.forEach((k, v) ->
+            rtMetricSamples.add(factory.newInstance(MetricsKey.METRIC_RT_MIN, k, v.get())));
+
+        this.maxRT.forEach((k, v) ->
+            rtMetricSamples.add(factory.newInstance(MetricsKey.METRIC_RT_MAX, k, v.get())));
+
+        return rtMetricSamples;
     }
 
-    @Override
-    public ConcurrentMap<M, LongAccumulator> getMinRT() {
-        return this.minRT;
-    }
-
-    @Override
-    public ConcurrentMap<M, LongAccumulator> getMaxRT() {
-        return this.maxRT;
-    }
-
-    @Override
-    public ConcurrentMap<M, AtomicLong> getAvgRT() {
-        return this.avgRT;
-    }
-
-    @Override
-    public ConcurrentMap<M, AtomicLong> getTotalRT() {
-        return this.totalRT;
-    }
-
-    @Override
-    public ConcurrentMap<M, AtomicLong> getRtCount() {
-        return this.rtCount;
-    }
-
-    protected void rtConfigure(MetricsCountSampleConfigurer<S,K,M> configure) {
+    protected void rtConfigure(MetricsCountSampleConfigurer<S, K, M> configure) {
 
     }
 
-    protected abstract void countConfigure(MetricsCountSampleConfigurer<S,K,M> sampleConfigure);
+    protected abstract void countConfigure(MetricsCountSampleConfigurer<S, K, M> sampleConfigure);
 
-    private void doExecute(S source,K metricsName,Function<AtomicLong,Boolean> counter){
-        MetricsCountSampleConfigurer<S,K,M> sampleConfigure = new MetricsCountSampleConfigurer<>();
+    private void doExecute(S source, K metricsName, Function<AtomicLong, Boolean> counter) {
+        MetricsCountSampleConfigurer<S, K, M> sampleConfigure = new MetricsCountSampleConfigurer<>();
         sampleConfigure.setSource(source);
         sampleConfigure.setMetricsName(metricsName);
 
