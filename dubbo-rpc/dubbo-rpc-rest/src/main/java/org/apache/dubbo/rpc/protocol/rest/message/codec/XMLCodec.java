@@ -21,6 +21,7 @@ import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.metadata.rest.media.MediaType;
 import org.apache.dubbo.rpc.protocol.rest.message.HttpMessageCodec;
 import org.apache.dubbo.rpc.protocol.rest.message.MediaTypeMatcher;
+
 import org.xml.sax.InputSource;
 
 import javax.xml.bind.JAXBContext;
@@ -29,7 +30,8 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.Source;
 import javax.xml.transform.sax.SAXSource;
-import java.io.*;
+import java.io.OutputStream;
+import java.io.StringReader;
 
 @Activate("xml")
 public class XMLCodec implements HttpMessageCodec<byte[], OutputStream> {
