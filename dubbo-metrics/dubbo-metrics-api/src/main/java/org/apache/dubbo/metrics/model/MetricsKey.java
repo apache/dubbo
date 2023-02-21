@@ -21,35 +21,32 @@ public enum MetricsKey {
     APPLICATION_METRIC_INFO("dubbo.application.info.total", "Total Application Info"),
 
     // provider metrics key
-    PROVIDER_METRIC_REQUESTS("dubbo.provider.requests.total", "Total Requests"),
-    PROVIDER_METRIC_REQUESTS_SUCCEED("dubbo.provider.requests.succeed.total", "Succeed Requests"),
-    PROVIDER_METRIC_REQUEST_BUSINESS_FAILED("dubbo.provider.requests.business.failed.total","Failed Business Requests"),
-    PROVIDER_METRIC_REQUESTS_PROCESSING("dubbo.provider.requests.processing", "Processing Requests"),
-    PROVIDER_METRIC_REQUESTS_TIMEOUT("dubbo.provider.requests.timeout.total", "Total Timeout Failed Requests"),
-    PROVIDER_METRIC_REQUESTS_LIMIT("dubbo.provider.requests.limit.total", "Total Limit Failed Requests"),
-    PROVIDER_METRIC_REQUESTS_FAILED("dubbo.provider.requests.unknown.failed.total", "Unknown Failed Requests"),
-    PROVIDER_METRIC_REQUESTS_TOTAL_FAILED("dubbo.provider.requests.failed.total", "Total Failed Requests"),
-    PROVIDER_METRIC_REQUESTS_NETWORK_FAILED("dubbo.provider.requests.network.failed.total", "Total Network Failed Requests"),
-    PROVIDER_METRIC_REQUESTS_CODEC_FAILED("dubbo.provider.requests.codec.failed.total", "Total Codec Network Failed Requests"),
+    METRIC_REQUESTS("dubbo.%s.requests.total", "Total Requests"),
+    METRIC_REQUESTS_SUCCEED("dubbo.%s.requests.succeed.total", "Succeed Requests"),
+    METRIC_REQUEST_BUSINESS_FAILED("dubbo.%s.requests.business.failed.total","Failed Business Requests"),
+    METRIC_REQUESTS_PROCESSING("dubbo.%s.requests.processing", "Processing Requests"),
+    METRIC_REQUESTS_TIMEOUT("dubbo.%s.requests.timeout.total", "Total Timeout Failed Requests"),
+    METRIC_REQUESTS_LIMIT("dubbo.%s.requests.limit.total", "Total Limit Failed Requests"),
+    METRIC_REQUESTS_FAILED("dubbo.%s.requests.unknown.failed.total", "Unknown Failed Requests"),
+    METRIC_REQUESTS_TOTAL_FAILED("dubbo.%s.requests.failed.total", "Total Failed Requests"),
 
-    PROVIDER_METRIC_REQUESTS_TOTAL_AGG("dubbo.provider.requests.total.aggregate", "Aggregated Total Requests"),
-    PROVIDER_METRIC_REQUESTS_SUCCEED_AGG("dubbo.provider.requests.succeed.aggregate", "Aggregated Succeed Requests"),
-    PROVIDER_METRIC_REQUESTS_FAILED_AGG("dubbo.provider.requests.failed.aggregate", "Aggregated Failed Requests"),
-    PROVIDER_METRIC_REQUESTS_BUSINESS_FAILED_AGG("dubbo.provider.requests.business.failed.aggregate", "Aggregated Business Failed Requests"),
-    PROVIDER_METRIC_REQUESTS_TIMEOUT_AGG("dubbo.provider.requests.timeout.failed.aggregate", "Aggregated timeout Failed Requests"),
-    PROVIDER_METRIC_REQUESTS_LIMIT_AGG("dubbo.provider.requests.limit.aggregate", "Aggregated limit Requests"),
-    PROVIDER_METRIC_REQUESTS_TOTAL_FAILED_AGG("dubbo.provider.requests.failed.total.aggregate", "Aggregated failed total Requests"),
-    PROVIDER_METRIC_REQUESTS_NETWORK_TOTAL_FAILED_AGG("dubbo.provider.requests.network.failed.total.aggregate", "Aggregated Network Failed Total Requests"),
-    PROVIDER_METRIC_REQUESTS_CODEC_TOTAL_FAILED_AGG("dubbo.provider.requests.codec.failed.total.aggregate", "Aggregated Codec Failed Total Requests"),
 
-    PROVIDER_METRIC_QPS("dubbo.provider.qps.seconds", "Query Per Seconds"),
-    PROVIDER_METRIC_RT_LAST("dubbo.provider.rt.seconds.last", "Last Response Time"),
-    PROVIDER_METRIC_RT_MIN("dubbo.provider.rt.seconds.min", "Min Response Time"),
-    PROVIDER_METRIC_RT_MAX("dubbo.provider.rt.seconds.max", "Max Response Time"),
-    PROVIDER_METRIC_RT_SUM("dubbo.provider.rt.seconds.sum", "Sum Response Time"),
-    PROVIDER_METRIC_RT_AVG("dubbo.provider.rt.seconds.avg", "Average Response Time"),
-    PROVIDER_METRIC_RT_P99("dubbo.provider.rt.seconds.p99", "Response Time P99"),
-    PROVIDER_METRIC_RT_P95("dubbo.provider.rt.seconds.p95", "Response Time P95"),
+    METRIC_REQUESTS_TOTAL_AGG("dubbo.%s.requests.total.aggregate", "Aggregated Total Requests"),
+    METRIC_REQUESTS_SUCCEED_AGG("dubbo.%s.requests.succeed.aggregate", "Aggregated Succeed Requests"),
+    METRIC_REQUESTS_FAILED_AGG("dubbo.%s.requests.failed.aggregate", "Aggregated Failed Requests"),
+    METRIC_REQUESTS_BUSINESS_FAILED_AGG("dubbo.%s.requests.business.failed.aggregate", "Aggregated Business Failed Requests"),
+    METRIC_REQUESTS_TIMEOUT_AGG("dubbo.%s.requests.timeout.failed.aggregate", "Aggregated timeout Failed Requests"),
+    METRIC_REQUESTS_LIMIT_AGG("dubbo.%s.requests.limit.aggregate", "Aggregated limit Requests"),
+    METRIC_REQUESTS_TOTAL_FAILED_AGG("dubbo.%s.requests.failed.total.aggregate", "Aggregated failed total Requests"),
+
+    METRIC_QPS("dubbo.%s.qps.seconds", "Query Per Seconds"),
+    METRIC_RT_LAST("dubbo.%s.rt.seconds.last", "Last Response Time"),
+    METRIC_RT_MIN("dubbo.%s.rt.seconds.min", "Min Response Time"),
+    METRIC_RT_MAX("dubbo.%s.rt.seconds.max", "Max Response Time"),
+    METRIC_RT_SUM("dubbo.%s.rt.seconds.sum", "Sum Response Time"),
+    METRIC_RT_AVG("dubbo.%s.rt.seconds.avg", "Average Response Time"),
+    METRIC_RT_P99("dubbo.%s.rt.seconds.p99", "Response Time P99"),
+    METRIC_RT_P95("dubbo.%s.rt.seconds.p95", "Response Time P95"),
 
     GENERIC_METRIC_REQUESTS("dubbo.%s.requests.total", "Total %s Requests"),
     GENERIC_METRIC_REQUESTS_SUCCEED("dubbo.%s.requests.succeed.total", "Succeed %s Requests"),
@@ -68,18 +65,16 @@ public enum MetricsKey {
     THREAD_POOL_MAX_SIZE("dubbo.thread.pool.max.size","Thread Pool Max Size"),
     THREAD_POOL_ACTIVE_SIZE("dubbo.thread.pool.active.size","Thread Pool Active Size"),
     THREAD_POOL_THREAD_COUNT("dubbo.thread.pool.thread.count","Thread Pool Thread Count"),
-    THREAD_POOL_QUEUE_SIZE("dubbo.thread.pool.queue.size","Thread Pool Queue Size"),
-
-    // consumer metrics key
-    PROVIDER_METRIC_REQUESTS_NO_PROVIDER_FAILED("dubbo.consumer.requests.no.provider.failed.total", "Total NoProvider Failed Requests"),
-    PROVIDER_METRIC_REQUESTS_NO_PROVIDER_TOTAL_FAILED_AGG("dubbo.consumer.requests.no.provider.failed.total.aggregate", "Aggregated noProvider Failed Requests"),
-    ;
+    THREAD_POOL_QUEUE_SIZE("dubbo.thread.pool.queue.size","Thread Pool Queue Size");
 
     private final String name;
     private final String description;
 
     public final String getName() {
         return this.name;
+    }
+    public final String getNameByType(String type) {
+        return String.format(name, type);
     }
 
     public final String getDescription() {
