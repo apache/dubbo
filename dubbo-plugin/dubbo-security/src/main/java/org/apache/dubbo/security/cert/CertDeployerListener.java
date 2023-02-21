@@ -35,7 +35,9 @@ public class CertDeployerListener implements ApplicationDeployListener {
         scopeModel.getApplicationConfigManager().getSsl().ifPresent(sslConfig -> {
             if (Objects.nonNull(sslConfig.getRemoteCAAddress()) &&
                 Objects.nonNull(sslConfig.getRemoteCAPort())) {
-                dubboCertManager.connect(sslConfig.getRemoteCAAddress(), sslConfig.getRemoteCAPort());
+                if (dubboCertManager != null) {
+                    dubboCertManager.connect(sslConfig.getRemoteCAAddress(), sslConfig.getRemoteCAPort());
+                }
             }
         });
     }

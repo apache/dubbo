@@ -26,7 +26,9 @@ public class CertScopeModelInitializer implements ScopeModelInitializer {
     @Override
     public void initializeFrameworkModel(FrameworkModel frameworkModel) {
         ScopeBeanFactory beanFactory = frameworkModel.getBeanFactory();
-        beanFactory.registerBean(DubboCertManager.class);
+        if (DubboCertManager.isSupported()) {
+            beanFactory.registerBean(DubboCertManager.class);
+        }
     }
 
     @Override

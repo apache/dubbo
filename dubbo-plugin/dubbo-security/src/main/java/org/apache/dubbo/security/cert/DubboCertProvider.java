@@ -37,7 +37,7 @@ public class DubboCertProvider implements CertProvider {
 
     @Override
     public boolean isSupport(URL address) {
-        return dubboCertManager.isConnected();
+        return dubboCertManager != null && dubboCertManager.isConnected();
     }
 
     @Override
