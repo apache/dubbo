@@ -51,9 +51,7 @@ public class MethodMetric implements Metric {
     private String group;
     private String version;
 
-    public MethodMetric() {
-
-    }
+    public MethodMetric() {}
 
     public MethodMetric(String applicationName, Invocation invocation) {
         this.applicationName = applicationName;

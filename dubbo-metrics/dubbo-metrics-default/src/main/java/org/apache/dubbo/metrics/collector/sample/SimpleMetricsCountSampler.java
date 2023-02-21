@@ -20,7 +20,6 @@ package org.apache.dubbo.metrics.collector.sample;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.metrics.model.Metric;
-
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;

@@ -39,7 +39,7 @@ public class ThreadPoolMetricsSampler implements MetricsSampler {
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ThreadPoolMetricsSampler.class);
 
     private DefaultMetricsCollector collector;
-    private FrameworkExecutorRepository     frameworkExecutorRepository;
+    private FrameworkExecutorRepository frameworkExecutorRepository;
     private Map<String, ThreadPoolExecutor> sampleThreadPoolExecutor = new ConcurrentHashMap<>();
 
     public ThreadPoolMetricsSampler(DefaultMetricsCollector collector) {

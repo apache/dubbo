@@ -33,7 +33,6 @@ public enum MetricsKey {
     METRIC_REQUESTS_SERVICE_UNAVAILABLE_FAILED("dubbo.%s.requests.failed.service.unavailable.total", "Total Service Unavailable Failed Requests"),
     METRIC_REQUESTS_CODEC_FAILED("dubbo.%s.requests.failed.codec.total", "Total Codec Failed Requests"),
 
-
     METRIC_REQUESTS_TOTAL_AGG("dubbo.%s.requests.total.aggregate", "Aggregated Total Requests"),
     METRIC_REQUESTS_SUCCEED_AGG("dubbo.%s.requests.succeed.aggregate", "Aggregated Succeed Requests"),
     METRIC_REQUESTS_FAILED_AGG("dubbo.%s.requests.failed.aggregate", "Aggregated Failed Requests"),
@@ -41,7 +40,6 @@ public enum MetricsKey {
     METRIC_REQUESTS_TIMEOUT_AGG("dubbo.%s.requests.timeout.failed.aggregate", "Aggregated timeout Failed Requests"),
     METRIC_REQUESTS_LIMIT_AGG("dubbo.%s.requests.limit.aggregate", "Aggregated limit Requests"),
     METRIC_REQUESTS_TOTAL_FAILED_AGG("dubbo.%s.requests.failed.total.aggregate", "Aggregated failed total Requests"),
-
     METRIC_REQUESTS_TOTAL_NETWORK_FAILED_AGG("dubbo.%s.requests.failed.network.total.aggregate", "Aggregated failed network total Requests"),
     METRIC_REQUESTS_TOTAL_CODEC_FAILED_AGG("dubbo.%s.requests.failed.codec.total.aggregate", "Aggregated failed codec total Requests"),
     METRIC_REQUESTS_TOTAL_SERVICE_UNAVAILABLE_FAILED_AGG("dubbo.%s.requests.failed.service.unavailable.total.aggregate", "Aggregated failed codec total Requests"),

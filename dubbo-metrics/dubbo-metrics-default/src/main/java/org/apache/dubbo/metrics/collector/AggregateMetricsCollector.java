@@ -32,13 +32,11 @@ import org.apache.dubbo.metrics.model.MetricsKey;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-
 import static org.apache.dubbo.metrics.model.MetricsCategory.QPS;
 import static org.apache.dubbo.metrics.model.MetricsCategory.REQUESTS;
 import static org.apache.dubbo.metrics.model.MetricsCategory.RT;
@@ -128,11 +126,9 @@ public class AggregateMetricsCollector implements MetricsCollector, MetricsListe
         collectMethod(list, MetricsEvent.Type.REQUEST_TIMEOUT, MetricsKey.METRIC_REQUESTS_TIMEOUT_AGG);
         collectMethod(list, MetricsEvent.Type.REQUEST_LIMIT, MetricsKey.METRIC_REQUESTS_LIMIT_AGG);
         collectMethod(list, MetricsEvent.Type.TOTAL_FAILED, MetricsKey.METRIC_REQUESTS_TOTAL_FAILED_AGG);
-
         collectMethod(list, MetricsEvent.Type.NETWORK_EXCEPTION, MetricsKey.METRIC_REQUESTS_TOTAL_NETWORK_FAILED_AGG);
         collectMethod(list, MetricsEvent.Type.CODEC_EXCEPTION, MetricsKey.METRIC_REQUESTS_TOTAL_CODEC_FAILED_AGG);
         collectMethod(list, MetricsEvent.Type.SERVICE_UNAVAILABLE, MetricsKey.METRIC_REQUESTS_TOTAL_SERVICE_UNAVAILABLE_FAILED_AGG);
-
     }
 
     private void collectMethod(List<MetricSample> list, MetricsEvent.Type eventType, MetricsKey metricsKey) {

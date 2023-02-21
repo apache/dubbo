@@ -29,10 +29,8 @@ import org.apache.dubbo.metrics.model.ApplicationMetric;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-
 import java.util.ArrayList;
 import java.util.List;
-
 import static org.apache.dubbo.metrics.model.MetricsCategory.APPLICATION;
 import static org.apache.dubbo.metrics.model.MetricsKey.APPLICATION_METRIC_INFO;
 
