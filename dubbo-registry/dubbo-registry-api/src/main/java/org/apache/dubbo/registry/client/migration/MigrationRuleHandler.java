@@ -31,8 +31,8 @@ public class MigrationRuleHandler<T> {
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(MigrationRuleHandler.class);
 
     private final MigrationClusterInvoker<T> migrationInvoker;
-    private MigrationStep currentStep;
-    private Float currentThreshold = 0f;
+    private volatile MigrationStep currentStep;
+    private volatile Float currentThreshold = 0f;
     private final URL consumerURL;
 
     public MigrationRuleHandler(MigrationClusterInvoker<T> invoker, URL url) {
