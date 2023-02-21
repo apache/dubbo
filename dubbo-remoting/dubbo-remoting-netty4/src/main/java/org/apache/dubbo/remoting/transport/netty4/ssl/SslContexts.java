@@ -42,7 +42,7 @@ public class SslContexts {
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(SslContexts.class);
 
     public static SslContext buildServerSslContext(URL url) {
-        CertManager certManager = url.getOrDefaultApplicationModel().getBeanFactory().getBean(CertManager.class);
+        CertManager certManager = url.getOrDefaultFrameworkModel().getBeanFactory().getBean(CertManager.class);
         ProviderCert providerConnectionConfig = certManager.getProviderConnectionConfig(url);
         if (providerConnectionConfig == null) {
             return null;
@@ -84,7 +84,7 @@ public class SslContexts {
     }
 
     public static SslContext buildClientSslContext(URL url) {
-        CertManager certManager = url.getOrDefaultApplicationModel().getBeanFactory().getBean(CertManager.class);
+        CertManager certManager = url.getOrDefaultFrameworkModel().getBeanFactory().getBean(CertManager.class);
         Cert consumerConnectionConfig = certManager.getConsumerConnectionConfig(url);
         if (consumerConnectionConfig == null) {
             return null;

@@ -21,9 +21,12 @@ import org.apache.dubbo.auth.v1alpha1.DubboCertificateResponse;
 import org.apache.dubbo.auth.v1alpha1.DubboCertificateServiceGrpc;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
-import io.grpc.ManagedChannel;
+import com.google.protobuf.ProtocolStringList;
+import io.grpc.Channel;
 import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
 import io.grpc.stub.StreamObserver;
 import org.bouncycastle.asn1.x500.X500Name;
@@ -37,19 +40,14 @@ import org.bouncycastle.util.io.pem.PemObject;
 
 import java.io.IOException;
 import java.io.StringWriter;
-import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.SecureRandom;
-import java.security.spec.ECGenParameterSpec;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_GENERATE_CERT_ISTIO;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_GENERATE_KEY_ISTIO;
@@ -59,27 +57,44 @@ public class DubboCertManager {
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(DubboCertManager.class);
 
-    private CertPair certPair;
+    private final FrameworkModel frameworkModel;
+    private volatile Channel channel;
+    private volatile CertPair certPair;
 
-    public DubboCertManager() {
-        // watch cert, Refresh every 30s
-        ScheduledExecutorService scheduledThreadPool = Executors.newScheduledThreadPool(1);
-        scheduledThreadPool.scheduleAtFixedRate(new GenerateCertTask(), 0, 30, TimeUnit.SECONDS);
+    public DubboCertManager(FrameworkModel frameworkModel) {
+        this.frameworkModel = frameworkModel;
+    }
+
+    public void connect(String remoteAddress, int port) {
+        if (channel != null) {
+            return;
+        }
+        synchronized (this) {
+            if (channel != null) {
+                return;
+            }
+            channel = NettyChannelBuilder.forAddress(remoteAddress, port)
+                .usePlaintext()
+                .build();
+            generateCert();
+            FrameworkExecutorRepository repository = frameworkModel.getBeanFactory().getBean(FrameworkExecutorRepository.class);
+            repository.getSharedScheduledExecutor().scheduleAtFixedRate(this::generateCert, 30, 30, TimeUnit.SECONDS);
+        }
+    }
+
+    public void disConnect() {
+
+    }
+
+    public boolean isConnected() {
+        return channel != null;
     }
 
     public CertPair generateCert() {
-
         if (certPair != null && !certPair.isExpire()) {
             return certPair;
         }
         return doGenerateCert();
-    }
-
-    private class GenerateCertTask implements Runnable {
-        @Override
-        public void run() {
-            doGenerateCert();
-        }
     }
 
     private CertPair doGenerateCert() {
@@ -101,18 +116,18 @@ public class DubboCertManager {
         PrivateKey privateKey = null;
         ContentSigner signer = null;
 
-        try {
-            ECGenParameterSpec ecSpec = new ECGenParameterSpec("secp256r1");
-            KeyPairGenerator g = KeyPairGenerator.getInstance("EC");
-            g.initialize(ecSpec, new SecureRandom());
-            KeyPair keypair = g.generateKeyPair();
-            publicKey = keypair.getPublic();
-            privateKey = keypair.getPrivate();
-            signer = new JcaContentSignerBuilder("SHA256withECDSA").build(keypair.getPrivate());
-        } catch (NoSuchAlgorithmException | InvalidAlgorithmParameterException | OperatorCreationException e) {
-            logger.error(REGISTRY_FAILED_GENERATE_KEY_ISTIO, "", "", "Generate Key with secp256r1 algorithm failed. Please check if your system support. "
-                + "Will attempt to generate with RSA2048.", e);
-        }
+//        try {
+//            ECGenParameterSpec ecSpec = new ECGenParameterSpec("secp256r1");
+//            KeyPairGenerator g = KeyPairGenerator.getInstance("EC");
+//            g.initialize(ecSpec, new SecureRandom());
+//            KeyPair keypair = g.generateKeyPair();
+//            publicKey = keypair.getPublic();
+//            privateKey = keypair.getPrivate();
+//            signer = new JcaContentSignerBuilder("SHA256withECDSA").build(keypair.getPrivate());
+//        } catch (NoSuchAlgorithmException | InvalidAlgorithmParameterException | OperatorCreationException e) {
+//            logger.error(REGISTRY_FAILED_GENERATE_KEY_ISTIO, "", "", "Generate Key with secp256r1 algorithm failed. Please check if your system support. "
+//                + "Will attempt to generate with RSA2048.", e);
+//        }
 
         if (publicKey == null) {
             try {
@@ -129,88 +144,46 @@ public class DubboCertManager {
         }
 
         String csr = generateCsr(publicKey, signer);
-//        String caCert = istioEnv.getCaCert();
-        ManagedChannel channel;
-//        if (StringUtils.isNotEmpty(caCert)) {
-//            channel = NettyChannelBuilder.forTarget(istioEnv.getCaAddr())
-//                .sslContext(
-//                    GrpcSslContexts.forClient()
-//                        .trustManager(new ByteArrayInputStream(caCert.getBytes(StandardCharsets.UTF_8)))
-//                        .build())
-//                .build();
-//        } else {
-        channel = NettyChannelBuilder.forTarget("dubbo-ca.dubbo-system.svc:50051")
-            .usePlaintext()
-//                .sslContext(GrpcSslContexts.forClient()
-//                    .trustManager(InsecureTrustManagerFactory.INSTANCE)
-//                    .build())
-            .build();
-//        }
-
-//        Metadata header = new Metadata();
-//        Metadata.Key<String> key = Metadata.Key.of("authorization", Metadata.ASCII_STRING_MARSHALLER);
-//        header.put(key, "Bearer " + istioEnv.getServiceAccount());
-
-//        key = Metadata.Key.of("ClusterID", Metadata.ASCII_STRING_MARSHALLER);
-//        header.put(key, istioEnv.getIstioMetaClusterId());
-
         DubboCertificateServiceGrpc.DubboCertificateServiceStub stub = DubboCertificateServiceGrpc.newStub(channel);
 
-//        stub = MetadataUtils.attachHeaders(stub, header);
-
-        CountDownLatch countDownLatch = new CountDownLatch(1);
-        StringBuffer publicKeyBuilder = new StringBuffer();
-        AtomicBoolean failed = new AtomicBoolean(false);
-        stub.createCertificate(generateRequest(csr), generateResponseObserver(countDownLatch, publicKeyBuilder, failed));
-
-//        long expireTime = System.currentTimeMillis() + (long) (istioEnv.getSecretTTL() * istioEnv.getSecretGracePeriodRatio());
-
-        try {
-            countDownLatch.await();
-        } catch (InterruptedException e) {
-            throw new RpcException("Generate Cert Failed. Wait for cert failed.", e);
-        }
-
-        if (failed.get()) {
-            throw new RpcException("Generate Cert Failed. Send csr request failed. Please check log above.");
-        }
-
         String privateKeyPem = generatePrivatePemKey(privateKey);
-        CertPair certPair = new CertPair(privateKeyPem, publicKeyBuilder.toString(), System.currentTimeMillis(), System.currentTimeMillis() + 180_000);
-
-        channel.shutdown();
-        return certPair;
+        CompletableFuture<CertPair> future = new CompletableFuture<>();
+        stub.createCertificate(generateRequest(csr), generateResponseObserver(future, privateKeyPem));
+        try {
+            return future.get();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } catch (ExecutionException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private DubboCertificateRequest generateRequest(String csr) {
         return DubboCertificateRequest.newBuilder().setCsr(csr).setType("CONNECTION").build();
     }
 
-    private StreamObserver<DubboCertificateResponse> generateResponseObserver(CountDownLatch countDownLatch,
-                                                                              StringBuffer publicKeyBuilder,
-                                                                              AtomicBoolean failed) {
+    private StreamObserver<DubboCertificateResponse> generateResponseObserver(CompletableFuture<CertPair> future, String privateKey) {
         return new StreamObserver<DubboCertificateResponse>() {
             @Override
             public void onNext(DubboCertificateResponse dubboCertificateResponse) {
-                for (int i = 0; i < dubboCertificateResponse.getCertChainCount(); i++) {
-                    publicKeyBuilder.append(dubboCertificateResponse.getCertChainBytes(i).toStringUtf8());
-                }
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Receive Cert chain from Istio Citadel. \n" + publicKeyBuilder);
-                }
-                countDownLatch.countDown();
+                String publicKey = dubboCertificateResponse.getPublicKey();
+                ProtocolStringList trustCertsList = dubboCertificateResponse.getTrustCertsList();
+                long expireTime = dubboCertificateResponse.getExpireTime();
+                CertPair pair = new CertPair(privateKey, publicKey, String.join("\n", trustCertsList), System.currentTimeMillis(), expireTime);
+                future.complete(pair);
             }
 
             @Override
             public void onError(Throwable throwable) {
-                failed.set(true);
                 logger.error(REGISTRY_RECEIVE_ERROR_MSG_ISTIO, "", "", "Receive error message from Istio Citadel grpc stub.", throwable);
-                countDownLatch.countDown();
+                future.completeExceptionally(throwable);
             }
 
             @Override
             public void onCompleted() {
-                countDownLatch.countDown();
+                if (future.isDone()) {
+                    future.complete(null);
+                }
             }
         };
     }
@@ -234,14 +207,6 @@ public class DubboCertManager {
     }
 
     private String generateCsr(PublicKey publicKey, ContentSigner signer) throws IOException {
-//        GeneralNames subjectAltNames = new GeneralNames(new GeneralName[]{new GeneralName(6, istioEnv.getCsrHost())});
-
-//        ExtensionsGenerator extGen = new ExtensionsGenerator();
-//        extGen.addExtension(Extension.subjectAlternativeName, true, subjectAltNames);
-
-//        PKCS10CertificationRequest request = new JcaPKCS10CertificationRequestBuilder(
-//            new X500Name("O=" + istioEnv.getTrustDomain()), publicKey).addAttribute(
-//            PKCSObjectIdentifiers.pkcs_9_at_extensionRequest, extGen.generate()).build(signer);
         PKCS10CertificationRequest request = new JcaPKCS10CertificationRequestBuilder(
             new X500Name("O=" + "cluster.domain"), publicKey).build(signer);
 

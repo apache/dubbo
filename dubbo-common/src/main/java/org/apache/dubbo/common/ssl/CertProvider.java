@@ -17,9 +17,10 @@
 package org.apache.dubbo.common.ssl;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 
-@SPI
+@SPI(scope = ExtensionScope.FRAMEWORK)
 public interface CertProvider {
     boolean isSupport(URL address);
 

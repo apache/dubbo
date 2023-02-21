@@ -63,6 +63,9 @@ public class SslConfig extends AbstractConfig {
     private InputStream clientPrivateKeyPathStream;
     private InputStream clientTrustCertCollectionPathStream;
 
+    private String remoteCAAddress;
+    private Integer remoteCAPort;
+
     public SslConfig() {
     }
 
@@ -140,6 +143,22 @@ public class SslConfig extends AbstractConfig {
 
     public void setClientTrustCertCollectionPath(String clientTrustCertCollectionPath) {
         this.clientTrustCertCollectionPath = clientTrustCertCollectionPath;
+    }
+
+    public String getRemoteCAAddress() {
+        return remoteCAAddress;
+    }
+
+    public void setRemoteCAAddress(String remoteCAAddress) {
+        this.remoteCAAddress = remoteCAAddress;
+    }
+
+    public Integer getRemoteCAPort() {
+        return remoteCAPort;
+    }
+
+    public void setRemoteCAPort(Integer remoteCAPort) {
+        this.remoteCAPort = remoteCAPort;
     }
 
     public InputStream getServerKeyCertChainPathStream() throws IOException {

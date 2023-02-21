@@ -24,7 +24,6 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.ssl.Cert;
 import org.apache.dubbo.common.ssl.CertProvider;
 import org.apache.dubbo.common.ssl.ProviderCert;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import org.apache.commons.io.IOUtils;
 
@@ -34,11 +33,6 @@ import java.util.Objects;
 @Activate(order = Integer.MAX_VALUE - 10000)
 public class SSLConfigCertProvider implements CertProvider {
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(SSLConfigCertProvider.class);
-    private final ApplicationModel applicationModel;
-
-    public SSLConfigCertProvider(ApplicationModel applicationModel) {
-        this.applicationModel = applicationModel;
-    }
 
     @Override
     public boolean isSupport(URL address) {
@@ -47,7 +41,7 @@ public class SSLConfigCertProvider implements CertProvider {
 
     @Override
     public ProviderCert getProviderConnectionConfig(URL localAddress) {
-        return applicationModel.getApplicationConfigManager().getSsl()
+        return localAddress.getOrDefaultApplicationModel().getApplicationConfigManager().getSsl()
             .filter(sslConfig -> Objects.nonNull(sslConfig.getServerKeyCertChainPath()))
             .filter(sslConfig -> Objects.nonNull(sslConfig.getServerPrivateKeyPath()))
             .map(sslConfig -> {
@@ -66,7 +60,7 @@ public class SSLConfigCertProvider implements CertProvider {
 
     @Override
     public Cert getConsumerConnectionConfig(URL remoteAddress) {
-        return applicationModel.getApplicationConfigManager().getSsl()
+        return remoteAddress.getOrDefaultApplicationModel().getApplicationConfigManager().getSsl()
             .filter(sslConfig -> Objects.nonNull(sslConfig.getClientKeyCertChainPath()))
             .filter(sslConfig -> Objects.nonNull(sslConfig.getClientPrivateKeyPath()))
             .map(sslConfig -> {

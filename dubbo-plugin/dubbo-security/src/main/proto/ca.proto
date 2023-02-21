@@ -22,7 +22,7 @@ import "google/protobuf/struct.proto";
 // Keep this package for backward compatibility.
 package org.apache.dubbo.auth.v1alpha1;
 
-option go_package = "dubbo.apache.org/api/security/v1alpha1";
+option go_package = "github.com/apache/dubbo-admin/ca/v1alpha1";
 option java_multiple_files = true;
 
 // Certificate request message. The authentication should be based on:
@@ -48,7 +48,7 @@ message DubboCertificateRequest {
 message DubboCertificateResponse {
   // PEM-encoded certificate chain.
   // The leaf cert is the first element, and the root cert is the last element.
-  repeated string cert_chain = 1;
+  string public_key = 1;
   repeated string trust_certs = 2;
   int64 expire_time = 3;
 }

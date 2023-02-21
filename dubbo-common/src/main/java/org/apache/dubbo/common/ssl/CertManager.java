@@ -17,15 +17,15 @@
 package org.apache.dubbo.common.ssl;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.util.List;
 
 public class CertManager {
     private final List<CertProvider> certProviders;
 
-    public CertManager(ApplicationModel applicationModel) {
-        this.certProviders = applicationModel.getExtensionLoader(CertProvider.class).getActivateExtensions();
+    public CertManager(FrameworkModel frameworkModel) {
+        this.certProviders = frameworkModel.getExtensionLoader(CertProvider.class).getActivateExtensions();
     }
 
     public ProviderCert getProviderConnectionConfig(URL localAddress) {

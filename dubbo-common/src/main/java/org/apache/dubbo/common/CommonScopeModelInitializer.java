@@ -39,6 +39,7 @@ public class CommonScopeModelInitializer implements ScopeModelInitializer {
         beanFactory.registerBean(ConverterUtil.class);
         beanFactory.registerBean(SerializeSecurityManager.class);
         beanFactory.registerBean(DefaultSerializeClassChecker.class);
+        beanFactory.registerBean(CertManager.class);
     }
 
     @Override
@@ -47,7 +48,6 @@ public class CommonScopeModelInitializer implements ScopeModelInitializer {
         beanFactory.registerBean(ShutdownHookCallbacks.class);
         beanFactory.registerBean(FrameworkStatusReportService.class);
         beanFactory.registerBean(new ConfigurationCache());
-        beanFactory.registerBean(CertManager.class);
     }
 
     @Override

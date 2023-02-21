@@ -17,33 +17,41 @@
 package org.apache.dubbo.security.cert;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.ssl.Cert;
 import org.apache.dubbo.common.ssl.CertProvider;
 import org.apache.dubbo.common.ssl.ProviderCert;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.nio.charset.StandardCharsets;
 
+@Activate
 public class DubboCertProvider implements CertProvider {
-    private final DubboCertManager dubboCertManager = new DubboCertManager();
+    private final DubboCertManager dubboCertManager;
+
+
+    public DubboCertProvider(FrameworkModel frameworkModel) {
+        dubboCertManager = frameworkModel.getBeanFactory().getBean(DubboCertManager.class);
+    }
 
     @Override
     public boolean isSupport(URL address) {
-        return true;
+        return dubboCertManager.isConnected();
     }
 
     @Override
     public ProviderCert getProviderConnectionConfig(URL localAddress) {
         CertPair certPair = dubboCertManager.generateCert();
-        return new ProviderCert(certPair.getPrivateKey().getBytes(StandardCharsets.UTF_8),
-            certPair.getPublicKey().getBytes(StandardCharsets.UTF_8),
+        return new ProviderCert(certPair.getPublicKey().getBytes(StandardCharsets.UTF_8),
+            certPair.getPrivateKey().getBytes(StandardCharsets.UTF_8),
             certPair.getTrustCerts().getBytes(StandardCharsets.UTF_8), null, true);
     }
 
     @Override
     public Cert getConsumerConnectionConfig(URL remoteAddress) {
         CertPair certPair = dubboCertManager.generateCert();
-        return new Cert(certPair.getPrivateKey().getBytes(StandardCharsets.UTF_8),
-            certPair.getPublicKey().getBytes(StandardCharsets.UTF_8),
+        return new Cert(certPair.getPublicKey().getBytes(StandardCharsets.UTF_8),
+            certPair.getPrivateKey().getBytes(StandardCharsets.UTF_8),
             certPair.getTrustCerts().getBytes(StandardCharsets.UTF_8));
     }
 }
