@@ -26,15 +26,15 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
-import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_CHAR_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
-import static org.apache.dubbo.common.constants.MetricsConstants.TAG_IP;
-import static org.apache.dubbo.common.constants.MetricsConstants.TAG_HOSTNAME;
+import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_APPLICATION_NAME;
-import static org.apache.dubbo.common.constants.MetricsConstants.TAG_INTERFACE_KEY;
-import static org.apache.dubbo.common.constants.MetricsConstants.TAG_METHOD_KEY;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_GROUP_KEY;
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_HOSTNAME;
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_IP;
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_METHOD_KEY;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_VERSION_KEY;
 import static org.apache.dubbo.common.utils.NetUtils.getLocalHost;
 import static org.apache.dubbo.common.utils.NetUtils.getLocalHostName;
@@ -97,7 +97,6 @@ public class MethodMetric implements Metric {
         tags.put(TAG_IP, getLocalHost());
         tags.put(TAG_HOSTNAME, getLocalHostName());
         tags.put(TAG_APPLICATION_NAME, applicationName);
-
         tags.put(TAG_INTERFACE_KEY, interfaceName);
         tags.put(TAG_METHOD_KEY, methodName);
         tags.put(TAG_GROUP_KEY, group);

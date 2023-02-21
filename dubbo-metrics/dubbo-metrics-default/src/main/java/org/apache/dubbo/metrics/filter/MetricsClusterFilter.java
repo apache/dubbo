@@ -61,7 +61,7 @@ public class MetricsClusterFilter implements ClusterFilter, BaseFilter.Listener,
         if (t != null && t instanceof RpcException) {
             RpcException e = (RpcException) t;
             if (e.isForbidden()) {
-                collector.getMethodSampler().incOnEvent(invocation, MetricsEvent.Type.NO_PROVIDER);
+                collector.getMethodSampler().incOnEvent(invocation, MetricsEvent.Type.SERVICE_UNAVAILABLE);
             }
         }
     }

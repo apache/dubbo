@@ -36,8 +36,7 @@ import static org.apache.dubbo.metrics.model.MetricsCategory.THREAD_POOL;
 
 public class ThreadPoolMetricsSampler implements MetricsSampler {
 
-    private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(
-        ThreadPoolMetricsSampler.class);
+    private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ThreadPoolMetricsSampler.class);
 
     private DefaultMetricsCollector collector;
     private FrameworkExecutorRepository     frameworkExecutorRepository;

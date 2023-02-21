@@ -58,7 +58,7 @@ public abstract class MetricsEvent {
 
         NETWORK_EXCEPTION,
 
-        NO_PROVIDER,
+        SERVICE_UNAVAILABLE,
 
         CODEC_EXCEPTION;
 

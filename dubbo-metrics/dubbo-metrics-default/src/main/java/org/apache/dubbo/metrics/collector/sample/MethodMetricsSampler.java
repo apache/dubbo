@@ -78,12 +78,14 @@ public class MethodMetricsSampler extends SimpleMetricsCountSampler<Invocation, 
         count(list, MetricsEvent.Type.REQUEST_TIMEOUT, MetricsKey.METRIC_REQUESTS_TIMEOUT);
         count(list, MetricsEvent.Type.REQUEST_LIMIT, MetricsKey.METRIC_REQUESTS_LIMIT);
         count(list, MetricsEvent.Type.TOTAL_FAILED, MetricsKey.METRIC_REQUESTS_TOTAL_FAILED);
+        count(list, MetricsEvent.Type.NETWORK_EXCEPTION, MetricsKey.METRIC_REQUESTS_NETWORK_FAILED);
+        count(list, MetricsEvent.Type.SERVICE_UNAVAILABLE, MetricsKey.METRIC_REQUESTS_SERVICE_UNAVAILABLE_FAILED);
+        count(list,MetricsEvent.Type.CODEC_EXCEPTION,MetricsKey.METRIC_REQUESTS_CODEC_FAILED);
     }
 
     private void collectRT(List<MetricSample> list) {
         this.getLastRT().forEach((k, v) ->
-            list.add(getGaugeMetricSample(MetricsKey.METRIC_RT_LAST, k, RT, v::get)
-            ));
+            list.add(getGaugeMetricSample(MetricsKey.METRIC_RT_LAST, k, RT, v::get)));
         this.getMinRT().forEach((k, v) ->
             list.add(getGaugeMetricSample(MetricsKey.METRIC_RT_MIN, k, RT, v::get)));
         this.getMaxRT().forEach((k, v) ->

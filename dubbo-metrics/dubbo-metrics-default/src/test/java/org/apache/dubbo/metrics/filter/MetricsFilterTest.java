@@ -17,12 +17,6 @@
 
 package org.apache.dubbo.metrics.filter;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.config.ApplicationConfig;
@@ -31,7 +25,12 @@ import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
 import org.apache.dubbo.metrics.model.MetricsKey;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
-import org.apache.dubbo.rpc.*;
+import org.apache.dubbo.rpc.AppResponse;
+import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.Result;
+import org.apache.dubbo.rpc.RpcContext;
+import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -43,7 +42,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE;
 import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_PARAMETER_DESC;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_GROUP_KEY;
@@ -86,7 +84,6 @@ class MetricsFilterTest {
         side = CommonConstants.CONSUMER;
         invocation.setInvoker(new TestMetricsInvoker(side));
         RpcContext.getServiceContext().setUrl(URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&side=" + side));
-
 
         metricsClusterFilter = new MetricsClusterFilter();
         metricsClusterFilter.setApplicationModel(applicationModel);
@@ -132,7 +129,6 @@ class MetricsFilterTest {
         Assertions.assertEquals(tags.get(TAG_VERSION_KEY), VERSION);
     }
 
-
     @Test
     void testBusinessFailedRequests() {
         collector.setCollectEnabled(true);
@@ -160,7 +156,6 @@ class MetricsFilterTest {
         Assertions.assertEquals(tags.get(TAG_GROUP_KEY), GROUP);
         Assertions.assertEquals(tags.get(TAG_VERSION_KEY), VERSION);
     }
-
 
     @Test
     void testTimeoutRequests() {
@@ -263,13 +258,14 @@ class MetricsFilterTest {
 
     @Test
     public void testErrors(){
-        testFilterError(RpcException.SERIALIZATION_EXCEPTION, MetricsKey.PROVIDER_METRIC_REQUESTS_CODEC_FAILED);
-        testFilterError(RpcException.NETWORK_EXCEPTION, MetricsKey.PROVIDER_METRIC_REQUESTS_NETWORK_FAILED);
+        testFilterError(RpcException.SERIALIZATION_EXCEPTION, MetricsKey.METRIC_REQUESTS_CODEC_FAILED.formatName(side));
+        testFilterError(RpcException.NETWORK_EXCEPTION, MetricsKey.METRIC_REQUESTS_NETWORK_FAILED.formatName(side));
     }
 
     @Test
     public void testNoProvider(){
-        testClusterFilterError(RpcException.FORBIDDEN_EXCEPTION, MetricsKey.PROVIDER_METRIC_REQUESTS_NO_PROVIDER_FAILED);
+        testClusterFilterError(RpcException.FORBIDDEN_EXCEPTION,
+            MetricsKey.METRIC_REQUESTS_SERVICE_UNAVAILABLE_FAILED.formatName(CommonConstants.CONSUMER));
     }
 
     private void testClusterFilterError(int errorCode,MetricsKey metricsKey){
