@@ -74,6 +74,7 @@ class MetricsFilterTest {
         filter = new MetricsFilter();
 
         collector = applicationModel.getBeanFactory().getOrRegisterBean(DefaultMetricsCollector.class);
+        collector.collectApplication(applicationModel);
         filter.setApplicationModel(applicationModel);
     }
 
