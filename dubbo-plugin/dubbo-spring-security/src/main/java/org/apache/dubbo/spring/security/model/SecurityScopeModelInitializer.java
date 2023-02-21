@@ -18,15 +18,17 @@
 package org.apache.dubbo.spring.security.model;
 
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
+import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ScopeModelInitializer;
 import org.apache.dubbo.spring.security.jackson.ObjectMapperCodec;
 import org.apache.dubbo.spring.security.jackson.ObjectMapperCodecCustomer;
-
 import java.util.Set;
+import static org.apache.dubbo.spring.security.utils.SecurityNames.SECURITY_CONTEXT_HOLDER_CLASS_NAME;
 
+@Activate(onClass = SECURITY_CONTEXT_HOLDER_CLASS_NAME)
 public class SecurityScopeModelInitializer implements ScopeModelInitializer {
 
     @Override

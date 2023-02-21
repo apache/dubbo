@@ -77,29 +77,25 @@ public class ObjectMapperCodec {
         return this;
     }
 
-    public ObjectMapperCodec configMapper(Consumer<ObjectMapper> objectMapperConfigure) {
+    public ObjectMapperCodec configureMapper(Consumer<ObjectMapper> objectMapperConfigure) {
         objectMapperConfigure.accept(this.mapper);
         return this;
     }
 
     private void registerDefaultModule() {
-        try{
-            mapper.registerModule(new CoreJackson2Module());
-            mapper.registerModule(new JavaTimeModule());
+        mapper.registerModule(new CoreJackson2Module());
+        mapper.registerModule(new JavaTimeModule());
 
-            List<String> jacksonModuleClassNameList = new ArrayList<>();
-            jacksonModuleClassNameList.add("org.springframework.security.oauth2.server.authorization.jackson2.OAuth2AuthorizationServerJackson2Module");
-            jacksonModuleClassNameList.add("org.springframework.security.oauth2.client.jackson2.OAuth2ClientJackson2Module");
-            jacksonModuleClassNameList.add("org.springframework.security.web.server.jackson2.WebServerJackson2Module");
-            jacksonModuleClassNameList.add("com.fasterxml.jackson.module.paramnames.ParameterNamesModule");
-            jacksonModuleClassNameList.add("org.springframework.security.web.jackson2.WebServletJackson2Module");
-            jacksonModuleClassNameList.add("org.springframework.security.web.jackson2.WebJackson2Module");
-            jacksonModuleClassNameList.add("org.springframework.boot.jackson.JsonMixinModule");
-
-            loadModuleIfPresent(jacksonModuleClassNameList);
-        }catch(Throwable ex){
-
-        }
+        List<String> jacksonModuleClassNameList = new ArrayList<>();
+        jacksonModuleClassNameList.add("org.springframework.security.oauth2.server.authorization.jackson2.OAuth2AuthorizationServerJackson2Module");
+        jacksonModuleClassNameList.add("org.springframework.security.oauth2.client.jackson2.OAuth2ClientJackson2Module");
+        jacksonModuleClassNameList.add("org.springframework.security.web.server.jackson2.WebServerJackson2Module");
+        jacksonModuleClassNameList.add("com.fasterxml.jackson.module.paramnames.ParameterNamesModule");
+        jacksonModuleClassNameList.add("org.springframework.security.web.jackson2.WebServletJackson2Module");
+        jacksonModuleClassNameList.add("org.springframework.security.web.jackson2.WebJackson2Module");
+        jacksonModuleClassNameList.add("org.springframework.boot.jackson.JsonMixinModule");
+        jacksonModuleClassNameList.add("org.springframework.security.ldap.jackson2.LdapJackson2Module");
+        loadModuleIfPresent(jacksonModuleClassNameList);
 
     }
 
