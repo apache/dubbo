@@ -920,7 +920,7 @@ public class ExtensionLoader<T> {
     /**
      * get properties name for setter, for instance: setVersion, return "version"
      * <p>
-     * return "", if setter name with length less than 3
+     * return "", if setter name with length less than or equal to 3
      */
     private String getSetterProperty(Method method) {
         return method.getName().length() > 3 ?
