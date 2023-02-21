@@ -21,6 +21,7 @@ import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.metadata.rest.media.MediaType;
 import org.apache.dubbo.rpc.protocol.rest.message.HttpMessageCodec;
 import org.apache.dubbo.rpc.protocol.rest.message.MediaTypeMatcher;
+
 import org.xml.sax.InputSource;
 
 import javax.xml.bind.JAXBContext;
