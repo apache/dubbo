@@ -83,19 +83,24 @@ public class ObjectMapperCodec {
     }
 
     private void registerDefaultModule() {
-        mapper.registerModule(new CoreJackson2Module());
-        mapper.registerModule(new JavaTimeModule());
+        try{
+            mapper.registerModule(new CoreJackson2Module());
+            mapper.registerModule(new JavaTimeModule());
 
-        List<String> jacksonModuleClassNameList = new ArrayList<>();
-        jacksonModuleClassNameList.add("org.springframework.security.oauth2.server.authorization.jackson2.OAuth2AuthorizationServerJackson2Module");
-        jacksonModuleClassNameList.add("org.springframework.security.oauth2.client.jackson2.OAuth2ClientJackson2Module");
-        jacksonModuleClassNameList.add("org.springframework.security.web.server.jackson2.WebServerJackson2Module");
-        jacksonModuleClassNameList.add("com.fasterxml.jackson.module.paramnames.ParameterNamesModule");
-        jacksonModuleClassNameList.add("org.springframework.security.web.jackson2.WebServletJackson2Module");
-        jacksonModuleClassNameList.add("org.springframework.security.web.jackson2.WebJackson2Module");
-        jacksonModuleClassNameList.add("org.springframework.boot.jackson.JsonMixinModule");
+            List<String> jacksonModuleClassNameList = new ArrayList<>();
+            jacksonModuleClassNameList.add("org.springframework.security.oauth2.server.authorization.jackson2.OAuth2AuthorizationServerJackson2Module");
+            jacksonModuleClassNameList.add("org.springframework.security.oauth2.client.jackson2.OAuth2ClientJackson2Module");
+            jacksonModuleClassNameList.add("org.springframework.security.web.server.jackson2.WebServerJackson2Module");
+            jacksonModuleClassNameList.add("com.fasterxml.jackson.module.paramnames.ParameterNamesModule");
+            jacksonModuleClassNameList.add("org.springframework.security.web.jackson2.WebServletJackson2Module");
+            jacksonModuleClassNameList.add("org.springframework.security.web.jackson2.WebJackson2Module");
+            jacksonModuleClassNameList.add("org.springframework.boot.jackson.JsonMixinModule");
 
-        loadModuleIfPresent(jacksonModuleClassNameList);
+            loadModuleIfPresent(jacksonModuleClassNameList);
+        }catch(Exception ex){
+
+        }
+
     }
 
     private void loadModuleIfPresent(List<String> jacksonModuleClassNameList) {
