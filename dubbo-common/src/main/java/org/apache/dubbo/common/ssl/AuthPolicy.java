@@ -16,20 +16,8 @@
  */
 package org.apache.dubbo.common.ssl;
 
-public class ProviderCert extends Cert {
-    private final AuthPolicy authPolicy;
-
-    public ProviderCert(byte[] keyCertChain, byte[] privateKey, byte[] trustCert, AuthPolicy authPolicy) {
-        super(keyCertChain, privateKey, trustCert);
-        this.authPolicy = authPolicy;
-    }
-
-    public ProviderCert(byte[] keyCertChain, byte[] privateKey, byte[] trustCert, String password, AuthPolicy authPolicy) {
-        super(keyCertChain, privateKey, trustCert, password);
-        this.authPolicy = authPolicy;
-    }
-
-    public AuthPolicy getAuthPolicy() {
-        return authPolicy;
-    }
+public enum AuthPolicy {
+    NONE,
+    SERVER_AUTH,
+    CLIENT_AUTH
 }

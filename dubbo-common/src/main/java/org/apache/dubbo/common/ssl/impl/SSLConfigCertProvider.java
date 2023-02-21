@@ -21,6 +21,7 @@ import org.apache.dubbo.common.constants.LoggerCodeConstants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.ssl.AuthPolicy;
 import org.apache.dubbo.common.ssl.Cert;
 import org.apache.dubbo.common.ssl.CertProvider;
 import org.apache.dubbo.common.ssl.ProviderCert;
@@ -50,7 +51,7 @@ public class SSLConfigCertProvider implements CertProvider {
                         IOUtils.toByteArray(sslConfig.getServerKeyCertChainPathStream()),
                         IOUtils.toByteArray(sslConfig.getServerPrivateKeyPathStream()),
                         sslConfig.getServerTrustCertCollectionPath() != null ? IOUtils.toByteArray(sslConfig.getServerTrustCertCollectionPathStream()) : null,
-                        sslConfig.getServerKeyPassword(), true);
+                        sslConfig.getServerKeyPassword(), AuthPolicy.CLIENT_AUTH);
                 } catch (IOException e) {
                     logger.warn(LoggerCodeConstants.CONFIG_SSL_PATH_LOAD_FAILED, "", "", "Failed to load ssl config.", e);
                     return null;

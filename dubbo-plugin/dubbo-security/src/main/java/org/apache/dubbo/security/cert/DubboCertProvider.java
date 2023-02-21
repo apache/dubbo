@@ -18,6 +18,7 @@ package org.apache.dubbo.security.cert;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.common.ssl.AuthPolicy;
 import org.apache.dubbo.common.ssl.Cert;
 import org.apache.dubbo.common.ssl.CertProvider;
 import org.apache.dubbo.common.ssl.ProviderCert;
@@ -44,7 +45,7 @@ public class DubboCertProvider implements CertProvider {
         CertPair certPair = dubboCertManager.generateCert();
         return new ProviderCert(certPair.getPublicKey().getBytes(StandardCharsets.UTF_8),
             certPair.getPrivateKey().getBytes(StandardCharsets.UTF_8),
-            certPair.getTrustCerts().getBytes(StandardCharsets.UTF_8), null, true);
+            certPair.getTrustCerts().getBytes(StandardCharsets.UTF_8), null, AuthPolicy.NONE);
     }
 
     @Override

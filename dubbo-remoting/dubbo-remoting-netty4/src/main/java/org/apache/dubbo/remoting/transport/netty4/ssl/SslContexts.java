@@ -19,6 +19,7 @@ package org.apache.dubbo.remoting.transport.netty4.ssl;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.ssl.AuthPolicy;
 import org.apache.dubbo.common.ssl.Cert;
 import org.apache.dubbo.common.ssl.CertManager;
 import org.apache.dubbo.common.ssl.ProviderCert;
@@ -41,9 +42,7 @@ public class SslContexts {
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(SslContexts.class);
 
-    public static SslContext buildServerSslContext(URL url) {
-        CertManager certManager = url.getOrDefaultFrameworkModel().getBeanFactory().getBean(CertManager.class);
-        ProviderCert providerConnectionConfig = certManager.getProviderConnectionConfig(url);
+    public static SslContext buildServerSslContext(ProviderCert providerConnectionConfig) {
         if (providerConnectionConfig == null) {
             return null;
         }
@@ -67,7 +66,11 @@ public class SslContexts {
 
             if (serverTrustCertStream != null) {
                 sslClientContextBuilder.trustManager(serverTrustCertStream);
-                sslClientContextBuilder.clientAuth(providerConnectionConfig.isStrict() ? ClientAuth.REQUIRE : ClientAuth.OPTIONAL);
+                if (providerConnectionConfig.getAuthPolicy() == AuthPolicy.CLIENT_AUTH) {
+                    sslClientContextBuilder.clientAuth(ClientAuth.REQUIRE);
+                } else {
+                    sslClientContextBuilder.clientAuth(ClientAuth.OPTIONAL);
+                }
             }
         } catch (Exception e) {
             throw new IllegalArgumentException("Could not find certificate file or the certificate is invalid.", e);

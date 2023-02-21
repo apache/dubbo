@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.remoting.transport.netty4.ssl;
 
-import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 
@@ -38,23 +37,16 @@ public class SslServerTlsHandler extends ByteToMessageDecoder {
 
     private final SslContext sslContext;
     private final boolean detectSsl;
+    private final boolean requireSsl;
 
-
-    public SslServerTlsHandler() {
-        this(null, false);
+    public SslServerTlsHandler(SslContext sslContext, boolean requireSsl) {
+        this(sslContext, true, requireSsl);
     }
 
-    public SslServerTlsHandler(URL url) {
-        this(SslContexts.buildServerSslContext(url));
-    }
-
-    public SslServerTlsHandler(SslContext sslContext) {
-        this(sslContext, true);
-    }
-
-    public SslServerTlsHandler(SslContext sslContext, boolean detectSsl) {
+    public SslServerTlsHandler(SslContext sslContext, boolean detectSsl, boolean requireSsl) {
         this.sslContext = sslContext;
         this.detectSsl = detectSsl;
+        this.requireSsl = requireSsl;
     }
 
     @Override
@@ -88,11 +80,16 @@ public class SslServerTlsHandler extends ByteToMessageDecoder {
 
         if (isSsl(byteBuf)) {
             enableSsl(channelHandlerContext);
-        } else {
+            return;
+        }
+
+        if (!requireSsl) {
             ChannelPipeline p = channelHandlerContext.pipeline();
             p.remove(this);
         }
 
+        logger.error(INTERNAL_ERROR, "", "", "TLS negotiation failed when trying to accept new connection.");
+        channelHandlerContext.close();
     }
 
     private boolean isSsl(ByteBuf buf) {
