@@ -18,8 +18,7 @@ package org.apache.dubbo.metadata.rest.api;
 
 import org.apache.dubbo.metadata.rest.User;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.bind.annotation.*;
-
+import org.springframework.web.bind.annotation.RestController;
 
 
 @RestController

@@ -29,7 +29,8 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.Source;
 import javax.xml.transform.sax.SAXSource;
-import java.io.*;
+import java.io.OutputStream;
+import java.io.StringReader;
 
 @Activate("xml")
 public class XMLCodec implements HttpMessageCodec<byte[], OutputStream> {
