@@ -75,7 +75,7 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
     private static final int MIGRATION_DEFAULT_DELAY_TIME = 60000;
     private String ruleKey;
 
-    protected final ConcurrentMap<MigrationInvoker, MigrationRuleHandler> handlers = new ConcurrentHashMap<>();
+    protected final ConcurrentMap<MigrationInvoker<?>, MigrationRuleHandler<?>> handlers = new ConcurrentHashMap<>();
     protected final LinkedBlockingQueue<String> ruleQueue = new LinkedBlockingQueue<>();
 
     private final AtomicBoolean executorSubmit = new AtomicBoolean(false);
@@ -88,7 +88,7 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
 
     private volatile String rawRule;
     private volatile MigrationRule rule;
-    private ModuleModel moduleModel;
+    private final ModuleModel moduleModel;
 
     public MigrationRuleListener(ModuleModel moduleModel) {
         this.moduleModel = moduleModel;
@@ -260,13 +260,11 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
         if (localRuleMigrationFuture != null) {
             localRuleMigrationFuture.cancel(true);
         }
-        if (ruleManageExecutor != null) {
-            ruleManageExecutor.shutdown();
-        }
+        ruleManageExecutor.shutdown();
         ruleQueue.clear();
     }
 
-    public Map<MigrationInvoker, MigrationRuleHandler> getHandlers() {
+    public Map<MigrationInvoker<?>, MigrationRuleHandler<?>> getHandlers() {
         return handlers;
     }
 

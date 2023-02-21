@@ -49,17 +49,17 @@ import static org.apache.dubbo.registry.client.migration.model.MigrationStep.APP
 import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
 
 public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
-    private ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(MigrationInvoker.class);
+    private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(MigrationInvoker.class);
 
     private URL url;
-    private URL consumerUrl;
-    private Cluster cluster;
-    private Registry registry;
-    private Class<T> type;
-    private RegistryProtocol registryProtocol;
+    private final URL consumerUrl;
+    private final Cluster cluster;
+    private final Registry registry;
+    private final Class<T> type;
+    private final RegistryProtocol registryProtocol;
     private MigrationRuleListener migrationRuleListener;
-    private ConsumerModel consumerModel;
-    private FrameworkStatusReportService reportService;
+    private final ConsumerModel consumerModel;
+    private final FrameworkStatusReportService reportService;
 
     private volatile ClusterInvoker<T> invoker;
     private volatile ClusterInvoker<T> serviceDiscoveryInvoker;
@@ -77,6 +77,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         this(null, null, registryProtocol, cluster, registry, type, url, consumerUrl);
     }
 
+    @SuppressWarnings("unchecked")
     public MigrationInvoker(ClusterInvoker<T> invoker,
                             ClusterInvoker<T> serviceDiscoveryInvoker,
                             RegistryProtocol registryProtocol,
@@ -249,6 +250,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         calcPreferredInvoker(newRule);
     }
 
+    @SuppressWarnings("all")
     private void waitAddressNotify(MigrationRule newRule, CountDownLatch latch) {
         // wait and compare threshold
         int delay = newRule.getDelay(consumerUrl);
@@ -317,6 +319,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
             : (invoker != null && invoker.isAvailable()) || (serviceDiscoveryInvoker != null && serviceDiscoveryInvoker.isAvailable());
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void destroy() {
         if (migrationRuleListener != null) {
