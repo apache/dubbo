@@ -29,16 +29,20 @@ public class CertManager {
     }
 
     public ProviderCert getProviderConnectionConfig(URL localAddress) {
-        return certProviders.stream()
-            .filter(certProvider -> certProvider.isSupport(localAddress))
-            .map(certProvider -> certProvider.getProviderConnectionConfig(localAddress))
-            .findFirst().orElse(null);
+        for (CertProvider certProvider : certProviders) {
+            if (certProvider.isSupport(localAddress)) {
+                return certProvider.getProviderConnectionConfig(localAddress);
+            }
+        }
+        return null;
     }
 
     public Cert getConsumerConnectionConfig(URL remoteAddress) {
-        return certProviders.stream()
-            .filter(certProvider -> certProvider.isSupport(remoteAddress))
-            .map(certProvider -> certProvider.getConsumerConnectionConfig(remoteAddress))
-            .findFirst().orElse(null);
+        for (CertProvider certProvider : certProviders) {
+            if (certProvider.isSupport(remoteAddress)) {
+                return certProvider.getConsumerConnectionConfig(remoteAddress);
+            }
+        }
+        return null;
     }
 }

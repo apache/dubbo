@@ -88,6 +88,9 @@ public class SslServerTlsHandler extends ByteToMessageDecoder {
 
         if (isSsl(byteBuf)) {
             enableSsl(channelHandlerContext);
+        } else {
+            ChannelPipeline p = channelHandlerContext.pipeline();
+            p.remove(this);
         }
 
     }
