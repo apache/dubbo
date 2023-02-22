@@ -79,14 +79,23 @@ public abstract class AbstractServerCall implements ServerCall, ServerStream.Lis
     protected PackableMethod packableMethod;
     protected Map<String, Object> requestMetadata;
 
+    private String className;
+
+    public String getClassName() {
+        return className;
+    }
+
+    public void setClassName(String className) {
+        this.className = className;
+    }
     AbstractServerCall(Invoker<?> invoker,
-        ServerStream stream,
-        FrameworkModel frameworkModel,
-        ServiceDescriptor serviceDescriptor,
-        String acceptEncoding,
-        String serviceName,
-        String methodName,
-        Executor executor
+                       ServerStream stream,
+                       FrameworkModel frameworkModel,
+                       ServiceDescriptor serviceDescriptor,
+                       String acceptEncoding,
+                       String serviceName,
+                       String methodName,
+                       Executor executor
     ) {
         Objects.requireNonNull(serviceDescriptor,
             "No service descriptor found for " + invoker.getUrl());
@@ -266,6 +275,9 @@ public abstract class AbstractServerCall implements ServerCall, ServerStream.Lis
         if (compressor != null) {
             headers.set(TripleHeaderEnum.GRPC_ENCODING.getHeader(),
                 compressor.getMessageEncoding());
+        }
+        if (getClassName() != null) {
+            headers.set(TripleHeaderEnum.TRI_CLASS_NAME.getHeader(), getClassName());
         }
         // send header failed will reset stream and close request observer cause no more data will be sent
         stream.sendHeader(headers)

@@ -45,7 +45,7 @@ public enum TripleHeaderEnum {
     SERVICE_GROUP("tri-service-group"),
 
     TRI_HEADER_CONVERT("tri-header-convert"),
-
+    TRI_CLASS_NAME("tri-class-name"),
     ;
 
     static final Map<String, TripleHeaderEnum> enumMap = new HashMap<>();

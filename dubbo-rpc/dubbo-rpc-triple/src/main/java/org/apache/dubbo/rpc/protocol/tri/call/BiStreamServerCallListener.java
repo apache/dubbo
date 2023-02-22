@@ -35,7 +35,7 @@ public class BiStreamServerCallListener extends AbstractServerCallListener {
     }
 
     @Override
-    public void onReturn(Object value) {
+    public void onReturn(Object value, String className) {
         this.requestObserver = (StreamObserver<Object>) value;
     }
 

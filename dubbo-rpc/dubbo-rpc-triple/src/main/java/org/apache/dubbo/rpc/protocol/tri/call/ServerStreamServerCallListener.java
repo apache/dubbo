@@ -30,7 +30,7 @@ public class ServerStreamServerCallListener extends AbstractServerCallListener {
     }
 
     @Override
-    public void onReturn(Object value) {
+    public void onReturn(Object value, String className) {
     }
 
     @Override

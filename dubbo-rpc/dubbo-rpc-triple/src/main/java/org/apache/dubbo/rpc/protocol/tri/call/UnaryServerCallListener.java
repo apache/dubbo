@@ -30,7 +30,8 @@ public class UnaryServerCallListener extends AbstractServerCallListener {
     }
 
     @Override
-    public void onReturn(Object value) {
+    public void onReturn(Object value, String className) {
+        responseObserver.setClassName(className);
         responseObserver.onNext(value);
         responseObserver.onCompleted();
     }

@@ -36,8 +36,10 @@ public class ServerCallToObserverAdapter<T> extends CancelableStreamObserver<T> 
     private Map<String, Object> attachments;
     private boolean terminated = false;
 
+    private String className;
+
     public ServerCallToObserverAdapter(AbstractServerCall call,
-        CancellationContext cancellationContext) {
+                                       CancellationContext cancellationContext) {
         this.call = call;
         this.cancellationContext = cancellationContext;
     }
@@ -55,11 +57,21 @@ public class ServerCallToObserverAdapter<T> extends CancelableStreamObserver<T> 
         this.terminated = true;
     }
 
+    public String getClassName() {
+        return className;
+    }
+
+    public void setClassName(String className) {
+        this.className = className;
+    }
     @Override
     public void onNext(Object data) {
         if (isTerminated()) {
             throw new IllegalStateException(
                 "Stream observer has been terminated, no more data is allowed");
+        }
+        if (getClassName() != null) {
+            call.setClassName(getClassName());
         }
         call.sendMessage(data);
     }
