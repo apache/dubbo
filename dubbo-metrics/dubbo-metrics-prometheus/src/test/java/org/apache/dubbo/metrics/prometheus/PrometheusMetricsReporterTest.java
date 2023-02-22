@@ -17,7 +17,6 @@
 
 package org.apache.dubbo.metrics.prometheus;
 
-import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.nested.PrometheusConfig;
