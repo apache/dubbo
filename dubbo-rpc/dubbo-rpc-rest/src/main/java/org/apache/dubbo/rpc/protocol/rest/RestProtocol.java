@@ -141,13 +141,14 @@ public class RestProtocol extends AbstractProxyProtocol {
     protected <T> Invoker<T> protocolBindingRefer(final Class<T> type, final URL url) throws RpcException {
 
         ReferenceCountedClient<? extends RestClient> refClient =
-            clients.computeIfAbsent(url.getAddress(), key -> createReferenceCountedClient(url));
+            clients.computeIfAbsent(url.getAddress(), key -> createReferenceCountedClient(url, clients));
 
         refClient.retain();
 
         // resolve metadata
         Map<String, Map<ParameterTypesComparator, RestMethodMetadata>> metadataMap = MetadataResolver.resolveConsumerServiceMetadata(type, url);
 
+        ReferenceCountedClient<? extends RestClient> finalRefClient = refClient;
         Invoker<T> invoker = new AbstractInvoker<T>(type, url, new String[]{INTERFACE_KEY, GROUP_KEY, TOKEN_KEY}) {
             @Override
             protected Result doInvoke(Invocation invocation) {
@@ -168,7 +169,8 @@ public class RestProtocol extends AbstractProxyProtocol {
                         intercept.intercept(httpConnectionCreateContext);
                     }
 
-                    CompletableFuture<RestResult> future = refClient.getClient().send(requestTemplate);
+
+                    CompletableFuture<RestResult> future = finalRefClient.getClient(url, clientFactory).send(requestTemplate);
                     CompletableFuture<AppResponse> responseFuture = new CompletableFuture<>();
                     AsyncRpcResult asyncRpcResult = new AsyncRpcResult(responseFuture, invocation);
                     future.whenComplete((r, t) -> {
@@ -224,12 +226,12 @@ public class RestProtocol extends AbstractProxyProtocol {
     }
 
 
-    private ReferenceCountedClient<? extends RestClient> createReferenceCountedClient(URL url) throws RpcException {
+    private ReferenceCountedClient<? extends RestClient> createReferenceCountedClient(URL url, ConcurrentMap<String, ReferenceCountedClient<? extends RestClient>> clients) throws RpcException {
 
         // url -> RestClient
         RestClient restClient = clientFactory.createRestClient(url);
 
-        return new ReferenceCountedClient<>(restClient);
+        return new ReferenceCountedClient(restClient, clients);
     }
 
     @Override
