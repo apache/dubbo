@@ -63,6 +63,21 @@ public class DefaultRestService implements RestService {
         return null;
     }
 
+    @Override
+    public void noAnnotationJsonBody(User user) {
+
+    }
+
+    @Override
+    public void noAnnotationFormBody(User user) {
+
+    }
+
+    @Override
+    public void noAnnotationParam(String text) {
+
+    }
+
     public User user(User user) {
         return user;
     }

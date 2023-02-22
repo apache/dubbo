@@ -163,7 +163,7 @@ public @interface DubboReference {
     String proxy() default "";
 
     /**
-     * Service stub name, use interface name + Local if not set
+     * Service stub name, use interface name + Stub if not set
      */
     String stub() default "";
 
