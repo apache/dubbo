@@ -24,7 +24,7 @@ import org.apache.dubbo.metrics.report.AbstractMetricsReporter;
 
 public class DubboMetrics implements MeterBinder {
 
-    public static volatile MeterRegistry globalRegistry = null;
+    private MeterRegistry globalRegistry = null;
 
     @Override
     public void bindTo(MeterRegistry registry) {
