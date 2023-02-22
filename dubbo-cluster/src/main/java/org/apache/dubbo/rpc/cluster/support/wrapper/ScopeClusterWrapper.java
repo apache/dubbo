@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.rpc.cluster.support.wrapper;
 
+import org.apache.dubbo.common.extension.Wrapper;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Cluster;
@@ -25,6 +26,7 @@ import org.apache.dubbo.rpc.cluster.Directory;
 /**
  * Introducing ScopeClusterInvoker section through Dubbo SPI mechanism
  */
+@Wrapper(order = -1)
 public class ScopeClusterWrapper implements Cluster {
     private final Cluster cluster;
 

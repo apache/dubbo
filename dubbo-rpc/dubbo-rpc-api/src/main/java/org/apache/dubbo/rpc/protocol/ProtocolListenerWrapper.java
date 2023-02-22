@@ -37,6 +37,7 @@ import java.util.List;
 import static org.apache.dubbo.common.constants.CommonConstants.EXPORTER_LISTENER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INVOKER_LISTENER_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_CLUSTER_TYPE_KEY;
+import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
 
 /**
  * ListenerProtocol
@@ -63,9 +64,13 @@ public class ProtocolListenerWrapper implements Protocol {
         if (UrlUtils.isRegistry(invoker.getUrl())) {
             return protocol.export(invoker);
         }
+        List<ExporterListener> exporterListeners = ScopeModelUtil.getExtensionLoader(ExporterListener.class, invoker.getUrl().getScopeModel())
+            .getActivateExtension(invoker.getUrl(), EXPORTER_LISTENER_KEY);
+        if (LOCAL_PROTOCOL.equals(invoker.getUrl().getProtocol())) {
+            exporterListeners.add(ScopeModelUtil.getExtensionLoader(ExporterListener.class,invoker.getUrl().getScopeModel()).getExtension(LOCAL_PROTOCOL));
+        }
         return new ListenerExporterWrapper<T>(protocol.export(invoker),
-                Collections.unmodifiableList(ScopeModelUtil.getExtensionLoader(ExporterListener.class, invoker.getUrl().getScopeModel())
-                        .getActivateExtension(invoker.getUrl(), EXPORTER_LISTENER_KEY)));
+                Collections.unmodifiableList(exporterListeners));
     }
 
     @Override

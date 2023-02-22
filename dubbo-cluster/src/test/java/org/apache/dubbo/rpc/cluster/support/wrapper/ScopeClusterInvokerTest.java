@@ -21,6 +21,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 
 import org.apache.dubbo.rpc.Exporter;
+import org.apache.dubbo.rpc.ExporterListener;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
@@ -31,6 +32,7 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
 import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
 import org.apache.dubbo.rpc.cluster.support.AbstractClusterInvoker;
+import org.apache.dubbo.rpc.listener.InjvmExporterListener;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -50,6 +52,8 @@ public class ScopeClusterInvokerTest {
 
     private final Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
     private final ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+
+    private final InjvmExporterListener injvmExporterListener = (InjvmExporterListener) ExtensionLoader.getExtensionLoader(ExporterListener.class).getExtension("injvm");
     private final List<Exporter<?>> exporters = new ArrayList<>();
 
     @AfterEach
@@ -91,6 +95,7 @@ public class ScopeClusterInvokerTest {
         URL injvmUrl = URL.valueOf("injvm://127.0.0.1/TestService")
             .addParameter(INTERFACE_KEY, DemoService.class.getName());
         Exporter<?> exporter = protocol.export(proxy.getInvoker(new DemoServiceImpl(), DemoService.class, injvmUrl));
+        injvmExporterListener.exported(exporter);
         exporters.add(exporter);
 
 
@@ -116,6 +121,7 @@ public class ScopeClusterInvokerTest {
         URL injvmUrl = URL.valueOf("injvm://127.0.0.1/TestService")
             .addParameter(INTERFACE_KEY, DemoService.class.getName());
         Exporter<?> exporter = protocol.export(proxy.getInvoker(new DemoServiceImpl(), DemoService.class, injvmUrl));
+        injvmExporterListener.exported(exporter);
         exporters.add(exporter);
 
         Invoker<DemoService> cluster = getClusterInvoker(url);
@@ -140,6 +146,7 @@ public class ScopeClusterInvokerTest {
         URL injvmUrl = URL.valueOf("injvm://127.0.0.1/TestService")
             .addParameter(INTERFACE_KEY, DemoService.class.getName());
         Exporter<?> exporter = protocol.export(proxy.getInvoker(new DemoServiceImpl(), DemoService.class, injvmUrl));
+        injvmExporterListener.exported(exporter);
         exporters.add(exporter);
 
         Invoker<DemoService> cluster = getClusterInvoker(url);
