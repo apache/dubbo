@@ -19,9 +19,10 @@ package org.apache.dubbo.metadata.rest;
 import org.apache.dubbo.metadata.definition.model.MethodDefinition;
 
 import java.io.Serializable;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -55,6 +56,17 @@ public class RestMethodMetadata implements Serializable {
     private List<String> formParams;
 
     private Map<Integer, Boolean> indexToEncoded;
+
+    private ServiceRestMetadata serviceRestMetadata;
+
+    private List<ArgInfo> argInfos;
+
+    private Method reflectMethod;
+
+    /**
+     *  make a distinction between mvc & resteasy
+     */
+    private Class codeStyle;
 
     public MethodDefinition getMethod() {
         if (method == null) {
@@ -112,7 +124,7 @@ public class RestMethodMetadata implements Serializable {
 
     public Map<Integer, Collection<String>> getIndexToName() {
         if (indexToName == null) {
-            indexToName = new HashMap<>();
+            indexToName = new LinkedHashMap<>();
         }
         return indexToName;
     }
@@ -157,6 +169,43 @@ public class RestMethodMetadata implements Serializable {
         this.indexToEncoded = indexToEncoded;
     }
 
+
+    public ServiceRestMetadata getServiceRestMetadata() {
+        return serviceRestMetadata;
+    }
+
+    public void setServiceRestMetadata(ServiceRestMetadata serviceRestMetadata) {
+        this.serviceRestMetadata = serviceRestMetadata;
+    }
+
+    public List<ArgInfo> getArgInfos() {
+        if (argInfos == null) {
+            argInfos = new ArrayList<>();
+        }
+        return argInfos;
+    }
+
+    public void addArgInfo(ArgInfo argInfo) {
+        getArgInfos().add(argInfo);
+    }
+
+
+    public Method getReflectMethod() {
+        return reflectMethod;
+    }
+
+    public void setReflectMethod(Method reflectMethod) {
+        this.reflectMethod = reflectMethod;
+    }
+
+    public Class getCodeStyle() {
+        return codeStyle;
+    }
+
+    public void setCodeStyle(Class codeStyle) {
+        this.codeStyle = codeStyle;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -167,13 +216,13 @@ public class RestMethodMetadata implements Serializable {
         }
         RestMethodMetadata that = (RestMethodMetadata) o;
         return Objects.equals(getMethod(), that.getMethod()) &&
-                Objects.equals(getRequest(), that.getRequest()) &&
-                Objects.equals(getUrlIndex(), that.getUrlIndex()) &&
-                Objects.equals(getBodyIndex(), that.getBodyIndex()) &&
-                Objects.equals(getHeaderMapIndex(), that.getHeaderMapIndex()) &&
-                Objects.equals(getBodyType(), that.getBodyType()) &&
-                Objects.equals(getFormParams(), that.getFormParams()) &&
-                Objects.equals(getIndexToEncoded(), that.getIndexToEncoded());
+            Objects.equals(getRequest(), that.getRequest()) &&
+            Objects.equals(getUrlIndex(), that.getUrlIndex()) &&
+            Objects.equals(getBodyIndex(), that.getBodyIndex()) &&
+            Objects.equals(getHeaderMapIndex(), that.getHeaderMapIndex()) &&
+            Objects.equals(getBodyType(), that.getBodyType()) &&
+            Objects.equals(getFormParams(), that.getFormParams()) &&
+            Objects.equals(getIndexToEncoded(), that.getIndexToEncoded());
     }
 
     @Override

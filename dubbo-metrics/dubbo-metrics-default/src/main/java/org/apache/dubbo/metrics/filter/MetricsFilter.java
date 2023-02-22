@@ -27,20 +27,25 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
 
+import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
 
-@Activate(group = PROVIDER, order = -1)
+@Activate(group = {CONSUMER, PROVIDER}, order = -1)
 public class MetricsFilter implements Filter, BaseFilter.Listener, ScopeModelAware {
 
     private DefaultMetricsCollector collector = null;
 
-    private ApplicationModel applicationModel;
+    private MethodMetricsInterceptor metricsInterceptor;
 
 
     @Override
     public void setApplicationModel(ApplicationModel applicationModel) {
-        this.applicationModel = applicationModel;
         collector = applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class);
+
+        if (collector != null) {
+            metricsInterceptor = new MethodMetricsInterceptor(collector.getMethodSampler());
+        }
+
     }
 
     @Override
@@ -48,9 +53,11 @@ public class MetricsFilter implements Filter, BaseFilter.Listener, ScopeModelAwa
         if (collector == null || !collector.isCollectEnabled()) {
             return invoker.invoke(invocation);
         }
-        MetricsCollectExecutor.beforeExecute(applicationModel.getApplicationName(), collector, invocation);
+
+        metricsInterceptor.beforeExecute(invocation);
 
         return invoker.invoke(invocation);
+
     }
 
     @Override
@@ -58,7 +65,7 @@ public class MetricsFilter implements Filter, BaseFilter.Listener, ScopeModelAwa
         if (collector == null || !collector.isCollectEnabled()) {
             return;
         }
-        MetricsCollectExecutor.postExecute(applicationModel.getApplicationName(), collector, invocation, result);
+        metricsInterceptor.postExecute(invocation, result);
     }
 
     @Override
@@ -66,7 +73,7 @@ public class MetricsFilter implements Filter, BaseFilter.Listener, ScopeModelAwa
         if (collector == null || !collector.isCollectEnabled()) {
             return;
         }
-        MetricsCollectExecutor.throwExecute(applicationModel.getApplicationName(), collector, invocation, t);
+        metricsInterceptor.throwExecute(invocation, t);
     }
 
 }

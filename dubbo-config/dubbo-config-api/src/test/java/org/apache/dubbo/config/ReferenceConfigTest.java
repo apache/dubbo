@@ -35,6 +35,7 @@ import org.apache.dubbo.registry.client.migration.MigrationInvoker;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.ProxyFactory;
+import org.apache.dubbo.rpc.cluster.filter.FilterChainBuilder;
 import org.apache.dubbo.rpc.cluster.support.registry.ZoneAwareClusterInvoker;
 import org.apache.dubbo.rpc.cluster.support.wrapper.MockClusterInvoker;
 import org.apache.dubbo.rpc.listener.ListenerInvokerWrapper;
@@ -480,8 +481,18 @@ class ReferenceConfigTest {
         referenceConfig.init();
         Assertions.assertTrue(referenceConfig.getInvoker() instanceof MockClusterInvoker);
         Invoker<?> withFilter = ((MockClusterInvoker<?>) referenceConfig.getInvoker()).getDirectory().getAllInvokers().get(0);
-        Assertions.assertTrue(withFilter instanceof ListenerInvokerWrapper);
-        Assertions.assertTrue(((ListenerInvokerWrapper<?>) withFilter).getInvoker() instanceof InjvmInvoker);
+        Assertions.assertTrue(withFilter instanceof ListenerInvokerWrapper
+            || withFilter instanceof FilterChainBuilder.CallbackRegistrationInvoker);
+        if (withFilter instanceof ListenerInvokerWrapper) {
+            Assertions.assertTrue(((ListenerInvokerWrapper<?>) withFilter).getInvoker() instanceof InjvmInvoker);
+        }
+        if (withFilter instanceof FilterChainBuilder.CallbackRegistrationInvoker) {
+            Invoker filterInvoker = ((FilterChainBuilder.CallbackRegistrationInvoker) withFilter).getFilterInvoker();
+            FilterChainBuilder.CopyOfFilterChainNode filterInvoker1 = (FilterChainBuilder.CopyOfFilterChainNode) filterInvoker;
+            ListenerInvokerWrapper originalInvoker = (ListenerInvokerWrapper) filterInvoker1.getOriginalInvoker();
+            Invoker invoker = originalInvoker.getInvoker();
+            Assertions.assertTrue(invoker instanceof InjvmInvoker);
+        }
         URL url = withFilter.getUrl();
         Assertions.assertEquals("application1", url.getParameter("application"));
         Assertions.assertEquals("value1", url.getParameter("key1"));
@@ -966,9 +977,9 @@ class ReferenceConfigTest {
     @Test
     void testDifferentClassLoader() throws Exception {
         ApplicationConfig applicationConfig = new ApplicationConfig("TestApp");
-        ApplicationModel applicationModel = new ApplicationModel(FrameworkModel.defaultModel());
+        ApplicationModel applicationModel = ApplicationModel.defaultModel();
         applicationModel.getApplicationConfigManager().setApplication(applicationConfig);
-        ModuleModel moduleModel = new ModuleModel(applicationModel);
+        ModuleModel moduleModel = applicationModel.newModule();
 
         DemoService demoService = new DemoServiceImpl();
         ServiceConfig<DemoService> serviceConfig = new ServiceConfig<>();
@@ -1047,9 +1058,9 @@ class ReferenceConfigTest {
         TestClassLoader2 classLoader3 = new TestClassLoader2(classLoader2, basePath);
 
         ApplicationConfig applicationConfig = new ApplicationConfig("TestApp");
-        ApplicationModel applicationModel = new ApplicationModel(frameworkModel);
+        ApplicationModel applicationModel = frameworkModel.newApplication();
         applicationModel.getApplicationConfigManager().setApplication(applicationConfig);
-        ModuleModel moduleModel = new ModuleModel(applicationModel);
+        ModuleModel moduleModel = applicationModel.newModule();
 
         Class<?> clazz1 = classLoader1.loadClass(MultiClassLoaderService.class.getName(), false);
         Class<?> clazz1impl = classLoader1.loadClass(MultiClassLoaderServiceImpl.class.getName(), false);

@@ -17,8 +17,6 @@
 
 package org.apache.dubbo.metrics.service;
 
-import org.apache.dubbo.metrics.collector.AggregateMetricsCollector;
-import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
 import org.apache.dubbo.metrics.collector.MetricsCollector;
 import org.apache.dubbo.metrics.model.MetricsCategory;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
@@ -37,12 +35,8 @@ public class DefaultMetricsService implements MetricsService {
 
     protected final List<MetricsCollector> collectors = new ArrayList<>();
 
-    private final ApplicationModel applicationModel;
-
     public DefaultMetricsService(ApplicationModel applicationModel) {
-        this.applicationModel = applicationModel;
-        collectors.add(applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class));
-        collectors.add(applicationModel.getBeanFactory().getBean(AggregateMetricsCollector.class));
+        collectors.addAll(applicationModel.getBeanFactory().getBeansOfType(MetricsCollector.class));
     }
 
     @Override

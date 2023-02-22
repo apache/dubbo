@@ -17,45 +17,72 @@
 
 package org.apache.dubbo.metrics.event;
 
+import org.apache.dubbo.metrics.listener.MetricsLifeListener;
 import org.apache.dubbo.metrics.listener.MetricsListener;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
 
-public final class SimpleMetricsEventMulticaster implements MetricsEventMulticaster {
+/**
+ *  A simple event publisher that defines lifecycle events and supports rt events
+ */
+public class SimpleMetricsEventMulticaster implements MetricsEventMulticaster {
+    private final List<MetricsListener<?>> listeners = Collections.synchronizedList(new ArrayList<>());
 
-    @SuppressWarnings("java:S3077")
-    private static volatile SimpleMetricsEventMulticaster instance;
+    private boolean available = false;
 
-    private SimpleMetricsEventMulticaster() {
+    public void setAvailable() {
+        this.available = true;
     }
 
-    private final List<MetricsListener> listeners = Collections.synchronizedList(new ArrayList<>());
-
-    public static SimpleMetricsEventMulticaster getInstance() {
-        if (instance == null) {
-            synchronized (SimpleMetricsEventMulticaster.class) {
-                if (instance == null) {
-                    instance = new SimpleMetricsEventMulticaster();
-                }
-            }
-        }
-        return instance;
+    public boolean isAvailable() {
+        return available;
     }
 
     @Override
-    public void addListener(MetricsListener listener) {
+    public void addListener(MetricsListener<?> listener) {
         listeners.add(listener);
     }
 
     @Override
+    @SuppressWarnings({"rawtypes", "unchecked"})
     public void publishEvent(MetricsEvent event) {
         if (event instanceof EmptyEvent) {
             return;
         }
         for (MetricsListener listener : listeners) {
-            listener.onEvent(event);
+            if (listener.isSupport(event)) {
+                listener.onEvent(event);
+            }
+        }
+    }
+
+    @Override
+    @SuppressWarnings({"unchecked"})
+    public void publishFinishEvent(MetricsEvent event) {
+        publishTimeEvent(event, metricsLifeListener -> metricsLifeListener.onEventFinish(event));
+    }
+
+    @Override
+    @SuppressWarnings({"unchecked"})
+    public void publishErrorEvent(MetricsEvent event) {
+        publishTimeEvent(event, metricsLifeListener -> metricsLifeListener.onEventError(event));
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private void publishTimeEvent(MetricsEvent event, Consumer<MetricsLifeListener> consumer) {
+        if (event instanceof EmptyEvent) {
+            return;
+        }
+        if (event instanceof TimeCounter) {
+            ((TimeCounter) event).getTimePair().end();
+        }
+        for (MetricsListener listener : listeners) {
+            if (listener instanceof MetricsLifeListener && listener.isSupport(event)) {
+                consumer.accept(((MetricsLifeListener) listener));
+            }
         }
     }
 }

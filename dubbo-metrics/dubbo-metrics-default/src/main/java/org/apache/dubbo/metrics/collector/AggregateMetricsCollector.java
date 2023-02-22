@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+
 import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.context.ConfigManager;
@@ -101,7 +102,7 @@ public class AggregateMetricsCollector implements MetricsCollector, MetricsListe
 
     private void onRequestEvent(RequestEvent event) {
         MethodMetric metric = (MethodMetric) event.getSource();
-        MetricsEvent.Type type = event.getType();
+        RequestEvent.Type type = event.getType();
         TimeWindowCounter counter = null;
         switch (type) {
             case TOTAL:
@@ -151,24 +152,39 @@ public class AggregateMetricsCollector implements MetricsCollector, MetricsListe
     }
 
     private void collectRequests(List<MetricSample> list) {
-        totalRequests.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.PROVIDER_METRIC_REQUESTS_TOTAL_AGG, k.getTags(), REQUESTS, v::get)));
-        succeedRequests.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.PROVIDER_METRIC_REQUESTS_SUCCEED_AGG, k.getTags(), REQUESTS, v::get)));
-        unknownFailedRequests.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.PROVIDER_METRIC_REQUESTS_FAILED_AGG, k.getTags(), REQUESTS, v::get)));
-        businessFailedRequests.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.PROVIDER_METRIC_REQUESTS_BUSINESS_FAILED_AGG, k.getTags(), REQUESTS, v::get)));
-        timeoutRequests.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.PROVIDER_METRIC_REQUESTS_TIMEOUT_AGG, k.getTags(), REQUESTS, v::get)));
-        limitRequests.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.PROVIDER_METRIC_REQUESTS_LIMIT_AGG, k.getTags(), REQUESTS, v::get)));
-        totalFailedRequests.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.PROVIDER_METRIC_REQUESTS_TOTAL_FAILED_AGG, k.getTags(), REQUESTS, v::get)));
+        totalRequests.forEach((k, v) ->
+            list.add(getGaugeMetricSample(MetricsKey.METRIC_REQUESTS_TOTAL_AGG, k, v)));
+        succeedRequests.forEach((k, v) ->
+            list.add(getGaugeMetricSample(MetricsKey.METRIC_REQUESTS_SUCCEED_AGG, k, v)));
+        unknownFailedRequests.forEach((k, v) ->
+            list.add(getGaugeMetricSample(MetricsKey.METRIC_REQUESTS_FAILED_AGG, k, v)));
+        businessFailedRequests.forEach((k, v) ->
+            list.add(getGaugeMetricSample(MetricsKey.METRIC_REQUESTS_BUSINESS_FAILED_AGG, k, v)));
+        timeoutRequests.forEach((k, v) ->
+            list.add(getGaugeMetricSample(MetricsKey.METRIC_REQUESTS_TIMEOUT_AGG, k, v)));
+        limitRequests.forEach((k, v) ->
+            list.add(getGaugeMetricSample(MetricsKey.METRIC_REQUESTS_LIMIT_AGG, k, v)));
+        totalFailedRequests.forEach((k, v) ->
+            list.add(getGaugeMetricSample(MetricsKey.METRIC_REQUESTS_TOTAL_FAILED_AGG, k, v)));
 
     }
 
+    private GaugeMetricSample getGaugeMetricSample(MetricsKey metricRequestsTotalAgg, MethodMetric k, TimeWindowCounter v) {
+        return new GaugeMetricSample(metricRequestsTotalAgg.getNameByType(k.getSide()),
+            metricRequestsTotalAgg.getDescription(), k.getTags(), REQUESTS, v::get);
+    }
+
     private void collectQPS(List<MetricSample> list) {
-        qps.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.PROVIDER_METRIC_QPS, k.getTags(), QPS, () -> v.get() / v.bucketLivedSeconds())));
+        qps.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.METRIC_QPS.getNameByType(k.getSide()),
+            MetricsKey.METRIC_QPS.getDescription(), k.getTags(), QPS, () -> v.get() / v.bucketLivedSeconds())));
     }
 
     private void collectRT(List<MetricSample> list) {
         rt.forEach((k, v) -> {
-            list.add(new GaugeMetricSample(MetricsKey.PROVIDER_METRIC_RT_P99, k.getTags(), RT, () -> v.quantile(0.99)));
-            list.add(new GaugeMetricSample(MetricsKey.PROVIDER_METRIC_RT_P95, k.getTags(), RT, () -> v.quantile(0.95)));
+            list.add(new GaugeMetricSample(MetricsKey.METRIC_RT_P99.getNameByType(k.getSide()),
+                MetricsKey.METRIC_RT_P99.getDescription(), k.getTags(), RT, () -> v.quantile(0.99)));
+            list.add(new GaugeMetricSample(MetricsKey.METRIC_RT_P95.getNameByType(k.getSide()),
+                MetricsKey.METRIC_RT_P95.getDescription(), k.getTags(), RT, () -> v.quantile(0.95)));
         });
     }
 }

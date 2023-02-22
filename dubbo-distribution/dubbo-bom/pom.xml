@@ -240,6 +240,11 @@
                 <artifactId>dubbo-metrics-prometheus</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.apache.dubbo</groupId>
+                <artifactId>dubbo-metrics-metadata</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
             <!-- monitor -->
             <dependency>
@@ -395,11 +400,7 @@
                 <artifactId>dubbo-rpc-rest</artifactId>
                 <version>${project.version}</version>
             </dependency>
-            <dependency>
-                <groupId>org.apache.dubbo</groupId>
-                <artifactId>dubbo-rpc-grpc</artifactId>
-                <version>${project.version}</version>
-            </dependency>
+
             <dependency>
                 <groupId>org.apache.dubbo</groupId>
                 <artifactId>dubbo-rpc-triple</artifactId>
