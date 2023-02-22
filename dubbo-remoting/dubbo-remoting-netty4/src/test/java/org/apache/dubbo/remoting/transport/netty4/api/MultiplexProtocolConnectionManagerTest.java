@@ -29,7 +29,6 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.opentest4j.AssertionFailedError;
 
 import java.lang.reflect.Field;
 import java.util.Map;
