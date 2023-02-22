@@ -114,7 +114,7 @@
         <!-- Maven plugins -->
         <maven_jar_version>3.3.0</maven_jar_version>
         <maven_surefire_version>3.0.0-M8</maven_surefire_version>
-        <maven_failsafe_version>3.0.0-M8</maven_failsafe_version>
+        <maven_failsafe_version>3.0.0-M9</maven_failsafe_version>
         <maven_deploy_version>2.8.2</maven_deploy_version>
         <maven_compiler_version>3.10.1</maven_compiler_version>
         <maven_source_version>3.2.1</maven_source_version>
