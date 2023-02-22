@@ -15,31 +15,17 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.metrics.collector;
+package org.apache.dubbo.metrics.metadata.event;
 
-import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.metrics.event.MetricsEvent;
-import org.apache.dubbo.metrics.listener.MetricsLifeListener;
-import org.apache.dubbo.metrics.model.sample.MetricSample;
+import org.apache.dubbo.metrics.event.SimpleMetricsEventMulticaster;
 
-import java.util.List;
+public final class MetadataMetricsEventMulticaster extends SimpleMetricsEventMulticaster {
 
-/**
- * Metrics Collector.
- * An interface of collector to collect framework internal metrics.
- */
-@SPI
-public interface MetricsCollector<E extends MetricsEvent> extends MetricsLifeListener<E> {
+    public MetadataMetricsEventMulticaster() {
+        super.addListener(new MetricsPushListener());
+        super.addListener(new MetricsSubscribeListener());
 
-    default boolean isCollectEnabled() {
-        return false;
+        setAvailable();
     }
-
-    /**
-     * Collect metrics as {@link MetricSample}
-     *
-     * @return List of MetricSample
-     */
-    List<MetricSample> collect();
 
 }

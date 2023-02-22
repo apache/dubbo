@@ -2111,6 +2111,16 @@
     ]
   },
   {
+    "name": "org.apache.dubbo.metrics.MetricsScopeModelInitializer",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
     "name": "org.apache.dubbo.rpc.cluster.ConfiguratorFactory",
     "allPublicMethods": true
   },
@@ -2908,7 +2918,7 @@
     "methods": [
       {
         "name": "<init>",
-        "parameterTypes": ["org.apache.dubbo.rpc.model.FrameworkModel"]
+        "parameterTypes": ["org.apache.dubbo.rpc.model.ApplicationModel"]
       }
     ]
   }
