@@ -17,6 +17,10 @@
 
 package org.apache.dubbo.rpc.protocol.tri.call;
 
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http2.DefaultHttp2Headers;
+import io.netty.util.concurrent.Future;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -39,11 +43,6 @@ import org.apache.dubbo.rpc.protocol.tri.observer.ServerCallToObserverAdapter;
 import org.apache.dubbo.rpc.protocol.tri.stream.ServerStream;
 import org.apache.dubbo.rpc.protocol.tri.stream.StreamUtils;
 
-import io.netty.handler.codec.http.HttpHeaderNames;
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http2.DefaultHttp2Headers;
-import io.netty.util.concurrent.Future;
-
 import java.io.IOException;
 import java.util.Map;
 import java.util.Objects;
@@ -52,8 +51,8 @@ import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_CREATE_STREAM_TRIPLE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_PARSE;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_SERIALIZE_TRIPLE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_REQUEST;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_SERIALIZE_TRIPLE;
 
 public abstract class AbstractServerCall implements ServerCall, ServerStream.Listener {
 
