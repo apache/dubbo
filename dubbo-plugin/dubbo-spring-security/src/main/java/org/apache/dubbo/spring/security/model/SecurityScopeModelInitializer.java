@@ -46,7 +46,6 @@ public class SecurityScopeModelInitializer implements ScopeModelInitializer {
 
     @Override
     public void initializeApplicationModel(ApplicationModel applicationModel) {
-
     }
 
     @Override
