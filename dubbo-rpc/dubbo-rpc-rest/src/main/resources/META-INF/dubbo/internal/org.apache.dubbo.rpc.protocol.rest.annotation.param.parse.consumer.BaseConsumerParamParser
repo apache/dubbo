@@ -1,0 +1,5 @@
+consumer-body=org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.consumer.BodyConsumerParamParser
+consumer-header=org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.consumer.HeaderConsumerParamParser
+consumer-req=org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.consumer.ReqOrResConsumerParamParser
+consumer-parameter=org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.consumer.ParameterConsumerParamParser
+consumer-form=org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.consumer.FormConsumerParamParser

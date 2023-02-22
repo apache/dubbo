@@ -16,8 +16,10 @@
  */
 package org.apache.dubbo.common.json.impl;
 
+
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
@@ -25,6 +27,7 @@ import java.lang.reflect.Type;
 import java.util.List;
 
 public class JacksonImpl extends AbstractJSONImpl {
+    private ObjectMapper objectMapper = new ObjectMapper();
 
     private volatile Object jacksonCache = null;
 
