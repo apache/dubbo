@@ -62,7 +62,7 @@ public class RegistryMetricsCollector implements ApplicationMetricsCollector<Reg
     public boolean isCollectEnabled() {
         if (collectEnabled == null) {
             ConfigManager configManager = applicationModel.getApplicationConfigManager();
-            configManager.getMetrics().ifPresent(metricsConfig -> setCollectEnabled(metricsConfig.getEnableRegistry()));
+            configManager.getMetrics().ifPresent(metricsConfig -> setCollectEnabled(metricsConfig.getEnableRegistryMetrics()));
         }
         return Optional.ofNullable(collectEnabled).orElse(false);
     }

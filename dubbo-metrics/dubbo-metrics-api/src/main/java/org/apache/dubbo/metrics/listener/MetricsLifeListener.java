@@ -27,8 +27,6 @@ public interface MetricsLifeListener<E extends MetricsEvent> extends MetricsList
     default void onEventFinish(E event) {
     }
 
-
     default void onEventError(E event) {
     }
-
 }

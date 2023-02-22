@@ -22,8 +22,6 @@ import org.apache.dubbo.metadata.definition.model.TypeDefinition;
 import org.apache.dubbo.metadata.definition.service.ComplexObject;
 import org.apache.dubbo.metadata.definition.service.DemoService;
 import org.apache.dubbo.rpc.model.FrameworkModel;
-
-import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;

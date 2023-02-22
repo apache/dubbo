@@ -43,7 +43,12 @@ public class MetricsConfig extends AbstractConfig {
     /**
      * Enable registry metrics.
      */
-    private Boolean enableRegistry;
+    private Boolean enableRegistryMetrics;
+
+    /**
+     * Enable metadata metrics.
+     */
+    private Boolean enableMetadataMetrics;
 
     /**
      * @deprecated After metrics config is refactored.
@@ -103,12 +108,12 @@ public class MetricsConfig extends AbstractConfig {
         this.enableJvmMetrics = enableJvmMetrics;
     }
 
-    public Boolean getEnableRegistry() {
-        return enableRegistry;
+    public Boolean getEnableRegistryMetrics() {
+        return enableRegistryMetrics;
     }
 
-    public void setEnableRegistry(Boolean enableRegistry) {
-        this.enableRegistry = enableRegistry;
+    public void setEnableRegistryMetrics(Boolean enableRegistryMetrics) {
+        this.enableRegistryMetrics = enableRegistryMetrics;
     }
 
     public String getPort() {
@@ -149,6 +154,14 @@ public class MetricsConfig extends AbstractConfig {
 
     public void setExportServicePort(Integer exportServicePort) {
         this.exportServicePort = exportServicePort;
+    }
+
+    public Boolean getEnableMetadataMetrics() {
+        return enableMetadataMetrics;
+    }
+
+    public void setEnableMetadataMetrics(Boolean enableMetadataMetrics) {
+        this.enableMetadataMetrics = enableMetadataMetrics;
     }
 }
 

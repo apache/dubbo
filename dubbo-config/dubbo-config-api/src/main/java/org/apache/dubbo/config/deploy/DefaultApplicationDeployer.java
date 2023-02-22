@@ -363,7 +363,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     private void initMetricsReporter() {
         DefaultMetricsCollector collector =
             applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class);
-
         MetricsConfig metricsConfig = configManager.getMetrics().orElse(null);
         // TODO compatible with old usage of metrics, remove protocol check after new metrics is ready for use.
         if (metricsConfig != null && PROTOCOL_PROMETHEUS.equals(metricsConfig.getProtocol())) {

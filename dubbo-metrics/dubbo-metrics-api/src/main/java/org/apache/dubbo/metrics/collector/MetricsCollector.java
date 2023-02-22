@@ -34,6 +34,7 @@ public interface MetricsCollector<E extends MetricsEvent> extends MetricsLifeLis
     default boolean isCollectEnabled() {
         return false;
     }
+
     /**
      * Collect metrics as {@link MetricSample}
      *
