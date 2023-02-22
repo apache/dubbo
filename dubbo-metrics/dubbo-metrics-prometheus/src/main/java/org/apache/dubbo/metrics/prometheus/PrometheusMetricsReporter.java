@@ -85,13 +85,21 @@ public class PrometheusMetricsReporter extends AbstractMetricsReporter {
             }
 
             try {
+
                 prometheusExporterHttpServer = HttpServer.create(new InetSocketAddress(port), 0);
                 prometheusExporterHttpServer.createContext(path, httpExchange -> {
+                    long begin = System.currentTimeMillis();
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("scrape begin");
+                    }
                     refreshData();
                     String response = prometheusRegistry.scrape();
                     httpExchange.sendResponseHeaders(200, response.getBytes().length);
                     try (OutputStream os = httpExchange.getResponseBody()) {
                         os.write(response.getBytes());
+                    }
+                    if (logger.isDebugEnabled()) {
+                        logger.debug(String.format("scrape end,Elapsed Time：%s",System.currentTimeMillis() - begin));
                     }
                 });
 
