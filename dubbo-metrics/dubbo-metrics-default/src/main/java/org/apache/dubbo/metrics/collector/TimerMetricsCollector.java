@@ -36,24 +36,13 @@ import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.metrics.model.MetricsCategory.RT;
 
-public class TimerMetricsCollector implements MetricsListener, MetricsCollector {
+public class TimerMetricsCollector implements MetricsListener {
 
     private final ConcurrentHashMap<MethodMetric, Timer> rt = new ConcurrentHashMap<>();
     private final TimerMetricRegister metricRegister;
 
     public TimerMetricsCollector() {
         metricRegister = new TimerMetricRegister(MetricsGlobalRegistry.getCompositeRegistry());
-    }
-
-    @Override
-    public List<MetricSample> collect() {
-        List<MetricSample> list = new ArrayList<>();
-
-        rt.forEach((k, v) -> {
-            list.add(new TimerMetricSample(MetricsKey.PROVIDER_METRIC_RT_HISTOGRAM, k.getTags(), RT));
-        });
-
-        return list;
     }
 
     @Override
