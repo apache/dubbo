@@ -16,8 +16,12 @@
  */
 package org.apache.dubbo.remoting.transport.netty4.ssl;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.ssl.AuthPolicy;
+import org.apache.dubbo.common.ssl.CertManager;
+import org.apache.dubbo.common.ssl.ProviderCert;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -35,18 +39,18 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERR
 public class SslServerTlsHandler extends ByteToMessageDecoder {
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(SslServerTlsHandler.class);
 
-    private final SslContext sslContext;
-    private final boolean detectSsl;
-    private final boolean requireSsl;
+    private final URL url;
 
-    public SslServerTlsHandler(SslContext sslContext, boolean requireSsl) {
-        this(sslContext, true, requireSsl);
+    private final boolean sslDetected;
+
+    public SslServerTlsHandler(URL url) {
+        this.url = url;
+        this.sslDetected = false;
     }
 
-    public SslServerTlsHandler(SslContext sslContext, boolean detectSsl, boolean requireSsl) {
-        this.sslContext = sslContext;
-        this.detectSsl = detectSsl;
-        this.requireSsl = requireSsl;
+    public SslServerTlsHandler(URL url, boolean sslDetected) {
+        this.url = url;
+        this.sslDetected = sslDetected;
     }
 
     @Override
@@ -78,12 +82,25 @@ public class SslServerTlsHandler extends ByteToMessageDecoder {
             return;
         }
 
-        if (isSsl(byteBuf)) {
-            enableSsl(channelHandlerContext);
+        if (sslDetected) {
             return;
         }
 
-        if (!requireSsl) {
+        CertManager certManager = url.getOrDefaultFrameworkModel().getBeanFactory().getBean(CertManager.class);
+        ProviderCert providerConnectionConfig = certManager.getProviderConnectionConfig(url, channelHandlerContext.channel().remoteAddress());
+
+        if (providerConnectionConfig == null) {
+            ChannelPipeline p = channelHandlerContext.pipeline();
+            p.remove(this);
+        }
+
+        if (isSsl(byteBuf)) {
+            SslContext sslContext = SslContexts.buildServerSslContext(providerConnectionConfig);
+            enableSsl(channelHandlerContext, sslContext);
+            return;
+        }
+
+        if (providerConnectionConfig.getAuthPolicy() == AuthPolicy.NONE) {
             ChannelPipeline p = channelHandlerContext.pipeline();
             p.remove(this);
         }
@@ -93,16 +110,13 @@ public class SslServerTlsHandler extends ByteToMessageDecoder {
     }
 
     private boolean isSsl(ByteBuf buf) {
-        if (detectSsl) {
-            return SslHandler.isEncrypted(buf);
-        }
-        return false;
+        return SslHandler.isEncrypted(buf);
     }
 
-    private void enableSsl(ChannelHandlerContext ctx) {
+    private void enableSsl(ChannelHandlerContext ctx, SslContext sslContext) {
         ChannelPipeline p = ctx.pipeline();
         ctx.pipeline().addAfter(ctx.name(), null, sslContext.newHandler(ctx.alloc()));
-        p.addLast("unificationA", new SslServerTlsHandler(sslContext, false));
+        p.addLast("unificationA", new SslServerTlsHandler(url, true));
         p.remove(this);
     }
 

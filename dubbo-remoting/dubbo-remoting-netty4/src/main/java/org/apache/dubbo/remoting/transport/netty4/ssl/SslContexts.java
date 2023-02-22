@@ -43,10 +43,6 @@ public class SslContexts {
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(SslContexts.class);
 
     public static SslContext buildServerSslContext(ProviderCert providerConnectionConfig) {
-        if (providerConnectionConfig == null) {
-            return null;
-        }
-
         SslContextBuilder sslClientContextBuilder;
         InputStream serverKeyCertChainPathStream = null;
         InputStream serverPrivateKeyPathStream = null;

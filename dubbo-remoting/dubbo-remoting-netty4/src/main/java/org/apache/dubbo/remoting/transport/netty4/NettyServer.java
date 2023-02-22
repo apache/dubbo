@@ -20,9 +20,6 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.ssl.AuthPolicy;
-import org.apache.dubbo.common.ssl.CertManager;
-import org.apache.dubbo.common.ssl.ProviderCert;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.Channel;
@@ -31,7 +28,6 @@ import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.transport.AbstractServer;
 import org.apache.dubbo.remoting.transport.dispatcher.ChannelHandlers;
-import org.apache.dubbo.remoting.transport.netty4.ssl.SslContexts;
 import org.apache.dubbo.remoting.transport.netty4.ssl.SslServerTlsHandler;
 import org.apache.dubbo.remoting.utils.UrlUtils;
 
@@ -42,7 +38,6 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
-import io.netty.handler.ssl.SslContext;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.Future;
 
@@ -132,9 +127,6 @@ public class NettyServer extends AbstractServer {
 
     protected void initServerBootstrap(NettyServerHandler nettyServerHandler) {
         boolean keepalive = getUrl().getParameter(KEEP_ALIVE_KEY, Boolean.FALSE);
-        CertManager certManager = getUrl().getOrDefaultFrameworkModel().getBeanFactory().getBean(CertManager.class);
-        ProviderCert providerConnectionConfig = certManager.getProviderConnectionConfig(getUrl());
-        SslContext sslContext = SslContexts.buildServerSslContext(providerConnectionConfig);
         bootstrap.group(bossGroup, workerGroup)
             .channel(NettyEventLoopFactory.serverSocketChannelClass())
             .option(ChannelOption.SO_REUSEADDR, Boolean.TRUE)
@@ -147,9 +139,7 @@ public class NettyServer extends AbstractServer {
                     // FIXME: should we use getTimeout()?
                     int idleTimeout = UrlUtils.getIdleTimeout(getUrl());
                     NettyCodecAdapter adapter = new NettyCodecAdapter(getCodec(), getUrl(), NettyServer.this);
-                    if (sslContext != null) {
-                        ch.pipeline().addLast("negotiation", new SslServerTlsHandler(sslContext, providerConnectionConfig.getAuthPolicy() != AuthPolicy.NONE));
-                    }
+                    ch.pipeline().addLast("negotiation", new SslServerTlsHandler(getUrl()));
                     ch.pipeline()
                         .addLast("decoder", adapter.getDecoder())
                         .addLast("encoder", adapter.getEncoder())

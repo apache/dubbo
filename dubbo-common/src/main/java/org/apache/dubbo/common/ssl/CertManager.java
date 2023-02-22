@@ -19,6 +19,7 @@ package org.apache.dubbo.common.ssl;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
+import java.net.SocketAddress;
 import java.util.List;
 
 public class CertManager {
@@ -28,7 +29,7 @@ public class CertManager {
         this.certProviders = frameworkModel.getExtensionLoader(CertProvider.class).getActivateExtensions();
     }
 
-    public ProviderCert getProviderConnectionConfig(URL localAddress) {
+    public ProviderCert getProviderConnectionConfig(URL localAddress, SocketAddress remoteAddress) {
         for (CertProvider certProvider : certProviders) {
             if (certProvider.isSupport(localAddress)) {
                 return certProvider.getProviderConnectionConfig(localAddress);
