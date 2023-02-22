@@ -65,18 +65,12 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERR
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERROR_CLOSE_SERVER;
 import static org.apache.dubbo.remoting.Constants.SERVER_KEY;
 import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
+import static org.apache.dubbo.rpc.protocol.rest.constans.RestConstant.PATH_SEPARATOR;
 
 public class RestProtocol extends AbstractProxyProtocol {
 
     private static final int DEFAULT_PORT = 80;
     private static final String DEFAULT_SERVER = Constants.JETTY;
-    private static final String DEFAULT_CLIENT = org.apache.dubbo.remoting.Constants.OK_HTTP;
-
-    private static final int HTTPCLIENTCONNECTIONMANAGER_MAXPERROUTE = 20;
-    private static final int HTTPCLIENTCONNECTIONMANAGER_MAXTOTAL = 20;
-    private static final int HTTPCLIENT_KEEPALIVEDURATION = 30 * 1000;
-    private static final int HTTPCLIENTCONNECTIONMANAGER_CLOSEWAITTIME_MS = 1000;
-    private static final int HTTPCLIENTCONNECTIONMANAGER_CLOSEIDLETIME_S = 30;
 
     private final RestServerFactory serverFactory = new RestServerFactory();
 
@@ -156,6 +150,8 @@ public class RestProtocol extends AbstractProxyProtocol {
         }
         refClient.retain();
 
+        final ReferenceCountedClient<? extends RestClient> glueRefClient = refClient;
+
         // resolve metadata
         Map<String, Map<ParameterTypesComparator, RestMethodMetadata>> metadataMap = MetadataResolver.resolveConsumerServiceMetadata(type, url);
 
@@ -179,7 +175,7 @@ public class RestProtocol extends AbstractProxyProtocol {
                         intercept.intercept(httpConnectionCreateContext);
                     }
 
-                    CompletableFuture<RestResult> future = refClient.getClient().send(requestTemplate);
+                    CompletableFuture<RestResult> future = glueRefClient.getClient().send(requestTemplate);
                     CompletableFuture<AppResponse> responseFuture = new CompletableFuture<>();
                     AsyncRpcResult asyncRpcResult = new AsyncRpcResult(responseFuture, invocation);
                     future.whenComplete((r, t) -> {
@@ -271,7 +267,7 @@ public class RestProtocol extends AbstractProxyProtocol {
         if (logger.isInfoEnabled()) {
             logger.info("Closing rest clients");
         }
-        for (ReferenceCountedClient client : clients.values()) {
+        for (ReferenceCountedClient<?> client : clients.values()) {
             try {
                 // destroy directly regardless of the current reference count.
                 client.destroy();
@@ -307,7 +303,7 @@ public class RestProtocol extends AbstractProxyProtocol {
     @Override
     protected void destroyInternal(URL url) {
         try {
-            ReferenceCountedClient referenceCountedClient = clients.get(url.getAddress());
+            ReferenceCountedClient<?> referenceCountedClient = clients.get(url.getAddress());
             if (referenceCountedClient != null && referenceCountedClient.release()) {
                 clients.remove(url.getAddress());
             }
