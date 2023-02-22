@@ -85,16 +85,28 @@ public class JAXRSServiceRestMetadataResolver extends AbstractServiceRestMetadat
     protected void processProduces(Method serviceMethod, Class<?> serviceType, Class<?> serviceInterfaceClass,
                                    Set<String> produces) {
         addAnnotationValues(serviceMethod, PRODUCES_ANNOTATION_CLASS_NAME, produces);
+        addAnnotationValues(serviceType, PRODUCES_ANNOTATION_CLASS_NAME, produces);
+        addAnnotationValues(serviceInterfaceClass, PRODUCES_ANNOTATION_CLASS_NAME, produces);
     }
 
     @Override
     protected void processConsumes(Method serviceMethod, Class<?> serviceType, Class<?> serviceInterfaceClass,
                                    Set<String> consumes) {
         addAnnotationValues(serviceMethod, CONSUMES_ANNOTATION_CLASS_NAME, consumes);
+        addAnnotationValues(serviceType, CONSUMES_ANNOTATION_CLASS_NAME, consumes);
+        addAnnotationValues(serviceInterfaceClass, CONSUMES_ANNOTATION_CLASS_NAME, consumes);
     }
 
     private void addAnnotationValues(Method serviceMethod, String annotationAttributeName, Set<String> result) {
         Annotation annotation = findAnnotation(serviceMethod, annotationAttributeName);
+        String[] value = getValue(annotation);
+        if (value != null) {
+            Stream.of(value).forEach(result::add);
+        }
+    }
+
+    private void addAnnotationValues(Class serviceType, String annotationAttributeName, Set<String> result) {
+        Annotation annotation = findAnnotation(serviceType, annotationAttributeName);
         String[] value = getValue(annotation);
         if (value != null) {
             Stream.of(value).forEach(result::add);

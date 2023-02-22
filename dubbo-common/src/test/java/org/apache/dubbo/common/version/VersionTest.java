@@ -91,4 +91,14 @@ class VersionTest {
         Assertions.assertTrue(Version.isRelease263OrHigher("2.6.3"));
         Assertions.assertTrue(Version.isRelease263OrHigher("2.6.3.0"));
     }
+
+    @Test
+    void testGetVersion() {
+        Assertions.assertEquals("1.0.0", Version.getVersion());
+    }
+
+    @Test
+    void testGetLastCommitId() {
+        Assertions.assertEquals("82a29fcd674216fe9bea10b6efef3196929dd7ca", Version.getLastCommitId());
+    }
 }

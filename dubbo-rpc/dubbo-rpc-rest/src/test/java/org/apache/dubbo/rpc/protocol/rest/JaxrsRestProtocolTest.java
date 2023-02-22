@@ -33,11 +33,14 @@ import org.apache.dubbo.rpc.model.ModuleServiceRepository;
 import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 
+import org.apache.dubbo.rpc.protocol.rest.rest.AnotherUserRestService;
+import org.apache.dubbo.rpc.protocol.rest.rest.AnotherUserRestServiceImpl;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
 import java.util.Map;
 
 import static org.apache.dubbo.remoting.Constants.SERVER_KEY;
@@ -47,7 +50,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-class RestProtocolTest {
+class JaxrsRestProtocolTest {
     private Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getExtension("rest");
     private ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
     private final int availablePort = NetUtils.getAvailablePort();
@@ -62,7 +65,8 @@ class RestProtocolTest {
 
     @Test
     void testRestProtocol() {
-        URL url = URL.valueOf("rest://127.0.0.1:" + NetUtils.getAvailablePort() + "/rest/say?version=1.0.0&interface=org.apache.dubbo.rpc.protocol.rest.DemoService");
+        URL url = URL.valueOf("rest://127.0.0.1:" + NetUtils.getAvailablePort() + "/?version=1.0.0&interface=org.apache.dubbo.rpc.protocol.rest.DemoService");
+
         DemoServiceImpl server = new DemoServiceImpl();
 
         url = this.registerProvider(url, server, DemoService.class);
@@ -75,6 +79,38 @@ class RestProtocolTest {
         String result = client.sayHello("haha");
         Assertions.assertTrue(server.isCalled());
         Assertions.assertEquals("Hello, haha", result);
+        invoker.destroy();
+        exporter.unexport();
+    }
+
+
+    @Test
+    void testAnotherUserRestProtocol() {
+        URL url = URL.valueOf("rest://127.0.0.1:" + NetUtils.getAvailablePort() + "/?version=1.0.0&interface=org.apache.dubbo.rpc.protocol.rest.rest.AnotherUserRestService");
+
+        AnotherUserRestServiceImpl server = new AnotherUserRestServiceImpl();
+
+        url = this.registerProvider(url, server, DemoService.class);
+
+        Exporter<AnotherUserRestService> exporter = protocol.export(proxy.getInvoker(server, AnotherUserRestService.class, url));
+        Invoker<AnotherUserRestService> invoker = protocol.refer(AnotherUserRestService.class, url);
+
+
+        AnotherUserRestService client = proxy.getProxy(invoker);
+        User result = client.getUser(123l);
+
+        Assertions.assertEquals(123l, result.getId());
+
+        result.setName("dubbo");
+        Assertions.assertEquals(123l, client.registerUser(result).getId());
+
+        Assertions.assertEquals("context", client.getContext());
+
+        byte[] bytes = {1, 2, 3, 4};
+        Assertions.assertTrue(Arrays.equals(bytes, client.bytes(bytes)));
+
+        Assertions.assertEquals(1l, client.number(1l));
+
         invoker.destroy();
         exporter.unexport();
     }
@@ -184,7 +220,7 @@ class RestProtocolTest {
         URL url = this.registerProvider(exportUrl, server, DemoService.class);
 
         URL nettyUrl = url.addParameter(SERVER_KEY, "netty")
-                .addParameter(EXTENSION_KEY, "org.apache.dubbo.rpc.protocol.rest.support.LoggingFilter");
+            .addParameter(EXTENSION_KEY, "org.apache.dubbo.rpc.protocol.rest.support.LoggingFilter");
         Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(server, DemoService.class, nettyUrl));
 
         DemoService demoService = this.proxy.getProxy(protocol.refer(DemoService.class, nettyUrl));
@@ -204,7 +240,7 @@ class RestProtocolTest {
 
         // use RpcContextFilter
         URL nettyUrl = url.addParameter(SERVER_KEY, "netty")
-                .addParameter(EXTENSION_KEY, "org.apache.dubbo.rpc.protocol.rest.RpcContextFilter");
+            .addParameter(EXTENSION_KEY, "org.apache.dubbo.rpc.protocol.rest.RpcContextFilter");
         Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(server, DemoService.class, nettyUrl));
 
         DemoService demoService = this.proxy.getProxy(protocol.refer(DemoService.class, nettyUrl));
