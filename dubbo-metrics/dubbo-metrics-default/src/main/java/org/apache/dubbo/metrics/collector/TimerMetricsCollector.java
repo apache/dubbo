@@ -25,12 +25,9 @@ import org.apache.dubbo.metrics.event.RTEvent;
 import org.apache.dubbo.metrics.listener.MetricsListener;
 import org.apache.dubbo.metrics.model.MethodMetric;
 import org.apache.dubbo.metrics.model.MetricsKey;
-import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.metrics.register.TimerMetricRegister;
 import org.apache.dubbo.metrics.sample.TimerMetricSample;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
