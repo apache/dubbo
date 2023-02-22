@@ -143,11 +143,6 @@ public class RestProtocol extends AbstractProxyProtocol {
         ReferenceCountedClient<? extends RestClient> refClient =
             clients.computeIfAbsent(url.getAddress(), key -> createReferenceCountedClient(url, clients));
 
-        // for  checking rest client   destroy checking
-        refClient.getClient(url, clientFactory);
-
-        refClient = clients.get(url.getAddress());
-
         refClient.retain();
 
         // resolve metadata
