@@ -50,7 +50,7 @@ public class TimerMetricsCollector implements MetricsListener, MetricsCollector 
         List<MetricSample> list = new ArrayList<>();
 
         rt.forEach((k, v) -> {
-            list.add(new TimerMetricSample(MetricsKey.GENERIC_METRIC_RT_P95, k.getTags(), RT));
+            list.add(new TimerMetricSample(MetricsKey.PROVIDER_METRIC_RT_HISTOGRAM, k.getTags(), RT));
         });
 
         return list;
