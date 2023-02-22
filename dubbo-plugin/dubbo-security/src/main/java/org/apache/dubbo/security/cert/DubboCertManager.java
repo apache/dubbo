@@ -22,12 +22,18 @@ import org.apache.dubbo.auth.v1alpha1.DubboCertificateServiceGrpc;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
+import org.apache.dubbo.common.utils.IOUtils;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import com.google.protobuf.ProtocolStringList;
 import io.grpc.Channel;
+import io.grpc.Metadata;
+import io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts;
 import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
+import io.grpc.netty.shaded.io.netty.handler.ssl.util.InsecureTrustManagerFactory;
+import io.grpc.stub.MetadataUtils;
 import io.grpc.stub.StreamObserver;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
@@ -38,13 +44,19 @@ import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequestBuilder;
 import org.bouncycastle.util.io.pem.PemObject;
 
+import javax.net.ssl.SSLException;
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.SecureRandom;
+import java.security.spec.ECGenParameterSpec;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -61,11 +73,13 @@ public class DubboCertManager {
     private volatile Channel channel;
     private volatile CertPair certPair;
 
+    private volatile String oidcTokenPath;
+
     public DubboCertManager(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
     }
 
-    public void connect(String remoteAddress, int port) {
+    public void connect(String remoteAddress, String envType, String caCertPath, String oidcTokenPath) {
         if (channel != null) {
             return;
         }
@@ -73,9 +87,29 @@ public class DubboCertManager {
             if (channel != null) {
                 return;
             }
-            channel = NettyChannelBuilder.forAddress(remoteAddress, port)
-                .usePlaintext()
-                .build();
+            if (StringUtils.isNotEmpty(envType) && !"Kubernetes".equals(envType)) {
+                throw new IllegalArgumentException("Only support Kubernetes env now.");
+            }
+            try {
+                if (StringUtils.isNotEmpty(caCertPath)) {
+                    channel = NettyChannelBuilder.forTarget(remoteAddress)
+                        .sslContext(
+                            GrpcSslContexts.forClient()
+                                .trustManager(new File(caCertPath))
+                                .build())
+                        .build();
+                } else {
+                    channel = NettyChannelBuilder.forTarget(remoteAddress)
+                        .sslContext(GrpcSslContexts.forClient()
+                            .trustManager(InsecureTrustManagerFactory.INSTANCE)
+                            .build())
+                        .build();
+                }
+            } catch (SSLException e) {
+                throw new RuntimeException(e);
+            }
+            this.oidcTokenPath = oidcTokenPath;
+
             generateCert();
             FrameworkExecutorRepository repository = frameworkModel.getBeanFactory().getBean(FrameworkExecutorRepository.class);
             repository.getSharedScheduledExecutor().scheduleAtFixedRate(this::generateCert, 30, 30, TimeUnit.SECONDS);
@@ -116,18 +150,18 @@ public class DubboCertManager {
         PrivateKey privateKey = null;
         ContentSigner signer = null;
 
-//        try {
-//            ECGenParameterSpec ecSpec = new ECGenParameterSpec("secp256r1");
-//            KeyPairGenerator g = KeyPairGenerator.getInstance("EC");
-//            g.initialize(ecSpec, new SecureRandom());
-//            KeyPair keypair = g.generateKeyPair();
-//            publicKey = keypair.getPublic();
-//            privateKey = keypair.getPrivate();
-//            signer = new JcaContentSignerBuilder("SHA256withECDSA").build(keypair.getPrivate());
-//        } catch (NoSuchAlgorithmException | InvalidAlgorithmParameterException | OperatorCreationException e) {
-//            logger.error(REGISTRY_FAILED_GENERATE_KEY_ISTIO, "", "", "Generate Key with secp256r1 algorithm failed. Please check if your system support. "
-//                + "Will attempt to generate with RSA2048.", e);
-//        }
+        try {
+            ECGenParameterSpec ecSpec = new ECGenParameterSpec("secp256r1");
+            KeyPairGenerator g = KeyPairGenerator.getInstance("EC");
+            g.initialize(ecSpec, new SecureRandom());
+            KeyPair keypair = g.generateKeyPair();
+            publicKey = keypair.getPublic();
+            privateKey = keypair.getPrivate();
+            signer = new JcaContentSignerBuilder("SHA256withECDSA").build(keypair.getPrivate());
+        } catch (NoSuchAlgorithmException | InvalidAlgorithmParameterException | OperatorCreationException e) {
+            logger.error(REGISTRY_FAILED_GENERATE_KEY_ISTIO, "", "", "Generate Key with secp256r1 algorithm failed. Please check if your system support. "
+                + "Will attempt to generate with RSA2048.", e);
+        }
 
         if (publicKey == null) {
             try {
@@ -145,6 +179,19 @@ public class DubboCertManager {
 
         String csr = generateCsr(publicKey, signer);
         DubboCertificateServiceGrpc.DubboCertificateServiceStub stub = DubboCertificateServiceGrpc.newStub(channel);
+
+        if (StringUtils.isNotEmpty(oidcTokenPath)) {
+            Metadata header = new Metadata();
+            Metadata.Key<String> key = Metadata.Key.of("authorization", Metadata.ASCII_STRING_MARSHALLER);
+            header.put(key, "Bearer " +
+                IOUtils.read(new FileReader(oidcTokenPath))
+                    .replace("\n", "")
+                    .replace("\t", "")
+                    .replace("\r", "")
+                    .trim());
+
+            stub = MetadataUtils.attachHeaders(stub, header);
+        }
 
         String privateKeyPem = generatePrivatePemKey(privateKey);
         CompletableFuture<CertPair> future = new CompletableFuture<>();

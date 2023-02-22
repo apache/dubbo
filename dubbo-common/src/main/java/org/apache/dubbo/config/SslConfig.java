@@ -63,8 +63,10 @@ public class SslConfig extends AbstractConfig {
     private InputStream clientPrivateKeyPathStream;
     private InputStream clientTrustCertCollectionPathStream;
 
-    private String remoteCAAddress;
-    private Integer remoteCAPort;
+    private String caAddress;
+    private String envType;
+    private String caCertPath;
+    private String oidcTokenPath;
 
     public SslConfig() {
     }
@@ -145,20 +147,36 @@ public class SslConfig extends AbstractConfig {
         this.clientTrustCertCollectionPath = clientTrustCertCollectionPath;
     }
 
-    public String getRemoteCAAddress() {
-        return remoteCAAddress;
+    public String getCaAddress() {
+        return caAddress;
     }
 
-    public void setRemoteCAAddress(String remoteCAAddress) {
-        this.remoteCAAddress = remoteCAAddress;
+    public void setCaAddress(String caAddress) {
+        this.caAddress = caAddress;
     }
 
-    public Integer getRemoteCAPort() {
-        return remoteCAPort;
+    public String getEnvType() {
+        return envType;
     }
 
-    public void setRemoteCAPort(Integer remoteCAPort) {
-        this.remoteCAPort = remoteCAPort;
+    public void setEnvType(String envType) {
+        this.envType = envType;
+    }
+
+    public String getCaCertPath() {
+        return caCertPath;
+    }
+
+    public void setCaCertPath(String caCertPath) {
+        this.caCertPath = caCertPath;
+    }
+
+    public String getOidcTokenPath() {
+        return oidcTokenPath;
+    }
+
+    public void setOidcTokenPath(String oidcTokenPath) {
+        this.oidcTokenPath = oidcTokenPath;
     }
 
     public InputStream getServerKeyCertChainPathStream() throws IOException {
