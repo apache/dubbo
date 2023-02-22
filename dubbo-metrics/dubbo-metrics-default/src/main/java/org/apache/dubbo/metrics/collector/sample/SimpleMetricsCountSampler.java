@@ -49,7 +49,7 @@ public abstract class SimpleMetricsCountSampler<S, K, M extends Metric>
     private final ConcurrentMap<M, LongAccumulator> maxRT = new ConcurrentHashMap<>();
 
     // lastRT, totalRT, rtCount, avgRT share a container, can utilize the system cache line
-    private final ConcurrentMap<M, AtomicLongArray> RTArray = new ConcurrentHashMap<>();
+    private final ConcurrentMap<M, AtomicLongArray> rtArray = new ConcurrentHashMap<>();
 
     private final Map<K, ConcurrentMap<M, AtomicLong>> metricCounter = new ConcurrentHashMap<>();
 
@@ -94,7 +94,7 @@ public abstract class SimpleMetricsCountSampler<S, K, M extends Metric>
 
         M metric = sampleConfigure.getMetric();
 
-        AtomicLongArray rtArray = ConcurrentHashMapUtils.computeIfAbsent(RTArray, metric, k -> new AtomicLongArray(4));
+        AtomicLongArray rtArray = ConcurrentHashMapUtils.computeIfAbsent(this.rtArray, metric, k -> new AtomicLongArray(4));
 
         // set lastRT
         rtArray.set(0, rt);
@@ -129,7 +129,7 @@ public abstract class SimpleMetricsCountSampler<S, K, M extends Metric>
     @Override
     public <R extends MetricSample> List<R> collectRT(MetricSampleFactory<M, R> factory) {
         final List<R> rtMetricSamples = new ArrayList<>();
-        RTArray.forEach((k, v) -> {
+        rtArray.forEach((k, v) -> {
             // lastRT
             rtMetricSamples.add(factory.newInstance(MetricsKey.METRIC_RT_LAST, k, v.get(0)));
             // totalRT
