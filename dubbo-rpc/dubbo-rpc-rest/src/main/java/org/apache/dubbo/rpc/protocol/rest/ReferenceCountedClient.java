@@ -26,7 +26,7 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERR
 public class ReferenceCountedClient<T extends RestClient> extends ReferenceCountedResource {
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ReferenceCountedClient.class);
 
-    private T client;
+    private final T client;
 
     public ReferenceCountedClient(T client) {
         this.client = client;

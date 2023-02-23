@@ -28,10 +28,9 @@ public class RestServerFactory {
     private static final HttpBinder httpBinder = FrameworkModel.defaultModel().getAdaptiveExtension(HttpBinder.class);
 
     public RestProtocolServer createServer(String name) {
-        // TODO move names to Constants
-        if ("servlet".equalsIgnoreCase(name) || "jetty".equalsIgnoreCase(name) || "tomcat".equalsIgnoreCase(name)) {
+        if (Constants.SERVLET.equalsIgnoreCase(name) || Constants.JETTY.equalsIgnoreCase(name) || Constants.TOMCAT.equalsIgnoreCase(name)) {
             return new DubboHttpProtocolServer(httpBinder);
-        } else if ("netty".equalsIgnoreCase(name)) {
+        } else if (Constants.NETTY.equalsIgnoreCase(name)) {
             return new NettyRestProtocolServer();
         } else {
             throw new IllegalArgumentException("Unrecognized server name: " + name);
