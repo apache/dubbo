@@ -39,7 +39,7 @@ public class Request {
 
     private boolean mBroken = false;
 
-    private int payload;
+    private int mPayload;
 
     private Object mData;
 
@@ -110,11 +110,11 @@ public class Request {
     }
 
     public int getPayload() {
-        return payload;
+        return mPayload;
     }
 
-    public void setPayload(int payload) {
-        this.payload = payload;
+    public void setPayload(int mPayload) {
+        this.mPayload = mPayload;
     }
 
     public Object getData() {
@@ -141,7 +141,7 @@ public class Request {
         copy.mTwoWay = this.mTwoWay;
         copy.mEvent = this.mEvent;
         copy.mBroken = this.mBroken;
-        copy.payload = this.payload;
+        copy.mPayload = this.mPayload;
         copy.mData = this.mData;
         return copy;
     }
@@ -152,13 +152,13 @@ public class Request {
         copy.mTwoWay = this.mTwoWay;
         copy.mEvent = this.mEvent;
         copy.mBroken = this.mBroken;
-        copy.payload = this.payload;
+        copy.mPayload = this.mPayload;
         return copy;
     }
 
     @Override
     public String toString() {
         return "Request [id=" + mId + ", version=" + mVersion + ", twoWay=" + mTwoWay + ", event=" + mEvent
-            + ", broken=" + mBroken + ", payload=" + payload + ", data=" + (mData == this ? "this" : safeToString(mData)) + "]";
+            + ", broken=" + mBroken + ", mPayload=" + mPayload + ", data=" + (mData == this ? "this" : safeToString(mData)) + "]";
     }
 }
