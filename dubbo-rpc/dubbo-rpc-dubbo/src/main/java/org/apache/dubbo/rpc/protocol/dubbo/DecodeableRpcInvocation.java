@@ -117,7 +117,7 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
                     log.warn(PROTOCOL_FAILED_DECODE, "", "", "Decode rpc invocation failed: " + e.getMessage(), e);
                 }
                 request.setBroken(true);
-                request.setData(e);
+                request.setData(ErrorData.of(this, e));
             } finally {
                 hasDecoded = true;
                 if (finishDecode) {
@@ -151,7 +151,7 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
                     log.warn(PROTOCOL_FAILED_DECODE, "", "", "Decode rpc invocation failed: " + e.getMessage(), e);
                 }
                 request.setBroken(true);
-                request.setData(ErrorData.of(this, e));
+                request.setData(e);
             } finally {
                 expProcessor.cleanUp(this);
             }
