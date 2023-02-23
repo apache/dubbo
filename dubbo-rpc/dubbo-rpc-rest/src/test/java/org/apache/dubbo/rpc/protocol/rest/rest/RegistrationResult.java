@@ -14,24 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.http.factory.impl;
+package org.apache.dubbo.rpc.protocol.rest.rest;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.remoting.Constants;
-import org.apache.dubbo.remoting.http.RestClient;
-import org.apache.dubbo.remoting.http.factory.AbstractHttpClientFactory;
-import org.apache.dubbo.remoting.http.restclient.HttpClientRestClient;
-import org.apache.dubbo.rpc.RpcException;
+import javax.xml.bind.annotation.XmlRootElement;
+import java.io.Serializable;
 
-@Activate(Constants.APACHE_HTTP_CLIENT)
-public class ApacheHttpClientFactory extends AbstractHttpClientFactory {
+/**
+ * DTO to customize the returned message
+ */
+@XmlRootElement
+public class RegistrationResult implements Serializable {
 
+    private Long id;
 
-    @Override
-    protected RestClient doCreateRestClient(URL url) throws RpcException {
+    public RegistrationResult() {
+    }
 
+    public RegistrationResult(Long id) {
+        this.id = id;
+    }
 
-        return new HttpClientRestClient(httpClientConfig);
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 }

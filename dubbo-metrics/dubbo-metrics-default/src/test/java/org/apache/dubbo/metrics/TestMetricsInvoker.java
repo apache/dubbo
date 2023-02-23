@@ -14,24 +14,44 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.http.factory.impl;
+package org.apache.dubbo.metrics;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.remoting.Constants;
-import org.apache.dubbo.remoting.http.RestClient;
-import org.apache.dubbo.remoting.http.factory.AbstractHttpClientFactory;
-import org.apache.dubbo.remoting.http.restclient.HttpClientRestClient;
+import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 
-@Activate(Constants.APACHE_HTTP_CLIENT)
-public class ApacheHttpClientFactory extends AbstractHttpClientFactory {
+public class TestMetricsInvoker implements Invoker {
 
+    private String side;
+
+    public TestMetricsInvoker(String side) {
+        this.side = side;
+    }
 
     @Override
-    protected RestClient doCreateRestClient(URL url) throws RpcException {
+    public Class getInterface() {
+        return null;
+    }
 
+    @Override
+    public Result invoke(Invocation invocation) throws RpcException {
+        return null;
+    }
 
-        return new HttpClientRestClient(httpClientConfig);
+    @Override
+    public URL getUrl() {
+        return URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&side="+side);
+    }
+
+    @Override
+    public boolean isAvailable() {
+        return true;
+    }
+
+    @Override
+    public void destroy() {
+
     }
 }

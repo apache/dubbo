@@ -16,18 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.rest;
 
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.stream.Collectors;
-
-import javax.servlet.ServletContext;
-import javax.ws.rs.ProcessingException;
-import javax.ws.rs.WebApplicationException;
-
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -41,7 +29,13 @@ import org.apache.dubbo.remoting.http.RestResult;
 import org.apache.dubbo.remoting.http.factory.RestClientFactory;
 import org.apache.dubbo.remoting.http.servlet.BootstrapListener;
 import org.apache.dubbo.remoting.http.servlet.ServletManager;
-import org.apache.dubbo.rpc.*;
+import org.apache.dubbo.rpc.AppResponse;
+import org.apache.dubbo.rpc.AsyncRpcResult;
+import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.ProtocolServer;
+import org.apache.dubbo.rpc.Result;
+import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.AbstractExporter;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
@@ -54,8 +48,20 @@ import org.apache.dubbo.rpc.protocol.rest.exception.HttpClientException;
 import org.apache.dubbo.rpc.protocol.rest.exception.RemoteServerInternalException;
 import org.apache.dubbo.rpc.protocol.rest.message.HttpMessageCodecManager;
 import org.apache.dubbo.rpc.protocol.rest.util.MediaTypeUtil;
+
 import org.jboss.resteasy.util.GetRestful;
 
+import javax.servlet.ServletContext;
+import javax.ws.rs.ProcessingException;
+import javax.ws.rs.WebApplicationException;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Collectors;
+
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import javax.servlet.ServletContext;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.WebApplicationException;
@@ -142,25 +148,15 @@ public class RestProtocol extends AbstractProxyProtocol {
 
     @Override
     protected <T> Runnable doExport(T impl, Class<T> type, URL url) throws RpcException {
-
         String addr = getAddr(url);
-
-
-        RestProtocolServer server = (RestProtocolServer) serverMap.computeIfAbsent(addr, restServer -> {
-
-            String serverKey = url.getParameter(SERVER_KEY, DEFAULT_SERVER);
-
-            RestProtocolServer s = serverFactory.createServer(serverKey);
+        Class implClass = url.getServiceModel().getProxyObject().getClass();
+        RestProtocolServer server = (RestProtocolServer) ConcurrentHashMapUtils.computeIfAbsent(serverMap, addr, restServer -> {
+            RestProtocolServer s = serverFactory.createServer(url.getParameter(SERVER_KEY, DEFAULT_SERVER));
             s.setAddress(url.getAddress());
             s.start(url);
             return s;
         });
 
-
-        Class implClass = url.getServiceModel().getProxyObject().getClass();
-
-
-        // TODO  remove
         String contextPath = getContextPath(url);
         if ("servlet".equalsIgnoreCase(url.getParameter(SERVER_KEY, DEFAULT_SERVER))) {
             ServletContext servletContext = ServletManager.getInstance().getServletContext(ServletManager.EXTERNAL_SERVER_PORT);
@@ -186,10 +182,11 @@ public class RestProtocol extends AbstractProxyProtocol {
 
         server.deploy(resourceDef, impl, contextPath);
 
+        final RestProtocolServer s = server;
         return () -> {
             // TODO due to dubbo's current architecture,
             // it will be called from registry protocol in the shutdown process and won't appear in logs
-//            s.undeploy(resourceDef);
+            s.undeploy(resourceDef);
         };
     }
 
@@ -198,14 +195,15 @@ public class RestProtocol extends AbstractProxyProtocol {
     protected <T> Invoker<T> protocolBindingRefer(final Class<T> type, final URL url) throws RpcException {
 
         ReferenceCountedClient<? extends RestClient> refClient =
-            clients.computeIfAbsent(url.getAddress(), key -> createReferenceCountedClient(url));
+            clients.computeIfAbsent(url.getAddress(), key -> createReferenceCountedClient(url, clients));
 
         refClient.retain();
 
         // resolve metadata
         Map<String, Map<ParameterTypesComparator, RestMethodMetadata>> metadataMap = MetadataResolver.resolveConsumerServiceMetadata(type, url);
 
-        Invoker<T> invoker = new AbstractInvoker<T>(type, url, new String[]{INTERFACE_KEY}) {
+        ReferenceCountedClient<? extends RestClient> finalRefClient = refClient;
+        Invoker<T> invoker = new AbstractInvoker<T>(type, url, new String[]{INTERFACE_KEY, GROUP_KEY, TOKEN_KEY}) {
             @Override
             protected Result doInvoke(Invocation invocation) {
                 try {
@@ -225,7 +223,8 @@ public class RestProtocol extends AbstractProxyProtocol {
                         intercept.intercept(httpConnectionCreateContext);
                     }
 
-                    CompletableFuture<RestResult> future = refClient.getClient().send(requestTemplate);
+
+                    CompletableFuture<RestResult> future = finalRefClient.getClient(url, clientFactory).send(requestTemplate);
                     CompletableFuture<AppResponse> responseFuture = new CompletableFuture<>();
                     AsyncRpcResult asyncRpcResult = new AsyncRpcResult(responseFuture, invocation);
                     future.whenComplete((r, t) -> {
@@ -281,12 +280,12 @@ public class RestProtocol extends AbstractProxyProtocol {
     }
 
 
-    private ReferenceCountedClient<? extends RestClient> createReferenceCountedClient(URL url) throws RpcException {
+    private ReferenceCountedClient<? extends RestClient> createReferenceCountedClient(URL url, ConcurrentMap<String, ReferenceCountedClient<? extends RestClient>> clients) throws RpcException {
 
         // url -> RestClient
         RestClient restClient = clientFactory.createRestClient(url);
 
-        return new ReferenceCountedClient<>(restClient);
+        return new ReferenceCountedClient(restClient, clients);
     }
 
     @Override

@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.rest.annotation.metadata;
 
-import java.util.Map;
-
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.metadata.ParameterTypesComparator;
@@ -26,6 +24,8 @@ import org.apache.dubbo.metadata.rest.RestMethodMetadata;
 import org.apache.dubbo.metadata.rest.ServiceRestMetadata;
 import org.apache.dubbo.metadata.rest.ServiceRestMetadataResolver;
 import org.apache.dubbo.rpc.protocol.rest.exception.CodeStyleNotSupportException;
+
+import java.util.Map;
 
 public class MetadataResolver {
     private MetadataResolver() {

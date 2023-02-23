@@ -21,7 +21,6 @@ import org.apache.dubbo.metadata.rest.media.MediaType;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.rest.exception.UnSupportContentTypeException;
 
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Set;
 
@@ -30,9 +29,9 @@ public class HttpMessageCodecManager {
         FrameworkModel.defaultModel().getExtensionLoader(HttpMessageCodec.class).getSupportedExtensionInstances();
 
 
-    public static Object httpMessageDecode(InputStream body, Class type, MediaType mediaType) throws Exception {
+    public static Object httpMessageDecode(byte[] body, Class type, MediaType mediaType) throws Exception {
         for (HttpMessageCodec httpMessageCodec : httpMessageCodecs) {
-            if (httpMessageCodec.contentTypeSupport(mediaType)) {
+            if (httpMessageCodec.contentTypeSupport(mediaType, type)) {
                 return httpMessageCodec.decode(body, type);
             }
         }
@@ -41,7 +40,7 @@ public class HttpMessageCodecManager {
 
     public static void httpMessageEncode(OutputStream outputStream, Object unSerializedBody, URL url, MediaType mediaType) throws Exception {
         for (HttpMessageCodec httpMessageCodec : httpMessageCodecs) {
-            if (httpMessageCodec.contentTypeSupport(mediaType)) {
+            if (httpMessageCodec.contentTypeSupport(mediaType, unSerializedBody.getClass())) {
                 httpMessageCodec.encode(outputStream, unSerializedBody, url);
                 return;
             }

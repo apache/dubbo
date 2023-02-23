@@ -16,13 +16,13 @@
  */
 package org.apache.dubbo.rpc.protocol.rest.annotation.consumer.inercept;
 
-import java.util.Arrays;
-
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.rpc.protocol.rest.annotation.ParamParserManager;
 import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.HttpConnectionCreateContext;
 import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.HttpConnectionPreBuildIntercept;
 import org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.consumer.ConsumerParseContext;
+
+import java.util.Arrays;
 
 @Activate(value = "paramparse",order = 5)
 public class ParamParseIntercept implements HttpConnectionPreBuildIntercept {

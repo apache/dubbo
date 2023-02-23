@@ -14,36 +14,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metrics.filter.observation;
+package org.apache.dubbo.metrics.observation;
 
 import io.micrometer.observation.Observation;
 import io.micrometer.observation.ObservationRegistry;
 import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.metrics.filter.observation.DefaultDubboServerObservationConvention;
+import org.apache.dubbo.metrics.filter.observation.DubboObservation;
+import org.apache.dubbo.metrics.filter.observation.DubboServerContext;
+import org.apache.dubbo.metrics.filter.observation.DubboServerObservationConvention;
 import org.apache.dubbo.rpc.BaseFilter;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.cluster.filter.ClusterFilter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
 
-import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
+import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
 
 /**
- * A {@link Filter} that creates an {@link Observation} around the outgoing message.
+ * A {@link Filter} that creates an {@link Observation} around the incoming message.
  */
-@Activate(group = CONSUMER, order = -1,onClass = "io.micrometer.observation.NoopObservationRegistry")
-public class ObservationSenderFilter implements ClusterFilter, BaseFilter.Listener, ScopeModelAware {
+@Activate(group = PROVIDER, order = -1,onClass = "io.micrometer.observation.NoopObservationRegistry")
+public class ObservationReceiverFilter implements Filter, BaseFilter.Listener, ScopeModelAware {
 
     private final ObservationRegistry observationRegistry;
 
-    private final DubboClientObservationConvention clientObservationConvention;
+    private final DubboServerObservationConvention serverObservationConvention;
 
-    public ObservationSenderFilter(ApplicationModel applicationModel) {
+    public ObservationReceiverFilter(ApplicationModel applicationModel) {
         observationRegistry = applicationModel.getBeanFactory().getBean(ObservationRegistry.class);
-        clientObservationConvention = applicationModel.getBeanFactory().getBean(DubboClientObservationConvention.class);
+        serverObservationConvention = applicationModel.getBeanFactory().getBean(DubboServerObservationConvention.class);
     }
 
     @Override
@@ -51,8 +54,8 @@ public class ObservationSenderFilter implements ClusterFilter, BaseFilter.Listen
         if (observationRegistry == null) {
             return invoker.invoke(invocation);
         }
-        DubboClientContext senderContext = new DubboClientContext(invoker, invocation);
-        Observation observation = DubboObservation.CLIENT.observation(this.clientObservationConvention, DefaultDubboClientObservationConvention.INSTANCE, () -> senderContext, observationRegistry);
+        DubboServerContext receiverContext = new DubboServerContext(invoker, invocation);
+        Observation observation = DubboObservation.SERVER.observation(this.serverObservationConvention, DefaultDubboServerObservationConvention.INSTANCE, () -> receiverContext, observationRegistry);
         invocation.put(Observation.class, observation.start());
         return observation.scoped(() -> invoker.invoke(invocation));
     }

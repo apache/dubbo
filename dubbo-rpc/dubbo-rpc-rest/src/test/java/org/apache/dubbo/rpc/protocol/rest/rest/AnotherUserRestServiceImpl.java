@@ -14,24 +14,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.http.factory.impl;
+package org.apache.dubbo.rpc.protocol.rest.rest;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.remoting.Constants;
-import org.apache.dubbo.remoting.http.RestClient;
-import org.apache.dubbo.remoting.http.factory.AbstractHttpClientFactory;
-import org.apache.dubbo.remoting.http.restclient.HttpClientRestClient;
-import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.protocol.rest.User;
 
-@Activate(Constants.APACHE_HTTP_CLIENT)
-public class ApacheHttpClientFactory extends AbstractHttpClientFactory {
+
+public class AnotherUserRestServiceImpl implements AnotherUserRestService {
 
 
     @Override
-    protected RestClient doCreateRestClient(URL url) throws RpcException {
+    public User getUser(Long id) {
 
+        User user = new User();
+        user.setId(id);
+        return user;
+    }
 
-        return new HttpClientRestClient(httpClientConfig);
+    @Override
+    public RegistrationResult registerUser(User user) {
+        return new RegistrationResult(user.getId());
+    }
+
+    @Override
+    public String getContext() {
+
+        return "context";
+    }
+
+    @Override
+    public byte[] bytes(byte[] bytes) {
+        return bytes;
+    }
+
+    @Override
+    public Long number(Long number) {
+        return number;
     }
 }

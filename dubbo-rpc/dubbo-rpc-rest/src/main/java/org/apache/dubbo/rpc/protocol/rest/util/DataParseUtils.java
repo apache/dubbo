@@ -19,17 +19,17 @@ package org.apache.dubbo.rpc.protocol.rest.util;
 import org.apache.dubbo.common.utils.JsonUtils;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
-import java.util.ArrayList;
-import java.util.Collection;
 
 public class DataParseUtils {
 
@@ -72,7 +72,7 @@ public class DataParseUtils {
      * @throws Exception
      */
     public static void writeJsonContent(Object object, OutputStream outputStream) throws Exception {
-        JsonUtils.getJson().serializeObject(outputStream, object);
+        outputStream.write(JsonUtils.getJson().toJson(object).getBytes(StandardCharsets.UTF_8));
     }
 
     /**
@@ -152,14 +152,13 @@ public class DataParseUtils {
 
     }
 
-    public static Object jsonConvert(Class targetType, InputStream inputStream) throws Exception {
-        return JsonUtils.getJson().parseObject(inputStream, targetType);
+    public static Object jsonConvert(Class targetType, byte[] body) throws Exception {
+        return JsonUtils.getJson().toJavaObject(new String(body, StandardCharsets.UTF_8), targetType);
     }
 
 
-    public static Object multipartFormConvert(InputStream inputStream, Charset charset) throws Exception {
-        String body = StreamUtils.copyToString(inputStream, charset);
-        String[] pairs = tokenizeToStringArray(body, "&");
+    public static Object multipartFormConvert(byte[] body, Charset charset) throws Exception {
+        String[] pairs = tokenizeToStringArray(new String(body, StandardCharsets.UTF_8), "&");
         Object result = MultiValueCreator.createMultiValueMap();
         for (String pair : pairs) {
             int idx = pair.indexOf('=');
@@ -175,9 +174,8 @@ public class DataParseUtils {
         return result;
     }
 
-    public static Object multipartFormConvert(InputStream inputStream) throws Exception {
-
-        return multipartFormConvert(inputStream, Charset.defaultCharset());
+    public static Object multipartFormConvert(byte[] body) throws Exception {
+        return multipartFormConvert(body, Charset.defaultCharset());
     }
 
 

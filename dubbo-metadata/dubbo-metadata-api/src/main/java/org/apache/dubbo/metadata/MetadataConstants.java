@@ -27,7 +27,7 @@ public interface MetadataConstants {
     String SERVICE_META_DATA_STORE_TAG = ".smd";
     String CONSUMER_META_DATA_STORE_TAG = ".cmd";
     String METADATA_PUBLISH_DELAY_KEY = "dubbo.application.metadata.publish.delay";
-    int DEFAULT_METADATA_PUBLISH_DELAY = 30000;
+    int DEFAULT_METADATA_PUBLISH_DELAY = 1000;
     String METADATA_PROXY_TIMEOUT_KEY = "dubbo.application.metadata.proxy.delay";
     int DEFAULT_METADATA_TIMEOUT_VALUE = 5000;
     String REPORT_CONSUMER_URL_KEY = "report-consumer-definition";
@@ -42,5 +42,4 @@ public interface MetadataConstants {
     String PATH_SEPARATOR = "/";
     String APPLICATION_FORM_URLENCODED_VALUE = "application/x-www-form-urlencoded";
     String APPLICATION_JSON_VALUE = "application/json";
-
 }

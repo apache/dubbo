@@ -14,24 +14,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.http.factory.impl;
+package org.apache.dubbo.metadata.rest.api;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.remoting.Constants;
-import org.apache.dubbo.remoting.http.RestClient;
-import org.apache.dubbo.remoting.http.factory.AbstractHttpClientFactory;
-import org.apache.dubbo.remoting.http.restclient.HttpClientRestClient;
-import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.metadata.rest.User;
 
-@Activate(Constants.APACHE_HTTP_CLIENT)
-public class ApacheHttpClientFactory extends AbstractHttpClientFactory {
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 
+@Path("u")
+@Consumes({MediaType.APPLICATION_JSON, MediaType.TEXT_XML})
+@Produces({MediaType.APPLICATION_JSON})
+public interface AnotherUserRestService {
 
-    @Override
-    protected RestClient doCreateRestClient(URL url) throws RpcException {
+    @GET
+    @Path("{id : \\d+}")
+    User getUser(@PathParam("id") Long id);
 
+    @POST
+    @Path("register")
+    String registerUser(User user);
 
-        return new HttpClientRestClient(httpClientConfig);
-    }
+    @GET
+    @Path("context")
+    String getContext();
 }

@@ -14,36 +14,44 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.rest.message.decode;
+package org.apache.dubbo.rpc.protocol.rest.message.codec;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.metadata.rest.media.MediaType;
 import org.apache.dubbo.rpc.protocol.rest.message.HttpMessageCodec;
 import org.apache.dubbo.rpc.protocol.rest.message.MediaTypeMatcher;
 import org.apache.dubbo.rpc.protocol.rest.util.DataParseUtils;
 
-import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Map;
+import java.nio.charset.StandardCharsets;
+import java.util.HashSet;
+import java.util.Set;
 
-@Activate("multiValue")
-public class MultiValueCodec implements HttpMessageCodec<InputStream,OutputStream> {
+@Activate("json")
+public class JsonCodec implements HttpMessageCodec<byte[], OutputStream> {
+    private static final Set<Class> unSupportClasses = new HashSet<>();
 
+    static {
 
-    @Override
-    public Object decode(InputStream body, Class targetType) throws Exception {
-        // TODO java bean  get set convert
-        return DataParseUtils.multipartFormConvert(body);
+        unSupportClasses.add(byte[].class);
+        unSupportClasses.add(String.class);
     }
 
     @Override
-    public boolean contentTypeSupport(MediaType mediaType) {
-        return MediaTypeMatcher.MULTI_VALUE.mediaSupport(mediaType);
+    public Object decode(byte[] body, Class targetType) throws Exception {
+        return DataParseUtils.jsonConvert(targetType, body);
     }
+
+    @Override
+    public boolean contentTypeSupport(MediaType mediaType, Class targetType) {
+        return MediaTypeMatcher.APPLICATION_JSON.mediaSupport(mediaType) && !unSupportClasses.contains(targetType);
+    }
+
 
     @Override
     public void encode(OutputStream outputStream, Object unSerializedBody, URL url) throws Exception {
-        DataParseUtils.writeFormContent((Map) unSerializedBody, outputStream);
+        outputStream.write(JsonUtils.getJson().toJson(unSerializedBody).getBytes(StandardCharsets.UTF_8));
     }
 }

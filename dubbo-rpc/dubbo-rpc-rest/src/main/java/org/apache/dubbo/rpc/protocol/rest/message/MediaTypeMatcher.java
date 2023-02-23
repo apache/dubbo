@@ -27,6 +27,7 @@ public enum MediaTypeMatcher {
     MULTI_VALUE(createMediaList(MediaType.APPLICATION_FORM_URLENCODED_VALUE)),
     APPLICATION_JSON(createMediaList(MediaType.APPLICATION_JSON_VALUE)),
     TEXT_PLAIN(createMediaList(MediaType.TEXT_PLAIN, MediaType.OCTET_STREAM)),
+    TEXT_XML(createMediaList(MediaType.TEXT_XML)),
 
     ;
 

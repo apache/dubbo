@@ -14,37 +14,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.rest.message.decode;
+package org.apache.dubbo.rpc.protocol.rest.message.codec;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.metadata.rest.media.MediaType;
 import org.apache.dubbo.rpc.protocol.rest.message.HttpMessageCodec;
-import org.apache.dubbo.rpc.protocol.rest.message.MediaTypeMatcher;
-import org.apache.dubbo.rpc.protocol.rest.util.DataParseUtils;
 
-import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
 
-@Activate("json")
-public class JsonCodec implements HttpMessageCodec<InputStream,OutputStream> {
+@Activate("byteArray")
+public class ByteArrayCodec implements HttpMessageCodec<byte[], OutputStream> {
 
 
     @Override
-    public Object decode(InputStream body, Class targetType) throws Exception {
-        return DataParseUtils.jsonConvert(targetType, body);
+    public Object decode(byte[] body, Class targetType) throws Exception {
+        return body;
     }
 
     @Override
-    public boolean contentTypeSupport(MediaType mediaType) {
-        return MediaTypeMatcher.APPLICATION_JSON.mediaSupport(mediaType);
+    public boolean contentTypeSupport(MediaType mediaType, Class targetType) {
+        return byte[].class.equals(targetType);
     }
 
 
     @Override
     public void encode(OutputStream outputStream, Object unSerializedBody, URL url) throws Exception {
-        outputStream.write(JsonUtils.getJson().toJson(unSerializedBody).getBytes(StandardCharsets.UTF_8));
+        outputStream.write((byte[]) unSerializedBody);
     }
 }

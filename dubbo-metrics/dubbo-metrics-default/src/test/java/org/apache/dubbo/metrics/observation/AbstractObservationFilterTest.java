@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.metrics.filter.observation;
+package org.apache.dubbo.metrics.observation;
 
 import io.micrometer.tracing.test.SampleTestRunner;
 import org.apache.dubbo.config.ApplicationConfig;

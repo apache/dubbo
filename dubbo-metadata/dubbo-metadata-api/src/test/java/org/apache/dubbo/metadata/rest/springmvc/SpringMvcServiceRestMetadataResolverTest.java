@@ -18,7 +18,12 @@ package org.apache.dubbo.metadata.rest.springmvc;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.JsonUtils;
-import org.apache.dubbo.metadata.rest.*;
+import org.apache.dubbo.metadata.rest.ClassPathServiceRestMetadataReader;
+import org.apache.dubbo.metadata.rest.DefaultRestService;
+import org.apache.dubbo.metadata.rest.RestMethodMetadata;
+import org.apache.dubbo.metadata.rest.RestService;
+import org.apache.dubbo.metadata.rest.ServiceRestMetadata;
+import org.apache.dubbo.metadata.rest.StandardRestService;
 import org.apache.dubbo.metadata.rest.api.SpringRestService;
 import org.apache.dubbo.metadata.rest.api.SpringRestServiceImpl;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -47,15 +52,15 @@ class SpringMvcServiceRestMetadataResolverTest {
     @Test
     void testSupports() {
         // Spring MVC RestService class
-        assertTrue(instance.supports(SpringRestService.class));
+        assertTrue(instance.supports(SpringRestService.class, true));
         // JAX-RS RestService class
-        assertFalse(instance.supports(StandardRestService.class));
+        assertFalse(instance.supports(StandardRestService.class, true));
         // Default RestService class
-        assertFalse(instance.supports(DefaultRestService.class));
+        assertFalse(instance.supports(DefaultRestService.class, true));
         // No annotated RestService class
-        assertFalse(instance.supports(RestService.class));
+        assertFalse(instance.supports(RestService.class, true));
         // null
-        assertFalse(instance.supports(null));
+        assertFalse(instance.supports(null, true));
     }
 
     @Test
@@ -83,7 +88,7 @@ class SpringMvcServiceRestMetadataResolverTest {
     void testResolve(Class service) {
         List<String> jsons = Arrays.asList(
 
-            "{\"argInfos\":[{\"annotationNameAttribute\":\"\",\"formContentType\":false,\"index\":0,\"paramAnnotationType\":\"org.springframework.web.bind.annotation.PathVariable\",\"paramName\":\"a\",\"paramType\":\"java.lang.String\",\"urlSplitIndex\":0}],\"codeStyle\":\"org.apache.dubbo.metadata.rest.springmvc.SpringMvcServiceRestMetadataResolver\",\"indexToName\":{0:[\"a\"]},\"method\":{\"annotations\":[],\"parameters\":[]},\"request\":{\"consumes\":[\"application/x-www-form-urlencoded\"],\"headerNames\":[],\"headers\":{},\"method\":\"POST\",\"paramNames\":[],\"params\":{},\"path\":\"/pathVariable/{a}\",\"produces\":[\"application/x-www-form-urlencoded\"]}}",
+            "{\"argInfos\":[{\"annotationNameAttribute\":\"\",\"formContentType\":false,\"index\":0,\"paramAnnotationType\":\"org.springframework.web.bind.annotation.PathVariable\",\"paramName\":\"a\",\"paramType\":\"java.lang.String\",\"urlSplitIndex\":2}],\"codeStyle\":\"org.apache.dubbo.metadata.rest.springmvc.SpringMvcServiceRestMetadataResolver\",\"indexToName\":{0:[\"a\"]},\"method\":{\"annotations\":[],\"parameters\":[]},\"request\":{\"consumes\":[\"application/x-www-form-urlencoded\"],\"headerNames\":[],\"headers\":{},\"method\":\"POST\",\"paramNames\":[],\"params\":{},\"path\":\"/pathVariable/{a}\",\"produces\":[\"application/x-www-form-urlencoded\"]}}",
             "{\"argInfos\":[{\"annotationNameAttribute\":\"user\",\"formContentType\":false,\"index\":0,\"paramAnnotationType\":\"org.springframework.web.bind.annotation.RequestBody\",\"paramName\":\"user\",\"paramType\":\"org.apache.dubbo.metadata.rest.User\",\"urlSplitIndex\":0}],\"codeStyle\":\"org.apache.dubbo.metadata.rest.springmvc.SpringMvcServiceRestMetadataResolver\",\"indexToName\":{0:[\"user\"]},\"method\":{\"annotations\":[],\"parameters\":[]},\"request\":{\"consumes\":[\"application/json\"],\"headerNames\":[],\"headers\":{},\"method\":\"POST\",\"paramNames\":[],\"params\":{},\"path\":\"/header\",\"produces\":[\"application/json\"]}}",
             "{\"argInfos\":[{\"annotationNameAttribute\":\"param\",\"defaultValue\":\"{0}\",\"formContentType\":false,\"index\":0,\"paramAnnotationType\":\"org.springframework.web.bind.annotation.RequestParam\",\"paramName\":\"param\",\"paramType\":\"java.lang.String\",\"urlSplitIndex\":0}],\"codeStyle\":\"org.apache.dubbo.metadata.rest.springmvc.SpringMvcServiceRestMetadataResolver\",\"indexToName\":{0:[\"param\"]},\"method\":{\"annotations\":[],\"parameters\":[]},\"request\":{\"consumes\":[\"text/plain\"],\"headerNames\":[],\"headers\":{},\"method\":\"GET\",\"paramNames\":[\"param\"],\"params\":{\"param\":[\"{0}\"]},\"path\":\"/param\",\"produces\":[\"text/plain\"]}}",
             "{\"argInfos\":[{\"annotationNameAttribute\":\"map\",\"formContentType\":false,\"index\":0,\"paramAnnotationType\":\"org.springframework.web.bind.annotation.RequestBody\",\"paramName\":\"map\",\"paramType\":\"org.springframework.util.MultiValueMap\",\"urlSplitIndex\":0}],\"codeStyle\":\"org.apache.dubbo.metadata.rest.springmvc.SpringMvcServiceRestMetadataResolver\",\"indexToName\":{0:[\"map\"]},\"method\":{\"annotations\":[],\"parameters\":[]},\"request\":{\"consumes\":[\"application/x-www-form-urlencoded\"],\"headerNames\":[],\"headers\":{},\"method\":\"POST\",\"paramNames\":[],\"params\":{},\"path\":\"/multiValue\",\"produces\":[\"application/x-www-form-urlencoded\"]}}",
