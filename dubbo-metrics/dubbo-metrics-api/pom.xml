@@ -54,15 +54,5 @@
             <groupId>com.tdunning</groupId>
             <artifactId>t-digest</artifactId>
         </dependency>
-        <dependency>
-            <groupId>io.micrometer</groupId>
-            <artifactId>micrometer-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.micrometer</groupId>
-            <artifactId>micrometer-tracing-integration-test</artifactId>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 </project>
