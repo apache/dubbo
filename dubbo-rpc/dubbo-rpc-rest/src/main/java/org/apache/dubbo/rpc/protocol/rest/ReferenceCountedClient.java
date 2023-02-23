@@ -31,15 +31,19 @@ public class ReferenceCountedClient<T extends RestClient> extends ReferenceCount
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ReferenceCountedClient.class);
 
     private ConcurrentMap<String, ReferenceCountedClient<? extends RestClient>> clients;
+    private URL url;
+    private RestClientFactory clientFactory;
 
     private T client;
 
-    public ReferenceCountedClient(T client, ConcurrentMap<String, ReferenceCountedClient<? extends RestClient>> clients) {
+    public ReferenceCountedClient(T client, ConcurrentMap<String, ReferenceCountedClient<? extends RestClient>> clients, RestClientFactory clientFactory, URL url) {
         this.client = client;
         this.clients = clients;
+        this.clientFactory = clientFactory;
+        this.url = url;
     }
 
-    public T getClient(URL url, RestClientFactory restClientFactory) {
+    public T getClient() {
 
         // for client destroy and create right now, only  lock current client
         synchronized (this) {
@@ -50,9 +54,8 @@ public class ReferenceCountedClient<T extends RestClient> extends ReferenceCount
                 synchronized (this) {
                     referenceCountedClient = clients.get(url.getAddress());
                     if (referenceCountedClient.isDestroyed()) {
-                        RestClient restClient = restClientFactory.createRestClient(url);
-                        clients.put(url.getAddress(), new ReferenceCountedClient(restClient, clients));
-                        clients.get(url.getAddress()).retain();
+                        RestClient restClient = clientFactory.createRestClient(url);
+                        clients.put(url.getAddress(), new ReferenceCountedClient(restClient, clients, clientFactory, url));
                         return (T) restClient;
                     } else {
                         return (T) referenceCountedClient.client;
