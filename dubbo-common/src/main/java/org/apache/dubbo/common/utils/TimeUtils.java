@@ -30,18 +30,16 @@ public final class TimeUtils {
 
     static {
         currentTimeMillis = System.currentTimeMillis();
-        Thread ticker = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while (isTickerAlive) {
-                    currentTimeMillis = System.currentTimeMillis();
-                    try {
-                        TimeUnit.MILLISECONDS.sleep(1);
-                    } catch (InterruptedException e) {
-                        isTickerAlive = false;
-                    } catch (Exception ignored) {
-                        //
-                    }
+        Thread ticker = new Thread(() -> {
+            while (isTickerAlive) {
+                currentTimeMillis = System.currentTimeMillis();
+                try {
+                    TimeUnit.MILLISECONDS.sleep(1);
+                } catch (InterruptedException e) {
+                    isTickerAlive = false;
+                    Thread.currentThread().interrupt();
+                } catch (Exception ignored) {
+                    //
                 }
             }
         });
