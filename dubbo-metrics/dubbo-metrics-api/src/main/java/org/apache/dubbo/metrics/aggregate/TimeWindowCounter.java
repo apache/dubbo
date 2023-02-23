@@ -42,8 +42,7 @@ public class TimeWindowCounter {
     }
 
     public long bucketLivedSeconds() {
-        return TimeUnit.MILLISECONDS.toSeconds((long)
-            this.slidingWindow.values().size() * this.slidingWindow.getPaneIntervalInMs());
+        return TimeUnit.MILLISECONDS.toSeconds(this.slidingWindow.values().size() * this.slidingWindow.getPaneIntervalInMs());
     }
 
     public void increment() {

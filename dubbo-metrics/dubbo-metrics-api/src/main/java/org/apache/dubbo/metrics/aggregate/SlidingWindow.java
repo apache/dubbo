@@ -60,7 +60,7 @@ public abstract class SlidingWindow<T> {
      */
     private final ReentrantLock updateLock = new ReentrantLock();
 
-    public SlidingWindow(int paneCount, long intervalInMs) {
+    protected SlidingWindow(int paneCount, long intervalInMs) {
         Assert.assertTrue(paneCount > 0, "pane count is invalid: " + paneCount);
         Assert.assertTrue(intervalInMs > 0, "total time interval of the sliding window should be positive");
         Assert.assertTrue(intervalInMs % paneCount == 0, "total time interval needs to be evenly divided");

@@ -26,6 +26,8 @@ public final class TimeUtils {
 
     private static volatile long currentTimeMillis;
 
+    private static volatile boolean isTickerInterrupted = false;
+
     static {
         currentTimeMillis = System.currentTimeMillis();
         Thread ticker = new Thread(new Runnable() {
@@ -35,7 +37,10 @@ public final class TimeUtils {
                     currentTimeMillis = System.currentTimeMillis();
                     try {
                         TimeUnit.MILLISECONDS.sleep(1);
-                    } catch (Throwable ignored) {
+                    } catch (InterruptedException e) {
+                        isTickerInterrupted = true;
+                        Thread.currentThread().interrupt();
+                    } catch (Exception ignored) {
                         //
                     }
                 }
@@ -51,6 +56,10 @@ public final class TimeUtils {
     }
 
     public static long currentTimeMillis() {
-        return currentTimeMillis;
+        if (isTickerInterrupted) {
+            return System.currentTimeMillis();
+        } else {
+            return currentTimeMillis;
+        }
     }
 }

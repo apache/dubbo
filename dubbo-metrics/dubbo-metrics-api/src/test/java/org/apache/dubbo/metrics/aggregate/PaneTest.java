@@ -64,10 +64,9 @@ class PaneTest {
     }
 
     @Test
-    void testIsTimeInWindow() throws Exception {
+    void testIsTimeInWindow() {
         Pane<?> pane = new Pane<>(10, System.currentTimeMillis(), new Object());
         assertTrue(pane.isTimeInWindow(System.currentTimeMillis()));
-        Thread.sleep(10);
-        assertFalse(pane.isTimeInWindow(System.currentTimeMillis()));
+        assertFalse(pane.isTimeInWindow(System.currentTimeMillis() + 10));
     }
 }
