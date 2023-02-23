@@ -151,7 +151,7 @@ public abstract class AbstractServerCall implements ServerCall, ServerStream.Lis
         final byte[] data;
         try {
             data = packableMethod.packResponse(message);
-        } catch (Throwable e) {
+        } catch (Exception e) {
             close(TriRpcStatus.INTERNAL.withDescription("Serialize response failed")
                 .withCause(e), null);
             LOGGER.error(PROTOCOL_FAILED_SERIALIZE_TRIPLE,"","",String.format("Serialize triple response failed, service=%s method=%s",
@@ -196,12 +196,12 @@ public abstract class AbstractServerCall implements ServerCall, ServerStream.Lis
         try {
             Object instance = parseSingleMessage(message);
             listener.onMessage(instance);
-        } catch (Throwable t) {
+        } catch (Exception e) {
             final TriRpcStatus status = TriRpcStatus.UNKNOWN.withDescription("Server error")
-                .withCause(t);
+                .withCause(e);
             close(status, null);
             LOGGER.error(PROTOCOL_FAILED_REQUEST,"","","Process request failed. service=" + serviceName +
-                " method=" + methodName, t);
+                " method=" + methodName, e);
         } finally {
             ClassLoadUtil.switchContextLoader(tccl);
         }
@@ -245,7 +245,7 @@ public abstract class AbstractServerCall implements ServerCall, ServerStream.Lis
             if (Objects.nonNull(timeout)) {
                 this.timeout = parseTimeoutToMills(timeout);
             }
-        } catch (Throwable t) {
+        } catch (Exception e) {
             LOGGER.warn(PROTOCOL_FAILED_PARSE, "", "", String.format("Failed to parse request timeout set from:%s, service=%s "
                 + "method=%s", timeout, serviceDescriptor.getInterfaceName(), methodName));
         }
@@ -402,10 +402,10 @@ public abstract class AbstractServerCall implements ServerCall, ServerStream.Lis
                     throw new IllegalStateException("Can not reach here");
             }
             return listener;
-        } catch (Throwable t) {
-            LOGGER.error(PROTOCOL_FAILED_CREATE_STREAM_TRIPLE, "", "", "Create triple stream failed", t);
+        } catch (Exception e) {
+            LOGGER.error(PROTOCOL_FAILED_CREATE_STREAM_TRIPLE, "", "", "Create triple stream failed", e);
             responseErr(TriRpcStatus.INTERNAL.withDescription("Create stream failed")
-                .withCause(t));
+                .withCause(e));
         }
         return null;
     }
