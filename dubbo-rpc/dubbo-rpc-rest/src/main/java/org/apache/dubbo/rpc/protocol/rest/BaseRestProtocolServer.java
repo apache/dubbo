@@ -25,22 +25,22 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
+import static org.apache.dubbo.rpc.protocol.rest.Constants.EXCEPTION_MAPPER_KEY;
 import static org.apache.dubbo.rpc.protocol.rest.Constants.EXTENSION_KEY;
 
 public abstract class BaseRestProtocolServer implements RestProtocolServer {
 
     private String address;
 
-    private Map<String, Object> attributes = new ConcurrentHashMap<>();
+    private final Map<String, Object> attributes = new ConcurrentHashMap<>();
 
     @Override
     public void start(URL url) {
         getDeployment().getMediaTypeMappings().put("json", "application/json");
         getDeployment().getMediaTypeMappings().put("xml", "text/xml");
-//        server.getDeployment().getMediaTypeMappings().put("xml", "application/xml");
         getDeployment().getProviderClasses().add(RpcContextFilter.class.getName());
-        // TODO users can override this mapper, but we just rely on the current priority strategy of resteasy
-        getDeployment().getProviderClasses().add(RpcExceptionMapper.class.getName());
+
+        loadProviders(url.getParameter(EXCEPTION_MAPPER_KEY, RpcExceptionMapper.class.getName()));
 
         loadProviders(url.getParameter(EXTENSION_KEY, ""));
 
@@ -48,7 +48,7 @@ public abstract class BaseRestProtocolServer implements RestProtocolServer {
     }
 
     @Override
-    public void deploy(Class resourceDef, Object resourceInstance, String contextPath) {
+    public void deploy(Class<?> resourceDef, Object resourceInstance, String contextPath) {
         if (StringUtils.isEmpty(contextPath)) {
             getDeployment().getRegistry().addResourceFactory(new DubboResourceFactory(resourceInstance, resourceDef));
         } else {
@@ -57,7 +57,7 @@ public abstract class BaseRestProtocolServer implements RestProtocolServer {
     }
 
     @Override
-    public void undeploy(Class resourceDef) {
+    public void undeploy(Class<?> resourceDef) {
         getDeployment().getRegistry().removeRegistrations(resourceDef);
     }
 

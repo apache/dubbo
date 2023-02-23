@@ -26,8 +26,8 @@ public interface RestProtocolServer extends ProtocolServer {
     /**
      * @param resourceDef it could be either resource interface or resource impl
      */
-    void deploy(Class resourceDef, Object resourceInstance, String contextPath);
+    void deploy(Class<?> resourceDef, Object resourceInstance, String contextPath);
 
-    void undeploy(Class resourceDef);
+    void undeploy(Class<?> resourceDef);
 
 }
