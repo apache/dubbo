@@ -34,6 +34,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.dubbo.decode.MockChannel;
 import org.apache.dubbo.rpc.protocol.dubbo.support.DemoService;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -53,7 +54,12 @@ class DecodeableRpcInvocationTest {
     void test() throws Exception {
         // Simulate the data called by the client(The called data is stored in invocation and written to the buffer)
         URL url = new ServiceConfigURL("dubbo", "127.0.0.1", 9103, DemoService.class.getName(), VERSION_KEY, "1.0.0");
-        RpcInvocation inv = buildRpcInvocation(DemoService.class.getName(), url);
+        RpcInvocation inv = new RpcInvocation(null, "sayHello", DemoService.class.getName(), "", new Class<?>[]{String.class}, new String[]{"yug"});
+        inv.setObjectAttachment(PATH_KEY, url.getPath());
+        inv.setObjectAttachment(VERSION_KEY, url.getVersion());
+        inv.setObjectAttachment(DUBBO_VERSION_KEY, DUBBO_VERSION);
+        inv.setObjectAttachment("k1", "v1");
+        inv.setObjectAttachment("k2", "v2");
         inv.setTargetServiceUniqueName(url.getServiceKey());
         // Write the data of inv to the buffer
         Byte proto = CodecSupport.getIDByName(DefaultSerializationSelector.getDefaultRemotingSerialization());
@@ -80,26 +86,10 @@ class DecodeableRpcInvocationTest {
         Assertions.assertEquals(decodeableRpcInvocation.getParameterTypesDesc(), inv.getParameterTypesDesc());
         Assertions.assertArrayEquals(decodeableRpcInvocation.getParameterTypes(), inv.getParameterTypes());
         Assertions.assertArrayEquals(decodeableRpcInvocation.getArguments(), inv.getArguments());
-        decodeableRpcInvocation.getObjectAttachments().remove("originGenericParameterTypes");
         Assertions.assertTrue(CollectionUtils.mapEquals(decodeableRpcInvocation.getObjectAttachments(), inv.getObjectAttachments()));
         Assertions.assertEquals(decodeableRpcInvocation.getTargetServiceUniqueName(), inv.getTargetServiceUniqueName());
 
         frameworkModel.destroy();
-    }
-
-    @Test
-    void testRetryableDecode() {
-
-    }
-
-    private RpcInvocation buildRpcInvocation(String Name, URL url) {
-        RpcInvocation inv = new RpcInvocation(null, "sayHello", Name, "", new Class<?>[]{String.class}, new String[]{"yug"});
-        inv.setObjectAttachment(PATH_KEY, url.getPath());
-        inv.setObjectAttachment(VERSION_KEY, url.getVersion());
-        inv.setObjectAttachment(DUBBO_VERSION_KEY, DUBBO_VERSION);
-        inv.setObjectAttachment("k1", "v1");
-        inv.setObjectAttachment("k2", "v2");
-        return inv;
     }
 
     private ChannelBuffer writeBuffer(URL url, RpcInvocation inv, Byte proto) throws IOException {
