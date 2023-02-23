@@ -63,7 +63,7 @@ public class Request {
 
         try {
             return data.toString();
-        } catch (Throwable e) {
+        } catch (Exception e) {
             return "<Fail toString of " + data.getClass() + ", cause: " + StringUtils.toString(e) + ">";
         }
     }

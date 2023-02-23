@@ -161,7 +161,7 @@ final class HeaderExchangeChannel implements ExchangeChannel {
             // graceful close
             DefaultFuture.closeChannel(channel);
             channel.close();
-        } catch (Throwable e) {
+        } catch (Exception e) {
             logger.warn(TRANSPORT_FAILED_CLOSE, "", "", e.getMessage(), e);
         }
     }
