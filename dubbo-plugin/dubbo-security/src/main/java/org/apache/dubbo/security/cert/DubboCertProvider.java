@@ -43,6 +43,9 @@ public class DubboCertProvider implements CertProvider {
     @Override
     public ProviderCert getProviderConnectionConfig(URL localAddress) {
         CertPair certPair = dubboCertManager.generateCert();
+        if (certPair == null) {
+            return null;
+        }
         return new ProviderCert(certPair.getPublicKey().getBytes(StandardCharsets.UTF_8),
             certPair.getPrivateKey().getBytes(StandardCharsets.UTF_8),
             certPair.getTrustCerts().getBytes(StandardCharsets.UTF_8), null, AuthPolicy.NONE);
@@ -51,6 +54,9 @@ public class DubboCertProvider implements CertProvider {
     @Override
     public Cert getConsumerConnectionConfig(URL remoteAddress) {
         CertPair certPair = dubboCertManager.generateCert();
+        if (certPair == null) {
+            return null;
+        }
         return new Cert(certPair.getPublicKey().getBytes(StandardCharsets.UTF_8),
             certPair.getPrivateKey().getBytes(StandardCharsets.UTF_8),
             certPair.getTrustCerts().getBytes(StandardCharsets.UTF_8));

@@ -33,9 +33,11 @@ message DubboCertificateRequest {
 }
 
 message DubboCertificateResponse {
-  string public_key = 1;
-  repeated string trust_certs = 2;
-  int64 expire_time = 3;
+  bool success = 1;
+  string cert_pem = 2;
+  repeated string trust_certs = 3;
+  int64 expire_time = 4;
+  string message = 5;
 }
 
 service DubboCertificateService {

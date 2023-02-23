@@ -64,7 +64,7 @@ public class SslServerTlsHandler extends ByteToMessageDecoder {
             SslHandshakeCompletionEvent handshakeEvent = (SslHandshakeCompletionEvent) evt;
             if (handshakeEvent.isSuccess()) {
                 SSLSession session = ctx.pipeline().get(SslHandler.class).engine().getSession();
-                logger.info("TLS negotiation succeed with session: " + session);
+                logger.info("TLS negotiation succeed with: " + session.getPeerHost());
                 // Remove after handshake success.
                 ctx.pipeline().remove(this);
             } else {
