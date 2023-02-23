@@ -53,8 +53,9 @@ public class DecodeHandler extends AbstractChannelHandlerDelegate {
         try {
             handler.received(channel, message);
         } catch (RetryHandleException e) {
-            if (message instanceof ErrorData) {
-                retry(((ErrorData) message).getData());
+            if (message instanceof Request) {
+                ErrorData errorData = (ErrorData) ((Request) message).getData();
+                retry(errorData.getData());
             } else {
                 // Retry only once, and only Request will throw an RetryHandleException
                 throw new RemotingException(channel, "Unknown error encountered when retry handle: " + e.getMessage());
