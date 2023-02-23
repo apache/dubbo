@@ -49,6 +49,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FILTER_VALIDATION_EXCEPTION;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.VULNERABILITY_WARNING;
 import static org.apache.dubbo.rpc.Constants.ACCESS_LOG_FIXED_PATH_KEY;
 
 /**
@@ -160,13 +161,13 @@ public class AccessLogFilter implements Filter {
                 processWithServiceLogger(logSet);
             } else {
                 if (isFixedPath) {
-                    logger.warn("Change of accesslog file path not allowed, will write to the default location, " +
-                        "please enable this feature by setting 'accesslog.fixed.path=true' and restart the process. " +
-                        "We highly recommend to not enable this feature in production for security concerns, " +
-                        "please be fully aware of the potential risks before doing so!");
+                    logger.warn(VULNERABILITY_WARNING, "Change of accesslog file path not allowed. ", "", "Will write to the default location, \" +\n" +
+                        "                        \"please enable this feature by setting 'accesslog.fixed.path=true' and restart the process. \" +\n" +
+                        "                        \"We highly recommend to not enable this feature in production for security concerns, \" +\n" +
+                        "                        \"please be fully aware of the potential risks before doing so!");
                     processWithServiceLogger(logSet);
                 } else {
-                    logger.warn("Accesslog file path changed to " + accessLog + ", be aware of possible vulnerabilities!");
+                    logger.warn(VULNERABILITY_WARNING, "Accesslog file path changed to " + accessLog + ", be aware of possible vulnerabilities!", "", "");
                     File file = new File(accessLog);
                     createIfLogDirAbsent(file);
                     if (logger.isDebugEnabled()) {
@@ -260,6 +261,7 @@ public class AccessLogFilter implements Filter {
         return LOG_OUTPUT_INTERVAL;
     }
 
+    // test purpose only
     public void destroy() {
         future.cancel(true);
     }
