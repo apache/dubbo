@@ -28,6 +28,7 @@ import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.ExceptionProcessor;
 import org.apache.dubbo.remoting.ExecutionException;
 import org.apache.dubbo.remoting.RemotingException;
+import org.apache.dubbo.remoting.exchange.ErrorData;
 import org.apache.dubbo.remoting.exchange.ExchangeChannel;
 import org.apache.dubbo.remoting.exchange.ExchangeHandler;
 import org.apache.dubbo.remoting.exchange.Request;
@@ -86,17 +87,22 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
         Response res = new Response(req.getId(), req.getVersion());
         if (req.isBroken()) {
             Object data = req.getData();
-            Throwable error = req.getError();
+            Throwable error = null;
 
             String msg;
             if (data == null) {
                 msg = null;
+            } else if (data instanceof Throwable) {
+                error = (Throwable) data;
+                msg = StringUtils.toString(error);
+            } else if (data instanceof ErrorData) {
+                error = ((ErrorData) data).getThrowable();
+                msg = StringUtils.toString(error);
             } else {
                 msg = data.toString();
             }
 
             if (error != null) {
-                msg = StringUtils.toString(error);
                 // Give ExceptionProcessors a chance to retry request handle or custom exception information.
                 String exPs = System.getProperty(EXCEPTION_PROCESSOR_KEY);
                 if (StringUtils.isNotBlank(exPs)) {

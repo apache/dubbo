@@ -24,6 +24,7 @@ import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Decodeable;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.RetryHandleException;
+import org.apache.dubbo.remoting.exchange.ErrorData;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.Response;
 
@@ -39,24 +40,6 @@ public class DecodeHandler extends AbstractChannelHandlerDelegate {
 
     @Override
     public void received(Channel channel, Object message) throws RemotingException {
-        doReceived(message);
-
-
-        try {
-            handler.received(channel, message);
-        } catch (RetryHandleException e) {
-            if (message instanceof Request) {
-                Request request = (Request) message;
-                retry(request.getData());
-            } else {
-                // Retry only once, and only Request will throw an RetryHandleException
-                throw new RemotingException(channel, "Unknown error encountered when retry handle: " + e.getMessage());
-            }
-            handler.received(channel, message);
-        }
-    }
-
-    private void doReceived(Object message) {
         if (message instanceof Decodeable) {
             decode(message);
         }
@@ -65,6 +48,18 @@ public class DecodeHandler extends AbstractChannelHandlerDelegate {
         }
         if (message instanceof Response) {
             decode(((Response) message).getResult());
+        }
+
+        try {
+            handler.received(channel, message);
+        } catch (RetryHandleException e) {
+            if (message instanceof ErrorData) {
+                retry(((ErrorData) message).getData());
+            } else {
+                // Retry only once, and only Request will throw an RetryHandleException
+                throw new RemotingException(channel, "Unknown error encountered when retry handle: " + e.getMessage());
+            }
+            handler.received(channel, message);
         }
     }
 

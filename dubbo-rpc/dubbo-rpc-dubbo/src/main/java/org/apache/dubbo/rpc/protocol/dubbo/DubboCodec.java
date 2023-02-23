@@ -166,7 +166,7 @@ public class DubboCodec extends ExchangeCodec {
                 }
                 // bad request
                 req.setBroken(true);
-                req.setError(t);
+                req.setData(t);
             }
 
             return req;

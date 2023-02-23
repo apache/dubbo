@@ -32,6 +32,7 @@ import org.apache.dubbo.remoting.Codec;
 import org.apache.dubbo.remoting.Decodeable;
 import org.apache.dubbo.remoting.ExceptionProcessor;
 import org.apache.dubbo.remoting.ServiceNotFoundException;
+import org.apache.dubbo.remoting.exchange.ErrorData;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.transport.CodecSupport;
 import org.apache.dubbo.rpc.RpcInvocation;
@@ -116,7 +117,7 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
                     log.warn(PROTOCOL_FAILED_DECODE, "", "", "Decode rpc invocation failed: " + e.getMessage(), e);
                 }
                 request.setBroken(true);
-                request.setError(e);
+                request.setData(e);
             } finally {
                 hasDecoded = true;
                 if (finishDecode) {
@@ -150,7 +151,7 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
                     log.warn(PROTOCOL_FAILED_DECODE, "", "", "Decode rpc invocation failed: " + e.getMessage(), e);
                 }
                 request.setBroken(true);
-                request.setError(e);
+                request.setData(ErrorData.of(this, e));
             } finally {
                 expProcessor.cleanUp(this);
             }

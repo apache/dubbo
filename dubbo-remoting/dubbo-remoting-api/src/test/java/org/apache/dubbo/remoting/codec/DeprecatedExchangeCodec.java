@@ -186,7 +186,7 @@ final class DeprecatedExchangeCodec extends DeprecatedTelnetCodec implements Cod
             } catch (Throwable t) {
                 // bad request
                 req.setBroken(true);
-                req.setError(t);
+                req.setData(t);
             }
             return req;
         }

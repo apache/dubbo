@@ -207,7 +207,7 @@ public class ExchangeCodec extends TelnetCodec {
             } catch (Throwable t) {
                 // bad request
                 req.setBroken(true);
-                req.setError(t);
+                req.setData(t);
             }
             return req;
         }
