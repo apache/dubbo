@@ -72,6 +72,8 @@ public class MethodConfig extends AbstractMethodConfig {
      * Thread limits for method invocations
      */
     private Integer executes;
+    private String flowcontrol;
+    private Integer staticflowcontrol;
 
     /**
      * If it's deprecated
@@ -379,6 +381,19 @@ public class MethodConfig extends AbstractMethodConfig {
 
     public void setExecutes(Integer executes) {
         this.executes = executes;
+    }
+
+    public void setFlowcontrol(String flowControlKey){
+        this.flowcontrol = flowControlKey;
+    }
+    public String getFlowcontrol(){
+        return flowcontrol;
+    }
+    public void setStaticflowcontrol(Integer staticFlowControl){
+        this.staticflowcontrol = staticFlowControl;
+    }
+    public Integer getStaticflowcontrol(){
+        return staticflowcontrol;
     }
 
     public Boolean getDeprecated() {

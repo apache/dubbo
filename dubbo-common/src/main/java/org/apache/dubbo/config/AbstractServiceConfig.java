@@ -109,6 +109,9 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
      */
     private Integer executes;
 
+    private String flowcontrol;
+    private Integer staticflowcontrol;
+
     /**
      * Whether to register
      */
@@ -305,6 +308,20 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
     public void setExecutes(Integer executes) {
         this.executes = executes;
     }
+    public String getFlowcontrol(){
+        return flowcontrol;
+    }
+    public void setFlowcontrol(String flowControlKey){
+        this.flowcontrol = flowControlKey;
+    }
+    public Integer getStaticflowcontrol(){
+        return staticflowcontrol;
+    }
+    public void setStaticflowcontrol(Integer staticFlowControl){
+        this.staticflowcontrol = staticFlowControl;
+    }
+
+
 
     @Override
     @Parameter(key = SERVICE_FILTER_KEY, append = true)

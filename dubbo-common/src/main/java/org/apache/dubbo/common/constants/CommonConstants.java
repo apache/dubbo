@@ -598,6 +598,13 @@ public interface CommonConstants {
      */
     String UNLOAD_CLUSTER_RELATED = "unloadClusterRelated";
 
+
+    String FLOW_CONTROL_KEY = "flowcontrol";
+    String STATIC_FLOW_CONTROL_KEY = "staticflowcontrol";
+    String STATIC_FLOW_CONTROL = "staticFlowControl";
+    String DEFAULT_FLOW_CONTROL = "heuristicSmoothingFlowControl";
+
+
     /**
      * used for thread isolation between services
      */
@@ -617,4 +624,5 @@ public interface CommonConstants {
 
     String ENCODE_IN_IO_THREAD_KEY = "encode.in.io";
     boolean DEFAULT_ENCODE_IN_IO_THREAD = false;
+
 }

@@ -119,7 +119,9 @@ public @interface DubboService {
      * Maximum concurrent executes for the service, default value is -1 - no limits
      */
     int executes() default -1;
+    String flowcontrol() default "";
 
+    int staticflowcontrol() default -1;
     /**
      * Whether to register the service to register center, default value is true
      */
