@@ -170,7 +170,7 @@ public class RestProtocol extends AbstractProxyProtocol {
                     }
 
 
-                    CompletableFuture<RestResult> future = finalRefClient.getClient(url, clientFactory).send(requestTemplate);
+                    CompletableFuture<RestResult> future = finalRefClient.getClient().send(requestTemplate);
                     CompletableFuture<AppResponse> responseFuture = new CompletableFuture<>();
                     AsyncRpcResult asyncRpcResult = new AsyncRpcResult(responseFuture, invocation);
                     future.whenComplete((r, t) -> {
@@ -231,7 +231,9 @@ public class RestProtocol extends AbstractProxyProtocol {
         // url -> RestClient
         RestClient restClient = clientFactory.createRestClient(url);
 
-        return new ReferenceCountedClient(restClient, clients);
+        ReferenceCountedClient refClient = new ReferenceCountedClient(restClient, clients, clientFactory, url);
+
+        return refClient;
     }
 
     @Override
