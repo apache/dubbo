@@ -233,6 +233,8 @@ public class RestProtocol extends AbstractProxyProtocol {
 
         ReferenceCountedClient refClient = new ReferenceCountedClient(restClient, clients, clientFactory, url);
 
+        // TODO  add timer for loop destroy check ?
+
         return refClient;
     }
 
