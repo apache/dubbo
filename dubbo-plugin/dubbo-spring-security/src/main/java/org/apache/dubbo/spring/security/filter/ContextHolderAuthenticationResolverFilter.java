@@ -24,17 +24,21 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.spring.security.utils.ObjectMapperCodec;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.spring.security.jackson.ObjectMapperCodec;
 import org.apache.dubbo.spring.security.utils.SecurityNames;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-
 import static org.apache.dubbo.spring.security.utils.SecurityNames.SECURITY_CONTEXT_HOLDER_CLASS_NAME;
 
 @Activate(group = CommonConstants.PROVIDER, order = -10000,onClass = SECURITY_CONTEXT_HOLDER_CLASS_NAME)
 public class ContextHolderAuthenticationResolverFilter implements Filter {
 
-    private ObjectMapperCodec mapper = new ObjectMapperCodec();
+    private final ObjectMapperCodec mapper;
+
+    public ContextHolderAuthenticationResolverFilter(ApplicationModel applicationModel) {
+        this.mapper = applicationModel.getBeanFactory().getBean(ObjectMapperCodec.class);
+    }
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
