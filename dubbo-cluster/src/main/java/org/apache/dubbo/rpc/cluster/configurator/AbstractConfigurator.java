@@ -17,7 +17,6 @@
 package org.apache.dubbo.rpc.cluster.configurator;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -52,8 +51,7 @@ import static org.apache.dubbo.rpc.cluster.configurator.parser.model.Configurato
  * AbstractConfigurator
  */
 public abstract class AbstractConfigurator implements Configurator {
-    public static final ErrorTypeAwareLogger errorLogger = LoggerFactory.getErrorTypeAwareLogger(AbstractConfigurator.class);
-    public static final Logger logger = LoggerFactory.getLogger(AbstractConfigurator.class);
+    private static final Logger logger = LoggerFactory.getLogger(AbstractConfigurator.class);
     private static final String TILDE = "~";
 
     private final URL configuratorUrl;
