@@ -17,7 +17,7 @@
 package org.apache.dubbo.remoting.exchange;
 
 /**
- * Request.
+ * Context where errors occur during decoding
  */
 public class ErrorData {
 
