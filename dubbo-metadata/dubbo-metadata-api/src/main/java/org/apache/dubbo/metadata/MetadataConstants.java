@@ -16,16 +16,30 @@
  */
 package org.apache.dubbo.metadata;
 
-public class MetadataConstants {
-    public static final String KEY_SEPARATOR = ":";
-    public static final String DEFAULT_PATH_TAG = "metadata";
-    public static final String KEY_REVISON_PREFIX = "revision";
-    public static final String META_DATA_STORE_TAG = ".metaData";
-    public static final String SERVICE_META_DATA_STORE_TAG = ".smd";
-    public static final String CONSUMER_META_DATA_STORE_TAG = ".cmd";
-    public static final String METADATA_PUBLISH_DELAY_KEY = "dubbo.application.metadata.publish.delay";
-    public static final int DEFAULT_METADATA_PUBLISH_DELAY = 1000;
-    public static final String METADATA_PROXY_TIMEOUT_KEY = "dubbo.application.metadata.proxy.delay";
-    public static final int DEFAULT_METADATA_TIMEOUT_VALUE = 5000;
-    public static String REPORT_CONSUMER_URL_KEY = "report-consumer-definition";
+import static org.apache.dubbo.common.utils.ClassUtils.getClassLoader;
+import static org.apache.dubbo.common.utils.ClassUtils.resolveClass;
+
+public interface MetadataConstants {
+    String KEY_SEPARATOR = ":";
+    String DEFAULT_PATH_TAG = "metadata";
+    String KEY_REVISON_PREFIX = "revision";
+    String META_DATA_STORE_TAG = ".metaData";
+    String SERVICE_META_DATA_STORE_TAG = ".smd";
+    String CONSUMER_META_DATA_STORE_TAG = ".cmd";
+    String METADATA_PUBLISH_DELAY_KEY = "dubbo.application.metadata.publish.delay";
+    int DEFAULT_METADATA_PUBLISH_DELAY = 1000;
+    String METADATA_PROXY_TIMEOUT_KEY = "dubbo.application.metadata.proxy.delay";
+    int DEFAULT_METADATA_TIMEOUT_VALUE = 5000;
+    String REPORT_CONSUMER_URL_KEY = "report-consumer-definition";
+    String JAVAX_SERVLET_REQ_CLASS_NAME = "javax.servlet.ServletRequest";
+    Class JAVAX_SERVLET_REQ_CLASS = resolveClass(JAVAX_SERVLET_REQ_CLASS_NAME, getClassLoader());
+    String JAVAX_SERVLET_RES_CLASS_NAME = "javax.servlet.ServletResponse";
+    Class JAVAX_SERVLET_RES_CLASS = resolveClass(JAVAX_SERVLET_RES_CLASS_NAME, getClassLoader());
+    String JAKARTA_SERVLET_REQ_CLASS_NAME = "jakarta.servlet.ServletRequest";
+    Class JAKARTA_SERVLET_REQ_CLASS = resolveClass(JAKARTA_SERVLET_REQ_CLASS_NAME, getClassLoader());
+    String JAKARTA_SERVLET_RES_CLASS_NAME = "jakarta.servlet.ServletResponse";
+    Class JAKARTA_SERVLET_RES_CLASS = resolveClass(JAKARTA_SERVLET_RES_CLASS_NAME, getClassLoader());
+    String PATH_SEPARATOR = "/";
+    String APPLICATION_FORM_URLENCODED_VALUE = "application/x-www-form-urlencoded";
+    String APPLICATION_JSON_VALUE = "application/json";
 }

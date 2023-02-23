@@ -17,14 +17,18 @@
 
 package org.apache.dubbo.metrics.collector;
 
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.nested.AggregationConfig;
+import org.apache.dubbo.metrics.TestMetricsInvoker;
 import org.apache.dubbo.metrics.collector.sample.MethodMetricsSampler;
 import org.apache.dubbo.metrics.event.MetricsEvent;
 import org.apache.dubbo.metrics.model.MetricsKey;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
+import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.junit.jupiter.api.AfterEach;
@@ -53,6 +57,7 @@ class AggregateMetricsCollectorTest {
     private String group;
     private String version;
     private RpcInvocation invocation;
+    private String side;
 
     @BeforeEach
     public void setup() {
@@ -71,7 +76,7 @@ class AggregateMetricsCollectorTest {
         aggregationConfig.setTimeWindowSeconds(120);
         metricsConfig.setAggregation(aggregationConfig);
         applicationModel.getApplicationConfigManager().setMetrics(metricsConfig);
-        applicationModel.getBeanFactory().registerBean(defaultCollector);
+        defaultCollector = applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class);
 
         interfaceName = "org.apache.dubbo.MockInterface";
         methodName = "mockMethod";
@@ -81,6 +86,10 @@ class AggregateMetricsCollectorTest {
         invocation.setTargetServiceUniqueName(group + "/" + interfaceName + ":" + version);
         invocation.setAttachment(GROUP_KEY, group);
         invocation.setAttachment(VERSION_KEY, version);
+        side = CommonConstants.CONSUMER;
+        invocation.setInvoker(new TestMetricsInvoker(side));
+        RpcContext.getServiceContext().setUrl(URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&side=" + side));
+
     }
 
     @AfterEach
@@ -96,10 +105,10 @@ class AggregateMetricsCollectorTest {
         defaultCollector.setApplicationName(applicationName);
         MethodMetricsSampler methodMetricsCountSampler = defaultCollector.getMethodSampler();
 
-        methodMetricsCountSampler.incOnEvent(invocation,MetricsEvent.Type.TOTAL);
-        methodMetricsCountSampler.incOnEvent(invocation,MetricsEvent.Type.SUCCEED);
-        methodMetricsCountSampler.incOnEvent(invocation,MetricsEvent.Type.UNKNOWN_FAILED);
-        methodMetricsCountSampler.incOnEvent(invocation,MetricsEvent.Type.BUSINESS_FAILED);
+        methodMetricsCountSampler.incOnEvent(invocation, MetricsEvent.Type.TOTAL);
+        methodMetricsCountSampler.incOnEvent(invocation, MetricsEvent.Type.SUCCEED);
+        methodMetricsCountSampler.incOnEvent(invocation, MetricsEvent.Type.UNKNOWN_FAILED);
+        methodMetricsCountSampler.incOnEvent(invocation, MetricsEvent.Type.BUSINESS_FAILED);
 
         List<MetricSample> samples = collector.collect();
         for (MetricSample sample : samples) {
@@ -117,12 +126,12 @@ class AggregateMetricsCollectorTest {
             return number.longValue();
         }));
 
-        Assertions.assertEquals(sampleMap.get(MetricsKey.PROVIDER_METRIC_REQUESTS_TOTAL_AGG.getName()), 1L);
-        Assertions.assertEquals(sampleMap.get(MetricsKey.PROVIDER_METRIC_REQUESTS_SUCCEED_AGG.getName()), 1L);
-        Assertions.assertEquals(sampleMap.get(MetricsKey.PROVIDER_METRIC_REQUESTS_FAILED_AGG.getName()), 1L);
-        Assertions.assertEquals(sampleMap.get(MetricsKey.PROVIDER_METRIC_REQUESTS_BUSINESS_FAILED_AGG.getName()), 1L);
+        Assertions.assertEquals(sampleMap.get(MetricsKey.METRIC_REQUESTS_TOTAL_AGG.getNameByType(side)), 1L);
+        Assertions.assertEquals(sampleMap.get(MetricsKey.METRIC_REQUESTS_SUCCEED_AGG.getNameByType(side)), 1L);
+        Assertions.assertEquals(sampleMap.get(MetricsKey.METRIC_REQUESTS_FAILED_AGG.getNameByType(side)), 1L);
+        Assertions.assertEquals(sampleMap.get(MetricsKey.METRIC_REQUESTS_BUSINESS_FAILED_AGG.getNameByType(side)), 1L);
 
-        Assertions.assertTrue(sampleMap.containsKey(MetricsKey.PROVIDER_METRIC_QPS.getName()));
+        Assertions.assertTrue(sampleMap.containsKey(MetricsKey.METRIC_QPS.getNameByType(side)));
     }
 
     @Test
@@ -150,7 +159,7 @@ class AggregateMetricsCollectorTest {
             return number.longValue();
         }));
 
-        Assertions.assertTrue(sampleMap.containsKey(MetricsKey.PROVIDER_METRIC_RT_P99.getName()));
-        Assertions.assertTrue(sampleMap.containsKey(MetricsKey.PROVIDER_METRIC_RT_P95.getName()));
+        Assertions.assertTrue(sampleMap.containsKey(MetricsKey.METRIC_RT_P99.getNameByType(side)));
+        Assertions.assertTrue(sampleMap.containsKey(MetricsKey.METRIC_RT_P95.getNameByType(side)));
     }
 }

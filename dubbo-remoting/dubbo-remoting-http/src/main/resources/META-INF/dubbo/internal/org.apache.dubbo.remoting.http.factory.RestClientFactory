@@ -1,0 +1,4 @@
+ok-http=org.apache.dubbo.remoting.http.factory.impl.OkHttpClientFactory
+url-connection=org.apache.dubbo.remoting.http.factory.impl.URLConnectionClientFactory
+apache-http-client=org.apache.dubbo.remoting.http.factory.impl.ApacheHttpClientFactory
+
