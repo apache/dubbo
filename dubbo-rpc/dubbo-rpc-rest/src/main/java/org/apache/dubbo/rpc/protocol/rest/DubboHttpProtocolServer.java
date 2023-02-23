@@ -26,6 +26,7 @@ import org.apache.dubbo.remoting.http.servlet.ServletManager;
 import org.apache.dubbo.rpc.*;
 
 import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
+import org.apache.dubbo.rpc.protocol.rest.exception.PathNoFoundException;
 import org.apache.dubbo.rpc.protocol.rest.message.HttpMessageCodecManager;
 import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
 import org.apache.dubbo.rpc.protocol.rest.request.RequestFacadeFactory;
@@ -96,7 +97,12 @@ public class DubboHttpProtocolServer extends BaseRestProtocolServer {
             RpcContext.getServiceContext().setRemoteAddress(request.getRemoteAddr(), request.getRemotePort());
 //            dispatcher.service(request, servletResponse);
 
-            Pair<RpcInvocation, Invoker> build = RPCInvocationBuilder.build(request, servletRequest, servletResponse);
+            Pair<RpcInvocation, Invoker> build = null;
+            try {
+                build = RPCInvocationBuilder.build(request, servletRequest, servletResponse);
+            } catch (PathNoFoundException e) {
+                servletResponse.setStatus(404);
+            }
 
             Invoker invoker = build.getSecond();
 
@@ -107,14 +113,13 @@ public class DubboHttpProtocolServer extends BaseRestProtocolServer {
                 servletResponse.setStatus(500);
             } else {
 
-                servletResponse.setStatus(200);
-                Object value = invoke.getValue();
-                String accept = request.getHeader(RestConstant.ACCEPT);
-
-                MediaType mediaType = MediaTypeUtil.convertMediaType(accept);
-
                 try {
+                    Object value = invoke.getValue();
+                    String accept = request.getHeader(RestConstant.ACCEPT);
+                    MediaType mediaType = MediaTypeUtil.convertMediaType(accept);
+                    // TODO write response
                     HttpMessageCodecManager.httpMessageEncode(servletResponse.getOutputStream(), value, invoker.getUrl(), mediaType);
+                    servletResponse.setStatus(200);
                 } catch (Exception e) {
                     servletResponse.setStatus(500);
                 }
@@ -122,8 +127,7 @@ public class DubboHttpProtocolServer extends BaseRestProtocolServer {
 
             }
 
-
-            // TODO write response
+            // TODO add Attachment header
 
 
         }
