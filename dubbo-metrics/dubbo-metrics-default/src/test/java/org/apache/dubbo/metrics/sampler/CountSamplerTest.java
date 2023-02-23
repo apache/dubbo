@@ -104,7 +104,7 @@ public class CountSamplerTest {
             sampleConfigure.configureMetrics(
                 configure -> new RequestMethodMetrics(configure.getSource()));
             sampleConfigure.configureEventHandler(configure -> {
-                System.out.println("发布事件");
+                System.out.println("generic event");
             });
         }
 
@@ -113,7 +113,7 @@ public class CountSamplerTest {
             MetricsCountSampleConfigurer<String, RT, RequestMethodMetrics> sampleConfigure) {
             sampleConfigure.configureMetrics(configure -> new RequestMethodMetrics(configure.getSource()));
             sampleConfigure.configureEventHandler(configure -> {
-                System.out.println("rt事件");
+                System.out.println("rt event");
             });
         }
     }
