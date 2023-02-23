@@ -50,43 +50,43 @@ public class CountSamplerTest {
         RequestMethodMetrics metrics = new RequestMethodMetrics(applicationName);
 
         ConcurrentMap<RequestMethodMetrics, AtomicLong> avgRT = sampler.getAvgRT(RT.METHOD_REQUEST);
-        Assertions.assertNotNull(avgRT.get(metrics).intValue()==2);
+        Assertions.assertTrue(avgRT != null && avgRT.get(metrics) != null && avgRT.get(metrics).intValue() == 0);
 
         ConcurrentMap<RequestMethodMetrics, LongAccumulator> maxRT = sampler.getMaxRT(RT.METHOD_REQUEST);
-        Assertions.assertNotNull(maxRT.get(metrics).equals(2));
+        Assertions.assertTrue(null != maxRT && null != maxRT.get(metrics) && maxRT.get(metrics).intValue()==2);
 
         ConcurrentMap<RequestMethodMetrics, AtomicLong> totalRT = sampler.getTotalRT(RT.METHOD_REQUEST);
-        Assertions.assertNotNull(totalRT.get(metrics).equals(1));
+        Assertions.assertTrue(null != totalRT && totalRT.get(metrics) != null && totalRT.get(metrics).intValue()==2);
 
         ConcurrentMap<RequestMethodMetrics, AtomicLong> rtCount = sampler.getRtCount(RT.METHOD_REQUEST);
-        Assertions.assertTrue(rtCount.get(metrics).intValue()==1);
+        Assertions.assertTrue(null != rtCount && null != rtCount.get(metrics) && rtCount.get(metrics).intValue() == 1);
 
         ConcurrentMap<RequestMethodMetrics, AtomicLong> lastRT = sampler.getLastRT(RT.METHOD_REQUEST);
-        Assertions.assertTrue(lastRT.get(metrics).intValue()==2);
+        Assertions.assertTrue(null != lastRT && null != lastRT.get(metrics) && lastRT.get(metrics).intValue() == 2);
 
         ConcurrentMap<RequestMethodMetrics, LongAccumulator> minRT = sampler.getMinRT(RT.METHOD_REQUEST);
-        Assertions.assertTrue(minRT.get(metrics).intValue()==2);
-
+        Assertions.assertTrue(null != minRT && null != minRT.get(metrics) && minRT.get(metrics).intValue() == 2);
 
         sampler.addRT(applicationName, RT.METHOD_REQUEST, 4L);
 
         ConcurrentMap<RequestMethodMetrics, AtomicLong> avgRT2 = sampler.getAvgRT(RT.METHOD_REQUEST);
-        Assertions.assertNotNull(avgRT2.get(metrics).intValue()==3);
+        Assertions.assertTrue(null != avgRT2 && null != avgRT2.get(metrics) && avgRT2.get(metrics).intValue() == 0);
 
         ConcurrentMap<RequestMethodMetrics, LongAccumulator> maxRT2 = sampler.getMaxRT(RT.METHOD_REQUEST);
-        Assertions.assertNotNull(maxRT2.get(metrics).equals(4));
+        Assertions.assertTrue(null != maxRT2 && null != maxRT2.get(metrics) && maxRT2.get(metrics).intValue()==4);
 
         ConcurrentMap<RequestMethodMetrics, AtomicLong> totalRT2 = sampler.getTotalRT(RT.METHOD_REQUEST);
-        Assertions.assertNotNull(totalRT2.get(metrics).intValue()==2);
+        Assertions.assertTrue(null != totalRT2 && null != totalRT2.get(metrics) && totalRT2.get(metrics).intValue()==6);
 
         ConcurrentMap<RequestMethodMetrics, AtomicLong> rtCount2 = sampler.getRtCount(RT.METHOD_REQUEST);
-        Assertions.assertTrue(rtCount2.get(metrics).intValue()==2);
+        Assertions.assertTrue(null != rtCount2 && null != rtCount2.get(metrics) && rtCount2.get(metrics)
+                .intValue() == 2);
 
         ConcurrentMap<RequestMethodMetrics, AtomicLong> lastRT2 = sampler.getLastRT(RT.METHOD_REQUEST);
-        Assertions.assertTrue(lastRT2.get(metrics).intValue()==4);
+        Assertions.assertTrue(null != lastRT2 && null != lastRT2.get(metrics) &&  lastRT2.get(metrics).intValue()==4);
 
         ConcurrentMap<RequestMethodMetrics, LongAccumulator> minRT2 = sampler.getMinRT(RT.METHOD_REQUEST);
-        Assertions.assertTrue(minRT2.get(metrics).intValue()==2);
+        Assertions.assertTrue(null != minRT2 && null != minRT2.get(metrics) && minRT2.get(metrics).intValue()==2);
 
     }
 
