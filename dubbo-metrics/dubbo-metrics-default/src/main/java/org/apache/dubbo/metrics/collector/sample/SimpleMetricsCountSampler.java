@@ -45,6 +45,13 @@ public abstract class SimpleMetricsCountSampler<S, K, M extends Metric>
     private final ConcurrentMap<M, AtomicLong>      rtCount = new ConcurrentHashMap<>();
 
     private Map<K, ConcurrentMap<M, AtomicLong>> metricCounter = new ConcurrentHashMap<>();
+    private final ConcurrentMap<K, ConcurrentMap<M,AtomicLong>>      groupLastRT = new ConcurrentHashMap<>();
+    private final ConcurrentMap<K, ConcurrentMap<M,LongAccumulator>> groupMinRT  = new ConcurrentHashMap<>();
+    private final ConcurrentMap<K, ConcurrentMap<M,LongAccumulator>> groupMaxRT  = new ConcurrentHashMap<>();
+    private final ConcurrentMap<K, ConcurrentMap<M,AtomicLong>>      groupAvgRT   = new ConcurrentHashMap<>();
+    private final ConcurrentMap<K, ConcurrentMap<M,AtomicLong>>      groupTotalRT = new ConcurrentHashMap<>();
+    private final ConcurrentMap<K, ConcurrentMap<M,AtomicLong>>      groupRtCount = new ConcurrentHashMap<>();
+
 
     @Override
     public void inc(S source, K metricName) {
@@ -111,6 +118,44 @@ public abstract class SimpleMetricsCountSampler<S, K, M extends Metric>
     }
 
     @Override
+    public void addRT(S source, K metricName, Long rt) {
+        MetricsCountSampleConfigurer<S,K,M> sampleConfigure = new MetricsCountSampleConfigurer<>();
+        sampleConfigure.setSource(source);
+        sampleConfigure.setMetricsName(metricName);
+
+        this.rtConfigure(sampleConfigure);
+
+        M metric = sampleConfigure.getMetric();
+
+        ConcurrentMap<M, AtomicLong> lastRT = ConcurrentHashMapUtils.computeIfAbsent(groupLastRT, metricName, k -> new ConcurrentHashMap<>());
+        AtomicLong last = ConcurrentHashMapUtils.computeIfAbsent(lastRT, metric, k -> new AtomicLong());
+        last.set(rt);
+
+        ConcurrentMap<M, LongAccumulator> minRT = ConcurrentHashMapUtils.computeIfAbsent(groupMinRT, metricName, k -> new ConcurrentHashMap<>());
+        LongAccumulator min = ConcurrentHashMapUtils.computeIfAbsent(minRT, metric, k -> new LongAccumulator(Long::min, Long.MAX_VALUE));
+        min.accumulate(rt);
+
+        ConcurrentMap<M, LongAccumulator> maxRT = ConcurrentHashMapUtils.computeIfAbsent(groupMaxRT, metricName, k -> new ConcurrentHashMap<>());
+        LongAccumulator max = ConcurrentHashMapUtils.computeIfAbsent(maxRT, metric, k -> new LongAccumulator(Long::max, Long.MIN_VALUE));
+        max.accumulate(rt);
+
+        ConcurrentMap<M, AtomicLong> totalRT = ConcurrentHashMapUtils.computeIfAbsent(groupTotalRT, metricName, k -> new ConcurrentHashMap<>());
+        AtomicLong total = ConcurrentHashMapUtils.computeIfAbsent(totalRT, metric, k -> new AtomicLong());
+        total.addAndGet(rt);
+
+        ConcurrentMap<M, AtomicLong> rtCount = ConcurrentHashMapUtils.computeIfAbsent(groupRtCount, metricName, k -> new ConcurrentHashMap<>());
+        AtomicLong count = ConcurrentHashMapUtils.computeIfAbsent(rtCount, metric, k -> new AtomicLong());
+        count.incrementAndGet();
+
+        ConcurrentMap<M, AtomicLong> avgRT = ConcurrentHashMapUtils.computeIfAbsent(groupAvgRT, metricName, k -> new ConcurrentHashMap<>());
+        ConcurrentHashMapUtils.computeIfAbsent(avgRT, metric, key -> new AtomicLong());
+
+        sampleConfigure.setRt(rt);
+
+        sampleConfigure.getFireEventHandler().accept(sampleConfigure);
+    }
+
+    @Override
     public Optional<ConcurrentMap<M, AtomicLong>> getCount(K metricName) {
         return Optional.ofNullable(metricCounter.get(metricName) == null ?
             new ConcurrentHashMap<>() :
@@ -145,6 +190,30 @@ public abstract class SimpleMetricsCountSampler<S, K, M extends Metric>
     @Override
     public ConcurrentMap<M, AtomicLong> getRtCount() {
         return this.rtCount;
+    }
+
+    public ConcurrentMap<M, AtomicLong> getLastRT(K metricName){
+        return this.groupLastRT.get(metricName);
+    }
+
+    public ConcurrentMap<M, LongAccumulator> getMinRT(K metricName){
+        return this.groupMinRT.get(metricName);
+    }
+
+    public ConcurrentMap<M, LongAccumulator> getMaxRT(K metricName){
+        return this.groupMaxRT.get(metricName);
+    }
+
+    public ConcurrentMap<M, AtomicLong> getAvgRT(K metricName){
+        return this.groupAvgRT.get(metricName);
+    }
+
+    public ConcurrentMap<M, AtomicLong> getTotalRT(K metricName){
+        return this.groupTotalRT.get(metricName);
+    }
+
+    public ConcurrentMap<M, AtomicLong> getRtCount(K metricName){
+        return this.groupRtCount.get(metricName);
     }
 
     protected void rtConfigure(MetricsCountSampleConfigurer<S,K,M> configure) {

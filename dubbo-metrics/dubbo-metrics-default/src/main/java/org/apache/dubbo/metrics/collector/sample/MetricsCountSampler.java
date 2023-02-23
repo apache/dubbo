@@ -34,6 +34,8 @@ public interface MetricsCountSampler<S, K,M extends Metric> extends MetricsSampl
 
     void addRT(S source, Long rt);
 
+    void addRT(S source, K metricName, Long rt);
+
     Optional<ConcurrentMap<M, AtomicLong>> getCount(K metricName);
 
     ConcurrentMap<M, AtomicLong> getLastRT();
@@ -47,5 +49,17 @@ public interface MetricsCountSampler<S, K,M extends Metric> extends MetricsSampl
     ConcurrentMap<M, AtomicLong> getTotalRT();
 
     ConcurrentMap<M, AtomicLong> getRtCount();
+
+    ConcurrentMap<M, AtomicLong> getLastRT(K metricName);
+
+    ConcurrentMap<M, LongAccumulator> getMinRT(K metricName);
+
+    ConcurrentMap<M, LongAccumulator> getMaxRT(K metricName);
+
+    ConcurrentMap<M, AtomicLong> getAvgRT(K metricName);
+
+    ConcurrentMap<M, AtomicLong> getTotalRT(K metricName);
+
+    ConcurrentMap<M, AtomicLong> getRtCount(K metricName);
 
 }
