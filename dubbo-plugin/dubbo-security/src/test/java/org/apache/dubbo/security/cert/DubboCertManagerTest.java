@@ -119,7 +119,7 @@ class DubboCertManagerTest {
     void testConnect2() {
         FrameworkModel frameworkModel = new FrameworkModel();
         DubboCertManager certManager = new DubboCertManager(frameworkModel);
-        String file = this.getClass().getClassLoader().getResource("ca.crt").getFile();
+        String file = this.getClass().getClassLoader().getResource("certs/ca.crt").getFile();
         CertConfig certConfig = new CertConfig("127.0.0.1:30062", null, file, null);
         certManager.connect0(certConfig);
         Assertions.assertNotNull(certManager.channel);
@@ -132,7 +132,7 @@ class DubboCertManagerTest {
     void testConnect3() {
         FrameworkModel frameworkModel = new FrameworkModel();
         DubboCertManager certManager = new DubboCertManager(frameworkModel);
-        String file = this.getClass().getClassLoader().getResource("broken-ca.crt").getFile();
+        String file = this.getClass().getClassLoader().getResource("certs/broken-ca.crt").getFile();
         CertConfig certConfig = new CertConfig("127.0.0.1:30062", null, file, null);
         Assertions.assertThrows(RuntimeException.class, () -> certManager.connect0(certConfig));
 
@@ -255,7 +255,7 @@ class DubboCertManagerTest {
                 certManager.certConfig = new CertConfig(null, null, null, null);
                 Assertions.assertNull(certManager.refreshCert());
 
-                String file = this.getClass().getClassLoader().getResource("token").getFile();
+                String file = this.getClass().getClassLoader().getResource("certs/token").getFile();
                 Mockito.when(stub.withInterceptors(Mockito.any())).thenReturn(stub);
                 certManager.certConfig = new CertConfig(null, null, null, file);
 

@@ -196,14 +196,14 @@ class CertDeployerListenerTest {
             applicationModel.getApplicationConfigManager().setApplication(new ApplicationConfig("test"));
             SslConfig sslConfig = new SslConfig();
             sslConfig.setCaAddress("127.0.0.1:30060");
-            sslConfig.setCaCertPath("ca.crt");
+            sslConfig.setCaCertPath("certs/ca.crt");
             sslConfig.setOidcTokenPath("token");
             sslConfig.setEnvType("test");
             applicationModel.getApplicationConfigManager().setSsl(sslConfig);
 
             applicationModel.getDeployer().start();
             Mockito.verify(reference.get(), Mockito.times(1))
-                .connect(new CertConfig("127.0.0.1:30060", "test", "ca.crt", "token"));
+                .connect(new CertConfig("127.0.0.1:30060", "test", "certs/ca.crt", "token"));
             applicationModel.getDeployer().stop();
             Mockito.verify(reference.get(), Mockito.atLeast(1))
                 .disConnect();
@@ -220,7 +220,7 @@ class CertDeployerListenerTest {
                      reference.set(mock);
                  })) {
             System.setProperty("dubbo.ssl.ca-address", "127.0.0.1:30060");
-            System.setProperty("dubbo.ssl.ca-cert-path", "ca.crt");
+            System.setProperty("dubbo.ssl.ca-cert-path", "certs/ca.crt");
             System.setProperty("dubbo.ssl.oidc-token-path", "token");
             System.setProperty("dubbo.ssl.env-type", "test");
             FrameworkModel frameworkModel = new FrameworkModel();
@@ -229,7 +229,7 @@ class CertDeployerListenerTest {
 
             applicationModel.getDeployer().start();
             Mockito.verify(reference.get(), Mockito.times(1))
-                .connect(new CertConfig("127.0.0.1:30060", "test", "ca.crt", "token"));
+                .connect(new CertConfig("127.0.0.1:30060", "test", "certs/ca.crt", "token"));
             applicationModel.getDeployer().stop();
             Mockito.verify(reference.get(), Mockito.atLeast(1)).disConnect();
             frameworkModel.destroy();
