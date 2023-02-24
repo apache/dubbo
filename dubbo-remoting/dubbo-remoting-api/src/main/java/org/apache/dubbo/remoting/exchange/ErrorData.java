@@ -21,7 +21,7 @@ package org.apache.dubbo.remoting.exchange;
  */
 public class ErrorData {
 
-    public ErrorData(Throwable throwable) {
+    private ErrorData(Throwable throwable) {
         this.throwable = throwable;
     }
 
