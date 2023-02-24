@@ -32,7 +32,10 @@ public class CertManager {
     public ProviderCert getProviderConnectionConfig(URL localAddress, SocketAddress remoteAddress) {
         for (CertProvider certProvider : certProviders) {
             if (certProvider.isSupport(localAddress)) {
-                return certProvider.getProviderConnectionConfig(localAddress);
+                ProviderCert cert = certProvider.getProviderConnectionConfig(localAddress);
+                if (cert != null) {
+                    return cert;
+                }
             }
         }
         return null;
@@ -41,7 +44,10 @@ public class CertManager {
     public Cert getConsumerConnectionConfig(URL remoteAddress) {
         for (CertProvider certProvider : certProviders) {
             if (certProvider.isSupport(remoteAddress)) {
-                return certProvider.getConsumerConnectionConfig(remoteAddress);
+                Cert cert = certProvider.getConsumerConnectionConfig(remoteAddress);
+                if (cert != null) {
+                    return cert;
+                }
             }
         }
         return null;

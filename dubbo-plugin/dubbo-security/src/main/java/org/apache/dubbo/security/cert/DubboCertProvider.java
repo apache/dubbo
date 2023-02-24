@@ -48,7 +48,7 @@ public class DubboCertProvider implements CertProvider {
         }
         return new ProviderCert(certPair.getCertificate().getBytes(StandardCharsets.UTF_8),
             certPair.getPrivateKey().getBytes(StandardCharsets.UTF_8),
-            certPair.getTrustCerts().getBytes(StandardCharsets.UTF_8), null, AuthPolicy.NONE);
+            certPair.getTrustCerts().getBytes(StandardCharsets.UTF_8), AuthPolicy.NONE);
     }
 
     @Override
