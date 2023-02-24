@@ -19,32 +19,31 @@ package org.apache.dubbo.rpc.protocol.rest;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.reference.ReferenceCountedResource;
-
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
+import org.apache.dubbo.remoting.http.RestClient;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERROR_CLOSE_CLIENT;
 
-public class ReferenceCountedClient extends ReferenceCountedResource {
+public class ReferenceCountedClient<T extends RestClient> extends ReferenceCountedResource {
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ReferenceCountedClient.class);
 
-    private final ResteasyClient resteasyClient;
+    private final T client;
 
-    public ReferenceCountedClient(ResteasyClient resteasyClient) {
-        this.resteasyClient = resteasyClient;
+    public ReferenceCountedClient(T client) {
+        this.client = client;
     }
 
-    public ResteasyClient getClient() {
-        return resteasyClient;
+    public T getClient() {
+        return client;
     }
 
     public boolean isDestroyed() {
-        return resteasyClient.isClosed();
+        return client.isClosed();
     }
 
     @Override
     protected void destroy() {
         try {
-            resteasyClient.close();
+            client.close();
         } catch (Exception e) {
             logger.error(PROTOCOL_ERROR_CLOSE_CLIENT, "", "", "Close resteasy client error", e);
         }

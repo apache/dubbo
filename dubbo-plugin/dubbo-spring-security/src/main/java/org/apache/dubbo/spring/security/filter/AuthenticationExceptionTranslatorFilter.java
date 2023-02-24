@@ -26,7 +26,7 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
-import static org.apache.dubbo.rpc.RpcException.FORBIDDEN_EXCEPTION;
+import static org.apache.dubbo.rpc.RpcException.AUTHORIZATION_EXCEPTION;
 import static org.apache.dubbo.spring.security.utils.SecurityNames.SECURITY_CONTEXT_HOLDER_CLASS_NAME;
 
 @Activate(group = CommonConstants.PROVIDER, order =Integer.MAX_VALUE,onClass = SECURITY_CONTEXT_HOLDER_CLASS_NAME)
@@ -43,7 +43,7 @@ public class AuthenticationExceptionTranslatorFilter implements Filter, Filter.L
         if (this.isTranslate(result)) {
             RpcException rpcException = new RpcException(result.getException().getMessage());
 
-            rpcException.setCode(FORBIDDEN_EXCEPTION);
+            rpcException.setCode(AUTHORIZATION_EXCEPTION);
 
             result.setException(rpcException);
         }

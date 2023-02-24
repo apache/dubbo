@@ -24,7 +24,9 @@ import org.apache.dubbo.metrics.event.MetricsEvent;
  */
 public interface MetricsLifeListener<E extends MetricsEvent> extends MetricsListener<E> {
 
-    void onEventFinish(E event);
+    default void onEventFinish(E event) {
+    }
 
-    void onEventError(E event);
+    default void onEventError(E event) {
+    }
 }

@@ -40,9 +40,8 @@ public class DubboHttpProtocolServer extends BaseRestProtocolServer {
 
     private final HttpServletDispatcher dispatcher = new HttpServletDispatcher();
     private final ResteasyDeployment deployment = new ResteasyDeployment();
-    private HttpBinder httpBinder;
+    private final HttpBinder httpBinder;
     private HttpServer httpServer;
-//    private boolean isExternalServer;
 
     public DubboHttpProtocolServer(HttpBinder httpBinder) {
         this.httpBinder = httpBinder;
@@ -114,15 +113,15 @@ public class DubboHttpProtocolServer extends BaseRestProtocolServer {
         }
 
         @Override
-        public Enumeration getInitParameterNames() {
-            return new Enumeration() {
+        public Enumeration<String> getInitParameterNames() {
+            return new Enumeration<String>() {
                 @Override
                 public boolean hasMoreElements() {
                     return false;
                 }
 
                 @Override
-                public Object nextElement() {
+                public String nextElement() {
                     return null;
                 }
             };
