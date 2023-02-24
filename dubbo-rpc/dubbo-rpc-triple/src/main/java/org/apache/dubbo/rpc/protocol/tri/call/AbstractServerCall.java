@@ -392,7 +392,7 @@ public abstract class AbstractServerCall implements ServerCall, ServerStream.Lis
             }
             return listener;
         } catch (Exception e) {
-            LOGGER.error(PROTOCOL_FAILED_CREATE_STREAM_TRIPLE, "", "", "Create triple stream failed", t);
+            LOGGER.error(PROTOCOL_FAILED_CREATE_STREAM_TRIPLE, "", "", "Create triple stream failed", e);
             responseErr(TriRpcStatus.INTERNAL.withDescription("Create stream failed")
                 .withCause(e));
         }
