@@ -16,15 +16,17 @@
  */
 package org.apache.dubbo.security.cert;
 
+import java.util.Objects;
+
 public class CertPair {
     private final String privateKey;
-    private final String publicKey;
+    private final String certificate;
     private final String trustCerts;
     private final long expireTime;
 
-    public CertPair(String privateKey, String publicKey, String trustCerts, long expireTime) {
+    public CertPair(String privateKey, String certificate, String trustCerts, long expireTime) {
         this.privateKey = privateKey;
-        this.publicKey = publicKey;
+        this.certificate = certificate;
         this.trustCerts = trustCerts;
         this.expireTime = expireTime;
     }
@@ -33,15 +35,36 @@ public class CertPair {
         return privateKey;
     }
 
-    public String getPublicKey() {
-        return publicKey;
+    public String getCertificate() {
+        return certificate;
     }
 
     public String getTrustCerts() {
         return trustCerts;
     }
 
+    public long getExpireTime() {
+        return expireTime;
+    }
+
     public boolean isExpire() {
         return System.currentTimeMillis() > expireTime;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        CertPair certPair = (CertPair) o;
+        return expireTime == certPair.expireTime && Objects.equals(privateKey, certPair.privateKey) && Objects.equals(certificate, certPair.certificate) && Objects.equals(trustCerts, certPair.trustCerts);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(privateKey, certificate, trustCerts, expireTime);
     }
 }

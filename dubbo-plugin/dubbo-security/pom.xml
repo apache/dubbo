@@ -89,6 +89,13 @@
             <artifactId>bcprov-ext-jdk15on</artifactId>
         </dependency>
 
+        <!-- test -->
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-config-api</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>

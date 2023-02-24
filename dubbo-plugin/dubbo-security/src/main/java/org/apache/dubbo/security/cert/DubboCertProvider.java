@@ -46,7 +46,7 @@ public class DubboCertProvider implements CertProvider {
         if (certPair == null) {
             return null;
         }
-        return new ProviderCert(certPair.getPublicKey().getBytes(StandardCharsets.UTF_8),
+        return new ProviderCert(certPair.getCertificate().getBytes(StandardCharsets.UTF_8),
             certPair.getPrivateKey().getBytes(StandardCharsets.UTF_8),
             certPair.getTrustCerts().getBytes(StandardCharsets.UTF_8), null, AuthPolicy.NONE);
     }
@@ -57,7 +57,7 @@ public class DubboCertProvider implements CertProvider {
         if (certPair == null) {
             return null;
         }
-        return new Cert(certPair.getPublicKey().getBytes(StandardCharsets.UTF_8),
+        return new Cert(certPair.getCertificate().getBytes(StandardCharsets.UTF_8),
             certPair.getPrivateKey().getBytes(StandardCharsets.UTF_8),
             certPair.getTrustCerts().getBytes(StandardCharsets.UTF_8));
     }
