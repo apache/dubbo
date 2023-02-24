@@ -1262,6 +1262,14 @@
                                         META-INF/dubbo/internal/org.apache.dubbo.metrics.collector.MetricsCollector
                                     </resource>
                                 </transformer>
+
+                                <transformer
+                                    implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>
+                                        META-INF/dubbo/internal/org.apache.dubbo.spring.security.jackson.ObjectMapperCodecCustomer
+                                    </resource>
+                                </transformer>
+
                             </transformers>
                             <filters>
                                 <filter>

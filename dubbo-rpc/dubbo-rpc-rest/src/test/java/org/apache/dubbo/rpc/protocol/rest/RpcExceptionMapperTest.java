@@ -46,8 +46,8 @@ class RpcExceptionMapperTest {
     @Test
     void testConstraintViolationException() {
         ConstraintViolationException violationException = mock(ConstraintViolationException.class);
-        ConstraintViolation violation = mock(ConstraintViolation.class, Answers.RETURNS_DEEP_STUBS);
-        given(violationException.getConstraintViolations()).willReturn(Sets.<ConstraintViolation<?>>newSet(violation));
+        ConstraintViolation<?> violation = mock(ConstraintViolation.class, Answers.RETURNS_DEEP_STUBS);
+        given(violationException.getConstraintViolations()).willReturn(Sets.newSet(violation));
         RpcException rpcException = new RpcException("violation", violationException);
 
         Response response = exceptionMapper.toResponse(rpcException);

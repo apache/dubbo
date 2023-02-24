@@ -15,27 +15,13 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.rpc.protocol.rest;
+package org.apache.dubbo.spring.security.jackson;
+import org.apache.dubbo.common.extension.ExtensionScope;
+import org.apache.dubbo.common.extension.SPI;
 
-/**
- * Constants definition.
- */
-public interface Constants {
-    String KEEP_ALIVE_KEY = "keepalive";
+@SPI(scope = ExtensionScope.FRAMEWORK)
+public interface ObjectMapperCodecCustomer {
 
-    boolean DEFAULT_KEEP_ALIVE = true;
+    void customize(ObjectMapperCodec objectMapperCodec);
 
-    String EXTENSION_KEY = "extension";
-
-    // http server
-    String SERVLET = "servlet";
-
-    String JETTY = "jetty";
-
-    String TOMCAT = "tomcat";
-
-    String NETTY = "netty";
-
-    // exception mapper
-    String EXCEPTION_MAPPER_KEY = "exception.mapper";
 }
