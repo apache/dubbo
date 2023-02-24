@@ -42,7 +42,7 @@ public abstract class AbstractServerCallListener implements AbstractServerCall.L
     final ServerCallToObserverAdapter<Object> responseObserver;
 
     public AbstractServerCallListener(RpcInvocation invocation, Invoker<?> invoker,
-        ServerCallToObserverAdapter<Object> responseObserver) {
+                                      ServerCallToObserverAdapter<Object> responseObserver) {
         this.invocation = invocation;
         this.invoker = invoker;
         this.cancellationContext = responseObserver.cancellationContext;
@@ -85,8 +85,8 @@ public abstract class AbstractServerCallListener implements AbstractServerCall.L
                 }
                 onReturn(r.getValue());
             });
-        } catch (Exception e) {
-            responseObserver.onError(e);
+        } catch (Throwable t) {
+            responseObserver.onError(t);
         } finally {
             RpcContext.removeCancellationContext();
             RpcContext.removeContext();
