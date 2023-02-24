@@ -31,6 +31,6 @@ public interface MetricsStatHandler {
 
     MetricsEvent decrease(String applicationName, Invocation invocation);
 
-    MetricsEvent addApplication(String applicationName, String version);
+    MetricsEvent addApplication(String applicationName);
 
 }
