@@ -273,6 +273,9 @@ class DubboCertManagerTest {
                 Assertions.assertEquals("certPem", certPair.getCertificate());
                 Assertions.assertEquals("trustCerts", certPair.getTrustCerts());
                 Assertions.assertEquals(123456, certPair.getExpireTime());
+
+                Mockito.when(stub.createCertificate(Mockito.any())).thenReturn(null);
+                Assertions.assertNull(certManager.refreshCert());
             }
 
             frameworkModel.destroy();
