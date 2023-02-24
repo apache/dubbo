@@ -215,7 +215,8 @@ public class DubboCertManager {
         DubboCertificateResponse certificateResponse = stub.createCertificate(generateRequest(csr));
 
         if (certificateResponse == null || !certificateResponse.getSuccess()) {
-            logger.error(CONFIG_SSL_CERT_GENERATE_FAILED, "", "", "Failed to generate cert from Dubbo Certificate Authority. Message: " + certificateResponse.getMessage());
+            logger.error(CONFIG_SSL_CERT_GENERATE_FAILED, "", "", "Failed to generate cert from Dubbo Certificate Authority. " +
+                "Message: " + (certificateResponse == null ? "null" : certificateResponse.getMessage()));
             return null;
         }
         logger.info("Successfully generate cert from Dubbo Certificate Authority. Cert expire time: " + certificateResponse.getExpireTime());
