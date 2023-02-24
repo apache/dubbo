@@ -122,18 +122,10 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
      * @return
      */
     private String getExecutorKey(URL url) {
-        String executorKey = INTERNAL_EXECUTOR_SERVICE_COMPONENT_KEY;
-        ServiceDescriptor serviceDescriptor = applicationModel.getInternalModule().getServiceRepository().lookupService(url.getServiceInterface());
-        // if not found in internal service repository, then it's biz service defined by user.
-        if (serviceDescriptor == null) {
-            executorKey = EXECUTOR_SERVICE_COMPONENT_KEY;
-
-        }
-
         if (CONSUMER_SIDE.equalsIgnoreCase(url.getParameter(SIDE_KEY))) {
-            executorKey = CONSUMER_SHARED_EXECUTOR_SERVICE_COMPONENT_KEY;
+            return CONSUMER_SHARED_EXECUTOR_SERVICE_COMPONENT_KEY;
         }
-        return executorKey;
+        return EXECUTOR_SERVICE_COMPONENT_KEY;
     }
 
     private ExecutorService createExecutor(URL url) {
