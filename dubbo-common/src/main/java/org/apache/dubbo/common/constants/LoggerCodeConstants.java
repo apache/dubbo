@@ -381,6 +381,8 @@ public interface LoggerCodeConstants {
 
     String CONFIG_SSL_CERT_GENERATE_FAILED = "5-42";
 
+    String CONFIG_SSL_CONNECT_INSECURE = "5-43";
+
     // Transport module
     String TRANSPORT_FAILED_CONNECT_PROVIDER = "6-1";
 

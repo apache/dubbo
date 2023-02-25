@@ -57,6 +57,7 @@ import java.util.concurrent.TimeUnit;
 
 import static io.grpc.stub.MetadataUtils.newAttachHeadersInterceptor;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_SSL_CERT_GENERATE_FAILED;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_SSL_CONNECT_INSECURE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_GENERATE_CERT_ISTIO;
 
@@ -140,7 +141,8 @@ public class DubboCertManager {
                             .build())
                     .build();
             } else {
-                logger.warn("No caCertPath is provided, will use insecure connection.");
+                logger.warn(CONFIG_SSL_CONNECT_INSECURE, "", "",
+                    "No caCertPath is provided, will use insecure connection.");
                 channel = NettyChannelBuilder.forTarget(remoteAddress)
                     .sslContext(GrpcSslContexts.forClient()
                         .trustManager(InsecureTrustManagerFactory.INSTANCE)
@@ -242,7 +244,8 @@ public class DubboCertManager {
             stub = stub.withInterceptors(newAttachHeadersInterceptor(header));
             logger.info("Use oidc token from " + oidcTokenPath + " to connect to Dubbo Certificate Authority.");
         } else {
-            logger.warn("Use insecure connection to connect to Dubbo Certificate Authority. Reason: No oidc token is provided.");
+            logger.warn(CONFIG_SSL_CONNECT_INSECURE, "", "",
+                "Use insecure connection to connect to Dubbo Certificate Authority. Reason: No oidc token is provided.");
         }
         return stub;
     }
