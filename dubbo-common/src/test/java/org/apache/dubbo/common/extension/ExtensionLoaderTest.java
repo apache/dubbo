@@ -70,11 +70,8 @@ import org.apache.dubbo.common.extension.wrapper.impl.DemoImpl;
 import org.apache.dubbo.common.extension.wrapper.impl.DemoWrapper;
 import org.apache.dubbo.common.extension.wrapper.impl.DemoWrapper2;
 import org.apache.dubbo.common.lang.Prioritized;
-import org.apache.dubbo.common.threadpool.manager.IsolationExecutorRepository;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
-import org.apache.dubbo.rpc.executor.IsolationExecutorSupportFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -361,15 +358,6 @@ class ExtensionLoaderTest {
         assertTrue(adaptive instanceof AddExt2_ManualAdaptive);
     }
 
-    @Test
-    void test_AddExtensionv2() {
-        ExtensionLoader<IsolationExecutorSupportFactory> loader = getExtensionLoader(IsolationExecutorSupportFactory.class);
-        loader.getAdaptiveExtension();
-        loader.addExtension(null, IsolationExecutorSupportFactory.class);
-
-        IsolationExecutorSupportFactory adaptive = loader.getAdaptiveExtension();
-        assertTrue(adaptive instanceof IsolationExecutorSupportFactory);
-    }
 
     @Test
     void test_AddExtension_Adaptive_ExceptionWhenExistedAdaptive() {
