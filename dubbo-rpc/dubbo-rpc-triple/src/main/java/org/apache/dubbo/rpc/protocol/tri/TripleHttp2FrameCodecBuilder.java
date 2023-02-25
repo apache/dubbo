@@ -29,10 +29,6 @@ import java.util.function.Consumer;
 
 public class TripleHttp2FrameCodecBuilder extends Http2FrameCodecBuilder {
 
-    TripleHttp2FrameCodecBuilder(boolean server, int maxReservedStreams) {
-        this(new DefaultHttp2Connection(server, maxReservedStreams));
-    }
-
     TripleHttp2FrameCodecBuilder(Http2Connection connection) {
         connection(connection);
     }
@@ -46,7 +42,7 @@ public class TripleHttp2FrameCodecBuilder extends Http2FrameCodecBuilder {
     }
 
     public static TripleHttp2FrameCodecBuilder forClient(int maxReservedStreams) {
-        return new TripleHttp2FrameCodecBuilder(false, maxReservedStreams);
+        return fromConnection(new DefaultHttp2Connection(false, maxReservedStreams));
     }
 
     public static TripleHttp2FrameCodecBuilder forServer() {
@@ -54,7 +50,7 @@ public class TripleHttp2FrameCodecBuilder extends Http2FrameCodecBuilder {
     }
 
     public static TripleHttp2FrameCodecBuilder forServer(int maxReservedStreams) {
-        return new TripleHttp2FrameCodecBuilder(true, maxReservedStreams);
+        return fromConnection(new DefaultHttp2Connection(true, maxReservedStreams));
     }
 
     public TripleHttp2FrameCodecBuilder customizeConnection(Consumer<Http2Connection> connectionCustomizer) {
