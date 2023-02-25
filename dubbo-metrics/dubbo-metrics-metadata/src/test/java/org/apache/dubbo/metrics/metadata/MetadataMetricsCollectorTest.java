@@ -15,10 +15,8 @@
  * limitations under the License.
  */
 
-package metrics.metrics.collector;
+package org.apache.dubbo.metrics.metadata;
 
-import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.metrics.event.GlobalMetricsEventMulticaster;
 import org.apache.dubbo.metrics.metadata.collector.MetadataMetricsCollector;
