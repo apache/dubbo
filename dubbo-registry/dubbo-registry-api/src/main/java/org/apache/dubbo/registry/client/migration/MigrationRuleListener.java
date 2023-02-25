@@ -51,10 +51,10 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_THREAD_INTERRUPTED_EXCEPTION;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_PROPERTY_TYPE_MISMATCH;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_EMPTY_ADDRESS;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_THREAD_INTERRUPTED_EXCEPTION;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_EMPTY_ADDRESS;
 import static org.apache.dubbo.common.constants.RegistryConstants.INIT;
 
 /**
@@ -75,7 +75,7 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
     private static final int MIGRATION_DEFAULT_DELAY_TIME = 60000;
     private String ruleKey;
 
-    protected final ConcurrentMap<MigrationInvoker, MigrationRuleHandler> handlers = new ConcurrentHashMap<>();
+    protected final ConcurrentMap<MigrationInvoker<?>, MigrationRuleHandler<?>> handlers = new ConcurrentHashMap<>();
     protected final LinkedBlockingQueue<String> ruleQueue = new LinkedBlockingQueue<>();
 
     private final AtomicBoolean executorSubmit = new AtomicBoolean(false);
@@ -88,7 +88,7 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
 
     private volatile String rawRule;
     private volatile MigrationRule rule;
-    private ModuleModel moduleModel;
+    private final ModuleModel moduleModel;
 
     public MigrationRuleListener(ModuleModel moduleModel) {
         this.moduleModel = moduleModel;
@@ -175,44 +175,44 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
                         logger.info("Ignore duplicated rule");
                         continue;
                     }
+
+                    logger.info("Using the following migration rule to migrate:");
+                    logger.info(rule);
+
+                    setRawRule(rule);
+
+                    if (CollectionUtils.isEmptyMap(handlers)) {
+                        continue;
+                    }
+
+                    ExecutorService executorService = null;
                     try {
-                        logger.info("Using the following migration rule to migrate:");
-                        logger.info(rule);
+                        executorService = Executors.newFixedThreadPool(Math.min(handlers.size(), 100), new NamedThreadFactory("Dubbo-Invoker-Migrate"));
+                        List<Future<?>> migrationFutures = new ArrayList<>(handlers.size());
+                        for (MigrationRuleHandler<?> handler : handlers.values()) {
+                            Future<?> future = executorService.submit(() -> handler.doMigrate(this.rule));
+                            migrationFutures.add(future);
+                        }
 
-                        setRawRule(rule);
-
-                        if (CollectionUtils.isNotEmptyMap(handlers)) {
-                            ExecutorService executorService = Executors.newFixedThreadPool(100, new NamedThreadFactory("Dubbo-Invoker-Migrate"));
-                            List<Future<?>> migrationFutures = new ArrayList<>(handlers.size());
-                            handlers.forEach((_key, handler) -> {
-                                Future<?> future = executorService.submit(() -> {
-                                    handler.doMigrate(this.rule);
-                                });
-                                migrationFutures.add(future);
-                            });
-
-                            Throwable migrationException = null;
-                            for (Future<?> future : migrationFutures) {
-                                try {
-                                    future.get();
-                                } catch (InterruptedException ie) {
-                                    logger.warn(INTERNAL_ERROR, "unknown error in registry module", "", "Interrupted while waiting for migration async task to finish.");
-                                } catch (ExecutionException ee) {
-                                    migrationException = ee.getCause();
-                                }
+                        for (Future<?> future : migrationFutures) {
+                            try {
+                                future.get();
+                            } catch (InterruptedException ie) {
+                                logger.warn(INTERNAL_ERROR, "unknown error in registry module", "", "Interrupted while waiting for migration async task to finish.");
+                            } catch (ExecutionException ee) {
+                                logger.error(INTERNAL_ERROR, "unknown error in registry module", "", "Migration async task failed.", ee.getCause());
                             }
-                            if (migrationException != null) {
-                                logger.error(INTERNAL_ERROR, "unknown error in registry module", "", "Migration async task failed.", migrationException);
-                            }
-                            executorService.shutdown();
                         }
                     } catch (Throwable t) {
                         logger.error(INTERNAL_ERROR, "unknown error in registry module", "", "Error occurred when migration.", t);
+                    } finally {
+                        if (executorService != null) {
+                            executorService.shutdown();
+                        }
                     }
                 }
             });
         }
-
     }
 
     public void setRawRule(String rawRule) {
@@ -260,13 +260,11 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
         if (localRuleMigrationFuture != null) {
             localRuleMigrationFuture.cancel(true);
         }
-        if (ruleManageExecutor != null) {
-            ruleManageExecutor.shutdown();
-        }
+        ruleManageExecutor.shutdown();
         ruleQueue.clear();
     }
 
-    public Map<MigrationInvoker, MigrationRuleHandler> getHandlers() {
+    public Map<MigrationInvoker<?>, MigrationRuleHandler<?>> getHandlers() {
         return handlers;
     }
 

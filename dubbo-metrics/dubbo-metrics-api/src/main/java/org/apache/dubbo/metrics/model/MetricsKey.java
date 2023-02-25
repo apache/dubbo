@@ -23,7 +23,7 @@ public enum MetricsKey {
     // provider metrics key
     METRIC_REQUESTS("dubbo.%s.requests.total", "Total Requests"),
     METRIC_REQUESTS_SUCCEED("dubbo.%s.requests.succeed.total", "Succeed Requests"),
-    METRIC_REQUEST_BUSINESS_FAILED("dubbo.%s.requests.business.failed.total","Failed Business Requests"),
+    METRIC_REQUEST_BUSINESS_FAILED("dubbo.%s.requests.business.failed.total", "Failed Business Requests"),
     METRIC_REQUESTS_PROCESSING("dubbo.%s.requests.processing", "Processing Requests"),
     METRIC_REQUESTS_TIMEOUT("dubbo.%s.requests.timeout.total", "Total Timeout Failed Requests"),
     METRIC_REQUESTS_LIMIT("dubbo.%s.requests.limit.total", "Total Limit Failed Requests"),
@@ -59,6 +59,26 @@ public enum MetricsKey {
     GENERIC_METRIC_RT_P99("dubbo.%s.rt.seconds.p99", "Response Time P99"),
     GENERIC_METRIC_RT_P95("dubbo.%s.rt.seconds.p95", "Response Time P95"),
 
+    // register metrics key
+    REGISTER_METRIC_REQUESTS("dubbo.registry.register.requests.total", "Total Register Requests"),
+    REGISTER_METRIC_REQUESTS_SUCCEED("dubbo.registry.register.requests.succeed.total", "Succeed Register Requests"),
+    REGISTER_METRIC_REQUESTS_FAILED("dubbo.registry.register.requests.failed.total", "Failed Register Requests"),
+
+    // subscribe metrics key
+    SUBSCRIBE_METRIC_NUM("dubbo.registry.subscribe.num.total", "Total Subscribe Num"),
+    SUBSCRIBE_METRIC_NUM_SUCCEED("dubbo.registry.subscribe.num.succeed.total", "Succeed Subscribe Num"),
+    SUBSCRIBE_METRIC_NUM_FAILED("dubbo.registry.subscribe.num.failed.total", "Failed Subscribe Num"),
+
+    // directory metrics key
+    DIRECTORY_METRIC_NUM_CURRENT("dubbo.registry.directory.num.current", "Current Directory Urls"),
+    DIRECTORY_METRIC_NUM_VALID("dubbo.registry.directory.num.valid.total", "Valid Directory Urls"),
+    DIRECTORY_METRIC_NUM_UN_VALID("dubbo.registry.directory.num.un_valid.total", "UnValid Directory Urls"),
+    DIRECTORY_METRIC_NUM_DISABLE("dubbo.registry.directory.num.disable.total", "Disable Directory Urls"),
+    DIRECTORY_METRIC_NUM_RECOVER_DISABLE("dubbo.registry.directory.num.recover.disable.total", "Recover Disable Directory Urls"),
+
+    NOTIFY_METRIC_REQUESTS("dubbo.registry.notify.requests.total", "Total Notify Requests"),
+    NOTIFY_METRIC_NUM_LAST("dubbo.registry.notify.num.last", "Last Notify Nums"),
+
     THREAD_POOL_CORE_SIZE("dubbo.thread.pool.core.size", "Thread Pool Core Size"),
     THREAD_POOL_LARGEST_SIZE("dubbo.thread.pool.largest.size", "Thread Pool Largest Size"),
     THREAD_POOL_MAX_SIZE("dubbo.thread.pool.max.size", "Thread Pool Max Size"),
@@ -85,6 +105,7 @@ public enum MetricsKey {
     public final String getName() {
         return this.name;
     }
+
     public final String getNameByType(String type) {
         return String.format(name, type);
     }

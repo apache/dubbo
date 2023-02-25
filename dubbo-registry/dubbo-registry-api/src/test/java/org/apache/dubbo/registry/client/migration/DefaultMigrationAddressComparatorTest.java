@@ -35,6 +35,7 @@ import static org.apache.dubbo.registry.client.migration.DefaultMigrationAddress
 
 class DefaultMigrationAddressComparatorTest {
 
+    @SuppressWarnings("all")
     @Test
     void test() {
         DefaultMigrationAddressComparator comparator = new DefaultMigrationAddressComparator();
@@ -69,13 +70,13 @@ class DefaultMigrationAddressComparatorTest {
 
         Mockito.when(oldInvoker.hasProxyInvokers()).thenReturn(true);
 
-        List<Invoker> newInvokerList = new LinkedList<>();
+        List<Invoker<?>> newInvokerList = new LinkedList<>();
         newInvokerList.add(Mockito.mock(Invoker.class));
         newInvokerList.add(Mockito.mock(Invoker.class));
         newInvokerList.add(Mockito.mock(Invoker.class));
         Mockito.when(newDirectory.getAllInvokers()).thenReturn(newInvokerList);
 
-        List<Invoker> oldInvokerList = new LinkedList<>();
+        List<Invoker<?>> oldInvokerList = new LinkedList<>();
         oldInvokerList.add(Mockito.mock(Invoker.class));
         oldInvokerList.add(Mockito.mock(Invoker.class));
         Mockito.when(oldDirectory.getAllInvokers()).thenReturn(oldInvokerList);
