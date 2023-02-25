@@ -28,29 +28,29 @@ import java.util.function.Supplier;
 
 /**
  * Long type data container
- * @param <NUMBER>
+ * @param <N>
  */
-public class LongContainer<NUMBER extends Number> extends ConcurrentHashMap<String, NUMBER> {
+public class LongContainer<N extends Number> extends ConcurrentHashMap<String, N> {
 
     /**
      * Provide the metric type name
      */
-    private final MetricsKeyWrapper metricsKeyWrapper;
+    private final transient MetricsKeyWrapper metricsKeyWrapper;
     /**
      * The initial value corresponding to the key is generally 0 of different data types
      */
-    private final Function<String, NUMBER> initFunc;
+    private final transient Function<String, N> initFunc;
     /**
      * Statistical data calculation function, which can be self-increment, self-decrement, or more complex avg function
      */
-    private final BiConsumer<Long, NUMBER> consumerFunc;
+    private final transient BiConsumer<Long, N> consumerFunc;
     /**
      * Data output function required by  {@link GaugeMetricSample GaugeMetricSample}
      */
-    private Function<String, Long> valueSupplier;
+    private transient Function<String, Long> valueSupplier;
 
 
-    public LongContainer(MetricsKeyWrapper metricsKeyWrapper, Supplier<NUMBER> initFunc, BiConsumer<Long, NUMBER> consumerFunc) {
+    public LongContainer(MetricsKeyWrapper metricsKeyWrapper, Supplier<N> initFunc, BiConsumer<Long, N> consumerFunc) {
         this.metricsKeyWrapper = metricsKeyWrapper;
         this.initFunc = s -> initFunc.get();
         this.consumerFunc = consumerFunc;
@@ -69,11 +69,11 @@ public class LongContainer<NUMBER extends Number> extends ConcurrentHashMap<Stri
         return metricsKeyWrapper.isKey(metricsKey, registryOpType);
     }
 
-    public Function<String, NUMBER> getInitFunc() {
+    public Function<String, N> getInitFunc() {
         return initFunc;
     }
 
-    public BiConsumer<Long, NUMBER> getConsumerFunc() {
+    public BiConsumer<Long, N> getConsumerFunc() {
         return consumerFunc;
     }
 
@@ -90,5 +90,23 @@ public class LongContainer<NUMBER extends Number> extends ConcurrentHashMap<Stri
         return "LongContainer{" +
             "metricsKeyWrapper=" + metricsKeyWrapper +
             '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+
+        LongContainer<?> that = (LongContainer<?>) o;
+
+        return metricsKeyWrapper.equals(that.metricsKeyWrapper);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        result = 31 * result + metricsKeyWrapper.hashCode();
+        return result;
     }
 }

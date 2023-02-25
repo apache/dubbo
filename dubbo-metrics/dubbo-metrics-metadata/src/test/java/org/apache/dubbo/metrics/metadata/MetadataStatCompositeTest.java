@@ -38,13 +38,13 @@ public class MetadataStatCompositeTest {
         MetadataStatComposite statComposite = new MetadataStatComposite();
         Assertions.assertEquals(statComposite.numStats.size(), MetadataEvent.Type.values().length);
         //(rt)5 * (push,subscribe)2
-        Assertions.assertEquals(statComposite.rtStats.size(), 5 * 2);
+        Assertions.assertEquals(5 * 2, statComposite.rtStats.size());
         statComposite.numStats.values().forEach((v ->
             Assertions.assertEquals(v, new ConcurrentHashMap<>())));
         statComposite.rtStats.forEach(rtContainer ->
         {
             for (Map.Entry<String, ? extends Number> entry : rtContainer.entrySet()) {
-                Assertions.assertEquals(rtContainer.getValueSupplier().apply(entry.getKey()), 0L);
+                Assertions.assertEquals(0L, rtContainer.getValueSupplier().apply(entry.getKey()));
             }
         });
     }
@@ -53,7 +53,7 @@ public class MetadataStatCompositeTest {
     void testIncrement() {
         MetadataStatComposite statComposite = new MetadataStatComposite();
         statComposite.increment(MetadataEvent.Type.P_TOTAL, applicationName);
-        Assertions.assertEquals(statComposite.numStats.get(MetadataEvent.Type.P_TOTAL).get(applicationName).get(), 1L);
+        Assertions.assertEquals(1L, statComposite.numStats.get(MetadataEvent.Type.P_TOTAL).get(applicationName).get());
     }
 
     @Test
@@ -62,6 +62,6 @@ public class MetadataStatCompositeTest {
         statComposite.calcRt(applicationName, OP_TYPE_SUBSCRIBE, 10L);
         Assertions.assertTrue(statComposite.rtStats.stream().anyMatch(longContainer -> longContainer.specifyType(OP_TYPE_SUBSCRIBE)));
         Optional<LongContainer<? extends Number>> subContainer = statComposite.rtStats.stream().filter(longContainer -> longContainer.specifyType(OP_TYPE_SUBSCRIBE)).findFirst();
-        subContainer.ifPresent(v -> Assertions.assertEquals(v.get(applicationName).longValue(), 10L));
+        subContainer.ifPresent(v -> Assertions.assertEquals(10L, v.get(applicationName).longValue()));
     }
 }

@@ -74,7 +74,7 @@ class MetadataMetricsCollectorTest {
         List<MetricSample> metricSamples = collector.collect();
 
         // push success +1
-        Assertions.assertEquals(metricSamples.size(), 1);
+        Assertions.assertEquals(1, metricSamples.size());
         Assertions.assertTrue(metricSamples.get(0) instanceof GaugeMetricSample);
         Assertions.assertEquals(metricSamples.get(0).getName(), MetricsKey.METADATA_PUSH_METRIC_NUM.getName());
 
@@ -82,7 +82,7 @@ class MetadataMetricsCollectorTest {
         // push finish rt +1
         metricSamples = collector.collect();
         //num(total+success) + rt(5) = 7
-        Assertions.assertEquals(metricSamples.size(), 7);
+        Assertions.assertEquals(7, metricSamples.size());
         long c1 = timePair.calc();
         TimePair lastTimePair = TimePair.start();
         eventMulticaster.publishEvent(new MetadataEvent.PushEvent(applicationModel, lastTimePair));
@@ -93,7 +93,7 @@ class MetadataMetricsCollectorTest {
         metricSamples = collector.collect();
 
         // num(total+success+error) + rt(5)
-        Assertions.assertEquals(metricSamples.size(), 8);
+        Assertions.assertEquals(8, metricSamples.size());
 
         // calc rt
         for (MetricSample sample : metricSamples) {
@@ -124,7 +124,7 @@ class MetadataMetricsCollectorTest {
         List<MetricSample> metricSamples = collector.collect();
 
         // push success +1
-        Assertions.assertEquals(metricSamples.size(), 1);
+        Assertions.assertEquals(1, metricSamples.size());
         Assertions.assertTrue(metricSamples.get(0) instanceof GaugeMetricSample);
         Assertions.assertEquals(metricSamples.get(0).getName(), MetricsKey.METADATA_SUBSCRIBE_METRIC_NUM.getName());
 
@@ -132,7 +132,7 @@ class MetadataMetricsCollectorTest {
         // push finish rt +1
         metricSamples = collector.collect();
         //num(total+success) + rt(5) = 7
-        Assertions.assertEquals(metricSamples.size(), 7);
+        Assertions.assertEquals(7, metricSamples.size());
         long c1 = timePair.calc();
         TimePair lastTimePair = TimePair.start();
         eventMulticaster.publishEvent(new MetadataEvent.SubscribeEvent(applicationModel, lastTimePair));
@@ -143,7 +143,7 @@ class MetadataMetricsCollectorTest {
         metricSamples = collector.collect();
 
         // num(total+success+error) + rt(5)
-        Assertions.assertEquals(metricSamples.size(), 8);
+        Assertions.assertEquals(8, metricSamples.size());
 
         // calc rt
         for (MetricSample sample : metricSamples) {

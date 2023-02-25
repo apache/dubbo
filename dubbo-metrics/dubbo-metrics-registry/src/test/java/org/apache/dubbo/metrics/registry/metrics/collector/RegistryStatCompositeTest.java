@@ -38,13 +38,13 @@ public class RegistryStatCompositeTest {
         RegistryStatComposite statComposite = new RegistryStatComposite();
         Assertions.assertEquals(statComposite.numStats.size(), RegistryEvent.Type.values().length);
         //(rt)5 * (register,subscribe,notify)3
-        Assertions.assertEquals(statComposite.rtStats.size(), 5 * 3);
+        Assertions.assertEquals(5 * 3, statComposite.rtStats.size());
         statComposite.numStats.values().forEach((v ->
             Assertions.assertEquals(v, new ConcurrentHashMap<>())));
         statComposite.rtStats.forEach(rtContainer ->
         {
             for (Map.Entry<String, ? extends Number> entry : rtContainer.entrySet()) {
-                Assertions.assertEquals(rtContainer.getValueSupplier().apply(entry.getKey()), 0L);
+                Assertions.assertEquals(0L, rtContainer.getValueSupplier().apply(entry.getKey()));
             }
         });
     }
@@ -53,7 +53,7 @@ public class RegistryStatCompositeTest {
     void testIncrement() {
         RegistryStatComposite statComposite = new RegistryStatComposite();
         statComposite.increment(RegistryEvent.Type.R_TOTAL, applicationName);
-        Assertions.assertEquals(statComposite.numStats.get(RegistryEvent.Type.R_TOTAL).get(applicationName).get(), 1L);
+        Assertions.assertEquals(1L, statComposite.numStats.get(RegistryEvent.Type.R_TOTAL).get(applicationName).get());
     }
 
     @Test
@@ -62,6 +62,6 @@ public class RegistryStatCompositeTest {
         statComposite.calcRt(applicationName, OP_TYPE_NOTIFY, 10L);
         Assertions.assertTrue(statComposite.rtStats.stream().anyMatch(longContainer -> longContainer.specifyType(OP_TYPE_NOTIFY)));
         Optional<LongContainer<? extends Number>> subContainer = statComposite.rtStats.stream().filter(longContainer -> longContainer.specifyType(OP_TYPE_NOTIFY)).findFirst();
-        subContainer.ifPresent(v -> Assertions.assertEquals(v.get(applicationName).longValue(), 10L));
+        subContainer.ifPresent(v -> Assertions.assertEquals(10L, v.get(applicationName).longValue()));
     }
 }
