@@ -35,9 +35,9 @@ import static org.apache.dubbo.metrics.model.MetricsCategory.THREAD_POOL;
 
 public class ThreadPoolMetricsSampler implements MetricsSampler {
 
-    private DefaultMetricsCollector collector;
+    private final DefaultMetricsCollector collector;
     private FrameworkExecutorRepository frameworkExecutorRepository;
-    private Set<ThreadPoolMetric> threadPoolMetricSet = new HashSet<>();
+    private final Set<ThreadPoolMetric> threadPoolMetricSet = new HashSet<>();
 
     public ThreadPoolMetricsSampler(DefaultMetricsCollector collector) {
         this.collector = collector;
@@ -58,11 +58,12 @@ public class ThreadPoolMetricsSampler implements MetricsSampler {
     }
 
     private void collect() {
-        try{
+        try {
             if (this.frameworkExecutorRepository == null) {
                 this.frameworkExecutorRepository = collector.getApplicationModel().getFrameworkModel().getBeanFactory().getBean(FrameworkExecutorRepository.class);
             }
-        }catch(Exception ex){}
+        } catch (Exception ignored) {
+        }
 
         if (frameworkExecutorRepository != null) {
             addThread("SharedExecutor", frameworkExecutorRepository.getSharedExecutor());

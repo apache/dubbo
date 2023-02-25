@@ -16,11 +16,8 @@
  */
 package org.apache.dubbo.rpc.cluster.support;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.Callable;
-
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.metrics.event.GlobalMetricsEventMulticaster;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Invocation;
@@ -33,9 +30,14 @@ import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.cluster.SingleRouterChain;
 import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Callable;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -65,7 +67,7 @@ class FailoverClusterInvokerTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-
+        ApplicationModel.defaultModel().getBeanFactory().registerBean(GlobalMetricsEventMulticaster.class);
         dic = mock(Directory.class);
 
         given(dic.getUrl()).willReturn(url);
