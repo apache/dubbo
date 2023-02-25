@@ -28,11 +28,11 @@ import org.apache.dubbo.common.utils.StringUtils;
 
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_UNABLE_DESTROY_MODEL;
@@ -62,23 +62,25 @@ public abstract class ScopeModel implements ExtensionAccessor {
 
     private String desc;
 
-    private Set<ClassLoader> classLoaders;
+    private final Set<ClassLoader> classLoaders = new ConcurrentHashSet<>();
 
     private final ScopeModel parent;
     private final ExtensionScope scope;
 
-    private ExtensionDirector extensionDirector;
+    private volatile ExtensionDirector extensionDirector;
 
-    private ScopeBeanFactory beanFactory;
-    private List<ScopeModelDestroyListener> destroyListeners;
+    private volatile ScopeBeanFactory beanFactory;
+    private final List<ScopeModelDestroyListener> destroyListeners = new CopyOnWriteArrayList<>();
 
-    private List<ScopeClassLoaderListener> classLoaderListeners;
+    private final List<ScopeClassLoaderListener> classLoaderListeners = new CopyOnWriteArrayList<>();
 
-    private Map<String, Object> attributes;
+    private final Map<String, Object> attributes = new ConcurrentHashMap<>();
     private final AtomicBoolean destroyed = new AtomicBoolean(false);
     private final boolean internalScope;
 
-    public ScopeModel(ScopeModel parent, ExtensionScope scope, boolean isInternal) {
+    protected final Object instLock = new Object();
+
+    protected ScopeModel(ScopeModel parent, ExtensionScope scope, boolean isInternal) {
         this.parent = parent;
         this.scope = scope;
         this.internalScope = isInternal;
@@ -94,18 +96,16 @@ public abstract class ScopeModel implements ExtensionAccessor {
      * </ol>
      */
     protected void initialize() {
-        this.extensionDirector = new ExtensionDirector(parent != null ? parent.getExtensionDirector() : null, scope, this);
-        this.extensionDirector.addExtensionPostProcessor(new ScopeModelAwareExtensionProcessor(this));
-        this.beanFactory = new ScopeBeanFactory(parent != null ? parent.getBeanFactory() : null, extensionDirector);
-        this.destroyListeners = new LinkedList<>();
-        this.classLoaderListeners = new LinkedList<>();
-        this.attributes = new ConcurrentHashMap<>();
-        this.classLoaders = new ConcurrentHashSet<>();
+        synchronized (instLock) {
+            this.extensionDirector = new ExtensionDirector(parent != null ? parent.getExtensionDirector() : null, scope, this);
+            this.extensionDirector.addExtensionPostProcessor(new ScopeModelAwareExtensionProcessor(this));
+            this.beanFactory = new ScopeBeanFactory(parent != null ? parent.getBeanFactory() : null, extensionDirector);
 
-        // Add Framework's ClassLoader by default
-        ClassLoader dubboClassLoader = ScopeModel.class.getClassLoader();
-        if (dubboClassLoader != null) {
-            this.addClassLoader(dubboClassLoader);
+            // Add Framework's ClassLoader by default
+            ClassLoader dubboClassLoader = ScopeModel.class.getClassLoader();
+            if (dubboClassLoader != null) {
+                this.addClassLoader(dubboClassLoader);
+            }
         }
     }
 
@@ -203,22 +203,26 @@ public abstract class ScopeModel implements ExtensionAccessor {
     }
 
     public void addClassLoader(ClassLoader classLoader) {
-        this.classLoaders.add(classLoader);
-        if (parent != null) {
-            parent.addClassLoader(classLoader);
+        synchronized (instLock) {
+            this.classLoaders.add(classLoader);
+            if (parent != null) {
+                parent.addClassLoader(classLoader);
+            }
+            extensionDirector.removeAllCachedLoader();
+            notifyClassLoaderAdd(classLoader);
         }
-        extensionDirector.removeAllCachedLoader();
-        notifyClassLoaderAdd(classLoader);
     }
 
     public void removeClassLoader(ClassLoader classLoader) {
-        if (checkIfClassLoaderCanRemoved(classLoader)) {
-            this.classLoaders.remove(classLoader);
-            if (parent != null) {
-                parent.removeClassLoader(classLoader);
+        synchronized (instLock) {
+            if (checkIfClassLoaderCanRemoved(classLoader)) {
+                this.classLoaders.remove(classLoader);
+                if (parent != null) {
+                    parent.removeClassLoader(classLoader);
+                }
+                extensionDirector.removeAllCachedLoader();
+                notifyClassLoaderDestroy(classLoader);
             }
-            extensionDirector.removeAllCachedLoader();
-            notifyClassLoaderDestroy(classLoader);
         }
     }
 

@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.common.serialize.hessian2;
 
-import java.io.Serializable;
-
 import org.apache.dubbo.common.utils.DefaultSerializeClassChecker;
 
 import com.alibaba.com.caucho.hessian.io.Deserializer;
@@ -25,6 +23,8 @@ import com.alibaba.com.caucho.hessian.io.JavaDeserializer;
 import com.alibaba.com.caucho.hessian.io.JavaSerializer;
 import com.alibaba.com.caucho.hessian.io.Serializer;
 import com.alibaba.com.caucho.hessian.io.SerializerFactory;
+
+import java.io.Serializable;
 
 public class Hessian2SerializerFactory extends SerializerFactory {
 
@@ -44,9 +44,15 @@ public class Hessian2SerializerFactory extends SerializerFactory {
         if (_defaultSerializer != null)
             return _defaultSerializer;
 
+        try {
+            // pre-check if class is allow
+            defaultSerializeClassChecker.loadClass(getClassLoader(), cl.getName());
+        } catch (ClassNotFoundException e) {
+            // ignore
+        }
+
         if (!Serializable.class.isAssignableFrom(cl)
-            && !isAllowNonSerializable()
-            && !defaultSerializeClassChecker.isCheckSerializable()) {
+            && (!isAllowNonSerializable() || !defaultSerializeClassChecker.isCheckSerializable())) {
             throw new IllegalStateException("Serialized class " + cl.getName() + " must implement java.io.Serializable");
         }
 
@@ -55,9 +61,15 @@ public class Hessian2SerializerFactory extends SerializerFactory {
 
     @Override
     protected Deserializer getDefaultDeserializer(Class cl) {
+        try {
+            // pre-check if class is allow
+            defaultSerializeClassChecker.loadClass(getClassLoader(), cl.getName());
+        } catch (ClassNotFoundException e) {
+            // ignore
+        }
+
         if (!Serializable.class.isAssignableFrom(cl)
-            && !isAllowNonSerializable()
-            && !defaultSerializeClassChecker.isCheckSerializable()) {
+            && (!isAllowNonSerializable() || !defaultSerializeClassChecker.isCheckSerializable())) {
             throw new IllegalStateException("Serialized class " + cl.getName() + " must implement java.io.Serializable");
         }
 
