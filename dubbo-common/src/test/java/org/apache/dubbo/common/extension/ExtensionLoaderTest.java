@@ -72,6 +72,7 @@ import org.apache.dubbo.common.extension.wrapper.impl.DemoWrapper2;
 import org.apache.dubbo.common.lang.Prioritized;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -357,7 +358,6 @@ class ExtensionLoaderTest {
         AddExt2 adaptive = loader.getAdaptiveExtension();
         assertTrue(adaptive instanceof AddExt2_ManualAdaptive);
     }
-
 
     @Test
     void test_AddExtension_Adaptive_ExceptionWhenExistedAdaptive() {
@@ -720,7 +720,7 @@ class ExtensionLoaderTest {
     void testDuplicatedImplWithoutOverriddenStrategy() {
         List<LoadingStrategy> loadingStrategies = ExtensionLoader.getLoadingStrategies();
         ExtensionLoader.setLoadingStrategies(new DubboExternalLoadingStrategyTest(false),
-                new DubboInternalLoadingStrategyTest(false));
+            new DubboInternalLoadingStrategyTest(false));
         ExtensionLoader<DuplicatedWithoutOverriddenExt> extensionLoader = getExtensionLoader(DuplicatedWithoutOverriddenExt.class);
         try {
             extensionLoader.getExtension("duplicated");
@@ -738,7 +738,7 @@ class ExtensionLoaderTest {
     void testDuplicatedImplWithOverriddenStrategy() {
         List<LoadingStrategy> loadingStrategies = ExtensionLoader.getLoadingStrategies();
         ExtensionLoader.setLoadingStrategies(new DubboExternalLoadingStrategyTest(true),
-                new DubboInternalLoadingStrategyTest(true));
+            new DubboInternalLoadingStrategyTest(true));
         ExtensionLoader<DuplicatedOverriddenExt> extensionLoader = getExtensionLoader(DuplicatedOverriddenExt.class);
         DuplicatedOverriddenExt duplicatedOverriddenExt = extensionLoader.getExtension("duplicated");
         assertEquals("DuplicatedOverriddenExt1", duplicatedOverriddenExt.echo());
