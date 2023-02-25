@@ -15,31 +15,19 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.metrics.model;
+package org.apache.dubbo.metrics.registry.event;
 
-public class TimePair {
+import org.apache.dubbo.metrics.event.SimpleMetricsEventMulticaster;
 
-    private final long begin;
-    private long end;
-    private static final TimePair empty = new TimePair(0L);
+public final class RegistryMetricsEventMulticaster extends SimpleMetricsEventMulticaster {
 
-    public TimePair(long currentTimeMillis) {
-        this.begin = currentTimeMillis;
+    public RegistryMetricsEventMulticaster() {
+        super.addListener(new MetricsRegisterListener());
+        super.addListener(new MetricsSubscribeListener());
+        super.addListener(new MetricsNotifyListener());
+        super.addListener(new MetricsDirectoryListener());
+
+        setAvailable();
     }
 
-    public static TimePair start() {
-        return new TimePair(System.currentTimeMillis());
-    }
-
-    public void end() {
-        this.end = System.currentTimeMillis();
-    }
-
-    public long calc() {
-        return end - begin;
-    }
-
-    public static TimePair empty() {
-        return empty;
-    }
 }

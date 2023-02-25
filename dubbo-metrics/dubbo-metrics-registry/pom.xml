@@ -23,7 +23,7 @@
         <version>${revision}</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-    <artifactId>dubbo-metrics-api</artifactId>
+    <artifactId>dubbo-metrics-registry</artifactId>
     <packaging>jar</packaging>
     <name>${project.artifactId}</name>
     <description>The metrics module of dubbo project</description>
@@ -33,21 +33,8 @@
     <dependencies>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-common</artifactId>
+            <artifactId>dubbo-metrics-api</artifactId>
             <version>${project.parent.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-rpc-api</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.micrometer</groupId>
-            <artifactId>micrometer-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.tdunning</groupId>
-            <artifactId>t-digest</artifactId>
         </dependency>
     </dependencies>
 </project>
