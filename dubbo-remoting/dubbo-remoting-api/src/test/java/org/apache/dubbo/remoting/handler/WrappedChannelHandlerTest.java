@@ -40,11 +40,12 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 class WrappedChannelHandlerTest {
     WrappedChannelHandler handler;
-    URL url = URL.valueOf("test://10.20.30.40:1234");
+    URL url = URL.valueOf("dubbo://10.20.30.40:1234/executor-management-mode=isolation&protocol=dubbo");
 
     @BeforeEach
     public void setUp() throws Exception {
         url = url.setScopeModel(ApplicationModel.defaultModel());
+//        addExtension("ext9", Ext9EmptyImpl.class);
         handler = new WrappedChannelHandler(new BizChannelHandler(true), url);
     }
 
