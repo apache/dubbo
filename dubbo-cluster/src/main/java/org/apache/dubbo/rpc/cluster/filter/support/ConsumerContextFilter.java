@@ -123,10 +123,7 @@ public class ConsumerContextFilter implements ClusterFilter, ClusterFilter.Liste
 
     @Override
     public void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
-        // pass attachments to result
-        Map<String, Object> map = appResponse.getObjectAttachments();
-        RpcContext.getClientResponseContext().setObjectAttachments(map);
-        removeContext(invocation);
+
     }
 
     @Override
