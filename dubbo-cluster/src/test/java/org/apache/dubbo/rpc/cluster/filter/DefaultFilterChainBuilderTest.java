@@ -23,7 +23,6 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -49,7 +48,7 @@ class DefaultFilterChainBuilderTest {
         };
 
         Invoker<?> invokerAfterBuild = defaultFilterChainBuilder.buildInvokerChain(invokerWithoutFilter, REFERENCE_FILTER_KEY, CONSUMER);
-        Assertions.assertTrue(invokerAfterBuild instanceof AbstractInvoker);
+        Assertions.assertTrue(invokerAfterBuild instanceof FilterChainBuilder.CallbackRegistrationInvoker);
 
         // verify that if LogFilter is configured, LogFilter should exist in the filter chain
         URL urlWithFilter = URL.valueOf("injvm://127.0.0.1/DemoService")
@@ -64,7 +63,7 @@ class DefaultFilterChainBuilderTest {
         };
         invokerAfterBuild = defaultFilterChainBuilder.buildInvokerChain(invokerWithFilter, REFERENCE_FILTER_KEY, CONSUMER);
         Assertions.assertTrue(invokerAfterBuild instanceof FilterChainBuilder.CallbackRegistrationInvoker);
-        Assertions.assertEquals(1, ((FilterChainBuilder.CallbackRegistrationInvoker<?, ?>) invokerAfterBuild).filters.size());
+        Assertions.assertEquals(2, ((FilterChainBuilder.CallbackRegistrationInvoker<?, ?>) invokerAfterBuild).filters.size());
 
     }
 
@@ -84,7 +83,7 @@ class DefaultFilterChainBuilderTest {
         };
 
         Invoker<?> invokerAfterBuild = defaultFilterChainBuilder.buildInvokerChain(invokerWithoutFilter, REFERENCE_FILTER_KEY, CONSUMER);
-        Assertions.assertTrue(invokerAfterBuild instanceof AbstractInvoker);
+        Assertions.assertTrue(invokerAfterBuild instanceof FilterChainBuilder.CallbackRegistrationInvoker);
 
         // verify that if LogFilter is configured, LogFilter should exist in the filter chain
         URL urlWithFilter = URL.valueOf("dubbo://127.0.0.1:20880/DemoService")
