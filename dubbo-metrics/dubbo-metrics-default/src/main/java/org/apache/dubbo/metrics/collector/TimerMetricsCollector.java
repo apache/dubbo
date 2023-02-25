@@ -53,7 +53,9 @@ public class TimerMetricsCollector implements MetricsListener {
         MethodMetric metric = (MethodMetric) event.getSource();
         Long responseTime = event.getRt();
 
-        TimerMetricSample sample = new TimerMetricSample(MetricsKey.PROVIDER_METRIC_RT_HISTOGRAM, metric.getTags(), RT);
+        TimerMetricSample sample = new TimerMetricSample(MetricsKey.PROVIDER_METRIC_RT_HISTOGRAM.getNameByType(metric.getSide()),
+            MetricsKey.PROVIDER_METRIC_RT_HISTOGRAM.getDescription(),
+            metric.getTags(), RT);
 
         Timer timer = ConcurrentHashMapUtils.computeIfAbsent(rt, metric, k -> metricRegister.register(sample));
         timer.record(responseTime, TimeUnit.MILLISECONDS);

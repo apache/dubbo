@@ -18,17 +18,15 @@
 package org.apache.dubbo.metrics.sample;
 
 import org.apache.dubbo.metrics.model.MetricsCategory;
-import org.apache.dubbo.metrics.model.MetricsKey;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 
 import java.util.Map;
 
 public class TimerMetricSample extends MetricSample {
 
-    public TimerMetricSample(MetricsKey metricsKey, Map<String, String> tags, MetricsCategory category) {
-        super(metricsKey.getName(), metricsKey.getDescription(), tags, Type.TIMER, category);
+    public TimerMetricSample(String name, String description, Map<String, String> tags, MetricsCategory category) {
+        super(name, description, tags, Type.TIMER, category);
     }
-
 
     public TimerMetricSample(String name, String description, Map<String, String> tags, Type type, MetricsCategory category, String baseUnit) {
         super(name, description, tags, type, category, baseUnit);

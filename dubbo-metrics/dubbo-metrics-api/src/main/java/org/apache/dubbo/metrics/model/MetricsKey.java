@@ -47,7 +47,7 @@ public enum MetricsKey {
     METRIC_RT_P99("dubbo.%s.rt.seconds.p99", "Response Time P99"),
     METRIC_RT_P95("dubbo.%s.rt.seconds.p95", "Response Time P95"),
 
-    PROVIDER_METRIC_RT_HISTOGRAM("dubbo.provider.rt.seconds.histogram", "Response Time Histogram"),
+    PROVIDER_METRIC_RT_HISTOGRAM("dubbo.%s.rt.seconds.histogram", "Response Time Histogram"),
 
 
     GENERIC_METRIC_REQUESTS("dubbo.%s.requests.total", "Total %s Requests"),
