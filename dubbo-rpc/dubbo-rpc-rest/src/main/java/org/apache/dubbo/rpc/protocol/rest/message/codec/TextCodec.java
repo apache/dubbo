@@ -42,7 +42,7 @@ public class TextCodec implements HttpMessageCodec<byte[], OutputStream> {
 
     @Override
     public boolean typeSupport(Class targetType) {
-        return false;
+        return DataParseUtils.isTextType(targetType);
     }
 
     @Override

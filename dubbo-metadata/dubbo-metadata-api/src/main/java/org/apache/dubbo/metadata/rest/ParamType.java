@@ -18,6 +18,7 @@ package org.apache.dubbo.metadata.rest;
 
 import org.apache.dubbo.metadata.MetadataConstants;
 import org.apache.dubbo.metadata.rest.tag.BodyTag;
+import org.apache.dubbo.metadata.rest.tag.ParamTag;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +28,7 @@ public enum ParamType {
         SpringMvcClassConstants.REQUEST_HEADER_ANNOTATION_CLASS)),
 
     PARAM(addSupportTypes(JAXRSClassConstants.QUERY_PARAM_ANNOTATION_CLASS,
-        SpringMvcClassConstants.REQUEST_PARAM_ANNOTATION_CLASS)),
+        SpringMvcClassConstants.REQUEST_PARAM_ANNOTATION_CLASS, ParamTag.class)),
 
     BODY(addSupportTypes(
         JAXRSClassConstants.REST_EASY_BODY_ANNOTATION_CLASS,

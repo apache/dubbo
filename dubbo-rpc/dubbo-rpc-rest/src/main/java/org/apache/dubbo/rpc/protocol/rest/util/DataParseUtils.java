@@ -52,6 +52,13 @@ public class DataParseUtils {
 
     }
 
+    public static boolean isTextType(Class targetType) {
+
+        return targetType == Boolean.class ||
+            targetType == String.class ||
+            Number.class.isAssignableFrom(targetType);
+    }
+
 
     /**
      * content-type text

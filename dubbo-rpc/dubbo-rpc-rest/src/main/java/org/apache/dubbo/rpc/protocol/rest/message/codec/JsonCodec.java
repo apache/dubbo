@@ -36,7 +36,7 @@ public class JsonCodec implements HttpMessageCodec<byte[], OutputStream> {
     static {
 
         unSupportClasses.add(byte[].class);
-        unSupportClasses.add(String.class);
+
     }
 
     @Override
@@ -51,7 +51,7 @@ public class JsonCodec implements HttpMessageCodec<byte[], OutputStream> {
 
     @Override
     public boolean typeSupport(Class targetType) {
-        return !unSupportClasses.contains(targetType);
+        return !unSupportClasses.contains(targetType) && !DataParseUtils.isTextType(targetType);
     }
 
     @Override

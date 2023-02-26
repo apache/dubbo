@@ -360,9 +360,12 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
         if (annotations == null || annotations.length == 0) {
 
             for (NoAnnotatedParameterRequestTagProcessor processor : noAnnotatedParameterRequestTagProcessors) {
-                processor.process(parameter, parameterIndex, metadata);
+                // no annotation only one default annotationType
+                if (processor.process(parameter, parameterIndex, metadata)) {
+                    return;
+                }
             }
-            return;
+
         }
 
         for (Annotation annotation : annotations) {
