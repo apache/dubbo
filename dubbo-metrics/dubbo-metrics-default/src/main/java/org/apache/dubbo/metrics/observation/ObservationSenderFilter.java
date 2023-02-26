@@ -18,6 +18,7 @@ package org.apache.dubbo.metrics.observation;
 
 import io.micrometer.observation.Observation;
 import io.micrometer.observation.ObservationRegistry;
+
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.metrics.filter.observation.DefaultDubboClientObservationConvention;
 import org.apache.dubbo.metrics.filter.observation.DubboClientContext;
@@ -38,7 +39,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 /**
  * A {@link Filter} that creates an {@link Observation} around the outgoing message.
  */
-@Activate(group = CONSUMER, order = -1,onClass = "io.micrometer.observation.NoopObservationRegistry")
+@Activate(group = CONSUMER, order = -1, onClass = "io.micrometer.observation.NoopObservationRegistry")
 public class ObservationSenderFilter implements ClusterFilter, BaseFilter.Listener, ScopeModelAware {
 
     private final ObservationRegistry observationRegistry;
