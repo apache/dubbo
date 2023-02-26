@@ -35,11 +35,14 @@ import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.rest.rest.RestDemoService;
 import org.apache.dubbo.rpc.protocol.rest.rest.RestDemoServiceImpl;
 
+import org.apache.dubbo.rpc.protocol.rest.rest.AnotherUserRestService;
+import org.apache.dubbo.rpc.protocol.rest.rest.AnotherUserRestServiceImpl;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
 import java.util.Map;
 
 import static org.apache.dubbo.remoting.Constants.SERVER_KEY;
@@ -48,6 +51,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+
 
 public class SpringMvcRestProtocolTest {
     private Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getExtension("rest");
@@ -92,6 +96,38 @@ public class SpringMvcRestProtocolTest {
         String result = client.sayHello("haha");
         Assertions.assertTrue(server.isCalled());
         Assertions.assertEquals("Hello, haha", result);
+        invoker.destroy();
+        exporter.unexport();
+    }
+
+
+    @Test
+    void testAnotherUserRestProtocol() {
+        URL url = URL.valueOf("rest://127.0.0.1:" + NetUtils.getAvailablePort() + "/?version=1.0.0&interface=org.apache.dubbo.rpc.protocol.rest.rest.AnotherUserRestService");
+
+        AnotherUserRestServiceImpl server = new AnotherUserRestServiceImpl();
+
+        url = this.registerProvider(url, server, DemoService.class);
+
+        Exporter<AnotherUserRestService> exporter = protocol.export(proxy.getInvoker(server, AnotherUserRestService.class, url));
+        Invoker<AnotherUserRestService> invoker = protocol.refer(AnotherUserRestService.class, url);
+
+
+        AnotherUserRestService client = proxy.getProxy(invoker);
+        User result = client.getUser(123l);
+
+        Assertions.assertEquals(123l, result.getId());
+
+        result.setName("dubbo");
+        Assertions.assertEquals(123l, client.registerUser(result).getId());
+
+        Assertions.assertEquals("context", client.getContext());
+
+        byte[] bytes = {1, 2, 3, 4};
+        Assertions.assertTrue(Arrays.equals(bytes, client.bytes(bytes)));
+
+        Assertions.assertEquals(1l, client.number(1l));
+
         invoker.destroy();
         exporter.unexport();
     }
