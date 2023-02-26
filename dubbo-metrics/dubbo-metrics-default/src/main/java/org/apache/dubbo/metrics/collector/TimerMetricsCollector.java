@@ -27,6 +27,7 @@ import org.apache.dubbo.metrics.model.MethodMetric;
 import org.apache.dubbo.metrics.model.MetricsKey;
 import org.apache.dubbo.metrics.register.TimerMetricRegister;
 import org.apache.dubbo.metrics.sample.TimerMetricSample;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -37,9 +38,17 @@ public class TimerMetricsCollector implements MetricsListener {
 
     private final ConcurrentHashMap<MethodMetric, Timer> rt = new ConcurrentHashMap<>();
     private final TimerMetricRegister metricRegister;
+    private final ApplicationModel applicationModel;
 
-    public TimerMetricsCollector() {
+    public TimerMetricsCollector(ApplicationModel applicationModel) {
+        this.applicationModel = applicationModel;
         metricRegister = new TimerMetricRegister(MetricsGlobalRegistry.getCompositeRegistry());
+        registerListener();
+    }
+
+    private void registerListener() {
+        System.out.println("timer init :gsralex");
+        applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class).addListener(this);
     }
 
     @Override
@@ -53,9 +62,7 @@ public class TimerMetricsCollector implements MetricsListener {
         MethodMetric metric = (MethodMetric) event.getSource();
         Long responseTime = event.getRt();
 
-        TimerMetricSample sample = new TimerMetricSample(MetricsKey.PROVIDER_METRIC_RT_HISTOGRAM.getNameByType(metric.getSide()),
-            MetricsKey.PROVIDER_METRIC_RT_HISTOGRAM.getDescription(),
-            metric.getTags(), RT);
+        TimerMetricSample sample = new TimerMetricSample(MetricsKey.PROVIDER_METRIC_RT_HISTOGRAM.getNameByType(metric.getSide()), MetricsKey.PROVIDER_METRIC_RT_HISTOGRAM.getDescription(), metric.getTags(), RT);
 
         Timer timer = ConcurrentHashMapUtils.computeIfAbsent(rt, metric, k -> metricRegister.register(sample));
         timer.record(responseTime, TimeUnit.MILLISECONDS);
