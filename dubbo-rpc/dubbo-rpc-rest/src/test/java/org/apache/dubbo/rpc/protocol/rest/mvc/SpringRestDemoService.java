@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController("/demoService")
-public interface DemoService {
+public interface SpringRestDemoService {
     @RequestMapping(value = "/hello", method = RequestMethod.GET)
     Integer hello(@RequestParam Integer a, @RequestParam Integer b);
 
@@ -33,4 +33,6 @@ public interface DemoService {
 
     @RequestMapping(value = "/sayHello", method = RequestMethod.POST, consumes = MediaType.TEXT_PLAIN_VALUE)
     String sayHello(String name);
+
+    boolean isCalled();
 }
