@@ -26,7 +26,7 @@ public class PathAndInvokerMapper {
     public static Pair<Invoker, RestMethodMetadata> getRestMethodMetadata(String path, String version, String group, int port) {
 
 
-        PathMatcher pathMather = new PathMatcher(path, version, group, port);
+        PathMatcher pathMather = PathMatcher.getInvokeCreatePathMatcher(path, version, group, port);
 
         if (!pathToServiceMap.containsKey(pathMather)) {
             throw new PathNoFoundException("rest service Path no found, current path info:" + pathMather);
