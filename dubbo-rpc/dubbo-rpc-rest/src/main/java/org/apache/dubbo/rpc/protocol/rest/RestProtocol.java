@@ -70,7 +70,6 @@ import static org.apache.dubbo.rpc.protocol.rest.constans.RestConstant.PATH_SEPA
 public class RestProtocol extends AbstractProxyProtocol {
 
     private static final int DEFAULT_PORT = 80;
-    private static final String DEFAULT_CLIENT = org.apache.dubbo.remoting.Constants.OK_HTTP;
     private static final String DEFAULT_SERVER = Constants.JETTY;
 
     private final RestServerFactory serverFactory = new RestServerFactory();
@@ -145,7 +144,7 @@ public class RestProtocol extends AbstractProxyProtocol {
             synchronized (clients) {
                 refClient = clients.get(url.getAddress());
                 if (refClient == null || refClient.isDestroyed()) {
-                    refClient = ConcurrentHashMapUtils.computeIfAbsent(clients, url.getAddress(), _key -> createReferenceCountedClient(url,clients));
+                    refClient = ConcurrentHashMapUtils.computeIfAbsent(clients, url.getAddress(), _key -> createReferenceCountedClient(url));
                 }
             }
         }
@@ -232,14 +231,12 @@ public class RestProtocol extends AbstractProxyProtocol {
     }
 
 
-    private ReferenceCountedClient<? extends RestClient> createReferenceCountedClient(URL url, ConcurrentMap<String, ReferenceCountedClient<? extends RestClient>> clients) throws RpcException {
+    private ReferenceCountedClient<? extends RestClient> createReferenceCountedClient(URL url) throws RpcException {
 
         // url -> RestClient
         RestClient restClient = clientFactory.createRestClient(url);
 
-        ReferenceCountedClient refClient = new ReferenceCountedClient(restClient, clients, clientFactory, url);
-
-        return refClient;
+        return new ReferenceCountedClient<>(restClient, clients, clientFactory, url);
     }
 
     @Override
