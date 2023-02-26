@@ -18,15 +18,21 @@ package org.apache.dubbo.metrics;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.binder.MeterBinder;
+import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
+import org.apache.dubbo.metrics.report.AbstractMetricsReporter;
 
 
 public class DubboMetrics implements MeterBinder {
 
-    public static volatile MeterRegistry globalRegistry = null;
+    private MeterRegistry globalRegistry = null;
 
     @Override
     public void bindTo(MeterRegistry registry) {
         globalRegistry = registry;
+        CompositeMeterRegistry compositeRegistry = AbstractMetricsReporter.compositeRegistry;
+        if (compositeRegistry != null) {
+            compositeRegistry.add(registry);
+        }
     }
 
     public void destroy() {

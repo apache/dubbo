@@ -65,12 +65,13 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERR
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERROR_CLOSE_SERVER;
 import static org.apache.dubbo.remoting.Constants.SERVER_KEY;
 import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
+import static org.apache.dubbo.rpc.protocol.rest.constans.RestConstant.PATH_SEPARATOR;
 
 public class RestProtocol extends AbstractProxyProtocol {
 
     private static final int DEFAULT_PORT = 80;
-    private static final String DEFAULT_SERVER = "jetty";
     private static final String DEFAULT_CLIENT = org.apache.dubbo.remoting.Constants.OK_HTTP;
+    private static final String DEFAULT_SERVER = Constants.JETTY;
 
     private final RestServerFactory serverFactory = new RestServerFactory();
 
@@ -95,7 +96,7 @@ public class RestProtocol extends AbstractProxyProtocol {
     @Override
     protected <T> Runnable doExport(T impl, Class<T> type, URL url) throws RpcException {
         String addr = getAddr(url);
-        Class implClass = url.getServiceModel().getProxyObject().getClass();
+        Class<?> implClass = url.getServiceModel().getProxyObject().getClass();
         RestProtocolServer server = (RestProtocolServer) ConcurrentHashMapUtils.computeIfAbsent(serverMap, addr, restServer -> {
             RestProtocolServer s = serverFactory.createServer(url.getParameter(SERVER_KEY, DEFAULT_SERVER));
             s.setAddress(url.getAddress());
@@ -104,7 +105,7 @@ public class RestProtocol extends AbstractProxyProtocol {
         });
 
         String contextPath = getContextPath(url);
-        if ("servlet".equalsIgnoreCase(url.getParameter(SERVER_KEY, DEFAULT_SERVER))) {
+        if (Constants.SERVLET.equalsIgnoreCase(url.getParameter(SERVER_KEY, DEFAULT_SERVER))) {
             ServletContext servletContext = ServletManager.getInstance().getServletContext(ServletManager.EXTERNAL_SERVER_PORT);
             if (servletContext == null) {
                 throw new RpcException("No servlet context found. Since you are using server='servlet', " +
@@ -118,13 +119,13 @@ public class RestProtocol extends AbstractProxyProtocol {
                         "make sure that the 'contextpath' property starts with the path of external webapp");
                 }
                 contextPath = contextPath.substring(webappPath.length());
-                if (contextPath.startsWith("/")) {
+                if (contextPath.startsWith(PATH_SEPARATOR)) {
                     contextPath = contextPath.substring(1);
                 }
             }
         }
 
-        final Class resourceDef = GetRestful.getRootResourceClass(implClass) != null ? implClass : type;
+        final Class<?> resourceDef = GetRestful.getRootResourceClass(implClass) != null ? implClass : type;
 
         server.deploy(resourceDef, impl, contextPath);
 
@@ -140,9 +141,15 @@ public class RestProtocol extends AbstractProxyProtocol {
     @Override
     protected <T> Invoker<T> protocolBindingRefer(final Class<T> type, final URL url) throws RpcException {
 
-        ReferenceCountedClient<? extends RestClient> refClient =
-            clients.computeIfAbsent(url.getAddress(), key -> createReferenceCountedClient(url, clients));
-
+        ReferenceCountedClient<? extends RestClient> refClient = clients.get(url.getAddress());
+        if (refClient == null || refClient.isDestroyed()) {
+            synchronized (clients) {
+                refClient = clients.get(url.getAddress());
+                if (refClient == null || refClient.isDestroyed()) {
+                    refClient = ConcurrentHashMapUtils.computeIfAbsent(clients, url.getAddress(), _key -> createReferenceCountedClient(url,clients));
+                }
+            }
+        }
         refClient.retain();
 
         // resolve metadata
@@ -233,8 +240,6 @@ public class RestProtocol extends AbstractProxyProtocol {
 
         ReferenceCountedClient refClient = new ReferenceCountedClient(restClient, clients, clientFactory, url);
 
-        // TODO  add timer for loop destroy check ?
-
         return refClient;
     }
 
@@ -266,7 +271,7 @@ public class RestProtocol extends AbstractProxyProtocol {
         if (logger.isInfoEnabled()) {
             logger.info("Closing rest clients");
         }
-        for (ReferenceCountedClient client : clients.values()) {
+        for (ReferenceCountedClient<?> client : clients.values()) {
             try {
                 // destroy directly regardless of the current reference count.
                 client.destroy();
@@ -293,7 +298,7 @@ public class RestProtocol extends AbstractProxyProtocol {
             if (contextPath.endsWith(url.getParameter(INTERFACE_KEY))) {
                 contextPath = contextPath.substring(0, contextPath.lastIndexOf(url.getParameter(INTERFACE_KEY)));
             }
-            return contextPath.endsWith("/") ? contextPath.substring(0, contextPath.length() - 1) : contextPath;
+            return contextPath.endsWith(PATH_SEPARATOR) ? contextPath.substring(0, contextPath.length() - 1) : contextPath;
         } else {
             return "";
         }
@@ -302,7 +307,7 @@ public class RestProtocol extends AbstractProxyProtocol {
     @Override
     protected void destroyInternal(URL url) {
         try {
-            ReferenceCountedClient referenceCountedClient = clients.get(url.getAddress());
+            ReferenceCountedClient<?> referenceCountedClient = clients.get(url.getAddress());
             if (referenceCountedClient != null && referenceCountedClient.release()) {
                 clients.remove(url.getAddress());
             }
