@@ -46,5 +46,11 @@
             <artifactId>micrometer-tracing-integration-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-cluster</artifactId>
+            <version>${project.parent.version}</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 </project>

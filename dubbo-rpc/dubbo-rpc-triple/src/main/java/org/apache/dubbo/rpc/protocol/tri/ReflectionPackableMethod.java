@@ -403,6 +403,7 @@ public class ReflectionPackableMethod implements PackableMethod {
         private final String serialize;
         private final MultipleSerialization multipleSerialization;
         private final String[] argumentsType;
+        private final Class<?>[] actualRequestTypes;
         private final URL url;
         private final boolean singleArgument;
 
@@ -414,6 +415,7 @@ public class ReflectionPackableMethod implements PackableMethod {
             this.url = url;
             this.serialize = serialize;
             this.multipleSerialization = multipleSerialization;
+            this.actualRequestTypes = actualRequestTypes;
             this.argumentsType = Stream.of(actualRequestTypes).map(Class::getName).toArray(String[]::new);
             this.singleArgument = singleArgument;
         }
@@ -431,9 +433,10 @@ public class ReflectionPackableMethod implements PackableMethod {
             for (String type : argumentsType) {
                 builder.addArgTypes(type);
             }
-            for (Object argument : arguments) {
+            for (int i = 0; i < arguments.length; i++) {
+                Object argument = arguments[i];
                 ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                multipleSerialization.serialize(url, serialize, argument.getClass(), argument, bos);
+                multipleSerialization.serialize(url, serialize, actualRequestTypes[i], argument, bos);
                 builder.addArgs(bos.toByteArray());
             }
             return builder.build().toByteArray();

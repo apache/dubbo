@@ -71,7 +71,7 @@ public class SimpleMetricsEventMulticaster implements MetricsEventMulticaster {
         publishTimeEvent(event, metricsLifeListener -> metricsLifeListener.onEventError(event));
     }
 
-    @SuppressWarnings({"rawtypes", "unchecked"})
+    @SuppressWarnings({"rawtypes"})
     private void publishTimeEvent(MetricsEvent event, Consumer<MetricsLifeListener> consumer) {
         if (event instanceof EmptyEvent) {
             return;
