@@ -369,4 +369,124 @@ class ConditionStateRouterTest {
         fileredInvokers = router.route(invokers.clone(), URL.valueOf("consumer://" + LOCAL_HOST + "/com.foo.BarService"), invocation, false, new Holder<>());
         Assertions.assertEquals(0, fileredInvokers.size());
     }
+
+    @Test
+    void testRoute_Attachments() {
+        StateRouter router = new ConditionStateRouterFactory().getRouter(String.class, getRouteUrl("attachments[foo] = a " + " => " + " host = 1.2.3.4").addParameter(FORCE_KEY, String.valueOf(true)));
+        List<Invoker<String>> originInvokers = new ArrayList<>();
+        Invoker<String> invoker1 = new MockInvoker<>(URL.valueOf("dubbo://10.20.3.3:20880/com.foo.BarService?region=hangzhou"));
+        Invoker<String> invoker2 = new MockInvoker<>(URL.valueOf("dubbo://" + LOCAL_HOST + ":20880/com.foo.BarService"));
+        Invoker<String> invoker3 = new MockInvoker<>(URL.valueOf("dubbo://" + LOCAL_HOST + ":20880/com.foo.BarService"));
+        originInvokers.add(invoker1);
+        originInvokers.add(invoker2);
+        originInvokers.add(invoker3);
+        BitList<Invoker<String>> invokers = new BitList<>(originInvokers);
+
+        RpcInvocation invocation = new RpcInvocation();
+        List<Invoker<String>> fileredInvokers = router.route(invokers.clone(), URL.valueOf("consumer://" + LOCAL_HOST + "/com.foo.BarService"), invocation, false, new Holder<>());
+        Assertions.assertEquals(3, fileredInvokers.size());
+
+        invocation.setAttachment("foo", "a");
+        fileredInvokers = router.route(invokers.clone(), URL.valueOf("consumer://" + LOCAL_HOST + "/com.foo.BarService"), invocation, false, new Holder<>());
+        Assertions.assertEquals(0, fileredInvokers.size());
+
+        router = new ConditionStateRouterFactory().getRouter(String.class, getRouteUrl("attachments = a " + " => " + " host = 1.2.3.4").addParameter(FORCE_KEY, String.valueOf(true)));
+        fileredInvokers = router.route(invokers.clone(), URL.valueOf("consumer://" + LOCAL_HOST + "/com.foo.BarService"), invocation, false, new Holder<>());
+        Assertions.assertEquals(3, fileredInvokers.size());
+
+        router = new ConditionStateRouterFactory().getRouter(String.class, getRouteUrl("attachments[foo] = a " + " => " + " region = hangzhou").addParameter(FORCE_KEY, String.valueOf(true)));
+        fileredInvokers = router.route(invokers.clone(), URL.valueOf("consumer://" + LOCAL_HOST + "/com.foo.BarService"), invocation, false, new Holder<>());
+        Assertions.assertEquals(1, fileredInvokers.size());
+    }
+
+    @Test
+    void testRoute_Range_Pattern() {
+        StateRouter router = new ConditionStateRouterFactory().getRouter(String.class, getRouteUrl("attachments[user_id] = 1~100 " + " => " + " region=hangzhou").addParameter(FORCE_KEY, String.valueOf(true)));
+        List<Invoker<String>> originInvokers = new ArrayList<>();
+        Invoker<String> invoker1 = new MockInvoker<>(URL.valueOf("dubbo://10.20.3.3:20880/com.foo.BarService?region=hangzhou"));
+        Invoker<String> invoker2 = new MockInvoker<>(URL.valueOf("dubbo://" + LOCAL_HOST + ":20880/com.foo.BarService"));
+        Invoker<String> invoker3 = new MockInvoker<>(URL.valueOf("dubbo://" + LOCAL_HOST + ":20880/com.foo.BarService"));
+        originInvokers.add(invoker1);
+        originInvokers.add(invoker2);
+        originInvokers.add(invoker3);
+        BitList<Invoker<String>> invokers = new BitList<>(originInvokers);
+
+        RpcInvocation invocation = new RpcInvocation();
+        List<Invoker<String>> fileredInvokers = router.route(invokers.clone(), URL.valueOf("consumer://" + LOCAL_HOST + "/com.foo.BarService"), invocation, false, new Holder<>());
+        Assertions.assertEquals(3, fileredInvokers.size());
+
+        invocation.setAttachment("user_id", "80");
+        fileredInvokers = router.route(invokers.clone(), URL.valueOf("consumer://" + LOCAL_HOST + "/com.foo.BarService"), invocation, false, new Holder<>());
+        Assertions.assertEquals(1, fileredInvokers.size());
+
+        invocation.setAttachment("user_id", "101");
+        fileredInvokers = router.route(invokers.clone(), URL.valueOf("consumer://" + LOCAL_HOST + "/com.foo.BarService"), invocation, false, new Holder<>());
+        Assertions.assertEquals(3, fileredInvokers.size());
+
+        router = new ConditionStateRouterFactory().getRouter(String.class, getRouteUrl("attachments[user_id] = ~100 " + " => " + " region = hangzhou").addParameter(FORCE_KEY, String.valueOf(true)));
+        invocation.setAttachment("user_id", "1");
+        fileredInvokers = router.route(invokers.clone(), URL.valueOf("consumer://" + LOCAL_HOST + "/com.foo.BarService"), invocation, false, new Holder<>());
+        Assertions.assertEquals(1, fileredInvokers.size());
+
+        router = new ConditionStateRouterFactory().getRouter(String.class, getRouteUrl("attachments[user_id] = ~100 " + " => " + " region = hangzhou").addParameter(FORCE_KEY, String.valueOf(true)));
+        invocation.setAttachment("user_id", "101");
+        fileredInvokers = router.route(invokers.clone(), URL.valueOf("consumer://" + LOCAL_HOST + "/com.foo.BarService"), invocation, false, new Holder<>());
+        Assertions.assertEquals(3, fileredInvokers.size());
+
+        router = new ConditionStateRouterFactory().getRouter(String.class, getRouteUrl("attachments[user_id] = ~100 " + " => " + " region = hangzhou").addParameter(FORCE_KEY, String.valueOf(true)));
+        fileredInvokers = router.route(invokers.clone(), URL.valueOf("consumer://" + LOCAL_HOST + "/com.foo.BarService"), invocation, false, new Holder<>());
+        Assertions.assertEquals(3, fileredInvokers.size());
+    }
+
+    @Test
+    void testRoute_Key_Not_Exist() {
+        StateRouter router = new ConditionStateRouterFactory().getRouter(String.class, getRouteUrl("when_key=a " + " => " + " not_exist_then_key = any_value").addParameter(FORCE_KEY, String.valueOf(true)));
+        List<Invoker<String>> originInvokers = new ArrayList<>();
+        Invoker<String> invoker1 = new MockInvoker<>(URL.valueOf("dubbo://10.20.3.3:20880/com.foo.BarService?then_key=a"));
+        Invoker<String> invoker2 = new MockInvoker<>(URL.valueOf("dubbo://" + LOCAL_HOST + ":20880/com.foo.BarService"));
+        Invoker<String> invoker3 = new MockInvoker<>(URL.valueOf("dubbo://" + LOCAL_HOST + ":20880/com.foo.BarService"));
+        originInvokers.add(invoker1);
+        originInvokers.add(invoker2);
+        originInvokers.add(invoker3);
+        BitList<Invoker<String>> invokers = new BitList<>(originInvokers);
+
+        URL consumer = URL.valueOf("consumer://" + LOCAL_HOST + "/com.foo.BarService?when_key=a");
+
+        List<Invoker<String>> fileredInvokers = router.route(invokers.clone(), consumer, null, false, new Holder<>());
+        Assertions.assertEquals(0, fileredInvokers.size());
+
+        router = new ConditionStateRouterFactory().getRouter(String.class, getRouteUrl("not_exist_when_key=a " + " => " + " then_key = a").addParameter(FORCE_KEY, String.valueOf(true)));
+        fileredInvokers = router.route(invokers, consumer, null, false, new Holder<>());
+        Assertions.assertEquals(3, fileredInvokers.size());
+    }
+
+    @Test
+    void testRoute_Multiple_Conditions() {
+        List<Invoker<String>> originInvokers = new ArrayList<>();
+        Invoker<String> invoker1 = new MockInvoker<>(URL.valueOf("dubbo://10.20.3.3:20880/com.foo.BarService"));
+        Invoker<String> invoker2 = new MockInvoker<>(URL.valueOf("dubbo://" + LOCAL_HOST + ":20880/com.foo.BarService"));
+        Invoker<String> invoker3 = new MockInvoker<>(URL.valueOf("dubbo://" + LOCAL_HOST + ":20880/com.foo.BarService"));
+        originInvokers.add(invoker1);
+        originInvokers.add(invoker2);
+        originInvokers.add(invoker3);
+        BitList<Invoker<String>> invokers = new BitList<>(originInvokers);
+
+
+        RpcInvocation invocation = new RpcInvocation();
+        String p = "a";
+        invocation.setArguments(new Object[]{p});
+
+        // all conditions match
+        URL consumer1 = URL.valueOf("consumer://" + LOCAL_HOST + "/com.foo.BarService?application=consumer_app");
+        StateRouter router = new ConditionStateRouterFactory().getRouter(String.class, getRouteUrl("application=consumer_app&arguments[0]=a" + " => " + " host = " + LOCAL_HOST).addParameter(FORCE_KEY, String.valueOf(true)));
+        List<Invoker<String>> fileredInvokers = router.route(invokers.clone(), consumer1, invocation, false, new Holder<>());
+        Assertions.assertEquals(2, fileredInvokers.size());
+
+        // one of the conditions does not match
+        URL consume2 = URL.valueOf("consumer://" + LOCAL_HOST + "/com.foo.BarService?application=another_consumer_app");
+        StateRouter router2 = new ConditionStateRouterFactory().getRouter(String.class, getRouteUrl("application=consumer_app&arguments[0]=a" + " => " + " host = " + LOCAL_HOST).addParameter(FORCE_KEY, String.valueOf(true)));
+        fileredInvokers = router2.route(invokers.clone(), consume2, invocation, false, new Holder<>());
+        Assertions.assertEquals(3, fileredInvokers.size());
+
+    }
 }
