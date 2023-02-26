@@ -137,7 +137,6 @@ public class RestProtocol extends AbstractProxyProtocol {
         };
     }
 
-
     @Override
     protected <T> Invoker<T> protocolBindingRefer(final Class<T> type, final URL url) throws RpcException {
 

@@ -39,6 +39,11 @@ public class HttpMessageCodecManager {
     }
 
     public static void httpMessageEncode(OutputStream outputStream, Object unSerializedBody, URL url, MediaType mediaType) throws Exception {
+
+        if (unSerializedBody == null) {
+            return;
+        }
+
         for (HttpMessageCodec httpMessageCodec : httpMessageCodecs) {
             if (httpMessageCodec.contentTypeSupport(mediaType, unSerializedBody.getClass())) {
                 httpMessageCodec.encode(outputStream, unSerializedBody, url);

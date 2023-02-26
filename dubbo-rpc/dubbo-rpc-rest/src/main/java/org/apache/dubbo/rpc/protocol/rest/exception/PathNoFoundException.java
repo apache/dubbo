@@ -14,24 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.http;
+package org.apache.dubbo.rpc.protocol.rest.exception;
 
-import javax.servlet.ServletException;
-import java.io.IOException;
+public class PathNoFoundException extends RuntimeException{
 
-/**
- * http invocation handler.
- */
-public interface HttpHandler<REQUEST,RESPONSE> {
-
-    /**
-     * invoke.
-     *
-     * @param request  request.
-     * @param response response.
-     * @throws IOException
-     * @throws ServletException
-     */
-    void handle(REQUEST request, RESPONSE response) throws IOException, ServletException;
-
+    public PathNoFoundException(String message) {
+        super(message);
+    }
 }

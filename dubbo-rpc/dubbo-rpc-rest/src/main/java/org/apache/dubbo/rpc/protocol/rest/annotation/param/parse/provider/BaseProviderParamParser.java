@@ -14,24 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.http;
+package org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.provider;
 
-import javax.servlet.ServletException;
-import java.io.IOException;
 
-/**
- * http invocation handler.
- */
-public interface HttpHandler<REQUEST,RESPONSE> {
+import org.apache.dubbo.common.extension.ExtensionScope;
+import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.rpc.protocol.rest.annotation.ParamParser;
 
-    /**
-     * invoke.
-     *
-     * @param request  request.
-     * @param response response.
-     * @throws IOException
-     * @throws ServletException
-     */
-    void handle(REQUEST request, RESPONSE response) throws IOException, ServletException;
+@SPI(scope = ExtensionScope.FRAMEWORK)
+public interface BaseProviderParamParser extends ParamParser<ProviderParseContext> {
 
 }
