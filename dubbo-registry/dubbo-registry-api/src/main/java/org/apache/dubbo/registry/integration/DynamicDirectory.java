@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.registry.integration;
 
-import java.util.List;
-
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.config.ConfigurationUtils;
@@ -45,6 +43,8 @@ import org.apache.dubbo.rpc.cluster.SingleRouterChain;
 import org.apache.dubbo.rpc.cluster.directory.AbstractDirectory;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
 import org.apache.dubbo.rpc.model.ModuleModel;
+
+import java.util.List;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_FAILED_SITE_SELECTION;
@@ -82,7 +82,7 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
     /**
      * Initialization at construction time, assertion not null, and always assign non-null value
      */
-    protected final URL directoryUrl;
+    protected volatile URL directoryUrl;
     protected final boolean multiGroup;
 
     /**
@@ -234,7 +234,7 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
      */
     @Override
     public URL getConsumerUrl() {
-        return this.consumerUrl;
+        return this.directoryUrl;
     }
 
     /**
@@ -376,4 +376,7 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
     }
 
     protected abstract void destroyAllInvokers();
+
+    protected abstract void refreshOverrideAndInvoker(List<URL> urls);
+
 }

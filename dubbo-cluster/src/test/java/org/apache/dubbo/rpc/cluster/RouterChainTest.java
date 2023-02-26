@@ -59,7 +59,7 @@ class RouterChainTest {
     void testBuildRouterChain() {
         RouterChain<DemoService> routerChain = createRouterChanin();
         Assertions.assertEquals(0, routerChain.getRouters().size());
-        Assertions.assertEquals(5, routerChain.getStateRouters().size());
+        Assertions.assertEquals(7, routerChain.getStateRouters().size());
     }
 
     private RouterChain<DemoService> createRouterChanin() {
@@ -158,14 +158,16 @@ class RouterChainTest {
         Assertions.assertTrue(result.contains(invoker5));
 
         String snapshotLog =
-                 "[ Parent (Input: 6) (Current Node Output: 6) (Chain Node Output: 1) ] Input: localhost:9103,localhost:9103,localhost:9103,localhost:9103,localhost:9103 -> Chain Node Output: localhost:9103...\n" +
+            "[ Parent (Input: 6) (Current Node Output: 6) (Chain Node Output: 1) ] Input: localhost:9103,localhost:9103,localhost:9103,localhost:9103,localhost:9103 -> Chain Node Output: localhost:9103...\n" +
                 "  [ MockInvokersSelector (Input: 6) (Current Node Output: 5) (Chain Node Output: 1) Router message: invocation.need.mock not set. Return normal Invokers. ] Current Node Output: localhost:9103,localhost:9103,localhost:9103,localhost:9103,localhost:9103\n" +
                 "    [ StandardMeshRuleRouter (Input: 5) (Current Node Output: 4) (Chain Node Output: 1) Router message: Match App: app Subset: isolation  ] Current Node Output: localhost:9103,localhost:9103,localhost:9103,localhost:9103\n" +
                 "      [ TagStateRouter (Input: 4) (Current Node Output: 3) (Chain Node Output: 1) Router message: Disable Tag Router. Reason: tagRouterRule is invalid or disabled ] Current Node Output: localhost:9103,localhost:9103,localhost:9103\n" +
                 "        [ ServiceStateRouter (Input: 3) (Current Node Output: 3) (Chain Node Output: 1) Router message: null ] Current Node Output: localhost:9103,localhost:9103,localhost:9103\n" +
                 "          [ ConditionStateRouter (Input: 3) (Current Node Output: 2) (Chain Node Output: 2) Router message: Match return. ] Current Node Output: localhost:9103,localhost:9103\n" +
-                "          [ AppStateRouter (Input: 2) (Current Node Output: 2) (Chain Node Output: 1) Router message: null ] Current Node Output: localhost:9103,localhost:9103\n" +
-                "            [ ConditionStateRouter (Input: 2) (Current Node Output: 1) (Chain Node Output: 1) Router message: Match return. ] Current Node Output: localhost:9103";
+                "          [ ProviderAppStateRouter (Input: 2) (Current Node Output: 2) (Chain Node Output: 1) Router message: Directly return. Reason: Invokers from previous router is empty or conditionRouters is empty. ] Current Node Output: localhost:9103,localhost:9103\n" +
+                "            [ AppStateRouter (Input: 2) (Current Node Output: 2) (Chain Node Output: 1) Router message: null ] Current Node Output: localhost:9103,localhost:9103\n" +
+                "              [ ConditionStateRouter (Input: 2) (Current Node Output: 1) (Chain Node Output: 1) Router message: Match return. ] Current Node Output: localhost:9103\n" +
+                "              [ AppScriptStateRouter (Input: 1) (Current Node Output: 1) (Chain Node Output: 1) Router message: Directly return from script router. Reason: Invokers from previous router is empty or script is not enabled. Script rule is: null ] Current Node Output: localhost:9103";
         String[] snapshot = routerSnapshotSwitcher.cloneSnapshot();
         Assertions.assertTrue(snapshot[0].contains(snapshotLog));
 
