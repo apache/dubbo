@@ -62,19 +62,19 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
 
     private static final ErrorTypeAwareLogger log = LoggerFactory.getErrorTypeAwareLogger(DecodeableRpcInvocation.class);
 
-    private Channel channel;
+    private final Channel channel;
 
-    private byte serializationType;
+    private final byte serializationType;
 
-    private InputStream inputStream;
+    private final InputStream inputStream;
 
-    private Request request;
+    private final Request request;
 
     private volatile boolean hasDecoded;
 
     protected final FrameworkModel frameworkModel;
 
-    private Supplier<CallbackServiceCodec> callbackServiceCodecFactory;
+    private final Supplier<CallbackServiceCodec> callbackServiceCodecFactory;
 
     public DecodeableRpcInvocation(FrameworkModel frameworkModel, Channel channel, Request request, InputStream is, byte id) {
         this.frameworkModel = frameworkModel;

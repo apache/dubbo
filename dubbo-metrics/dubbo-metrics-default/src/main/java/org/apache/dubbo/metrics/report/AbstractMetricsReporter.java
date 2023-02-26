@@ -29,14 +29,13 @@ import io.micrometer.core.instrument.binder.system.ProcessorMetrics;
 import io.micrometer.core.instrument.binder.system.UptimeMetrics;
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.common.constants.MetricsConstants;
 import org.apache.dubbo.common.lang.ShutdownHookCallbacks;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
-import org.apache.dubbo.metrics.DubboMetrics;
 import org.apache.dubbo.metrics.collector.AggregateMetricsCollector;
-import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
 import org.apache.dubbo.metrics.collector.MetricsCollector;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
@@ -61,17 +60,17 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(AbstractMetricsReporter.class);
 
     private final AtomicBoolean initialized = new AtomicBoolean(false);
-    private final AtomicBoolean addGlobalRegistry = new AtomicBoolean(false);
 
     protected final URL url;
     protected final List<MetricsCollector> collectors = new ArrayList<>();
-    protected final CompositeMeterRegistry compositeRegistry = new CompositeMeterRegistry();
+    public static final CompositeMeterRegistry compositeRegistry = new CompositeMeterRegistry();
 
     private final ApplicationModel applicationModel;
+
     private ScheduledExecutorService collectorSyncJobExecutor = null;
 
     private static final int DEFAULT_SCHEDULE_INITIAL_DELAY = 5;
-    private static final int DEFAULT_SCHEDULE_PERIOD = 30;
+    private static final int DEFAULT_SCHEDULE_PERIOD = 3;
 
     protected AbstractMetricsReporter(URL url, ApplicationModel applicationModel) {
         this.url = url;
@@ -94,13 +93,7 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
     protected void addMeterRegistry(MeterRegistry registry) {
         compositeRegistry.add(registry);
     }
-    private void addDubboMeterRegistry(){
-        MeterRegistry globalRegistry = DubboMetrics.globalRegistry;
-        if(globalRegistry != null && !addGlobalRegistry.get()){
-            compositeRegistry.add(globalRegistry);
-            addGlobalRegistry.set(true);
-        }
-    }
+
 
     protected ApplicationModel getApplicationModel() {
         return applicationModel;
@@ -128,51 +121,54 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
     }
 
     private void initCollectors() {
-        applicationModel.getBeanFactory().getOrRegisterBean(AggregateMetricsCollector.class);
-
-        collectors.add(applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class));
-        collectors.add(applicationModel.getBeanFactory().getBean(AggregateMetricsCollector.class));
+        ScopeBeanFactory beanFactory = applicationModel.getBeanFactory();
+        beanFactory.getOrRegisterBean(AggregateMetricsCollector.class);
+        List<MetricsCollector> otherCollectors = beanFactory.getBeansOfType(MetricsCollector.class);
+        collectors.addAll(otherCollectors);
     }
 
     private void scheduleMetricsCollectorSyncJob() {
         NamedThreadFactory threadFactory = new NamedThreadFactory("metrics-collector-sync-job", true);
         collectorSyncJobExecutor = Executors.newScheduledThreadPool(1, threadFactory);
         collectorSyncJobExecutor.scheduleWithFixedDelay(() -> {
-            addDubboMeterRegistry();
-            collectors.forEach(collector -> {
-                List<MetricSample> samples = collector.collect();
-                for (MetricSample sample : samples) {
-                    try {
-                        switch (sample.getType()) {
-                            case GAUGE:
-                                GaugeMetricSample gaugeSample = (GaugeMetricSample) sample;
-                                List<Tag> tags = new ArrayList<>();
-                                gaugeSample.getTags().forEach((k, v) -> {
-                                    if (v == null) {
-                                        v = "";
-                                    }
-
-                                    tags.add(Tag.of(k, v));
-                                });
-
-                                Gauge.builder(gaugeSample.getName(), gaugeSample.getSupplier())
-                                    .description(gaugeSample.getDescription()).tags(tags).register(compositeRegistry);
-                                break;
-                            case COUNTER:
-                            case TIMER:
-                            case LONG_TASK_TIMER:
-                            case DISTRIBUTION_SUMMARY:
-                                // TODO
-                                break;
-                            default:
-                                break;
-                        }
-                    } catch (Exception e) {
-                        logger.error(COMMON_METRICS_COLLECTOR_EXCEPTION, "", "", "error occurred when synchronize metrics collector.", e);
-                    }
-                }
-            });
+            refreshData();
         }, DEFAULT_SCHEDULE_INITIAL_DELAY, DEFAULT_SCHEDULE_PERIOD, TimeUnit.SECONDS);
+    }
+
+    public void refreshData() {
+        collectors.forEach(collector -> {
+            List<MetricSample> samples = collector.collect();
+            for (MetricSample sample : samples) {
+                try {
+                    switch (sample.getType()) {
+                        case GAUGE:
+                            GaugeMetricSample gaugeSample = (GaugeMetricSample) sample;
+                            List<Tag> tags = new ArrayList<>();
+                            gaugeSample.getTags().forEach((k, v) -> {
+                                if (v == null) {
+                                    v = "";
+                                }
+
+                                tags.add(Tag.of(k, v));
+                            });
+
+                            Gauge.builder(gaugeSample.getName(), gaugeSample.getSupplier())
+                                .description(gaugeSample.getDescription()).tags(tags).register(compositeRegistry);
+                            break;
+                        case COUNTER:
+                        case TIMER:
+                        case LONG_TASK_TIMER:
+                        case DISTRIBUTION_SUMMARY:
+                            // TODO
+                            break;
+                        default:
+                            break;
+                    }
+                } catch (Exception e) {
+                    logger.error(COMMON_METRICS_COLLECTOR_EXCEPTION, "", "", "error occurred when synchronize metrics collector.", e);
+                }
+            }
+        });
     }
 
     private void registerDubboShutdownHook() {
@@ -183,7 +179,6 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
         if (collectorSyncJobExecutor != null) {
             collectorSyncJobExecutor.shutdownNow();
         }
-
         doDestroy();
     }
 

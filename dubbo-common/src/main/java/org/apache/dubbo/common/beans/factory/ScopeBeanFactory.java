@@ -186,6 +186,15 @@ public class ScopeBeanFactory {
         return ConcurrentHashMapUtils.computeIfAbsent(beanNameIdCounterMap, beanClass, key -> new AtomicInteger()).incrementAndGet();
     }
 
+    @SuppressWarnings("unchecked")
+    public <T> List<T> getBeansOfType(Class<T> type) {
+        List<T> currentBeans = (List<T>) registeredBeanInfos.stream().filter(beanInfo -> type.isInstance(beanInfo.instance)).map(beanInfo -> beanInfo.instance).collect(Collectors.toList());
+        if (parent != null) {
+            currentBeans.addAll(parent.getBeansOfType(type));
+        }
+        return currentBeans;
+    }
+
     public <T> T getBean(Class<T> type) {
         return this.getBean(null, type);
     }

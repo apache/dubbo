@@ -123,9 +123,7 @@ class MockDirInvocation implements Invocation {
 
     @Override
     public void setObjectAttachmentIfAbsent(String key, Object value) {
-        if (attachments.get(key) == null) {
-            attachments.put(key, value);
-        }
+        attachments.putIfAbsent(key, value);
     }
 
     public Invoker<?> getInvoker() {

@@ -43,8 +43,10 @@ public abstract class AbstractStateRouter<T> implements StateRouter<T> {
      */
     private final boolean shouldFailFast;
 
+    protected ModuleModel moduleModel;
+
     public AbstractStateRouter(URL url) {
-        ModuleModel moduleModel = url.getOrDefaultModuleModel();
+        moduleModel = url.getOrDefaultModuleModel();
         this.ruleRepository = moduleModel.getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension();
         this.url = url;
         this.shouldFailFast = Boolean.parseBoolean(ConfigurationUtils.getProperty(moduleModel, Constants.SHOULD_FAIL_FAST_KEY, "true"));

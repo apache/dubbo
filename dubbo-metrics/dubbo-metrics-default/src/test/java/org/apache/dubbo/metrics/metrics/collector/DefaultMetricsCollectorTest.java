@@ -17,8 +17,12 @@
 
 package org.apache.dubbo.metrics.metrics.collector;
 
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.metrics.TestMetricsInvoker;
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
+import org.apache.dubbo.metrics.collector.sample.MethodMetricsSampler;
 import org.apache.dubbo.metrics.event.MetricsEvent;
 import org.apache.dubbo.metrics.event.RTEvent;
 import org.apache.dubbo.metrics.event.RequestEvent;
@@ -26,6 +30,7 @@ import org.apache.dubbo.metrics.listener.MetricsListener;
 import org.apache.dubbo.metrics.model.MetricsKey;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
+import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -55,6 +60,7 @@ class DefaultMetricsCollectorTest {
     private String group;
     private String version;
     private RpcInvocation invocation;
+    private String side;
 
     @BeforeEach
     public void setup() {
@@ -74,6 +80,11 @@ class DefaultMetricsCollectorTest {
         invocation.setTargetServiceUniqueName(group + "/" + interfaceName + ":" + version);
         invocation.setAttachment(GROUP_KEY, group);
         invocation.setAttachment(VERSION_KEY, version);
+        side = CommonConstants.CONSUMER;
+
+        invocation.setInvoker(new TestMetricsInvoker(side));
+        RpcContext.getServiceContext().setUrl(URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&side="+side));
+
     }
 
     @AfterEach
@@ -85,11 +96,14 @@ class DefaultMetricsCollectorTest {
     void testRequestsMetrics() {
         DefaultMetricsCollector collector = new DefaultMetricsCollector();
         collector.setCollectEnabled(true);
-        String applicationName = applicationModel.getApplicationName();
-        collector.increaseTotalRequests(applicationName, invocation);
-        collector.increaseProcessingRequests(applicationName, invocation);
-        collector.increaseSucceedRequests(applicationName, invocation);
-        collector.increaseUnknownFailedRequests(applicationName, invocation);
+        collector.setApplicationName(applicationModel.getApplicationName());
+
+        MethodMetricsSampler methodMetricsCountSampler = collector.getMethodSampler();
+
+        methodMetricsCountSampler.incOnEvent(invocation,MetricsEvent.Type.TOTAL);
+        methodMetricsCountSampler.incOnEvent(invocation,MetricsEvent.Type.PROCESSING);
+        methodMetricsCountSampler.incOnEvent(invocation,MetricsEvent.Type.SUCCEED);
+        methodMetricsCountSampler.incOnEvent(invocation,MetricsEvent.Type.UNKNOWN_FAILED);
 
         List<MetricSample> samples = collector.collect();
         for (MetricSample sample : samples) {
@@ -105,23 +119,27 @@ class DefaultMetricsCollectorTest {
             Assertions.assertEquals(supplier.get().longValue(), 1);
         }
 
-        collector.decreaseProcessingRequests(applicationName, invocation);
+        methodMetricsCountSampler.dec(invocation,MetricsEvent.Type.PROCESSING);
         samples = collector.collect();
         Map<String, Long> sampleMap = samples.stream().collect(Collectors.toMap(MetricSample::getName, k -> {
             Number number = ((GaugeMetricSample) k).getSupplier().get();
             return number.longValue();
         }));
 
-        Assertions.assertEquals(sampleMap.get(MetricsKey.PROVIDER_METRIC_REQUESTS_PROCESSING.getName()), 0L);
+        Assertions.assertEquals(sampleMap.get(MetricsKey.METRIC_REQUESTS_PROCESSING.getNameByType(side)), 0L);
     }
 
     @Test
     void testRTMetrics() {
         DefaultMetricsCollector collector = new DefaultMetricsCollector();
         collector.setCollectEnabled(true);
+        MethodMetricsSampler methodMetricsCountSampler = collector.getMethodSampler();
         String applicationName = applicationModel.getApplicationName();
-        collector.addRT(applicationName, invocation, 10L);
-        collector.addRT(applicationName, invocation, 0L);
+
+        collector.setApplicationName(applicationName);
+
+        methodMetricsCountSampler.addRT(invocation, 10L);
+        methodMetricsCountSampler.addRT(invocation, 0L);
 
         List<MetricSample> samples = collector.collect();
         for (MetricSample sample : samples) {
@@ -138,28 +156,29 @@ class DefaultMetricsCollectorTest {
             return number.longValue();
         }));
 
-        Assertions.assertEquals(sampleMap.get(MetricsKey.PROVIDER_METRIC_RT_LAST.getName()), 0L);
-        Assertions.assertEquals(sampleMap.get(MetricsKey.PROVIDER_METRIC_RT_MIN.getName()), 0L);
-        Assertions.assertEquals(sampleMap.get(MetricsKey.PROVIDER_METRIC_RT_MAX.getName()), 10L);
-        Assertions.assertEquals(sampleMap.get(MetricsKey.PROVIDER_METRIC_RT_AVG.getName()), 5L);
-        Assertions.assertEquals(sampleMap.get(MetricsKey.PROVIDER_METRIC_RT_SUM.getName()), 10L);
+        Assertions.assertEquals(sampleMap.get(MetricsKey.METRIC_RT_LAST.getNameByType(side)), 0L);
+        Assertions.assertEquals(sampleMap.get(MetricsKey.METRIC_RT_MIN.getNameByType(side)), 0L);
+        Assertions.assertEquals(sampleMap.get(MetricsKey.METRIC_RT_MAX.getNameByType(side)), 10L);
+        Assertions.assertEquals(sampleMap.get(MetricsKey.METRIC_RT_AVG.getNameByType(side)), 5L);
+        Assertions.assertEquals(sampleMap.get(MetricsKey.METRIC_RT_SUM.getNameByType(side)), 10L);
     }
 
     @Test
     void testListener() {
         DefaultMetricsCollector collector = new DefaultMetricsCollector();
+        MethodMetricsSampler methodMetricsCountSampler = collector.getMethodSampler();
         collector.setCollectEnabled(true);
 
         MockListener mockListener = new MockListener();
         collector.addListener(mockListener);
-        String applicationName = applicationModel.getApplicationName();
+        collector.setApplicationName(applicationModel.getApplicationName());
 
-        collector.increaseTotalRequests(applicationName, invocation);
+        methodMetricsCountSampler.incOnEvent(invocation,MetricsEvent.Type.TOTAL);
         Assertions.assertNotNull(mockListener.getCurEvent());
         Assertions.assertTrue(mockListener.getCurEvent() instanceof RequestEvent);
-        Assertions.assertEquals(((RequestEvent) mockListener.getCurEvent()).getType(), RequestEvent.Type.TOTAL);
+        Assertions.assertEquals(((RequestEvent) mockListener.getCurEvent()).getType(), MetricsEvent.Type.TOTAL);
 
-        collector.addRT(applicationName, invocation, 5L);
+        methodMetricsCountSampler.addRT(invocation, 5L);
         Assertions.assertTrue(mockListener.getCurEvent() instanceof RTEvent);
         Assertions.assertEquals(((RTEvent) mockListener.getCurEvent()).getRt(), 5L);
     }

@@ -24,7 +24,7 @@ import io.micrometer.observation.docs.ObservationDocumentation;
 /**
  * Documentation of Dubbo observations.
  */
-enum DubboObservation implements ObservationDocumentation {
+public enum DubboObservation implements ObservationDocumentation {
 
     /**
      * Server side Dubbo RPC Observation.
