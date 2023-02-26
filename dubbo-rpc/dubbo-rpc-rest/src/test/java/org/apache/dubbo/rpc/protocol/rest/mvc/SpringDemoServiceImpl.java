@@ -21,7 +21,7 @@ import org.apache.dubbo.rpc.RpcContext;
 
 import java.util.Map;
 
-public class SpringDemoServiceImpl implements DemoService {
+public class SpringDemoServiceImpl implements SpringRestDemoService {
     private static Map<String, Object> context;
     private boolean called;
 
@@ -33,6 +33,7 @@ public class SpringDemoServiceImpl implements DemoService {
     }
 
 
+    @Override
     public boolean isCalled() {
         return called;
     }
@@ -52,4 +53,6 @@ public class SpringDemoServiceImpl implements DemoService {
     public static Map<String, Object> getAttachments() {
         return context;
     }
+
+
 }

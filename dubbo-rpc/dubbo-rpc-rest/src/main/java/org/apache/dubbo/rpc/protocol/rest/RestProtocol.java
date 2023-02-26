@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.ParameterTypesComparator;
+import org.apache.dubbo.metadata.rest.PathMatcher;
 import org.apache.dubbo.metadata.rest.RestMethodMetadata;
 import org.apache.dubbo.metadata.rest.media.MediaType;
 import org.apache.dubbo.remoting.http.RequestTemplate;
@@ -31,11 +32,13 @@ import org.apache.dubbo.remoting.http.servlet.ServletManager;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.ProtocolServer;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.protocol.AbstractExporter;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
 import org.apache.dubbo.rpc.protocol.AbstractProxyProtocol;
 import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.HttpConnectionConfig;
@@ -53,6 +56,7 @@ import javax.servlet.ServletContext;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.WebApplicationException;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -66,6 +70,7 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERR
 import static org.apache.dubbo.remoting.Constants.SERVER_KEY;
 import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 import static org.apache.dubbo.rpc.protocol.rest.constans.RestConstant.PATH_SEPARATOR;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.*;
 
 public class RestProtocol extends AbstractProxyProtocol {
 
@@ -91,6 +96,49 @@ public class RestProtocol extends AbstractProxyProtocol {
     public int getDefaultPort() {
         return DEFAULT_PORT;
     }
+
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T> Exporter<T> export(final Invoker<T> invoker) throws RpcException {
+        URL url = invoker.getUrl();
+        final String uri = serviceKey(url);
+        Exporter<T> exporter = (Exporter<T>) exporterMap.get(uri);
+        if (exporter != null) {
+            // When modifying the configuration through override, you need to re-expose the newly modified service.
+            if (Objects.equals(exporter.getInvoker().getUrl(), invoker.getUrl())) {
+                return exporter;
+            }
+        }
+
+        Class<?> implClass = url.getServiceModel().getProxyObject().getClass();
+
+        String contextPath = getContextPath(url);
+
+        // TODO  addAll metadataMap to RPCInvocationBuilder metadataMap
+        Map<PathMatcher, RestMethodMetadata> metadataMap = MetadataResolver.resolveProviderServiceMetadata(implClass,url);
+
+        PathAndInvokerMapper.addPathAndInvoker(metadataMap, invoker,contextPath);
+
+
+        final Runnable runnable = doExport(proxyFactory.getProxy(invoker, true), invoker.getInterface(), invoker.getUrl());
+        exporter = new AbstractExporter<T>(invoker) {
+            @Override
+            public void afterUnExport() {
+                exporterMap.remove(uri);
+                if (runnable != null) {
+                    try {
+                        runnable.run();
+                    } catch (Throwable t) {
+                        logger.warn(PROTOCOL_UNSUPPORTED, "", "", t.getMessage(), t);
+                    }
+                }
+            }
+        };
+        exporterMap.put(uri, exporter);
+        return exporter;
+    }
+
 
     @Override
     protected <T> Runnable doExport(T impl, Class<T> type, URL url) throws RpcException {

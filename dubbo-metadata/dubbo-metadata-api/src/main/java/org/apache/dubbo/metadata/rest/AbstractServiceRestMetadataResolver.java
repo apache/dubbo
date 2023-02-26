@@ -79,7 +79,8 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
         }
 
         // for provider
-        return isImplementedInterface(serviceType) && isServiceAnnotationPresent(serviceType) && supports0(serviceType);
+        // for xml config bean  && isServiceAnnotationPresent(serviceType)
+        return isImplementedInterface(serviceType) && supports0(serviceType);
     }
 
     protected final boolean isImplementedInterface(Class<?> serviceType) {
@@ -359,9 +360,12 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
         if (annotations == null || annotations.length == 0) {
 
             for (NoAnnotatedParameterRequestTagProcessor processor : noAnnotatedParameterRequestTagProcessors) {
-                processor.process(parameter, parameterIndex, metadata);
+                // no annotation only one default annotationType
+                if (processor.process(parameter, parameterIndex, metadata)) {
+                    return;
+                }
             }
-            return;
+
         }
 
         for (Annotation annotation : annotations) {

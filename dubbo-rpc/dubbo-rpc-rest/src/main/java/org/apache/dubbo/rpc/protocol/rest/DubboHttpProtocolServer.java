@@ -117,7 +117,15 @@ public class DubboHttpProtocolServer extends BaseRestProtocolServer {
                     String accept = request.getHeader(RestConstant.ACCEPT);
                     MediaType mediaType = MediaTypeUtil.convertMediaType(accept);
                     // TODO write response
-                    HttpMessageCodecManager.httpMessageEncode(servletResponse.getOutputStream(), value, invoker.getUrl(), mediaType);
+                    Pair<Boolean, MediaType> booleanMediaTypePair = HttpMessageCodecManager.httpMessageEncode(servletResponse.getOutputStream(), value, invoker.getUrl(), mediaType);
+
+                    Boolean encoded = booleanMediaTypePair.getFirst();
+
+                    if (encoded) {
+                        servletResponse.addHeader(RestConstant.CONTENT_TYPE, booleanMediaTypePair.getSecond().value);
+                    }
+
+
                     servletResponse.setStatus(200);
                 } catch (Exception e) {
                     servletResponse.setStatus(500);
