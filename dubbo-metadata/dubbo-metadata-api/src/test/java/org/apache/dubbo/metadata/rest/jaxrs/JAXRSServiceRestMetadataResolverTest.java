@@ -151,7 +151,7 @@ class JAXRSServiceRestMetadataResolverTest {
         }
 
 
-        Assertions.assertEquals("/u/1", PathUtil.resolvePathVariable("u/{id : \\d+}", object.getArgInfos(), Arrays.asList(1)));
+        Assertions.assertEquals("/u/1", PathUtil.resolvePathVariable("/u/{id : \\d+}", object.getArgInfos(), Arrays.asList(1)));
 
     }
 }
