@@ -236,7 +236,7 @@ public class RestProtocol extends AbstractProxyProtocol {
         // url -> RestClient
         RestClient restClient = clientFactory.createRestClient(url);
 
-        return new ReferenceCountedClient<>(restClient);
+        return new ReferenceCountedClient<>(restClient, clients, clientFactory, url);
     }
 
     @Override
