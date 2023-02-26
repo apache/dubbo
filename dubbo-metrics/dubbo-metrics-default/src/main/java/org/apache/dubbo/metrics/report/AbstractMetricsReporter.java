@@ -35,6 +35,7 @@ import org.apache.dubbo.common.lang.ShutdownHookCallbacks;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.metrics.DubboMetrics;
+import org.apache.dubbo.metrics.MetricsGlobalRegistry;
 import org.apache.dubbo.metrics.collector.AggregateMetricsCollector;
 import org.apache.dubbo.metrics.collector.MetricsCollector;
 import org.apache.dubbo.metrics.collector.TimerMetricsCollector;
@@ -62,7 +63,7 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
 
     protected final URL url;
     protected final List<MetricsCollector> collectors = new ArrayList<>();
-    protected final CompositeMeterRegistry compositeRegistry = new CompositeMeterRegistry();
+    protected final CompositeMeterRegistry compositeRegistry;
 
     private final ApplicationModel applicationModel;
 
@@ -70,6 +71,7 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
     protected AbstractMetricsReporter(URL url, ApplicationModel applicationModel) {
         this.url = url;
         this.applicationModel = applicationModel;
+        this.compositeRegistry = MetricsGlobalRegistry.getCompositeRegistry();
     }
 
     @Override
@@ -87,9 +89,10 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
     protected void addMeterRegistry(MeterRegistry registry) {
         compositeRegistry.add(registry);
     }
-    private void addDubboMeterRegistry(){
+
+    private void addDubboMeterRegistry() {
         MeterRegistry globalRegistry = DubboMetrics.globalRegistry;
-        if(globalRegistry != null && !addGlobalRegistry.get()){
+        if (globalRegistry != null && !addGlobalRegistry.get()) {
             compositeRegistry.add(globalRegistry);
             addGlobalRegistry.set(true);
         }
