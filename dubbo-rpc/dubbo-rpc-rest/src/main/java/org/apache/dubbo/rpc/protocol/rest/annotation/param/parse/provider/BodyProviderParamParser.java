@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.provider;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -51,7 +52,7 @@ public class BodyProviderParamParser extends ProviderParamParser {
             // TODO add form parse
             InputStream inputStream = request.getInputStream();
             MediaType mediaType = MediaTypeUtil.convertMediaType(contentType);
-            Object param = HttpMessageCodecManager.httpMessageDecode(inputStream, argInfo.getParamType(), mediaType);
+            Object param = HttpMessageCodecManager.httpMessageDecode(IOUtils.toByteArray(inputStream), argInfo.getParamType(), mediaType);
             parseContext.setValueByIndex(argInfo.getIndex(), param);
         } catch (Exception e) {
             logger.error("BodyProviderParamParser parse error: {}", e);
