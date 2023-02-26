@@ -116,7 +116,6 @@ class JAXRSServiceRestMetadataResolverTest {
             restMethodMetadata.setMethod(null);
             jsonsTmp.add(JsonUtils.getJson().toJson(restMethodMetadata));
 
-            System.out.println(JsonUtils.getJson().toJson(restMethodMetadata));
         }
 
         Comparator<String> comparator = new Comparator<String>() {
