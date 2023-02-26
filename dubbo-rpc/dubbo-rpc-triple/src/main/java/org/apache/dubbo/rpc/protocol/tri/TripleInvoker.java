@@ -22,6 +22,7 @@ import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.stream.StreamObserver;
+import org.apache.dubbo.common.threadpool.serial.SerializingExecutor;
 import org.apache.dubbo.remoting.api.connection.AbstractConnectionClient;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.AsyncRpcResult;
@@ -54,6 +55,7 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -77,6 +79,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
     private final ExecutorService streamExecutor;
     private final String acceptEncodings;
     private final TripleWriteQueue writeQueue = new TripleWriteQueue();
+    private final Executor serializingExecutor;
 
     public TripleInvoker(Class<T> serviceType,
         URL url,
@@ -89,6 +92,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         this.connectionClient = connectionClient;
         this.acceptEncodings = acceptEncodings;
         this.streamExecutor = streamExecutor;
+        this.serializingExecutor = new SerializingExecutor(streamExecutor);
     }
 
     private static AsciiString getSchemeFromUrl(URL url) {
@@ -120,6 +124,8 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         try {
             switch (methodDescriptor.getRpcType()) {
                 case UNARY:
+                    call = new TripleClientCall(connectionClient, serializingExecutor,
+                        getUrl().getOrDefaultFrameworkModel(), writeQueue);
                     result = invokeUnary(methodDescriptor, invocation, call);
                     break;
                 case SERVER_STREAM:
