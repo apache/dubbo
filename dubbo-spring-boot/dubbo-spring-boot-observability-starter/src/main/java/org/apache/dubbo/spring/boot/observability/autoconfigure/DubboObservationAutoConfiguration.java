@@ -42,7 +42,6 @@ import org.springframework.context.annotation.Configuration;
 
 import java.util.Arrays;
 
-
 /**
  * Register observationRegistry to ApplicationModel.
  * Create observationRegistry when you are using Boot <3.0 or you are not using spring-boot-starter-actuator
@@ -52,7 +51,7 @@ import java.util.Arrays;
 @ConditionalOnDubboTracingEnable
 public class DubboObservationAutoConfiguration implements BeanFactoryAware, SmartInitializingSingleton {
 
-    public DubboObservationAutoConfiguration( ApplicationModel applicationModel){
+    public DubboObservationAutoConfiguration(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
     }
 

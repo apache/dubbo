@@ -49,6 +49,7 @@ import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
+import org.apache.dubbo.common.Version;
 import org.apache.dubbo.spring.boot.observability.annotation.ConditionalOnDubboTracingEnable;
 import org.apache.dubbo.spring.boot.observability.autoconfigure.DubboMicrometerTracingAutoConfiguration;
 import org.apache.dubbo.spring.boot.observability.config.DubboTracingProperties;
@@ -131,7 +132,7 @@ public class OpenTelemetryAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     Tracer otelTracer(OpenTelemetry openTelemetry) {
-        return openTelemetry.getTracer("org.apache.dubbo");
+        return openTelemetry.getTracer("org.apache.dubbo", Version.getVersion());
     }
 
     @Bean
