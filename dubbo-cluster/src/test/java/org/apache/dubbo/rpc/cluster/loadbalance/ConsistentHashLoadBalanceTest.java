@@ -16,25 +16,52 @@
  */
 package org.apache.dubbo.rpc.cluster.loadbalance;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.cluster.LoadBalance;
-import org.apache.dubbo.rpc.cluster.RouterChain;
-import org.apache.dubbo.rpc.cluster.router.state.BitList;
-
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.cluster.LoadBalance;
+import org.apache.dubbo.rpc.cluster.RouterChain;
+import org.apache.dubbo.rpc.cluster.router.state.BitList;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
 @SuppressWarnings("rawtypes")
-public class ConsistentHashLoadBalanceTest extends LoadBalanceBaseTest {
+class ConsistentHashLoadBalanceTest extends LoadBalanceBaseTest {
 
     @Test
-    public void testConsistentHashLoadBalance() {
+    void testConsistentHashLoadBalanceInGenericCall() {
+        int runs = 10000;
+        Map<Invoker, AtomicLong> genericInvokeCounter = getGenericInvokeCounter(runs, ConsistentHashLoadBalance.NAME);
+        Map<Invoker, AtomicLong> invokeCounter = getInvokeCounter(runs, ConsistentHashLoadBalance.NAME);
+
+        Invoker genericHitted = findHitted(genericInvokeCounter);
+        Invoker hitted = findHitted(invokeCounter);
+
+        Assertions.assertEquals(hitted,
+            genericHitted, "hitted should equals to genericHitted");
+    }
+
+    private Invoker findHitted(Map<Invoker,AtomicLong> invokerCounter) {
+        Invoker invoker = null;
+
+        for (Map.Entry<Invoker,AtomicLong> entry : invokerCounter.entrySet()) {
+            if (entry.getValue().longValue() > 0) {
+                invoker = entry.getKey();
+                break;
+            }
+        }
+
+        Assertions.assertNotNull(invoker,"invoker should be found");
+
+        return null;
+    }
+
+    @Test
+    void testConsistentHashLoadBalance() {
         int runs = 10000;
         long unHitedInvokerCount = 0;
         Map<Invoker, Long> hitedInvokers = new HashMap<>();
@@ -65,8 +92,9 @@ public class ConsistentHashLoadBalanceTest extends LoadBalanceBaseTest {
         Invoker<LoadBalanceBaseTest> result = lb.select(invokers, url, invocation);
 
         for (int i = 0; i < 100; i++) {
-            routerChain.setInvokers(new BitList<>(invokers));
-            List<Invoker<LoadBalanceBaseTest>> routeInvokers = routerChain.route(url, new BitList<>(invokers), invocation);
+            routerChain.setInvokers(new BitList<>(invokers), () -> {});
+            List<Invoker<LoadBalanceBaseTest>> routeInvokers = routerChain.getSingleChain(url, new BitList<>(invokers), invocation)
+                .route(url, new BitList<>(invokers), invocation);
             Invoker<LoadBalanceBaseTest> finalInvoker = lb.select(routeInvokers, url, invocation);
             Assertions.assertEquals(result, finalInvoker);
         }

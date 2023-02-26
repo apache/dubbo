@@ -47,7 +47,9 @@ import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.CONFIG_NAMESPACE_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_CLOSE_CONNECT_APOLLO;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_CONNECT_REGISTRY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_NOT_EFFECT_EMPTY_RULE_APOLLO;
 
 /**
  * Apollo implementation, https://github.com/ctripcorp/apollo
@@ -122,7 +124,7 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
         try {
             listeners.clear();
         } catch (UnsupportedOperationException e) {
-            logger.warn("Failed to close connect from config center, the config center is Apollo");
+            logger.warn(CONFIG_FAILED_CLOSE_CONNECT_APOLLO, "", "", "Failed to close connect from config center, the config center is Apollo");
         }
     }
 
@@ -236,7 +238,7 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
             for (String key : changeEvent.changedKeys()) {
                 ConfigChange change = changeEvent.getChange(key);
                 if ("".equals(change.getNewValue())) {
-                    logger.warn("an empty rule is received for " + key + ", the current working rule is " +
+                    logger.warn(CONFIG_NOT_EFFECT_EMPTY_RULE_APOLLO, "", "", "an empty rule is received for " + key + ", the current working rule is " +
                         change.getOldValue() + ", the empty rule will not take effect.");
                     return;
                 }

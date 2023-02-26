@@ -24,9 +24,9 @@ import java.io.IOException;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-public class UnsafeStringReaderTest {
+class UnsafeStringReaderTest {
     @Test
-    public void testRead() throws IOException {
+    void testRead() throws IOException {
         UnsafeStringReader reader = new UnsafeStringReader("abc");
         assertThat(reader.markSupported(), is(true));
         assertThat(reader.read(), is((int) 'a'));
@@ -47,7 +47,7 @@ public class UnsafeStringReaderTest {
     }
 
     @Test
-    public void testSkip() throws IOException {
+    void testSkip() throws IOException {
         UnsafeStringReader reader = new UnsafeStringReader("abc");
         assertThat(reader.ready(), is(true));
         reader.skip(1);
@@ -55,7 +55,7 @@ public class UnsafeStringReaderTest {
     }
 
     @Test
-    public void testSkipTooLong() throws IOException {
+    void testSkipTooLong() throws IOException {
         UnsafeStringReader reader = new UnsafeStringReader("abc");
 
         reader.skip(10);
@@ -65,7 +65,7 @@ public class UnsafeStringReaderTest {
     }
 
     @Test
-    public void testWrongLength() throws IOException {
+    void testWrongLength() throws IOException {
         Assertions.assertThrows(IndexOutOfBoundsException.class, () -> {
             UnsafeStringReader reader = new UnsafeStringReader("abc");
             char[] chars = new char[1];

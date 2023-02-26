@@ -19,24 +19,52 @@ package org.apache.dubbo.common.utils;
 import org.apache.dubbo.common.json.impl.FastJson2Impl;
 import org.apache.dubbo.common.json.impl.FastJsonImpl;
 import org.apache.dubbo.common.json.impl.GsonImpl;
+import org.apache.dubbo.common.json.impl.JacksonImpl;
 import org.apache.dubbo.common.utils.json.TestEnum;
 import org.apache.dubbo.common.utils.json.TestObjectA;
 import org.apache.dubbo.common.utils.json.TestObjectB;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedConstruction;
+import org.mockito.Mockito;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-public class JsonUtilsTest {
+class JsonUtilsTest {
+    private AtomicBoolean allowFastjson2 = new AtomicBoolean(true);
+    private AtomicBoolean allowFastjson = new AtomicBoolean(true);
+    private AtomicBoolean allowGson = new AtomicBoolean(true);
+    private AtomicBoolean allowJackson = new AtomicBoolean(true);
+    private MockedConstruction<FastJson2Impl> fastjson2Mock;
+    private MockedConstruction<FastJsonImpl> fastjsonMock;
+    private MockedConstruction<GsonImpl> gsonMock;
+    private MockedConstruction<JacksonImpl> jacksonMock;
+
+    @AfterEach
+    void teardown() {
+        if (fastjsonMock != null) {
+            fastjsonMock.close();
+        }
+        if (fastjson2Mock != null) {
+            fastjson2Mock.close();
+        }
+        if (gsonMock != null) {
+            gsonMock.close();
+        }
+        if (jacksonMock != null) {
+            jacksonMock.close();
+        }
+    }
+
     @Test
-    public void testGetJson1() {
+    void testGetJson1() {
         Assertions.assertNotNull(JsonUtils.getJson());
         Assertions.assertEquals(JsonUtils.getJson(), JsonUtils.getJson());
 
@@ -65,6 +93,14 @@ public class JsonUtilsTest {
         // prefer use gson
         JsonUtils.setJson(null);
         System.setProperty("dubbo.json-framework.prefer", "gson");
+        Assertions.assertEquals("{\"a\":\"a\"}", JsonUtils.getJson().toJson(map));
+        Assertions.assertEquals(map, JsonUtils.getJson().toJavaObject("{\"a\":\"a\"}", Map.class));
+        Assertions.assertEquals(Collections.singletonList(map), JsonUtils.getJson().toJavaList("[{\"a\":\"a\"}]", Map.class));
+        System.clearProperty("dubbo.json-framework.prefer");
+
+        // prefer use jackson
+        JsonUtils.setJson(null);
+        System.setProperty("dubbo.json-framework.prefer", "jackson");
         Assertions.assertEquals("{\"a\":\"a\"}", JsonUtils.getJson().toJson(map));
         Assertions.assertEquals(map, JsonUtils.getJson().toJavaObject("{\"a\":\"a\"}", Map.class));
         Assertions.assertEquals(Collections.singletonList(map), JsonUtils.getJson().toJavaList("[{\"a\":\"a\"}]", Map.class));
@@ -153,106 +189,129 @@ public class JsonUtilsTest {
             String fromGson = JsonUtils.getJson().toJson(obj);
             System.clearProperty("dubbo.json-framework.prefer");
 
+            // prefer use jackson
+            JsonUtils.setJson(null);
+            System.setProperty("dubbo.json-framework.prefer", "jackson");
+            Assertions.assertInstanceOf(JacksonImpl.class, JsonUtils.getJson());
+            String fromJackson = JsonUtils.getJson().toJson(obj);
+            System.clearProperty("dubbo.json-framework.prefer");
+
             JsonUtils.setJson(null);
 
             Assertions.assertEquals(fromFastjson1, fromFastjson2);
             Assertions.assertEquals(fromFastjson1, fromGson);
             Assertions.assertEquals(fromFastjson2, fromGson);
+            Assertions.assertEquals(fromFastjson1, fromJackson);
+            Assertions.assertEquals(fromFastjson2, fromJackson);
         }
     }
 
     @Test
-    public void testGetJson2() {
-        ClassLoader originClassLoader = Thread.currentThread().getContextClassLoader();
-        AtomicReference<List<String>> removedPackages = new AtomicReference<>(Collections.emptyList());
-        ClassLoader newClassLoader = new ClassLoader(originClassLoader) {
-            @Override
-            public Class<?> loadClass(String name) throws ClassNotFoundException {
-                for (String removedPackage : removedPackages.get()) {
-                    if (name.startsWith(removedPackage)) {
-                        throw new ClassNotFoundException("Test");
-                    }
-                }
-                return super.loadClass(name);
-            }
-        };
-        Thread.currentThread().setContextClassLoader(newClassLoader);
+    void testGetJson2() {
+        fastjson2Mock = Mockito.mockConstruction(FastJson2Impl.class,
+            (mock, context) -> Mockito.when(mock.isSupport()).thenAnswer(invocation -> allowFastjson2.get()));
+        fastjsonMock = Mockito.mockConstruction(FastJsonImpl.class,
+            (mock, context) -> Mockito.when(mock.isSupport()).thenAnswer(invocation -> allowFastjson.get()));
+        gsonMock = Mockito.mockConstruction(GsonImpl.class,
+            (mock, context) -> Mockito.when(mock.isSupport()).thenAnswer(invocation -> allowGson.get()));
+        jacksonMock = Mockito.mockConstruction(JacksonImpl.class,
+            (mock, context) -> Mockito.when(mock.isSupport()).thenAnswer(invocation -> allowJackson.get()));
 
         // default use fastjson2
         JsonUtils.setJson(null);
-        removedPackages.set(Collections.emptyList());
         Assertions.assertInstanceOf(FastJson2Impl.class, JsonUtils.getJson());
 
         // prefer use fastjson2
         JsonUtils.setJson(null);
-        removedPackages.set(Collections.emptyList());
         System.setProperty("dubbo.json-framework.prefer", "fastjson2");
         Assertions.assertInstanceOf(FastJson2Impl.class, JsonUtils.getJson());
-        System.clearProperty("dubbo.json-framework.prefer");
 
         // prefer use fastjson
         JsonUtils.setJson(null);
-        removedPackages.set(Collections.emptyList());
         System.setProperty("dubbo.json-framework.prefer", "fastjson");
         Assertions.assertInstanceOf(FastJsonImpl.class, JsonUtils.getJson());
         System.clearProperty("dubbo.json-framework.prefer");
 
         // prefer use gson
         JsonUtils.setJson(null);
-        removedPackages.set(Collections.emptyList());
         System.setProperty("dubbo.json-framework.prefer", "gson");
         Assertions.assertInstanceOf(GsonImpl.class, JsonUtils.getJson());
         System.clearProperty("dubbo.json-framework.prefer");
 
         // prefer use not found
         JsonUtils.setJson(null);
-        removedPackages.set(Collections.emptyList());
         System.setProperty("dubbo.json-framework.prefer", "notfound");
         Assertions.assertInstanceOf(FastJson2Impl.class, JsonUtils.getJson());
         System.clearProperty("dubbo.json-framework.prefer");
 
         JsonUtils.setJson(null);
         // TCCL not found fastjson2
-        removedPackages.set(Collections.singletonList("com.alibaba.fastjson2"));
+        allowFastjson2.set(false);
         Assertions.assertInstanceOf(FastJsonImpl.class, JsonUtils.getJson());
+        allowFastjson2.set(true);
 
         JsonUtils.setJson(null);
-        // TCCL not found fastjson
-        removedPackages.set(Arrays.asList("com.alibaba.fastjson2", "com.alibaba.fastjson"));
+        // TCCL not found fastjson2, fastjson
+        allowFastjson2.set(false);
+        allowFastjson.set(false);
         Assertions.assertInstanceOf(GsonImpl.class, JsonUtils.getJson());
+        allowFastjson.set(true);
+        allowFastjson2.set(true);
 
         JsonUtils.setJson(null);
-        // TCCL not found gson
-        removedPackages.set(Arrays.asList("com.alibaba.fastjson2", "com.google.gson"));
-        Assertions.assertInstanceOf(FastJsonImpl.class, JsonUtils.getJson());
+        // TCCL not found fastjson2, fastjson, gson
+        allowFastjson2.set(false);
+        allowFastjson.set(false);
+        allowGson.set(false);
+        Assertions.assertInstanceOf(JacksonImpl.class, JsonUtils.getJson());
+        allowGson.set(true);
+        allowFastjson.set(true);
+        allowFastjson2.set(true);
 
         JsonUtils.setJson(null);
-        // TCCL not found fastjson2, prefer use fastjson
-        removedPackages.set(Collections.singletonList("com.alibaba.fastjson2"));
-        System.setProperty("dubbo.json-framework.prefer", "fastjson");
+        // TCCL not found fastjson2, prefer use fastjson2
+        allowFastjson2.set(false);
+        System.setProperty("dubbo.json-framework.prefer", "fastjson2");
         Assertions.assertInstanceOf(FastJsonImpl.class, JsonUtils.getJson());
         System.clearProperty("dubbo.json-framework.prefer");
+        allowFastjson2.set(true);
 
         JsonUtils.setJson(null);
         // TCCL not found fastjson, prefer use fastjson
-        removedPackages.set(Arrays.asList("com.alibaba.fastjson2", "com.alibaba.fastjson"));
+        allowFastjson.set(false);
         System.setProperty("dubbo.json-framework.prefer", "fastjson");
-        Assertions.assertInstanceOf(GsonImpl.class, JsonUtils.getJson());
+        Assertions.assertInstanceOf(FastJson2Impl.class, JsonUtils.getJson());
         System.clearProperty("dubbo.json-framework.prefer");
+        allowFastjson.set(true);
 
         JsonUtils.setJson(null);
         // TCCL not found gson, prefer use gson
-        removedPackages.set(Arrays.asList("com.alibaba.fastjson2", "com.google.gson"));
+        allowGson.set(false);
         System.setProperty("dubbo.json-framework.prefer", "gson");
-        Assertions.assertInstanceOf(FastJsonImpl.class, JsonUtils.getJson());
+        Assertions.assertInstanceOf(FastJson2Impl.class, JsonUtils.getJson());
         System.clearProperty("dubbo.json-framework.prefer");
+        allowGson.set(true);
+
+        JsonUtils.setJson(null);
+        // TCCL not found jackson, prefer use jackson
+        allowJackson.set(false);
+        System.setProperty("dubbo.json-framework.prefer", "jackson");
+        Assertions.assertInstanceOf(FastJson2Impl.class, JsonUtils.getJson());
+        System.clearProperty("dubbo.json-framework.prefer");
+        allowJackson.set(true);
 
         JsonUtils.setJson(null);
         // TCCL not found fastjson, gson
-        removedPackages.set(Arrays.asList("com.alibaba.fastjson2", "com.alibaba.fastjson", "com.google.gson"));
+        allowFastjson2.set(false);
+        allowFastjson.set(false);
+        allowGson.set(false);
+        allowJackson.set(false);
         Assertions.assertThrows(IllegalStateException.class, JsonUtils::getJson);
+        allowGson.set(true);
+        allowFastjson.set(true);
+        allowFastjson2.set(true);
+        allowJackson.set(true);
 
-        Thread.currentThread().setContextClassLoader(originClassLoader);
         JsonUtils.setJson(null);
     }
 }

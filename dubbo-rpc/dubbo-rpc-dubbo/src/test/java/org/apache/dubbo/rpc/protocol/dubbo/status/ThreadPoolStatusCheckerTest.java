@@ -20,6 +20,7 @@ import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.status.Status;
 import org.apache.dubbo.common.store.DataStore;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -30,17 +31,17 @@ import java.util.concurrent.Executors;
 /**
  * {@link ThreadPoolStatusChecker}
  */
-public class ThreadPoolStatusCheckerTest {
+class ThreadPoolStatusCheckerTest {
 
     @Test
-    public void test() {
+    void test() {
         DataStore dataStore = ExtensionLoader.getExtensionLoader(DataStore.class).getDefaultExtension();
         ExecutorService executorService1 = Executors.newFixedThreadPool(1);
         ExecutorService executorService2 = Executors.newFixedThreadPool(10);
         dataStore.put(CommonConstants.EXECUTOR_SERVICE_COMPONENT_KEY, "8888", executorService1);
         dataStore.put(CommonConstants.EXECUTOR_SERVICE_COMPONENT_KEY, "8889", executorService2);
 
-        ThreadPoolStatusChecker threadPoolStatusChecker = new ThreadPoolStatusChecker();
+        ThreadPoolStatusChecker threadPoolStatusChecker = new ThreadPoolStatusChecker(ApplicationModel.defaultModel());
         Status status = threadPoolStatusChecker.check();
         Assertions.assertEquals(status.getLevel(), Status.Level.WARN);
         Assertions.assertEquals(status.getMessage(),

@@ -16,11 +16,13 @@
  */
 package org.apache.dubbo.config.spring.context;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_DUBBO_BEAN_NOT_FOUND;
 import static org.springframework.util.ObjectUtils.nullSafeEquals;
 
 import java.util.concurrent.atomic.AtomicBoolean;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.spring.context.event.DubboConfigInitEvent;
 import org.apache.dubbo.config.spring.util.DubboBeanUtils;
 import org.apache.dubbo.rpc.model.ModuleModel;
@@ -34,7 +36,7 @@ import org.springframework.context.ApplicationListener;
  */
 public class DubboConfigApplicationListener implements ApplicationListener<DubboConfigInitEvent>, ApplicationContextAware {
 
-    private final static Log logger = LogFactory.getLog(DubboConfigApplicationListener.class);
+    private final static ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(DubboConfigApplicationListener.class);
 
     private ApplicationContext applicationContext;
 
@@ -64,7 +66,7 @@ public class DubboConfigApplicationListener implements ApplicationListener<Dubbo
         if (applicationContext.containsBean(DubboConfigBeanInitializer.BEAN_NAME)) {
             applicationContext.getBean(DubboConfigBeanInitializer.BEAN_NAME, DubboConfigBeanInitializer.class);
         } else {
-            logger.warn("Bean '" + DubboConfigBeanInitializer.BEAN_NAME + "' was not found");
+            logger.warn(CONFIG_DUBBO_BEAN_NOT_FOUND, "", "", "Bean '" + DubboConfigBeanInitializer.BEAN_NAME + "' was not found");
         }
 
         // All infrastructure config beans are loaded, initialize dubbo here

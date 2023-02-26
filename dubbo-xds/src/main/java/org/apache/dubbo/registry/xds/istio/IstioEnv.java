@@ -16,7 +16,8 @@
  */
 package org.apache.dubbo.registry.xds.istio;
 
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.constants.LoggerCodeConstants;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.registry.xds.XdsEnv;
 
@@ -27,12 +28,13 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ERROR_READ_FILE_ISTIO;
 import static org.apache.dubbo.registry.xds.istio.IstioConstant.NS;
 import static org.apache.dubbo.registry.xds.istio.IstioConstant.SA;
 import static org.apache.dubbo.registry.xds.istio.IstioConstant.SPIFFE;
 
 public class IstioEnv implements XdsEnv {
-    private static final Logger logger = LoggerFactory.getLogger(IstioEnv.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(IstioEnv.class);
 
     private static final IstioEnv INSTANCE = new IstioEnv();
 
@@ -56,6 +58,8 @@ public class IstioEnv implements XdsEnv {
 
     private String istioMetaClusterId;
 
+    private String pilotCertProvider;
+
     private IstioEnv() {
         jwtPolicy = Optional.ofNullable(System.getenv(IstioConstant.JWT_POLICY)).orElse(IstioConstant.DEFAULT_JWT_POLICY);
         podName = Optional.ofNullable(System.getenv("POD_NAME")).orElse(System.getenv("HOSTNAME"));
@@ -67,7 +71,7 @@ public class IstioEnv implements XdsEnv {
                     try {
                         return FileUtils.readFileToString(namespaceFile, StandardCharsets.UTF_8);
                     } catch (IOException e) {
-                        logger.error("read namespace file error", e);
+                        logger.error(REGISTRY_ERROR_READ_FILE_ISTIO,  "", "", "read namespace file error", e);
                     }
                 }
                 return IstioConstant.DEFAULT_WORKLOAD_NAMESPACE;
@@ -78,6 +82,7 @@ public class IstioEnv implements XdsEnv {
         secretTTL = Integer.parseInt(Optional.ofNullable(System.getenv(IstioConstant.SECRET_TTL_KEY)).orElse(IstioConstant.DEFAULT_SECRET_TTL));
         secretGracePeriodRatio = Float.parseFloat(Optional.ofNullable(System.getenv(IstioConstant.SECRET_GRACE_PERIOD_RATIO_KEY)).orElse(IstioConstant.DEFAULT_SECRET_GRACE_PERIOD_RATIO));
         istioMetaClusterId = Optional.ofNullable(System.getenv(IstioConstant.ISTIO_META_CLUSTER_ID_KEY)).orElse(IstioConstant.DEFAULT_ISTIO_META_CLUSTER_ID);
+        pilotCertProvider = Optional.ofNullable(System.getenv(IstioConstant.PILOT_CERT_PROVIDER_KEY)).orElse("");
 
         if (getServiceAccount() == null) {
             throw new UnsupportedOperationException("Unable to found kubernetes service account token file. " +
@@ -111,7 +116,7 @@ public class IstioEnv implements XdsEnv {
             try {
                 return FileUtils.readFileToString(saFile, StandardCharsets.UTF_8);
             } catch (IOException e) {
-                logger.error("Unable to read token file.", e);
+                logger.error(LoggerCodeConstants.REGISTRY_ISTIO_EXCEPTION, "File Read Failed", "", "Unable to read token file.", e);
             }
         }
 
@@ -158,19 +163,16 @@ public class IstioEnv implements XdsEnv {
 
     public String getCaCert() {
         File caFile;
-        switch (jwtPolicy) {
-            case IstioConstant.FIRST_PARTY_JWT:
-                caFile = new File(IstioConstant.KUBERNETES_CA_PATH);
-                break;
-            case IstioConstant.THIRD_PARTY_JWT:
-            default:
-                caFile = new File(IstioConstant.ISTIO_CA_PATH);
+        if (IstioConstant.ISTIO_PILOT_CERT_PROVIDER.equals(pilotCertProvider)) {
+            caFile = new File(IstioConstant.ISTIO_CA_PATH);
+        } else {
+            return null;
         }
         if (caFile.canRead()) {
             try {
                 return FileUtils.readFileToString(caFile, StandardCharsets.UTF_8);
             } catch (IOException e) {
-                logger.error("read ca file error", e);
+                logger.error(LoggerCodeConstants.REGISTRY_ISTIO_EXCEPTION, "File Read Failed", "", "read ca file error", e);
             }
         }
         return null;

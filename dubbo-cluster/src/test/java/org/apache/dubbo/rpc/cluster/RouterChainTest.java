@@ -17,6 +17,12 @@
 package org.apache.dubbo.rpc.cluster;
 
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
 import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
@@ -27,7 +33,6 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.cluster.filter.DemoService;
-
 import org.apache.dubbo.rpc.cluster.router.RouterSnapshotSwitcher;
 import org.apache.dubbo.rpc.cluster.router.condition.config.AppStateRouter;
 import org.apache.dubbo.rpc.cluster.router.condition.config.ListenableStateRouter;
@@ -40,24 +45,18 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TAG_KEY;
 import static org.apache.dubbo.rpc.cluster.router.mesh.route.MeshRuleConstants.MESH_RULE_DATA_ID_SUFFIX;
 import static org.mockito.Mockito.when;
 
-public class RouterChainTest {
+class RouterChainTest {
 
     /**
      * verify the router and state router loaded by default
      */
     @Test
-    public void testBuildRouterChain() {
+    void testBuildRouterChain() {
         RouterChain<DemoService> routerChain = createRouterChanin();
         Assertions.assertEquals(0, routerChain.getRouters().size());
         Assertions.assertEquals(5, routerChain.getStateRouters().size());
@@ -78,7 +77,7 @@ public class RouterChainTest {
     }
 
     @Test
-    public void testRoute() {
+    void testRoute() {
         RouterChain<DemoService> routerChain = createRouterChanin();
 
         // mockInvoker will be filtered out by MockInvokersSelector
@@ -120,7 +119,7 @@ public class RouterChainTest {
         Invoker<DemoService> invoker5 = createNormalInvoker(map5);
 
         BitList<Invoker<DemoService>> invokers = new BitList<>(Arrays.asList(mockInvoker, invoker1, invoker2, invoker3, invoker4, invoker5));
-        routerChain.setInvokers(invokers);
+        routerChain.setInvokers(invokers, () -> {});
 
         // mesh rule for MeshStateRouter
         MeshRuleManager meshRuleManager = mockInvoker.getUrl().getOrDefaultModuleModel().getBeanFactory().getBean(MeshRuleManager.class);
@@ -153,7 +152,8 @@ public class RouterChainTest {
         RouterSnapshotSwitcher routerSnapshotSwitcher = FrameworkModel.defaultModel().getBeanFactory().getBean(RouterSnapshotSwitcher.class);
         routerSnapshotSwitcher.addEnabledService("org.apache.dubbo.demo.DemoService");
         // route
-        List<Invoker<DemoService>> result = routerChain.route(consumerUrl, invokers, rpcInvocation);
+        List<Invoker<DemoService>> result = routerChain.getSingleChain(consumerUrl, invokers, rpcInvocation)
+            .route(consumerUrl, invokers, rpcInvocation);
         Assertions.assertEquals(result.size(), 1);
         Assertions.assertTrue(result.contains(invoker5));
 
@@ -170,7 +170,8 @@ public class RouterChainTest {
         Assertions.assertTrue(snapshot[0].contains(snapshotLog));
 
         RpcContext.getServiceContext().setNeedPrintRouterSnapshot(false);
-        result = routerChain.route(consumerUrl, invokers, rpcInvocation);
+        result = routerChain.getSingleChain(consumerUrl, invokers, rpcInvocation)
+            .route(consumerUrl, invokers, rpcInvocation);
         Assertions.assertEquals(result.size(), 1);
         Assertions.assertTrue(result.contains(invoker5));
 

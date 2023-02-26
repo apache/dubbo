@@ -33,7 +33,7 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 
-public class LoggerTest {
+class LoggerTest {
 
     static Stream<Arguments> data() {
         return Stream.of(

@@ -18,7 +18,7 @@ package org.apache.dubbo.remoting.transport.netty4;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -26,8 +26,7 @@ import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
-import org.apache.dubbo.remoting.api.NettyEventLoopFactory;
-import org.apache.dubbo.remoting.api.SslContexts;
+import org.apache.dubbo.remoting.transport.netty4.ssl.SslContexts;
 import org.apache.dubbo.remoting.api.WireProtocol;
 import org.apache.dubbo.remoting.api.pu.AbstractPortUnificationServer;
 import org.apache.dubbo.remoting.transport.dispatcher.ChannelHandlers;
@@ -54,6 +53,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.IO_THREADS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SSL_ENABLED_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_CLOSE;
 import static org.apache.dubbo.remoting.Constants.EVENT_LOOP_BOSS_POOL_NAME;
 import static org.apache.dubbo.remoting.Constants.EVENT_LOOP_WORKER_POOL_NAME;
 
@@ -62,7 +62,7 @@ import static org.apache.dubbo.remoting.Constants.EVENT_LOOP_WORKER_POOL_NAME;
  */
 public class NettyPortUnificationServer extends AbstractPortUnificationServer {
 
-    private static final Logger logger = LoggerFactory.getLogger(NettyPortUnificationServer.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(NettyPortUnificationServer.class);
 
     private final int serverShutdownTimeoutMills;
     /**
@@ -100,8 +100,8 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
         }
     }
 
-    public void bind(){
-        if(channel == null) {
+    public void bind() {
+        if (channel == null) {
             doOpen();
         }
     }
@@ -153,7 +153,7 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
     }
 
     @Override
-    public void doClose(){
+    public void doClose() {
 
         try {
             if (channel != null) {
@@ -163,7 +163,7 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
             }
 
         } catch (Throwable e) {
-            logger.warn("Interrupted while shutting down", e);
+            logger.warn(TRANSPORT_FAILED_CLOSE, "", "", "Interrupted while shutting down", e);
         }
 
         try {
@@ -173,12 +173,12 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
                     try {
                         channel.close();
                     } catch (Throwable e) {
-                        logger.warn(e.getMessage(), e);
+                        logger.warn(TRANSPORT_FAILED_CLOSE, "", "", e.getMessage(), e);
                     }
                 }
             }
         } catch (Throwable e) {
-            logger.warn(e.getMessage(), e);
+            logger.warn(TRANSPORT_FAILED_CLOSE, "", "", e.getMessage(), e);
         }
 
         for (WireProtocol protocol : getProtocols()) {
@@ -197,8 +197,13 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
                 workerGroupShutdownFuture.awaitUninterruptibly(timeout, MILLISECONDS);
             }
         } catch (Throwable e) {
-            logger.warn(e.getMessage(), e);
+            logger.warn(TRANSPORT_FAILED_CLOSE, "", "", e.getMessage(), e);
         }
+    }
+
+    @Override
+    protected int getChannelsSize() {
+        return dubboChannels.size();
     }
 
     public boolean isBound() {

@@ -38,7 +38,7 @@ import static org.mockito.Mockito.mock;
  * EventFilterTest.java
  * TODO rely on callback integration test for now
  */
-public class FutureFilterTest {
+class FutureFilterTest {
     private static RpcInvocation invocation;
     private ClusterFilter eventFilter = new FutureFilter();
 
@@ -51,7 +51,7 @@ public class FutureFilterTest {
     }
 
     @Test
-    public void testSyncCallback() {
+    void testSyncCallback() {
         @SuppressWarnings("unchecked")
         Invoker<DemoService> invoker = mock(Invoker.class);
         given(invoker.isAvailable()).willReturn(true);
@@ -67,7 +67,7 @@ public class FutureFilterTest {
     }
 
     @Test
-    public void testSyncCallbackHasException() throws RpcException, Throwable {
+    void testSyncCallbackHasException() throws RpcException, Throwable {
         Assertions.assertThrows(RuntimeException.class, () -> {
             @SuppressWarnings("unchecked")
             Invoker<DemoService> invoker = mock(Invoker.class);

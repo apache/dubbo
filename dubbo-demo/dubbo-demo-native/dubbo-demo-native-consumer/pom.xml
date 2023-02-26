@@ -53,10 +53,6 @@
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-configcenter-zookeeper</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-rpc-dubbo</artifactId>
         </dependency>
         <dependency>
@@ -83,6 +79,16 @@
         <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-remoting-http</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>fastjson</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-native</artifactId>
         </dependency>
 
     </dependencies>
@@ -122,7 +128,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-compiler-plugin</artifactId>
-                        <version>3.7.0</version>
+                        <version>3.10.1</version>
                         <configuration>
                             <source>1.8</source>
                             <target>1.8</target>
@@ -140,7 +146,7 @@
                     <plugin>
                         <groupId>org.graalvm.nativeimage</groupId>
                         <artifactId>native-image-maven-plugin</artifactId>
-                        <version>21.0.0.2</version>
+                        <version>21.2.0</version>
                         <executions>
                             <execution>
                                 <goals>
@@ -184,11 +190,20 @@
                                 --initialize-at-run-time=io.netty.channel.unix.Limits
                                 --initialize-at-run-time=io.netty.channel.unix.Socket
                                 --initialize-at-run-time=io.netty.channel.ChannelHandlerMask
+                                --initialize-at-run-time=io.netty.internal.tcnative.CertificateVerifier
+                                --initialize-at-run-time=io.netty.internal.tcnative.AsyncSSLPrivateKeyMethod
+                                --initialize-at-run-time=io.netty.handler.ssl.ReferenceCountedOpenSslEngine
+                                --initialize-at-run-time=io.netty.handler.ssl.OpenSslPrivateKeyMethod
+                                --initialize-at-run-time=io.netty.internal.tcnative.CertificateVerifier
+                                --initialize-at-run-time=io.netty.internal.tcnative.SSL
+                                --initialize-at-run-time=io.netty.handler.ssl.OpenSslAsyncPrivateKeyMethod
+                                --initialize-at-run-time=io.netty.internal.tcnative.SSLPrivateKeyMethod
 
                                 --report-unsupported-elements-at-runtime
                                 --allow-incomplete-classpath
                                 --enable-url-protocols=http
                                 -H:+ReportExceptionStackTraces
+                                -H:+AllowJRTFileSystem
                             </buildArgs>
                         </configuration>
                     </plugin>

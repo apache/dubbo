@@ -20,7 +20,7 @@ import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.io.Bytes;
 import org.apache.dubbo.common.io.StreamUtils;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.serialize.Cleanable;
 import org.apache.dubbo.common.serialize.ObjectInput;
@@ -43,6 +43,10 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_EXCEED_PAYLOAD_LIMIT;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_RESPONSE;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_SKIP_UNUSED_STREAM;
+
 /**
  * ExchangeCodec.
  */
@@ -59,7 +63,7 @@ public class ExchangeCodec extends TelnetCodec {
     protected static final byte FLAG_TWOWAY = (byte) 0x40;
     protected static final byte FLAG_EVENT = (byte) 0x20;
     protected static final int SERIALIZATION_MASK = 0x1f;
-    private static final Logger logger = LoggerFactory.getLogger(ExchangeCodec.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ExchangeCodec.class);
 
     public Short getMagicCode() {
         return MAGIC;
@@ -88,7 +92,7 @@ public class ExchangeCodec extends TelnetCodec {
     protected Object decode(Channel channel, ChannelBuffer buffer, int readable, byte[] header) throws IOException {
         // check magic number.
         if (readable > 0 && header[0] != MAGIC_HIGH
-                || readable > 1 && header[1] != MAGIC_LOW) {
+            || readable > 1 && header[1] != MAGIC_LOW) {
             int length = header.length;
             if (header.length < readable) {
                 header = Bytes.copyOf(header, readable);
@@ -132,11 +136,11 @@ public class ExchangeCodec extends TelnetCodec {
             if (is.available() > 0) {
                 try {
                     if (logger.isWarnEnabled()) {
-                        logger.warn("Skip input stream " + is.available());
+                        logger.warn(TRANSPORT_SKIP_UNUSED_STREAM, "", "", "Skip input stream " + is.available());
                     }
                     StreamUtils.skipUnusedStream(is);
                 } catch (IOException e) {
-                    logger.warn(e.getMessage(), e);
+                    logger.warn(TRANSPORT_SKIP_UNUSED_STREAM, "", "", e.getMessage(), e);
                 }
             }
         }
@@ -298,10 +302,10 @@ public class ExchangeCodec extends TelnetCodec {
 
             // encode response data or error message.
             if (status == Response.OK) {
-                if(res.isHeartbeat()){
+                if (res.isHeartbeat()) {
                     // heartbeat response data is always null
                     bos.write(CodecSupport.getNullBytesOf(serialization));
-                }else {
+                } else {
                     ObjectOutput out = serialization.serialize(channel.getUrl(), bos);
                     if (res.isEvent()) {
                         encodeEventData(channel, out, res.getResult());
@@ -341,23 +345,23 @@ public class ExchangeCodec extends TelnetCodec {
                 r.setStatus(Response.BAD_RESPONSE);
 
                 if (t instanceof ExceedPayloadLimitException) {
-                    logger.warn(t.getMessage(), t);
+                    logger.warn(TRANSPORT_EXCEED_PAYLOAD_LIMIT, "", "", t.getMessage(), t);
                     try {
                         r.setErrorMessage(t.getMessage());
                         channel.send(r);
                         return;
                     } catch (RemotingException e) {
-                        logger.warn("Failed to send bad_response info back: " + t.getMessage() + ", cause: " + e.getMessage(), e);
+                        logger.warn(TRANSPORT_FAILED_RESPONSE, "", "", "Failed to send bad_response info back: " + t.getMessage() + ", cause: " + e.getMessage(), e);
                     }
                 } else {
                     // FIXME log error message in Codec and handle in caught() of IoHanndler?
-                    logger.warn("Fail to encode response: " + res + ", send bad_response info instead, cause: " + t.getMessage(), t);
+                    logger.warn(TRANSPORT_FAILED_RESPONSE, "", "", "Fail to encode response: " + res + ", send bad_response info instead, cause: " + t.getMessage(), t);
                     try {
                         r.setErrorMessage("Failed to send response: " + res + ", cause: " + StringUtils.toString(t));
                         channel.send(r);
                         return;
                     } catch (RemotingException e) {
-                        logger.warn("Failed to send bad_response info back: " + res + ", cause: " + e.getMessage(), e);
+                        logger.warn(TRANSPORT_FAILED_RESPONSE, "", "", "Failed to send bad_response info back: " + res + ", cause: " + e.getMessage(), e);
                     }
                 }
             }
@@ -493,7 +497,7 @@ public class ExchangeCodec extends TelnetCodec {
                 }
                 res.setStatus(Response.CLIENT_ERROR);
                 String errorMsg = "Data length too large: " + size + ", max payload: " + payload + ", channel: " + channel;
-                logger.error(errorMsg);
+                logger.error(TRANSPORT_EXCEED_PAYLOAD_LIMIT, "", "", errorMsg);
                 res.setErrorMessage(errorMsg);
                 return res;
             }

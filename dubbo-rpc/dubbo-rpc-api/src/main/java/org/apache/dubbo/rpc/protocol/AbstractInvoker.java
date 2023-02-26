@@ -20,7 +20,7 @@ import org.apache.dubbo.common.Node;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.ThreadlessExecutor;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
@@ -49,7 +49,9 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_VERSION;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_REQUEST;
 import static org.apache.dubbo.rpc.Constants.SERIALIZATION_ID_KEY;
 
 /**
@@ -57,7 +59,7 @@ import static org.apache.dubbo.rpc.Constants.SERIALIZATION_ID_KEY;
  */
 public abstract class AbstractInvoker<T> implements Invoker<T> {
 
-    protected static final Logger logger = LoggerFactory.getLogger(AbstractInvoker.class);
+    protected static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(AbstractInvoker.class);
 
     /**
      * Service interface type
@@ -73,6 +75,8 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
      * {@link Invoker} default attachment
      */
     private final Map<String, Object> attachment;
+
+    protected final String version;
 
     /**
      * {@link Node} available
@@ -108,7 +112,12 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
         }
         this.type = type;
         this.url = url;
-        this.attachment = attachment == null ? null : Collections.unmodifiableMap(attachment);
+        
+        this.attachment = attachment == null
+            ? null
+            : Collections.unmodifiableMap(attachment);
+        this.version = url.getVersion(DEFAULT_VERSION);
+
     }
 
     private static Map<String, Object> convertAttachment(URL url, String[] keys) {
@@ -165,7 +174,7 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
     public Result invoke(Invocation inv) throws RpcException {
         // if invoker is destroyed due to address refresh from registry, let's allow the current invoke to proceed
         if (isDestroyed()) {
-            logger.warn("Invoker for service " + this + " on consumer " + NetUtils.getLocalHost() + " is destroyed, " + ", dubbo version is " + Version.getVersion() + ", this invoker should not be used any longer");
+            logger.warn(PROTOCOL_FAILED_REQUEST, "", "", "Invoker for service " + this + " on consumer " + NetUtils.getLocalHost() + " is destroyed, " + ", dubbo version is " + Version.getVersion() + ", this invoker should not be used any longer");
         }
 
         RpcInvocation invocation = (RpcInvocation) inv;
@@ -271,12 +280,10 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
              * must call {@link java.util.concurrent.CompletableFuture#get(long, TimeUnit)} because
              * {@link java.util.concurrent.CompletableFuture#get()} was proved to have serious performance drop.
              */
-            Object timeout = invocation.getObjectAttachmentWithoutConvert(TIMEOUT_KEY);
-            if (timeout instanceof Integer) {
-                asyncResult.get((Integer) timeout, TimeUnit.MILLISECONDS);
-            } else {
-                asyncResult.get(Integer.MAX_VALUE, TimeUnit.MILLISECONDS);
-            }
+            Object timeoutKey = invocation.getObjectAttachmentWithoutConvert(TIMEOUT_KEY);
+            long timeout = RpcUtils.convertToNumber(timeoutKey, Integer.MAX_VALUE);
+
+            asyncResult.get(timeout, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new RpcException("Interrupted unexpectedly while waiting for remote result to return! method: " + invocation.getMethodName() + ", provider: " + getUrl() + ", cause: " + e.getMessage(), e);

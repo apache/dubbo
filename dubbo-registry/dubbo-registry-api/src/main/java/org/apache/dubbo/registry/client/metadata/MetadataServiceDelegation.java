@@ -16,18 +16,6 @@
  */
 package org.apache.dubbo.registry.client.metadata;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.resource.Disposable;
-import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.metadata.InstanceMetadataChangedListener;
-import org.apache.dubbo.metadata.MetadataInfo;
-import org.apache.dubbo.metadata.MetadataService;
-import org.apache.dubbo.registry.client.ServiceDiscovery;
-import org.apache.dubbo.registry.support.RegistryManager;
-import org.apache.dubbo.rpc.model.ApplicationModel;
-
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -40,10 +28,23 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.resource.Disposable;
+import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.metadata.InstanceMetadataChangedListener;
+import org.apache.dubbo.metadata.MetadataInfo;
+import org.apache.dubbo.metadata.MetadataService;
+import org.apache.dubbo.registry.client.ServiceDiscovery;
+import org.apache.dubbo.registry.support.RegistryManager;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+
 import static java.util.Collections.emptySortedSet;
 import static java.util.Collections.unmodifiableSortedSet;
 import static org.apache.dubbo.common.URL.buildKey;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_LOAD_METADATA;
 import static org.apache.dubbo.common.utils.CollectionUtils.isEmpty;
 
 /**
@@ -94,6 +95,9 @@ public class MetadataServiceDelegation implements MetadataService, Disposable {
         for (ServiceDiscovery sd : serviceDiscoveries) {
             MetadataInfo metadataInfo = sd.getLocalMetadata();
             Map<String, SortedSet<URL>> serviceURLs = metadataInfo.getExportedServiceURLs();
+            if (serviceURLs == null) {
+                continue;
+            }
             for (Map.Entry<String, SortedSet<URL>> entry : serviceURLs.entrySet()) {
                 SortedSet<URL> urls = entry.getValue();
                 if (urls != null) {
@@ -114,6 +118,9 @@ public class MetadataServiceDelegation implements MetadataService, Disposable {
         for (ServiceDiscovery sd : serviceDiscoveries) {
             MetadataInfo metadataInfo = sd.getLocalMetadata();
             Map<String, SortedSet<URL>> serviceURLs = metadataInfo.getSubscribedServiceURLs();
+            if (serviceURLs == null) {
+                continue;
+            }
             for (Map.Entry<String, SortedSet<URL>> entry : serviceURLs.entrySet()) {
                 SortedSet<URL> urls = entry.getValue();
                 if (urls != null) {
@@ -137,7 +144,7 @@ public class MetadataServiceDelegation implements MetadataService, Disposable {
         return unmodifiableSortedSet(getServiceURLs(getAllServiceURLs(), serviceKey, protocol));
     }
 
-    private Map<String, SortedSet<URL>> getAllServiceURLs () {
+    private Map<String, SortedSet<URL>> getAllServiceURLs() {
         List<ServiceDiscovery> serviceDiscoveries = registryManager.getServiceDiscoveries();
         Map<String, SortedSet<URL>> allServiceURLs = new HashMap<>();
         for (ServiceDiscovery sd : serviceDiscoveries) {
@@ -175,14 +182,14 @@ public class MetadataServiceDelegation implements MetadataService, Disposable {
         }
 
         for (ServiceDiscovery sd : registryManager.getServiceDiscoveries()) {
-            MetadataInfo metadataInfo = sd.getLocalMetadata();
-            if (revision.equals(metadataInfo.getRevision())) {
+            MetadataInfo metadataInfo = sd.getLocalMetadata(revision);
+            if (metadataInfo != null && revision.equals(metadataInfo.getRevision())) {
                 return metadataInfo;
             }
         }
 
         if (logger.isWarnEnabled()) {
-            logger.warn("metadata not found for revision: " + revision);
+            logger.warn(REGISTRY_FAILED_LOAD_METADATA, "", "", "metadata not found for revision: " + revision);
         }
         return null;
     }

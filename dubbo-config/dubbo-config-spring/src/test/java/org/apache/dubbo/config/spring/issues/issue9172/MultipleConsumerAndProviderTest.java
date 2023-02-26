@@ -37,10 +37,10 @@ import org.springframework.context.annotation.PropertySource;
 /**
  * Test for issue 9172
  */
-public class MultipleConsumerAndProviderTest {
+class MultipleConsumerAndProviderTest {
 
     @Test
-    public void test() {
+    void test() {
 
         AnnotationConfigApplicationContext providerContext = null;
         AnnotationConfigApplicationContext consumerContext = null;

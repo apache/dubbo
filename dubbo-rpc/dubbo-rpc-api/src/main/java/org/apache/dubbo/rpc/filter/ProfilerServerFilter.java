@@ -17,27 +17,35 @@
 package org.apache.dubbo.rpc.filter;
 
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.profiler.Profiler;
 import org.apache.dubbo.common.profiler.ProfilerEntry;
 import org.apache.dubbo.common.profiler.ProfilerSwitch;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.BaseFilter;
+import org.apache.dubbo.rpc.Constants;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.support.RpcUtils;
 
+import java.lang.management.ManagementFactory;
+import java.lang.management.OperatingSystemMXBean;
+
+import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROXY_TIMEOUT_RESPONSE;
 
 @Activate(group = PROVIDER, order = Integer.MIN_VALUE)
 public class ProfilerServerFilter implements Filter, BaseFilter.Listener {
     private final static String CLIENT_IP_KEY = "client_ip";
-    private final static Logger logger = LoggerFactory.getLogger(ProfilerServerFilter.class);
+    private final static ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ProfilerServerFilter.class);
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
@@ -59,6 +67,7 @@ public class ProfilerServerFilter implements Filter, BaseFilter.Listener {
     @Override
     public void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
         afterInvoke(invoker, invocation);
+        addAdaptiveResponse(appResponse, invocation);
     }
 
     @Override
@@ -77,14 +86,24 @@ public class ProfilerServerFilter implements Filter, BaseFilter.Listener {
             }
         }
     }
+    private void addAdaptiveResponse(Result appResponse, Invocation invocation) {
+        String adaptiveLoadAttachment = invocation.getAttachment(Constants.ADAPTIVE_LOADBALANCE_ATTACHMENT_KEY);
+        if (StringUtils.isNotEmpty(adaptiveLoadAttachment)) {
+            OperatingSystemMXBean operatingSystemMXBean = ManagementFactory.getOperatingSystemMXBean();
+
+            StringBuilder sb = new StringBuilder(64);
+            sb.append("curTime:").append(System.currentTimeMillis());
+            sb.append(COMMA_SEPARATOR).append("load:").append(operatingSystemMXBean.getSystemLoadAverage() * 100 / operatingSystemMXBean.getAvailableProcessors() );
+
+            appResponse.setAttachment(Constants.ADAPTIVE_LOADBALANCE_ATTACHMENT_KEY,sb.toString());
+        }
+    }
 
     private void dumpIfNeed(Invoker<?> invoker, Invocation invocation, ProfilerEntry profiler) {
-        int timeout;
-        Object timeoutValue = invocation.getObjectAttachmentWithoutConvert(TIMEOUT_KEY);
-        if (timeoutValue instanceof Integer) {
-            timeout = (Integer) timeoutValue;
-        } else {
-            timeout = invoker.getUrl().getMethodPositiveParameter(invocation.getMethodName(), TIMEOUT_KEY, DEFAULT_TIMEOUT);
+        Long timeout = RpcUtils.convertToNumber(invocation.getObjectAttachmentWithoutConvert(TIMEOUT_KEY));
+
+        if (timeout == null) {
+            timeout = (long) invoker.getUrl().getMethodPositiveParameter(invocation.getMethodName(), TIMEOUT_KEY, DEFAULT_TIMEOUT);
         }
         long usage = profiler.getEndTime() - profiler.getStartTime();
         if (((usage / (1000_000L * ProfilerSwitch.getWarnPercent())) > timeout) && timeout != -1) {
@@ -94,12 +113,13 @@ public class ProfilerServerFilter implements Filter, BaseFilter.Listener {
                 attachment.append(entry.getKey()).append("=").append(entry.getValue()).append(";\n");
             });
 
-            logger.warn(String.format("[Dubbo-Provider] execute service %s#%s cost %d.%06d ms, this invocation almost (maybe already) timeout. Timeout: %dms\n" +
-                    "client: %s\n" +
-                    "invocation context:\n%s" +
-                    "thread info: \n%s",
-                invocation.getTargetServiceUniqueName(), invocation.getMethodName(), usage / 1000_000, usage % 1000_000, timeout,
-                invocation.get(CLIENT_IP_KEY), attachment, Profiler.buildDetail(profiler)));
+            logger.warn(PROXY_TIMEOUT_RESPONSE, "", "",
+                String.format("[Dubbo-Provider] execute service %s#%s cost %d.%06d ms, this invocation almost (maybe already) timeout. Timeout: %dms\n" +
+                        "client: %s\n" +
+                        "invocation context:\n%s" +
+                        "thread info: \n%s",
+                    invocation.getTargetServiceUniqueName(), invocation.getMethodName(), usage / 1000_000, usage % 1000_000, timeout,
+                    invocation.get(CLIENT_IP_KEY), attachment, Profiler.buildDetail(profiler)));
         }
     }
 }

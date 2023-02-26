@@ -43,7 +43,7 @@ import static org.mockito.Mockito.mock;
  * {@link OfflineApp}
  * {@link OfflineInterface}
  */
-public class OfflineTest {
+class OfflineTest {
     private FrameworkModel frameworkModel;
     private ModuleServiceRepository repository;
     private ProviderModel.RegisterStatedURL registerStatedURL;
@@ -61,7 +61,7 @@ public class OfflineTest {
     }
 
     @Test
-    public void testExecute() {
+    void testExecute() {
         Offline offline = new Offline(frameworkModel);
         String result = offline.execute(mock(CommandContext.class), new String[]{DemoService.class.getName()});
         Assertions.assertEquals(result, "OK");

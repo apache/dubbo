@@ -17,6 +17,7 @@
 package org.apache.dubbo.metadata;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.RegistryConstants;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -25,7 +26,6 @@ import org.apache.dubbo.rpc.model.ScopeModelUtil;
 import org.apache.dubbo.rpc.service.Destroyable;
 
 import java.util.Arrays;
-import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -47,6 +47,8 @@ public interface ServiceNameMapping extends Destroyable {
      * Map the specified Dubbo service interface, group, version and protocol to current Dubbo service name
      */
     boolean map(URL url);
+
+    boolean hasValidMetadataCenter();
 
     /**
      * Get the default extension of {@link ServiceNameMapping}
@@ -89,14 +91,13 @@ public interface ServiceNameMapping extends Destroyable {
         return new TreeSet<>(Arrays.asList(content.split(COMMA_SEPARATOR)));
     }
 
-    /**
-     * Init mapping from local storage and url parameter.
-     *
-     * @return app list the current interface maps to, in sequence determined by:
-     * 1. PROVIDED_BY specified by user
-     * 2. snapshot in local file
-     */
-    void initInterfaceAppMapping(URL subscribedURL);
+    static Set<String> getMappingByUrl(URL consumerURL) {
+        String providedBy = consumerURL.getParameter(RegistryConstants.PROVIDED_BY);
+        if(StringUtils.isBlank(providedBy)) {
+            return null;
+        }
+        return AbstractServiceNameMapping.parseServices(providedBy);
+    }
 
     /**
      * Get the latest mapping result from remote center and register listener at the same time to get notified once mapping changes.
@@ -110,13 +111,9 @@ public interface ServiceNameMapping extends Destroyable {
 
     void putCachedMapping(String serviceKey, Set<String> apps);
 
-    Set<String> getCachedMapping(String mappingKey);
-
-    Set<String> getCachedMapping(URL consumerURL);
+    Set<String> getMapping(URL consumerURL);
 
     Set<String> getRemoteMapping(URL consumerURL);
-
-    Map<String, Set<String>> getCachedMapping();
 
     Set<String> removeCachedMapping(String serviceKey);
 }

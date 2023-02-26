@@ -48,10 +48,10 @@ class BaseClass {
 interface BaseInterface {
 
 }
-public class ClassGeneratorTest {
+class ClassGeneratorTest {
 
     @Test
-    public void test() throws Exception {
+    void test() throws Exception {
         ClassGenerator cg = ClassGenerator.newInstance();
 
         // add className, interface, superClass
@@ -147,7 +147,7 @@ public class ClassGeneratorTest {
 
     @SuppressWarnings("unchecked")
     @Test
-    public void testMain() throws Exception {
+    void testMain() throws Exception {
         Bean b = new Bean();
         Field fname = Bean.class.getDeclaredField("name");
         fname.setAccessible(true);
@@ -173,7 +173,7 @@ public class ClassGeneratorTest {
     }
 
     @Test
-    public void testMain0() throws Exception {
+    void testMain0() throws Exception {
         Bean b = new Bean();
         Field fname = Bean.class.getDeclaredField("name");
         fname.setAccessible(true);

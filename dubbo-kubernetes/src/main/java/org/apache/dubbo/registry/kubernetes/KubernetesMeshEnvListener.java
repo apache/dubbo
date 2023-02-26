@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.registry.kubernetes;
 
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.cluster.router.mesh.route.MeshAppRuleListener;
 import org.apache.dubbo.rpc.cluster.router.mesh.route.MeshEnvListener;
@@ -32,11 +32,13 @@ import org.yaml.snakeyaml.constructor.SafeConstructor;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ERROR_LISTEN_KUBERNETES;
+
 public class KubernetesMeshEnvListener implements MeshEnvListener {
-    public static final Logger logger = LoggerFactory.getLogger(KubernetesMeshEnvListener.class);
-    private volatile static boolean usingApiServer = false;
-    private volatile static KubernetesClient kubernetesClient;
-    private volatile static String namespace;
+    public static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(KubernetesMeshEnvListener.class);
+    private static volatile boolean usingApiServer = false;
+    private static volatile KubernetesClient kubernetesClient;
+    private static volatile String namespace;
 
     private final Map<String, MeshAppRuleListener> appRuleListenerMap = new ConcurrentHashMap<>();
 
@@ -101,11 +103,11 @@ public class KubernetesMeshEnvListener implements MeshEnvListener {
                             }
                         }
 
-                    @Override
-                    public void onClose(WatcherException cause) {
-                        // ignore
-                    }
-                });
+                        @Override
+                        public void onClose(WatcherException cause) {
+                            // ignore
+                        }
+                    });
             vsAppWatch.put(appName, watch);
             try {
                 GenericKubernetesResource vsRule = kubernetesClient
@@ -119,7 +121,7 @@ public class KubernetesMeshEnvListener implements MeshEnvListener {
 
             }
         } catch (Exception e) {
-            logger.error("Error occurred when listen kubernetes crd.", e);
+            logger.error(REGISTRY_ERROR_LISTEN_KUBERNETES, "", "", "Error occurred when listen kubernetes crd.", e);
         }
     }
 
@@ -178,7 +180,7 @@ public class KubernetesMeshEnvListener implements MeshEnvListener {
 
             }
         } catch (Exception e) {
-            logger.error("Error occurred when listen kubernetes crd.", e);
+            logger.error(REGISTRY_ERROR_LISTEN_KUBERNETES, "", "", "Error occurred when listen kubernetes crd.", e);
         }
     }
 

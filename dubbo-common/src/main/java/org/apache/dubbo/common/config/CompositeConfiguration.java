@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.common.config;
 
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ArrayUtils;
 
@@ -24,11 +24,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_LOAD_ENV_VARIABLE;
+
 /**
  * This is an abstraction specially customized for the sequence Dubbo retrieves properties.
  */
 public class CompositeConfiguration implements Configuration {
-    private final Logger logger = LoggerFactory.getLogger(CompositeConfiguration.class);
+    private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(CompositeConfiguration.class);
 
     /**
      * List holding all the configuration
@@ -80,7 +82,7 @@ public class CompositeConfiguration implements Configuration {
                     return value;
                 }
             } catch (Exception e) {
-                logger.error("Error when trying to get value for key " + key + " from " + config + ", " +
+                logger.error(CONFIG_FAILED_LOAD_ENV_VARIABLE, "", "", "Error when trying to get value for key " + key + " from " + config + ", " +
                     "will continue to try the next one.");
             }
         }

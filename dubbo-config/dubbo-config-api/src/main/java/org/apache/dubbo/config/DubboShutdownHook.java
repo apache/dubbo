@@ -18,6 +18,7 @@ package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.constants.LoggerCodeConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.Assert;
@@ -110,7 +111,8 @@ public class DubboShutdownHook extends Thread {
                             }
                         }
                     } catch (InterruptedException e) {
-                        logger.warn(e.getMessage(), e);
+                        logger.warn(LoggerCodeConstants.INTERNAL_INTERRUPTED, "", "", e.getMessage(), e);
+                        Thread.currentThread().interrupt();
                     }
                 }
             }

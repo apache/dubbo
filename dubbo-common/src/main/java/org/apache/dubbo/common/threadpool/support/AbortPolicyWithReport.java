@@ -42,10 +42,12 @@ import java.util.concurrent.ThreadPoolExecutor;
 import static java.lang.String.format;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR_CHAR;
 import static org.apache.dubbo.common.constants.CommonConstants.DUMP_DIRECTORY;
+import static org.apache.dubbo.common.constants.CommonConstants.DUMP_ENABLE;
 import static org.apache.dubbo.common.constants.CommonConstants.OS_NAME_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.OS_WIN_PREFIX;
 import static org.apache.dubbo.common.constants.CommonConstants.THREAD_POOL_EXHAUSTED_LISTENERS_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_THREAD_POOL_EXHAUSTED;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXPECTED_CREATE_DUMP;
 
 /**
  * Abort Policy.
@@ -59,7 +61,7 @@ public class AbortPolicyWithReport extends ThreadPoolExecutor.AbortPolicy {
 
     private final URL url;
 
-    private static volatile long lastPrintTime = 0;
+    protected static volatile long lastPrintTime = 0;
 
     private static final long TEN_MINUTES_MILLS = 10 * 60 * 1000;
 
@@ -67,7 +69,7 @@ public class AbortPolicyWithReport extends ThreadPoolExecutor.AbortPolicy {
 
     private static final String DEFAULT_DATETIME_FORMAT = "yyyy-MM-dd_HH:mm:ss";
 
-    private static Semaphore guard = new Semaphore(1);
+    protected static Semaphore guard = new Semaphore(1);
 
     private static final String USER_HOME = System.getProperty("user.home");
 
@@ -106,7 +108,10 @@ public class AbortPolicyWithReport extends ThreadPoolExecutor.AbortPolicy {
         // 0-1 - Thread pool is EXHAUSTED!
         logger.warn(COMMON_THREAD_POOL_EXHAUSTED, "too much client requesting provider", "", msg);
 
-        dumpJStack();
+        if (Boolean.parseBoolean(url.getParameter(DUMP_ENABLE, "true"))) {
+            dumpJStack();
+        }
+
         dispatchThreadPoolExhaustedEvent(msg);
 
         throw new RejectedExecutionException(msg);
@@ -160,9 +165,9 @@ public class AbortPolicyWithReport extends ThreadPoolExecutor.AbortPolicy {
             //try-with-resources
             try (FileOutputStream jStackStream = new FileOutputStream(
                 new File(dumpPath, "Dubbo_JStack.log" + "." + dateStr))) {
-                JVMUtil.jstack(jStackStream);
-            } catch (Throwable t) {
-                logger.error("dump jStack error", t);
+                jstack(jStackStream);
+            } catch (Exception t) {
+                logger.error(COMMON_UNEXPECTED_CREATE_DUMP, "", "", "dump jStack error", t);
             } finally {
                 guard.release();
             }
@@ -173,7 +178,11 @@ public class AbortPolicyWithReport extends ThreadPoolExecutor.AbortPolicy {
 
     }
 
-    private String getDumpPath() {
+    protected void jstack(FileOutputStream jStackStream) throws Exception {
+        JVMUtil.jstack(jStackStream);
+    }
+
+    protected String getDumpPath() {
         final String dumpPath = url.getParameter(DUMP_DIRECTORY);
         if (StringUtils.isEmpty(dumpPath)) {
             return USER_HOME;
@@ -183,7 +192,7 @@ public class AbortPolicyWithReport extends ThreadPoolExecutor.AbortPolicy {
             if (dumpDirectory.mkdirs()) {
                 logger.info(format("Dubbo dump directory[%s] created", dumpDirectory.getAbsolutePath()));
             } else {
-                logger.warn(format("Dubbo dump directory[%s] can't be created, use the 'user.home'[%s]",
+                logger.warn(COMMON_UNEXPECTED_CREATE_DUMP, "", "", format("Dubbo dump directory[%s] can't be created, use the 'user.home'[%s]",
                     dumpDirectory.getAbsolutePath(), USER_HOME));
                 return USER_HOME;
             }

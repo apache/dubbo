@@ -16,6 +16,19 @@
  */
 package org.apache.dubbo.registry.support;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
+
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.URLStrParser;
@@ -28,23 +41,12 @@ import org.apache.dubbo.common.url.component.ServiceAddressURL;
 import org.apache.dubbo.common.url.component.URLAddress;
 import org.apache.dubbo.common.url.component.URLParam;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.ProviderFirstParams;
 import org.apache.dubbo.rpc.model.ScopeModel;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.URLStrParser.ENCODED_AND_MARK;
 import static org.apache.dubbo.common.URLStrParser.ENCODED_PID_KEY;
@@ -56,13 +58,13 @@ import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_SEPARATOR_ENCODED;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ADDRESS_INVALID;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_PROPERTY_TYPE_MISMATCH;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_EMPTY_ADDRESS;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_URL_EVICTING;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_PROPERTY_MISSPELLING;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_NO_PARAMETERS_URL;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_CLEAR_CACHED_URLS;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_URL_EVICTING;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_NO_PARAMETERS_URL;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_ENABLE_EMPTY_PROTECTION;
 import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
 import static org.apache.dubbo.common.constants.RegistryConstants.ENABLE_EMPTY_PROTECTION_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDERS_CATEGORY;
@@ -82,8 +84,8 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
 
     private static String[] VARIABLE_KEYS = new String[]{ENCODED_TIMESTAMP_KEY, ENCODED_PID_KEY};
 
-    protected Map<String, URLAddress> stringAddress = new ConcurrentHashMap<>();
-    protected Map<String, URLParam> stringParam = new ConcurrentHashMap<>();
+    protected ConcurrentMap<String, URLAddress> stringAddress = new ConcurrentHashMap<>();
+    protected ConcurrentMap<String, URLParam> stringParam = new ConcurrentHashMap<>();
 
     private ScheduledExecutorService cacheRemovalScheduler;
     private int cacheRemovalTaskIntervalInMillis;
@@ -114,7 +116,7 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
             } catch (NumberFormatException e) {
                 // 0-2 Property type mismatch.
 
-                logger.warn(COMMON_PROPERTY_MISSPELLING, "typo in property value", "This property requires an integer value.",
+                logger.warn(COMMON_PROPERTY_TYPE_MISMATCH, "typo in property value", "This property requires an integer value.",
                     "Invalid registry properties configuration key " + key + ", value " + str);
             }
         }
@@ -177,10 +179,6 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
                 // create DubboServiceAddress object using provider url, consumer url, and extra parameters.
                 ServiceAddressURL cachedURL = createURL(rawProvider, copyOfConsumer, getExtraParameters());
                 if (cachedURL == null) {
-                    // 1-1: Address invalid.
-                    logger.warn(REGISTRY_ADDRESS_INVALID, "mismatch of service group and version settings", "",
-                        "Invalid address, failed to parse into URL " + rawProvider);
-
                     continue;
                 }
                 newURLs.put(rawProvider, cachedURL);
@@ -193,9 +191,6 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
                 if (cachedURL == null) {
                     cachedURL = createURL(rawProvider, copyOfConsumer, getExtraParameters());
                     if (cachedURL == null) {
-                        logger.warn(REGISTRY_ADDRESS_INVALID, "mismatch of service group and version settings", "",
-                            "Invalid address, failed to parse into URL " + rawProvider);
-
                         continue;
                     }
                 }
@@ -229,7 +224,7 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
         if (urls.isEmpty()) {
             int i = path.lastIndexOf(PATH_SEPARATOR);
             String category = i < 0 ? path : path.substring(i + 1);
-            if (!PROVIDERS_CATEGORY.equals(category) || !getUrl().getParameter(ENABLE_EMPTY_PROTECTION_KEY, true)) {
+            if (!PROVIDERS_CATEGORY.equals(category) || !getUrl().getParameter(ENABLE_EMPTY_PROTECTION_KEY, DEFAULT_ENABLE_EMPTY_PROTECTION)) {
                 if (PROVIDERS_CATEGORY.equals(category)) {
                     logger.warn(REGISTRY_EMPTY_ADDRESS, "", "",
                         "Service " + consumer.getServiceKey() + " received empty address list and empty protection is disabled, will clear current available addresses");
@@ -248,8 +243,8 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
     /**
      * Create DubboServiceAddress object using provider url, consumer url, and extra parameters.
      *
-     * @param rawProvider provider url string
-     * @param consumerURL URL object of consumer
+     * @param rawProvider     provider url string
+     * @param consumerURL     URL object of consumer
      * @param extraParameters extra parameters
      * @return created DubboServiceAddressURL object
      */
@@ -285,10 +280,10 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
         boolean isEncoded = encoded;
 
         // PathURLAddress if it's using dubbo protocol.
-        URLAddress address = stringAddress.computeIfAbsent(rawAddress, k -> URLAddress.parse(k, getDefaultURLProtocol(), isEncoded));
+        URLAddress address = ConcurrentHashMapUtils.computeIfAbsent(stringAddress, rawAddress, k -> URLAddress.parse(k, getDefaultURLProtocol(), isEncoded));
         address.setTimestamp(System.currentTimeMillis());
 
-        URLParam param = stringParam.computeIfAbsent(rawParams, k -> URLParam.parse(k, isEncoded, extraParameters));
+        URLParam param = ConcurrentHashMapUtils.computeIfAbsent(stringParam, rawParams, k -> URLParam.parse(k, isEncoded, extraParameters));
         param.setTimestamp(System.currentTimeMillis());
 
         // create service URL using cached address, param, and consumer URL.

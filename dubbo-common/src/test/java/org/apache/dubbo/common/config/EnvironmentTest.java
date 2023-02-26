@@ -35,10 +35,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 /**
  * {@link Environment}
  */
-public class EnvironmentTest {
+class EnvironmentTest {
 
     @Test
-    public void testResolvePlaceholders() {
+    void testResolvePlaceholders() {
         Environment environment = ApplicationModel.defaultModel().getModelEnvironment();
 
         Map<String, String> externalMap = new LinkedHashMap<>();
@@ -62,9 +62,9 @@ public class EnvironmentTest {
     }
 
     @Test
-    public void test() {
+    void test() {
         FrameworkModel frameworkModel = new FrameworkModel();
-        ApplicationModel applicationModel = new ApplicationModel(frameworkModel);
+        ApplicationModel applicationModel = frameworkModel.newApplication();
         Environment environment = applicationModel.getModelEnvironment();
 
         // test getPrefixedConfiguration

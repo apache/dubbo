@@ -16,6 +16,22 @@
  */
 package org.apache.dubbo.rpc;
 
+import java.io.Serializable;
+import java.lang.reflect.Method;
+import java.lang.reflect.Type;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
+
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -25,20 +41,6 @@ import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.model.ServiceModel;
 import org.apache.dubbo.rpc.support.RpcUtils;
-
-import java.io.Serializable;
-import java.lang.reflect.Method;
-import java.lang.reflect.Type;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.function.Consumer;
-import java.util.stream.Stream;
 
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
@@ -92,6 +94,8 @@ public class RpcInvocation implements Invocation, Serializable {
 
     private transient InvokeMode invokeMode;
 
+    private transient List<Invoker<?>> invokedInvokers = new LinkedList<>();
+
     /**
      * @deprecated only for test
      */
@@ -112,7 +116,7 @@ public class RpcInvocation implements Invocation, Serializable {
      * Deep clone of an invocation & put some service params into attachment from invoker (will not change the invoker in invocation)
      *
      * @param invocation original invocation
-     * @param invoker target invoker
+     * @param invoker    target invoker
      */
     public RpcInvocation(Invocation invocation, Invoker<?> invoker) {
         this(invocation.getTargetServiceUniqueName(), invocation.getServiceModel(), invocation.getMethodName(), invocation.getServiceName(),
@@ -312,6 +316,16 @@ public class RpcInvocation implements Invocation, Serializable {
     }
 
     @Override
+    public void addInvokedInvoker(Invoker<?> invoker) {
+        this.invokedInvokers.add(invoker);
+    }
+
+    @Override
+    public List<Invoker<?>> getInvokedInvokers() {
+        return this.invokedInvokers;
+    }
+
+    @Override
     public String getTargetServiceUniqueName() {
         return targetServiceUniqueName;
     }
@@ -384,6 +398,9 @@ public class RpcInvocation implements Invocation, Serializable {
     public Map<String, Object> getObjectAttachments() {
         try {
             attachmentLock.lock();
+            if (attachments == null) {
+                attachments = new HashMap<>();
+            }
             return attachments;
         } finally {
             attachmentLock.unlock();
@@ -434,6 +451,9 @@ public class RpcInvocation implements Invocation, Serializable {
     public Map<String, String> getAttachments() {
         try {
             attachmentLock.lock();
+            if (attachments == null) {
+                attachments = new HashMap<>();
+            }
             return new AttachmentsAdapter.ObjectToStringMap(attachments);
         } finally {
             attachmentLock.unlock();

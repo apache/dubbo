@@ -26,7 +26,7 @@ import org.junit.jupiter.api.Test;
 /**
  * {@link ScopeModelAwareExtensionProcessor}
  */
-public class ScopeModelAwareExtensionProcessorTest {
+class ScopeModelAwareExtensionProcessorTest {
     private FrameworkModel frameworkModel;
     private ApplicationModel applicationModel;
     private ModuleModel moduleModel;
@@ -34,8 +34,8 @@ public class ScopeModelAwareExtensionProcessorTest {
     @BeforeEach
     public void setUp() {
         frameworkModel = new FrameworkModel();
-        applicationModel = new ApplicationModel(frameworkModel);
-        moduleModel = new ModuleModel(applicationModel);
+        applicationModel = frameworkModel.newApplication();
+        moduleModel = applicationModel.newModule();
     }
 
     @AfterEach
@@ -44,7 +44,7 @@ public class ScopeModelAwareExtensionProcessorTest {
     }
 
     @Test
-    public void testInitialize() {
+    void testInitialize() {
         ScopeModelAwareExtensionProcessor processor1 = new ScopeModelAwareExtensionProcessor(frameworkModel);
         Assertions.assertEquals(processor1.getFrameworkModel(), frameworkModel);
         Assertions.assertEquals(processor1.getScopeModel(), frameworkModel);
@@ -65,7 +65,7 @@ public class ScopeModelAwareExtensionProcessorTest {
     }
 
     @Test
-    public void testPostProcessAfterInitialization() throws Exception {
+    void testPostProcessAfterInitialization() throws Exception {
         ScopeModelAwareExtensionProcessor processor = new ScopeModelAwareExtensionProcessor(moduleModel);
         MockScopeModelAware mockScopeModelAware = new MockScopeModelAware();
         Object object = processor.postProcessAfterInitialization(mockScopeModelAware, mockScopeModelAware.getClass().getName());

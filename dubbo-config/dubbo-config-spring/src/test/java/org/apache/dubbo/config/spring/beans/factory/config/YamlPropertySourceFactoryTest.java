@@ -40,7 +40,7 @@ import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER
 @Configuration
 @ContextConfiguration(classes = YamlPropertySourceFactoryTest.class)
 @DirtiesContext(classMode = AFTER_EACH_TEST_METHOD)
-public class YamlPropertySourceFactoryTest {
+class YamlPropertySourceFactoryTest {
 
     @Autowired
     private Environment environment;
@@ -64,7 +64,7 @@ public class YamlPropertySourceFactoryTest {
     private Integer queues;
 
     @Test
-    public void testProperty() {
+    void testProperty() {
         Assertions.assertEquals(isDefault, environment.getProperty("dubbo.consumer.default", Boolean.class));
         Assertions.assertEquals(client, environment.getProperty("dubbo.consumer.client", String.class));
         Assertions.assertEquals(threadPool, environment.getProperty("dubbo.consumer.threadpool", String.class));

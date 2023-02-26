@@ -31,14 +31,14 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Collection;
 
-public class ExtensionDirectorTest {
+class ExtensionDirectorTest {
 
     String testFwSrvName = "testFwSrv";
     String testAppSrvName = "testAppSrv";
     String testMdSrvName = "testMdSrv";
 
     @Test
-    public void testInheritanceAndScope() {
+    void testInheritanceAndScope() {
 
         // Expecting:
         // 1. SPI extension only be created in ExtensionDirector which matched scope
@@ -78,20 +78,20 @@ public class ExtensionDirectorTest {
     }
 
     @Test
-    public void testPostProcessor() {
+    void testPostProcessor() {
 
     }
 
     @Test
-    public void testModelAware() {
+    void testModelAware() {
         // Expecting:
         // 1. Module scope SPI can be injected ModuleModel, ApplicationModel, FrameworkModel
         // 2. Application scope SPI can be injected ApplicationModel, FrameworkModel, but not ModuleModel
         // 3. Framework scope SPI can be injected FrameworkModel, but not ModuleModel, ApplicationModel
 
         FrameworkModel frameworkModel = new FrameworkModel();
-        ApplicationModel applicationModel = new ApplicationModel(frameworkModel);
-        ModuleModel moduleModel = new ModuleModel(applicationModel);
+        ApplicationModel applicationModel = frameworkModel.newApplication();
+        ModuleModel moduleModel = applicationModel.newModule();
 
         ExtensionDirector moduleExtensionDirector = moduleModel.getExtensionDirector();
         ExtensionDirector appExtensionDirector = applicationModel.getExtensionDirector();
@@ -139,7 +139,7 @@ public class ExtensionDirectorTest {
     }
 
     @Test
-    public void testModelDataIsolation() {
+    void testModelDataIsolation() {
         //Model Tree
         //├─frameworkModel1
         //│  ├─applicationModel11
@@ -152,16 +152,16 @@ public class ExtensionDirectorTest {
         //      └─moduleModel211
 
         FrameworkModel frameworkModel1 = new FrameworkModel();
-        ApplicationModel applicationModel11 = new ApplicationModel(frameworkModel1);
-        ModuleModel moduleModel111 = new ModuleModel(applicationModel11);
-        ModuleModel moduleModel112 = new ModuleModel(applicationModel11);
+        ApplicationModel applicationModel11 = frameworkModel1.newApplication();
+        ModuleModel moduleModel111 = applicationModel11.newModule();
+        ModuleModel moduleModel112 = applicationModel11.newModule();
 
-        ApplicationModel applicationModel12 = new ApplicationModel(frameworkModel1);
-        ModuleModel moduleModel121 = new ModuleModel(applicationModel12);
+        ApplicationModel applicationModel12 = frameworkModel1.newApplication();
+        ModuleModel moduleModel121 = applicationModel12.newModule();
 
         FrameworkModel frameworkModel2 = new FrameworkModel();
-        ApplicationModel applicationModel21 = new ApplicationModel(frameworkModel2);
-        ModuleModel moduleModel211 = new ModuleModel(applicationModel21);
+        ApplicationModel applicationModel21 = frameworkModel2.newApplication();
+        ModuleModel moduleModel211 = applicationModel21.newModule();
 
         // test model references
         Collection<ApplicationModel> applicationsOfFw1 = frameworkModel1.getApplicationModels();
@@ -227,7 +227,7 @@ public class ExtensionDirectorTest {
     }
 
     @Test
-    public void testInjection() {
+    void testInjection() {
 
         // Expect:
         // 1. Framework scope extension can be injected to extensions of Framework/Application/Module scope
@@ -235,8 +235,8 @@ public class ExtensionDirectorTest {
         // 3. Module scope extension can be injected to extensions of Module scope, but not Framework/Application scope
 
         FrameworkModel frameworkModel = new FrameworkModel();
-        ApplicationModel applicationModel = new ApplicationModel(frameworkModel);
-        ModuleModel moduleModel = new ModuleModel(applicationModel);
+        ApplicationModel applicationModel = frameworkModel.newApplication();
+        ModuleModel moduleModel = applicationModel.newModule();
 
         // check module service
         TestModuleService moduleService = (TestModuleService) moduleModel.getExtensionDirector()

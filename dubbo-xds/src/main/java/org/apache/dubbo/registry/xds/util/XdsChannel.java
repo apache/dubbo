@@ -21,7 +21,7 @@ import io.grpc.netty.shaded.io.netty.channel.epoll.EpollDomainSocketChannel;
 import io.grpc.netty.shaded.io.netty.channel.epoll.EpollEventLoopGroup;
 import io.grpc.netty.shaded.io.netty.channel.unix.DomainSocketAddress;
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.url.component.URLAddress;
 import org.apache.dubbo.registry.xds.XdsCertificateSigner;
@@ -37,36 +37,58 @@ import io.grpc.netty.shaded.io.netty.handler.ssl.util.InsecureTrustManagerFactor
 import io.grpc.stub.StreamObserver;
 import org.apache.dubbo.registry.xds.util.bootstrap.Bootstrapper;
 import org.apache.dubbo.registry.xds.util.bootstrap.BootstrapperImpl;
+
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ERROR_CREATE_CHANNEL_XDS;
+
 public class XdsChannel {
 
-    private static final Logger logger = LoggerFactory.getLogger(XdsChannel.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(XdsChannel.class);
 
     private static final String USE_AGENT = "use-agent";
 
+    private URL url;
+
+    private static final String SECURE = "secure";
+
+    private static final String PLAINTEXT = "plaintext";
+
     private final ManagedChannel channel;
 
-    protected XdsChannel(URL url) {
+    public URL getUrl() {
+        return url;
+    }
+
+    public ManagedChannel getChannel() {
+        return channel;
+    }
+
+    public XdsChannel(URL url) {
         ManagedChannel managedChannel = null;
+        this.url = url;
         try {
-            if(!url.getParameter(USE_AGENT,false)) {
-                XdsCertificateSigner signer = url.getOrDefaultApplicationModel().getExtensionLoader(XdsCertificateSigner.class)
-                    .getExtension(url.getParameter("signer", "istio"));
-                XdsCertificateSigner.CertPair certPair = signer.GenerateCert(url);
-                SslContext context = GrpcSslContexts.forClient()
-                    .trustManager(InsecureTrustManagerFactory.INSTANCE)
-                    .keyManager(new ByteArrayInputStream(certPair.getPublicKey().getBytes(StandardCharsets.UTF_8)),
-                        new ByteArrayInputStream(certPair.getPrivateKey().getBytes(StandardCharsets.UTF_8)))
-                    .build();
-                managedChannel = NettyChannelBuilder.forAddress(url.getHost(), url.getPort()).sslContext(context)
-                    .build();
-            }
-            else {
+            if (!url.getParameter(USE_AGENT, false)) {
+                if(PLAINTEXT.equals(url.getParameter(SECURE))){
+                    managedChannel = NettyChannelBuilder.forAddress(url.getHost(), url.getPort()).usePlaintext()
+                        .build();
+                }else{
+                    XdsCertificateSigner signer = url.getOrDefaultApplicationModel().getExtensionLoader(XdsCertificateSigner.class)
+                        .getExtension(url.getParameter("signer", "istio"));
+                    XdsCertificateSigner.CertPair certPair = signer.GenerateCert(url);
+                    SslContext context = GrpcSslContexts.forClient()
+                        .trustManager(InsecureTrustManagerFactory.INSTANCE)
+                        .keyManager(new ByteArrayInputStream(certPair.getPublicKey().getBytes(StandardCharsets.UTF_8)),
+                            new ByteArrayInputStream(certPair.getPrivateKey().getBytes(StandardCharsets.UTF_8)))
+                        .build();
+                    managedChannel = NettyChannelBuilder.forAddress(url.getHost(), url.getPort()).sslContext(context)
+                        .build();
+                }
+            } else {
                 BootstrapperImpl bootstrapper = new BootstrapperImpl();
                 Bootstrapper.BootstrapInfo bootstrapInfo = bootstrapper.bootstrap();
-                URLAddress address =URLAddress.parse(bootstrapInfo.servers().get(0).target(),null, false);
+                URLAddress address = URLAddress.parse(bootstrapInfo.servers().get(0).target(), null, false);
                 EpollEventLoopGroup elg = new EpollEventLoopGroup();
                 managedChannel = NettyChannelBuilder.forAddress(new DomainSocketAddress("/" + address.getPath()))
                     .eventLoopGroup(elg)
@@ -75,7 +97,7 @@ public class XdsChannel {
                     .build();
             }
         } catch (Exception e) {
-            logger.error("Error occurred when creating gRPC channel to control panel.", e);
+            logger.error(REGISTRY_ERROR_CREATE_CHANNEL_XDS, "", "", "Error occurred when creating gRPC channel to control panel.", e);
         }
         channel = managedChannel;
     }

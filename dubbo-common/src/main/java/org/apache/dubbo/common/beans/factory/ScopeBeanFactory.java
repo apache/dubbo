@@ -21,15 +21,15 @@ import org.apache.dubbo.common.beans.support.InstantiationStrategy;
 import org.apache.dubbo.common.extension.ExtensionAccessor;
 import org.apache.dubbo.common.extension.ExtensionAccessorAware;
 import org.apache.dubbo.common.extension.ExtensionPostProcessor;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.resource.Disposable;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.model.ScopeModelAccessor;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -37,17 +37,19 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_DESTROY_INVOKER;
+
 /**
  * A bean factory for internal sharing.
  */
 public class ScopeBeanFactory {
 
-    protected static final Logger LOGGER = LoggerFactory.getLogger(ScopeBeanFactory.class);
+    protected static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(ScopeBeanFactory.class);
 
     private final ScopeBeanFactory parent;
     private ExtensionAccessor extensionAccessor;
     private List<ExtensionPostProcessor> extensionPostProcessors;
-    private Map<Class, AtomicInteger> beanNameIdCounterMap = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<Class, AtomicInteger> beanNameIdCounterMap = new ConcurrentHashMap<>();
     private List<BeanInfo> registeredBeanInfos = new CopyOnWriteArrayList<>();
     private InstantiationStrategy instantiationStrategy;
     private AtomicBoolean destroyed = new AtomicBoolean();
@@ -181,7 +183,16 @@ public class ScopeBeanFactory {
     }
 
     private int getNextId(Class<?> beanClass) {
-        return beanNameIdCounterMap.computeIfAbsent(beanClass, key -> new AtomicInteger()).incrementAndGet();
+        return ConcurrentHashMapUtils.computeIfAbsent(beanNameIdCounterMap, beanClass, key -> new AtomicInteger()).incrementAndGet();
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> List<T> getBeansOfType(Class<T> type) {
+        List<T> currentBeans = (List<T>) registeredBeanInfos.stream().filter(beanInfo -> type.isInstance(beanInfo.instance)).map(beanInfo -> beanInfo.instance).collect(Collectors.toList());
+        if (parent != null) {
+            currentBeans.addAll(parent.getBeansOfType(type));
+        }
+        return currentBeans;
     }
 
     public <T> T getBean(Class<T> type) {
@@ -239,14 +250,14 @@ public class ScopeBeanFactory {
     }
 
     public void destroy() {
-        if (destroyed.compareAndSet(false, true)){
+        if (destroyed.compareAndSet(false, true)) {
             for (BeanInfo beanInfo : registeredBeanInfos) {
                 if (beanInfo.instance instanceof Disposable) {
                     try {
                         Disposable beanInstance = (Disposable) beanInfo.instance;
                         beanInstance.destroy();
                     } catch (Throwable e) {
-                        LOGGER.error("An error occurred when destroy bean [name=" + beanInfo.name + ", bean=" + beanInfo.instance + "]: " + e, e);
+                        LOGGER.error(CONFIG_FAILED_DESTROY_INVOKER, "", "", "An error occurred when destroy bean [name=" + beanInfo.name + ", bean=" + beanInfo.instance + "]: " + e, e);
                     }
                 }
             }

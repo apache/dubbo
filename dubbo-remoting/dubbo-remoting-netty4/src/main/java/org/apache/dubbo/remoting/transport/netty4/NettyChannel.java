@@ -19,7 +19,7 @@ package org.apache.dubbo.remoting.transport.netty4;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelFutureListener;
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.ChannelHandler;
@@ -48,6 +48,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_ENCODE_I
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.ENCODE_IN_IO_THREAD_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_CLOSE;
 import static org.apache.dubbo.rpc.model.ScopeModelUtil.getFrameworkModel;
 
 /**
@@ -55,7 +56,7 @@ import static org.apache.dubbo.rpc.model.ScopeModelUtil.getFrameworkModel;
  */
 final class NettyChannel extends AbstractChannel {
 
-    private static final Logger logger = LoggerFactory.getLogger(NettyChannel.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(NettyChannel.class);
     /**
      * the cache for netty channel and dubbo channel
      */
@@ -226,7 +227,7 @@ final class NettyChannel extends AbstractChannel {
         }
         if (!success) {
             throw new RemotingException(this, "Failed to send message " + PayloadDropper.getRequestWithoutData(message) + " to " + getRemoteAddress()
-                    + "in timeout(" + timeout + "ms) limit");
+                + "in timeout(" + timeout + "ms) limit");
         }
     }
 
@@ -235,17 +236,17 @@ final class NettyChannel extends AbstractChannel {
         try {
             super.close();
         } catch (Exception e) {
-            logger.warn(e.getMessage(), e);
+            logger.warn(TRANSPORT_FAILED_CLOSE, "", "", e.getMessage(), e);
         }
         try {
             removeChannelIfDisconnected(channel);
         } catch (Exception e) {
-            logger.warn(e.getMessage(), e);
+            logger.warn(TRANSPORT_FAILED_CLOSE, "", "", e.getMessage(), e);
         }
         try {
             attributes.clear();
         } catch (Exception e) {
-            logger.warn(e.getMessage(), e);
+            logger.warn(TRANSPORT_FAILED_CLOSE, "", "", e.getMessage(), e);
         }
         try {
             if (logger.isInfoEnabled()) {
@@ -253,7 +254,7 @@ final class NettyChannel extends AbstractChannel {
             }
             channel.close();
         } catch (Exception e) {
-            logger.warn(e.getMessage(), e);
+            logger.warn(TRANSPORT_FAILED_CLOSE, "", "", e.getMessage(), e);
         }
     }
 

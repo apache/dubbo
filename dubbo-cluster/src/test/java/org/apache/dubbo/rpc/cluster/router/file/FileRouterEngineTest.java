@@ -47,7 +47,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
 @SuppressWarnings("unchecked")
-public class FileRouterEngineTest {
+class FileRouterEngineTest {
     private static boolean isScriptUnsupported = new ScriptEngineManager().getEngineByName("javascript") == null;
     List<Invoker<FileRouterEngineTest>> invokers = new ArrayList<Invoker<FileRouterEngineTest>>();
     Invoker<FileRouterEngineTest> invoker1 = mock(Invoker.class);
@@ -75,7 +75,7 @@ public class FileRouterEngineTest {
     }
 
     @Test
-    public void testRouteNotAvailable() {
+    void testRouteNotAvailable() {
         if (isScriptUnsupported) return;
         URL url = initUrl("notAvailablerule.javascript");
         initInvocation("method1");
@@ -92,7 +92,7 @@ public class FileRouterEngineTest {
     }
 
     @Test
-    public void testRouteAvailable() {
+    void testRouteAvailable() {
         if (isScriptUnsupported) return;
         URL url = initUrl("availablerule.javascript");
         initInvocation("method1");
@@ -109,7 +109,7 @@ public class FileRouterEngineTest {
     }
 
     @Test
-    public void testRouteByMethodName() {
+    void testRouteByMethodName() {
         if (isScriptUnsupported) return;
         URL url = initUrl("methodrule.javascript");
         {

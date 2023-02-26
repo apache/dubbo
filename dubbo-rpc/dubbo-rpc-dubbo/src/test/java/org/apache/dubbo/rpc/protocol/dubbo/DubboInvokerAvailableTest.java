@@ -25,6 +25,7 @@ import org.apache.dubbo.remoting.exchange.ExchangeClient;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.ProxyFactory;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
 
 import org.junit.jupiter.api.AfterAll;
@@ -37,12 +38,11 @@ import org.junit.jupiter.api.Test;
 import java.lang.reflect.Field;
 
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
-import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Check available status for dubboInvoker
  */
-public class DubboInvokerAvailableTest {
+class DubboInvokerAvailableTest {
     private static DubboProtocol protocol;
     private static ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
 
@@ -52,7 +52,7 @@ public class DubboInvokerAvailableTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        protocol = new DubboProtocol();
+        protocol = new DubboProtocol(FrameworkModel.defaultModel());
     }
 
     @AfterAll
@@ -61,7 +61,7 @@ public class DubboInvokerAvailableTest {
     }
 
     @Test
-    public void test_Normal_available() {
+    void test_Normal_available() {
         int port = NetUtils.getAvailablePort();
         URL url = URL.valueOf("dubbo://127.0.0.1:" + port + "/org.apache.dubbo.rpc.protocol.dubbo.IDemoService");
         ProtocolUtils.export(new DemoServiceImpl(), IDemoService.class, url);
@@ -73,7 +73,7 @@ public class DubboInvokerAvailableTest {
     }
 
     @Test
-    public void test_Normal_ChannelReadOnly() throws Exception {
+    void test_Normal_ChannelReadOnly() throws Exception {
         int port = NetUtils.getAvailablePort();
         URL url = URL.valueOf("dubbo://127.0.0.1:" + port + "/org.apache.dubbo.rpc.protocol.dubbo.IDemoService");
         ProtocolUtils.export(new DemoServiceImpl(), IDemoService.class, url);
@@ -91,7 +91,7 @@ public class DubboInvokerAvailableTest {
 
     @Disabled
     @Test
-    public void test_normal_channel_close_wait_gracefully() throws Exception {
+    void test_normal_channel_close_wait_gracefully() throws Exception {
         int testPort = NetUtils.getAvailablePort();
         URL url = URL.valueOf("dubbo://127.0.0.1:" + testPort + "/org.apache.dubbo.rpc.protocol.dubbo.IDemoService?scope=true&lazy=false");
         Exporter<IDemoService> exporter = ProtocolUtils.export(new DemoServiceImpl(), IDemoService.class, url);
@@ -115,7 +115,7 @@ public class DubboInvokerAvailableTest {
     }
 
     @Test
-    public void test_NoInvokers() throws Exception {
+    void test_NoInvokers() throws Exception {
         int port = NetUtils.getAvailablePort();
         URL url = URL.valueOf("dubbo://127.0.0.1:" + port + "/org.apache.dubbo.rpc.protocol.dubbo.IDemoService?connections=1");
         ProtocolUtils.export(new DemoServiceImpl(), IDemoService.class, url);
@@ -129,7 +129,7 @@ public class DubboInvokerAvailableTest {
     }
 
     @Test
-    public void test_Lazy_ChannelReadOnly() throws Exception {
+    void test_Lazy_ChannelReadOnly() throws Exception {
         int port = NetUtils.getAvailablePort();
         URL url = URL.valueOf("dubbo://127.0.0.1:" + port + "/org.apache.dubbo.rpc.protocol.dubbo.IDemoService?lazy=true&connections=1&timeout=10000");
         ProtocolUtils.export(new DemoServiceImpl(), IDemoService.class, url);

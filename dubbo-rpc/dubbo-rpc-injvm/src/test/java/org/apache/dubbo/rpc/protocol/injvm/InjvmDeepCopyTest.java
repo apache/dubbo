@@ -25,7 +25,6 @@ import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ConsumerModel;
-import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
@@ -36,11 +35,11 @@ import org.junit.jupiter.api.Test;
 import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class InjvmDeepCopyTest {
+class InjvmDeepCopyTest {
 
     @Test
-    public void testDeepCopy() {
-        ApplicationModel applicationModel = new ApplicationModel(FrameworkModel.defaultModel());
+    void testDeepCopy() {
+        ApplicationModel applicationModel = ApplicationModel.defaultModel();
         applicationModel.getApplicationConfigManager().setApplication(new ApplicationConfig("TestInjvm"));
 
         ModuleModel moduleModel = applicationModel.newModule();

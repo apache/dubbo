@@ -16,8 +16,14 @@
  */
 package org.apache.dubbo.registry.xds;
 
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ReflectionBasedServiceDiscovery;
@@ -28,15 +34,12 @@ import org.apache.dubbo.registry.xds.util.protocol.message.Endpoint;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ERROR_INITIALIZE_XDS;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ERROR_PARSING_XDS;
 
 public class XdsServiceDiscovery extends ReflectionBasedServiceDiscovery {
 
-    private static final Logger logger = LoggerFactory.getLogger(XdsServiceDiscovery.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(XdsServiceDiscovery.class);
 
     private PilotExchanger exchanger;
 
@@ -49,7 +52,7 @@ public class XdsServiceDiscovery extends ReflectionBasedServiceDiscovery {
         try {
             exchanger = PilotExchanger.initialize(registryURL);
         } catch (Throwable t) {
-            logger.error(t);
+            logger.error(REGISTRY_ERROR_INITIALIZE_XDS, "", "", t.getMessage(), t);
         }
     }
 
@@ -58,7 +61,7 @@ public class XdsServiceDiscovery extends ReflectionBasedServiceDiscovery {
         try {
             exchanger.destroy();
         } catch (Throwable t) {
-            logger.error(t);
+            logger.error(REGISTRY_ERROR_INITIALIZE_XDS, "", "", t.getMessage(), t);
         }
     }
 
@@ -85,10 +88,11 @@ public class XdsServiceDiscovery extends ReflectionBasedServiceDiscovery {
             try {
                 DefaultServiceInstance serviceInstance = new DefaultServiceInstance(serviceName, endpoint.getAddress(), endpoint.getPortValue(), ScopeModelUtil.getApplicationModel(getUrl().getScopeModel()));
                 // fill metadata by SelfHostMetaServiceDiscovery, will be fetched by RPC request
+                serviceInstance.putExtendParam("clusterName", endpoint.getClusterName());
                 fillServiceInstance(serviceInstance);
                 instances.add(serviceInstance);
             } catch (Throwable t) {
-                logger.error("Error occurred when parsing endpoints. Endpoints List:" + endpoints, t);
+                logger.error(REGISTRY_ERROR_PARSING_XDS, "", "", "Error occurred when parsing endpoints. Endpoints List:" + endpoints, t);
             }
         });
         instances.sort(Comparator.comparingInt(ServiceInstance::hashCode));

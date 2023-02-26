@@ -25,6 +25,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ConfigCenterConfig;
 import org.apache.dubbo.config.ConsumerConfig;
@@ -53,8 +54,8 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
@@ -80,7 +81,7 @@ public final class DubboBootstrap {
 
     private static final Logger logger = LoggerFactory.getLogger(DubboBootstrap.class);
 
-    private static volatile Map<ApplicationModel, DubboBootstrap> instanceMap = new ConcurrentHashMap<>();
+    private static volatile ConcurrentMap<ApplicationModel, DubboBootstrap> instanceMap = new ConcurrentHashMap<>();
     private static volatile DubboBootstrap instance;
 
     private final AtomicBoolean awaited = new AtomicBoolean(false);
@@ -116,7 +117,7 @@ public final class DubboBootstrap {
     }
 
     public static DubboBootstrap getInstance(ApplicationModel applicationModel) {
-        return instanceMap.computeIfAbsent(applicationModel, _k -> new DubboBootstrap(applicationModel));
+        return ConcurrentHashMapUtils.computeIfAbsent(instanceMap, applicationModel, _k -> new DubboBootstrap(applicationModel));
     }
 
     public static DubboBootstrap newInstance() {
@@ -217,6 +218,7 @@ public final class DubboBootstrap {
 
     /**
      * Start dubbo application
+     *
      * @param wait If true, wait for startup to complete, or else no waiting.
      * @return
      */
@@ -234,6 +236,7 @@ public final class DubboBootstrap {
 
     /**
      * Start dubbo application but no wait for finish.
+     *
      * @return the future object
      */
     public Future asyncStart() {
@@ -242,6 +245,7 @@ public final class DubboBootstrap {
 
     /**
      * Stop dubbo application
+     *
      * @return
      * @throws IllegalStateException
      */
@@ -369,7 +373,7 @@ public final class DubboBootstrap {
         return metadataReport(null, consumerBuilder);
     }
 
-    public DubboBootstrap metadataReport(String id,Consumer<MetadataReportBuilder> consumerBuilder) {
+    public DubboBootstrap metadataReport(String id, Consumer<MetadataReportBuilder> consumerBuilder) {
         MetadataReportBuilder metadataReportBuilder = createMetadataReportBuilder(id);
         consumerBuilder.accept(metadataReportBuilder);
         return this;

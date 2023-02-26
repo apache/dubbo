@@ -16,10 +16,17 @@
  */
 package org.apache.dubbo.registry.nacos;
 
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.function.ThrowableFunction;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.registry.client.AbstractServiceDiscovery;
@@ -28,6 +35,7 @@ import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 import org.apache.dubbo.registry.nacos.util.NacosNamingServiceUtils;
+import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import com.alibaba.nacos.api.exception.NacosException;
@@ -37,17 +45,15 @@ import com.alibaba.nacos.api.naming.listener.NamingEvent;
 import com.alibaba.nacos.api.naming.pojo.Instance;
 import com.alibaba.nacos.api.naming.pojo.ListView;
 
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
-
 import static com.alibaba.nacos.api.common.Constants.DEFAULT_GROUP;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_NACOS_EXCEPTION;
 import static org.apache.dubbo.common.function.ThrowableConsumer.execute;
+import static org.apache.dubbo.metadata.RevisionResolver.EMPTY_REVISION;
+import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getExportedServicesRevision;
 import static org.apache.dubbo.registry.nacos.util.NacosNamingServiceUtils.createNamingService;
 import static org.apache.dubbo.registry.nacos.util.NacosNamingServiceUtils.getGroup;
 import static org.apache.dubbo.registry.nacos.util.NacosNamingServiceUtils.toInstance;
+import static org.apache.dubbo.rpc.RpcException.REGISTRY_EXCEPTION;
 
 /**
  * Nacos {@link ServiceDiscovery} implementation
@@ -57,7 +63,7 @@ import static org.apache.dubbo.registry.nacos.util.NacosNamingServiceUtils.toIns
  */
 public class NacosServiceDiscovery extends AbstractServiceDiscovery {
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
 
     private final String group;
 
@@ -72,7 +78,7 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
         this.namingService = createNamingService(registryURL);
         // backward compatibility for 3.0.x
         this.group = Boolean.parseBoolean(ConfigurationUtils.getProperty(applicationModel, NACOS_SD_USE_DEFAULT_GROUP_KEY, "false")) ?
-            DEFAULT_GROUP: getGroup(registryURL);
+            DEFAULT_GROUP : getGroup(registryURL);
     }
 
     @Override
@@ -95,6 +101,35 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
             Instance instance = toInstance(serviceInstance);
             service.deregisterInstance(instance.getServiceName(), group, instance);
         });
+    }
+
+    @Override
+    protected void doUpdate(ServiceInstance oldServiceInstance, ServiceInstance newServiceInstance) throws RuntimeException {
+        if (EMPTY_REVISION.equals(getExportedServicesRevision(newServiceInstance))) {
+            super.doUpdate(oldServiceInstance, newServiceInstance);
+            return;
+        }
+
+        if (!Objects.equals(newServiceInstance.getHost(), oldServiceInstance.getHost()) ||
+            !Objects.equals(newServiceInstance.getPort(), oldServiceInstance.getPort())) {
+            // Ignore if id changed. Should unregister first.
+            super.doUpdate(oldServiceInstance, newServiceInstance);
+            return;
+        }
+
+        Instance oldInstance = toInstance(oldServiceInstance);
+        Instance newInstance = toInstance(newServiceInstance);
+
+        try {
+            this.serviceInstance = newServiceInstance;
+            reportMetadata(newServiceInstance.getServiceMetadata());
+            execute(namingService, service -> {
+                Instance instance = toInstance(serviceInstance);
+                service.updateInstance(instance.getServiceName(), group, oldInstance, newInstance);
+            });
+        } catch (Exception e) {
+            throw new RpcException(REGISTRY_EXCEPTION, "Failed register instance " + newServiceInstance.toString(), e);
+        }
     }
 
     @Override
@@ -132,7 +167,7 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
                     namingService.subscribe(serviceName, group, nacosEventListener);
                     eventListeners.put(serviceName, nacosEventListener);
                 } catch (NacosException e) {
-                    logger.error("add nacos service instances changed listener fail ", e);
+                    logger.error(REGISTRY_NACOS_EXCEPTION, "", "", "add nacos service instances changed listener fail ", e);
                 }
             }
         }
@@ -152,7 +187,7 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
                     try {
                         namingService.unsubscribe(serviceName, group, nacosEventListener);
                     } catch (NacosException e) {
-                        logger.error("remove nacos service instances changed listener fail ", e);
+                        logger.error(REGISTRY_NACOS_EXCEPTION, "", "", "remove nacos service instances changed listener fail ", e);
                     }
                 }
             }

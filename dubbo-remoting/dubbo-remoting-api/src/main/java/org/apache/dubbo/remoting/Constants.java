@@ -82,7 +82,7 @@ public interface Constants {
     /**
      * Prefer serialization
      */
-    String PREFER_SERIALIZATION_KEY = "prefer_serialization";
+    String PREFER_SERIALIZATION_KEY = "prefer.serialization";
 
     String DEFAULT_REMOTING_SERIALIZATION_PROPERTY_KEY = "DUBBO_DEFAULT_SERIALIZATION";
 
@@ -110,9 +110,9 @@ public interface Constants {
 
     int DEFAULT_IO_THREADS = Math.min(Runtime.getRuntime().availableProcessors() + 1, 32);
 
-    String EVENT_LOOP_BOSS_POOL_NAME  = "NettyServerBoss";
+    String EVENT_LOOP_BOSS_POOL_NAME = "NettyServerBoss";
 
-    String EVENT_LOOP_WORKER_POOL_NAME  = "NettyServerWorker";
+    String EVENT_LOOP_WORKER_POOL_NAME = "NettyServerWorker";
 
     String NETTY_EPOLL_ENABLE_KEY = "netty.epoll.enable";
 
@@ -148,4 +148,14 @@ public interface Constants {
     String CONNECTIONS_KEY = "connections";
 
     int DEFAULT_BACKLOG = 1024;
+
+    String CONNECTION = "Connection";
+
+    String KEEP_ALIVE = "keep-alive";
+
+    String KEEP_ALIVE_HEADER = "Keep-Alive";
+
+    String OK_HTTP = "ok-http";
+    String URL_CONNECTION = "url-connection";
+    String APACHE_HTTP_CLIENT = "apache-http-client";
 }

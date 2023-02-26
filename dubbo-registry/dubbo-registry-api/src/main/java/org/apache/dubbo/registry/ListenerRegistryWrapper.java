@@ -26,6 +26,8 @@ import org.apache.dubbo.common.utils.UrlUtils;
 import java.util.List;
 import java.util.function.Consumer;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
+
 public class ListenerRegistryWrapper implements Registry {
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ListenerRegistryWrapper.class);
 
@@ -123,7 +125,7 @@ public class ListenerRegistryWrapper implements Registry {
                     try {
                         consumer.accept(listener);
                     } catch (RuntimeException t) {
-                        logger.error(t.getMessage(), t);
+                        logger.error(INTERNAL_ERROR, "unknown error in registry module", "", t.getMessage(), t);
                         exception = t;
                     }
                 }

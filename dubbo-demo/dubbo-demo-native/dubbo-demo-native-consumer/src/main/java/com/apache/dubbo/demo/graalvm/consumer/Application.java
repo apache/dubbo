@@ -33,6 +33,7 @@ public class Application {
     public static void main(String[] args) {
         System.setProperty("dubbo.application.logger", "log4j");
         System.setProperty("native", "true");
+        System.setProperty("dubbo.json-framework.prefer", "fastjson");
         if (isClassic(args)) {
             runWithRefer();
         } else {
@@ -45,11 +46,8 @@ public class Application {
     }
 
     private static void runWithBootstrap() {
-        ReferenceConfig<DemoService> reference = new ReferenceConfig<>();
-        reference.setInterface(DemoService.class);
-        reference.setGeneric("false");
-
         DubboBootstrap bootstrap = DubboBootstrap.getInstance();
+
         ApplicationConfig applicationConfig = new ApplicationConfig("dubbo-demo-api-consumer");
         applicationConfig.setQosEnable(false);
         applicationConfig.setCompiler("jdk");
@@ -57,9 +55,15 @@ public class Application {
         m.put("proxy", "jdk");
         applicationConfig.setParameters(m);
 
+        ReferenceConfig<DemoService> reference = new ReferenceConfig<>();
+        reference.setInterface(DemoService.class);
+        reference.setGeneric("false");
+
+        ProtocolConfig protocolConfig = new ProtocolConfig(CommonConstants.DUBBO, -1);
+        protocolConfig.setSerialization("fastjson2");
         bootstrap.application(applicationConfig)
             .registry(new RegistryConfig("zookeeper://127.0.0.1:2181"))
-            .protocol(new ProtocolConfig(CommonConstants.DUBBO, -1))
+            .protocol(protocolConfig)
             .reference(reference)
             .start();
 

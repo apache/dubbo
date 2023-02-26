@@ -31,10 +31,10 @@ import org.junit.jupiter.api.Test;
  * {@link ScopeBeanExtensionInjector}
  * {@link SpiExtensionInjector}
  */
-public class AdaptiveExtensionInjectorTest {
+class AdaptiveExtensionInjectorTest {
 
     @Test
-    public void test() {
+    void test() {
         FrameworkModel frameworkModel = new FrameworkModel();
         ExtensionLoader<ExtensionInjector> extensionLoader = frameworkModel.getExtensionLoader(ExtensionInjector.class);
 

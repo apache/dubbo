@@ -28,6 +28,7 @@ import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
 
 import com.alibaba.metrics.FastCompass;
@@ -65,7 +66,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 
-public class MetricsFilterTest {
+class MetricsFilterTest {
     private int port = NetUtils.getAvailablePort(20880 + new Random().nextInt(10000));
 
     private final Function<URL, Invoker<DemoService>> invokerFunction = (url) -> {
@@ -93,7 +94,7 @@ public class MetricsFilterTest {
     }
 
     @Test
-    public void testAll() {
+    void testAll() {
         List<Callable<Void>> testcases = new LinkedList<>();
         testcases.add(() -> {
             testConsumerSuccess();
@@ -247,7 +248,7 @@ public class MetricsFilterTest {
                 //ignore
             }
         }
-        Protocol protocol = new DubboProtocol();
+        Protocol protocol = new DubboProtocol(FrameworkModel.defaultModel());
         // using host name might cause connection failure because multiple addresses might be configured to the same name!
         url = URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":" + port + "/" + MetricsService.class.getName());
         Invoker<MetricsService> invoker = protocol.refer(MetricsService.class, url);
@@ -306,7 +307,7 @@ public class MetricsFilterTest {
             }
         }
 
-        Protocol protocol = new DubboProtocol();
+        Protocol protocol = new DubboProtocol(FrameworkModel.defaultModel());
         // using host name might cause connection failure because multiple addresses might be configured to the same name!
         url = URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":" + port + "/" + MetricsService.class.getName());
         Invoker<MetricsService> invoker = protocol.refer(MetricsService.class, url);

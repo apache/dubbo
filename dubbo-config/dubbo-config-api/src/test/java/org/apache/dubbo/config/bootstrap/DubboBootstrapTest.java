@@ -75,7 +75,7 @@ import static org.hamcrest.Matchers.is;
  *
  * @since 2.7.5
  */
-public class DubboBootstrapTest {
+class DubboBootstrapTest {
 
     private static File dubboProperties;
     private static String zkServerAddress;
@@ -101,7 +101,7 @@ public class DubboBootstrapTest {
     }
 
     @Test
-    public void checkApplication() {
+    void checkApplication() {
         SysProps.setProperty("dubbo.application.name", "demo");
         ApplicationConfig applicationConfig = new ApplicationConfig();
         applicationConfig.refresh();
@@ -109,7 +109,7 @@ public class DubboBootstrapTest {
     }
 
     @Test
-    public void compatibleApplicationShutdown() {
+    void compatibleApplicationShutdown() {
         try {
             System.clearProperty(SHUTDOWN_WAIT_KEY);
             System.clearProperty(SHUTDOWN_WAIT_SECONDS_KEY);
@@ -132,7 +132,7 @@ public class DubboBootstrapTest {
     }
 
     @Test
-    public void testLoadRegistries() {
+    void testLoadRegistries() {
         SysProps.setProperty("dubbo.registry.address", "addr1");
 
         ServiceConfig serviceConfig = new ServiceConfig();
@@ -161,7 +161,7 @@ public class DubboBootstrapTest {
     }
 
     @Test
-    public void testLoadUserMonitor_address_only() {
+    void testLoadUserMonitor_address_only() {
         // -Ddubbo.monitor.address=monitor-addr:12080
         SysProps.setProperty(DUBBO_MONITOR_ADDRESS, "monitor-addr:12080");
         URL url = ConfigValidationUtils.loadMonitor(getTestInterfaceConfig(new MonitorConfig()), new ServiceConfigURL("dubbo", "addr1", 9090));
@@ -173,7 +173,7 @@ public class DubboBootstrapTest {
     }
 
     @Test
-    public void testLoadUserMonitor_registry() {
+    void testLoadUserMonitor_registry() {
         // dubbo.monitor.protocol=registry
         MonitorConfig monitorConfig = new MonitorConfig();
         monitorConfig.setProtocol("registry");
@@ -184,7 +184,7 @@ public class DubboBootstrapTest {
     }
 
     @Test
-    public void testLoadUserMonitor_service_discovery() {
+    void testLoadUserMonitor_service_discovery() {
         // dubbo.monitor.protocol=service-discovery-registry
         MonitorConfig monitorConfig = new MonitorConfig();
         monitorConfig.setProtocol("service-discovery-registry");
@@ -195,13 +195,13 @@ public class DubboBootstrapTest {
     }
 
     @Test
-    public void testLoadUserMonitor_no_monitor() {
+    void testLoadUserMonitor_no_monitor() {
         URL url = ConfigValidationUtils.loadMonitor(getTestInterfaceConfig(null), URL.valueOf(ZookeeperRegistryCenterConfig.getConnectionAddress()));
         Assertions.assertNull(url);
     }
 
     @Test
-    public void testLoadUserMonitor_user() {
+    void testLoadUserMonitor_user() {
         // dubbo.monitor.protocol=user
         MonitorConfig monitorConfig = new MonitorConfig();
         monitorConfig.setProtocol("user");
@@ -211,7 +211,7 @@ public class DubboBootstrapTest {
     }
 
     @Test
-    public void testLoadUserMonitor_user_address() {
+    void testLoadUserMonitor_user_address() {
         // dubbo.monitor.address=user://1.2.3.4:5678?k=v
         MonitorConfig monitorConfig = new MonitorConfig();
         monitorConfig.setAddress("user://1.2.3.4:5678?param1=value1");
@@ -231,7 +231,7 @@ public class DubboBootstrapTest {
     }
 
     @Test
-    public void testBootstrapStart() {
+    void testBootstrapStart() {
         ServiceConfig<DemoService> service = new ServiceConfig<>();
         service.setInterface(DemoService.class);
         service.setRef(new DemoServiceImpl());
@@ -258,7 +258,7 @@ public class DubboBootstrapTest {
     }
 
     @Test
-    public void testLocalMetadataServiceExporter() {
+    void testLocalMetadataServiceExporter() {
         ServiceConfig<DemoService> service = new ServiceConfig<>();
         service.setInterface(DemoService.class);
         service.setRef(new DemoServiceImpl());
@@ -278,7 +278,7 @@ public class DubboBootstrapTest {
     }
 
     @Test
-    public void testRemoteMetadataServiceExporter() {
+    void testRemoteMetadataServiceExporter() {
         ServiceConfig<DemoService> service = new ServiceConfig<>();
         service.setInterface(DemoService.class);
         service.setRef(new DemoServiceImpl());

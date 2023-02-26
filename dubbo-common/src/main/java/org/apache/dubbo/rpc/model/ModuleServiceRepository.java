@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.model;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.config.ReferenceConfigBase;
 import org.apache.dubbo.config.ServiceConfigBase;
 
@@ -81,7 +82,7 @@ public class ModuleServiceRepository {
     }
 
     public void registerConsumer(ConsumerModel consumerModel) {
-        consumers.computeIfAbsent(consumerModel.getServiceKey(), (serviceKey) -> new CopyOnWriteArrayList<>()).add(consumerModel);
+        ConcurrentHashMapUtils.computeIfAbsent(consumers, consumerModel.getServiceKey(), (serviceKey) -> new CopyOnWriteArrayList<>()).add(consumerModel);
     }
 
     /**
@@ -119,7 +120,7 @@ public class ModuleServiceRepository {
     }
 
     public ServiceDescriptor registerService(Class<?> interfaceClazz, ServiceDescriptor serviceDescriptor) {
-        List<ServiceDescriptor> serviceDescriptors = services.computeIfAbsent(interfaceClazz.getName(),
+        List<ServiceDescriptor> serviceDescriptors = ConcurrentHashMapUtils.computeIfAbsent(services, interfaceClazz.getName(),
             k -> new CopyOnWriteArrayList<>());
         synchronized (serviceDescriptors) {
             Optional<ServiceDescriptor> previous = serviceDescriptors.stream()
@@ -149,7 +150,7 @@ public class ModuleServiceRepository {
         ServiceDescriptor serviceDescriptor = registerService(interfaceClass);
         // if path is different with interface name, add extra path mapping
         if (!interfaceClass.getName().equals(path)) {
-            List<ServiceDescriptor> serviceDescriptors = services.computeIfAbsent(path,
+            List<ServiceDescriptor> serviceDescriptors = ConcurrentHashMapUtils.computeIfAbsent(services, path,
                 _k -> new CopyOnWriteArrayList<>());
             synchronized (serviceDescriptors) {
                 Optional<ServiceDescriptor> previous = serviceDescriptors.stream()
@@ -179,7 +180,7 @@ public class ModuleServiceRepository {
     public void reRegisterConsumer(String newServiceKey, String serviceKey) {
         List<ConsumerModel> consumerModel = this.consumers.get(serviceKey);
         consumerModel.forEach(c -> c.setServiceKey(newServiceKey));
-        this.consumers.computeIfAbsent(newServiceKey, (k) -> new CopyOnWriteArrayList<>()).addAll(consumerModel);
+        ConcurrentHashMapUtils.computeIfAbsent(this.consumers, newServiceKey, (k) -> new CopyOnWriteArrayList<>()).addAll(consumerModel);
         this.consumers.remove(serviceKey);
     }
 

@@ -66,6 +66,7 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAI
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_DESTROY_UNREGISTER_URL;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_READ_WRITE_CACHE_FILE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_DELETE_LOCKFILE;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
 import static org.apache.dubbo.common.constants.RegistryConstants.ACCEPTS_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_KEY;
@@ -78,7 +79,7 @@ import static org.apache.dubbo.registry.Constants.USER_HOME;
 /**
  * <p>
  * Provides a fail-safe registry service backed by cache file. The consumer/provider can still find each other when registry center crashed.
- *
+ * <p>
  * (SPI, Prototype, ThreadSafe)
  */
 public abstract class AbstractRegistry implements Registry {
@@ -222,7 +223,7 @@ public abstract class AbstractRegistry implements Registry {
             }
 
             try (RandomAccessFile raf = new RandomAccessFile(lockfile, "rw");
-                FileChannel channel = raf.getChannel()) {
+                 FileChannel channel = raf.getChannel()) {
                 FileLock lock = channel.tryLock();
                 if (lock == null) {
 
@@ -565,7 +566,7 @@ public abstract class AbstractRegistry implements Registry {
                 registryCacheExecutor.schedule(() -> doSaveProperties(version), DEFAULT_INTERVAL_SAVE_PROPERTIES, TimeUnit.MILLISECONDS);
             }
         } catch (Throwable t) {
-            logger.warn(t.getMessage(), t);
+            logger.warn(INTERNAL_ERROR, "unknown error in registry module", "", t.getMessage(), t);
         }
     }
 

@@ -18,7 +18,6 @@ package org.apache.dubbo.registry.nacos;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,7 +26,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Test for NacosRegistryFactory
  */
-public class NacosRegistryFactoryTest {
+class NacosRegistryFactoryTest {
 
     private NacosRegistryFactory nacosRegistryFactory;
 
@@ -41,16 +40,16 @@ public class NacosRegistryFactoryTest {
     }
 
     @Test
-    public void testCreateRegistryCacheKey() {
-        URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostAddress() + ":8080");
+    void testCreateRegistryCacheKey() {
+        URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostAddress() + ":8080?nacos.check=false");
         String registryCacheKey1 = nacosRegistryFactory.createRegistryCacheKey(url);
         String registryCacheKey2 = nacosRegistryFactory.createRegistryCacheKey(url);
         Assertions.assertEquals(registryCacheKey1, registryCacheKey2);
     }
 
     @Test
-    public void testCreateRegistryCacheKeyWithNamespace() {
-        URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostAddress() + ":8080?namespace=test");
+    void testCreateRegistryCacheKeyWithNamespace() {
+        URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostAddress() + ":8080?namespace=test&nacos.check=false");
         String registryCacheKey1 = nacosRegistryFactory.createRegistryCacheKey(url);
         String registryCacheKey2 = nacosRegistryFactory.createRegistryCacheKey(url);
         Assertions.assertEquals(registryCacheKey1, registryCacheKey2);

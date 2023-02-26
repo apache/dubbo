@@ -23,7 +23,6 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.transport.CodecSupport;
 
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -57,7 +56,7 @@ public class UrlUtils {
      */
     public static Byte serializationId(URL url) {
         Byte serializationId;
-        // Obtain the value from prefer_serialization. Such as:fastjson2,hessian2
+        // Obtain the value from prefer_serialization. Such as.fastjson2,hessian2
         List<String> preferSerials = preferSerialization(url);
         for (String preferSerial : preferSerials) {
             if ((serializationId = CodecSupport.getIDByName(preferSerial)) != null) {
@@ -81,7 +80,9 @@ public class UrlUtils {
      * @return {@link String}
      */
     public static String serializationOrDefault(URL url) {
-        return allSerializations(url).stream().findFirst().get();
+        //noinspection OptionalGetWithoutIsPresent
+        Optional<String> serializations = allSerializations(url).stream().findFirst();
+        return serializations.orElseGet(DefaultSerializationSelector::getDefaultRemotingSerialization);
     }
 
     /**
@@ -92,8 +93,7 @@ public class UrlUtils {
      */
     public static Collection<String> allSerializations(URL url) {
         // preferSerialization -> serialization -> default serialization
-        Set<String> serializations = new LinkedHashSet<>();
-        UrlUtils.preferSerialization(url).forEach(serializations::add);
+        Set<String> serializations = new LinkedHashSet<>(preferSerialization(url));
         Optional.ofNullable(url.getParameter(SERIALIZATION_KEY)).filter(StringUtils::isNotBlank).ifPresent(serializations::add);
         serializations.add(DefaultSerializationSelector.getDefaultRemotingSerialization());
         return Collections.unmodifiableSet(serializations);

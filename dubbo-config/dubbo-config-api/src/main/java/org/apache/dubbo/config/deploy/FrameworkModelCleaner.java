@@ -17,7 +17,7 @@
 package org.apache.dubbo.config.deploy;
 
 import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -25,12 +25,14 @@ import org.apache.dubbo.rpc.model.ScopeModelDestroyListener;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_UNDEFINED_PROTOCOL;
+
 /**
  * A cleaner to release resources of framework model
  */
 public class FrameworkModelCleaner implements ScopeModelDestroyListener<FrameworkModel> {
 
-    private static final Logger logger = LoggerFactory.getLogger(FrameworkModelCleaner.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(FrameworkModelCleaner.class);
 
     private final AtomicBoolean protocolDestroyed = new AtomicBoolean(false);
 
@@ -65,7 +67,7 @@ public class FrameworkModelCleaner implements ScopeModelDestroyListener<Framewor
                         protocol.destroy();
                     }
                 } catch (Throwable t) {
-                    logger.warn(t.getMessage(), t);
+                    logger.warn(CONFIG_UNDEFINED_PROTOCOL, "", "", t.getMessage(), t);
                 }
             }
         }

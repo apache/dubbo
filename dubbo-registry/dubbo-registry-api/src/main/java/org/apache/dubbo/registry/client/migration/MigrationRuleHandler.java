@@ -23,6 +23,9 @@ import org.apache.dubbo.common.status.reporter.FrameworkStatusReportService;
 import org.apache.dubbo.registry.client.migration.model.MigrationRule;
 import org.apache.dubbo.registry.client.migration.model.MigrationStep;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_NO_PARAMETERS_URL;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
+
 public class MigrationRuleHandler<T> {
     public static final String DUBBO_SERVICEDISCOVERY_MIGRATION = "dubbo.application.migration.step";
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(MigrationRuleHandler.class);
@@ -51,7 +54,7 @@ public class MigrationRuleHandler<T> {
             step = rule.getStep(consumerURL);
             threshold = rule.getThreshold(consumerURL);
         } catch (Exception e) {
-            logger.error("Failed to get step and threshold info from rule: " + rule, e);
+            logger.error(REGISTRY_NO_PARAMETERS_URL, "", "", "Failed to get step and threshold info from rule: " + rule, e);
         }
 
         if (refreshInvoker(step, threshold, rule)) {
@@ -86,8 +89,8 @@ public class MigrationRuleHandler<T> {
                 report(step, originStep, "true");
             } else {
                 // migrate failed, do not save new step and rule
-                logger.warn("Migrate to " + step + " mode failed. Probably not satisfy the threshold you set "
-                        + threshold + ". Please try re-publish configuration if you still after check.");
+                logger.warn(INTERNAL_ERROR, "unknown error in registry module", "", "Migrate to " + step + " mode failed. Probably not satisfy the threshold you set "
+                    + threshold + ". Please try re-publish configuration if you still after check.");
                 report(step, originStep, "false");
             }
 
@@ -104,7 +107,7 @@ public class MigrationRuleHandler<T> {
         if (reportService.hasReporter()) {
             reportService.reportMigrationStepStatus(
                 reportService.createMigrationStepReport(consumerURL.getServiceInterface(), consumerURL.getVersion(),
-                            consumerURL.getGroup(), String.valueOf(originStep), String.valueOf(step), success));
+                    consumerURL.getGroup(), String.valueOf(originStep), String.valueOf(step), success));
         }
     }
 

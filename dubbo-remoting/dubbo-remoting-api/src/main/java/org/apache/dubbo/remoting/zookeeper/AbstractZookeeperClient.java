@@ -18,8 +18,9 @@ package org.apache.dubbo.remoting.zookeeper;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.ConfigItem;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 
 import java.util.List;
@@ -29,9 +30,11 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.Executor;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ZOOKEEPER_EXCEPTION;
+
 public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildListener> implements ZookeeperClient {
 
-    protected static final Logger logger = LoggerFactory.getLogger(AbstractZookeeperClient.class);
+    protected static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(AbstractZookeeperClient.class);
 
     // may hang up to wait name resolution up to 10s
     protected int DEFAULT_CONNECTION_TIMEOUT_MS = 30 * 1000;
@@ -65,9 +68,8 @@ public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildLis
         deletePath(path);
     }
 
-
     @Override
-    public void create(String path, boolean ephemeral) {
+    public void create(String path, boolean ephemeral, boolean faultTolerant) {
         if (!ephemeral) {
             if (persistentExistNodePath.contains(path)) {
                 return;
@@ -79,12 +81,12 @@ public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildLis
         }
         int i = path.lastIndexOf('/');
         if (i > 0) {
-            create(path.substring(0, i), false);
+            create(path.substring(0, i), false, true);
         }
         if (ephemeral) {
-            createEphemeral(path);
+            createEphemeral(path, faultTolerant);
         } else {
-            createPersistent(path);
+            createPersistent(path, faultTolerant);
             persistentExistNodePath.add(path);
         }
     }
@@ -105,8 +107,8 @@ public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildLis
 
     @Override
     public List<String> addChildListener(String path, final ChildListener listener) {
-        ConcurrentMap<ChildListener, TargetChildListener> listeners = childListeners.computeIfAbsent(path, k -> new ConcurrentHashMap<>());
-        TargetChildListener targetListener = listeners.computeIfAbsent(listener, k -> createTargetChildListener(path, k));
+        ConcurrentMap<ChildListener, TargetChildListener> listeners = ConcurrentHashMapUtils.computeIfAbsent(childListeners, path, k -> new ConcurrentHashMap<>());
+        TargetChildListener targetListener = ConcurrentHashMapUtils.computeIfAbsent(listeners, listener, k -> createTargetChildListener(path, k));
         return addTargetChildListener(path, targetListener);
     }
 
@@ -117,8 +119,8 @@ public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildLis
 
     @Override
     public void addDataListener(String path, DataListener listener, Executor executor) {
-        ConcurrentMap<DataListener, TargetDataListener> dataListenerMap = listeners.computeIfAbsent(path, k -> new ConcurrentHashMap<>());
-        TargetDataListener targetListener = dataListenerMap.computeIfAbsent(listener, k -> createTargetDataListener(path, k));
+        ConcurrentMap<DataListener, TargetDataListener> dataListenerMap = ConcurrentHashMapUtils.computeIfAbsent(listeners, path, k -> new ConcurrentHashMap<>());
+        TargetDataListener targetListener = ConcurrentHashMapUtils.computeIfAbsent(dataListenerMap, listener, k -> createTargetDataListener(path, k));
         addTargetDataListener(path, targetListener, executor);
     }
 
@@ -158,32 +160,29 @@ public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildLis
         closed = true;
         try {
             doClose();
-        } catch (Throwable t) {
-            logger.warn(t.getMessage(), t);
+        } catch (Exception e) {
+            logger.warn(REGISTRY_ZOOKEEPER_EXCEPTION, "", "", e.getMessage(), e);
         }
     }
 
     @Override
-    public void create(String path, String content, boolean ephemeral) {
-        if (checkExists(path)) {
-            delete(path);
-        }
+    public void createOrUpdate(String path, String content, boolean ephemeral) {
         int i = path.lastIndexOf('/');
         if (i > 0) {
-            create(path.substring(0, i), false);
+            create(path.substring(0, i), false, true);
         }
         if (ephemeral) {
-            createEphemeral(path, content);
+            createOrUpdateEphemeral(path, content);
         } else {
-            createPersistent(path, content);
+            createOrUpdatePersistent(path, content);
         }
     }
 
     @Override
-    public void createOrUpdate(String path, String content, boolean ephemeral, int version) {
+    public void createOrUpdate(String path, String content, boolean ephemeral, Integer version) {
         int i = path.lastIndexOf('/');
         if (i > 0) {
-            create(path.substring(0, i), false);
+            create(path.substring(0, i), false, true);
         }
         if (ephemeral) {
             createOrUpdateEphemeral(path, content, version);
@@ -210,19 +209,25 @@ public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildLis
         stateListeners.clear();
     }
 
-    protected abstract void createPersistent(String path);
+    protected abstract void createPersistent(String path, boolean faultTolerant);
 
-    protected abstract void createEphemeral(String path);
+    protected abstract void createEphemeral(String path, boolean faultTolerant);
 
-    protected abstract void createPersistent(String path, String data);
+    protected abstract void createPersistent(String path, String data, boolean faultTolerant);
 
-    protected abstract void createEphemeral(String path, String data);
+    protected abstract void createEphemeral(String path, String data, boolean faultTolerant);
 
     protected abstract void update(String path, String data, int version);
 
-    protected abstract void createOrUpdatePersistent(String path, String data, int version);
+    protected abstract void update(String path, String data);
 
-    protected abstract void createOrUpdateEphemeral(String path, String data, int version);
+    protected abstract void createOrUpdatePersistent(String path, String data);
+
+    protected abstract void createOrUpdateEphemeral(String path, String data);
+
+    protected abstract void createOrUpdatePersistent(String path, String data, Integer version);
+
+    protected abstract void createOrUpdateEphemeral(String path, String data, Integer version);
 
     @Override
     public abstract boolean checkExists(String path);

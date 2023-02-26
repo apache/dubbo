@@ -26,10 +26,10 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-public class RouterSnapshotFilterTest {
+class RouterSnapshotFilterTest {
 
     @Test
-    public void test() {
+    void test() {
         FrameworkModel frameworkModel = new FrameworkModel();
         RouterSnapshotSwitcher routerSnapshotSwitcher = frameworkModel.getBeanFactory().getBean(RouterSnapshotSwitcher.class);
         RouterSnapshotFilter routerSnapshotFilter = new RouterSnapshotFilter(frameworkModel);

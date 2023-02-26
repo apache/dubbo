@@ -19,6 +19,8 @@
     <modelVersion>4.0.0</modelVersion>
     <modules>
         <module>dubbo-metrics-api</module>
+        <module>dubbo-metrics-default</module>
+        <module>dubbo-metrics-metadata</module>
         <module>dubbo-metrics-prometheus</module>
     </modules>
     <parent>

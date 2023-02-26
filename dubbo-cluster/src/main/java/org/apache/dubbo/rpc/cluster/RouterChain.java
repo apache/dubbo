@@ -16,8 +16,15 @@
  */
 package org.apache.dubbo.rpc.cluster;
 
+import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.stream.Collectors;
+
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
+import org.apache.dubbo.common.constants.LoggerCodeConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.Invocation;
@@ -29,11 +36,6 @@ import org.apache.dubbo.rpc.cluster.router.state.StateRouterFactory;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_INTERRUPTED;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ROUTER_WAIT_LONG;
 import static org.apache.dubbo.rpc.cluster.Constants.ROUTER_KEY;
 
 /**
@@ -42,8 +44,8 @@ import static org.apache.dubbo.rpc.cluster.Constants.ROUTER_KEY;
 public class RouterChain<T> {
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(RouterChain.class);
 
-    private final SingleRouterChain<T> mainChain;
-    private final SingleRouterChain<T> backupChain;
+    private volatile SingleRouterChain<T> mainChain;
+    private volatile SingleRouterChain<T> backupChain;
     private volatile SingleRouterChain<T> currentChain;
 
     @SuppressWarnings({"rawtypes", "unchecked"})
@@ -88,47 +90,115 @@ public class RouterChain<T> {
         this.currentChain = this.mainChain;
     }
 
+    private final AtomicReference<BitList<Invoker<T>>> notifyingInvokers = new AtomicReference<>();
+
+    private final ReadWriteLock lock = new ReentrantReadWriteLock();
+
+    public ReadWriteLock getLock() {
+        return lock;
+    }
+
+    public SingleRouterChain<T> getSingleChain(URL url, BitList<Invoker<T>> availableInvokers, Invocation invocation) {
+        // If current is in:
+        // 1. `setInvokers` is in progress
+        // 2. Most of the invocation should use backup chain => currentChain == backupChain
+        // 3. Main chain has been update success => notifyingInvokers.get() != null
+        //     If `availableInvokers` is created from origin invokers => use backup chain
+        //     If `availableInvokers` is created from newly invokers  => use main chain
+        BitList<Invoker<T>> notifying = notifyingInvokers.get();
+        if (notifying != null &&
+            currentChain == backupChain &&
+            availableInvokers.getOriginList() == notifying.getOriginList()) {
+            return mainChain;
+        }
+        return currentChain;
+    }
+
+    /**
+     * @deprecated use {@link RouterChain#getSingleChain(URL, BitList, Invocation)} and {@link SingleRouterChain#route(URL, BitList, Invocation)} instead
+     */
+    @Deprecated
     public List<Invoker<T>> route(URL url, BitList<Invoker<T>> availableInvokers, Invocation invocation) {
-        return currentChain.route(url, availableInvokers, invocation);
+        return getSingleChain(url, availableInvokers, invocation).route(url, availableInvokers, invocation);
     }
 
     /**
      * Notify router chain of the initial addresses from registry at the first time.
      * Notify whenever addresses in registry change.
      */
-    public synchronized void setInvokers(BitList<Invoker<T>> invokers) {
-        // 1. switch
-        currentChain = backupChain;
-
-        // 2. wait
-        waitChain(mainChain);
-
-        // 3. notify
-        mainChain.setInvokers(invokers);
-
-        // 4. switch back
-        currentChain = mainChain;
-
-        // 5. wait
-        waitChain(backupChain);
-
-        // 6. notify
-        backupChain.setInvokers(invokers);
-    }
-
-    private void waitChain(SingleRouterChain<T> oldChain) {
+    public synchronized void setInvokers(BitList<Invoker<T>> invokers, Runnable switchAction) {
         try {
-            Thread.sleep(1);
-            int waitTime = 0;
-            while (oldChain.getCurrentConcurrency() != 0) {
-                if (waitTime++ == 1000) {
-                    logger.warn(REGISTRY_ROUTER_WAIT_LONG, "Wait router to long", "", "Wait router invoke end exceed 1000ms, router may stuck in.");
-                }
-                // long time wait
-                Thread.sleep(1);
-            }
+            // Lock to prevent directory continue list
+            lock.writeLock().lock();
+
+            // Switch to back up chain. Will update main chain first.
+            currentChain = backupChain;
+        } finally {
+            // Release lock to minimize the impact for each newly created invocations as much as possible.
+            // Should not release lock until main chain update finished. Or this may cause long hang.
+            lock.writeLock().unlock();
+        }
+
+        // Refresh main chain.
+        // No one can request to use main chain. `currentChain` is backup chain. `route` method cannot access main chain.
+        try {
+            // Lock main chain to wait all invocation end
+            // To wait until no one is using main chain.
+            mainChain.getLock().writeLock().lock();
+
+            // refresh
+            mainChain.setInvokers(invokers);
         } catch (Throwable t) {
-            logger.error(INTERNAL_INTERRUPTED, "Wait router to interrupted", "", "Wait router to interrupted.");
+            logger.error(LoggerCodeConstants.INTERNAL_ERROR, "", "", "Error occurred when refreshing router chain.", t);
+            throw t;
+        } finally {
+            // Unlock main chain
+            mainChain.getLock().writeLock().unlock();
+        }
+
+        // Set the reference of newly invokers to temp variable.
+        // Reason: The next step will switch the invokers reference in directory, so we should check the `availableInvokers`
+        //         argument when `route`. If the current invocation use newly invokers, we should use main chain to route, and
+        //         this can prevent use newly invokers to route backup chain, which can only route origin invokers now.
+        notifyingInvokers.set(invokers);
+
+        // Switch the invokers reference in directory.
+        // Cannot switch before update main chain or after backup chain update success. Or that will cause state inconsistent.
+        switchAction.run();
+
+        try {
+            // Lock to prevent directory continue list
+            // The invokers reference in directory now should be the newly one and should always use the newly one once lock released.
+            lock.writeLock().lock();
+
+            // Switch to main chain. Will update backup chain later.
+            currentChain = mainChain;
+
+            // Clean up temp variable.
+            // `availableInvokers` check is useless now, because `route` method will no longer receive any `availableInvokers` related
+            // with the origin invokers. The getter of invokers reference in directory is locked now, and will return newly invokers
+            // once lock released.
+            notifyingInvokers.set(null);
+        } finally {
+            // Release lock to minimize the impact for each newly created invocations as much as possible.
+            // Will use newly invokers and main chain now.
+            lock.writeLock().unlock();
+        }
+
+        // Refresh main chain.
+        // No one can request to use main chain. `currentChain` is main chain. `route` method cannot access backup chain.
+        try {
+            // Lock main chain to wait all invocation end
+            backupChain.getLock().writeLock().lock();
+
+            // refresh
+            backupChain.setInvokers(invokers);
+        } catch (Throwable t) {
+            logger.error(LoggerCodeConstants.INTERNAL_ERROR, "", "", "Error occurred when refreshing router chain.", t);
+            throw t;
+        } finally {
+            // Unlock backup chain
+            backupChain.getLock().writeLock().unlock();
         }
     }
 
@@ -137,10 +207,9 @@ public class RouterChain<T> {
         backupChain.destroy();
 
         // 2. switch
+        lock.writeLock().lock();
         currentChain = backupChain;
-
-        // 3. wait
-        waitChain(mainChain);
+        lock.writeLock().unlock();
 
         // 4. destroy
         mainChain.destroy();

@@ -16,7 +16,10 @@
  */
 package org.apache.dubbo.rpc.protocol.rest;
 
+import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.RpcContext;
 
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
@@ -30,6 +33,7 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.Map;
 
 @Priority(Integer.MIN_VALUE + 1)
@@ -37,7 +41,7 @@ public class RpcContextFilter implements ContainerRequestFilter, ClientRequestFi
 
     private static final String DUBBO_ATTACHMENT_HEADER = "Dubbo-Attachments";
 
-    // currently we use a single header to hold the attachments so that the total attachment size limit is about 8k
+    // currently, we use a single header to hold the attachments so that the total attachment size limit is about 8k
     private static final int MAX_HEADER_SIZE = 8 * 1024;
 
     @Override
@@ -54,7 +58,7 @@ public class RpcContextFilter implements ContainerRequestFilter, ClientRequestFi
 
         String headers = requestContext.getHeaderString(DUBBO_ATTACHMENT_HEADER);
         if (headers != null) {
-            for (String header : headers.split(",")) {
+            for (String header : headers.split(CommonConstants.COMMA_SEPARATOR)) {
                 int index = header.indexOf("=");
                 if (index > 0) {
                     String key = header.substring(0, index);
@@ -70,7 +74,13 @@ public class RpcContextFilter implements ContainerRequestFilter, ClientRequestFi
     @Override
     public void filter(ClientRequestContext requestContext) throws IOException {
         int size = 0;
-        for (Map.Entry<String, Object> entry : RpcContext.getClientAttachment().getObjectAttachments().entrySet()) {
+        Map<String, Object> objectAttachments = new HashMap<>(RpcContext.getClientAttachment().getObjectAttachments());
+        Invocation invocation = RpcContext.getServiceContext().getInvocation();
+        //should merge attachments from invocation and RpcContext.getClientAttachment()
+        if(invocation != null && CollectionUtils.isNotEmptyMap(invocation.getObjectAttachments()) ){
+            objectAttachments.putAll(invocation.getObjectAttachments());
+        }
+        for (Map.Entry<String, Object> entry : objectAttachments.entrySet()) {
             String key = entry.getKey();
             String value = (String) entry.getValue();
             if (illegalHttpHeaderKey(key) || illegalHttpHeaderValue(value)) {
@@ -92,14 +102,14 @@ public class RpcContextFilter implements ContainerRequestFilter, ClientRequestFi
 
     private boolean illegalHttpHeaderKey(String key) {
         if (StringUtils.isNotEmpty(key)) {
-            return key.contains(",") || key.contains("=");
+            return key.contains(CommonConstants.COMMA_SEPARATOR) || key.contains("=");
         }
         return false;
     }
 
     private boolean illegalHttpHeaderValue(String value) {
         if (StringUtils.isNotEmpty(value)) {
-            return value.contains(",");
+            return value.contains(CommonConstants.COMMA_SEPARATOR);
         }
         return false;
     }

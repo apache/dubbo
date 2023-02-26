@@ -1,3 +1,4 @@
 listener=org.apache.dubbo.rpc.protocol.ProtocolListenerWrapper
 mock=org.apache.dubbo.rpc.support.MockProtocol
 serializationwrapper=org.apache.dubbo.rpc.protocol.ProtocolSerializationWrapper
+securitywrapper=org.apache.dubbo.rpc.protocol.ProtocolSecurityWrapper

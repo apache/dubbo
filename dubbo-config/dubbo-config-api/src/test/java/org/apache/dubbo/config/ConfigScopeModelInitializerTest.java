@@ -25,7 +25,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class ConfigScopeModelInitializerTest {
+class ConfigScopeModelInitializerTest {
     private FrameworkModel frameworkModel;
     private ApplicationModel applicationModel;
     private ModuleModel moduleModel;
@@ -33,8 +33,8 @@ public class ConfigScopeModelInitializerTest {
     @BeforeEach
     public void setUp() {
         frameworkModel = new FrameworkModel();
-        applicationModel = new ApplicationModel(frameworkModel);
-        moduleModel = new ModuleModel(applicationModel);
+        applicationModel = frameworkModel.newApplication();
+        moduleModel = applicationModel.newModule();
     }
 
     @AfterEach
@@ -43,7 +43,7 @@ public class ConfigScopeModelInitializerTest {
     }
 
     @Test
-    public void test(){
+    void test(){
         Assertions.assertNotNull(applicationModel.getDeployer());
         Assertions.assertNotNull(moduleModel.getDeployer());
     }

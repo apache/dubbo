@@ -32,7 +32,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-public class DubboSpringInitCustomizerTest {
+class DubboSpringInitCustomizerTest {
 
     @BeforeAll
     public static void beforeAll() {
@@ -48,7 +48,7 @@ public class DubboSpringInitCustomizerTest {
     }
 
     @Test
-    public void testReloadSpringContext() {
+    void testReloadSpringContext() {
 
         ClassPathXmlApplicationContext providerContext1 = null;
         ClassPathXmlApplicationContext providerContext2 = null;

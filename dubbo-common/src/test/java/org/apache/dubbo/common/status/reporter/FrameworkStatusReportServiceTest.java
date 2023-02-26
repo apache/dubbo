@@ -36,12 +36,12 @@ import static org.apache.dubbo.common.status.reporter.FrameworkStatusReportServi
 /**
  * {@link FrameworkStatusReportService}
  */
-public class FrameworkStatusReportServiceTest {
+class FrameworkStatusReportServiceTest {
 
     @Test
-    public void test() {
+    void test() {
         FrameworkModel frameworkModel = new FrameworkModel();
-        ApplicationModel applicationModel = new ApplicationModel(frameworkModel);
+        ApplicationModel applicationModel = frameworkModel.newApplication();
         ApplicationConfig app = new ApplicationConfig("APP");
         applicationModel.getApplicationConfigManager().setApplication(app);
         FrameworkStatusReportService reportService = applicationModel.getBeanFactory().getBean(FrameworkStatusReportService.class);

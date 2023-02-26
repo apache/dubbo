@@ -56,6 +56,7 @@ import java.util.concurrent.TimeUnit;
 import static org.apache.dubbo.common.constants.CommonConstants.SESSION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_CONNECT_REGISTRY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ZOOKEEPER_EXCEPTION;
 
 
 public class Curator5ZookeeperClient extends AbstractZookeeperClient<Curator5ZookeeperClient.NodeCacheListenerImpl, Curator5ZookeeperClient.CuratorWatcherImpl> {
@@ -72,10 +73,10 @@ public class Curator5ZookeeperClient extends AbstractZookeeperClient<Curator5Zoo
             int timeout = url.getParameter(TIMEOUT_KEY, DEFAULT_CONNECTION_TIMEOUT_MS);
             int sessionExpireMs = url.getParameter(SESSION_KEY, DEFAULT_SESSION_TIMEOUT_MS);
             CuratorFrameworkFactory.Builder builder = CuratorFrameworkFactory.builder()
-                    .connectString(url.getBackupAddress())
-                    .retryPolicy(new RetryNTimes(1, 1000))
-                    .connectionTimeoutMs(timeout)
-                    .sessionTimeoutMs(sessionExpireMs);
+                .connectString(url.getBackupAddress())
+                .retryPolicy(new RetryNTimes(1, 1000))
+                .connectionTimeoutMs(timeout)
+                .sessionTimeoutMs(sessionExpireMs);
             String userInformation = url.getUserInformation();
             if (userInformation != null && userInformation.length() > 0) {
                 builder = builder.authorization("digest", userInformation.getBytes());
@@ -97,7 +98,7 @@ public class Curator5ZookeeperClient extends AbstractZookeeperClient<Curator5Zoo
             boolean connected = client.blockUntilConnected(timeout, TimeUnit.MILLISECONDS);
 
             if (!connected) {
-                IllegalStateException illegalStateException = new IllegalStateException("zookeeper not connected");
+                IllegalStateException illegalStateException = new IllegalStateException("zookeeper not connected, the address is: " + url);
 
                 // 5-1 Failed to connect to configuration center.
                 logger.error(CONFIG_FAILED_CONNECT_REGISTRY, "Zookeeper server offline", "",
@@ -112,42 +113,13 @@ public class Curator5ZookeeperClient extends AbstractZookeeperClient<Curator5Zoo
     }
 
     @Override
-    public void createPersistent(String path) {
+    public void createPersistent(String path, boolean faultTolerant) {
         try {
             client.create().forPath(path);
         } catch (NodeExistsException e) {
-            logger.warn("ZNode " + path + " already exists.", e);
-        } catch (Exception e) {
-            throw new IllegalStateException(e.getMessage(), e);
-        }
-    }
-
-    @Override
-    public void createEphemeral(String path) {
-        try {
-            client.create().withMode(CreateMode.EPHEMERAL).forPath(path);
-        } catch (NodeExistsException e) {
-            logger.warn("ZNode " + path + " already exists, since we will only try to recreate a node on a session expiration" +
-                    ", this duplication might be caused by a delete delay from the zk server, which means the old expired session" +
-                    " may still holds this ZNode and the server just hasn't got time to do the deletion. In this case, " +
-                    "we can just try to delete and create again.", e);
-            deletePath(path);
-            createEphemeral(path);
-        } catch (Exception e) {
-            throw new IllegalStateException(e.getMessage(), e);
-        }
-    }
-
-    @Override
-    protected void createPersistent(String path, String data) {
-        byte[] dataBytes = data.getBytes(CHARSET);
-        try {
-            client.create().forPath(path, dataBytes);
-        } catch (NodeExistsException e) {
-            try {
-                client.setData().forPath(path, dataBytes);
-            } catch (Exception e1) {
-                throw new IllegalStateException(e.getMessage(), e1);
+            if (!faultTolerant) {
+                logger.warn(REGISTRY_ZOOKEEPER_EXCEPTION, "", "", "ZNode " + path + " already exists.", e);
+                throw new IllegalStateException(e.getMessage(), e);
             }
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
@@ -155,17 +127,65 @@ public class Curator5ZookeeperClient extends AbstractZookeeperClient<Curator5Zoo
     }
 
     @Override
-    protected void createEphemeral(String path, String data) {
+    public void createEphemeral(String path, boolean faultTolerant) {
+        try {
+            client.create().withMode(CreateMode.EPHEMERAL).forPath(path);
+        } catch (NodeExistsException e) {
+            if (faultTolerant) {
+                logger.info("ZNode " + path + " already exists, since we will only try to recreate a node on a session expiration" +
+                    ", this duplication might be caused by a delete delay from the zk server, which means the old expired session" +
+                    " may still holds this ZNode and the server just hasn't got time to do the deletion. In this case, " +
+                    "we can just try to delete and create again.");
+                deletePath(path);
+                createEphemeral(path, true);
+            } else {
+                logger.warn(REGISTRY_ZOOKEEPER_EXCEPTION, "", "", "ZNode " + path + " already exists.", e);
+                throw new IllegalStateException(e.getMessage(), e);
+            }
+        } catch (Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    protected void createPersistent(String path, String data, boolean faultTolerant) {
+        byte[] dataBytes = data.getBytes(CHARSET);
+        try {
+            client.create().forPath(path, dataBytes);
+        } catch (NodeExistsException e) {
+            if (faultTolerant) {
+                logger.info("ZNode " + path + " already exists. Will be override with new data.");
+                try {
+                    client.setData().forPath(path, dataBytes);
+                } catch (Exception e1) {
+                    throw new IllegalStateException(e.getMessage(), e1);
+                }
+            } else {
+                logger.warn(REGISTRY_ZOOKEEPER_EXCEPTION, "", "", "ZNode " + path + " already exists.", e);
+                throw new IllegalStateException(e.getMessage(), e);
+            }
+        } catch (Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    protected void createEphemeral(String path, String data, boolean faultTolerant) {
         byte[] dataBytes = data.getBytes(CHARSET);
         try {
             client.create().withMode(CreateMode.EPHEMERAL).forPath(path, dataBytes);
         } catch (NodeExistsException e) {
-            logger.warn("ZNode " + path + " already exists, since we will only try to recreate a node on a session expiration" +
+            if (faultTolerant) {
+                logger.info("ZNode " + path + " already exists, since we will only try to recreate a node on a session expiration" +
                     ", this duplication might be caused by a delete delay from the zk server, which means the old expired session" +
                     " may still holds this ZNode and the server just hasn't got time to do the deletion. In this case, " +
-                    "we can just try to delete and create again.", e);
-            deletePath(path);
-            createEphemeral(path, data);
+                    "we can just try to delete and create again.");
+                deletePath(path);
+                createEphemeral(path, data, true);
+            } else {
+                logger.warn(REGISTRY_ZOOKEEPER_EXCEPTION, "", "", "ZNode " + path + " already exists.", e);
+                throw new IllegalStateException(e.getMessage(), e);
+            }
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
@@ -182,12 +202,50 @@ public class Curator5ZookeeperClient extends AbstractZookeeperClient<Curator5Zoo
     }
 
     @Override
-    protected void createOrUpdatePersistent(String path, String data, int version) {
+    protected void update(String path, String data) {
+        byte[] dataBytes = data.getBytes(CHARSET);
+        try {
+            client.setData().forPath(path, dataBytes);
+        } catch (Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    protected void createOrUpdatePersistent(String path, String data) {
         try {
             if (checkExists(path)) {
+                update(path, data);
+            } else {
+                createPersistent(path, data, true);
+            }
+        } catch (Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+
+    }
+
+    @Override
+    protected void createOrUpdateEphemeral(String path, String data) {
+        try {
+            if (checkExists(path)) {
+                update(path, data);
+            } else {
+                createEphemeral(path, data, true);
+            }
+        } catch (Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+
+    }
+
+    @Override
+    protected void createOrUpdatePersistent(String path, String data, Integer version) {
+        try {
+            if (checkExists(path) && version != null) {
                 update(path, data, version);
             } else {
-                createPersistent(path, data);
+                createPersistent(path, data, false);
             }
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
@@ -195,12 +253,12 @@ public class Curator5ZookeeperClient extends AbstractZookeeperClient<Curator5Zoo
     }
 
     @Override
-    protected void createOrUpdateEphemeral(String path, String data, int version) {
+    protected void createOrUpdateEphemeral(String path, String data, Integer version) {
         try {
-            if (checkExists(path)) {
+            if (checkExists(path) && version != null) {
                 update(path, data, version);
             } else {
-                createEphemeral(path, data);
+                createEphemeral(path, data, false);
             }
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
@@ -424,15 +482,15 @@ public class Curator5ZookeeperClient extends AbstractZookeeperClient<Curator5Zoo
             try {
                 sessionId = client.getZookeeperClient().getZooKeeper().getSessionId();
             } catch (Exception e) {
-                logger.warn("Curator client state changed, but failed to get the related zk session instance.");
+                logger.warn(REGISTRY_ZOOKEEPER_EXCEPTION, "", "", "Curator client state changed, but failed to get the related zk session instance.");
             }
 
             if (state == ConnectionState.LOST) {
-                logger.warn("Curator zookeeper session " + Long.toHexString(lastSessionId) + " expired.");
+                logger.warn(REGISTRY_ZOOKEEPER_EXCEPTION, "", "", "Curator zookeeper session " + Long.toHexString(lastSessionId) + " expired.");
                 Curator5ZookeeperClient.this.stateChanged(StateListener.SESSION_LOST);
             } else if (state == ConnectionState.SUSPENDED) {
-                logger.warn("Curator zookeeper connection of session " + Long.toHexString(sessionId) + " timed out. " +
-                        "connection timeout value is " + timeout + ", session expire timeout value is " + sessionExpireMs);
+                logger.warn(REGISTRY_ZOOKEEPER_EXCEPTION, "", "", "Curator zookeeper connection of session " + Long.toHexString(sessionId) + " timed out. " +
+                    "connection timeout value is " + timeout + ", session expire timeout value is " + sessionExpireMs);
                 Curator5ZookeeperClient.this.stateChanged(StateListener.SUSPENDED);
             } else if (state == ConnectionState.CONNECTED) {
                 lastSessionId = sessionId;
@@ -440,12 +498,12 @@ public class Curator5ZookeeperClient extends AbstractZookeeperClient<Curator5Zoo
                 Curator5ZookeeperClient.this.stateChanged(StateListener.CONNECTED);
             } else if (state == ConnectionState.RECONNECTED) {
                 if (lastSessionId == sessionId && sessionId != UNKNOWN_SESSION_ID) {
-                    logger.warn("Curator zookeeper connection recovered from connection lose, " +
-                            "reuse the old session " + Long.toHexString(sessionId));
+                    logger.warn(REGISTRY_ZOOKEEPER_EXCEPTION, "", "", "Curator zookeeper connection recovered from connection lose, " +
+                        "reuse the old session " + Long.toHexString(sessionId));
                     Curator5ZookeeperClient.this.stateChanged(StateListener.RECONNECTED);
                 } else {
-                    logger.warn("New session created after old session lost, " +
-                            "old session " + Long.toHexString(lastSessionId) + ", new session " + Long.toHexString(sessionId));
+                    logger.warn(REGISTRY_ZOOKEEPER_EXCEPTION, "", "", "New session created after old session lost, " +
+                        "old session " + Long.toHexString(lastSessionId) + ", new session " + Long.toHexString(sessionId));
                     lastSessionId = sessionId;
                     Curator5ZookeeperClient.this.stateChanged(StateListener.NEW_SESSION_CREATED);
                 }

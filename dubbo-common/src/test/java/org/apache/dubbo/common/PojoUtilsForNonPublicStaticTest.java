@@ -20,10 +20,10 @@ import org.apache.dubbo.common.utils.PojoUtils;
 
 import org.junit.jupiter.api.Test;
 
-public class PojoUtilsForNonPublicStaticTest {
+class PojoUtilsForNonPublicStaticTest {
 
     @Test
-    public void testNonPublicStaticClass() {
+    void testNonPublicStaticClass() {
         NonPublicStaticData nonPublicStaticData = new NonPublicStaticData("horizon");
         PojoUtils.generalize(nonPublicStaticData);
     }

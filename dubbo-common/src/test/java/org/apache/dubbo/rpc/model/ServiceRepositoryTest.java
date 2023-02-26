@@ -32,7 +32,7 @@ import java.util.Set;
 /**
  * {@link ServiceRepository}
  */
-public class ServiceRepositoryTest {
+class ServiceRepositoryTest {
     private FrameworkModel frameworkModel;
     private ApplicationModel applicationModel;
     private ModuleModel moduleModel;
@@ -40,8 +40,8 @@ public class ServiceRepositoryTest {
     @BeforeEach
     public void setUp() {
         frameworkModel = new FrameworkModel();
-        applicationModel = new ApplicationModel(frameworkModel);
-        moduleModel = new ModuleModel(applicationModel);
+        applicationModel = frameworkModel.newApplication();
+        moduleModel = applicationModel.newModule();
     }
 
     @AfterEach
@@ -50,7 +50,7 @@ public class ServiceRepositoryTest {
     }
 
     @Test
-    public void test() {
+    void test() {
         // verify BuiltinService
         Set<BuiltinServiceDetector> builtinServices
             = applicationModel.getExtensionLoader(BuiltinServiceDetector.class).getSupportedExtensionInstances();

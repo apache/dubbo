@@ -16,12 +16,16 @@
  */
 package org.apache.dubbo.metadata.rest;
 
+import org.apache.dubbo.common.extension.ExtensionScope;
+import org.apache.dubbo.common.extension.SPI;
+
 /**
  * The interface to resolve the {@link ServiceRestMetadata REST metadata} from the specified
  * Dubbo Service interface or type.
  *
  * @since 2.7.6
  */
+@SPI(scope = ExtensionScope.APPLICATION)
 public interface ServiceRestMetadataResolver {
 
     /**
@@ -32,6 +36,8 @@ public interface ServiceRestMetadataResolver {
      */
     boolean supports(Class<?> serviceType);
 
+    boolean supports(Class<?> serviceType,boolean consumer);
+
     /**
      * Resolve the {@link ServiceRestMetadata REST metadata} from the specified
      * Dubbo Service interface or type
@@ -40,4 +46,6 @@ public interface ServiceRestMetadataResolver {
      * @return
      */
     ServiceRestMetadata resolve(Class<?> serviceType);
+
+    ServiceRestMetadata resolve(Class<?> serviceType, ServiceRestMetadata serviceRestMetadata);
 }

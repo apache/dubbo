@@ -32,7 +32,7 @@ import org.junit.jupiter.api.Test;
 /**
  * {@link CommonScopeModelInitializer}
  */
-public class CommonScopeModelInitializerTest {
+class CommonScopeModelInitializerTest {
 
     private FrameworkModel frameworkModel;
     private ApplicationModel applicationModel;
@@ -41,8 +41,8 @@ public class CommonScopeModelInitializerTest {
     @BeforeEach
     public void setUp() {
         frameworkModel = new FrameworkModel();
-        applicationModel = new ApplicationModel(frameworkModel);
-        moduleModel = new ModuleModel(applicationModel);
+        applicationModel = frameworkModel.newApplication();
+        moduleModel = applicationModel.newModule();
     }
 
     @AfterEach
@@ -51,7 +51,7 @@ public class CommonScopeModelInitializerTest {
     }
 
     @Test
-    public void test() {
+    void test() {
         ScopeBeanFactory applicationModelBeanFactory = applicationModel.getBeanFactory();
         Assertions.assertNotNull(applicationModelBeanFactory.getBean(ShutdownHookCallbacks.class));
         Assertions.assertNotNull(applicationModelBeanFactory.getBean(FrameworkStatusReportService.class));

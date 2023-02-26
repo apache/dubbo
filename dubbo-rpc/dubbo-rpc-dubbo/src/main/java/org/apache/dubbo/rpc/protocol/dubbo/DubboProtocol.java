@@ -19,7 +19,6 @@ package org.apache.dubbo.rpc.protocol.dubbo;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.config.ConfigurationUtils;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -44,6 +43,7 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.protocol.AbstractProtocol;
 
@@ -66,6 +66,10 @@ import static org.apache.dubbo.common.constants.CommonConstants.LAZY_CONNECT_KEY
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.STUB_EVENT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERROR_CLOSE_CLIENT;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERROR_CLOSE_SERVER;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_REFER_INVOKER;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_UNSUPPORTED;
 import static org.apache.dubbo.remoting.Constants.CHANNEL_READONLYEVENT_SENT_KEY;
 import static org.apache.dubbo.remoting.Constants.CLIENT_KEY;
 import static org.apache.dubbo.remoting.Constants.CODEC_KEY;
@@ -107,132 +111,133 @@ public class DubboProtocol extends AbstractProtocol {
 
     private final AtomicBoolean destroyed = new AtomicBoolean();
 
-    private final ExchangeHandler requestHandler = new ExchangeHandlerAdapter() {
+    private final ExchangeHandler requestHandler;
 
-        @Override
-        public CompletableFuture<Object> reply(ExchangeChannel channel, Object message) throws RemotingException {
+    public DubboProtocol(FrameworkModel frameworkModel) {
+        requestHandler = new ExchangeHandlerAdapter(frameworkModel) {
 
-            if (!(message instanceof Invocation)) {
-                throw new RemotingException(channel, "Unsupported request: "
-                    + (message == null ? null : (message.getClass().getName() + ": " + message))
-                    + ", channel: consumer: " + channel.getRemoteAddress() + " --> provider: " + channel.getLocalAddress());
-            }
+            @Override
+            public CompletableFuture<Object> reply(ExchangeChannel channel, Object message) throws RemotingException {
 
-            Invocation inv = (Invocation) message;
-            Invoker<?> invoker = getInvoker(channel, inv);
-            inv.setServiceModel(invoker.getUrl().getServiceModel());
-            // switch TCCL
-            if (invoker.getUrl().getServiceModel() != null) {
-                Thread.currentThread().setContextClassLoader(invoker.getUrl().getServiceModel().getClassLoader());
-            }
-            // need to consider backward-compatibility if it's a callback
-            if (Boolean.TRUE.toString().equals(inv.getObjectAttachmentWithoutConvert(IS_CALLBACK_SERVICE_INVOKE))) {
-                String methodsStr = invoker.getUrl().getParameters().get("methods");
-                boolean hasMethod = false;
-                if (methodsStr == null || !methodsStr.contains(",")) {
-                    hasMethod = inv.getMethodName().equals(methodsStr);
-                } else {
-                    String[] methods = methodsStr.split(",");
-                    for (String method : methods) {
-                        if (inv.getMethodName().equals(method)) {
-                            hasMethod = true;
-                            break;
+                if (!(message instanceof Invocation)) {
+                    throw new RemotingException(channel, "Unsupported request: "
+                        + (message == null ? null : (message.getClass().getName() + ": " + message))
+                        + ", channel: consumer: " + channel.getRemoteAddress() + " --> provider: " + channel.getLocalAddress());
+                }
+
+                Invocation inv = (Invocation) message;
+                Invoker<?> invoker = getInvoker(channel, inv);
+                inv.setServiceModel(invoker.getUrl().getServiceModel());
+                // switch TCCL
+                if (invoker.getUrl().getServiceModel() != null) {
+                    Thread.currentThread().setContextClassLoader(invoker.getUrl().getServiceModel().getClassLoader());
+                }
+                // need to consider backward-compatibility if it's a callback
+                if (Boolean.TRUE.toString().equals(inv.getObjectAttachmentWithoutConvert(IS_CALLBACK_SERVICE_INVOKE))) {
+                    String methodsStr = invoker.getUrl().getParameters().get("methods");
+                    boolean hasMethod = false;
+                    if (methodsStr == null || !methodsStr.contains(",")) {
+                        hasMethod = inv.getMethodName().equals(methodsStr);
+                    } else {
+                        String[] methods = methodsStr.split(",");
+                        for (String method : methods) {
+                            if (inv.getMethodName().equals(method)) {
+                                hasMethod = true;
+                                break;
+                            }
                         }
                     }
+                    if (!hasMethod) {
+                        logger.warn(PROTOCOL_FAILED_REFER_INVOKER, "", "", new IllegalStateException("The methodName " + inv.getMethodName()
+                            + " not found in callback service interface ,invoke will be ignored."
+                            + " please update the api interface. url is:"
+                            + invoker.getUrl()) + " ,invocation is :" + inv);
+                        return null;
+                    }
                 }
-                if (!hasMethod) {
-                    logger.warn(new IllegalStateException("The methodName " + inv.getMethodName()
-                        + " not found in callback service interface ,invoke will be ignored."
-                        + " please update the api interface. url is:"
-                        + invoker.getUrl()) + " ,invocation is :" + inv);
+                RpcContext.getServiceContext().setRemoteAddress(channel.getRemoteAddress());
+                Result result = invoker.invoke(inv);
+                return result.thenApply(Function.identity());
+            }
+
+            @Override
+            public void received(Channel channel, Object message) throws RemotingException {
+                if (message instanceof Invocation) {
+                    reply((ExchangeChannel) channel, message);
+
+                } else {
+                    super.received(channel, message);
+                }
+            }
+
+            @Override
+            public void connected(Channel channel) throws RemotingException {
+                invoke(channel, ON_CONNECT_KEY);
+            }
+
+            @Override
+            public void disconnected(Channel channel) throws RemotingException {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("disconnected from " + channel.getRemoteAddress() + ",url:" + channel.getUrl());
+                }
+                invoke(channel, ON_DISCONNECT_KEY);
+            }
+
+            private void invoke(Channel channel, String methodKey) {
+                Invocation invocation = createInvocation(channel, channel.getUrl(), methodKey);
+                if (invocation != null) {
+                    try {
+                        if (Boolean.TRUE.toString().equals(invocation.getAttachment(STUB_EVENT_KEY))) {
+                            tryToGetStubService(channel, invocation);
+                        }
+                        received(channel, invocation);
+                    } catch (Throwable t) {
+                        logger.warn(PROTOCOL_FAILED_REFER_INVOKER, "", "", "Failed to invoke event method " + invocation.getMethodName() + "(), cause: " + t.getMessage(), t);
+                    }
+                }
+            }
+
+            private void tryToGetStubService(Channel channel, Invocation invocation) throws RemotingException {
+                try {
+                    Invoker<?> invoker = getInvoker(channel, invocation);
+                } catch (RemotingException e) {
+                    String serviceKey = serviceKey(
+                        0,
+                        (String) invocation.getObjectAttachmentWithoutConvert(PATH_KEY),
+                        (String) invocation.getObjectAttachmentWithoutConvert(VERSION_KEY),
+                        (String) invocation.getObjectAttachmentWithoutConvert(GROUP_KEY)
+                    );
+                    throw new RemotingException(channel, "The stub service[" + serviceKey + "] is not found, it may not be exported yet");
+                }
+            }
+
+            /**
+             * FIXME channel.getUrl() always binds to a fixed service, and this service is random.
+             * we can choose to use a common service to carry onConnect event if there's no easy way to get the specific
+             * service this connection is binding to.
+             * @param channel
+             * @param url
+             * @param methodKey
+             * @return
+             */
+            private Invocation createInvocation(Channel channel, URL url, String methodKey) {
+                String method = url.getParameter(methodKey);
+                if (method == null || method.length() == 0) {
                     return null;
                 }
-            }
-            RpcContext.getServiceContext().setRemoteAddress(channel.getRemoteAddress());
-            Result result = invoker.invoke(inv);
-            return result.thenApply(Function.identity());
-        }
 
-        @Override
-        public void received(Channel channel, Object message) throws RemotingException {
-            if (message instanceof Invocation) {
-                reply((ExchangeChannel) channel, message);
-
-            } else {
-                super.received(channel, message);
-            }
-        }
-
-        @Override
-        public void connected(Channel channel) throws RemotingException {
-            invoke(channel, ON_CONNECT_KEY);
-        }
-
-        @Override
-        public void disconnected(Channel channel) throws RemotingException {
-            if (logger.isDebugEnabled()) {
-                logger.debug("disconnected from " + channel.getRemoteAddress() + ",url:" + channel.getUrl());
-            }
-            invoke(channel, ON_DISCONNECT_KEY);
-        }
-
-        private void invoke(Channel channel, String methodKey) {
-            Invocation invocation = createInvocation(channel, channel.getUrl(), methodKey);
-            if (invocation != null) {
-                try {
-                    if (Boolean.TRUE.toString().equals(invocation.getAttachment(STUB_EVENT_KEY))) {
-                        tryToGetStubService(channel, invocation);
-                    }
-                    received(channel, invocation);
-                } catch (Throwable t) {
-                    logger.warn("Failed to invoke event method " + invocation.getMethodName() + "(), cause: " + t.getMessage(), t);
+                RpcInvocation invocation = new RpcInvocation(url.getServiceModel(), method, url.getParameter(INTERFACE_KEY), "", new Class<?>[0], new Object[0]);
+                invocation.setAttachment(PATH_KEY, url.getPath());
+                invocation.setAttachment(GROUP_KEY, url.getGroup());
+                invocation.setAttachment(INTERFACE_KEY, url.getParameter(INTERFACE_KEY));
+                invocation.setAttachment(VERSION_KEY, url.getVersion());
+                if (url.getParameter(STUB_EVENT_KEY, false)) {
+                    invocation.setAttachment(STUB_EVENT_KEY, Boolean.TRUE.toString());
                 }
+
+                return invocation;
             }
-        }
-
-        private void tryToGetStubService(Channel channel, Invocation invocation) throws RemotingException {
-            try {
-                Invoker<?> invoker = getInvoker(channel, invocation);
-            } catch (RemotingException e) {
-                String serviceKey = serviceKey(
-                    0,
-                    (String) invocation.getObjectAttachmentWithoutConvert(PATH_KEY),
-                    (String) invocation.getObjectAttachmentWithoutConvert(VERSION_KEY),
-                    (String) invocation.getObjectAttachmentWithoutConvert(GROUP_KEY)
-                );
-                throw new RemotingException(channel, "The stub service[" + serviceKey + "] is not found, it may not be exported yet");
-            }
-        }
-
-        /**
-         * FIXME channel.getUrl() always binds to a fixed service, and this service is random.
-         * we can choose to use a common service to carry onConnect event if there's no easy way to get the specific
-         * service this connection is binding to.
-         * @param channel
-         * @param url
-         * @param methodKey
-         * @return
-         */
-        private Invocation createInvocation(Channel channel, URL url, String methodKey) {
-            String method = url.getParameter(methodKey);
-            if (method == null || method.length() == 0) {
-                return null;
-            }
-
-            RpcInvocation invocation = new RpcInvocation(url.getServiceModel(), method, url.getParameter(INTERFACE_KEY), "", new Class<?>[0], new Object[0]);
-            invocation.setAttachment(PATH_KEY, url.getPath());
-            invocation.setAttachment(GROUP_KEY, url.getGroup());
-            invocation.setAttachment(INTERFACE_KEY, url.getParameter(INTERFACE_KEY));
-            invocation.setAttachment(VERSION_KEY, url.getVersion());
-            if (url.getParameter(STUB_EVENT_KEY, false)) {
-                invocation.setAttachment(STUB_EVENT_KEY, Boolean.TRUE.toString());
-            }
-
-            return invocation;
-        }
-    };
-
-    public DubboProtocol() {
+        };
     }
 
     /**
@@ -240,7 +245,7 @@ public class DubboProtocol extends AbstractProtocol {
      */
     @Deprecated
     public static DubboProtocol getDubboProtocol() {
-        return (DubboProtocol) ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(DubboProtocol.NAME, false);
+        return (DubboProtocol) FrameworkModel.defaultModel().getExtensionLoader(Protocol.class).getExtension(DubboProtocol.NAME, false);
     }
 
     public static DubboProtocol getDubboProtocol(ScopeModel scopeModel) {
@@ -316,8 +321,8 @@ public class DubboProtocol extends AbstractProtocol {
             String stubServiceMethods = url.getParameter(STUB_EVENT_METHODS_KEY);
             if (stubServiceMethods == null || stubServiceMethods.length() == 0) {
                 if (logger.isWarnEnabled()) {
-                    logger.warn(new IllegalStateException("consumer [" + url.getParameter(INTERFACE_KEY) +
-                        "], has set stub proxy support event ,but no stub methods founded."));
+                    logger.warn(PROTOCOL_UNSUPPORTED, "", "", "consumer [" + url.getParameter(INTERFACE_KEY) +
+                        "], has set stub proxy support event ,but no stub methods founded.");
                 }
 
             }
@@ -636,7 +641,7 @@ public class DubboProtocol extends AbstractProtocol {
                 server.close(getServerShutdownTimeout(protocolServer));
 
             } catch (Throwable t) {
-                logger.warn("Close dubbo server [" + server.getLocalAddress() + "] failed: " + t.getMessage(), t);
+                logger.warn(PROTOCOL_ERROR_CLOSE_SERVER, "", "", "Close dubbo server [" + server.getLocalAddress() + "] failed: " + t.getMessage(), t);
             }
         }
         serverMap.clear();
@@ -685,7 +690,7 @@ public class DubboProtocol extends AbstractProtocol {
              */
 
         } catch (Throwable t) {
-            logger.warn(t.getMessage(), t);
+            logger.warn(PROTOCOL_ERROR_CLOSE_CLIENT, "", "", t.getMessage(), t);
         }
     }
 

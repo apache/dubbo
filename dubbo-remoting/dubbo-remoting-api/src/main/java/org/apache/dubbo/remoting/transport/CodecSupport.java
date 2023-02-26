@@ -19,12 +19,13 @@ package org.apache.dubbo.remoting.transport;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.serialize.ObjectOutput;
 import org.apache.dubbo.common.serialize.Serialization;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.remoting.utils.UrlUtils;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.FrameworkServiceRepository;
@@ -38,16 +39,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import static org.apache.dubbo.common.BaseServiceMetadata.keyWithoutGroup;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_SERIALIZATION;
 
 public class CodecSupport {
-    private static final Logger logger = LoggerFactory.getLogger(CodecSupport.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(CodecSupport.class);
     private static Map<Byte, Serialization> ID_SERIALIZATION_MAP = new HashMap<Byte, Serialization>();
     private static Map<Byte, String> ID_SERIALIZATIONNAME_MAP = new HashMap<Byte, String>();
     private static Map<String, Byte> SERIALIZATIONNAME_ID_MAP = new HashMap<String, Byte>();
     // Cache null object serialize results, for heartbeat request/response serialize use.
-    private static Map<Byte, byte[]> ID_NULLBYTES_MAP = new ConcurrentHashMap<>();
+    private static ConcurrentMap<Byte, byte[]> ID_NULLBYTES_MAP = new ConcurrentHashMap<>();
 
     private static final ThreadLocal<byte[]> TL_BUFFER = ThreadLocal.withInitial(() -> new byte[1024]);
 
@@ -58,10 +61,10 @@ public class CodecSupport {
             Serialization serialization = extensionLoader.getExtension(name);
             byte idByte = serialization.getContentTypeId();
             if (ID_SERIALIZATION_MAP.containsKey(idByte)) {
-                logger.error("Serialization extension " + serialization.getClass().getName()
-                        + " has duplicate id to Serialization extension "
-                        + ID_SERIALIZATION_MAP.get(idByte).getClass().getName()
-                        + ", ignore this Serialization extension");
+                logger.error(TRANSPORT_FAILED_SERIALIZATION, "", "", "Serialization extension " + serialization.getClass().getName()
+                    + " has duplicate id to Serialization extension "
+                    + ID_SERIALIZATION_MAP.get(idByte).getClass().getName()
+                    + ", ignore this Serialization extension");
                 continue;
             }
             ID_SERIALIZATION_MAP.put(idByte, serialization);
@@ -106,7 +109,7 @@ public class CodecSupport {
      * @return serialize result of null object
      */
     public static byte[] getNullBytesOf(Serialization s) {
-        return ID_NULLBYTES_MAP.computeIfAbsent(s.getContentTypeId(), k -> {
+        return ConcurrentHashMapUtils.computeIfAbsent(ID_NULLBYTES_MAP, s.getContentTypeId(), k -> {
             //Pre-generated Null object bytes
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             byte[] nullBytes = new byte[0];
@@ -117,7 +120,7 @@ public class CodecSupport {
                 nullBytes = baos.toByteArray();
                 baos.close();
             } catch (Exception e) {
-                logger.warn("Serialization extension " + s.getClass().getName() + " not support serializing null object, return an empty bytes instead.");
+                logger.warn(TRANSPORT_FAILED_SERIALIZATION, "", "", "Serialization extension " + s.getClass().getName() + " not support serializing null object, return an empty bytes instead.");
             }
             return nullBytes;
         });

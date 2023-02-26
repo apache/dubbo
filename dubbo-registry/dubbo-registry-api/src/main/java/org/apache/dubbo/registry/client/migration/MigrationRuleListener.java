@@ -26,6 +26,7 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.registry.client.migration.model.MigrationRule;
@@ -40,6 +41,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -49,14 +51,18 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_THREAD_INTERRUPTED_EXCEPTION;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_PROPERTY_TYPE_MISMATCH;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_EMPTY_ADDRESS;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
 import static org.apache.dubbo.common.constants.RegistryConstants.INIT;
 
 /**
  * Listens to {@MigrationRule} from Config Center.
- *
+ * <p>
  * - Migration rule is of consumer application scope.
  * - Listener is shared among all invokers (interfaces), it keeps the relation between interface and handler.
- *
+ * <p>
  * There are two execution points:
  * - Refer, invoker behaviour is determined with default rule.
  * - Rule change, invoker behaviour is changed according to the newly received rule.
@@ -69,7 +75,7 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
     private static final int MIGRATION_DEFAULT_DELAY_TIME = 60000;
     private String ruleKey;
 
-    protected final Map<MigrationInvoker, MigrationRuleHandler> handlers = new ConcurrentHashMap<>();
+    protected final ConcurrentMap<MigrationInvoker, MigrationRuleHandler> handlers = new ConcurrentHashMap<>();
     protected final LinkedBlockingQueue<String> ruleQueue = new LinkedBlockingQueue<>();
 
     private final AtomicBoolean executorSubmit = new AtomicBoolean(false);
@@ -104,7 +110,7 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
             setRawRule(rawRule);
         } else {
             if (logger.isWarnEnabled()) {
-                logger.warn("Using default configuration rule because config center is not configured!");
+                logger.warn(REGISTRY_EMPTY_ADDRESS, "", "", "Using default configuration rule because config center is not configured!");
             }
             setRawRule(INIT);
         }
@@ -131,7 +137,7 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
         try {
             delay = Integer.parseInt(delayStr);
         } catch (Exception e) {
-            logger.warn("Invalid migration delay param " + delayStr);
+            logger.warn(COMMON_PROPERTY_TYPE_MISMATCH, "", "", "Invalid migration delay param " + delayStr);
         }
         return delay;
     }
@@ -142,12 +148,12 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
         if (StringUtils.isEmpty(rawRule)) {
             // fail back to startup status
             rawRule = INIT;
-            //logger.warn("Received empty migration rule, will ignore.");
+            //logger.warn(COMMON_PROPERTY_TYPE_MISMATCH, "", "", "Received empty migration rule, will ignore.");
         }
         try {
             ruleQueue.put(rawRule);
         } catch (InterruptedException e) {
-            logger.error("Put rawRule to rule management queue failed. rawRule: " + rawRule, e);
+            logger.error(COMMON_THREAD_INTERRUPTED_EXCEPTION, "", "", "Put rawRule to rule management queue failed. rawRule: " + rawRule, e);
         }
 
         if (executorSubmit.compareAndSet(false, true)) {
@@ -160,7 +166,7 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
                             Thread.sleep(1000);
                         }
                     } catch (InterruptedException e) {
-                        logger.error("Poll Rule from config center failed.", e);
+                        logger.error(COMMON_THREAD_INTERRUPTED_EXCEPTION, "", "", "Poll Rule from config center failed.", e);
                     }
                     if (StringUtils.isEmpty(rule)) {
                         continue;
@@ -179,10 +185,10 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
                             ExecutorService executorService = Executors.newFixedThreadPool(100, new NamedThreadFactory("Dubbo-Invoker-Migrate"));
                             List<Future<?>> migrationFutures = new ArrayList<>(handlers.size());
                             handlers.forEach((_key, handler) -> {
-                               Future<?> future = executorService.submit(() -> {
+                                Future<?> future = executorService.submit(() -> {
                                     handler.doMigrate(this.rule);
                                 });
-                               migrationFutures.add(future);
+                                migrationFutures.add(future);
                             });
 
                             Throwable migrationException = null;
@@ -190,18 +196,18 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
                                 try {
                                     future.get();
                                 } catch (InterruptedException ie) {
-                                    logger.warn("Interrupted while waiting for migration async task to finish.");
+                                    logger.warn(INTERNAL_ERROR, "unknown error in registry module", "", "Interrupted while waiting for migration async task to finish.");
                                 } catch (ExecutionException ee) {
                                     migrationException = ee.getCause();
                                 }
                             }
                             if (migrationException != null) {
-                                logger.error("Migration async task failed.", migrationException);
+                                logger.error(INTERNAL_ERROR, "unknown error in registry module", "", "Migration async task failed.", migrationException);
                             }
                             executorService.shutdown();
                         }
                     } catch (Throwable t) {
-                        logger.error("Error occurred when migration.", t);
+                        logger.error(INTERNAL_ERROR, "unknown error in registry module", "", "Error occurred when migration.", t);
                     }
                 }
             });
@@ -222,7 +228,7 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
             try {
                 tmpRule = MigrationRule.parse(rawRule);
             } catch (Exception e) {
-                logger.error("Failed to parse migration rule...", e);
+                logger.error(COMMON_PROPERTY_TYPE_MISMATCH, "", "", "Failed to parse migration rule...", e);
             }
         }
         return tmpRule;
@@ -235,7 +241,7 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
 
     @Override
     public void onRefer(RegistryProtocol registryProtocol, ClusterInvoker<?> invoker, URL consumerUrl, URL registryURL) {
-        MigrationRuleHandler<?> migrationRuleHandler = handlers.computeIfAbsent((MigrationInvoker<?>) invoker, _key -> {
+        MigrationRuleHandler<?> migrationRuleHandler = ConcurrentHashMapUtils.computeIfAbsent(handlers, (MigrationInvoker<?>) invoker, _key -> {
             ((MigrationInvoker<?>) invoker).setMigrationRuleListener(this);
             return new MigrationRuleHandler<>((MigrationInvoker<?>) invoker, consumerUrl);
         });

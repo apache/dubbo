@@ -91,4 +91,10 @@ public @interface Activate {
      * @return absolute ordering info
      */
     int order() default 0;
+
+    /**
+     * Activate loadClass when the current extension when the specified className all match
+     * @return className names to all match
+     */
+    String [] onClass() default {};
 }

@@ -16,16 +16,16 @@
  */
 package org.apache.dubbo.rpc;
 
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 
-public class AppResponseTest {
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
+
+class AppResponseTest {
     @Test
-    public void testAppResponseWithNormalException() {
+    void testAppResponseWithNormalException() {
         NullPointerException npe = new NullPointerException();
         AppResponse appResponse = new AppResponse(npe);
 
@@ -38,7 +38,7 @@ public class AppResponseTest {
      * please run this test in Run mode
      */
     @Test
-    public void testAppResponseWithEmptyStackTraceException() {
+    void testAppResponseWithEmptyStackTraceException() {
         Throwable throwable = buildEmptyStackTraceException();
         assumeFalse(throwable == null);
         AppResponse appResponse = new AppResponse(throwable);
@@ -49,7 +49,7 @@ public class AppResponseTest {
     }
 
     @Test
-    public void testSetExceptionWithNormalException() {
+    void testSetExceptionWithNormalException() {
         NullPointerException npe = new NullPointerException();
         AppResponse appResponse = new AppResponse();
         appResponse.setException(npe);
@@ -63,7 +63,7 @@ public class AppResponseTest {
      * please run this test in Run mode
      */
     @Test
-    public void testSetExceptionWithEmptyStackTraceException() {
+    void testSetExceptionWithEmptyStackTraceException() {
         Throwable throwable = buildEmptyStackTraceException();
         assumeFalse(throwable == null);
         AppResponse appResponse = new AppResponse();
@@ -101,7 +101,7 @@ public class AppResponseTest {
     }
 
     @Test
-    public void testObjectAttachment() {
+    void testObjectAttachment() {
         AppResponse response = new AppResponse();
 
         response.setAttachment("objectKey1", "value1");

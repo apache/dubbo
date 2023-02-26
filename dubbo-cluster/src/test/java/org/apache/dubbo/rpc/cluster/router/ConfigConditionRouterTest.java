@@ -24,7 +24,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 @Disabled("FIXME This is not a formal UT")
-public class ConfigConditionRouterTest {
+class ConfigConditionRouterTest {
     private static CuratorFramework client;
 
     @BeforeEach
@@ -35,7 +35,7 @@ public class ConfigConditionRouterTest {
     }
 
     @Test
-    public void normalConditionRuleApplicationLevelTest() {
+    void normalConditionRuleApplicationLevelTest() {
         String serviceStr = "---\n" +
                 "scope: application\n" +
                 "force: true\n" +
@@ -58,7 +58,7 @@ public class ConfigConditionRouterTest {
     }
 
     @Test
-    public void normalConditionRuleApplicationServiceLevelTest() {
+    void normalConditionRuleApplicationServiceLevelTest() {
         String serviceStr = "---\n" +
                 "scope: application\n" +
                 "force: true\n" +
@@ -82,7 +82,7 @@ public class ConfigConditionRouterTest {
     }
 
     @Test
-    public void normalConditionRuleServiceLevelTest() {
+    void normalConditionRuleServiceLevelTest() {
         String serviceStr = "---\n" +
                 "scope: service\n" +
                 "force: true\n" +
@@ -107,7 +107,7 @@ public class ConfigConditionRouterTest {
     }
 
     @Test
-    public void abnormalNoruleConditionRuleTest() {
+    void abnormalNoruleConditionRuleTest() {
         String serviceStr = "---\n" +
                 "scope: service\n" +
                 "force: true\n" +

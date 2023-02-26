@@ -16,21 +16,23 @@
  */
 package org.apache.dubbo.qos.command.impl;
 
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.profiler.ProfilerSwitch;
 import org.apache.dubbo.qos.command.BaseCommand;
 import org.apache.dubbo.qos.command.CommandContext;
 import org.apache.dubbo.qos.command.annotation.Cmd;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.QOS_PROFILER_ENABLED;
+
 @Cmd(name = "enableDetailProfiler", summary = "Enable Dubbo Invocation Profiler.")
 public class EnableDetailProfiler implements BaseCommand {
-    private final static Logger logger = LoggerFactory.getLogger(EnableDetailProfiler.class);
+    private final static ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(EnableDetailProfiler.class);
 
     @Override
     public String execute(CommandContext commandContext, String[] args) {
         ProfilerSwitch.enableDetailProfiler();
-        logger.warn("Dubbo Invocation Profiler has been enabled.");
+        logger.warn(QOS_PROFILER_ENABLED, "", "", "Dubbo Invocation Profiler has been enabled.");
         return "OK. This will cause performance degradation, please be careful!";
     }
 }

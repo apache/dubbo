@@ -17,8 +17,10 @@
 
 package org.apache.dubbo.rpc.protocol.tri.transport;
 
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.JsonUtils;
+import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 import org.apache.dubbo.rpc.protocol.tri.stream.StreamUtils;
@@ -28,10 +30,14 @@ import io.netty.handler.codec.http2.Http2Headers;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
+
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_PARSE;
 
 public abstract class AbstractH2TransportListener implements H2TransportListener {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractH2TransportListener.class);
+    private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(AbstractH2TransportListener.class);
 
     /**
      * Parse metadata to a KV pairs map.
@@ -39,7 +45,7 @@ public abstract class AbstractH2TransportListener implements H2TransportListener
      * @param trailers the metadata from remote
      * @return KV pairs map
      */
-    protected Map<String, Object> headersToMap(Http2Headers trailers) {
+    protected Map<String, Object> headersToMap(Http2Headers trailers, Supplier<Object> convertUpperHeaderSupplier) {
         if (trailers == null) {
             return Collections.emptyMap();
         }
@@ -54,11 +60,32 @@ public abstract class AbstractH2TransportListener implements H2TransportListener
                     byte[] value = StreamUtils.decodeASCIIByte(header.getValue());
                     attachments.put(realKey, value);
                 } catch (Exception e) {
-                    LOGGER.error("Failed to parse response attachment key=" + key, e);
+                    LOGGER.error(PROTOCOL_FAILED_PARSE, "", "", "Failed to parse response attachment key=" + key, e);
                 }
             } else {
                 attachments.put(key, header.getValue().toString());
             }
+        }
+
+        // try converting upper key
+        Object obj = convertUpperHeaderSupplier.get();
+        if (obj == null) {
+            return attachments;
+        }
+        if (obj instanceof String) {
+            String json = TriRpcStatus.decodeMessage((String) obj);
+            Map<String, String> map = JsonUtils.getJson().toJavaObject(json, Map.class);
+            for (Map.Entry<String, String> entry : map.entrySet()) {
+                Object val = attachments.remove(entry.getKey());
+                if (val != null) {
+                    attachments.put(entry.getValue(), val);
+                }
+            }
+        } else {
+            // If convertUpperHeaderSupplier does not return String, just fail...
+            // Internal invocation, use INTERNAL_ERROR instead.
+
+            LOGGER.error(INTERNAL_ERROR, "wrong internal invocation", "", "Triple convertNoLowerCaseHeader error, obj is not String");
         }
         return attachments;
     }
@@ -71,9 +98,6 @@ public abstract class AbstractH2TransportListener implements H2TransportListener
         Map<String, String> excludeHeaders = new HashMap<>(trailers.size());
         for (Map.Entry<CharSequence, CharSequence> header : trailers) {
             String key = header.getKey().toString();
-            if (Http2Headers.PseudoHeaderName.isPseudoHeader(key)) {
-                excludeHeaders.put(key, trailers.getAndRemove(key).toString());
-            }
             if (TripleHeaderEnum.containsExcludeAttachments(key)) {
                 excludeHeaders.put(key, trailers.getAndRemove(key).toString());
             }

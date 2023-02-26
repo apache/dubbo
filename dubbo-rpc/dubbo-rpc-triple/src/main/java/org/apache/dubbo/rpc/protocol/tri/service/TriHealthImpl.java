@@ -17,7 +17,7 @@
 
 package org.apache.dubbo.rpc.protocol.tri.service;
 
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.rpc.RpcContext;
@@ -32,9 +32,11 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_CLOSED_SERVER;
+
 public class TriHealthImpl extends DubboHealthTriple.HealthImplBase {
 
-    private static final Logger logger = LoggerFactory.getLogger(TriHealthImpl.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(TriHealthImpl.class);
 
     // Due to the latency of rpc calls, synchronization of the map does not help with consistency.
     // However, need use ConcurrentHashMap to allow concurrent reading by check().
@@ -76,7 +78,7 @@ public class TriHealthImpl extends DubboHealthTriple.HealthImplBase {
 
     @Override
     public void watch(HealthCheckRequest request,
-        StreamObserver<HealthCheckResponse> responseObserver) {
+                      StreamObserver<HealthCheckResponse> responseObserver) {
         final String service = request.getService();
         synchronized (watchLock) {
             HealthCheckResponse.ServingStatus status = statusMap.get(service);
@@ -136,7 +138,7 @@ public class TriHealthImpl extends DubboHealthTriple.HealthImplBase {
     void enterTerminalState() {
         synchronized (watchLock) {
             if (terminal) {
-                logger.warn("Already terminating", new RuntimeException());
+                logger.warn(PROTOCOL_CLOSED_SERVER, "", "", "Already terminating", new RuntimeException());
                 return;
             }
             terminal = true;

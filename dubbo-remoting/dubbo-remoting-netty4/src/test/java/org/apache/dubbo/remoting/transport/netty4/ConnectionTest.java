@@ -18,78 +18,138 @@ package org.apache.dubbo.remoting.transport.netty4;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
-import org.apache.dubbo.remoting.api.Connection;
+import org.apache.dubbo.remoting.RemotingException;
+import org.apache.dubbo.remoting.api.connection.AbstractConnectionClient;
+import org.apache.dubbo.remoting.api.connection.ConnectionManager;
+import org.apache.dubbo.remoting.api.connection.MultiplexProtocolConnectionManager;
 import org.apache.dubbo.remoting.api.pu.DefaultPuHandler;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
+
 
 public class ConnectionTest {
+
+    private static URL url;
+
+    private static NettyPortUnificationServer server;
+
+    private static ConnectionManager connectionManager;
+
+    @BeforeAll
+    public static void init() throws RemotingException {
+        int port = NetUtils.getAvailablePort();
+        url = URL.valueOf("empty://127.0.0.1:" + port + "?foo=bar");
+        server = new NettyPortUnificationServer(url, new DefaultPuHandler());
+        server.bind();
+        connectionManager = url.getOrDefaultFrameworkModel().getExtensionLoader(ConnectionManager.class).getExtension(MultiplexProtocolConnectionManager.NAME);
+    }
+
+    @AfterAll
+    public static void close() {
+        try {
+            server.close();
+        } catch (Throwable e) {
+            // ignored
+        }
+    }
+
     @Test
-    public void connectSyncTest() throws Throwable {
+    void testGetChannel() {
+        final AbstractConnectionClient connectionClient = connectionManager.connect(url, new DefaultPuHandler());
+        Assertions.assertNotNull(connectionClient);
+        connectionClient.close();
+    }
+
+    @Test
+    void testRefCnt0() throws InterruptedException {
+        final AbstractConnectionClient connectionClient = connectionManager.connect(url, new DefaultPuHandler());
+        CountDownLatch latch = new CountDownLatch(1);
+        Assertions.assertNotNull(connectionClient);
+        connectionClient.addCloseListener(latch::countDown);
+        connectionClient.release();
+        latch.await();
+        Assertions.assertEquals(0, latch.getCount());
+    }
+
+    @Test
+    void testRefCnt1() {
+        DefaultPuHandler handler = new DefaultPuHandler();
+        final AbstractConnectionClient connectionClient = connectionManager.connect(url, handler);
+        CountDownLatch latch = new CountDownLatch(1);
+        Assertions.assertNotNull(connectionClient);
+
+        connectionManager.connect(url, handler);
+        connectionClient.addCloseListener(latch::countDown);
+        connectionClient.release();
+        Assertions.assertEquals(1, latch.getCount());
+        connectionClient.close();
+    }
+
+    @Test
+    void testRefCnt2() throws InterruptedException {
+        final AbstractConnectionClient connectionClient = connectionManager.connect(url, new DefaultPuHandler());
+        CountDownLatch latch = new CountDownLatch(1);
+        connectionClient.retain();
+        connectionClient.addCloseListener(latch::countDown);
+        connectionClient.release();
+        connectionClient.release();
+        latch.await();
+        Assertions.assertEquals(0, latch.getCount());
+    }
+
+    @Test
+    void connectSyncTest() throws RemotingException {
         int port = NetUtils.getAvailablePort();
         URL url = URL.valueOf("empty://127.0.0.1:" + port + "?foo=bar");
-        NettyPortUnificationServer server = null;
-        try {
-            server = new NettyPortUnificationServer(url, new DefaultPuHandler());
-            server.bind();
+        NettyPortUnificationServer nettyPortUnificationServer = new NettyPortUnificationServer(url, new DefaultPuHandler());
+        nettyPortUnificationServer.bind();
+        final AbstractConnectionClient connectionClient = connectionManager.connect(url, new DefaultPuHandler());
+        Assertions.assertTrue(connectionClient.isAvailable());
 
-            Connection connection = new Connection(url);
-            Assertions.assertTrue(connection.isAvailable());
+        nettyPortUnificationServer.close();
+        Assertions.assertFalse(connectionClient.isAvailable());
 
-            server.close();
-            Assertions.assertFalse(connection.isAvailable());
+        nettyPortUnificationServer.bind();
+        // auto reconnect
+        Assertions.assertTrue(connectionClient.isAvailable());
 
-            server.bind();
-            // auto reconnect
-            Assertions.assertTrue(connection.isAvailable());
-
-            connection.close();
-            Assertions.assertFalse(connection.isAvailable());
-        } finally {
-            try {
-                server.close();
-            } catch (Throwable e) {
-                // ignored
-            }
-        }
-
+        connectionClient.close();
+        Assertions.assertFalse(connectionClient.isAvailable());
+        nettyPortUnificationServer.close();
 
     }
 
     @Test
-    public void testMultiConnect() throws Throwable {
-        int port = NetUtils.getAvailablePort();
-        URL url = URL.valueOf("empty://127.0.0.1:" + port + "?foo=bar");
-        NettyPortUnificationServer server = null;
-        try {
-            server = new NettyPortUnificationServer(url, new DefaultPuHandler());
-            server.close();
-
-            Connection connection = new Connection(url);
-            ExecutorService service = Executors.newFixedThreadPool(10);
-            final CountDownLatch latch = new CountDownLatch(10);
-            for (int i = 0; i < 10; i++) {
-                Runnable runnable = () -> {
-                    try {
-                        Assertions.assertTrue(connection.isAvailable());
-                        latch.countDown();
-                    } catch (Exception e) {
-                        // ignore
-                    }
-                };
-                service.execute(runnable);
-            }
-        } finally {
+    void testMultiConnect() throws Throwable {
+        ExecutorService service = Executors.newFixedThreadPool(10);
+        final CountDownLatch latch = new CountDownLatch(10);
+        AtomicInteger failedCount = new AtomicInteger(0);
+        final AbstractConnectionClient connectionClient = connectionManager.connect(url, new DefaultPuHandler());
+        Runnable runnable = () -> {
             try {
-                server.close();
-            } catch (Throwable e) {
-                // ignored
+                Assertions.assertTrue(connectionClient.isAvailable());
+            } catch (Exception e) {
+                // ignore
+                e.printStackTrace();
+                failedCount.incrementAndGet();
+            } finally {
+                latch.countDown();
             }
+        };
+        for (int i = 0; i < 10; i++) {
+            service.execute(runnable);
         }
+        latch.await();
+        Assertions.assertEquals(0, failedCount.get());
+        service.shutdown();
+        connectionClient.destroy();
     }
 }

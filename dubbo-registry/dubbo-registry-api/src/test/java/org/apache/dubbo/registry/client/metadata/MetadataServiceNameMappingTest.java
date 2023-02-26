@@ -16,6 +16,13 @@
  */
 package org.apache.dubbo.registry.client.metadata;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.ConfigItem;
 import org.apache.dubbo.config.ApplicationConfig;
@@ -24,7 +31,6 @@ import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.metadata.report.MetadataReport;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,13 +38,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -48,7 +47,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
-public class MetadataServiceNameMappingTest {
+class MetadataServiceNameMappingTest {
 
     private MetadataServiceNameMapping mapping;
     private URL url;
@@ -59,7 +58,7 @@ public class MetadataServiceNameMappingTest {
 
     @BeforeEach
     public void setUp() {
-        applicationModel = new ApplicationModel(FrameworkModel.defaultModel());
+        applicationModel = ApplicationModel.defaultModel();
         configManager = mock(ConfigManager.class);
         metadataReport = mock(MetadataReport.class);
         metadataReportList.put("default", metadataReport);
@@ -74,7 +73,7 @@ public class MetadataServiceNameMappingTest {
     }
 
     @Test
-    public void testMap() {
+    void testMap() {
         ApplicationModel mockedApplicationModel = spy(applicationModel);
 
         when(configManager.getMetadataConfigs()).thenReturn(Collections.emptyList());
@@ -97,7 +96,7 @@ public class MetadataServiceNameMappingTest {
         result = mapping.map(url);
         assertTrue(result);
 
-        // metadata report using cas and retry, succeeded after retried 5 times
+        // metadata report using cas and retry, succeeded after retried 10 times
         when(metadataReport.registerServiceAppMapping(any(), any(), any())).thenReturn(false);
         when(metadataReport.getConfigItem(any(), any())).thenReturn(new ConfigItem());
         when(metadataReport.registerServiceAppMapping(any(), any(), any(), any())).thenAnswer(new Answer<Boolean>() {
@@ -105,7 +104,7 @@ public class MetadataServiceNameMappingTest {
 
             @Override
             public Boolean answer(InvocationOnMock invocationOnMock) throws Throwable {
-                if (++counter == 5) {
+                if (++counter == 10) {
                     return true;
                 }
                 return false;
@@ -113,7 +112,7 @@ public class MetadataServiceNameMappingTest {
         });
         assertTrue(mapping.map(url));
 
-        // metadata report using cas and retry, failed after 6 times retry
+        // metadata report using cas and retry, failed after 11 times retry
         when(metadataReport.registerServiceAppMapping(any(), any(), any(), any())).thenReturn(false);
         Exception exceptionExpected = null;
         assertFalse(mapping.map(url));
@@ -123,7 +122,7 @@ public class MetadataServiceNameMappingTest {
      * This test currently doesn't make any sense
      */
     @Test
-    public void testGet() {
+    void testGet() {
         Set<String> set = new HashSet<>();
         set.add("app1");
 
@@ -140,7 +139,7 @@ public class MetadataServiceNameMappingTest {
      * Same situation as testGet, so left empty.
      */
     @Test
-    public void testGetAndListen() {
+    void testGetAndListen() {
         // TODO
     }
 }

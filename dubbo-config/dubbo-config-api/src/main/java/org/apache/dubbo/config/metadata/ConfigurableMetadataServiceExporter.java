@@ -16,13 +16,6 @@
  */
 package org.apache.dubbo.config.metadata;
 
-import static java.util.Collections.emptyList;
-import static org.apache.dubbo.common.constants.CommonConstants.METADATA_SERVICE_PORT_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.METADATA_SERVICE_PROTOCOL_KEY;
-
-import java.util.Collections;
-import java.util.List;
-
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -34,6 +27,14 @@ import org.apache.dubbo.config.bootstrap.builders.InternalServiceConfigBuilder;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.registry.client.metadata.MetadataServiceDelegation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
+import java.util.Collections;
+import java.util.List;
+
+import static java.util.Collections.emptyList;
+import static org.apache.dubbo.common.constants.CommonConstants.METADATA_SERVICE_PORT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.METADATA_SERVICE_PROTOCOL_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_METADATA_SERVICE_EXPORTED;
 
 /**
  * Export metadata service
@@ -71,7 +72,7 @@ public class ConfigurableMetadataServiceExporter {
             }
         } else {
             if (logger.isWarnEnabled()) {
-                logger.warn("The MetadataService has been exported : " + serviceConfig.getExportedUrls());
+                logger.warn(CONFIG_METADATA_SERVICE_EXPORTED, "", "", "The MetadataService has been exported : " + serviceConfig.getExportedUrls());
             }
         }
 

@@ -18,7 +18,7 @@ package org.apache.dubbo.remoting.transport;
 
 import org.apache.dubbo.common.Resetable;
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.ChannelHandler;
@@ -28,6 +28,7 @@ import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.transport.codec.CodecAdapter;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
 import static org.apache.dubbo.rpc.model.ScopeModelUtil.getFrameworkModel;
 
 /**
@@ -35,7 +36,7 @@ import static org.apache.dubbo.rpc.model.ScopeModelUtil.getFrameworkModel;
  */
 public abstract class AbstractEndpoint extends AbstractPeer implements Resetable {
 
-    private static final Logger logger = LoggerFactory.getLogger(AbstractEndpoint.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(AbstractEndpoint.class);
 
     private Codec2 codec;
 
@@ -56,10 +57,10 @@ public abstract class AbstractEndpoint extends AbstractPeer implements Resetable
         FrameworkModel frameworkModel = getFrameworkModel(url.getScopeModel());
         if (frameworkModel.getExtensionLoader(Codec2.class).hasExtension(codecName)) {
             return frameworkModel.getExtensionLoader(Codec2.class).getExtension(codecName);
-        } else if(frameworkModel.getExtensionLoader(Codec.class).hasExtension(codecName)){
+        } else if (frameworkModel.getExtensionLoader(Codec.class).hasExtension(codecName)) {
             return new CodecAdapter(frameworkModel.getExtensionLoader(Codec.class)
                 .getExtension(codecName));
-        }else {
+        } else {
             return frameworkModel.getExtensionLoader(Codec2.class).getExtension("default");
         }
     }
@@ -79,7 +80,7 @@ public abstract class AbstractEndpoint extends AbstractPeer implements Resetable
                 }
             }
         } catch (Throwable t) {
-            logger.error(t.getMessage(), t);
+            logger.error(INTERNAL_ERROR, "", "", t.getMessage(), t);
         }
 
         try {
@@ -87,7 +88,7 @@ public abstract class AbstractEndpoint extends AbstractPeer implements Resetable
                 this.codec = getChannelCodec(url);
             }
         } catch (Throwable t) {
-            logger.error(t.getMessage(), t);
+            logger.error(INTERNAL_ERROR, "unknown error in remoting module", "", t.getMessage(), t);
         }
     }
 

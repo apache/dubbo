@@ -16,15 +16,16 @@
  */
 package org.apache.dubbo.common.serialize.fastjson2;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Optional;
+
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.serialize.ObjectOutput;
 import org.apache.dubbo.common.serialize.Serialization;
 import org.apache.dubbo.rpc.model.FrameworkModel;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 
 import static org.apache.dubbo.common.serialize.Constants.FASTJSON2_SERIALIZATION_ID;
 
@@ -36,12 +37,6 @@ import static org.apache.dubbo.common.serialize.Constants.FASTJSON2_SERIALIZATIO
  * </pre>
  */
 public class FastJson2Serialization implements Serialization {
-
-    private final Fastjson2CreatorManager fastjson2CreatorManager;
-
-    public FastJson2Serialization(FrameworkModel frameworkModel) {
-        this.fastjson2CreatorManager = frameworkModel.getBeanFactory().getBean(Fastjson2CreatorManager.class);
-    }
 
     @Override
     public byte getContentTypeId() {
@@ -55,12 +50,30 @@ public class FastJson2Serialization implements Serialization {
 
     @Override
     public ObjectOutput serialize(URL url, OutputStream output) throws IOException {
-        return new FastJson2ObjectOutput(fastjson2CreatorManager, output);
+        Fastjson2CreatorManager fastjson2CreatorManager = Optional.ofNullable(url)
+            .map(URL::getOrDefaultFrameworkModel)
+            .orElse(FrameworkModel.defaultModel())
+            .getBeanFactory().getBean(Fastjson2CreatorManager.class);
+        Fastjson2SecurityManager fastjson2SecurityManager = Optional.ofNullable(url)
+            .map(URL::getOrDefaultFrameworkModel)
+            .orElse(FrameworkModel.defaultModel())
+            .getBeanFactory().getBean(Fastjson2SecurityManager.class);
+
+        return new FastJson2ObjectOutput(fastjson2CreatorManager, fastjson2SecurityManager, output);
     }
 
     @Override
     public ObjectInput deserialize(URL url, InputStream input) throws IOException {
-        return new FastJson2ObjectInput(fastjson2CreatorManager, input);
+        Fastjson2CreatorManager fastjson2CreatorManager = Optional.ofNullable(url)
+            .map(URL::getOrDefaultFrameworkModel)
+            .orElse(FrameworkModel.defaultModel())
+            .getBeanFactory().getBean(Fastjson2CreatorManager.class);
+        Fastjson2SecurityManager fastjson2SecurityManager = Optional.ofNullable(url)
+            .map(URL::getOrDefaultFrameworkModel)
+            .orElse(FrameworkModel.defaultModel())
+            .getBeanFactory().getBean(Fastjson2SecurityManager.class);
+
+        return new FastJson2ObjectInput(fastjson2CreatorManager, fastjson2SecurityManager, input);
     }
 
 }

@@ -16,6 +16,10 @@
  */
 package org.apache.dubbo.rpc.filter;
 
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.AsyncRpcResult;
@@ -23,30 +27,27 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.support.DemoService;
 import org.apache.dubbo.rpc.support.Person;
-
-import com.alibaba.dubbo.rpc.service.GenericException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
+import com.alibaba.dubbo.rpc.service.GenericException;
 
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE;
 import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.when;
 
-public class GenericImplFilterTest {
+class GenericImplFilterTest {
 
-    private GenericImplFilter genericImplFilter = new GenericImplFilter();
+    private GenericImplFilter genericImplFilter = new GenericImplFilter(ApplicationModel.defaultModel().getDefaultModule());
 
     @Test
-    public void testInvoke() throws Exception {
+    void testInvoke() throws Exception {
 
         RpcInvocation invocation = new RpcInvocation("getPerson", "org.apache.dubbo.rpc.support.DemoService",
                 "org.apache.dubbo.rpc.support.DemoService:dubbo", new Class[]{Person.class}, new Object[]{new Person("dubbo", 10)});
@@ -74,7 +75,7 @@ public class GenericImplFilterTest {
     }
 
     @Test
-    public void testInvokeWithException() throws Exception {
+    void testInvokeWithException() throws Exception {
 
         RpcInvocation invocation = new RpcInvocation("getPerson", "org.apache.dubbo.rpc.support.DemoService",
                 "org.apache.dubbo.rpc.support.DemoService:dubbo", new Class[]{Person.class}, new Object[]{new Person("dubbo", 10)});
@@ -96,7 +97,7 @@ public class GenericImplFilterTest {
     }
 
     @Test
-    public void testInvokeWith$Invoke() throws Exception {
+    void testInvokeWith$Invoke() throws Exception {
 
         Method genericInvoke = GenericService.class.getMethods()[0];
 

@@ -18,6 +18,7 @@
 package org.apache.dubbo.reactive;
 
 import org.apache.dubbo.reactive.handler.OneToOneMethodHandler;
+
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.CompletableFuture;
@@ -31,7 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public final class OneToOneMethodHandlerTest {
 
     @Test
-    public void testInvoke() throws ExecutionException, InterruptedException {
+    void testInvoke() throws ExecutionException, InterruptedException {
         String request = "request";
         OneToOneMethodHandler<String, String> handler = new OneToOneMethodHandler<>(requestMono ->
             requestMono.map(r -> r + "Test"));

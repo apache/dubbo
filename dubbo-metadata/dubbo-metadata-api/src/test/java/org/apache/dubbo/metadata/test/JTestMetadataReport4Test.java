@@ -34,7 +34,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * ZookeeperRegistry
  */
-public class JTestMetadataReport4Test extends AbstractMetadataReport {
+class JTestMetadataReport4Test extends AbstractMetadataReport {
 
     private final static Logger logger = LoggerFactory.getLogger(JTestMetadataReport4Test.class);
 

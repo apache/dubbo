@@ -38,7 +38,7 @@ import java.util.List;
 import static org.apache.dubbo.rpc.cluster.Constants.RULE_KEY;
 
 @DisabledForJreRange(min = JRE.JAVA_16)
-public class ScriptStateRouterTest {
+class ScriptStateRouterTest {
 
     private URL SCRIPT_URL = URL.valueOf("script://javascript?type=javascript");
 
@@ -55,7 +55,7 @@ public class ScriptStateRouterTest {
     }
 
     @Test
-    public void testRouteReturnAll() {
+    void testRouteReturnAll() {
         StateRouter router = new ScriptStateRouterFactory().getRouter(String.class, getRouteUrl("function route(op1,op2){return op1} route(invokers)"));
         List<Invoker<String>> originInvokers = new ArrayList<Invoker<String>>();
         originInvokers.add(new MockInvoker<String>());
@@ -68,7 +68,7 @@ public class ScriptStateRouterTest {
     }
 
     @Test
-    public void testRoutePickInvokers() {
+    void testRoutePickInvokers() {
         String rule = "var result = new java.util.ArrayList(invokers.size());" +
             "for (i=0;i<invokers.size(); i++){ " +
             "if (invokers.get(i).isAvailable()) {" +
@@ -95,7 +95,7 @@ public class ScriptStateRouterTest {
     }
 
     @Test
-    public void testRouteHostFilter() {
+    void testRouteHostFilter() {
         List<Invoker<String>> originInvokers = new ArrayList<Invoker<String>>();
         MockInvoker<String> invoker1 = new MockInvoker<String>(URL.valueOf("dubbo://10.134.108.1:20880/com.dubbo.HelloService"));
         MockInvoker<String> invoker2 = new MockInvoker<String>(URL.valueOf("dubbo://10.134.108.2:20880/com.dubbo.HelloService"));
@@ -125,7 +125,7 @@ public class ScriptStateRouterTest {
     }
 
     @Test
-    public void testRoute_throwException() {
+    void testRoute_throwException() {
         List<Invoker<String>> originInvokers = new ArrayList<Invoker<String>>();
         MockInvoker<String> invoker1 = new MockInvoker<String>(URL.valueOf("dubbo://10.134.108.1:20880/com.dubbo.HelloService"));
         MockInvoker<String> invoker2 = new MockInvoker<String>(URL.valueOf("dubbo://10.134.108.2:20880/com.dubbo.HelloService"));
