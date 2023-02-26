@@ -16,27 +16,35 @@
  */
 package org.apache.dubbo.qos.permission;
 
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-
 import org.apache.dubbo.qos.command.CommandContext;
 import org.apache.dubbo.qos.common.QosConfiguration;
+
+import io.netty.channel.Channel;
+
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.util.Optional;
 
 public class DefaultAnonymousAccessPermissionChecker implements PermissionChecker {
     public static final DefaultAnonymousAccessPermissionChecker INSTANCE = new DefaultAnonymousAccessPermissionChecker();
 
     @Override
     public boolean access(CommandContext commandContext, PermissionLevel defaultCmdRequiredPermissionLevel) {
-        final InetAddress inetAddress = ((InetSocketAddress) commandContext.getRemote().remoteAddress()).getAddress();
+        final InetAddress inetAddress = Optional.ofNullable(commandContext.getRemote())
+            .map(Channel::remoteAddress)
+            .map(InetSocketAddress.class::cast)
+            .map(InetSocketAddress::getAddress)
+            .orElse(null);
 
         QosConfiguration qosConfiguration = commandContext.getQosConfiguration();
         PermissionLevel currentLevel = qosConfiguration.getAnonymousAccessPermissionLevel();
 
         // Local has private permission
-        if (inetAddress.isLoopbackAddress()) {
+        if (inetAddress != null && inetAddress.isLoopbackAddress()) {
             currentLevel = PermissionLevel.PRIVATE;
-        } else if (qosConfiguration.getAcceptForeignIpWhitelistPredicate()
-            .test(inetAddress.getHostAddress())) {
+        } else if (inetAddress != null &&
+            qosConfiguration.getAcceptForeignIpWhitelistPredicate()
+                .test(inetAddress.getHostAddress())) {
             currentLevel = PermissionLevel.PROTECTED;
         }
 
