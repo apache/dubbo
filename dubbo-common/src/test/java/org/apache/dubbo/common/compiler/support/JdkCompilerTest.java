@@ -33,7 +33,7 @@ class JdkCompilerTest extends JavaCodeTest {
     }
 
     @Test
-    void test_compileJavaClass0() throws Exception {
+    void test_compileJavaClass0() {
         Assertions.assertThrows(IllegalStateException.class, () -> {
             JdkCompiler compiler = new JdkCompiler();
             Class<?> clazz = compiler.compile(JavaCodeTest.class, getSimpleCodeWithoutPackage(), JdkCompiler.class.getClassLoader());
@@ -44,7 +44,7 @@ class JdkCompilerTest extends JavaCodeTest {
     }
 
     @Test
-    void test_compileJavaClass1() throws Exception {
+    void test_compileJavaClass1() {
         Assertions.assertThrows(IllegalStateException.class, () -> {
             JdkCompiler compiler = new JdkCompiler();
             Class<?> clazz = compiler.compile(JavaCodeTest.class, getSimpleCodeWithSyntax(), JdkCompiler.class.getClassLoader());
@@ -64,7 +64,7 @@ class JdkCompilerTest extends JavaCodeTest {
     }
 
     @Test
-    void test_compileJavaClass0_java8() throws Exception {
+    void test_compileJavaClass0_java8() {
         Assertions.assertThrows(IllegalStateException.class, () -> {
             JdkCompiler compiler = new JdkCompiler("1.8");
             Class<?> clazz = compiler.compile(JavaCodeTest.class, getSimpleCodeWithoutPackage(), JdkCompiler.class.getClassLoader());
@@ -75,7 +75,7 @@ class JdkCompilerTest extends JavaCodeTest {
     }
 
     @Test
-    void test_compileJavaClass1_java8() throws Exception {
+    void test_compileJavaClass1_java8() {
         Assertions.assertThrows(IllegalStateException.class, () -> {
             JdkCompiler compiler = new JdkCompiler("1.8");
             Class<?> clazz = compiler.compile(JavaCodeTest.class, getSimpleCodeWithSyntax(), JdkCompiler.class.getClassLoader());

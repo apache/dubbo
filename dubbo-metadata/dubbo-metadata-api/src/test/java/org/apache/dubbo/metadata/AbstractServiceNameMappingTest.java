@@ -47,7 +47,7 @@ class AbstractServiceNameMappingTest {
     }
 
     @AfterEach
-    public void clearup() throws Exception {
+    public void clearup() {
         mapping.removeCachedMapping(ServiceNameMapping.buildMappingKey(url));
     }
 

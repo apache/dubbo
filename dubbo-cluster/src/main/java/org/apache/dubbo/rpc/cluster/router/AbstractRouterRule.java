@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.cluster.router;
 
 import java.util.Map;
 
+import static org.apache.dubbo.rpc.cluster.Constants.CONFIG_VERSION_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.DYNAMIC_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.ENABLED_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.FORCE_KEY;
@@ -40,6 +41,7 @@ public abstract class AbstractRouterRule {
     private int priority;
     private boolean dynamic = false;
 
+    private String version;
     private String scope;
     private String key;
 
@@ -78,6 +80,7 @@ public abstract class AbstractRouterRule {
 
         setScope((String) map.get(SCOPE_KEY));
         setKey((String) map.get(KEY_KEY));
+        setVersion((String) map.get(CONFIG_VERSION_KEY));
     }
 
     public String getRawRule() {
@@ -150,5 +153,13 @@ public abstract class AbstractRouterRule {
 
     public void setKey(String key) {
         this.key = key;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
     }
 }
