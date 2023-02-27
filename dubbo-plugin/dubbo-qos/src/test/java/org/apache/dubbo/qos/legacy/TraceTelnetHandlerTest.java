@@ -17,12 +17,24 @@
 package org.apache.dubbo.qos.legacy;
 
 import org.apache.dubbo.common.URL;
+<<<<<<< HEAD
+=======
+import org.apache.dubbo.common.extension.ExtensionLoader;
+>>>>>>> origin/3.2
 import org.apache.dubbo.qos.legacy.service.DemoService;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.telnet.TelnetHandler;
 import org.apache.dubbo.rpc.Invoker;
+<<<<<<< HEAD
 import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
 import org.apache.dubbo.rpc.protocol.dubbo.filter.TraceFilter;
+=======
+import org.apache.dubbo.rpc.Protocol;
+import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
+import org.apache.dubbo.rpc.protocol.dubbo.filter.TraceFilter;
+
+>>>>>>> origin/3.2
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,7 +48,11 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 
+<<<<<<< HEAD
 public class TraceTelnetHandlerTest {
+=======
+class TraceTelnetHandlerTest {
+>>>>>>> origin/3.2
 
     private TelnetHandler handler;
     private Channel mockChannel;
@@ -55,16 +71,28 @@ public class TraceTelnetHandlerTest {
     @AfterEach
     public void tearDown() {
         reset(mockChannel, mockInvoker);
+<<<<<<< HEAD
         ProtocolUtils.closeAll();
     }
 
     @Test
     public void testTraceTelnetAddTracer() throws Exception {
+=======
+        FrameworkModel.destroyAll();
+    }
+
+    @Test
+    void testTraceTelnetAddTracer() throws Exception {
+>>>>>>> origin/3.2
         String method = "sayHello";
         String message = "org.apache.dubbo.qos.legacy.service.DemoService sayHello 1";
         Class<?> type = DemoService.class;
 
+<<<<<<< HEAD
         DubboProtocol.getDubboProtocol().export(mockInvoker);
+=======
+        ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(DubboProtocol.NAME).export(mockInvoker);
+>>>>>>> origin/3.2
         handler.telnet(mockChannel, message);
 
         String key = type.getName() + "." + method;
@@ -78,4 +106,8 @@ public class TraceTelnetHandlerTest {
 
         Assertions.assertTrue(channels.contains(mockChannel));
     }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> origin/3.2

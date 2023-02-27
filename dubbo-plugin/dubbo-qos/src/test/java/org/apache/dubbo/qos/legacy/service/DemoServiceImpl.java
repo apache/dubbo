@@ -62,7 +62,7 @@ public class DemoServiceImpl implements DemoService {
     }
 
     public Object invoke(String service, String method) throws Exception {
-        System.out.println("RpcContext.getContext().getRemoteHost()=" + RpcContext.getContext().getRemoteHost());
+        System.out.println("RpcContext.getServerAttachment().getRemoteHost()=" + RpcContext.getServiceContext().getRemoteHost());
         return service + ":" + method;
     }
 
@@ -113,8 +113,8 @@ public class DemoServiceImpl implements DemoService {
     }
 
     @Override
-    public int getPerson(Person person1, Person perso2) {
-        return person1.getAge() + perso2.getAge();
+    public int getPerson(Person person1, Person person2) {
+        return person1.getAge() + person2.getAge();
     }
 
     @Override
@@ -124,7 +124,7 @@ public class DemoServiceImpl implements DemoService {
 
     @Override
     public String getRemoteApplicationName() {
-        return RpcContext.getContext().getRemoteApplicationName();
+        return RpcContext.getServiceContext().getRemoteApplicationName();
     }
 
     @Override

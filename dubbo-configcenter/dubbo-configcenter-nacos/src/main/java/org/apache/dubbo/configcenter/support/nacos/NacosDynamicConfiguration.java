@@ -17,24 +17,37 @@
 
 package org.apache.dubbo.configcenter.support.nacos;
 
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.Executor;
+
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
 import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
+import org.apache.dubbo.common.config.configcenter.ConfigItem;
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.constants.LoggerCodeConstants;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+<<<<<<< HEAD
 import org.apache.dubbo.common.utils.ReflectUtils;
+=======
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
+import org.apache.dubbo.common.utils.MD5Utils;
+>>>>>>> origin/3.2
 import org.apache.dubbo.common.utils.StringUtils;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import com.alibaba.nacos.api.NacosFactory;
 import com.alibaba.nacos.api.PropertyKeyConst;
 import com.alibaba.nacos.api.config.ConfigService;
 import com.alibaba.nacos.api.config.listener.AbstractSharedListener;
 import com.alibaba.nacos.api.exception.NacosException;
+<<<<<<< HEAD
 import com.alibaba.nacos.client.config.http.HttpAgent;
 import com.alibaba.nacos.common.http.HttpRestResult;
 
@@ -60,6 +73,18 @@ import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
 import static org.apache.dubbo.common.utils.StringConstantFieldValuePredicate.of;
 import static org.apache.dubbo.common.utils.StringUtils.HYPHEN_CHAR;
 import static org.apache.dubbo.common.utils.StringUtils.SLASH_CHAR;
+=======
+
+import static com.alibaba.nacos.api.PropertyKeyConst.PASSWORD;
+import static com.alibaba.nacos.api.PropertyKeyConst.SERVER_ADDR;
+import static com.alibaba.nacos.api.PropertyKeyConst.USERNAME;
+import static com.alibaba.nacos.client.constant.Constants.HealthCheck.UP;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_ERROR_NACOS;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_INTERRUPTED;
+import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
+import static org.apache.dubbo.common.utils.StringConstantFieldValuePredicate.of;
+import static org.apache.dubbo.common.utils.StringUtils.HYPHEN_CHAR;
+>>>>>>> origin/3.2
 
 /**
  * The nacos implementation of {@link DynamicConfiguration}
@@ -68,7 +93,7 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
 
     private static final String GET_CONFIG_KEYS_PATH = "/v1/cs/configs";
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
     /**
      * the default timeout in millis to get config from nacos
      */
@@ -76,48 +101,99 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
 
     private Properties nacosProperties;
 
+    private static final String NACOS_RETRY_KEY = "nacos.retry";
+
+    private static final String NACOS_RETRY_WAIT_KEY = "nacos.retry-wait";
+
+    private static final String NACOS_CHECK_KEY = "nacos.check";
+
     /**
      * The nacos configService
      */
     private final NacosConfigServiceWrapper configService;
+<<<<<<< HEAD
 
     private HttpAgent httpAgent;
+=======
+>>>>>>> origin/3.2
 
     /**
      * The map store the key to {@link NacosConfigListener} mapping
      */
     private final ConcurrentMap<String, NacosConfigListener> watchListenerMap;
 
+    private MD5Utils md5Utils = new MD5Utils();
+
     NacosDynamicConfiguration(URL url) {
         this.nacosProperties = buildNacosProperties(url);
         this.configService = buildConfigService(url);
+<<<<<<< HEAD
         this.httpAgent = getHttpAgent(configService.getConfigService());
+=======
+>>>>>>> origin/3.2
         watchListenerMap = new ConcurrentHashMap<>();
     }
 
     private NacosConfigServiceWrapper buildConfigService(URL url) {
+<<<<<<< HEAD
         ConfigService configService = null;
+=======
+        int retryTimes = url.getPositiveParameter(NACOS_RETRY_KEY, 10);
+        int sleepMsBetweenRetries = url.getPositiveParameter(NACOS_RETRY_WAIT_KEY, 1000);
+        boolean check = url.getParameter(NACOS_CHECK_KEY, true);
+        ConfigService tmpConfigServices = null;
+>>>>>>> origin/3.2
         try {
-            configService = NacosFactory.createConfigService(nacosProperties);
-        } catch (NacosException e) {
-            if (logger.isErrorEnabled()) {
-                logger.error(e.getErrMsg(), e);
+            for (int i = 0; i < retryTimes + 1; i++) {
+                tmpConfigServices = NacosFactory.createConfigService(nacosProperties);
+                if (!check || (UP.equals(tmpConfigServices.getServerStatus()) && testConfigService(tmpConfigServices))) {
+                    break;
+                } else {
+                    logger.warn(LoggerCodeConstants.CONFIG_ERROR_NACOS, "", "",
+                        "Failed to connect to nacos config server. " +
+                            (i < retryTimes ? "Dubbo will try to retry in " + sleepMsBetweenRetries + ". " : "Exceed retry max times.") +
+                            "Try times: " + (i + 1));
+                }
+                tmpConfigServices.shutDown();
+                tmpConfigServices = null;
+                Thread.sleep(sleepMsBetweenRetries);
             }
+        } catch (NacosException e) {
+            logger.error(CONFIG_ERROR_NACOS, "", "", e.getErrMsg(), e);
+            throw new IllegalStateException(e);
+        } catch (InterruptedException e) {
+            logger.error(INTERNAL_INTERRUPTED, "", "", "Interrupted when creating nacos config service client.", e);
+            Thread.currentThread().interrupt();
             throw new IllegalStateException(e);
         }
+
+        if (tmpConfigServices == null) {
+            logger.error(CONFIG_ERROR_NACOS, "", "", "Failed to create nacos config service client. Reason: server status check failed.");
+            throw new IllegalStateException("Failed to create nacos config service client. Reason: server status check failed.");
+        }
+<<<<<<< HEAD
         return new NacosConfigServiceWrapper(configService);
+=======
+
+        return new NacosConfigServiceWrapper(tmpConfigServices);
+>>>>>>> origin/3.2
     }
 
-    private HttpAgent getHttpAgent(ConfigService configService) {
-        HttpAgent agent = null;
+    private boolean testConfigService(ConfigService configService) {
         try {
+<<<<<<< HEAD
             Field field = configService.getClass().getDeclaredField("agent");
             ReflectUtils.makeAccessible(field);
             agent = (HttpAgent) field.get(configService);
         } catch (Exception e) {
             throw new IllegalStateException(e);
+=======
+            configService.getConfig("Dubbo-Nacos-Test", "Dubbo-Nacos-Test", DEFAULT_TIMEOUT);
+            return true;
+        } catch (NacosException e) {
+            return false;
+>>>>>>> origin/3.2
         }
-        return agent;
     }
 
     private Properties buildNacosProperties(URL url) {
@@ -129,14 +205,14 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
 
     private void setServerAddr(URL url, Properties properties) {
         StringBuilder serverAddrBuilder =
-                new StringBuilder(url.getHost()) // Host
-                        .append(":")
-                        .append(url.getPort()); // Port
+            new StringBuilder(url.getHost()) // Host
+                .append(':')
+                .append(url.getPort()); // Port
 
         // Append backup parameter as other servers
         String backup = url.getParameter(BACKUP_KEY);
         if (backup != null) {
-            serverAddrBuilder.append(",").append(backup);
+            serverAddrBuilder.append(',').append(backup);
         }
         String serverAddr = serverAddrBuilder.toString();
         properties.put(SERVER_ADDR, serverAddr);
@@ -153,6 +229,15 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
         }
         // Put all parameters
         properties.putAll(parameters);
+<<<<<<< HEAD
+=======
+        if (StringUtils.isNotEmpty(url.getUsername())) {
+            properties.put(USERNAME, url.getUsername());
+        }
+        if (StringUtils.isNotEmpty(url.getPassword())) {
+            properties.put(PASSWORD, url.getPassword());
+        }
+>>>>>>> origin/3.2
     }
 
     private static void putPropertyIfAbsent(URL url, Properties properties, String propertyName) {
@@ -185,14 +270,23 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
     }
 
     @Override
+    public void close() throws Exception {
+        configService.shutdown();
+    }
+
+    @Override
     public void addListener(String key, String group, ConfigurationListener listener) {
         String listenerKey = buildListenerKey(key, group);
+<<<<<<< HEAD
         NacosConfigListener nacosConfigListener = watchListenerMap.computeIfAbsent(listenerKey, k -> createTargetListener(key, group));
+=======
+        NacosConfigListener nacosConfigListener = ConcurrentHashMapUtils.computeIfAbsent(watchListenerMap, listenerKey, k -> createTargetListener(key, group));
+>>>>>>> origin/3.2
         nacosConfigListener.addListener(listener);
         try {
             configService.addListener(key, group, nacosConfigListener);
         } catch (NacosException e) {
-            logger.error(e.getMessage());
+            logger.error(CONFIG_ERROR_NACOS, "", "", e.getMessage(), e);
         }
     }
 
@@ -214,9 +308,19 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
             }
             return configService.getConfig(key, group, nacosTimeout);
         } catch (NacosException e) {
-            logger.error(e.getMessage());
+            logger.error(CONFIG_ERROR_NACOS, "", "", e.getMessage(), e);
         }
         return null;
+    }
+
+    @Override
+    public ConfigItem getConfigItem(String key, String group) {
+        String content = getConfig(key, group);
+        String casMd5 = "";
+        if (StringUtils.isNotEmpty(content)) {
+            casMd5 = md5Utils.getMd5(content);
+        }
+        return new ConfigItem(content, casMd5);
     }
 
     @Override
@@ -224,7 +328,7 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
         try {
             return configService.getConfig(key, DEFAULT_GROUP, getDefaultTimeout());
         } catch (NacosException e) {
-            logger.error(e.getMessage());
+            logger.error(CONFIG_ERROR_NACOS, "", "", e.getMessage(), e);
         }
         return null;
     }
@@ -235,27 +339,15 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
         try {
             published = configService.publishConfig(key, group, content);
         } catch (NacosException e) {
-            logger.error(e.getErrMsg(), e);
+            logger.error(CONFIG_ERROR_NACOS, "", "", e.getMessage(), e);
         }
         return published;
     }
 
     @Override
-    public long getDefaultTimeout() {
-        return DEFAULT_TIMEOUT;
-    }
-
-    /**
-     * TODO Nacos does not support atomic update of the value mapped to a key.
-     *
-     * @param group the specified group
-     * @return
-     */
-    @Override
-    public SortedSet<String> getConfigKeys(String group) {
-        // TODO use Nacos Client API to replace HTTP Open API
-        SortedSet<String> keys = new TreeSet<>();
+    public boolean publishConfigCas(String key, String group, String content, Object ticket) {
         try {
+<<<<<<< HEAD
 
             Map<String, String> paramsValues = new HashMap<>();
             paramsValues.put("search", "accurate");
@@ -274,9 +366,21 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
         } catch (Exception e) {
             if (logger.isErrorEnabled()) {
                 logger.error(e.getMessage(), e);
+=======
+            if (!(ticket instanceof String)) {
+                throw new IllegalArgumentException("nacos publishConfigCas requires string type ticket");
+>>>>>>> origin/3.2
             }
+            return configService.publishConfigCas(key, group, content, (String) ticket);
+        } catch (NacosException e) {
+            logger.warn(CONFIG_ERROR_NACOS, "nacos publishConfigCas failed.", "", e.getMessage(), e);
+            return false;
         }
-        return keys;
+    }
+
+    @Override
+    public long getDefaultTimeout() {
+        return DEFAULT_TIMEOUT;
     }
 
     @Override
@@ -286,12 +390,13 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
             removed = configService.removeConfig(key, group);
         } catch (NacosException e) {
             if (logger.isErrorEnabled()) {
-                logger.error(e.getMessage(), e);
+                logger.error(CONFIG_ERROR_NACOS, "", "", e.getMessage(), e);
             }
         }
         return removed;
     }
 
+<<<<<<< HEAD
     private Stream<String> toKeysStream(String content) {
         JSONObject jsonObject = JSON.parseObject(content);
         if (jsonObject == null) {
@@ -306,6 +411,8 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
                 .map(json -> json.getString("dataId"));
     }
 
+=======
+>>>>>>> origin/3.2
     private String getProperty(String name, String defaultValue) {
         return nacosProperties.getProperty(name, defaultValue);
     }

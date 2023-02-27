@@ -116,7 +116,8 @@ public class URL extends org.apache.dubbo.common.URL {
 
     @Override
     public String getAuthority() {
-        return super.getAuthority();
+        // Compatible with old version logic：The previous Authority only contained username and password information.
+        return super.getUserInformation();
     }
 
     @Override
@@ -626,6 +627,6 @@ public class URL extends org.apache.dubbo.common.URL {
 
     public org.apache.dubbo.common.URL getOriginalURL() {
         return new org.apache.dubbo.common.URL(super.getProtocol(), super.getUsername(), super.getPassword(),
-                super.getHost(), super.getPort(), super.getPath(), super.getParameters());
+            super.getHost(), super.getPort(), super.getPath(), super.getParameters());
     }
 }

@@ -16,25 +16,28 @@
  */
 package org.apache.dubbo.remoting;
 
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.serialize.support.DefaultSerializationSelector;
 import org.apache.dubbo.remoting.exchange.ExchangeClient;
 import org.apache.dubbo.remoting.exchange.Exchangers;
 import org.apache.dubbo.remoting.exchange.support.ExchangeHandlerAdapter;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_UNDEFINED_ARGUMENT;
 
 /**
  * ChanelHandlerTest
  * <p>
  * mvn clean test -Dtest=*PerformanceClientTest -Dserver=10.20.153.187:9911
  */
-public class ChanelHandlerTest  {
+class ChanelHandlerTest {
 
-    private static final Logger logger = LoggerFactory.getLogger(ChanelHandlerTest.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ChanelHandlerTest.class);
 
     public static ExchangeClient initClient(String url) {
         // Create client and build connection
@@ -47,7 +50,7 @@ public class ChanelHandlerTest  {
             } catch (Throwable t) {
 
                 if (t != null && t.getCause() != null && t.getCause().getClass() != null && (t.getCause().getClass() == java.net.ConnectException.class
-                        || t.getCause().getClass() == java.net.ConnectException.class)) {
+                    || t.getCause().getClass() == java.net.ConnectException.class)) {
 
                 } else {
                     t.printStackTrace();
@@ -73,15 +76,15 @@ public class ChanelHandlerTest  {
     }
 
     @Test
-    public void testClient() throws Throwable {
+    void testClient() throws Throwable {
         // read server info from property
         if (PerformanceUtils.getProperty("server", null) == null) {
-            logger.warn("Please set -Dserver=127.0.0.1:9911");
+            logger.warn(CONFIG_UNDEFINED_ARGUMENT, "", "", "Please set -Dserver=127.0.0.1:9911");
             return;
         }
         final String server = System.getProperty("server", "127.0.0.1:9911");
         final String transporter = PerformanceUtils.getProperty(Constants.TRANSPORTER_KEY, Constants.DEFAULT_TRANSPORTER);
-        final String serialization = PerformanceUtils.getProperty(Constants.SERIALIZATION_KEY, Constants.DEFAULT_REMOTING_SERIALIZATION);
+        final String serialization = PerformanceUtils.getProperty(Constants.SERIALIZATION_KEY, DefaultSerializationSelector.getDefaultRemotingSerialization());
         final int timeout = PerformanceUtils.getIntProperty(TIMEOUT_KEY, DEFAULT_TIMEOUT);
         int sleep = PerformanceUtils.getIntProperty("sleep", 60 * 1000 * 60);
 
@@ -98,6 +101,7 @@ public class ChanelHandlerTest  {
          * @param url
          */
         public PeformanceTestHandler(String url) {
+            super(FrameworkModel.defaultModel());
             this.url = url;
         }
 

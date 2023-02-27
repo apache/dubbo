@@ -17,7 +17,13 @@
 package org.apache.dubbo.registry.client;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ScopeModelAware;
 
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -28,14 +34,24 @@ import java.util.concurrent.ConcurrentMap;
  * @see ServiceDiscoveryFactory
  * @since 2.7.5
  */
-public abstract class AbstractServiceDiscoveryFactory implements ServiceDiscoveryFactory {
+public abstract class AbstractServiceDiscoveryFactory implements ServiceDiscoveryFactory, ScopeModelAware {
 
+    protected ApplicationModel applicationModel;
     private final ConcurrentMap<String, ServiceDiscovery> discoveries = new ConcurrentHashMap<>();
+
+    @Override
+    public void setApplicationModel(ApplicationModel applicationModel) {
+        this.applicationModel = applicationModel;
+    }
+
+    public List<ServiceDiscovery> getAllServiceDiscoveries() {
+        return Collections.unmodifiableList(new LinkedList<>(discoveries.values()));
+    }
 
     @Override
     public ServiceDiscovery getServiceDiscovery(URL registryURL) {
         String key = registryURL.toServiceStringWithoutResolving();
-        return discoveries.computeIfAbsent(key, k -> createDiscovery(registryURL));
+        return ConcurrentHashMapUtils.computeIfAbsent(discoveries, key, k -> createDiscovery(registryURL));
     }
 
     protected abstract ServiceDiscovery createDiscovery(URL registryURL);

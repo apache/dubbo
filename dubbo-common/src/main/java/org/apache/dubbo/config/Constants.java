@@ -17,6 +17,13 @@
 
 package org.apache.dubbo.config;
 
+import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP_COMPATIBLE;
+import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP_WHITELIST_COMPATIBLE;
+import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE_COMPATIBLE;
+import static org.apache.dubbo.common.constants.QosConstants.QOS_HOST_COMPATIBLE;
+import static org.apache.dubbo.common.constants.QosConstants.QOS_PORT_COMPATIBLE;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_TYPE_KEY;
+
 /**
  *
  */
@@ -30,11 +37,17 @@ public interface Constants {
 
     String LAYER_KEY = "layer";
 
+<<<<<<< HEAD
     String STUB_KEY = "stub";
+=======
+    // General
+>>>>>>> origin/3.2
 
     /**
-     * General
+     * Config id
      */
+    String ID = "id";
+
     /**
      * Application name;
      */
@@ -92,18 +105,29 @@ public interface Constants {
 
     String SCOPE_NONE = "none";
 
+    String ON_INVOKE_METHOD_PARAMETER_KEY = "oninvoke.method";
 
-    String ON_INVOKE_METHOD_KEY = "oninvoke.method";
+    String ON_RETURN_METHOD_PARAMETER_KEY = "onreturn.method";
 
-    String ON_RETURN_METHOD_KEY = "onreturn.method";
+    String ON_THROW_METHOD_PARAMETER_KEY = "onthrow.method";
 
-    String ON_THROW_METHOD_KEY = "onthrow.method";
+    String ON_INVOKE_INSTANCE_PARAMETER_KEY = "oninvoke.instance";
 
-    String ON_INVOKE_INSTANCE_KEY = "oninvoke.instance";
+    String ON_RETURN_INSTANCE_PARAMETER_KEY = "onreturn.instance";
 
-    String ON_RETURN_INSTANCE_KEY = "onreturn.instance";
+    String ON_THROW_INSTANCE_PARAMETER_KEY = "onthrow.instance";
 
-    String ON_THROW_INSTANCE_KEY = "onthrow.instance";
+    String ON_INVOKE_METHOD_ATTRIBUTE_KEY = "oninvoke-method";
+
+    String ON_RETURN_METHOD_ATTRIBUTE_KEY = "onreturn-method";
+
+    String ON_THROW_METHOD_ATTRIBUTE_KEY = "onthrow-method";
+
+    String ON_INVOKE_INSTANCE_ATTRIBUTE_KEY = "oninvoke-instance";
+
+    String ON_RETURN_INSTANCE_ATTRIBUTE_KEY = "onreturn-instance";
+
+    String ON_THROW_INSTANCE_ATTRIBUTE_KEY = "onthrow-instance";
 
 
     // FIXME: is this still useful?
@@ -119,10 +143,25 @@ public interface Constants {
 
     String REGISTER_KEY = "register";
 
+<<<<<<< HEAD
     String IGNORE_CHECK_KEYS = "ignoreCheckKeys";
 
     /**
      * Url merge processor key
      */
     String URL_MERGE_PROCESSOR_KEY = "url-merge-processor";
+=======
+    String MULTI_SERIALIZATION_KEY = "serialize.multiple";
+
+    String[] DOT_COMPATIBLE_KEYS = new String[]{QOS_ENABLE_COMPATIBLE, QOS_HOST_COMPATIBLE, QOS_PORT_COMPATIBLE,
+        ACCEPT_FOREIGN_IP_COMPATIBLE, ACCEPT_FOREIGN_IP_WHITELIST_COMPATIBLE, REGISTRY_TYPE_KEY};
+
+    String IGNORE_CHECK_KEYS = "ignoreCheckKeys";
+
+    String PARAMETERS = "parameters";
+
+    String SERVER_THREAD_POOL_NAME = "DubboServerHandler";
+
+
+>>>>>>> origin/3.2
 }

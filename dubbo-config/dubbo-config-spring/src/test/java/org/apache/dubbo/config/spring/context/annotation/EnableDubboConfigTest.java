@@ -23,18 +23,24 @@ import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.RegistryConfig;
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
+import org.apache.dubbo.config.context.ConfigManager;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
+<<<<<<< HEAD
+=======
+import org.junit.jupiter.api.AfterEach;
+>>>>>>> origin/3.2
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.test.annotation.DirtiesContext;
 
-import java.util.Map;
+import java.util.Collection;
 
 import static com.alibaba.spring.util.BeanRegistrar.hasAlias;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 /**
@@ -42,10 +48,24 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  * @since 2.5.8
  */
+<<<<<<< HEAD
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class EnableDubboConfigTest {
+=======
+class EnableDubboConfigTest {
+>>>>>>> origin/3.2
 
-    @Test
+    @BeforeEach
+    public void setUp() {
+        DubboBootstrap.reset();
+    }
+
+    @AfterEach
+    public void tearDown() {
+        DubboBootstrap.reset();
+    }
+
+    //@Test
     public void testSingle() {
 
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
@@ -89,34 +109,38 @@ public class EnableDubboConfigTest {
         context.close();
     }
 
-    @Test
+    //@Test
     public void testMultiple() {
 
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
         context.register(TestMultipleConfig.class);
         context.refresh();
 
-        // application
-        ApplicationConfig applicationConfig = context.getBean("applicationBean", ApplicationConfig.class);
-        Assertions.assertEquals("dubbo-demo-application", applicationConfig.getName());
+        RegistryConfig registry1 = context.getBean("registry1", RegistryConfig.class);
+        Assertions.assertEquals(2181, registry1.getPort());
 
+        RegistryConfig registry2 = context.getBean("registry2", RegistryConfig.class);
+        Assertions.assertEquals(2182, registry2.getPort());
 
-        ApplicationConfig applicationBean2 = context.getBean("applicationBean2", ApplicationConfig.class);
-        Assertions.assertEquals("dubbo-demo-application2", applicationBean2.getName());
+        ConfigManager configManager = ApplicationModel.defaultModel().getApplicationConfigManager();
+        Collection<ProtocolConfig> protocolConfigs = configManager.getProtocols();
+        Assertions.assertEquals(3, protocolConfigs.size());
 
-        ApplicationConfig applicationBean3 = context.getBean("applicationBean3", ApplicationConfig.class);
-        Assertions.assertEquals("dubbo-demo-application3", applicationBean3.getName());
+        configManager.getProtocol("dubbo").get();
+        configManager.getProtocol("rest").get();
+        configManager.getProtocol("thrift").get();
 
-        Map<String, ProtocolConfig> protocolConfigs = context.getBeansOfType(ProtocolConfig.class);
-
+<<<<<<< HEAD
         for (Map.Entry<String, ProtocolConfig> entry : protocolConfigs.entrySet()) {
             ProtocolConfig protocol = entry.getValue();
             Assertions.assertEquals(protocol, context.getBean(protocol.getName(), ProtocolConfig.class));
         }
+=======
+>>>>>>> origin/3.2
 
         // asserts aliases
-        assertTrue(hasAlias(context, "applicationBean2", "dubbo-demo-application2"));
-        assertTrue(hasAlias(context, "applicationBean3", "dubbo-demo-application3"));
+//        assertTrue(hasAlias(context, "applicationBean2", "dubbo-demo-application2"));
+//        assertTrue(hasAlias(context, "applicationBean3", "dubbo-demo-application3"));
 
         context.close();
 

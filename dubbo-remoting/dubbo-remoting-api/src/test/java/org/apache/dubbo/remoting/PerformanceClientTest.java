@@ -16,11 +16,13 @@
  */
 package org.apache.dubbo.remoting;
 
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.serialize.support.DefaultSerializationSelector;
 import org.apache.dubbo.remoting.exchange.ExchangeClient;
 import org.apache.dubbo.remoting.exchange.Exchangers;
 import org.apache.dubbo.remoting.exchange.support.ExchangeHandlerAdapter;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import org.junit.jupiter.api.Test;
 
@@ -34,6 +36,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_UNDEFINED_ARGUMENT;
 import static org.apache.dubbo.remoting.Constants.CONNECTIONS_KEY;
 
 /**
@@ -41,21 +44,21 @@ import static org.apache.dubbo.remoting.Constants.CONNECTIONS_KEY;
  * <p>
  * mvn clean test -Dtest=*PerformanceClientTest -Dserver=10.20.153.187:9911
  */
-public class PerformanceClientTest  {
+class PerformanceClientTest {
 
-    private static final Logger logger = LoggerFactory.getLogger(PerformanceClientTest.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(PerformanceClientTest.class);
 
     @Test
     @SuppressWarnings("unchecked")
     public void testClient() throws Throwable {
         // read server info from property
         if (PerformanceUtils.getProperty("server", null) == null) {
-            logger.warn("Please set -Dserver=127.0.0.1:9911");
+            logger.warn(CONFIG_UNDEFINED_ARGUMENT, "", "", "Please set -Dserver=127.0.0.1:9911");
             return;
         }
         final String server = System.getProperty("server", "127.0.0.1:9911");
         final String transporter = PerformanceUtils.getProperty(Constants.TRANSPORTER_KEY, Constants.DEFAULT_TRANSPORTER);
-        final String serialization = PerformanceUtils.getProperty(Constants.SERIALIZATION_KEY, Constants.DEFAULT_REMOTING_SERIALIZATION);
+        final String serialization = PerformanceUtils.getProperty(Constants.SERIALIZATION_KEY, DefaultSerializationSelector.getDefaultRemotingSerialization());
         final int timeout = PerformanceUtils.getIntProperty(TIMEOUT_KEY, DEFAULT_TIMEOUT);
         final int length = PerformanceUtils.getIntProperty("length", 1024);
         final int connections = PerformanceUtils.getIntProperty(CONNECTIONS_KEY, 1);
@@ -78,7 +81,7 @@ public class PerformanceClientTest  {
         // Create some data for test
         StringBuilder buf = new StringBuilder(length);
         for (int i = 0; i < length; i++) {
-            buf.append("A");
+            buf.append('A');
         }
         final String data = buf.toString();
 
@@ -216,6 +219,9 @@ public class PerformanceClientTest  {
     }
 
     static class PeformanceTestHandler extends ExchangeHandlerAdapter {
+        public PeformanceTestHandler() {
+            super(FrameworkModel.defaultModel());
+        }
 
         @Override
         public void connected(Channel channel) throws RemotingException {

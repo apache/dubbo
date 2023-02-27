@@ -23,4 +23,13 @@ public class DemoImpl implements Demo {
     public String echo(String msg) {
         return msg;
     }
+<<<<<<< HEAD
+=======
+
+    public DemoImpl() {
+    }
+
+    public DemoImpl(String test) {
+    }
+>>>>>>> origin/3.2
 }

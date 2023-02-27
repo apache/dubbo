@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config.spring.registry;
 
+<<<<<<< HEAD
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.registry.client.AbstractServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
@@ -39,10 +40,36 @@ public class MockServiceDiscovery extends AbstractServiceDiscovery {
 
     @Override
     public void doRegister(ServiceInstance serviceInstance) {
+=======
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.registry.client.AbstractServiceDiscovery;
+import org.apache.dubbo.registry.client.ServiceInstance;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+
+public class MockServiceDiscovery extends AbstractServiceDiscovery {
+    private URL registryURL;
+
+    public MockServiceDiscovery(ApplicationModel applicationModel, URL registryURL) {
+        super(applicationModel, registryURL);
+    }
+
+    public MockServiceDiscovery(String serviceName, URL registryURL) {
+        super(serviceName, registryURL);
+    }
+
+    @Override
+    public void doDestroy() throws Exception {
+>>>>>>> origin/3.2
 
     }
 
     @Override
+<<<<<<< HEAD
     public void doUpdate(ServiceInstance serviceInstance) {
 
     }
@@ -50,6 +77,17 @@ public class MockServiceDiscovery extends AbstractServiceDiscovery {
     @Override
     public void unregister(ServiceInstance serviceInstance) throws RuntimeException {
         this.serviceInstance = null;
+=======
+    public void doRegister(ServiceInstance serviceInstance) throws RuntimeException {
+    }
+
+    @Override
+    public void doUpdate(ServiceInstance oldServiceInstance, ServiceInstance newServiceInstance) throws RuntimeException {
+    }
+
+    @Override
+    public void doUnregister(ServiceInstance serviceInstance) throws RuntimeException {
+>>>>>>> origin/3.2
     }
 
     @Override
@@ -58,6 +96,14 @@ public class MockServiceDiscovery extends AbstractServiceDiscovery {
     }
 
     @Override
+<<<<<<< HEAD
+=======
+    public List<ServiceInstance> getInstances(String serviceName) throws NullPointerException {
+        return Collections.emptyList();
+    }
+
+    @Override
+>>>>>>> origin/3.2
     public URL getUrl() {
         return registryURL;
     }

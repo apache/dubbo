@@ -1,4 +1,8 @@
-impl1=org.apache.dubbo.common.extension.ext6_wrap.impl.Ext5Impl1
-impl2=org.apache.dubbo.common.extension.ext6_wrap.impl.Ext5Impl2
-wrapper1=org.apache.dubbo.common.extension.ext6_wrap.impl.Ext5Wrapper1
-wrapper2=org.apache.dubbo.common.extension.ext6_wrap.impl.Ext5Wrapper2
+impl1=org.apache.dubbo.common.extension.ext6_wrap.impl.Ext6Impl1
+impl2=org.apache.dubbo.common.extension.ext6_wrap.impl.Ext6Impl2
+impl3=org.apache.dubbo.common.extension.ext6_wrap.impl.Ext6Impl3
+impl4=org.apache.dubbo.common.extension.ext6_wrap.impl.Ext6Impl4
+wrapper1=org.apache.dubbo.common.extension.ext6_wrap.impl.Ext6Wrapper1
+wrapper2=org.apache.dubbo.common.extension.ext6_wrap.impl.Ext6Wrapper2
+wrapper3=org.apache.dubbo.common.extension.ext6_wrap.impl.Ext6Wrapper3
+wrapper4=org.apache.dubbo.common.extension.ext6_wrap.impl.Ext6Wrapper4

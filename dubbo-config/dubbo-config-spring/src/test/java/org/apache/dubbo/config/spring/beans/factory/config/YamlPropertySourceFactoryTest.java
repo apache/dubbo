@@ -27,6 +27,11 @@ import org.springframework.core.env.Environment;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+<<<<<<< HEAD
+=======
+
+import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD;
+>>>>>>> origin/3.2
 
 /**
  * {@link YamlPropertySourceFactory} Test
@@ -37,8 +42,13 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @PropertySource(name = "yaml-source", value = {"classpath:/META-INF/dubbo.yml"}, factory = YamlPropertySourceFactory.class)
 @Configuration
 @ContextConfiguration(classes = YamlPropertySourceFactoryTest.class)
+<<<<<<< HEAD
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class YamlPropertySourceFactoryTest {
+=======
+@DirtiesContext(classMode = AFTER_EACH_TEST_METHOD)
+class YamlPropertySourceFactoryTest {
+>>>>>>> origin/3.2
 
     @Autowired
     private Environment environment;
@@ -62,7 +72,11 @@ public class YamlPropertySourceFactoryTest {
     private Integer queues;
 
     @Test
+<<<<<<< HEAD
     public void testProperty() {
+=======
+    void testProperty() {
+>>>>>>> origin/3.2
         Assertions.assertEquals(isDefault, environment.getProperty("dubbo.consumer.default", Boolean.class));
         Assertions.assertEquals(client, environment.getProperty("dubbo.consumer.client", String.class));
         Assertions.assertEquals(threadPool, environment.getProperty("dubbo.consumer.threadpool", String.class));

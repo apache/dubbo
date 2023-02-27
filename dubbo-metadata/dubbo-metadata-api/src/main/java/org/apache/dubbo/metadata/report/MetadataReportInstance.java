@@ -18,26 +18,55 @@ package org.apache.dubbo.metadata.report;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
+<<<<<<< HEAD
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.config.MetadataReportConfig;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.HashMap;
+=======
+import org.apache.dubbo.common.resource.Disposable;
+import org.apache.dubbo.config.MetadataReportConfig;
+import org.apache.dubbo.metadata.report.support.NopMetadataReport;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+
+import java.util.HashMap;
+import java.util.List;
+>>>>>>> origin/3.2
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_DIRECTORY;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
+<<<<<<< HEAD
+=======
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA_STORAGE_TYPE;
+import static org.apache.dubbo.common.constants.CommonConstants.PORT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_LOCAL_FILE_CACHE_ENABLED;
+import static org.apache.dubbo.common.utils.StringUtils.isEmpty;
+>>>>>>> origin/3.2
 import static org.apache.dubbo.metadata.report.support.Constants.METADATA_REPORT_KEY;
 
 /**
- * 2019-08-09
+ * Repository of MetadataReport instances that can talk to remote metadata server.
+ *
+ * MetadataReport instances are initiated during the beginning of deployer.start() and used by components that
+ * need to interact with metadata server.
+ *
+ * If multiple metadata reports and registries need to be declared, it is recommended to group each two metadata report and registry together by giving them the same id:
+ * <dubbo:registry id=demo1 address="registry://"/>
+ * <dubbo:metadata id=demo1 address="metadata://"/>
+ *
+ * <dubbo:registry id=demo2 address="registry://"/>
+ * <dubbo:metadata id=demo2 address="metadata://"/>
  */
-public class MetadataReportInstance {
+public class MetadataReportInstance implements Disposable {
 
-    private static AtomicBoolean init = new AtomicBoolean(false);
+    private AtomicBoolean init = new AtomicBoolean(false);
+    private String metadataType;
 
+<<<<<<< HEAD
     private static final Map<String, MetadataReport> metadataReports = new HashMap<>();
 
     public static void init(MetadataReportConfig config) {
@@ -45,14 +74,46 @@ public class MetadataReportInstance {
             return;
         }
         MetadataReportFactory metadataReportFactory = ExtensionLoader.getExtensionLoader(MetadataReportFactory.class).getAdaptiveExtension();
+=======
+    // mapping of registry id to metadata report instance, registry instances will use this mapping to find related metadata reports
+    private final Map<String, MetadataReport> metadataReports = new HashMap<>();
+    private ApplicationModel applicationModel;
+    private final NopMetadataReport nopMetadataReport;
+
+    public MetadataReportInstance(ApplicationModel applicationModel) {
+        this.applicationModel = applicationModel;
+        this.nopMetadataReport = new NopMetadataReport();
+    }
+
+    public void init(List<MetadataReportConfig> metadataReportConfigs) {
+        if (!init.compareAndSet(false, true)) {
+            return;
+        }
+
+        this.metadataType = applicationModel.getApplicationConfigManager().getApplicationOrElseThrow().getMetadataType();
+        if (metadataType == null) {
+            this.metadataType = DEFAULT_METADATA_STORAGE_TYPE;
+        }
+
+        MetadataReportFactory metadataReportFactory = applicationModel.getExtensionLoader(MetadataReportFactory.class).getAdaptiveExtension();
+        for (MetadataReportConfig metadataReportConfig : metadataReportConfigs) {
+            init(metadataReportConfig, metadataReportFactory);
+        }
+    }
+
+    private void init(MetadataReportConfig config, MetadataReportFactory metadataReportFactory) {
+>>>>>>> origin/3.2
         URL url = config.toUrl();
         if (METADATA_REPORT_KEY.equals(url.getProtocol())) {
             String protocol = url.getParameter(METADATA_REPORT_KEY, DEFAULT_DIRECTORY);
             url = URLBuilder.from(url)
                     .setProtocol(protocol)
+                    .setPort(url.getParameter(PORT_KEY, url.getPort()))
+                    .setScopeModel(config.getScopeModel())
                     .removeParameter(METADATA_REPORT_KEY)
                     .build();
         }
+<<<<<<< HEAD
         url = url.addParameterIfAbsent(APPLICATION_KEY, ApplicationModel.getApplicationConfig().getName());
         String relatedRegistryId = config.getRegistry() == null ? DEFAULT_KEY : config.getRegistry();
 //        RegistryConfig registryConfig = ApplicationModel.getConfigManager().getRegistry(relatedRegistryId)
@@ -63,6 +124,27 @@ public class MetadataReportInstance {
     public static Map<String, MetadataReport> getMetadataReports(boolean checked) {
         if (checked) {
             checkInit();
+=======
+        url = url.addParameterIfAbsent(APPLICATION_KEY, applicationModel.getCurrentConfig().getName());
+        url = url.addParameterIfAbsent(REGISTRY_LOCAL_FILE_CACHE_ENABLED, String.valueOf(applicationModel.getCurrentConfig().getEnableFileCache()));
+        String relatedRegistryId = isEmpty(config.getRegistry()) ? (isEmpty(config.getId()) ? DEFAULT_KEY : config.getId()) : config.getRegistry();
+//        RegistryConfig registryConfig = applicationModel.getConfigManager().getRegistry(relatedRegistryId)
+//                .orElseThrow(() -> new IllegalStateException("Registry id " + relatedRegistryId + " does not exist."));
+        MetadataReport metadataReport = metadataReportFactory.getMetadataReport(url);
+        if (metadataReport != null) {
+            metadataReports.put(relatedRegistryId, metadataReport);
+        }
+    }
+
+    public Map<String, MetadataReport> getMetadataReports(boolean checked) {
+        return metadataReports;
+    }
+
+    public MetadataReport getMetadataReport(String registryKey) {
+        MetadataReport metadataReport = metadataReports.get(registryKey);
+        if (metadataReport == null && metadataReports.size() > 0) {
+            metadataReport = metadataReports.values().iterator().next();
+>>>>>>> origin/3.2
         }
         return metadataReports;
     }
@@ -76,11 +158,32 @@ public class MetadataReportInstance {
         return metadataReport;
     }
 
+<<<<<<< HEAD
 
     private static void checkInit() {
         if (!init.get()) {
             throw new IllegalStateException("the metadata report was not inited.");
         }
+=======
+    public MetadataReport getNopMetadataReport() {
+        return nopMetadataReport;
+    }
+
+    public String getMetadataType() {
+        return metadataType;
+    }
+
+    public boolean inited() {
+        return init.get();
+    }
+
+    @Override
+    public void destroy() {
+        metadataReports.forEach((_k, reporter) -> {
+            reporter.destroy();
+        });
+        metadataReports.clear();
+>>>>>>> origin/3.2
     }
 
     // only for unit test

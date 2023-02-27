@@ -1,6 +1,13 @@
+<<<<<<< HEAD
 all=org.apache.dubbo.remoting.transport.dispatcher.all.AllDispatcher
 all2=org.apache.dubbo.remoting.transport.dispatcher.all2.AllDispatcher2
 direct=org.apache.dubbo.remoting.transport.dispatcher.direct.DirectDispatcher
 message=org.apache.dubbo.remoting.transport.dispatcher.message.MessageOnlyDispatcher
 execution=org.apache.dubbo.remoting.transport.dispatcher.execution.ExecutionDispatcher
+=======
+all=org.apache.dubbo.remoting.transport.dispatcher.all.AllDispatcher
+direct=org.apache.dubbo.remoting.transport.dispatcher.direct.DirectDispatcher
+message=org.apache.dubbo.remoting.transport.dispatcher.message.MessageOnlyDispatcher
+execution=org.apache.dubbo.remoting.transport.dispatcher.execution.ExecutionDispatcher
+>>>>>>> origin/3.2
 connection=org.apache.dubbo.remoting.transport.dispatcher.connection.ConnectionOrderedDispatcher

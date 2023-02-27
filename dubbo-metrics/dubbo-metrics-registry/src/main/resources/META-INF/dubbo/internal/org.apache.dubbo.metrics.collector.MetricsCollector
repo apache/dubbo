@@ -1,0 +1,1 @@
+registry-collector=org.apache.dubbo.metrics.registry.collector.RegistryMetricsCollector

@@ -18,13 +18,42 @@ package org.apache.dubbo.monitor;
 
 public interface Constants {
     String DUBBO_PROVIDER = "dubbo.provider";
+
     String DUBBO_CONSUMER = "dubbo.consumer";
+
     String DUBBO_PROVIDER_METHOD = "dubbo.provider.method";
+
     String DUBBO_CONSUMER_METHOD = "dubbo.consumer.method";
+
     String SERVICE = "service";
-    String METHOD = "method";
+
     String DUBBO_GROUP = "dubbo";
-    String METRICS_KEY = "metrics";
+
     String LOGSTAT_PROTOCOL = "logstat";
+
     String COUNT_PROTOCOL = "count";
+
+    String MONITOR_SEND_DATA_INTERVAL_KEY = "interval";
+
+    int DEFAULT_MONITOR_SEND_DATA_INTERVAL = 60000;
+
+    String SUCCESS_KEY = "success";
+
+    String FAILURE_KEY = "failure";
+
+    String INPUT_KEY = "input";
+
+    String OUTPUT_KEY = "output";
+
+    String ELAPSED_KEY = "elapsed";
+
+    String CONCURRENT_KEY = "concurrent";
+
+    String MAX_INPUT_KEY = "max.input";
+
+    String MAX_OUTPUT_KEY = "max.output";
+
+    String MAX_ELAPSED_KEY = "max.elapsed";
+
+    String MAX_CONCURRENT_KEY = "max.concurrent";
 }

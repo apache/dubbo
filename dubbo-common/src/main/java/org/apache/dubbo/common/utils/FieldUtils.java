@@ -32,16 +32,20 @@ public interface FieldUtils {
      *
      * @param declaredClass the declared class
      * @param fieldName     the name of {@link Field}
-     * @return if can't be found, return <code>null</code>
+     * @return if field can't be found, return <code>null</code>
      */
     static Field getDeclaredField(Class<?> declaredClass, String fieldName) {
-        Field field = null;
         try {
-            field = declaredClass.getDeclaredField(fieldName);
-        } catch (NoSuchFieldException ignored) {
-            field = null;
+            Field[] fields = declaredClass.getDeclaredFields();
+            for (int i = 0; i < fields.length; i++) {
+                if (fields[i].getName().equals(fieldName)) {
+                    return fields[i];
+                }
+            }
+            return null;
+        } catch (Exception exception) {
+            throw new RuntimeException(exception);
         }
-        return field;
     }
 
     /**
@@ -64,7 +68,11 @@ public interface FieldUtils {
         }
 
         if (field == null) {
+<<<<<<< HEAD
            throw new IllegalStateException(String.format("cannot find field %s,field is null", fieldName));
+=======
+            throw new IllegalStateException(String.format("cannot find field %s,field is null", fieldName));
+>>>>>>> origin/3.2
         }
 
         return field;

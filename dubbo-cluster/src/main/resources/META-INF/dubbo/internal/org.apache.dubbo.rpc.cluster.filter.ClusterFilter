@@ -1,0 +1,3 @@
+consumercontext=org.apache.dubbo.rpc.cluster.filter.support.ConsumerContextFilter
+consumer-classloader=org.apache.dubbo.rpc.cluster.filter.support.ConsumerClassLoaderFilter
+router-snapshot=org.apache.dubbo.rpc.cluster.router.RouterSnapshotFilter

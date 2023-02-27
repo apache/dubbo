@@ -16,34 +16,37 @@
  */
 package org.apache.dubbo.config.context;
 
+<<<<<<< HEAD
 import org.apache.dubbo.common.context.FrameworkExt;
 import org.apache.dubbo.common.context.LifecycleAdapter;
 import org.apache.dubbo.common.extension.Inject;
+=======
+import org.apache.dubbo.common.context.ApplicationExt;
+import org.apache.dubbo.common.extension.DisableInject;
+>>>>>>> origin/3.2
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ConfigCenterConfig;
-import org.apache.dubbo.config.ConsumerConfig;
+import org.apache.dubbo.config.ConfigKeys;
 import org.apache.dubbo.config.MetadataReportConfig;
 import org.apache.dubbo.config.MetricsConfig;
-import org.apache.dubbo.config.ModuleConfig;
 import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.ProtocolConfig;
-import org.apache.dubbo.config.ProviderConfig;
-import org.apache.dubbo.config.ReferenceConfigBase;
 import org.apache.dubbo.config.RegistryConfig;
-import org.apache.dubbo.config.ServiceConfigBase;
 import org.apache.dubbo.config.SslConfig;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+<<<<<<< HEAD
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicReference;
@@ -55,35 +58,57 @@ import java.util.stream.Collectors;
 import static java.lang.Boolean.TRUE;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.unmodifiableSet;
+=======
+
+>>>>>>> origin/3.2
 import static java.util.Optional.ofNullable;
-import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
-import static org.apache.dubbo.common.utils.ReflectUtils.getProperty;
-import static org.apache.dubbo.common.utils.StringUtils.isNotEmpty;
 import static org.apache.dubbo.config.AbstractConfig.getTagName;
+<<<<<<< HEAD
 import static org.apache.dubbo.config.Constants.PROTOCOLS_PREFIX;
 import static org.apache.dubbo.config.Constants.REGISTRIES_PREFIX;
+=======
+>>>>>>> origin/3.2
 
-public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
+/**
+ * A lock-free config manager (through ConcurrentHashMap), for fast read operation.
+ * The Write operation lock with sub configs map of config type, for safely check and add new config.
+ */
+public class ConfigManager extends AbstractConfigManager implements ApplicationExt {
 
     private static final Logger logger = LoggerFactory.getLogger(ConfigManager.class);
 
     public static final String NAME = "config";
+    public static final String BEAN_NAME = "dubboConfigManager";
+    public static final String DUBBO_CONFIG_MODE = ConfigKeys.DUBBO_CONFIG_MODE;
 
-    private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
-    final Map<String, Map<String, AbstractConfig>> configsCache = newMap();
-
-    public ConfigManager() {
+    public ConfigManager(ApplicationModel applicationModel) {
+        super(applicationModel, Arrays.asList(ApplicationConfig.class, MonitorConfig.class,
+            MetricsConfig.class, SslConfig.class, ProtocolConfig.class, RegistryConfig.class, ConfigCenterConfig.class,
+            MetadataReportConfig.class));
     }
 
+<<<<<<< HEAD
     // ApplicationConfig correlative methods
     @Inject(enable = false)
+=======
+
+// ApplicationConfig correlative methods
+
+    /**
+     * Set application config
+     *
+     * @param application
+     * @return current application config instance
+     */
+    @DisableInject
+>>>>>>> origin/3.2
     public void setApplication(ApplicationConfig application) {
-        addConfig(application, true);
+        addConfig(application);
     }
 
     public Optional<ApplicationConfig> getApplication() {
-        return ofNullable(getConfig(getTagName(ApplicationConfig.class)));
+        return ofNullable(getSingleConfig(getTagName(ApplicationConfig.class)));
     }
 
     public ApplicationConfig getApplicationOrElseThrow() {
@@ -92,12 +117,17 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
 
     // MonitorConfig correlative methods
 
+<<<<<<< HEAD
     @Inject(enable = false)
+=======
+    @DisableInject
+>>>>>>> origin/3.2
     public void setMonitor(MonitorConfig monitor) {
-        addConfig(monitor, true);
+        addConfig(monitor);
     }
 
     public Optional<MonitorConfig> getMonitor() {
+<<<<<<< HEAD
         return ofNullable(getConfig(getTagName(MonitorConfig.class)));
     }
 
@@ -112,21 +142,31 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
     }
 
     @Inject(enable = false)
+=======
+        return ofNullable(getSingleConfig(getTagName(MonitorConfig.class)));
+    }
+
+    @DisableInject
+>>>>>>> origin/3.2
     public void setMetrics(MetricsConfig metrics) {
-        addConfig(metrics, true);
+        addConfig(metrics);
     }
 
     public Optional<MetricsConfig> getMetrics() {
-        return ofNullable(getConfig(getTagName(MetricsConfig.class)));
+        return ofNullable(getSingleConfig(getTagName(MetricsConfig.class)));
     }
 
+<<<<<<< HEAD
     @Inject(enable = false)
+=======
+    @DisableInject
+>>>>>>> origin/3.2
     public void setSsl(SslConfig sslConfig) {
-        addConfig(sslConfig, true);
+        addConfig(sslConfig);
     }
 
     public Optional<SslConfig> getSsl() {
-        return ofNullable(getConfig(getTagName(SslConfig.class)));
+        return ofNullable(getSingleConfig(getTagName(SslConfig.class)));
     }
 
     // ConfigCenterConfig correlative methods
@@ -147,8 +187,8 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
         return Optional.ofNullable(defaults);
     }
 
-    public ConfigCenterConfig getConfigCenter(String id) {
-        return getConfig(getTagName(ConfigCenterConfig.class), id);
+    public Optional<ConfigCenterConfig> getConfigCenter(String id) {
+        return getConfig(ConfigCenterConfig.class, id);
     }
 
     public Collection<ConfigCenterConfig> getConfigCenters() {
@@ -169,14 +209,18 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
         return getConfigs(getTagName(MetadataReportConfig.class));
     }
 
+<<<<<<< HEAD
     public MetadataReportConfig getMetadataConfig(String id) {
         return getConfig(getTagName(MetadataReportConfig.class), id);
     }
 
+=======
+>>>>>>> origin/3.2
     public Collection<MetadataReportConfig> getDefaultMetadataConfigs() {
         Collection<MetadataReportConfig> defaults = getDefaultConfigs(getConfigsMap(getTagName(MetadataReportConfig.class)));
         if (CollectionUtils.isEmpty(defaults)) {
             return getMetadataConfigs();
+<<<<<<< HEAD
         }
         return defaults;
     }
@@ -231,12 +275,10 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
         List<ConsumerConfig> consumerConfigs = getDefaultConfigs(getConfigsMap(getTagName(ConsumerConfig.class)));
         if (CollectionUtils.isNotEmpty(consumerConfigs)) {
             return Optional.of(consumerConfigs.get(0));
+=======
+>>>>>>> origin/3.2
         }
-        return Optional.empty();
-    }
-
-    public Collection<ConsumerConfig> getConsumers() {
-        return getConfigs(getTagName(ConsumerConfig.class));
+        return defaults;
     }
 
     // ProtocolConfig correlative methods
@@ -251,18 +293,20 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
         }
     }
 
-    public Optional<ProtocolConfig> getProtocol(String id) {
-        return ofNullable(getConfig(getTagName(ProtocolConfig.class), id));
+    public Optional<ProtocolConfig> getProtocol(String idOrName) {
+        return getConfig(ProtocolConfig.class, idOrName);
     }
 
     public List<ProtocolConfig> getDefaultProtocols() {
-        return getDefaultConfigs(getConfigsMap(getTagName(ProtocolConfig.class)));
+        return getDefaultConfigs(ProtocolConfig.class);
     }
 
-    public Collection<ProtocolConfig> getProtocols() {
-        return getConfigs(getTagName(ProtocolConfig.class));
+    @Override
+    public <C extends AbstractConfig> List<C> getDefaultConfigs(Class<C> cls) {
+        return getDefaultConfigs(getConfigsMap(getTagName(cls)));
     }
 
+<<<<<<< HEAD
     public Set<String> getProtocolIds() {
         Set<String> protocolIds = new HashSet<>();
         protocolIds.addAll(getSubProperties(ApplicationModel.getEnvironment()
@@ -271,6 +315,10 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
                 .getAppExternalConfigurationMap(), PROTOCOLS_PREFIX));
 
         return unmodifiableSet(protocolIds);
+=======
+    public Collection<ProtocolConfig> getProtocols() {
+        return getConfigs(getTagName(ProtocolConfig.class));
+>>>>>>> origin/3.2
     }
 
 
@@ -287,7 +335,7 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
     }
 
     public Optional<RegistryConfig> getRegistry(String id) {
-        return ofNullable(getConfig(getTagName(RegistryConfig.class), id));
+        return getConfig(RegistryConfig.class, id);
     }
 
     public List<RegistryConfig> getDefaultRegistries() {
@@ -298,6 +346,7 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
         return getConfigs(getTagName(RegistryConfig.class));
     }
 
+<<<<<<< HEAD
     public Set<String> getRegistryIds() {
         Set<String> registryIds = new HashSet<>();
         registryIds.addAll(getSubProperties(ApplicationModel.getEnvironment().getExternalConfigurationMap(),
@@ -309,111 +358,79 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
     }
 
     // ServiceConfig correlative methods
+=======
+>>>>>>> origin/3.2
 
-    public void addService(ServiceConfigBase<?> serviceConfig) {
-        addConfig(serviceConfig);
-    }
-
-    public void addServices(Iterable<ServiceConfigBase<?>> serviceConfigs) {
-        serviceConfigs.forEach(this::addService);
-    }
-
-    public Collection<ServiceConfigBase> getServices() {
-        return getConfigs(getTagName(ServiceConfigBase.class));
-    }
-
-    public <T> ServiceConfigBase<T> getService(String id) {
-        return getConfig(getTagName(ServiceConfigBase.class), id);
-    }
-
-    // ReferenceConfig correlative methods
-
-    public void addReference(ReferenceConfigBase<?> referenceConfig) {
-        addConfig(referenceConfig);
-    }
-
-    public void addReferences(Iterable<ReferenceConfigBase<?>> referenceConfigs) {
-        referenceConfigs.forEach(this::addReference);
-    }
-
-    public Collection<ReferenceConfigBase<?>> getReferences() {
-        return getConfigs(getTagName(ReferenceConfigBase.class));
-    }
-
-    public <T> ReferenceConfigBase<T> getReference(String id) {
-        return getConfig(getTagName(ReferenceConfigBase.class), id);
-    }
-
-    protected static Set<String> getSubProperties(Map<String, String> properties, String prefix) {
-        return properties.keySet().stream().filter(k -> k.contains(prefix)).map(k -> {
-            k = k.substring(prefix.length());
-            return k.substring(0, k.indexOf("."));
-        }).collect(Collectors.toSet());
-    }
-
+    @Override
     public void refreshAll() {
-        write(() -> {
-            // refresh all configs here,
-            getApplication().ifPresent(ApplicationConfig::refresh);
-            getMonitor().ifPresent(MonitorConfig::refresh);
-            getModule().ifPresent(ModuleConfig::refresh);
+        // refresh all configs here
+        getApplication().ifPresent(ApplicationConfig::refresh);
+        getMonitor().ifPresent(MonitorConfig::refresh);
+        getMetrics().ifPresent(MetricsConfig::refresh);
+        getSsl().ifPresent(SslConfig::refresh);
 
-            getProtocols().forEach(ProtocolConfig::refresh);
-            getRegistries().forEach(RegistryConfig::refresh);
-            getProviders().forEach(ProviderConfig::refresh);
-            getConsumers().forEach(ConsumerConfig::refresh);
-        });
-
+        getProtocols().forEach(ProtocolConfig::refresh);
+        getRegistries().forEach(RegistryConfig::refresh);
+        getConfigCenters().forEach(ConfigCenterConfig::refresh);
+        getMetadataConfigs().forEach(MetadataReportConfig::refresh);
     }
 
-    /**
-     * In some scenario,  we may nee to add and remove ServiceConfig or ReferenceConfig dynamically.
-     *
-     * @param config the config instance to remove.
-     */
-    public void removeConfig(AbstractConfig config) {
-        if (config == null) {
-            return;
-        }
+    @Override
+    public void loadConfigs() {
+        // application config has load before starting config center
+        // load dubbo.applications.xxx
+        loadConfigsOfTypeFromProps(ApplicationConfig.class);
 
-        Map<String, AbstractConfig> configs = configsCache.get(getTagName(config.getClass()));
-        if (CollectionUtils.isNotEmptyMap(configs)) {
-            configs.remove(getId(config));
+        // load dubbo.monitors.xxx
+        loadConfigsOfTypeFromProps(MonitorConfig.class);
+
+        // load dubbo.metrics.xxx
+        loadConfigsOfTypeFromProps(MetricsConfig.class);
+
+        // load multiple config types:
+        // load dubbo.protocols.xxx
+        loadConfigsOfTypeFromProps(ProtocolConfig.class);
+
+        // load dubbo.registries.xxx
+        loadConfigsOfTypeFromProps(RegistryConfig.class);
+
+        // load dubbo.metadata-report.xxx
+        loadConfigsOfTypeFromProps(MetadataReportConfig.class);
+
+        // config centers has bean loaded before starting config center
+        //loadConfigsOfTypeFromProps(ConfigCenterConfig.class);
+
+        refreshAll();
+
+        checkConfigs();
+
+        // set model name
+        if (StringUtils.isBlank(applicationModel.getModelName())) {
+            applicationModel.setModelName(applicationModel.getApplicationName());
         }
     }
 
+<<<<<<< HEAD
     public void clear() {
         write(this.configsCache::clear);
     }
+=======
+    private void checkConfigs() {
+        // check config types (ignore metadata-center)
+        List<Class<? extends AbstractConfig>> multipleConfigTypes = Arrays.asList(
+            ApplicationConfig.class,
+            ProtocolConfig.class,
+            RegistryConfig.class,
+            MonitorConfig.class,
+            MetricsConfig.class,
+            SslConfig.class);
+>>>>>>> origin/3.2
 
-    /**
-     * @throws IllegalStateException
-     * @since 2.7.8
-     */
-    @Override
-    public void destroy() throws IllegalStateException {
-        clear();
-    }
-
-    /**
-     * Add the dubbo {@link AbstractConfig config}
-     *
-     * @param config the dubbo {@link AbstractConfig config}
-     */
-    public void addConfig(AbstractConfig config) {
-        addConfig(config, false);
-    }
-
-    protected void addConfig(AbstractConfig config, boolean unique) {
-        if (config == null) {
-            return;
+        for (Class<? extends AbstractConfig> configType : multipleConfigTypes) {
+            checkDefaultAndValidateConfigs(configType);
         }
-        write(() -> {
-            Map<String, AbstractConfig> configsMap = configsCache.computeIfAbsent(getTagName(config.getClass()), type -> newMap());
-            addIfAbsent(config, configsMap, unique);
-        });
-    }
 
+<<<<<<< HEAD
     protected <C extends AbstractConfig> Map<String, C> getConfigsMap(String configType) {
         return (Map<String, C>) read(() -> configsCache.getOrDefault(configType, emptyMap()));
     }
@@ -450,103 +467,33 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
                 }
 
                 logger.warn("Expected single matching of " + configType + ", but found " + size + " instances, will randomly pick the first one.");
+=======
+        // check port conflicts
+        Map<Integer, ProtocolConfig> protocolPortMap = new LinkedHashMap<>();
+        for (ProtocolConfig protocol : this.getProtocols()) {
+            Integer port = protocol.getPort();
+            if (port == null || port == -1) {
+                continue;
+>>>>>>> origin/3.2
             }
-
-            return configsMap.values().iterator().next();
-        });
-    }
-
-    private <V> V write(Callable<V> callable) {
-        V value = null;
-        Lock writeLock = lock.writeLock();
-        try {
-            writeLock.lock();
-            value = callable.call();
-        } catch (RuntimeException e) {
-            throw e;
-        } catch (Throwable e) {
-            throw new RuntimeException(e.getCause());
-        } finally {
-            writeLock.unlock();
-        }
-        return value;
-    }
-
-    private void write(Runnable runnable) {
-        write(() -> {
-            runnable.run();
-            return null;
-        });
-    }
-
-    private <V> V read(Callable<V> callable) {
-        Lock readLock = lock.readLock();
-        V value = null;
-        try {
-            readLock.lock();
-            value = callable.call();
-        } catch (Throwable e) {
-            throw new RuntimeException(e);
-        } finally {
-            readLock.unlock();
-        }
-        return value;
-    }
-
-    private static void checkDuplicate(AbstractConfig oldOne, AbstractConfig newOne) throws IllegalStateException {
-        if (oldOne != null && !oldOne.equals(newOne)) {
-            String configName = oldOne.getClass().getSimpleName();
-            logger.warn("Duplicate Config found for " + configName + ", you should use only one unique " + configName + " for one application.");
-        }
-    }
-
-    private static Map newMap() {
-        return new HashMap<>();
-    }
-
-    static <C extends AbstractConfig> void addIfAbsent(C config, Map<String, C> configsMap, boolean unique)
-            throws IllegalStateException {
-
-        if (config == null || configsMap == null) {
-            return;
+            ProtocolConfig prevProtocol = protocolPortMap.get(port);
+            if (prevProtocol != null) {
+                throw new IllegalStateException("Duplicated port used by protocol configs, port: " + port +
+                    ", configs: " + Arrays.asList(prevProtocol, protocol));
+            }
+            protocolPortMap.put(port, protocol);
         }
 
-        if (unique) { // check duplicate
-            configsMap.values().forEach(c -> {
-                checkDuplicate(c, config);
+        // Log the current configurations.
+        logger.info("The current configurations or effective configurations are as follows:");
+        for (Class<? extends AbstractConfig> configType : multipleConfigTypes) {
+            getConfigs(configType).stream().forEach((config) -> {
+                logger.info(config.toString());
             });
         }
-
-        String key = getId(config);
-
-        C existedConfig = configsMap.get(key);
-
-        if (existedConfig != null && !config.equals(existedConfig)) {
-            if (logger.isWarnEnabled()) {
-                String type = config.getClass().getSimpleName();
-                logger.warn(String.format("Duplicate %s found, there already has one default %s or more than two %ss have the same id, " +
-                        "you can try to give each %s a different id : %s", type, type, type, type, config));
-            }
-        } else {
-            configsMap.put(key, config);
-        }
     }
 
-    static <C extends AbstractConfig> String getId(C config) {
-        String id = config.getId();
-        return isNotEmpty(id) ? id : isDefaultConfig(config) ?
-                config.getClass().getSimpleName() + "#" + DEFAULT_KEY : null;
-    }
-
-    static <C extends AbstractConfig> boolean isDefaultConfig(C config) {
-        Boolean isDefault = getProperty(config, "isDefault");
-        return isDefault == null || TRUE.equals(isDefault);
-    }
-
-    static <C extends AbstractConfig> List<C> getDefaultConfigs(Map<String, C> configsMap) {
-        return configsMap.values()
-                .stream()
-                .filter(ConfigManager::isDefaultConfig)
-                .collect(Collectors.toList());
+    public ConfigMode getConfigMode() {
+        return configMode;
     }
 }

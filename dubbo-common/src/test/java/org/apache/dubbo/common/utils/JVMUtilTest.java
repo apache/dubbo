@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.common.utils;
 
+<<<<<<< HEAD
 import org.junit.jupiter.api.Test;
 import java.io.ByteArrayOutputStream;
 
@@ -29,3 +30,7 @@ public class JVMUtilTest {
         System.out.println(threadStackInfo);
     }
 }
+=======
+class JVMUtilTest {
+}
+>>>>>>> origin/3.2

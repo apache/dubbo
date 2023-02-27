@@ -22,7 +22,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * TODO this may not be a pretty elegant solution,
- *
  */
 public class ServletManager {
 

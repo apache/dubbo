@@ -20,15 +20,11 @@ import org.apache.dubbo.common.logger.Logger;
 
 import org.apache.commons.logging.Log;
 
-import java.io.Serializable;
-
 /**
  * Adaptor to commons logging, depends on commons-logging.jar. For more information about commons logging, pls. refer to
  * <a target="_blank" href="http://www.apache.org/">http://www.apache.org/</a>
  */
-public class JclLogger implements Logger, Serializable {
-
-    private static final long serialVersionUID = 1L;
+public class JclLogger implements Logger {
 
     private final Log logger;
 

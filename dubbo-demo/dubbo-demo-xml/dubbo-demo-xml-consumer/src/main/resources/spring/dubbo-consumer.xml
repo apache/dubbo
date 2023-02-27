@@ -21,19 +21,38 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
        http://dubbo.apache.org/schema/dubbo http://dubbo.apache.org/schema/dubbo/dubbo.xsd">
 
+<<<<<<< HEAD
     <dubbo:application name="demo-consumer" >
         <dubbo:parameter key="mapping-type" value="metadata"/>
         <dubbo:parameter key="enable-auto-migration" value="true"/>
+=======
+    <dubbo:application name="demo-consumer">
+>>>>>>> origin/3.2
     </dubbo:application>
 
     <dubbo:metadata-report address="zookeeper://127.0.0.1:2181"/>
 
+<<<<<<< HEAD
     <dubbo:registry address="zookeeper://127.0.0.1:2181"/>
 
     <dubbo:reference id="demoService" check="true"
+=======
+    <dubbo:registry id="demo1" address="zookeeper://127.0.0.1:2181?registry-type=service"/>
+
+    <dubbo:reference id="demoService" check="false"
+>>>>>>> origin/3.2
                      interface="org.apache.dubbo.demo.DemoService"/>
 
     <dubbo:reference version="1.0.0" group="greeting" id="greetingService" check="false"
                      interface="org.apache.dubbo.demo.GreetingService"/>
 
+<<<<<<< HEAD
+=======
+    <dubbo:reference version="1.0.0" id="restDemoService" check="false"
+                     interface="org.apache.dubbo.demo.RestDemoService"/>
+
+    <dubbo:reference version="1.0.0" id="tripleService" check="false"
+                     interface="org.apache.dubbo.demo.TripleService"/>
+
+>>>>>>> origin/3.2
 </beans>

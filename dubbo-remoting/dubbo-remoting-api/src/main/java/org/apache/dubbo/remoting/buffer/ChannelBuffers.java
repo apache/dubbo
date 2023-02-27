@@ -23,11 +23,13 @@ public final class ChannelBuffers {
 
     public static final ChannelBuffer EMPTY_BUFFER = new HeapChannelBuffer(0);
 
+    public static final int DEFAULT_CAPACITY = 256;
+
     private ChannelBuffers() {
     }
 
     public static ChannelBuffer dynamicBuffer() {
-        return dynamicBuffer(256);
+        return dynamicBuffer(DEFAULT_CAPACITY);
     }
 
     public static ChannelBuffer dynamicBuffer(int capacity) {
@@ -85,7 +87,7 @@ public final class ChannelBuffers {
         }
 
         ChannelBuffer buffer = new ByteBufferBackedChannelBuffer(
-                ByteBuffer.allocateDirect(capacity));
+            ByteBuffer.allocateDirect(capacity));
         buffer.clear();
         return buffer;
     }
@@ -112,7 +114,29 @@ public final class ChannelBuffers {
         return true;
     }
 
-    public static int hasCode(ChannelBuffer buffer){
+    // prefix
+    public static boolean prefixEquals(ChannelBuffer bufferA, ChannelBuffer bufferB, int count) {
+        final int aLen = bufferA.readableBytes();
+        final int bLen = bufferB.readableBytes();
+        if (aLen < count || bLen < count) {
+            return false;
+        }
+
+        int aIndex = bufferA.readerIndex();
+        int bIndex = bufferB.readerIndex();
+
+        for (int i = count; i > 0; i--) {
+            if (bufferA.getByte(aIndex) != bufferB.getByte(bIndex)) {
+                return false;
+            }
+            aIndex++;
+            bIndex++;
+        }
+
+        return true;
+    }
+
+    public static int hasCode(ChannelBuffer buffer) {
         final int aLen = buffer.readableBytes();
         final int byteCount = aLen & 7;
 

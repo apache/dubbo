@@ -38,6 +38,16 @@ import org.yaml.snakeyaml.parser.ParserException;
 import org.yaml.snakeyaml.representer.Representer;
 import org.yaml.snakeyaml.resolver.Resolver;
 
+<<<<<<< HEAD
+=======
+import java.io.IOException;
+import java.util.AbstractMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Pattern;
+
+>>>>>>> origin/3.2
 /**
  * YAML {@link PropertySourceFactory} implementation, some source code is copied Spring Boot
  * org.springframework.boot.env.YamlPropertySourceLoader , see {@link #createYaml()} and {@link #process()}
@@ -66,8 +76,13 @@ public class YamlPropertySourceFactory extends YamlProcessor implements Property
             }
 
             @Override
+<<<<<<< HEAD
             protected Map<Object, Object> createDefaultMap() {
                 final Map<Object, Object> delegate = super.createDefaultMap();
+=======
+            protected Map<Object, Object> createDefaultMap(int initSize) {
+                final Map<Object, Object> delegate = super.createDefaultMap(initSize);
+>>>>>>> origin/3.2
                 return new AbstractMap<Object, Object>() {
                     @Override
                     public Object put(Object key, Object value) {

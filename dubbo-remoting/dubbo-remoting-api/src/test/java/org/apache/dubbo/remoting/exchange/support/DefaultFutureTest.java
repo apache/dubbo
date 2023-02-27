@@ -35,18 +35,18 @@ import java.time.format.DateTimeFormatter;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class DefaultFutureTest {
+class DefaultFutureTest {
 
     private static final AtomicInteger index = new AtomicInteger();
 
     @Test
-    public void newFuture() {
+    void newFuture() {
         DefaultFuture future = defaultFuture(3000);
         Assertions.assertNotNull(future, "new future return null");
     }
 
     @Test
-    public void isDone() {
+    void isDone() {
         DefaultFuture future = defaultFuture(3000);
         Assertions.assertTrue(!future.isDone(), "init future is finished!");
 
@@ -122,12 +122,20 @@ public class DefaultFutureTest {
     }
     /**
      * for example, it will print like this:
+<<<<<<< HEAD
      *before a future is create , time is : 2021-01-22 10:55:03
+=======
+     * before a future is created , time is : 2021-01-22 10:55:03
+>>>>>>> origin/3.2
      * null
      * after a future is timeout , time is : 2021-01-22 10:55:05
      */
     @Test
+<<<<<<< HEAD
     public void interruptSend() throws Exception {
+=======
+    void interruptSend() throws Exception {
+>>>>>>> origin/3.2
         final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         System.out.println("before a future is create , time is : " + LocalDateTime.now().format(formatter));
         // timeout after 1 seconds.
@@ -136,7 +144,11 @@ public class DefaultFutureTest {
         Request request = new Request(channelId);
         ExecutorService sharedExecutor = ExtensionLoader.getExtensionLoader(ExecutorRepository.class)
                 .getDefaultExtension().createExecutorIfAbsent(URL.valueOf("dubbo://127.0.0.1:23456"));
+<<<<<<< HEAD
         ThreadlessExecutor executor = new ThreadlessExecutor(sharedExecutor);
+=======
+        ThreadlessExecutor executor = new ThreadlessExecutor();
+>>>>>>> origin/3.2
         DefaultFuture f = DefaultFuture.newFuture(channel, request, 1000, executor);
         //mark the future is sent
         DefaultFuture.sent(channel, request);
@@ -159,11 +171,19 @@ public class DefaultFutureTest {
     }
 
     @Test
+<<<<<<< HEAD
     public void testClose() throws Exception {
         Channel channel = new MockedChannel();
         Request request = new Request(123);
         ExecutorService executor = ExtensionLoader.getExtensionLoader(ExecutorRepository.class)
                 .getDefaultExtension().createExecutorIfAbsent(URL.valueOf("dubbo://127.0.0.1:23456"));
+=======
+    void testClose() throws Exception {
+        Channel channel = new MockedChannel();
+        Request request = new Request(123);
+        ExecutorService executor = ExtensionLoader.getExtensionLoader(ExecutorRepository.class)
+            .getDefaultExtension().createExecutorIfAbsent(URL.valueOf("dubbo://127.0.0.1:23456"));
+>>>>>>> origin/3.2
         DefaultFuture.newFuture(channel, request, 1000, executor);
         DefaultFuture.closeChannel(channel);
         Assertions.assertFalse(executor.isTerminated());

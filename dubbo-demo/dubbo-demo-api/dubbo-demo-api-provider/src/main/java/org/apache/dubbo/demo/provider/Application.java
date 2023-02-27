@@ -16,7 +16,10 @@
  */
 package org.apache.dubbo.demo.provider;
 
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.config.MetadataReportConfig;
+import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
@@ -44,10 +47,11 @@ public class Application {
 
         DubboBootstrap bootstrap = DubboBootstrap.getInstance();
         bootstrap.application(new ApplicationConfig("dubbo-demo-api-provider"))
-                .registry(new RegistryConfig("zookeeper://127.0.0.1:2181"))
-                .service(service)
-                .start()
-                .await();
+            .registry(new RegistryConfig("zookeeper://127.0.0.1:2181"))
+            .protocol(new ProtocolConfig(CommonConstants.DUBBO, -1))
+            .service(service)
+            .start()
+            .await();
     }
 
     private static void startWithExport() throws InterruptedException {
@@ -56,6 +60,7 @@ public class Application {
         service.setRef(new DemoServiceImpl());
         service.setApplication(new ApplicationConfig("dubbo-demo-api-provider"));
         service.setRegistry(new RegistryConfig("zookeeper://127.0.0.1:2181"));
+        service.setMetadataReportConfig(new MetadataReportConfig("zookeeper://127.0.0.1:2181"));
         service.export();
 
         System.out.println("dubbo service started");

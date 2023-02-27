@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.common.convert.multiple;
 
+import org.apache.dubbo.rpc.model.FrameworkModel;
+
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -25,6 +27,9 @@ import java.util.Collection;
  * @since 2.7.6
  */
 public class StringToCollectionConverter extends StringToIterableConverter<Collection> {
+    public StringToCollectionConverter(FrameworkModel frameworkModel) {
+        super(frameworkModel);
+    }
 
     @Override
     protected Collection createMultiValue(int size, Class<?> multiValueType) {

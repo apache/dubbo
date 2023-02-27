@@ -17,9 +17,23 @@
 package org.apache.dubbo.registry.client.migration;
 
 import org.apache.dubbo.common.extension.SPI;
+<<<<<<< HEAD
 import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 
 @SPI
 public interface MigrationAddressComparator {
     <T> boolean shouldMigrate(ClusterInvoker<T> serviceDiscoveryInvoker, ClusterInvoker<T> invoker);
+=======
+import org.apache.dubbo.registry.client.migration.model.MigrationRule;
+import org.apache.dubbo.rpc.cluster.ClusterInvoker;
+
+import java.util.Map;
+
+@SPI
+public interface MigrationAddressComparator {
+
+    <T> boolean shouldMigrate(ClusterInvoker<T> newInvoker, ClusterInvoker<T> oldInvoker, MigrationRule rule);
+
+    Map<String, Integer> getAddressSize(String displayServiceKey);
+>>>>>>> origin/3.2
 }

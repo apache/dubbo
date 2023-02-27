@@ -18,8 +18,7 @@ package org.apache.dubbo.remoting.transport;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
-import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -38,6 +37,12 @@ import java.util.concurrent.locks.ReentrantLock;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_CLIENT_THREADPOOL;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREAD_NAME_KEY;
+<<<<<<< HEAD
+=======
+import static org.apache.dubbo.common.constants.CommonConstants.LAZY_CONNECT_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_CLOSE;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_CONNECT_PROVIDER;
+>>>>>>> origin/3.2
 
 /**
  * AbstractClient
@@ -45,12 +50,18 @@ import static org.apache.dubbo.common.constants.CommonConstants.THREAD_NAME_KEY;
 public abstract class AbstractClient extends AbstractEndpoint implements Client {
 
     protected static final String CLIENT_THREAD_POOL_NAME = "DubboClientHandler";
-    private static final Logger logger = LoggerFactory.getLogger(AbstractClient.class);
+
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(AbstractClient.class);
+
     private final Lock connectLock = new ReentrantLock();
+
     private final boolean needReconnect;
+<<<<<<< HEAD
     //issue-7054:Consumer's executor is sharing globally.
+=======
+
+>>>>>>> origin/3.2
     protected volatile ExecutorService executor;
-    private ExecutorRepository executorRepository = ExtensionLoader.getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
 
     public AbstractClient(URL url, ChannelHandler handler) throws RemotingException {
         super(url, handler);
@@ -64,8 +75,8 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
         } catch (Throwable t) {
             close();
             throw new RemotingException(url.toInetSocketAddress(), null,
-                    "Failed to start " + getClass().getSimpleName() + " " + NetUtils.getLocalAddress()
-                            + " connect to the server " + getRemoteAddress() + ", cause: " + t.getMessage(), t);
+                "Failed to start " + getClass().getSimpleName() + " " + NetUtils.getLocalAddress()
+                    + " connect to the server " + getRemoteAddress() + ", cause: " + t.getMessage(), t);
         }
 
         try {
@@ -75,25 +86,48 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
                 logger.info("Start " + getClass().getSimpleName() + " " + NetUtils.getLocalAddress() + " connect to the server " + getRemoteAddress());
             }
         } catch (RemotingException t) {
+            // If lazy connect client fails to establish a connection, the client instance will still be created,
+            // and the reconnection will be initiated by ReconnectTask, so there is no need to throw an exception
+            if (url.getParameter(LAZY_CONNECT_KEY, false)) {
+                logger.warn(TRANSPORT_FAILED_CONNECT_PROVIDER, "", "", "Failed to start " + getClass().getSimpleName() + " " + NetUtils.getLocalAddress() +
+                    " connect to the server " + getRemoteAddress() +
+                    " (the connection request is initiated by lazy connect client, ignore and retry later!), cause: " +
+                    t.getMessage(), t);
+                return;
+            }
+
             if (url.getParameter(Constants.CHECK_KEY, true)) {
                 close();
                 throw t;
             } else {
-                logger.warn("Failed to start " + getClass().getSimpleName() + " " + NetUtils.getLocalAddress()
-                        + " connect to the server " + getRemoteAddress() + " (check == false, ignore and retry later!), cause: " + t.getMessage(), t);
+                logger.warn(TRANSPORT_FAILED_CONNECT_PROVIDER, "", "", "Failed to start " + getClass().getSimpleName() + " " + NetUtils.getLocalAddress()
+                    + " connect to the server " + getRemoteAddress() + " (check == false, ignore and retry later!), cause: " + t.getMessage(), t);
             }
         } catch (Throwable t) {
             close();
             throw new RemotingException(url.toInetSocketAddress(), null,
-                    "Failed to start " + getClass().getSimpleName() + " " + NetUtils.getLocalAddress()
-                            + " connect to the server " + getRemoteAddress() + ", cause: " + t.getMessage(), t);
+                "Failed to start " + getClass().getSimpleName() + " " + NetUtils.getLocalAddress()
+                    + " connect to the server " + getRemoteAddress() + ", cause: " + t.getMessage(), t);
         }
     }
 
     private void initExecutor(URL url) {
+<<<<<<< HEAD
         //issue-7054:Consumer's executor is sharing globally, thread name not require provider ip.
         url = url.addParameter(THREAD_NAME_KEY, CLIENT_THREAD_POOL_NAME);
         url = url.addParameterIfAbsent(THREADPOOL_KEY, DEFAULT_CLIENT_THREADPOOL);
+=======
+        ExecutorRepository executorRepository = ExecutorRepository.getInstance(url.getOrDefaultApplicationModel());
+
+        /**
+         * Consumer's executor is shared globally, provider ip doesn't need to be part of the thread name.
+         *
+         * Instance of url is InstanceAddressURL, so addParameter actually adds parameters into ServiceInstance,
+         * which means params are shared among different services. Since client is shared among services this is currently not a problem.
+         */
+        url = url.addParameter(THREAD_NAME_KEY, CLIENT_THREAD_POOL_NAME)
+            .addParameterIfAbsent(THREADPOOL_KEY, DEFAULT_CLIENT_THREADPOOL);
+>>>>>>> origin/3.2
         executor = executorRepository.createExecutorIfAbsent(url);
     }
 
@@ -190,23 +224,28 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
             }
 
             if (isClosed() || isClosing()) {
+<<<<<<< HEAD
                 logger.warn("No need to connect to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " "
                         + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion() + ", cause: client status is closed or closing.");
+=======
+                logger.warn(TRANSPORT_FAILED_CONNECT_PROVIDER, "", "", "No need to connect to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " "
+                    + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion() + ", cause: client status is closed or closing.");
+>>>>>>> origin/3.2
                 return;
             }
 
             doConnect();
 
             if (!isConnected()) {
-                throw new RemotingException(this, "Failed connect to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " "
-                        + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion()
-                        + ", cause: Connect wait timeout: " + getConnectTimeout() + "ms.");
+                throw new RemotingException(this, "Failed to connect to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " "
+                    + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion()
+                    + ", cause: Connect wait timeout: " + getConnectTimeout() + "ms.");
 
             } else {
                 if (logger.isInfoEnabled()) {
-                    logger.info("Successed connect to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " "
-                            + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion()
-                            + ", channel is " + this.getChannel());
+                    logger.info("Successfully connect to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " "
+                        + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion()
+                        + ", channel is " + this.getChannel());
                 }
             }
 
@@ -214,9 +253,9 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
             throw e;
 
         } catch (Throwable e) {
-            throw new RemotingException(this, "Failed connect to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " "
-                    + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion()
-                    + ", cause: " + e.getMessage(), e);
+            throw new RemotingException(this, "Failed to connect to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " "
+                + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion()
+                + ", cause: " + e.getMessage(), e);
 
         } finally {
             connectLock.unlock();
@@ -232,12 +271,12 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
                     channel.close();
                 }
             } catch (Throwable e) {
-                logger.warn(e.getMessage(), e);
+                logger.warn(TRANSPORT_FAILED_CLOSE, "", "", e.getMessage(), e);
             }
             try {
                 doDisConnect();
             } catch (Throwable e) {
-                logger.warn(e.getMessage(), e);
+                logger.warn(TRANSPORT_FAILED_CLOSE, "", "", e.getMessage(), e);
             }
         } finally {
             connectLock.unlock();
@@ -258,33 +297,53 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
     @Override
     public void close() {
         if (isClosed()) {
+<<<<<<< HEAD
             logger.warn("No need to close connection to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " " + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion() + ", cause: the client status is closed.");
+=======
+            logger.warn(TRANSPORT_FAILED_CONNECT_PROVIDER, "", "", "No need to close connection to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " " + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion() + ", cause: the client status is closed.");
+>>>>>>> origin/3.2
             return;
         }
 
         connectLock.lock();
         try {
             if (isClosed()) {
+<<<<<<< HEAD
                 logger.warn("No need to close connection to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " " + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion() + ", cause: the client status is closed.");
+=======
+                logger.warn(TRANSPORT_FAILED_CONNECT_PROVIDER, "", "", "No need to close connection to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " " + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion() + ", cause: the client status is closed.");
+>>>>>>> origin/3.2
                 return;
             }
 
             try {
                 super.close();
             } catch (Throwable e) {
+<<<<<<< HEAD
                 logger.warn(e.getMessage(), e);
+=======
+                logger.warn(TRANSPORT_FAILED_CLOSE, "", "", e.getMessage(), e);
+>>>>>>> origin/3.2
             }
 
             try {
                 disconnect();
             } catch (Throwable e) {
+<<<<<<< HEAD
                 logger.warn(e.getMessage(), e);
+=======
+                logger.warn(TRANSPORT_FAILED_CLOSE, "", "", e.getMessage(), e);
+>>>>>>> origin/3.2
             }
 
             try {
                 doClose();
             } catch (Throwable e) {
+<<<<<<< HEAD
                 logger.warn(e.getMessage(), e);
+=======
+                logger.warn(TRANSPORT_FAILED_CLOSE, "", "", e.getMessage(), e);
+>>>>>>> origin/3.2
             }
 
         } finally {

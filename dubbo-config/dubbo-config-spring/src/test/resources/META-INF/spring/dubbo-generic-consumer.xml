@@ -25,9 +25,9 @@
     <dubbo:application name="dubbo-generic-consumer"/>
 
     <!-- 连接注册中心配置 -->
-    <dubbo:registry address="N/A"/>
+    <dubbo:registry address="${zookeeper.connection.address}"/>
 
-    <dubbo:reference id="demoServiceRef" interface="org.apache.dubbo.config.spring.api.DemoService" generic="true"/>
+    <dubbo:reference id="demoServiceRef" interface="org.apache.dubbo.config.spring.api.DemoService" generic="true" init="false"/>
 
     <bean id="genericService" class="org.apache.dubbo.config.spring.schema.MyGenericService"/>
 

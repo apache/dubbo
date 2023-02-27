@@ -18,7 +18,7 @@ package org.apache.dubbo.cache.support.lru;
 
 import org.apache.dubbo.cache.Cache;
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.utils.LRUCache;
+import org.apache.dubbo.common.utils.LRU2Cache;
 
 import java.util.Map;
 
@@ -54,7 +54,7 @@ public class LruCache implements Cache {
      */
     public LruCache(URL url) {
         final int max = url.getParameter("cache.size", 1000);
-        this.store = new LRUCache<>(max);
+        this.store = new LRU2Cache<>(max);
     }
 
     /**

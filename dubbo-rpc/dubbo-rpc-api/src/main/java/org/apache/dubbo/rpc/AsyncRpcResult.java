@@ -16,10 +16,12 @@
  */
 package org.apache.dubbo.rpc;
 
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.ThreadlessExecutor;
 import org.apache.dubbo.rpc.model.ConsumerMethodModel;
+import org.apache.dubbo.rpc.protocol.dubbo.FutureAdapter;
 
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -30,6 +32,8 @@ import java.util.concurrent.TimeoutException;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
+import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_ASYNC_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROXY_ERROR_ASYNC_RESPONSE;
 import static org.apache.dubbo.common.utils.ReflectUtils.defaultReturn;
 
 /**
@@ -47,25 +51,36 @@ import static org.apache.dubbo.common.utils.ReflectUtils.defaultReturn;
  * for compatibility consideration. Because many legacy {@link Filter} implementation are most possibly to call getValue directly.
  */
 public class AsyncRpcResult implements Result {
-    private static final Logger logger = LoggerFactory.getLogger(AsyncRpcResult.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(AsyncRpcResult.class);
 
     /**
      * RpcContext may already have been changed when callback happens, it happens when the same thread is used to execute another RPC call.
-     * So we should keep the reference of current RpcContext instance and restore it before callback being executed.
+     * So we should keep the copy of current RpcContext instance and restore it before callback being executed.
      */
-    private RpcContext storedContext;
-    private RpcContext storedServerContext;
+    private RpcContext.RestoreContext storedContext;
+
     private Executor executor;
 
-    private Invocation invocation;
+    private final Invocation invocation;
+    private final boolean async;
 
     private CompletableFuture<AppResponse> responseFuture;
+
+    /**
+     * Whether set future to Thread Local when invocation mode is sync
+     */
+    private static final boolean setFutureWhenSync = Boolean.parseBoolean(System.getProperty(CommonConstants.SET_FUTURE_IN_SYNC_MODE, "true"));
 
     public AsyncRpcResult(CompletableFuture<AppResponse> future, Invocation invocation) {
         this.responseFuture = future;
         this.invocation = invocation;
-        this.storedContext = RpcContext.getContext();
-        this.storedServerContext = RpcContext.getServerContext();
+        RpcInvocation rpcInvocation = (RpcInvocation) invocation;
+        if ((rpcInvocation.get(PROVIDER_ASYNC_KEY) != null || InvokeMode.SYNC != rpcInvocation.getInvokeMode()) && !future.isDone()) {
+            async = true;
+            this.storedContext = RpcContext.clearAndStoreContext();
+        } else {
+            async = false;
+        }
     }
 
     /**
@@ -80,8 +95,8 @@ public class AsyncRpcResult implements Result {
 
     /**
      * CompletableFuture can only be completed once, so try to update the result of one completed CompletableFuture will
-     * has no effect. To avoid this problem, we check the complete status of this future before update it's value.
-     *
+     * have no effect. To avoid this problem, we check the complete status of this future before update its value.
+     * <p>
      * But notice that trying to give an uncompleted CompletableFuture a new specified value may face a race condition,
      * because the background thread watching the real result will also change the status of this CompletableFuture.
      * The result is you may lose the value you expected to set.
@@ -100,7 +115,7 @@ public class AsyncRpcResult implements Result {
             }
         } catch (Exception e) {
             // This should not happen in normal request process;
-            logger.error("Got exception when trying to fetch the underlying result from AsyncRpcResult.");
+            logger.error(PROXY_ERROR_ASYNC_RESPONSE, "", "", "Got exception when trying to fetch the underlying result from AsyncRpcResult.");
             throw new RpcException(e);
         }
     }
@@ -122,7 +137,7 @@ public class AsyncRpcResult implements Result {
             }
         } catch (Exception e) {
             // This should not happen in normal request process;
-            logger.error("Got exception when trying to fetch the underlying result from AsyncRpcResult.");
+            logger.error(PROXY_ERROR_ASYNC_RESPONSE, "", "", "Got exception when trying to fetch the underlying result from AsyncRpcResult.");
             throw new RpcException(e);
         }
     }
@@ -147,7 +162,7 @@ public class AsyncRpcResult implements Result {
             }
         } catch (Exception e) {
             // This should not happen in normal request process;
-            logger.error("Got exception when trying to fetch the underlying result from AsyncRpcResult.");
+            logger.error(PROXY_ERROR_ASYNC_RESPONSE, "", "", "Got exception when trying to fetch the underlying result from AsyncRpcResult.");
             throw new RpcException(e);
         }
 
@@ -185,7 +200,9 @@ public class AsyncRpcResult implements Result {
     public Object recreate() throws Throwable {
         RpcInvocation rpcInvocation = (RpcInvocation) invocation;
         if (InvokeMode.FUTURE == rpcInvocation.getInvokeMode()) {
-            return RpcContext.getContext().getFuture();
+            return RpcContext.getClientAttachment().getFuture();
+        } else if (InvokeMode.ASYNC == rpcInvocation.getInvokeMode()) {
+            return createDefaultValue(invocation).recreate();
         }
 
         return getAppResponse().recreate();
@@ -193,10 +210,17 @@ public class AsyncRpcResult implements Result {
 
     public Result whenCompleteWithContext(BiConsumer<Result, Throwable> fn) {
         this.responseFuture = this.responseFuture.whenComplete((v, t) -> {
-            beforeContext.accept(v, t);
+            if (async) {
+                RpcContext.restoreContext(storedContext);
+            }
             fn.accept(v, t);
-            afterContext.accept(v, t);
         });
+
+        if (setFutureWhenSync || ((RpcInvocation) invocation).getInvokeMode() != InvokeMode.SYNC) {
+            // Necessary! update future in context, see https://github.com/apache/dubbo/issues/9461
+            RpcContext.getServiceContext().setFuture(new FutureAdapter<>(this.responseFuture));
+        }
+
         return this;
     }
 
@@ -279,24 +303,6 @@ public class AsyncRpcResult implements Result {
     public void setExecutor(Executor executor) {
         this.executor = executor;
     }
-
-    /**
-     * tmp context to use when the thread switch to Dubbo thread.
-     */
-    private RpcContext tmpContext;
-
-    private RpcContext tmpServerContext;
-    private BiConsumer<Result, Throwable> beforeContext = (appResponse, t) -> {
-        tmpContext = RpcContext.getContext();
-        tmpServerContext = RpcContext.getServerContext();
-        RpcContext.restoreContext(storedContext);
-        RpcContext.restoreServerContext(storedServerContext);
-    };
-
-    private BiConsumer<Result, Throwable> afterContext = (appResponse, t) -> {
-        RpcContext.restoreContext(tmpContext);
-        RpcContext.restoreServerContext(tmpServerContext);
-    };
 
     /**
      * Some utility methods used to quickly generate default AsyncRpcResult instance.

@@ -18,13 +18,20 @@ package org.apache.dubbo.rpc.cluster.configurator.parser;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.CollectionUtils;
+<<<<<<< HEAD
 import org.apache.dubbo.common.utils.PojoUtils;
+=======
+import org.apache.dubbo.common.utils.JsonUtils;
+>>>>>>> origin/3.2
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.cluster.configurator.parser.model.ConfigItem;
 import org.apache.dubbo.rpc.cluster.configurator.parser.model.ConfiguratorConfig;
 
+<<<<<<< HEAD
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONValidator;
+=======
+>>>>>>> origin/3.2
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
 
@@ -33,9 +40,14 @@ import java.util.List;
 import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
 import static org.apache.dubbo.common.constants.RegistryConstants.APP_DYNAMIC_CONFIGURATORS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_CONFIGURATORS_CATEGORY;
 import static org.apache.dubbo.rpc.cluster.Constants.OVERRIDE_PROVIDERS_KEY;
+<<<<<<< HEAD
+=======
+import static org.apache.dubbo.rpc.cluster.configurator.parser.model.ConfiguratorConfig.MATCH_CONDITION;
+>>>>>>> origin/3.2
 
 /**
  * Config parser
@@ -44,8 +56,9 @@ public class ConfigParser {
 
     public static List<URL> parseConfigurators(String rawConfig) throws Exception {
         // compatible url JsonArray, such as [ "override://xxx", "override://xxx" ]
-        if (isJsonArray(rawConfig)) {
-            return parseJsonArray(rawConfig);
+        List<URL> compatibleUrls = parseJsonArray(rawConfig);
+        if (CollectionUtils.isNotEmpty(compatibleUrls)) {
+            return compatibleUrls;
         }
 
         List<URL> urls = new ArrayList<>();
@@ -60,22 +73,34 @@ public class ConfigParser {
             // service scope by default.
             items.forEach(item -> urls.addAll(serviceItemToUrls(item, configuratorConfig)));
         }
+
         return urls;
     }
 
     private static List<URL> parseJsonArray(String rawConfig) {
         List<URL> urls = new ArrayList<>();
-        List<String> list = JSON.parseArray(rawConfig, String.class);
-        if (!CollectionUtils.isEmpty(list)) {
-            list.forEach(u -> urls.add(URL.valueOf(u)));
+        try {
+            List<String> list = JsonUtils.getJson().toJavaList(rawConfig, String.class);
+            if (!CollectionUtils.isEmpty(list)) {
+                list.forEach(u -> urls.add(URL.valueOf(u)));
+            }
+        } catch (Throwable t) {
+            return null;
         }
         return urls;
     }
 
+<<<<<<< HEAD
     private static <T> T parseObject(String rawConfig) throws Exception {
         Yaml yaml = new Yaml(new SafeConstructor());
         Map<String, Object> map = yaml.load(rawConfig);
         return (T) PojoUtils.mapToPojo(map, ConfiguratorConfig.class);
+=======
+    private static ConfiguratorConfig parseObject(String rawConfig) {
+        Yaml yaml = new Yaml(new SafeConstructor());
+        Map<String, Object> map = yaml.load(rawConfig);
+        return ConfiguratorConfig.parseFromMap(map);
+>>>>>>> origin/3.2
     }
 
     private static List<URL> serviceItemToUrls(ConfigItem item, ConfiguratorConfig config) {
@@ -84,7 +109,7 @@ public class ConfigParser {
 
         addresses.forEach(addr -> {
             StringBuilder urlBuilder = new StringBuilder();
-            urlBuilder.append("override://").append(addr).append("/");
+            urlBuilder.append("override://").append(addr).append('/');
 
             urlBuilder.append(appendService(config.getKey()));
             urlBuilder.append(toParameterString(item));
@@ -97,10 +122,14 @@ public class ConfigParser {
             if (CollectionUtils.isNotEmpty(apps)) {
                 apps.forEach(app -> {
                     StringBuilder tmpUrlBuilder = new StringBuilder(urlBuilder);
+<<<<<<< HEAD
                     urls.add(URL.valueOf(tmpUrlBuilder.append("&application=").append(app).toString()));
+=======
+                    urls.add(appendMatchCondition(URL.valueOf(tmpUrlBuilder.append("&application=").append(app).toString()), item));
+>>>>>>> origin/3.2
                 });
             } else {
-                urls.add(URL.valueOf(urlBuilder.toString()));
+                urls.add(appendMatchCondition(URL.valueOf(urlBuilder.toString()), item));
             }
         });
 
@@ -112,7 +141,7 @@ public class ConfigParser {
         List<String> addresses = parseAddresses(item);
         for (String addr : addresses) {
             StringBuilder urlBuilder = new StringBuilder();
-            urlBuilder.append("override://").append(addr).append("/");
+            urlBuilder.append("override://").append(addr).append('/');
             List<String> services = item.getServices();
             if (services == null) {
                 services = new ArrayList<>();
@@ -132,7 +161,11 @@ public class ConfigParser {
                 tmpUrlBuilder.append("&category=").append(APP_DYNAMIC_CONFIGURATORS_CATEGORY);
                 tmpUrlBuilder.append("&configVersion=").append(config.getConfigVersion());
 
+<<<<<<< HEAD
                 urls.add(URL.valueOf(tmpUrlBuilder.toString()));
+=======
+                urls.add(appendMatchCondition(URL.valueOf(tmpUrlBuilder.toString()), item));
+>>>>>>> origin/3.2
             }
         }
         return urls;
@@ -149,21 +182,26 @@ public class ConfigParser {
         Map<String, String> parameters = item.getParameters();
         if (CollectionUtils.isEmptyMap(parameters)) {
             throw new IllegalStateException("Invalid configurator rule, please specify at least one parameter " +
-                    "you want to change in the rule.");
+                "you want to change in the rule.");
         }
 
         parameters.forEach((k, v) -> {
-            sb.append("&");
+            sb.append('&');
             sb.append(k);
-            sb.append("=");
+            sb.append('=');
             sb.append(v);
         });
 
         if (CollectionUtils.isNotEmpty(item.getProviderAddresses())) {
-            sb.append("&");
+            sb.append('&');
             sb.append(OVERRIDE_PROVIDERS_KEY);
-            sb.append("=");
+            sb.append('=');
             sb.append(CollectionUtils.join(item.getProviderAddresses(), ","));
+        } else if (PROVIDER.equals(item.getSide())) {
+            sb.append('&');
+            sb.append(OVERRIDE_PROVIDERS_KEY);
+            sb.append('=');
+            sb.append(CollectionUtils.join(parseAddresses(item), ","));
         }
 
         return sb.toString();
@@ -180,7 +218,7 @@ public class ConfigParser {
         if (i > 0) {
             sb.append("group=");
             sb.append(interfaceName, 0, i);
-            sb.append("&");
+            sb.append('&');
 
             interfaceName = interfaceName.substring(i + 1);
         }
@@ -188,7 +226,7 @@ public class ConfigParser {
         if (j > 0) {
             sb.append("version=");
             sb.append(interfaceName.substring(j + 1));
-            sb.append("&");
+            sb.append('&');
             interfaceName = interfaceName.substring(0, j);
         }
         sb.insert(0, interfaceName + "?");
@@ -216,13 +254,10 @@ public class ConfigParser {
         return addresses;
     }
 
-    private static boolean isJsonArray(String rawConfig) {
-        try {
-            JSONValidator validator = JSONValidator.from(rawConfig);
-            return validator.validate() && validator.getType() == JSONValidator.Type.Array;
-        } catch (Exception e) {
-            // ignore exception and return false
+    private static URL appendMatchCondition(URL url, ConfigItem item) {
+        if (item.getMatch() != null) {
+            url = url.putAttribute(MATCH_CONDITION, item.getMatch());
         }
-        return false;
+        return url;
     }
 }

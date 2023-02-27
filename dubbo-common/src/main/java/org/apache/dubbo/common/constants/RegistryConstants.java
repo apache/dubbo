@@ -43,6 +43,8 @@ public interface RegistryConstants {
 
     String CONFIGURATORS_CATEGORY = "configurators";
 
+    String ALL_CATEGORIES = "providers,configurators,routers";
+
     String DYNAMIC_CONFIGURATORS_CATEGORY = "dynamicconfigurators";
 
     String APP_DYNAMIC_CONFIGURATORS_CATEGORY = "appdynamicconfigurators";
@@ -53,13 +55,31 @@ public interface RegistryConstants {
 
     String ROUTE_PROTOCOL = "route";
 
+    String ROUTE_SCRIPT_PROTOCOL = "script";
+
     String OVERRIDE_PROTOCOL = "override";
 
     String COMPATIBLE_CONFIG_KEY = "compatible_config";
 
+<<<<<<< HEAD
     String REGISTRY_PUBLISH_INTERFACE_KEY = "publish-interface";
 
     String DUBBO_PUBLISH_INTERFACE_DEFAULT_KEY = "dubbo.application.publish-interface";
+=======
+    String REGISTER_MODE_KEY = "register-mode";
+
+    String DUBBO_REGISTER_MODE_DEFAULT_KEY = "dubbo.application.register-mode";
+
+    String DUBBO_PUBLISH_INTERFACE_DEFAULT_KEY = "dubbo.application.publish-interface";
+
+    String DUBBO_PUBLISH_INSTANCE_DEFAULT_KEY = "dubbo.application.publish-instance";
+
+    String DEFAULT_REGISTER_MODE_INTERFACE = "interface";
+
+    String DEFAULT_REGISTER_MODE_INSTANCE = "instance";
+
+    String DEFAULT_REGISTER_MODE_ALL = "all";
+>>>>>>> origin/3.2
     /**
      * The parameter key of Dubbo Registry type
      *
@@ -82,15 +102,25 @@ public interface RegistryConstants {
     String SERVICE_REGISTRY_PROTOCOL = "service-discovery-registry";
 
     /**
-     * The parameter key of the subscribed service names for Service-Oriented Registry
-     * <p>
-     * If there is a multiple-values, the  "comma" is the separator.
-     *
-     * @since 2.7.5
+     * Specify registry level services consumer needs to subscribe to, multiple values should be separated using ",".
      */
     String SUBSCRIBED_SERVICE_NAMES_KEY = "subscribed-services";
 
     String PROVIDED_BY = "provided-by";
+
+    /**
+     * The provider tri port
+     *
+     * @since 3.1.0
+     */
+    String PROVIDER_PORT = "provider-port";
+
+    /**
+     * provider namespace
+     *
+     * @since 3.1.1
+     */
+    String PROVIDER_NAMESPACE = "provider-namespace";
 
     /**
      * The request size of service instances
@@ -111,10 +141,21 @@ public interface RegistryConstants {
     String ZONE_KEY = "zone";
 
     String REGISTRY_SERVICE_REFERENCE_PATH = "org.apache.dubbo.registry.RegistryService";
+<<<<<<< HEAD
 
     String INIT = "INIT";
 
     String MIGRATION_MULTI_REGISTRY = "MIGRATION_MULTI_REGISTRY";
 
     String LOADBALANCE_AMONG_REGISTRIES = "random";
+=======
+    String INIT = "INIT";
+
+    float DEFAULT_HASHMAP_LOAD_FACTOR = 0.75f;
+
+    String ENABLE_EMPTY_PROTECTION_KEY = "enable-empty-protection";
+    boolean DEFAULT_ENABLE_EMPTY_PROTECTION = false;
+    String REGISTER_CONSUMER_URL_KEY = "register-consumer-url";
+
+>>>>>>> origin/3.2
 }

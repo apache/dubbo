@@ -23,7 +23,7 @@ import org.apache.dubbo.rpc.cluster.Router;
 @Deprecated
 public interface RouterFactory extends org.apache.dubbo.rpc.cluster.RouterFactory {
 
-    Router getRouter(com.alibaba.dubbo.common.URL url);
+    com.alibaba.dubbo.rpc.cluster.Router getRouter(com.alibaba.dubbo.common.URL url);
 
     @Override
     default Router getRouter(URL url) {

@@ -16,14 +16,24 @@
  */
 package org.apache.dubbo.common.lang;
 
+import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 
 /**
- * Dubbo ShutdownHook callback interface
+ * A callback interface invoked when Dubbo application is stopped.
+ * <p>Note: This class is not directly related to Java ShutdownHook.</p>
+ * <p/>
+ * <p>Call chains:</p>
+ * <ol>
+ *     <li>Java Shutdown Hook -> ApplicationDeployer.destroy() -> execute ShutdownHookCallback</li>
+ *     <li>Stop dubbo application -> ApplicationDeployer.destroy() -> execute ShutdownHookCallback</li>
+ * </ol>
  *
  * @since 2.7.5
+ * @see org.apache.dubbo.common.deploy.ApplicationDeployListener
+ * @see org.apache.dubbo.rpc.model.ScopeModelDestroyListener
  */
-@SPI
+@SPI(scope = ExtensionScope.APPLICATION)
 public interface ShutdownHookCallback extends Prioritized {
 
     /**

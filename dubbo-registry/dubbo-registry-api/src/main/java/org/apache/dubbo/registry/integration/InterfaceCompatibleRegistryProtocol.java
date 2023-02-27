@@ -18,12 +18,18 @@ package org.apache.dubbo.registry.integration;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
+<<<<<<< HEAD
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.client.ServiceDiscoveryRegistryDirectory;
 import org.apache.dubbo.registry.client.migration.MigrationInvoker;
 import org.apache.dubbo.registry.support.AbstractRegistryFactory;
+=======
+import org.apache.dubbo.registry.Registry;
+import org.apache.dubbo.registry.client.ServiceDiscoveryRegistryDirectory;
+import org.apache.dubbo.registry.client.migration.MigrationInvoker;
+>>>>>>> origin/3.2
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.cluster.ClusterInvoker;
@@ -37,8 +43,11 @@ import static org.apache.dubbo.registry.Constants.DEFAULT_REGISTRY;
  */
 public class InterfaceCompatibleRegistryProtocol extends RegistryProtocol {
 
+<<<<<<< HEAD
     private static final Logger logger = LoggerFactory.getLogger(InterfaceCompatibleRegistryProtocol.class);
 
+=======
+>>>>>>> origin/3.2
     @Override
     protected URL getRegistryUrl(Invoker<?> originInvoker) {
         URL registryUrl = originInvoker.getUrl();
@@ -65,6 +74,7 @@ public class InterfaceCompatibleRegistryProtocol extends RegistryProtocol {
 
     @Override
     public <T> ClusterInvoker<T> getServiceDiscoveryInvoker(Cluster cluster, Registry registry, Class<T> type, URL url) {
+<<<<<<< HEAD
         try {
             registry = registryFactory.getRegistry(super.getRegistryUrl(url));
         } catch (IllegalStateException e) {
@@ -73,13 +83,20 @@ public class InterfaceCompatibleRegistryProtocol extends RegistryProtocol {
             registry = AbstractRegistryFactory.getDefaultNopRegistryIfNotSupportServiceDiscovery();
         }
 
+=======
+        registry = getRegistry(super.getRegistryUrl(url));
+>>>>>>> origin/3.2
         DynamicDirectory<T> directory = new ServiceDiscoveryRegistryDirectory<>(type, url);
         return doCreateInvoker(directory, cluster, registry, type);
     }
 
     @Override
+<<<<<<< HEAD
     protected <T> ClusterInvoker<T> getMigrationInvoker(RegistryProtocol registryProtocol, Cluster cluster, Registry registry,
                                                         Class<T> type, URL url, URL consumerUrl) {
+=======
+    protected <T> ClusterInvoker<T> getMigrationInvoker(RegistryProtocol registryProtocol, Cluster cluster, Registry registry, Class<T> type, URL url, URL consumerUrl) {
+>>>>>>> origin/3.2
 //        ClusterInvoker<T> invoker = getInvoker(cluster, registry, type, url);
         return new MigrationInvoker<T>(registryProtocol, cluster, registry, type, url, consumerUrl);
     }

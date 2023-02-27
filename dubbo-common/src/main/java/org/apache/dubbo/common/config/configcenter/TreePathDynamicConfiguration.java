@@ -21,14 +21,14 @@ import org.apache.dubbo.common.config.configcenter.file.FileSystemDynamicConfigu
 import org.apache.dubbo.common.utils.StringUtils;
 
 import java.util.Collection;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
+<<<<<<< HEAD
 import static java.util.Collections.emptySortedSet;
 import static java.util.Collections.unmodifiableSortedSet;
+=======
+>>>>>>> origin/3.2
 import static org.apache.dubbo.common.constants.CommonConstants.CONFIG_NAMESPACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
-import static org.apache.dubbo.common.utils.CollectionUtils.isEmpty;
 import static org.apache.dubbo.common.utils.PathUtils.buildPath;
 import static org.apache.dubbo.common.utils.PathUtils.normalize;
 
@@ -61,7 +61,7 @@ public abstract class TreePathDynamicConfiguration extends AbstractDynamicConfig
      */
     public static final String DEFAULT_CONFIG_BASE_PATH = "/config";
 
-    private final String rootPath;
+    protected final String rootPath;
 
     public TreePathDynamicConfiguration(URL url) {
         super(url);
@@ -99,20 +99,13 @@ public abstract class TreePathDynamicConfiguration extends AbstractDynamicConfig
     @Override
     public final void addListener(String key, String group, ConfigurationListener listener) {
         String pathKey = buildPathKey(group, key);
-        doAddListener(pathKey, listener);
+        doAddListener(pathKey, listener, key, group);
     }
 
     @Override
     public final void removeListener(String key, String group, ConfigurationListener listener) {
         String pathKey = buildPathKey(group, key);
         doRemoveListener(pathKey, listener);
-    }
-
-    @Override
-    public final SortedSet<String> getConfigKeys(String group) throws UnsupportedOperationException {
-        String groupPath = buildGroupPath(group);
-        Collection<String> configKeys = doGetConfigKeys(groupPath);
-        return isEmpty(configKeys) ? emptySortedSet() : unmodifiableSortedSet(new TreeSet<>(configKeys));
     }
 
     protected abstract boolean doPublishConfig(String pathKey, String content) throws Exception;
@@ -123,7 +116,7 @@ public abstract class TreePathDynamicConfiguration extends AbstractDynamicConfig
 
     protected abstract Collection<String> doGetConfigKeys(String groupPath);
 
-    protected abstract void doAddListener(String pathKey, ConfigurationListener listener);
+    protected abstract void doAddListener(String pathKey, ConfigurationListener listener, String key, String group);
 
     protected abstract void doRemoveListener(String pathKey, ConfigurationListener listener);
 

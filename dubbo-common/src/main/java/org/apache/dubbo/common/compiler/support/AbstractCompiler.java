@@ -18,6 +18,10 @@ package org.apache.dubbo.common.compiler.support;
 
 import org.apache.dubbo.common.compiler.Compiler;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -30,8 +34,10 @@ public abstract class AbstractCompiler implements Compiler {
 
     private static final Pattern CLASS_PATTERN = Pattern.compile("class\\s+([$_a-zA-Z][$_a-zA-Z0-9]*)\\s+");
 
+    private static final Map<String, Lock> CLASS_IN_CREATION_MAP = new ConcurrentHashMap<>();
+
     @Override
-    public Class<?> compile(String code, ClassLoader classLoader) {
+    public Class<?> compile(Class<?> neighbor, String code, ClassLoader classLoader) {
         code = code.trim();
         Matcher matcher = PACKAGE_PATTERN.matcher(code);
         String pkg;
@@ -48,22 +54,36 @@ public abstract class AbstractCompiler implements Compiler {
             throw new IllegalArgumentException("No such class name in " + code);
         }
         String className = pkg != null && pkg.length() > 0 ? pkg + "." + cls : cls;
+        Lock lock = CLASS_IN_CREATION_MAP.get(className);
+        if (lock == null) {
+            CLASS_IN_CREATION_MAP.putIfAbsent(className, new ReentrantLock());
+            lock = CLASS_IN_CREATION_MAP.get(className);
+        }
         try {
-            return Class.forName(className, true, org.apache.dubbo.common.utils.ClassUtils.getCallerClassLoader(getClass()));
+            lock.lock();
+            return Class.forName(className, true, classLoader);
         } catch (ClassNotFoundException e) {
             if (!code.endsWith("}")) {
                 throw new IllegalStateException("The java code not endsWith \"}\", code: \n" + code + "\n");
             }
             try {
-                return doCompile(className, code);
+                return doCompile(neighbor, classLoader, className, code);
             } catch (RuntimeException t) {
                 throw t;
             } catch (Throwable t) {
                 throw new IllegalStateException("Failed to compile class, cause: " + t.getMessage() + ", class: " + className + ", code: \n" + code + "\n, stack: " + ClassUtils.toString(t));
             }
+        } finally {
+            lock.unlock();
         }
     }
 
-    protected abstract Class<?> doCompile(String name, String source) throws Throwable;
+    protected Class<?> doCompile(ClassLoader classLoader, String name, String source) throws Throwable {
+        return null;
+    }
+
+    protected Class<?> doCompile(Class<?> neighbor,ClassLoader classLoader, String name, String source) throws Throwable {
+        return doCompile(classLoader, name, source);
+    }
 
 }

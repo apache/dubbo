@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.common.convert.multiple;
 
+import org.apache.dubbo.rpc.model.FrameworkModel;
+
 import java.util.NavigableSet;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -26,6 +28,9 @@ import java.util.TreeSet;
  * @since 2.7.6
  */
 public class StringToNavigableSetConverter extends StringToIterableConverter<NavigableSet> {
+    public StringToNavigableSetConverter(FrameworkModel frameworkModel) {
+        super(frameworkModel);
+    }
 
     @Override
     protected NavigableSet createMultiValue(int size, Class<?> multiValueType) {

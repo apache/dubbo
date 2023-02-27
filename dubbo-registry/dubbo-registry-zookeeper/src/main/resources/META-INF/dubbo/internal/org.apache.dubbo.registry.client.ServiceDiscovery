@@ -1,1 +1,0 @@
-zookeeper=org.apache.dubbo.registry.zookeeper.ZookeeperServiceDiscovery

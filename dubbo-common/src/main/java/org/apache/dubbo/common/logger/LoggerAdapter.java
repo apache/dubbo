@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.common.logger;
 
+import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 
 import java.io.File;
@@ -23,7 +24,7 @@ import java.io.File;
 /**
  * Logger provider
  */
-@SPI
+@SPI(scope = ExtensionScope.FRAMEWORK)
 public interface LoggerAdapter {
 
     /**
@@ -69,4 +70,14 @@ public interface LoggerAdapter {
      * @param file logging file
      */
     void setFile(File file);
+
+    /**
+     * Return is the current logger has been configured.
+     * Used to check if logger is available to use.
+     *
+     * @return true if the current logger has been configured
+     */
+    default boolean isConfigured() {
+        return true;
+    }
 }

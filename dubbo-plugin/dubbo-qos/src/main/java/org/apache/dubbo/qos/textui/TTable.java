@@ -155,7 +155,7 @@ public class TTable implements TComponent {
 
                     if (isLastColOfRow) {
                         if (border.has(Border.BORDER_OUTER_RIGHT)) {
-                            segmentSB.append("|");
+                            segmentSB.append('|');
                         }
                         segmentSB.append(System.lineSeparator());
                     }
@@ -247,19 +247,19 @@ public class TTable implements TComponent {
 
             if (isFirstCol
                     && border.has(Border.BORDER_OUTER_LEFT)) {
-                separationLineSB.append("+");
+                separationLineSB.append('+');
             }
 
             if (!isFirstCol
                     && border.has(Border.BORDER_INNER_V)) {
-                separationLineSB.append("+");
+                separationLineSB.append('+');
             }
 
             separationLineSB.append(repeat("-", width + 2 * padding));
 
             if (isLastCol
                     && border.has(Border.BORDER_OUTER_RIGHT)) {
-                separationLineSB.append("+");
+                separationLineSB.append('+');
             }
 
         }

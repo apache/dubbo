@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.common.lang;
 
+import org.apache.dubbo.rpc.model.ApplicationModel;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,22 +30,22 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  * @since 2.7.5
  */
-public class ShutdownHookCallbacksTest {
+class ShutdownHookCallbacksTest {
 
     private ShutdownHookCallbacks callbacks;
 
     @BeforeEach
     public void init() {
-        callbacks = new ShutdownHookCallbacks();
+        callbacks = new ShutdownHookCallbacks(ApplicationModel.defaultModel());
     }
 
     @Test
-    public void testSingleton() {
+    void testSingleton() {
         assertNotNull(callbacks);
     }
 
     @Test
-    public void testCallback() {
+    void testCallback() {
         callbacks.callback();
         DefaultShutdownHookCallback callback = (DefaultShutdownHookCallback) callbacks.getCallbacks().iterator().next();
         assertTrue(callback.isExecuted());
@@ -51,7 +53,7 @@ public class ShutdownHookCallbacksTest {
 
     @AfterEach
     public void destroy() {
-        callbacks.clear();
+        callbacks.destroy();
         assertTrue(callbacks.getCallbacks().isEmpty());
     }
 }

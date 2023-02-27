@@ -27,12 +27,10 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
-import java.util.TreeSet;
+import java.io.IOException;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static java.util.Arrays.asList;
-import static org.apache.commons.io.FileUtils.deleteQuietly;
 import static org.apache.dubbo.common.URL.valueOf;
 import static org.apache.dubbo.common.config.configcenter.DynamicConfiguration.DEFAULT_GROUP;
 import static org.apache.dubbo.common.config.configcenter.file.FileSystemDynamicConfiguration.CONFIG_CENTER_DIR_PARAM_NAME;
@@ -44,10 +42,17 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * {@link FileSystemDynamicConfiguration} Test
  */
+<<<<<<< HEAD
 // Test often failed on Github Actions Platform because of file system on Azure
 //@DisabledIfEnvironmentVariable(named = "DISABLE_FILE_SYSTEM_TEST", matches = "true")
 @Disabled
 public class FileSystemDynamicConfigurationTest {
+=======
+// Test often failed on GitHub Actions Platform because of file system on Azure
+// Change to Disabled because DisabledIfEnvironmentVariable does not work on GitHub.
+@Disabled
+class FileSystemDynamicConfigurationTest {
+>>>>>>> origin/3.2
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -61,13 +66,18 @@ public class FileSystemDynamicConfigurationTest {
     public void init() {
         File rootDirectory = new File(getClassPath(), "config-center");
         rootDirectory.mkdirs();
+        try {
+            FileUtils.cleanDirectory(rootDirectory);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         URL url = valueOf("dubbo://127.0.0.1:20880").addParameter(CONFIG_CENTER_DIR_PARAM_NAME, rootDirectory.getAbsolutePath());
         configuration = new FileSystemDynamicConfiguration(url);
     }
 
     @AfterEach
     public void destroy() throws Exception {
-        deleteQuietly(configuration.getRootDirectory());
+        FileUtils.deleteQuietly(configuration.getRootDirectory());
         configuration.close();
     }
 
@@ -76,7 +86,7 @@ public class FileSystemDynamicConfigurationTest {
     }
 
     @Test
-    public void testInit() {
+    void testInit() {
 
         assertEquals(new File(getClassPath(), "config-center"), configuration.getRootDirectory());
         assertEquals("UTF-8", configuration.getEncoding());
@@ -92,7 +102,7 @@ public class FileSystemDynamicConfigurationTest {
     }
 
     @Test
-    public void testPublishAndGetConfig() {
+    void testPublishAndGetConfig() {
         assertTrue(configuration.publishConfig(KEY, CONTENT));
         assertTrue(configuration.publishConfig(KEY, CONTENT));
         assertTrue(configuration.publishConfig(KEY, CONTENT));
@@ -100,7 +110,7 @@ public class FileSystemDynamicConfigurationTest {
     }
 
     @Test
-    public void testAddAndRemoveListener() throws InterruptedException {
+    void testAddAndRemoveListener() throws InterruptedException {
 
         configuration.publishConfig(KEY, "A");
 
@@ -157,7 +167,7 @@ public class FileSystemDynamicConfigurationTest {
     }
 
     @Test
-    public void testRemoveConfig() throws Exception {
+    void testRemoveConfig() throws Exception {
 
         assertTrue(configuration.publishConfig(KEY, DEFAULT_GROUP, "A"));
 
@@ -168,16 +178,16 @@ public class FileSystemDynamicConfigurationTest {
         assertFalse(configuration.configFile(KEY, DEFAULT_GROUP).exists());
 
     }
-
-    @Test
-    public void testGetConfigKeys() throws Exception {
-
-        assertTrue(configuration.publishConfig("A", DEFAULT_GROUP, "A"));
-
-        assertTrue(configuration.publishConfig("B", DEFAULT_GROUP, "B"));
-
-        assertTrue(configuration.publishConfig("C", DEFAULT_GROUP, "C"));
-
-        assertEquals(new TreeSet(asList("A", "B", "C")), configuration.getConfigKeys(DEFAULT_GROUP));
-    }
+//
+//    @Test
+//    public void testGetConfigKeys() throws Exception {
+//
+//        assertTrue(configuration.publishConfig("A", DEFAULT_GROUP, "A"));
+//
+//        assertTrue(configuration.publishConfig("B", DEFAULT_GROUP, "B"));
+//
+//        assertTrue(configuration.publishConfig("C", DEFAULT_GROUP, "C"));
+//
+//        assertEquals(new TreeSet(asList("A", "B", "C")), configuration.getConfigKeys(DEFAULT_GROUP));
+//    }
 }

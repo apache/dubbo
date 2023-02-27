@@ -16,19 +16,29 @@
  */
 package org.apache.dubbo.remoting.transport;
 
+<<<<<<< HEAD
 import org.apache.dubbo.common.logger.Logger;
+=======
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+>>>>>>> origin/3.2
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.exchange.support.MultiMessage;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
+
 /**
  * @see MultiMessage
  */
 public class MultiMessageHandler extends AbstractChannelHandlerDelegate {
 
+<<<<<<< HEAD
     protected static final Logger logger = LoggerFactory.getLogger(MultiMessageHandler.class);
+=======
+    protected static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(MultiMessageHandler.class);
+>>>>>>> origin/3.2
 
     public MultiMessageHandler(ChannelHandler handler) {
         super(handler);
@@ -43,11 +53,19 @@ public class MultiMessageHandler extends AbstractChannelHandlerDelegate {
                 try {
                     handler.received(channel, obj);
                 } catch (Throwable t) {
+<<<<<<< HEAD
                     logger.error("MultiMessageHandler received fail.", t);
                     try {
                         handler.caught(channel, t);
                     } catch (Throwable t1) {
                         logger.error("MultiMessageHandler caught fail.", t1);
+=======
+                    logger.error(INTERNAL_ERROR, "unknown error in remoting module", "", "MultiMessageHandler received fail.", t);
+                    try {
+                        handler.caught(channel, t);
+                    } catch (Throwable t1) {
+                        logger.error(INTERNAL_ERROR, "unknown error in remoting module", "", "MultiMessageHandler caught fail.", t1);
+>>>>>>> origin/3.2
                     }
                 }
             }

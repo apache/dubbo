@@ -17,12 +17,13 @@
 package org.apache.dubbo.remoting;
 
 import org.apache.dubbo.common.extension.Adaptive;
+import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.remoting.buffer.ChannelBuffer;
 
 import java.io.IOException;
 
-@SPI
+@SPI(scope = ExtensionScope.FRAMEWORK)
 public interface Codec2 {
 
     @Adaptive({Constants.CODEC_KEY})

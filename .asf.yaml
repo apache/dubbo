@@ -1,0 +1,52 @@
+#
+#
+#   Licensed to the Apache Software Foundation (ASF) under one or more
+#   contributor license agreements.  See the NOTICE file distributed with
+#   this work for additional information regarding copyright ownership.
+#   The ASF licenses this file to You under the Apache License, Version 2.0
+#   (the "License"); you may not use this file except in compliance with
+#   the License.  You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an "AS IS" BASIS,
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#   See the License for the specific language governing permissions and
+#   limitations under the License.
+#
+#
+
+notifications:
+  commits:      commits@dubbo.apache.org
+  issues:       notifications@dubbo.apache.org
+  pullrequests: notifications@dubbo.apache.org
+  jira_options: link label link label
+
+github:
+  homepage: https://dubbo.apache.org/
+  features:
+    # Enable wiki for documentation
+    wiki: true
+    # Enable issue management
+    issues: true
+    # Enable projects for project management boards
+    projects: true
+  protected_branches:
+    master:
+      # only disable force push
+      foo: bar
+    3.0:
+      # only disable force push
+      foo: bar
+    3.1:
+      # only disable force push
+      foo: bar
+  labels:
+    - java
+    - microservices
+    - framework
+    - restful
+    - distributed-systems
+    - rpc
+    - dubbo

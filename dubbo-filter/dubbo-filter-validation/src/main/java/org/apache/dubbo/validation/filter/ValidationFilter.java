@@ -27,8 +27,6 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.validation.Validation;
 import org.apache.dubbo.validation.Validator;
 
-import javax.validation.ValidationException;
-
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
 import static org.apache.dubbo.common.constants.FilterConstants.VALIDATION_KEY;
@@ -42,13 +40,13 @@ import static org.apache.dubbo.common.constants.FilterConstants.VALIDATION_KEY;
  *     In the above configuration a validation has been configured of type jvalidation. On invocation of method <b>save</b>
  *     dubbo will invoke {@link org.apache.dubbo.validation.support.jvalidation.JValidator}
  * </pre>
- *
+ * <p>
  * To add a new type of validation
  * <pre>
  *     e.g. &lt;dubbo:method name="save" validation="special" /&gt;
  *     where "special" is representing a validator for special character.
  * </pre>
- *
+ * <p>
  * developer needs to do
  * <br/>
  * 1)Implement a SpecialValidation.java class (package name xxx.yyy.zzz) either by implementing {@link Validation} or extending {@link org.apache.dubbo.validation.support.AbstractValidation} <br/>
@@ -67,6 +65,7 @@ public class ValidationFilter implements Filter {
 
     /**
      * Sets the validation instance for ValidationFilter
+     *
      * @param validation Validation instance injected by dubbo framework based on "validation" attribute value.
      */
     public void setValidation(Validation validation) {
@@ -75,6 +74,7 @@ public class ValidationFilter implements Filter {
 
     /**
      * Perform the validation of before invoking the actual method based on <b>validation</b> attribute value.
+     *
      * @param invoker    service
      * @param invocation invocation.
      * @return Method invocation result
@@ -83,7 +83,7 @@ public class ValidationFilter implements Filter {
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         if (validation != null && !invocation.getMethodName().startsWith("$")
-                && ConfigUtils.isNotEmpty(invoker.getUrl().getMethodParameter(invocation.getMethodName(), VALIDATION_KEY))) {
+            && ConfigUtils.isNotEmpty(invoker.getUrl().getMethodParameter(invocation.getMethodName(), VALIDATION_KEY))) {
             try {
                 Validator validator = validation.getValidator(invoker.getUrl());
                 if (validator != null) {
@@ -91,9 +91,6 @@ public class ValidationFilter implements Filter {
                 }
             } catch (RpcException e) {
                 throw e;
-            } catch (ValidationException e) {
-                // only use exception's message to avoid potential serialization issue
-                return AsyncRpcResult.newDefaultAsyncResult(new ValidationException(e.getMessage()), invocation);
             } catch (Throwable t) {
                 return AsyncRpcResult.newDefaultAsyncResult(t, invocation);
             }

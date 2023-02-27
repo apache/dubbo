@@ -16,8 +16,9 @@
  */
 package org.apache.dubbo.remoting.exchange.support;
 
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.resource.GlobalResourceInitializer;
 import org.apache.dubbo.common.threadpool.ThreadlessExecutor;
 import org.apache.dubbo.common.timer.HashedWheelTimer;
 import org.apache.dubbo.common.timer.Timeout;
@@ -40,30 +41,40 @@ import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_TIMEOUT_SERVER;
 
 /**
  * DefaultFuture.
  */
 public class DefaultFuture extends CompletableFuture<Object> {
 
-    private static final Logger logger = LoggerFactory.getLogger(DefaultFuture.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(DefaultFuture.class);
 
+    /**
+     * in-flight channels
+     */
     private static final Map<Long, Channel> CHANNELS = new ConcurrentHashMap<>();
 
+    /**
+     * in-flight requests
+     */
     private static final Map<Long, DefaultFuture> FUTURES = new ConcurrentHashMap<>();
 
-    public static final Timer TIME_OUT_TIMER = new HashedWheelTimer(
-            new NamedThreadFactory("dubbo-future-timeout", true),
-            30,
-            TimeUnit.MILLISECONDS);
+    private static final GlobalResourceInitializer<Timer> TIME_OUT_TIMER = new GlobalResourceInitializer<>(() -> new HashedWheelTimer(new NamedThreadFactory("dubbo-future-timeout", true), 30, TimeUnit.MILLISECONDS), DefaultFuture::destroy);
 
     // invoke id.
     private final Long id;
+
     private final Channel channel;
+
     private final Request request;
+
     private final int timeout;
+
     private final long start = System.currentTimeMillis();
+
     private volatile long sent;
+
     private Timeout timeoutCheckTask;
 
     private ExecutorService executor;
@@ -91,7 +102,13 @@ public class DefaultFuture extends CompletableFuture<Object> {
      */
     private static void timeoutCheck(DefaultFuture future) {
         TimeoutCheckTask task = new TimeoutCheckTask(future.getId());
-        future.timeoutCheckTask = TIME_OUT_TIMER.newTimeout(task, future.getTimeout(), TimeUnit.MILLISECONDS);
+        future.timeoutCheckTask = TIME_OUT_TIMER.get().newTimeout(task, future.getTimeout(), TimeUnit.MILLISECONDS);
+    }
+
+    public static void destroy() {
+        TIME_OUT_TIMER.remove(Timer::stop);
+        FUTURES.clear();
+        CHANNELS.clear();
     }
 
     /**
@@ -145,9 +162,14 @@ public class DefaultFuture extends CompletableFuture<Object> {
                     Response disconnectResponse = new Response(future.getId());
                     disconnectResponse.setStatus(Response.CHANNEL_INACTIVE);
                     disconnectResponse.setErrorMessage("Channel " +
+<<<<<<< HEAD
                             channel +
                             " is inactive. Directly return the unFinished request : " +
                             (logger.isDebugEnabled() ? future.getRequest() : future.getRequest().copyWithoutData()));
+=======
+                        channel + " is inactive. Directly return the unFinished request : " +
+                        (logger.isDebugEnabled() ? future.getRequest() : future.getRequest().copyWithoutData()));
+>>>>>>> origin/3.2
                     DefaultFuture.received(channel, disconnectResponse);
                 }
             }
@@ -169,11 +191,11 @@ public class DefaultFuture extends CompletableFuture<Object> {
                 }
                 future.doReceived(response);
             } else {
-                logger.warn("The timeout response finally returned at "
-                        + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date()))
-                        + ", response status is " + response.getStatus()
-                        + (channel == null ? "" : ", channel: " + channel.getLocalAddress()
-                        + " -> " + channel.getRemoteAddress()) + ", please check provider side for detailed result.");
+                logger.warn(PROTOCOL_TIMEOUT_SERVER, "", "", "The timeout response finally returned at "
+                    + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date()))
+                    + ", response status is " + response.getStatus()
+                    + (channel == null ? "" : ", channel: " + channel.getLocalAddress()
+                    + " -> " + channel.getRemoteAddress()) + ", please check provider side for detailed result.");
             }
         } finally {
             CHANNELS.remove(response.getId());
@@ -188,6 +210,7 @@ public class DefaultFuture extends CompletableFuture<Object> {
         this.doReceived(errorResult);
         FUTURES.remove(id);
         CHANNELS.remove(id);
+        timeoutCheckTask.cancel();
         return true;
     }
 
@@ -207,13 +230,13 @@ public class DefaultFuture extends CompletableFuture<Object> {
             this.completeExceptionally(new RemotingException(channel, res.getErrorMessage()));
         }
 
-        // the result is returning, but the caller thread may still waiting
+        // the result is returning, but the caller thread may still wait
         // to avoid endless waiting for whatever reason, notify caller thread to return.
         if (executor != null && executor instanceof ThreadlessExecutor) {
             ThreadlessExecutor threadlessExecutor = (ThreadlessExecutor) executor;
             if (threadlessExecutor.isWaiting()) {
                 threadlessExecutor.notifyReturn(new IllegalStateException("The result has returned, but the biz thread is still waiting" +
-                        " which is not an expected state, interrupt the thread manually by returning an exception."));
+                    " which is not an expected state, interrupt the thread manually by returning an exception."));
             }
         }
     }
@@ -245,6 +268,7 @@ public class DefaultFuture extends CompletableFuture<Object> {
     private String getTimeoutMessage(boolean scan) {
         long nowTimestamp = System.currentTimeMillis();
         return (sent > 0 ? "Waiting server-side response timeout" : "Sending request timeout in client-side")
+<<<<<<< HEAD
                 + (scan ? " by scan timer" : "") + ". start time: "
                 + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date(start))) + ", end time: "
                 + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date(nowTimestamp))) + ","
@@ -253,6 +277,16 @@ public class DefaultFuture extends CompletableFuture<Object> {
                 : " elapsed: " + (nowTimestamp - start)) + " ms, timeout: "
                 + timeout + " ms, request: " + (logger.isDebugEnabled() ? request : request.copyWithoutData()) + ", channel: " + channel.getLocalAddress()
                 + " -> " + channel.getRemoteAddress();
+=======
+            + (scan ? " by scan timer" : "") + ". start time: "
+            + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date(start))) + ", end time: "
+            + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date(nowTimestamp))) + ","
+            + (sent > 0 ? " client elapsed: " + (sent - start)
+            + " ms, server elapsed: " + (nowTimestamp - sent)
+            : " elapsed: " + (nowTimestamp - start)) + " ms, timeout: "
+            + timeout + " ms, request: " + (logger.isDebugEnabled() ? request : request.copyWithoutData()) + ", channel: " + channel.getLocalAddress()
+            + " -> " + channel.getRemoteAddress();
+>>>>>>> origin/3.2
     }
 
 

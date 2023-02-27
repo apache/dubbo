@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 mock=org.apache.dubbo.rpc.cluster.support.wrapper.MockClusterWrapper
 failover=org.apache.dubbo.rpc.cluster.support.FailoverCluster
 failfast=org.apache.dubbo.rpc.cluster.support.FailfastCluster
@@ -8,4 +9,15 @@ available=org.apache.dubbo.rpc.cluster.support.AvailableCluster
 mergeable=org.apache.dubbo.rpc.cluster.support.MergeableCluster
 broadcast=org.apache.dubbo.rpc.cluster.support.BroadcastCluster
 broadcast2=org.apache.dubbo.rpc.cluster.support.BroadcastCluster2
+=======
+mock=org.apache.dubbo.rpc.cluster.support.wrapper.MockClusterWrapper
+failover=org.apache.dubbo.rpc.cluster.support.FailoverCluster
+failfast=org.apache.dubbo.rpc.cluster.support.FailfastCluster
+failsafe=org.apache.dubbo.rpc.cluster.support.FailsafeCluster
+failback=org.apache.dubbo.rpc.cluster.support.FailbackCluster
+forking=org.apache.dubbo.rpc.cluster.support.ForkingCluster
+available=org.apache.dubbo.rpc.cluster.support.AvailableCluster
+mergeable=org.apache.dubbo.rpc.cluster.support.MergeableCluster
+broadcast=org.apache.dubbo.rpc.cluster.support.BroadcastCluster
+>>>>>>> origin/3.2
 zone-aware=org.apache.dubbo.rpc.cluster.support.registry.ZoneAwareCluster

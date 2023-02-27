@@ -63,9 +63,8 @@ public class ArrayMerger implements Merger<Object[]> {
         int index = 0;
         for (Object[] array : items) {
             if (array != null) {
-                for (int j = 0; j < array.length; j++) {
-                    Array.set(result, index++, array[j]);
-                }
+                System.arraycopy(array, 0, result, index, array.length);
+                index += array.length;
             }
         }
         return (Object[]) result;

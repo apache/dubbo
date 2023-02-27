@@ -1,1 +1,5 @@
+<<<<<<< HEAD
 curator5=org.apache.dubbo.remoting.zookeeper.curator5.Curator5ZookeeperTransporter
+=======
+curator5=org.apache.dubbo.remoting.zookeeper.curator5.Curator5ZookeeperTransporter
+>>>>>>> origin/3.2

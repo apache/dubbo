@@ -27,8 +27,11 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+<<<<<<< HEAD
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_RETRIES;
 
+=======
+>>>>>>> origin/3.2
 /**
  * Service annotation
  *
@@ -38,7 +41,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_RETRIES;
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE})
+@Target({ElementType.TYPE, ElementType.METHOD})
 @Inherited
 @Deprecated
 public @interface Service {
@@ -96,7 +99,7 @@ public @interface Service {
     /**
      * Maximum concurrent executes for the service, default value is 0 - no limits
      */
-    int executes() default 0;
+    int executes() default -1;
 
     /**
      * Whether to register the service to register center, default value is true
@@ -106,7 +109,7 @@ public @interface Service {
     /**
      * Service weight value, default value is 0
      */
-    int weight() default 0;
+    int weight() default -1;
 
     /**
      * Service doc, default value is ""
@@ -116,7 +119,7 @@ public @interface Service {
     /**
      * Delay time for service registration, default value is 0
      */
-    int delay() default 0;
+    int delay() default -1;
 
     /**
      * @see Service#stub()
@@ -142,14 +145,14 @@ public @interface Service {
     /**
      * Maximum connections service provider can accept, default value is 0 - connection is shared
      */
-    int connections() default 0;
+    int connections() default -1;
 
     /**
      * The callback instance limit peer connection
      * <p>
-     * see org.apache.dubbo.rpc.Constants#DEFAULT_CALLBACK_INSTANCES
+     * see org.apache.dubbo.common.constants.CommonConstants.DEFAULT_CALLBACK_INSTANCES
      */
-    int callbacks() default org.apache.dubbo.common.constants.CommonConstants.DEFAULT_CALLBACK_INSTANCES;
+    int callbacks() default -1;
 
     /**
      * Callback method name when connected, default value is empty string
@@ -176,12 +179,16 @@ public @interface Service {
      *
      * @see org.apache.dubbo.common.constants.CommonConstants#DEFAULT_RETRIES
      */
-    int retries() default DEFAULT_RETRIES;
+    int retries() default -1;
 
     /**
      * Load balance strategy, you can use {@link org.apache.dubbo.common.constants.LoadbalanceRules#RANDOM} ……
      */
+<<<<<<< HEAD
     String loadbalance() default LoadbalanceRules.RANDOM;
+=======
+    String loadbalance() default "";
+>>>>>>> origin/3.2
 
     /**
      * Whether to enable async invocation, default value is false
@@ -191,7 +198,7 @@ public @interface Service {
     /**
      * Maximum active requests allowed, default value is 0
      */
-    int actives() default 0;
+    int actives() default -1;
 
     /**
      * Whether the async request has already been sent, the default value is false
@@ -211,7 +218,7 @@ public @interface Service {
     /**
      * Timeout value for service invocation, default value is 0
      */
-    int timeout() default 0;
+    int timeout() default -1;
 
     /**
      * Specify cache implementation for service invocation, legal values include: lru, threadlocal, jcache
@@ -239,7 +246,9 @@ public @interface Service {
 
     /**
      * Application spring bean name
+     * @deprecated Do not set it and use the global Application Config
      */
+    @Deprecated
     String application() default "";
 
     /**

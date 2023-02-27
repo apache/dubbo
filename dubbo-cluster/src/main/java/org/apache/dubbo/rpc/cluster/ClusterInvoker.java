@@ -32,9 +32,29 @@ import org.apache.dubbo.rpc.Invoker;
  * @param <T>
  */
 public interface ClusterInvoker<T> extends Invoker<T> {
+
     URL getRegistryUrl();
 
     Directory<T> getDirectory();
 
     boolean isDestroyed();
+<<<<<<< HEAD
+=======
+
+    default boolean isServiceDiscovery() {
+        Directory<T> directory = getDirectory();
+        if (directory == null) {
+            return false;
+        }
+        return directory.isServiceDiscovery();
+    }
+
+    default boolean hasProxyInvokers() {
+        Directory<T> directory = getDirectory();
+        if (directory == null) {
+            return false;
+        }
+        return !directory.isEmpty();
+    }
+>>>>>>> origin/3.2
 }

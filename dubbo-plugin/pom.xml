@@ -31,9 +31,19 @@
     <modules>
         <module>dubbo-qos</module>
         <module>dubbo-auth</module>
+        <module>dubbo-reactive</module>
+        <module>dubbo-spring-security</module>
     </modules>
     <properties>
         <skip_maven_deploy>false</skip_maven_deploy>
     </properties>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-test-check</artifactId>
+            <version>${project.parent.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 </project>

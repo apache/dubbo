@@ -19,12 +19,19 @@ package org.apache.dubbo.config.utils;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.config.ConfigurationUtils;
+<<<<<<< HEAD
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
+=======
+import org.apache.dubbo.common.config.PropertiesConfiguration;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+>>>>>>> origin/3.2
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.serialize.Serialization;
 import org.apache.dubbo.common.status.StatusChecker;
+import org.apache.dubbo.common.status.reporter.FrameworkStatusReportService;
 import org.apache.dubbo.common.threadpool.ThreadPool;
+import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -60,30 +67,43 @@ import org.apache.dubbo.rpc.InvokerListener;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
+import org.apache.dubbo.rpc.cluster.filter.ClusterFilter;
+import org.apache.dubbo.rpc.model.ScopeModel;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
 import org.apache.dubbo.rpc.support.MockInvoker;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
+<<<<<<< HEAD
+=======
+import java.util.Collections;
+>>>>>>> origin/3.2
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
+<<<<<<< HEAD
 import static org.apache.dubbo.common.constants.CommonConstants.DISPATHER;
+=======
+>>>>>>> origin/3.2
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_MONITOR_ADDRESS;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.FILE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.FILTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.HOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.LOADBALANCE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.PASSWORD_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
@@ -93,15 +113,27 @@ import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_SE
 import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.USERNAME_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+<<<<<<< HEAD
 import static org.apache.dubbo.common.constants.RegistryConstants.DUBBO_PUBLISH_INTERFACE_DEFAULT_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PROTOCOL;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PUBLISH_INTERFACE_KEY;
+=======
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_CLASS_NOT_FOUND;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_PARAMETER_FORMAT_ERROR;
+import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_REGISTER_MODE_ALL;
+import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_REGISTER_MODE_INSTANCE;
+import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_REGISTER_MODE_INTERFACE;
+import static org.apache.dubbo.common.constants.RegistryConstants.DUBBO_REGISTER_MODE_DEFAULT_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTER_MODE_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PROTOCOL;
+>>>>>>> origin/3.2
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_TYPE_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGISTRY_PROTOCOL;
 import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
-import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
-import static org.apache.dubbo.common.utils.UrlUtils.isServiceDiscoveryRegistryType;
+import static org.apache.dubbo.common.utils.StringUtils.isEmpty;
+import static org.apache.dubbo.common.utils.StringUtils.isNotEmpty;
 import static org.apache.dubbo.config.Constants.ARCHITECTURE;
 import static org.apache.dubbo.config.Constants.CONTEXTPATH_KEY;
 import static org.apache.dubbo.config.Constants.DUBBO_IP_TO_REGISTRY;
@@ -116,7 +148,6 @@ import static org.apache.dubbo.config.Constants.STATUS_KEY;
 import static org.apache.dubbo.config.Constants.STUB_KEY;
 import static org.apache.dubbo.monitor.Constants.LOGSTAT_PROTOCOL;
 import static org.apache.dubbo.registry.Constants.REGISTER_IP_KEY;
-import static org.apache.dubbo.registry.Constants.REGISTER_KEY;
 import static org.apache.dubbo.registry.Constants.SUBSCRIBE_KEY;
 import static org.apache.dubbo.remoting.Constants.CLIENT_KEY;
 import static org.apache.dubbo.remoting.Constants.CODEC_KEY;
@@ -124,7 +155,7 @@ import static org.apache.dubbo.remoting.Constants.DISPATCHER_KEY;
 import static org.apache.dubbo.remoting.Constants.EXCHANGER_KEY;
 import static org.apache.dubbo.remoting.Constants.SERIALIZATION_KEY;
 import static org.apache.dubbo.remoting.Constants.SERVER_KEY;
-import static org.apache.dubbo.remoting.Constants.TELNET;
+import static org.apache.dubbo.remoting.Constants.TELNET_KEY;
 import static org.apache.dubbo.remoting.Constants.TRANSPORTER_KEY;
 import static org.apache.dubbo.rpc.Constants.FAIL_PREFIX;
 import static org.apache.dubbo.rpc.Constants.FORCE_PREFIX;
@@ -137,7 +168,7 @@ import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
 
 public class ConfigValidationUtils {
-    private static final Logger logger = LoggerFactory.getLogger(ConfigValidationUtils.class);
+    private static ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ConfigValidationUtils.class);
     /**
      * The maximum length of a <b>parameter's value</b>
      */
@@ -181,15 +212,22 @@ public class ConfigValidationUtils {
     public static final String IPV6_START_MARK = "[";
 
     public static final String IPV6_END_MARK = "]";
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/3.2
 
     public static List<URL> loadRegistries(AbstractInterfaceConfig interfaceConfig, boolean provider) {
         // check && override if necessary
-        List<URL> registryList = new ArrayList<URL>();
+        List<URL> registryList = new ArrayList<>();
         ApplicationConfig application = interfaceConfig.getApplication();
         List<RegistryConfig> registries = interfaceConfig.getRegistries();
         if (CollectionUtils.isNotEmpty(registries)) {
             for (RegistryConfig config : registries) {
+                // try to refresh registry in case it is set directly by user using config.setRegistries()
+                if (!config.isRefreshed()) {
+                    config.refresh();
+                }
                 String address = config.getAddress();
                 if (StringUtils.isEmpty(address)) {
                     address = ANYHOST_VALUE;
@@ -209,19 +247,20 @@ public class ConfigValidationUtils {
                         throw new IllegalStateException(String.format("url should not be null,address is %s", address));
                     }
                     for (URL url : urls) {
-
                         url = URLBuilder.from(url)
-                                .addParameter(REGISTRY_KEY, url.getProtocol())
-                                .setProtocol(extractRegistryType(url))
-                                .build();
-                        if ((provider && url.getParameter(REGISTER_KEY, true))
-                                || (!provider && url.getParameter(SUBSCRIBE_KEY, true))) {
+                            .addParameter(REGISTRY_KEY, url.getProtocol())
+                            .setProtocol(extractRegistryType(url))
+                            .setScopeModel(interfaceConfig.getScopeModel())
+                            .build();
+                        // provider delay register state will be checked in RegistryProtocol#export
+                        if (provider || url.getParameter(SUBSCRIBE_KEY, true)) {
                             registryList.add(url);
                         }
                     }
                 }
             }
         }
+<<<<<<< HEAD
         return genCompatibleRegistries(registryList, provider);
     }
 
@@ -248,6 +287,71 @@ public class ConfigValidationUtils {
     private static boolean registryNotExists(URL registryURL, List<URL> registryList, String registryType) {
         return registryList.stream().noneMatch(
                 url -> registryType.equals(url.getProtocol()) && registryURL.getBackupAddress().equals(url.getBackupAddress())
+=======
+        return genCompatibleRegistries(interfaceConfig.getScopeModel(), registryList, provider);
+    }
+
+    private static List<URL> genCompatibleRegistries(ScopeModel scopeModel, List<URL> registryList, boolean provider) {
+        List<URL> result = new ArrayList<>(registryList.size());
+        registryList.forEach(registryURL -> {
+            if (provider) {
+                // for registries enabled service discovery, automatically register interface compatible addresses.
+                String registerMode;
+                if (SERVICE_REGISTRY_PROTOCOL.equals(registryURL.getProtocol())) {
+                    registerMode = registryURL.getParameter(REGISTER_MODE_KEY, ConfigurationUtils.getCachedDynamicProperty(scopeModel, DUBBO_REGISTER_MODE_DEFAULT_KEY, DEFAULT_REGISTER_MODE_INSTANCE));
+                    if (!isValidRegisterMode(registerMode)) {
+                        registerMode = DEFAULT_REGISTER_MODE_INSTANCE;
+                    }
+                    result.add(registryURL);
+                    if (DEFAULT_REGISTER_MODE_ALL.equalsIgnoreCase(registerMode)
+                        && registryNotExists(registryURL, registryList, REGISTRY_PROTOCOL)) {
+                        URL interfaceCompatibleRegistryURL = URLBuilder.from(registryURL)
+                            .setProtocol(REGISTRY_PROTOCOL)
+                            .removeParameter(REGISTRY_TYPE_KEY)
+                            .build();
+                        result.add(interfaceCompatibleRegistryURL);
+                    }
+                } else {
+                    registerMode = registryURL.getParameter(REGISTER_MODE_KEY, ConfigurationUtils.getCachedDynamicProperty(scopeModel, DUBBO_REGISTER_MODE_DEFAULT_KEY, DEFAULT_REGISTER_MODE_ALL));
+                    if (!isValidRegisterMode(registerMode)) {
+                        registerMode = DEFAULT_REGISTER_MODE_INTERFACE;
+                    }
+                    if ((DEFAULT_REGISTER_MODE_INSTANCE.equalsIgnoreCase(registerMode) || DEFAULT_REGISTER_MODE_ALL.equalsIgnoreCase(registerMode))
+                        && registryNotExists(registryURL, registryList, SERVICE_REGISTRY_PROTOCOL)) {
+                        URL serviceDiscoveryRegistryURL = URLBuilder.from(registryURL)
+                            .setProtocol(SERVICE_REGISTRY_PROTOCOL)
+                            .removeParameter(REGISTRY_TYPE_KEY)
+                            .build();
+                        result.add(serviceDiscoveryRegistryURL);
+                    }
+
+                    if (DEFAULT_REGISTER_MODE_INTERFACE.equalsIgnoreCase(registerMode) || DEFAULT_REGISTER_MODE_ALL.equalsIgnoreCase(registerMode)) {
+                        result.add(registryURL);
+                    }
+                }
+
+                FrameworkStatusReportService reportService = ScopeModelUtil.getApplicationModel(scopeModel).getBeanFactory().getBean(FrameworkStatusReportService.class);
+                reportService.reportRegistrationStatus(reportService.createRegistrationReport(registerMode));
+            } else {
+                result.add(registryURL);
+            }
+        });
+
+        return result;
+    }
+
+    private static boolean isValidRegisterMode(String mode) {
+        return isNotEmpty(mode)
+            && (DEFAULT_REGISTER_MODE_INTERFACE.equalsIgnoreCase(mode)
+            || DEFAULT_REGISTER_MODE_INSTANCE.equalsIgnoreCase(mode)
+            || DEFAULT_REGISTER_MODE_ALL.equalsIgnoreCase(mode)
+        );
+    }
+
+    private static boolean registryNotExists(URL registryURL, List<URL> registryList, String registryType) {
+        return registryList.stream().noneMatch(
+            url -> registryType.equals(url.getProtocol()) && registryURL.getBackupAddress().equals(url.getBackupAddress())
+>>>>>>> origin/3.2
         );
     }
 
@@ -261,7 +365,7 @@ public class ConfigValidationUtils {
             hostToRegistry = NetUtils.getLocalHost();
         } else if (NetUtils.isInvalidLocalHost(hostToRegistry)) {
             throw new IllegalArgumentException("Specified invalid registry ip from property:" +
-                    DUBBO_IP_TO_REGISTRY + ", value:" + hostToRegistry);
+                DUBBO_IP_TO_REGISTRY + ", value:" + hostToRegistry);
         }
         map.put(REGISTER_IP_KEY, hostToRegistry);
 
@@ -270,29 +374,41 @@ public class ConfigValidationUtils {
         AbstractConfig.appendParameters(map, monitor);
         AbstractConfig.appendParameters(map, application);
         String address = null;
+<<<<<<< HEAD
         String sysaddress = System.getProperty(DUBBO_MONITOR_ADDRESS);
         if (sysaddress != null && sysaddress.length() > 0) {
             address = sysaddress;
+=======
+        String sysAddress = System.getProperty(DUBBO_MONITOR_ADDRESS);
+        if (sysAddress != null && sysAddress.length() > 0) {
+            address = sysAddress;
+>>>>>>> origin/3.2
         } else if (monitor != null) {
             address = monitor.getAddress();
         }
-        if (ConfigUtils.isNotEmpty(address)) {
+        String protocol = monitor == null ? null : monitor.getProtocol();
+        if (monitor != null &&
+            (REGISTRY_PROTOCOL.equals(protocol) || SERVICE_REGISTRY_PROTOCOL.equals(protocol))
+            && registryURL != null) {
+            return URLBuilder.from(registryURL)
+                .setProtocol(DUBBO_PROTOCOL)
+                .addParameter(PROTOCOL_KEY, protocol)
+                .putAttribute(REFER_KEY, map)
+                .build();
+        } else if (ConfigUtils.isNotEmpty(address) || ConfigUtils.isNotEmpty(protocol)) {
             if (!map.containsKey(PROTOCOL_KEY)) {
-                if (getExtensionLoader(MonitorFactory.class).hasExtension(LOGSTAT_PROTOCOL)) {
+                if (interfaceConfig.getScopeModel().getExtensionLoader(MonitorFactory.class).hasExtension(LOGSTAT_PROTOCOL)) {
                     map.put(PROTOCOL_KEY, LOGSTAT_PROTOCOL);
+                } else if (ConfigUtils.isNotEmpty(protocol)) {
+                    map.put(PROTOCOL_KEY, protocol);
                 } else {
                     map.put(PROTOCOL_KEY, DUBBO_PROTOCOL);
                 }
             }
+            if (ConfigUtils.isEmpty(address)) {
+                address = LOCALHOST_VALUE;
+            }
             return UrlUtils.parseURL(address, map);
-        } else if (monitor != null &&
-                (REGISTRY_PROTOCOL.equals(monitor.getProtocol()) || SERVICE_REGISTRY_PROTOCOL.equals(monitor.getProtocol()))
-                && registryURL != null) {
-            return URLBuilder.from(registryURL)
-                    .setProtocol(DUBBO_PROTOCOL)
-                    .addParameter(PROTOCOL_KEY, monitor.getProtocol())
-                    .addParameterAndEncoded(REFER_KEY, StringUtils.toQueryString(map))
-                    .build();
         }
         return null;
     }
@@ -318,7 +434,7 @@ public class ConfigValidationUtils {
                 MockInvoker.parseMockValue(normalizedMock);
             } catch (Exception e) {
                 throw new IllegalStateException("Illegal mock return in <dubbo:service/reference ... " +
-                        "mock=\"" + mock + "\" />");
+                    "mock=\"" + mock + "\" />");
             }
         } else if (normalizedMock.startsWith(THROW_PREFIX)) {
             normalizedMock = normalizedMock.substring(THROW_PREFIX.length()).trim();
@@ -328,12 +444,12 @@ public class ConfigValidationUtils {
                     MockInvoker.getThrowable(normalizedMock);
                 } catch (Exception e) {
                     throw new IllegalStateException("Illegal mock throw in <dubbo:service/reference ... " +
-                            "mock=\"" + mock + "\" />");
+                        "mock=\"" + mock + "\" />");
                 }
             }
         } else {
             //Check whether the mock class is a implementation of the interfaceClass, and if it has a default constructor
-            MockInvoker.getMockObject(normalizedMock, interfaceClass);
+            MockInvoker.getMockObject(config.getScopeModel().getExtensionDirector(), normalizedMock, interfaceClass);
         }
     }
 
@@ -342,9 +458,9 @@ public class ConfigValidationUtils {
         checkName(STUB_KEY, config.getStub());
         checkMultiName(OWNER, config.getOwner());
 
-        checkExtension(ProxyFactory.class, PROXY_KEY, config.getProxy());
-        checkExtension(Cluster.class, CLUSTER_KEY, config.getCluster());
-        checkMultiExtension(Filter.class, FILE_KEY, config.getFilter());
+        checkExtension(config.getScopeModel(), ProxyFactory.class, PROXY_KEY, config.getProxy());
+        checkExtension(config.getScopeModel(), Cluster.class, CLUSTER_KEY, config.getCluster());
+        checkMultiExtension(config.getScopeModel(), Arrays.asList(Filter.class, ClusterFilter.class), FILTER_KEY, config.getFilter());
         checkNameHasSymbol(LAYER_KEY, config.getLayer());
 
         List<MethodConfig> methods = config.getMethods();
@@ -359,7 +475,11 @@ public class ConfigValidationUtils {
         checkName(TOKEN_KEY, config.getToken());
         checkPathName(PATH_KEY, config.getPath());
 
+<<<<<<< HEAD
         checkMultiExtension(ExporterListener.class, LISTENER_KEY, config.getListener());
+=======
+        checkMultiExtension(config.getScopeModel(), ExporterListener.class, "listener", config.getListener());
+>>>>>>> origin/3.2
 
         validateAbstractInterfaceConfig(config);
 
@@ -384,7 +504,11 @@ public class ConfigValidationUtils {
     }
 
     public static void validateReferenceConfig(ReferenceConfig config) {
+<<<<<<< HEAD
         checkMultiExtension(InvokerListener.class, LISTENER_KEY, config.getListener());
+=======
+        checkMultiExtension(config.getScopeModel(), InvokerListener.class, "listener", config.getListener());
+>>>>>>> origin/3.2
         checkKey(VERSION_KEY, config.getVersion());
         checkKey(GROUP_KEY, config.getGroup());
         checkName(CLIENT_KEY, config.getClient());
@@ -417,15 +541,17 @@ public class ConfigValidationUtils {
 
         if (!config.isValid()) {
             throw new IllegalStateException("No application config found or it's not a valid config! " +
-                    "Please add <dubbo:application name=\"...\" /> to your spring config.");
+                "Please add <dubbo:application name=\"...\" /> to your spring config.");
         }
 
         // backward compatibility
-        String wait = ConfigUtils.getProperty(SHUTDOWN_WAIT_KEY);
+        ScopeModel scopeModel = ScopeModelUtil.getOrDefaultApplicationModel(config.getScopeModel());
+        PropertiesConfiguration configuration = scopeModel.getModelEnvironment().getPropertiesConfiguration();
+        String wait = configuration.getProperty(SHUTDOWN_WAIT_KEY);
         if (wait != null && wait.trim().length() > 0) {
             System.setProperty(SHUTDOWN_WAIT_KEY, wait.trim());
         } else {
-            wait = ConfigUtils.getProperty(SHUTDOWN_WAIT_SECONDS_KEY);
+            wait = configuration.getProperty(SHUTDOWN_WAIT_SECONDS_KEY);
             if (wait != null && wait.trim().length() > 0) {
                 System.setProperty(SHUTDOWN_WAIT_SECONDS_KEY, wait.trim());
             }
@@ -437,6 +563,17 @@ public class ConfigValidationUtils {
         checkName(ARCHITECTURE, config.getArchitecture());
         checkName(ENVIRONMENT, config.getEnvironment());
         checkParameterName(config.getParameters());
+        checkQosDependency(config);
+    }
+
+    private static void checkQosDependency(ApplicationConfig config) {
+        if (!Boolean.FALSE.equals(config.getQosEnable())) {
+            try {
+                ClassUtils.forName("org.apache.dubbo.qos.protocol.QosProtocolWrapper");
+            } catch (ClassNotFoundException e) {
+                logger.warn(COMMON_CLASS_NOT_FOUND, "", "", "No QosProtocolWrapper class was found. Please check the dependency of dubbo-qos whether was imported correctly.", e);
+            }
+        }
     }
 
     public static void validateModuleConfig(ModuleConfig config) {
@@ -447,9 +584,29 @@ public class ConfigValidationUtils {
         }
     }
 
-    public static void validateMetadataConfig(MetadataReportConfig metadataReportConfig) {
+    public static boolean isValidMetadataConfig(MetadataReportConfig metadataReportConfig) {
         if (metadataReportConfig == null) {
+            return false;
+        }
+
+        if (Boolean.FALSE.equals(metadataReportConfig.getReportMetadata()) &&
+            Boolean.FALSE.equals(metadataReportConfig.getReportDefinition())) {
+            return false;
+        }
+
+        return !isEmpty(metadataReportConfig.getAddress());
+    }
+
+    public static void validateMetadataConfig(MetadataReportConfig metadataReportConfig) {
+        if (!isValidMetadataConfig(metadataReportConfig)) {
             return;
+        }
+
+        String address = metadataReportConfig.getAddress();
+        String protocol = metadataReportConfig.getProtocol();
+
+        if ((isEmpty(address) || !address.contains("://")) && isEmpty(protocol)) {
+            throw new IllegalArgumentException("Please specify valid protocol or address for metadata report " + address);
         }
     }
 
@@ -468,7 +625,12 @@ public class ConfigValidationUtils {
     public static void validateMonitorConfig(MonitorConfig config) {
         if (config != null) {
             if (!config.isValid()) {
+<<<<<<< HEAD
                 logger.info("No valid monitor config found, specify monitor info to enable collection of Dubbo statistics");
+=======
+                logger.info("There's no valid monitor config found, if you want to open monitor statistics for Dubbo, " +
+                    "please make sure your monitor is configured properly.");
+>>>>>>> origin/3.2
             }
 
             checkParameterName(config.getParameters());
@@ -478,6 +640,7 @@ public class ConfigValidationUtils {
     public static void validateProtocolConfig(ProtocolConfig config) {
         if (config != null) {
             String name = config.getName();
+<<<<<<< HEAD
             checkName(NAME, name);
             checkHost(HOST_KEY, config.getHost());
             checkPathName(CONTEXTPATH_KEY, config.getContextpath());
@@ -497,16 +660,37 @@ public class ConfigValidationUtils {
             checkExtension(Dispatcher.class, DISPATCHER_KEY, config.getDispatcher());
             checkExtension(Dispatcher.class, DISPATHER, config.getDispather());
             checkExtension(ThreadPool.class, THREADPOOL_KEY, config.getThreadpool());
+=======
+            checkName("name", name);
+            checkHost(HOST_KEY, config.getHost());
+            checkPathName("contextpath", config.getContextpath());
+
+
+            if (DUBBO_PROTOCOL.equals(name)) {
+                checkMultiExtension(config.getScopeModel(), Codec2.class, CODEC_KEY, config.getCodec());
+                checkMultiExtension(config.getScopeModel(), Serialization.class, SERIALIZATION_KEY, config.getSerialization());
+                checkMultiExtension(config.getScopeModel(), Transporter.class, SERVER_KEY, config.getServer());
+                checkMultiExtension(config.getScopeModel(), Transporter.class, CLIENT_KEY, config.getClient());
+            }
+
+            checkMultiExtension(config.getScopeModel(), TelnetHandler.class, TELNET_KEY, config.getTelnet());
+            checkMultiExtension(config.getScopeModel(), StatusChecker.class, "status", config.getStatus());
+            checkExtension(config.getScopeModel(), Transporter.class, TRANSPORTER_KEY, config.getTransporter());
+            checkExtension(config.getScopeModel(), Exchanger.class, EXCHANGER_KEY, config.getExchanger());
+            checkExtension(config.getScopeModel(), Dispatcher.class, DISPATCHER_KEY, config.getDispatcher());
+            checkExtension(config.getScopeModel(), Dispatcher.class, "dispather", config.getDispather());
+            checkExtension(config.getScopeModel(), ThreadPool.class, THREADPOOL_KEY, config.getThreadpool());
+>>>>>>> origin/3.2
         }
     }
 
     public static void validateProviderConfig(ProviderConfig config) {
         checkPathName(CONTEXTPATH_KEY, config.getContextpath());
-        checkExtension(ThreadPool.class, THREADPOOL_KEY, config.getThreadpool());
-        checkMultiExtension(TelnetHandler.class, TELNET, config.getTelnet());
-        checkMultiExtension(StatusChecker.class, STATUS_KEY, config.getStatus());
-        checkExtension(Transporter.class, TRANSPORTER_KEY, config.getTransporter());
-        checkExtension(Exchanger.class, EXCHANGER_KEY, config.getExchanger());
+        checkExtension(config.getScopeModel(), ThreadPool.class, THREADPOOL_KEY, config.getThreadpool());
+        checkMultiExtension(config.getScopeModel(), TelnetHandler.class, TELNET_KEY, config.getTelnet());
+        checkMultiExtension(config.getScopeModel(), StatusChecker.class, STATUS_KEY, config.getStatus());
+        checkExtension(config.getScopeModel(), Transporter.class, TRANSPORTER_KEY, config.getTransporter());
+        checkExtension(config.getScopeModel(), Exchanger.class, EXCHANGER_KEY, config.getExchanger());
     }
 
     public static void validateConsumerConfig(ConsumerConfig config) {
@@ -527,12 +711,12 @@ public class ConfigValidationUtils {
     }
 
     public static void validateMethodConfig(MethodConfig config) {
-        checkExtension(LoadBalance.class, LOADBALANCE_KEY, config.getLoadbalance());
+        checkExtension(config.getScopeModel(), LoadBalance.class, LOADBALANCE_KEY, config.getLoadbalance());
         checkParameterName(config.getParameters());
         checkMethodName(NAME, config.getName());
 
         String mock = config.getMock();
-        if (StringUtils.isNotEmpty(mock)) {
+        if (isNotEmpty(mock)) {
             if (mock.startsWith(RETURN_PREFIX) || mock.startsWith(THROW_PREFIX + " ")) {
                 checkLength(MOCK_KEY, mock);
             } else if (mock.startsWith(FAIL_PREFIX) || mock.startsWith(FORCE_PREFIX)) {
@@ -544,13 +728,18 @@ public class ConfigValidationUtils {
     }
 
     private static String extractRegistryType(URL url) {
-        return isServiceDiscoveryRegistryType(url) ? SERVICE_REGISTRY_PROTOCOL : REGISTRY_PROTOCOL;
+        return UrlUtils.hasServiceDiscoveryRegistryTypeKey(url) ? SERVICE_REGISTRY_PROTOCOL : getRegistryProtocolType(url);
     }
 
-    public static void checkExtension(Class<?> type, String property, String value) {
+    private static String getRegistryProtocolType(URL url) {
+        String registryProtocol = url.getParameter("registry-protocol-type");
+        return isNotEmpty(registryProtocol) ? registryProtocol : REGISTRY_PROTOCOL;
+    }
+
+    public static void checkExtension(ScopeModel scopeModel, Class<?> type, String property, String value) {
         checkName(property, value);
-        if (StringUtils.isNotEmpty(value)
-                && !ExtensionLoader.getExtensionLoader(type).hasExtension(value)) {
+        if (isNotEmpty(value)
+            && !scopeModel.getExtensionLoader(type).hasExtension(value)) {
             throw new IllegalStateException("No such extension " + value + " for " + property + "/" + type.getName());
         }
     }
@@ -563,9 +752,13 @@ public class ConfigValidationUtils {
      * @param property The extension key
      * @param value    The Extension name
      */
-    public static void checkMultiExtension(Class<?> type, String property, String value) {
+    public static void checkMultiExtension(ScopeModel scopeModel, Class<?> type, String property, String value) {
+        checkMultiExtension(scopeModel, Collections.singletonList(type), property, value);
+    }
+
+    public static void checkMultiExtension(ScopeModel scopeModel, List<Class<?>> types, String property, String value) {
         checkMultiName(property, value);
-        if (StringUtils.isNotEmpty(value)) {
+        if (isNotEmpty(value)) {
             String[] values = value.split("\\s*[,]+\\s*");
             for (String v : values) {
                 if (v.startsWith(REMOVE_VALUE_PREFIX)) {
@@ -574,8 +767,15 @@ public class ConfigValidationUtils {
                 if (DEFAULT_KEY.equals(v)) {
                     continue;
                 }
-                if (!ExtensionLoader.getExtensionLoader(type).hasExtension(v)) {
-                    throw new IllegalStateException("No such extension " + v + " for " + property + "/" + type.getName());
+                boolean match = false;
+                for (Class<?> type : types) {
+                    if (scopeModel.getExtensionLoader(type).hasExtension(v)) {
+                        match = true;
+                    }
+                }
+                if (!match) {
+                    throw new IllegalStateException("No such extension " + v + " for " + property + "/" +
+                        types.stream().map(Class::getName).collect(Collectors.joining(",")));
                 }
             }
         }
@@ -637,7 +837,11 @@ public class ConfigValidationUtils {
         ignoreCheckKeys.add(BACKUP_KEY);
         String ignoreCheckKeysStr = parameters.get(IGNORE_CHECK_KEYS);
         if (!StringUtils.isBlank(ignoreCheckKeysStr)) {
+<<<<<<< HEAD
             ignoreCheckKeys.addAll(Arrays.asList(ignoreCheckKeysStr.split(COMMA_SEPARATOR)));
+=======
+            ignoreCheckKeys.addAll(Arrays.asList(ignoreCheckKeysStr.split(",")));
+>>>>>>> origin/3.2
         }
         for (Map.Entry<String, String> entry : parameters.entrySet()) {
             if (!ignoreCheckKeys.contains(entry.getKey())) {
@@ -651,13 +855,15 @@ public class ConfigValidationUtils {
             return;
         }
         if (value.length() > maxlength) {
-            throw new IllegalStateException("Invalid " + property + "=\"" + value + "\" is longer than " + maxlength);
+            logger.error(CONFIG_PARAMETER_FORMAT_ERROR, "the value content is too long", "", "Parameter value format error. Invalid " +
+                property + "=\"" + value + "\" is longer than " + maxlength);
         }
         if (pattern != null) {
             Matcher matcher = pattern.matcher(value);
             if (!matcher.matches()) {
-                throw new IllegalStateException("Invalid " + property + "=\"" + value + "\" contains illegal " +
-                        "character, only digit, letter, '-', '_' or '.' is legal.");
+                logger.error(CONFIG_PARAMETER_FORMAT_ERROR, "the value content is illegal character", "", "Parameter value format error. Invalid " +
+                    property + "=\"" + value + "\" contains illegal " +
+                    "character, only digit, letter, '-', '_' or '.' is legal.");
             }
         }
     }

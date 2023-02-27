@@ -17,33 +17,14 @@
 package org.apache.dubbo.registry.client;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.common.extension.SPI;
-
-import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
 
 /**
- * The default {@link SPI} implementation of {@link ServiceDiscoveryFactory} to {@link #getServiceDiscovery(URL) get the
- * instance of ServiceDiscovery} via the {@link URL#getProtocol() protocol} from the {@link URL} that will connect
- * the infrastructure of Service registration and discovery. The {@link URL#getProtocol() protocol} will be used as the
- * extension name by which the {@link ServiceDiscovery} instance is loaded.
- *
- * @see AbstractServiceDiscoveryFactory
- * @see EventPublishingServiceDiscovery
- * @since 2.7.5
+ * This class is designed for compatibility purpose. When a specific registry type does not have counterpart service discovery provided,
+ * the nop instance will be returned.
  */
 public class DefaultServiceDiscoveryFactory extends AbstractServiceDiscoveryFactory {
-
-    /**
-     * Create the {@link ServiceDiscovery} by {@link URL#getProtocol() the protocol} from {@link URL connection URL}
-     *
-     * @param registryURL
-     * @return
-     */
     @Override
     protected ServiceDiscovery createDiscovery(URL registryURL) {
-        String protocol = registryURL.getProtocol();
-        ExtensionLoader<ServiceDiscovery> loader = getExtensionLoader(ServiceDiscovery.class);
-        return loader.getExtension(protocol);
+        return new NopServiceDiscovery(registryURL.getApplicationModel(), registryURL);
     }
 }

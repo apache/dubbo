@@ -18,4 +18,9 @@ package org.apache.dubbo.metadata;
 
 public interface MappingListener {
     void onEvent(MappingChangedEvent event);
+<<<<<<< HEAD
+=======
+
+    void stop();
+>>>>>>> origin/3.2
 }

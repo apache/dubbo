@@ -22,9 +22,15 @@ import org.apache.dubbo.remoting.exchange.Response;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+<<<<<<< HEAD
 public class PayloadDropperTest {
     @Test
     public void test() {
+=======
+class PayloadDropperTest {
+    @Test
+    void test() {
+>>>>>>> origin/3.2
         Request request = new Request(1);
         request.setData(new Object());
         Request requestWithoutData = (Request) PayloadDropper.getRequestWithoutData(request);

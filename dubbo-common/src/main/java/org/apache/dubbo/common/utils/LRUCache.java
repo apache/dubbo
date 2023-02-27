@@ -21,10 +21,17 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
+<<<<<<< HEAD
  * LRU-2
  * </p>
  * When the data accessed for the first time, add it to history list. If the size of history list reaches max capacity, eliminate the earliest data (first in first out).
  * When the data already exists in the history list, and be accessed for the second time, then it will be put into cache.
+=======
+ * A 'least recently used' cache based on LinkedHashMap.
+ *
+ * @param <K> key
+ * @param <V> value
+>>>>>>> origin/3.2
  */
 public class LRUCache<K, V> extends LinkedHashMap<K, V> {
 
@@ -124,6 +131,14 @@ public class LRUCache<K, V> extends LinkedHashMap<K, V> {
         }
     }
 
+    public void lock() {
+        lock.lock();
+    }
+
+    public void releaseLock() {
+        lock.unlock();
+    }
+
     public int getMaxCapacity() {
         return maxCapacity;
     }
@@ -133,6 +148,7 @@ public class LRUCache<K, V> extends LinkedHashMap<K, V> {
         this.maxCapacity = maxCapacity;
     }
 
+<<<<<<< HEAD
     static class PreCache<K, V> extends LinkedHashMap<K, V> {
 
         private volatile int maxCapacity;
@@ -157,3 +173,6 @@ public class LRUCache<K, V> extends LinkedHashMap<K, V> {
     }
 
 }
+=======
+}
+>>>>>>> origin/3.2

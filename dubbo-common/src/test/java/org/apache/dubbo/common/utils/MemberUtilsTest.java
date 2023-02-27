@@ -29,15 +29,22 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  * @since 2.7.6
  */
-public class MemberUtilsTest {
+class MemberUtilsTest {
 
     @Test
-    public void testIsStatic() throws NoSuchMethodException {
+    void test() throws NoSuchMethodException {
 
-        assertFalse(isStatic(getClass().getMethod("testIsStatic")));
+        assertFalse(isStatic(getClass().getMethod("noStatic")));
         assertTrue(isStatic(getClass().getMethod("staticMethod")));
         assertTrue(isPrivate(getClass().getDeclaredMethod("privateMethod")));
         assertTrue(isPublic(getClass().getMethod("publicMethod")));
+<<<<<<< HEAD
+=======
+    }
+
+    public void noStatic() throws NoSuchMethodException {
+
+>>>>>>> origin/3.2
     }
 
     public static void staticMethod() {

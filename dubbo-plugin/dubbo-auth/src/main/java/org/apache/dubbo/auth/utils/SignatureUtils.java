@@ -23,75 +23,68 @@ import java.io.IOException;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.security.SignatureException;
-import java.util.Arrays;
+import java.nio.charset.StandardCharsets;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 
 public class SignatureUtils {
     private static final String HMAC_SHA256_ALGORITHM = "HmacSHA256";
 
-    public static String sign(String metadata, String key) throws SecurityException {
-        try {
-            return sign(metadata.getBytes(), key);
-        } catch (Exception e) {
-            throw new SecurityException("Failed to generate HMAC : " + e.getMessage(), e);
-        }
+    public static String sign(String metadata, String key) throws RuntimeException {
+        return sign(metadata.getBytes(StandardCharsets.UTF_8), key);
     }
 
-    public static String sign(Object[] parameters, String metadata, String key) {
-        try {
-            if (parameters == null) {
-                return sign(metadata, key);
-            }
-            boolean notSerializable = Arrays.stream(parameters).anyMatch(parameter -> !(parameter instanceof Serializable));
-            if (notSerializable) {
-                throw new IllegalArgumentException("");
-            }
-
-            Object[] includeMetadata = new Object[parameters.length + 1];
-            System.arraycopy(parameters, 0, includeMetadata, 0, parameters.length);
-            includeMetadata[parameters.length] = metadata;
-            byte[] bytes = toByteArray(includeMetadata);
-            return sign(bytes, key);
-        } catch (Exception e) {
-            throw new SecurityException("Failed to generate HMAC : " + e.getMessage(), e);
+    public static String sign(Object[] parameters, String metadata, String key) throws RuntimeException {
+        if (parameters == null) {
+            return sign(metadata, key);
         }
+        for (int i = 0; i < parameters.length; i++) {
+            if (!(parameters[i] instanceof Serializable)) {
+                throw new IllegalArgumentException("The parameter [" + i + "] to be signed was not serializable.");
+            }
+        }
+        Object[] includeMetadata = new Object[parameters.length + 1];
+        System.arraycopy(parameters, 0, includeMetadata, 0, parameters.length);
+        includeMetadata[parameters.length] = metadata;
+        byte[] includeMetadataBytes;
+        try {
+            includeMetadataBytes = toByteArray(includeMetadata);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to generate HMAC: " + e.getMessage());
+        }
+        return sign(includeMetadataBytes, key);
     }
 
-    public static String sign(byte[] data, String key) throws SignatureException {
-        String result;
+    private static String sign(byte[] data, String key) throws RuntimeException {
+        Mac mac;
         try {
-            Mac mac = Mac.getInstance(HMAC_SHA256_ALGORITHM);
-            SecretKeySpec signingKey = new SecretKeySpec(key.getBytes(),
-                    HMAC_SHA256_ALGORITHM);
+            mac = Mac.getInstance(HMAC_SHA256_ALGORITHM);
+        } catch(NoSuchAlgorithmException e) {
+            throw new RuntimeException("Failed to generate HMAC: no such algorithm exception " + HMAC_SHA256_ALGORITHM);
+        }
+        SecretKeySpec signingKey = new SecretKeySpec(key.getBytes(), HMAC_SHA256_ALGORITHM);
+        try {
             mac.init(signingKey);
-            // compute the hmac on input data bytes
-            byte[] rawHmac = mac.doFinal(data);
-            // base64-encode the hmac
-            result = Base64.getEncoder().encodeToString(rawHmac);
-
-        } catch (Exception e) {
-            throw new SignatureException("Failed to generate HMAC : "
-                    + e.getMessage());
+        } catch(InvalidKeyException e) {
+            throw new RuntimeException("Failed to generate HMAC: invalid key exception");
         }
-        return result;
+        byte[] rawHmac;
+        try{
+            // compute the hmac on input data bytes
+            rawHmac = mac.doFinal(data);
+        } catch (IllegalStateException e) {
+            throw new RuntimeException("Failed to generate HMAC: " + e.getMessage());
+        }
+        // base64-encode the hmac
+        return Base64.getEncoder().encodeToString(rawHmac);
     }
 
-    static byte[] toByteArray(Object[] parameters) throws Exception {
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutput out = null;
-        try {
-            out = new ObjectOutputStream(bos);
+    private static byte[] toByteArray(Object[] parameters) throws IOException {
+        try (ByteArrayOutputStream bos = new ByteArrayOutputStream(); ObjectOutput out = new ObjectOutputStream(bos)) {
             out.writeObject(parameters);
             out.flush();
             return bos.toByteArray();
-        } finally {
-            try {
-                bos.close();
-            } catch (IOException ex) {
-                // ignore close exception
-            }
         }
     }
-
 }

@@ -19,10 +19,10 @@ package org.apache.dubbo.rpc.support;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class ProtocolUtilsTest {
+class ProtocolUtilsTest {
 
     @Test
-    public void testGetServiceKey() {
+    void testGetServiceKey() {
         final String serviceName = "com.abc.demoService";
         final int port = 1001;
 
@@ -60,14 +60,14 @@ public class ProtocolUtilsTest {
         StringBuilder buf = new StringBuilder();
         if (serviceGroup != null && serviceGroup.length() > 0) {
             buf.append(serviceGroup);
-            buf.append("/");
+            buf.append('/');
         }
         buf.append(serviceName);
         if (serviceVersion != null && serviceVersion.length() > 0 && !"0.0.0".equals(serviceVersion)) {
-            buf.append(":");
+            buf.append(':');
             buf.append(serviceVersion);
         }
-        buf.append(":");
+        buf.append(':');
         buf.append(port);
         return buf.toString();
     }

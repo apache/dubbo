@@ -32,6 +32,22 @@ public interface Constants {
 
     String FORCE_KEY = "force";
 
+    String RAW_RULE_KEY = "rawRule";
+
+    String VALID_KEY = "valid";
+
+    String ENABLED_KEY = "enabled";
+
+    String DYNAMIC_KEY = "dynamic";
+
+    String SCOPE_KEY = "scope";
+
+    String KEY_KEY = "key";
+
+    String CONDITIONS_KEY = "conditions";
+
+    String TAGS_KEY = "tags";
+
     /**
      * To decide whether to exclude unavailable invoker from the cluster
      */
@@ -55,8 +71,6 @@ public interface Constants {
      * @see #CLUSTER_STICKY_KEY
      */
     boolean DEFAULT_CLUSTER_STICKY = false;
-
-    String ADDRESS_KEY = "address";
 
     /**
      * When this attribute appears in invocation's attachment, mock invoker will be used
@@ -91,18 +105,45 @@ public interface Constants {
      * key for router type, for e.g., "script"/"file",  corresponding to ScriptRouterFactory.NAME, FileRouterFactory.NAME
      */
     String ROUTER_KEY = "router";
+
     /**
      * The key name for reference URL in register center
      */
     String REFER_KEY = "refer";
+
+    String ATTRIBUTE_KEY = "attribute";
+
     /**
      * The key name for export URL in register center
      */
     String EXPORT_KEY = "export";
+<<<<<<< HEAD
+=======
+
+    String PEER_KEY = "peer";
+
+    String CONSUMER_URL_KEY = "CONSUMER_URL";
+
+>>>>>>> origin/3.2
     /**
      * prefix of arguments router key
      */
     String ARGUMENTS = "arguments";
 
+<<<<<<< HEAD
     String SHOULD_FAIL_FAST_KEY = "dubbo.router.should-fail-fast";
+=======
+    String NEED_REEXPORT = "need-reexport";
+
+    /**
+     * The key of shortestResponseSlidePeriod
+     */
+    String SHORTEST_RESPONSE_SLIDE_PERIOD = "shortestResponseSlidePeriod";
+
+    String SHOULD_FAIL_FAST_KEY = "dubbo.router.should-fail-fast";
+
+    String RULE_VERSION_V27 = "v2.7";
+
+    String RULE_VERSION_V30 = "v3.0";
+>>>>>>> origin/3.2
 }

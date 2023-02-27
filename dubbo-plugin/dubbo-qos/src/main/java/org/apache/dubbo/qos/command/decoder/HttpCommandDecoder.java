@@ -34,14 +34,14 @@ public class HttpCommandDecoder {
     public static CommandContext decode(HttpRequest request) {
         CommandContext commandContext = null;
         if (request != null) {
-            QueryStringDecoder queryStringDecoder = new QueryStringDecoder(request.getUri());
+            QueryStringDecoder queryStringDecoder = new QueryStringDecoder(request.uri());
             String path = queryStringDecoder.path();
             String[] array = path.split("/");
             if (array.length == 2) {
                 String name = array[1];
 
                 // process GET request and POST request separately. Check url for GET, and check body for POST
-                if (request.getMethod() == HttpMethod.GET) {
+                if (request.method() == HttpMethod.GET) {
                     if (queryStringDecoder.parameters().isEmpty()) {
                         commandContext = CommandContextFactory.newInstance(name);
                         commandContext.setHttp(true);
@@ -52,7 +52,7 @@ public class HttpCommandDecoder {
                         }
                         commandContext = CommandContextFactory.newInstance(name, valueList.toArray(new String[]{}),true);
                     }
-                } else if (request.getMethod() == HttpMethod.POST) {
+                } else if (request.method() == HttpMethod.POST) {
                     HttpPostRequestDecoder httpPostRequestDecoder = new HttpPostRequestDecoder(request);
                     List<String> valueList = new ArrayList<String>();
                     for (InterfaceHttpData interfaceHttpData : httpPostRequestDecoder.getBodyHttpDatas()) {

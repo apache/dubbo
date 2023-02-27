@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 package org.apache.dubbo.common.beanutil;
 
 import java.io.Serializable;
@@ -8,6 +9,8 @@ import java.util.Map;
 import org.apache.dubbo.rpc.model.person.FullAddress;
 import org.apache.dubbo.rpc.model.person.PersonStatus;
 import org.apache.dubbo.rpc.model.person.Phone;
+=======
+>>>>>>> origin/3.2
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -24,6 +27,20 @@ import org.apache.dubbo.rpc.model.person.Phone;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+<<<<<<< HEAD
+=======
+package org.apache.dubbo.common.beanutil;
+
+import java.io.Serializable;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Map;
+
+import org.apache.dubbo.rpc.model.person.FullAddress;
+import org.apache.dubbo.rpc.model.person.PersonStatus;
+import org.apache.dubbo.rpc.model.person.Phone;
+
+>>>>>>> origin/3.2
 public class Bean implements Serializable {
 
     private Class<?> type;

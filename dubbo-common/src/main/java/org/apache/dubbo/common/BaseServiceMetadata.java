@@ -17,6 +17,9 @@
 package org.apache.dubbo.common;
 
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.rpc.model.ServiceModel;
+
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_VERSION;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_VERSION;
 
@@ -30,8 +33,10 @@ public class BaseServiceMetadata {
     protected String serviceInterfaceName;
     protected String version;
     protected volatile String group;
+    private ServiceModel serviceModel;
 
     public static String buildServiceKey(String path, String group, String version) {
+<<<<<<< HEAD
         StringBuilder buf = new StringBuilder();
         if (StringUtils.isNotEmpty(group)) {
             buf.append(group).append("/");
@@ -39,8 +44,21 @@ public class BaseServiceMetadata {
         buf.append(path);
         if (StringUtils.isNotEmpty(version)) {
             buf.append(":").append(version);
+=======
+        int length = path == null ? 0 : path.length();
+        length += group == null ? 0 : group.length();
+        length += version == null ? 0 : version.length();
+        length += 2;
+        StringBuilder buf = new StringBuilder(length);
+        if (StringUtils.isNotEmpty(group)) {
+            buf.append(group).append('/');
         }
-        return buf.toString();
+        buf.append(path);
+        if (StringUtils.isNotEmpty(version)) {
+            buf.append(':').append(version);
+>>>>>>> origin/3.2
+        }
+        return buf.toString().intern();
     }
 
     public static String versionFromServiceKey(String serviceKey) {
@@ -74,6 +92,7 @@ public class BaseServiceMetadata {
      */
     public String getDisplayServiceKey() {
         StringBuilder serviceNameBuilder = new StringBuilder();
+<<<<<<< HEAD
         if(StringUtils.isNotEmpty(serviceInterfaceName)){
             serviceNameBuilder.append(serviceInterfaceName);
         }
@@ -81,6 +100,10 @@ public class BaseServiceMetadata {
         if(StringUtils.isNotEmpty(version)){
             serviceNameBuilder.append(COLON_SEPARATOR).append(version);
         }
+=======
+        serviceNameBuilder.append(serviceInterfaceName);
+        serviceNameBuilder.append(COLON_SEPARATOR).append(version);
+>>>>>>> origin/3.2
         return serviceNameBuilder.toString();
     }
 
@@ -101,6 +124,13 @@ public class BaseServiceMetadata {
             serviceDescriptor.setVersion(eles[1]);
         }
         return serviceDescriptor;
+    }
+
+    public static String keyWithoutGroup(String interfaceName, String version) {
+        if (StringUtils.isEmpty(version)) {
+            return interfaceName + ":" + DEFAULT_VERSION;
+        }
+        return interfaceName + ":" + version;
     }
 
     public String getServiceKey() {
@@ -139,4 +169,11 @@ public class BaseServiceMetadata {
         this.group = group;
     }
 
+    public ServiceModel getServiceModel() {
+        return serviceModel;
+    }
+
+    public void setServiceModel(ServiceModel serviceModel) {
+        this.serviceModel = serviceModel;
+    }
 }

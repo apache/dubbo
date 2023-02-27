@@ -1,0 +1,1 @@
+dubbo-config-spring=org.apache.dubbo.config.spring.SpringScopeModelInitializer

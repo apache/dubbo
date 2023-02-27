@@ -17,11 +17,19 @@
 package org.apache.dubbo.qos.command.impl;
 
 import org.apache.dubbo.config.ApplicationConfig;
+<<<<<<< HEAD
 import org.apache.dubbo.rpc.model.ApplicationModel;
+=======
+import org.apache.dubbo.qos.command.CommandContext;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
+
+>>>>>>> origin/3.2
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+<<<<<<< HEAD
 
 public class PublishMetadataTest {
 
@@ -48,5 +56,49 @@ public class PublishMetadataTest {
         String[] args = {"10"};
         String msg = publishMetadata.execute(null, args);
         Assertions.assertEquals(msg,"publish task submitted, will publish in " + args[0] + " seconds.");
+=======
+import org.mockito.Mockito;
+
+class PublishMetadataTest {
+    private FrameworkModel frameworkModel;
+
+    @BeforeEach
+    public void setUp() throws Exception {
+        frameworkModel = new FrameworkModel();
+        for (int i = 0; i < 3; i++) {
+            ApplicationModel applicationModel = frameworkModel.newApplication();
+            applicationModel.getApplicationConfigManager().setApplication(new ApplicationConfig("APP_" + i));
+        }
+
+    }
+
+    @AfterEach
+    public void reset() {
+        frameworkModel.destroy();
+    }
+
+    @Test
+    void testExecute() {
+        PublishMetadata publishMetadata = new PublishMetadata(frameworkModel);
+
+        String result = publishMetadata.execute(Mockito.mock(CommandContext.class), new String[0]);
+        String expectResult = "publish metadata succeeded. App:APP_0\n" +
+            "publish metadata succeeded. App:APP_1\n" +
+            "publish metadata succeeded. App:APP_2\n";
+        Assertions.assertEquals(result, expectResult);
+
+        // delay 5s
+        result = publishMetadata.execute(Mockito.mock(CommandContext.class), new String[]{"5"});
+        expectResult = "publish task submitted, will publish in 5 seconds. App:APP_0\n" +
+            "publish task submitted, will publish in 5 seconds. App:APP_1\n" +
+            "publish task submitted, will publish in 5 seconds. App:APP_2\n";
+        Assertions.assertEquals(result, expectResult);
+
+        // wrong delay param
+        result = publishMetadata.execute(Mockito.mock(CommandContext.class), new String[]{"A"});
+        expectResult = "publishMetadata failed! Wrong delay param!";
+        Assertions.assertEquals(result, expectResult);
+
+>>>>>>> origin/3.2
     }
 }

@@ -16,16 +16,28 @@
  */
 package org.apache.dubbo.registry.zookeeper;
 
+import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
+import org.apache.dubbo.common.utils.ConcurrentHashSet;
+import org.apache.dubbo.registry.RegistryNotifier;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
+import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
+<<<<<<< HEAD
+=======
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
+>>>>>>> origin/3.2
 
+import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.api.CuratorWatcher;
-import org.apache.zookeeper.WatchedEvent;
+import org.apache.curator.framework.state.ConnectionState;
+import org.apache.curator.x.discovery.ServiceCache;
+import org.apache.curator.x.discovery.details.ServiceCacheListener;
 import org.apache.zookeeper.Watcher;
 
-import static org.apache.zookeeper.Watcher.Event.EventType.NodeChildrenChanged;
-import static org.apache.zookeeper.Watcher.Event.EventType.NodeDataChanged;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * Zookeeper {@link ServiceDiscovery} Change {@link CuratorWatcher watcher} only interests in
@@ -34,28 +46,68 @@ import static org.apache.zookeeper.Watcher.Event.EventType.NodeDataChanged;
  *
  * @since 2.7.5
  */
+<<<<<<< HEAD
 public class ZookeeperServiceDiscoveryChangeWatcher implements CuratorWatcher {
     private ServiceInstancesChangedListener listener;
 
     private final ZookeeperServiceDiscovery zookeeperServiceDiscovery;
 
     private volatile boolean keepWatching = true;
+=======
+public class ZookeeperServiceDiscoveryChangeWatcher implements ServiceCacheListener {
+    private final Set<ServiceInstancesChangedListener> listeners = new ConcurrentHashSet<>();
+
+    private final ServiceCache<ZookeeperInstance> cacheInstance;
+
+    private final ZookeeperServiceDiscovery zookeeperServiceDiscovery;
+
+    private final RegistryNotifier notifier;
+>>>>>>> origin/3.2
 
     private final String serviceName;
 
+    private final CountDownLatch latch;
+
     public ZookeeperServiceDiscoveryChangeWatcher(ZookeeperServiceDiscovery zookeeperServiceDiscovery,
+<<<<<<< HEAD
                                                   String serviceName,
                                                   ServiceInstancesChangedListener listener) {
+=======
+                                                  ServiceCache<ZookeeperInstance> cacheInstance,
+                                                  String serviceName,
+                                                  CountDownLatch latch) {
+>>>>>>> origin/3.2
         this.zookeeperServiceDiscovery = zookeeperServiceDiscovery;
+        this.cacheInstance = cacheInstance;
         this.serviceName = serviceName;
+<<<<<<< HEAD
         this.listener = listener;
+=======
+        this.notifier = new RegistryNotifier(zookeeperServiceDiscovery.getUrl(), zookeeperServiceDiscovery.getDelay(),
+            ScopeModelUtil.getFrameworkModel(zookeeperServiceDiscovery.getUrl().getScopeModel()).getBeanFactory()
+                .getBean(FrameworkExecutorRepository.class).getServiceDiscoveryAddressNotificationExecutor()) {
+            @Override
+            protected void doNotify(Object rawAddresses) {
+                listeners.forEach(listener -> listener.onEvent((ServiceInstancesChangedEvent) rawAddresses));
+            }
+        };
+        this.latch = latch;
+>>>>>>> origin/3.2
     }
 
     @Override
-    public void process(WatchedEvent event) throws Exception {
+    public void cacheChanged() {
+        try {
+            latch.await();
+        } catch (InterruptedException ignore) {
+            Thread.currentThread().interrupt();
+        }
 
-        Watcher.Event.EventType eventType = event.getType();
+        List<ServiceInstance> instanceList = zookeeperServiceDiscovery.getInstances(serviceName);
+        notifier.notify(new ServiceInstancesChangedEvent(serviceName, instanceList));
+    }
 
+<<<<<<< HEAD
         if (NodeChildrenChanged.equals(eventType) || NodeDataChanged.equals(eventType)) {
             if (shouldKeepWatching()) {
                 listener.onEvent(new ServiceInstancesChangedEvent(serviceName, zookeeperServiceDiscovery.getInstances(serviceName)));
@@ -64,6 +116,23 @@ public class ZookeeperServiceDiscoveryChangeWatcher implements CuratorWatcher {
                 // zookeeperServiceDiscovery.dispatchServiceInstancesChangedEvent(serviceName);
             }
         }
+=======
+    @Override
+    public void stateChanged(CuratorFramework curatorFramework, ConnectionState connectionState) {
+        // ignore: taken care by curator ServiceDiscovery
+    }
+
+    public ServiceCache<ZookeeperInstance> getCacheInstance() {
+        return cacheInstance;
+    }
+
+    public Set<ServiceInstancesChangedListener> getListeners() {
+        return listeners;
+    }
+
+    public void addListener(ServiceInstancesChangedListener listener) {
+        listeners.add(listener);
+>>>>>>> origin/3.2
     }
 
     public boolean shouldKeepWatching() {

@@ -185,15 +185,15 @@ public class FullAddress implements Serializable {
             sb.append(countryName);
         }
         if (provinceName != null && provinceName.length() > 0) {
-            sb.append(" ");
+            sb.append(' ');
             sb.append(provinceName);
         }
         if (cityName != null && cityName.length() > 0) {
-            sb.append(" ");
+            sb.append(' ');
             sb.append(cityName);
         }
         if (streetAddress != null && streetAddress.length() > 0) {
-            sb.append(" ");
+            sb.append(' ');
             sb.append(streetAddress);
         }
         return sb.toString();

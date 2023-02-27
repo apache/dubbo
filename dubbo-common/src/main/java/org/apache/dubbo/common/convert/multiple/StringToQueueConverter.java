@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.common.convert.multiple;
 
+import org.apache.dubbo.rpc.model.FrameworkModel;
+
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Queue;
@@ -26,6 +28,9 @@ import java.util.Queue;
  * @since 2.7.6
  */
 public class StringToQueueConverter extends StringToIterableConverter<Queue> {
+    public StringToQueueConverter(FrameworkModel frameworkModel) {
+        super(frameworkModel);
+    }
 
     @Override
     protected Queue createMultiValue(int size, Class<?> multiValueType) {

@@ -27,18 +27,18 @@ import org.apache.dubbo.remoting.exchange.support.Replier;
 /**
  * NettyClientToServerTest
  */
-public class NettyClientToServerTest extends ClientToServerTest {
+class NettyClientToServerTest extends ClientToServerTest {
 
     protected ExchangeServer newServer(int port, Replier<?> receiver) throws RemotingException {
         // add heartbeat cycle to avoid unstable ut.
-        URL url = URL.valueOf("exchange://localhost:" + port + "?server=netty3");
+        URL url = URL.valueOf("exchange://localhost:" + port + "?server=netty3&codec=exchange");
         url = url.addParameter(Constants.HEARTBEAT_KEY, 600 * 1000);
         return Exchangers.bind(url, receiver);
     }
 
     protected ExchangeChannel newClient(int port) throws RemotingException {
         // add heartbeat cycle to avoid unstable ut.
-        URL url = URL.valueOf("exchange://localhost:" + port + "?client=netty3&timeout=3000");
+        URL url = URL.valueOf("exchange://localhost:" + port + "?client=netty3&timeout=3000&codec=exchange");
         url = url.addParameter(Constants.HEARTBEAT_KEY, 600 * 1000);
         return Exchangers.connect(url);
     }

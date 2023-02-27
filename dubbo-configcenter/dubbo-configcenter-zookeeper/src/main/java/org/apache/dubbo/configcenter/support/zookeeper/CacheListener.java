@@ -16,26 +16,27 @@
  */
 package org.apache.dubbo.configcenter.support.zookeeper;
 
-import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
-import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.remoting.zookeeper.DataListener;
-import org.apache.dubbo.remoting.zookeeper.EventType;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+<<<<<<< HEAD
 import java.util.concurrent.CopyOnWriteArraySet;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DOT_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
+=======
+import java.util.concurrent.ConcurrentMap;
+>>>>>>> origin/3.2
 
 /**
- *
+ * one path has one zookeeperDataListener
  */
+public class CacheListener {
 
+<<<<<<< HEAD
 public class CacheListener implements DataListener {
 
     private Map<String, Set<ConfigurationListener>> keyListeners = new ConcurrentHashMap<>();
@@ -54,9 +55,32 @@ public class CacheListener implements DataListener {
         Set<ConfigurationListener> listeners = keyListeners.get(key);
         if (listeners != null) {
             listeners.remove(configurationListener);
-        }
+=======
+    private ConcurrentMap<String, ZookeeperDataListener> pathKeyListeners = new ConcurrentHashMap<>();
+
+    public CacheListener() {
     }
 
+    public ZookeeperDataListener addListener(String pathKey, ConfigurationListener configurationListener, String key, String group) {
+        ZookeeperDataListener zookeeperDataListener = ConcurrentHashMapUtils.computeIfAbsent(pathKeyListeners, pathKey,
+            _pathKey -> new ZookeeperDataListener(_pathKey, key, group));
+        zookeeperDataListener.addListener(configurationListener);
+        return zookeeperDataListener;
+    }
+
+    public ZookeeperDataListener removeListener(String pathKey, ConfigurationListener configurationListener) {
+        ZookeeperDataListener zookeeperDataListener = pathKeyListeners.get(pathKey);
+        if (zookeeperDataListener != null) {
+            zookeeperDataListener.removeListener(configurationListener);
+            if (CollectionUtils.isEmpty(zookeeperDataListener.getListeners())) {
+                pathKeyListeners.remove(pathKey);
+            }
+>>>>>>> origin/3.2
+        }
+        return zookeeperDataListener;
+    }
+
+<<<<<<< HEAD
     public void removeAllListeners() {
         keyListeners.clear();
     }
@@ -112,6 +136,18 @@ public class CacheListener implements DataListener {
         if (CollectionUtils.isNotEmpty(listeners)) {
             listeners.forEach(listener -> listener.process(configChangeEvent));
         }
+=======
+    public ZookeeperDataListener getCachedListener(String pathKey) {
+        return pathKeyListeners.get(pathKey);
+    }
+
+    public Map<String, ZookeeperDataListener> getPathKeyListeners() {
+        return pathKeyListeners;
+    }
+
+    public void clear() {
+        pathKeyListeners.clear();
+>>>>>>> origin/3.2
     }
 }
 

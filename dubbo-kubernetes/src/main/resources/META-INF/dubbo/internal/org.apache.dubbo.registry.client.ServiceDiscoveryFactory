@@ -1,0 +1,1 @@
+kubernetes=org.apache.dubbo.registry.kubernetes.KubernetesServiceDiscoveryFactory

@@ -17,8 +17,9 @@
 package org.apache.dubbo.rpc.support;
 
 import org.apache.dubbo.rpc.AttachmentsAdapter;
-import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.model.ServiceModel;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -33,7 +34,7 @@ import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 /**
  * MockInvocation.java
  */
-public class MockInvocation implements Invocation {
+public class MockInvocation extends RpcInvocation {
 
     private Map<String, Object> attachments;
 
@@ -114,6 +115,16 @@ public class MockInvocation implements Invocation {
     }
 
     public Invoker<?> getInvoker() {
+        return null;
+    }
+
+    @Override
+    public void setServiceModel(ServiceModel serviceModel) {
+
+    }
+
+    @Override
+    public ServiceModel getServiceModel() {
         return null;
     }
 

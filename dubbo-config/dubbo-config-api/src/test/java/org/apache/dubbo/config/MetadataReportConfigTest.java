@@ -18,6 +18,7 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.URL;
+<<<<<<< HEAD
 import org.junit.jupiter.api.Test;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -25,14 +26,33 @@ import static org.hamcrest.Matchers.equalTo;
 public class MetadataReportConfigTest {
     @Test
     public void testFile() {
+=======
+
+import org.junit.jupiter.api.Test;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+
+class MetadataReportConfigTest {
+    @Test
+    void testFile() {
+>>>>>>> origin/3.2
         MetadataReportConfig metadataReportConfig = new MetadataReportConfig();
         metadataReportConfig.setFile("file");
         assertThat(metadataReportConfig.getFile(), equalTo("file"));
 
+<<<<<<< HEAD
         metadataReportConfig.setAddress("127.0.0.1:2181");
+=======
+        metadataReportConfig.setAddress("file://dir-to-file");
+>>>>>>> origin/3.2
         URL url = metadataReportConfig.toUrl();
         assertThat(url.getParameter("file"), equalTo("file"));
 
     }
 
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> origin/3.2

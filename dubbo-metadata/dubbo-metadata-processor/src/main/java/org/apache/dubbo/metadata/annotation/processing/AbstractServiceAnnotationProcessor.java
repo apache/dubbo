@@ -78,11 +78,11 @@ public abstract class AbstractServiceAnnotationProcessor extends AbstractProcess
         StringBuilder methodSignatureBuilder = new StringBuilder();
 
         method.getModifiers().forEach(member -> {
-            methodSignatureBuilder.append(member).append(" ");
+            methodSignatureBuilder.append(member).append(' ');
         });
 
         methodSignatureBuilder.append(method.getReturnType())
-                .append(" ")
+                .append(' ')
                 .append(method.toString());
 
         return methodSignatureBuilder.toString();

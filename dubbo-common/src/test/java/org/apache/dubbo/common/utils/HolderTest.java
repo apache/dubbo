@@ -19,12 +19,12 @@ package org.apache.dubbo.common.utils;
 
 import org.junit.jupiter.api.Test;
 
-import static org.hamcrest.Matchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 
-public class HolderTest {
+class HolderTest {
     @Test
-    public void testSetAndGet() throws Exception {
+    void testSetAndGet() throws Exception {
         Holder<String> holder = new Holder<String>();
         String message = "hello";
         holder.set(message);

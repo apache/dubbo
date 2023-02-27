@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.common.convert.multiple;
 
+import org.apache.dubbo.rpc.model.FrameworkModel;
+
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.BlockingQueue;
@@ -26,6 +28,9 @@ import java.util.concurrent.BlockingQueue;
  * @since 2.7.6
  */
 public class StringToBlockingQueueConverter extends StringToIterableConverter<BlockingQueue> {
+    public StringToBlockingQueueConverter(FrameworkModel frameworkModel) {
+        super(frameworkModel);
+    }
 
     @Override
     protected BlockingQueue createMultiValue(int size, Class<?> multiValueType) {

@@ -120,17 +120,17 @@ public class Phone implements Serializable {
         StringBuilder sb = new StringBuilder();
         if (country != null && country.length() > 0) {
             sb.append(country);
-            sb.append("-");
+            sb.append('-');
         }
         if (area != null && area.length() > 0) {
             sb.append(area);
-            sb.append("-");
+            sb.append('-');
         }
         if (number != null && number.length() > 0) {
             sb.append(number);
         }
         if (extensionNumber != null && extensionNumber.length() > 0) {
-            sb.append("-");
+            sb.append('-');
             sb.append(extensionNumber);
         }
         return sb.toString();

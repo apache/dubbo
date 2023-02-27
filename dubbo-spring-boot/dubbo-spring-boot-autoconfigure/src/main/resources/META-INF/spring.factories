@@ -1,2 +1,6 @@
+<<<<<<< HEAD
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+=======
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+>>>>>>> origin/3.2
 org.apache.dubbo.spring.boot.autoconfigure.DubboRelaxedBinding2AutoConfiguration

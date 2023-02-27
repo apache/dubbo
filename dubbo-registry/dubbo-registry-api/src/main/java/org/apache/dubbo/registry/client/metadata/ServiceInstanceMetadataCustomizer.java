@@ -16,16 +16,26 @@
  */
 package org.apache.dubbo.registry.client.metadata;
 
+<<<<<<< HEAD
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.infra.InfraAdapter;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.MetadataParamsFilter;
 import org.apache.dubbo.metadata.WritableMetadataService;
+=======
+import org.apache.dubbo.common.infra.InfraAdapter;
+import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.metadata.MetadataInfo;
+>>>>>>> origin/3.2
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstanceCustomizer;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+<<<<<<< HEAD
+=======
+import java.util.Collections;
+>>>>>>> origin/3.2
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -33,11 +43,29 @@ import java.util.Set;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 
 /**
+<<<<<<< HEAD
+=======
+ * <p>Intercepting instance to load instance-level params from different sources before being registered into registry.</p>
+ *
+ * The sources can be one or both of the following:
+ * <ul>
+ *  <li>os environment</li>
+ *  <li>vm options</li>
+ * </ul>
+ *
+ * So, finally, the keys left in order will be:
+ * <ul>
+ *  <li>all keys specified by sources above</li>
+ *  <li>keys found in metadata info</li>
+ * </ul>
+ *
+>>>>>>> origin/3.2
  *
  */
 public class ServiceInstanceMetadataCustomizer implements ServiceInstanceCustomizer {
 
     @Override
+<<<<<<< HEAD
     public void customize(ServiceInstance serviceInstance) {
 
         ExtensionLoader<MetadataParamsFilter> loader = ExtensionLoader.getExtensionLoader(MetadataParamsFilter.class);
@@ -81,5 +109,29 @@ public class ServiceInstanceMetadataCustomizer implements ServiceInstanceCustomi
                 }
             }
         });
+=======
+    public void customize(ServiceInstance serviceInstance, ApplicationModel applicationModel) {
+        MetadataInfo metadataInfo = serviceInstance.getServiceMetadata();
+        if (metadataInfo == null || CollectionUtils.isEmptyMap(metadataInfo.getServices())) {
+            return;
+        }
+
+        // try to load instance params that do not appear in service urls
+        // TODO, duplicate snippet in ApplicationConfig
+        Map<String, String> extraParameters = Collections.emptyMap();
+        Set<InfraAdapter> adapters = applicationModel.getExtensionLoader(InfraAdapter.class).getSupportedExtensionInstances();
+        if (CollectionUtils.isNotEmpty(adapters)) {
+            Map<String, String> inputParameters = new HashMap<>();
+            inputParameters.put(APPLICATION_KEY, applicationModel.getApplicationName());
+            for (InfraAdapter adapter : adapters) {
+                extraParameters = adapter.getExtraAttributes(inputParameters);
+            }
+        }
+
+        serviceInstance.getMetadata().putAll(extraParameters);
+        if (CollectionUtils.isNotEmptyMap(metadataInfo.getInstanceParams())) {
+            serviceInstance.getMetadata().putAll(metadataInfo.getInstanceParams());
+        }
+>>>>>>> origin/3.2
     }
 }

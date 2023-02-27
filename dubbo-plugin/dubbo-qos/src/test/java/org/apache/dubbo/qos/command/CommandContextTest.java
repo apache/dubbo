@@ -21,16 +21,16 @@ import io.netty.channel.Channel;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.arrayContaining;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class CommandContextTest {
+class CommandContextTest {
     @Test
-    public void test() throws Exception {
+    void test() throws Exception {
         CommandContext context = new CommandContext("test", new String[]{"hello"}, true);
         Object request = new Object();
         context.setOriginRequest(request);

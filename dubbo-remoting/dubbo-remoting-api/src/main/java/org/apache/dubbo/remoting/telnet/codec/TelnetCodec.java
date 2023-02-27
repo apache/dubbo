@@ -17,7 +17,7 @@
 package org.apache.dubbo.remoting.telnet.codec;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -33,6 +33,7 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_UNSUPPORTED_CHARSET;
 import static org.apache.dubbo.remoting.Constants.CHARSET_KEY;
 import static org.apache.dubbo.remoting.Constants.DEFAULT_CHARSET;
 
@@ -41,7 +42,7 @@ import static org.apache.dubbo.remoting.Constants.DEFAULT_CHARSET;
  */
 public class TelnetCodec extends TransportCodec {
 
-    private static final Logger logger = LoggerFactory.getLogger(TelnetCodec.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(TelnetCodec.class);
 
     private static final String HISTORY_LIST_KEY = "telnet.history.list";
 
@@ -52,13 +53,13 @@ public class TelnetCodec extends TransportCodec {
     private static final byte[] DOWN = new byte[]{27, 91, 66};
 
     private static final List<?> ENTER = Arrays.asList(
-            new byte[]{'\r', '\n'} /* Windows Enter */,
-            new byte[]{'\n'} /* Linux Enter */);
+        new byte[]{'\r', '\n'} /* Windows Enter */,
+        new byte[]{'\n'} /* Linux Enter */);
 
     private static final List<?> EXIT = Arrays.asList(
-            new byte[]{3} /* Windows Ctrl+C */,
-            new byte[]{-1, -12, -1, -3, 6} /* Linux Ctrl+C */,
-            new byte[]{-1, -19, -1, -3, 6} /* Linux Pause */);
+        new byte[]{3} /* Windows Ctrl+C */,
+        new byte[]{-1, -12, -1, -3, 6} /* Linux Ctrl+C */,
+        new byte[]{-1, -19, -1, -3, 6} /* Linux Pause */);
 
     private static Charset getCharset(Channel channel) {
         if (channel != null) {
@@ -67,7 +68,7 @@ public class TelnetCodec extends TransportCodec {
                 try {
                     return Charset.forName((String) attribute);
                 } catch (Throwable t) {
-                    logger.warn(t.getMessage(), t);
+                    logger.warn(TRANSPORT_UNSUPPORTED_CHARSET, "", "", t.getMessage(), t);
                 }
             } else if (attribute instanceof Charset) {
                 return (Charset) attribute;
@@ -79,7 +80,7 @@ public class TelnetCodec extends TransportCodec {
                     try {
                         return Charset.forName(parameter);
                     } catch (Throwable t) {
-                        logger.warn(t.getMessage(), t);
+                        logger.warn(TRANSPORT_UNSUPPORTED_CHARSET, "", "", t.getMessage(), t);
                     }
                 }
             }
@@ -87,7 +88,7 @@ public class TelnetCodec extends TransportCodec {
         try {
             return Charset.forName(DEFAULT_CHARSET);
         } catch (Throwable t) {
-            logger.warn(t.getMessage(), t);
+            logger.warn(TRANSPORT_UNSUPPORTED_CHARSET, "", "", t.getMessage(), t);
         }
         return Charset.defaultCharset();
     }
@@ -115,7 +116,7 @@ public class TelnetCodec extends TransportCodec {
                     i = i + 2;
                 }
             } else if (b == -1 && i < message.length - 2
-                    && (message[i + 1] == -3 || message[i + 1] == -5)) { // handshake
+                && (message[i + 1] == -3 || message[i + 1] == -5)) { // handshake
                 i = i + 2;
             } else {
                 copy[index++] = message[i];
@@ -177,8 +178,8 @@ public class TelnetCodec extends TransportCodec {
 
         if (message[message.length - 1] == '\b') { // Windows backspace echo
             try {
-                boolean doublechar = message.length >= 3 && message[message.length - 3] < 0; // double byte char
-                channel.send(new String(doublechar ? new byte[]{32, 32, 8, 8} : new byte[]{32, 8}, getCharset(channel).name()));
+                boolean isDoubleChar = message.length >= 3 && message[message.length - 3] < 0; // double byte char
+                channel.send(new String(isDoubleChar ? new byte[]{32, 32, 8, 8} : new byte[]{32, 8}, getCharset(channel).name()));
             } catch (RemotingException e) {
                 throw new IOException(StringUtils.toString(e));
             }
@@ -226,15 +227,15 @@ public class TelnetCodec extends TransportCodec {
                     String ov = history.get(old);
                     StringBuilder buf = new StringBuilder();
                     for (int i = 0; i < ov.length(); i++) {
-                        buf.append("\b");
+                        buf.append('\b');
                     }
                     for (int i = 0; i < ov.length(); i++) {
-                        buf.append(" ");
+                        buf.append(' ');
                     }
                     for (int i = 0; i < ov.length(); i++) {
-                        buf.append("\b");
+                        buf.append('\b');
                     }
-                    value = buf.toString() + value;
+                    value = buf + value;
                 }
                 try {
                     channel.send(value);

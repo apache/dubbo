@@ -17,11 +17,12 @@
 
 package org.apache.dubbo.common.store;
 
+import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 
 import java.util.Map;
 
-@SPI("simple")
+@SPI(value = "simple", scope = ExtensionScope.APPLICATION)
 public interface DataStore {
 
     /**

@@ -1,0 +1,1 @@
+xds=org.apache.dubbo.registry.xds.XdsServiceDiscoveryFactory

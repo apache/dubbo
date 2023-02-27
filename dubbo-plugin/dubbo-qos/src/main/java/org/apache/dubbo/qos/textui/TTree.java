@@ -69,7 +69,7 @@ public class TTree implements TComponent {
 
                 int costPrefixLength = 0;
                 if (hasChild) {
-                    treeSB.append("+");
+                    treeSB.append('+');
                 }
                 if (isPrintCost
                         && !node.isRoot()) {
@@ -82,7 +82,7 @@ public class TTree implements TComponent {
                     boolean isFirst = true;
                     while (scanner.hasNextLine()) {
                         if (isFirst) {
-                            treeSB.append(scanner.nextLine()).append("\n");
+                            treeSB.append(scanner.nextLine()).append('\n');
                             isFirst = false;
                         } else {
                             treeSB.append(prefix)

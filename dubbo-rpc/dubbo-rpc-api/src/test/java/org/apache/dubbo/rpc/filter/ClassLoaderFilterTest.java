@@ -22,6 +22,7 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.model.ServiceModel;
 import org.apache.dubbo.rpc.support.DemoService;
 import org.apache.dubbo.rpc.support.MyInvoker;
 
@@ -31,12 +32,12 @@ import org.mockito.Mockito;
 
 import java.net.URLClassLoader;
 
-public class ClassLoaderFilterTest {
+class ClassLoaderFilterTest {
 
     private ClassLoaderFilter classLoaderFilter = new ClassLoaderFilter();
 
     @Test
-    public void testInvoke() throws Exception {
+    void testInvoke() throws Exception {
         URL url = URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1");
 
         String path = DemoService.class.getResource("/").getPath();
@@ -64,6 +65,9 @@ public class ClassLoaderFilterTest {
             }
         };
         Invocation invocation = Mockito.mock(Invocation.class);
+        ServiceModel serviceModel = Mockito.mock(ServiceModel.class);
+        Mockito.when(serviceModel.getClassLoader()).thenReturn(cl);
+        Mockito.when(invocation.getServiceModel()).thenReturn(serviceModel);
 
         classLoaderFilter.invoke(invoker, invocation);
     }

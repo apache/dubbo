@@ -13,43 +13,50 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+<<<<<<< HEAD
  *//*
+=======
+ */
+>>>>>>> origin/3.2
 
 package org.apache.dubbo.metadata.report.support;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.metadata.MappingListener;
 import org.apache.dubbo.metadata.definition.ServiceDefinitionBuilder;
 import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
-import org.apache.dubbo.metadata.report.MetadataReport;
 import org.apache.dubbo.metadata.report.identifier.KeyTypeEnum;
 import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.ServiceMetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import com.google.gson.Gson;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedSet;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadPoolExecutor;
 
-import static java.util.Collections.emptySet;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
+import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+<<<<<<< HEAD
 */
 /**
  * Test {@link MetadataReport#saveExportedURLs(String, String, String)} method
@@ -64,16 +71,18 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *//*
 
 public class AbstractMetadataReportTest {
+=======
+class AbstractMetadataReportTest {
+>>>>>>> origin/3.2
 
     private NewMetadataReport abstractMetadataReport;
-
 
     @BeforeEach
     public void before() {
         URL url = URL.valueOf("zookeeper://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=vic");
         abstractMetadataReport = new NewMetadataReport(url);
         // set the simple name of current class as the application name
-        ApplicationModel.getConfigManager().setApplication(new ApplicationConfig(getClass().getSimpleName()));
+        ApplicationModel.defaultModel().getConfigManager().setApplication(new ApplicationConfig(getClass().getSimpleName()));
     }
 
     @AfterEach
@@ -83,59 +92,65 @@ public class AbstractMetadataReportTest {
     }
 
     @Test
-    public void testGetProtocol() {
+    void testGetProtocol() {
         URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=vic&side=provider");
         String protocol = abstractMetadataReport.getProtocol(url);
-        assertEquals(protocol, "provider");
+        assertEquals("provider", protocol);
 
         URL url2 = URL.valueOf("consumer://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=vic");
         String protocol2 = abstractMetadataReport.getProtocol(url2);
-        assertEquals(protocol2, "consumer");
+        assertEquals("consumer", protocol2);
     }
 
     @Test
-    public void testStoreProviderUsual() throws ClassNotFoundException, InterruptedException {
+    void testStoreProviderUsual() throws ClassNotFoundException, InterruptedException {
         String interfaceName = "org.apache.dubbo.metadata.store.InterfaceNameTestService";
         String version = "1.0.0";
         String group = null;
         String application = "vic";
-        MetadataIdentifier providerMetadataIdentifier = storePrivider(abstractMetadataReport, interfaceName, version, group, application);
-        Thread.sleep(1500);
+        ThreadPoolExecutor reportCacheExecutor = (ThreadPoolExecutor) abstractMetadataReport.getReportCacheExecutor();
+
+        long completedTaskCount1 = reportCacheExecutor.getCompletedTaskCount();
+        MetadataIdentifier providerMetadataIdentifier = storeProvider(abstractMetadataReport, interfaceName, version, group, application);
+        await().until(() -> reportCacheExecutor.getCompletedTaskCount() > completedTaskCount1);
         Assertions.assertNotNull(abstractMetadataReport.store.get(providerMetadataIdentifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY)));
     }
 
     @Test
-    public void testStoreProviderSync() throws ClassNotFoundException, InterruptedException {
+    void testStoreProviderSync() throws ClassNotFoundException, InterruptedException {
         String interfaceName = "org.apache.dubbo.metadata.store.InterfaceNameTestService";
         String version = "1.0.0";
         String group = null;
         String application = "vic";
         abstractMetadataReport.syncReport = true;
-        MetadataIdentifier providerMetadataIdentifier = storePrivider(abstractMetadataReport, interfaceName, version, group, application);
+        MetadataIdentifier providerMetadataIdentifier = storeProvider(abstractMetadataReport, interfaceName, version, group, application);
         Assertions.assertNotNull(abstractMetadataReport.store.get(providerMetadataIdentifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY)));
     }
 
     @Test
-    public void testFileExistAfterPut() throws InterruptedException, ClassNotFoundException {
+    void testFileExistAfterPut() throws InterruptedException, ClassNotFoundException {
         //just for one method
         URL singleUrl = URL.valueOf("redis://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.metadata.store.InterfaceNameTestService?version=1.0.0&application=singleTest");
         NewMetadataReport singleMetadataReport = new NewMetadataReport(singleUrl);
 
-        Assertions.assertFalse(singleMetadataReport.localCacheFile.exists());
+        assertFalse(singleMetadataReport.file.exists());
 
         String interfaceName = "org.apache.dubbo.metadata.store.InterfaceNameTestService";
         String version = "1.0.0";
         String group = null;
         String application = "vic";
-        MetadataIdentifier providerMetadataIdentifier = storePrivider(singleMetadataReport, interfaceName, version, group, application);
+        ThreadPoolExecutor reportCacheExecutor = (ThreadPoolExecutor) singleMetadataReport.getReportCacheExecutor();
 
-        Thread.sleep(2000);
-        assertTrue(singleMetadataReport.localCacheFile.exists());
+        long completedTaskCount1 = reportCacheExecutor.getCompletedTaskCount();
+        MetadataIdentifier providerMetadataIdentifier = storeProvider(singleMetadataReport, interfaceName, version, group, application);
+        await().until(() -> reportCacheExecutor.getCompletedTaskCount() > completedTaskCount1);
+
+        assertTrue(singleMetadataReport.file.exists());
         assertTrue(singleMetadataReport.properties.containsKey(providerMetadataIdentifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY)));
     }
 
     @Test
-    public void testRetry() throws InterruptedException, ClassNotFoundException {
+    void testRetry() throws InterruptedException, ClassNotFoundException {
         String interfaceName = "org.apache.dubbo.metadata.store.RetryTestService";
         String version = "1.0.0.retry";
         String group = null;
@@ -150,21 +165,27 @@ public class AbstractMetadataReportTest {
         assertTrue(retryReport.failedReports.isEmpty());
 
 
-        storePrivider(retryReport, interfaceName, version, group, application);
-        Thread.sleep(150);
+        ThreadPoolExecutor reportCacheExecutor = (ThreadPoolExecutor) retryReport.getReportCacheExecutor();
+        ScheduledThreadPoolExecutor retryExecutor = (ScheduledThreadPoolExecutor) retryReport.getMetadataReportRetry().getRetryExecutor();
+
+        long completedTaskCount1 = reportCacheExecutor.getCompletedTaskCount();
+        long completedTaskCount2 = retryExecutor.getCompletedTaskCount();
+        storeProvider(retryReport, interfaceName, version, group, application);
+        await().until(() -> reportCacheExecutor.getCompletedTaskCount() > completedTaskCount1);
 
         assertTrue(retryReport.store.isEmpty());
-        Assertions.assertFalse(retryReport.failedReports.isEmpty());
-        Assertions.assertNotNull(retryReport.metadataReportRetry.retryScheduledFuture);
-        Thread.sleep(2000L);
-        assertTrue(retryReport.metadataReportRetry.retryCounter.get() != 0);
+        assertFalse(retryReport.failedReports.isEmpty());
+        assertNotNull(retryReport.metadataReportRetry.retryScheduledFuture);
+
+        await().until(() -> retryExecutor.getCompletedTaskCount() > completedTaskCount2 + 2);
+        assertNotEquals(0, retryReport.metadataReportRetry.retryCounter.get());
         assertTrue(retryReport.metadataReportRetry.retryCounter.get() >= 3);
-        Assertions.assertFalse(retryReport.store.isEmpty());
+        assertFalse(retryReport.store.isEmpty());
         assertTrue(retryReport.failedReports.isEmpty());
     }
 
     @Test
-    public void testRetryCancel() throws InterruptedException, ClassNotFoundException {
+    void testRetryCancel() throws InterruptedException, ClassNotFoundException {
         String interfaceName = "org.apache.dubbo.metadata.store.RetryTestService";
         String version = "1.0.0.retrycancel";
         String group = null;
@@ -174,20 +195,23 @@ public class AbstractMetadataReportTest {
         retryReport.metadataReportRetry.retryPeriod = 150L;
         retryReport.metadataReportRetry.retryTimesIfNonFail = 2;
 
-        storePrivider(retryReport, interfaceName, version, group, application);
-        Thread.sleep(80);
+        ScheduledThreadPoolExecutor retryExecutor = (ScheduledThreadPoolExecutor) retryReport.getMetadataReportRetry().getRetryExecutor();
+        long completedTaskCount = retryExecutor.getCompletedTaskCount();
+        storeProvider(retryReport, interfaceName, version, group, application);
 
-        Assertions.assertFalse(retryReport.metadataReportRetry.retryScheduledFuture.isCancelled());
-        Assertions.assertFalse(retryReport.metadataReportRetry.retryExecutor.isShutdown());
-        Thread.sleep(1000L);
+        // Wait for the assignment of retryScheduledFuture to complete
+        await().until(() -> retryReport.metadataReportRetry.retryScheduledFuture != null);
+        assertFalse(retryReport.metadataReportRetry.retryScheduledFuture.isCancelled());
+        assertFalse(retryReport.metadataReportRetry.retryExecutor.isShutdown());
+        await().until(() -> retryExecutor.getCompletedTaskCount() > completedTaskCount + 2);
         assertTrue(retryReport.metadataReportRetry.retryScheduledFuture.isCancelled());
         assertTrue(retryReport.metadataReportRetry.retryExecutor.isShutdown());
 
     }
 
-    private MetadataIdentifier storePrivider(AbstractMetadataReport abstractMetadataReport, String interfaceName, String version, String group, String application) throws ClassNotFoundException {
+    private MetadataIdentifier storeProvider(AbstractMetadataReport abstractMetadataReport, String interfaceName, String version, String group, String application) throws ClassNotFoundException {
         URL url = URL.valueOf("xxx://" + NetUtils.getLocalAddress().getHostName() + ":4444/" + interfaceName + "?version=" + version + "&application="
-                + application + (group == null ? "" : "&group=" + group) + "&testPKey=8989");
+            + application + (group == null ? "" : "&group=" + group) + "&testPKey=8989");
 
         MetadataIdentifier providerMetadataIdentifier = new MetadataIdentifier(interfaceName, version, group, PROVIDER_SIDE, application);
         Class interfaceClass = Class.forName(interfaceName);
@@ -200,7 +224,7 @@ public class AbstractMetadataReportTest {
 
     private MetadataIdentifier storeConsumer(AbstractMetadataReport abstractMetadataReport, String interfaceName, String version, String group, String application, Map<String, String> tmp) throws ClassNotFoundException {
         URL url = URL.valueOf("xxx://" + NetUtils.getLocalAddress().getHostName() + ":4444/" + interfaceName + "?version=" + version + "&application="
-                + application + (group == null ? "" : "&group=" + group) + "&testPKey=9090");
+            + application + (group == null ? "" : "&group=" + group) + "&testPKey=9090");
 
         tmp.putAll(url.getParameters());
         MetadataIdentifier consumerMetadataIdentifier = new MetadataIdentifier(interfaceName, version, group, CONSUMER_SIDE, application);
@@ -211,7 +235,8 @@ public class AbstractMetadataReportTest {
     }
 
     @Test
-    public void testPublishAll() throws ClassNotFoundException, InterruptedException {
+    void testPublishAll() throws ClassNotFoundException, InterruptedException {
+        ThreadPoolExecutor reportCacheExecutor = (ThreadPoolExecutor) abstractMetadataReport.getReportCacheExecutor();
 
         assertTrue(abstractMetadataReport.store.isEmpty());
         assertTrue(abstractMetadataReport.allMetadataReports.isEmpty());
@@ -219,55 +244,56 @@ public class AbstractMetadataReportTest {
         String version = "1.0.0";
         String group = null;
         String application = "vic";
-        MetadataIdentifier providerMetadataIdentifier1 = storePrivider(abstractMetadataReport, interfaceName, version, group, application);
-        Thread.sleep(1000);
-        assertEquals(abstractMetadataReport.allMetadataReports.size(), 1);
+        long completedTaskCount1 = reportCacheExecutor.getCompletedTaskCount();
+        MetadataIdentifier providerMetadataIdentifier1 = storeProvider(abstractMetadataReport, interfaceName, version, group, application);
+        await().until(() -> reportCacheExecutor.getCompletedTaskCount() > completedTaskCount1);
+        assertEquals(1, abstractMetadataReport.allMetadataReports.size());
         assertTrue(((FullServiceDefinition) abstractMetadataReport.allMetadataReports.get(providerMetadataIdentifier1)).getParameters().containsKey("testPKey"));
 
-        MetadataIdentifier providerMetadataIdentifier2 = storePrivider(abstractMetadataReport, interfaceName, version + "_2", group + "_2", application);
-        Thread.sleep(1000);
-        assertEquals(abstractMetadataReport.allMetadataReports.size(), 2);
+        long completedTaskCount2 = reportCacheExecutor.getCompletedTaskCount();
+        MetadataIdentifier providerMetadataIdentifier2 = storeProvider(abstractMetadataReport, interfaceName, version + "_2", group + "_2", application);
+        await().until(() -> reportCacheExecutor.getCompletedTaskCount() > completedTaskCount2);
+        assertEquals(2, abstractMetadataReport.allMetadataReports.size());
         assertTrue(((FullServiceDefinition) abstractMetadataReport.allMetadataReports.get(providerMetadataIdentifier2)).getParameters().containsKey("testPKey"));
         assertEquals(((FullServiceDefinition) abstractMetadataReport.allMetadataReports.get(providerMetadataIdentifier2)).getParameters().get("version"), version + "_2");
 
         Map<String, String> tmpMap = new HashMap<>();
         tmpMap.put("testKey", "value");
+        long completedTaskCount3 = reportCacheExecutor.getCompletedTaskCount();
         MetadataIdentifier consumerMetadataIdentifier = storeConsumer(abstractMetadataReport, interfaceName, version + "_3", group + "_3", application, tmpMap);
-        Thread.sleep(1000);
-        assertEquals(abstractMetadataReport.allMetadataReports.size(), 3);
+        await().until(() -> reportCacheExecutor.getCompletedTaskCount() > completedTaskCount3);
+        assertEquals(3, abstractMetadataReport.allMetadataReports.size());
 
         Map tmpMapResult = (Map) abstractMetadataReport.allMetadataReports.get(consumerMetadataIdentifier);
-        assertEquals(tmpMapResult.get("testPKey"), "9090");
-        assertEquals(tmpMapResult.get("testKey"), "value");
+        assertEquals("9090", tmpMapResult.get("testPKey"));
+        assertEquals("value", tmpMapResult.get("testKey"));
         assertEquals(3, abstractMetadataReport.store.size());
 
         abstractMetadataReport.store.clear();
 
         assertEquals(0, abstractMetadataReport.store.size());
 
+        long completedTaskCount4 = reportCacheExecutor.getCompletedTaskCount();
         abstractMetadataReport.publishAll();
-        Thread.sleep(200);
+        await().until(() -> reportCacheExecutor.getCompletedTaskCount() > completedTaskCount4);
 
         assertEquals(3, abstractMetadataReport.store.size());
 
         String v = abstractMetadataReport.store.get(providerMetadataIdentifier1.getUniqueKey(KeyTypeEnum.UNIQUE_KEY));
-        Gson gson = new Gson();
-        FullServiceDefinition data = gson.fromJson(v, FullServiceDefinition.class);
+        FullServiceDefinition data = JsonUtils.getJson().toJavaObject(v, FullServiceDefinition.class);
         checkParam(data.getParameters(), application, version);
 
         String v2 = abstractMetadataReport.store.get(providerMetadataIdentifier2.getUniqueKey(KeyTypeEnum.UNIQUE_KEY));
-        gson = new Gson();
-        data = gson.fromJson(v2, FullServiceDefinition.class);
+        data = JsonUtils.getJson().toJavaObject(v2, FullServiceDefinition.class);
         checkParam(data.getParameters(), application, version + "_2");
 
         String v3 = abstractMetadataReport.store.get(consumerMetadataIdentifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY));
-        gson = new Gson();
-        Map v3Map = gson.fromJson(v3, Map.class);
+        Map v3Map = JsonUtils.getJson().toJavaObject(v3, Map.class);
         checkParam(v3Map, application, version + "_3");
     }
 
     @Test
-    public void testCalculateStartTime() {
+    void testCalculateStartTime() {
         for (int i = 0; i < 300; i++) {
             long t = abstractMetadataReport.calculateStartTime() + System.currentTimeMillis();
             Calendar c = Calendar.getInstance();
@@ -277,6 +303,7 @@ public class AbstractMetadataReportTest {
         }
     }
 
+<<<<<<< HEAD
     */
 /**
  * Test {@link MetadataReport#saveExportedURLs(String, String, String)} method
@@ -336,25 +363,13 @@ public class AbstractMetadataReportTest {
         FullServiceDefinition data = gson.fromJson(v, FullServiceDefinition.class);
         return data;
     }
+=======
+>>>>>>> origin/3.2
 
     private void checkParam(Map<String, String> map, String application, String version) {
         assertEquals(map.get("application"), application);
         assertEquals(map.get("version"), version);
     }
-
-    private Map<String, String> queryUrlToMap(String urlQuery) {
-        if (urlQuery == null) {
-            return Collections.emptyMap();
-        }
-        String[] pairs = urlQuery.split("&");
-        Map<String, String> map = new HashMap<>();
-        for (String pairStr : pairs) {
-            String[] pair = pairStr.split("=");
-            map.put(pair[0], pair[1]);
-        }
-        return map;
-    }
-
 
     private static class NewMetadataReport extends AbstractMetadataReport {
 
@@ -401,6 +416,11 @@ public class AbstractMetadataReportTest {
 
         @Override
         public String getServiceDefinition(MetadataIdentifier consumerMetadataIdentifier) {
+            throw new UnsupportedOperationException("This extension does not support working as a remote metadata center.");
+        }
+
+        @Override
+        public void removeServiceAppMappingListener(String serviceKey, MappingListener listener) {
             throw new UnsupportedOperationException("This extension does not support working as a remote metadata center.");
         }
     }
@@ -462,6 +482,11 @@ public class AbstractMetadataReportTest {
 
         @Override
         public String getServiceDefinition(MetadataIdentifier consumerMetadataIdentifier) {
+            throw new UnsupportedOperationException("This extension does not support working as a remote metadata center.");
+        }
+
+        @Override
+        public void removeServiceAppMappingListener(String serviceKey, MappingListener listener) {
             throw new UnsupportedOperationException("This extension does not support working as a remote metadata center.");
         }
 

@@ -17,18 +17,34 @@
 package org.apache.dubbo.registry.zookeeper;
 
 import org.apache.dubbo.common.URL;
+<<<<<<< HEAD
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.Page;
 import org.apache.dubbo.event.EventDispatcher;
+=======
+import org.apache.dubbo.config.ApplicationConfig;
+>>>>>>> origin/3.2
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstance;
+import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
+import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
+<<<<<<< HEAD
 import org.apache.curator.test.TestingServer;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
+=======
+>>>>>>> origin/3.2
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+<<<<<<< HEAD
+=======
+import org.junit.jupiter.api.condition.DisabledForJreRange;
+import org.junit.jupiter.api.condition.JRE;
+>>>>>>> origin/3.2
 import org.mockito.internal.util.collections.Sets;
 
 import java.util.HashMap;
@@ -38,8 +54,6 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
 import static java.util.Arrays.asList;
-import static org.apache.dubbo.common.utils.NetUtils.getAvailablePort;
-import static org.apache.dubbo.registry.zookeeper.util.CuratorFrameworkUtils.generateId;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -49,43 +63,51 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  * @since 2.7.5
  */
-public class ZookeeperServiceDiscoveryTest {
+@DisabledForJreRange(min = JRE.JAVA_16)
+class ZookeeperServiceDiscoveryTest {
 
     private static final String SERVICE_NAME = "A";
 
     private static final String LOCALHOST = "127.0.0.1";
 
-    private TestingServer zkServer;
-    private int zkServerPort;
     private URL registryUrl;
 
     private ZookeeperServiceDiscovery discovery;
+    private static String zookeeperConnectionAddress1;
+
+    @BeforeAll
+    public static void beforeAll() {
+        zookeeperConnectionAddress1 = System.getProperty("zookeeper.connection.address.1");
+    }
 
     @BeforeEach
     public void init() throws Exception {
-        EventDispatcher.getDefaultExtension().removeAllEventListeners();
-        zkServerPort = getAvailablePort();
-        zkServer = new TestingServer(zkServerPort, true);
-        zkServer.start();
-
-        this.registryUrl = URL.valueOf("zookeeper://127.0.0.1:" + zkServerPort);
-        this.discovery = new ZookeeperServiceDiscovery();
-        this.discovery.initialize(registryUrl);
+        this.registryUrl = URL.valueOf(zookeeperConnectionAddress1);
+        ApplicationModel applicationModel = ApplicationModel.defaultModel();
+        applicationModel.getApplicationConfigManager().setApplication(new ApplicationConfig(SERVICE_NAME));
+        registryUrl.setScopeModel(applicationModel);
+        this.discovery = new ZookeeperServiceDiscovery(applicationModel, registryUrl);
     }
 
     @AfterEach
     public void close() throws Exception {
         discovery.destroy();
-        zkServer.stop();
     }
 
     @Test
+<<<<<<< HEAD
     public void testRegistration() throws InterruptedException {
-
-        DefaultServiceInstance serviceInstance = createServiceInstance(SERVICE_NAME, LOCALHOST, NetUtils.getAvailablePort());
+=======
+    void testRegistration() throws InterruptedException {
+>>>>>>> origin/3.2
 
         CountDownLatch latch = new CountDownLatch(1);
 
+<<<<<<< HEAD
+        CountDownLatch latch = new CountDownLatch(1);
+
+=======
+>>>>>>> origin/3.2
         // Add Listener
         discovery.addServiceInstancesChangedListener(
                 new ServiceInstancesChangedListener(Sets.newSet(SERVICE_NAME), discovery) {
@@ -94,13 +116,25 @@ public class ZookeeperServiceDiscoveryTest {
                 latch.countDown();
             }
         });
+<<<<<<< HEAD
 
         discovery.register(serviceInstance);
 
         latch.await();
         
-        List<ServiceInstance> serviceInstances = discovery.getInstances(SERVICE_NAME);
+=======
 
+        discovery.register();
+        latch.await();
+>>>>>>> origin/3.2
+        List<ServiceInstance> serviceInstances = discovery.getInstances(SERVICE_NAME);
+        assertEquals(0, serviceInstances.size());
+
+        discovery.register(URL.valueOf("dubbo://1.1.2.3:20880/DemoService"));
+        discovery.register();
+        serviceInstances = discovery.getInstances(SERVICE_NAME);
+
+        DefaultServiceInstance serviceInstance = (DefaultServiceInstance)discovery.getLocalInstance();
         assertTrue(serviceInstances.contains(serviceInstance));
         assertEquals(asList(serviceInstance), serviceInstances);
 
@@ -108,19 +142,21 @@ public class ZookeeperServiceDiscoveryTest {
         //metadata.put("message", "Hello,World");
         serviceInstance.setMetadata(metadata);
 
-        discovery.update(serviceInstance);
+        discovery.register(URL.valueOf("dubbo://1.1.2.3:20880/DemoService1"));
+        discovery.update();
 
         serviceInstances = discovery.getInstances(SERVICE_NAME);
 
         assertEquals(serviceInstance, serviceInstances.get(0));
 
-        discovery.unregister(serviceInstance);
+        discovery.unregister();
 
         serviceInstances = discovery.getInstances(SERVICE_NAME);
 
         assertTrue(serviceInstances.isEmpty());
     }
 
+<<<<<<< HEAD
     private DefaultServiceInstance createServiceInstance(String serviceName, String host, int port) {
         return new DefaultServiceInstance(generateId(host, port), serviceName, host, port);
     }
@@ -224,4 +260,6 @@ public class ZookeeperServiceDiscoveryTest {
         assertFalse(page.hasData());
 
     }
+=======
+>>>>>>> origin/3.2
 }

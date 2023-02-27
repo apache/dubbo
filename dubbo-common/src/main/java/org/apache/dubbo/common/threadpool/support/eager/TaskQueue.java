@@ -50,7 +50,7 @@ public class TaskQueue<R extends Runnable> extends LinkedBlockingQueue<Runnable>
 
         int currentPoolThreadSize = executor.getPoolSize();
         // have free worker. put task into queue to let the worker deal with task.
-        if (executor.getSubmittedTaskCount() < currentPoolThreadSize) {
+        if (executor.getActiveCount() < currentPoolThreadSize) {
             return super.offer(runnable);
         }
 

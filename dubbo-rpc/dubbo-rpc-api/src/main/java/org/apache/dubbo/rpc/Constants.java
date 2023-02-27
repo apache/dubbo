@@ -55,11 +55,15 @@ public interface Constants {
 
     String STUB_EVENT_METHODS_KEY = "dubbo.stub.event.methods";
 
+    String COMPRESSOR_KEY = "dubbo.rpc.tri.compressor";
+
     String PROXY_KEY = "proxy";
 
     String EXECUTES_KEY = "executes";
 
     String ACCESS_LOG_KEY = "accesslog";
+
+    String ACCESS_LOG_FIXED_PATH_KEY = "accesslog.fixed.path";
 
     String ACTIVES_KEY = "actives";
 
@@ -94,4 +98,23 @@ public interface Constants {
     String SERIALIZATION_SECURITY_CHECK_KEY = "serialization.security.check";
     String INVOCATION_KEY = "invocation";
     String SERIALIZATION_ID_KEY = "serialization_id";
+<<<<<<< HEAD
+=======
+
+    String H2_SETTINGS_HEADER_TABLE_SIZE_KEY = "dubbo.rpc.tri.header-table-size";
+    String H2_SETTINGS_ENABLE_PUSH_KEY = "dubbo.rpc.tri.enable-push";
+    String H2_SETTINGS_MAX_CONCURRENT_STREAMS_KEY = "dubbo.rpc.tri.max-concurrent-streams";
+    String H2_SETTINGS_INITIAL_WINDOW_SIZE_KEY = "dubbo.rpc.tri.initial-window-size";
+    String H2_SETTINGS_MAX_FRAME_SIZE_KEY = "dubbo.rpc.tri.max-frame-size";
+    String H2_SETTINGS_MAX_HEADER_LIST_SIZE_KEY = "dubbo.rpc.tri.max-header-list-size";
+
+    String ADAPTIVE_LOADBALANCE_ATTACHMENT_KEY = "lb_adaptive";
+    String ADAPTIVE_LOADBALANCE_START_TIME = "adaptive_startTime";
+    String H2_SUPPORT_NO_LOWER_HEADER_KEY = "dubbo.rpc.tri.support-no-lower-header";
+    String TRI_BUILTIN_SERVICE_INIT = "dubbo.tri.builtin.service.init";
+
+    String H2_IGNORE_1_0_0_KEY = "dubbo.rpc.tri.ignore-1.0.0-version";
+
+    String H2_RESOLVE_FALLBACK_TO_DEFAULT_KEY = "dubbo.rpc.tri.resolve-fallback-to-default";
+>>>>>>> origin/3.2
 }

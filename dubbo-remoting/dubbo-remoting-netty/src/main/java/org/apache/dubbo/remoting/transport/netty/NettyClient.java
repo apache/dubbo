@@ -18,7 +18,7 @@ package org.apache.dubbo.remoting.transport.netty;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -39,18 +39,22 @@ import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_CLIENT_CONNECT_TIMEOUT;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_CONNECT_PROVIDER;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_DISCONNECT_PROVIDER;
+
 /**
  * NettyClient.
  */
 public class NettyClient extends AbstractClient {
 
-    private static final Logger logger = LoggerFactory.getLogger(NettyClient.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(NettyClient.class);
 
     // ChannelFactory's closure has a DirectMemory leak, using static to avoid
     // https://issues.jboss.org/browse/NETTY-424
     private static final ChannelFactory CHANNEL_FACTORY = new NioClientSocketChannelFactory(Executors.newCachedThreadPool(new NamedThreadFactory("NettyClientBoss", true)),
-            Executors.newCachedThreadPool(new NamedThreadFactory("NettyClientWorker", true)),
-            Constants.DEFAULT_IO_THREADS);
+        Executors.newCachedThreadPool(new NamedThreadFactory("NettyClientWorker", true)),
+        Constants.DEFAULT_IO_THREADS);
     private ClientBootstrap bootstrap;
 
     private volatile Channel channel; // volatile, please copy reference to use
@@ -121,13 +125,26 @@ public class NettyClient extends AbstractClient {
                     }
                 }
             } else if (future.getCause() != null) {
-                throw new RemotingException(this, "client(url: " + getUrl() + ") failed to connect to server "
-                        + getRemoteAddress() + ", error message is:" + future.getCause().getMessage(), future.getCause());
+                Throwable cause = future.getCause();
+
+                RemotingException remotingException = new RemotingException(this, "client(url: " + getUrl() + ") failed to connect to server "
+                    + getRemoteAddress() + ", error message is:" + cause.getMessage(), cause);
+
+                // 6-1 - Failed to connect to provider server by other reason.
+                logger.error(TRANSPORT_FAILED_CONNECT_PROVIDER, "network disconnected", "", "Failed to connect to provider server by other reason.", cause);
+
+                throw remotingException;
             } else {
-                throw new RemotingException(this, "client(url: " + getUrl() + ") failed to connect to server "
-                        + getRemoteAddress() + " client-side timeout "
-                        + getConnectTimeout() + "ms (elapsed: " + (System.currentTimeMillis() - start) + "ms) from netty client "
-                        + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion());
+
+                RemotingException remotingException = new RemotingException(this, "client(url: " + getUrl() + ") failed to connect to server "
+                    + getRemoteAddress() + " client-side timeout "
+                    + getConnectTimeout() + "ms (elapsed: " + (System.currentTimeMillis() - start) + "ms) from netty client "
+                    + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion());
+
+                // 6-2 - Client-side timeout.
+                logger.error(TRANSPORT_CLIENT_CONNECT_TIMEOUT, "provider crash", "", "Client-side timeout.", remotingException);
+
+                throw remotingException;
             }
         } finally {
             if (!isConnected()) {
@@ -141,7 +158,7 @@ public class NettyClient extends AbstractClient {
         try {
             NettyChannel.removeChannelIfDisconnected(channel);
         } catch (Throwable t) {
-            logger.warn(t.getMessage());
+            logger.warn(TRANSPORT_FAILED_DISCONNECT_PROVIDER, "", "", t.getMessage());
         }
     }
 

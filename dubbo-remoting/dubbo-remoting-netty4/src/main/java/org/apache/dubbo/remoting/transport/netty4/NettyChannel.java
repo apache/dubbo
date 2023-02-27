@@ -16,16 +16,27 @@
  */
 package org.apache.dubbo.remoting.transport.netty4;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelFutureListener;
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.ChannelHandler;
+import org.apache.dubbo.remoting.Codec;
+import org.apache.dubbo.remoting.Codec2;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
+import org.apache.dubbo.remoting.buffer.ChannelBuffer;
+import org.apache.dubbo.remoting.exchange.Request;
+import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.transport.AbstractChannel;
+import org.apache.dubbo.remoting.transport.codec.CodecAdapter;
 import org.apache.dubbo.remoting.utils.PayloadDropper;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.net.InetSocketAddress;
 import java.util.Map;
@@ -33,15 +44,19 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_ENCODE_IN_IO_THREAD;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
+import static org.apache.dubbo.common.constants.CommonConstants.ENCODE_IN_IO_THREAD_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_CLOSE;
+import static org.apache.dubbo.rpc.model.ScopeModelUtil.getFrameworkModel;
 
 /**
  * NettyChannel maintains the cache of channel.
  */
 final class NettyChannel extends AbstractChannel {
 
-    private static final Logger logger = LoggerFactory.getLogger(NettyChannel.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(NettyChannel.class);
     /**
      * the cache for netty channel and dubbo channel
      */
@@ -54,6 +69,12 @@ final class NettyChannel extends AbstractChannel {
     private final Map<String, Object> attributes = new ConcurrentHashMap<String, Object>();
 
     private final AtomicBoolean active = new AtomicBoolean(false);
+
+    private final Netty4BatchWriteQueue writeQueue;
+
+    private final Codec2 codec;
+
+    private final boolean encodeInIOThread;
 
     /**
      * The constructor of NettyChannel.
@@ -69,6 +90,9 @@ final class NettyChannel extends AbstractChannel {
             throw new IllegalArgumentException("netty channel == null;");
         }
         this.channel = channel;
+        this.writeQueue = Netty4BatchWriteQueue.createWriteQueue(channel);
+        this.codec = getChannelCodec(url);
+        this.encodeInIOThread = getUrl().getParameter(ENCODE_IN_IO_THREAD_KEY, DEFAULT_ENCODE_IN_IO_THREAD);
     }
 
     /**
@@ -94,6 +118,8 @@ final class NettyChannel extends AbstractChannel {
             if (ret == null) {
                 ret = nettyChannel;
             }
+        } else {
+            ret.markActive(true);
         }
         return ret;
     }
@@ -159,7 +185,33 @@ final class NettyChannel extends AbstractChannel {
         boolean success = true;
         int timeout = 0;
         try {
-            ChannelFuture future = channel.writeAndFlush(message);
+            Object outputMessage = message;
+            if (!encodeInIOThread) {
+                ByteBuf buf = channel.alloc().buffer();
+                ChannelBuffer buffer = new NettyBackedChannelBuffer(buf);
+                codec.encode(this, buffer, message);
+                outputMessage = buf;
+            }
+            ChannelFuture future = writeQueue.enqueue(outputMessage).addListener(new ChannelFutureListener() {
+                @Override
+                public void operationComplete(ChannelFuture future) throws Exception {
+                    if (!(message instanceof Request)) {
+                        return;
+                    }
+                    ChannelHandler handler = getChannelHandler();
+                    if (future.isSuccess()) {
+                        handler.sent(NettyChannel.this, message);
+                    } else {
+                        Throwable t = future.cause();
+                        if (t == null) {
+                            return;
+                        }
+                        Response response = buildErrorResponse((Request) message, t);
+                        handler.received(NettyChannel.this, response);
+                    }
+                }
+            });
+
             if (sent) {
                 // wait timeout ms
                 timeout = getUrl().getPositiveParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT);
@@ -175,7 +227,7 @@ final class NettyChannel extends AbstractChannel {
         }
         if (!success) {
             throw new RemotingException(this, "Failed to send message " + PayloadDropper.getRequestWithoutData(message) + " to " + getRemoteAddress()
-                    + "in timeout(" + timeout + "ms) limit");
+                + "in timeout(" + timeout + "ms) limit");
         }
     }
 
@@ -184,17 +236,17 @@ final class NettyChannel extends AbstractChannel {
         try {
             super.close();
         } catch (Exception e) {
-            logger.warn(e.getMessage(), e);
+            logger.warn(TRANSPORT_FAILED_CLOSE, "", "", e.getMessage(), e);
         }
         try {
             removeChannelIfDisconnected(channel);
         } catch (Exception e) {
-            logger.warn(e.getMessage(), e);
+            logger.warn(TRANSPORT_FAILED_CLOSE, "", "", e.getMessage(), e);
         }
         try {
             attributes.clear();
         } catch (Exception e) {
-            logger.warn(e.getMessage(), e);
+            logger.warn(TRANSPORT_FAILED_CLOSE, "", "", e.getMessage(), e);
         }
         try {
             if (logger.isInfoEnabled()) {
@@ -202,7 +254,7 @@ final class NettyChannel extends AbstractChannel {
             }
             channel.close();
         } catch (Exception e) {
-            logger.warn(e.getMessage(), e);
+            logger.warn(TRANSPORT_FAILED_CLOSE, "", "", e.getMessage(), e);
         }
     }
 
@@ -218,7 +270,7 @@ final class NettyChannel extends AbstractChannel {
 
     @Override
     public void setAttribute(String key, Object value) {
-        // The null value is unallowed in the ConcurrentHashMap.
+        // The null value is not allowed in the ConcurrentHashMap.
         if (value == null) {
             attributes.remove(key);
         } else {
@@ -231,12 +283,18 @@ final class NettyChannel extends AbstractChannel {
         attributes.remove(key);
     }
 
+
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((channel == null) ? 0 : channel.hashCode());
         return result;
+    }
+
+    @Override
+    protected void setUrl(URL url) {
+        super.setUrl(url);
     }
 
     @Override
@@ -273,4 +331,38 @@ final class NettyChannel extends AbstractChannel {
         return "NettyChannel [channel=" + channel + "]";
     }
 
+    public Channel getNioChannel() {
+        return channel;
+    }
+
+    /**
+     * build a bad request's response
+     *
+     * @param request the request
+     * @param t       the throwable. In most cases, serialization fails.
+     * @return the response
+     */
+    private static Response buildErrorResponse(Request request, Throwable t) {
+        Response response = new Response(request.getId(), request.getVersion());
+        response.setStatus(Response.BAD_REQUEST);
+        response.setErrorMessage(StringUtils.toString(t));
+        return response;
+    }
+
+    private static Codec2 getChannelCodec(URL url) {
+        String codecName = url.getParameter(Constants.CODEC_KEY);
+        if (StringUtils.isEmpty(codecName)) {
+            // codec extension name must stay the same with protocol name
+            codecName = url.getProtocol();
+        }
+        FrameworkModel frameworkModel = getFrameworkModel(url.getScopeModel());
+        if (frameworkModel.getExtensionLoader(Codec2.class).hasExtension(codecName)) {
+            return frameworkModel.getExtensionLoader(Codec2.class).getExtension(codecName);
+        } else if(frameworkModel.getExtensionLoader(Codec.class).hasExtension(codecName)){
+            return new CodecAdapter(frameworkModel.getExtensionLoader(Codec.class)
+                .getExtension(codecName));
+        }else {
+            return frameworkModel.getExtensionLoader(Codec2.class).getExtension("default");
+        }
+    }
 }

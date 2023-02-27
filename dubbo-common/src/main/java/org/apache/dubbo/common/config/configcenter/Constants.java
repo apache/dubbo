@@ -16,6 +16,12 @@
  */
 package org.apache.dubbo.common.config.configcenter;
 
+<<<<<<< HEAD
+=======
+/**
+ * @deprecated Replaced to {@link org.apache.dubbo.common.constants.CommonConstants}
+ */
+>>>>>>> origin/3.2
 @Deprecated
 public interface Constants {
     String CONFIG_CLUSTER_KEY = "config.cluster";

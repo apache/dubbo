@@ -1,0 +1,276 @@
+/*
+* Licensed to the Apache Software Foundation (ASF) under one or more
+* contributor license agreements.  See the NOTICE file distributed with
+* this work for additional information regarding copyright ownership.
+* The ASF licenses this file to You under the Apache License, Version 2.0
+* (the "License"); you may not use this file except in compliance with
+* the License.  You may obtain a copy of the License at
+*
+*     http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
+
+{{#packageName}}
+    package {{packageName}};
+{{/packageName}}
+
+import org.apache.dubbo.common.stream.StreamObserver;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.PathResolver;
+import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.ServerService;
+import org.apache.dubbo.rpc.TriRpcStatus;
+import org.apache.dubbo.rpc.model.MethodDescriptor;
+import org.apache.dubbo.rpc.model.ServiceDescriptor;
+import org.apache.dubbo.rpc.model.StubMethodDescriptor;
+import org.apache.dubbo.rpc.model.StubServiceDescriptor;
+import org.apache.dubbo.rpc.stub.BiStreamMethodHandler;
+import org.apache.dubbo.rpc.stub.ServerStreamMethodHandler;
+import org.apache.dubbo.rpc.stub.StubInvocationUtil;
+import org.apache.dubbo.rpc.stub.StubInvoker;
+import org.apache.dubbo.rpc.stub.StubMethodHandler;
+import org.apache.dubbo.rpc.stub.StubSuppliers;
+import org.apache.dubbo.rpc.stub.UnaryStubMethodHandler;
+
+import com.google.protobuf.Message;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.BiConsumer;
+import java.util.concurrent.CompletableFuture;
+
+public final class {{className}} {
+
+    public static final String SERVICE_NAME = {{interfaceClassName}}.SERVICE_NAME;
+
+    private static final StubServiceDescriptor serviceDescriptor = new StubServiceDescriptor(SERVICE_NAME,{{interfaceClassName}}.class);
+
+    static {
+        org.apache.dubbo.rpc.protocol.tri.service.SchemaDescriptorRegistry.addSchemaDescriptor(SERVICE_NAME,{{outerClassName}}.getDescriptor());
+        StubSuppliers.addSupplier(SERVICE_NAME, {{className}}::newStub);
+        StubSuppliers.addSupplier({{interfaceClassName}}.JAVA_SERVICE_NAME,  {{className}}::newStub);
+        StubSuppliers.addDescriptor(SERVICE_NAME, serviceDescriptor);
+        StubSuppliers.addDescriptor({{interfaceClassName}}.JAVA_SERVICE_NAME, serviceDescriptor);
+    }
+
+    @SuppressWarnings("all")
+    public static {{interfaceClassName}} newStub(Invoker<?> invoker) {
+        return new {{interfaceClassName}}Stub((Invoker<{{interfaceClassName}}>)invoker);
+    }
+
+{{#unaryMethods}}
+    {{#javaDoc}}
+    {{{javaDoc}}}
+    {{/javaDoc}}
+    private static final StubMethodDescriptor {{methodName}}Method = new StubMethodDescriptor("{{originMethodName}}",
+    {{inputType}}.class, {{outputType}}.class, serviceDescriptor, MethodDescriptor.RpcType.UNARY,
+    obj -> ((Message) obj).toByteArray(), obj -> ((Message) obj).toByteArray(), {{inputType}}::parseFrom,
+    {{outputType}}::parseFrom);
+
+    private static final StubMethodDescriptor {{methodName}}AsyncMethod = new StubMethodDescriptor("{{originMethodName}}",
+    {{inputType}}.class, java.util.concurrent.CompletableFuture.class, serviceDescriptor, MethodDescriptor.RpcType.UNARY,
+    obj -> ((Message) obj).toByteArray(), obj -> ((Message) obj).toByteArray(), {{inputType}}::parseFrom,
+    {{outputType}}::parseFrom);
+
+    private static final StubMethodDescriptor {{methodName}}ProxyAsyncMethod = new StubMethodDescriptor("{{originMethodName}}Async",
+    {{inputType}}.class, {{outputType}}.class, serviceDescriptor, MethodDescriptor.RpcType.UNARY,
+    obj -> ((Message) obj).toByteArray(), obj -> ((Message) obj).toByteArray(), {{inputType}}::parseFrom,
+    {{outputType}}::parseFrom);
+
+{{/unaryMethods}}
+
+{{#serverStreamingMethods}}
+    {{#javaDoc}}
+    {{{javaDoc}}}
+    {{/javaDoc}}
+    private static final StubMethodDescriptor {{methodName}}Method = new StubMethodDescriptor("{{originMethodName}}",
+    {{inputType}}.class, {{outputType}}.class, serviceDescriptor, MethodDescriptor.RpcType.SERVER_STREAM,
+    obj -> ((Message) obj).toByteArray(), obj -> ((Message) obj).toByteArray(), {{inputType}}::parseFrom,
+    {{outputType}}::parseFrom);
+
+{{/serverStreamingMethods}}
+
+{{#clientStreamingMethods}}
+    {{#javaDoc}}
+    {{{javaDoc}}}
+    {{/javaDoc}}
+    private static final StubMethodDescriptor {{methodName}}Method = new StubMethodDescriptor("{{originMethodName}}",
+    {{inputType}}.class, {{outputType}}.class, serviceDescriptor, MethodDescriptor.RpcType.CLIENT_STREAM,
+    obj -> ((Message) obj).toByteArray(), obj -> ((Message) obj).toByteArray(), {{inputType}}::parseFrom,
+    {{outputType}}::parseFrom);
+{{/clientStreamingMethods}}
+
+{{#biStreamingWithoutClientStreamMethods}}
+    {{#javaDoc}}
+    {{{javaDoc}}}
+    {{/javaDoc}}
+    private static final StubMethodDescriptor {{methodName}}Method = new StubMethodDescriptor("{{originMethodName}}",
+    {{inputType}}.class, {{outputType}}.class, serviceDescriptor, MethodDescriptor.RpcType.BI_STREAM,
+    obj -> ((Message) obj).toByteArray(), obj -> ((Message) obj).toByteArray(), {{inputType}}::parseFrom,
+    {{outputType}}::parseFrom);
+{{/biStreamingWithoutClientStreamMethods}}
+
+    public static class {{interfaceClassName}}Stub implements {{interfaceClassName}}{
+        private final Invoker<{{interfaceClassName}}> invoker;
+
+        public {{interfaceClassName}}Stub(Invoker<{{interfaceClassName}}> invoker) {
+            this.invoker = invoker;
+        }
+
+    {{#unaryMethods}}
+        {{#javaDoc}}
+            {{{javaDoc}}}
+        {{/javaDoc}}
+        @Override
+        public {{outputType}} {{methodName}}({{inputType}} request){
+            return StubInvocationUtil.unaryCall(invoker, {{methodName}}Method, request);
+        }
+
+        public CompletableFuture<{{outputType}}> {{methodName}}Async({{inputType}} request){
+            return StubInvocationUtil.unaryCall(invoker, {{methodName}}AsyncMethod, request);
+        }
+
+        {{#javaDoc}}
+            {{{javaDoc}}}
+        {{/javaDoc}}
+        @Override
+        public void {{methodName}}({{inputType}} request, StreamObserver<{{outputType}}> responseObserver){
+            StubInvocationUtil.unaryCall(invoker, {{methodName}}Method , request, responseObserver);
+        }
+    {{/unaryMethods}}
+
+    {{#serverStreamingMethods}}
+        {{#javaDoc}}
+            {{{javaDoc}}}
+        {{/javaDoc}}
+        @Override
+        public void {{methodName}}({{inputType}} request, StreamObserver<{{outputType}}> responseObserver){
+            StubInvocationUtil.serverStreamCall(invoker, {{methodName}}Method , request, responseObserver);
+        }
+    {{/serverStreamingMethods}}
+
+    {{#biStreamingWithoutClientStreamMethods}}
+        {{#javaDoc}}
+            {{{javaDoc}}}
+        {{/javaDoc}}
+        @Override
+        public StreamObserver<{{inputType}}> {{methodName}}(StreamObserver<{{outputType}}> responseObserver){
+            return StubInvocationUtil.biOrClientStreamCall(invoker, {{methodName}}Method , responseObserver);
+        }
+    {{/biStreamingWithoutClientStreamMethods}}
+
+    {{#clientStreamingMethods}}
+        {{#javaDoc}}
+            {{{javaDoc}}}
+        {{/javaDoc}}
+        @Override
+        public StreamObserver<{{inputType}}> {{methodName}}(StreamObserver<{{outputType}}> responseObserver){
+        return StubInvocationUtil.biOrClientStreamCall(invoker, {{methodName}}Method , responseObserver);
+        }
+    {{/clientStreamingMethods}}
+    }
+
+    public static abstract class {{interfaceClassName}}ImplBase implements {{interfaceClassName}}, ServerService<{{interfaceClassName}}> {
+
+        private <T, R> BiConsumer<T, StreamObserver<R>> syncToAsync(java.util.function.Function<T, R> syncFun) {
+            return new BiConsumer<T, StreamObserver<R>>() {
+                @Override
+                public void accept(T t, StreamObserver<R> observer) {
+                    try {
+                        R ret = syncFun.apply(t);
+                        observer.onNext(ret);
+                        observer.onCompleted();
+                    } catch (Throwable e) {
+                        observer.onError(e);
+                    }
+                }
+            };
+        }
+
+        @Override
+        public final Invoker<{{interfaceClassName}}> getInvoker(URL url) {
+            PathResolver pathResolver = url.getOrDefaultFrameworkModel()
+            .getExtensionLoader(PathResolver.class)
+            .getDefaultExtension();
+            Map<String,StubMethodHandler<?, ?>> handlers = new HashMap<>();
+
+        {{#methods}}
+            pathResolver.addNativeStub( "/" + SERVICE_NAME + "/{{originMethodName}}" );
+            pathResolver.addNativeStub( "/" + SERVICE_NAME + "/{{originMethodName}}Async" );
+        {{/methods}}
+
+        {{#unaryMethods}}
+            BiConsumer<{{inputType}}, StreamObserver<{{outputType}}>> {{methodName}}Func = this::{{methodName}};
+            handlers.put({{methodName}}Method.getMethodName(), new UnaryStubMethodHandler<>({{methodName}}Func));
+            BiConsumer<{{inputType}}, StreamObserver<{{outputType}}>> {{methodName}}AsyncFunc = syncToAsync(this::{{methodName}});
+            handlers.put({{methodName}}ProxyAsyncMethod.getMethodName(), new UnaryStubMethodHandler<>({{methodName}}AsyncFunc));
+        {{/unaryMethods}}
+
+        {{#serverStreamingMethods}}
+            handlers.put({{methodName}}Method.getMethodName(), new ServerStreamMethodHandler<>(this::{{methodName}}));
+        {{/serverStreamingMethods}}
+
+        {{#clientStreamingMethods}}
+            handlers.put({{methodName}}Method.getMethodName(), new BiStreamMethodHandler<>(this::{{methodName}}));
+        {{/clientStreamingMethods}}
+
+        {{#biStreamingWithoutClientStreamMethods}}
+            handlers.put({{methodName}}Method.getMethodName(), new BiStreamMethodHandler<>(this::{{methodName}}));
+        {{/biStreamingWithoutClientStreamMethods}}
+
+            return new StubInvoker<>(this, url, {{interfaceClassName}}.class, handlers);
+        }
+
+
+    {{#unaryMethods}}
+        @Override
+        public {{outputType}} {{methodName}}({{inputType}} request){
+            throw unimplementedMethodException({{methodName}}Method);
+        }
+
+    {{/unaryMethods}}
+
+    {{#serverStreamingMethods}}
+        {{#javaDoc}}
+            {{{javaDoc}}}
+        {{/javaDoc}}
+        @Override
+        public void {{methodName}}({{inputType}} request, StreamObserver<{{outputType}}> responseObserver){
+            throw unimplementedMethodException({{methodName}}Method);
+        }
+    {{/serverStreamingMethods}}
+
+    {{#biStreamingWithoutClientStreamMethods}}
+        @Override
+        public StreamObserver<{{inputType}}> {{methodName}}(StreamObserver<{{outputType}}> responseObserver){
+            throw unimplementedMethodException({{methodName}}Method);
+        }
+    {{/biStreamingWithoutClientStreamMethods}}
+
+    {{#clientStreamingMethods}}
+        {{#javaDoc}}
+            {{{javaDoc}}}
+        {{/javaDoc}}
+        @Override
+        public StreamObserver<{{inputType}}> {{methodName}}(StreamObserver<{{outputType}}> responseObserver){
+            throw unimplementedMethodException({{methodName}}Method);
+        }
+    {{/clientStreamingMethods}}
+
+        @Override
+        public final ServiceDescriptor getServiceDescriptor() {
+            return serviceDescriptor;
+        }
+        private RpcException unimplementedMethodException(StubMethodDescriptor methodDescriptor) {
+            return TriRpcStatus.UNIMPLEMENTED.withDescription(String.format("Method %s is unimplemented",
+                "/" + serviceDescriptor.getInterfaceName() + "/" + methodDescriptor.getMethodName())).asException();
+        }
+    }
+
+}

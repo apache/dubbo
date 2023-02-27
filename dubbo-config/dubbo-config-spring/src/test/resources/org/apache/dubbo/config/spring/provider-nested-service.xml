@@ -27,14 +27,14 @@
 
     <dubbo:protocol name="dubbo" port="20887"/>
 
-    <dubbo:provider timeout="2000"/>
+    <dubbo:provider id="defaultProvider" timeout="2000"/>
 
     <dubbo:service id="serviceConfig" interface="org.apache.dubbo.config.spring.api.DemoService" ref="demoService"/>
 
     <!-- nested configuration -->
-    <dubbo:provider timeout="1000">
+    <dubbo:provider id="provider2" timeout="1000">
         <dubbo:service id="serviceConfig2" interface="org.apache.dubbo.config.spring.api.DemoService" ref="demoService"
-                       group="demo2"/>
+                       version="2.0.0"/>
     </dubbo:provider>
 
     <bean id="demoService" class="org.apache.dubbo.config.spring.impl.DemoServiceImpl"/>

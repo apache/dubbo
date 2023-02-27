@@ -17,7 +17,10 @@
 package org.apache.dubbo.common.bytecode;
 
 import org.apache.dubbo.common.utils.ArrayUtils;
+<<<<<<< HEAD
 import org.apache.dubbo.common.utils.ClassUtils;
+=======
+>>>>>>> origin/3.2
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 
@@ -51,7 +54,7 @@ public final class ClassGenerator {
 
     private static final AtomicLong CLASS_NAME_COUNTER = new AtomicLong(0);
     private static final String SIMPLE_NAME_TAG = "<init>";
-    private static final Map<ClassLoader, ClassPool> POOL_MAP = new ConcurrentHashMap<ClassLoader, ClassPool>(); //ClassLoader - ClassPool
+    private static final Map<ClassLoader, ClassPool> POOL_MAP = new ConcurrentHashMap<>(); //ClassLoader - ClassPool
     private ClassPool mPool;
     private CtClass mCtc;
     private String mClassName;
@@ -60,6 +63,7 @@ public final class ClassGenerator {
     private List<String> mFields;
     private List<String> mConstructors;
     private List<String> mMethods;
+    private ClassLoader mClassLoader;
     private Map<String, Method> mCopyMethods; // <method desc,method instance>
     private Map<String, Constructor<?>> mCopyConstructors; // <constructor desc,constructor instance>
     private boolean mDefaultConstructor = false;
@@ -67,16 +71,17 @@ public final class ClassGenerator {
     private ClassGenerator() {
     }
 
-    private ClassGenerator(ClassPool pool) {
+    private ClassGenerator(ClassLoader classLoader, ClassPool pool) {
+        mClassLoader = classLoader;
         mPool = pool;
     }
 
     public static ClassGenerator newInstance() {
-        return new ClassGenerator(getClassPool(Thread.currentThread().getContextClassLoader()));
+        return new ClassGenerator(Thread.currentThread().getContextClassLoader(), getClassPool(Thread.currentThread().getContextClassLoader()));
     }
 
     public static ClassGenerator newInstance(ClassLoader loader) {
-        return new ClassGenerator(getClassPool(loader));
+        return new ClassGenerator(loader, getClassPool(loader));
     }
 
     public static boolean isDynamicClass(Class<?> cl) {
@@ -91,7 +96,12 @@ public final class ClassGenerator {
         ClassPool pool = POOL_MAP.get(loader);
         if (pool == null) {
             pool = new ClassPool(true);
+<<<<<<< HEAD
             pool.appendClassPath(new CustomizedLoaderClassPath(loader));
+=======
+            pool.insertClassPath(new LoaderClassPath(loader));
+            pool.insertClassPath(new DubboLoaderClassPath());
+>>>>>>> origin/3.2
             POOL_MAP.put(loader, pool);
         }
         return pool;
@@ -128,7 +138,7 @@ public final class ClassGenerator {
 
     public ClassGenerator addInterface(String cn) {
         if (mInterfaces == null) {
-            mInterfaces = new HashSet<String>();
+            mInterfaces = new HashSet<>();
         }
         mInterfaces.add(cn);
         return this;
@@ -150,7 +160,7 @@ public final class ClassGenerator {
 
     public ClassGenerator addField(String code) {
         if (mFields == null) {
-            mFields = new ArrayList<String>();
+            mFields = new ArrayList<>();
         }
         mFields.add(code);
         return this;
@@ -174,7 +184,7 @@ public final class ClassGenerator {
 
     public ClassGenerator addMethod(String code) {
         if (mMethods == null) {
-            mMethods = new ArrayList<String>();
+            mMethods = new ArrayList<>();
         }
         mMethods.add(code);
         return this;
@@ -189,12 +199,14 @@ public final class ClassGenerator {
         StringBuilder sb = new StringBuilder();
         sb.append(modifier(mod)).append(' ').append(ReflectUtils.getName(rt)).append(' ').append(name);
         sb.append('(');
-        for (int i = 0; i < pts.length; i++) {
-            if (i > 0) {
-                sb.append(',');
+        if (ArrayUtils.isNotEmpty(pts)) {
+            for (int i = 0; i < pts.length; i++) {
+                if (i > 0) {
+                    sb.append(',');
+                }
+                sb.append(ReflectUtils.getName(pts[i]));
+                sb.append(" arg").append(i);
             }
-            sb.append(ReflectUtils.getName(pts[i]));
-            sb.append(" arg").append(i);
         }
         sb.append(')');
         if (ArrayUtils.isNotEmpty(ets)) {
@@ -219,7 +231,7 @@ public final class ClassGenerator {
         String desc = name + ReflectUtils.getDescWithoutMethodName(m);
         addMethod(':' + desc);
         if (mCopyMethods == null) {
-            mCopyMethods = new ConcurrentHashMap<String, Method>(8);
+            mCopyMethods = new ConcurrentHashMap<>(8);
         }
         mCopyMethods.put(desc, m);
         return this;
@@ -227,7 +239,7 @@ public final class ClassGenerator {
 
     public ClassGenerator addConstructor(String code) {
         if (mConstructors == null) {
-            mConstructors = new LinkedList<String>();
+            mConstructors = new LinkedList<>();
         }
         mConstructors.add(code);
         return this;
@@ -266,7 +278,7 @@ public final class ClassGenerator {
         String desc = ReflectUtils.getDesc(c);
         addConstructor(":" + desc);
         if (mCopyConstructors == null) {
-            mCopyConstructors = new ConcurrentHashMap<String, Constructor<?>>(4);
+            mCopyConstructors = new ConcurrentHashMap<>(4);
         }
         mCopyConstructors.put(desc, c);
         return this;
@@ -281,12 +293,17 @@ public final class ClassGenerator {
         return mPool;
     }
 
-    public Class<?> toClass() {
-        return toClass(ClassUtils.getClassLoader(ClassGenerator.class),
-                getClass().getProtectionDomain());
+    /**
+     * @param neighbor    A class belonging to the same package that this
+     *                    class belongs to.  It is used to load the class.
+     */
+    public Class<?> toClass(Class<?> neighbor) {
+        return toClass(neighbor,
+            mClassLoader,
+            getClass().getProtectionDomain());
     }
 
-    public Class<?> toClass(ClassLoader loader, ProtectionDomain pd) {
+    public Class<?> toClass(Class<?> neighborClass, ClassLoader loader, ProtectionDomain pd) {
         if (mCtc != null) {
             mCtc.detach();
         }
@@ -337,7 +354,15 @@ public final class ClassGenerator {
                     }
                 }
             }
-            return mCtc.toClass(loader, pd);
+
+            try {
+                return mPool.toClass(mCtc, neighborClass, loader, pd);
+            } catch (Throwable t) {
+                if (!(t instanceof CannotCompileException)) {
+                    return mPool.toClass(mCtc, loader, pd);
+                }
+                throw t;
+            }
         } catch (RuntimeException e) {
             throw e;
         } catch (NotFoundException | CannotCompileException e) {

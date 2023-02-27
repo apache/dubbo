@@ -23,45 +23,61 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
+import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.ZoneDetector;
 import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
 import org.apache.dubbo.rpc.cluster.support.AbstractClusterInvoker;
+<<<<<<< HEAD
 import org.apache.dubbo.rpc.cluster.support.migration.MigrationClusterComparator;
 import org.apache.dubbo.rpc.cluster.support.migration.MigrationClusterInvoker;
 import org.apache.dubbo.rpc.cluster.support.migration.MigrationRule;
 import org.apache.dubbo.rpc.cluster.support.migration.MigrationStep;
 import org.apache.dubbo.rpc.cluster.support.wrapper.MockClusterInvoker;
+=======
+>>>>>>> origin/3.2
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+<<<<<<< HEAD
 import static org.apache.dubbo.common.constants.RegistryConstants.LOADBALANCE_AMONG_REGISTRIES;
+=======
+import static org.apache.dubbo.common.constants.CommonConstants.PREFERRED_KEY;
+>>>>>>> origin/3.2
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_ZONE;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_ZONE_FORCE;
 import static org.apache.dubbo.common.constants.RegistryConstants.ZONE_KEY;
 import static org.apache.dubbo.config.RegistryConfig.PREFER_REGISTRY_KEY;
 
 /**
- * When there're more than one registry for subscription.
+ * When there are more than one registry for subscription.
  * <p>
  * This extension provides a strategy to decide how to distribute traffics among them:
  * 1. registry marked as 'preferred=true' has the highest priority.
  * 2. check the zone the current request belongs, pick the registry that has the same zone first.
  * 3. Evenly balance traffic between all registries based on each registry's weight.
- * 4. Pick anyone that's available.
  */
 public class ZoneAwareClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
     private static final Logger logger = LoggerFactory.getLogger(ZoneAwareClusterInvoker.class);
 
+<<<<<<< HEAD
     private final LoadBalance loadBalanceAmongRegistries = ExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(LOADBALANCE_AMONG_REGISTRIES);
+=======
+    private ZoneDetector zoneDetector;
+>>>>>>> origin/3.2
 
     public ZoneAwareClusterInvoker(Directory<T> directory) {
         super(directory);
+        ExtensionLoader<ZoneDetector> loader = directory.getConsumerUrl().getOrDefaultApplicationModel().getExtensionLoader(ZoneDetector.class);
+        if (loader.hasExtension("default")) {
+            zoneDetector = loader.getExtension("default");
+        }
     }
 
     @Override
@@ -71,13 +87,24 @@ public class ZoneAwareClusterInvoker<T> extends AbstractClusterInvoker<T> {
         for (Invoker<T> invoker : invokers) {
             ClusterInvoker<T> clusterInvoker = (ClusterInvoker<T>) invoker;
             if (clusterInvoker.isAvailable() && clusterInvoker.getRegistryUrl()
+<<<<<<< HEAD
                     .getParameter(PREFER_REGISTRY_KEY, false)) {
+=======
+                    .getParameter(PREFERRED_KEY, false)) {
+>>>>>>> origin/3.2
                 return clusterInvoker.invoke(invocation);
             }
         }
 
+        RpcContext rpcContext = RpcContext.getClientAttachment();
+        String zone = rpcContext.getAttachment(REGISTRY_ZONE);
+        String force = rpcContext.getAttachment(REGISTRY_ZONE_FORCE);
+        if (StringUtils.isEmpty(zone) && zoneDetector != null) {
+            zone = zoneDetector.getZoneOfCurrentRequest(invocation);
+            force = zoneDetector.isZoneForcingEnabled(invocation, zone);
+        }
+
         // providers in the registry with the same zone
-        String zone = invocation.getAttachment(REGISTRY_ZONE);
         if (StringUtils.isNotEmpty(zone)) {
             for (Invoker<T> invoker : invokers) {
                 ClusterInvoker<T> clusterInvoker = (ClusterInvoker<T>) invoker;
@@ -85,18 +112,22 @@ public class ZoneAwareClusterInvoker<T> extends AbstractClusterInvoker<T> {
                     return clusterInvoker.invoke(invocation);
                 }
             }
-            String force = invocation.getAttachment(REGISTRY_ZONE_FORCE);
             if (StringUtils.isNotEmpty(force) && "true".equalsIgnoreCase(force)) {
                 throw new IllegalStateException("No registry instance in zone or no available providers in the registry, zone: "
                         + zone
-                        + ", registries: " + invokers.stream().map(invoker -> ((MockClusterInvoker<T>) invoker).getRegistryUrl().toString()).collect(Collectors.joining(",")));
+                        + ", registries: " + invokers.stream().map(invoker -> ((ClusterInvoker<T>) invoker).getRegistryUrl().toString()).collect(Collectors.joining(",")));
             }
         }
 
 
         // load balance among all registries, with registry weight count in.
+<<<<<<< HEAD
         Invoker<T> balancedInvoker = select(loadBalanceAmongRegistries, invocation, invokers, null);
         if (balancedInvoker.isAvailable()) {
+=======
+        Invoker<T> balancedInvoker = select(loadbalance, invocation, invokers, null);
+        if (balancedInvoker!=null && balancedInvoker.isAvailable()) {
+>>>>>>> origin/3.2
             return balancedInvoker.invoke(invocation);
         }
 
@@ -108,10 +139,10 @@ public class ZoneAwareClusterInvoker<T> extends AbstractClusterInvoker<T> {
             }
         }
 
-        //if none available,just pick one
-        return invokers.get(0).invoke(invocation);
+        throw new RpcException("No provider available in " + invokers);
     }
 
+<<<<<<< HEAD
     @Override
     protected List<Invoker<T>> list(Invocation invocation) throws RpcException {
         List<Invoker<T>> invokers = super.list(invocation);
@@ -245,4 +276,6 @@ public class ZoneAwareClusterInvoker<T> extends AbstractClusterInvoker<T> {
         }
     }
 
+=======
+>>>>>>> origin/3.2
 }

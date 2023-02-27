@@ -52,7 +52,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  * @since 2.7.6
  */
-public class ServiceAnnotationUtilsTest extends AbstractAnnotationProcessingTest {
+class ServiceAnnotationUtilsTest extends AbstractAnnotationProcessingTest {
 
     @Override
     protected void addCompiledClasses(Set<Class<?>> classesToBeCompiled) {
@@ -65,7 +65,11 @@ public class ServiceAnnotationUtilsTest extends AbstractAnnotationProcessingTest
     }
 
     @Test
+<<<<<<< HEAD
     public void testConstants() {
+=======
+    void testConstants() {
+>>>>>>> origin/3.2
         assertEquals("org.apache.dubbo.config.annotation.DubboService", DUBBO_SERVICE_ANNOTATION_TYPE);
         assertEquals("org.apache.dubbo.config.annotation.Service", SERVICE_ANNOTATION_TYPE);
         assertEquals("com.alibaba.dubbo.config.annotation.Service", LEGACY_SERVICE_ANNOTATION_TYPE);
@@ -77,7 +81,7 @@ public class ServiceAnnotationUtilsTest extends AbstractAnnotationProcessingTest
     }
 
     @Test
-    public void testIsServiceAnnotationPresent() {
+    void testIsServiceAnnotationPresent() {
 
         assertTrue(isServiceAnnotationPresent(getType(TestServiceImpl.class)));
         assertTrue(isServiceAnnotationPresent(getType(GenericTestService.class)));
@@ -87,7 +91,7 @@ public class ServiceAnnotationUtilsTest extends AbstractAnnotationProcessingTest
     }
 
     @Test
-    public void testGetAnnotation() {
+    void testGetAnnotation() {
         TypeElement type = getType(TestServiceImpl.class);
         assertEquals("org.apache.dubbo.config.annotation.Service", getAnnotation(type).getAnnotationType().toString());
 
@@ -101,7 +105,7 @@ public class ServiceAnnotationUtilsTest extends AbstractAnnotationProcessingTest
     }
 
     @Test
-    public void testResolveServiceInterfaceName() {
+    void testResolveServiceInterfaceName() {
         TypeElement type = getType(TestServiceImpl.class);
         assertEquals("org.apache.dubbo.metadata.tools.TestService", resolveServiceInterfaceName(type, getAnnotation(type)));
 
@@ -113,7 +117,7 @@ public class ServiceAnnotationUtilsTest extends AbstractAnnotationProcessingTest
     }
 
     @Test
-    public void testGetVersion() {
+    void testGetVersion() {
         TypeElement type = getType(TestServiceImpl.class);
         assertEquals("3.0.0", getVersion(getAnnotation(type)));
 
@@ -125,7 +129,7 @@ public class ServiceAnnotationUtilsTest extends AbstractAnnotationProcessingTest
     }
 
     @Test
-    public void testGetGroup() {
+    void testGetGroup() {
         TypeElement type = getType(TestServiceImpl.class);
         assertEquals("test", getGroup(getAnnotation(type)));
 

@@ -17,7 +17,10 @@
 package org.apache.dubbo.registry.nacos;
 
 import org.apache.dubbo.common.URL;
+<<<<<<< HEAD
 import org.apache.dubbo.common.constants.CommonConstants;
+=======
+>>>>>>> origin/3.2
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.RegistryFactory;
@@ -37,10 +40,17 @@ public class NacosRegistryFactory extends AbstractRegistryFactory {
     protected String createRegistryCacheKey(URL url) {
         String namespace = url.getParameter(CONFIG_NAMESPACE_KEY);
         url = URL.valueOf(url.toServiceStringWithoutResolving());
+<<<<<<< HEAD
         if (StringUtils.isNotEmpty(namespace) && !CommonConstants.DUBBO.equals(namespace)) {
             // ignore "dubbo" namespace, make the behavior equivalent to configcenter
             url = url.addParameter(CONFIG_NAMESPACE_KEY, namespace);
         }
+=======
+        if (StringUtils.isNotEmpty(namespace)) {
+            url = url.addParameter(CONFIG_NAMESPACE_KEY, namespace);
+        }
+
+>>>>>>> origin/3.2
         return url.toFullString();
     }
 

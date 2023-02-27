@@ -1,1 +1,5 @@
+<<<<<<< HEAD
 mapinvokerlistener=org.apache.dubbo.rpc.listener.MapInvokerListener
+=======
+count=org.apache.dubbo.rpc.protocol.CountInvokerListener
+>>>>>>> origin/3.2

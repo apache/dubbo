@@ -20,11 +20,16 @@ package org.apache.dubbo.config.spring.context.properties;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
-import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 
+<<<<<<< HEAD
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+=======
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+>>>>>>> origin/3.2
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +38,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+<<<<<<< HEAD
 @ExtendWith(SpringExtension.class)
 @TestPropertySource(locations = "classpath:/dubbo-binder.properties")
 @ContextConfiguration(classes = DefaultDubboConfigBinder.class)
@@ -47,13 +53,26 @@ public class DefaultDubboConfigBinderTest {
     @AfterEach
     public void tearDown() {
         ApplicationModel.reset();
+=======
+import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD;
+
+@ExtendWith(SpringExtension.class)
+@TestPropertySource(locations = "classpath:/dubbo-binder.properties")
+@ContextConfiguration(classes = DefaultDubboConfigBinder.class)
+@DirtiesContext(classMode = AFTER_EACH_TEST_METHOD)
+class DefaultDubboConfigBinderTest {
+
+    @BeforeAll
+    public static void setUp() {
+        DubboBootstrap.reset();
+>>>>>>> origin/3.2
     }
 
     @Autowired
     private DubboConfigBinder dubboConfigBinder;
 
     @Test
-    public void testBinder() {
+    void testBinder() {
 
         ApplicationConfig applicationConfig = new ApplicationConfig();
         dubboConfigBinder.bind("dubbo.application", applicationConfig);

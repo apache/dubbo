@@ -17,7 +17,7 @@
 package org.apache.dubbo.config.spring.schema;
 
 import org.apache.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessor;
-import org.apache.dubbo.config.spring.beans.factory.annotation.ServiceAnnotationBeanPostProcessor;
+import org.apache.dubbo.config.spring.beans.factory.annotation.ServiceAnnotationPostProcessor;
 
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
@@ -30,7 +30,7 @@ import static org.springframework.util.StringUtils.trimArrayElements;
 
 /**
  * @link BeanDefinitionParser}
- * @see ServiceAnnotationBeanPostProcessor
+ * @see ServiceAnnotationPostProcessor
  * @see ReferenceAnnotationBeanPostProcessor
  * @since 2.5.9
  */
@@ -73,7 +73,7 @@ public class AnnotationBeanDefinitionParser extends AbstractSingleBeanDefinition
 
     @Override
     protected Class<?> getBeanClass(Element element) {
-        return ServiceAnnotationBeanPostProcessor.class;
+        return ServiceAnnotationPostProcessor.class;
     }
 
 }

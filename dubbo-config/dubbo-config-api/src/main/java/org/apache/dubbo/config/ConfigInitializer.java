@@ -16,13 +16,14 @@
  */
 package org.apache.dubbo.config;
 
+import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 
 /**
  * Dynamically add some parameters / check config
  */
 
-@SPI
+@SPI(scope = ExtensionScope.MODULE)
 public interface ConfigInitializer {
 
     default void initReferConfig(ReferenceConfig referenceConfig) {

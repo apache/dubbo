@@ -17,6 +17,7 @@
 package org.apache.dubbo.qos.command.impl;
 
 import org.apache.dubbo.common.URL;
+<<<<<<< HEAD
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
@@ -36,10 +37,32 @@ import java.util.stream.Collectors;
         "ready",
         "ready xx.xx.xxx.service"
 })
+=======
+import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.qos.command.BaseCommand;
+import org.apache.dubbo.qos.command.CommandContext;
+import org.apache.dubbo.qos.command.annotation.Cmd;
+import org.apache.dubbo.qos.permission.PermissionLevel;
+import org.apache.dubbo.qos.probe.ReadinessProbe;
+import org.apache.dubbo.rpc.model.FrameworkModel;
+
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
+@Cmd(name = "ready", summary = "Judge if service is ready to work? ", requiredPermissionLevel = PermissionLevel.PUBLIC)
+>>>>>>> origin/3.2
 public class Ready implements BaseCommand {
+    private final FrameworkModel frameworkModel;
+
+    public Ready(FrameworkModel frameworkModel) {
+        this.frameworkModel = frameworkModel;
+    }
 
     @Override
     public String execute(CommandContext commandContext, String[] args) {
+<<<<<<< HEAD
         String serviceName = args.length > 0 ? args[0] : null;
         if (StringUtils.isEmpty(serviceName)) {
             // judge application has started
@@ -93,6 +116,33 @@ public class Ready implements BaseCommand {
             }
         }
         return res;
+=======
+        String config = frameworkModel.getApplicationModels()
+            .stream()
+            .map(applicationModel -> applicationModel.getApplicationConfigManager().getApplication())
+            .map(o -> o.orElse(null))
+            .filter(Objects::nonNull)
+            .map(ApplicationConfig::getReadinessProbe)
+            .filter(Objects::nonNull)
+            .collect(Collectors.joining(","));
+
+        URL url = URL.valueOf("application://")
+                .addParameter(CommonConstants.QOS_READY_PROBE_EXTENSION, config);
+        List<ReadinessProbe> readinessProbes = frameworkModel.getExtensionLoader(ReadinessProbe.class)
+                .getActivateExtension(url, CommonConstants.QOS_READY_PROBE_EXTENSION);
+        if (!readinessProbes.isEmpty()) {
+            for (ReadinessProbe readinessProbe : readinessProbes) {
+                if (!readinessProbe.check()) {
+                    // 503 Service Unavailable
+                    commandContext.setHttpCode(503);
+                    return "false";
+                }
+            }
+        }
+        // 200 OK
+        commandContext.setHttpCode(200);
+        return "true";
+>>>>>>> origin/3.2
     }
 
 }

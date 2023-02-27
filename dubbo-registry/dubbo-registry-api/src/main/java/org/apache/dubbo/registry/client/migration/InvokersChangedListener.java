@@ -18,4 +18,8 @@ package org.apache.dubbo.registry.client.migration;
 
 public interface InvokersChangedListener {
     void onChange();
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> origin/3.2

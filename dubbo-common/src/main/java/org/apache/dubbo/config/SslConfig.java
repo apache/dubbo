@@ -20,16 +20,35 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.IOUtils;
 import org.apache.dubbo.config.support.Parameter;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.io.IOException;
 import java.io.InputStream;
+<<<<<<< HEAD
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+=======
+>>>>>>> origin/3.2
 
 public class SslConfig extends AbstractConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(SslConfig.class);
-    private AtomicBoolean inited = new AtomicBoolean(false);
+
+    public static final String SERVER_KEY_CERT_CHAIN_PATH = "server-key-cert-chain-path";
+
+    public static final String SERVER_PRIVATE_KEY_PATH = "server-private-key-path";
+
+    public static final String SERVER_KEY_PASSWORD = "server-key-password";
+
+    public static final String SERVER_TRUST_CERT_COLLECTION_PATH = "server-trust-cert-collection-path";
+
+    public static final String CLIENT_KEY_CERT_CHAIN_PATH = "client-key-cert-chain-path";
+
+    public static final String CLIENT_PRIVATE_KEY_PATH = "client-private-key-path";
+
+    public static final String CLIENT_KEY_PASSWORD = "client-key-password";
+
+    public static final String CLIENT_TRUST_CERT_COLLECTION_PATH = "client-trust-cert-collection-path";
 
     private String serverKeyCertChainPath;
     private String serverPrivateKeyPath;
@@ -59,7 +78,14 @@ public class SslConfig extends AbstractConfig {
     private InputStream clientPrivateKeyPathStream;
     private InputStream clientTrustCertCollectionPathStream;
 
-    @Parameter(key = "server-key-cert-chain-path")
+    public SslConfig() {
+    }
+
+    public SslConfig(ApplicationModel applicationModel) {
+        super(applicationModel);
+    }
+
+    @Parameter(key = SERVER_KEY_CERT_CHAIN_PATH)
     public String getServerKeyCertChainPath() {
         return serverKeyCertChainPath;
     }
@@ -68,7 +94,7 @@ public class SslConfig extends AbstractConfig {
         this.serverKeyCertChainPath = serverKeyCertChainPath;
     }
 
-    @Parameter(key = "server-private-key-path")
+    @Parameter(key = SERVER_PRIVATE_KEY_PATH)
     public String getServerPrivateKeyPath() {
         return serverPrivateKeyPath;
     }
@@ -77,7 +103,7 @@ public class SslConfig extends AbstractConfig {
         this.serverPrivateKeyPath = serverPrivateKeyPath;
     }
 
-    @Parameter(key = "server-key-password")
+    @Parameter(key = SERVER_KEY_PASSWORD)
     public String getServerKeyPassword() {
         return serverKeyPassword;
     }
@@ -86,7 +112,7 @@ public class SslConfig extends AbstractConfig {
         this.serverKeyPassword = serverKeyPassword;
     }
 
-    @Parameter(key = "server-trust-cert-collection-path")
+    @Parameter(key = SERVER_TRUST_CERT_COLLECTION_PATH)
     public String getServerTrustCertCollectionPath() {
         return serverTrustCertCollectionPath;
     }
@@ -95,7 +121,7 @@ public class SslConfig extends AbstractConfig {
         this.serverTrustCertCollectionPath = serverTrustCertCollectionPath;
     }
 
-    @Parameter(key = "client-key-cert-chain-path")
+    @Parameter(key = CLIENT_KEY_CERT_CHAIN_PATH)
     public String getClientKeyCertChainPath() {
         return clientKeyCertChainPath;
     }
@@ -104,7 +130,7 @@ public class SslConfig extends AbstractConfig {
         this.clientKeyCertChainPath = clientKeyCertChainPath;
     }
 
-    @Parameter(key = "client-private-key-path")
+    @Parameter(key = CLIENT_PRIVATE_KEY_PATH)
     public String getClientPrivateKeyPath() {
         return clientPrivateKeyPath;
     }
@@ -113,7 +139,7 @@ public class SslConfig extends AbstractConfig {
         this.clientPrivateKeyPath = clientPrivateKeyPath;
     }
 
-    @Parameter(key = "client-key-password")
+    @Parameter(key = CLIENT_KEY_PASSWORD)
     public String getClientKeyPassword() {
         return clientKeyPassword;
     }
@@ -122,7 +148,7 @@ public class SslConfig extends AbstractConfig {
         this.clientKeyPassword = clientKeyPassword;
     }
 
-    @Parameter(key = "client-trust-cert-collection-path")
+    @Parameter(key = CLIENT_TRUST_CERT_COLLECTION_PATH)
     public String getClientTrustCertCollectionPath() {
         return clientTrustCertCollectionPath;
     }
@@ -131,6 +157,7 @@ public class SslConfig extends AbstractConfig {
         this.clientTrustCertCollectionPath = clientTrustCertCollectionPath;
     }
 
+<<<<<<< HEAD
     @Parameter(key = "ciphers")
     public List<String> getCiphers() {
         return ciphers;
@@ -149,6 +176,8 @@ public class SslConfig extends AbstractConfig {
         this.protocols = protocols;
     }
 
+=======
+>>>>>>> origin/3.2
     public InputStream getServerKeyCertChainPathStream() throws IOException {
         if (serverKeyCertChainPath != null) {
             serverKeyCertChainPathStream = IOUtils.getURL(serverKeyCertChainPath).openStream();

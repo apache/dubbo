@@ -25,6 +25,7 @@ import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.RemotingServer;
 import org.apache.dubbo.remoting.exchange.Exchangers;
 import org.apache.dubbo.remoting.exchange.support.ExchangeHandlerAdapter;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -33,7 +34,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Client reconnect test
  */
-public class ClientReconnectTest {
+class ClientReconnectTest {
     public static void main(String[] args) {
         System.out.println(3 % 1);
     }
@@ -44,7 +45,7 @@ public class ClientReconnectTest {
     }
 
     @Test
-    public void testReconnect() throws RemotingException, InterruptedException {
+    void testReconnect() throws RemotingException, InterruptedException {
         {
             int port = NetUtils.getAvailablePort();
             Client client = startClient(port, 200);
@@ -83,6 +84,10 @@ public class ClientReconnectTest {
     }
 
     static class HandlerAdapter extends ExchangeHandlerAdapter {
+        public HandlerAdapter() {
+            super(FrameworkModel.defaultModel());
+        }
+
         @Override
         public void connected(Channel channel) throws RemotingException {
         }

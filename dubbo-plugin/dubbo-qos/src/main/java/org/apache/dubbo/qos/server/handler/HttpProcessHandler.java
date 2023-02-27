@@ -16,13 +16,16 @@
  */
 package org.apache.dubbo.qos.server.handler;
 
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.qos.command.CommandContext;
 import org.apache.dubbo.qos.command.CommandExecutor;
 import org.apache.dubbo.qos.command.DefaultCommandExecutor;
-import org.apache.dubbo.qos.command.NoSuchCommandException;
+import org.apache.dubbo.qos.command.exception.NoSuchCommandException;
+import org.apache.dubbo.qos.command.exception.PermissionDenyException;
 import org.apache.dubbo.qos.command.decoder.HttpCommandDecoder;
+import org.apache.dubbo.qos.common.QosConfiguration;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
@@ -30,10 +33,15 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpResponse;
+import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
+
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.QOS_COMMAND_NOT_FOUND;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.QOS_UNEXPECTED_EXCEPTION;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.QOS_PERMISSION_DENY_EXCEPTION;
 
 /**
  * Parse HttpRequest for uri and parameters
@@ -48,9 +56,32 @@ import io.netty.handler.codec.http.HttpVersion;
  */
 public class HttpProcessHandler extends SimpleChannelInboundHandler<HttpRequest> {
 
-    private static final Logger log = LoggerFactory.getLogger(HttpProcessHandler.class);
-    private static CommandExecutor commandExecutor = new DefaultCommandExecutor();
+    private static final ErrorTypeAwareLogger log = LoggerFactory.getErrorTypeAwareLogger(HttpProcessHandler.class);
+    private final CommandExecutor commandExecutor;
 
+    private final QosConfiguration qosConfiguration;
+
+    public HttpProcessHandler(FrameworkModel frameworkModel, QosConfiguration qosConfiguration) {
+        this.commandExecutor = new DefaultCommandExecutor(frameworkModel);
+        this.qosConfiguration = qosConfiguration;
+    }
+
+    private static FullHttpResponse http(int httpCode, String result) {
+        FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.valueOf(httpCode)
+            , Unpooled.wrappedBuffer(result.getBytes()));
+        HttpHeaders httpHeaders = response.headers();
+        httpHeaders.set(HttpHeaderNames.CONTENT_TYPE, "text/plain");
+        httpHeaders.set(HttpHeaderNames.CONTENT_LENGTH, response.content().readableBytes());
+        return response;
+    }
+
+    private static FullHttpResponse http(int httpCode) {
+        FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.valueOf(httpCode));
+        HttpHeaders httpHeaders = response.headers();
+        httpHeaders.set(HttpHeaderNames.CONTENT_TYPE, "text/plain");
+        httpHeaders.set(HttpHeaderNames.CONTENT_LENGTH, response.content().readableBytes());
+        return response;
+    }
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, HttpRequest msg) throws Exception {
@@ -58,12 +89,20 @@ public class HttpProcessHandler extends SimpleChannelInboundHandler<HttpRequest>
         // return 404 when fail to construct command context
         FullHttpResponse response;
         if (commandContext == null) {
+<<<<<<< HEAD
             log.warn("can not found commandContext url: " + msg.getUri());
             response = http404();
+=======
+            log.warn(QOS_UNEXPECTED_EXCEPTION, "", "", "can not found commandContext, url: " + msg.uri());
+            FullHttpResponse response = http(404);
+            ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
+>>>>>>> origin/3.2
         } else {
             commandContext.setRemote(ctx.channel());
+            commandContext.setQosConfiguration(qosConfiguration);
             try {
                 String result = commandExecutor.execute(commandContext);
+<<<<<<< HEAD
                 response = http200(result);
             } catch (NoSuchCommandException ex) {
                 log.error("can not find commandContext: " + commandContext, ex);
@@ -71,11 +110,29 @@ public class HttpProcessHandler extends SimpleChannelInboundHandler<HttpRequest>
             } catch (Exception qosEx) {
                 log.error("execute commandContext: " + commandContext + " got exception", qosEx);
                 response = http500(qosEx.getMessage());
+=======
+                int httpCode = commandContext.getHttpCode();
+                FullHttpResponse response = http(httpCode, result);
+                ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
+            } catch (NoSuchCommandException ex) {
+                log.error(QOS_COMMAND_NOT_FOUND, "", "", "can not find command: " + commandContext, ex);
+                FullHttpResponse response = http(404);
+                ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
+            } catch (PermissionDenyException ex) {
+                log.error(QOS_PERMISSION_DENY_EXCEPTION, "", "", "permission deny to access command: " + commandContext, ex);
+                FullHttpResponse response = http(403);
+                ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
+            } catch (Exception qosEx) {
+                log.error(QOS_UNEXPECTED_EXCEPTION, "", "", "execute commandContext: " + commandContext + " got exception", qosEx);
+                FullHttpResponse response = http(500, qosEx.getMessage());
+                ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
+>>>>>>> origin/3.2
             }
         }
         ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
     }
 
+<<<<<<< HEAD
     private static final FullHttpResponse http200(String result) {
         FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK,
                 Unpooled.wrappedBuffer(result.getBytes()));
@@ -100,4 +157,6 @@ public class HttpProcessHandler extends SimpleChannelInboundHandler<HttpRequest>
         return response;
     }
 
+=======
+>>>>>>> origin/3.2
 }

@@ -16,8 +16,14 @@
  */
 package org.apache.dubbo.registry.client;
 
+import org.apache.dubbo.metadata.MetadataInfo;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
+
+import java.beans.Transient;
 import java.io.Serializable;
 import java.util.Map;
+import java.util.SortedMap;
 
 /**
  * The model class of an instance of a service, which is used for service registration and discovery.
@@ -26,13 +32,6 @@ import java.util.Map;
  * @since 2.7.5
  */
 public interface ServiceInstance extends Serializable {
-
-    /**
-     * The id of the registered service instance.
-     *
-     * @return nullable
-     */
-    String getId();
 
     /**
      * The name of service that current instance belongs to.
@@ -53,12 +52,14 @@ public interface ServiceInstance extends Serializable {
      *
      * @return the positive integer if present
      */
-    Integer getPort();
+    int getPort();
+
+    String getAddress();
 
     String getAddress();
 
     /**
-     * The enable status of the registered service instance.
+     * The enabled status of the registered service instance.
      *
      * @return if <code>true</code>, indicates current instance is enabled, or disable, the client should remove this one.
      * The default value is <code>true</code>
@@ -70,7 +71,7 @@ public interface ServiceInstance extends Serializable {
     /**
      * The registered service instance is health or not.
      *
-     * @return if <code>true</code>, indicates current instance is enabled, or disable, the client may ignore this one.
+     * @return if <code>true</code>, indicates current instance is healthy, or unhealthy, the client may ignore this one.
      * The default value is <code>true</code>
      */
     default boolean isHealthy() {
@@ -84,10 +85,40 @@ public interface ServiceInstance extends Serializable {
      */
     Map<String, String> getMetadata();
 
+<<<<<<< HEAD
     Map<String, String> getExtendParams();
 
     Map<String, String> getAllParams();
 
+=======
+    SortedMap<String, String> getSortedMetadata();
+
+    String getRegistryCluster();
+
+    void setRegistryCluster(String registryCluster);
+
+    Map<String, String> getExtendParams();
+
+    String getExtendParam(String key);
+
+    String putExtendParam(String key, String value);
+
+    String putExtendParamIfAbsent(String key, String value);
+
+    String removeExtendParam(String key);
+
+    Map<String, String> getAllParams();
+
+    void setApplicationModel(ApplicationModel applicationModel);
+
+    ApplicationModel getApplicationModel();
+
+    @Transient
+    default ApplicationModel getOrDefaultApplicationModel() {
+        return ScopeModelUtil.getApplicationModel(getApplicationModel());
+    }
+
+>>>>>>> origin/3.2
     /**
      * Get the value of metadata by the specified name
      *
@@ -110,16 +141,11 @@ public interface ServiceInstance extends Serializable {
         return getMetadata().getOrDefault(name, defaultValue);
     }
 
-    /**
-     * @return the hash code of current instance.
-     */
-    int hashCode();
+    MetadataInfo getServiceMetadata();
 
-    /**
-     * @param another another {@link ServiceInstance}
-     * @return if equals , return <code>true</code>, or <code>false</code>
-     */
-    boolean equals(Object another);
+    void setServiceMetadata(MetadataInfo serviceMetadata);
+
+    InstanceAddressURL toURL(String protocol);
 
     InstanceAddressURL toURL();
 

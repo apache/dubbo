@@ -52,6 +52,12 @@ public class ApplicationBuilder extends AbstractBuilder<ApplicationConfig, Appli
     private Map<String, String> parameters;
     private String shutwait;
     private Integer metadataServicePort;
+<<<<<<< HEAD
+=======
+    private String livenessProbe;
+    private String readinessProbe;
+    private String startupProbe;
+>>>>>>> origin/3.2
 
     public static ApplicationBuilder newBuilder() {
         return new ApplicationBuilder();
@@ -178,6 +184,24 @@ public class ApplicationBuilder extends AbstractBuilder<ApplicationConfig, Appli
         return getThis();
     }
 
+<<<<<<< HEAD
+=======
+    public ApplicationBuilder livenessProbe(String livenessProbe) {
+        this.livenessProbe = livenessProbe;
+        return getThis();
+    }
+
+    public ApplicationBuilder readinessProbe(String readinessProbe) {
+        this.readinessProbe = readinessProbe;
+        return getThis();
+    }
+
+    public ApplicationBuilder startupProbe(String startupProbe) {
+        this.startupProbe = startupProbe;
+        return getThis();
+    }
+
+>>>>>>> origin/3.2
     public ApplicationConfig build() {
         ApplicationConfig config = new ApplicationConfig();
         super.build(config);
@@ -200,6 +224,12 @@ public class ApplicationBuilder extends AbstractBuilder<ApplicationConfig, Appli
         config.setQosPort(this.qosPort);
         config.setQosAcceptForeignIp(this.qosAcceptForeignIp);
         config.setMetadataServicePort(this.metadataServicePort);
+<<<<<<< HEAD
+=======
+        config.setLivenessProbe(this.livenessProbe);
+        config.setReadinessProbe(this.readinessProbe);
+        config.setStartupProbe(this.startupProbe);
+>>>>>>> origin/3.2
         config.setParameters(this.parameters);
         if (!StringUtils.isEmpty(shutwait)) {
             config.setShutwait(shutwait);

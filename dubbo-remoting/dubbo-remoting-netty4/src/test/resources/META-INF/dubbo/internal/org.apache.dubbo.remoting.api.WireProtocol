@@ -1,0 +1,2 @@
+empty=org.apache.dubbo.remoting.transport.netty4.api.EmptyWireProtocol
+tri=org.apache.dubbo.remoting.transport.netty4.api.EmptyWireProtocol

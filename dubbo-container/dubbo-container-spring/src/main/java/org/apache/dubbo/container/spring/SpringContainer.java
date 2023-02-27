@@ -16,13 +16,14 @@
  */
 package org.apache.dubbo.container.spring;
 
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.container.Container;
 
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_STOP_DUBBO_ERROR;
 
 /**
  * SpringContainer. (SPI, Singleton, ThreadSafe)
@@ -33,7 +34,7 @@ public class SpringContainer implements Container {
 
     public static final String SPRING_CONFIG = "dubbo.spring.config";
     public static final String DEFAULT_SPRING_CONFIG = "classpath*:META-INF/spring/*.xml";
-    private static final Logger logger = LoggerFactory.getLogger(SpringContainer.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(SpringContainer.class);
     static ClassPathXmlApplicationContext context;
 
     public static ClassPathXmlApplicationContext getContext() {
@@ -42,7 +43,7 @@ public class SpringContainer implements Container {
 
     @Override
     public void start() {
-        String configPath = ConfigUtils.getProperty(SPRING_CONFIG);
+        String configPath = System.getProperty(SPRING_CONFIG);
         if (StringUtils.isEmpty(configPath)) {
             configPath = DEFAULT_SPRING_CONFIG;
         }
@@ -60,7 +61,7 @@ public class SpringContainer implements Container {
                 context = null;
             }
         } catch (Throwable e) {
-            logger.error(e.getMessage(), e);
+            logger.error(CONFIG_STOP_DUBBO_ERROR, "", "", e.getMessage(), e);
         }
     }
 

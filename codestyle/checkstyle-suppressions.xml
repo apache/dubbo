@@ -4,5 +4,6 @@
         "http://www.puppycrawl.com/dtds/suppressions_1_1.dtd">
 <suppressions>
     <suppress files="[\\/]src[\\/]main[\\/]java[\\/]com[\\/]alibaba[\\/]com[\\/]caucho[\\/]hessian" checks=".*"/>
+    <suppress files="[\\/]build[\\/]generated[\\/]source[\\/]proto" checks=".*"/>
     <suppress files="Yylex\.java" checks="AvoidEscapedUnicodeCharacters"/>
 </suppressions>

@@ -19,6 +19,11 @@ package org.apache.dubbo.monitor.support;
 import org.apache.dubbo.monitor.MetricsService;
 import org.apache.dubbo.rpc.model.BuiltinServiceDetector;
 
+/**
+ * @deprecated After metrics config is refactored.
+ * This class should no longer use and will be deleted in the future.
+ */
+@Deprecated
 public class MetricsServiceDetector implements BuiltinServiceDetector {
 
     @Override

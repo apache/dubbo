@@ -22,9 +22,9 @@ import org.apache.dubbo.rpc.Invocation;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import static org.apache.dubbo.rpc.Constants.TPS_LIMIT_RATE_KEY;
-import static org.apache.dubbo.rpc.Constants.TPS_LIMIT_INTERVAL_KEY;
 import static org.apache.dubbo.rpc.Constants.DEFAULT_TPS_LIMIT_INTERVAL;
+import static org.apache.dubbo.rpc.Constants.TPS_LIMIT_INTERVAL_KEY;
+import static org.apache.dubbo.rpc.Constants.TPS_LIMIT_RATE_KEY;
 
 /**
  * DefaultTPSLimiter is a default implementation for tps filter. It is an in memory based implementation for storing
@@ -38,8 +38,8 @@ public class DefaultTPSLimiter implements TPSLimiter {
 
     @Override
     public boolean isAllowable(URL url, Invocation invocation) {
-        int rate = url.getParameter(TPS_LIMIT_RATE_KEY, -1);
-        long interval = url.getParameter(TPS_LIMIT_INTERVAL_KEY, DEFAULT_TPS_LIMIT_INTERVAL);
+        int rate = url.getMethodParameter(invocation.getMethodName(), TPS_LIMIT_RATE_KEY, -1);
+        long interval = url.getMethodParameter(invocation.getMethodName(), TPS_LIMIT_INTERVAL_KEY, DEFAULT_TPS_LIMIT_INTERVAL);
         String serviceKey = url.getServiceKey();
         if (rate > 0) {
             StatItem statItem = stats.get(serviceKey);

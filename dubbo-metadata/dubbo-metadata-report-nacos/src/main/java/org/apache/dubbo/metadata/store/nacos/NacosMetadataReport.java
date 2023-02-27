@@ -17,15 +17,43 @@
 
 package org.apache.dubbo.metadata.store.nacos;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.Executor;
+
 import org.apache.dubbo.common.URL;
+<<<<<<< HEAD
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.MetadataInfo;
+=======
+import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
+import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
+import org.apache.dubbo.common.config.configcenter.ConfigItem;
+import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
+import org.apache.dubbo.common.constants.LoggerCodeConstants;
+import org.apache.dubbo.common.utils.JsonUtils;
+import org.apache.dubbo.common.utils.MD5Utils;
+import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.metadata.MappingChangedEvent;
+import org.apache.dubbo.metadata.MappingListener;
+import org.apache.dubbo.metadata.MetadataInfo;
+import org.apache.dubbo.metadata.ServiceNameMapping;
+>>>>>>> origin/3.2
 import org.apache.dubbo.metadata.report.identifier.BaseMetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.KeyTypeEnum;
 import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.ServiceMetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
 import org.apache.dubbo.metadata.report.support.AbstractMetadataReport;
+<<<<<<< HEAD
 import org.apache.dubbo.rpc.RpcException;
 
 import com.alibaba.nacos.api.NacosFactory;
@@ -44,6 +72,27 @@ import static com.alibaba.nacos.api.PropertyKeyConst.SERVER_ADDR;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
 import static org.apache.dubbo.common.utils.StringConstantFieldValuePredicate.of;
+=======
+
+import com.alibaba.nacos.api.NacosFactory;
+import com.alibaba.nacos.api.PropertyKeyConst;
+import com.alibaba.nacos.api.config.ConfigService;
+import com.alibaba.nacos.api.config.listener.AbstractSharedListener;
+import com.alibaba.nacos.api.exception.NacosException;
+
+import static com.alibaba.nacos.api.PropertyKeyConst.SERVER_ADDR;
+import static com.alibaba.nacos.client.constant.Constants.HealthCheck.UP;
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_ERROR_NACOS;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_INTERRUPTED;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_NACOS_EXCEPTION;
+import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
+import static org.apache.dubbo.common.utils.StringConstantFieldValuePredicate.of;
+import static org.apache.dubbo.common.utils.StringUtils.HYPHEN_CHAR;
+import static org.apache.dubbo.metadata.MetadataConstants.REPORT_CONSUMER_URL_KEY;
+import static org.apache.dubbo.metadata.ServiceNameMapping.DEFAULT_MAPPING_GROUP;
+import static org.apache.dubbo.metadata.ServiceNameMapping.getAppNames;
+>>>>>>> origin/3.2
 
 /**
  * metadata report impl for nacos
@@ -51,14 +100,31 @@ import static org.apache.dubbo.common.utils.StringConstantFieldValuePredicate.of
 public class NacosMetadataReport extends AbstractMetadataReport {
 
     private NacosConfigServiceWrapper configService;
+<<<<<<< HEAD
 
     private Gson gson = new Gson();
+=======
+>>>>>>> origin/3.2
 
     /**
      * The group used to store metadata in Nacos
      */
     private String group;
 
+<<<<<<< HEAD
+=======
+    private Map<String, NacosConfigListener> watchListenerMap = new ConcurrentHashMap<>();
+
+    private Map<String, MappingDataListener> casListenerMap = new ConcurrentHashMap<>();
+
+    private MD5Utils md5Utils = new MD5Utils();
+
+    private static final String NACOS_RETRY_KEY = "nacos.retry";
+
+    private static final String NACOS_RETRY_WAIT_KEY = "nacos.retry-wait";
+
+    private static final String NACOS_CHECK_KEY = "nacos.check";
+>>>>>>> origin/3.2
 
     public NacosMetadataReport(URL url) {
         super(url);
@@ -66,6 +132,7 @@ public class NacosMetadataReport extends AbstractMetadataReport {
         group = url.getParameter(GROUP_KEY, DEFAULT_ROOT);
     }
 
+<<<<<<< HEAD
     public NacosConfigServiceWrapper buildConfigService(URL url) {
         Properties nacosProperties = buildNacosProperties(url);
         try {
@@ -77,6 +144,53 @@ public class NacosMetadataReport extends AbstractMetadataReport {
             throw new IllegalStateException(e);
         }
         return configService;
+=======
+    private NacosConfigServiceWrapper buildConfigService(URL url) {
+        Properties nacosProperties = buildNacosProperties(url);
+        int retryTimes = url.getPositiveParameter(NACOS_RETRY_KEY, 10);
+        int sleepMsBetweenRetries = url.getPositiveParameter(NACOS_RETRY_WAIT_KEY, 1000);
+        boolean check = url.getParameter(NACOS_CHECK_KEY, true);
+        ConfigService tmpConfigServices = null;
+        try {
+            for (int i = 0; i < retryTimes + 1; i++) {
+                tmpConfigServices = NacosFactory.createConfigService(nacosProperties);
+                if (!check || (UP.equals(tmpConfigServices.getServerStatus()) && testConfigService(tmpConfigServices))) {
+                    break;
+                } else {
+                    logger.warn(LoggerCodeConstants.CONFIG_ERROR_NACOS, "", "",
+                        "Failed to connect to nacos config server. " +
+                            (i < retryTimes ? "Dubbo will try to retry in " + sleepMsBetweenRetries + ". " : "Exceed retry max times.") +
+                            "Try times: " + (i + 1));
+                }
+                tmpConfigServices.shutDown();
+                tmpConfigServices = null;
+                Thread.sleep(sleepMsBetweenRetries);
+            }
+        } catch (NacosException e) {
+            logger.error(CONFIG_ERROR_NACOS, "", "", e.getErrMsg(), e);
+            throw new IllegalStateException(e);
+        } catch (InterruptedException e) {
+            logger.error(INTERNAL_INTERRUPTED, "", "", "Interrupted when creating nacos config service client.", e);
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException(e);
+        }
+
+        if (tmpConfigServices == null) {
+            logger.error(CONFIG_ERROR_NACOS, "", "", "Failed to create nacos config service client. Reason: server status check failed.");
+            throw new IllegalStateException("Failed to create nacos config service client. Reason: server status check failed.");
+        }
+
+        return new NacosConfigServiceWrapper(tmpConfigServices);
+    }
+
+    private boolean testConfigService(ConfigService configService) {
+        try {
+            configService.getConfig("Dubbo-Nacos-Test", "Dubbo-Nacos-Test", 3000L);
+            return true;
+        } catch (NacosException e) {
+            return false;
+        }
+>>>>>>> origin/3.2
     }
 
     private Properties buildNacosProperties(URL url) {
@@ -88,6 +202,7 @@ public class NacosMetadataReport extends AbstractMetadataReport {
 
     private void setServerAddr(URL url, Properties properties) {
         StringBuilder serverAddrBuilder =
+<<<<<<< HEAD
                 new StringBuilder(url.getHost()) // Host
                         .append(":")
                         .append(url.getPort()); // Port
@@ -95,6 +210,15 @@ public class NacosMetadataReport extends AbstractMetadataReport {
         String backup = url.getParameter(BACKUP_KEY);
         if (backup != null) {
             serverAddrBuilder.append(",").append(backup);
+=======
+            new StringBuilder(url.getHost()) // Host
+                .append(':')
+                .append(url.getPort()); // Port
+        // Append backup parameter as other servers
+        String backup = url.getParameter(BACKUP_KEY);
+        if (backup != null) {
+            serverAddrBuilder.append(',').append(backup);
+>>>>>>> origin/3.2
         }
         String serverAddr = serverAddrBuilder.toString();
         properties.put(SERVER_ADDR, serverAddr);
@@ -125,9 +249,25 @@ public class NacosMetadataReport extends AbstractMetadataReport {
 
     @Override
     public void publishAppMetadata(SubscriberMetadataIdentifier identifier, MetadataInfo metadataInfo) {
+<<<<<<< HEAD
         String content = gson.toJson(metadataInfo);
         try {
             configService.publishConfig(identifier.getApplication(), identifier.getRevision(), content);
+=======
+        try {
+            if (metadataInfo.getContent() != null) {
+                configService.publishConfig(identifier.getApplication(), identifier.getRevision(), metadataInfo.getContent());
+            }
+        } catch (NacosException e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public void unPublishAppMetadata(SubscriberMetadataIdentifier identifier, MetadataInfo metadataInfo) {
+        try {
+            configService.removeConfig(identifier.getApplication(), identifier.getRevision());
+>>>>>>> origin/3.2
         } catch (NacosException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
@@ -137,7 +277,11 @@ public class NacosMetadataReport extends AbstractMetadataReport {
     public MetadataInfo getAppMetadata(SubscriberMetadataIdentifier identifier, Map<String, String> instanceMetadata) {
         try {
             String content = configService.getConfig(identifier.getApplication(), identifier.getRevision(), 3000L);
+<<<<<<< HEAD
             return gson.fromJson(content, MetadataInfo.class);
+=======
+            return JsonUtils.getJson().toJavaObject(content, MetadataInfo.class);
+>>>>>>> origin/3.2
         } catch (NacosException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
@@ -150,7 +294,9 @@ public class NacosMetadataReport extends AbstractMetadataReport {
 
     @Override
     protected void doStoreConsumerMetadata(MetadataIdentifier consumerMetadataIdentifier, String value) {
-        this.storeMetadata(consumerMetadataIdentifier, value);
+        if (getUrl().getParameter(REPORT_CONSUMER_URL_KEY, false)) {
+            this.storeMetadata(consumerMetadataIdentifier, value);
+        }
     }
 
     @Override
@@ -187,6 +333,124 @@ public class NacosMetadataReport extends AbstractMetadataReport {
         return getConfig(metadataIdentifier);
     }
 
+<<<<<<< HEAD
+=======
+    @Override
+    public boolean registerServiceAppMapping(String key, String group, String content, Object ticket) {
+        try {
+            if (!(ticket instanceof String)) {
+                throw new IllegalArgumentException("nacos publishConfigCas requires string type ticket");
+            }
+            return configService.publishConfigCas(key, group, content, (String) ticket);
+        } catch (NacosException e) {
+            logger.warn(REGISTRY_NACOS_EXCEPTION, "", "", "nacos publishConfigCas failed.", e);
+            return false;
+        }
+    }
+
+    @Override
+    public ConfigItem getConfigItem(String key, String group) {
+        String content = getConfig(key, group);
+        String casMd5 = "0";
+        if (StringUtils.isNotEmpty(content)) {
+            casMd5 = md5Utils.getMd5(content);
+        }
+        return new ConfigItem(content, casMd5);
+    }
+
+    @Override
+    public Set<String> getServiceAppMapping(String serviceKey, MappingListener listener, URL url) {
+        String group = DEFAULT_MAPPING_GROUP;
+
+        if (null == casListenerMap.get(buildListenerKey(serviceKey, group))) {
+            addCasServiceMappingListener(serviceKey, group, listener);
+        }
+        String content = getConfig(serviceKey, group);
+        return ServiceNameMapping.getAppNames(content);
+    }
+
+    @Override
+    public void removeServiceAppMappingListener(String serviceKey, MappingListener listener) {
+        String group = DEFAULT_MAPPING_GROUP;
+
+        MappingDataListener mappingDataListener = casListenerMap.get(buildListenerKey(serviceKey, group));
+        if (null != mappingDataListener) {
+            removeCasServiceMappingListener(serviceKey, group, listener);
+        }
+    }
+
+    @Override
+    public Set<String> getServiceAppMapping(String serviceKey, URL url) {
+        String content = getConfig(serviceKey, DEFAULT_MAPPING_GROUP);
+        return ServiceNameMapping.getAppNames(content);
+    }
+
+    private String getConfig(String dataId, String group) {
+        try {
+            return configService.getConfig(dataId, group);
+        } catch (NacosException e) {
+            logger.error(REGISTRY_NACOS_EXCEPTION, "", "", e.getMessage());
+        }
+        return null;
+    }
+
+    private void addCasServiceMappingListener(String serviceKey, String group, MappingListener listener) {
+        MappingDataListener mappingDataListener = casListenerMap.computeIfAbsent(buildListenerKey(serviceKey, group), k -> new MappingDataListener(serviceKey, group));
+        mappingDataListener.addListeners(listener);
+        addListener(serviceKey, DEFAULT_MAPPING_GROUP, mappingDataListener);
+    }
+
+    private void removeCasServiceMappingListener(String serviceKey, String group, MappingListener listener) {
+        MappingDataListener mappingDataListener = casListenerMap.get(buildListenerKey(serviceKey, group));
+        if (mappingDataListener != null) {
+            mappingDataListener.removeListeners(listener);
+            if (mappingDataListener.isEmpty()) {
+                removeListener(serviceKey, DEFAULT_MAPPING_GROUP, mappingDataListener);
+                casListenerMap.remove(buildListenerKey(serviceKey, group), mappingDataListener);
+            }
+        }
+    }
+
+    public void addListener(String key, String group, ConfigurationListener listener) {
+        String listenerKey = buildListenerKey(key, group);
+        NacosConfigListener nacosConfigListener =
+            watchListenerMap.computeIfAbsent(listenerKey, k -> createTargetListener(key, group));
+        nacosConfigListener.addListener(listener);
+        try {
+            configService.addListener(key, group, nacosConfigListener);
+        } catch (NacosException e) {
+            logger.error(REGISTRY_NACOS_EXCEPTION, "", "", e.getMessage());
+        }
+    }
+
+    public void removeListener(String key, String group, ConfigurationListener listener) {
+        String listenerKey = buildListenerKey(key, group);
+        NacosConfigListener nacosConfigListener = watchListenerMap.get(listenerKey);
+        try {
+            if (nacosConfigListener != null) {
+                nacosConfigListener.removeListener(listener);
+                if (nacosConfigListener.isEmpty()) {
+                    configService.removeListener(key, group, nacosConfigListener);
+                    watchListenerMap.remove(listenerKey);
+                }
+            }
+        } catch (NacosException e) {
+            logger.error(REGISTRY_NACOS_EXCEPTION, "", "", e.getMessage());
+        }
+    }
+
+    private NacosConfigListener createTargetListener(String key, String group) {
+        NacosConfigListener configListener = new NacosConfigListener();
+        configListener.fillContext(key, group);
+        return configListener;
+    }
+
+    private String buildListenerKey(String key, String group) {
+        return key + HYPHEN_CHAR + group;
+    }
+
+
+>>>>>>> origin/3.2
     private void storeMetadata(BaseMetadataIdentifier identifier, String value) {
         try {
             boolean publishResult = configService.publishConfig(identifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY), group, value);
@@ -194,8 +458,8 @@ public class NacosMetadataReport extends AbstractMetadataReport {
                 throw new RuntimeException("publish nacos metadata failed");
             }
         } catch (Throwable t) {
-            logger.error("Failed to put " + identifier + " to nacos " + value + ", cause: " + t.getMessage(), t);
-            throw new RpcException("Failed to put " + identifier + " to nacos " + value + ", cause: " + t.getMessage(), t);
+            logger.error(REGISTRY_NACOS_EXCEPTION, "", "", "Failed to put " + identifier + " to nacos " + value + ", cause: " + t.getMessage(), t);
+            throw new RuntimeException("Failed to put " + identifier + " to nacos " + value + ", cause: " + t.getMessage(), t);
         }
     }
 
@@ -206,8 +470,8 @@ public class NacosMetadataReport extends AbstractMetadataReport {
                 throw new RuntimeException("remove nacos metadata failed");
             }
         } catch (Throwable t) {
-            logger.error("Failed to remove " + identifier + " from nacos , cause: " + t.getMessage(), t);
-            throw new RpcException("Failed to remove " + identifier + " from nacos , cause: " + t.getMessage(), t);
+            logger.error(REGISTRY_NACOS_EXCEPTION, "", "", "Failed to remove " + identifier + " from nacos , cause: " + t.getMessage(), t);
+            throw new RuntimeException("Failed to remove " + identifier + " from nacos , cause: " + t.getMessage(), t);
         }
     }
 
@@ -215,8 +479,110 @@ public class NacosMetadataReport extends AbstractMetadataReport {
         try {
             return configService.getConfig(identifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY), group, 3000L);
         } catch (Throwable t) {
-            logger.error("Failed to get " + identifier + " from nacos , cause: " + t.getMessage(), t);
-            throw new RpcException("Failed to get " + identifier + " from nacos , cause: " + t.getMessage(), t);
+            logger.error(REGISTRY_NACOS_EXCEPTION, "", "", "Failed to get " + identifier + " from nacos , cause: " + t.getMessage(), t);
+            throw new RuntimeException("Failed to get " + identifier + " from nacos , cause: " + t.getMessage(), t);
+        }
+    }
+
+    public class NacosConfigListener extends AbstractSharedListener {
+
+        private Set<ConfigurationListener> listeners = new CopyOnWriteArraySet<>();
+        /**
+         * cache data to store old value
+         */
+        private Map<String, String> cacheData = new ConcurrentHashMap<>();
+
+        @Override
+        public Executor getExecutor() {
+            return null;
+        }
+
+        /**
+         * receive
+         *
+         * @param dataId     data ID
+         * @param group      group
+         * @param configInfo content
+         */
+        @Override
+        public void innerReceive(String dataId, String group, String configInfo) {
+            String oldValue = cacheData.get(dataId);
+            ConfigChangedEvent event = new ConfigChangedEvent(dataId, group, configInfo, getChangeType(configInfo, oldValue));
+            if (configInfo == null) {
+                cacheData.remove(dataId);
+            } else {
+                cacheData.put(dataId, configInfo);
+            }
+            listeners.forEach(listener -> listener.process(event));
+        }
+
+        void addListener(ConfigurationListener configurationListener) {
+
+            this.listeners.add(configurationListener);
+        }
+
+        void removeListener(ConfigurationListener configurationListener) {
+            this.listeners.remove(configurationListener);
+        }
+
+        boolean isEmpty() {
+            return this.listeners.isEmpty();
+        }
+
+        private ConfigChangeType getChangeType(String configInfo, String oldValue) {
+            if (StringUtils.isBlank(configInfo)) {
+                return ConfigChangeType.DELETED;
+            }
+            if (StringUtils.isBlank(oldValue)) {
+                return ConfigChangeType.ADDED;
+            }
+            return ConfigChangeType.MODIFIED;
+        }
+    }
+
+    static class MappingDataListener implements ConfigurationListener {
+
+        private String dataId;
+
+        private String groupId;
+
+        private String serviceKey;
+
+        private Set<MappingListener> listeners;
+
+        public MappingDataListener(String dataId, String groupId) {
+            this.serviceKey = dataId;
+            this.dataId = dataId;
+            this.groupId = groupId;
+            this.listeners = new HashSet<>();
+        }
+
+        public void addListeners(MappingListener mappingListener) {
+            listeners.add(mappingListener);
+        }
+
+        public void removeListeners(MappingListener mappingListener) {
+            listeners.remove(mappingListener);
+        }
+
+        public boolean isEmpty() {
+            return listeners.isEmpty();
+        }
+
+        @Override
+        public void process(ConfigChangedEvent event) {
+            if (ConfigChangeType.DELETED == event.getChangeType()) {
+                return;
+            }
+            if (!dataId.equals(event.getKey()) || !groupId.equals(event.getGroup())) {
+                return;
+            }
+
+            Set<String> apps = getAppNames(event.getContent());
+
+            MappingChangedEvent mappingChangedEvent = new MappingChangedEvent(serviceKey, apps);
+
+            listeners.forEach(listener -> listener.onEvent(mappingChangedEvent));
         }
     }
 

@@ -88,14 +88,24 @@
 
     <properties>
         <!-- Test libs -->
+<<<<<<< HEAD
         <junit_jupiter_version>5.7.1</junit_jupiter_version>
+=======
+        <junit_jupiter_version>5.8.1</junit_jupiter_version>
+        <awaitility_version>4.2.0</awaitility_version>
+>>>>>>> origin/3.2
         <hazelcast_version>3.11.1</hazelcast_version>
         <hamcrest_version>2.2</hamcrest_version>
         <hibernate_validator_version>5.2.4.Final</hibernate_validator_version>
-        <el_api_version>2.2.4</el_api_version>
+        <el_api_version>2.2.5</el_api_version>
         <jaxb_api_version>2.2.7</jaxb_api_version>
+<<<<<<< HEAD
         <cglib_version>2.2</cglib_version>
         <mockito_version>3.8.0</mockito_version>
+=======
+        <cglib_version>2.2.2</cglib_version>
+        <mockito_version>4.11.0</mockito_version>
+>>>>>>> origin/3.2
         <!-- Build args -->
         <argline>-server -Xms256m -Xmx512m -Dfile.encoding=UTF-8
             -Djava.net.preferIPv4Stack=true -XX:MetaspaceSize=64m -XX:MaxMetaspaceSize=128m
@@ -111,6 +121,7 @@
         <java_target_version>1.8</java_target_version>
         <file_encoding>UTF-8</file_encoding>
         <!-- Maven plugins -->
+<<<<<<< HEAD
         <maven_jar_version>3.2.0</maven_jar_version>
         <maven_surefire_version>3.0.0-M5</maven_surefire_version>
         <maven_failsafe_version>3.0.0-M5</maven_failsafe_version>
@@ -124,35 +135,65 @@
         <maven_flatten_version>1.2.5</maven_flatten_version>
         <maven_enforce_version>3.0.0-M3</maven_enforce_version>
         <apache-rat-plugin.version>0.13</apache-rat-plugin.version>
+=======
+        <maven_jar_version>3.3.0</maven_jar_version>
+        <maven_surefire_version>3.0.0-M9</maven_surefire_version>
+        <maven_failsafe_version>3.0.0-M9</maven_failsafe_version>
+        <maven_deploy_version>2.8.2</maven_deploy_version>
+        <maven_compiler_version>3.10.1</maven_compiler_version>
+        <maven_source_version>3.2.1</maven_source_version>
+        <maven_javadoc_version>3.5.0</maven_javadoc_version>
+        <maven_jetty_version>9.4.50.v20221201</maven_jetty_version>
+        <maven_checkstyle_version>3.2.1</maven_checkstyle_version>
+        <maven_jacoco_version>0.8.8</maven_jacoco_version>
+        <maven_flatten_version>1.3.0</maven_flatten_version>
+        <maven_enforce_version>3.2.1</maven_enforce_version>
+        <maven_antrun_version>3.1.0</maven_antrun_version>
+>>>>>>> origin/3.2
         <arguments />
         <checkstyle.skip>true</checkstyle.skip>
+        <checkstyle_unix.skip>true</checkstyle_unix.skip>
         <rat.skip>true</rat.skip>
+<<<<<<< HEAD
         <revision>2.7.22-SNAPSHOT</revision>
+=======
+        <jacoco.skip>true</jacoco.skip>
+        <revision>3.2.0-beta.6-SNAPSHOT</revision>
+>>>>>>> origin/3.2
     </properties>
 
     <modules>
         <module>dubbo-common</module>
         <module>dubbo-container</module>
+        <module>dubbo-compiler</module>
         <module>dubbo-remoting</module>
         <module>dubbo-rpc</module>
-        <module>dubbo-filter</module>
         <module>dubbo-cluster</module>
         <module>dubbo-registry</module>
         <module>dubbo-monitor</module>
         <module>dubbo-config</module>
+        <module>dubbo-filter</module>
         <module>dubbo-demo</module>
         <module>dubbo-plugin</module>
         <module>dubbo-serialization</module>
         <module>dubbo-compatible</module>
         <module>dubbo-dependencies-bom</module>
-        <module>dubbo-bom</module>
-        <module>dubbo-all</module>
         <module>dubbo-distribution</module>
         <module>dubbo-configcenter</module>
         <module>dubbo-dependencies</module>
         <module>dubbo-metadata</module>
+        <module>dubbo-metrics</module>
         <module>dubbo-build-tools</module>
         <module>dubbo-spring-boot</module>
+<<<<<<< HEAD
+=======
+        <module>dubbo-native</module>
+        <module>dubbo-test</module>
+        <module>dubbo-kubernetes</module>
+        <module>dubbo-xds</module>
+        <module>dubbo-native-plugin</module>
+        <module>dubbo-maven-plugin</module>
+>>>>>>> origin/3.2
     </modules>
 
     <dependencyManagement>
@@ -168,6 +209,7 @@
     </dependencyManagement>
 
     <dependencies>
+        <!--JUnit Jupiter Engine to depend on the JUnit5 engine and JUnit 5 API -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
@@ -176,8 +218,20 @@
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>${junit_jupiter_version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-params</artifactId>
             <version>${junit_jupiter_version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.awaitility</groupId>
+            <artifactId>awaitility</artifactId>
+            <version>${awaitility_version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -245,8 +299,24 @@
                 <doclint>none</doclint>
             </properties>
         </profile>
+        <!-- jacoco: mvn validate -Pjacoco  -->
+        <profile>
+            <id>jacoco</id>
+            <properties>
+                <jacoco.skip>false</jacoco.skip>
+            </properties>
+        </profile>
+
+        <!-- check code style: mvn validate -Pcheckstyle  -->
         <profile>
             <id>checkstyle</id>
+            <properties>
+                <checkstyle.skip>false</checkstyle.skip>
+                <checkstyle_unix.skip>false</checkstyle_unix.skip>
+            </properties>
+        </profile>
+        <profile>
+            <id>checkstyle_def</id>
             <activation>
                 <jdk>[1.8,)</jdk>
             </activation>
@@ -278,8 +348,25 @@
                                     <encoding>UTF-8</encoding>
                                     <consoleOutput>true</consoleOutput>
                                     <failOnViolation>true</failOnViolation>
+                                    <skip>${checkstyle.skip}</skip>
                                     <excludes>
                                         **/JSONWriter.java,
+                                        **/org/apache/dubbo/maven/plugin/aot/AbstractAotMojo.java,
+                                        **/org/apache/dubbo/maven/plugin/aot/AbstractDependencyFilterMojo.java,
+                                        **/org/apache/dubbo/maven/plugin/aot/CommandLineBuilder.java,
+                                        **/org/apache/dubbo/maven/plugin/aot/DependencyFilter.java,
+                                        **/org/apache/dubbo/maven/plugin/aot/Exclude.java,
+                                        **/org/apache/dubbo/maven/plugin/aot/ExcludeFilter.java,
+                                        **/org/apache/dubbo/maven/plugin/aot/FilterableDependency.java,
+                                        **/org/apache/dubbo/maven/plugin/aot/Include.java,
+                                        **/org/apache/dubbo/maven/plugin/aot/IncludeFilter.java,
+                                        **/org/apache/dubbo/maven/plugin/aot/JavaCompilerPluginConfiguration.java,
+                                        **/org/apache/dubbo/maven/plugin/aot/JavaExecutable.java,
+                                        **/org/apache/dubbo/maven/plugin/aot/JavaProcessExecutor.java,
+                                        **/org/apache/dubbo/maven/plugin/aot/MatchingGroupIdFilter.java,
+                                        **/org/apache/dubbo/maven/plugin/aot/RunArguments.java,
+                                        **/org/apache/dubbo/maven/plugin/aot/RunProcess.java,
+                                        **/org/apache/dubbo/common/threadpool/serial/SerializingExecutor.java,
                                         **/org/apache/dubbo/common/threadlocal/InternalThreadLocal.java,
                                         **/org/apache/dubbo/common/threadlocal/InternalThreadLocalMap.java,
                                         **/org/apache/dubbo/common/timer/TimerTask.java,
@@ -290,7 +377,39 @@
                                         **/org/apache/dubbo/common/utils/Utf8Utils.java,
                                         **/org/apache/dubbo/common/serialize/protobuf/support/wrapper/MapValue.java,
                                         **/org/apache/dubbo/common/serialize/protobuf/support/wrapper/ThrowablePB.java,
+                                        **/org/apache/dubbo/test/common/utils/TestSocketUtils.java,
+                                        **/org/apache/dubbo/triple/TripleWrapper.java,
+                                        **/org/apache/dubbo/rpc/protocol/tri/TriHttp2RemoteFlowController.java,
+                                        **/istio/v1/auth/**/*,
+                                        **/com/google/rpc/*,
+                                        **/generated/**/*,
+                                        **/generated-sources/**/*,
+                                        **/grpc/health/**/*,
+                                        **/grpc/reflection/**/*,
+                                        **/target/**/*,
+                                        **/*.json
                                     </excludes>
+                                </configuration>
+                                <goals>
+                                    <goal>check</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>checkstyle-unix-validation</id>
+                                <phase>validate</phase>
+                                <configuration>
+                                    <configLocation>codestyle/checkstyle_unix.xml</configLocation>
+                                    <encoding>UTF-8</encoding>
+                                    <consoleOutput>true</consoleOutput>
+                                    <failOnViolation>true</failOnViolation>
+                                    <skip>${checkstyle_unix.skip}</skip>
+                                    <resourceExcludes>
+                                        **/target/**/*
+                                    </resourceExcludes>
+                                    <resourceExcludes>
+                                        **/generated/**/*
+                                        **/generated-sources/**/*
+                                    </resourceExcludes>
                                 </configuration>
                                 <goals>
                                     <goal>check</goal>
@@ -324,6 +443,10 @@
             <id>release</id>
             <properties>
                 <log4j2_version>2.17.2</log4j2_version>
+<<<<<<< HEAD
+=======
+                <jacoco.skip>false</jacoco.skip>
+>>>>>>> origin/3.2
             </properties>
             <build>
                 <plugins>
@@ -370,6 +493,7 @@
                             <charset>UTF-8</charset>
                             <encoding>UTF-8</encoding>
                             <docencoding>UTF-8</docencoding>
+                            <source>${maven_source_version}</source>
                             <links>
                                 <link>http://docs.oracle.com/javase/8/docs/api</link>
                             </links>
@@ -432,6 +556,60 @@
             </build>
         </profile>
         <profile>
+<<<<<<< HEAD
+=======
+            <id>jdk15ge-add-open</id>
+            <activation>
+                <jdk>[15,</jdk>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <useSystemClassLoader>true</useSystemClassLoader>
+                            <forkMode>once</forkMode>
+                            <argLine>${argline} ${jacocoArgLine}
+                                --add-opens java.base/java.lang=ALL-UNNAMED
+                                --add-opens java.base/java.math=ALL-UNNAMED
+                                --add-opens java.base/java.util=ALL-UNNAMED
+                            </argLine>
+                            <systemProperties>
+                                <!-- common shared -->
+                            </systemProperties>
+                            <!-- Activate the use of TCP to transmit events to the plugin to fix Corrupted STDOUT issue -->
+                            <forkNode implementation="org.apache.maven.plugin.surefire.extensions.SurefireForkNodeFactory"/>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>jdk15ge-simple</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <useSystemClassLoader>true</useSystemClassLoader>
+                            <forkMode>once</forkMode>
+                            <argLine>${argline} ${jacocoArgLine}
+                            </argLine>
+                            <systemProperties>
+                                <!-- common shared -->
+                            </systemProperties>
+                            <!-- Activate the use of TCP to transmit events to the plugin to fix Corrupted STDOUT issue -->
+                            <forkNode implementation="org.apache.maven.plugin.surefire.extensions.SurefireForkNodeFactory"/>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+>>>>>>> origin/3.2
             <id>jdk9-compile</id>
             <activation>
                 <jdk>[1.9,)</jdk>
@@ -447,6 +625,34 @@
                 </plugins>
             </build>
         </profile>
+<<<<<<< HEAD
+=======
+
+        <profile>
+            <id>jacoco089</id>
+            <properties>
+                <maven_jacoco_version>0.8.9-SNAPSHOT</maven_jacoco_version>
+            </properties>
+            <pluginRepositories>
+                <pluginRepository>
+                    <id>apache.snapshots</id>
+                    <name>Apache Snapshot Repository</name>
+                    <url>https://repository.apache.org/snapshots</url>
+                    <releases>
+                        <enabled>false</enabled>
+                    </releases>
+                </pluginRepository>
+                <pluginRepository>
+                    <id>oss.snapshots</id>
+                    <name>Oss Repository</name>
+                    <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+                    <releases>
+                        <enabled>false</enabled>
+                    </releases>
+                </pluginRepository>
+            </pluginRepositories>
+        </profile>
+>>>>>>> origin/3.2
     </profiles>
 
     <build>
@@ -486,6 +692,37 @@
                 </configuration>
             </plugin>
             <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${maven_jacoco_version}</version>
+                <executions>
+                    <execution>
+                        <id>jacoco-initialize</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                        <configuration>
+                            <propertyName>jacocoArgLine</propertyName>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>report-aggregate</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>report</goal>
+                            <goal>report-aggregate</goal>
+                        </goals>
+                        <configuration>
+                            <includes>
+                                <include>target/classes/**/*</include>
+                                <include>target/classes/**</include>
+                                <include>**/*</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
@@ -521,6 +758,7 @@
                 </configuration>
             </plugin>
             <plugin>
+<<<<<<< HEAD
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <version>${maven_jacoco_version}</version>
@@ -614,9 +852,11 @@
                 </executions>
             </plugin>
             <plugin>
+=======
+>>>>>>> origin/3.2
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-release-plugin</artifactId>
-                <version>3.0.0-M1</version>
+                <version>3.0.0-M7</version>
                 <configuration>
                     <autoVersionSubmodules>true</autoVersionSubmodules>
                     <useReleaseProfile>false</useReleaseProfile>
@@ -656,6 +896,7 @@
             <plugins>
                 <!-- keep surefire and failsafe in sync -->
                 <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>${maven_surefire_version}</version>
                     <configuration>
@@ -670,7 +911,11 @@
                 </plugin>
                 <plugin>
                     <artifactId>maven-clean-plugin</artifactId>
+<<<<<<< HEAD
                     <version>3.1.0</version>
+=======
+                    <version>3.2.0</version>
+>>>>>>> origin/3.2
                 </plugin>
                 <plugin>
                     <groupId>org.ops4j.pax.exam</groupId>
@@ -679,12 +924,16 @@
                 </plugin>
                 <plugin>
                     <artifactId>maven-dependency-plugin</artifactId>
+<<<<<<< HEAD
                     <version>3.1.2</version>
+=======
+                    <version>3.5.0</version>
+>>>>>>> origin/3.2
                 </plugin>
                 <plugin>
                     <!-- Do NOT upgrade -->
                     <artifactId>maven-jxr-plugin</artifactId>
-                    <version>2.2</version>
+                    <version>2.5</version>
                 </plugin>
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
@@ -704,7 +953,11 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-shade-plugin</artifactId>
+<<<<<<< HEAD
                     <version>3.2.4</version>
+=======
+                    <version>3.4.1</version>
+>>>>>>> origin/3.2
                     <configuration>
                         <createDependencyReducedPom>false</createDependencyReducedPom>
                     </configuration>
@@ -714,7 +967,13 @@
                     <artifactId>jetty-maven-plugin</artifactId>
                     <version>${maven_jetty_version}</version>
                 </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-antrun-plugin</artifactId>
+                    <version>${maven_antrun_version}</version>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
+
 </project>

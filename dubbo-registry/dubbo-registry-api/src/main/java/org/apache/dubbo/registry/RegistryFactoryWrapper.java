@@ -18,7 +18,6 @@
 package org.apache.dubbo.registry;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 
 import java.util.Collections;
 
@@ -32,7 +31,7 @@ public class RegistryFactoryWrapper implements RegistryFactory {
     @Override
     public Registry getRegistry(URL url) {
         return new ListenerRegistryWrapper(registryFactory.getRegistry(url),
-                Collections.unmodifiableList(ExtensionLoader.getExtensionLoader(RegistryServiceListener.class)
+                Collections.unmodifiableList(url.getOrDefaultApplicationModel().getExtensionLoader(RegistryServiceListener.class)
                         .getActivateExtension(url, "registry.listeners")));
     }
 }

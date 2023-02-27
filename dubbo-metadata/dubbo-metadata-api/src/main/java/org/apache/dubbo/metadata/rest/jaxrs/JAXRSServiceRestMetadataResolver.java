@@ -18,6 +18,7 @@ package org.apache.dubbo.metadata.rest.jaxrs;
 
 import org.apache.dubbo.metadata.rest.AbstractServiceRestMetadataResolver;
 import org.apache.dubbo.metadata.rest.ServiceRestMetadataResolver;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -40,6 +41,9 @@ import static org.apache.dubbo.metadata.rest.RestMetadataConstants.JAX_RS.PRODUC
  * @since 2.7.6
  */
 public class JAXRSServiceRestMetadataResolver extends AbstractServiceRestMetadataResolver {
+    public JAXRSServiceRestMetadataResolver(ApplicationModel applicationModel) {
+        super(applicationModel);
+    }
 
     @Override
     protected boolean supports0(Class<?> serviceType) {
@@ -81,16 +85,28 @@ public class JAXRSServiceRestMetadataResolver extends AbstractServiceRestMetadat
     protected void processProduces(Method serviceMethod, Class<?> serviceType, Class<?> serviceInterfaceClass,
                                    Set<String> produces) {
         addAnnotationValues(serviceMethod, PRODUCES_ANNOTATION_CLASS_NAME, produces);
+        addAnnotationValues(serviceType, PRODUCES_ANNOTATION_CLASS_NAME, produces);
+        addAnnotationValues(serviceInterfaceClass, PRODUCES_ANNOTATION_CLASS_NAME, produces);
     }
 
     @Override
     protected void processConsumes(Method serviceMethod, Class<?> serviceType, Class<?> serviceInterfaceClass,
                                    Set<String> consumes) {
         addAnnotationValues(serviceMethod, CONSUMES_ANNOTATION_CLASS_NAME, consumes);
+        addAnnotationValues(serviceType, CONSUMES_ANNOTATION_CLASS_NAME, consumes);
+        addAnnotationValues(serviceInterfaceClass, CONSUMES_ANNOTATION_CLASS_NAME, consumes);
     }
 
     private void addAnnotationValues(Method serviceMethod, String annotationAttributeName, Set<String> result) {
         Annotation annotation = findAnnotation(serviceMethod, annotationAttributeName);
+        String[] value = getValue(annotation);
+        if (value != null) {
+            Stream.of(value).forEach(result::add);
+        }
+    }
+
+    private void addAnnotationValues(Class serviceType, String annotationAttributeName, Set<String> result) {
+        Annotation annotation = findAnnotation(serviceType, annotationAttributeName);
         String[] value = getValue(annotation);
         if (value != null) {
             Stream.of(value).forEach(result::add);

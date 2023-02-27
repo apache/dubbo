@@ -17,33 +17,34 @@
 package org.apache.dubbo.rpc.protocol.dubbo.support;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
-import org.apache.dubbo.rpc.ProtocolServer;
 import org.apache.dubbo.rpc.ProxyFactory;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
-
-import java.util.List;
 
 /**
  * TODO Comment of ProtocolUtils
  */
 public class ProtocolUtils {
 
-    public static ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
-    private static Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
 
     public static <T> T refer(Class<T> type, String url) {
         return refer(type, URL.valueOf(url));
     }
 
     public static <T> T refer(Class<T> type, URL url) {
+        FrameworkModel frameworkModel = url.getOrDefaultFrameworkModel();
+        ProxyFactory proxy = frameworkModel.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+        Protocol protocol = frameworkModel.getExtensionLoader(Protocol.class).getAdaptiveExtension();
         return proxy.getProxy(protocol.refer(type, url));
     }
 
     public static Invoker<?> referInvoker(Class<?> type, URL url) {
+        FrameworkModel frameworkModel = url.getOrDefaultFrameworkModel();
+        ProxyFactory proxy = frameworkModel.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+        Protocol protocol = frameworkModel.getExtensionLoader(Protocol.class).getAdaptiveExtension();
         return (Invoker<?>) protocol.refer(type, url);
     }
 
@@ -52,14 +53,14 @@ public class ProtocolUtils {
     }
 
     public static <T> Exporter<T> export(T instance, Class<T> type, URL url) {
+        FrameworkModel frameworkModel = url.getOrDefaultFrameworkModel();
+        ProxyFactory proxy = frameworkModel.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+        Protocol protocol = frameworkModel.getExtensionLoader(Protocol.class).getAdaptiveExtension();
         return protocol.export(proxy.getInvoker(instance, type, url));
     }
 
     public static void closeAll() {
         DubboProtocol.getDubboProtocol().destroy();
-        List<ProtocolServer> servers = DubboProtocol.getDubboProtocol().getServers();
-        for (ProtocolServer server : servers) {
-            server.close();
-        }
+        FrameworkModel.destroyAll();
     }
 }

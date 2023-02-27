@@ -16,6 +16,9 @@
  */
 package org.apache.dubbo.common;
 
+import org.apache.dubbo.common.url.component.ServiceConfigURL;
+import org.apache.dubbo.common.url.component.URLItemCache;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -26,7 +29,10 @@ import static org.apache.dubbo.common.utils.StringUtils.decodeHexByte;
 import static org.apache.dubbo.common.utils.Utf8Utils.decodeUtf8;
 
 public final class URLStrParser {
-
+    public static final String ENCODED_QUESTION_MARK = "%3F";
+    public static final String ENCODED_TIMESTAMP_KEY = "timestamp%3D";
+    public static final String ENCODED_PID_KEY = "pid%3D";
+    public static final String ENCODED_AND_MARK = "%26";
     private static final char SPACE = 0x20;
 
     private static final ThreadLocal<TempBuf> DECODE_TEMP_BUF = ThreadLocal.withInitial(() -> new TempBuf(1024));
@@ -34,6 +40,7 @@ public final class URLStrParser {
     private URLStrParser() {
         //empty
     }
+
 
     /**
      * @param decodedURLStr : after {@link URL#decode} string
@@ -132,9 +139,13 @@ public final class URLStrParser {
         String password = null;
         int pwdEndIdx = lastIndexOf(decodedBody, '@', starIdx, endIdx);
         if (pwdEndIdx > 0) {
-            int userNameEndIdx = indexOf(decodedBody, ':', starIdx, pwdEndIdx);
-            username = decodedBody.substring(starIdx, userNameEndIdx);
-            password = decodedBody.substring(userNameEndIdx + 1, pwdEndIdx);
+            int passwordStartIdx = indexOf(decodedBody, ':', starIdx, pwdEndIdx);
+            if (passwordStartIdx != -1) {//tolerate incomplete user pwd input, like '1234@'
+                username = decodedBody.substring(starIdx, passwordStartIdx);
+                password = decodedBody.substring(passwordStartIdx + 1, pwdEndIdx);
+            } else {
+                username = decodedBody.substring(starIdx, pwdEndIdx);
+            }
             starIdx = pwdEndIdx + 1;
         }
 
@@ -156,7 +167,40 @@ public final class URLStrParser {
         if (endIdx > starIdx) {
             host = decodedBody.substring(starIdx, endIdx);
         }
-        return new URL(protocol, username, password, host, port, path, parameters);
+
+        // check cache
+        protocol = URLItemCache.intern(protocol);
+        path = URLItemCache.checkPath(path);
+
+        return new ServiceConfigURL(protocol, username, password, host, port, path, parameters);
+    }
+
+    public static String[] parseRawURLToArrays(String rawURLStr, int pathEndIdx) {
+        String[] parts = new String[2];
+        int paramStartIdx = pathEndIdx + 3;//skip ENCODED_QUESTION_MARK
+        if (pathEndIdx == -1) {
+            pathEndIdx = rawURLStr.indexOf('?');
+            if (pathEndIdx == -1) {
+                // url with no params, decode anyway
+                rawURLStr = URL.decode(rawURLStr);
+            } else {
+                paramStartIdx = pathEndIdx + 1;
+            }
+        }
+        if (pathEndIdx >= 0) {
+            parts[0] = rawURLStr.substring(0, pathEndIdx);
+            parts[1] = rawURLStr.substring(paramStartIdx);
+        } else {
+            parts = new String[]{rawURLStr};
+        }
+        return parts;
+    }
+
+    public static Map<String, String> parseParams(String rawParams, boolean encoded) {
+        if (encoded) {
+            return parseEncodedParams(rawParams, 0);
+        }
+        return parseDecodedParams(rawParams, 0);
     }
 
     /**
@@ -233,6 +277,7 @@ public final class URLStrParser {
         String name;
         String value;
         if (isEncoded) {
+<<<<<<< HEAD
             name = decodeComponent(str, nameStart, valueStart - 3, false, tempBuf);
             value = valueStart >= valueEnd ? name : decodeComponent(str, valueStart, valueEnd, false, tempBuf);
         } else {
@@ -244,6 +289,33 @@ public final class URLStrParser {
         // compatible with lower versions registering "default." keys
         if (name.startsWith(DEFAULT_KEY_PREFIX)) {
             params.putIfAbsent(name.substring(DEFAULT_KEY_PREFIX.length()), value);
+=======
+            String name = decodeComponent(str, nameStart, valueStart - 3, false, tempBuf);
+            String value;
+            if (valueStart >= valueEnd) {
+                value = name;
+            } else {
+                value = decodeComponent(str, valueStart, valueEnd, false, tempBuf);
+            }
+            URLItemCache.putParams(params,name, value);
+            // compatible with lower versions registering "default." keys
+            if (name.startsWith(DEFAULT_KEY_PREFIX)) {
+                params.putIfAbsent(name.substring(DEFAULT_KEY_PREFIX.length()), value);
+            }
+        } else {
+            String name = str.substring(nameStart, valueStart - 1);
+            String value;
+            if (valueStart >= valueEnd) {
+                value = name;
+            } else {
+                value = str.substring(valueStart, valueEnd);
+            }
+            URLItemCache.putParams(params, name, value);
+            // compatible with lower versions registering "default." keys
+            if (name.startsWith(DEFAULT_KEY_PREFIX)) {
+                params.putIfAbsent(name.substring(DEFAULT_KEY_PREFIX.length()), value);
+            }
+>>>>>>> origin/3.2
         }
         return true;
     }

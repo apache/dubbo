@@ -39,6 +39,7 @@ public class DefaultCharSequence implements CharSequence, Prioritized {
         return null;
     }
 
+    @Override
     public int getPriority() {
         return MAX_PRIORITY;
     }

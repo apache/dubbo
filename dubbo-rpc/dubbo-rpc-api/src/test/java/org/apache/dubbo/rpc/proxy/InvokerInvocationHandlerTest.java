@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.proxy;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.Invoker;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,7 +28,7 @@ import java.lang.reflect.Method;
 
 import static org.mockito.Mockito.when;
 
-public class InvokerInvocationHandlerTest {
+class InvokerInvocationHandlerTest {
 
     private Invoker<?> invoker;
     private InvokerInvocationHandler invokerInvocationHandler;
@@ -41,7 +42,7 @@ public class InvokerInvocationHandlerTest {
     }
 
     @Test
-    public void testInvokeToString() throws Throwable {
+    void testInvokeToString() throws Throwable {
         String methodName = "toString";
 
         when(invoker.toString()).thenReturn(methodName);

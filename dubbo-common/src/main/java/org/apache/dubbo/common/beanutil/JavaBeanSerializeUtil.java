@@ -28,9 +28,15 @@ import java.util.Map;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+<<<<<<< HEAD
 import org.apache.dubbo.common.utils.LogHelper;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.SerializeClassChecker;
+=======
+import org.apache.dubbo.common.utils.DefaultSerializeClassChecker;
+import org.apache.dubbo.common.utils.LogHelper;
+import org.apache.dubbo.common.utils.ReflectUtils;
+>>>>>>> origin/3.2
 
 public final class JavaBeanSerializeUtil {
 
@@ -465,10 +471,14 @@ public final class JavaBeanSerializeUtil {
         if (isReferenceType(name)) {
             name = name.substring(1, name.length() - 1);
         }
+<<<<<<< HEAD
         SerializeClassChecker.getInstance().validateClass(name);
         Class<?> aClass = Class.forName(name, false, loader);
         SerializeClassChecker.getInstance().validateClass(aClass);
         return aClass;
+=======
+        return DefaultSerializeClassChecker.getInstance().loadClass(loader, name);
+>>>>>>> origin/3.2
     }
 
     private static boolean isArray(String type) {

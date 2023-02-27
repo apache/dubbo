@@ -6,7 +6,8 @@
             targetNamespace="http://code.alibabatech.com/schema/dubbo">
 
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
-    <xsd:import namespace="http://www.springframework.org/schema/beans" schemaLocation="http://www.springframework.org/schema/beans/spring-beans.xsd"/>
+    <xsd:import namespace="http://www.springframework.org/schema/beans"
+                schemaLocation="http://www.springframework.org/schema/beans/spring-beans.xsd"/>
     <xsd:import namespace="http://www.springframework.org/schema/tool"/>
 
     <xsd:annotation>
@@ -33,12 +34,6 @@
         <xsd:attribute name="actives" type="xsd:string">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ The max active requests. ]]></xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-        <xsd:attribute name="connections" type="xsd:string">
-            <xsd:annotation>
-                <xsd:documentation>
-                    <![CDATA[ The exclusive connections. default share one connection. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="loadbalance" type="xsd:string">
@@ -178,6 +173,12 @@
                             <![CDATA[ Defines the service tag]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
+                <xsd:attribute name="connections" type="xsd:string">
+                    <xsd:annotation>
+                        <xsd:documentation>
+                            <![CDATA[ The exclusive connections. default share one connection. ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
             </xsd:extension>
         </xsd:complexContent>
     </xsd:complexType>
@@ -236,6 +237,18 @@
                     <xsd:annotation>
                         <xsd:documentation>
                             <![CDATA[ declares which app or service this interface belongs to. ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+                <xsd:attribute name="provider-port" type="xsd:integer">
+                    <xsd:annotation>
+                        <xsd:documentation>
+                            <![CDATA[ declares provider service port. ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+                <xsd:attribute name="provider-namespace" type="xsd:string">
+                    <xsd:annotation>
+                        <xsd:documentation>
+                            <![CDATA[ assign namespace that the provider belong to when mesh enable. ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
                 <xsd:attribute name="router" type="xsd:string">
@@ -340,6 +353,12 @@
                         <xsd:documentation><![CDATA[ The serialization protocol of service. ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
+                <xsd:attribute name="executor" type="xsd:string">
+                    <xsd:annotation>
+                        <xsd:documentation>
+                            <![CDATA[ Bean name of service executor(thread pool), used for thread pool isolation between services. ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
                 <xsd:anyAttribute namespace="##other" processContents="lax"/>
             </xsd:extension>
         </xsd:complexContent>
@@ -404,7 +423,7 @@
                 <xsd:documentation><![CDATA[ The application monitor. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
-        <xsd:attribute name="shutwait" type="xsd:string" >
+        <xsd:attribute name="shutwait" type="xsd:string">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ The application shutDown-wait time. ]]></xsd:documentation>
             </xsd:annotation>
@@ -424,7 +443,38 @@
                 <xsd:documentation><![CDATA[ Register consumer instance or not, default false. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
-
+        <xsd:attribute name="register-mode" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation>
+                    <![CDATA[ Register interface/instance/all addresses to registry, default all. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="enable-empty-protection" type="xsd:boolean">
+            <xsd:annotation>
+                <xsd:documentation>
+                    <![CDATA[ Enable empty protection on empty address notification, default true. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="protocol" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The preferred protocol to use, set protocol name. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="executor-management-mode" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Thread pool management: default/isolation. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="dump-directory" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The file path directory of the saving thread dump. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="dump-enable" type="xsd:boolean">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Saving thread dump or not, default true. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
     </xsd:complexType>
 
     <xsd:complexType name="moduleType">
@@ -633,6 +683,18 @@
                 <xsd:documentation><![CDATA[ weight of registry. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
+        <xsd:attribute name="register-mode" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation>
+                    <![CDATA[ Register interface/instance/all addresses to registry, default all. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="enable-empty-protection" type="xsd:boolean">
+            <xsd:annotation>
+                <xsd:documentation>
+                    <![CDATA[ Enable empty protection on empty address notification, default true. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
     </xsd:complexType>
 
     <xsd:complexType name="metadataReportType">
@@ -700,6 +762,21 @@
                 <xsd:documentation><![CDATA[ registry config id. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
+<<<<<<< HEAD
+=======
+        <xsd:attribute name="report-metadata" type="xsd:boolean" use="optional">
+            <xsd:annotation>
+                <xsd:documentation>
+                    <![CDATA[ Whether to report metadata to remote center, default is false. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="report-definition" type="xsd:boolean" use="optional">
+            <xsd:annotation>
+                <xsd:documentation>
+                    <![CDATA[ Whether to report service definition to remote center, default is true. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+>>>>>>> origin/3.2
     </xsd:complexType>
 
     <xsd:complexType name="configCenterType">
@@ -718,7 +795,8 @@
         </xsd:attribute>
         <xsd:attribute name="cluster" type="xsd:string" use="optional">
             <xsd:annotation>
-                <xsd:documentation><![CDATA[ The config center cluster, it's real meaning may very on different Config Center products. ]]></xsd:documentation>
+                <xsd:documentation>
+                    <![CDATA[ The config center cluster, it's real meaning may very on different Config Center products. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="namespace" type="xsd:string" use="optional">
@@ -761,7 +839,7 @@
         <xsd:attribute name="highest-priority" type="xsd:boolean" use="optional">
             <xsd:annotation>
                 <xsd:documentation>
-                    <![CDATA[ Whether the configs from config center has the highest priority. ]]></xsd:documentation>
+                    <![CDATA[ Deprecated. Whether the configs from config center has the highest priority. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="include-spring-env" type="xsd:boolean" use="optional">
@@ -961,7 +1039,8 @@
                 </xsd:attribute>
                 <xsd:attribute name="threadpool" type="xsd:string">
                     <xsd:annotation>
-                        <xsd:documentation><![CDATA[ Consumer threadpool: cached, fixed, limited, eager]]></xsd:documentation>
+                        <xsd:documentation>
+                            <![CDATA[ Consumer threadpool: cached, fixed, limited, eager]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
                 <xsd:attribute name="corethreads" type="xsd:string">
@@ -977,6 +1056,11 @@
                 <xsd:attribute name="queues" type="xsd:string">
                     <xsd:annotation>
                         <xsd:documentation><![CDATA[ The thread pool queue size. ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+                <xsd:attribute name="mesh-enable" type="xsd:boolean">
+                    <xsd:annotation>
+                        <xsd:documentation><![CDATA[ Enable mesh mode. ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
                 <xsd:anyAttribute namespace="##other" processContents="lax"/>
@@ -1021,6 +1105,14 @@
                         <xsd:documentation><![CDATA[ The service protocol. ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
+                <xsd:attribute name="unloadClusterRelated" type="xsd:boolean">
+                    <xsd:annotation>
+                        <xsd:documentation>
+                            <![CDATA[ In the mesh mode, uninstall the directory, router and load balance related to the cluster in the currently invoked invoker.
+                            Delegate retry, load balancing, timeout and other traffic management capabilities to Sidecar. ]]>
+                        </xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
                 <xsd:anyAttribute namespace="##other" processContents="lax"/>
             </xsd:extension>
         </xsd:complexContent>
@@ -1035,7 +1127,7 @@
                 <xsd:documentation><![CDATA[ The unique identifier for a bean. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
-        <xsd:attribute name="name" type="xsd:string">
+        <xsd:attribute name="name" type="xsd:string" use="required">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ The protocol name. ]]></xsd:documentation>
             </xsd:annotation>
@@ -1058,6 +1150,11 @@
         <xsd:attribute name="threadname" type="xsd:string">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ The thread pool name. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="thread-pool-exhausted-listeners" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The thread pool exhausted listeners. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="threads" type="xsd:string">

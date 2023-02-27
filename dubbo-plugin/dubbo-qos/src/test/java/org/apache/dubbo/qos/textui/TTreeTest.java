@@ -18,12 +18,12 @@ package org.apache.dubbo.qos.textui;
 
 import org.junit.jupiter.api.Test;
 
-import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 
-public class TTreeTest {
+class TTreeTest {
     @Test
-    public void test() throws Exception {
+    void test() throws Exception {
         TTree tree = new TTree(false, "root");
         tree.begin("one").begin("ONE").end().end();
         tree.begin("two").begin("TWO").end().begin("2").end().end();

@@ -26,7 +26,7 @@ import org.apache.dubbo.rpc.cluster.LoadBalance;
 import java.util.List;
 
 /**
- * AvailableCluster
+ * AvailableClusterInvoker
  *
  */
 public class AvailableClusterInvoker<T> extends AbstractClusterInvoker<T> {
@@ -39,7 +39,7 @@ public class AvailableClusterInvoker<T> extends AbstractClusterInvoker<T> {
     public Result doInvoke(Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
         for (Invoker<T> invoker : invokers) {
             if (invoker.isAvailable()) {
-                return invoker.invoke(invocation);
+                return invokeWithContext(invoker, invocation);
             }
         }
         throw new RpcException("No provider available in " + invokers);

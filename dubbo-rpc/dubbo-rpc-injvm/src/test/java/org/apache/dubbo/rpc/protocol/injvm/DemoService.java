@@ -39,7 +39,12 @@ public interface DemoService {
 
     Type enumlength(Type... types);
 
+<<<<<<< HEAD
     String getRemoteApplicationName();
 
     String getAsyncResult();
 }
+=======
+    String getAsyncResult();
+}
+>>>>>>> origin/3.2

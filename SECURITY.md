@@ -6,6 +6,7 @@ Below is a table that shows versions that we accept security fixes.
 
 | Version | Supported          |
 | ------- | ------------------ |
+| 3.0.x   | :white_check_mark: |
 | 2.7.x   | :white_check_mark: |
 | 2.6.x   | :white_check_mark: |
 | 2.5.x   | :x: |

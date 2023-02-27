@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.config;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
@@ -28,9 +29,9 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.is;
 
-public class MonitorConfigTest {
+class MonitorConfigTest {
     @Test
-    public void testAddress() throws Exception {
+    void testAddress() throws Exception {
         MonitorConfig monitor = new MonitorConfig();
         monitor.setAddress("monitor-addr");
         assertThat(monitor.getAddress(), equalTo("monitor-addr"));
@@ -40,7 +41,7 @@ public class MonitorConfigTest {
     }
 
     @Test
-    public void testProtocol() throws Exception {
+    void testProtocol() throws Exception {
         MonitorConfig monitor = new MonitorConfig();
         monitor.setProtocol("protocol");
         assertThat(monitor.getProtocol(), equalTo("protocol"));
@@ -50,7 +51,7 @@ public class MonitorConfigTest {
     }
 
     @Test
-    public void testUsername() throws Exception {
+    void testUsername() throws Exception {
         MonitorConfig monitor = new MonitorConfig();
         monitor.setUsername("user");
         assertThat(monitor.getUsername(), equalTo("user"));
@@ -60,7 +61,7 @@ public class MonitorConfigTest {
     }
 
     @Test
-    public void testPassword() throws Exception {
+    void testPassword() throws Exception {
         MonitorConfig monitor = new MonitorConfig();
         monitor.setPassword("secret");
         assertThat(monitor.getPassword(), equalTo("secret"));
@@ -70,21 +71,21 @@ public class MonitorConfigTest {
     }
 
     @Test
-    public void testGroup() throws Exception {
+    void testGroup() throws Exception {
         MonitorConfig monitor = new MonitorConfig();
         monitor.setGroup("group");
         assertThat(monitor.getGroup(), equalTo("group"));
     }
 
     @Test
-    public void testVersion() throws Exception {
+    void testVersion() throws Exception {
         MonitorConfig monitor = new MonitorConfig();
         monitor.setVersion("1.0.0");
         assertThat(monitor.getVersion(), equalTo("1.0.0"));
     }
 
     @Test
-    public void testParameters() throws Exception {
+    void testParameters() throws Exception {
         MonitorConfig monitor = new MonitorConfig();
         Map<String, String> parameters = Collections.singletonMap("k1", "v1");
         monitor.setParameters(parameters);
@@ -92,16 +93,23 @@ public class MonitorConfigTest {
     }
 
     @Test
-    public void testDefault() throws Exception {
+    void testDefault() throws Exception {
         MonitorConfig monitor = new MonitorConfig();
         monitor.setDefault(true);
         assertThat(monitor.isDefault(), is(true));
     }
 
     @Test
-    public void testInterval() throws Exception {
+    void testInterval() throws Exception {
         MonitorConfig monitor = new MonitorConfig();
         monitor.setInterval("100");
         assertThat(monitor.getInterval(), equalTo("100"));
+    }
+
+    @Test
+    void testMetaData() {
+        MonitorConfig config = new MonitorConfig();
+        Map<String, String> metaData = config.getMetaData();
+        Assertions.assertEquals(0, metaData.size(), "Expect empty metadata but found: "+metaData);
     }
 }

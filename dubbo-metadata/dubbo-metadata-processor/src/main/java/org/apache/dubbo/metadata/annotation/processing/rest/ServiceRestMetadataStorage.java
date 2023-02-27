@@ -16,17 +16,14 @@
  */
 package org.apache.dubbo.metadata.annotation.processing.rest;
 
+import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.metadata.annotation.processing.ClassPathMetadataStorage;
 import org.apache.dubbo.metadata.rest.ServiceRestMetadata;
 
-import com.google.gson.Gson;
-
 import javax.annotation.processing.ProcessingEnvironment;
 import java.io.IOException;
-import java.util.List;
 import java.util.Set;
 
-import static com.google.gson.reflect.TypeToken.getParameterized;
 import static org.apache.dubbo.metadata.rest.RestMetadataConstants.SERVICE_REST_METADATA_RESOURCE_PATH;
 
 /**
@@ -41,13 +38,20 @@ public class ServiceRestMetadataStorage {
     }
 
     public void append(Set<ServiceRestMetadata> serviceRestMetadata) throws IOException {
+        // Add all existed ServiceRestMetadata
         storage.read(SERVICE_REST_METADATA_RESOURCE_PATH, reader -> {
-            Gson gson = new Gson();
-            return (List) gson.fromJson(reader, getParameterized(List.class, ServiceRestMetadata.class).getType());
-        }).ifPresent(existedMetadata -> {
-            // Add all existed ServiceRestMetadata
-            serviceRestMetadata.addAll(existedMetadata);
-        });
+            try {
+                StringBuilder stringBuilder = new StringBuilder();
+                char[] buf = new char[1024];
+                int len;
+                while ((len = reader.read(buf)) != -1) {
+                    stringBuilder.append(buf, 0, len);
+                }
+                return JsonUtils.getJson().toJavaList(stringBuilder.toString(), ServiceRestMetadata.class);
+            } catch (IOException e) {
+                return null;
+            }
+        }).ifPresent(serviceRestMetadata::addAll);
         write(serviceRestMetadata);
     }
 
@@ -55,7 +59,7 @@ public class ServiceRestMetadataStorage {
         if (serviceRestMetadata.isEmpty()) {
             return;
         }
-        storage.write(() -> new Gson().toJson(serviceRestMetadata), SERVICE_REST_METADATA_RESOURCE_PATH);
+        storage.write(() -> JsonUtils.getJson().toJson(serviceRestMetadata), SERVICE_REST_METADATA_RESOURCE_PATH);
     }
 
 }

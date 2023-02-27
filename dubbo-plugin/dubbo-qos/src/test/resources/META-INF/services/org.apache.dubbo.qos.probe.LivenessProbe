@@ -1,0 +1,1 @@
+mock=org.apache.dubbo.qos.command.impl.MockLivenessProbe

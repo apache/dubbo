@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.dubbo.decode;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
@@ -68,7 +69,7 @@ public class MockChannel implements Channel {
 
     @Override
     public URL getUrl() {
-        return new URL("dubbo", "localhost", 20880);
+        return new ServiceConfigURL("dubbo", "localhost", 20880);
     }
 
     @Override

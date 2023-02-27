@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.support;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -30,10 +31,10 @@ import java.util.HashMap;
 
 import static org.apache.dubbo.rpc.Constants.MOCK_KEY;
 
-public class MockInvokerTest {
+class MockInvokerTest {
 
     @Test
-    public void testParseMockValue() throws Exception {
+    void testParseMockValue() throws Exception {
         Assertions.assertNull(MockInvoker.parseMockValue("null"));
         Assertions.assertNull(MockInvoker.parseMockValue("empty"));
 
@@ -54,7 +55,7 @@ public class MockInvokerTest {
     }
 
     @Test
-    public void testInvoke() {
+    void testInvoke() {
         URL url = URL.valueOf("remote://1.2.3.4/" + String.class.getName());
         url = url.addParameter(MOCK_KEY, "return ");
         MockInvoker mockInvoker = new MockInvoker(url, String.class);
@@ -66,7 +67,11 @@ public class MockInvokerTest {
     }
 
     @Test
+<<<<<<< HEAD
     public void testGetDefaultObject() {
+=======
+    void testGetDefaultObject() {
+>>>>>>> origin/3.2
         // test methodA in DemoServiceAMock
         final Class<DemoServiceA> demoServiceAClass = DemoServiceA.class;
         URL url = URL.valueOf("remote://1.2.3.4/" + demoServiceAClass.getName());
@@ -91,7 +96,11 @@ public class MockInvokerTest {
 
 
     @Test
+<<<<<<< HEAD
     public void testInvokeThrowsRpcException1() {
+=======
+    void testInvokeThrowsRpcException1() {
+>>>>>>> origin/3.2
         URL url = URL.valueOf("remote://1.2.3.4/" + String.class.getName());
         MockInvoker mockInvoker = new MockInvoker(url, null);
 
@@ -100,7 +109,7 @@ public class MockInvokerTest {
     }
 
     @Test
-    public void testInvokeThrowsRpcException2() {
+    void testInvokeThrowsRpcException2() {
         URL url = URL.valueOf("remote://1.2.3.4/" + String.class.getName());
         url = url.addParameter(MOCK_KEY, "fail");
         MockInvoker mockInvoker = new MockInvoker(url, String.class);
@@ -112,7 +121,7 @@ public class MockInvokerTest {
     }
 
     @Test
-    public void testInvokeThrowsRpcException3() {
+    void testInvokeThrowsRpcException3() {
         URL url = URL.valueOf("remote://1.2.3.4/" + String.class.getName());
         url = url.addParameter(MOCK_KEY, "throw");
         MockInvoker mockInvoker = new MockInvoker(url, String.class);
@@ -124,28 +133,28 @@ public class MockInvokerTest {
     }
 
     @Test
-    public void testGetThrowable() {
+    void testGetThrowable() {
         Assertions.assertThrows(RpcException.class,
                 () -> MockInvoker.getThrowable("Exception.class"));
     }
 
     @Test
-    public void testGetMockObject() {
+    void testGetMockObject() {
         Assertions.assertEquals("",
-                MockInvoker.getMockObject("java.lang.String", String.class));
+                MockInvoker.getMockObject(ApplicationModel.defaultModel().getExtensionDirector(), "java.lang.String", String.class));
 
         Assertions.assertThrows(IllegalStateException.class, () -> MockInvoker
-                .getMockObject("true", String.class));
+                .getMockObject(ApplicationModel.defaultModel().getExtensionDirector(), "true", String.class));
         Assertions.assertThrows(IllegalStateException.class, () -> MockInvoker
-                .getMockObject("default", String.class));
+                .getMockObject(ApplicationModel.defaultModel().getExtensionDirector(), "default", String.class));
         Assertions.assertThrows(IllegalStateException.class, () -> MockInvoker
-                .getMockObject("java.lang.String", Integer.class));
+                .getMockObject(ApplicationModel.defaultModel().getExtensionDirector(), "java.lang.String", Integer.class));
         Assertions.assertThrows(IllegalStateException.class, () -> MockInvoker
-                .getMockObject("java.io.Serializable", Serializable.class));
+                .getMockObject(ApplicationModel.defaultModel().getExtensionDirector(), "java.io.Serializable", Serializable.class));
     }
 
     @Test
-    public void testNormalizeMock() {
+    void testNormalizeMock() {
         Assertions.assertNull(MockInvoker.normalizeMock(null));
 
         Assertions.assertEquals("", MockInvoker.normalizeMock(""));

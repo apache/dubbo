@@ -17,6 +17,12 @@
 package org.apache.dubbo.metadata.test;
 
 import org.apache.dubbo.common.URL;
+<<<<<<< HEAD
+=======
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.metadata.MappingListener;
+>>>>>>> origin/3.2
 import org.apache.dubbo.metadata.report.identifier.KeyTypeEnum;
 import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.ServiceMetadataIdentifier;
@@ -28,12 +34,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
-
 /**
  * ZookeeperRegistry
  */
-public class JTestMetadataReport4Test extends AbstractMetadataReport {
+class JTestMetadataReport4Test extends AbstractMetadataReport {
 
     public JTestMetadataReport4Test(URL url) {
         super(url);
@@ -43,7 +47,7 @@ public class JTestMetadataReport4Test extends AbstractMetadataReport {
 
 
     private static String getProtocol(URL url) {
-        String protocol = url.getParameter(SIDE_KEY);
+        String protocol = url.getSide();
         protocol = protocol == null ? url.getProtocol() : protocol;
         return protocol;
     }
@@ -94,5 +98,10 @@ public class JTestMetadataReport4Test extends AbstractMetadataReport {
     @Override
     public String getServiceDefinition(MetadataIdentifier consumerMetadataIdentifier) {
         return store.get(consumerMetadataIdentifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY));
+    }
+
+    @Override
+    public void removeServiceAppMappingListener(String serviceKey, MappingListener listener) {
+
     }
 }

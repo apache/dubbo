@@ -14,7 +14,12 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
+<<<<<<< HEAD
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+=======
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+>>>>>>> origin/3.2
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.apache.dubbo</groupId>
@@ -29,8 +34,14 @@
     <properties>
         <skip_maven_deploy>false</skip_maven_deploy>
         <curator5_version>5.1.0</curator5_version>
+<<<<<<< HEAD
         <zookeeper_version>3.6.0</zookeeper_version>
     </properties>
+=======
+        <zookeeper_version>3.7.0</zookeeper_version>
+    </properties>
+
+>>>>>>> origin/3.2
     <dependencies>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
@@ -44,12 +55,20 @@
         </dependency>
         <dependency>
             <groupId>org.apache.curator</groupId>
+<<<<<<< HEAD
             <artifactId>curator-recipes</artifactId>
+=======
+            <artifactId>curator-framework</artifactId>
+>>>>>>> origin/3.2
             <version>${curator5_version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.curator</groupId>
+<<<<<<< HEAD
             <artifactId>curator-framework</artifactId>
+=======
+            <artifactId>curator-recipes</artifactId>
+>>>>>>> origin/3.2
             <version>${curator5_version}</version>
         </dependency>
         <dependency>
@@ -57,11 +76,14 @@
             <artifactId>zookeeper</artifactId>
             <version>${zookeeper_version}</version>
         </dependency>
+<<<<<<< HEAD
         <dependency>
             <groupId>org.apache.curator</groupId>
             <artifactId>curator-test</artifactId>
             <version>${curator5_version}</version>
             <scope>test</scope>
         </dependency>
+=======
+>>>>>>> origin/3.2
     </dependencies>
 </project>

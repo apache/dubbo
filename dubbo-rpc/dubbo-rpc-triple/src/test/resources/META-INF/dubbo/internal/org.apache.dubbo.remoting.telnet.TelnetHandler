@@ -1,0 +1,1 @@
+test=org.apache.dubbo.rpc.protocol.dubbo.decode.telnet.TestTelnetHandler

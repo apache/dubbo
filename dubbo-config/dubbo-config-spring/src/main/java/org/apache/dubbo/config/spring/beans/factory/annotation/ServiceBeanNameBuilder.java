@@ -82,6 +82,10 @@ public class ServiceBeanNameBuilder {
         return new ServiceBeanNameBuilder(interfaceClass, environment);
     }
 
+    public static ServiceBeanNameBuilder create(String interfaceClass, Environment environment) {
+        return new ServiceBeanNameBuilder(interfaceClass, environment);
+    }
+
     public static ServiceBeanNameBuilder create(Service service, Class<?> interfaceClass, Environment environment) {
         return create(getAnnotationAttributes(service, false, false), interfaceClass, environment);
     }
@@ -91,8 +95,9 @@ public class ServiceBeanNameBuilder {
     }
 
     private static void append(StringBuilder builder, String value) {
+        builder.append(SEPARATOR);
         if (StringUtils.hasText(value)) {
-            builder.append(SEPARATOR).append(value);
+            builder.append(value);
         }
     }
 

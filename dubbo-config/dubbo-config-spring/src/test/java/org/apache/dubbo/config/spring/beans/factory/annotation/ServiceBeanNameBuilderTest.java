@@ -39,8 +39,12 @@ import static org.apache.dubbo.config.spring.beans.factory.annotation.ServiceBea
  */
 @Service(interfaceClass = DemoService.class, group = GROUP, version = VERSION,
         application = "application", module = "module", registry = {"1", "2", "3"})
+<<<<<<< HEAD
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class ServiceBeanNameBuilderTest {
+=======
+class ServiceBeanNameBuilderTest {
+>>>>>>> origin/3.2
 
     @Reference(interfaceClass = DemoService.class, group = "DUBBO", version = "${dubbo.version}",
             application = "application", module = "module", registry = {"1", "2", "3"})
@@ -59,22 +63,35 @@ public class ServiceBeanNameBuilderTest {
     }
 
     @Test
-    public void testServiceAnnotation() {
+    void testServiceAnnotation() {
         Service service = AnnotationUtils.getAnnotation(ServiceBeanNameBuilderTest.class, Service.class);
         ServiceBeanNameBuilder builder = ServiceBeanNameBuilder.create(service, INTERFACE_CLASS, environment);
         Assertions.assertEquals("ServiceBean:org.apache.dubbo.config.spring.api.DemoService:1.0.0:DUBBO",
+<<<<<<< HEAD
                 builder.build());
 
         Assertions.assertEquals("ServiceBean:org.apache.dubbo.config.spring.api.DemoService:1.0.0:DUBBO",
+=======
+>>>>>>> origin/3.2
                 builder.build());
     }
 
     @Test
-    public void testReferenceAnnotation() {
+    void testReferenceAnnotation() {
         Reference reference = AnnotationUtils.getAnnotation(ReflectionUtils.findField(ServiceBeanNameBuilderTest.class, "INTERFACE_CLASS"), Reference.class);
         ServiceBeanNameBuilder builder = ServiceBeanNameBuilder.create(reference, INTERFACE_CLASS, environment);
         Assertions.assertEquals("ServiceBean:org.apache.dubbo.config.spring.api.DemoService:1.0.0:DUBBO",
                 builder.build());
     }
 
+    @Test
+    void testServiceNameBuild() {
+        ServiceBeanNameBuilder vBuilder = ServiceBeanNameBuilder.create(INTERFACE_CLASS, environment);
+        String vBeanName = vBuilder.version("DUBBO").build();
+
+        ServiceBeanNameBuilder gBuilder = ServiceBeanNameBuilder.create(INTERFACE_CLASS, environment);
+        String gBeanName = gBuilder.group("DUBBO").build();
+
+        Assertions.assertNotEquals(vBeanName, gBeanName);
+    }
 }

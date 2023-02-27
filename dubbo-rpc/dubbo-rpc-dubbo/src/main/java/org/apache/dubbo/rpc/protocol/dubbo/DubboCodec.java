@@ -19,11 +19,15 @@ package org.apache.dubbo.rpc.protocol.dubbo;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.io.Bytes;
 import org.apache.dubbo.common.io.UnsafeByteArrayInputStream;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.serialize.ObjectOutput;
 import org.apache.dubbo.common.serialize.Serialization;
+<<<<<<< HEAD
+=======
+import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
+>>>>>>> origin/3.2
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.exchange.Request;
@@ -34,16 +38,19 @@ import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_MANAGEMENT_MODE_ISOLATION;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
-import static org.apache.dubbo.rpc.protocol.dubbo.CallbackServiceCodec.encodeInvocationArgument;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_DECODE;
 import static org.apache.dubbo.rpc.protocol.dubbo.Constants.DECODE_IN_IO_THREAD_KEY;
 import static org.apache.dubbo.rpc.protocol.dubbo.Constants.DEFAULT_DECODE_IN_IO_THREAD;
 
@@ -62,7 +69,16 @@ public class DubboCodec extends ExchangeCodec {
     public static final byte RESPONSE_NULL_VALUE_WITH_ATTACHMENTS = 5;
     public static final Object[] EMPTY_OBJECT_ARRAY = new Object[0];
     public static final Class<?>[] EMPTY_CLASS_ARRAY = new Class<?>[0];
-    private static final Logger log = LoggerFactory.getLogger(DubboCodec.class);
+    private static final ErrorTypeAwareLogger log = LoggerFactory.getErrorTypeAwareLogger(DubboCodec.class);
+
+    private static final AtomicBoolean decodeInUserThreadLogged = new AtomicBoolean(false);
+    private final CallbackServiceCodec callbackServiceCodec;
+    private final FrameworkModel frameworkModel;
+
+    public DubboCodec(FrameworkModel frameworkModel) {
+        this.frameworkModel = frameworkModel;
+        callbackServiceCodec = new CallbackServiceCodec(frameworkModel);
+    }
 
     @Override
     protected Object decodeBody(Channel channel, InputStream is, byte[] header) throws IOException {
@@ -94,12 +110,12 @@ public class DubboCodec extends ExchangeCodec {
                         DecodeableRpcResult result;
                         if (channel.getUrl().getParameter(DECODE_IN_IO_THREAD_KEY, DEFAULT_DECODE_IN_IO_THREAD)) {
                             result = new DecodeableRpcResult(channel, res, is,
-                                    (Invocation) getRequestData(id), proto);
+                                (Invocation) getRequestData(id), proto);
                             result.decode();
                         } else {
                             result = new DecodeableRpcResult(channel, res,
-                                    new UnsafeByteArrayInputStream(readMessageData(is)),
-                                    (Invocation) getRequestData(id), proto);
+                                new UnsafeByteArrayInputStream(readMessageData(is)),
+                                (Invocation) getRequestData(id), proto);
                         }
                         data = result;
                     }
@@ -110,7 +126,7 @@ public class DubboCodec extends ExchangeCodec {
                 }
             } catch (Throwable t) {
                 if (log.isWarnEnabled()) {
-                    log.warn("Decode response failed: " + t.getMessage(), t);
+                    log.warn(PROTOCOL_FAILED_DECODE, "", "", "Decode response failed: " + t.getMessage(), t);
                 }
                 res.setStatus(Response.CLIENT_ERROR);
                 res.setErrorMessage(StringUtils.toString(t));
@@ -137,19 +153,19 @@ public class DubboCodec extends ExchangeCodec {
                     }
                 } else {
                     DecodeableRpcInvocation inv;
-                    if (channel.getUrl().getParameter(DECODE_IN_IO_THREAD_KEY, DEFAULT_DECODE_IN_IO_THREAD)) {
-                        inv = new DecodeableRpcInvocation(channel, req, is, proto);
+                    if (isDecodeDataInIoThread(channel)) {
+                        inv = new DecodeableRpcInvocation(frameworkModel, channel, req, is, proto);
                         inv.decode();
                     } else {
-                        inv = new DecodeableRpcInvocation(channel, req,
-                                new UnsafeByteArrayInputStream(readMessageData(is)), proto);
+                        inv = new DecodeableRpcInvocation(frameworkModel, channel, req,
+                            new UnsafeByteArrayInputStream(readMessageData(is)), proto);
                     }
                     data = inv;
                 }
                 req.setData(data);
             } catch (Throwable t) {
                 if (log.isWarnEnabled()) {
-                    log.warn("Decode request failed: " + t.getMessage(), t);
+                    log.warn(PROTOCOL_FAILED_DECODE, "", "", "Decode request failed: " + t.getMessage(), t);
                 }
                 // bad request
                 req.setBroken(true);
@@ -158,6 +174,21 @@ public class DubboCodec extends ExchangeCodec {
 
             return req;
         }
+    }
+
+    private boolean isDecodeDataInIoThread(Channel channel) {
+        boolean decodeDataInIoThread = channel.getUrl().getParameter(DECODE_IN_IO_THREAD_KEY, DEFAULT_DECODE_IN_IO_THREAD);
+        String mode = ExecutorRepository.getMode(channel.getUrl().getOrDefaultApplicationModel());
+        if (EXECUTOR_MANAGEMENT_MODE_ISOLATION.equals(mode)) {
+            if (!decodeDataInIoThread && decodeInUserThreadLogged.compareAndSet(false, true)) {
+                log.info("Because thread pool isolation is enabled on the dubbo protocol, the body can only be decoded " +
+                    "on the io thread, and the parameter[" + DECODE_IN_IO_THREAD_KEY + "] will be ignored");
+                // Why? because obtaining the isolated thread pool requires the serviceKey of the service,
+                // and this part must be decoded before it can be obtained (more see DubboExecutorSupport)
+            }
+            return true;
+        }
+        return decodeDataInIoThread;
     }
 
     private byte[] readMessageData(InputStream is) throws IOException {
@@ -197,7 +228,7 @@ public class DubboCodec extends ExchangeCodec {
         Object[] args = inv.getArguments();
         if (args != null) {
             for (int i = 0; i < args.length; i++) {
-                out.writeObject(encodeInvocationArgument(channel, inv, i));
+                out.writeObject(callbackServiceCodec.encodeInvocationArgument(channel, inv, i));
             }
         }
         out.writeAttachments(inv.getObjectAttachments());

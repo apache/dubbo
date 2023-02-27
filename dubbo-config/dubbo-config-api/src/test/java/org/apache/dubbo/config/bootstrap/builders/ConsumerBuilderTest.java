@@ -76,7 +76,7 @@ class ConsumerBuilderTest {
     void build() {
         ConsumerBuilder builder = new ConsumerBuilder();
         builder.isDefault(true).client("client").threadPool("threadPool").coreThreads(10).threads(100).queues(200)
-                .shareConnections(300).id("id").prefix("prefix");
+                .shareConnections(300).id("id");
 
         ConsumerConfig config = builder.build();
         ConsumerConfig config2 = builder.build();
@@ -85,7 +85,6 @@ class ConsumerBuilderTest {
         Assertions.assertEquals("client", config.getClient());
         Assertions.assertEquals("threadPool", config.getThreadpool());
         Assertions.assertEquals("id", config.getId());
-        Assertions.assertEquals("prefix", config.getPrefix());
         Assertions.assertEquals(10, config.getCorethreads());
         Assertions.assertEquals(100, config.getThreads());
         Assertions.assertEquals(200, config.getQueues());

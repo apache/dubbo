@@ -34,7 +34,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.SUBSCRIBED_SERVICE_NAMES_KEY;
-import static org.apache.dubbo.metadata.DynamicConfigurationServiceNameMapping.buildGroup;
+import static org.apache.dubbo.common.config.configcenter.DynamicConfigurationServiceNameMapping.buildGroup;
 import static org.apache.dubbo.metadata.ServiceNameMapping.getDefaultExtension;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -42,12 +42,16 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 */
 /**
- * {@link ServiceNameMapping} Test
+ * {@link org.apache.dubbo.metadata.ServiceNameMapping} Test
  *
  * @since 2.7.8
  *//*
 
+<<<<<<< HEAD
 public class ServiceNameMappingTest {
+=======
+class ServiceNameMappingTest {
+>>>>>>> origin/3.2
 
     private static final URL BASE_URL = URL.valueOf("dubbo://127.0.0.1:20880");
 
@@ -64,13 +68,13 @@ public class ServiceNameMappingTest {
 
         applicationName = getClass().getSimpleName();
 
-        ApplicationModel.getConfigManager().setApplication(new ApplicationConfig(applicationName));
+        ApplicationModel.defaultModel().getConfigManager().setApplication(new ApplicationConfig(applicationName));
 
         configuration = new FileSystemDynamicConfiguration();
 
         FileUtils.deleteQuietly(configuration.getRootDirectory());
 
-        ApplicationModel.getEnvironment().setDynamicConfiguration(configuration);
+        ApplicationModel.defaultModel().getEnvironment().setDynamicConfiguration(configuration);
 
         serviceNameMapping = getDefaultExtension();
     }
@@ -83,7 +87,7 @@ public class ServiceNameMappingTest {
     }
 
     @Test
-    public void testDeprecatedMethods() {
+    void testDeprecatedMethods() {
         assertThrows(UnsupportedOperationException.class, () -> {
             serviceNameMapping.map(null, null, null, null);
         });
@@ -94,7 +98,7 @@ public class ServiceNameMappingTest {
     }
 
     @Test
-    public void testMap() {
+    void testMap() {
         String serviceInterface = ServiceNameMapping.class.getName();
         String key = applicationName;
         String group = buildGroup(serviceInterface, null, null, null);
@@ -104,7 +108,7 @@ public class ServiceNameMappingTest {
     }
 
     @Test
-    public void testGet() {
+    void testGet() {
         String serviceInterface = ServiceNameMapping.class.getName();
         URL url = BASE_URL.setServiceInterface(serviceInterface);
         serviceNameMapping.map(url);

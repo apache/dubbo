@@ -23,8 +23,8 @@
         </layout>
     </appender>
 
-    <logger name="org.apache.dubbo.config.spring" additivity="false">
-        <level value="DEBUG"/>
+    <logger name="org.apache.dubbo.config" additivity="false">
+        <level value="INFO"/>
         <appender-ref ref="CONSOLE"/>
     </logger>
 

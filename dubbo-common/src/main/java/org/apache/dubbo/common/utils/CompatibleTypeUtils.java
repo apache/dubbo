@@ -21,6 +21,10 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+<<<<<<< HEAD
+=======
+import java.time.LocalDate;
+>>>>>>> origin/3.2
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -127,7 +131,11 @@ public class CompatibleTypeUtils {
                 if (StringUtils.isEmpty(string)) {
                     return null;
                 }
+<<<<<<< HEAD
                 return java.time.LocalDate.parse(string);
+=======
+                return LocalDate.parse(string);
+>>>>>>> origin/3.2
             }
             if (type == java.time.LocalTime.class) {
                 if (StringUtils.isEmpty(string)) {
@@ -181,7 +189,11 @@ public class CompatibleTypeUtils {
                 return BigInteger.valueOf(number.longValue());
             }
             if (type == BigDecimal.class) {
+<<<<<<< HEAD
                 return BigDecimal.valueOf(number.doubleValue());
+=======
+                return new BigDecimal(number.toString());
+>>>>>>> origin/3.2
             }
             if (type == Date.class) {
                 return new Date(number.longValue());

@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.common.infra;
 
+import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 
 import java.util.Map;
@@ -26,7 +27,7 @@ import java.util.Map;
  * 2. get configurations from third-party systems which maybe useful for a specific component.
  */
 
-@SPI
+@SPI(scope = ExtensionScope.APPLICATION)
 public interface InfraAdapter {
 
     /**

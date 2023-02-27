@@ -17,7 +17,6 @@
 package org.apache.dubbo.metadata.report.identifier;
 
 import org.apache.dubbo.metadata.MetadataConstants;
-import org.apache.dubbo.metadata.report.identifier.KeyTypeEnum;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -28,10 +27,10 @@ import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 /**
  * 2019/1/7
  */
-public class MetadataIdentifierTest {
+class MetadataIdentifierTest {
 
     @Test
-    public void testGetUniqueKey() {
+    void testGetUniqueKey() {
         String interfaceName = "org.apache.dubbo.metadata.integration.InterfaceNameTestService";
         String version = "1.0.0.zk.md";
         String group = null;

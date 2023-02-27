@@ -16,15 +16,15 @@
  */
 package org.apache.dubbo.common.config;
 
+<<<<<<< HEAD
 import org.apache.dubbo.common.utils.ReflectUtils;
 
 import org.junit.jupiter.api.AfterEach;
+=======
+>>>>>>> origin/3.2
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.lang.reflect.Field;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -36,18 +36,11 @@ public class EnvironmentConfigurationTest {
     private static final String MOCK_KEY = "DUBBO_KEY";
     private static final String MOCK_VALUE = "mockValue";
 
-    /**
-     * Init.
-     */
-    @BeforeEach
-    public void init() {
-
-    }
-
     @Test
-    public void testGetInternalProperty() {
+    void testGetInternalProperty() {
         Map<String, String> map = new HashMap<>();
         map.put(MOCK_KEY, MOCK_VALUE);
+<<<<<<< HEAD
         try {
             setEnv(map);
             EnvironmentConfiguration configuration = new EnvironmentConfiguration();
@@ -94,13 +87,35 @@ public class EnvironmentConfigurationTest {
         Field field = env.getClass().getDeclaredField("m");
         ReflectUtils.makeAccessible(field);
         ((Map<String, String>) field.get(env)).put(name, val);
+=======
+        EnvironmentConfiguration configuration = new EnvironmentConfiguration() {
+            @Override
+            protected String getenv(String key) {
+                return map.get(key);
+            }
+        };
+        // this UT maybe only works on particular platform, assert only when value is not null.
+        Assertions.assertEquals(MOCK_VALUE, configuration.getInternalProperty("dubbo.key"));
+        Assertions.assertEquals(MOCK_VALUE, configuration.getInternalProperty("key"));
+        Assertions.assertEquals(MOCK_VALUE, configuration.getInternalProperty("dubbo_key"));
+        Assertions.assertEquals(MOCK_VALUE, configuration.getInternalProperty(MOCK_KEY));
+>>>>>>> origin/3.2
     }
-    /**
-     * Clean.
-     */
-    @AfterEach
-    public void clean(){
 
+    @Test
+    void testGetProperties() {
+        Map<String, String> map = new HashMap<>();
+        map.put(MOCK_KEY, MOCK_VALUE);
+        EnvironmentConfiguration configuration = new EnvironmentConfiguration() {
+            @Override
+            protected Map<String, String> getenv() {
+                return map;
+            }
+        };
+        Assertions.assertEquals(map, configuration.getProperties());
     }
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/3.2
 }

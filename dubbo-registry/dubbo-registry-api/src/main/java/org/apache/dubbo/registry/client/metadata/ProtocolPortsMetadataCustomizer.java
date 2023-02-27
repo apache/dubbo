@@ -17,13 +17,23 @@
 package org.apache.dubbo.registry.client.metadata;
 
 import org.apache.dubbo.common.URL;
+<<<<<<< HEAD
 import org.apache.dubbo.metadata.WritableMetadataService;
+=======
+import org.apache.dubbo.common.constants.LoggerCodeConstants;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.metadata.MetadataInfo;
+>>>>>>> origin/3.2
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstanceCustomizer;
 import org.apache.dubbo.rpc.Protocol;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.setEndpoints;
 
@@ -34,8 +44,9 @@ import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataU
  * @since 2.7.5
  */
 public class ProtocolPortsMetadataCustomizer implements ServiceInstanceCustomizer {
-
+    private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(ProtocolPortsMetadataCustomizer.class);
     @Override
+<<<<<<< HEAD
     public void customize(ServiceInstance serviceInstance) {
         WritableMetadataService writableMetadataService = WritableMetadataService.getDefaultExtension();
 
@@ -47,7 +58,30 @@ public class ProtocolPortsMetadataCustomizer implements ServiceInstanceCustomize
                     // TODO, same protocol listen on different ports will override with each other.
                     protocols.put(url.getProtocol(), url.getPort());
                 });
+=======
+    public void customize(ServiceInstance serviceInstance, ApplicationModel applicationModel) {
+        MetadataInfo metadataInfo = serviceInstance.getServiceMetadata();
+        if (metadataInfo == null || CollectionUtils.isEmptyMap(metadataInfo.getExportedServiceURLs())) {
+            return;
+        }
 
-        setEndpoints(serviceInstance, protocols);
+        Map<String, Integer> protocols = new HashMap<>();
+        Set<URL> urls = metadataInfo.collectExportedURLSet();
+        urls.forEach(url -> {
+            // TODO, same protocol listen on different ports will override with each other.
+            String protocol = url.getProtocol();
+            Integer oldPort = protocols.get(protocol);
+            int newPort = url.getPort();
+            if (oldPort != null && oldPort != newPort) {
+                LOGGER.warn(LoggerCodeConstants.PROTOCOL_INCORRECT_PARAMETER_VALUES, "the protocol is listening multiple ports", "", "Same protocol " + "[" + protocol + "]" + " listens on different ports " + "[" + oldPort + "," + newPort + "]" + " will override with each other" +
+                    ". The port [" + oldPort + "] is overridden with port [" + newPort + "].");
+            }
+            protocols.put(protocol, newPort);
+        });
+>>>>>>> origin/3.2
+
+        if (protocols.size() > 0) {// set endpoints only for multi-protocol scenario
+            setEndpoints(serviceInstance, protocols);
+        }
     }
 }

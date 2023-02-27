@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.rest;
 
 import org.apache.dubbo.rpc.RpcException;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Answers;
@@ -33,7 +34,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
-public class RpcExceptionMapperTest {
+class RpcExceptionMapperTest {
 
     private RpcExceptionMapper exceptionMapper;
 
@@ -43,10 +44,10 @@ public class RpcExceptionMapperTest {
     }
 
     @Test
-    public void testConstraintViolationException() {
+    void testConstraintViolationException() {
         ConstraintViolationException violationException = mock(ConstraintViolationException.class);
-        ConstraintViolation violation = mock(ConstraintViolation.class, Answers.RETURNS_DEEP_STUBS);
-        given(violationException.getConstraintViolations()).willReturn(Sets.<ConstraintViolation<?>>newSet(violation));
+        ConstraintViolation<?> violation = mock(ConstraintViolation.class, Answers.RETURNS_DEEP_STUBS);
+        given(violationException.getConstraintViolations()).willReturn(Sets.newSet(violation));
         RpcException rpcException = new RpcException("violation", violationException);
 
         Response response = exceptionMapper.toResponse(rpcException);
@@ -56,7 +57,7 @@ public class RpcExceptionMapperTest {
     }
 
     @Test
-    public void testNormalException() {
+    void testNormalException() {
         RpcException rpcException = new RpcException();
         Response response = exceptionMapper.toResponse(rpcException);
 

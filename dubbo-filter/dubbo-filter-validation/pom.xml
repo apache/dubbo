@@ -20,7 +20,6 @@
         <groupId>org.apache.dubbo</groupId>
         <artifactId>dubbo-filter</artifactId>
         <version>${revision}</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>dubbo-filter-validation</artifactId>
     <packaging>jar</packaging>
@@ -34,6 +33,10 @@
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-rpc-api</artifactId>
             <version>${project.parent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.validation</groupId>
+            <artifactId>jakarta.validation-api</artifactId>
         </dependency>
         <dependency>
             <groupId>javax.validation</groupId>

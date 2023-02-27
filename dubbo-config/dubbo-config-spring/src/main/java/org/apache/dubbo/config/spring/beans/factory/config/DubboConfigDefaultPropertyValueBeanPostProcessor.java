@@ -18,7 +18,11 @@ package org.apache.dubbo.config.spring.beans.factory.config;
 
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.AbstractConfig;
+<<<<<<< HEAD
 import org.apache.dubbo.config.ProtocolConfig;
+=======
+import org.apache.dubbo.config.Constants;
+>>>>>>> origin/3.2
 
 import com.alibaba.spring.beans.factory.config.GenericBeanPostProcessorAdapter;
 import org.springframework.beans.BeansException;
@@ -53,7 +57,9 @@ public class DubboConfigDefaultPropertyValueBeanPostProcessor extends GenericBea
      */
     public static final String BEAN_NAME = "dubboConfigDefaultPropertyValueBeanPostProcessor";
 
+    @Override
     protected void processBeforeInitialization(AbstractConfig dubboConfigBean, String beanName) throws BeansException {
+<<<<<<< HEAD
         // [Feature] https://github.com/apache/dubbo/issues/5721
         setBeanNameAsDefaultValue(dubboConfigBean, "id", beanName);
         if (dubboConfigBean instanceof ProtocolConfig) {
@@ -63,6 +69,15 @@ public class DubboConfigDefaultPropertyValueBeanPostProcessor extends GenericBea
             }
         } else {
             setBeanNameAsDefaultValue(dubboConfigBean, "name", beanName);
+=======
+        // ignore auto generate bean name
+        if (!beanName.contains("#")) {
+            // [Feature] https://github.com/apache/dubbo/issues/5721
+            setPropertyIfAbsent(dubboConfigBean, Constants.ID, beanName);
+
+            // beanName should not be used as config name, fix https://github.com/apache/dubbo/pull/7624
+            //setPropertyIfAbsent(dubboConfigBean, "name", beanName);
+>>>>>>> origin/3.2
         }
     }
 
@@ -71,7 +86,7 @@ public class DubboConfigDefaultPropertyValueBeanPostProcessor extends GenericBea
         // DO NOTHING
     }
 
-    protected void setBeanNameAsDefaultValue(Object bean, String propertyName, String beanName) {
+    protected void setPropertyIfAbsent(Object bean, String propertyName, String beanName) {
 
         Class<?> beanClass = getTargetClass(bean);
 
@@ -87,14 +102,14 @@ public class DubboConfigDefaultPropertyValueBeanPostProcessor extends GenericBea
 
             Object propertyValue = invokeMethod(getterMethod, bean);
 
-            if (propertyValue != null) { // If The return value of "getName" method is not null
+            if (propertyValue != null) { // If The return value of "getId" method is not null
                 return;
             }
 
             Method setterMethod = propertyDescriptor.getWriteMethod();
             if (setterMethod != null) { // the getter and setter methods are present
                 if (Arrays.equals(of(String.class), setterMethod.getParameterTypes())) { // the param type is String
-                    // set bean name to the value of the the property
+                    // set bean name to the value of the property
                     invokeMethod(setterMethod, bean, beanName);
                 }
             }

@@ -26,10 +26,17 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+<<<<<<< HEAD
 public class ExchangersTest {
 
     @Test
     public void testBind() throws RemotingException {
+=======
+class ExchangersTest {
+
+    @Test
+    void testBind() throws RemotingException {
+>>>>>>> origin/3.2
         String url = "dubbo://127.0.0.1:12345?exchanger=mockExchanger";
         Exchangers.bind(url, Mockito.mock(Replier.class));
         Exchangers.bind(url, new ChannelHandlerAdapter(), Mockito.mock(Replier.class));
@@ -42,7 +49,11 @@ public class ExchangersTest {
     }
 
     @Test
+<<<<<<< HEAD
     public void testConnect() throws RemotingException {
+=======
+    void testConnect() throws RemotingException {
+>>>>>>> origin/3.2
         String url = "dubbo://127.0.0.1:12345?exchanger=mockExchanger";
         Exchangers.connect(url);
         Exchangers.connect(url, Mockito.mock(Replier.class));

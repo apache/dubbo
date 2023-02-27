@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.metadata;
 
+<<<<<<< HEAD
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 
@@ -56,4 +57,19 @@ public class RevisionResolver {
     }
 
 
+=======
+
+import org.apache.dubbo.common.utils.MD5Utils;
+
+public class RevisionResolver {
+
+    public static final String EMPTY_REVISION = "0";
+
+    private static MD5Utils md5Utils = new MD5Utils();
+
+    public static String calRevision(String metadata) {
+        return md5Utils.getMd5(metadata);
+    }
+
+>>>>>>> origin/3.2
 }

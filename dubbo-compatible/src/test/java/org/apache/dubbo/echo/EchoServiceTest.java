@@ -27,14 +27,17 @@ import org.apache.dubbo.rpc.service.EchoService;
 import org.apache.dubbo.service.DemoService;
 import org.apache.dubbo.service.DemoServiceImpl;
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/3.2
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class EchoServiceTest {
+class EchoServiceTest {
 
     @Test
-    public void testEcho() {
+    void testEcho() {
         DemoService server = new DemoServiceImpl();
         ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
         Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();

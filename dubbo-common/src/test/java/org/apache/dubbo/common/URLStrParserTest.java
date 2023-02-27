@@ -29,7 +29,11 @@ import static org.hamcrest.MatcherAssert.assertThat;
 /**
  * Created by LinShunkang on 2020/03/12
  */
+<<<<<<< HEAD
 public class URLStrParserTest {
+=======
+class URLStrParserTest {
+>>>>>>> origin/3.2
     private static Set<String> testCases = new HashSet<>(16);
     private static Set<String> errorDecodedCases = new HashSet<>(8);
     private static Set<String> errorEncodedCases = new HashSet<>(8);
@@ -43,6 +47,10 @@ public class URLStrParserTest {
         testCases.add("dubbo://192.168.1.1/" + RandomString.make(10240));
         testCases.add("file:/path/to/file.txt");
         testCases.add("dubbo://fe80:0:0:0:894:aeec:f37d:23e1%en0/path?abc=abc");
+<<<<<<< HEAD
+=======
+        testCases.add("dubbo://[fe80:0:0:0:894:aeec:f37d:23e1]:20880/path?abc=abc");
+>>>>>>> origin/3.2
 
         errorDecodedCases.add("dubbo:192.168.1.1");
         errorDecodedCases.add("://192.168.1.1");
@@ -56,7 +64,11 @@ public class URLStrParserTest {
     }
 
     @Test
+<<<<<<< HEAD
     public void testEncoded() {
+=======
+    void testEncoded() {
+>>>>>>> origin/3.2
         testCases.forEach(testCase -> {
             assertThat(URLStrParser.parseEncodedStr(URL.encode(testCase)), equalTo(URL.valueOf(testCase)));
         });
@@ -68,7 +80,11 @@ public class URLStrParserTest {
     }
 
     @Test
+<<<<<<< HEAD
     public void testDecoded() {
+=======
+    void testDecoded() {
+>>>>>>> origin/3.2
         testCases.forEach(testCase -> {
             assertThat(URLStrParser.parseDecodedStr(testCase), equalTo(URL.valueOf(testCase)));
         });

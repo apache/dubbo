@@ -68,4 +68,8 @@ public interface DemoService {
     String getRemoteApplicationName();
 
     byte[] download(int size);
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> origin/3.2

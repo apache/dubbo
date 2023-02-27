@@ -72,7 +72,7 @@ public class PerformanceUtils {
     public static void printSeparator() {
         StringBuilder pad = new StringBuilder();
         for (int i = 0; i < WIDTH; i++) {
-            pad.append("-");
+            pad.append('-');
         }
         System.out.println("+" + pad + "+");
     }
@@ -80,7 +80,7 @@ public class PerformanceUtils {
     public static void printBorder() {
         StringBuilder pad = new StringBuilder();
         for (int i = 0; i < WIDTH; i++) {
-            pad.append("=");
+            pad.append('=');
         }
         System.out.println("+" + pad + "+");
     }
@@ -90,7 +90,7 @@ public class PerformanceUtils {
         int len = WIDTH - msg.length() - 1;
         if (len > 0) {
             for (int i = 0; i < len; i++) {
-                pad.append(" ");
+                pad.append(' ');
             }
         }
         System.out.println("| " + msg + pad + "|");
@@ -102,7 +102,7 @@ public class PerformanceUtils {
         if (len > 0) {
             int half = len / 2;
             for (int i = 0; i < half; i++) {
-                pad.append(" ");
+                pad.append(' ');
             }
         }
         System.out.println("|" + pad + msg + pad + ((len % 2 == 0) ? "" : " ") + "|");

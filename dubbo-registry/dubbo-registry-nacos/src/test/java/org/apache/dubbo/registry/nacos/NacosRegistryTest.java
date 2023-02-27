@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.registry.nacos;
 
+<<<<<<< HEAD
 
 import com.alibaba.nacos.api.common.Constants;
 import com.alibaba.nacos.api.exception.NacosException;
@@ -41,21 +42,64 @@ import java.util.Map;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+=======
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.registry.NotifyListener;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import com.alibaba.nacos.api.common.Constants;
+import com.alibaba.nacos.api.exception.NacosException;
+import com.alibaba.nacos.api.naming.NamingService;
+import com.alibaba.nacos.api.naming.pojo.Instance;
+import com.alibaba.nacos.api.naming.pojo.ListView;
+import com.alibaba.nacos.client.naming.NacosNamingService;
+
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
+>>>>>>> origin/3.2
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_CATEGORY;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+<<<<<<< HEAD
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.doNothing;
 
 public class NacosRegistryTest {
 
+=======
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+/**
+ * Test for NacosRegistry
+ */
+class NacosRegistryTest {
+
+    private static final String serviceInterface = "org.apache.dubbo.registry.nacos.NacosService";
+
+    private final URL serviceUrl = URL.valueOf("nacos://127.0.0.1:3333/" + serviceInterface + "?interface=" +
+        serviceInterface + "&notify=false&methods=test1,test2&category=providers&version=1.0.0&group=default&side=provider");
+>>>>>>> origin/3.2
 
     private NacosRegistryFactory nacosRegistryFactory;
 
     private NacosRegistry nacosRegistry;
 
+<<<<<<< HEAD
     private static final String serviceInterface = "org.apache.dubbo.registry.nacos.NacosService";
 
     private final URL serviceUrl = URL.valueOf("nacos://127.0.0.1:3333/" + serviceInterface + "?interface=" +
@@ -64,26 +108,45 @@ public class NacosRegistryTest {
     private URL registryUrl;
 
 
+=======
+    private URL registryUrl;
+
+>>>>>>> origin/3.2
     @BeforeEach
     public void setUp() throws Exception {
 
         int nacosServerPort = NetUtils.getAvailablePort();
 
+<<<<<<< HEAD
         this.registryUrl = URL.valueOf("nacos://localhost:" + nacosServerPort);
+=======
+        this.registryUrl = URL.valueOf("nacos://localhost:" + nacosServerPort + "?nacos.check=false");
+>>>>>>> origin/3.2
 
         this.nacosRegistryFactory = new NacosRegistryFactory();
 
         this.nacosRegistry = (NacosRegistry) nacosRegistryFactory.createRegistry(registryUrl);
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/3.2
     }
 
 
     @AfterEach
     public void tearDown() throws Exception {
+<<<<<<< HEAD
     }
 
     @Test
     public void testRegister() {
+=======
+
+    }
+
+    @Test
+    void testRegister() {
+>>>>>>> origin/3.2
         NamingService namingService = mock(NacosNamingService.class);
         try {
 
@@ -92,21 +155,32 @@ public class NacosRegistryTest {
             URL newUrl = this.serviceUrl.addParameter(CATEGORY_KEY, category);
             newUrl = newUrl.addParameter(PROTOCOL_KEY, this.serviceUrl.getProtocol());
             newUrl = newUrl.addParameter(PATH_KEY, this.serviceUrl.getPath());
+<<<<<<< HEAD
             newUrl = newUrl.addParameters(NacosNamingServiceUtils.getNacosPreservedParam(this.serviceUrl));
+=======
+>>>>>>> origin/3.2
             String ip = newUrl.getHost();
             int port = newUrl.getPort();
             Instance instance = new Instance();
             instance.setIp(ip);
             instance.setPort(port);
             instance.setMetadata(new HashMap<>(newUrl.getParameters()));
+<<<<<<< HEAD
             doNothing().when(namingService).registerInstance(serviceName,
                     Constants.DEFAULT_GROUP, instance);
+=======
+            doNothing().when(namingService).registerInstance(serviceName, Constants.DEFAULT_GROUP, instance);
+>>>>>>> origin/3.2
         } catch (NacosException e) {
             // ignore
         }
 
+<<<<<<< HEAD
         NacosNamingServiceWrapper nacosNamingServiceWrapper = new
                 NacosNamingServiceWrapper(namingService);
+=======
+        NacosNamingServiceWrapper nacosNamingServiceWrapper = new NacosNamingServiceWrapper(new NacosConnectionManager(namingService), 0, 0);
+>>>>>>> origin/3.2
         nacosRegistry = new NacosRegistry(this.registryUrl, nacosNamingServiceWrapper);
 
         Set<URL> registered;
@@ -117,12 +191,20 @@ public class NacosRegistryTest {
         }
 
         registered = nacosRegistry.getRegistered();
+<<<<<<< HEAD
         assertThat(registered.size(), is(1));
 
     }
 
     @Test
     public void testUnRegister() {
+=======
+        Assertions.assertEquals(1, registered.size());
+    }
+
+    @Test
+    void testUnRegister() {
+>>>>>>> origin/3.2
         NamingService namingService = mock(NacosNamingService.class);
 
         try {
@@ -132,7 +214,10 @@ public class NacosRegistryTest {
             URL newUrl = this.serviceUrl.addParameter(CATEGORY_KEY, category);
             newUrl = newUrl.addParameter(PROTOCOL_KEY, this.serviceUrl.getProtocol());
             newUrl = newUrl.addParameter(PATH_KEY, this.serviceUrl.getPath());
+<<<<<<< HEAD
             newUrl = newUrl.addParameters(NacosNamingServiceUtils.getNacosPreservedParam(this.serviceUrl));
+=======
+>>>>>>> origin/3.2
             String ip = newUrl.getHost();
             int port = newUrl.getPort();
             Instance instance = new Instance();
@@ -140,22 +225,34 @@ public class NacosRegistryTest {
             instance.setPort(port);
             instance.setMetadata(new HashMap<>(newUrl.getParameters()));
             doNothing().when(namingService).registerInstance(serviceName,
+<<<<<<< HEAD
                     Constants.DEFAULT_GROUP, instance);
 
             doNothing().when(namingService).deregisterInstance(serviceName,
                     Constants.DEFAULT_GROUP, ip, port);
+=======
+                Constants.DEFAULT_GROUP, instance);
+
+            doNothing().when(namingService).deregisterInstance(serviceName,
+                Constants.DEFAULT_GROUP, ip, port);
+>>>>>>> origin/3.2
         } catch (NacosException e) {
             // ignore
         }
 
+<<<<<<< HEAD
         NacosNamingServiceWrapper nacosNamingServiceWrapper = new
                 NacosNamingServiceWrapper(namingService);
+=======
+        NacosNamingServiceWrapper nacosNamingServiceWrapper = new NacosNamingServiceWrapper(new NacosConnectionManager(namingService), 0, 0);
+>>>>>>> origin/3.2
         nacosRegistry = new NacosRegistry(this.registryUrl, nacosNamingServiceWrapper);
 
         nacosRegistry.register(serviceUrl);
         Set<URL> registered = nacosRegistry.getRegistered();
 
         assertThat(registered.contains(serviceUrl), is(true));
+<<<<<<< HEAD
         assertThat(registered.size(), is(1));
 
         nacosRegistry.unregister(serviceUrl);
@@ -166,6 +263,17 @@ public class NacosRegistryTest {
 
     @Test
     public void testSubscribe() {
+=======
+        Assertions.assertEquals(1, registered.size());
+
+        nacosRegistry.unregister(serviceUrl);
+        Assertions.assertFalse(registered.contains(serviceUrl));
+        Assertions.assertEquals(0, registered.size());
+    }
+
+    @Test
+    void testSubscribe() {
+>>>>>>> origin/3.2
         NamingService namingService = mock(NacosNamingService.class);
 
         try {
@@ -175,7 +283,10 @@ public class NacosRegistryTest {
             URL newUrl = this.serviceUrl.addParameter(CATEGORY_KEY, category);
             newUrl = newUrl.addParameter(PROTOCOL_KEY, this.serviceUrl.getProtocol());
             newUrl = newUrl.addParameter(PATH_KEY, this.serviceUrl.getPath());
+<<<<<<< HEAD
             newUrl = newUrl.addParameters(NacosNamingServiceUtils.getNacosPreservedParam(this.serviceUrl));
+=======
+>>>>>>> origin/3.2
             String ip = newUrl.getHost();
             int port = newUrl.getPort();
             Instance instance = new Instance();
@@ -186,19 +297,28 @@ public class NacosRegistryTest {
             List<Instance> instances = new ArrayList<>();
             instances.add(instance);
             when(namingService.getAllInstances(serviceName,
+<<<<<<< HEAD
                     this.registryUrl.getParameter(GROUP_KEY, Constants.DEFAULT_GROUP))).thenReturn(instances);
+=======
+                this.registryUrl.getParameter(GROUP_KEY, Constants.DEFAULT_GROUP))).thenReturn(instances);
+>>>>>>> origin/3.2
         } catch (NacosException e) {
             // ignore
         }
 
+<<<<<<< HEAD
         NacosNamingServiceWrapper nacosNamingServiceWrapper = new
                 NacosNamingServiceWrapper(namingService);
+=======
+        NacosNamingServiceWrapper nacosNamingServiceWrapper = new NacosNamingServiceWrapper(new NacosConnectionManager(namingService), 0, 0);
+>>>>>>> origin/3.2
         nacosRegistry = new NacosRegistry(this.registryUrl, nacosNamingServiceWrapper);
 
         NotifyListener listener = mock(NotifyListener.class);
         nacosRegistry.subscribe(serviceUrl, listener);
 
         Map<URL, Set<NotifyListener>> subscribed = nacosRegistry.getSubscribed();
+<<<<<<< HEAD
         assertThat(subscribed.size(), is(1));
         assertThat(subscribed.get(serviceUrl).size(), is(1));
 
@@ -206,6 +326,14 @@ public class NacosRegistryTest {
 
     @Test
     public void testUnSubscribe() {
+=======
+        Assertions.assertEquals(1, subscribed.size());
+        Assertions.assertEquals(1, subscribed.get(serviceUrl).size());
+    }
+
+    @Test
+    void testUnSubscribe() {
+>>>>>>> origin/3.2
         NamingService namingService = mock(NacosNamingService.class);
 
         try {
@@ -215,7 +343,10 @@ public class NacosRegistryTest {
             URL newUrl = this.serviceUrl.addParameter(CATEGORY_KEY, category);
             newUrl = newUrl.addParameter(PROTOCOL_KEY, this.serviceUrl.getProtocol());
             newUrl = newUrl.addParameter(PATH_KEY, this.serviceUrl.getPath());
+<<<<<<< HEAD
             newUrl = newUrl.addParameters(NacosNamingServiceUtils.getNacosPreservedParam(this.serviceUrl));
+=======
+>>>>>>> origin/3.2
             String ip = newUrl.getHost();
             int port = newUrl.getPort();
             Instance instance = new Instance();
@@ -226,20 +357,29 @@ public class NacosRegistryTest {
             List<Instance> instances = new ArrayList<>();
             instances.add(instance);
             when(namingService.getAllInstances(serviceName,
+<<<<<<< HEAD
                     this.registryUrl.getParameter(GROUP_KEY, Constants.DEFAULT_GROUP))).thenReturn(instances);
+=======
+                this.registryUrl.getParameter(GROUP_KEY, Constants.DEFAULT_GROUP))).thenReturn(instances);
+>>>>>>> origin/3.2
 
         } catch (NacosException e) {
             // ignore
         }
 
         NacosNamingServiceWrapper nacosNamingServiceWrapper = new
+<<<<<<< HEAD
                 NacosNamingServiceWrapper(namingService);
+=======
+            NacosNamingServiceWrapper(new NacosConnectionManager(namingService), 0, 0);
+>>>>>>> origin/3.2
         nacosRegistry = new NacosRegistry(this.registryUrl, nacosNamingServiceWrapper);
 
         NotifyListener listener = mock(NotifyListener.class);
         nacosRegistry.subscribe(serviceUrl, listener);
 
         Map<URL, Set<NotifyListener>> subscribed = nacosRegistry.getSubscribed();
+<<<<<<< HEAD
         assertThat(subscribed.size(), is(1));
         assertThat(subscribed.get(serviceUrl).size(), is(1));
 
@@ -247,21 +387,40 @@ public class NacosRegistryTest {
         subscribed = nacosRegistry.getSubscribed();
         assertThat(subscribed.size(), is(1));
         assertThat(subscribed.get(serviceUrl).size(), is(0));
+=======
+        Assertions.assertEquals(1, subscribed.size());
+        Assertions.assertEquals(1, subscribed.get(serviceUrl).size());
+
+        nacosRegistry.unsubscribe(serviceUrl, listener);
+        subscribed = nacosRegistry.getSubscribed();
+        Assertions.assertEquals(1, subscribed.size());
+        Assertions.assertEquals(0, subscribed.get(serviceUrl).size());
+>>>>>>> origin/3.2
     }
 
 
     @Test
+<<<<<<< HEAD
     public void testIsConformRules() {
         NamingService namingService = mock(NacosNamingService.class);
         URL serviceUrlWithoutCategory = URL.valueOf("nacos://127.0.0.1:3333/" + serviceInterface + "?interface=" +
                 serviceInterface + "&notify=false&methods=test1,test2&version=1.0.0&group=default");
+=======
+    void testIsConformRules() {
+        NamingService namingService = mock(NacosNamingService.class);
+        URL serviceUrlWithoutCategory = URL.valueOf("nacos://127.0.0.1:3333/" + serviceInterface + "?interface=" +
+            serviceInterface + "&notify=false&methods=test1,test2&version=1.0.0&group=default");
+>>>>>>> origin/3.2
         try {
             String serviceName = "providers:org.apache.dubbo.registry.nacos.NacosService:1.0.0:default";
             String category = this.serviceUrl.getParameter(CATEGORY_KEY, DEFAULT_CATEGORY);
             URL newUrl = this.serviceUrl.addParameter(CATEGORY_KEY, category);
             newUrl = newUrl.addParameter(PROTOCOL_KEY, this.serviceUrl.getProtocol());
             newUrl = newUrl.addParameter(PATH_KEY, this.serviceUrl.getPath());
+<<<<<<< HEAD
             newUrl = newUrl.addParameters(NacosNamingServiceUtils.getNacosPreservedParam(this.serviceUrl));
+=======
+>>>>>>> origin/3.2
             String ip = newUrl.getHost();
             int port = newUrl.getPort();
             Instance instance = new Instance();
@@ -272,7 +431,11 @@ public class NacosRegistryTest {
             List<Instance> instances = new ArrayList<>();
             instances.add(instance);
             when(namingService.getAllInstances(serviceName,
+<<<<<<< HEAD
                     this.registryUrl.getParameter(GROUP_KEY, Constants.DEFAULT_GROUP))).thenReturn(instances);
+=======
+                this.registryUrl.getParameter(GROUP_KEY, Constants.DEFAULT_GROUP))).thenReturn(instances);
+>>>>>>> origin/3.2
 
             String serviceNameWithoutVersion = "providers:org.apache.dubbo.registry.nacos.NacosService:default";
             String serviceName1 = "providers:org.apache.dubbo.registry.nacos.NacosService:1.0.0:default";
@@ -282,19 +445,28 @@ public class NacosRegistryTest {
             ListView<String> result = new ListView<>();
             result.setData(serviceNames);
             when(namingService.getServicesOfServer(1, Integer.MAX_VALUE,
+<<<<<<< HEAD
                     registryUrl.getParameter(GROUP_KEY, Constants.DEFAULT_GROUP))).thenReturn(result);
+=======
+                registryUrl.getParameter(GROUP_KEY, Constants.DEFAULT_GROUP))).thenReturn(result);
+>>>>>>> origin/3.2
         } catch (NacosException e) {
             // ignore
         }
 
         NacosNamingServiceWrapper nacosNamingServiceWrapper = new
+<<<<<<< HEAD
                 NacosNamingServiceWrapper(namingService);
+=======
+            NacosNamingServiceWrapper(new NacosConnectionManager(namingService), 0, 0);
+>>>>>>> origin/3.2
         nacosRegistry = new NacosRegistry(this.registryUrl, nacosNamingServiceWrapper);
 
         Set<URL> registered;
         nacosRegistry.register(this.serviceUrl);
         nacosRegistry.register(serviceUrlWithoutCategory);
         registered = nacosRegistry.getRegistered();
+<<<<<<< HEAD
         assertThat(registered.contains(serviceUrl), is(true));
         assertThat(registered.contains(serviceUrlWithoutCategory), is(true));
         assertThat(registered.size(), is(2));
@@ -309,6 +481,21 @@ public class NacosRegistryTest {
                 serviceInterface +
                 "?interface=org.apache.dubbo.registry.nacos.NacosService" +
                 "&notify=false&methods=test1,test2&category=providers&version=1.0.0&group=default");
+=======
+        Assertions.assertTrue(registered.contains(serviceUrl));
+        Assertions.assertTrue(registered.contains(serviceUrlWithoutCategory));
+        Assertions.assertEquals(2, registered.size());
+
+        URL serviceUrlWithWildcard = URL.valueOf("nacos://127.0.0.1:3333/" +
+            serviceInterface +
+            "?interface=org.apache.dubbo.registry.nacos.NacosService" +
+            "&notify=false&methods=test1,test2&category=providers&version=*&group=default");
+
+        URL serviceUrlWithOutWildcard = URL.valueOf("nacos://127.0.0.1:3333/" +
+            serviceInterface +
+            "?interface=org.apache.dubbo.registry.nacos.NacosService" +
+            "&notify=false&methods=test1,test2&category=providers&version=1.0.0&group=default");
+>>>>>>> origin/3.2
 
         NotifyListener listener = mock(NotifyListener.class);
         nacosRegistry.subscribe(serviceUrlWithWildcard, listener);
@@ -316,6 +503,7 @@ public class NacosRegistryTest {
 
         Map<URL, Set<NotifyListener>> subscribed = nacosRegistry.getSubscribed();
 
+<<<<<<< HEAD
         assertThat(subscribed.size(), is(2));
         assertThat(subscribed.get(serviceUrlWithOutWildcard).size(), is(1));
 
@@ -323,5 +511,12 @@ public class NacosRegistryTest {
         assertThat(subscribed.get(serviceUrlWithWildcard).size(), is(1));
 
 
+=======
+        Assertions.assertEquals(2, registered.size());
+        Assertions.assertEquals(1, subscribed.get(serviceUrlWithOutWildcard).size());
+
+        Assertions.assertEquals(2, registered.size());
+        Assertions.assertEquals(1, subscribed.get(serviceUrlWithWildcard).size());
+>>>>>>> origin/3.2
     }
 }

@@ -18,6 +18,7 @@ package org.apache.dubbo.common.threadpool;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Adaptive;
+import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.common.threadpool.support.fixed.FixedThreadPool;
 
@@ -28,7 +29,12 @@ import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
 /**
  * ThreadPool
  */
+<<<<<<< HEAD
 @SPI(FixedThreadPool.NAME)
+=======
+//TODO which scope for ThreadPool? APPLICATION or FRAMEWORK
+@SPI(value = "fixed", scope = ExtensionScope.FRAMEWORK)
+>>>>>>> origin/3.2
 public interface ThreadPool {
 
     /**

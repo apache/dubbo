@@ -20,19 +20,20 @@ package org.apache.dubbo.common.status.support;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.status.Status;
+
 import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.common.status.Status.Level.OK;
 import static org.apache.dubbo.common.status.Status.Level.WARN;
 import static org.hamcrest.CoreMatchers.anyOf;
-import static org.hamcrest.Matchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 
-public class MemoryStatusCheckerTest {
+class MemoryStatusCheckerTest {
     private static final Logger logger = LoggerFactory.getLogger(MemoryStatusCheckerTest.class);
 
     @Test
-    public void test() throws Exception {
+    void test() throws Exception {
         MemoryStatusChecker statusChecker = new MemoryStatusChecker();
         Status status = statusChecker.check();
         assertThat(status.getLevel(), anyOf(is(OK), is(WARN)));

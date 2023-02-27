@@ -20,7 +20,9 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.spring.beans.factory.annotation.DubboConfigAliasPostProcessor;
 import org.apache.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessor;
+import org.apache.dubbo.config.spring.beans.factory.annotation.ServicePackagesHolder;
 import org.apache.dubbo.config.spring.beans.factory.config.DubboConfigDefaultPropertyValueBeanPostProcessor;
+<<<<<<< HEAD
 import org.apache.dubbo.config.spring.beans.factory.config.DubboConfigEarlyRegistrationPostProcessor;
 import org.apache.dubbo.config.spring.context.DubboApplicationListenerRegistrar;
 import org.apache.dubbo.config.spring.context.DubboBootstrapApplicationListener;
@@ -32,8 +34,31 @@ import org.springframework.beans.factory.BeanNotOfRequiredTypeException;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.NoUniqueBeanDefinitionException;
-import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+=======
+import org.apache.dubbo.config.spring.context.DubboConfigApplicationListener;
+import org.apache.dubbo.config.spring.context.DubboConfigBeanInitializer;
+import org.apache.dubbo.config.spring.context.DubboDeployApplicationListener;
+import org.apache.dubbo.config.spring.context.DubboInfraBeanRegisterPostProcessor;
+import org.apache.dubbo.config.spring.context.DubboSpringInitContext;
+import org.apache.dubbo.config.spring.reference.ReferenceBeanManager;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ModuleModel;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.config.BeanPostProcessor;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.beans.factory.support.AbstractBeanFactory;
+import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+>>>>>>> origin/3.2
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.beans.factory.support.RootBeanDefinition;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
+
+<<<<<<< HEAD
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -42,6 +67,10 @@ import static com.alibaba.spring.util.BeanRegistrar.registerInfrastructureBean;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.unmodifiableList;
 import static org.springframework.util.ObjectUtils.isEmpty;
+=======
+import java.util.HashMap;
+import java.util.Map;
+>>>>>>> origin/3.2
 
 /**
  * Dubbo Bean utilities class
@@ -52,6 +81,8 @@ public abstract class DubboBeanUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(DubboBeanUtils.class);
 
+    Log log = LogFactory.getLog(DubboBeanUtils.class);
+
     /**
      * Register the common beans
      *
@@ -59,19 +90,23 @@ public abstract class DubboBeanUtils {
      * @see ReferenceAnnotationBeanPostProcessor
      * @see DubboConfigDefaultPropertyValueBeanPostProcessor
      * @see DubboConfigAliasPostProcessor
-     * @see DubboLifecycleComponentApplicationListener
-     * @see DubboBootstrapApplicationListener
      */
     public static void registerCommonBeans(BeanDefinitionRegistry registry) {
 
+        registerInfrastructureBean(registry, ServicePackagesHolder.BEAN_NAME, ServicePackagesHolder.class);
+
+        registerInfrastructureBean(registry, ReferenceBeanManager.BEAN_NAME, ReferenceBeanManager.class);
+
         // Since 2.5.7 Register @Reference Annotation Bean Processor as an infrastructure Bean
         registerInfrastructureBean(registry, ReferenceAnnotationBeanPostProcessor.BEAN_NAME,
-                ReferenceAnnotationBeanPostProcessor.class);
+            ReferenceAnnotationBeanPostProcessor.class);
 
+        // TODO Whether DubboConfigAliasPostProcessor can be removed ?
         // Since 2.7.4 [Feature] https://github.com/apache/dubbo/issues/5093
         registerInfrastructureBean(registry, DubboConfigAliasPostProcessor.BEAN_NAME,
-                DubboConfigAliasPostProcessor.class);
+            DubboConfigAliasPostProcessor.class);
 
+<<<<<<< HEAD
         // Since 2.7.9 Register DubboApplicationListenerRegister as an infrastructure Bean
         // https://github.com/apache/dubbo/issues/6559
 
@@ -158,5 +193,132 @@ public abstract class DubboBeanUtils {
             }
         }
         return unmodifiableList(beans);
+=======
+        // register ApplicationListeners
+        registerInfrastructureBean(registry, DubboDeployApplicationListener.class.getName(), DubboDeployApplicationListener.class);
+        registerInfrastructureBean(registry, DubboConfigApplicationListener.class.getName(), DubboConfigApplicationListener.class);
+
+        // Since 2.7.6 Register DubboConfigDefaultPropertyValueBeanPostProcessor as an infrastructure Bean
+        registerInfrastructureBean(registry, DubboConfigDefaultPropertyValueBeanPostProcessor.BEAN_NAME,
+            DubboConfigDefaultPropertyValueBeanPostProcessor.class);
+
+        // Dubbo config initializer
+        registerInfrastructureBean(registry, DubboConfigBeanInitializer.BEAN_NAME, DubboConfigBeanInitializer.class);
+
+        // register infra bean if not exists later
+        registerInfrastructureBean(registry, DubboInfraBeanRegisterPostProcessor.BEAN_NAME, DubboInfraBeanRegisterPostProcessor.class);
     }
+
+    /**
+     * Register Infrastructure Bean
+     *
+     * @param beanDefinitionRegistry {@link BeanDefinitionRegistry}
+     * @param beanType               the type of bean
+     * @param beanName               the name of bean
+     * @return if it's a first time to register, return <code>true</code>, or <code>false</code>
+     */
+    static boolean registerInfrastructureBean(BeanDefinitionRegistry beanDefinitionRegistry,
+                                              String beanName,
+                                              Class<?> beanType) {
+
+        boolean registered = false;
+
+        if (!beanDefinitionRegistry.containsBeanDefinition(beanName)) {
+            RootBeanDefinition beanDefinition = new RootBeanDefinition(beanType);
+            beanDefinition.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
+            beanDefinitionRegistry.registerBeanDefinition(beanName, beanDefinition);
+            registered = true;
+
+            if (log.isDebugEnabled()) {
+                log.debug("The Infrastructure bean definition [" + beanDefinition
+                    + "with name [" + beanName + "] has been registered.");
+            }
+        }
+
+        return registered;
+>>>>>>> origin/3.2
+    }
+
+    /**
+     * Register a placeholder configurer beans if not exists.
+     * Call this method in BeanDefinitionRegistryPostProcessor,
+     * in order to enable the registered BeanFactoryPostProcessor bean to be loaded and executed.
+     *
+     * @param beanFactory
+     * @param registry
+     * @see DubboInfraBeanRegisterPostProcessor
+     * @see org.springframework.context.support.PostProcessorRegistrationDelegate#invokeBeanFactoryPostProcessors(org.springframework.beans.factory.config.ConfigurableListableBeanFactory, java.util.List)
+     */
+    static void registerPlaceholderConfigurerBeanIfNotExists(ConfigurableListableBeanFactory beanFactory, BeanDefinitionRegistry registry) {
+        // Auto register a PropertyPlaceholderConfigurer bean to resolve placeholders with Spring Environment PropertySources
+        // when loading dubbo xml config with @ImportResource
+        if (!checkBeanExists(beanFactory, PropertySourcesPlaceholderConfigurer.class)) {
+            Map<String, Object> propertySourcesPlaceholderPropertyValues = new HashMap<>();
+            propertySourcesPlaceholderPropertyValues.put("ignoreUnresolvablePlaceholders", true);
+
+            registerBeanDefinition(registry, PropertySourcesPlaceholderConfigurer.class.getName(),
+                PropertySourcesPlaceholderConfigurer.class, propertySourcesPlaceholderPropertyValues);
+        }
+    }
+
+    static boolean registerBeanDefinition(BeanDefinitionRegistry registry, String beanName,
+                                          Class<?> beanClass, Map<String, Object> extraPropertyValues) {
+        if (registry.containsBeanDefinition(beanName)) {
+            return false;
+        }
+
+        BeanDefinition beanDefinition = BeanDefinitionBuilder.genericBeanDefinition(beanClass).getBeanDefinition();
+        if (extraPropertyValues != null) {
+            for (Map.Entry<String, Object> entry : extraPropertyValues.entrySet()) {
+                beanDefinition.getPropertyValues().add(entry.getKey(), entry.getValue());
+            }
+        }
+
+        registry.registerBeanDefinition(beanName, beanDefinition);
+        return true;
+    }
+
+    static boolean checkBeanExists(ConfigurableListableBeanFactory beanFactory, Class<?> targetClass) {
+        String[] beanNames = beanFactory.getBeanNamesForType(targetClass, true, false);
+        return (beanNames != null && beanNames.length > 0);
+    }
+
+
+    static ReferenceAnnotationBeanPostProcessor getReferenceAnnotationBeanPostProcessor(AbstractBeanFactory beanFactory) {
+        for (BeanPostProcessor beanPostProcessor : beanFactory.getBeanPostProcessors()) {
+            if (beanPostProcessor instanceof ReferenceAnnotationBeanPostProcessor) {
+                return (ReferenceAnnotationBeanPostProcessor) beanPostProcessor;
+            }
+        }
+        return null;
+    }
+
+    static ReferenceAnnotationBeanPostProcessor getReferenceAnnotationBeanPostProcessor(ApplicationContext applicationContext) {
+        return getReferenceAnnotationBeanPostProcessor((AbstractBeanFactory) applicationContext.getAutowireCapableBeanFactory());
+    }
+
+    static DubboSpringInitContext getInitializationContext(BeanFactory beanFactory) {
+        String beanName = DubboSpringInitContext.class.getName();
+        if (beanFactory.containsBean(beanName)) {
+            return beanFactory.getBean(beanName, DubboSpringInitContext.class);
+        }
+        return null;
+    }
+
+    static ApplicationModel getApplicationModel(BeanFactory beanFactory) {
+        String beanName = ApplicationModel.class.getName();
+        if (beanFactory.containsBean(beanName)) {
+            return beanFactory.getBean(beanName, ApplicationModel.class);
+        }
+        return null;
+    }
+
+    static ModuleModel getModuleModel(BeanFactory beanFactory) {
+        String beanName = ModuleModel.class.getName();
+        if (beanFactory.containsBean(beanName)) {
+            return beanFactory.getBean(beanName, ModuleModel.class);
+        }
+        return null;
+    }
+
 }

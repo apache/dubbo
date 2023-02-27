@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Dubbo Community Repo
+    url: https://github.com/apache/dubbo-website
+    about: Please see our community docs here.
+  - name: Report a security issue
+    url: https://github.com/apache/dubbo/security/policy
+    about: Please report security vulnerabilities using these instructions.

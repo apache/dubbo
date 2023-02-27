@@ -382,16 +382,21 @@ public interface TypeUtils {
         if (element != null) {
             List<? extends TypeParameterElement> typeParameterElements = element.getTypeParameters();
             if (!typeParameterElements.isEmpty()) {
-                List<TypeMirror> typeMirrors = invokeMethod(type, "getTypeArguments");
+                List<? extends TypeMirror> typeMirrors;
+                if (type instanceof DeclaredType) {
+                    typeMirrors = ((DeclaredType) type).getTypeArguments();
+                } else {
+                    typeMirrors = invokeMethod(type, "getTypeArguments");
+                }
                 StringBuilder typeBuilder = new StringBuilder(element.toString());
-                typeBuilder.append("<");
+                typeBuilder.append('<');
                 for (int i = 0; i < typeMirrors.size(); i++) {
                     if (i > 0) {
                         typeBuilder.append(", ");
                     }
                     typeBuilder.append(typeMirrors.get(i).toString());
                 }
-                typeBuilder.append(">");
+                typeBuilder.append('>');
                 return typeBuilder.toString();
             }
         }

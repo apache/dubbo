@@ -23,6 +23,10 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.protocol.dubbo.support.DemoService;
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/3.2
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,7 +41,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
+<<<<<<< HEAD
 public class TraceFilterTest {
+=======
+class TraceFilterTest {
+>>>>>>> origin/3.2
 
     private MockChannel mockChannel;
     private static final String TRACE_MAX = "trace.max";
@@ -56,7 +64,11 @@ public class TraceFilterTest {
     }
 
     @Test
+<<<<<<< HEAD
     public void testAddAndRemoveTracer() throws Exception {
+=======
+    void testAddAndRemoveTracer() throws Exception {
+>>>>>>> origin/3.2
         String method = "sayHello";
         Class<?> type = DemoService.class;
         String key = type.getName() + "." + method;
@@ -84,7 +96,11 @@ public class TraceFilterTest {
     }
 
     @Test
+<<<<<<< HEAD
     public void testInvoke() throws Exception {
+=======
+    void testInvoke() throws Exception {
+>>>>>>> origin/3.2
         String method = "sayHello";
         Class<?> type = DemoService.class;
         String key = type.getName() + "." + method;

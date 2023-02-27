@@ -22,6 +22,10 @@ import org.apache.dubbo.cache.support.AbstractCacheFactoryTest;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.RpcInvocation;
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/3.2
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.TimeUnit;
@@ -30,6 +34,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+<<<<<<< HEAD
 
 public class ExpiringCacheFactoryTest extends AbstractCacheFactoryTest {
 
@@ -38,12 +43,26 @@ public class ExpiringCacheFactoryTest extends AbstractCacheFactoryTest {
 
     @Test
     public void testExpiringCacheFactory() throws Exception {
+=======
+
+class ExpiringCacheFactoryTest extends AbstractCacheFactoryTest {
+
+    private static final String EXPIRING_CACHE_URL =
+            "test://test:12/test?cache=expiring&cache.seconds=1&cache.interval=1";
+
+    @Test
+    void testExpiringCacheFactory() throws Exception {
+>>>>>>> origin/3.2
         Cache cache = super.constructCache();
         assertThat(cache instanceof ExpiringCache, is(true));
     }
 
     @Test
+<<<<<<< HEAD
     public void testExpiringCacheGetExpired() throws Exception {
+=======
+    void testExpiringCacheGetExpired() throws Exception {
+>>>>>>> origin/3.2
         URL url = URL.valueOf("test://test:12/test?cache=expiring&cache.seconds=1&cache.interval=1");
         AbstractCacheFactory cacheFactory = getCacheFactory();
         Invocation invocation = new RpcInvocation();
@@ -54,7 +73,11 @@ public class ExpiringCacheFactoryTest extends AbstractCacheFactoryTest {
     }
 
     @Test
+<<<<<<< HEAD
     public void testExpiringCacheUnExpired() throws Exception {
+=======
+    void testExpiringCacheUnExpired() throws Exception {
+>>>>>>> origin/3.2
         URL url = URL.valueOf("test://test:12/test?cache=expiring&cache.seconds=0&cache.interval=1");
         AbstractCacheFactory cacheFactory = getCacheFactory();
         Invocation invocation = new RpcInvocation();
@@ -65,7 +88,11 @@ public class ExpiringCacheFactoryTest extends AbstractCacheFactoryTest {
     }
 
     @Test
+<<<<<<< HEAD
     public void testExpiringCache() throws Exception {
+=======
+    void testExpiringCache() throws Exception {
+>>>>>>> origin/3.2
         Cache cache = constructCache();
         assertThat(cache instanceof ExpiringCache, is(true));
 
@@ -81,7 +108,11 @@ public class ExpiringCacheFactoryTest extends AbstractCacheFactoryTest {
     }
 
     @Test
+<<<<<<< HEAD
     public void testExpiringCacheExpired() throws Exception {
+=======
+    void testExpiringCacheExpired() throws Exception {
+>>>>>>> origin/3.2
         Cache cache = constructCache();
         assertThat(cache instanceof ExpiringCache, is(true));
 

@@ -221,22 +221,50 @@ class ApplicationBuilderTest {
     }
 
     @Test
+<<<<<<< HEAD
+=======
+    void livenessProbe() {
+        ApplicationBuilder builder = new ApplicationBuilder();
+        builder.livenessProbe("TestProbe");
+        Assertions.assertEquals("TestProbe", builder.build().getLivenessProbe());
+    }
+
+    @Test
+    void readinessProbe() {
+        ApplicationBuilder builder = new ApplicationBuilder();
+        builder.readinessProbe("TestProbe");
+        Assertions.assertEquals("TestProbe", builder.build().getReadinessProbe());
+    }
+
+    @Test
+    void startupProbe() {
+        ApplicationBuilder builder = new ApplicationBuilder();
+        builder.startupProbe("TestProbe");
+        Assertions.assertEquals("TestProbe", builder.build().getStartupProbe());
+    }
+
+    @Test
+>>>>>>> origin/3.2
     void build() {
         MonitorConfig monitor = new MonitorConfig("monitor-addr");
         RegistryConfig registry = new RegistryConfig();
 
         ApplicationBuilder builder = new ApplicationBuilder();
-        builder.id("id").prefix("prefix").name("name").version("version").owner("owner").organization("organization").architecture("architecture")
+        builder.id("id").name("name").version("version").owner("owner").organization("organization").architecture("architecture")
                 .environment("develop").compiler("compiler").logger("log4j").monitor(monitor).isDefault(false)
                 .dumpDirectory("dumpDirectory").qosEnable(true).qosPort(8080).qosAcceptForeignIp(false)
                 .shutwait("shutwait").registryIds("registryIds").addRegistry(registry)
+<<<<<<< HEAD
                 .appendParameter("default.num", "one").metadataServicePort(12345);
+=======
+                .appendParameter("default.num", "one").metadataServicePort(12345)
+                .livenessProbe("liveness").readinessProbe("readiness").startupProbe("startup");
+>>>>>>> origin/3.2
 
         ApplicationConfig config = builder.build();
         ApplicationConfig config2 = builder.build();
 
         Assertions.assertEquals("id", config.getId());
-        Assertions.assertEquals("prefix", config.getPrefix());
         Assertions.assertEquals("name", config.getName());
         Assertions.assertEquals("version", config.getVersion());
         Assertions.assertEquals("owner", config.getOwner());
@@ -257,6 +285,12 @@ class ApplicationBuilderTest {
         Assertions.assertTrue(config.getParameters().containsKey("default.num"));
         Assertions.assertEquals("one", config.getParameters().get("default.num"));
         Assertions.assertEquals(12345, config.getMetadataServicePort());
+<<<<<<< HEAD
+=======
+        Assertions.assertEquals("liveness", config.getLivenessProbe());
+        Assertions.assertEquals("readiness", config.getReadinessProbe());
+        Assertions.assertEquals("startup", config.getStartupProbe());
+>>>>>>> origin/3.2
 
         Assertions.assertNotSame(config, config2);
     }

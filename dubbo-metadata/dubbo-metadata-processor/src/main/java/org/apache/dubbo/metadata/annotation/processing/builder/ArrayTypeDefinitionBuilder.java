@@ -22,15 +22,16 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.TypeMirror;
 import java.lang.reflect.Array;
+import java.util.Map;
 
 import static org.apache.dubbo.metadata.annotation.processing.util.TypeUtils.isArrayType;
 
 /**
- * {@link TypeDefinitionBuilder} for Java {@link Array}
+ * {@link TypeBuilder} for Java {@link Array}
  *
  * @since 2.7.6
  */
-public class ArrayTypeDefinitionBuilder implements TypeDefinitionBuilder<ArrayType> {
+public class ArrayTypeDefinitionBuilder implements TypeBuilder<ArrayType> {
 
     @Override
     public boolean accept(ProcessingEnvironment processingEnv, TypeMirror type) {
@@ -38,9 +39,13 @@ public class ArrayTypeDefinitionBuilder implements TypeDefinitionBuilder<ArrayTy
     }
 
     @Override
-    public void build(ProcessingEnvironment processingEnv, ArrayType type, TypeDefinition typeDefinition) {
+    public TypeDefinition build(ProcessingEnvironment processingEnv, ArrayType type, Map<String, TypeDefinition> typeCache) {
+        TypeDefinition typeDefinition = new TypeDefinition(type.toString());
         TypeMirror componentType = type.getComponentType();
-        typeDefinition.getItems().add(TypeDefinitionBuilder.build(processingEnv, componentType));
+        TypeDefinition subTypeDefinition = TypeDefinitionBuilder.build(processingEnv, componentType, typeCache);
+        typeDefinition.getItems()
+                .add(subTypeDefinition.getType());
+        return typeDefinition;
     }
 
     @Override

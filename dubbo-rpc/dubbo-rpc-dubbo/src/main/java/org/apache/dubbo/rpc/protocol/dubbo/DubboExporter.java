@@ -32,11 +32,23 @@ public class DubboExporter<T> extends AbstractExporter<T> {
     public DubboExporter(Invoker<T> invoker, String key, DelegateExporterMap delegateExporterMap) {
         super(invoker);
         this.key = key;
+<<<<<<< HEAD
         this.delegateExporterMap = delegateExporterMap;
+=======
+        this.exporterMap = exporterMap;
+        exporterMap.put(key, this);
+>>>>>>> origin/3.2
     }
 
     @Override
     public void afterUnExport() {
+<<<<<<< HEAD
         delegateExporterMap.removeExportMap(key, this);
     }
 }
+=======
+        exporterMap.remove(key, this);
+    }
+
+}
+>>>>>>> origin/3.2

@@ -33,4 +33,14 @@
         <module>dubbo-monitor-api</module>
         <module>dubbo-monitor-default</module>
     </modules>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-test-check</artifactId>
+            <version>${project.parent.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
 </project>

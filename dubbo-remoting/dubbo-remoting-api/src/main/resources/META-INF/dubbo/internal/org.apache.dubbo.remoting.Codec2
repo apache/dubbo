@@ -1,3 +1,4 @@
 transport=org.apache.dubbo.remoting.transport.codec.TransportCodec
 telnet=org.apache.dubbo.remoting.telnet.codec.TelnetCodec
 exchange=org.apache.dubbo.remoting.exchange.codec.ExchangeCodec
+default=org.apache.dubbo.remoting.api.pu.DefaultCodec

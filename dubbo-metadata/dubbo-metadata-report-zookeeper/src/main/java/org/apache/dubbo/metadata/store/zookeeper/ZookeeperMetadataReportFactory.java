@@ -17,10 +17,18 @@
 package org.apache.dubbo.metadata.store.zookeeper;
 
 import org.apache.dubbo.common.URL;
+<<<<<<< HEAD
 import org.apache.dubbo.common.extension.Inject;
 import org.apache.dubbo.metadata.report.MetadataReport;
 import org.apache.dubbo.metadata.report.support.AbstractMetadataReportFactory;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
+=======
+import org.apache.dubbo.common.extension.DisableInject;
+import org.apache.dubbo.metadata.report.MetadataReport;
+import org.apache.dubbo.metadata.report.support.AbstractMetadataReportFactory;
+import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+>>>>>>> origin/3.2
 
 /**
  * ZookeeperRegistryFactory.
@@ -28,6 +36,7 @@ import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
 public class ZookeeperMetadataReportFactory extends AbstractMetadataReportFactory {
 
     private ZookeeperTransporter zookeeperTransporter;
+<<<<<<< HEAD
 
     public ZookeeperMetadataReportFactory() {
         this.zookeeperTransporter = ZookeeperTransporter.getExtension();
@@ -43,4 +52,24 @@ public class ZookeeperMetadataReportFactory extends AbstractMetadataReportFactor
         return new ZookeeperMetadataReport(url, zookeeperTransporter);
     }
 
+=======
+
+    private ApplicationModel applicationModel;
+
+    public ZookeeperMetadataReportFactory(ApplicationModel applicationModel) {
+        this.applicationModel = applicationModel;
+        this.zookeeperTransporter = ZookeeperTransporter.getExtension(applicationModel);
+    }
+
+    @DisableInject
+    public void setZookeeperTransporter(ZookeeperTransporter zookeeperTransporter) {
+        this.zookeeperTransporter = zookeeperTransporter;
+    }
+
+    @Override
+    public MetadataReport createMetadataReport(URL url) {
+        return new ZookeeperMetadataReport(url, zookeeperTransporter);
+    }
+
+>>>>>>> origin/3.2
 }

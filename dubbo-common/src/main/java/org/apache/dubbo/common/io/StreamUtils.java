@@ -28,7 +28,9 @@ public class StreamUtils {
 
     public static InputStream limitedInputStream(final InputStream is, final int limit) throws IOException {
         return new InputStream() {
-            private int mPosition = 0, mMark = 0, mLimit = Math.min(limit, is.available());
+            private int mPosition = 0;
+            private int mMark = 0;
+            private final int mLimit = Math.min(limit, is.available());
 
             @Override
             public int read() throws IOException {
@@ -92,13 +94,13 @@ public class StreamUtils {
             }
 
             @Override
-            public void mark(int readlimit) {
+            public synchronized void mark(int readlimit) {
                 is.mark(readlimit);
                 mMark = mPosition;
             }
 
             @Override
-            public void reset() throws IOException {
+            public synchronized void reset() throws IOException {
                 is.reset();
                 mPosition = mMark;
             }

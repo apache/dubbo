@@ -150,7 +150,7 @@ class AbstractMethodBuilderTest {
     @Test
     void build() {
         MethodBuilder builder = new MethodBuilder();
-        builder.id("id").prefix("prefix").timeout(1).retries(2).actives(3).loadbalance("mockloadbalance").async(true)
+        builder.id("id").timeout(1).retries(2).actives(3).loadbalance("mockloadbalance").async(true)
                 .sent(false).mock("mock").merger("merger").cache("cache").validation("validation")
                 .appendParameter("default.num", "one");
 
@@ -158,7 +158,6 @@ class AbstractMethodBuilderTest {
         MethodConfig config2 = builder.build();
 
         Assertions.assertEquals("id", config.getId());
-        Assertions.assertEquals("prefix", config.getPrefix());
         Assertions.assertEquals(1, config.getTimeout());
         Assertions.assertEquals(2, config.getRetries());
         Assertions.assertEquals(3, config.getActives());

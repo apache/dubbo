@@ -17,10 +17,12 @@
 package org.apache.dubbo.remoting.http.jetty;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.http.HttpHandler;
 import org.apache.dubbo.remoting.http.HttpServer;
+
 import org.apache.http.client.fluent.Request;
 import org.junit.jupiter.api.Test;
 
@@ -31,11 +33,11 @@ import java.io.IOException;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 
-public class JettyHttpBinderTest {
+class JettyHttpBinderTest {
     @Test
-    public void shouldAbleHandleRequestForJettyBinder() throws Exception {
+    void shouldAbleHandleRequestForJettyBinder() throws Exception {
         int port = NetUtils.getAvailablePort();
-        URL url = new URL("http", "localhost", port,
+        URL url = new ServiceConfigURL("http", "localhost", port,
                 new String[]{Constants.BIND_PORT_KEY, String.valueOf(port)});
         HttpServer httpServer = new JettyHttpServer(url, new HttpHandler() {
             @Override

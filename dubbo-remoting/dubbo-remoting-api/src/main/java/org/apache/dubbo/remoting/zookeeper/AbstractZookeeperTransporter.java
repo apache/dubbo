@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.StringUtils;
 
 import java.util.ArrayList;
@@ -34,7 +35,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 /**
  * AbstractZookeeperTransporter is abstract implements of ZookeeperTransporter.
  * <p>
- * If you want to extends this, implements createZookeeperClient.
+ * If you want to extend this, implements createZookeeperClient.
  */
 public abstract class AbstractZookeeperTransporter implements ZookeeperTransporter {
     private static final Logger logger = LoggerFactory.getLogger(ZookeeperTransporter.class);
@@ -89,13 +90,17 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
      * @return
      */
     public ZookeeperClient fetchAndUpdateZookeeperClientCache(List<String> addressList) {
+<<<<<<< HEAD:dubbo-remoting/dubbo-remoting-api/src/main/java/org/apache/dubbo/remoting/zookeeper/AbstractZookeeperTransporter.java
 
+=======
+>>>>>>> origin/3.2:dubbo-remoting/dubbo-remoting-zookeeper/src/main/java/org/apache/dubbo/remoting/zookeeper/support/AbstractZookeeperTransporter.java
         ZookeeperClient zookeeperClient = null;
         for (String address : addressList) {
             if ((zookeeperClient = zookeeperClientMap.get(address)) != null && zookeeperClient.isConnected()) {
                 break;
             }
         }
+        // mapping new backup address
         if (zookeeperClient != null && zookeeperClient.isConnected()) {
             writeToClientMap(addressList, zookeeperClient);
         }
@@ -103,25 +108,29 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
     }
 
     /**
-     * get all zookeeper urls (such as :zookeeper://127.0.0.1:2181?127.0.0.1:8989,127.0.0.1:9999)
+     * get all zookeeper urls (such as zookeeper://127.0.0.1:2181?backup=127.0.0.1:8989,127.0.0.1:9999)
      *
-     * @param url such as:zookeeper://127.0.0.1:2181?127.0.0.1:8989,127.0.0.1:9999
+     * @param url such as zookeeper://127.0.0.1:2181?backup=127.0.0.1:8989,127.0.0.1:9999
      * @return such as 127.0.0.1:2181,127.0.0.1:8989,127.0.0.1:9999
      */
     public List<String> getURLBackupAddress(URL url) {
+<<<<<<< HEAD:dubbo-remoting/dubbo-remoting-api/src/main/java/org/apache/dubbo/remoting/zookeeper/AbstractZookeeperTransporter.java
         List<String> addressList = new ArrayList<String>();
+=======
+        List<String> addressList = new ArrayList<>();
+>>>>>>> origin/3.2:dubbo-remoting/dubbo-remoting-zookeeper/src/main/java/org/apache/dubbo/remoting/zookeeper/support/AbstractZookeeperTransporter.java
         addressList.add(url.getAddress());
-        addressList.addAll(url.getParameter(RemotingConstants.BACKUP_KEY, Collections.EMPTY_LIST));
+        addressList.addAll(url.getParameter(RemotingConstants.BACKUP_KEY, Collections.emptyList()));
 
         String authPrefix = null;
         if (StringUtils.isNotEmpty(url.getUsername())) {
             StringBuilder buf = new StringBuilder();
             buf.append(url.getUsername());
             if (StringUtils.isNotEmpty(url.getPassword())) {
-                buf.append(":");
+                buf.append(':');
                 buf.append(url.getPassword());
             }
-            buf.append("@");
+            buf.append('@');
             authPrefix = buf.toString();
         }
 
@@ -132,7 +141,6 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
             }
             return authedAddressList;
         }
-
 
         return addressList;
     }
@@ -165,7 +173,7 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
             parameterMap.put(RemotingConstants.BACKUP_KEY, url.getParameter(RemotingConstants.BACKUP_KEY));
         }
 
-        return new URL(url.getProtocol(), url.getUsername(), url.getPassword(), url.getHost(), url.getPort(),
+        return new ServiceConfigURL(url.getProtocol(), url.getUsername(), url.getPassword(), url.getHost(), url.getPort(),
                 ZookeeperTransporter.class.getName(), parameterMap);
     }
 
@@ -176,5 +184,14 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
      */
     public Map<String, ZookeeperClient> getZookeeperClientMap() {
         return zookeeperClientMap;
+    }
+
+    @Override
+    public void destroy() {
+        // only destroy zk clients here
+        for (ZookeeperClient client : zookeeperClientMap.values()) {
+            client.close();
+        }
+        zookeeperClientMap.clear();
     }
 }

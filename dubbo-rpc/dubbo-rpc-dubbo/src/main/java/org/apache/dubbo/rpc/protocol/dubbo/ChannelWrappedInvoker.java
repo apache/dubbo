@@ -141,7 +141,7 @@ class ChannelWrappedInvoker<T> extends AbstractInvoker<T> {
 
         @Override
         public InetSocketAddress getRemoteAddress() {
-            return channel.getLocalAddress();
+            return channel.getRemoteAddress();
         }
 
         @Override

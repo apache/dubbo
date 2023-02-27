@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.common.logger;
 
+import org.apache.dubbo.rpc.model.FrameworkModel;
+
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -24,9 +26,9 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-public class LoggerFactoryTest {
+class LoggerFactoryTest {
     @Test
-    public void testLoggerLevel() {
+    void testLoggerLevel() {
         LoggerFactory.setLevel(Level.INFO);
         Level level = LoggerFactory.getLevel();
 
@@ -34,15 +36,15 @@ public class LoggerFactoryTest {
     }
 
     @Test
-    public void testGetLogFile() {
-        LoggerFactory.setLoggerAdapter("slf4j");
+    void testGetLogFile() {
+        LoggerFactory.setLoggerAdapter(FrameworkModel.defaultModel(), "slf4j");
         File file = LoggerFactory.getFile();
 
         assertThat(file, is(nullValue()));
     }
 
     @Test
-    public void testAllLogLevel() {
+    void testAllLogLevel() {
         for (Level targetLevel : Level.values()) {
             LoggerFactory.setLevel(targetLevel);
             Level level = LoggerFactory.getLevel();
@@ -52,7 +54,7 @@ public class LoggerFactoryTest {
     }
 
     @Test
-    public void testGetLogger() {
+    void testGetLogger() {
         Logger logger1 = LoggerFactory.getLogger(this.getClass());
         Logger logger2 = LoggerFactory.getLogger(this.getClass());
 
@@ -60,9 +62,17 @@ public class LoggerFactoryTest {
     }
 
     @Test
-    public void shouldReturnSameLogger() {
+    void shouldReturnSameLogger() {
         Logger logger1 = LoggerFactory.getLogger(this.getClass().getName());
         Logger logger2 = LoggerFactory.getLogger(this.getClass().getName());
+
+        assertThat(logger1, is(logger2));
+    }
+
+    @Test
+    void shouldReturnSameErrorTypeAwareLogger() {
+        ErrorTypeAwareLogger logger1 = LoggerFactory.getErrorTypeAwareLogger(this.getClass().getName());
+        ErrorTypeAwareLogger logger2 = LoggerFactory.getErrorTypeAwareLogger(this.getClass().getName());
 
         assertThat(logger1, is(logger2));
     }

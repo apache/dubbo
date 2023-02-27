@@ -134,8 +134,13 @@ class MetadataReportBuilderTest {
     void build() {
         MetadataReportBuilder builder = new MetadataReportBuilder();
         builder.address("address").username("username").password("password").timeout(1000).group("group")
+<<<<<<< HEAD
                 .retryTimes(1).retryPeriod(2).cycleReport(true).syncReport(false).file("file")
                 .appendParameter("default.num", "one").id("id").prefix("prefix");
+=======
+                .retryTimes(1).retryPeriod(2).cycleReport(true).syncReport(false)
+                .appendParameter("default.num", "one").id("id");
+>>>>>>> origin/3.2
 
         MetadataReportConfig config = builder.build();
         MetadataReportConfig config2 = builder.build();
@@ -153,7 +158,6 @@ class MetadataReportBuilderTest {
         Assertions.assertTrue(config.getParameters().containsKey("default.num"));
         Assertions.assertEquals("one", config.getParameters().get("default.num"));
         Assertions.assertEquals("id", config.getId());
-        Assertions.assertEquals("prefix", config.getPrefix());
         Assertions.assertNotSame(config, config2);
     }
 }

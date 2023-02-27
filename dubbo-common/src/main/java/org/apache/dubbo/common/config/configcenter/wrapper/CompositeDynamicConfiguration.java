@@ -18,12 +18,15 @@ package org.apache.dubbo.common.config.configcenter.wrapper;
 
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.SortedSet;
 import java.util.function.Consumer;
 import java.util.function.Function;
+
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
 
 /**
  * support multiple config center, simply iterating each concrete config center.
@@ -32,6 +35,8 @@ public class CompositeDynamicConfiguration implements DynamicConfiguration {
 
     public static final String NAME = "COMPOSITE";
 
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(CompositeDynamicConfiguration.class);
+
     private Set<DynamicConfiguration> configurations = new HashSet<>();
 
     public void addConfiguration(DynamicConfiguration configuration) {
@@ -39,6 +44,11 @@ public class CompositeDynamicConfiguration implements DynamicConfiguration {
             this.configurations.add(configuration);
         }
     }
+
+    public Set<DynamicConfiguration> getInnerConfigurations() {
+        return configurations;
+    }
+
 
     @Override
     public void addListener(String key, String group, ConfigurationListener listener) {
@@ -77,9 +87,15 @@ public class CompositeDynamicConfiguration implements DynamicConfiguration {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public SortedSet<String> getConfigKeys(String group) throws UnsupportedOperationException {
-        return (SortedSet<String>) iterateConfigOperation(configuration -> configuration.getConfigKeys(group));
+    public void close() throws Exception {
+        for (DynamicConfiguration configuration : configurations) {
+            try {
+                configuration.close();
+            } catch (Exception e) {
+                logger.warn(INTERNAL_ERROR, "unknown error in configuration-center related code in common module", "", "close dynamic configuration " + configuration.getClass().getName() + "failed: " + e.getMessage(), e);
+            }
+        }
+        configurations.clear();
     }
 
     private void iterateListenerOperation(Consumer<DynamicConfiguration> consumer) {

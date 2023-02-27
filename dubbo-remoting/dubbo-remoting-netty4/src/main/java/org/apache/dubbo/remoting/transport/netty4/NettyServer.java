@@ -17,17 +17,18 @@
 package org.apache.dubbo.remoting.transport.netty4;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.config.ConfigurationUtils;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.ExecutorUtil;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
-import org.apache.dubbo.remoting.RemotingServer;
 import org.apache.dubbo.remoting.transport.AbstractServer;
 import org.apache.dubbo.remoting.transport.dispatcher.ChannelHandlers;
+import org.apache.dubbo.remoting.transport.netty4.ssl.SslServerTlsHandler;
 import org.apache.dubbo.remoting.utils.UrlUtils;
 
 import io.netty.bootstrap.ServerBootstrap;
@@ -38,6 +39,7 @@ import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.timeout.IdleStateHandler;
+import io.netty.util.concurrent.Future;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
@@ -48,14 +50,18 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.dubbo.common.constants.CommonConstants.IO_THREADS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.KEEP_ALIVE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SSL_ENABLED_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_CLOSE;
+import static org.apache.dubbo.remoting.Constants.EVENT_LOOP_BOSS_POOL_NAME;
+import static org.apache.dubbo.remoting.Constants.EVENT_LOOP_WORKER_POOL_NAME;
+
 
 
 /**
  * NettyServer.
  */
-public class NettyServer extends AbstractServer implements RemotingServer {
+public class NettyServer extends AbstractServer {
 
-    private static final Logger logger = LoggerFactory.getLogger(NettyServer.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(NettyServer.class);
     /**
      * the cache for alive worker channel.
      * <ip:port, dubbo channel>
@@ -68,15 +74,19 @@ public class NettyServer extends AbstractServer implements RemotingServer {
     /**
      * the boss channel that receive connections and dispatch these to worker channel.
      */
-	private io.netty.channel.Channel channel;
+    private io.netty.channel.Channel channel;
 
     private EventLoopGroup bossGroup;
     private EventLoopGroup workerGroup;
+    private final int serverShutdownTimeoutMills;
 
     public NettyServer(URL url, ChannelHandler handler) throws RemotingException {
-        // you can customize name and type of client thread pool by THREAD_NAME_KEY and THREADPOOL_KEY in CommonConstants.
+        // you can customize name and type of client thread pool by THREAD_NAME_KEY and THREAD_POOL_KEY in CommonConstants.
         // the handler will be wrapped: MultiMessageHandler->HeartbeatHandler->handler
-        super(ExecutorUtil.setThreadName(url, SERVER_THREAD_POOL_NAME), ChannelHandlers.wrap(handler, url));
+        super(url, ChannelHandlers.wrap(handler, url));
+
+        // read config before destroy
+        serverShutdownTimeoutMills = ConfigurationUtils.getServerShutdownTimeout(getUrl().getOrDefaultModuleModel());
     }
 
     /**
@@ -90,6 +100,7 @@ public class NettyServer extends AbstractServer implements RemotingServer {
 
         bossGroup = createBossGroup();
         workerGroup = createWorkerGroup();
+<<<<<<< HEAD
 
         final NettyServerHandler nettyServerHandler = createNettyServerHandler();
         channels = nettyServerHandler.getChannels();
@@ -143,6 +154,60 @@ public class NettyServer extends AbstractServer implements RemotingServer {
                                 .addLast("handler", nettyServerHandler);
                     }
                 });
+=======
+
+        final NettyServerHandler nettyServerHandler = createNettyServerHandler();
+        channels = nettyServerHandler.getChannels();
+
+        initServerBootstrap(nettyServerHandler);
+
+        // bind
+        ChannelFuture channelFuture = bootstrap.bind(getBindAddress());
+        channelFuture.syncUninterruptibly();
+        channel = channelFuture.channel();
+
+>>>>>>> origin/3.2
+    }
+
+    protected EventLoopGroup createBossGroup() {
+        return NettyEventLoopFactory.eventLoopGroup(1, EVENT_LOOP_BOSS_POOL_NAME);
+    }
+
+    protected EventLoopGroup createWorkerGroup() {
+        return NettyEventLoopFactory.eventLoopGroup(
+            getUrl().getPositiveParameter(IO_THREADS_KEY, Constants.DEFAULT_IO_THREADS),
+            EVENT_LOOP_WORKER_POOL_NAME);
+    }
+
+    protected NettyServerHandler createNettyServerHandler() {
+        return new NettyServerHandler(getUrl(), this);
+    }
+
+    protected void initServerBootstrap(NettyServerHandler nettyServerHandler) {
+        boolean keepalive = getUrl().getParameter(KEEP_ALIVE_KEY, Boolean.FALSE);
+
+        bootstrap.group(bossGroup, workerGroup)
+            .channel(NettyEventLoopFactory.serverSocketChannelClass())
+            .option(ChannelOption.SO_REUSEADDR, Boolean.TRUE)
+            .childOption(ChannelOption.TCP_NODELAY, Boolean.TRUE)
+            .childOption(ChannelOption.SO_KEEPALIVE, keepalive)
+            .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
+            .childHandler(new ChannelInitializer<SocketChannel>() {
+                @Override
+                protected void initChannel(SocketChannel ch) throws Exception {
+                    // FIXME: should we use getTimeout()?
+                    int idleTimeout = UrlUtils.getIdleTimeout(getUrl());
+                    NettyCodecAdapter adapter = new NettyCodecAdapter(getCodec(), getUrl(), NettyServer.this);
+                    if (getUrl().getParameter(SSL_ENABLED_KEY, false)) {
+                        ch.pipeline().addLast("negotiation", new SslServerTlsHandler(getUrl()));
+                    }
+                    ch.pipeline()
+                        .addLast("decoder", adapter.getDecoder())
+                        .addLast("encoder", adapter.getEncoder())
+                        .addLast("server-idle-handler", new IdleStateHandler(0, 0, idleTimeout, MILLISECONDS))
+                        .addLast("handler", nettyServerHandler);
+                }
+            });
     }
 
     @Override
@@ -153,42 +218,56 @@ public class NettyServer extends AbstractServer implements RemotingServer {
                 channel.close();
             }
         } catch (Throwable e) {
-            logger.warn(e.getMessage(), e);
+            logger.warn(TRANSPORT_FAILED_CLOSE, "", "", e.getMessage(), e);
         }
         try {
             Collection<Channel> channels = getChannels();
+<<<<<<< HEAD
             if (channels != null && channels.size() > 0) {
+=======
+            if (CollectionUtils.isNotEmpty(channels)) {
+>>>>>>> origin/3.2
                 for (Channel channel : channels) {
                     try {
                         channel.close();
                     } catch (Throwable e) {
-                        logger.warn(e.getMessage(), e);
+                        logger.warn(TRANSPORT_FAILED_CLOSE, "", "", e.getMessage(), e);
                     }
                 }
             }
         } catch (Throwable e) {
-            logger.warn(e.getMessage(), e);
+            logger.warn(TRANSPORT_FAILED_CLOSE, "", "", e.getMessage(), e);
         }
         try {
             if (bootstrap != null) {
-                bossGroup.shutdownGracefully().syncUninterruptibly();
-                workerGroup.shutdownGracefully().syncUninterruptibly();
+                long timeout = serverShutdownTimeoutMills;
+                long quietPeriod = Math.min(2000L, timeout);
+                Future<?> bossGroupShutdownFuture = bossGroup.shutdownGracefully(quietPeriod, timeout, MILLISECONDS);
+                Future<?> workerGroupShutdownFuture = workerGroup.shutdownGracefully(quietPeriod, timeout, MILLISECONDS);
+                bossGroupShutdownFuture.syncUninterruptibly();
+                workerGroupShutdownFuture.syncUninterruptibly();
             }
         } catch (Throwable e) {
-            logger.warn(e.getMessage(), e);
+            logger.warn(TRANSPORT_FAILED_CLOSE, "", "", e.getMessage(), e);
         }
         try {
             if (channels != null) {
                 channels.clear();
             }
         } catch (Throwable e) {
-            logger.warn(e.getMessage(), e);
+            logger.warn(TRANSPORT_FAILED_CLOSE, "", "", e.getMessage(), e);
         }
+    }
+
+    @Override
+    protected int getChannelsSize() {
+        return channels.size();
     }
 
     @Override
     public Collection<Channel> getChannels() {
         Collection<Channel> chs = new ArrayList<>(this.channels.size());
+<<<<<<< HEAD
         chs.addAll(this.channels.values());
         // check of connection status is unnecessary since we are using channels in NettyServerHandler
 //        for (Channel channel : this.channels.values()) {
@@ -198,6 +277,10 @@ public class NettyServer extends AbstractServer implements RemotingServer {
 //                channels.remove(NetUtils.toAddressString(channel.getRemoteAddress()));
 //            }
 //        }
+=======
+        // pick channels from NettyServerHandler ( needless to check connectivity )
+        chs.addAll(this.channels.values());
+>>>>>>> origin/3.2
         return chs;
     }
 

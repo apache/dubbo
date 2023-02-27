@@ -20,14 +20,17 @@ import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.MethodInterceptor;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledForJreRange;
+import org.junit.jupiter.api.condition.JRE;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-public class ProxyTest {
+@DisabledForJreRange(min = JRE.JAVA_16)
+class ProxyTest {
 
     @Test
-    public void testMain() throws Exception {
+    void testMain() throws Exception {
         Proxy proxy = Proxy.getProxy(ITest.class, ITest.class);
         ITest instance = (ITest) proxy.newInstance((proxy1, method, args) -> {
             if ("getName".equals(method.getName())) {
@@ -45,7 +48,7 @@ public class ProxyTest {
     }
 
     @Test
-    public void testCglibProxy() throws Exception {
+    void testCglibProxy() throws Exception {
         ITest test = (ITest) Proxy.getProxy(ITest.class).newInstance((proxy, method, args) -> {
             System.out.println(method.getName());
             return null;

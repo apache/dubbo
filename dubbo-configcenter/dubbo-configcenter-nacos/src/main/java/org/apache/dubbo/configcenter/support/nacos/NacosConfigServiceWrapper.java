@@ -29,8 +29,14 @@ public class NacosConfigServiceWrapper {
 
     private static final String INNERCLASS_COMPATIBLE_SYMBOL = "___";
 
+<<<<<<< HEAD
     private ConfigService configService;
 
+=======
+    private static final long DEFAULT_TIMEOUT = 3000L;
+
+    private ConfigService configService;
+>>>>>>> origin/3.2
 
     public NacosConfigServiceWrapper(ConfigService configService) {
         this.configService = configService;
@@ -44,6 +50,13 @@ public class NacosConfigServiceWrapper {
         configService.addListener(handleInnerSymbol(dataId), handleInnerSymbol(group), listener);
     }
 
+<<<<<<< HEAD
+=======
+    public String getConfig(String dataId, String group) throws NacosException {
+        return configService.getConfig(handleInnerSymbol(dataId), handleInnerSymbol(group), DEFAULT_TIMEOUT);
+    }
+
+>>>>>>> origin/3.2
     public String getConfig(String dataId, String group, long timeout) throws NacosException {
         return configService.getConfig(handleInnerSymbol(dataId), handleInnerSymbol(group), timeout);
     }
@@ -52,10 +65,18 @@ public class NacosConfigServiceWrapper {
         return configService.publishConfig(handleInnerSymbol(dataId), handleInnerSymbol(group), content);
     }
 
+<<<<<<< HEAD
+=======
+    public boolean publishConfigCas(String dataId, String group, String content, String casMd5) throws NacosException {
+        return configService.publishConfigCas(handleInnerSymbol(dataId), handleInnerSymbol(group), content, casMd5);
+    }
+
+>>>>>>> origin/3.2
     public boolean removeConfig(String dataId, String group) throws NacosException {
         return configService.removeConfig(handleInnerSymbol(dataId), handleInnerSymbol(group));
     }
 
+<<<<<<< HEAD
     /**
      * see {@link com.alibaba.nacos.client.config.utils.ParamUtils#isValid(java.lang.String)}
      */
@@ -65,5 +86,19 @@ public class NacosConfigServiceWrapper {
         }
         return param.replace(INNERCLASS_SYMBOL, INNERCLASS_COMPATIBLE_SYMBOL)
                 .replace(SLASH_CHAR, HYPHEN_CHAR);
+=======
+    public void shutdown() throws NacosException {
+        configService.shutDown();
+    }
+
+    /**
+     * see {@link com.alibaba.nacos.client.config.utils.ParamUtils#isValid(java.lang.String)}
+     */
+    private String handleInnerSymbol(String data) {
+        if (data == null) {
+            return null;
+        }
+        return data.replace(INNERCLASS_SYMBOL, INNERCLASS_COMPATIBLE_SYMBOL).replace(SLASH_CHAR, HYPHEN_CHAR);
+>>>>>>> origin/3.2
     }
 }

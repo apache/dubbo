@@ -39,9 +39,16 @@ import static org.springframework.context.annotation.AnnotationConfigUtils.regis
 public class DubboClassPathBeanDefinitionScanner extends ClassPathBeanDefinitionScanner {
 
     /**
+<<<<<<< HEAD
      * key is package, value is BeanDefinition
      */
     private final ConcurrentMap<String, Set<BeanDefinition>> beanDefinitionMap = new ConcurrentHashMap<>();
+=======
+     * key is package to scan, value is BeanDefinition
+     */
+    private final ConcurrentMap<String, Set<BeanDefinition>> beanDefinitionMap = new ConcurrentHashMap<>();
+
+>>>>>>> origin/3.2
 
     public DubboClassPathBeanDefinitionScanner(BeanDefinitionRegistry registry, boolean useDefaultFilters, Environment environment,
                                                ResourceLoader resourceLoader) {
@@ -64,11 +71,14 @@ public class DubboClassPathBeanDefinitionScanner extends ClassPathBeanDefinition
     }
 
     @Override
+<<<<<<< HEAD
     public boolean checkCandidate(String beanName, BeanDefinition beanDefinition) throws IllegalStateException {
         return super.checkCandidate(beanName, beanDefinition);
     }
 
     @Override
+=======
+>>>>>>> origin/3.2
     public Set<BeanDefinition> findCandidateComponents(String basePackage) {
         Set<BeanDefinition> beanDefinitions = beanDefinitionMap.get(basePackage);
         // if beanDefinitions size is null => scan

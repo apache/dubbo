@@ -1,0 +1,1 @@
+filter=org.apache.dubbo.rpc.cluster.filter.ProtocolFilterWrapper

@@ -25,11 +25,10 @@ import java.util.concurrent.ConcurrentMap;
 import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_RAW_RETURN;
 import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_SERIALIZATION_BEAN;
 import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_SERIALIZATION_DEFAULT;
+import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_SERIALIZATION_GSON;
 import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_SERIALIZATION_NATIVE_JAVA;
 import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_SERIALIZATION_GSON;
 import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_SERIALIZATION_PROTOBUF;
-import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 
 public class ProtocolUtils {
 
@@ -39,8 +38,8 @@ public class ProtocolUtils {
     }
 
     public static String serviceKey(URL url) {
-        return serviceKey(url.getPort(), url.getPath(), url.getParameter(VERSION_KEY),
-                url.getParameter(GROUP_KEY));
+        return serviceKey(url.getPort(), url.getPath(), url.getVersion(),
+                url.getGroup());
     }
 
     public static String serviceKey(int port, String serviceName, String serviceVersion, String serviceGroup) {

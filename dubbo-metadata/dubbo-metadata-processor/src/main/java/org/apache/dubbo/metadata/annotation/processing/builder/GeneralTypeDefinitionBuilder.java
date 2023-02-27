@@ -21,13 +21,14 @@ import org.apache.dubbo.metadata.definition.model.TypeDefinition;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
+import java.util.Map;
 
 import static org.apache.dubbo.metadata.annotation.processing.util.FieldUtils.getNonStaticFields;
 import static org.apache.dubbo.metadata.annotation.processing.util.TypeUtils.getType;
 import static org.apache.dubbo.metadata.annotation.processing.util.TypeUtils.isClassType;
 
 /**
- * {@link TypeDefinitionBuilder} for General Object
+ * {@link TypeBuilder} for General Object
  *
  * @since 2.7.6
  */
@@ -39,23 +40,26 @@ public class GeneralTypeDefinitionBuilder implements DeclaredTypeDefinitionBuild
     }
 
     @Override
-    public void build(ProcessingEnvironment processingEnv, DeclaredType type, TypeDefinition typeDefinition) {
+    public TypeDefinition build(ProcessingEnvironment processingEnv, DeclaredType type, Map<String, TypeDefinition> typeCache) {
 
         String typeName = type.toString();
 
         TypeElement typeElement = getType(processingEnv, typeName);
 
-        buildProperties(processingEnv, typeElement, typeDefinition);
+        return buildProperties(processingEnv, typeElement, typeCache);
     }
 
-    protected void buildProperties(ProcessingEnvironment processingEnv, TypeElement type, TypeDefinition definition) {
+    protected TypeDefinition buildProperties(ProcessingEnvironment processingEnv, TypeElement type, Map<String, TypeDefinition> typeCache) {
+        TypeDefinition definition = new TypeDefinition(type.toString());
         getNonStaticFields(type).forEach(field -> {
             String fieldName = field.getSimpleName().toString();
-            TypeDefinition propertyType = TypeDefinitionBuilder.build(processingEnv, field);
+            TypeDefinition propertyType = TypeDefinitionBuilder.build(processingEnv, field, typeCache);
             if (propertyType != null) {
-                definition.getProperties().put(fieldName, propertyType);
+                typeCache.put(propertyType.getType(), propertyType);
+                definition.getProperties().put(fieldName, propertyType.getType());
             }
         });
+        return definition;
     }
 
     @Override

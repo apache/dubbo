@@ -19,12 +19,20 @@ package org.apache.dubbo.common.compiler.support;
 import org.apache.dubbo.common.compiler.Compiler;
 import org.apache.dubbo.common.extension.Adaptive;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.model.ScopeModelAware;
 
 /**
  * AdaptiveCompiler. (SPI, Singleton, ThreadSafe)
  */
 @Adaptive
-public class AdaptiveCompiler implements Compiler {
+public class AdaptiveCompiler implements Compiler, ScopeModelAware {
+    private FrameworkModel frameworkModel;
+
+    @Override
+    public void setFrameworkModel(FrameworkModel frameworkModel) {
+        this.frameworkModel = frameworkModel;
+    }
 
     private static volatile String DEFAULT_COMPILER;
 
@@ -33,16 +41,16 @@ public class AdaptiveCompiler implements Compiler {
     }
 
     @Override
-    public Class<?> compile(String code, ClassLoader classLoader) {
+    public Class<?> compile(Class<?> neighbor, String code, ClassLoader classLoader) {
         Compiler compiler;
-        ExtensionLoader<Compiler> loader = ExtensionLoader.getExtensionLoader(Compiler.class);
+        ExtensionLoader<Compiler> loader = frameworkModel.getExtensionLoader(Compiler.class);
         String name = DEFAULT_COMPILER; // copy reference
         if (name != null && name.length() > 0) {
             compiler = loader.getExtension(name);
         } else {
             compiler = loader.getDefaultExtension();
         }
-        return compiler.compile(code, classLoader);
+        return compiler.compile(neighbor, code, classLoader);
     }
 
 }

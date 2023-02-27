@@ -33,7 +33,7 @@ import static com.alibaba.spring.util.AnnotationUtils.getAttributes;
  * @see PropertyValues
  * @since 2.5.11
  */
-class AnnotationPropertyValuesAdapter implements PropertyValues {
+public class AnnotationPropertyValuesAdapter implements PropertyValues {
 
     private final PropertyValues delegate;
 

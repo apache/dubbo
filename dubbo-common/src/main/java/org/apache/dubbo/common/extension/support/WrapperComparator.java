@@ -17,11 +17,16 @@
 package org.apache.dubbo.common.extension.support;
 
 import org.apache.dubbo.common.extension.Activate;
+<<<<<<< HEAD
+=======
+import org.apache.dubbo.common.extension.Wrapper;
+>>>>>>> origin/3.2
 
 import java.util.Comparator;
 
 /**
  * OrderComparator
+ * Derived from {@link ActivateComparator}
  */
 public class WrapperComparator implements Comparator<Object> {
 
@@ -54,15 +59,24 @@ public class WrapperComparator implements Comparator<Object> {
         return n1 > n2 ? 1 : -1;
     }
 
+<<<<<<< HEAD
+=======
+    @SuppressWarnings("deprecation")
+>>>>>>> origin/3.2
     private OrderInfo parseOrder(Class<?> clazz) {
         OrderInfo info = new OrderInfo();
         if (clazz.isAnnotationPresent(Activate.class)) {
+            // TODO: backward compatibility
             Activate activate = clazz.getAnnotation(Activate.class);
             info.order = activate.order();
         } else if (clazz.isAnnotationPresent(com.alibaba.dubbo.common.extension.Activate.class)) {
+            // TODO: backward compatibility
             com.alibaba.dubbo.common.extension.Activate activate = clazz.getAnnotation(
                     com.alibaba.dubbo.common.extension.Activate.class);
             info.order = activate.order();
+        } else if (clazz.isAnnotationPresent(Wrapper.class)) {
+            Wrapper wrapper = clazz.getAnnotation(Wrapper.class);
+            info.order = wrapper.order();
         }
         return info;
     }

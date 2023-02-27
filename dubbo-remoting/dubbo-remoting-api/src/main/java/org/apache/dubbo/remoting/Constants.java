@@ -79,13 +79,20 @@ public interface Constants {
 
     String SERIALIZATION_KEY = "serialization";
 
-    String DEFAULT_REMOTING_SERIALIZATION = "hessian2";
+    /**
+     * Prefer serialization
+     */
+    String PREFER_SERIALIZATION_KEY = "prefer.serialization";
+
+    String DEFAULT_REMOTING_SERIALIZATION_PROPERTY_KEY = "DUBBO_DEFAULT_SERIALIZATION";
 
     String CODEC_KEY = "codec";
 
     String CODEC_VERSION_KEY = "codec.version";
 
     String SERVER_KEY = "server";
+
+    String IS_PU_SERVER_KEY = "ispuserver";
 
     String CLIENT_KEY = "client";
 
@@ -102,6 +109,12 @@ public interface Constants {
     String DISPACTHER_KEY = "dispacther";
 
     int DEFAULT_IO_THREADS = Math.min(Runtime.getRuntime().availableProcessors() + 1, 32);
+
+    String EVENT_LOOP_BOSS_POOL_NAME = "NettyServerBoss";
+
+    String EVENT_LOOP_WORKER_POOL_NAME = "NettyServerWorker";
+
+    String NETTY_EPOLL_ENABLE_KEY = "netty.epoll.enable";
 
     String BIND_IP_KEY = "bind.ip";
 
@@ -128,11 +141,21 @@ public interface Constants {
     String PROMPT_KEY = "prompt";
 
     String DEFAULT_PROMPT = "dubbo>";
-    String TELNET = "telnet";
+    String TELNET_KEY = "telnet";
     String HEARTBEAT_KEY = "heartbeat";
     int DEFAULT_HEARTBEAT = 60 * 1000;
     String HEARTBEAT_TIMEOUT_KEY = "heartbeat.timeout";
     String CONNECTIONS_KEY = "connections";
 
     int DEFAULT_BACKLOG = 1024;
+
+    String CONNECTION = "Connection";
+
+    String KEEP_ALIVE = "keep-alive";
+
+    String KEEP_ALIVE_HEADER = "Keep-Alive";
+
+    String OK_HTTP = "ok-http";
+    String URL_CONNECTION = "url-connection";
+    String APACHE_HTTP_CLIENT = "apache-http-client";
 }

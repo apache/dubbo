@@ -21,6 +21,11 @@ import org.apache.dubbo.monitor.Monitor;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.ProtocolServer;
 import org.apache.dubbo.rpc.ProxyFactory;
+<<<<<<< HEAD
+=======
+import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
+>>>>>>> origin/3.2
 
 import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
 import org.junit.jupiter.api.AfterEach;
@@ -40,7 +45,7 @@ import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-public class DubboMonitorFactoryTest {
+class DubboMonitorFactoryTest {
     private DubboMonitorFactory dubboMonitorFactory;
     @Mock
     private ProxyFactory proxyFactory;
@@ -49,7 +54,11 @@ public class DubboMonitorFactoryTest {
     public void setUp() throws Exception {
         initMocks(this);
         this.dubboMonitorFactory = new DubboMonitorFactory();
+<<<<<<< HEAD
         this.dubboMonitorFactory.setProtocol(DubboProtocol.getDubboProtocol());
+=======
+        this.dubboMonitorFactory.setProtocol(new DubboProtocol(FrameworkModel.defaultModel()));
+>>>>>>> origin/3.2
         this.dubboMonitorFactory.setProxyFactory(proxyFactory);
     }
 
@@ -63,7 +72,7 @@ public class DubboMonitorFactoryTest {
     }
 
     @Test
-    public void testCreateMonitor() {
+    void testCreateMonitor() {
         URL urlWithoutPath = URL.valueOf("http://10.10.10.11");
         Monitor monitor = dubboMonitorFactory.createMonitor(urlWithoutPath);
         assertThat(monitor, not(nullValue()));

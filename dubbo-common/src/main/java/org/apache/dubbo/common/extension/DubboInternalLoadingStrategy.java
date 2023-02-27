@@ -32,4 +32,9 @@ public class DubboInternalLoadingStrategy implements LoadingStrategy {
     public int getPriority() {
         return MAX_PRIORITY;
     }
+
+    @Override
+    public String getName() {
+        return "DUBBO_INTERNAL";
+    }
 }

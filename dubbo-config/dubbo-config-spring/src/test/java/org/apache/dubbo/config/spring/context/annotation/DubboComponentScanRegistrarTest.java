@@ -21,7 +21,6 @@ import org.apache.dubbo.config.spring.api.DemoService;
 import org.apache.dubbo.config.spring.context.annotation.consumer.ConsumerConfiguration;
 import org.apache.dubbo.config.spring.context.annotation.provider.DemoServiceImpl;
 import org.apache.dubbo.config.spring.context.annotation.provider.ProviderConfiguration;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -39,8 +38,12 @@ import static org.springframework.core.annotation.AnnotationUtils.findAnnotation
  *
  * @since 2.5.8
  */
+<<<<<<< HEAD
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class DubboComponentScanRegistrarTest {
+=======
+class DubboComponentScanRegistrarTest {
+>>>>>>> origin/3.2
 
     @BeforeEach
     public void setUp() {
@@ -49,11 +52,10 @@ public class DubboComponentScanRegistrarTest {
 
     @AfterEach
     public void tearDown() {
-        ApplicationModel.reset();
     }
 
     @Test
-    public void test() {
+    void test() {
 
         AnnotationConfigApplicationContext providerContext = new AnnotationConfigApplicationContext();
 
@@ -75,6 +77,8 @@ public class DubboComponentScanRegistrarTest {
         // Test @Transactional is present or not
         Assertions.assertNotNull(findAnnotation(beanClass, Transactional.class));
 
+
+        // consumer app
         AnnotationConfigApplicationContext consumerContext = new AnnotationConfigApplicationContext();
 
         consumerContext.register(ConsumerConfiguration.class);

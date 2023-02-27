@@ -17,6 +17,8 @@
 package org.apache.dubbo.metadata.report.support;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.metadata.report.MetadataReport;
 import org.apache.dubbo.metadata.report.MetadataReportFactory;
 
@@ -24,43 +26,91 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
+import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXPECTED_EXCEPTION;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROXY_FAILED_EXPORT_SERVICE;
+
 public abstract class AbstractMetadataReportFactory implements MetadataReportFactory {
+
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(AbstractMetadataReportFactory.class);
     private static final String EXPORT_KEY = "export";
     private static final String REFER_KEY = "refer";
 
-    // The lock for the acquisition process of the registry
-    private static final ReentrantLock LOCK = new ReentrantLock();
+    /**
+     * The lock for the acquisition process of the registry
+     */
+    private final ReentrantLock lock = new ReentrantLock();
 
-    // Registry Collection Map<metadataAddress, MetadataReport>
-    private static final Map<String, MetadataReport> SERVICE_STORE_MAP = new ConcurrentHashMap<String, MetadataReport>();
+    /**
+     * Registry Collection Map<metadataAddress, MetadataReport>
+     */
+    private final Map<String, MetadataReport> serviceStoreMap = new ConcurrentHashMap<>();
 
     @Override
     public MetadataReport getMetadataReport(URL url) {
         url = url.setPath(MetadataReport.class.getName())
-                .removeParameters(EXPORT_KEY, REFER_KEY);
+            .removeParameters(EXPORT_KEY, REFER_KEY);
         String key = url.toServiceString();
 
+<<<<<<< HEAD
         MetadataReport metadataReport = SERVICE_STORE_MAP.get(key);
+=======
+        MetadataReport metadataReport = serviceStoreMap.get(key);
+>>>>>>> origin/3.2
         if (metadataReport != null) {
             return metadataReport;
         }
 
         // Lock the metadata access process to ensure a single instance of the metadata instance
-        LOCK.lock();
+        lock.lock();
         try {
+<<<<<<< HEAD
             metadataReport = SERVICE_STORE_MAP.get(key);
+=======
+            metadataReport = serviceStoreMap.get(key);
+>>>>>>> origin/3.2
             if (metadataReport != null) {
                 return metadataReport;
             }
-            metadataReport = createMetadataReport(url);
-            if (metadataReport == null) {
+            boolean check = url.getParameter(CHECK_KEY, true) && url.getPort() != 0;
+            try {
+                metadataReport = createMetadataReport(url);
+            } catch (Exception e) {
+                if (!check) {
+                    logger.warn(PROXY_FAILED_EXPORT_SERVICE, "", "", "The metadata reporter failed to initialize", e);
+                } else {
+                    throw e;
+                }
+            }
+
+            if (check && metadataReport == null) {
                 throw new IllegalStateException("Can not create metadata Report " + url);
             }
-            SERVICE_STORE_MAP.put(key, metadataReport);
+            if (metadataReport != null) {
+                serviceStoreMap.put(key, metadataReport);
+            }
             return metadataReport;
         } finally {
             // Release the lock
-            LOCK.unlock();
+            lock.unlock();
+        }
+    }
+
+    @Override
+    public void destroy() {
+        lock.lock();
+        try {
+            for (MetadataReport metadataReport : serviceStoreMap.values()) {
+                try {
+                    metadataReport.destroy();
+                } catch (Throwable ignored) {
+                    // ignored
+                    logger.warn(COMMON_UNEXPECTED_EXCEPTION, "", "", ignored.getMessage(), ignored);
+                }
+            }
+            serviceStoreMap.clear();
+        } finally {
+            lock.unlock();
         }
     }
 

@@ -32,15 +32,25 @@
     </properties>
     <modules>
         <module>dubbo-remoting-api</module>
-        <module>dubbo-remoting-netty</module>
-        <module>dubbo-remoting-mina</module>
-        <module>dubbo-remoting-grizzly</module>
-        <module>dubbo-remoting-p2p</module>
         <module>dubbo-remoting-http</module>
+        <module>dubbo-remoting-netty</module>
         <module>dubbo-remoting-zookeeper</module>
         <module>dubbo-remoting-zookeeper-curator5</module>
         <module>dubbo-remoting-netty4</module>
+<<<<<<< HEAD
         <module>dubbo-remoting-etcd3</module>
         <module>dubbo-remoting-redis</module>
     </modules>
+=======
+    </modules>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-test-check</artifactId>
+            <version>${project.parent.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+>>>>>>> origin/3.2
 </project>

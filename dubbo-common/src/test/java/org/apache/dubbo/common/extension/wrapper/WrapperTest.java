@@ -19,6 +19,10 @@ package org.apache.dubbo.common.extension.wrapper;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.extension.wrapper.impl.DemoWrapper;
 import org.apache.dubbo.common.extension.wrapper.impl.DemoWrapper2;
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/3.2
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -28,13 +32,24 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  * @since 2.7.5
  */
+<<<<<<< HEAD
 public class WrapperTest {
 
     @Test
     public void testWrapper() {
+=======
+class WrapperTest {
+
+    @Test
+    void testWrapper() {
+>>>>>>> origin/3.2
         Demo demoWrapper = ExtensionLoader.getExtensionLoader(Demo.class).getExtension("demo");
         assertTrue(demoWrapper instanceof DemoWrapper);
         Demo demoWrapper2 = ExtensionLoader.getExtensionLoader(Demo.class).getExtension("demo2");
         assertTrue(demoWrapper2 instanceof DemoWrapper2);
     }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> origin/3.2

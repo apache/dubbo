@@ -24,10 +24,18 @@ import org.apache.dubbo.config.spring.context.event.DubboBootstrapStopedEvent;
 import org.springframework.context.ApplicationContext;
 
 /**
+<<<<<<< HEAD
  * convert Dubbo bootstrap event to spring environment.
  *
  * @scene 2.7.9
  */
+=======
+ * convcert Dubbo bootstrap event to spring environment.
+ *
+ * @scene 2.7.9
+ */
+@Deprecated
+>>>>>>> origin/3.2
 public class DubboBootstrapStartStopListenerSpringAdapter implements DubboBootstrapStartStopListener {
 
     static ApplicationContext applicationContext;

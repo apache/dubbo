@@ -18,11 +18,11 @@ package org.apache.dubbo.rpc.protocol.dubbo;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.AppResponse;
-import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.cluster.filter.ClusterFilter;
 import org.apache.dubbo.rpc.protocol.dubbo.filter.FutureFilter;
 import org.apache.dubbo.rpc.protocol.dubbo.support.DemoService;
 
@@ -38,9 +38,9 @@ import static org.mockito.Mockito.mock;
  * EventFilterTest.java
  * TODO rely on callback integration test for now
  */
-public class FutureFilterTest {
+class FutureFilterTest {
     private static RpcInvocation invocation;
-    private Filter eventFilter = new FutureFilter();
+    private ClusterFilter eventFilter = new FutureFilter();
 
     @BeforeAll
     public static void setUp() {
@@ -51,7 +51,7 @@ public class FutureFilterTest {
     }
 
     @Test
-    public void testSyncCallback() {
+    void testSyncCallback() {
         @SuppressWarnings("unchecked")
         Invoker<DemoService> invoker = mock(Invoker.class);
         given(invoker.isAvailable()).willReturn(true);
@@ -67,7 +67,7 @@ public class FutureFilterTest {
     }
 
     @Test
-    public void testSyncCallbackHasException() throws RpcException, Throwable {
+    void testSyncCallbackHasException() throws RpcException, Throwable {
         Assertions.assertThrows(RuntimeException.class, () -> {
             @SuppressWarnings("unchecked")
             Invoker<DemoService> invoker = mock(Invoker.class);

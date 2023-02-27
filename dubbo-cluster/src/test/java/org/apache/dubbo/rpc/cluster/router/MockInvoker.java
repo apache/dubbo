@@ -34,6 +34,12 @@ public class MockInvoker<T> implements Invoker<T> {
         this.url = url;
     }
 
+    public MockInvoker(URL url, boolean available) {
+        super();
+        this.url = url;
+        this.available = available;
+    }
+
     public MockInvoker(boolean available) {
         this.available = available;
     }

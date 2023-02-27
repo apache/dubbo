@@ -38,16 +38,17 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE;
+import static org.apache.dubbo.common.constants.CommonConstants.ENABLE_NATIVE_JAVA_GENERIC_SERIALIZE;
 import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_SERIALIZATION_NATIVE_JAVA;
 import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-public class GenericFilterTest {
+class GenericFilterTest {
     GenericFilter genericFilter = new GenericFilter();
 
     @Test
-    public void testInvokeWithDefault() throws Exception {
+    void testInvokeWithDefault() throws Exception {
 
         Method genericInvoke = GenericService.class.getMethods()[0];
 
@@ -75,9 +76,15 @@ public class GenericFilterTest {
     }
 
     @Test
+<<<<<<< HEAD
     public void testInvokeWithJavaException() throws Exception {
         // temporary enable native java generic serialize
         System.setProperty(CommonConstants.ENABLE_NATIVE_JAVA_GENERIC_SERIALIZE, "true");
+=======
+    void testInvokeWithJavaException() throws Exception {
+        // temporary enable native java generic serialize
+        System.setProperty(ENABLE_NATIVE_JAVA_GENERIC_SERIALIZE, "true");
+>>>>>>> origin/3.2
         Assertions.assertThrows(RpcException.class, () -> {
             Method genericInvoke = GenericService.class.getMethods()[0];
 
@@ -98,11 +105,15 @@ public class GenericFilterTest {
 
             genericFilter.invoke(invoker, invocation);
         });
+<<<<<<< HEAD
         System.clearProperty(CommonConstants.ENABLE_NATIVE_JAVA_GENERIC_SERIALIZE);
+=======
+        System.clearProperty(ENABLE_NATIVE_JAVA_GENERIC_SERIALIZE);
+>>>>>>> origin/3.2
     }
 
     @Test
-    public void testInvokeWithMethodNamtNot$Invoke() {
+    void testInvokeWithMethodNamtNot$Invoke() {
 
         Method genericInvoke = GenericService.class.getMethods()[0];
 
@@ -126,7 +137,7 @@ public class GenericFilterTest {
     }
 
     @Test
-    public void testInvokeWithMethodArgumentSizeIsNot3() {
+    void testInvokeWithMethodArgumentSizeIsNot3() {
 
         Method genericInvoke = GenericService.class.getMethods()[0];
 

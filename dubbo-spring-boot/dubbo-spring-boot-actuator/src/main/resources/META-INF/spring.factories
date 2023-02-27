@@ -1,2 +1,8 @@
+<<<<<<< HEAD
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
 org.apache.dubbo.spring.boot.actuate.autoconfigure.DubboEndpointAnnotationAutoConfiguration
+=======
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+org.apache.dubbo.spring.boot.actuate.autoconfigure.DubboEndpointAnnotationAutoConfiguration,\
+org.apache.dubbo.spring.boot.actuate.autoconfigure.DubboMetricsAutoConfiguration
+>>>>>>> origin/3.2

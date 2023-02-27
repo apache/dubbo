@@ -18,6 +18,7 @@
 package org.apache.dubbo.config;
 
 import org.hamcrest.Matchers;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
@@ -31,21 +32,21 @@ import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
 
-public class ModuleConfigTest {
+class ModuleConfigTest {
 
     @Test
-    public void testName2() throws Exception {
+    void testName2() throws Exception {
         ModuleConfig module = new ModuleConfig();
         module.setName("module-name");
         assertThat(module.getName(), equalTo("module-name"));
-        assertThat(module.getId(), equalTo("module-name"));
+        assertThat(module.getId(), equalTo(null));
         Map<String, String> parameters = new HashMap<String, String>();
         ModuleConfig.appendParameters(parameters, module);
         assertThat(parameters, hasEntry("module", "module-name"));
     }
 
     @Test
-    public void testVersion() throws Exception {
+    void testVersion() throws Exception {
         ModuleConfig module = new ModuleConfig();
         module.setName("module-name");
         module.setVersion("1.0.0");
@@ -56,21 +57,21 @@ public class ModuleConfigTest {
     }
 
     @Test
-    public void testOwner() throws Exception {
+    void testOwner() throws Exception {
         ModuleConfig module = new ModuleConfig();
         module.setOwner("owner");
         assertThat(module.getOwner(), equalTo("owner"));
     }
 
     @Test
-    public void testOrganization() throws Exception {
+    void testOrganization() throws Exception {
         ModuleConfig module = new ModuleConfig();
         module.setOrganization("org");
         assertThat(module.getOrganization(), equalTo("org"));
     }
 
     @Test
-    public void testRegistry() throws Exception {
+    void testRegistry() throws Exception {
         ModuleConfig module = new ModuleConfig();
         RegistryConfig registry = new RegistryConfig();
         module.setRegistry(registry);
@@ -78,7 +79,7 @@ public class ModuleConfigTest {
     }
 
     @Test
-    public void testRegistries() throws Exception {
+    void testRegistries() throws Exception {
         ModuleConfig module = new ModuleConfig();
         RegistryConfig registry = new RegistryConfig();
         module.setRegistries(Collections.singletonList(registry));
@@ -87,7 +88,7 @@ public class ModuleConfigTest {
     }
 
     @Test
-    public void testMonitor() throws Exception {
+    void testMonitor() throws Exception {
         ModuleConfig module = new ModuleConfig();
         module.setMonitor("monitor-addr1");
         assertThat(module.getMonitor().getAddress(), equalTo("monitor-addr1"));
@@ -96,9 +97,16 @@ public class ModuleConfigTest {
     }
 
     @Test
-    public void testDefault() throws Exception {
+    void testDefault() throws Exception {
         ModuleConfig module = new ModuleConfig();
         module.setDefault(true);
         assertThat(module.isDefault(), is(true));
+    }
+
+    @Test
+    void testMetaData() {
+        MonitorConfig config = new MonitorConfig();
+        Map<String, String> metaData = config.getMetaData();
+        Assertions.assertEquals(0, metaData.size(), "Expect empty metadata but found: "+metaData);
     }
 }

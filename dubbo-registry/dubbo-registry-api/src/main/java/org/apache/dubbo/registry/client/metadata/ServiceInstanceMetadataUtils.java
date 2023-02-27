@@ -17,9 +17,14 @@
 package org.apache.dubbo.registry.client.metadata;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.MetadataService;
+<<<<<<< HEAD
 import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
@@ -28,18 +33,27 @@ import org.apache.dubbo.registry.support.AbstractRegistryFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import com.alibaba.fastjson.JSON;
+=======
+import org.apache.dubbo.registry.client.DefaultServiceInstance;
+import org.apache.dubbo.registry.client.DefaultServiceInstance.Endpoint;
+import org.apache.dubbo.registry.client.ServiceDiscovery;
+import org.apache.dubbo.registry.client.ServiceInstance;
+import org.apache.dubbo.registry.client.ServiceInstanceCustomizer;
+import org.apache.dubbo.registry.support.RegistryManager;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+>>>>>>> origin/3.2
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
-import static java.util.Collections.emptyMap;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PORT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.common.utils.StringUtils.isBlank;
 import static org.apache.dubbo.registry.integration.InterfaceCompatibleRegistryProtocol.DEFAULT_REGISTER_PROVIDER_KEYS;
@@ -56,6 +70,7 @@ import static org.apache.dubbo.rpc.Constants.ID_KEY;
  * @since 2.7.5
  */
 public class ServiceInstanceMetadataUtils {
+    private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(ServiceInstanceMetadataUtils.class);
 
     /**
      * The prefix of {@link MetadataService} : "dubbo.metadata-service."
@@ -67,7 +82,7 @@ public class ServiceInstanceMetadataUtils {
     /**
      * The property name of metadata JSON of {@link MetadataService}'s {@link URL}
      */
-    public static String METADATA_SERVICE_URL_PARAMS_PROPERTY_NAME = METADATA_SERVICE_PREFIX + "url-params";
+    public static final String METADATA_SERVICE_URL_PARAMS_PROPERTY_NAME = METADATA_SERVICE_PREFIX + "url-params";
 
     /**
      * The {@link URL URLs} property name of {@link MetadataService} :
@@ -79,11 +94,16 @@ public class ServiceInstanceMetadataUtils {
     /**
      * The property name of The revision for all exported Dubbo services.
      */
+<<<<<<< HEAD
     public static String EXPORTED_SERVICES_REVISION_PROPERTY_NAME = "dubbo.metadata.revision";
+=======
+    public static final String EXPORTED_SERVICES_REVISION_PROPERTY_NAME = "dubbo.metadata.revision";
+>>>>>>> origin/3.2
 
     /**
      * The property name of metadata storage type.
      */
+<<<<<<< HEAD
     public static String METADATA_STORAGE_TYPE_PROPERTY_NAME = "dubbo.metadata.storage-type";
 
     public static String METADATA_CLUSTER_PROPERTY_NAME = "dubbo.metadata.cluster";
@@ -113,36 +133,31 @@ public class ServiceInstanceMetadataUtils {
         Map<String, Map<String, String>> params = getMetadataServiceURLsParams(serviceInstance);
         return params.getOrDefault(protocol, emptyMap());
     }
+=======
+    public static final String METADATA_STORAGE_TYPE_PROPERTY_NAME = "dubbo.metadata.storage-type";
+>>>>>>> origin/3.2
 
-    public static String getMetadataServiceParameter(List<URL> urls) {
+    public static final String METADATA_CLUSTER_PROPERTY_NAME = "dubbo.metadata.cluster";
 
-        Map<String, Map<String, String>> params = new HashMap<>();
-
-        urls.stream()
-                // remove APPLICATION_KEY because service name must be present
-                .map(url -> url.removeParameter(APPLICATION_KEY))
-                // remove GROUP_KEY, always uses application name.
-                .map(url -> url.removeParameter(GROUP_KEY))
-                // remove DEPRECATED_KEY because it's always false
-                .map(url -> url.removeParameter(DEPRECATED_KEY))
-                // remove TIMESTAMP_KEY because it's nonsense
-                .map(url -> url.removeParameter(TIMESTAMP_KEY))
-                .forEach(url -> {
-                    String protocol = url.getProtocol();
-                    params.put(protocol, getParams(url));
-                });
+    public static String getMetadataServiceParameter(URL url) {
+        if (url == null) {
+            return "";
+        }
+        url = url.removeParameters(APPLICATION_KEY, GROUP_KEY, DEPRECATED_KEY, TIMESTAMP_KEY);
+        Map<String, String> params = getParams(url);
 
         if (params.isEmpty()) {
             return null;
         }
 
-        return JSON.toJSONString(params);
+        return JsonUtils.getJson().toJson(params);
     }
 
     private static Map<String, String> getParams(URL providerURL) {
         Map<String, String> params = new LinkedHashMap<>();
         setDefaultParams(params, providerURL);
         params.put(PORT_KEY, String.valueOf(providerURL.getPort()));
+        params.put(PROTOCOL_KEY, providerURL.getProtocol());
         return params;
     }
 
@@ -153,8 +168,15 @@ public class ServiceInstanceMetadataUtils {
      * @return <code>null</code> if not exits
      */
     public static String getExportedServicesRevision(ServiceInstance serviceInstance) {
+<<<<<<< HEAD
         Map<String, String> metadata = serviceInstance.getMetadata();
         return metadata.get(EXPORTED_SERVICES_REVISION_PROPERTY_NAME);
+=======
+        return Optional.ofNullable(serviceInstance.getServiceMetadata())
+            .map(MetadataInfo::getRevision)
+            .filter(StringUtils::isNotEmpty)
+            .orElse(serviceInstance.getMetadata(EXPORTED_SERVICES_REVISION_PROPERTY_NAME));
+>>>>>>> origin/3.2
     }
 
     /**
@@ -168,10 +190,9 @@ public class ServiceInstanceMetadataUtils {
     }
 
     /**
-     * Get the metadata's storage type is used to which {@link WritableMetadataService} instance.
+     * Get the metadata storage type specified by the peer instance.
      *
-     * @param serviceInstance the specified {@link ServiceInstance}
-     * @return if not found in {@link ServiceInstance#getMetadata() metadata} of {@link ServiceInstance}, return
+     * @return storage type, remote or local
      */
     public static String getMetadataStorageType(ServiceInstance serviceInstance) {
         Map<String, String> metadata = serviceInstance.getMetadata();
@@ -190,6 +211,7 @@ public class ServiceInstanceMetadataUtils {
     }
 
     public static String getRemoteCluster(ServiceInstance serviceInstance) {
+<<<<<<< HEAD
         Map<String, String> metadata = serviceInstance.getMetadata();
         return metadata.get(METADATA_CLUSTER_PROPERTY_NAME);
     }
@@ -201,9 +223,14 @@ public class ServiceInstanceMetadataUtils {
      * @return if Dubbo Service instance, return <code>true</code>, or <code>false</code>
      */
     public static boolean isDubboServiceInstance(ServiceInstance serviceInstance) {
+=======
+>>>>>>> origin/3.2
         Map<String, String> metadata = serviceInstance.getMetadata();
-        return metadata.containsKey(METADATA_SERVICE_URL_PARAMS_PROPERTY_NAME)
-                || metadata.containsKey(METADATA_SERVICE_URLS_PROPERTY_NAME);
+        return metadata.get(METADATA_CLUSTER_PROPERTY_NAME);
+    }
+
+    public static boolean hasEndpoints(ServiceInstance serviceInstance) {
+        return StringUtils.isNotEmpty(serviceInstance.getMetadata().get(ENDPOINTS));
     }
 
     public static void setEndpoints(ServiceInstance serviceInstance, Map<String, Integer> protocolPorts) {
@@ -214,7 +241,7 @@ public class ServiceInstanceMetadataUtils {
             endpoints.add(endpoint);
         });
 
-        metadata.put(ENDPOINTS, JSON.toJSONString(endpoints));
+        metadata.put(ENDPOINTS, JsonUtils.getJson().toJson(endpoints));
     }
 
     /**
@@ -225,20 +252,19 @@ public class ServiceInstanceMetadataUtils {
      * @param protocol        the name of protocol, e.g, dubbo, rest, and so on
      * @return if not found, return <code>null</code>
      */
-    public static Integer getProtocolPort(ServiceInstance serviceInstance, String protocol) {
-        Map<String, String> metadata = serviceInstance.getMetadata();
-        String rawEndpoints = metadata.get(ENDPOINTS);
-        if (StringUtils.isNotEmpty(rawEndpoints)) {
-            List<Endpoint> endpoints = JSON.parseArray(rawEndpoints, Endpoint.class);
+    public static Endpoint getEndpoint(ServiceInstance serviceInstance, String protocol) {
+        List<Endpoint> endpoints = ((DefaultServiceInstance) serviceInstance).getEndpoints();
+        if (endpoints != null) {
             for (Endpoint endpoint : endpoints) {
                 if (endpoint.getProtocol().equals(protocol)) {
-                    return endpoint.getPort();
+                    return endpoint;
                 }
             }
         }
         return null;
     }
 
+<<<<<<< HEAD
     public static void calInstanceRevision(ServiceDiscovery serviceDiscovery, ServiceInstance instance) {
         String registryCluster = serviceDiscovery.getUrl().getParameter(ID_KEY);
         if (registryCluster == null) {
@@ -275,6 +301,46 @@ public class ServiceInstanceMetadataUtils {
         });
     }
 
+=======
+    public static void registerMetadataAndInstance(ApplicationModel applicationModel) {
+        LOGGER.info("Start registering instance address to registry.");
+        RegistryManager registryManager = applicationModel.getBeanFactory().getBean(RegistryManager.class);
+        // register service instance
+        registryManager.getServiceDiscoveries().forEach(ServiceDiscovery::register);
+    }
+
+    public static void refreshMetadataAndInstance(ApplicationModel applicationModel) {
+        RegistryManager registryManager = applicationModel.getBeanFactory().getBean(RegistryManager.class);
+        // update service instance revision
+        registryManager.getServiceDiscoveries().forEach(ServiceDiscovery::update);
+    }
+
+    public static void unregisterMetadataAndInstance(ApplicationModel applicationModel) {
+        RegistryManager registryManager = applicationModel.getBeanFactory().getBean(RegistryManager.class);
+        registryManager.getServiceDiscoveries().forEach(serviceDiscovery -> {
+            try {
+                serviceDiscovery.unregister();
+            } catch (Exception ignored) {
+                // ignored
+            }
+        });
+    }
+
+    public static void customizeInstance(ServiceInstance instance, ApplicationModel applicationModel) {
+        ExtensionLoader<ServiceInstanceCustomizer> loader =
+            instance.getOrDefaultApplicationModel().getExtensionLoader(ServiceInstanceCustomizer.class);
+        // FIXME, sort customizer before apply
+        loader.getSupportedExtensionInstances().forEach(customizer -> {
+            // customize
+            customizer.customize(instance, applicationModel);
+        });
+    }
+
+    public static boolean isValidInstance(ServiceInstance instance) {
+        return instance != null && instance.getHost() != null && instance.getPort() != 0;
+    }
+
+>>>>>>> origin/3.2
     /**
      * Set the default parameters via the specified {@link URL providerURL}
      *
@@ -290,29 +356,4 @@ public class ServiceInstanceMetadataUtils {
         }
     }
 
-    public static class Endpoint {
-        Integer port;
-        String protocol;
-
-        public Endpoint(Integer port, String protocol) {
-            this.port = port;
-            this.protocol = protocol;
-        }
-
-        public Integer getPort() {
-            return port;
-        }
-
-        public void setPort(Integer port) {
-            this.port = port;
-        }
-
-        public String getProtocol() {
-            return protocol;
-        }
-
-        public void setProtocol(String protocol) {
-            this.protocol = protocol;
-        }
-    }
 }

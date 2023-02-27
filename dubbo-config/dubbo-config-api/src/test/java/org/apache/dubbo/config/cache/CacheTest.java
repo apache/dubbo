@@ -21,12 +21,14 @@ import org.apache.dubbo.cache.CacheFactory;
 import org.apache.dubbo.cache.support.threadlocal.ThreadLocalCache;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.MethodConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.RpcInvocation;
 
@@ -44,16 +46,16 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * CacheTest
  */
-public class CacheTest {
+class CacheTest {
 
     @BeforeEach
     public void setUp() {
-//        ApplicationModel.getConfigManager().clear();
+        DubboBootstrap.reset();
     }
 
     @AfterEach
     public void tearDown() {
-//        ApplicationModel.getConfigManager().clear();
+//        ApplicationModel.defaultModel().getConfigManager().clear();
     }
 
     private void testCache(String type) throws Exception {
@@ -116,22 +118,22 @@ public class CacheTest {
     }
 
     @Test
-    public void testCacheLru() throws Exception {
+    void testCacheLru() throws Exception {
         testCache("lru");
     }
 
     @Test
-    public void testCacheThreadlocal() throws Exception {
+    void testCacheThreadlocal() throws Exception {
         testCache("threadlocal");
     }
 
     @Test
-    public void testCacheProvider() throws Exception {
+    void testCacheProvider() throws Exception {
         CacheFactory cacheFactory = ExtensionLoader.getExtensionLoader(CacheFactory.class).getAdaptiveExtension();
 
         Map<String, String> parameters = new HashMap<String, String>();
         parameters.put("findCache.cache", "threadlocal");
-        URL url = new URL("dubbo", "127.0.0.1", 29582, "org.apache.dubbo.config.cache.CacheService", parameters);
+        URL url = new ServiceConfigURL("dubbo", "127.0.0.1", 29582, "org.apache.dubbo.config.cache.CacheService", parameters);
 
         Invocation invocation = new RpcInvocation("findCache", CacheService.class.getName(), "", new Class[]{String.class}, new String[]{"0"}, null, null, null);
 

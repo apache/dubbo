@@ -16,30 +16,48 @@
  */
 package org.apache.dubbo.common.extension.support;
 
+import org.apache.dubbo.rpc.model.ApplicationModel;
+
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class ActivateComparatorTest {
+class ActivateComparatorTest {
+
+    private ActivateComparator activateComparator;
+
+    @BeforeEach
+    public void setup() {
+        activateComparator = new ActivateComparator(ApplicationModel.defaultModel().getExtensionDirector());
+    }
 
     @Test
-    public void testActivateComparator(){
+    void testActivateComparator(){
         Filter1 f1 = new Filter1();
         Filter2 f2 = new Filter2();
         Filter3 f3 = new Filter3();
         Filter4 f4 = new Filter4();
         OldFilter5 f5 = new OldFilter5();
+<<<<<<< HEAD
         List<Class> filters = new ArrayList<>();
+=======
+        List<Class<?>> filters = new ArrayList<>();
+>>>>>>> origin/3.2
         filters.add(f1.getClass());
         filters.add(f2.getClass());
         filters.add(f3.getClass());
         filters.add(f4.getClass());
         filters.add(f5.getClass());
 
+<<<<<<< HEAD
         Collections.sort(filters, ActivateComparator.COMPARATOR);
+=======
+        Collections.sort(filters, activateComparator);
+>>>>>>> origin/3.2
 
         Assertions.assertEquals(f4.getClass(), filters.get(0));
         Assertions.assertEquals(f5.getClass(), filters.get(1));
@@ -49,17 +67,29 @@ public class ActivateComparatorTest {
     }
 
     @Test
+<<<<<<< HEAD
     public void testFilterOrder() {
         Order0Filter1 order0Filter1 = new Order0Filter1();
         Order0Filter2 order0Filter2 = new Order0Filter2();
 
         List<Class> filters = null;
+=======
+    void testFilterOrder() {
+        Order0Filter1 order0Filter1 = new Order0Filter1();
+        Order0Filter2 order0Filter2 = new Order0Filter2();
+
+        List<Class<?>> filters = null;
+>>>>>>> origin/3.2
 
         {
             filters = new ArrayList<>();
             filters.add(order0Filter1.getClass());
             filters.add(order0Filter2.getClass());
+<<<<<<< HEAD
             Collections.sort(filters, ActivateComparator.COMPARATOR);
+=======
+            filters.sort(activateComparator);
+>>>>>>> origin/3.2
             Assertions.assertEquals(order0Filter1.getClass(), filters.get(0));
             Assertions.assertEquals(order0Filter2.getClass(), filters.get(1));
         }
@@ -68,7 +98,11 @@ public class ActivateComparatorTest {
             filters = new ArrayList<>();
             filters.add(order0Filter2.getClass());
             filters.add(order0Filter1.getClass());
+<<<<<<< HEAD
             Collections.sort(filters, ActivateComparator.COMPARATOR);
+=======
+            filters.sort(activateComparator);
+>>>>>>> origin/3.2
             Assertions.assertEquals(order0Filter1.getClass(), filters.get(0));
             Assertions.assertEquals(order0Filter2.getClass(), filters.get(1));
         }

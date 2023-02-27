@@ -29,7 +29,7 @@
     <description>The demo provider module of dubbo project</description>
     <properties>
         <skip_maven_deploy>true</skip_maven_deploy>
-        <slf4j-log4j12.version>1.7.25</slf4j-log4j12.version>
+        <slf4j-log4j12.version>1.7.33</slf4j-log4j12.version>
     </properties>
 
     <dependencies>
@@ -44,11 +44,15 @@
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
+<<<<<<< HEAD
             <artifactId>dubbo-registry-redis</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-registry-multiple</artifactId>
+=======
+            <artifactId>dubbo-registry-zookeeper</artifactId>
+>>>>>>> origin/3.2
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
@@ -60,10 +64,6 @@
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-registry-zookeeper</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-configcenter-zookeeper</artifactId>
         </dependency>
         <dependency>
@@ -72,19 +72,27 @@
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-metadata-report-nacos</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-metadata-report-zookeeper</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-metadata-report-nacos</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-rpc-dubbo</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+<<<<<<< HEAD
             <artifactId>dubbo-metadata-report-failover</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-rpc-dubbo</artifactId>
+=======
+            <artifactId>dubbo-rpc-rest</artifactId>
+>>>>>>> origin/3.2
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
@@ -100,6 +108,13 @@
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
+<<<<<<< HEAD
+=======
+            <artifactId>dubbo-serialization-fastjson2</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+>>>>>>> origin/3.2
             <artifactId>dubbo-serialization-jdk</artifactId>
         </dependency>
         <dependency>
@@ -115,6 +130,7 @@
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
         </dependency>
+<<<<<<< HEAD
 
         <!-- The metadata center cannot be initialized without this dependency -->
         <dependency>
@@ -123,5 +139,15 @@
             <version>1.9.12</version>
         </dependency>
 
+=======
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-rpc-triple</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-qos</artifactId>
+        </dependency>
+>>>>>>> origin/3.2
     </dependencies>
 </project>

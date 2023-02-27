@@ -16,12 +16,21 @@
  */
 package org.apache.dubbo.common.config;
 
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+
 import java.util.NoSuchElementException;
+
+import static org.apache.dubbo.common.config.ConfigurationUtils.isEmptyValue;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_PROPERTY_TYPE_MISMATCH;
 
 /**
  * Configuration interface, to fetch the value for the specified key.
  */
 public interface Configuration {
+
+    ErrorTypeAwareLogger interfaceLevelLogger = LoggerFactory.getErrorTypeAwareLogger(Configuration.class);
+
     /**
      * Get a string associated with the given configuration key.
      *
@@ -47,7 +56,7 @@ public interface Configuration {
     }
 
     default int getInt(String key) {
-        Integer i = this.getInteger(key, (Integer) null);
+        Integer i = this.getInteger(key, null);
         if (i != null) {
             return i;
         } else {
@@ -56,7 +65,7 @@ public interface Configuration {
     }
 
     default int getInt(String key, int defaultValue) {
-        Integer i = this.getInteger(key, (Integer) null);
+        Integer i = this.getInteger(key, null);
         return i == null ? defaultValue : i;
     }
 
@@ -64,6 +73,11 @@ public interface Configuration {
         try {
             return convert(Integer.class, key, defaultValue);
         } catch (NumberFormatException e) {
+            // 0-2 Property type mismatch.
+            interfaceLevelLogger.error(COMMON_PROPERTY_TYPE_MISMATCH, "typo in property value",
+                "This property requires an integer value.",
+                "Actual Class: " + getClass().getName(), e);
+
             throw new IllegalStateException('\'' + key + "' doesn't map to a Integer object", e);
         }
     }
@@ -133,7 +147,7 @@ public interface Configuration {
      * key, {@code false} otherwise
      */
     default boolean containsKey(String key) {
-        return getProperty(key) != null;
+        return !isEmptyValue(getProperty(key));
     }
 
 

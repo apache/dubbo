@@ -27,7 +27,7 @@ public interface Cluster extends org.apache.dubbo.rpc.cluster.Cluster {
             com.alibaba.dubbo.rpc.RpcException;
 
     @Override
-    default <T> Invoker<T> join(Directory<T> directory) throws RpcException {
+    default <T> Invoker<T> join(Directory<T> directory, boolean buildFilterChain) throws RpcException {
         return null;
     }
 }

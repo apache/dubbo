@@ -192,7 +192,7 @@ class ProviderBuilderTest {
                 .charset("utf-8").payload(6).buffer(1024).transporter("mocktransporter").exchanger("mockexchanger")
                 .dispatcher("mockdispatcher").networker("networker").server("server").client("client")
                 .telnet("mocktelnethandler").prompt("prompt").status("mockstatuschecker").wait(Integer.valueOf(1000))
-                .isDefault(true).id("id").prefix("prefix");
+                .isDefault(true).id("id");
 
         ProviderConfig config = builder.build();
         ProviderConfig config2 = builder.build();
@@ -221,7 +221,6 @@ class ProviderBuilderTest {
         Assertions.assertEquals("mockstatuschecker", config.getStatus());
         Assertions.assertTrue(config.isDefault());
         Assertions.assertEquals("id", config.getId());
-        Assertions.assertEquals("prefix", config.getPrefix());
         Assertions.assertNotSame(config, config2);
     }
 }

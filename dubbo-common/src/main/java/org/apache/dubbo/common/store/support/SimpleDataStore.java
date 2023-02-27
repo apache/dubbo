@@ -18,6 +18,7 @@
 package org.apache.dubbo.common.store.support;
 
 import org.apache.dubbo.common.store.DataStore;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,7 +29,7 @@ public class SimpleDataStore implements DataStore {
 
     // <component name or id, <data-name, data-value>>
     private ConcurrentMap<String, ConcurrentMap<String, Object>> data =
-            new ConcurrentHashMap<String, ConcurrentMap<String, Object>>();
+        new ConcurrentHashMap<String, ConcurrentMap<String, Object>>();
 
     @Override
     public Map<String, Object> get(String componentName) {
@@ -50,7 +51,7 @@ public class SimpleDataStore implements DataStore {
 
     @Override
     public void put(String componentName, String key, Object value) {
-        Map<String, Object> componentData = data.computeIfAbsent(componentName, k -> new ConcurrentHashMap<>());
+        Map<String, Object> componentData = ConcurrentHashMapUtils.computeIfAbsent(data, componentName, k -> new ConcurrentHashMap<>());
         componentData.put(key, value);
     }
 

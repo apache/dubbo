@@ -19,21 +19,28 @@ package org.apache.dubbo.remoting.transport;
 import org.apache.dubbo.common.Parameters;
 import org.apache.dubbo.common.Resetable;
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Codec;
 import org.apache.dubbo.remoting.Codec2;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.transport.codec.CodecAdapter;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
+<<<<<<< HEAD
+=======
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
+import static org.apache.dubbo.rpc.model.ScopeModelUtil.getFrameworkModel;
+
+>>>>>>> origin/3.2
 /**
  * AbstractEndpoint
  */
 public abstract class AbstractEndpoint extends AbstractPeer implements Resetable {
 
-    private static final Logger logger = LoggerFactory.getLogger(AbstractEndpoint.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(AbstractEndpoint.class);
 
     private Codec2 codec;
 
@@ -46,12 +53,25 @@ public abstract class AbstractEndpoint extends AbstractPeer implements Resetable
     }
 
     protected static Codec2 getChannelCodec(URL url) {
+<<<<<<< HEAD
         String codecName = url.getProtocol(); // codec extension name must stay the same with protocol name
         if (ExtensionLoader.getExtensionLoader(Codec2.class).hasExtension(codecName)) {
             return ExtensionLoader.getExtensionLoader(Codec2.class).getExtension(codecName);
+=======
+        String codecName = url.getParameter(Constants.CODEC_KEY);
+        if (StringUtils.isEmpty(codecName)) {
+            // codec extension name must stay the same with protocol name
+            codecName = url.getProtocol();
+        }
+        FrameworkModel frameworkModel = getFrameworkModel(url.getScopeModel());
+        if (frameworkModel.getExtensionLoader(Codec2.class).hasExtension(codecName)) {
+            return frameworkModel.getExtensionLoader(Codec2.class).getExtension(codecName);
+        } else if (frameworkModel.getExtensionLoader(Codec.class).hasExtension(codecName)) {
+            return new CodecAdapter(frameworkModel.getExtensionLoader(Codec.class)
+                .getExtension(codecName));
+>>>>>>> origin/3.2
         } else {
-            return new CodecAdapter(ExtensionLoader.getExtensionLoader(Codec.class)
-                    .getExtension(codecName));
+            return frameworkModel.getExtensionLoader(Codec2.class).getExtension("default");
         }
     }
 
@@ -59,7 +79,11 @@ public abstract class AbstractEndpoint extends AbstractPeer implements Resetable
     public void reset(URL url) {
         if (isClosed()) {
             throw new IllegalStateException("Failed to reset parameters "
+<<<<<<< HEAD
                     + url + ", cause: Channel closed. channel: " + getLocalAddress());
+=======
+                + url + ", cause: Channel closed. channel: " + getLocalAddress());
+>>>>>>> origin/3.2
         }
 
         try {
@@ -70,7 +94,7 @@ public abstract class AbstractEndpoint extends AbstractPeer implements Resetable
                 }
             }
         } catch (Throwable t) {
-            logger.error(t.getMessage(), t);
+            logger.error(INTERNAL_ERROR, "", "", t.getMessage(), t);
         }
 
         try {
@@ -78,7 +102,7 @@ public abstract class AbstractEndpoint extends AbstractPeer implements Resetable
                 this.codec = getChannelCodec(url);
             }
         } catch (Throwable t) {
-            logger.error(t.getMessage(), t);
+            logger.error(INTERNAL_ERROR, "unknown error in remoting module", "", t.getMessage(), t);
         }
     }
 

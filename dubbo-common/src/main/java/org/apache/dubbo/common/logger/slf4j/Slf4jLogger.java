@@ -21,11 +21,7 @@ import org.apache.dubbo.common.logger.support.FailsafeLogger;
 
 import org.slf4j.spi.LocationAwareLogger;
 
-import java.io.Serializable;
-
-public class Slf4jLogger implements Logger, Serializable {
-
-    private static final long serialVersionUID = 1L;
+public class Slf4jLogger implements Logger {
 
     private static final String FQCN = FailsafeLogger.class.getName();
 

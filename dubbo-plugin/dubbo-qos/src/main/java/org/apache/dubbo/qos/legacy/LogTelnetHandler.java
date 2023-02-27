@@ -49,7 +49,7 @@ public class LogTelnetHandler implements TelnetHandler {
             buf.append("EXAMPLE: log error / log 100");
         } else {
             String[] str = message.split(" ");
-            if (!StringUtils.isInteger(str[0])) {
+            if (!StringUtils.isNumber(str[0])) {
                 LoggerFactory.setLevel(Level.valueOf(message.toUpperCase()));
             } else {
                 int showLogLength = Integer.parseInt(str[0]);

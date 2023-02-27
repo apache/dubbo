@@ -34,8 +34,6 @@ import java.util.concurrent.CompletableFuture;
  */
 public abstract class ClientToServerTest {
 
-    protected static final String LOCALHOST = "127.0.0.1";
-
     protected ExchangeServer server;
 
     protected ExchangeChannel client;
@@ -65,7 +63,7 @@ public abstract class ClientToServerTest {
     }
 
     @Test
-    public void testFuture() throws Exception {
+    void testFuture() throws Exception {
         CompletableFuture<Object> future = client.request(new World("world"));
         Hello result = (Hello) future.get();
         Assertions.assertEquals("hello,world", result.getName());

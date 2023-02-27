@@ -18,11 +18,6 @@ package org.apache.dubbo.metadata.report.identifier;
 
 import org.apache.dubbo.common.URL;
 
-import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
-
 /**
  * The MetadataIdentifier is used to store method descriptor.
  * <p>
@@ -48,10 +43,10 @@ public class MetadataIdentifier extends BaseServiceMetadataIdentifier implements
 
     public MetadataIdentifier(URL url) {
         this.serviceInterface = url.getServiceInterface();
-        this.version = url.getParameter(VERSION_KEY);
-        this.group = url.getParameter(GROUP_KEY);
-        this.side = url.getParameter(SIDE_KEY);
-        setApplication(url.getParameter(APPLICATION_KEY));
+        this.version = url.getVersion();
+        this.group = url.getGroup();
+        this.side = url.getSide();
+        setApplication(url.getApplication());
     }
 
     public String getUniqueKey(KeyTypeEnum keyType) {

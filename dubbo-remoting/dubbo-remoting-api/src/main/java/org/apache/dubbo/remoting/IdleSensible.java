@@ -23,10 +23,10 @@ package org.apache.dubbo.remoting;
  */
 public interface IdleSensible {
     /**
-     * Whether the implementation can sense and handle the idle connection. By default it's false, the implementation
+     * Whether the implementation can sense and handle the idle connection. By default, it's false, the implementation
      * relies on dedicated timer to take care of idle connection.
      *
-     * @return whether has the ability to handle idle connection
+     * @return whether it has the ability to handle idle connection
      */
     default boolean canHandleIdle() {
         return false;

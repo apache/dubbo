@@ -28,6 +28,10 @@ import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CORE_THREADS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY_PREFIX;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
+<<<<<<< HEAD
+=======
+import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_KEY;
+>>>>>>> origin/3.2
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INVOKER_LISTENER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
@@ -41,14 +45,20 @@ import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREAD_NAME_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+<<<<<<< HEAD
 import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_KEY;
+=======
+>>>>>>> origin/3.2
 
 
 public class DefaultProviderURLMergeProcessor implements ProviderURLMergeProcessor {
 
     @Override
     public URL mergeUrl(URL remoteUrl, Map<String, String> localParametersMap) {
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/3.2
         Map<String, String> map = new HashMap<>();
         Map<String, String> remoteMap = remoteUrl.getParameters();
 
@@ -81,10 +91,17 @@ public class DefaultProviderURLMergeProcessor implements ProviderURLMergeProcess
         if (localParametersMap != null && localParametersMap.size() > 0) {
             Map<String, String> copyOfLocalMap = new HashMap<>(localParametersMap);
 
+<<<<<<< HEAD
             if(map.containsKey(GROUP_KEY)){
                 copyOfLocalMap.remove(GROUP_KEY);
             }
             if(map.containsKey(VERSION_KEY)){
+=======
+            if (map.containsKey(GROUP_KEY)) {
+                copyOfLocalMap.remove(GROUP_KEY);
+            }
+            if (map.containsKey(VERSION_KEY)) {
+>>>>>>> origin/3.2
                 copyOfLocalMap.remove(VERSION_KEY);
             }
             if (map.containsKey(GENERIC_KEY)) {
@@ -109,7 +126,10 @@ public class DefaultProviderURLMergeProcessor implements ProviderURLMergeProcess
                         && localFilter != null && localFilter.length() > 0) {
                     map.put(REFERENCE_FILTER_KEY, remoteFilter + "," + localFilter);
                 }
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/3.2
                 String remoteListener = remoteMap.get(INVOKER_LISTENER_KEY);
                 String localListener = copyOfLocalMap.get(INVOKER_LISTENER_KEY);
                 if (remoteListener != null && remoteListener.length() > 0

@@ -17,8 +17,12 @@
 package org.apache.dubbo.remoting.zookeeper.curator;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
 import org.apache.dubbo.remoting.zookeeper.AbstractZookeeperTransporter;
+import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
+<<<<<<< HEAD
+import org.apache.dubbo.remoting.zookeeper.AbstractZookeeperTransporter;
+=======
+>>>>>>> origin/3.2
 
 public class CuratorZookeeperTransporter extends AbstractZookeeperTransporter {
     @Override

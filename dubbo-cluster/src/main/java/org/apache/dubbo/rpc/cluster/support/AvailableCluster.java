@@ -16,22 +16,20 @@
  */
 package org.apache.dubbo.rpc.cluster.support;
 
-import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.cluster.Directory;
+import org.apache.dubbo.rpc.cluster.support.wrapper.AbstractCluster;
 
 /**
  * AvailableCluster
  *
  */
-public class AvailableCluster implements Cluster {
+public class AvailableCluster extends AbstractCluster {
 
     public static final String NAME = "available";
 
     @Override
-    public <T> Invoker<T> join(Directory<T> directory) throws RpcException {
+    public <T> AbstractClusterInvoker<T> doJoin(Directory<T> directory) throws RpcException {
         return new AvailableClusterInvoker<>(directory);
     }
-
 }

@@ -17,12 +17,22 @@
 package org.apache.dubbo.common;
 
 import org.apache.dubbo.common.utils.PojoUtils;
+<<<<<<< HEAD
 import org.junit.jupiter.api.Test;
 
 public class PojoUtilsForNonPublicStaticTest {
 
     @Test
     public void testNonPublicStaticClass() {
+=======
+
+import org.junit.jupiter.api.Test;
+
+class PojoUtilsForNonPublicStaticTest {
+
+    @Test
+    void testNonPublicStaticClass() {
+>>>>>>> origin/3.2
         NonPublicStaticData nonPublicStaticData = new NonPublicStaticData("horizon");
         PojoUtils.generalize(nonPublicStaticData);
     }
@@ -46,4 +56,8 @@ public class PojoUtilsForNonPublicStaticTest {
             this.name = name;
         }
     }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> origin/3.2

@@ -18,11 +18,19 @@ package org.apache.dubbo.remoting.zookeeper;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+<<<<<<< HEAD
 import org.apache.dubbo.common.extension.SPI;
 
 import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
 
 @SPI
+=======
+import org.apache.dubbo.common.extension.ExtensionScope;
+import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+
+@SPI(scope = ExtensionScope.APPLICATION)
+>>>>>>> origin/3.2
 public interface ZookeeperTransporter {
 
     String CURATOR_5 = "curator5";
@@ -31,6 +39,7 @@ public interface ZookeeperTransporter {
 
     ZookeeperClient connect(URL url);
 
+<<<<<<< HEAD
     static ZookeeperTransporter getExtension() {
         ExtensionLoader<ZookeeperTransporter> extensionLoader = getExtensionLoader(ZookeeperTransporter.class);
         boolean isHighVersion = isHighVersionCurator();
@@ -38,6 +47,13 @@ public interface ZookeeperTransporter {
             return extensionLoader.getExtension(CURATOR_5);
         }
         return extensionLoader.getExtension(CURATOR);
+=======
+    void destroy();
+
+    static ZookeeperTransporter getExtension(ApplicationModel applicationModel) {
+        ExtensionLoader<ZookeeperTransporter> extensionLoader = applicationModel.getExtensionLoader(ZookeeperTransporter.class);
+        return isHighVersionCurator() ? extensionLoader.getExtension(CURATOR_5) : extensionLoader.getExtension(CURATOR);
+>>>>>>> origin/3.2
     }
 
     static boolean isHighVersionCurator() {
@@ -48,5 +64,8 @@ public interface ZookeeperTransporter {
             return false;
         }
     }
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/3.2
 }

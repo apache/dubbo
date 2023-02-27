@@ -16,6 +16,10 @@
  */
 package org.apache.dubbo.qos.server.handler;
 
+import org.apache.dubbo.qos.common.QosConfiguration;
+import org.apache.dubbo.qos.permission.PermissionLevel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
+
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
@@ -26,61 +30,67 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
-import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class HttpProcessHandlerTest {
+class HttpProcessHandlerTest {
     @Test
-    public void test1() throws Exception {
+    void test1() throws Exception {
         ChannelHandlerContext context = mock(ChannelHandlerContext.class);
         ChannelFuture future = mock(ChannelFuture.class);
         when(context.writeAndFlush(any(FullHttpResponse.class))).thenReturn(future);
         HttpRequest message = Mockito.mock(HttpRequest.class);
-        when(message.getUri()).thenReturn("test");
-        HttpProcessHandler handler = new HttpProcessHandler();
+        when(message.uri()).thenReturn("test");
+        HttpProcessHandler handler = new HttpProcessHandler(FrameworkModel.defaultModel(), QosConfiguration.builder().build());
         handler.channelRead0(context, message);
         verify(future).addListener(ChannelFutureListener.CLOSE);
         ArgumentCaptor<FullHttpResponse> captor = ArgumentCaptor.forClass(FullHttpResponse.class);
         verify(context).writeAndFlush(captor.capture());
         FullHttpResponse response = captor.getValue();
-        assertThat(response.getStatus().code(), equalTo(404));
+        assertThat(response.status().code(), equalTo(404));
     }
 
     @Test
-    public void test2() throws Exception {
+    void test2() throws Exception {
         ChannelHandlerContext context = mock(ChannelHandlerContext.class);
         ChannelFuture future = mock(ChannelFuture.class);
         when(context.writeAndFlush(any(FullHttpResponse.class))).thenReturn(future);
         HttpRequest message = Mockito.mock(HttpRequest.class);
-        when(message.getUri()).thenReturn("localhost:80/greeting");
-        when(message.getMethod()).thenReturn(HttpMethod.GET);
-        HttpProcessHandler handler = new HttpProcessHandler();
+        when(message.uri()).thenReturn("localhost:80/greeting");
+        when(message.method()).thenReturn(HttpMethod.GET);
+        HttpProcessHandler handler = new HttpProcessHandler(FrameworkModel.defaultModel(),
+            QosConfiguration.builder()
+                .anonymousAccessPermissionLevel(PermissionLevel.NONE.name())
+                .build());
         handler.channelRead0(context, message);
         verify(future).addListener(ChannelFutureListener.CLOSE);
         ArgumentCaptor<FullHttpResponse> captor = ArgumentCaptor.forClass(FullHttpResponse.class);
         verify(context).writeAndFlush(captor.capture());
         FullHttpResponse response = captor.getValue();
-        assertThat(response.getStatus().code(), equalTo(200));
+        assertThat(response.status().code(), equalTo(200));
     }
 
     @Test
-    public void test3() throws Exception {
+    void test3() throws Exception {
         ChannelHandlerContext context = mock(ChannelHandlerContext.class);
         ChannelFuture future = mock(ChannelFuture.class);
         when(context.writeAndFlush(any(FullHttpResponse.class))).thenReturn(future);
         HttpRequest message = Mockito.mock(HttpRequest.class);
-        when(message.getUri()).thenReturn("localhost:80/test");
-        when(message.getMethod()).thenReturn(HttpMethod.GET);
-        HttpProcessHandler handler = new HttpProcessHandler();
+        when(message.uri()).thenReturn("localhost:80/test");
+        when(message.method()).thenReturn(HttpMethod.GET);
+        HttpProcessHandler handler = new HttpProcessHandler(FrameworkModel.defaultModel(),
+            QosConfiguration.builder()
+                .anonymousAccessPermissionLevel(PermissionLevel.NONE.name())
+                .build());
         handler.channelRead0(context, message);
         verify(future).addListener(ChannelFutureListener.CLOSE);
         ArgumentCaptor<FullHttpResponse> captor = ArgumentCaptor.forClass(FullHttpResponse.class);
         verify(context).writeAndFlush(captor.capture());
         FullHttpResponse response = captor.getValue();
-        assertThat(response.getStatus().code(), equalTo(404));
+        assertThat(response.status().code(), equalTo(404));
     }
 }

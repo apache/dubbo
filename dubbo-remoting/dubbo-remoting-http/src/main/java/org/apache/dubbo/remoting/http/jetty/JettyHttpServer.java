@@ -17,7 +17,7 @@
 package org.apache.dubbo.remoting.http.jetty;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.Constants;
@@ -31,16 +31,15 @@ import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
-import org.eclipse.jetty.util.log.Log;
-import org.eclipse.jetty.util.log.StdErrLog;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 
-import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_THREADS;
+import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_FAILED_STOP_HTTP_SERVER;
 
 public class JettyHttpServer extends AbstractHttpServer {
 
-    private static final Logger logger = LoggerFactory.getLogger(JettyHttpServer.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(JettyHttpServer.class);
 
     private Server server;
 
@@ -49,10 +48,9 @@ public class JettyHttpServer extends AbstractHttpServer {
     public JettyHttpServer(URL url, final HttpHandler handler) {
         super(url, handler);
         this.url = url;
-        // TODO we should leave this setting to slf4j
-        // we must disable the debug logging for production use
-        Log.setLog(new StdErrLog());
-        Log.getLog().setDebugEnabled(false);
+
+        // set dubbo's logger
+        System.setProperty("org.eclipse.jetty.util.log.class", JettyLoggerAdapter.class.getName());
 
         DispatcherServlet.addHttpHandler(url.getParameter(Constants.BIND_PORT_KEY, url.getPort()), handler);
 
@@ -104,7 +102,7 @@ public class JettyHttpServer extends AbstractHttpServer {
             try {
                 server.stop();
             } catch (Exception e) {
-                logger.warn(e.getMessage(), e);
+                logger.warn(COMMON_FAILED_STOP_HTTP_SERVER, "", "", e.getMessage(), e);
             }
         }
     }

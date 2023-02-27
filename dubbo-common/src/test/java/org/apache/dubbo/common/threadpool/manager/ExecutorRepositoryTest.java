@@ -17,6 +17,7 @@
 package org.apache.dubbo.common.threadpool.manager;
 
 import org.apache.dubbo.common.URL;
+<<<<<<< HEAD
 import org.apache.dubbo.common.extension.ExtensionLoader;
 
 import org.junit.jupiter.api.Assertions;
@@ -40,6 +41,45 @@ public class ExecutorRepositoryTest {
 
         Assertions.assertNotNull(executorRepository.getSharedExecutor());
         Assertions.assertNotNull(executorRepository.getServiceExporterExecutor());
+=======
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
+
+import static org.awaitility.Awaitility.await;
+
+class ExecutorRepositoryTest {
+    private ApplicationModel applicationModel;
+    private ExecutorRepository executorRepository;
+
+    @BeforeEach
+    public void setup() {
+        applicationModel = FrameworkModel.defaultModel().newApplication();
+        executorRepository = ExecutorRepository.getInstance(applicationModel);
+    }
+
+    @AfterEach
+    public void teardown() {
+        applicationModel.destroy();
+    }
+
+    @Test
+    void testGetExecutor() {
+        testGet(URL.valueOf("dubbo://127.0.0.1:23456/TestService"));
+        testGet(URL.valueOf("dubbo://127.0.0.1:23456/TestService?side=consumer"));
+
+        Assertions.assertNotNull(executorRepository.getSharedExecutor());
+        Assertions.assertNotNull(executorRepository.getServiceExportExecutor());
+        Assertions.assertNotNull(executorRepository.getServiceReferExecutor());
+>>>>>>> origin/3.2
         executorRepository.nextScheduledExecutor();
     }
 
@@ -55,6 +95,7 @@ public class ExecutorRepositoryTest {
     }
 
     @Test
+<<<<<<< HEAD
     public void testGetForProviderSide() throws Exception {
         URL provider1 = URL.valueOf("dubbo://127.0.0.1:6789?side=provider");
         URL provider2 = URL.valueOf("dubbo://127.0.0.1:6790?side=provider");
@@ -110,6 +151,10 @@ public class ExecutorRepositoryTest {
     @Test
     public void testUpdateExecutor() {
         URL url = URL.valueOf("dubbo://127.0.0.1:23456?threads=5");
+=======
+    void testUpdateExecutor() {
+        URL url = URL.valueOf("dubbo://127.0.0.1:23456/TestService?threads=5");
+>>>>>>> origin/3.2
         ThreadPoolExecutor executorService = (ThreadPoolExecutor) executorRepository.createExecutorIfAbsent(url);
 
         executorService.setCorePoolSize(3);
@@ -129,7 +174,47 @@ public class ExecutorRepositoryTest {
 
         executorService.setCorePoolSize(5);
         executorRepository.updateThreadpool(url, executorService);
+<<<<<<< HEAD
 
 
+=======
+    }
+
+    @Test
+    void testSharedExecutor() throws Exception {
+        ExecutorService sharedExecutor = executorRepository.getSharedExecutor();
+        CountDownLatch latch = new CountDownLatch(3);
+        CountDownLatch latch1 = new CountDownLatch(1);
+        sharedExecutor.execute(()->{
+            latch.countDown();
+            try {
+                latch1.await();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        });
+        sharedExecutor.execute(()->{
+            latch.countDown();
+            try {
+                latch1.await();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        });
+        sharedExecutor.submit(()->{
+            latch.countDown();
+            try {
+                latch1.await();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        });
+
+        await().until(()->latch.getCount() == 0);
+        Assertions.assertEquals(3, ((ThreadPoolExecutor)sharedExecutor).getActiveCount());
+        latch1.countDown();
+        await().until(()->((ThreadPoolExecutor)sharedExecutor).getActiveCount() == 0);
+        Assertions.assertEquals(3, ((ThreadPoolExecutor)sharedExecutor).getCompletedTaskCount());
+>>>>>>> origin/3.2
     }
 }

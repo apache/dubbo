@@ -17,6 +17,7 @@
 package org.apache.dubbo.config.mock;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
 
@@ -31,7 +32,7 @@ import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
  */
 public class MockRegistry implements Registry {
 
-    static URL subscribedUrl = new URL("null", "0.0.0.0", 0);
+    static URL subscribedUrl = new ServiceConfigURL("null", "0.0.0.0", 0);
 
     public static URL getSubscribedUrl() {
         return subscribedUrl;

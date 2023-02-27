@@ -24,10 +24,14 @@ import java.io.IOException;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
-public class LFUCacheTest {
+class LFUCacheTest {
 
     @Test
+<<<<<<< HEAD
     public void testCacheEviction() throws Exception {
+=======
+    void testCacheEviction() throws Exception {
+>>>>>>> origin/3.2
         LFUCache<String, Integer> cache = new LFUCache<>(8, 0.8f);
         cache.put("one", 1);
         cache.put("two", 2);
@@ -48,7 +52,11 @@ public class LFUCacheTest {
     }
 
     @Test
+<<<<<<< HEAD
     public void testCacheRemove() throws Exception {
+=======
+    void testCacheRemove() throws Exception {
+>>>>>>> origin/3.2
         LFUCache<String, Integer> cache = new LFUCache<>(8, 0.8f);
         cache.put("one", 1);
         cache.put("two", 2);
@@ -68,16 +76,28 @@ public class LFUCacheTest {
     }
 
     @Test
+<<<<<<< HEAD
     public void testDefaultCapacity() throws Exception {
+=======
+    void testDefaultCapacity() throws Exception {
+>>>>>>> origin/3.2
         LFUCache<String, Integer> cache = new LFUCache<>();
         assertThat(cache.getCapacity(), equalTo(1000));
     }
 
     @Test
+<<<<<<< HEAD
     public void testErrorConstructArguments() throws IOException {
+=======
+    void testErrorConstructArguments() throws IOException {
+>>>>>>> origin/3.2
         Assertions.assertThrows(IllegalArgumentException.class, () -> new LFUCache<>(0, 0.8f));
         Assertions.assertThrows(IllegalArgumentException.class, () -> new LFUCache<>(-1, 0.8f));
         Assertions.assertThrows(IllegalArgumentException.class, () -> new LFUCache<>(100, 0.0f));
         Assertions.assertThrows(IllegalArgumentException.class, () -> new LFUCache<>(100, -0.1f));
     }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> origin/3.2

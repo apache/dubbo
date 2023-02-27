@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc;
 
+import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 
 /**
@@ -33,6 +34,30 @@ import org.apache.dubbo.common.extension.SPI;
  *    Caching is implemented in dubbo using filter approach. If cache is configured for invocation then before
  *    remote call configured caching type's (e.g. Thread Local, JCache etc) implementation invoke method gets called.
  * </pre>
+ *
+ * Starting from 3.0, Filter on consumer side has been refactored. There are two different kinds of Filters working at different stages
+ * of an RPC request.
+ * 1. Filter. Works at the instance level, each Filter is bond to one specific Provider instance(invoker).
+ * 2. ClusterFilter. Newly introduced in 3.0, intercepts request before Loadbalancer picks one specific Filter(Invoker).
+ *
+ * Filter Chain in 3.x
+ *
+ *                                          -> Filter -> Invoker
+ *
+ * Proxy -> ClusterFilter -> ClusterInvoker -> Filter -> Invoker
+ *
+ *                                          -> Filter -> Invoker
+ *
+ *
+ * Filter Chain in 2.x
+ *
+ *                            Filter -> Invoker
+ *
+ * Proxy -> ClusterInvoker -> Filter -> Invoker
+ *
+ *                            Filter -> Invoker
+ *
+ *
  * Filter. (SPI, Singleton, ThreadSafe)
  *
  * @see org.apache.dubbo.rpc.filter.GenericFilter
@@ -40,18 +65,7 @@ import org.apache.dubbo.common.extension.SPI;
  * @see org.apache.dubbo.rpc.filter.TokenFilter
  * @see org.apache.dubbo.rpc.filter.TpsLimitFilter
  */
-@SPI
-public interface Filter {
-    /**
-     * Make sure call invoker.invoke() in your implementation.
-     */
-    Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException;
-
-    interface Listener {
-
-        void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation);
-
-        void onError(Throwable t, Invoker<?> invoker, Invocation invocation);
-    }
-
+@SPI(scope = ExtensionScope.MODULE)
+public interface Filter extends BaseFilter {
 }
+

@@ -20,16 +20,17 @@ package org.apache.dubbo.common.status.support;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.status.Status;
+
 import org.junit.jupiter.api.Test;
 
-import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.notNullValue;
 
-public class LoadStatusCheckerTest {
+class LoadStatusCheckerTest {
     private static Logger logger = LoggerFactory.getLogger(LoadStatusCheckerTest.class);
 
     @Test
-    public void test() throws Exception {
+    void test() throws Exception {
         LoadStatusChecker statusChecker = new LoadStatusChecker();
         Status status = statusChecker.check();
         assertThat(status, notNullValue());

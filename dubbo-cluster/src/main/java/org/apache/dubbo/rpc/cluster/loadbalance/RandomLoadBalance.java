@@ -17,11 +17,17 @@
 package org.apache.dubbo.rpc.cluster.loadbalance;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
+
+import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_SERVICE_REFERENCE_PATH;
+import static org.apache.dubbo.rpc.cluster.Constants.WEIGHT_KEY;
 
 /**
  * This class select one provider from multiple providers randomly.
@@ -37,8 +43,9 @@ public class RandomLoadBalance extends AbstractLoadBalance {
 
     /**
      * Select one invoker between a list using a random criteria
-     * @param invokers List of possible invokers
-     * @param url URL
+     *
+     * @param invokers   List of possible invokers
+     * @param url        URL
      * @param invocation Invocation
      * @param <T>
      * @return The selected invoker
@@ -47,6 +54,11 @@ public class RandomLoadBalance extends AbstractLoadBalance {
     protected <T> Invoker<T> doSelect(List<Invoker<T>> invokers, URL url, Invocation invocation) {
         // Number of invokers
         int length = invokers.size();
+
+        if (!needWeightLoadBalance(invokers, invocation)) {
+            return invokers.get(ThreadLocalRandom.current().nextInt(length));
+        }
+
         // Every invoker has the same weight?
         boolean sameWeight = true;
         // the maxWeight of every invokers, the minWeight = 0 or the maxWeight of the last invoker
@@ -77,4 +89,25 @@ public class RandomLoadBalance extends AbstractLoadBalance {
         return invokers.get(ThreadLocalRandom.current().nextInt(length));
     }
 
+    private <T> boolean needWeightLoadBalance(List<Invoker<T>> invokers, Invocation invocation) {
+        Invoker<T> invoker = invokers.get(0);
+        URL invokerUrl = invoker.getUrl();
+        if (invoker instanceof ClusterInvoker) {
+            invokerUrl = ((ClusterInvoker<?>) invoker).getRegistryUrl();
+        }
+
+        // Multiple registry scenario, load balance among multiple registries.
+        if (REGISTRY_SERVICE_REFERENCE_PATH.equals(invokerUrl.getServiceInterface())) {
+            String weight = invokerUrl.getParameter(WEIGHT_KEY);
+            return StringUtils.isNotEmpty(weight);
+        } else {
+            String weight = invokerUrl.getMethodParameter(invocation.getMethodName(), WEIGHT_KEY);
+            if (StringUtils.isNotEmpty(weight)) {
+                return true;
+            } else {
+                String timeStamp = invoker.getUrl().getParameter(TIMESTAMP_KEY);
+                return StringUtils.isNotEmpty(timeStamp);
+            }
+        }
+    }
 }

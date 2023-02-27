@@ -15,14 +15,16 @@
  * limitations under the License.
  */
 package org.apache.dubbo.common.extension.adaptive;
-import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.rpc.model.ScopeModel;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
 public class HasAdaptiveExt$Adaptive implements org.apache.dubbo.common.extension.adaptive.HasAdaptiveExt {
 public java.lang.String echo(org.apache.dubbo.common.URL arg0, java.lang.String arg1)  {
 if (arg0 == null) throw new IllegalArgumentException("url == null");
 org.apache.dubbo.common.URL url = arg0;
 String extName = url.getParameter("has.adaptive.ext", "adaptive");
 if(extName == null) throw new IllegalStateException("Failed to get extension (org.apache.dubbo.common.extension.adaptive.HasAdaptiveExt) name from url (" + url.toString() + ") use keys([has.adaptive.ext])");
-org.apache.dubbo.common.extension.adaptive.HasAdaptiveExt extension = (org.apache.dubbo.common.extension.adaptive.HasAdaptiveExt)ExtensionLoader.getExtensionLoader(org.apache.dubbo.common.extension.adaptive.HasAdaptiveExt.class).getExtension(extName);
+ScopeModel scopeModel = ScopeModelUtil.getOrDefault(url.getScopeModel(), org.apache.dubbo.common.extension.adaptive.HasAdaptiveExt.class);
+org.apache.dubbo.common.extension.adaptive.HasAdaptiveExt extension = (org.apache.dubbo.common.extension.adaptive.HasAdaptiveExt)scopeModel.getExtensionLoader(org.apache.dubbo.common.extension.adaptive.HasAdaptiveExt.class).getExtension(extName);
 return extension.echo(arg0, arg1);
 }
 }

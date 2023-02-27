@@ -32,6 +32,7 @@
     <dependencies>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
+<<<<<<< HEAD
             <artifactId>dubbo-metadata-report-zookeeper</artifactId>
         </dependency>
         <dependency>
@@ -40,6 +41,8 @@
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
+=======
+>>>>>>> origin/3.2
             <artifactId>dubbo-demo-interface</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
@@ -77,6 +80,10 @@
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-metadata-report-zookeeper</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-metadata-report-nacos</artifactId>
         </dependency>
         <dependency>
@@ -97,6 +104,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
+<<<<<<< HEAD
             <artifactId>dubbo-serialization-jdk</artifactId>
         </dependency>
         <!-- The metadata center cannot be initialized without this dependency -->
@@ -106,5 +114,17 @@
             <version>1.9.12</version>
         </dependency>
 
+=======
+            <artifactId>dubbo-serialization-fastjson2</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-serialization-jdk</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-rpc-triple</artifactId>
+        </dependency>
+>>>>>>> origin/3.2
     </dependencies>
 </project>

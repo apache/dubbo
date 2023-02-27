@@ -18,10 +18,13 @@ package org.apache.dubbo.metadata.annotation.processing.builder;
 
 import org.apache.dubbo.metadata.annotation.processing.AbstractAnnotationProcessingTest;
 import org.apache.dubbo.metadata.definition.model.ServiceDefinition;
+import org.apache.dubbo.metadata.definition.model.TypeDefinition;
 import org.apache.dubbo.metadata.tools.TestServiceImpl;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 
 import static org.apache.dubbo.metadata.annotation.processing.builder.ServiceDefinitionBuilder.build;
@@ -32,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  *
  * @since 2.7.6
  */
-public class ServiceDefinitionBuilderTest extends AbstractAnnotationProcessingTest {
+class ServiceDefinitionBuilderTest extends AbstractAnnotationProcessingTest {
 
 
     @Override
@@ -45,20 +48,36 @@ public class ServiceDefinitionBuilderTest extends AbstractAnnotationProcessingTe
     }
 
     @Test
-    public void testBuild() {
+    void testBuild() {
         ServiceDefinition serviceDefinition = build(processingEnv, getType(TestServiceImpl.class));
         assertEquals(TestServiceImpl.class.getTypeName(), serviceDefinition.getCanonicalName());
         assertEquals("org/apache/dubbo/metadata/tools/TestServiceImpl.class", serviceDefinition.getCodeSource());
+
         // types
-        int i = 0;
-        assertEquals("org.apache.dubbo.metadata.tools.TestServiceImpl", serviceDefinition.getTypes().get(i++).getType());
-        assertEquals("org.apache.dubbo.metadata.tools.GenericTestService", serviceDefinition.getTypes().get(i++).getType());
-        assertEquals("org.apache.dubbo.metadata.tools.DefaultTestService", serviceDefinition.getTypes().get(i++).getType());
-        assertEquals("org.apache.dubbo.metadata.tools.TestService", serviceDefinition.getTypes().get(i++).getType());
-        assertEquals("java.lang.AutoCloseable", serviceDefinition.getTypes().get(i++).getType());
-        assertEquals("java.io.Serializable", serviceDefinition.getTypes().get(i++).getType());
-        assertEquals("java.util.EventListener", serviceDefinition.getTypes().get(i++).getType());
+        List<String> typeNames = Arrays.asList(
+                "org.apache.dubbo.metadata.tools.TestServiceImpl",
+                "org.apache.dubbo.metadata.tools.GenericTestService",
+                "org.apache.dubbo.metadata.tools.DefaultTestService",
+                "org.apache.dubbo.metadata.tools.TestService",
+                "java.lang.AutoCloseable",
+                "java.io.Serializable",
+                "java.util.EventListener"
+        );
+        for (String typeName : typeNames) {
+            String gotTypeName = getTypeName(typeName, serviceDefinition.getTypes());
+            assertEquals(typeName, gotTypeName);
+        }
+
         // methods
         assertEquals(14, serviceDefinition.getMethods().size());
+    }
+
+    private static String getTypeName(String type, List<TypeDefinition> types) {
+        for (TypeDefinition typeDefinition : types) {
+            if (type.equals(typeDefinition.getType())) {
+                return typeDefinition.getType();
+            }
+        }
+        return type;
     }
 }

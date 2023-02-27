@@ -34,4 +34,8 @@ public interface DemoService {
 
     int echo(int i);
 
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> origin/3.2

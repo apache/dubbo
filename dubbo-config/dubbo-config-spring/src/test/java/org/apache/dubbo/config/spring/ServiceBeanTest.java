@@ -17,8 +17,11 @@
 package org.apache.dubbo.config.spring;
 
 import org.apache.dubbo.config.annotation.Service;
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 
 import org.hamcrest.MatcherAssert;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.annotation.DirtiesContext;
 
@@ -26,10 +29,25 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.mockito.Mockito.mock;
 
+<<<<<<< HEAD
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class ServiceBeanTest {
+=======
+class ServiceBeanTest {
+
+    @BeforeEach
+    public void setUp() {
+        DubboBootstrap.reset();
+    }
+
+    @AfterEach
+    public void tearDown() {
+        DubboBootstrap.reset();
+    }
+
+>>>>>>> origin/3.2
     @Test
-    public void testGetService() {
+    void testGetService() {
         TestService service = mock(TestService.class);
         ServiceBean serviceBean = new ServiceBean(service);
 

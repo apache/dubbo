@@ -1,0 +1,1 @@
+testAppSrv=org.apache.dubbo.common.extension.director.impl.TestAppService

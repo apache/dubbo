@@ -18,20 +18,20 @@ package org.apache.dubbo.metadata;
 
 import org.apache.dubbo.common.URL;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import static java.util.Collections.unmodifiableSortedSet;
-import static java.util.stream.StreamSupport.stream;
 import static org.apache.dubbo.common.URL.buildKey;
 
 /**
+<<<<<<< HEAD
  * A framework interface of Dubbo Metadata Service defines the contract of Dubbo Services registration and subscription
  * between Dubbo service providers and its consumers. The implementation will be exported as a normal Dubbo service that
  * the clients would subscribe, whose version comes from the {@link #version()} method and group gets from
@@ -42,26 +42,19 @@ import static org.apache.dubbo.common.URL.buildKey;
  *
  * @see WritableMetadataService
  * @since 2.7.5
+=======
+ * This service is used to expose the metadata information inside a Dubbo process.
+ * Typical uses include:
+ * 1. The Consumer queries the metadata information of the Provider to list the interfaces and each interface's configuration
+ * 2. The Console (dubbo-admin) queries for the metadata of a specific process, or aggregate data of all processes.
+>>>>>>> origin/3.2
  */
 public interface MetadataService {
-
-    //FIXME the value is default, it was used by testing temporarily
-    static final String DEFAULT_EXTENSION = "default";
-
-    /**
-     * The value of all service names
-     */
-    String ALL_SERVICE_NAMES = "*";
 
     /**
      * The value of All service instances
      */
     String ALL_SERVICE_INTERFACES = "*";
-
-    /**
-     * The service interface name of {@link MetadataService}
-     */
-    String SERVICE_INTERFACE_NAME = MetadataService.class.getName();
 
     /**
      * The contract version of {@link MetadataService}, the future update must make sure compatible.
@@ -84,6 +77,8 @@ public interface MetadataService {
     default String version() {
         return VERSION;
     }
+
+    URL getMetadataURL();
 
     /**
      * the list of String that presents all Dubbo subscribed {@link URL urls}
@@ -162,6 +157,10 @@ public interface MetadataService {
      */
     SortedSet<String> getExportedURLs(String serviceInterface, String group, String version, String protocol);
 
+    default Set<URL> getExportedServiceURLs() {
+        return Collections.emptySet();
+    }
+
     /**
      * Interface definition.
      *
@@ -171,14 +170,10 @@ public interface MetadataService {
         return getServiceDefinition(buildKey(interfaceName, group, version));
     }
 
-    /**
-     * Interface definition.
-     *
-     * @return
-     */
     String getServiceDefinition(String serviceKey);
 
     MetadataInfo getMetadataInfo(String revision);
+<<<<<<< HEAD
 
     Map<String, MetadataInfo> getMetadataInfos();
 
@@ -192,18 +187,10 @@ public interface MetadataService {
         String serviceInterface = url.getServiceInterface();
         return SERVICE_INTERFACE_NAME.equals(serviceInterface);
     }
+=======
+>>>>>>> origin/3.2
 
-    /**
-     * Convert the multiple {@link URL urls} to a {@link List list} of {@link URL urls}
-     *
-     * @param urls the strings presents the {@link URL Dubbo URLs}
-     * @return non-null
-     */
-    static List<URL> toURLs(Iterable<String> urls) {
-        return stream(urls.spliterator(), false)
-                .map(URL::valueOf)
-                .collect(Collectors.toList());
-    }
+    List<MetadataInfo> getMetadataInfos();
 
     /**
      * Convert the specified {@link Iterable} of {@link URL URLs} to be the {@link URL#toFullString() strings} presenting
@@ -229,18 +216,32 @@ public interface MetadataService {
         return unmodifiableSortedSet(stream.map(URL::toFullString).collect(TreeSet::new, Set::add, Set::addAll));
     }
 
+<<<<<<< HEAD
+=======
+    static boolean isMetadataService(String interfaceName) {
+        return interfaceName != null && interfaceName.equals(MetadataService.class.getName());
+    }
+
+>>>>>>> origin/3.2
     /**
      * Export Metadata in Service Instance of Service Discovery
      * <p>
      * Used for consumer to get Service Instance Metadata
      * if Registry is unsupported with publishing metadata
      *
+<<<<<<< HEAD
      * @param metadata {@link Map} of provider Service Instance Metadata
      * @since 3.0
      */
     default void exportServiceDiscoveryMetadata(String metadata) {
         throw new UnsupportedOperationException("This operation is not supported for consumer.");
     }
+=======
+     * @param instanceMetadata {@link Map} of provider Service Instance Metadata
+     * @since 3.0
+     */
+    void exportInstanceMetadata(String instanceMetadata);
+>>>>>>> origin/3.2
 
     /**
      * Get all Metadata listener from local
@@ -248,12 +249,19 @@ public interface MetadataService {
      * Used for consumer to get Service Instance Metadata
      * if Registry is unsupported with publishing metadata
      *
+<<<<<<< HEAD
      * @return {@link Map} of {@link MetadataChangeListener}
      * @since 3.0
      */
     default Map<String, MetadataChangeListener> getMetadataChangeListenerMap() {
         throw new UnsupportedOperationException("This operation is not supported for consumer.");
     }
+=======
+     * @return {@link Map} of {@link InstanceMetadataChangedListener}
+     * @since 3.0
+     */
+    Map<String, InstanceMetadataChangedListener> getInstanceMetadataChangedListenerMap();
+>>>>>>> origin/3.2
 
     /**
      * 1. Fetch Metadata in Service Instance of Service Discovery
@@ -263,6 +271,7 @@ public interface MetadataService {
      * if Registry is unsupported with publishing metadata
      *
      * @param consumerId consumerId
+<<<<<<< HEAD
      * @param listener   {@link MetadataChangeListener} used to notify event
      * @return {@link Map} of provider Service Instance Metadata
      * @since 3.0
@@ -270,4 +279,11 @@ public interface MetadataService {
     default String getAndListenServiceDiscoveryMetadata(String consumerId, MetadataChangeListener listener) {
         throw new UnsupportedOperationException("This operation is not supported for consumer.");
     }
+=======
+     * @param listener   {@link InstanceMetadataChangedListener} used to notify event
+     * @return {@link Map} of provider Service Instance Metadata
+     * @since 3.0
+     */
+    String getAndListenInstanceMetadata(String consumerId, InstanceMetadataChangedListener listener);
+>>>>>>> origin/3.2
 }

@@ -34,7 +34,7 @@
     <!-- nested configuration -->
     <dubbo:provider timeout="1000">
         <dubbo:service id="serviceConfig2" interface="org.apache.dubbo.config.spring.api.DemoService" ref="demoService"
-                       group="demo2"/>
+                       version="2.0.0"/>
     </dubbo:provider>
     <dubbo:module name="test-module" version="1.1"/>
 

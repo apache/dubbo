@@ -17,6 +17,13 @@
 
 package org.apache.dubbo.configcenter.support.apollo;
 
+<<<<<<< HEAD
+=======
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.JsonUtils;
+
+>>>>>>> origin/3.2
 import com.ctrip.framework.apollo.build.ApolloInjector;
 import com.ctrip.framework.apollo.core.dto.ApolloConfig;
 import com.ctrip.framework.apollo.core.dto.ApolloConfigNotification;
@@ -24,17 +31,30 @@ import com.ctrip.framework.apollo.core.utils.ResourceUtils;
 import com.ctrip.framework.apollo.internals.ConfigServiceLocator;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+<<<<<<< HEAD
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+=======
+import okhttp3.mockwebserver.Dispatcher;
+import okhttp3.mockwebserver.MockResponse;
+import okhttp3.mockwebserver.MockWebServer;
+import okhttp3.mockwebserver.RecordedRequest;
+import org.junit.jupiter.api.extension.AfterAllCallback;
+import org.junit.jupiter.api.extension.BeforeAllCallback;
+import org.junit.jupiter.api.extension.ExtensionContext;
+
+import java.lang.reflect.Method;
+>>>>>>> origin/3.2
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+<<<<<<< HEAD
 import okhttp3.mockwebserver.Dispatcher;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
@@ -49,11 +69,20 @@ public class EmbeddedApolloJunit5 implements BeforeAllCallback, AfterAllCallback
     private static final Logger logger = LoggerFactory.getLogger(EmbeddedApolloJunit5.class);
     private static final Type notificationType = new TypeToken<List<ApolloConfigNotification>>() {
     }.getType();
+=======
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_CLOSE_CONNECT_APOLLO;
+
+public class EmbeddedApolloJunit5 implements BeforeAllCallback, AfterAllCallback {
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(EmbeddedApolloJunit5.class);
+>>>>>>> origin/3.2
 
     private static Method CONFIG_SERVICE_LOCATOR_CLEAR;
     private static ConfigServiceLocator CONFIG_SERVICE_LOCATOR;
 
+<<<<<<< HEAD
     private static final Gson GSON = new Gson();
+=======
+>>>>>>> origin/3.2
     private final Map<String, Map<String, String>> addedOrModifiedPropertiesOfNamespace = Maps.newConcurrentMap();
     private final Map<String, Set<String>> deletedKeysOfNamespace = Maps.newConcurrentMap();
 
@@ -91,6 +120,7 @@ public class EmbeddedApolloJunit5 implements BeforeAllCallback, AfterAllCallback
 
         Map<String, String> mergedConfigurations = mergeOverriddenProperties(namespace, configurations);
         apolloConfig.setConfigurations(mergedConfigurations);
+<<<<<<< HEAD
         return GSON.toJson(apolloConfig);
     }
 
@@ -102,6 +132,19 @@ public class EmbeddedApolloJunit5 implements BeforeAllCallback, AfterAllCallback
                     .add(new ApolloConfigNotification(notification.getNamespaceName(), notification.getNotificationId() + 1));
         }
         return GSON.toJson(newNotifications);
+=======
+        return JsonUtils.getJson().toJson(apolloConfig);
+    }
+
+    private String mockLongPollBody(String notificationsStr) {
+        List<ApolloConfigNotification> oldNotifications = JsonUtils.getJson().toJavaList(notificationsStr, ApolloConfigNotification.class);
+        List<ApolloConfigNotification> newNotifications = new ArrayList<>();
+        for (ApolloConfigNotification notification : oldNotifications) {
+            newNotifications
+                .add(new ApolloConfigNotification(notification.getNamespaceName(), notification.getNotificationId() + 1));
+        }
+        return JsonUtils.getJson().toJson(newNotifications);
+>>>>>>> origin/3.2
     }
 
     /**
@@ -159,7 +202,11 @@ public class EmbeddedApolloJunit5 implements BeforeAllCallback, AfterAllCallback
             clear();
             server.close();
         } catch (Exception e) {
+<<<<<<< HEAD
             logger.error("stop apollo server error", e);
+=======
+            logger.error(CONFIG_FAILED_CLOSE_CONNECT_APOLLO, "", "", "stop apollo server error", e);
+>>>>>>> origin/3.2
         }
     }
 

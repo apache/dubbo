@@ -27,6 +27,7 @@ public @interface Wrapper {
 
     /**
      * the extension names that need to be wrapped.
+     * default is matching when this array is empty.
      */
     String[] matches() default {};
 
@@ -34,4 +35,11 @@ public @interface Wrapper {
      * the extension names that need to be excluded.
      */
     String[] mismatches() default {};
+
+    /**
+     * absolute ordering, optional
+     * ascending order, smaller values will be in the front of the list.
+     * @return
+     */
+    int order() default 0;
 }

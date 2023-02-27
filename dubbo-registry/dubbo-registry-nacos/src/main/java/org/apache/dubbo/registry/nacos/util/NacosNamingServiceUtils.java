@@ -17,21 +17,24 @@
 package org.apache.dubbo.registry.nacos.util;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstance;
+<<<<<<< HEAD
 import org.apache.dubbo.registry.nacos.NacosNamingServiceWrapper;
+=======
+import org.apache.dubbo.registry.nacos.NacosConnectionManager;
+import org.apache.dubbo.registry.nacos.NacosNamingServiceWrapper;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
+>>>>>>> origin/3.2
 
-import com.alibaba.nacos.api.NacosFactory;
-import com.alibaba.nacos.api.PropertyKeyConst;
-import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.api.naming.NamingService;
 import com.alibaba.nacos.api.naming.PreservedMetadataKeys;
 import com.alibaba.nacos.api.naming.pojo.Instance;
 import com.alibaba.nacos.api.naming.utils.NamingUtils;
 
+<<<<<<< HEAD
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -44,6 +47,10 @@ import static com.alibaba.nacos.api.common.Constants.DEFAULT_GROUP;
 import static com.alibaba.nacos.client.naming.utils.UtilAndComs.NACOS_NAMING_LOG_NAME;
 import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
 import static org.apache.dubbo.common.utils.StringConstantFieldValuePredicate.of;
+=======
+import static com.alibaba.nacos.api.common.Constants.DEFAULT_GROUP;
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+>>>>>>> origin/3.2
 
 /**
  * The utilities class for {@link NamingService}
@@ -52,7 +59,18 @@ import static org.apache.dubbo.common.utils.StringConstantFieldValuePredicate.of
  */
 public class NacosNamingServiceUtils {
 
-    private static final Logger logger = LoggerFactory.getLogger(NacosNamingServiceUtils.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(NacosNamingServiceUtils.class);
+    private static final String NACOS_GROUP_KEY = "nacos.group";
+
+    private static final String NACOS_RETRY_KEY = "nacos.retry";
+
+    private static final String NACOS_RETRY_WAIT_KEY = "nacos.retry-wait";
+
+    private static final String NACOS_CHECK_KEY = "nacos.check";
+
+    private NacosNamingServiceUtils() {
+        throw new IllegalStateException("NacosNamingServiceUtils should not be instantiated");
+    }
 
     /**
      * Convert the {@link ServiceInstance} to {@link Instance}
@@ -63,11 +81,10 @@ public class NacosNamingServiceUtils {
      */
     public static Instance toInstance(ServiceInstance serviceInstance) {
         Instance instance = new Instance();
-        instance.setInstanceId(serviceInstance.getId());
         instance.setServiceName(serviceInstance.getServiceName());
         instance.setIp(serviceInstance.getHost());
         instance.setPort(serviceInstance.getPort());
-        instance.setMetadata(serviceInstance.getMetadata());
+        instance.setMetadata(serviceInstance.getSortedMetadata());
         instance.setEnabled(serviceInstance.isEnabled());
         instance.setHealthy(serviceInstance.isHealthy());
         return instance;
@@ -80,9 +97,12 @@ public class NacosNamingServiceUtils {
      * @return non-null
      * @since 2.7.5
      */
-    public static ServiceInstance toServiceInstance(Instance instance) {
-        DefaultServiceInstance serviceInstance = new DefaultServiceInstance(instance.getInstanceId(),
-                NamingUtils.getServiceName(instance.getServiceName()), instance.getIp(), instance.getPort());
+    public static ServiceInstance toServiceInstance(URL registryUrl, Instance instance) {
+        DefaultServiceInstance serviceInstance =
+            new DefaultServiceInstance(
+                NamingUtils.getServiceName(instance.getServiceName()),
+                instance.getIp(), instance.getPort(),
+                ScopeModelUtil.getApplicationModel(registryUrl.getScopeModel()));
         serviceInstance.setMetadata(instance.getMetadata());
         serviceInstance.setEnabled(instance.isEnabled());
         serviceInstance.setHealthy(instance.isHealthy());
@@ -97,7 +117,9 @@ public class NacosNamingServiceUtils {
      * @since 2.7.5
      */
     public static String getGroup(URL connectionURL) {
-        return connectionURL.getParameter("nacos.group", DEFAULT_GROUP);
+        // Compatible with nacos grouping via group.
+        String group = connectionURL.getParameter(GROUP_KEY, DEFAULT_GROUP);
+        return connectionURL.getParameter(NACOS_GROUP_KEY, group);
     }
 
     /**
@@ -108,6 +130,7 @@ public class NacosNamingServiceUtils {
      * @since 2.7.5
      */
     public static NacosNamingServiceWrapper createNamingService(URL connectionURL) {
+<<<<<<< HEAD
         Properties nacosProperties = buildNacosProperties(connectionURL);
         NamingService namingService;
         try {
@@ -175,6 +198,13 @@ public class NacosNamingServiceUtils {
         } else {
             properties.setProperty(propertyName, defaultValue);
         }
+=======
+        boolean check = connectionURL.getParameter(NACOS_CHECK_KEY, true);
+        int retryTimes = connectionURL.getPositiveParameter(NACOS_RETRY_KEY, 10);
+        int sleepMsBetweenRetries = connectionURL.getPositiveParameter(NACOS_RETRY_WAIT_KEY, 10);
+        NacosConnectionManager nacosConnectionManager = new NacosConnectionManager(connectionURL, check, retryTimes, sleepMsBetweenRetries);
+        return new NacosNamingServiceWrapper(nacosConnectionManager, retryTimes, sleepMsBetweenRetries);
+>>>>>>> origin/3.2
     }
 
     public static Map<String, String> getNacosPreservedParam(URL registryUrl) {

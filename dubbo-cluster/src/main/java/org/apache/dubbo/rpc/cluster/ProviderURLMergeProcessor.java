@@ -33,6 +33,11 @@ public interface ProviderURLMergeProcessor {
      */
     URL mergeUrl(URL remoteUrl, Map<String, String> localParametersMap);
 
+<<<<<<< HEAD
+=======
+    default Map<String, String> mergeLocalParams(Map<String, String> localMap) { return localMap; }
+
+>>>>>>> origin/3.2
     default boolean accept(URL providerUrl, Map<String, String> localParametersMap) {
         return true;
     }

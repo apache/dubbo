@@ -25,11 +25,12 @@ import org.junit.jupiter.api.Test;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 import static org.apache.dubbo.metadata.annotation.processing.util.FieldUtils.findField;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -37,7 +38,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  * @since 2.7.6
  */
-public class PrimitiveTypeDefinitionBuilderTest extends AbstractAnnotationProcessingTest {
+class PrimitiveTypeDefinitionBuilderTest extends AbstractAnnotationProcessingTest {
 
     private PrimitiveTypeDefinitionBuilder builder;
 
@@ -89,7 +90,7 @@ public class PrimitiveTypeDefinitionBuilderTest extends AbstractAnnotationProces
     }
 
     @Test
-    public void testAccept() {
+    void testAccept() {
         assertTrue(builder.accept(processingEnv, zField.asType()));
         assertTrue(builder.accept(processingEnv, bField.asType()));
         assertTrue(builder.accept(processingEnv, cField.asType()));
@@ -101,7 +102,7 @@ public class PrimitiveTypeDefinitionBuilderTest extends AbstractAnnotationProces
     }
 
     @Test
-    public void testBuild() {
+    void testBuild() {
         buildAndAssertTypeDefinition(processingEnv, zField, builder);
         buildAndAssertTypeDefinition(processingEnv, bField, builder);
         buildAndAssertTypeDefinition(processingEnv, cField, builder);
@@ -113,18 +114,18 @@ public class PrimitiveTypeDefinitionBuilderTest extends AbstractAnnotationProces
         buildAndAssertTypeDefinition(processingEnv, dField, builder);
     }
 
-    static void buildAndAssertTypeDefinition(ProcessingEnvironment processingEnv, VariableElement field, TypeDefinitionBuilder builder) {
-        TypeDefinition typeDefinition = TypeDefinitionBuilder.build(processingEnv, field);
+    static void buildAndAssertTypeDefinition(ProcessingEnvironment processingEnv, VariableElement field, TypeBuilder builder) {
+        Map<String, TypeDefinition> typeCache = new HashMap<>();
+        TypeDefinition typeDefinition = TypeDefinitionBuilder.build(processingEnv, field, typeCache);
         assertBasicTypeDefinition(typeDefinition, field.asType().toString(), builder);
 //        assertEquals(field.getSimpleName().toString(), typeDefinition.get$ref());
     }
 
-    static void assertBasicTypeDefinition(TypeDefinition typeDefinition, String type, TypeDefinitionBuilder builder) {
+    static void assertBasicTypeDefinition(TypeDefinition typeDefinition, String type, TypeBuilder builder) {
         assertEquals(type, typeDefinition.getType());
 //        assertEquals(builder.getClass().getName(), typeDefinition.getTypeBuilderName());
         assertTrue(typeDefinition.getProperties().isEmpty());
         assertTrue(typeDefinition.getItems().isEmpty());
         assertTrue(typeDefinition.getEnums().isEmpty());
-        assertNull(typeDefinition.getId());
     }
 }

@@ -21,6 +21,7 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -31,7 +32,11 @@ import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+<<<<<<< HEAD
 public class ThreadNameTest {
+=======
+class ThreadNameTest {
+>>>>>>> origin/3.2
 
     private NettyServer server;
     private NettyClient client;
@@ -51,12 +56,24 @@ public class ThreadNameTest {
     @BeforeEach
     public void before() throws Exception {
         int port = NetUtils.getAvailablePort(20880 + new Random().nextInt(10000));
+<<<<<<< HEAD
         serverURL = URL.valueOf("telnet://localhost?side=provider").setPort(port);
         clientURL = URL.valueOf("telnet://localhost?side=consumer").setPort(port);
 
         serverHandler = new ThreadNameVerifyHandler(serverRegex, false, serverLatch);
         clientHandler = new ThreadNameVerifyHandler(clientRegex, true, clientLatch);
 
+=======
+        serverURL = URL.valueOf("telnet://localhost?side=provider&codec=telnet")
+            .setPort(port)
+            .setScopeModel(ApplicationModel.defaultModel());
+        clientURL = URL.valueOf("telnet://localhost?side=consumer&codec=telnet")
+            .setPort(port)
+            .setScopeModel(ApplicationModel.defaultModel());
+
+        serverHandler = new ThreadNameVerifyHandler(serverRegex, false, serverLatch);
+        clientHandler = new ThreadNameVerifyHandler(clientRegex, true, clientLatch);
+>>>>>>> origin/3.2
         server = new NettyServer(serverURL, serverHandler);
         client = new NettyClient(clientURL, clientHandler);
     }
@@ -75,9 +92,12 @@ public class ThreadNameTest {
     }
 
     @Test
-    public void testThreadName() throws Exception {
+    void testThreadName() throws Exception {
         client.send("hello");
+<<<<<<< HEAD
         //Thread.sleep(1000L * 5L);
+=======
+>>>>>>> origin/3.2
         serverLatch.await(30, TimeUnit.SECONDS);
         clientLatch.await(30, TimeUnit.SECONDS);
         if (!serverHandler.isSuccess() || !clientHandler.isSuccess()) {
@@ -106,7 +126,11 @@ public class ThreadNameTest {
             if (!success) {
                 success = Thread.currentThread().getName().matches(message);
             }
+<<<<<<< HEAD
             if (success) {
+=======
+            if(success) {
+>>>>>>> origin/3.2
                 latch.countDown();
             }
         }
@@ -136,7 +160,11 @@ public class ThreadNameTest {
 
         @Override
         public void received(Channel channel, Object message) throws RemotingException {
+<<<<<<< HEAD
             // server: DubboServerHandler or DubboSharedHandler thread.
+=======
+            // server: DubboServerHandler or DubboSharedHandler thread. 
+>>>>>>> origin/3.2
             output("received");
         }
 

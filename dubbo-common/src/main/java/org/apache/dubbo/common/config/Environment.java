@@ -17,94 +17,173 @@
 package org.apache.dubbo.common.config;
 
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
-import org.apache.dubbo.common.context.FrameworkExt;
+import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.context.ApplicationExt;
 import org.apache.dubbo.common.context.LifecycleAdapter;
+<<<<<<< HEAD
 import org.apache.dubbo.common.extension.Inject;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+=======
+import org.apache.dubbo.common.extension.DisableInject;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ConfigUtils;
+import org.apache.dubbo.common.utils.StringUtils;
+>>>>>>> origin/3.2
 import org.apache.dubbo.config.AbstractConfig;
-import org.apache.dubbo.config.ConfigCenterConfig;
 import org.apache.dubbo.config.context.ConfigConfigurationAdapter;
-import org.apache.dubbo.config.context.ConfigManager;
-import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ScopeModel;
 
-import java.util.Collection;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXPECTED_EXCEPTION;
+
+public class Environment extends LifecycleAdapter implements ApplicationExt {
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(Environment.class);
+
+<<<<<<< HEAD
 public class Environment extends LifecycleAdapter implements FrameworkExt {
     private static final Logger logger = LoggerFactory.getLogger(Environment.class);
+=======
+>>>>>>> origin/3.2
     public static final String NAME = "environment";
 
-    private final PropertiesConfiguration propertiesConfiguration;
-    private final SystemConfiguration systemConfiguration;
-    private final EnvironmentConfiguration environmentConfiguration;
-    private final InmemoryConfiguration externalConfiguration;
-    private final InmemoryConfiguration appExternalConfiguration;
+    // dubbo properties in classpath
+    private PropertiesConfiguration propertiesConfiguration;
 
+    // java system props (-D)
+    private SystemConfiguration systemConfiguration;
+
+    // java system environment
+    private EnvironmentConfiguration environmentConfiguration;
+
+    // external config, such as config-center global/default config
+    private InmemoryConfiguration externalConfiguration;
+
+    // external app config, such as config-center app config
+    private InmemoryConfiguration appExternalConfiguration;
+
+    // local app config , such as Spring Environment/PropertySources/application.properties
+    private InmemoryConfiguration appConfiguration;
+
+    protected CompositeConfiguration globalConfiguration;
+
+    protected List<Map<String, String>> globalConfigurationMaps;
+
+<<<<<<< HEAD
     private CompositeConfiguration globalConfiguration;
     private CompositeConfiguration dynamicGlobalConfiguration;
 
+=======
+    private CompositeConfiguration defaultDynamicGlobalConfiguration;
+>>>>>>> origin/3.2
 
-    private Map<String, String> externalConfigurationMap = new HashMap<>();
-    private Map<String, String> appExternalConfigurationMap = new HashMap<>();
+    private DynamicConfiguration defaultDynamicConfiguration;
 
-    private boolean configCenterFirst = true;
+    private String localMigrationRule;
 
-    private DynamicConfiguration dynamicConfiguration;
+    private AtomicBoolean initialized = new AtomicBoolean(false);
+    private ScopeModel scopeModel;
 
-    public Environment() {
-        this.propertiesConfiguration = new PropertiesConfiguration();
-        this.systemConfiguration = new SystemConfiguration();
-        this.environmentConfiguration = new EnvironmentConfiguration();
-        this.externalConfiguration = new InmemoryConfiguration();
-        this.appExternalConfiguration = new InmemoryConfiguration();
+    public Environment(ScopeModel scopeModel) {
+        this.scopeModel = scopeModel;
     }
 
     @Override
     public void initialize() throws IllegalStateException {
-        ConfigManager configManager = ApplicationModel.getConfigManager();
-        Optional<Collection<ConfigCenterConfig>> defaultConfigs = configManager.getDefaultConfigCenter();
-        defaultConfigs.ifPresent(configs -> {
-            for (ConfigCenterConfig config : configs) {
-                this.setExternalConfigMap(config.getExternalConfiguration());
-                this.setAppExternalConfigMap(config.getAppExternalConfiguration());
-            }
-        });
+        if (initialized.compareAndSet(false, true)) {
+            this.propertiesConfiguration = new PropertiesConfiguration(scopeModel);
+            this.systemConfiguration = new SystemConfiguration();
+            this.environmentConfiguration = new EnvironmentConfiguration();
+            this.externalConfiguration = new InmemoryConfiguration("ExternalConfig");
+            this.appExternalConfiguration = new InmemoryConfiguration("AppExternalConfig");
+            this.appConfiguration = new InmemoryConfiguration("AppConfig");
 
-        this.externalConfiguration.setProperties(externalConfigurationMap);
-        this.appExternalConfiguration.setProperties(appExternalConfigurationMap);
+            loadMigrationRule();
+        }
+    }
+
+    /**
+     * @deprecated MigrationRule will be removed in 3.1
+     */
+    @Deprecated
+    private void loadMigrationRule() {
+        if (Boolean.parseBoolean(System.getProperty(CommonConstants.DUBBO_MIGRATION_FILE_ENABLE, "false"))) {
+            String path = System.getProperty(CommonConstants.DUBBO_MIGRATION_KEY);
+            if (StringUtils.isEmpty(path)) {
+                path = System.getenv(CommonConstants.DUBBO_MIGRATION_KEY);
+                if (StringUtils.isEmpty(path)) {
+                    path = CommonConstants.DEFAULT_DUBBO_MIGRATION_FILE;
+                }
+            }
+            this.localMigrationRule = ConfigUtils.loadMigrationRule(scopeModel.getClassLoaders(), path);
+        } else {
+            this.localMigrationRule = null;
+        }
+    }
+
+    /**
+     * @deprecated only for ut
+     */
+    @Deprecated
+    @DisableInject
+    public void setLocalMigrationRule(String localMigrationRule) {
+        this.localMigrationRule = localMigrationRule;
     }
 
     @Inject(enable = false)
     public void setExternalConfigMap(Map<String, String> externalConfiguration) {
         if (externalConfiguration != null) {
-            this.externalConfigurationMap = externalConfiguration;
+            this.externalConfiguration.setProperties(externalConfiguration);
         }
     }
 
     @Inject(enable = false)
     public void setAppExternalConfigMap(Map<String, String> appExternalConfiguration) {
         if (appExternalConfiguration != null) {
-            this.appExternalConfigurationMap = appExternalConfiguration;
+            this.appExternalConfiguration.setProperties(appExternalConfiguration);
         }
     }
 
-    public Map<String, String> getExternalConfigurationMap() {
-        return externalConfigurationMap;
+    @DisableInject
+    public void setAppConfigMap(Map<String, String> appConfiguration) {
+        if (appConfiguration != null) {
+            this.appConfiguration.setProperties(appConfiguration);
+        }
     }
 
-    public Map<String, String> getAppExternalConfigurationMap() {
-        return appExternalConfigurationMap;
+    public Map<String, String> getExternalConfigMap() {
+        return externalConfiguration.getProperties();
     }
 
-    public void updateExternalConfigurationMap(Map<String, String> externalMap) {
-        this.externalConfigurationMap.putAll(externalMap);
+    public Map<String, String> getAppExternalConfigMap() {
+        return appExternalConfiguration.getProperties();
     }
 
-    public void updateAppExternalConfigurationMap(Map<String, String> externalMap) {
-        this.appExternalConfigurationMap.putAll(externalMap);
+    public Map<String, String> getAppConfigMap() {
+        return appConfiguration.getProperties();
+    }
+
+    public void updateExternalConfigMap(Map<String, String> externalMap) {
+        this.externalConfiguration.addProperties(externalMap);
+    }
+
+    public void updateAppExternalConfigMap(Map<String, String> externalMap) {
+        this.appExternalConfiguration.addProperties(externalMap);
+    }
+
+    /**
+     * Merge target map properties into app configuration
+     *
+     * @param map
+     */
+    public void updateAppConfigMap(Map<String, String> map) {
+        this.appConfiguration.addProperties(map);
     }
 
     /**
@@ -112,34 +191,26 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
      * All configurations will be converged into a data bus - URL, and then drive the subsequent process.
      * <p>
      * At present, there are many configuration sources, including AbstractConfig (API, XML, annotation), - D, config center, etc.
-     * This method helps us to filter out the most priority values from various configuration sources.
+     * This method helps us t filter out the most priority values from various configuration sources.
      *
      * @param config
+     * @param prefix
      * @return
      */
-    public synchronized CompositeConfiguration getPrefixedConfiguration(AbstractConfig config) {
-        CompositeConfiguration prefixedConfiguration = new CompositeConfiguration(config.getPrefix(), config.getId());
-        Configuration configuration = new ConfigConfigurationAdapter(config);
-        if (this.isConfigCenterFirst()) {
-            // The sequence would be: SystemConfiguration -> AppExternalConfiguration -> ExternalConfiguration -> AbstractConfig -> PropertiesConfiguration
-            // Config center has the highest priority
-            prefixedConfiguration.addConfiguration(systemConfiguration);
-            prefixedConfiguration.addConfiguration(environmentConfiguration);
-            prefixedConfiguration.addConfiguration(appExternalConfiguration);
-            prefixedConfiguration.addConfiguration(externalConfiguration);
-            prefixedConfiguration.addConfiguration(configuration);
-            prefixedConfiguration.addConfiguration(propertiesConfiguration);
-        } else {
-            // The sequence would be: SystemConfiguration -> AbstractConfig -> AppExternalConfiguration -> ExternalConfiguration -> PropertiesConfiguration
-            // Config center has the highest priority
-            prefixedConfiguration.addConfiguration(systemConfiguration);
-            prefixedConfiguration.addConfiguration(environmentConfiguration);
-            prefixedConfiguration.addConfiguration(configuration);
-            prefixedConfiguration.addConfiguration(appExternalConfiguration);
-            prefixedConfiguration.addConfiguration(externalConfiguration);
-            prefixedConfiguration.addConfiguration(propertiesConfiguration);
-        }
-        return prefixedConfiguration;
+    public Configuration getPrefixedConfiguration(AbstractConfig config, String prefix) {
+
+        // The sequence would be: SystemConfiguration -> EnvironmentConfiguration -> AppExternalConfiguration -> ExternalConfiguration  -> AppConfiguration -> AbstractConfig -> PropertiesConfiguration
+        Configuration instanceConfiguration = new ConfigConfigurationAdapter(config, prefix);
+        CompositeConfiguration compositeConfiguration = new CompositeConfiguration();
+        compositeConfiguration.addConfiguration(systemConfiguration);
+        compositeConfiguration.addConfiguration(environmentConfiguration);
+        compositeConfiguration.addConfiguration(appExternalConfiguration);
+        compositeConfiguration.addConfiguration(externalConfiguration);
+        compositeConfiguration.addConfiguration(appConfiguration);
+        compositeConfiguration.addConfiguration(instanceConfiguration);
+        compositeConfiguration.addConfiguration(propertiesConfiguration);
+
+        return new PrefixedConfiguration(compositeConfiguration, prefix);
     }
 
     /**
@@ -148,18 +219,30 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
      * 2. The configuration exposed in this method is convenient for us to query the latest values from multiple
      * prioritized sources, it also guarantees that configs changed dynamically can take effect on the fly.
      */
-    public Configuration getConfiguration() {
+    public CompositeConfiguration getConfiguration() {
         if (globalConfiguration == null) {
+<<<<<<< HEAD
             globalConfiguration = new CompositeConfiguration();
             globalConfiguration.addConfiguration(systemConfiguration);
             globalConfiguration.addConfiguration(environmentConfiguration);
             globalConfiguration.addConfiguration(appExternalConfiguration);
             globalConfiguration.addConfiguration(externalConfiguration);
             globalConfiguration.addConfiguration(propertiesConfiguration);
+=======
+            CompositeConfiguration configuration = new CompositeConfiguration();
+            configuration.addConfiguration(systemConfiguration);
+            configuration.addConfiguration(environmentConfiguration);
+            configuration.addConfiguration(appExternalConfiguration);
+            configuration.addConfiguration(externalConfiguration);
+            configuration.addConfiguration(appConfiguration);
+            configuration.addConfiguration(propertiesConfiguration);
+            globalConfiguration = configuration;
+>>>>>>> origin/3.2
         }
         return globalConfiguration;
     }
 
+<<<<<<< HEAD
     public Configuration getDynamicGlobalConfiguration() {
         if (dynamicGlobalConfiguration == null) {
             if (dynamicConfiguration == null) {
@@ -182,12 +265,67 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
     @Inject(enable = false)
     public void setConfigCenterFirst(boolean configCenterFirst) {
         this.configCenterFirst = configCenterFirst;
+=======
+    /**
+     * Get configuration map list for target instance
+     *
+     * @param config
+     * @param prefix
+     * @return
+     */
+    public List<Map<String, String>> getConfigurationMaps(AbstractConfig config, String prefix) {
+        // The sequence would be: SystemConfiguration -> EnvironmentConfiguration -> AppExternalConfiguration -> ExternalConfiguration  -> AppConfiguration -> AbstractConfig -> PropertiesConfiguration
+
+        List<Map<String, String>> maps = new ArrayList<>();
+        maps.add(systemConfiguration.getProperties());
+        maps.add(environmentConfiguration.getProperties());
+        maps.add(appExternalConfiguration.getProperties());
+        maps.add(externalConfiguration.getProperties());
+        maps.add(appConfiguration.getProperties());
+        if (config != null) {
+            ConfigConfigurationAdapter configurationAdapter = new ConfigConfigurationAdapter(config, prefix);
+            maps.add(configurationAdapter.getProperties());
+        }
+        maps.add(propertiesConfiguration.getProperties());
+        return maps;
     }
 
-    public Optional<DynamicConfiguration> getDynamicConfiguration() {
-        return Optional.ofNullable(dynamicConfiguration);
+    /**
+     * Get global configuration as map list
+     *
+     * @return
+     */
+    public List<Map<String, String>> getConfigurationMaps() {
+        if (globalConfigurationMaps == null) {
+            globalConfigurationMaps = getConfigurationMaps(null, null);
+        }
+        return globalConfigurationMaps;
+>>>>>>> origin/3.2
     }
 
+    @Override
+    public void destroy() throws IllegalStateException {
+        initialized.set(false);
+        systemConfiguration = null;
+        propertiesConfiguration = null;
+        environmentConfiguration = null;
+        externalConfiguration = null;
+        appExternalConfiguration = null;
+        appConfiguration = null;
+        globalConfiguration = null;
+        globalConfigurationMaps = null;
+        defaultDynamicGlobalConfiguration = null;
+        if (defaultDynamicConfiguration != null) {
+            try {
+                defaultDynamicConfiguration.close();
+            } catch (Exception e) {
+                logger.warn(COMMON_UNEXPECTED_EXCEPTION, "", "", "close dynamic configuration failed: " + e.getMessage(), e);
+            }
+            defaultDynamicConfiguration = null;
+        }
+    }
+
+<<<<<<< HEAD
     @Inject(enable = false)
     public void setDynamicConfiguration(DynamicConfiguration dynamicConfiguration) {
         this.dynamicConfiguration = dynamicConfiguration;
@@ -198,6 +336,19 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
         clearExternalConfigs();
         clearAppExternalConfigs();
         clearDynamicConfiguration();
+=======
+    /**
+     * Reset environment.
+     * For test only.
+     */
+    public void reset() {
+        destroy();
+        initialize();
+    }
+
+    public String resolvePlaceholders(String str) {
+        return ConfigUtils.replaceProperty(str, getConfiguration());
+>>>>>>> origin/3.2
     }
 
     public PropertiesConfiguration getPropertiesConfiguration() {
@@ -220,16 +371,44 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
         return appExternalConfiguration;
     }
 
-    // For test
-    public void clearExternalConfigs() {
-        this.externalConfiguration.clear();
-        this.externalConfigurationMap.clear();
+    public InmemoryConfiguration getAppConfiguration() {
+        return appConfiguration;
     }
 
-    // For test
-    public void clearAppExternalConfigs() {
-        this.appExternalConfiguration.clear();
-        this.appExternalConfigurationMap.clear();
+    public String getLocalMigrationRule() {
+        return localMigrationRule;
+    }
+
+    public synchronized void refreshClassLoaders() {
+        propertiesConfiguration.refresh();
+        loadMigrationRule();
+        this.globalConfiguration = null;
+        this.globalConfigurationMaps = null;
+        this.defaultDynamicGlobalConfiguration = null;
+    }
+
+    public Configuration getDynamicGlobalConfiguration() {
+        if (defaultDynamicGlobalConfiguration == null) {
+            if (defaultDynamicConfiguration == null) {
+                if (logger.isWarnEnabled()) {
+                    logger.warn(COMMON_UNEXPECTED_EXCEPTION, "", "", "dynamicConfiguration is null , return globalConfiguration.");
+                }
+                return getConfiguration();
+            }
+            defaultDynamicGlobalConfiguration = new CompositeConfiguration();
+            defaultDynamicGlobalConfiguration.addConfiguration(defaultDynamicConfiguration);
+            defaultDynamicGlobalConfiguration.addConfiguration(getConfiguration());
+        }
+        return defaultDynamicGlobalConfiguration;
+    }
+
+    public Optional<DynamicConfiguration> getDynamicConfiguration() {
+        return Optional.ofNullable(defaultDynamicConfiguration);
+    }
+
+    @DisableInject
+    public void setDynamicConfiguration(DynamicConfiguration defaultDynamicConfiguration) {
+        this.defaultDynamicConfiguration = defaultDynamicConfiguration;
     }
 
     public void clearDynamicConfiguration() {

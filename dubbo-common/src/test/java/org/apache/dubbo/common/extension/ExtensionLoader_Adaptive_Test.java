@@ -27,6 +27,7 @@ import org.apache.dubbo.common.extension.ext4.NoUrlParamExt;
 import org.apache.dubbo.common.extension.ext5.NoAdaptiveMethodExt;
 import org.apache.dubbo.common.extension.ext6_inject.Ext6;
 import org.apache.dubbo.common.extension.ext6_inject.impl.Ext6Impl2;
+import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.LogUtil;
 
 import org.junit.jupiter.api.Assertions;
@@ -43,22 +44,22 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-public class ExtensionLoader_Adaptive_Test {
+class ExtensionLoader_Adaptive_Test {
 
     @Test
-    public void test_useAdaptiveClass() throws Exception {
+    void test_useAdaptiveClass() throws Exception {
         ExtensionLoader<HasAdaptiveExt> loader = ExtensionLoader.getExtensionLoader(HasAdaptiveExt.class);
         HasAdaptiveExt ext = loader.getAdaptiveExtension();
         assertTrue(ext instanceof HasAdaptiveExt_ManualAdaptive);
     }
 
     @Test
-    public void test_getAdaptiveExtension_defaultAdaptiveKey() throws Exception {
+    void test_getAdaptiveExtension_defaultAdaptiveKey() throws Exception {
         {
             SimpleExt ext = ExtensionLoader.getExtensionLoader(SimpleExt.class).getAdaptiveExtension();
 
             Map<String, String> map = new HashMap<String, String>();
-            URL url = new URL("p1", "1.2.3.4", 1010, "path1", map);
+            URL url = new ServiceConfigURL("p1", "1.2.3.4", 1010, "path1", map);
 
             String echo = ext.echo(url, "haha");
             assertEquals("Ext1Impl1-echo", echo);
@@ -69,7 +70,7 @@ public class ExtensionLoader_Adaptive_Test {
 
             Map<String, String> map = new HashMap<String, String>();
             map.put("simple.ext", "impl2");
-            URL url = new URL("p1", "1.2.3.4", 1010, "path1", map);
+            URL url = new ServiceConfigURL("p1", "1.2.3.4", 1010, "path1", map);
 
             String echo = ext.echo(url, "haha");
             assertEquals("Ext1Impl2-echo", echo);
@@ -77,12 +78,12 @@ public class ExtensionLoader_Adaptive_Test {
     }
 
     @Test
-    public void test_getAdaptiveExtension_customizeAdaptiveKey() throws Exception {
+    void test_getAdaptiveExtension_customizeAdaptiveKey() throws Exception {
         SimpleExt ext = ExtensionLoader.getExtensionLoader(SimpleExt.class).getAdaptiveExtension();
 
         Map<String, String> map = new HashMap<String, String>();
         map.put("key2", "impl2");
-        URL url = new URL("p1", "1.2.3.4", 1010, "path1", map);
+        URL url = new ServiceConfigURL("p1", "1.2.3.4", 1010, "path1", map);
 
         String echo = ext.yell(url, "haha");
         assertEquals("Ext1Impl2-yell", echo);
@@ -93,7 +94,7 @@ public class ExtensionLoader_Adaptive_Test {
     }
 
     @Test
-    public void test_getAdaptiveExtension_protocolKey() throws Exception {
+    void test_getAdaptiveExtension_protocolKey() throws Exception {
         UseProtocolKeyExt ext = ExtensionLoader.getExtensionLoader(UseProtocolKeyExt.class).getAdaptiveExtension();
 
         {
@@ -101,7 +102,7 @@ public class ExtensionLoader_Adaptive_Test {
             assertEquals("Ext3Impl1-echo", echo); // default value
 
             Map<String, String> map = new HashMap<String, String>();
-            URL url = new URL("impl3", "1.2.3.4", 1010, "path1", map);
+            URL url = new ServiceConfigURL("impl3", "1.2.3.4", 1010, "path1", map);
 
             echo = ext.echo(url, "s");
             assertEquals("Ext3Impl3-echo", echo); // use 2nd key, protocol
@@ -114,7 +115,7 @@ public class ExtensionLoader_Adaptive_Test {
         {
 
             Map<String, String> map = new HashMap<String, String>();
-            URL url = new URL(null, "1.2.3.4", 1010, "path1", map);
+            URL url = new ServiceConfigURL(null, "1.2.3.4", 1010, "path1", map);
             String yell = ext.yell(url, "s");
             assertEquals("Ext3Impl1-yell", yell); // default value
 
@@ -129,7 +130,7 @@ public class ExtensionLoader_Adaptive_Test {
     }
 
     @Test
-    public void test_getAdaptiveExtension_UrlNpe() throws Exception {
+    void test_getAdaptiveExtension_UrlNpe() throws Exception {
         SimpleExt ext = ExtensionLoader.getExtensionLoader(SimpleExt.class).getAdaptiveExtension();
 
         try {
@@ -141,7 +142,7 @@ public class ExtensionLoader_Adaptive_Test {
     }
 
     @Test
-    public void test_getAdaptiveExtension_ExceptionWhenNoAdaptiveMethodOnInterface() throws Exception {
+    void test_getAdaptiveExtension_ExceptionWhenNoAdaptiveMethodOnInterface() throws Exception {
         try {
             ExtensionLoader.getExtensionLoader(NoAdaptiveMethodExt.class).getAdaptiveExtension();
             fail();
@@ -162,11 +163,11 @@ public class ExtensionLoader_Adaptive_Test {
     }
 
     @Test
-    public void test_getAdaptiveExtension_ExceptionWhenNotAdaptiveMethod() throws Exception {
+    void test_getAdaptiveExtension_ExceptionWhenNotAdaptiveMethod() throws Exception {
         SimpleExt ext = ExtensionLoader.getExtensionLoader(SimpleExt.class).getAdaptiveExtension();
 
         Map<String, String> map = new HashMap<String, String>();
-        URL url = new URL("p1", "1.2.3.4", 1010, "path1", map);
+        URL url = new ServiceConfigURL("p1", "1.2.3.4", 1010, "path1", map);
 
         try {
             ext.bang(url, 33);
@@ -180,7 +181,7 @@ public class ExtensionLoader_Adaptive_Test {
     }
 
     @Test
-    public void test_getAdaptiveExtension_ExceptionWhenNoUrlAttribute() throws Exception {
+    void test_getAdaptiveExtension_ExceptionWhenNoUrlAttribute() throws Exception {
         try {
             ExtensionLoader.getExtensionLoader(NoUrlParamExt.class).getAdaptiveExtension();
             fail();
@@ -191,12 +192,12 @@ public class ExtensionLoader_Adaptive_Test {
     }
 
     @Test
-    public void test_urlHolder_getAdaptiveExtension() throws Exception {
+    void test_urlHolder_getAdaptiveExtension() throws Exception {
         Ext2 ext = ExtensionLoader.getExtensionLoader(Ext2.class).getAdaptiveExtension();
 
         Map<String, String> map = new HashMap<String, String>();
         map.put("ext2", "impl1");
-        URL url = new URL("p1", "1.2.3.4", 1010, "path1", map);
+        URL url = new ServiceConfigURL("p1", "1.2.3.4", 1010, "path1", map);
 
         UrlHolder holder = new UrlHolder();
         holder.setUrl(url);
@@ -206,10 +207,10 @@ public class ExtensionLoader_Adaptive_Test {
     }
 
     @Test
-    public void test_urlHolder_getAdaptiveExtension_noExtension() throws Exception {
+    void test_urlHolder_getAdaptiveExtension_noExtension() throws Exception {
         Ext2 ext = ExtensionLoader.getExtensionLoader(Ext2.class).getAdaptiveExtension();
 
-        URL url = new URL("p1", "1.2.3.4", 1010, "path1");
+        URL url = new ServiceConfigURL("p1", "1.2.3.4", 1010, "path1");
 
         UrlHolder holder = new UrlHolder();
         holder.setUrl(url);
@@ -232,7 +233,7 @@ public class ExtensionLoader_Adaptive_Test {
     }
 
     @Test
-    public void test_urlHolder_getAdaptiveExtension_UrlNpe() throws Exception {
+    void test_urlHolder_getAdaptiveExtension_UrlNpe() throws Exception {
         Ext2 ext = ExtensionLoader.getExtensionLoader(Ext2.class).getAdaptiveExtension();
 
         try {
@@ -251,11 +252,11 @@ public class ExtensionLoader_Adaptive_Test {
     }
 
     @Test
-    public void test_urlHolder_getAdaptiveExtension_ExceptionWhenNotAdativeMethod() throws Exception {
+    void test_urlHolder_getAdaptiveExtension_ExceptionWhenNotAdativeMethod() throws Exception {
         Ext2 ext = ExtensionLoader.getExtensionLoader(Ext2.class).getAdaptiveExtension();
 
         Map<String, String> map = new HashMap<String, String>();
-        URL url = new URL("p1", "1.2.3.4", 1010, "path1", map);
+        URL url = new ServiceConfigURL("p1", "1.2.3.4", 1010, "path1", map);
 
         try {
             ext.bang(url, 33);
@@ -269,10 +270,10 @@ public class ExtensionLoader_Adaptive_Test {
     }
 
     @Test
-    public void test_urlHolder_getAdaptiveExtension_ExceptionWhenNameNotProvided() throws Exception {
+    void test_urlHolder_getAdaptiveExtension_ExceptionWhenNameNotProvided() throws Exception {
         Ext2 ext = ExtensionLoader.getExtensionLoader(Ext2.class).getAdaptiveExtension();
 
-        URL url = new URL("p1", "1.2.3.4", 1010, "path1");
+        URL url = new ServiceConfigURL("p1", "1.2.3.4", 1010, "path1");
 
         UrlHolder holder = new UrlHolder();
         holder.setUrl(url);
@@ -295,11 +296,11 @@ public class ExtensionLoader_Adaptive_Test {
     }
 
     @Test
-    public void test_getAdaptiveExtension_inject() throws Exception {
+    void test_getAdaptiveExtension_inject() throws Exception {
         LogUtil.start();
         Ext6 ext = ExtensionLoader.getExtensionLoader(Ext6.class).getAdaptiveExtension();
 
-        URL url = new URL("p1", "1.2.3.4", 1010, "path1");
+        URL url = new ServiceConfigURL("p1", "1.2.3.4", 1010, "path1");
         url = url.addParameters("ext6", "impl1");
 
         assertEquals("Ext6Impl1-echo-Ext1Impl1-echo", ext.echo(url, "ha"));
@@ -313,7 +314,7 @@ public class ExtensionLoader_Adaptive_Test {
     }
 
     @Test
-    public void test_getAdaptiveExtension_InjectNotExtFail() throws Exception {
+    void test_getAdaptiveExtension_InjectNotExtFail() throws Exception {
         Ext6 ext = ExtensionLoader.getExtensionLoader(Ext6.class).getExtension("impl2");
 
         Ext6Impl2 impl = (Ext6Impl2) ext;

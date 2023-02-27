@@ -24,10 +24,14 @@ import com.google.common.util.concurrent.SettableFuture;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+<<<<<<< HEAD
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.Order;
+=======
+import org.junit.jupiter.api.extension.RegisterExtension;
+>>>>>>> origin/3.2
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -44,8 +48,12 @@ import static org.junit.jupiter.api.Assertions.fail;
  * Notice: EmbeddedApollo(apollo mock server) only support < junit5, please not upgrade the junit version in this UT,
  * the junit version in this UT is junit4, and the dependency comes from apollo-mockserver.
  */
+<<<<<<< HEAD
 @TestMethodOrder(OrderAnnotation.class)
 public class ApolloDynamicConfigurationTest {
+=======
+class ApolloDynamicConfigurationTest {
+>>>>>>> origin/3.2
     private static final String SESSION_TIMEOUT_KEY = "session";
     private static final String DEFAULT_NAMESPACE = "dubbo";
     private static ApolloDynamicConfiguration apolloDynamicConfiguration;
@@ -88,8 +96,12 @@ public class ApolloDynamicConfigurationTest {
      * Test get rule.
      */
     @Test
+<<<<<<< HEAD
     @Order(1)
     public void testGetRule() {
+=======
+    void testGetRule() {
+>>>>>>> origin/3.2
         String mockKey = "mockKey1";
         String mockValue = String.valueOf(new Random().nextInt());
         putMockRuleData(mockKey, mockValue, DEFAULT_NAMESPACE);
@@ -106,8 +118,12 @@ public class ApolloDynamicConfigurationTest {
      * @throws InterruptedException the interrupted exception
      */
     @Test
+<<<<<<< HEAD
     @Order(2)
     public void testGetInternalProperty() throws InterruptedException {
+=======
+    void testGetInternalProperty() throws InterruptedException {
+>>>>>>> origin/3.2
         String mockKey = "mockKey2";
         String mockValue = String.valueOf(new Random().nextInt());
         putMockRuleData(mockKey, mockValue, DEFAULT_NAMESPACE);
@@ -129,8 +145,12 @@ public class ApolloDynamicConfigurationTest {
      * @throws Exception the exception
      */
     @Test
+<<<<<<< HEAD
     @Order(3)
     public void testAddListener() throws Exception {
+=======
+    void testAddListener() throws Exception {
+>>>>>>> origin/3.2
         String mockKey = "mockKey3";
         String mockValue = String.valueOf(new Random().nextInt());
 

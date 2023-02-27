@@ -25,22 +25,22 @@ import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Method;
 
-public class JdkCompilerTest extends JavaCodeTest {
+class JdkCompilerTest extends JavaCodeTest {
 
     @Test
-    public void test_compileJavaClass() throws Exception {
+    void test_compileJavaClass() throws Exception {
         JdkCompiler compiler = new JdkCompiler();
-        Class<?> clazz = compiler.compile(getSimpleCode(), JdkCompiler.class.getClassLoader());
+        Class<?> clazz = compiler.compile(JavaCodeTest.class, getSimpleCode(), JdkCompiler.class.getClassLoader());
         Object instance = clazz.newInstance();
         Method sayHello = instance.getClass().getMethod("sayHello");
         Assertions.assertEquals("Hello world!", sayHello.invoke(instance));
     }
 
     @Test
-    public void test_compileJavaClass0() throws Exception {
+    void test_compileJavaClass0() throws Exception {
         Assertions.assertThrows(IllegalStateException.class, () -> {
             JdkCompiler compiler = new JdkCompiler();
-            Class<?> clazz = compiler.compile(getSimpleCodeWithoutPackage(), JdkCompiler.class.getClassLoader());
+            Class<?> clazz = compiler.compile(JavaCodeTest.class, getSimpleCodeWithoutPackage(), JdkCompiler.class.getClassLoader());
             Object instance = clazz.newInstance();
             Method sayHello = instance.getClass().getMethod("sayHello");
             Assertions.assertEquals("Hello world!", sayHello.invoke(instance));
@@ -48,10 +48,10 @@ public class JdkCompilerTest extends JavaCodeTest {
     }
 
     @Test
-    public void test_compileJavaClass1() throws Exception {
+    void test_compileJavaClass1() throws Exception {
         Assertions.assertThrows(IllegalStateException.class, () -> {
             JdkCompiler compiler = new JdkCompiler();
-            Class<?> clazz = compiler.compile(getSimpleCodeWithSyntax(), JdkCompiler.class.getClassLoader());
+            Class<?> clazz = compiler.compile(JavaCodeTest.class, getSimpleCodeWithSyntax(), JdkCompiler.class.getClassLoader());
             Object instance = clazz.newInstance();
             Method sayHello = instance.getClass().getMethod("sayHello");
             Assertions.assertEquals("Hello world!", sayHello.invoke(instance));
@@ -59,19 +59,32 @@ public class JdkCompilerTest extends JavaCodeTest {
     }
 
     @Test
+<<<<<<< HEAD
     public void test_compileJavaClass_java8() throws Exception {
         JdkCompiler compiler = new JdkCompiler("1.8");
         Class<?> clazz = compiler.compile(getSimpleCode(), JdkCompiler.class.getClassLoader());
+=======
+    void test_compileJavaClass_java8() throws Exception {
+        JdkCompiler compiler = new JdkCompiler("1.8");
+        Class<?> clazz = compiler.compile(JavaCodeTest.class, getSimpleCode(), JdkCompiler.class.getClassLoader());
+>>>>>>> origin/3.2
         Object instance = clazz.newInstance();
         Method sayHello = instance.getClass().getMethod("sayHello");
         Assertions.assertEquals("Hello world!", sayHello.invoke(instance));
     }
 
     @Test
+<<<<<<< HEAD
     public void test_compileJavaClass0_java8() throws Exception {
         Assertions.assertThrows(IllegalStateException.class, () -> {
             JdkCompiler compiler = new JdkCompiler("1.8");
             Class<?> clazz = compiler.compile(getSimpleCodeWithoutPackage(), JdkCompiler.class.getClassLoader());
+=======
+    void test_compileJavaClass0_java8() throws Exception {
+        Assertions.assertThrows(IllegalStateException.class, () -> {
+            JdkCompiler compiler = new JdkCompiler("1.8");
+            Class<?> clazz = compiler.compile(JavaCodeTest.class, getSimpleCodeWithoutPackage(), JdkCompiler.class.getClassLoader());
+>>>>>>> origin/3.2
             Object instance = clazz.newInstance();
             Method sayHello = instance.getClass().getMethod("sayHello");
             Assertions.assertEquals("Hello world!", sayHello.invoke(instance));
@@ -79,15 +92,23 @@ public class JdkCompilerTest extends JavaCodeTest {
     }
 
     @Test
+<<<<<<< HEAD
     public void test_compileJavaClass1_java8() throws Exception {
         Assertions.assertThrows(IllegalStateException.class, () -> {
             JdkCompiler compiler = new JdkCompiler("1.8");
             Class<?> clazz = compiler.compile(getSimpleCodeWithSyntax(), JdkCompiler.class.getClassLoader());
+=======
+    void test_compileJavaClass1_java8() throws Exception {
+        Assertions.assertThrows(IllegalStateException.class, () -> {
+            JdkCompiler compiler = new JdkCompiler("1.8");
+            Class<?> clazz = compiler.compile(JavaCodeTest.class, getSimpleCodeWithSyntax(), JdkCompiler.class.getClassLoader());
+>>>>>>> origin/3.2
             Object instance = clazz.newInstance();
             Method sayHello = instance.getClass().getMethod("sayHello");
             Assertions.assertEquals("Hello world!", sayHello.invoke(instance));
         });
     }
+<<<<<<< HEAD
 
     @Test
     public void testGetCompileClassWithError() {
@@ -102,3 +123,6 @@ public class JdkCompilerTest extends JavaCodeTest {
         assertThat("can not acquire detail error message from exception.", exception.getMessage(), StringContains.containsString("public String sayHello( {"));
     }
 }
+=======
+}
+>>>>>>> origin/3.2

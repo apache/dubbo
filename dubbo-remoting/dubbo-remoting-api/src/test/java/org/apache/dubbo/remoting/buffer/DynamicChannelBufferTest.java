@@ -16,11 +16,14 @@
  */
 package org.apache.dubbo.remoting.buffer;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import java.util.Random;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class DynamicChannelBufferTest extends AbstractChannelBufferTest {
+class DynamicChannelBufferTest extends AbstractChannelBufferTest {
 
     private ChannelBuffer buffer;
 
@@ -41,20 +44,34 @@ public class DynamicChannelBufferTest extends AbstractChannelBufferTest {
     }
 
     @Test
-    public void shouldNotFailOnInitialIndexUpdate() {
+    void shouldNotFailOnInitialIndexUpdate() {
         new DynamicChannelBuffer(10).setIndex(0, 10);
     }
 
     @Test
-    public void shouldNotFailOnInitialIndexUpdate2() {
+    void shouldNotFailOnInitialIndexUpdate2() {
         new DynamicChannelBuffer(10).writerIndex(10);
     }
 
     @Test
-    public void shouldNotFailOnInitialIndexUpdate3() {
+    void shouldNotFailOnInitialIndexUpdate3() {
         ChannelBuffer buf = new DynamicChannelBuffer(10);
         buf.writerIndex(10);
         buf.readerIndex(10);
+    }
+
+    @Test
+    void ensureWritableBytes() {
+        ChannelBuffer buf = new DynamicChannelBuffer(16);
+        buf.ensureWritableBytes(30);
+        Assertions.assertEquals(buf.capacity(), 32);
+
+        Random random = new Random();
+        byte[] bytes = new byte[126];
+        random.nextBytes(bytes);
+        buf.writeBytes(bytes);
+        Assertions.assertEquals(buf.capacity(), 128);
+
     }
 }
 

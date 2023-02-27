@@ -24,9 +24,15 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+<<<<<<< HEAD
 public class StatusTelnetHandlerTest {
     @Test
     public void test() {
+=======
+class StatusTelnetHandlerTest {
+    @Test
+    void test() {
+>>>>>>> origin/3.2
         Channel channel = Mockito.mock(Channel.class);
         Mockito.when(channel.getUrl()).thenReturn(URL.valueOf("dubbo://127.0.0.1:12345"));
 

@@ -20,16 +20,22 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.annotation.Service;
+import org.apache.dubbo.config.context.ConfigMode;
 import org.apache.dubbo.config.support.Parameter;
-import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ModuleModel;
+import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ServiceMetadata;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
@@ -75,9 +81,18 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
      */
     protected volatile String generic;
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/3.2
 
     public ServiceConfigBase() {
+        serviceMetadata = new ServiceMetadata();
+        serviceMetadata.addAttribute("ORIGIN_CONFIG", this);
+    }
+
+    public ServiceConfigBase(ModuleModel moduleModel) {
+        super(moduleModel);
         serviceMetadata = new ServiceMetadata();
         serviceMetadata.addAttribute("ORIGIN_CONFIG", this);
     }
@@ -89,60 +104,20 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
         setMethods(MethodConfig.constructMethodConfig(service.methods()));
     }
 
-    @Deprecated
-    private static List<ProtocolConfig> convertProviderToProtocol(List<ProviderConfig> providers) {
-        if (CollectionUtils.isEmpty(providers)) {
-            return null;
-        }
-        List<ProtocolConfig> protocols = new ArrayList<ProtocolConfig>(providers.size());
-        for (ProviderConfig provider : providers) {
-            protocols.add(convertProviderToProtocol(provider));
-        }
-        return protocols;
+    public ServiceConfigBase(ModuleModel moduleModel, Service service) {
+        super(moduleModel);
+        serviceMetadata = new ServiceMetadata();
+        serviceMetadata.addAttribute("ORIGIN_CONFIG", this);
+        appendAnnotation(Service.class, service);
+        setMethods(MethodConfig.constructMethodConfig(service.methods()));
     }
 
-    @Deprecated
-    private static List<ProviderConfig> convertProtocolToProvider(List<ProtocolConfig> protocols) {
-        if (CollectionUtils.isEmpty(protocols)) {
-            return null;
+    @Override
+    protected void postProcessAfterScopeModelChanged(ScopeModel oldScopeModel, ScopeModel newScopeModel) {
+        super.postProcessAfterScopeModelChanged(oldScopeModel, newScopeModel);
+        if (this.provider != null && this.provider.getScopeModel() != getScopeModel()) {
+            this.provider.setScopeModel(getScopeModel());
         }
-        List<ProviderConfig> providers = new ArrayList<ProviderConfig>(protocols.size());
-        for (ProtocolConfig provider : protocols) {
-            providers.add(convertProtocolToProvider(provider));
-        }
-        return providers;
-    }
-
-    @Deprecated
-    private static ProtocolConfig convertProviderToProtocol(ProviderConfig provider) {
-        ProtocolConfig protocol = new ProtocolConfig();
-        protocol.setName(provider.getProtocol().getName());
-        protocol.setServer(provider.getServer());
-        protocol.setClient(provider.getClient());
-        protocol.setCodec(provider.getCodec());
-        protocol.setHost(provider.getHost());
-        protocol.setPort(provider.getPort());
-        protocol.setPath(provider.getPath());
-        protocol.setPayload(provider.getPayload());
-        protocol.setThreads(provider.getThreads());
-        protocol.setParameters(provider.getParameters());
-        return protocol;
-    }
-
-    @Deprecated
-    private static ProviderConfig convertProtocolToProvider(ProtocolConfig protocol) {
-        ProviderConfig provider = new ProviderConfig();
-        provider.setProtocol(protocol);
-        provider.setServer(protocol.getServer());
-        provider.setClient(protocol.getClient());
-        provider.setCodec(protocol.getCodec());
-        provider.setHost(protocol.getHost());
-        provider.setPort(protocol.getPort());
-        provider.setPath(protocol.getPath());
-        provider.setPayload(protocol.getPayload());
-        provider.setThreads(protocol.getThreads());
-        provider.setParameters(protocol.getParameters());
-        return provider;
     }
 
     public boolean shouldExport() {
@@ -166,16 +141,21 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
         return (delay == null && provider != null) ? provider.getDelay() : delay;
     }
 
-    public void checkRef() {
+    protected void checkRef() {
         // reference should not be null, and is the implementation of the given interface
         if (ref == null) {
             throw new IllegalStateException("ref not allow null!");
         }
         if (!interfaceClass.isInstance(ref)) {
             throw new IllegalStateException("The class "
-                    + ref.getClass().getName() + " unimplemented interface "
-                    + interfaceClass + "!");
+                + getClassDesc(ref.getClass()) + " unimplemented interface "
+                + getClassDesc(interfaceClass) + "!");
         }
+    }
+
+    private String getClassDesc(Class clazz) {
+        ClassLoader classLoader = clazz.getClassLoader();
+        return clazz.getName() + "[classloader=" + classLoader.getClass().getName() + "@" + classLoader.hashCode() + "]";
     }
 
     public Optional<String> getContextPath(ProtocolConfig protocolConfig) {
@@ -190,14 +170,25 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
         return ref.getClass();
     }
 
-    public void checkDefault() throws IllegalStateException {
+    @Override
+    protected void preProcessRefresh() {
+        super.preProcessRefresh();
+        convertProviderIdToProvider();
         if (provider == null) {
-            provider = ApplicationModel.getConfigManager()
+            provider = getModuleConfigManager()
                     .getDefaultProvider()
-                    .orElse(new ProviderConfig());
+                    .orElseThrow(() -> new IllegalStateException("Default provider is not initialized"));
         }
+        // try set properties from `dubbo.service` if not set in current config
+        refreshWithPrefixes(super.getPrefixes(), ConfigMode.OVERRIDE_IF_ABSENT);
     }
 
+    @Override
+    public Map<String, String> getMetaData() {
+        return getMetaData(null);
+    }
+
+<<<<<<< HEAD
     public void checkProtocol() {
         if (provider != null && notHasSelfProtocolProperty()) {
             setProtocols(provider.getProtocols());
@@ -205,7 +196,27 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
         }
 
         if (CollectionUtils.isEmpty(protocols) && provider != null) {
+=======
+    @Override
+    public Map<String, String> getMetaData(String prefix) {
+        Map<String, String> metaData = new HashMap<>();
+        ProviderConfig provider = this.getProvider();
+        // provider should be initialized at preProcessRefresh()
+        if (isRefreshed() && provider == null) {
+            throw new IllegalStateException("Provider is not initialized");
+        }
+        // use provider attributes as default value
+        appendAttributes(metaData, provider, prefix);
+        // Finally, put the service's attributes, overriding previous attributes
+        appendAttributes(metaData, this, prefix);
+        return metaData;
+    }
+
+    protected void checkProtocol() {
+        if (provider != null && notHasSelfProtocolProperty()) {
+>>>>>>> origin/3.2
             setProtocols(provider.getProtocols());
+            setProtocolIds(provider.getProtocolIds());
         }
         convertProtocolIdsToProtocols();
     }
@@ -214,7 +225,11 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
         return CollectionUtils.isEmpty(protocols) && StringUtils.isEmpty(protocolIds);
     }
 
+<<<<<<< HEAD
     public void completeCompoundConfigs() {
+=======
+    protected void completeCompoundConfigs() {
+>>>>>>> origin/3.2
         super.completeCompoundConfigs(provider);
         if (provider != null) {
             if (notHasSelfProtocolProperty()) {
@@ -227,39 +242,37 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
         }
     }
 
+<<<<<<< HEAD
     private void convertProtocolIdsToProtocols() {
+=======
+    protected void convertProviderIdToProvider() {
+        if (provider == null && StringUtils.hasText(providerIds)) {
+            provider = getModuleConfigManager().getProvider(providerIds)
+                    .orElseThrow(() -> new IllegalStateException("Provider config not found: " + providerIds));
+        }
+    }
+
+    protected void convertProtocolIdsToProtocols() {
+>>>>>>> origin/3.2
         if (StringUtils.isEmpty(protocolIds)) {
             if (CollectionUtils.isEmpty(protocols)) {
-                List<ProtocolConfig> protocolConfigs = ApplicationModel.getConfigManager().getDefaultProtocols();
+                List<ProtocolConfig> protocolConfigs = getConfigManager().getDefaultProtocols();
                 if (protocolConfigs.isEmpty()) {
-                    protocolConfigs = new ArrayList<>(1);
-                    ProtocolConfig protocolConfig = new ProtocolConfig();
-                    protocolConfig.setDefault(true);
-                    protocolConfig.refresh();
-                    protocolConfigs.add(protocolConfig);
-                    ApplicationModel.getConfigManager().addProtocol(protocolConfig);
+                    throw new IllegalStateException("The default protocol has not been initialized.");
                 }
                 setProtocols(protocolConfigs);
             }
         } else {
-            String[] arr = COMMA_SPLIT_PATTERN.split(protocolIds);
+            String[] idsArray = COMMA_SPLIT_PATTERN.split(protocolIds);
+            Set<String> idsSet = new LinkedHashSet<>(Arrays.asList(idsArray));
             List<ProtocolConfig> tmpProtocols = new ArrayList<>();
-            Arrays.stream(arr).forEach(id -> {
-                if (tmpProtocols.stream().noneMatch(prot -> prot.getId().equals(id))) {
-                    Optional<ProtocolConfig> globalProtocol = ApplicationModel.getConfigManager().getProtocol(id);
-                    if (globalProtocol.isPresent()) {
-                        tmpProtocols.add(globalProtocol.get());
-                    } else {
-                        ProtocolConfig protocolConfig = new ProtocolConfig();
-                        protocolConfig.setId(id);
-                        protocolConfig.refresh();
-                        tmpProtocols.add(protocolConfig);
-                    }
+            for (String id : idsSet) {
+                Optional<ProtocolConfig> globalProtocol = getConfigManager().getProtocol(id);
+                if (globalProtocol.isPresent()) {
+                    tmpProtocols.add(globalProtocol.get());
+                } else {
+                    throw new IllegalStateException("Protocol not found: "+id);
                 }
-            });
-            if (tmpProtocols.size() > arr.length) {
-                throw new IllegalStateException("Too much protocols found, the protocols comply to this service are :" + protocolIds + " but got " + protocols
-                        .size() + " registries!");
             }
             setProtocols(tmpProtocols);
         }
@@ -273,7 +286,7 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
             return GenericService.class;
         }
         try {
-            if (interfaceName != null && interfaceName.length() > 0) {
+            if (StringUtils.isNotEmpty(interfaceName)) {
                 this.interfaceClass = Class.forName(interfaceName, true, Thread.currentThread()
                         .getContextClassLoader());
             }
@@ -300,6 +313,12 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
         }
         this.interfaceClass = interfaceClass;
         setInterface(interfaceClass == null ? null : interfaceClass.getName());
+<<<<<<< HEAD
+=======
+        if (getInterfaceClassLoader() == null) {
+            setInterfaceClassLoader(interfaceClass == null ? null : interfaceClass.getClassLoader());
+        }
+>>>>>>> origin/3.2
     }
 
     public T getRef() {
@@ -324,7 +343,7 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
     }
 
     public void setProvider(ProviderConfig provider) {
-        ApplicationModel.getConfigManager().addProvider(provider);
+        getModuleConfigManager().addProvider(provider);
         this.provider = provider;
     }
 
@@ -352,45 +371,22 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
         }
     }
 
-//    @Override
-//    public void setMock(String mock) {
-//        throw new IllegalArgumentException("mock doesn't support on provider side");
-//    }
-//
-//    @Override
-//    public void setMock(Object mock) {
-//        throw new IllegalArgumentException("mock doesn't support on provider side");
-//    }
-
     public ServiceMetadata getServiceMetadata() {
         return serviceMetadata;
     }
 
-    /**
-     * @deprecated Replace to getProtocols()
-     */
-    @Deprecated
-    public List<ProviderConfig> getProviders() {
-        return convertProtocolToProvider(protocols);
-    }
-
-    /**
-     * @deprecated Replace to setProtocols()
-     */
-    @Deprecated
-    public void setProviders(List<ProviderConfig> providers) {
-        this.protocols = convertProviderToProtocol(providers);
-    }
-
     @Override
-    @Parameter(excluded = true)
-    public String getPrefix() {
-        return DUBBO + ".service." + interfaceName;
+    @Parameter(excluded = true, attribute = false)
+    public List<String> getPrefixes() {
+        List<String> prefixes = new ArrayList<>();
+        // dubbo.service.{interface-name}
+        prefixes.add(DUBBO + ".service." + interfaceName);
+        return prefixes;
     }
 
-    @Parameter(excluded = true)
+    @Parameter(excluded = true, attribute = false)
     public String getUniqueServiceName() {
-        return URL.buildKey(interfaceName, getGroup(), getVersion());
+        return interfaceName != null ? URL.buildKey(interfaceName, getGroup(), getVersion()) : null;
     }
 
     @Override
@@ -408,11 +404,28 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
         if (provider != null && notHasSelfRegistryProperty()) {
             setRegistries(provider.getRegistries());
             setRegistryIds(provider.getRegistryIds());
+<<<<<<< HEAD
         }
 
         super.computeValidRegistryIds();
+=======
+        }
+        super.computeValidRegistryIds();
     }
 
+    public Boolean shouldExportAsync() {
+        Boolean shouldExportAsync = getExportAsync();
+        if (shouldExportAsync == null) {
+            shouldExportAsync = provider != null && provider.getExportAsync() != null && provider.getExportAsync();
+        }
+
+        return shouldExportAsync;
+>>>>>>> origin/3.2
+    }
+
+    /**
+     * export service and auto start application instance
+     */
     public abstract void export();
 
     public abstract void unexport();

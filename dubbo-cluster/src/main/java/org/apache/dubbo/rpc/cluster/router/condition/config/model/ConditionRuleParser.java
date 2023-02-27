@@ -40,10 +40,17 @@ import java.util.Map;
  */
 public class ConditionRuleParser {
 
+<<<<<<< HEAD
     public static ConditionRouterRule parse(String rawRule) throws Exception {
         Yaml yaml = new Yaml(new SafeConstructor());
         Map<String, Object> map = yaml.load(rawRule);
         ConditionRouterRule rule = PojoUtils.mapToPojo(map, ConditionRouterRule.class);
+=======
+    public static ConditionRouterRule parse(String rawRule) {
+        Yaml yaml = new Yaml(new SafeConstructor());
+        Map<String, Object> map = yaml.load(rawRule);
+        ConditionRouterRule rule = ConditionRouterRule.parseFromMap(map);
+>>>>>>> origin/3.2
         rule.setRawRule(rawRule);
         if (CollectionUtils.isEmpty(rule.getConditions())) {
             rule.setValid(false);

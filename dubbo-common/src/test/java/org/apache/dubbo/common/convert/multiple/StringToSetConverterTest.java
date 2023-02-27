@@ -17,6 +17,7 @@
 package org.apache.dubbo.common.convert.multiple;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -49,17 +50,17 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  * @since 2.7.6
  */
-public class StringToSetConverterTest {
+class StringToSetConverterTest {
 
     private StringToSetConverter converter;
 
     @BeforeEach
     public void init() {
-        converter = new StringToSetConverter();
+        converter = new StringToSetConverter(FrameworkModel.defaultModel());
     }
 
     @Test
-    public void testAccept() {
+    void testAccept() {
 
         assertFalse(converter.accept(String.class, Collection.class));
 
@@ -87,7 +88,7 @@ public class StringToSetConverterTest {
     }
 
     @Test
-    public void testConvert() {
+    void testConvert() {
         Set values = new HashSet(asList(1.0, 2.0, 3.0));
 
         Set result = (Set<Double>) converter.convert("1.0,2.0,3.0", Queue.class, Double.class);
@@ -106,12 +107,12 @@ public class StringToSetConverterTest {
     }
 
     @Test
-    public void testGetSourceType() {
+    void testGetSourceType() {
         assertEquals(String.class, converter.getSourceType());
     }
 
     @Test
-    public void testGetPriority() {
+    void testGetPriority() {
         assertEquals(Integer.MAX_VALUE - 2, converter.getPriority());
     }
 }

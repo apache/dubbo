@@ -928,7 +928,7 @@ public interface ChannelBuffer extends Comparable<ChannelBuffer> {
     /**
      * Returns the backing byte array of this buffer.
      *
-     * @throws UnsupportedOperationException if there no accessible backing byte
+     * @throws UnsupportedOperationException if there is no accessible backing byte
      *                                       array
      */
     byte[] array();
@@ -944,7 +944,7 @@ public interface ChannelBuffer extends Comparable<ChannelBuffer> {
      * Returns the offset of the first byte within the backing byte array of
      * this buffer.
      *
-     * @throws UnsupportedOperationException if there no accessible backing byte
+     * @throws UnsupportedOperationException if there is no accessible backing byte
      *                                       array
      */
     int arrayOffset();

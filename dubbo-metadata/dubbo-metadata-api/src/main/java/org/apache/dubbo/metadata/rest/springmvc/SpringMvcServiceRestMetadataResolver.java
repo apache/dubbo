@@ -18,6 +18,7 @@ package org.apache.dubbo.metadata.rest.springmvc;
 
 import org.apache.dubbo.metadata.rest.AbstractServiceRestMetadataResolver;
 import org.apache.dubbo.metadata.rest.ServiceRestMetadataResolver;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
@@ -47,6 +48,10 @@ import static org.apache.dubbo.metadata.rest.RestMetadataConstants.SPRING_MVC.RE
 public class SpringMvcServiceRestMetadataResolver extends AbstractServiceRestMetadataResolver {
 
     private static final int FIRST_ELEMENT_INDEX = 0;
+
+    public SpringMvcServiceRestMetadataResolver(ApplicationModel applicationModel) {
+        super(applicationModel);
+    }
 
     @Override
     protected boolean supports0(Class<?> serviceType) {
@@ -84,11 +89,15 @@ public class SpringMvcServiceRestMetadataResolver extends AbstractServiceRestMet
     @Override
     protected void processProduces(Method serviceMethod, Class<?> serviceType, Class<?> serviceInterfaceClass, Set<String> produces) {
         addMediaTypes(serviceMethod, "produces", produces);
+        addMediaTypes(serviceType, "produces", produces);
+        addMediaTypes(serviceInterfaceClass, "produces", produces);
     }
 
     @Override
     protected void processConsumes(Method serviceMethod, Class<?> serviceType, Class<?> serviceInterfaceClass, Set<String> consumes) {
         addMediaTypes(serviceMethod, "consumes", consumes);
+        addMediaTypes(serviceType, "consumes", consumes);
+        addMediaTypes(serviceInterfaceClass, "consumes", consumes);
     }
 
     private String resolveRequestPath(AnnotatedElement annotatedElement) {
@@ -111,6 +120,17 @@ public class SpringMvcServiceRestMetadataResolver extends AbstractServiceRestMet
     private void addMediaTypes(Method serviceMethod, String annotationAttributeName, Set<String> mediaTypesSet) {
 
         Annotation mappingAnnotation = getRequestMapping(serviceMethod);
+
+        String[] mediaTypes = getAttribute(mappingAnnotation, annotationAttributeName);
+
+        if (isNotEmpty(mediaTypes)) {
+            of(mediaTypes).forEach(mediaTypesSet::add);
+        }
+    }
+
+    private void addMediaTypes(Class serviceType, String annotationAttributeName, Set<String> mediaTypesSet) {
+
+        Annotation mappingAnnotation = getRequestMapping(serviceType);
 
         String[] mediaTypes = getAttribute(mappingAnnotation, annotationAttributeName);
 

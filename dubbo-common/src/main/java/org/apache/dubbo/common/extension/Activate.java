@@ -86,7 +86,15 @@ public @interface Activate {
     /**
      * Absolute ordering info, optional
      *
+     * Ascending order, smaller values will be in the front o the list.
+     *
      * @return absolute ordering info
      */
     int order() default 0;
+
+    /**
+     * Activate loadClass when the current extension when the specified className all match
+     * @return className names to all match
+     */
+    String [] onClass() default {};
 }

@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config.api;
 
+import java.io.Serializable;
 import java.util.List;
 
 
@@ -34,4 +35,10 @@ public interface DemoService {
 
     int echo(int i);
 
+    default InnerClass callInnerClass() {
+        return new InnerClass();
+    }
+
+    class InnerClass implements Serializable {
+    }
 }

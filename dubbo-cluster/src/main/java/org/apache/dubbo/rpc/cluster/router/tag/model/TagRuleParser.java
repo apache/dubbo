@@ -17,7 +17,10 @@
 package org.apache.dubbo.rpc.cluster.router.tag.model;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
+<<<<<<< HEAD
 import org.apache.dubbo.common.utils.PojoUtils;
+=======
+>>>>>>> origin/3.2
 
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
@@ -25,20 +28,26 @@ import org.yaml.snakeyaml.constructor.SafeConstructor;
 import java.util.Map;
 
 /**
- *
+ * Parse raw rule into structured tag rule
  */
 public class TagRuleParser {
 
+<<<<<<< HEAD
     public static TagRouterRule parse(String rawRule) throws Exception {
         Yaml yaml = new Yaml(new SafeConstructor());
         Map<String, Object> map = yaml.load(rawRule);
         TagRouterRule rule = PojoUtils.mapToPojo(map, TagRouterRule.class);
+=======
+    public static TagRouterRule parse(String rawRule) {
+        Yaml yaml = new Yaml(new SafeConstructor());
+        Map<String, Object> map = yaml.load(rawRule);
+        TagRouterRule rule = TagRouterRule.parseFromMap(map);
+>>>>>>> origin/3.2
         rule.setRawRule(rawRule);
         if (CollectionUtils.isEmpty(rule.getTags())) {
             rule.setValid(false);
         }
 
-        rule.init();
         return rule;
     }
 }

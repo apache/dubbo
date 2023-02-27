@@ -40,7 +40,11 @@ import static org.mockito.Mockito.mock;
 /**
  * Test for AvailableClusterInvoker
  */
+<<<<<<< HEAD
 public class AvailableClusterInvokerTest {
+=======
+class AvailableClusterInvokerTest {
+>>>>>>> origin/3.2
 
     private final URL url = URL.valueOf("test://test:80/test");
     private final Invoker<AvailableClusterInvokerTest> invoker1 = mock(Invoker.class);
@@ -86,8 +90,13 @@ public class AvailableClusterInvokerTest {
         given(invoker3.getInterface()).willReturn(AvailableClusterInvokerTest.class);
     }
 
+<<<<<<< HEAD
     @Test()
     public void testInvokeNoException() {
+=======
+    @Test
+    void testInvokeNoException() {
+>>>>>>> origin/3.2
 
         resetInvokerToNoException();
 
@@ -96,8 +105,13 @@ public class AvailableClusterInvokerTest {
         Assertions.assertSame(result, ret);
     }
 
+<<<<<<< HEAD
     @Test()
     public void testInvokeWithException() {
+=======
+    @Test
+    void testInvokeWithException() {
+>>>>>>> origin/3.2
 
         // remove invokers for test exception
         dic.list(invocation).removeAll(invokers);
@@ -111,4 +125,8 @@ public class AvailableClusterInvokerTest {
             assertFalse(e.getCause() instanceof RpcException);
         }
     }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> origin/3.2

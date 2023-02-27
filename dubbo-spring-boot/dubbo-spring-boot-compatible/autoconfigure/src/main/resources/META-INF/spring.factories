@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
 org.apache.dubbo.spring.boot.autoconfigure.DubboAutoConfiguration,\
 org.apache.dubbo.spring.boot.autoconfigure.DubboRelaxedBindingAutoConfiguration
@@ -9,4 +10,15 @@ org.apache.dubbo.spring.boot.context.event.AwaitingNonWebApplicationListener
 org.springframework.boot.env.EnvironmentPostProcessor=\
 org.apache.dubbo.spring.boot.env.DubboDefaultPropertiesEnvironmentPostProcessor
 org.springframework.context.ApplicationContextInitializer=\
+=======
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+org.apache.dubbo.spring.boot.autoconfigure.DubboAutoConfiguration,\
+org.apache.dubbo.spring.boot.autoconfigure.DubboRelaxedBindingAutoConfiguration,\
+org.apache.dubbo.spring.boot.autoconfigure.DubboListenerAutoConfiguration
+org.springframework.context.ApplicationListener=\
+org.apache.dubbo.spring.boot.context.event.WelcomeLogoApplicationListener
+org.springframework.boot.env.EnvironmentPostProcessor=\
+org.apache.dubbo.spring.boot.env.DubboDefaultPropertiesEnvironmentPostProcessor
+org.springframework.context.ApplicationContextInitializer=\
+>>>>>>> origin/3.2
 org.apache.dubbo.spring.boot.context.DubboApplicationContextInitializer

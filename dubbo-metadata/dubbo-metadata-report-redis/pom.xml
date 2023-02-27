@@ -19,11 +19,16 @@
         <groupId>org.apache.dubbo</groupId>
         <artifactId>dubbo-metadata</artifactId>
         <version>${revision}</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>dubbo-metadata-report-redis</artifactId>
+<<<<<<< HEAD
+=======
+    <properties>
+        <jedis.version>3.9.0</jedis.version>
+    </properties>
+>>>>>>> origin/3.2
 
     <dependencies>
         <dependency>
@@ -36,11 +41,14 @@
             <artifactId>jedis</artifactId>
         </dependency>
         <dependency>
+<<<<<<< HEAD
             <groupId>org.apache.curator</groupId>
             <artifactId>curator-test</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
+=======
+>>>>>>> origin/3.2
             <groupId>com.github.codemonstur</groupId>
             <artifactId>embedded-redis</artifactId>
             <scope>test</scope>

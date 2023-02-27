@@ -16,10 +16,13 @@
  */
 package org.apache.dubbo.registry.client.event;
 
-import org.apache.dubbo.event.Event;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 
+<<<<<<< HEAD
+=======
+import java.util.Collections;
+>>>>>>> origin/3.2
 import java.util.List;
 
 import static java.util.Collections.unmodifiableList;
@@ -30,7 +33,7 @@ import static java.util.Collections.unmodifiableList;
  * @see ServiceInstancesChangedListener
  * @since 2.7.5
  */
-public class ServiceInstancesChangedEvent extends Event {
+public class ServiceInstancesChangedEvent {
 
     private final String serviceName;
 
@@ -42,9 +45,19 @@ public class ServiceInstancesChangedEvent extends Event {
      * @throws IllegalArgumentException if source is null.
      */
     public ServiceInstancesChangedEvent(String serviceName, List<ServiceInstance> serviceInstances) {
+<<<<<<< HEAD
         super(serviceName);
         this.serviceName = serviceName;
         this.serviceInstances = unmodifiableList(serviceInstances);
+=======
+        this.serviceName = serviceName;
+        this.serviceInstances = unmodifiableList(serviceInstances);
+    }
+
+    protected ServiceInstancesChangedEvent() {
+        this.serviceInstances = Collections.emptyList();
+        this.serviceName = "";
+>>>>>>> origin/3.2
     }
 
     /**

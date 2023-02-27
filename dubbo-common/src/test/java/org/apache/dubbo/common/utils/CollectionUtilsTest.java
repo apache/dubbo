@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.common.utils;
 
+import org.apache.dubbo.config.ProtocolConfig;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -43,11 +45,12 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class CollectionUtilsTest {
+class CollectionUtilsTest {
     @Test
-    public void testSort() throws Exception {
+    void testSort() throws Exception {
         List<Integer> list = new ArrayList<Integer>();
         list.add(100);
         list.add(10);
@@ -62,14 +65,14 @@ public class CollectionUtilsTest {
     }
 
     @Test
-    public void testSortNull() throws Exception {
+    void testSortNull() throws Exception {
         assertNull(CollectionUtils.sort(null));
 
         assertTrue(CollectionUtils.sort(new ArrayList<Integer>()).isEmpty());
     }
 
     @Test
-    public void testSortSimpleName() throws Exception {
+    void testSortSimpleName() throws Exception {
         List<String> list = new ArrayList<String>();
         list.add("aaa.z");
         list.add("b");
@@ -84,14 +87,30 @@ public class CollectionUtilsTest {
     }
 
     @Test
-    public void testSortSimpleNameNull() throws Exception {
+    void testSortSimpleNameNull() throws Exception {
         assertNull(CollectionUtils.sortSimpleName(null));
 
         assertTrue(CollectionUtils.sortSimpleName(new ArrayList<String>()).isEmpty());
     }
 
     @Test
-    public void testSplitAll() throws Exception {
+    void testFlip() {
+        assertEquals(CollectionUtils.flip(null), null);
+        Map<String, String> input1 = new HashMap<>();
+        input1.put("k1", null);
+        input1.put("k2", "v2");
+        Map<String, String> output1 = new HashMap<>();
+        output1.put(null, "k1");
+        output1.put("v2", "k2");
+        assertEquals(CollectionUtils.flip(input1), output1);
+        Map<String, String> input2 = new HashMap<>();
+        input2.put("k1", null);
+        input2.put("k2", null);
+        assertThrows(IllegalArgumentException.class, () -> CollectionUtils.flip(input2));
+    }
+
+    @Test
+    void testSplitAll() throws Exception {
         assertNull(CollectionUtils.splitAll(null, null));
         assertNull(CollectionUtils.splitAll(null, "-"));
 
@@ -113,7 +132,7 @@ public class CollectionUtilsTest {
     }
 
     @Test
-    public void testJoinAll() throws Exception {
+    void testJoinAll() throws Exception {
         assertNull(CollectionUtils.joinAll(null, null));
         assertNull(CollectionUtils.joinAll(null, "-"));
 
@@ -140,7 +159,11 @@ public class CollectionUtilsTest {
     }
 
     @Test
+<<<<<<< HEAD
     public void testJoinList() throws Exception {
+=======
+    void testJoinList() throws Exception {
+>>>>>>> origin/3.2
         List<String> list = emptyList();
         assertEquals("", CollectionUtils.join(list, "/"));
 
@@ -152,7 +175,7 @@ public class CollectionUtilsTest {
     }
 
     @Test
-    public void testMapEquals() throws Exception {
+    void testMapEquals() throws Exception {
         assertTrue(CollectionUtils.mapEquals(null, null));
         assertFalse(CollectionUtils.mapEquals(null, new HashMap<String, String>()));
         assertFalse(CollectionUtils.mapEquals(new HashMap<String, String>(), null));
@@ -162,17 +185,17 @@ public class CollectionUtilsTest {
     }
 
     @Test
-    public void testStringMap1() throws Exception {
+    void testStringMap1() throws Exception {
         assertThat(toStringMap("key", "value"), equalTo(Collections.singletonMap("key", "value")));
     }
 
     @Test
-    public void testStringMap2() throws Exception {
+    void testStringMap2() throws Exception {
         Assertions.assertThrows(IllegalArgumentException.class, () -> toStringMap("key", "value", "odd"));
     }
 
     @Test
-    public void testToMap1() throws Exception {
+    void testToMap1() throws Exception {
         assertTrue(CollectionUtils.toMap().isEmpty());
 
         Map<String, Integer> expected = new HashMap<String, Integer>();
@@ -184,24 +207,32 @@ public class CollectionUtilsTest {
     }
 
     @Test
-    public void testToMap2() throws Exception {
+    void testObjectToMap() throws Exception {
+        ProtocolConfig protocolConfig=new ProtocolConfig();
+        protocolConfig.setSerialization("fastjson2");
+
+        assertFalse(CollectionUtils.objToMap(protocolConfig).isEmpty());
+    }
+
+    @Test
+    void testToMap2() throws Exception {
         Assertions.assertThrows(IllegalArgumentException.class, () -> toMap("a", "b", "c"));
     }
 
     @Test
-    public void testIsEmpty() throws Exception {
+    void testIsEmpty() throws Exception {
         assertThat(isEmpty(null), is(true));
         assertThat(isEmpty(new HashSet()), is(true));
         assertThat(isEmpty(emptyList()), is(true));
     }
 
     @Test
-    public void testIsNotEmpty() throws Exception {
+    void testIsNotEmpty() throws Exception {
         assertThat(isNotEmpty(singleton("a")), is(true));
     }
 
     @Test
-    public void testOfSet() {
+    void testOfSet() {
         Set<String> set = ofSet();
         assertEquals(emptySet(), set);
 

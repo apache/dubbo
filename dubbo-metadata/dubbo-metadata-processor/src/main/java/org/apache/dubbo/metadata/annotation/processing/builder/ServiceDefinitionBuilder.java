@@ -17,9 +17,13 @@
 package org.apache.dubbo.metadata.annotation.processing.builder;
 
 import org.apache.dubbo.metadata.definition.model.ServiceDefinition;
+import org.apache.dubbo.metadata.definition.model.TypeDefinition;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.TypeElement;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.apache.dubbo.metadata.annotation.processing.util.MethodUtils.getPublicNonStaticMethods;
 import static org.apache.dubbo.metadata.annotation.processing.util.TypeUtils.getHierarchicalTypes;
@@ -38,18 +42,20 @@ public interface ServiceDefinitionBuilder {
         serviceDefinition.setCanonicalName(type.toString());
         serviceDefinition.setCodeSource(getResourceName(type.toString()));
 
+        Map<String, TypeDefinition> types = new HashMap<>();
+
         // Get all super types and interface excluding the specified type
         // and then the result will be added into ServiceDefinition#getTypes()
         getHierarchicalTypes(type.asType(), Object.class)
-                .stream()
-                .map(t -> TypeDefinitionBuilder.build(processingEnv, t))
-                .forEach(serviceDefinition.getTypes()::add);
+                .forEach(t -> TypeDefinitionBuilder.build(processingEnv, t, types));
 
         // Get all declared methods that will be added into ServiceDefinition#getMethods()
         getPublicNonStaticMethods(type, Object.class)
                 .stream()
-                .map(method -> MethodDefinitionBuilder.build(processingEnv, method))
+                .map(method -> MethodDefinitionBuilder.build(processingEnv, method, types))
                 .forEach(serviceDefinition.getMethods()::add);
+
+        serviceDefinition.setTypes(new ArrayList<>(types.values()));
 
         return serviceDefinition;
     }

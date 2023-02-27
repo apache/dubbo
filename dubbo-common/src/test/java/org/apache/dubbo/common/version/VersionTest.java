@@ -22,15 +22,15 @@ import org.apache.dubbo.common.Version;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class VersionTest {
+class VersionTest {
 
     @Test
-    public void testGetProtocolVersion() {
+    void testGetProtocolVersion() {
         Assertions.assertEquals(Version.getProtocolVersion(), Version.DEFAULT_DUBBO_PROTOCOL_VERSION);
     }
 
     @Test
-    public void testSupportResponseAttachment() {
+    void testSupportResponseAttachment() {
         Assertions.assertTrue(Version.isSupportResponseAttachment("2.0.2"));
         Assertions.assertTrue(Version.isSupportResponseAttachment("2.0.3"));
         Assertions.assertTrue(Version.isSupportResponseAttachment("2.0.99"));
@@ -47,7 +47,7 @@ public class VersionTest {
     }
 
     @Test
-    public void testGetIntVersion() {
+    void testGetIntVersion() {
         Assertions.assertEquals(2060100, Version.getIntVersion("2.6.1"));
         Assertions.assertEquals(2060101, Version.getIntVersion("2.6.1.1"));
         Assertions.assertEquals(2070001, Version.getIntVersion("2.7.0.1"));
@@ -55,10 +55,23 @@ public class VersionTest {
         Assertions.assertEquals(Version.HIGHEST_PROTOCOL_VERSION, Version.getIntVersion("2.0.99"));
         Assertions.assertEquals(2070000, Version.getIntVersion("2.7.0.RC1"));
         Assertions.assertEquals(2070000, Version.getIntVersion("2.7.0-SNAPSHOT"));
+        Assertions.assertEquals(3000000, Version.getIntVersion("3.0.0-SNAPSHOT"));
+        Assertions.assertEquals(3010000, Version.getIntVersion("3.1.0"));
     }
 
     @Test
-    public void testIsFramework270OrHigher() {
+    void testCompare() {
+        Assertions.assertEquals(0, Version.compare("3.0.0", "3.0.0"));
+        Assertions.assertEquals(0, Version.compare("3.0.0-SNAPSHOT", "3.0.0"));
+        Assertions.assertEquals(1, Version.compare("3.0.0.1", "3.0.0"));
+        Assertions.assertEquals(1, Version.compare("3.1.0", "3.0.0"));
+        Assertions.assertEquals(1, Version.compare("3.1.2.3", "3.0.0"));
+        Assertions.assertEquals(-1, Version.compare("2.9.9.9", "3.0.0"));
+        Assertions.assertEquals(-1, Version.compare("2.6.3.1", "3.0.0"));
+    }
+
+    @Test
+    void testIsFramework270OrHigher() {
         Assertions.assertTrue(Version.isRelease270OrHigher("2.7.0"));
         Assertions.assertTrue(Version.isRelease270OrHigher("2.7.0.1"));
         Assertions.assertTrue(Version.isRelease270OrHigher("2.7.0.2"));
@@ -68,7 +81,7 @@ public class VersionTest {
     }
 
     @Test
-    public void testIsFramework263OrHigher() {
+    void testIsFramework263OrHigher() {
         Assertions.assertTrue(Version.isRelease263OrHigher("2.7.0"));
         Assertions.assertTrue(Version.isRelease263OrHigher("2.7.0.1"));
         Assertions.assertTrue(Version.isRelease263OrHigher("2.6.4"));
@@ -77,5 +90,15 @@ public class VersionTest {
         Assertions.assertFalse(Version.isRelease263OrHigher("2.6.1.1"));
         Assertions.assertTrue(Version.isRelease263OrHigher("2.6.3"));
         Assertions.assertTrue(Version.isRelease263OrHigher("2.6.3.0"));
+    }
+
+    @Test
+    void testGetVersion() {
+        Assertions.assertEquals("1.0.0", Version.getVersion());
+    }
+
+    @Test
+    void testGetLastCommitId() {
+        Assertions.assertEquals("82a29fcd674216fe9bea10b6efef3196929dd7ca", Version.getLastCommitId());
     }
 }

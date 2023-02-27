@@ -17,12 +17,13 @@
 package org.apache.dubbo.common.convert.multiple;
 
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.common.lang.Prioritized;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.util.Collection;
 
-import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
 import static org.apache.dubbo.common.utils.TypeUtils.findActualTypeArgument;
 
 /**
@@ -32,7 +33,7 @@ import static org.apache.dubbo.common.utils.TypeUtils.findActualTypeArgument;
  * @param <S> The source type
  * @since 2.7.6
  */
-@SPI
+@SPI(scope = ExtensionScope.FRAMEWORK)
 public interface MultiValueConverter<S> extends Prioritized {
 
     /**
@@ -71,9 +72,12 @@ public interface MultiValueConverter<S> extends Prioritized {
      * @return <code>null</code> if not found
      * @see ExtensionLoader#getSupportedExtensionInstances()
      * @since 2.7.8
+     * @deprecated will be removed in 3.3.0
      */
+    @Deprecated
     static MultiValueConverter<?> find(Class<?> sourceType, Class<?> targetType) {
-        return getExtensionLoader(MultiValueConverter.class)
+        return FrameworkModel.defaultModel()
+                .getExtensionLoader(MultiValueConverter.class)
                 .getSupportedExtensionInstances()
                 .stream()
                 .filter(converter -> converter.accept(sourceType, targetType))
@@ -81,6 +85,10 @@ public interface MultiValueConverter<S> extends Prioritized {
                 .orElse(null);
     }
 
+    /**
+     * @deprecated will be removed in 3.3.0
+     */
+    @Deprecated
     static <T> T convertIfPossible(Object source, Class<?> multiValueType, Class<?> elementType) {
         Class<?> sourceType = source.getClass();
         MultiValueConverter converter = find(sourceType, multiValueType);

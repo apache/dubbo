@@ -1,7 +1,6 @@
 # maven ignore
 target/
 *.jar
-!.mvn/wrapper/*
 *.war
 *.zip
 *.tar
@@ -47,3 +46,8 @@ compiler/.gradle/*
 
 # protobuf
 dubbo-serialization/dubbo-serialization-protobuf/build/*
+dubbo-demo/dubbo-demo-triple/build/*
+
+# global registry center
+.tmp
+

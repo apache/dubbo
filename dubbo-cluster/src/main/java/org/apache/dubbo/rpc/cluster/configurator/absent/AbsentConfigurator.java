@@ -21,7 +21,6 @@ import org.apache.dubbo.rpc.cluster.configurator.AbstractConfigurator;
 
 /**
  * AbsentConfigurator
- *
  */
 public class AbsentConfigurator extends AbstractConfigurator {
 

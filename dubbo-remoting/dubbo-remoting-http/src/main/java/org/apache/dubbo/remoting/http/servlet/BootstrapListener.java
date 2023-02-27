@@ -21,7 +21,6 @@ import javax.servlet.ServletContextListener;
 
 /**
  * This class must be defined before something like spring's ContextLoaderListener in web.xml
- *
  */
 public class BootstrapListener implements ServletContextListener {
 

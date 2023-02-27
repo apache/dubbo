@@ -19,7 +19,11 @@ package org.apache.dubbo.rpc.protocol.dubbo;
 
 import org.apache.dubbo.common.Parameters;
 import org.apache.dubbo.common.URL;
+<<<<<<< HEAD
 import org.apache.dubbo.common.logger.Logger;
+=======
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+>>>>>>> origin/3.2
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
@@ -31,8 +35,13 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 
+<<<<<<< HEAD
 import static org.apache.dubbo.remoting.Constants.SEND_RECONNECT_KEY;
 import static org.apache.dubbo.rpc.protocol.dubbo.Constants.LAZY_CONNECT_INITIAL_STATE_KEY;
+=======
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_SERVER_SHUTDOWN_TIMEOUT;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_REQUEST;
+>>>>>>> origin/3.2
 
 /**
  * dubbo protocol support class.
@@ -40,16 +49,25 @@ import static org.apache.dubbo.rpc.protocol.dubbo.Constants.LAZY_CONNECT_INITIAL
 @SuppressWarnings("deprecation")
 final class ReferenceCountExchangeClient implements ExchangeClient {
 
+<<<<<<< HEAD
     private static final Logger logger = LoggerFactory.getLogger(ReferenceCountExchangeClient.class);
     private final URL url;
     private final AtomicInteger referenceCount = new AtomicInteger(0);
     private final AtomicInteger disconnectCount = new AtomicInteger(0);
     private final Integer warningPeriod = 50;
+=======
+    private final static ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ReferenceCountExchangeClient.class);
+    private final URL url;
+    private final AtomicInteger referenceCount = new AtomicInteger(0);
+    private final AtomicInteger disconnectCount = new AtomicInteger(0);
+    private static final Integer warningPeriod = 50;
+>>>>>>> origin/3.2
     private ExchangeClient client;
+    private int shutdownWaitTime = DEFAULT_SERVER_SHUTDOWN_TIMEOUT;
 
-    public ReferenceCountExchangeClient(ExchangeClient client) {
+    public ReferenceCountExchangeClient(ExchangeClient client, String codec) {
         this.client = client;
-        referenceCount.incrementAndGet();
+        this.referenceCount.incrementAndGet();
         this.url = client.getUrl();
     }
 
@@ -199,6 +217,7 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
     private void replaceWithLazyClient() {
         // start warning at second replaceWithLazyClient()
         if (disconnectCount.getAndIncrement() % warningPeriod == 1) {
+<<<<<<< HEAD
             logger.warn(url.getAddress() + " " + url.getServiceKey() + " safe guard client , should not be called ,must have a bug.");
         }
 
@@ -212,6 +231,14 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
                     .addParameter(SEND_RECONNECT_KEY, Boolean.TRUE.toString());
             // .addParameter(LazyConnectExchangeClient.REQUEST_WITH_WARNING_KEY, true);
             client = new LazyConnectExchangeClient(lazyUrl, client.getExchangeHandler());
+=======
+            logger.warn(PROTOCOL_FAILED_REQUEST, "", "", url.getAddress() + " " + url.getServiceKey() + " safe guard client , should not be called ,must have a bug.");
+        }
+
+        // the order of judgment in the if statement cannot be changed.
+        if (!(client instanceof LazyConnectExchangeClient)) {
+            client = new LazyConnectExchangeClient(url, client.getExchangeHandler());
+>>>>>>> origin/3.2
         }
     }
 
@@ -230,5 +257,16 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
     public int getCount() {
         return referenceCount.get();
     }
+<<<<<<< HEAD
+=======
+
+    public int getShutdownWaitTime() {
+        return shutdownWaitTime;
+    }
+
+    public void setShutdownWaitTime(int shutdownWaitTime) {
+        this.shutdownWaitTime = shutdownWaitTime;
+    }
+>>>>>>> origin/3.2
 }
 

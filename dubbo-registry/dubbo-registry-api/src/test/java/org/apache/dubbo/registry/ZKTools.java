@@ -58,7 +58,12 @@ public class ZKTools {
             }
         }, executor);
 
+<<<<<<< HEAD
         testMigrationRule();
+=======
+//        testMigrationRule();
+        testAppMigrationRule();
+>>>>>>> origin/3.2
 //        tesConditionRule();
 //        testStartupConfig();
 //        testProviderConfig();
@@ -69,10 +74,39 @@ public class ZKTools {
     }
 
     public static void testMigrationRule() {
+<<<<<<< HEAD
         String serviceStr = "---\n" +
                 "key: demo-consumer\n" +
                 "step: INTERFACE_FIRST\n" +
                 "...";
+=======
+        String serviceStr = "key: demo-consumer\n" +
+                "interfaces:\n" +
+                "  - serviceKey: org.apache.dubbo.demo.DemoService:1.0.0\n" +
+                "    threshold: 1.0\n" +
+                "    step: FORCE_APPLICATION";
+        try {
+            String servicePath = "/dubbo/config/DUBBO_SERVICEDISCOVERY_MIGRATION/demo-consumer.migration";
+            if (client.checkExists().forPath(servicePath) == null) {
+                client.create().creatingParentsIfNeeded().forPath(servicePath);
+            }
+            setData(servicePath, serviceStr);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void testAppMigrationRule() {
+        String serviceStr = "key: demo-consumer\n" +
+                "applications:\n" +
+                "  - name: demo-provider\n" +
+                "    step: FORCE_APPLICATION\n" +
+                "    threshold: 0.8\n" +
+                "interfaces:\n" +
+                "  - serviceKey: org.apache.dubbo.demo.DemoService\n" +
+                "    threshold: 1.0\n" +
+                "    step: FORCE_APPLICATION";
+>>>>>>> origin/3.2
         try {
             String servicePath = "/dubbo/config/DUBBO_SERVICEDISCOVERY_MIGRATION/demo-consumer.migration";
             if (client.checkExists().forPath(servicePath) == null) {

@@ -17,30 +17,15 @@
 package org.apache.dubbo.common.config.configcenter;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
-
-import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
 
 /**
  * The factory interface to create the instance of {@link DynamicConfiguration}
  */
-@SPI("nop") // 2.7.5 change the default SPI implementation
+@SPI(value = "nop", scope = ExtensionScope.APPLICATION) // 2.7.5 change the default SPI implementation
 public interface DynamicConfigurationFactory {
 
     DynamicConfiguration getDynamicConfiguration(URL url);
 
-    /**
-     * Get an instance of {@link DynamicConfigurationFactory} by the specified name. If not found, take the default
-     * extension of {@link DynamicConfigurationFactory}
-     *
-     * @param name the name of extension of {@link DynamicConfigurationFactory}
-     * @return non-null
-     * @see 2.7.4
-     */
-    static DynamicConfigurationFactory getDynamicConfigurationFactory(String name) {
-        Class<DynamicConfigurationFactory> factoryClass = DynamicConfigurationFactory.class;
-        ExtensionLoader<DynamicConfigurationFactory> loader = getExtensionLoader(factoryClass);
-        return loader.getOrDefaultExtension(name);
-    }
 }

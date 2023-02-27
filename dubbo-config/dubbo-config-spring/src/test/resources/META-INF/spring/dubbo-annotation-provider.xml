@@ -30,11 +30,11 @@
     <dubbo:protocol name="dubbo" port="12345"/>
 
     <!-- Annotation 注册 -->
-    <dubbo:annotation id="doubleServiceAnnotationBeanPostProcessor"
+    <dubbo:annotation id="doubleServiceAnnotationPostProcessor"
                       package="org.apache.dubbo.config.spring.context.com.alibaba.dubbo.config.annotation.provider ,
              org.apache.dubbo.config.spring.context.com.alibaba.dubbo.config.annotation.provider"/>
 
-    <dubbo:annotation id="emptyServiceAnnotationBeanPostProcessor"
+    <dubbo:annotation id="emptyServiceAnnotationPostProcessor"
                       package="    "/>
 
 </beans>

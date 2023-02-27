@@ -20,10 +20,10 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class MixinTest {
+class MixinTest {
 
     @Test
-    public void testMain() throws Exception {
+    void testMain() throws Exception {
         Mixin mixin = Mixin.mixin(new Class[]{I1.class, I2.class, I3.class}, new Class[]{C1.class, C2.class});
         Object o = mixin.newInstance(new Object[]{new C1(), new C2()});
         assertTrue(o instanceof I1);
@@ -34,19 +34,19 @@ public class MixinTest {
         ((I3) o).m3();
     }
 
-    interface I1 {
+    public interface I1 {
         void m1();
     }
 
-    interface I2 {
+    public interface I2 {
         void m2();
     }
 
-    interface I3 {
+    public interface I3 {
         void m3();
     }
 
-    class C1 implements Mixin.MixinAware {
+    public class C1 implements Mixin.MixinAware {
         public void m1() {
             System.out.println("c1.m1();");
         }
@@ -60,7 +60,7 @@ public class MixinTest {
         }
     }
 
-    class C2 implements Mixin.MixinAware {
+    public class C2 implements Mixin.MixinAware {
         public void m3() {
             System.out.println("c2.m3();");
         }

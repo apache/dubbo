@@ -16,9 +16,8 @@
  */
 package org.apache.dubbo.metadata.annotation.processing;
 
+import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.metadata.definition.model.ServiceDefinition;
-
-import com.google.gson.Gson;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.Processor;
@@ -48,7 +47,7 @@ public class ServiceDefinitionMetadataAnnotationProcessor extends AbstractServic
 
         if (roundEnv.processingOver()) {
             ClassPathMetadataStorage writer = new ClassPathMetadataStorage(processingEnv);
-            writer.write(() -> new Gson().toJson(serviceDefinitions), "META-INF/dubbo/service-definitions.json");
+            writer.write(() -> JsonUtils.getJson().toJson(serviceDefinitions), "META-INF/dubbo/service-definitions.json");
         }
 
         return false;

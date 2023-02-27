@@ -21,6 +21,8 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+
 import org.junit.jupiter.api.Test;
 
 import static org.mockito.ArgumentMatchers.anyString;
@@ -40,7 +42,7 @@ class ConsumerSignFilterTest {
         Invoker invoker = mock(Invoker.class);
         Invocation invocation = mock(Invocation.class);
         when(invoker.getUrl()).thenReturn(url);
-        ConsumerSignFilter consumerSignFilter = new ConsumerSignFilter();
+        ConsumerSignFilter consumerSignFilter = new ConsumerSignFilter(ApplicationModel.defaultModel());
         consumerSignFilter.invoke(invoker, invocation);
         verify(invocation, never()).setAttachment(eq(Constants.REQUEST_SIGNATURE_KEY), anyString());
     }
@@ -55,7 +57,7 @@ class ConsumerSignFilterTest {
         Invoker invoker = mock(Invoker.class);
         Invocation invocation = mock(Invocation.class);
         when(invoker.getUrl()).thenReturn(url);
-        ConsumerSignFilter consumerSignFilter = new ConsumerSignFilter();
+        ConsumerSignFilter consumerSignFilter = new ConsumerSignFilter(ApplicationModel.defaultModel());
         consumerSignFilter.invoke(invoker, invocation);
         verify(invocation, times(1)).setAttachment(eq(Constants.REQUEST_SIGNATURE_KEY), anyString());
     }

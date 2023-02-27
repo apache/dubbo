@@ -16,34 +16,43 @@
  */
 package org.apache.dubbo.common.utils;
 
+import org.apache.dubbo.common.config.Configuration;
+import org.apache.dubbo.common.config.InmemoryConfiguration;
 import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.extension.ExtensionDirector;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
+import java.net.URL;
 import java.util.ArrayList;
-import java.util.Enumeration;
+import java.util.Arrays;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOVE_VALUE_PREFIX;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_IO_EXCEPTION;
 
 public class ConfigUtils {
 
-    private static final Logger logger = LoggerFactory.getLogger(ConfigUtils.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ConfigUtils.class);
     private static Pattern VARIABLE_PATTERN = Pattern.compile(
-            "\\$\\s*\\{?\\s*([\\._0-9a-zA-Z]+)\\s*\\}?");
-    private static volatile Properties PROPERTIES;
+        "\\$\\s*\\{?\\s*([\\._0-9a-zA-Z]+)\\s*\\}?");
     private static int PID = -1;
 
     private ConfigUtils() {
@@ -55,15 +64,15 @@ public class ConfigUtils {
 
     public static boolean isEmpty(String value) {
         return StringUtils.isEmpty(value)
-                || "false".equalsIgnoreCase(value)
-                || "0".equalsIgnoreCase(value)
-                || "null".equalsIgnoreCase(value)
-                || "N/A".equalsIgnoreCase(value);
+            || "false".equalsIgnoreCase(value)
+            || "0".equalsIgnoreCase(value)
+            || "null".equalsIgnoreCase(value)
+            || "N/A".equalsIgnoreCase(value);
     }
 
     public static boolean isDefault(String value) {
         return "true".equalsIgnoreCase(value)
-                || "default".equalsIgnoreCase(value);
+            || "default".equalsIgnoreCase(value);
     }
 
     /**
@@ -79,11 +88,11 @@ public class ConfigUtils {
      * @param def  Default extension list
      * @return result extension list
      */
-    public static List<String> mergeValues(Class<?> type, String cfg, List<String> def) {
+    public static List<String> mergeValues(ExtensionDirector extensionDirector, Class<?> type, String cfg, List<String> def) {
         List<String> defaults = new ArrayList<String>();
         if (def != null) {
             for (String name : def) {
-                if (ExtensionLoader.getExtensionLoader(type).hasExtension(name)) {
+                if (extensionDirector.getExtensionLoader(type).hasExtension(name)) {
                     defaults.add(name);
                 }
             }
@@ -124,7 +133,11 @@ public class ConfigUtils {
     }
 
     public static String replaceProperty(String expression, Map<String, String> params) {
-        if (expression == null || expression.length() == 0 || expression.indexOf('$') < 0) {
+        return replaceProperty(expression, new InmemoryConfiguration(params));
+    }
+
+    public static String replaceProperty(String expression, Configuration configuration) {
+        if (StringUtils.isEmpty(expression) || expression.indexOf('$') < 0) {
             return expression;
         }
         Matcher matcher = VARIABLE_PATTERN.matcher(expression);
@@ -132,11 +145,13 @@ public class ConfigUtils {
         while (matcher.find()) {
             String key = matcher.group(1);
             String value = System.getProperty(key);
-            if (value == null && params != null) {
-                value = params.get(key);
+            if (value == null && configuration != null) {
+                Object val = configuration.getProperty(key);
+                value = (val != null) ? val.toString() : null;
             }
             if (value == null) {
-                value = "";
+                // maybe not placeholders, use origin express
+                value = matcher.group();
             }
             matcher.appendReplacement(sb, Matcher.quoteReplacement(value));
         }
@@ -144,46 +159,21 @@ public class ConfigUtils {
         return sb.toString();
     }
 
-    public static Properties getProperties() {
-        if (PROPERTIES == null) {
-            synchronized (ConfigUtils.class) {
-                if (PROPERTIES == null) {
-                    String path = System.getProperty(CommonConstants.DUBBO_PROPERTIES_KEY);
-                    if (path == null || path.length() == 0) {
-                        path = System.getenv(CommonConstants.DUBBO_PROPERTIES_KEY);
-                        if (path == null || path.length() == 0) {
-                            path = CommonConstants.DEFAULT_DUBBO_PROPERTIES;
-                        }
-                    }
-                    PROPERTIES = ConfigUtils.loadProperties(path, false, true);
-                }
+    /**
+     * Get dubbo properties.
+     * It is not recommended using this method to modify dubbo properties.
+     *
+     * @return
+     */
+    public static Properties getProperties(Set<ClassLoader> classLoaders) {
+        String path = System.getProperty(CommonConstants.DUBBO_PROPERTIES_KEY);
+        if (StringUtils.isEmpty(path)) {
+            path = System.getenv(CommonConstants.DUBBO_PROPERTIES_KEY);
+            if (StringUtils.isEmpty(path)) {
+                path = CommonConstants.DEFAULT_DUBBO_PROPERTIES;
             }
         }
-        return PROPERTIES;
-    }
-
-    public static void setProperties(Properties properties) {
-        PROPERTIES = properties;
-    }
-
-    public static void addProperties(Properties properties) {
-        if (properties != null) {
-            getProperties().putAll(properties);
-        }
-    }
-
-    public static String getProperty(String key) {
-        return getProperty(key, null);
-    }
-
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    public static String getProperty(String key, String defaultValue) {
-        String value = System.getProperty(key);
-        if (value != null && value.length() > 0) {
-            return value;
-        }
-        Properties properties = getProperties();
-        return replaceProperty(properties.getProperty(key, defaultValue), (Map) properties);
+        return ConfigUtils.loadProperties(classLoaders, path, false, true);
     }
 
     /**
@@ -200,12 +190,12 @@ public class ConfigUtils {
         return value;
     }
 
-    public static Properties loadProperties(String fileName) {
-        return loadProperties(fileName, false, false);
+    public static Properties loadProperties(Set<ClassLoader> classLoaders, String fileName) {
+        return loadProperties(classLoaders, fileName, false, false);
     }
 
-    public static Properties loadProperties(String fileName, boolean allowMultiFile) {
-        return loadProperties(fileName, allowMultiFile, false);
+    public static Properties loadProperties(Set<ClassLoader> classLoaders, String fileName, boolean allowMultiFile) {
+        return loadProperties(classLoaders, fileName, allowMultiFile, false);
     }
 
     /**
@@ -220,7 +210,7 @@ public class ConfigUtils {
      * </ul>
      * @throws IllegalStateException not allow multi-file, but multi-file exist on class path.
      */
-    public static Properties loadProperties(String fileName, boolean allowMultiFile, boolean optional) {
+    public static Properties loadProperties(Set<ClassLoader> classLoaders, String fileName, boolean allowMultiFile, boolean optional) {
         Properties properties = new Properties();
         // add scene judgement in windows environment Fix 2557
         if (checkFileNameExist(fileName)) {
@@ -232,48 +222,50 @@ public class ConfigUtils {
                     input.close();
                 }
             } catch (Throwable e) {
-                logger.warn("Failed to load " + fileName + " file from " + fileName + "(ignore this file): " + e.getMessage(), e);
+                logger.warn(COMMON_IO_EXCEPTION, "", "", "Failed to load " + fileName + " file from " + fileName + "(ignore this file): " + e.getMessage(), e);
             }
             return properties;
         }
 
-        List<java.net.URL> list = new ArrayList<java.net.URL>();
+        Set<java.net.URL> set = null;
         try {
-            Enumeration<java.net.URL> urls = ClassUtils.getClassLoader().getResources(fileName);
-            list = new ArrayList<java.net.URL>();
-            while (urls.hasMoreElements()) {
-                list.add(urls.nextElement());
-            }
+            List<ClassLoader> classLoadersToLoad = new LinkedList<>();
+            classLoadersToLoad.add(ClassUtils.getClassLoader());
+            classLoadersToLoad.addAll(classLoaders);
+            set = ClassLoaderResourceLoader.loadResources(fileName, classLoadersToLoad).values().stream().reduce(new LinkedHashSet<>(), (a, i) -> {
+                a.addAll(i);
+                return a;
+            });
         } catch (Throwable t) {
-            logger.warn("Fail to load " + fileName + " file: " + t.getMessage(), t);
+            logger.warn(COMMON_IO_EXCEPTION, "", "", "Fail to load " + fileName + " file: " + t.getMessage(), t);
         }
 
-        if (list.isEmpty()) {
+        if (CollectionUtils.isEmpty(set)) {
             if (!optional) {
-                logger.warn("No " + fileName + " found on the class path.");
+                logger.warn(COMMON_IO_EXCEPTION, "", "", "No " + fileName + " found on the class path.");
             }
             return properties;
         }
 
         if (!allowMultiFile) {
-            if (list.size() > 1) {
+            if (set.size() > 1) {
                 String errMsg = String.format("only 1 %s file is expected, but %d dubbo.properties files found on class path: %s",
-                        fileName, list.size(), list.toString());
-                logger.warn(errMsg);
+                    fileName, set.size(), set);
+                logger.warn(COMMON_IO_EXCEPTION, "", "", errMsg);
             }
 
             // fall back to use method getResourceAsStream
             try {
                 properties.load(ClassUtils.getClassLoader().getResourceAsStream(fileName));
             } catch (Throwable e) {
-                logger.warn("Failed to load " + fileName + " file from " + fileName + "(ignore this file): " + e.getMessage(), e);
+                logger.warn(COMMON_IO_EXCEPTION, "", "", "Failed to load " + fileName + " file from " + fileName + "(ignore this file): " + e.getMessage(), e);
             }
             return properties;
         }
 
-        logger.info("load " + fileName + " properties file from " + list);
+        logger.info("load " + fileName + " properties file from " + set);
 
-        for (java.net.URL url : list) {
+        for (java.net.URL url : set) {
             try {
                 Properties p = new Properties();
                 InputStream input = url.openStream();
@@ -289,11 +281,60 @@ public class ConfigUtils {
                     }
                 }
             } catch (Throwable e) {
-                logger.warn("Fail to load " + fileName + " file from " + url + "(ignore this file): " + e.getMessage(), e);
+                logger.warn(COMMON_IO_EXCEPTION, "", "", "Fail to load " + fileName + " file from " + url + "(ignore this file): " + e.getMessage(), e);
             }
         }
 
         return properties;
+    }
+
+    public static String loadMigrationRule(Set<ClassLoader> classLoaders, String fileName) {
+        String rawRule = "";
+        if (checkFileNameExist(fileName)) {
+            try {
+                try (FileInputStream input = new FileInputStream(fileName)) {
+                    return readString(input);
+                }
+            } catch (Throwable e) {
+                logger.warn(COMMON_IO_EXCEPTION, "", "", "Failed to load " + fileName + " file from " + fileName + "(ignore this file): " + e.getMessage(), e);
+            }
+        }
+
+        try {
+            List<ClassLoader> classLoadersToLoad = new LinkedList<>();
+            classLoadersToLoad.add(ClassUtils.getClassLoader());
+            classLoadersToLoad.addAll(classLoaders);
+            for (Set<URL> urls : ClassLoaderResourceLoader.loadResources(fileName, classLoadersToLoad).values()) {
+                for (URL url : urls) {
+                    InputStream is = url.openStream();
+                    if (is != null) {
+                        return readString(is);
+                    }
+                }
+            }
+        } catch (Throwable e) {
+            logger.warn(COMMON_IO_EXCEPTION, "", "", "Failed to load " + fileName + " file from " + fileName + "(ignore this file): " + e.getMessage(), e);
+        }
+        return rawRule;
+    }
+
+    private static String readString(InputStream is) {
+        StringBuilder stringBuilder = new StringBuilder();
+        char[] buffer = new char[10];
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(is))) {
+            int n;
+            while ((n = reader.read(buffer)) != -1) {
+                if (n < 10) {
+                    buffer = Arrays.copyOf(buffer, n);
+                }
+                stringBuilder.append(String.valueOf(buffer));
+                buffer = new char[10];
+            }
+        } catch (IOException e) {
+            logger.error(COMMON_IO_EXCEPTION, "", "", "Read migration file error.", e);
+        }
+
+        return stringBuilder.toString();
     }
 
     /**
@@ -312,7 +353,8 @@ public class ConfigUtils {
         if (PID < 0) {
             try {
                 RuntimeMXBean runtime = ManagementFactory.getRuntimeMXBean();
-                String name = runtime.getName(); // format: "pid@hostname"
+                // format: "pid@hostname"
+                String name = runtime.getName();
                 PID = Integer.parseInt(name.substring(0, name.indexOf('@')));
             } catch (Throwable e) {
                 PID = 0;

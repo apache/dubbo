@@ -20,7 +20,7 @@ package org.apache.dubbo.common.extension.activate.impl;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.extension.activate.ActivateExt1;
 
-@Activate(group = {"default_group"})
+@Activate(order = 1, group = {"default_group"})
 public class ActivateExt1Impl1 implements ActivateExt1 {
     public String echo(String msg) {
         return msg;

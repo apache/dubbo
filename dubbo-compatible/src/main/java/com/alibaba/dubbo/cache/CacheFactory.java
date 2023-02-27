@@ -24,4 +24,8 @@ import com.alibaba.dubbo.rpc.Invocation;
 public interface CacheFactory extends org.apache.dubbo.cache.CacheFactory {
 
     Cache getCache(URL url, Invocation invocation);
+
+    default org.apache.dubbo.cache.Cache getCache(org.apache.dubbo.common.URL url, org.apache.dubbo.rpc.Invocation invocation) {
+        return this.getCache(new URL(url), new Invocation.CompatibleInvocation(invocation));
+    }
 }

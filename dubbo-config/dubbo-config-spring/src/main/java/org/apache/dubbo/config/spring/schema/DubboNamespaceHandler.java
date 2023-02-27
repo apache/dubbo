@@ -31,6 +31,7 @@ import org.apache.dubbo.config.spring.ConfigCenterBean;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.ServiceBean;
 import org.apache.dubbo.config.spring.beans.factory.config.ConfigurableSourceBeanMetadataElement;
+import org.apache.dubbo.config.spring.context.DubboSpringInitializer;
 
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
@@ -38,8 +39,6 @@ import org.springframework.beans.factory.xml.NamespaceHandlerSupport;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.context.annotation.AnnotationConfigUtils;
 import org.w3c.dom.Element;
-
-import static org.apache.dubbo.config.spring.util.DubboBeanUtils.registerCommonBeans;
 
 /**
  * DubboNamespaceHandler
@@ -54,6 +53,7 @@ public class DubboNamespaceHandler extends NamespaceHandlerSupport implements Co
 
     @Override
     public void init() {
+<<<<<<< HEAD
         registerBeanDefinitionParser("application", new DubboBeanDefinitionParser(ApplicationConfig.class, true));
         registerBeanDefinitionParser("module", new DubboBeanDefinitionParser(ModuleConfig.class, true));
         registerBeanDefinitionParser("registry", new DubboBeanDefinitionParser(RegistryConfig.class, true));
@@ -67,6 +67,21 @@ public class DubboNamespaceHandler extends NamespaceHandlerSupport implements Co
         registerBeanDefinitionParser("protocol", new DubboBeanDefinitionParser(ProtocolConfig.class, true));
         registerBeanDefinitionParser("service", new DubboBeanDefinitionParser(ServiceBean.class, true));
         registerBeanDefinitionParser("reference", new DubboBeanDefinitionParser(ReferenceBean.class, true));
+=======
+        registerBeanDefinitionParser("application", new DubboBeanDefinitionParser(ApplicationConfig.class));
+        registerBeanDefinitionParser("module", new DubboBeanDefinitionParser(ModuleConfig.class));
+        registerBeanDefinitionParser("registry", new DubboBeanDefinitionParser(RegistryConfig.class));
+        registerBeanDefinitionParser("config-center", new DubboBeanDefinitionParser(ConfigCenterBean.class));
+        registerBeanDefinitionParser("metadata-report", new DubboBeanDefinitionParser(MetadataReportConfig.class));
+        registerBeanDefinitionParser("monitor", new DubboBeanDefinitionParser(MonitorConfig.class));
+        registerBeanDefinitionParser("metrics", new DubboBeanDefinitionParser(MetricsConfig.class));
+        registerBeanDefinitionParser("ssl", new DubboBeanDefinitionParser(SslConfig.class));
+        registerBeanDefinitionParser("provider", new DubboBeanDefinitionParser(ProviderConfig.class));
+        registerBeanDefinitionParser("consumer", new DubboBeanDefinitionParser(ConsumerConfig.class));
+        registerBeanDefinitionParser("protocol", new DubboBeanDefinitionParser(ProtocolConfig.class));
+        registerBeanDefinitionParser("service", new DubboBeanDefinitionParser(ServiceBean.class));
+        registerBeanDefinitionParser("reference", new DubboBeanDefinitionParser(ReferenceBean.class));
+>>>>>>> origin/3.2
         registerBeanDefinitionParser("annotation", new AnnotationBeanDefinitionParser());
     }
 
@@ -82,11 +97,10 @@ public class DubboNamespaceHandler extends NamespaceHandlerSupport implements Co
     public BeanDefinition parse(Element element, ParserContext parserContext) {
         BeanDefinitionRegistry registry = parserContext.getRegistry();
         registerAnnotationConfigProcessors(registry);
-        /**
-         * @since 2.7.8
-         * issue : https://github.com/apache/dubbo/issues/6275
-         */
-        registerCommonBeans(registry);
+
+        // initialize dubbo beans
+        DubboSpringInitializer.initialize(parserContext.getRegistry());
+
         BeanDefinition beanDefinition = super.parse(element, parserContext);
         setSource(beanDefinition);
         return beanDefinition;

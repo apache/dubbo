@@ -18,31 +18,36 @@ package org.apache.dubbo.rpc.protocol.dubbo.filter;
 
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+<<<<<<< HEAD
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.rpc.Filter;
+=======
+>>>>>>> origin/3.2
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.cluster.filter.ClusterFilter;
 import org.apache.dubbo.rpc.model.AsyncMethodInfo;
 import org.apache.dubbo.rpc.model.ConsumerModel;
+import org.apache.dubbo.rpc.model.ServiceModel;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_REQUEST;
 import static org.apache.dubbo.rpc.protocol.dubbo.Constants.ASYNC_METHOD_INFO;
 
 /**
  * EventFilter
  */
 @Activate(group = CommonConstants.CONSUMER)
-public class FutureFilter implements Filter, Filter.Listener {
+public class FutureFilter implements ClusterFilter, ClusterFilter.Listener {
 
-    protected static final Logger logger = LoggerFactory.getLogger(FutureFilter.class);
+    protected static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(FutureFilter.class);
 
     @Override
     public Result invoke(final Invoker<?> invoker, final Invocation invocation) throws RpcException {
@@ -174,10 +179,10 @@ public class FutureFilter implements Filter, Filter.Listener {
                 }
                 onthrowMethod.invoke(onthrowInst, params);
             } catch (Throwable e) {
-                logger.error(invocation.getMethodName() + ".call back method invoke error . callback method :" + onthrowMethod + ", url:" + invoker.getUrl(), e);
+                logger.error(PROTOCOL_FAILED_REQUEST, "", "", invocation.getMethodName() + ".call back method invoke error . callback method :" + onthrowMethod + ", url:" + invoker.getUrl(), e);
             }
         } else {
-            logger.error(invocation.getMethodName() + ".call back method invoke error . callback method :" + onthrowMethod + ", url:" + invoker.getUrl(), exception);
+            logger.error(PROTOCOL_FAILED_REQUEST, "", "", invocation.getMethodName() + ".call back method invoke error . callback method :" + onthrowMethod + ", url:" + invoker.getUrl(), exception);
         }
     }
 
@@ -187,8 +192,8 @@ public class FutureFilter implements Filter, Filter.Listener {
             return asyncMethodInfo;
         }
 
-        ConsumerModel consumerModel = ApplicationModel.getConsumerModel(invoker.getUrl().getServiceKey());
-        if (consumerModel == null) {
+        ServiceModel serviceModel = invocation.getServiceModel();
+        if (!(serviceModel instanceof ConsumerModel)) {
             return null;
         }
 
@@ -197,7 +202,7 @@ public class FutureFilter implements Filter, Filter.Listener {
             methodName = (String) invocation.getArguments()[0];
         }
 
-        return consumerModel.getAsyncInfo(methodName);
+        return ((ConsumerModel) serviceModel).getAsyncInfo(methodName);
     }
 
 }

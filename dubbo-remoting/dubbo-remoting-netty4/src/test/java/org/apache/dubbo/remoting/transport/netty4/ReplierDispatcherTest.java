@@ -45,7 +45,7 @@ import static org.junit.jupiter.api.Assertions.fail;
  * ReplierDispatcherTest
  */
 
-public class ReplierDispatcherTest {
+class ReplierDispatcherTest {
 
     private ExchangeServer exchangeServer;
 
@@ -64,13 +64,17 @@ public class ReplierDispatcherTest {
 
 
     @Test
+<<<<<<< HEAD
     public void testDataPackage() throws Exception {
+=======
+    void testDataPackage() throws Exception {
+>>>>>>> origin/3.2
         ExchangeChannel client = Exchangers.connect(URL.valueOf("exchange://localhost:" + port + "?" + CommonConstants.TIMEOUT_KEY + "=60000"));
         Random random = new Random();
         for (int i = 5; i < 100; i++) {
             StringBuilder sb = new StringBuilder();
             for (int j = 0; j < i * 100; j++)
-                sb.append("(").append(random.nextLong()).append(")");
+                sb.append('(').append(random.nextLong()).append(')');
             Data d = new Data();
             d.setData(sb.toString());
             Assertions.assertEquals(client.request(d).get().toString(), "hello world");
@@ -80,7 +84,7 @@ public class ReplierDispatcherTest {
 
 
     @Test
-    public void testMultiThread() throws Exception {
+    void testMultiThread() throws Exception {
         int tc = 10;
         ExecutorService exec = Executors.newFixedThreadPool(tc);
         for (int i = 0; i < tc; i++)

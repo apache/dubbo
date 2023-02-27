@@ -1,0 +1,5 @@
+# DubboRegistryCenterStarted should be the first one because of the startup of zookeeper
+org.apache.dubbo.test.check.RegistryCenterStarted
+org.apache.dubbo.test.check.DubboTestChecker
+# DubboRegistryCenterFinished should be the last one because of the shutdown of zookeeper
+org.apache.dubbo.test.check.RegistryCenterFinished

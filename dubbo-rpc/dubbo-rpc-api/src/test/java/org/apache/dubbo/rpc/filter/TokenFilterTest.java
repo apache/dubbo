@@ -34,12 +34,12 @@ import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-public class TokenFilterTest {
+class TokenFilterTest {
 
     private TokenFilter tokenFilter = new TokenFilter();
 
     @Test
-    public void testInvokeWithToken() throws Exception {
+    void testInvokeWithToken() throws Exception {
         String token = "token";
 
         Invoker invoker = Mockito.mock(Invoker.class);
@@ -47,17 +47,15 @@ public class TokenFilterTest {
         when(invoker.getUrl()).thenReturn(url);
         when(invoker.invoke(any(Invocation.class))).thenReturn(new AppResponse("result"));
 
-        Map<String, Object> attachments = new HashMap<>();
-        attachments.put(TOKEN_KEY, token);
         Invocation invocation = Mockito.mock(Invocation.class);
-        when(invocation.getObjectAttachments()).thenReturn(attachments);
+        when(invocation.getObjectAttachmentWithoutConvert(TOKEN_KEY)).thenReturn(token);
 
         Result result = tokenFilter.invoke(invoker, invocation);
         Assertions.assertEquals("result", result.getValue());
     }
 
     @Test
-    public void testInvokeWithWrongToken() throws Exception {
+    void testInvokeWithWrongToken() throws Exception {
         Assertions.assertThrows(RpcException.class, () -> {
             String token = "token";
 
@@ -76,7 +74,7 @@ public class TokenFilterTest {
     }
 
     @Test
-    public void testInvokeWithoutToken() throws Exception {
+    void testInvokeWithoutToken() throws Exception {
         Assertions.assertThrows(RpcException.class, () -> {
             String token = "token";
 

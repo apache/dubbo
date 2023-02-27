@@ -45,10 +45,6 @@
                     <groupId>org.apache.dubbo</groupId>
                     <artifactId>dubbo-cluster</artifactId>
                 </exclusion>
-                <exclusion>
-                    <groupId>com.google.code.gson</groupId>
-                    <artifactId>gson</artifactId>
-                </exclusion>
             </exclusions>
         </dependency>
 
@@ -94,10 +90,6 @@
                     <artifactId>hessian-lite</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>com.alibaba</groupId>
-                    <artifactId>fastjson</artifactId>
-                </exclusion>
-                <exclusion>
                     <groupId>com.esotericsoftware</groupId>
                     <artifactId>kryo</artifactId>
                 </exclusion>
@@ -117,11 +109,6 @@
 
         </dependency>
 
-        <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
-        </dependency>
-
         <!-- Test -->
         <dependency>
             <groupId>org.apache.dubbo</groupId>
@@ -129,10 +116,10 @@
             <version>${project.parent.version}</version>
             <scope>test</scope>
             <exclusions>
-                <exclusion>
-                    <groupId>org.apache.dubbo</groupId>
-                    <artifactId>dubbo-registry-api</artifactId>
-                </exclusion>
+<!--                <exclusion>-->
+<!--                    <groupId>org.apache.dubbo</groupId>-->
+<!--                    <artifactId>dubbo-registry-api</artifactId>-->
+<!--                </exclusion>-->
                 <exclusion>
                     <groupId>org.apache.dubbo</groupId>
                     <artifactId>dubbo-metadata-api</artifactId>

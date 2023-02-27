@@ -16,17 +16,16 @@
  */
 package org.apache.dubbo.registry.client;
 
+import java.util.List;
+import java.util.Set;
+
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.common.lang.Prioritized;
-import org.apache.dubbo.common.utils.Page;
-import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.event.EventDispatcher;
-import org.apache.dubbo.event.EventListener;
-import org.apache.dubbo.registry.NotifyListener;
-import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
+import org.apache.dubbo.metadata.MetadataInfo;
+import org.apache.dubbo.registry.RegistryService;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 
+<<<<<<< HEAD
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -37,25 +36,20 @@ import java.util.stream.Stream;
 import static java.util.Collections.unmodifiableList;
 import static java.util.Collections.unmodifiableMap;
 import static org.apache.dubbo.event.EventDispatcher.getDefaultExtension;
+=======
+import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_DELAY_NOTIFICATION_KEY;
+>>>>>>> origin/3.2
 
 /**
- * The common operations of Service Discovery
- *
- * @since 2.7.5
+ * Defines the common operations of Service Discovery, extended and loaded by ServiceDiscoveryFactory
  */
-@SPI("zookeeper")
-public interface ServiceDiscovery extends Prioritized {
+public interface ServiceDiscovery extends RegistryService, Prioritized {
 
-    // ==================================== Lifecycle ==================================== //
+    void register() throws RuntimeException;
 
-    /**
-     * Initializes the {@link ServiceDiscovery}
-     *
-     * @param registryURL the {@link URL url} to connect service registry
-     * @throws Exception If met with error
-     */
-    void initialize(URL registryURL) throws Exception;
+    void update() throws RuntimeException;
 
+<<<<<<< HEAD
     /**
      * Destroy the {@link ServiceDiscovery}
      *
@@ -103,6 +97,9 @@ public interface ServiceDiscovery extends Prioritized {
     default int getDefaultPageSize() {
         return 100;
     }
+=======
+    void unregister() throws RuntimeException;
+>>>>>>> origin/3.2
 
     /**
      * Gets all service names
@@ -111,6 +108,7 @@ public interface ServiceDiscovery extends Prioritized {
      */
     Set<String> getServices();
 
+<<<<<<< HEAD
     /**
      * Gets all {@link ServiceInstance service instances} by the specified service name.
      *
@@ -135,14 +133,18 @@ public interface ServiceDiscovery extends Prioritized {
             page = getInstances(serviceName, offset, pageSize);
             allInstances.addAll(page.getData());
         }
+=======
+    List<ServiceInstance> getInstances(String serviceName) throws NullPointerException;
+>>>>>>> origin/3.2
 
-        return unmodifiableList(allInstances);
+    default void addServiceInstancesChangedListener(ServiceInstancesChangedListener listener)
+            throws NullPointerException, IllegalArgumentException {
     }
 
     /**
-     * Gets the {@link Page pagination} of {@link ServiceInstance service instances} by the specified service name.
-     * It's equal to {@link #getInstances(String, int, int, boolean)} with <code>healthyOnly == true</code>
+     * unsubscribe to instance change event.
      *
+<<<<<<< HEAD
      * @param serviceName the service name
      * @param offset      the offset of request , the number "0" indicates first page
      * @param pageSize    the number of request, the {@link Integer#MAX_VALUE max value} indicates the range is unlimited
@@ -150,12 +152,16 @@ public interface ServiceDiscovery extends Prioritized {
      * @throws NullPointerException          if <code>serviceName</code> is <code>null</code>
      * @throws IllegalArgumentException      if <code>offset</code> or <code>pageSize</code> is negative number
      * @throws UnsupportedOperationException if not supported
+=======
+     * @param listener
+     * @throws IllegalArgumentException
+>>>>>>> origin/3.2
      */
-    default Page<ServiceInstance> getInstances(String serviceName, int offset, int pageSize) throws NullPointerException,
-            IllegalArgumentException {
-        return getInstances(serviceName, offset, pageSize, false);
+    default void removeServiceInstancesChangedListener(ServiceInstancesChangedListener listener)
+            throws IllegalArgumentException {
     }
 
+<<<<<<< HEAD
     /**
      * Get the {@link Page pagination} of {@link ServiceInstance service instances} by the specified service name.
      * If <code>healthyOnly == true</code>, filter healthy instances only.
@@ -232,23 +238,23 @@ public interface ServiceDiscovery extends Prioritized {
      */
     default void dispatchServiceInstancesChangedEvent(String serviceName) {
         dispatchServiceInstancesChangedEvent(serviceName, getInstances(serviceName));
+=======
+    default ServiceInstancesChangedListener createListener(Set<String> serviceNames) {
+        return new ServiceInstancesChangedListener(serviceNames, this);
     }
 
-    /**
-     * Dispatch the {@link ServiceInstancesChangedEvent}
-     *
-     * @param serviceName       the name of service whose service instances have been changed
-     * @param otherServiceNames the names of other services
-     */
-    default void dispatchServiceInstancesChangedEvent(String serviceName, String... otherServiceNames) {
-        dispatchServiceInstancesChangedEvent(serviceName, getInstances(serviceName));
-        if (otherServiceNames != null) {
-            Stream.of(otherServiceNames)
-                    .filter(StringUtils::isNotEmpty)
-                    .forEach(this::dispatchServiceInstancesChangedEvent);
-        }
+    ServiceInstance getLocalInstance();
+
+    MetadataInfo getLocalMetadata();
+
+    default MetadataInfo getLocalMetadata(String revision) {
+        return getLocalMetadata();
+>>>>>>> origin/3.2
     }
 
+    MetadataInfo getRemoteMetadata(String revision);
+
+<<<<<<< HEAD
     /**
      * Dispatch the {@link ServiceInstancesChangedEvent}
      *
@@ -258,17 +264,26 @@ public interface ServiceDiscovery extends Prioritized {
     default void dispatchServiceInstancesChangedEvent(String serviceName, List<ServiceInstance> serviceInstances) {
         dispatchServiceInstancesChangedEvent(new ServiceInstancesChangedEvent(serviceName, serviceInstances));
     }
+=======
+    MetadataInfo getRemoteMetadata(String revision, List<ServiceInstance> instances);
+>>>>>>> origin/3.2
 
     /**
-     * Dispatch the {@link ServiceInstancesChangedEvent}
+     * Destroy the {@link ServiceDiscovery}
      *
-     * @param event the {@link ServiceInstancesChangedEvent}
+     * @throws Exception If met with error
      */
-    default void dispatchServiceInstancesChangedEvent(ServiceInstancesChangedEvent event) {
-        getDefaultExtension().dispatch(event);
+    void destroy() throws Exception;
+
+    boolean isDestroy();
+
+    default URL getUrl() {
+        return null;
     }
 
-    // ==================================================================================== //
+    default long getDelay() {
+        return getUrl().getParameter(REGISTRY_DELAY_NOTIFICATION_KEY, 5000);
+    }
 
 //    String getKey(URL exportedURL);
 
@@ -283,5 +298,7 @@ public interface ServiceDiscovery extends Prioritized {
      *
      * @return The description.
      */
+
+    @Override
     String toString();
 }

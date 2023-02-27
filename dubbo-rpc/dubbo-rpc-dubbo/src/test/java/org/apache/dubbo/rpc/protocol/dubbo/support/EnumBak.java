@@ -47,7 +47,7 @@ public class EnumBak {
         );
         DemoService demo = new DemoServiceImpl();
 
-        ApplicationModel.getServiceRepository().registerService("test", DemoService.class);
+        ApplicationModel.defaultModel().getDefaultModule().getServiceRepository().registerService("test", DemoService.class);
 
         Invoker<DemoService> invoker = proxy.getInvoker(demo, DemoService.class, serviceurl);
         protocol.export(invoker);
@@ -93,7 +93,7 @@ public class EnumBak {
         );
         DemoService demo = new DemoServiceImpl();
 
-        ApplicationModel.getServiceRepository().registerService("test", DemoService.class);
+        ApplicationModel.defaultModel().getDefaultModule().getServiceRepository().registerService("test", DemoService.class);
 
         Invoker<DemoService> invoker = proxy.getInvoker(demo, DemoService.class, serviceurl);
         protocol.export(invoker);
@@ -117,7 +117,7 @@ public class EnumBak {
         URL consumerurl = URL.valueOf("dubbo://127.0.0.1:" + port + "/test?timeout=" + Integer.MAX_VALUE
         );
 
-        ApplicationModel.getServiceRepository().registerService(DemoService.class);
+        ApplicationModel.defaultModel().getDefaultModule().getServiceRepository().registerService(DemoService.class);
 
         Invoker<DemoService> reference = protocol.refer(DemoService.class, consumerurl);
         DemoService demoProxy = (DemoService) proxy.getProxy(reference);

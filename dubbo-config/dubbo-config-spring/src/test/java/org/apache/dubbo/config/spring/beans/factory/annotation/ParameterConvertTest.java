@@ -17,6 +17,10 @@
 package org.apache.dubbo.config.spring.beans.factory.annotation;
 
 import org.apache.dubbo.config.spring.util.DubboAnnotationUtils;
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/3.2
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.annotation.DirtiesContext;
@@ -28,10 +32,17 @@ import java.util.Map;
  * {@link DubboAnnotationUtils#convertParameters} Test
  */
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
+<<<<<<< HEAD
 public class ParameterConvertTest {
 
     @Test
     public void test() {
+=======
+class ParameterConvertTest {
+
+    @Test
+    void test() {
+>>>>>>> origin/3.2
         /**
          *     (array->map)
          *     ["a","b"] ==> {a=b}
@@ -56,5 +67,15 @@ public class ParameterConvertTest {
         parametersMap.clear();
         parametersMap.put("a", "a:b");
         Assertions.assertEquals(parametersMap, DubboAnnotationUtils.convertParameters(new String[]{"a", "a:b"}));
+<<<<<<< HEAD
     }
 }
+=======
+
+        parametersMap.clear();
+        parametersMap.put("a", "0,100");
+        Assertions.assertEquals(parametersMap, DubboAnnotationUtils.convertParameters(new String[]{"a", "0,100"}));
+
+    }
+}
+>>>>>>> origin/3.2
