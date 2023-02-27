@@ -194,7 +194,7 @@ class AbstractClusterInvokerTest {
     }
 
     @Test
-    void testSelect_Invokersize0() throws Exception {
+    void testSelect_Invokersize0() {
         LoadBalance l = cluster.initLoadBalance(invokers, invocation);
         Assertions.assertNotNull(l,"cluster.initLoadBalance returns null!");
         {
@@ -228,7 +228,7 @@ class AbstractClusterInvokerTest {
     }
 
     @Test
-    void testSelect_Invokersize1() throws Exception {
+    void testSelect_Invokersize1() {
         invokers.clear();
         invokers.add(invoker1);
         LoadBalance l = cluster.initLoadBalance(invokers, invocation);
@@ -238,7 +238,7 @@ class AbstractClusterInvokerTest {
     }
 
     @Test
-    void testSelect_Invokersize2AndselectNotNull() throws Exception {
+    void testSelect_Invokersize2AndselectNotNull() {
         invokers.clear();
         invokers.add(invoker2);
         invokers.add(invoker4);
@@ -412,7 +412,7 @@ class AbstractClusterInvokerTest {
     }
 
 
-    public void testSelect_multiInvokers(String lbname) throws Exception {
+    public void testSelect_multiInvokers(String lbname) {
 
         int min = 100, max = 500;
         Double d = (Math.random() * (max - min + 1) + min);
