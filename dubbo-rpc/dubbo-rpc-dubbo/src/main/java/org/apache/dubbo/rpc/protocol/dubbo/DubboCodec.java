@@ -43,6 +43,7 @@ import java.io.InputStream;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.EXCEPTION_PROCESSOR_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_MANAGEMENT_MODE_ISOLATION;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
@@ -150,12 +151,24 @@ public class DubboCodec extends ExchangeCodec {
                     }
                 } else {
                     DecodeableRpcInvocation inv;
+                    String exPs = System.getProperty(EXCEPTION_PROCESSOR_KEY);
+
                     if (isDecodeDataInIoThread(channel)) {
-                        inv = new DecodeableRpcInvocation(frameworkModel, channel, req, is, proto);
+                        if (StringUtils.isBlank(exPs)) {
+                            inv = new DecodeableRpcInvocation(frameworkModel, channel, req, is, proto);
+                        } else {
+                            inv = new RetryDecodeableRpcInvocation(frameworkModel, channel, req, is, proto);
+                        }
                         inv.decode();
                     } else {
-                        inv = new DecodeableRpcInvocation(frameworkModel, channel, req,
-                            new UnsafeByteArrayInputStream(readMessageData(is)), proto);
+                        if (StringUtils.isBlank(exPs)) {
+                            inv = new DecodeableRpcInvocation(frameworkModel, channel, req,
+                                new UnsafeByteArrayInputStream(readMessageData(is)), proto);
+                        } else {
+                            inv = new RetryDecodeableRpcInvocation(frameworkModel, channel, req,
+                                new UnsafeByteArrayInputStream(readMessageData(is)), proto);
+                        }
+
                     }
                     data = inv;
                 }

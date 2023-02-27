@@ -23,6 +23,7 @@ import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Decodeable;
 import org.apache.dubbo.remoting.RemotingException;
+import org.apache.dubbo.remoting.RetryDecodeable;
 import org.apache.dubbo.remoting.RetryHandleException;
 import org.apache.dubbo.remoting.exchange.ErrorData;
 import org.apache.dubbo.remoting.exchange.Request;
@@ -82,10 +83,10 @@ public class DecodeHandler extends AbstractChannelHandlerDelegate {
     }
 
     private void retry(Object message) {
-        if (!(message instanceof Decodeable)) {
+        if (!(message instanceof RetryDecodeable)) {
             return;
         }
 
-        ((Decodeable) message).retry();
+        ((RetryDecodeable) message).retry();
     }
 }

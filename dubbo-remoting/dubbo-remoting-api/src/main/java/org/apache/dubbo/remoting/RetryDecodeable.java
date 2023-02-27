@@ -17,8 +17,9 @@
 
 package org.apache.dubbo.remoting;
 
-public interface Decodeable {
+public interface RetryDecodeable extends Decodeable {
 
-    void decode() throws Exception;
+    void retry();
 
+    void resetHasDecoded();
 }
