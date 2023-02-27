@@ -28,12 +28,23 @@ public final class TimeUtils {
 
     private static volatile boolean isTickerAlive = false;
 
+    private static volatile boolean isFallback = false;
+
     private TimeUtils() {
     }
 
     public static long currentTimeMillis() {
+        // When an exception occurs in the Ticker mechanism, fall back.
+        if (isFallback) {
+            return System.currentTimeMillis();
+        }
+
         if (!isTickerAlive) {
-            startTicker();
+            try {
+                startTicker();
+            } catch (Exception e) {
+                isFallback = true;
+            }
         }
         return currentTimeMillis;
     }
