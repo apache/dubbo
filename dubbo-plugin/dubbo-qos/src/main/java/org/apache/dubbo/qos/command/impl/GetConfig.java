@@ -179,6 +179,9 @@ public class GetConfig implements BaseCommand {
     }
 
     private static boolean isMatch(String type, String id, String[] args) {
+        if (args == null) {
+            return true;
+        }
         switch (args.length) {
             case 1:
                 if (!Objects.equals(args[0], type)) {
