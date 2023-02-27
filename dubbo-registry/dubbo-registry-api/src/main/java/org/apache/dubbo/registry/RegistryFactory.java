@@ -17,6 +17,7 @@
 package org.apache.dubbo.registry;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Adaptive;
 import org.apache.dubbo.common.extension.SPI;
 
@@ -42,7 +43,7 @@ public interface RegistryFactory {
      * @param url Registry address, is not allowed to be empty
      * @return Registry reference, never return empty value
      */
-    @Adaptive({"protocol"})
+    @Adaptive({CommonConstants.PROTOCOL_KEY})
     Registry getRegistry(URL url);
 
 }
