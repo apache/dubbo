@@ -90,7 +90,7 @@ public class RegistryMetricsCollector implements ApplicationMetricsCollector<Reg
     @Override
     public List<MetricSample> collect() {
         if (!isCollectEnabled()) {
-            new ArrayList<>();
+           return new ArrayList<>();
         }
         List<MetricSample> list = new ArrayList<>();
         list.addAll(stats.exportNumMetrics());
