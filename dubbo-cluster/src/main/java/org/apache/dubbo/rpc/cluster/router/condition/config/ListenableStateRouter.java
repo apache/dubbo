@@ -48,7 +48,7 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_FAIL
  */
 public abstract class ListenableStateRouter<T> extends AbstractStateRouter<T> implements ConfigurationListener {
     public static final String NAME = "LISTENABLE_ROUTER";
-    private static final String RULE_SUFFIX = ".condition-router";
+    public static final String RULE_SUFFIX = ".condition-router";
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ListenableStateRouter.class);
     private volatile ConditionRouterRule routerRule;

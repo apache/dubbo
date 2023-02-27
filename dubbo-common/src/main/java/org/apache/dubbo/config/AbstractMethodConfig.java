@@ -22,6 +22,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
 
+import java.beans.Transient;
 import java.util.Map;
 
 /**
@@ -108,11 +109,13 @@ public abstract class AbstractMethodConfig extends AbstractConfig {
     }
 
     @Override
+    @Transient
     public ModuleModel getScopeModel() {
         return (ModuleModel) super.getScopeModel();
     }
 
     @Override
+    @Transient
     protected ScopeModel getDefaultModel() {
         return ApplicationModel.defaultModel().getDefaultModule();
     }
@@ -127,6 +130,7 @@ public abstract class AbstractMethodConfig extends AbstractConfig {
         }
     }
 
+    @Transient
     protected ModuleConfigManager getModuleConfigManager() {
         return getScopeModel().getConfigManager();
     }

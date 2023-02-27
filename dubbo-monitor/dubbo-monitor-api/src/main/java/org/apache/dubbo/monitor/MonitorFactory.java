@@ -17,6 +17,7 @@
 package org.apache.dubbo.monitor;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Adaptive;
 import org.apache.dubbo.common.extension.SPI;
 
@@ -32,7 +33,7 @@ public interface MonitorFactory {
      * @param url
      * @return monitor
      */
-    @Adaptive("protocol")
+    @Adaptive(CommonConstants.PROTOCOL_KEY)
     Monitor getMonitor(URL url);
 
 }

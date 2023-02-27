@@ -45,48 +45,48 @@ import static org.mockito.Mockito.when;
 class NetUtilsTest {
 
     @Test
-    void testGetRandomPort() throws Exception {
+    void testGetRandomPort() {
         assertThat(NetUtils.getRandomPort(), greaterThanOrEqualTo(30000));
         assertThat(NetUtils.getRandomPort(), greaterThanOrEqualTo(30000));
         assertThat(NetUtils.getRandomPort(), greaterThanOrEqualTo(30000));
     }
 
     @Test
-    void testGetAvailablePort() throws Exception {
+    void testGetAvailablePort() {
         assertThat(NetUtils.getAvailablePort(), greaterThan(0));
         assertThat(NetUtils.getAvailablePort(12345), greaterThanOrEqualTo(12345));
         assertThat(NetUtils.getAvailablePort(-1), greaterThanOrEqualTo(0));
     }
 
     @Test
-    void testValidAddress() throws Exception {
+    void testValidAddress() {
         assertTrue(NetUtils.isValidAddress("10.20.130.230:20880"));
         assertFalse(NetUtils.isValidAddress("10.20.130.230"));
         assertFalse(NetUtils.isValidAddress("10.20.130.230:666666"));
     }
 
     @Test
-    void testIsInvalidPort() throws Exception {
+    void testIsInvalidPort() {
         assertTrue(NetUtils.isInvalidPort(0));
         assertTrue(NetUtils.isInvalidPort(65536));
         assertFalse(NetUtils.isInvalidPort(1024));
     }
 
     @Test
-    void testIsLocalHost() throws Exception {
+    void testIsLocalHost() {
         assertTrue(NetUtils.isLocalHost("localhost"));
         assertTrue(NetUtils.isLocalHost("127.1.2.3"));
         assertFalse(NetUtils.isLocalHost("128.1.2.3"));
     }
 
     @Test
-    void testIsAnyHost() throws Exception {
+    void testIsAnyHost() {
         assertTrue(NetUtils.isAnyHost("0.0.0.0"));
         assertFalse(NetUtils.isAnyHost("1.1.1.1"));
     }
 
     @Test
-    void testIsInvalidLocalHost() throws Exception {
+    void testIsInvalidLocalHost() {
         assertTrue(NetUtils.isInvalidLocalHost(null));
         assertTrue(NetUtils.isInvalidLocalHost(""));
         assertTrue(NetUtils.isInvalidLocalHost("localhost"));
@@ -97,13 +97,13 @@ class NetUtilsTest {
     }
 
     @Test
-    void testIsValidLocalHost() throws Exception {
+    void testIsValidLocalHost() {
         assertTrue(NetUtils.isValidLocalHost("1.2.3.4"));
         assertTrue(NetUtils.isValidLocalHost("128.0.0.1"));
     }
 
     @Test
-    void testGetLocalSocketAddress() throws Exception {
+    void testGetLocalSocketAddress() {
         InetSocketAddress address = NetUtils.getLocalSocketAddress("localhost", 12345);
         assertTrue(address.getAddress().isAnyLocalAddress());
         assertEquals(address.getPort(), 12345);
@@ -113,7 +113,7 @@ class NetUtilsTest {
     }
 
     @Test
-    void testIsValidAddress() throws Exception {
+    void testIsValidAddress() {
         assertFalse(NetUtils.isValidV4Address((InetAddress) null));
         InetAddress address = mock(InetAddress.class);
         when(address.isLoopbackAddress()).thenReturn(true);
@@ -133,19 +133,19 @@ class NetUtilsTest {
     }
 
     @Test
-    void testGetLocalHost() throws Exception {
+    void testGetLocalHost() {
         assertNotNull(NetUtils.getLocalHost());
     }
 
     @Test
-    void testGetLocalAddress() throws Exception {
+    void testGetLocalAddress() {
         InetAddress address = NetUtils.getLocalAddress();
         assertNotNull(address);
         assertTrue(NetUtils.isValidLocalHost(address.getHostAddress()));
     }
 
     @Test
-    void testFilterLocalHost() throws Exception {
+    void testFilterLocalHost() {
         assertNull(NetUtils.filterLocalHost(null));
         assertEquals(NetUtils.filterLocalHost(""), "");
         String host = NetUtils.filterLocalHost("dubbo://127.0.0.1:8080/foo");
@@ -159,18 +159,18 @@ class NetUtilsTest {
     }
 
     @Test
-    void testGetHostName() throws Exception {
+    void testGetHostName() {
         assertNotNull(NetUtils.getHostName("127.0.0.1"));
     }
 
     @Test
-    void testGetIpByHost() throws Exception {
+    void testGetIpByHost() {
         assertThat(NetUtils.getIpByHost("localhost"), equalTo("127.0.0.1"));
         assertThat(NetUtils.getIpByHost("dubbo.local"), equalTo("dubbo.local"));
     }
 
     @Test
-    void testToAddressString() throws Exception {
+    void testToAddressString() {
         InetAddress address = mock(InetAddress.class);
         when(address.getHostAddress()).thenReturn("dubbo");
         InetSocketAddress socketAddress = new InetSocketAddress(address, 1234);
@@ -178,7 +178,7 @@ class NetUtilsTest {
     }
 
     @Test
-    void testToAddress() throws Exception {
+    void testToAddress() {
         InetSocketAddress address = NetUtils.toAddress("localhost:1234");
         assertThat(address.getHostName(), equalTo("localhost"));
         assertThat(address.getPort(), equalTo(1234));
@@ -188,7 +188,7 @@ class NetUtilsTest {
     }
 
     @Test
-    void testToURL() throws Exception {
+    void testToURL() {
         String url = NetUtils.toURL("dubbo", "host", 1234, "foo");
         assertThat(url, equalTo("dubbo://host:1234/foo"));
     }
@@ -248,7 +248,7 @@ class NetUtilsTest {
     }
 
     @Test
-    void testMatchIpRangeMatchWhenIpv6Exception() throws UnknownHostException {
+    void testMatchIpRangeMatchWhenIpv6Exception() {
         IllegalArgumentException thrown =
             assertThrows(IllegalArgumentException.class, () ->
                 NetUtils.matchIpRange("234e:0:4567::3d:*", "234e:0:4567::3d:ff", 90));
@@ -265,7 +265,7 @@ class NetUtilsTest {
     }
 
     @Test
-    void testMatchIpRangeMatchWhenIpWrongException() throws UnknownHostException {
+    void testMatchIpRangeMatchWhenIpWrongException() {
         UnknownHostException thrown =
             assertThrows(UnknownHostException.class, () ->
                 NetUtils.matchIpRange("192.168.1.63", "192.168.1.ff", 90));
