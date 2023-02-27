@@ -52,5 +52,9 @@ public class InjvmExporterListener extends ExporterListenerAdapter {
         }
     }
 
+    public synchronized void removeExporterChangeListener(ExporterChangeListener listener) {
+        exporterChangeListeners.remove(listener);
+    }
+
 
 }

@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.cluster.support.wrapper;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
+import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.ExporterListener;
 import org.apache.dubbo.rpc.Invocation;
@@ -35,12 +36,12 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_VALUE;
 import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
 import static org.apache.dubbo.rpc.Constants.SCOPE_KEY;
 import static org.apache.dubbo.rpc.Constants.SCOPE_REMOTE;
 import static org.apache.dubbo.rpc.Constants.SCOPE_LOCAL;
+import static org.apache.dubbo.rpc.cluster.Constants.PEER_KEY;
 
 /**
  * A ClusterInvoker that selects between local and remote invokers at runtime.
@@ -51,7 +52,6 @@ public class ScopeClusterInvoker<T> implements ClusterInvoker<T>, ExporterChange
     private final Directory<T> directory;
     private final Invoker<T> invoker;
     private final AtomicBoolean isExported;
-    private final AtomicBoolean localFlag;
     private volatile Invoker<T> injvmInvoker;
     private volatile InjvmExporterListener injvmExporterListener;
 
@@ -60,7 +60,6 @@ public class ScopeClusterInvoker<T> implements ClusterInvoker<T>, ExporterChange
         this.directory = directory;
         this.invoker = invoker;
         this.isExported = new AtomicBoolean(false);
-        this.localFlag = new AtomicBoolean(SCOPE_LOCAL.equalsIgnoreCase(directory.getUrl().getParameter(SCOPE_KEY)));
     }
 
     @Override
@@ -94,6 +93,9 @@ public class ScopeClusterInvoker<T> implements ClusterInvoker<T>, ExporterChange
 
     @Override
     public void destroy() {
+        if (injvmExporterListener != null) {
+            injvmExporterListener.removeExporterChangeListener(this);
+        }
         this.invoker.destroy();
     }
 
@@ -104,22 +106,43 @@ public class ScopeClusterInvoker<T> implements ClusterInvoker<T>, ExporterChange
 
     @Override
     public Result invoke(Invocation invocation) throws RpcException {
-        String scope = getUrl().getParameter(SCOPE_KEY);
-        if (getUrl().getParameter(LOCAL_PROTOCOL, false)) {
-            localFlag.compareAndSet(false, true);
+        Boolean peer = (Boolean) getUrl().getAttribute(PEER_KEY);
+        if (peer != null && peer) {
+            return invoker.invoke(invocation);
         }
-        if (!SCOPE_REMOTE.equalsIgnoreCase(scope) && !getUrl().getParameter(GENERIC_KEY, false)) {
-            if (protocolSPI == null) {
-                protocolSPI = ApplicationModel.defaultModel().getExtensionLoader(Protocol.class).getAdaptiveExtension();
+        String scope = getUrl().getParameter(SCOPE_KEY);
+        if (injvmInvoker == null && LOCAL_PROTOCOL.equals(getRegistryUrl().getProtocol())) {
+            isExported.compareAndSet(false, true);
+            injvmInvoker = invoker;
+        }
+        String isInjvm = getUrl().getParameter(LOCAL_PROTOCOL);
+        if (isInjvm == null) {
+            if  (!SCOPE_REMOTE.equalsIgnoreCase(scope) &&
+                !getUrl().getParameter(GENERIC_KEY, false)) {
+                if (isInjvmExported(invocation, scope)) {
+                    return selectInjvmInvoker().invoke(invocation);
+                }
             }
-            if (!isExported.get() && SCOPE_LOCAL.equalsIgnoreCase(scope)) {
-                throw new RpcException("Local service has not been exposed yet!");
-            }
-            if (localFlag.get()) {
+        } else if (Boolean.parseBoolean(isInjvm)) {
+            if (isInjvmExported(invocation, scope)) {
                 return selectInjvmInvoker().invoke(invocation);
             }
         }
         return invoker.invoke(invocation);
+    }
+
+    private boolean isInjvmExported(Invocation invocation, String scope) {
+        if (injvmExporterListener == null) {
+            injvmExporterListener = (InjvmExporterListener) ApplicationModel.defaultModel().getExtensionLoader(ExporterListener.class).getExtension("injvm");
+            injvmExporterListener.addExporterChangeListener(this, getUrl().getServiceKey());
+        }
+        if (!isExported.get() && SCOPE_LOCAL.equalsIgnoreCase(scope)) {
+            throw new RpcException("Local service has not been exposed yet!");
+        }
+        if (isExported.get()) {
+            return true;
+        }
+        return false;
     }
 
 
@@ -127,8 +150,8 @@ public class ScopeClusterInvoker<T> implements ClusterInvoker<T>, ExporterChange
         if (injvmInvoker != null) {
             return injvmInvoker;
         }
-        if (!localFlag.get()) {
-            throw new RpcException("This call cannot be called as a remote call.");
+        if (injvmInvoker == null && protocolSPI == null) {
+            protocolSPI = ApplicationModel.defaultModel().getExtensionLoader(Protocol.class).getAdaptiveExtension();
         }
         if (injvmInvoker == null) {
             synchronized (this) {
@@ -145,7 +168,7 @@ public class ScopeClusterInvoker<T> implements ClusterInvoker<T>, ExporterChange
     }
 
     private Invoker<T> createInjvmInvoker() {
-        URL url = new ServiceConfigURL(LOCAL_PROTOCOL, LOCALHOST_VALUE, 0, getDirectory().getInterface().getName(), getUrl().getParameters());
+        URL url = new ServiceConfigURL(LOCAL_PROTOCOL, NetUtils.getLocalHost(), getUrl().getPort(), getDirectory().getInterface().getName(), getUrl().getParameters());
         url = url.setScopeModel(getUrl().getScopeModel());
         url = url.setServiceModel(getUrl().getServiceModel());
         return protocolSPI.refer(getDirectory().getInterface(), url);
@@ -160,7 +183,10 @@ public class ScopeClusterInvoker<T> implements ClusterInvoker<T>, ExporterChange
         if (exporter.getInvoker().getInterface().equals(getInterface())
             && exporter.getInvoker().getUrl().getProtocol().equals(LOCAL_PROTOCOL)) {
             isExported.compareAndSet(false, true);
-            localFlag.compareAndSet(false, true);
         }
+    }
+
+    public Invoker<?> getInvoker() {
+        return invoker;
     }
 }

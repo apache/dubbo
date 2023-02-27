@@ -69,6 +69,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_CLUSTER_DOMAIN;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_MESH_PORT;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.MESH_ENABLE;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
@@ -419,20 +420,18 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
 
     @SuppressWarnings({"unchecked"})
     private T createProxy(Map<String, String> referenceParameters) {
-            urls.clear();
+        urls.clear();
 
-            meshModeHandleUrl(referenceParameters);
+        meshModeHandleUrl(referenceParameters);
 
-            if (StringUtils.isNotEmpty(url)) {
-                // user specified URL, could be peer-to-peer address, or register center's address.
-                parseUrl(referenceParameters);
-            } else {
-                // if protocols not in jvm checkRegistry
-                if (!LOCAL_PROTOCOL.equalsIgnoreCase(getProtocol())) {
-                    aggregateUrlFromRegistry(referenceParameters);
-                }
-            }
-           createInvoker();
+        if (StringUtils.isNotEmpty(url)) {
+            // user specified URL, could be peer-to-peer address, or register center's address.
+            parseUrl(referenceParameters);
+        } else {
+            // if protocols not in jvm checkRegistry
+            aggregateUrlFromRegistry(referenceParameters);
+        }
+        createInvoker();
 
         if (logger.isInfoEnabled()) {
             logger.info("Referred dubbo service: [" + referenceParameters.get(INTERFACE_KEY) + "]." +
@@ -558,8 +557,17 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                 }
                 u = u.setScopeModel(getScopeModel());
                 u = u.setServiceModel(consumerModel);
+                if (isInjvm() != null && isInjvm()) {
+                    u = u.addParameter(LOCAL_PROTOCOL, true);
+                }
                 urls.add(u.putAttribute(REFER_KEY, referenceParameters));
             }
+        }
+        if (urls.isEmpty() && shouldJvmRefer(referenceParameters)) {
+            URL injvmUrl = new URL(LOCAL_PROTOCOL,LOCALHOST_VALUE,0,interfaceClass.getName()).addParameters(referenceParameters);
+            injvmUrl = injvmUrl.setScopeModel(getScopeModel());
+            injvmUrl = injvmUrl.setServiceModel(consumerModel);
+            urls.add(injvmUrl.putAttribute(REFER_KEY, referenceParameters));
         }
         if (urls.isEmpty()) {
             throw new IllegalStateException(
