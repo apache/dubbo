@@ -8,9 +8,9 @@ header:
       The ASF licenses this file to You under the Apache License, Version 2.0
       (the "License"); you may not use this file except in compliance with
       the License.  You may obtain a copy of the License at
-      
+
           http://www.apache.org/licenses/LICENSE-2.0
-      
+
       Unless required by applicable law or agreed to in writing, software
       distributed under the License is distributed on an "AS IS" BASIS,
       WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -194,5 +194,9 @@ dependency:
       license: EPL-2.0
     - name: org.jboss.spec.javax.annotation:jboss-annotations-api_1.2_spec
       license: CDDL-1.1
+    - name: org.jboss.spec.javax.ws.rs:jboss-jaxrs-api_2.1_spec
+      license: EPL-2.0
+    - name: org.jboss.spec.javax.annotation:jboss-annotations-api_1.3_spec
+      license: EPL-2.0
   excludes:
     - name: javax.xml.bind:jsr173_api

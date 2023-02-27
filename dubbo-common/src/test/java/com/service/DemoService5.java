@@ -14,22 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.service;
 
-package org.apache.dubbo.common.serialize;
-
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionScope;
-import org.apache.dubbo.common.extension.SPI;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-
-@SPI(scope = ExtensionScope.FRAMEWORK)
-public interface MultipleSerialization {
-
-    void serialize(URL url, String serializeType, Class<?> clz, Object obj, OutputStream os) throws IOException;
-
-    Object deserialize(URL url, String serializeType, Class<?> clz, InputStream os) throws IOException, ClassNotFoundException;
-
+public abstract class DemoService5<T, R, Children extends DemoService5<T, R, Children>> {
 }

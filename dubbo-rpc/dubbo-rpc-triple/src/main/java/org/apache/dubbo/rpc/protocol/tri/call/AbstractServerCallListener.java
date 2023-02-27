@@ -85,8 +85,8 @@ public abstract class AbstractServerCallListener implements AbstractServerCall.L
                 }
                 onReturn(r.getValue());
             });
-        } catch (Throwable t) {
-            responseObserver.onError(t);
+        } catch (Exception e) {
+            responseObserver.onError(e);
         } finally {
             RpcContext.removeCancellationContext();
             RpcContext.removeContext();

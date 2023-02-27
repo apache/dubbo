@@ -739,7 +739,7 @@ class MultiInstanceTest {
 
 
             // consumer app
-            ApplicationModel consumerApplicationModel = new ApplicationModel(FrameworkModel.defaultModel());
+            ApplicationModel consumerApplicationModel = ApplicationModel.defaultModel();
             ReferenceConfig<DemoService> referenceConfig = new ReferenceConfig<>();
             referenceConfig.setScopeModel(consumerApplicationModel.getDefaultModule());
             referenceConfig.setApplication(new ApplicationConfig("consumer-app"));
