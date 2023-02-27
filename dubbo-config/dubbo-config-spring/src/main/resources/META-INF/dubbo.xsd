@@ -1022,6 +1022,18 @@
             </xsd:annotation>
         </xsd:attribute>
 
+        <xsd:attribute name="enable-registry-metrics" type="xsd:boolean" default="false">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Enable registry metrics when collecting. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+
+        <xsd:attribute name="enable-metadata-metrics" type="xsd:boolean" default="false">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Enable metadata metrics when collecting. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+
         <xsd:attribute name="port" type="xsd:string">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ Deprecated. No longer use. ]]></xsd:documentation>
