@@ -37,7 +37,7 @@ import static org.apache.dubbo.rpc.protocol.rest.Constants.DEFAULT_KEEP_ALIVE;
 import static org.apache.dubbo.rpc.protocol.rest.Constants.KEEP_ALIVE_KEY;
 
 
-public class HttpRestServer implements RestProtocolServer {
+public class NettyHttpRestServer implements RestProtocolServer {
 
 
     private String address;

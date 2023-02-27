@@ -224,7 +224,7 @@ public class NettyServer {
             return new ChannelInitializer<SocketChannel>() {
                 @Override
                 public void initChannel(SocketChannel ch) throws Exception {
-                    setupHandlers(ch , "http");
+                    setupHandlers(ch, "http");
                 }
             };
         } else {
@@ -232,7 +232,7 @@ public class NettyServer {
                 @Override
                 public void initChannel(SocketChannel ch) throws Exception {
 //                    ch.pipeline().addFirst(new SniHandler());
-                    setupHandlers(ch , "https");
+                    setupHandlers(ch, "https");
                 }
             };
         }
@@ -245,11 +245,11 @@ public class NettyServer {
             channelPipeline.addLast("idleStateHandler", new IdleStateHandler(0, 0, idleTimeout));
         }
         channelPipeline.addLast(new HttpRequestDecoder(maxInitialLineLength, maxHeaderSize, maxChunkSize));
-        channelPipeline.addLast(new HttpResponseEncoder());
         channelPipeline.addLast(new HttpObjectAggregator(maxRequestSize));
+        channelPipeline.addLast(new HttpResponseEncoder());
         channelPipeline.addLast(httpChannelHandlers.toArray(new ChannelHandler[httpChannelHandlers.size()]));
         channelPipeline.addLast(new RestHttpRequestDecoder(new NettyHttpHandler(), protocol));
-        channelPipeline.addLast(new RestEasyHttpResponseEncoder());
+        channelPipeline.addLast(new RestHttpResponseEncoder());
 
     }
 
