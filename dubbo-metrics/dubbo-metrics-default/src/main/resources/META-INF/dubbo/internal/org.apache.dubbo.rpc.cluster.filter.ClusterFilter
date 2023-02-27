@@ -1,0 +1,1 @@
+observationsender=org.apache.dubbo.metrics.observation.ObservationSenderFilter

@@ -31,8 +31,8 @@
         <skip_maven_deploy>false</skip_maven_deploy>
         <dubbo.compiler.version>0.0.4.1-SNAPSHOT</dubbo.compiler.version>
         <reactive.version>1.0.4</reactive.version>
-        <reactor.version>3.5.2</reactor.version>
-        <protobuf-java.version>3.21.12</protobuf-java.version>
+        <reactor.version>3.5.3</reactor.version>
+        <protobuf-java.version>3.22.0</protobuf-java.version>
     </properties>
     <dependencies>
         <dependency>

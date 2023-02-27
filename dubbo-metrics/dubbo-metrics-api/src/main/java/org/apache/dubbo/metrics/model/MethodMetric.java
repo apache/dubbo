@@ -18,12 +18,17 @@
 package org.apache.dubbo.metrics.model;
 
 import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
+import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_CHAR_SEPARATOR;
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_IP;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_HOSTNAME;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_APPLICATION_NAME;
@@ -40,6 +45,7 @@ import static org.apache.dubbo.rpc.support.RpcUtils.isGenericCall;
  */
 public class MethodMetric implements Metric {
     private String applicationName;
+    private String side;
     private String interfaceName;
     private String methodName;
     private String group;
@@ -99,30 +105,6 @@ public class MethodMetric implements Metric {
         return tags;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        MethodMetric that = (MethodMetric) o;
-        return Objects.equals(interfaceName, that.interfaceName) && Objects.equals(methodName, that.methodName)
-            && Objects.equals(group, that.group) && Objects.equals(version, that.version);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(interfaceName, methodName, group, version);
-    }
-
-    @Override
-    public String toString() {
-        return "MethodMetric{" +
-            "interfaceName='" + interfaceName + '\'' +
-            ", methodName='" + methodName + '\'' +
-            ", group='" + group + '\'' +
-            ", version='" + version + '\'' +
-            '}';
-    }
-
     private void init(Invocation invocation) {
         String serviceUniqueName = invocation.getTargetServiceUniqueName();
         String methodName = invocation.getMethodName();
@@ -134,21 +116,62 @@ public class MethodMetric implements Metric {
         }
         String group = null;
         String interfaceAndVersion;
-        String[] arr = serviceUniqueName.split("/");
+        String[] arr = serviceUniqueName.split(PATH_SEPARATOR);
         if (arr.length == 2) {
             group = arr[0];
             interfaceAndVersion = arr[1];
         } else {
             interfaceAndVersion = arr[0];
         }
-
-        String[] ivArr = interfaceAndVersion.split(":");
+        String[] ivArr = interfaceAndVersion.split(GROUP_CHAR_SEPARATOR);
         String interfaceName = ivArr[0];
         String version = ivArr.length == 2 ? ivArr[1] : null;
-
+        Optional<? extends Invoker<?>> invoker = Optional.ofNullable(invocation.getInvoker());
+        this.side = invoker.isPresent() ? invoker.get().getUrl().getSide() : PROVIDER_SIDE;
         this.interfaceName = interfaceName;
         this.methodName = methodName;
         this.group = group;
         this.version = version;
+    }
+
+    public String getApplicationName() {
+        return applicationName;
+    }
+
+    public void setApplicationName(String applicationName) {
+        this.applicationName = applicationName;
+    }
+
+    public String getSide() {
+        return side;
+    }
+
+    public void setSide(String side) {
+        this.side = side;
+    }
+
+    @Override
+    public String toString() {
+        return "MethodMetric{" +
+            "applicationName='" + applicationName + '\'' +
+            ", side='" + side + '\'' +
+            ", interfaceName='" + interfaceName + '\'' +
+            ", methodName='" + methodName + '\'' +
+            ", group='" + group + '\'' +
+            ", version='" + version + '\'' +
+            '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        MethodMetric that = (MethodMetric) o;
+        return Objects.equals(applicationName, that.applicationName) && Objects.equals(side, that.side) && Objects.equals(interfaceName, that.interfaceName) && Objects.equals(methodName, that.methodName) && Objects.equals(group, that.group) && Objects.equals(version, that.version);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(applicationName, side, interfaceName, methodName, group, version);
     }
 }

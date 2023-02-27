@@ -18,11 +18,9 @@
 package org.apache.dubbo.qos.command;
 
 import org.apache.dubbo.qos.command.exception.NoSuchCommandException;
-import org.apache.dubbo.qos.command.exception.PermissionDenyException;
 import org.apache.dubbo.qos.common.QosConfiguration;
 import org.apache.dubbo.qos.permission.PermissionLevel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

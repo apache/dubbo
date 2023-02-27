@@ -279,9 +279,7 @@
     "methods": [
       {
         "name": "<init>",
-        "parameterTypes": [
-          "org.apache.dubbo.rpc.model.ApplicationModel"
-        ]
+        "parameterTypes": ["org.apache.dubbo.rpc.model.ApplicationModel"]
       }
     ]
   },
@@ -510,9 +508,7 @@
     "methods": [
       {
         "name": "<init>",
-        "parameterTypes": [
-          "org.apache.dubbo.rpc.model.ApplicationModel"
-        ]
+        "parameterTypes": ["org.apache.dubbo.rpc.model.ApplicationModel"]
       }
     ]
   },
@@ -652,9 +648,7 @@
     "methods": [
       {
         "name": "<init>",
-        "parameterTypes": [
-          "org.apache.dubbo.rpc.model.ApplicationModel"
-        ]
+        "parameterTypes": ["org.apache.dubbo.rpc.model.ApplicationModel"]
       }
     ]
   },
@@ -1180,6 +1174,16 @@
     ]
   },
   {
+    "name": "org.apache.dubbo.metrics.MetricsScopeModelInitializer",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
     "name": "org.apache.dubbo.rpc.cluster.ConfiguratorFactory",
     "allPublicMethods": true
   },
@@ -1246,9 +1250,7 @@
     "methods": [
       {
         "name": "<init>",
-        "parameterTypes": [
-          "org.apache.dubbo.rpc.model.ApplicationModel"
-        ]
+        "parameterTypes": ["org.apache.dubbo.rpc.model.ApplicationModel"]
       }
     ]
   },
@@ -1301,7 +1303,14 @@
     ]
   },
   {
-    "name": "org.apache.dubbo.rpc.filter.AccessLogFilter"
+    "name": "org.apache.dubbo.rpc.filter.AccessLogFilter",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
   },
   {
     "name": "org.apache.dubbo.rpc.filter.ClassLoaderFilter",
@@ -1322,9 +1331,7 @@
     "methods": [
       {
         "name": "<init>",
-        "parameterTypes": [
-          "org.apache.dubbo.rpc.model.ApplicationModel"
-        ]
+        "parameterTypes": ["org.apache.dubbo.rpc.model.ApplicationModel"]
       }
     ]
   },
@@ -1608,9 +1615,7 @@
     "methods": [
       {
         "name": "<init>",
-        "parameterTypes": [
-          "org.apache.dubbo.rpc.model.FrameworkModel"
-        ]
+        "parameterTypes": ["org.apache.dubbo.rpc.model.FrameworkModel"]
       }
     ]
   },
@@ -1743,9 +1748,7 @@
     "methods": [
       {
         "name": "<init>",
-        "parameterTypes": [
-          "org.apache.dubbo.rpc.model.FrameworkModel"
-        ]
+        "parameterTypes": ["org.apache.dubbo.rpc.model.FrameworkModel"]
       }
     ]
   },
@@ -1755,9 +1758,7 @@
     "methods": [
       {
         "name": "<init>",
-        "parameterTypes": [
-          "org.apache.dubbo.rpc.model.ModuleModel"
-        ]
+        "parameterTypes": ["org.apache.dubbo.rpc.model.ModuleModel"]
       }
     ]
   },
@@ -1767,9 +1768,7 @@
     "methods": [
       {
         "name": "<init>",
-        "parameterTypes": [
-          "org.apache.dubbo.rpc.model.ModuleModel"
-        ]
+        "parameterTypes": ["org.apache.dubbo.rpc.model.ModuleModel"]
       }
     ]
   },
@@ -1804,8 +1803,88 @@
     ]
   },
   {
+    "name": "org.apache.dubbo.rpc.cluster.router.condition.matcher.attachment.AttachmentConditionMatcherFactory",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.rpc.cluster.router.condition.matcher.argument.ArgumentConditionMatcherFactory",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.rpc.cluster.router.condition.matcher.param.UrlParamConditionMatcherFactory",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.rpc.cluster.router.condition.matcher.pattern.range.RangeValuePattern",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.rpc.cluster.router.condition.matcher.pattern.wildcard.WildcardValuePattern",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.rpc.cluster.router.condition.config.ProviderAppStateRouterFactory",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.rpc.cluster.router.script.config.AppScriptRouterFactory",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
     "name": "com.alibaba.fastjson.JSON",
     "allPublicMethods": true
+  },
+  {
+    "name": "org.apache.dubbo.metrics.event.GlobalMetricsEventMulticaster",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": ["org.apache.dubbo.rpc.model.ApplicationModel"]
+      }
+    ]
   },
   {
     "name": "org.apache.zookeeper.ClientCnxnSocketNIO",

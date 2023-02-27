@@ -79,15 +79,6 @@ jobs:
         with:
           name: "class-file"
           path: ${{ github.workspace }}/class.zip
-      - name: "Pack rat file if failure"
-        if: failure()
-        run: 7z a ${{ github.workspace }}/rat.zip *rat.txt -r
-      - name: "Upload rat file if failure"
-        if: failure()
-        uses: actions/upload-artifact@v3
-        with:
-          name: "rat-file"
-          path: ${{ github.workspace }}/rat.zip
       - name: "Pack checkstyle file if failure"
         if: failure()
         run: 7z a ${{ github.workspace }}/checkstyle.zip *checkstyle* -r

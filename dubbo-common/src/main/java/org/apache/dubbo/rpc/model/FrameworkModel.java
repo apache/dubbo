@@ -40,111 +40,117 @@ import java.util.stream.Collectors;
  */
 public class FrameworkModel extends ScopeModel {
 
+    // ========================= Static Fields Start ===================================
+
     protected static final Logger LOGGER = LoggerFactory.getLogger(FrameworkModel.class);
 
     public static final String NAME = "FrameworkModel";
     private static final AtomicLong index = new AtomicLong(1);
-    // internal app index is 0, default app index is 1
-    private final AtomicLong appIndex = new AtomicLong(0);
 
     private static final Object globalLock = new Object();
     
     private volatile static FrameworkModel defaultInstance;
 
+    private static final List<FrameworkModel> allInstances = new CopyOnWriteArrayList<>();
+
+    // ========================= Static Fields End ===================================
+
+    // internal app index is 0, default app index is 1
+    private final AtomicLong appIndex = new AtomicLong(0);
+
     private volatile ApplicationModel defaultAppModel;
 
-    private static List<FrameworkModel> allInstances = new CopyOnWriteArrayList<>();
+    private final List<ApplicationModel> applicationModels = new CopyOnWriteArrayList<>();
 
-    private List<ApplicationModel> applicationModels = new CopyOnWriteArrayList<>();
+    private final List<ApplicationModel> pubApplicationModels = new CopyOnWriteArrayList<>();
 
-    private List<ApplicationModel> pubApplicationModels = new CopyOnWriteArrayList<>();
+    private final FrameworkServiceRepository serviceRepository;
 
-    private FrameworkServiceRepository serviceRepository;
+    private final ApplicationModel internalApplicationModel;
 
-    private ApplicationModel internalApplicationModel;
-
-    private final Object instLock = new Object();
-
+    /**
+     * Use {@link FrameworkModel#newModel()} to create a new model
+     */
     public FrameworkModel() {
         super(null, ExtensionScope.FRAMEWORK, false);
-        this.setInternalId(String.valueOf(index.getAndIncrement()));
-        // register FrameworkModel instance early
         synchronized (globalLock) {
-            allInstances.add(this);
-            resetDefaultFrameworkModel();
+            synchronized (instLock) {
+                this.setInternalId(String.valueOf(index.getAndIncrement()));
+                // register FrameworkModel instance early
+                allInstances.add(this);
+                if (LOGGER.isInfoEnabled()) {
+                    LOGGER.info(getDesc() + " is created");
+                }
+                initialize();
+
+                TypeDefinitionBuilder.initBuilders(this);
+
+                serviceRepository = new FrameworkServiceRepository(this);
+
+                ExtensionLoader<ScopeModelInitializer> initializerExtensionLoader = this.getExtensionLoader(ScopeModelInitializer.class);
+                Set<ScopeModelInitializer> initializers = initializerExtensionLoader.getSupportedExtensionInstances();
+                for (ScopeModelInitializer initializer : initializers) {
+                    initializer.initializeFrameworkModel(this);
+                }
+
+                internalApplicationModel = new ApplicationModel(this, true);
+                internalApplicationModel.getApplicationConfigManager().setApplication(
+                    new ApplicationConfig(internalApplicationModel, CommonConstants.DUBBO_INTERNAL_APPLICATION));
+                internalApplicationModel.setModelName(CommonConstants.DUBBO_INTERNAL_APPLICATION);
+            }
         }
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info(getDesc() + " is created");
-        }
-        initialize();
-    }
-
-    @Override
-    protected void initialize() {
-        super.initialize();
-
-        TypeDefinitionBuilder.initBuilders(this);
-
-        serviceRepository = new FrameworkServiceRepository(this);
-
-        ExtensionLoader<ScopeModelInitializer> initializerExtensionLoader = this.getExtensionLoader(ScopeModelInitializer.class);
-        Set<ScopeModelInitializer> initializers = initializerExtensionLoader.getSupportedExtensionInstances();
-        for (ScopeModelInitializer initializer : initializers) {
-            initializer.initializeFrameworkModel(this);
-        }
-
-        internalApplicationModel = new ApplicationModel(this, true);
-        internalApplicationModel.getApplicationConfigManager().setApplication(
-            new ApplicationConfig(internalApplicationModel, CommonConstants.DUBBO_INTERNAL_APPLICATION));
-        internalApplicationModel.setModelName(CommonConstants.DUBBO_INTERNAL_APPLICATION);
     }
 
     @Override
     protected void onDestroy() {
-        if (defaultInstance == this) {
-            // NOTE: During destroying the default FrameworkModel, the FrameworkModel.defaultModel() or ApplicationModel.defaultModel()
-            // will return a broken model, maybe cause unpredictable problem.
-            if (LOGGER.isInfoEnabled()) {
-                LOGGER.info("Destroying default framework model: " + getDesc());
+        synchronized (instLock) {
+            if (defaultInstance == this) {
+                // NOTE: During destroying the default FrameworkModel, the FrameworkModel.defaultModel() or ApplicationModel.defaultModel()
+                // will return a broken model, maybe cause unpredictable problem.
+                if (LOGGER.isInfoEnabled()) {
+                    LOGGER.info("Destroying default framework model: " + getDesc());
+                }
             }
+
+            if (LOGGER.isInfoEnabled()) {
+                LOGGER.info(getDesc() + " is destroying ...");
+            }
+
+            // destroy all application model
+            for (ApplicationModel applicationModel : new ArrayList<>(applicationModels)) {
+                applicationModel.destroy();
+            }
+            // check whether all application models are destroyed
+            checkApplicationDestroy();
+
+            // notify destroy and clean framework resources
+            // see org.apache.dubbo.config.deploy.FrameworkModelCleaner
+            notifyDestroy();
+
+            if (LOGGER.isInfoEnabled()) {
+                LOGGER.info(getDesc() + " is destroyed");
+            }
+
+            // remove from allInstances and reset default FrameworkModel
+            synchronized (globalLock) {
+                allInstances.remove(this);
+                resetDefaultFrameworkModel();
+            }
+
+            // if all FrameworkModels are destroyed, clean global static resources, shutdown dubbo completely
+            destroyGlobalResources();
         }
-
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info(getDesc() + " is destroying ...");
-        }
-
-        // destroy all application model
-        for (ApplicationModel applicationModel : new ArrayList<>(applicationModels)) {
-            applicationModel.destroy();
-        }
-        // check whether all application models are destroyed
-        checkApplicationDestroy();
-
-        // notify destroy and clean framework resources
-        // see org.apache.dubbo.config.deploy.FrameworkModelCleaner
-        notifyDestroy();
-
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info(getDesc() + " is destroyed");
-        }
-
-        // remove from allInstances and reset default FrameworkModel
-        synchronized (globalLock) {
-            allInstances.remove(this);
-            resetDefaultFrameworkModel();
-        }
-
-        // if all FrameworkModels are destroyed, clean global static resources, shutdown dubbo completely
-        destroyGlobalResources();
     }
 
     private void checkApplicationDestroy() {
-        if (applicationModels.size() > 0) {
-            List<String> remainApplications = applicationModels.stream()
-                .map(ScopeModel::getDesc)
-                .collect(Collectors.toList());
-            throw new IllegalStateException("Not all application models are completely destroyed, remaining " +
-                remainApplications.size() + " application models may be created during destruction: " + remainApplications);
+        synchronized (instLock) {
+            if (applicationModels.size() > 0) {
+                List<String> remainApplications = applicationModels.stream()
+                    .map(ScopeModel::getDesc)
+                    .collect(Collectors.toList());
+                throw new IllegalStateException("Not all application models are completely destroyed, remaining " +
+                    remainApplications.size() + " application models may be created during destruction: " + remainApplications);
+            }
         }
     }
 
@@ -182,20 +188,26 @@ public class FrameworkModel extends ScopeModel {
      * @return
      */
     public static List<FrameworkModel> getAllInstances() {
-        return Collections.unmodifiableList(new ArrayList<>(allInstances));
+        synchronized (globalLock) {
+            return Collections.unmodifiableList(new ArrayList<>(allInstances));
+        }
     }
 
     /**
      * Destroy all framework model instances, shutdown dubbo engine completely.
      */
     public static void destroyAll() {
-        for (FrameworkModel frameworkModel : new ArrayList<>(allInstances)) {
-            frameworkModel.destroy();
+        synchronized (globalLock) {
+            for (FrameworkModel frameworkModel : new ArrayList<>(allInstances)) {
+                frameworkModel.destroy();
+            }
         }
     }
 
     public ApplicationModel newApplication() {
-        return new ApplicationModel(this);
+        synchronized (instLock) {
+            return new ApplicationModel(this);
+        }
     }
 
     /**
@@ -235,7 +247,6 @@ public class FrameworkModel extends ScopeModel {
                 if (!applicationModel.isInternal()) {
                     this.pubApplicationModels.add(applicationModel);
                 }
-                resetDefaultAppModel();
             }
         }
     }
@@ -323,14 +334,18 @@ public class FrameworkModel extends ScopeModel {
      * Get all application models except for the internal application model.
      */
     public List<ApplicationModel> getApplicationModels() {
-        return Collections.unmodifiableList(pubApplicationModels);
+        synchronized (globalLock) {
+            return Collections.unmodifiableList(pubApplicationModels);
+        }
     }
 
     /**
      * Get all application models including the internal application model.
      */
     public List<ApplicationModel> getAllApplicationModels() {
-        return Collections.unmodifiableList(applicationModels);
+        synchronized (globalLock) {
+            return Collections.unmodifiableList(applicationModels);
+        }
     }
 
     public ApplicationModel getInternalApplicationModel() {
