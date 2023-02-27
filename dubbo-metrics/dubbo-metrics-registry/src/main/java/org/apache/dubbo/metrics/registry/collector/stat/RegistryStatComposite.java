@@ -65,14 +65,14 @@ public class RegistryStatComposite implements MetricsExport {
 
     private List<LongContainer<? extends Number>> initStats(String registryOpType) {
         List<LongContainer<? extends Number>> singleRtStats = new ArrayList<>();
-        singleRtStats.add(new AtomicLongContainer(new MetricsKeyWrapper(registryOpType, MetricsKey.GENERIC_METRIC_RT_LAST)));
-        singleRtStats.add(new LongAccumulatorContainer(new MetricsKeyWrapper(registryOpType, MetricsKey.GENERIC_METRIC_RT_MIN), new LongAccumulator(Long::min, Long.MAX_VALUE)));
-        singleRtStats.add(new LongAccumulatorContainer(new MetricsKeyWrapper(registryOpType, MetricsKey.GENERIC_METRIC_RT_MAX), new LongAccumulator(Long::max, Long.MIN_VALUE)));
-        singleRtStats.add(new AtomicLongContainer(new MetricsKeyWrapper(registryOpType, MetricsKey.GENERIC_METRIC_RT_SUM), (responseTime, longAccumulator) -> longAccumulator.addAndGet(responseTime)));
+        singleRtStats.add(new AtomicLongContainer(new MetricsKeyWrapper(registryOpType, MetricsKey.METRIC_RT_LAST)));
+        singleRtStats.add(new LongAccumulatorContainer(new MetricsKeyWrapper(registryOpType, MetricsKey.METRIC_RT_MIN), new LongAccumulator(Long::min, Long.MAX_VALUE)));
+        singleRtStats.add(new LongAccumulatorContainer(new MetricsKeyWrapper(registryOpType, MetricsKey.METRIC_RT_MAX), new LongAccumulator(Long::max, Long.MIN_VALUE)));
+        singleRtStats.add(new AtomicLongContainer(new MetricsKeyWrapper(registryOpType, MetricsKey.METRIC_RT_SUM), (responseTime, longAccumulator) -> longAccumulator.addAndGet(responseTime)));
         // AvgContainer is a special counter that stores the number of times but outputs function of sum/times
-        AtomicLongContainer avgContainer = new AtomicLongContainer(new MetricsKeyWrapper(registryOpType, MetricsKey.GENERIC_METRIC_RT_AVG), (k, v) -> v.incrementAndGet());
+        AtomicLongContainer avgContainer = new AtomicLongContainer(new MetricsKeyWrapper(registryOpType, MetricsKey.METRIC_RT_AVG), (k, v) -> v.incrementAndGet());
         avgContainer.setValueSupplier(applicationName -> {
-            LongContainer<? extends Number> totalContainer = rtStats.stream().filter(longContainer -> longContainer.isKeyWrapper(MetricsKey.GENERIC_METRIC_RT_SUM, registryOpType)).findFirst().get();
+            LongContainer<? extends Number> totalContainer = rtStats.stream().filter(longContainer -> longContainer.isKeyWrapper(MetricsKey.METRIC_RT_SUM, registryOpType)).findFirst().get();
             AtomicLong totalRtTimes = avgContainer.get(applicationName);
             AtomicLong totalRtSum = (AtomicLong) totalContainer.get(applicationName);
             return totalRtSum.get() / totalRtTimes.get();
