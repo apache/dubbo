@@ -51,6 +51,9 @@ import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.metadata.report.MetadataReportFactory;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
+import org.apache.dubbo.metrics.event.GlobalMetricsEventMulticaster;
+import org.apache.dubbo.metrics.model.TimePair;
+import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.metrics.report.MetricsReporter;
 import org.apache.dubbo.metrics.report.MetricsReporterFactory;
 import org.apache.dubbo.metrics.service.MetricsServiceExporter;
@@ -825,10 +828,15 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     private final AtomicInteger serviceRefreshState = new AtomicInteger(0);
 
     private void registerServiceInstance() {
+        TimePair timePair = TimePair.start();
+        GlobalMetricsEventMulticaster eventMulticaster = applicationModel.getBeanFactory().getBean(GlobalMetricsEventMulticaster.class);
+        eventMulticaster.publishEvent(new RegistryEvent.MetricsRegisterEvent(applicationModel, timePair));
         try {
             registered = true;
             ServiceInstanceMetadataUtils.registerMetadataAndInstance(applicationModel);
+            eventMulticaster.publishFinishEvent(new RegistryEvent.MetricsRegisterEvent(applicationModel, timePair));
         } catch (Exception e) {
+            eventMulticaster.publishErrorEvent(new RegistryEvent.MetricsRegisterEvent(applicationModel, timePair));
             logger.error(CONFIG_REGISTER_INSTANCE_ERROR, "configuration server disconnected", "", "Register instance error.", e);
         }
         if (registered) {

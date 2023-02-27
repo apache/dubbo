@@ -90,6 +90,9 @@ public interface LoggerCodeConstants {
 
     String COMMON_ISOLATED_EXECUTOR_CONFIGURATION_ERROR = "0-27";
 
+    String VULNERABILITY_WARNING = "0-28";
+
+
     // Registry module
 
     String REGISTRY_ADDRESS_INVALID = "1-1";
