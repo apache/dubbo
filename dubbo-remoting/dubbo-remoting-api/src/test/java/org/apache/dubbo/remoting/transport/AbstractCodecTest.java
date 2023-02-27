@@ -85,12 +85,12 @@ class AbstractCodecTest {
     private AbstractCodec getAbstractCodec() {
         AbstractCodec codec = new AbstractCodec() {
             @Override
-            public void encode(Channel channel, ChannelBuffer buffer, Object message) throws IOException {
+            public void encode(Channel channel, ChannelBuffer buffer, Object message) {
 
             }
 
             @Override
-            public Object decode(Channel channel, ChannelBuffer buffer) throws IOException {
+            public Object decode(Channel channel, ChannelBuffer buffer) {
                 return null;
             }
         };

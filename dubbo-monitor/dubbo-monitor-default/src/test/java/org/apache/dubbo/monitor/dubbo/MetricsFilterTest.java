@@ -136,7 +136,7 @@ class MetricsFilterTest {
         }
     }
 
-    private void testConsumerSuccess() throws Exception {
+    private void testConsumerSuccess() {
         IMetricManager metricManager = MetricManager.getIMetricManager();
         metricManager.clear();
         MetricsFilter metricsFilter = new MetricsFilter();
@@ -197,7 +197,7 @@ class MetricsFilterTest {
 
     }
 
-    private void testProviderSuccess() throws Exception {
+    private void testProviderSuccess() {
         IMetricManager metricManager = MetricManager.getIMetricManager();
         metricManager.clear();
         MetricsFilter metricsFilter = new MetricsFilter();
