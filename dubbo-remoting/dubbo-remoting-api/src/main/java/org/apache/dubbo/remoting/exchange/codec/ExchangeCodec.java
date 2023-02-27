@@ -32,6 +32,7 @@ import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.buffer.ChannelBuffer;
 import org.apache.dubbo.remoting.buffer.ChannelBufferInputStream;
 import org.apache.dubbo.remoting.buffer.ChannelBufferOutputStream;
+import org.apache.dubbo.remoting.exchange.HeartBeatRequest;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.exchange.support.DefaultFuture;
@@ -184,31 +185,34 @@ public class ExchangeCodec extends TelnetCodec {
             return res;
         } else {
             // decode request.
-            Request req = new Request(id);
-            req.setVersion(Version.getProtocolVersion());
-            req.setTwoWay((flag & FLAG_TWOWAY) != 0);
-            if ((flag & FLAG_EVENT) != 0) {
-                req.setEvent(true);
-            }
+            Request req;
             try {
                 Object data;
-                if (req.isEvent()) {
+                if ((flag & FLAG_EVENT) != 0) {
                     byte[] eventPayload = CodecSupport.getPayload(is);
                     if (CodecSupport.isHeartBeat(eventPayload, proto)) {
                         // heart beat response data is always null;
+                        req = new HeartBeatRequest(id);
+                        ((HeartBeatRequest) req).setProto(proto);
                         data = null;
                     } else {
+                        req = new Request(id);
                         data = decodeEventData(channel, CodecSupport.deserialize(channel.getUrl(), new ByteArrayInputStream(eventPayload), proto), eventPayload);
                     }
+                    req.setEvent(true);
                 } else {
+                    req = new Request(id);
                     data = decodeRequestData(channel, CodecSupport.deserialize(channel.getUrl(), is, proto));
                 }
                 req.setData(data);
             } catch (Throwable t) {
                 // bad request
+                req = new Request(id);
                 req.setBroken(true);
                 req.setData(t);
             }
+            req.setVersion(Version.getProtocolVersion());
+            req.setTwoWay((flag & FLAG_TWOWAY) != 0);
             return req;
         }
     }
