@@ -16,6 +16,12 @@
  */
 package org.apache.dubbo.qos.common;
 
+import java.net.UnknownHostException;
+import java.util.Arrays;
+import java.util.function.Predicate;
+
+import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.qos.permission.PermissionLevel;
 
 public class QosConfiguration {
@@ -25,6 +31,8 @@ public class QosConfiguration {
     // the whitelist of foreign IP when acceptForeignIp = false, the delimiter is colon(,)
     // support specific ip and an ip range from CIDR specification
     private String acceptForeignIpWhitelist;
+
+    private Predicate<String> acceptForeignIpWhitelistPredicate;
 
     // this permission level for anonymous access, it will ignore the acceptForeignIp and acceptForeignIpWhitelist configurations
     // Access permission depends on the config anonymousAccessPermissionLevel and the cmd required permission level
@@ -39,6 +47,27 @@ public class QosConfiguration {
         this.acceptForeignIp = builder.isAcceptForeignIp();
         this.acceptForeignIpWhitelist = builder.getAcceptForeignIpWhitelist();
         this.anonymousAccessPermissionLevel = builder.getAnonymousAccessPermissionLevel();
+        buildPredicate();
+    }
+
+    private void buildPredicate() {
+        if (StringUtils.isNotEmpty(acceptForeignIpWhitelist)) {
+            this.acceptForeignIpWhitelistPredicate = Arrays.stream(acceptForeignIpWhitelist.split(","))
+                .map(String::trim)
+                .filter(StringUtils::isNotEmpty)
+                .map(foreignIpPattern -> (Predicate<String>) foreignIp -> {
+                    try {
+                        // hard code port to -1
+                        return NetUtils.matchIpExpression(foreignIpPattern, foreignIp, -1);
+                    } catch (UnknownHostException ignore) {
+                        // ignore illegal CIDR specification
+                    }
+                    return false;
+                })
+                .reduce(Predicate::or).orElse(s -> false);
+        } else {
+            this.acceptForeignIpWhitelistPredicate = foreignIp -> false;
+        }
     }
 
     public boolean isAllowAnonymousAccess() {
@@ -55,6 +84,10 @@ public class QosConfiguration {
 
     public String getAcceptForeignIpWhitelist() {
         return acceptForeignIpWhitelist;
+    }
+
+    public Predicate<String> getAcceptForeignIpWhitelistPredicate() {
+        return acceptForeignIpWhitelistPredicate;
     }
 
     public boolean isAcceptForeignIp() {

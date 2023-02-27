@@ -213,6 +213,8 @@ public interface CommonConstants {
 
     String PATH_KEY = "path";
 
+    String ADDRESS_KEY = "address";
+
     String INTERFACE_KEY = "interface";
 
     String FILE_KEY = "file";

@@ -21,6 +21,7 @@ public class TimePair {
 
     private final long begin;
     private long end;
+    private static final TimePair empty = new TimePair(0L);
 
     public TimePair(long currentTimeMillis) {
         this.begin = currentTimeMillis;
@@ -36,5 +37,9 @@ public class TimePair {
 
     public long calc() {
         return end - begin;
+    }
+
+    public static TimePair empty() {
+        return empty;
     }
 }

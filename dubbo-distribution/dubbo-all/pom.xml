@@ -192,6 +192,13 @@
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-metrics-registry</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-metrics-prometheus</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
@@ -502,6 +509,7 @@
                                     <include>org.apache.dubbo:dubbo-metadata-report-zookeeper</include>
                                     <include>org.apache.dubbo:dubbo-metrics-api</include>
                                     <include>org.apache.dubbo:dubbo-metrics-default</include>
+                                    <include>org.apache.dubbo:dubbo-metrics-registry</include>
                                     <include>org.apache.dubbo:dubbo-metrics-metadata</include>
                                     <include>org.apache.dubbo:dubbo-metrics-prometheus</include>
                                     <include>org.apache.dubbo:dubbo-monitor-api</include>
@@ -1146,6 +1154,18 @@
                                     implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                     <resource>
                                         META-INF/dubbo/internal/org.apache.dubbo.rpc.cluster.router.state.StateRouterFactory
+                                    </resource>
+                                </transformer>
+                                <transformer
+                                    implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>
+                                        META-INF/dubbo/internal/org.apache.dubbo.rpc.cluster.router.condition.matcher.pattern.ValuePattern
+                                    </resource>
+                                </transformer>
+                                <transformer
+                                    implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>
+                                        META-INF/dubbo/internal/org.apache.dubbo.rpc.cluster.router.condition.matcher.ConditionMatcherFactory
                                     </resource>
                                 </transformer>
                                 <transformer

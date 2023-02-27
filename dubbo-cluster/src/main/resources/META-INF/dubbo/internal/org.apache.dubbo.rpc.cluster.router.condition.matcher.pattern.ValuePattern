@@ -1,0 +1,2 @@
+range=org.apache.dubbo.rpc.cluster.router.condition.matcher.pattern.range.RangeValuePattern
+wildcard=org.apache.dubbo.rpc.cluster.router.condition.matcher.pattern.wildcard.WildcardValuePattern
