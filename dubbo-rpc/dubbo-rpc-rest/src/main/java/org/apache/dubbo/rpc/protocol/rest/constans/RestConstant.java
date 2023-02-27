@@ -57,4 +57,5 @@ public interface RestConstant {
     String TEXT_PLAIN = "text/plain";
     String ACCEPT = "Accept";
     String DEFAULT_ACCEPT = "*/*";
+    String REST_PORT = "rest-port";
 }

@@ -17,14 +17,21 @@
 package org.apache.dubbo.rpc.protocol.rest;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.metadata.rest.media.MediaType;
 import org.apache.dubbo.remoting.http.HttpBinder;
 import org.apache.dubbo.remoting.http.HttpHandler;
 import org.apache.dubbo.remoting.http.HttpServer;
 import org.apache.dubbo.remoting.http.servlet.BootstrapListener;
 import org.apache.dubbo.remoting.http.servlet.ServletManager;
-import org.apache.dubbo.rpc.RpcContext;
-import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.*;
 
+import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
+import org.apache.dubbo.rpc.protocol.rest.exception.PathNoFoundException;
+import org.apache.dubbo.rpc.protocol.rest.message.HttpMessageCodecManager;
+import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
+import org.apache.dubbo.rpc.protocol.rest.request.RequestFacadeFactory;
+import org.apache.dubbo.rpc.protocol.rest.util.MediaTypeUtil;
+import org.apache.dubbo.rpc.protocol.rest.util.Pair;
 import org.jboss.resteasy.plugins.server.servlet.HttpServletDispatcher;
 import org.jboss.resteasy.spi.ResteasyDeployment;
 
@@ -59,7 +66,7 @@ public class DubboHttpProtocolServer extends BaseRestProtocolServer {
         }
         if (servletContext == null) {
             throw new RpcException("No servlet context found. If you are using server='servlet', " +
-                    "make sure that you've configured " + BootstrapListener.class.getName() + " in web.xml");
+                "make sure that you've configured " + BootstrapListener.class.getName() + " in web.xml");
         }
 
         servletContext.setAttribute(ResteasyDeployment.class.getName(), deployment);
@@ -81,12 +88,56 @@ public class DubboHttpProtocolServer extends BaseRestProtocolServer {
         return deployment;
     }
 
-    private class RestHandler implements HttpHandler {
+    private class RestHandler implements HttpHandler<HttpServletRequest, HttpServletResponse> {
 
         @Override
-        public void handle(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+        public void handle(HttpServletRequest servletRequest, HttpServletResponse servletResponse) throws IOException, ServletException {
+
+            RequestFacade request = RequestFacadeFactory.createRequestFacade(servletRequest);
             RpcContext.getServiceContext().setRemoteAddress(request.getRemoteAddr(), request.getRemotePort());
-            dispatcher.service(request, response);
+//            dispatcher.service(request, servletResponse);
+
+            Pair<RpcInvocation, Invoker> build = null;
+            try {
+                build = RPCInvocationBuilder.build(request, servletRequest, servletResponse);
+            } catch (PathNoFoundException e) {
+                servletResponse.setStatus(404);
+            }
+
+            Invoker invoker = build.getSecond();
+
+            Result invoke = invoker.invoke(build.getFirst());
+
+            // TODO handling  exceptions
+            if (invoke.hasException()) {
+                servletResponse.setStatus(500);
+            } else {
+
+                try {
+                    Object value = invoke.getValue();
+                    String accept = request.getHeader(RestConstant.ACCEPT);
+                    MediaType mediaType = MediaTypeUtil.convertMediaType(accept);
+                    // TODO write response
+                    Pair<Boolean, MediaType> booleanMediaTypePair = HttpMessageCodecManager.httpMessageEncode(servletResponse.getOutputStream(), value, invoker.getUrl(), mediaType);
+
+                    Boolean encoded = booleanMediaTypePair.getFirst();
+
+                    if (encoded) {
+                        servletResponse.addHeader(RestConstant.CONTENT_TYPE, booleanMediaTypePair.getSecond().value);
+                    }
+
+
+                    servletResponse.setStatus(200);
+                } catch (Exception e) {
+                    servletResponse.setStatus(500);
+                }
+
+
+            }
+
+            // TODO add Attachment header
+
+
         }
     }
 

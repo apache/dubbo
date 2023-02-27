@@ -60,6 +60,16 @@ public class XMLCodec implements HttpMessageCodec<byte[], OutputStream> {
         return MediaTypeMatcher.TEXT_XML.mediaSupport(mediaType);
     }
 
+    @Override
+    public boolean typeSupport(Class targetType) {
+        return false;
+    }
+
+    @Override
+    public MediaType contentType() {
+        return MediaType.TEXT_XML;
+    }
+
 
     @Override
     public void encode(OutputStream outputStream, Object unSerializedBody, URL url) throws Exception {

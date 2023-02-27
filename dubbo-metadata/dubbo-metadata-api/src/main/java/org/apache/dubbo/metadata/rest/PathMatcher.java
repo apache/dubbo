@@ -17,6 +17,7 @@
 package org.apache.dubbo.metadata.rest;
 
 
+import java.util.Arrays;
 import java.util.Objects;
 
 public class PathMatcher {
@@ -27,14 +28,28 @@ public class PathMatcher {
     private Integer port;
     private String[] pathSplits;
     private boolean hasPathVariable;
+    private String contextPath;
+    private boolean invokeCreate;
 
 
     public PathMatcher(String path) {
-        this(path, null, null, 0);
+        this(path, null, null, null, false);
+    }
+
+    public PathMatcher(String path, String version, String group, Integer port, boolean invokeCreate) {
+        this.path = path;
+        dealPathVariable(path);
+        this.version = version;
+        this.group = group;
+        this.port = (port == null || port == -1 || port == 0) ? null : port;
+        this.invokeCreate = invokeCreate;
     }
 
     public PathMatcher(String path, String version, String group, Integer port) {
-        this.path = path;
+        this(path, version, group, port, false);
+    }
+
+    private void dealPathVariable(String path) {
         this.pathSplits = path.split(SEPARATOR);
 
         for (String pathSplit : pathSplits) {
@@ -44,9 +59,6 @@ public class PathMatcher {
                 break;
             }
         }
-        this.version = version;
-        this.group = group;
-        this.port = port;
     }
 
     public void setPath(String path) {
@@ -65,13 +77,36 @@ public class PathMatcher {
         this.port = port;
     }
 
+    public void setContextPath(String contextPath) {
+
+
+        contextPath = contextPathFormat(contextPath);
+
+
+        this.contextPath = contextPath;
+
+        setPath(contextPath + path);
+
+        dealPathVariable(path);
+
+    }
+
+    public static PathMatcher getInvokeCreatePathMatcher(String path, String version, String group, Integer port) {
+        return new PathMatcher(path, version, group, port, true);
+    }
+
+    public boolean hasPathVariable() {
+        return hasPathVariable;
+    }
+
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         PathMatcher that = (PathMatcher) o;
-        return pathEqual(that.path) && Objects.equals(version, that.version)
+        return invokeCreate && pathEqual(that)
+            && Objects.equals(version, that.version)
             && Objects.equals(group, that.group) && Objects.equals(port, that.port);
     }
 
@@ -80,22 +115,24 @@ public class PathMatcher {
         return Objects.hash(version, group, port);
     }
 
-    private boolean pathEqual(String path) {
+    private boolean pathEqual(PathMatcher pathMatcher) {
+
 
         // no place hold
-        if (!hasPathVariable) {
-            return this.path.equals(path);
+        if (!pathMatcher.hasPathVariable) {
+            return this.path.equals(pathMatcher.path);
         }
 
-        String[] split = path.split(SEPARATOR);
+        String[] pathSplits = pathMatcher.pathSplits;
+        String[] thisPathSplits = this.pathSplits;
 
 
-        if (split.length != pathSplits.length) {
+        if (thisPathSplits.length != pathSplits.length) {
             return false;
         }
 
         for (int i = 0; i < pathSplits.length; i++) {
-            boolean equals = split[i].equals(pathSplits[i]);
+            boolean equals = thisPathSplits[i].equals(pathSplits[i]);
             if (equals) {
                 continue;
             } else {
@@ -134,13 +171,36 @@ public class PathMatcher {
     }
 
 
+    private String contextPathFormat(String contextPath) {
+
+
+        if (contextPath == null || contextPath.equals(SEPARATOR) || contextPath.length() == 0) {
+            return "";
+        }
+
+
+        return pathFormat(contextPath);
+    }
+
+    private String pathFormat(String path) {
+        if (path.startsWith(SEPARATOR)) {
+            return path;
+        } else {
+            return SEPARATOR + path;
+        }
+    }
+
+
     @Override
     public String toString() {
-        return "PathMather{" +
+        return "PathMatcher{" +
             "path='" + path + '\'' +
             ", version='" + version + '\'' +
             ", group='" + group + '\'' +
-            ", port='" + port + '\'' +
+            ", port=" + port +
+            ", pathSplits=" + Arrays.toString(pathSplits) +
+            ", hasPathVariable=" + hasPathVariable +
+            ", contextPath='" + contextPath + '\'' +
             '}';
     }
 }

@@ -41,6 +41,16 @@ public class TextCodec implements HttpMessageCodec<byte[], OutputStream> {
     }
 
     @Override
+    public boolean typeSupport(Class targetType) {
+        return DataParseUtils.isTextType(targetType);
+    }
+
+    @Override
+    public MediaType contentType() {
+        return MediaType.TEXT_PLAIN;
+    }
+
+    @Override
     public void encode(OutputStream outputStream, Object unSerializedBody, URL url) throws Exception {
         DataParseUtils.writeTextContent(unSerializedBody, outputStream);
     }

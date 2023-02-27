@@ -14,28 +14,48 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata.rest.springmvc;
+package org.apache.dubbo.rpc.protocol.rest;
 
-import org.apache.dubbo.metadata.rest.AbstractNoAnnotatedParameterProcessor;
+import org.apache.dubbo.metadata.rest.PathMatcher;
 import org.apache.dubbo.metadata.rest.RestMethodMetadata;
-import org.apache.dubbo.metadata.rest.media.MediaType;
-import org.apache.dubbo.metadata.rest.tag.BodyTag;
+import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.ProtocolServer;
 
-import static org.apache.dubbo.metadata.rest.media.MediaType.APPLICATION_FORM_URLENCODED_VALUE;
+import java.util.Map;
 
-public class FormBodyNoAnnotatedProcessor extends AbstractNoAnnotatedParameterProcessor {
-    @Override
-    public MediaType consumerContentType() {
-        return APPLICATION_FORM_URLENCODED_VALUE;
+public class HttpRestServer<T> implements ProtocolServer {
+
+    Invoker<T> invoker;
+    Map<PathMatcher, RestMethodMetadata> pathMatcherRestMethodMetadataMap;
+    String address;
+
+    public HttpRestServer(Invoker<T> invoker, Map<PathMatcher,
+        RestMethodMetadata> pathMatcherRestMethodMetadataMap,
+                          String address) {
+
+        this.invoker = invoker;
+        this.pathMatcherRestMethodMetadataMap = pathMatcherRestMethodMetadataMap;
+        this.address = address;
+
     }
 
     @Override
-    public String defaultAnnotationClassName(RestMethodMetadata restMethodMetadata) {
-        return BodyTag.class.getName();
+    public String getAddress() {
+        return address;
     }
 
     @Override
-    protected boolean isFormContentType(RestMethodMetadata restMethodMetadata) {
-        return true;
+    public void setAddress(String address) {
+
+    }
+
+    @Override
+    public void close() {
+
+    }
+
+    @Override
+    public Map<String, Object> getAttributes() {
+        return null;
     }
 }

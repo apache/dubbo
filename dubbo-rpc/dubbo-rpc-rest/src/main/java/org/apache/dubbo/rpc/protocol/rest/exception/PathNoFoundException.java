@@ -14,19 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata.rest;
+package org.apache.dubbo.rpc.protocol.rest.exception;
 
-import org.apache.dubbo.common.extension.ExtensionScope;
-import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.metadata.rest.media.MediaType;
+public class PathNoFoundException extends RuntimeException{
 
-import java.lang.reflect.Parameter;
-
-@SPI(scope = ExtensionScope.FRAMEWORK)
-public interface NoAnnotatedParameterRequestTagProcessor {
-    MediaType consumerContentType();
-
-    String defaultAnnotationClassName(RestMethodMetadata restMethodMetadata);
-
-    boolean process(Parameter parameter, int parameterIndex, RestMethodMetadata restMethodMetadata);
+    public PathNoFoundException(String message) {
+        super(message);
+    }
 }

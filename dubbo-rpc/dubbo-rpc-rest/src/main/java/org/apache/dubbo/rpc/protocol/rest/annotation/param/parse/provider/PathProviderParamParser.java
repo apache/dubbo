@@ -14,28 +14,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata.rest.springmvc;
+package org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.provider;
 
-import org.apache.dubbo.metadata.rest.AbstractNoAnnotatedParameterProcessor;
-import org.apache.dubbo.metadata.rest.RestMethodMetadata;
-import org.apache.dubbo.metadata.rest.media.MediaType;
-import org.apache.dubbo.metadata.rest.tag.BodyTag;
 
-import static org.apache.dubbo.metadata.rest.media.MediaType.APPLICATION_FORM_URLENCODED_VALUE;
+import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
+import org.apache.dubbo.metadata.rest.ArgInfo;
+import org.apache.dubbo.metadata.rest.ParamType;
 
-public class FormBodyNoAnnotatedProcessor extends AbstractNoAnnotatedParameterProcessor {
+
+/**
+ * path param parse
+ */
+@Activate(value = RestConstant.PROVIDER_PATH_PARSE)
+public class PathProviderParamParser extends ProviderParamParser {
     @Override
-    public MediaType consumerContentType() {
-        return APPLICATION_FORM_URLENCODED_VALUE;
+    protected void doParse(ProviderParseContext parseContext, ArgInfo argInfo) {
+
+        String pathVariable = parseContext.getPathVariable(argInfo.getUrlSplitIndex());
+
+        Object pathVariableValue = paramTypeConvert(argInfo.getParamType(), pathVariable);
+
+        parseContext.setValueByIndex(argInfo.getIndex(), pathVariableValue);
+
     }
 
     @Override
-    public String defaultAnnotationClassName(RestMethodMetadata restMethodMetadata) {
-        return BodyTag.class.getName();
-    }
-
-    @Override
-    protected boolean isFormContentType(RestMethodMetadata restMethodMetadata) {
-        return true;
+    protected ParamType getParamType() {
+        return ParamType.PATH;
     }
 }

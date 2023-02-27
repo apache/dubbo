@@ -27,4 +27,8 @@ public interface HttpMessageCodec<InputStream, OutputStream> extends HttpMessage
 
     boolean contentTypeSupport(MediaType mediaType, Class targetType);
 
+    boolean typeSupport(Class targetType);
+
+    MediaType contentType();
+
 }

@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.protocol.rest.annotation.metadata;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.metadata.ParameterTypesComparator;
+import org.apache.dubbo.metadata.rest.PathMatcher;
 import org.apache.dubbo.metadata.rest.RestMethodMetadata;
 import org.apache.dubbo.metadata.rest.ServiceRestMetadata;
 import org.apache.dubbo.metadata.rest.ServiceRestMetadataResolver;
@@ -53,5 +54,21 @@ public class MetadataResolver {
         throw new CodeStyleNotSupportException("service is: " + targetClass + ", only support " + extensionLoader.getSupportedExtensions() + " annotation");
     }
 
+
+
+
+    public static Map<PathMatcher, RestMethodMetadata> resolveProviderServiceMetadata(Class serviceImpl, URL url) {
+        ExtensionLoader<ServiceRestMetadataResolver> extensionLoader = url.getOrDefaultApplicationModel().getExtensionLoader(ServiceRestMetadataResolver.class);
+
+        for (ServiceRestMetadataResolver serviceRestMetadataResolver : extensionLoader.getSupportedExtensionInstances()) {
+            boolean supports = serviceRestMetadataResolver.supports(serviceImpl);
+            if (supports) {
+                ServiceRestMetadata serviceRestMetadata = new ServiceRestMetadata(url.getServiceInterface(), url.getVersion(), url.getGroup(), false);
+                ServiceRestMetadata resolve = serviceRestMetadataResolver.resolve(serviceImpl, serviceRestMetadata);
+                return resolve.getPathToServiceMap();
+            }
+        }
+        throw new CodeStyleNotSupportException("service is:" + serviceImpl + ",just support rest or spring-web annotation");
+    }
 
 }

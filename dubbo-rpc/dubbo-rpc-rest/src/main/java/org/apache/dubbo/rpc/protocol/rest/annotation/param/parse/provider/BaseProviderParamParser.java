@@ -14,23 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.rest.mvc;
+package org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.provider;
 
 
-import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.apache.dubbo.common.extension.ExtensionScope;
+import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.rpc.protocol.rest.annotation.ParamParser;
 
-@RestController("/demoService")
-public interface DemoService {
-    @RequestMapping(value = "/hello", method = RequestMethod.GET)
-    Integer hello(@RequestParam Integer a, @RequestParam Integer b);
+@SPI(scope = ExtensionScope.FRAMEWORK)
+public interface BaseProviderParamParser extends ParamParser<ProviderParseContext> {
 
-    @RequestMapping(value = "/error", method = RequestMethod.GET)
-    String error();
-
-    @RequestMapping(value = "/sayHello", method = RequestMethod.POST, consumes = MediaType.TEXT_PLAIN_VALUE)
-    String sayHello(String name);
 }

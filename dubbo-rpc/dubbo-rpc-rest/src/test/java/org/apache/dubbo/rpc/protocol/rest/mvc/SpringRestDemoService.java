@@ -14,19 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata.rest;
+package org.apache.dubbo.rpc.protocol.rest.mvc;
 
-import org.apache.dubbo.common.extension.ExtensionScope;
-import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.metadata.rest.media.MediaType;
 
-import java.lang.reflect.Parameter;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-@SPI(scope = ExtensionScope.FRAMEWORK)
-public interface NoAnnotatedParameterRequestTagProcessor {
-    MediaType consumerContentType();
+@RestController("/demoService")
+public interface SpringRestDemoService {
+    @RequestMapping(value = "/hello", method = RequestMethod.GET)
+    Integer hello(@RequestParam Integer a, @RequestParam Integer b);
 
-    String defaultAnnotationClassName(RestMethodMetadata restMethodMetadata);
+    @RequestMapping(value = "/error", method = RequestMethod.GET)
+    String error();
 
-    boolean process(Parameter parameter, int parameterIndex, RestMethodMetadata restMethodMetadata);
+    @RequestMapping(value = "/sayHello", method = RequestMethod.POST, consumes = MediaType.TEXT_PLAIN_VALUE)
+    String sayHello(String name);
+
+    boolean isCalled();
 }

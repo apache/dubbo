@@ -42,6 +42,16 @@ public class MultiValueCodec implements HttpMessageCodec<byte[],OutputStream> {
     }
 
     @Override
+    public boolean typeSupport(Class targetType) {
+        return false;
+    }
+
+    @Override
+    public MediaType contentType() {
+        return MediaType.APPLICATION_FORM_URLENCODED_VALUE;
+    }
+
+    @Override
     public void encode(OutputStream outputStream, Object unSerializedBody, URL url) throws Exception {
         DataParseUtils.writeFormContent((Map) unSerializedBody, outputStream);
     }
