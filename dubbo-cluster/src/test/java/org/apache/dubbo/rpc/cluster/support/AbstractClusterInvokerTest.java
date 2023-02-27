@@ -35,6 +35,7 @@ import org.apache.dubbo.rpc.cluster.loadbalance.LeastActiveLoadBalance;
 import org.apache.dubbo.rpc.cluster.loadbalance.RandomLoadBalance;
 import org.apache.dubbo.rpc.cluster.loadbalance.RoundRobinLoadBalance;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -259,7 +260,7 @@ class AbstractClusterInvokerTest {
     }
 
     @Test
-    void testSelect_multiInvokers() throws Exception {
+    void testSelect_multiInvokers() {
         testSelect_multiInvokers(RoundRobinLoadBalance.NAME);
         testSelect_multiInvokers(LeastActiveLoadBalance.NAME);
         testSelect_multiInvokers(RandomLoadBalance.NAME);
