@@ -237,6 +237,10 @@ public interface FilterChainBuilder {
             return asyncResult;
         }
 
+        public Invoker<T> getFilterInvoker() {
+            return filterInvoker;
+        }
+
         @Override
         public Class<T> getInterface() {
             return filterInvoker.getInterface();

@@ -60,10 +60,6 @@
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-serialization-hessian2</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-serialization-fastjson2</artifactId>
         </dependency>
         <dependency>
@@ -94,17 +90,6 @@
 
 
     <profiles>
-
-        <profile>
-            <id>dev</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <properties>
-                <profileActive>dev</profileActive>
-            </properties>
-        </profile>
-
         <profile>
             <id>native</id>
             <properties>
@@ -115,13 +100,16 @@
                 <plugins>
                     <plugin>
                         <groupId>org.apache.dubbo</groupId>
-                        <artifactId>dubbo-native-plugin</artifactId>
+                        <artifactId>dubbo-maven-plugin</artifactId>
                         <version>${project.version}</version>
+                        <configuration>
+                            <mainClass>org.apache.dubbo.demo.graalvm.provider.Application</mainClass>
+                        </configuration>
                         <executions>
                             <execution>
                                 <phase>process-sources</phase>
                                 <goals>
-                                    <goal>generate</goal>
+                                    <goal>dubbo-process-aot</goal>
                                 </goals>
                             </execution>
                         </executions>
@@ -129,7 +117,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-compiler-plugin</artifactId>
-                        <version>3.10.1</version>
+                        <version>3.7.0</version>
                         <configuration>
                             <source>1.8</source>
                             <target>1.8</target>
@@ -143,71 +131,20 @@
                             </compilerArguments>
                         </configuration>
                     </plugin>
-
                     <plugin>
-                        <groupId>org.graalvm.nativeimage</groupId>
-                        <artifactId>native-image-maven-plugin</artifactId>
-                        <version>21.2.0</version>
-                        <executions>
-                            <execution>
-                                <goals>
-                                    <goal>native-image</goal>
-                                </goals>
-                                <phase>package</phase>
-                            </execution>
-                        </executions>
+                        <groupId>org.graalvm.buildtools</groupId>
+                        <artifactId>native-maven-plugin</artifactId>
+                        <version>0.9.19</version>
                         <configuration>
-                            <skip>false</skip>
-                            <imageName>demo-native-provider</imageName>
+                            <classesDirectory>${project.build.outputDirectory}</classesDirectory>
+                            <metadataRepository>
+                                <enabled>true</enabled>
+                            </metadataRepository>
+                            <requiredVersion>22.3</requiredVersion>
                             <mainClass>org.apache.dubbo.demo.graalvm.provider.Application</mainClass>
-                            <buildArgs>
-                                --no-fallback
-
-                                --initialize-at-build-time=org.slf4j.MDC
-                                --initialize-at-build-time=org.apache.log4j.MDC
-                                --initialize-at-build-time=org.slf4j.LoggerFactory
-                                --initialize-at-build-time=org.slf4j.impl.StaticLoggerBinder
-                                --initialize-at-build-time=org.apache.log4j.helpers.Loader
-                                --initialize-at-build-time=org.apache.log4j.Logger
-                                --initialize-at-build-time=org.apache.log4j.helpers.LogLog
-                                --initialize-at-build-time=org.apache.log4j.LogManager
-                                --initialize-at-build-time=org.apache.log4j.spi.LoggingEvent
-                                --initialize-at-build-time=org.slf4j.impl.Log4jLoggerFactory
-                                --initialize-at-build-time=org.slf4j.impl.Log4jLoggerAdapter
-                                --initialize-at-build-time=org.eclipse.collections.api.factory.Sets
-                                --initialize-at-build-time=io.netty.util.internal.logging.Log4JLogger
-
-
-                                --initialize-at-run-time=io.netty.channel.epoll.Epoll
-                                --initialize-at-run-time=io.netty.channel.epoll.Native
-                                --initialize-at-run-time=io.netty.channel.epoll.EpollEventLoop
-                                --initialize-at-run-time=io.netty.channel.epoll.EpollEventArray
-                                --initialize-at-run-time=io.netty.channel.DefaultFileRegion
-                                --initialize-at-run-time=io.netty.channel.kqueue.KQueueEventArray
-                                --initialize-at-run-time=io.netty.channel.kqueue.KQueueEventLoop
-                                --initialize-at-run-time=io.netty.channel.kqueue.Native
-                                --initialize-at-run-time=io.netty.channel.unix.Errors
-                                --initialize-at-run-time=io.netty.channel.unix.IovArray
-                                --initialize-at-run-time=io.netty.channel.unix.Limits
-                                --initialize-at-run-time=io.netty.channel.unix.Socket
-                                --initialize-at-run-time=io.netty.channel.ChannelHandlerMask
-                                --initialize-at-run-time=io.netty.internal.tcnative.CertificateVerifier
-                                --initialize-at-run-time=io.netty.internal.tcnative.AsyncSSLPrivateKeyMethod
-                                --initialize-at-run-time=io.netty.handler.ssl.ReferenceCountedOpenSslEngine
-                                --initialize-at-run-time=io.netty.handler.ssl.OpenSslPrivateKeyMethod
-                                --initialize-at-run-time=io.netty.internal.tcnative.CertificateVerifier
-                                --initialize-at-run-time=io.netty.internal.tcnative.SSL
-                                --initialize-at-run-time=io.netty.handler.ssl.OpenSslAsyncPrivateKeyMethod
-                                --initialize-at-run-time=io.netty.internal.tcnative.SSLPrivateKeyMethod
-
-                                --report-unsupported-elements-at-runtime
-                                --allow-incomplete-classpath
-                                --enable-url-protocols=http
-                                -H:+ReportExceptionStackTraces
-                                -H:+AllowJRTFileSystem
-                            </buildArgs>
                         </configuration>
                     </plugin>
+
                 </plugins>
             </build>
 

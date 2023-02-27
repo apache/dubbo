@@ -21,6 +21,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
+import java.beans.Transient;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -371,6 +372,7 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
     }
 
     @Parameter(key = SERVICE_EXECUTOR)
+    @Transient
     public Executor getExecutor() {
         return executor;
     }

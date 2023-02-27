@@ -38,7 +38,7 @@ public abstract class AbstractProxyTest {
     public static ProxyFactory factory;
 
     @Test
-    void testGetProxy() throws Exception {
+    void testGetProxy() {
         URL url = URL.valueOf("test://test:11/test?group=dubbo&version=1.1");
 
         MyInvoker<DemoService> invoker = new MyInvoker<>(url);
@@ -61,7 +61,7 @@ public abstract class AbstractProxyTest {
     }
 
     @Test
-    void testGetInvoker() throws Exception {
+    void testGetInvoker() {
         URL url = URL.valueOf("test://test:11/test?group=dubbo&version=1.1");
 
         DemoService origin = new DemoServiceImpl();
