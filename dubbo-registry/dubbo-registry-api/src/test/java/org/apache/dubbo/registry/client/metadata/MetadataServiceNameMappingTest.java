@@ -31,7 +31,7 @@ import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.metadata.report.MetadataReport;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.FrameworkModel;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -58,7 +58,7 @@ class MetadataServiceNameMappingTest {
 
     @BeforeEach
     public void setUp() {
-        applicationModel = new ApplicationModel(FrameworkModel.defaultModel());
+        applicationModel = ApplicationModel.defaultModel();
         configManager = mock(ConfigManager.class);
         metadataReport = mock(MetadataReport.class);
         metadataReportList.put("default", metadataReport);
@@ -103,7 +103,7 @@ class MetadataServiceNameMappingTest {
             private int counter = 0;
 
             @Override
-            public Boolean answer(InvocationOnMock invocationOnMock) throws Throwable {
+            public Boolean answer(InvocationOnMock invocationOnMock) {
                 if (++counter == 10) {
                     return true;
                 }

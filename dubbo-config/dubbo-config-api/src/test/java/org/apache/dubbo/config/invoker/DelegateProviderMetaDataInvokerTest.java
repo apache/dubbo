@@ -40,7 +40,7 @@ class DelegateProviderMetaDataInvokerTest {
     }
 
     @Test
-    void testDelegate() throws Exception {
+    void testDelegate() {
         DelegateProviderMetaDataInvoker<Greeting> delegate =
                 new DelegateProviderMetaDataInvoker<Greeting>(invoker, service);
         delegate.getInterface();

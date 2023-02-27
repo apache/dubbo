@@ -32,10 +32,10 @@ import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.context.ModuleConfigManager;
 import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
 import org.apache.dubbo.registry.client.migration.MigrationInvoker;
-
+import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
+import org.apache.dubbo.rpc.cluster.filter.FilterChainBuilder;
 import org.apache.dubbo.rpc.cluster.support.registry.ZoneAwareClusterInvoker;
 import org.apache.dubbo.rpc.cluster.support.wrapper.MockClusterInvoker;
 import org.apache.dubbo.rpc.cluster.support.wrapper.ScopeClusterInvoker;
@@ -418,8 +418,19 @@ class ReferenceConfigTest {
         Invoker<?> mockInvoker = scopeClusterInvoker.getInvoker();
         Assertions.assertTrue(mockInvoker instanceof MockClusterInvoker);
         Invoker<?> withFilter = ((MockClusterInvoker<?>)mockInvoker).getDirectory().getAllInvokers().get(0);
-        Assertions.assertTrue(withFilter instanceof ListenerInvokerWrapper);
-        Assertions.assertTrue(((ListenerInvokerWrapper<?>) withFilter).getInvoker() instanceof InjvmInvoker);
+
+        Assertions.assertTrue(withFilter instanceof ListenerInvokerWrapper
+            || withFilter instanceof FilterChainBuilder.CallbackRegistrationInvoker);
+        if (withFilter instanceof ListenerInvokerWrapper) {
+            Assertions.assertTrue(((ListenerInvokerWrapper<?>) withFilter).getInvoker() instanceof InjvmInvoker);
+        }
+        if (withFilter instanceof FilterChainBuilder.CallbackRegistrationInvoker) {
+            Invoker filterInvoker = ((FilterChainBuilder.CallbackRegistrationInvoker) withFilter).getFilterInvoker();
+            FilterChainBuilder.CopyOfFilterChainNode filterInvoker1 = (FilterChainBuilder.CopyOfFilterChainNode) filterInvoker;
+            ListenerInvokerWrapper originalInvoker = (ListenerInvokerWrapper) filterInvoker1.getOriginalInvoker();
+            Invoker invoker = originalInvoker.getInvoker();
+            Assertions.assertTrue(invoker instanceof InjvmInvoker);
+        }
         URL url = withFilter.getUrl();
         Assertions.assertEquals("application1", url.getParameter("application"));
         Assertions.assertEquals("value1", url.getParameter("key1"));
@@ -508,10 +519,8 @@ class ReferenceConfigTest {
             .initialize();
 
         referenceConfig.init();
-        Assertions.assertTrue(referenceConfig.getInvoker() instanceof ScopeClusterInvoker);
-        ScopeClusterInvoker scopeClusterInvoker = (ScopeClusterInvoker) referenceConfig.getInvoker();
-        Assertions.assertTrue(scopeClusterInvoker.getInvoker() instanceof MockClusterInvoker);
-        Assertions.assertEquals(Boolean.TRUE, scopeClusterInvoker.getInvoker().getUrl().getAttribute(PEER_KEY));
+        Assertions.assertTrue(referenceConfig.getInvoker() instanceof MockClusterInvoker);
+        Assertions.assertEquals(Boolean.TRUE, referenceConfig.getInvoker().getUrl().getAttribute(PEER_KEY));
         dubboBootstrap.destroy();
 
     }
@@ -682,15 +691,13 @@ class ReferenceConfigTest {
             System.setProperty("java.net.preferIPv4Stack", "true");
             ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
             DemoService service = new DemoServiceImpl();
-            URL url = URL.valueOf("injvm://127.0.0.1/DemoService")
+            URL url = URL.valueOf("dubbo://127.0.0.1/DemoService")
                 .addParameter(INTERFACE_KEY, DemoService.class.getName());
-            Protocol protocol = ApplicationModel.defaultModel().getExtensionLoader(Protocol.class).getAdaptiveExtension();
-            protocol.export(proxy.getInvoker(service, DemoService.class, url));
+            InjvmProtocol.getInjvmProtocol(FrameworkModel.defaultModel()).export(proxy.getInvoker(service, DemoService.class, url));
             demoService = rc.get();
             success = true;
         } catch (Exception e) {
             // ignore
-            e.printStackTrace();
         } finally {
             rc.destroy();
             InjvmProtocol.getInjvmProtocol(FrameworkModel.defaultModel()).destroy();

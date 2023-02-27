@@ -52,17 +52,17 @@ class AbstractDynamicConfigurationTest {
     public void init() {
         configuration = new AbstractDynamicConfiguration(null) {
             @Override
-            protected String doGetConfig(String key, String group) throws Exception {
+            protected String doGetConfig(String key, String group) {
                 return null;
             }
 
             @Override
-            protected void doClose() throws Exception {
+            protected void doClose() {
 
             }
 
             @Override
-            protected boolean doRemoveConfig(String key, String group) throws Exception {
+            protected boolean doRemoveConfig(String key, String group) {
                 return false;
             }
         };
@@ -93,17 +93,17 @@ class AbstractDynamicConfigurationTest {
         AbstractDynamicConfiguration configuration = new AbstractDynamicConfiguration(url) {
 
             @Override
-            protected String doGetConfig(String key, String group) throws Exception {
+            protected String doGetConfig(String key, String group) {
                 return null;
             }
 
             @Override
-            protected void doClose() throws Exception {
+            protected void doClose() {
 
             }
 
             @Override
-            protected boolean doRemoveConfig(String key, String group) throws Exception {
+            protected boolean doRemoveConfig(String key, String group) {
                 return false;
             }
         };

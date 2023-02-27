@@ -54,8 +54,12 @@ public class FastJson2Serialization implements Serialization {
             .map(URL::getOrDefaultFrameworkModel)
             .orElse(FrameworkModel.defaultModel())
             .getBeanFactory().getBean(Fastjson2CreatorManager.class);
+        Fastjson2SecurityManager fastjson2SecurityManager = Optional.ofNullable(url)
+            .map(URL::getOrDefaultFrameworkModel)
+            .orElse(FrameworkModel.defaultModel())
+            .getBeanFactory().getBean(Fastjson2SecurityManager.class);
 
-        return new FastJson2ObjectOutput(fastjson2CreatorManager, output);
+        return new FastJson2ObjectOutput(fastjson2CreatorManager, fastjson2SecurityManager, output);
     }
 
     @Override

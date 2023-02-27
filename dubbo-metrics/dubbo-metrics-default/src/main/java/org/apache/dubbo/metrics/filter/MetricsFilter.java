@@ -27,22 +27,25 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
 
-import java.util.function.Consumer;
-
+import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
 
-@Activate(group = PROVIDER, order = -1)
+@Activate(group = {CONSUMER, PROVIDER}, order = -1)
 public class MetricsFilter implements Filter, BaseFilter.Listener, ScopeModelAware {
 
     private DefaultMetricsCollector collector = null;
 
-    private ApplicationModel applicationModel;
+    private MethodMetricsInterceptor metricsInterceptor;
 
 
     @Override
     public void setApplicationModel(ApplicationModel applicationModel) {
-        this.applicationModel = applicationModel;
         collector = applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class);
+
+        if (collector != null) {
+            metricsInterceptor = new MethodMetricsInterceptor(collector.getMethodSampler());
+        }
+
     }
 
     @Override
@@ -50,28 +53,27 @@ public class MetricsFilter implements Filter, BaseFilter.Listener, ScopeModelAwa
         if (collector == null || !collector.isCollectEnabled()) {
             return invoker.invoke(invocation);
         }
-        collect(invocation, MetricsCollectExecutor::beforeExecute);
+
+        metricsInterceptor.beforeExecute(invocation);
 
         return invoker.invoke(invocation);
+
     }
 
     @Override
     public void onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
-        collect(invocation, collector->collector.postExecute(result));
+        if (collector == null || !collector.isCollectEnabled()) {
+            return;
+        }
+        metricsInterceptor.postExecute(invocation, result);
     }
 
     @Override
     public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
-        collect(invocation, collector-> collector.throwExecute(t));
-    }
-
-    private void collect(Invocation invocation, Consumer<MetricsCollectExecutor> execute) {
         if (collector == null || !collector.isCollectEnabled()) {
             return;
         }
-
-        MetricsCollectExecutor collectorExecutor = new MetricsCollectExecutor(applicationModel.getApplicationName(),
-            collector, invocation);
-        execute.accept(collectorExecutor);
+        metricsInterceptor.throwExecute(invocation, t);
     }
+
 }

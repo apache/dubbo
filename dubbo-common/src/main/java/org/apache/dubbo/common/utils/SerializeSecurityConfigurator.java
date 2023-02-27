@@ -16,6 +16,14 @@
  */
 package org.apache.dubbo.common.utils;
 
+import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.model.ModuleModel;
+import org.apache.dubbo.rpc.model.ScopeClassLoaderListener;
+
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.GenericArrayType;
@@ -32,14 +40,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.config.ApplicationConfig;
-import org.apache.dubbo.rpc.model.FrameworkModel;
-import org.apache.dubbo.rpc.model.ModuleModel;
-import org.apache.dubbo.rpc.model.ScopeClassLoaderListener;
-
 import static org.apache.dubbo.common.constants.CommonConstants.CLASS_DESERIALIZE_ALLOWED_LIST;
 import static org.apache.dubbo.common.constants.CommonConstants.CLASS_DESERIALIZE_BLOCKED_LIST;
 import static org.apache.dubbo.common.constants.CommonConstants.CLASS_DESERIALIZE_BLOCK_ALL;
@@ -54,9 +54,9 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
 
     private final ModuleModel moduleModel;
 
-    private final boolean autoTrustSerializeClass;
+    private volatile boolean autoTrustSerializeClass = true;
 
-    private final int trustSerializeClassLevel;
+    private volatile int trustSerializeClassLevel = 3;
 
     public SerializeSecurityConfigurator(ModuleModel moduleModel) {
         this.moduleModel = moduleModel;
@@ -66,9 +66,13 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
         serializeSecurityManager = frameworkModel.getBeanFactory().getBean(SerializeSecurityManager.class);
 
         refreshStatus();
+        refreshCheck();
         refreshConfig();
-        onAddClassLoader(moduleModel, Thread.currentThread().getContextClassLoader());
 
+        onAddClassLoader(moduleModel, Thread.currentThread().getContextClassLoader());
+    }
+
+    public void refreshCheck() {
         Optional<ApplicationConfig> applicationConfig = moduleModel.getApplicationModel().getApplicationConfigManager().getApplication();
         autoTrustSerializeClass = applicationConfig.map(ApplicationConfig::getAutoTrustSerializeClass).orElse(true);
         trustSerializeClassLevel = applicationConfig.map(ApplicationConfig::getTrustSerializeClassLevel).orElse(3);
@@ -153,7 +157,7 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
         }
     }
 
-    private void refreshStatus() {
+    public void refreshStatus() {
         Optional<ApplicationConfig> application = moduleModel.getApplicationModel().getApplicationConfigManager().getApplication();
         String statusString = application.map(ApplicationConfig::getSerializeCheckStatus).orElse(null);
         SerializeCheckStatus checkStatus = null;
@@ -181,8 +185,9 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
             return;
         }
 
-        Set<Class<?>> markedClass = new HashSet<>();
+        Set<Type> markedClass = new HashSet<>();
         markedClass.add(clazz);
+        checkClass(markedClass, clazz);
 
         addToAllow(clazz.getName());
 
@@ -217,10 +222,17 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
         }
     }
 
-    private void checkType(Set<Class<?>> markedClass, Type type) {
+    private void checkType(Set<Type> markedClass, Type type) {
         if (type instanceof Class) {
             checkClass(markedClass, (Class<?>) type);
-        } else if (type instanceof ParameterizedType) {
+            return;
+        }
+
+        if (!markedClass.add(type)) {
+            return;
+        }
+
+        if (type instanceof ParameterizedType) {
             ParameterizedType parameterizedType = (ParameterizedType) type;
             checkClass(markedClass, (Class<?>) parameterizedType.getRawType());
             for (Type actualTypeArgument : parameterizedType.getActualTypeArguments()) {
@@ -245,12 +257,10 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
         }
     }
 
-    private void checkClass(Set<Class<?>> markedClass, Class<?> clazz) {
-        if (markedClass.contains(clazz)) {
+    private void checkClass(Set<Type> markedClass, Class<?> clazz) {
+        if (!markedClass.add(clazz)) {
             return;
         }
-
-        markedClass.add(clazz);
 
         addToAllow(clazz.getName());
 

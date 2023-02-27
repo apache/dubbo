@@ -29,7 +29,6 @@ import org.apache.dubbo.common.utils.SerializeSecurityManager;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import com.alibaba.fastjson2.filter.ContextAutoTypeBeforeHandler;
-import com.alibaba.fastjson2.filter.Filter;
 import com.alibaba.fastjson2.util.TypeUtils;
 
 import static com.alibaba.fastjson2.util.TypeUtils.loadClass;
@@ -37,11 +36,11 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_UNT
 import static org.apache.dubbo.common.utils.SerializeCheckStatus.STRICT;
 
 public class Fastjson2SecurityManager implements AllowClassNotifyListener {
-    private Filter securityFilter = new Handler(AllowClassNotifyListener.DEFAULT_STATUS, true, new String[0], new ConcurrentHashSet<>());
+    private volatile Handler securityFilter;
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(Fastjson2SecurityManager.class);
 
-    private static final Set<String> warnedClasses = new ConcurrentHashSet<>(1);
+    private final SerializeSecurityManager securityManager;
 
     private volatile SerializeCheckStatus status = AllowClassNotifyListener.DEFAULT_STATUS;
 
@@ -52,45 +51,48 @@ public class Fastjson2SecurityManager implements AllowClassNotifyListener {
     private volatile Set<String> disAllowedList = new ConcurrentHashSet<>(1);
 
     public Fastjson2SecurityManager(FrameworkModel frameworkModel) {
-        SerializeSecurityManager securityManager = frameworkModel.getBeanFactory().getOrRegisterBean(SerializeSecurityManager.class);
+        securityManager = frameworkModel.getBeanFactory().getOrRegisterBean(SerializeSecurityManager.class);
         securityManager.registerListener(this);
+        securityFilter = new Handler(AllowClassNotifyListener.DEFAULT_STATUS, securityManager, true, new String[0], new ConcurrentHashSet<>());
     }
 
     @Override
     public synchronized void notifyPrefix(Set<String> allowedList, Set<String> disAllowedList) {
         this.allowedList = allowedList;
         this.disAllowedList = disAllowedList;
-        this.securityFilter = new Handler(this.status, this.checkSerializable, this.allowedList.toArray(new String[0]), this.disAllowedList);
+        this.securityFilter = new Handler(this.status, this.securityManager, this.checkSerializable, this.allowedList.toArray(new String[0]), this.disAllowedList);
     }
 
     @Override
     public synchronized void notifyCheckStatus(SerializeCheckStatus status) {
         this.status = status;
-        this.securityFilter = new Handler(this.status, this.checkSerializable, this.allowedList.toArray(new String[0]), this.disAllowedList);
+        this.securityFilter = new Handler(this.status, this.securityManager, this.checkSerializable, this.allowedList.toArray(new String[0]), this.disAllowedList);
     }
 
     @Override
     public synchronized void notifyCheckSerializable(boolean checkSerializable) {
         this.checkSerializable = checkSerializable;
-        this.securityFilter = new Handler(this.status, this.checkSerializable, this.allowedList.toArray(new String[0]), this.disAllowedList);
+        this.securityFilter = new Handler(this.status, this.securityManager, this.checkSerializable, this.allowedList.toArray(new String[0]), this.disAllowedList);
 
     }
 
-    public Filter getSecurityFilter() {
+    public Handler getSecurityFilter() {
         return securityFilter;
     }
 
     public static class Handler extends ContextAutoTypeBeforeHandler {
         final SerializeCheckStatus status;
+        final SerializeSecurityManager serializeSecurityManager;
         final Map<String, Class<?>> classCache = new ConcurrentHashMap<>(16, 0.75f, 1);
 
         final Set<String> disAllowedList;
 
         final boolean checkSerializable;
 
-        public Handler(SerializeCheckStatus status, boolean checkSerializable, String[] acceptNames, Set<String> disAllowedList) {
+        public Handler(SerializeCheckStatus status, SerializeSecurityManager serializeSecurityManager, boolean checkSerializable, String[] acceptNames, Set<String> disAllowedList) {
             super(true, acceptNames);
             this.status = status;
+            this.serializeSecurityManager = serializeSecurityManager;
             this.checkSerializable = checkSerializable;
             this.disAllowedList = disAllowedList;
         }
@@ -109,7 +111,7 @@ public class Fastjson2SecurityManager implements AllowClassNotifyListener {
                 String msg = "[Serialization Security] Serialized class " + typeName + " is not in allow list. " +
                     "Current mode is `STRICT`, will disallow to deserialize it by default. " +
                     "Please add it into security/serialize.allowlist or follow FAQ to configure it.";
-                if (warnedClasses.add(typeName)) {
+                if (serializeSecurityManager.getWarnedClasses().add(typeName)) {
                     logger.error(PROTOCOL_UNTRUSTED_SERIALIZE_CLASS, "", "", msg);
                 }
 
@@ -119,7 +121,7 @@ public class Fastjson2SecurityManager implements AllowClassNotifyListener {
             // 3. try load
             Class<?> localClass = loadClassDirectly(typeName);
             if (localClass != null) {
-                if (status == SerializeCheckStatus.WARN && warnedClasses.add(typeName)) {
+                if (status == SerializeCheckStatus.WARN && serializeSecurityManager.getWarnedClasses().add(typeName)) {
                     logger.error(PROTOCOL_UNTRUSTED_SERIALIZE_CLASS, "", "",
                         "[Serialization Security] Serialized class " + localClass.getName() + " is not in allow list. " +
                             "Current mode is `WARN`, will allow to deserialize it by default. " +
@@ -149,7 +151,7 @@ public class Fastjson2SecurityManager implements AllowClassNotifyListener {
                 String msg = "[Serialization Security] Serialized class " + typeName + " is in disAllow list. " +
                     "Current mode is `WARN`, will disallow to deserialize it by default. " +
                     "Please add it into security/serialize.allowlist or follow FAQ to configure it.";
-                if (warnedClasses.add(typeName)) {
+                if (serializeSecurityManager.getWarnedClasses().add(typeName)) {
                     logger.error(PROTOCOL_UNTRUSTED_SERIALIZE_CLASS, "", "", msg);
                 }
             }

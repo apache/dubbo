@@ -135,7 +135,7 @@ class AbstractConfigTest {
     }
 
     @Test
-    void testAppendParameters1() throws Exception {
+    void testAppendParameters1() {
         Map<String, String> parameters = new HashMap<String, String>();
         parameters.put("num", "ONE");
         AbstractConfig.appendParameters(parameters, new ParameterConfig(1, "hello/world", 30, "password"), "prefix");
@@ -148,7 +148,7 @@ class AbstractConfigTest {
     }
 
     @Test
-    void testAppendParameters2() throws Exception {
+    void testAppendParameters2() {
         Assertions.assertThrows(IllegalStateException.class, () -> {
             Map<String, String> parameters = new HashMap<String, String>();
             AbstractConfig.appendParameters(parameters, new ParameterConfig());
@@ -156,14 +156,14 @@ class AbstractConfigTest {
     }
 
     @Test
-    void testAppendParameters3() throws Exception {
+    void testAppendParameters3() {
         Map<String, String> parameters = new HashMap<String, String>();
         AbstractConfig.appendParameters(parameters, null);
         assertTrue(parameters.isEmpty());
     }
 
     @Test
-    void testAppendParameters4() throws Exception {
+    void testAppendParameters4() {
         Map<String, String> parameters = new HashMap<String, String>();
         AbstractConfig.appendParameters(parameters, new ParameterConfig(1, "hello/world", 30, "password"));
         Assertions.assertEquals("one", parameters.get("key.1"));
@@ -174,7 +174,7 @@ class AbstractConfigTest {
     }
 
     @Test
-    void testAppendAttributes1() throws Exception {
+    void testAppendAttributes1() {
         ParameterConfig config = new ParameterConfig(1, "hello/world", 30, "password","BEIJING");
         Map<String, String> parameters = new HashMap<>();
         AbstractConfig.appendParameters(parameters, config);
@@ -195,24 +195,24 @@ class AbstractConfigTest {
     }
 
     @Test
-    void checkExtension() throws Exception {
+    void checkExtension() {
         Assertions.assertThrows(IllegalStateException.class, () -> ConfigValidationUtils.checkExtension(ApplicationModel.defaultModel(), Greeting.class, "hello", "world"));
     }
 
     @Test
-    void checkMultiExtension1() throws Exception {
+    void checkMultiExtension1() {
         Assertions.assertThrows(IllegalStateException.class,
                 () -> ConfigValidationUtils.checkMultiExtension(ApplicationModel.defaultModel(), Greeting.class, "hello", "default,world"));
     }
 
     @Test
-    void checkMultiExtension2() throws Exception {
+    void checkMultiExtension2() {
         Assertions.assertThrows(IllegalStateException.class,
                 () -> ConfigValidationUtils.checkMultiExtension(ApplicationModel.defaultModel(), Greeting.class, "hello", "default,-world"));
     }
 
     @Test
-    void checkLength() throws Exception {
+    void checkLength() {
         Assertions.assertDoesNotThrow(() -> {
             StringBuilder builder = new StringBuilder();
             for (int i = 0; i <= 200; i++) {
@@ -223,7 +223,7 @@ class AbstractConfigTest {
     }
 
     @Test
-    void checkPathLength() throws Exception {
+    void checkPathLength() {
         Assertions.assertDoesNotThrow(() -> {
             StringBuilder builder = new StringBuilder();
             for (int i = 0; i <= 200; i++) {
@@ -234,12 +234,12 @@ class AbstractConfigTest {
     }
 
     @Test
-    void checkName() throws Exception {
+    void checkName() {
         Assertions.assertDoesNotThrow(() -> ConfigValidationUtils.checkName("hello", "world%"));
     }
 
     @Test
-    void checkNameHasSymbol() throws Exception {
+    void checkNameHasSymbol() {
         try {
             ConfigValidationUtils.checkNameHasSymbol("hello", ":*,/ -0123\tabcdABCD");
             ConfigValidationUtils.checkNameHasSymbol("mock", "force:return world");
@@ -249,7 +249,7 @@ class AbstractConfigTest {
     }
 
     @Test
-    void checkKey() throws Exception {
+    void checkKey() {
         try {
             ConfigValidationUtils.checkKey("hello", "*,-0123abcdABCD");
         } catch (Exception e) {
@@ -258,7 +258,7 @@ class AbstractConfigTest {
     }
 
     @Test
-    void checkMultiName() throws Exception {
+    void checkMultiName() {
         try {
             ConfigValidationUtils.checkMultiName("hello", ",-._0123abcdABCD");
         } catch (Exception e) {
@@ -267,7 +267,7 @@ class AbstractConfigTest {
     }
 
     @Test
-    void checkPathName() throws Exception {
+    void checkPathName() {
         try {
             ConfigValidationUtils.checkPathName("hello", "/-$._0123abcdABCD");
         } catch (Exception e) {
@@ -276,7 +276,7 @@ class AbstractConfigTest {
     }
 
     @Test
-    void checkMethodName() throws Exception {
+    void checkMethodName() {
         try {
             ConfigValidationUtils.checkMethodName("hello", "abcdABCD0123abcd");
         } catch (Exception e) {
@@ -292,7 +292,7 @@ class AbstractConfigTest {
     }
 
     @Test
-    void checkParameterName() throws Exception {
+    void checkParameterName() {
         Map<String, String> parameters = Collections.singletonMap("hello", ":*,/-._0123abcdABCD");
         try {
             ConfigValidationUtils.checkParameterName(parameters);

@@ -82,7 +82,7 @@ class AbstractMetadataReportTest {
     }
 
     @Test
-    void testStoreProviderUsual() throws ClassNotFoundException, InterruptedException {
+    void testStoreProviderUsual() throws ClassNotFoundException {
         String interfaceName = "org.apache.dubbo.metadata.store.InterfaceNameTestService";
         String version = "1.0.0";
         String group = null;
@@ -96,7 +96,7 @@ class AbstractMetadataReportTest {
     }
 
     @Test
-    void testStoreProviderSync() throws ClassNotFoundException, InterruptedException {
+    void testStoreProviderSync() throws ClassNotFoundException {
         String interfaceName = "org.apache.dubbo.metadata.store.InterfaceNameTestService";
         String version = "1.0.0";
         String group = null;
@@ -107,7 +107,7 @@ class AbstractMetadataReportTest {
     }
 
     @Test
-    void testFileExistAfterPut() throws InterruptedException, ClassNotFoundException {
+    void testFileExistAfterPut() throws ClassNotFoundException {
         //just for one method
         URL singleUrl = URL.valueOf("redis://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.metadata.store.InterfaceNameTestService?version=1.0.0&application=singleTest");
         NewMetadataReport singleMetadataReport = new NewMetadataReport(singleUrl);
@@ -129,7 +129,7 @@ class AbstractMetadataReportTest {
     }
 
     @Test
-    void testRetry() throws InterruptedException, ClassNotFoundException {
+    void testRetry() throws ClassNotFoundException {
         String interfaceName = "org.apache.dubbo.metadata.store.RetryTestService";
         String version = "1.0.0.retry";
         String group = null;
@@ -164,7 +164,7 @@ class AbstractMetadataReportTest {
     }
 
     @Test
-    void testRetryCancel() throws InterruptedException, ClassNotFoundException {
+    void testRetryCancel() throws ClassNotFoundException {
         String interfaceName = "org.apache.dubbo.metadata.store.RetryTestService";
         String version = "1.0.0.retrycancel";
         String group = null;
@@ -201,7 +201,7 @@ class AbstractMetadataReportTest {
         return providerMetadataIdentifier;
     }
 
-    private MetadataIdentifier storeConsumer(AbstractMetadataReport abstractMetadataReport, String interfaceName, String version, String group, String application, Map<String, String> tmp) throws ClassNotFoundException {
+    private MetadataIdentifier storeConsumer(AbstractMetadataReport abstractMetadataReport, String interfaceName, String version, String group, String application, Map<String, String> tmp) {
         URL url = URL.valueOf("xxx://" + NetUtils.getLocalAddress().getHostName() + ":4444/" + interfaceName + "?version=" + version + "&application="
             + application + (group == null ? "" : "&group=" + group) + "&testPKey=9090");
 
@@ -214,7 +214,7 @@ class AbstractMetadataReportTest {
     }
 
     @Test
-    void testPublishAll() throws ClassNotFoundException, InterruptedException {
+    void testPublishAll() throws ClassNotFoundException {
         ThreadPoolExecutor reportCacheExecutor = (ThreadPoolExecutor) abstractMetadataReport.getReportCacheExecutor();
 
         assertTrue(abstractMetadataReport.store.isEmpty());

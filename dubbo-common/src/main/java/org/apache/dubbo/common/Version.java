@@ -19,15 +19,19 @@ package org.apache.dubbo.common;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ClassUtils;
+import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 
 import java.io.IOException;
 import java.net.URL;
 import java.security.CodeSource;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -46,8 +50,9 @@ public final class Version {
     public static final String DEFAULT_DUBBO_PROTOCOL_VERSION = "2.0.2";
     // version 1.0.0 represents Dubbo rpc protocol before v2.6.2
     public static final int LEGACY_DUBBO_PROTOCOL_VERSION = 10000; // 1.0.0
-    // Dubbo implementation version, usually is jar version.
-    private static final String VERSION = getVersion(Version.class, "");
+    // Dubbo implementation version.
+    private static String VERSION;
+    private static String LATEST_COMMIT_ID;
 
     /**
      * For protocol compatibility purpose.
@@ -61,6 +66,21 @@ public final class Version {
     static {
         // check if there's duplicated jar
         Version.checkDuplicate(Version.class);
+
+        // get dubbo version and last commit id
+        try {
+            Properties properties =
+                ConfigUtils.loadProperties(Collections.emptySet(), "META-INF/version");
+
+            VERSION = Optional.ofNullable(properties.getProperty("revision"))
+                .filter(StringUtils::isNotBlank)
+                .orElseGet(() -> getVersion(Version.class, ""));
+            LATEST_COMMIT_ID = Optional.ofNullable(properties.getProperty("git.commit.id")).orElse("");
+        } catch (Throwable e) {
+            logger.warn(COMMON_UNEXPECTED_EXCEPTION, "", "", "continue the old logic, ignore exception " + e.getMessage(), e);
+            VERSION = getVersion(Version.class, "");
+            LATEST_COMMIT_ID = "";
+        }
     }
 
     private Version() {
@@ -72,6 +92,10 @@ public final class Version {
 
     public static String getVersion() {
         return VERSION;
+    }
+
+    public static String getLastCommitId() {
+        return LATEST_COMMIT_ID;
     }
 
     /**
