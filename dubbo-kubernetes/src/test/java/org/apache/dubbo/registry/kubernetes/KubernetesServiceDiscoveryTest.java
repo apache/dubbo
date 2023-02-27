@@ -121,7 +121,7 @@ class KubernetesServiceDiscoveryTest {
     }
 
     @Test
-    void testEndpointsUpdate() throws Exception {
+    void testEndpointsUpdate() {
         serviceDiscovery.setCurrentHostname(POD_NAME);
         serviceDiscovery.setKubernetesClient(mockClient);
 
@@ -191,7 +191,7 @@ class KubernetesServiceDiscoveryTest {
     }
 
     @Test
-    void testServiceUpdate() throws Exception {
+    void testServiceUpdate() {
         serviceDiscovery.setCurrentHostname(POD_NAME);
         serviceDiscovery.setKubernetesClient(mockClient);
 

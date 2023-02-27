@@ -14,27 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster;
+package org.apache.dubbo.remoting.exchange;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.extension.Adaptive;
-import org.apache.dubbo.common.extension.SPI;
+public class HeartBeatRequest extends Request {
+    private byte proto;
 
-/**
- * ConfiguratorFactory. (SPI, Singleton, ThreadSafe)
- *
- */
-@SPI
-public interface ConfiguratorFactory {
+    public HeartBeatRequest(long id) {
+        super(id);
+    }
 
-    /**
-     * get the configurator instance.
-     *
-     * @param url - configurator url.
-     * @return configurator instance.
-     */
-    @Adaptive(CommonConstants.PROTOCOL_KEY)
-    Configurator getConfigurator(URL url);
+    public byte getProto() {
+        return proto;
+    }
 
+    public void setProto(byte proto) {
+        this.proto = proto;
+    }
 }
