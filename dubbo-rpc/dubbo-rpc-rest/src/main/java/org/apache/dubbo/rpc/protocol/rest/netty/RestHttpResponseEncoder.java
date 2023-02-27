@@ -25,6 +25,7 @@ import io.netty.handler.codec.http.LastHttpContent;
 
 
 import java.util.List;
+import java.util.Map;
 
 public class RestHttpResponseEncoder extends MessageToMessageEncoder<NettyHttpResponse> {
 
@@ -45,6 +46,13 @@ public class RestHttpResponseEncoder extends MessageToMessageEncoder<NettyHttpRe
             response.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
         } else {
             response.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.CLOSE);
+        }
+
+        for (Map.Entry<String, List<String>> entry : nettyResponse.getOutputHeaders().entrySet()) {
+            String key = entry.getKey();
+            for (String value : entry.getValue()) {
+                response.headers().set(key, value);
+            }
         }
 
     }

@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.protocol.rest.netty;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.List;
 import java.util.Map;
 
 
@@ -27,7 +28,7 @@ public interface HttpResponse {
 
     void setStatus(int status);
 
-    Map<String, Object> getOutputHeaders();
+    Map<String, List<String>> getOutputHeaders();
 
     OutputStream getOutputStream() throws IOException;
 
@@ -46,6 +47,9 @@ public interface HttpResponse {
     void reset();
 
     void flushBuffer() throws IOException;
+
+
+    void addOutputHeaders(String name, String value);
 
 }
 

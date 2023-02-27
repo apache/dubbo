@@ -70,7 +70,7 @@ public class NettyHttpHandler implements HttpHandler<FullHttpRequest,NettyHttpRe
                 Boolean encoded = booleanMediaTypePair.getFirst();
 
                 if (encoded) {
-                    nettyHttpResponse.getOutputHeaders().put(RestConstant.CONTENT_TYPE, booleanMediaTypePair.getSecond().value);
+                    nettyHttpResponse.addOutputHeaders(RestConstant.CONTENT_TYPE, booleanMediaTypePair.getSecond().value);
                 }
 
 

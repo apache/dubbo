@@ -248,8 +248,9 @@ public class NettyServer {
         channelPipeline.addLast(new HttpObjectAggregator(maxRequestSize));
         channelPipeline.addLast(new HttpResponseEncoder());
         channelPipeline.addLast(httpChannelHandlers.toArray(new ChannelHandler[httpChannelHandlers.size()]));
-        channelPipeline.addLast(new RestHttpRequestDecoder(new NettyHttpHandler(), protocol));
+
         channelPipeline.addLast(new RestHttpResponseEncoder());
+        channelPipeline.addLast(new RestHttpRequestDecoder(new NettyHttpHandler(), protocol));
 
     }
 

@@ -34,7 +34,9 @@ import io.netty.handler.codec.http.LastHttpContent;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
@@ -44,7 +46,7 @@ public class NettyHttpResponse implements HttpResponse {
     private static final int EMPTY_CONTENT_LENGTH = 0;
     private int status = 200;
     private OutputStream os;
-    private Map<String, Object> outputHeaders;
+    private Map<String, List<String>> outputHeaders;
     private final ChannelHandlerContext ctx;
     private boolean committed;
     private boolean keepAlive;
@@ -78,7 +80,7 @@ public class NettyHttpResponse implements HttpResponse {
     }
 
     @Override
-    public Map<String, Object> getOutputHeaders() {
+    public Map<String, List<String>> getOutputHeaders() {
         return outputHeaders;
     }
 
@@ -86,7 +88,6 @@ public class NettyHttpResponse implements HttpResponse {
     public OutputStream getOutputStream() throws IOException {
         return os;
     }
-
 
 
     @Override
@@ -148,7 +149,7 @@ public class NettyHttpResponse implements HttpResponse {
 
     public DefaultHttpResponse getDefaultHttpResponse() {
         DefaultHttpResponse res = new DefaultHttpResponse(HTTP_1_1, HttpResponseStatus.valueOf(getStatus()));
-
+        transformResponseHeaders(res);
         return res;
     }
 
@@ -158,10 +159,14 @@ public class NettyHttpResponse implements HttpResponse {
         {
             res.headers().add(Names.CONTENT_LENGTH, EMPTY_CONTENT_LENGTH);
         }
+        transformResponseHeaders(res);
 
         return res;
     }
 
+    private void transformResponseHeaders(io.netty.handler.codec.http.HttpResponse res) {
+        RestHttpResponseEncoder.transformHeaders(this, res);
+    }
 
 
     public void prepareChunkStream() {
@@ -193,5 +198,18 @@ public class NettyHttpResponse implements HttpResponse {
         if (os != null)
             os.flush();
         ctx.flush();
+    }
+
+    @Override
+    public void addOutputHeaders(String name, String value) {
+
+        List<String> values = outputHeaders.get(name);
+
+        if (values == null) {
+            values = new ArrayList<>();
+            outputHeaders.put(name, values);
+        }
+
+        values.add(value);
     }
 }

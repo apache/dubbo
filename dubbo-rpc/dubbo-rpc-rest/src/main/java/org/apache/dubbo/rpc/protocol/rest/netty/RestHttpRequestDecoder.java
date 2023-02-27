@@ -46,7 +46,7 @@ public class RestHttpRequestDecoder extends MessageToMessageDecoder<io.netty.han
         NettyHttpResponse nettyHttpResponse = new NettyHttpResponse(ctx, keepAlive);
         handler.handle(request, nettyHttpResponse);
 
-        ctx.writeAndFlush(nettyHttpResponse);
+        nettyHttpResponse.finish();
 
 
     }
