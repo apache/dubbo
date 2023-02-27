@@ -26,37 +26,39 @@ public final class TimeUtils {
 
     private static volatile long currentTimeMillis;
 
-    private static volatile boolean isTickerAlive = true;
-
-    static {
-        currentTimeMillis = System.currentTimeMillis();
-        Thread ticker = new Thread(() -> {
-            while (isTickerAlive) {
-                currentTimeMillis = System.currentTimeMillis();
-                try {
-                    TimeUnit.MILLISECONDS.sleep(1);
-                } catch (InterruptedException e) {
-                    isTickerAlive = false;
-                    Thread.currentThread().interrupt();
-                } catch (Exception ignored) {
-                    //
-                }
-            }
-        });
-        ticker.setDaemon(true);
-        ticker.setName("time-millis-ticker-thread");
-        ticker.start();
-        Runtime.getRuntime().addShutdownHook(new Thread(ticker::interrupt));
-    }
+    private static volatile boolean isTickerAlive = false;
 
     private TimeUtils() {
     }
 
     public static long currentTimeMillis() {
-        if (isTickerAlive) {
-            return currentTimeMillis;
-        } else {
-            return System.currentTimeMillis();
+        if (!isTickerAlive) {
+            startTicker();
+        }
+        return currentTimeMillis;
+    }
+
+    private static synchronized void startTicker() {
+        if (!isTickerAlive) {
+            currentTimeMillis = System.currentTimeMillis();
+            Thread ticker = new Thread(() -> {
+                while (isTickerAlive) {
+                    currentTimeMillis = System.currentTimeMillis();
+                    try {
+                        TimeUnit.MILLISECONDS.sleep(1);
+                    } catch (InterruptedException e) {
+                        isTickerAlive = false;
+                        Thread.currentThread().interrupt();
+                    } catch (Exception ignored) {
+                        //
+                    }
+                }
+            });
+            ticker.setDaemon(true);
+            ticker.setName("time-millis-ticker-thread");
+            ticker.start();
+            Runtime.getRuntime().addShutdownHook(new Thread(ticker::interrupt));
+            isTickerAlive = true;
         }
     }
 }
