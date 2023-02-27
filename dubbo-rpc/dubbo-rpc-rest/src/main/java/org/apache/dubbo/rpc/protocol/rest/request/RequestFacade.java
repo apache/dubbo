@@ -21,7 +21,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-import java.util.*;
+import java.util.Enumeration;
+import java.util.Map;
 
 
 public abstract class RequestFacade<T> implements Request {
@@ -31,16 +32,8 @@ public abstract class RequestFacade<T> implements Request {
 
     public RequestFacade(T request) {
         this.request = request;
-        initHeaders();
     }
 
-
-
-
-    protected  void initHeaders(){
-
-
-    }
 
     public T getRequest() {
         return request;
