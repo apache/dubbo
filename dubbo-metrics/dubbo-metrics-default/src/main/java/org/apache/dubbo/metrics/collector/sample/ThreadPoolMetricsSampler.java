@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.metrics.collector.sample;
 
+import org.apache.dubbo.common.store.DataStore;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
 import org.apache.dubbo.metrics.model.MetricsKey;
@@ -28,9 +29,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 
+import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_SERVICE_COMPONENT_KEY;
 import static org.apache.dubbo.metrics.model.MetricsCategory.THREAD_POOL;
 
 public class ThreadPoolMetricsSampler implements MetricsSampler {
@@ -38,6 +41,7 @@ public class ThreadPoolMetricsSampler implements MetricsSampler {
     private final DefaultMetricsCollector collector;
     private FrameworkExecutorRepository frameworkExecutorRepository;
     private final Set<ThreadPoolMetric> threadPoolMetricSet = new HashSet<>();
+    private DataStore dataStore;
 
     public ThreadPoolMetricsSampler(DefaultMetricsCollector collector) {
         this.collector = collector;
@@ -63,6 +67,20 @@ public class ThreadPoolMetricsSampler implements MetricsSampler {
                 this.frameworkExecutorRepository = collector.getApplicationModel().getFrameworkModel().getBeanFactory().getBean(FrameworkExecutorRepository.class);
             }
         } catch (Exception ignored) {
+        }
+
+        if (this.dataStore == null) {
+            this.dataStore = collector.getApplicationModel().getExtensionLoader(DataStore.class).getDefaultExtension();
+        }
+
+        if (dataStore != null) {
+            Map<String, Object> executors = dataStore.get(EXECUTOR_SERVICE_COMPONENT_KEY);
+            for (Map.Entry<String, Object> entry : executors.entrySet()) {
+                ExecutorService executor = (ExecutorService) entry.getValue();
+                if (executor instanceof ThreadPoolExecutor) {
+                    addThread(entry.getKey(), executor);
+                }
+            }
         }
 
         if (frameworkExecutorRepository != null) {
