@@ -33,7 +33,6 @@ import io.netty.handler.codec.http.HttpResponseEncoder;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.EventExecutor;
 import org.apache.dubbo.rpc.protocol.rest.handler.NettyHttpHandler;
-import org.jboss.resteasy.plugins.server.netty.RestEasyHttpResponseEncoder;
 
 import javax.net.ssl.SSLContext;
 import java.net.InetSocketAddress;
@@ -248,8 +247,6 @@ public class NettyServer {
         channelPipeline.addLast(new HttpObjectAggregator(maxRequestSize));
         channelPipeline.addLast(new HttpResponseEncoder());
         channelPipeline.addLast(httpChannelHandlers.toArray(new ChannelHandler[httpChannelHandlers.size()]));
-
-        channelPipeline.addLast(new RestHttpResponseEncoder());
         channelPipeline.addLast(new RestHttpRequestDecoder(new NettyHttpHandler(), protocol));
 
     }

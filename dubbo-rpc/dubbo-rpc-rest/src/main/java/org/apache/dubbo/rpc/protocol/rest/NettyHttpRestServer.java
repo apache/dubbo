@@ -38,7 +38,7 @@ import static org.apache.dubbo.rpc.protocol.rest.Constants.KEEP_ALIVE_KEY;
 
 
 public class NettyHttpRestServer implements RestProtocolServer {
-
+    private NettyServer server = new NettyServer();
 
     private String address;
 
@@ -58,6 +58,7 @@ public class NettyHttpRestServer implements RestProtocolServer {
 
     @Override
     public void close() {
+        server.stop();
 
     }
 
@@ -68,7 +69,7 @@ public class NettyHttpRestServer implements RestProtocolServer {
 
     @Override
     public void start(URL url) {
-        NettyServer server = new NettyServer();
+
         String bindIp = url.getParameter(BIND_IP_KEY, url.getHost());
         if (!url.isAnyHost() && NetUtils.isValidLocalHost(bindIp)) {
             server.setHostname(bindIp);

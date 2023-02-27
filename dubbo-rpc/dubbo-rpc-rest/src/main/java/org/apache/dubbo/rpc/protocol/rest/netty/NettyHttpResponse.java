@@ -155,8 +155,7 @@ public class NettyHttpResponse implements HttpResponse {
 
     public DefaultHttpResponse getEmptyHttpResponse() {
         DefaultFullHttpResponse res = new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.valueOf(getStatus()));
-        if (method == null || !method.equals(HttpMethod.HEAD)) //[RESTEASY-1627]
-        {
+        if (method == null || !method.equals(HttpMethod.HEAD)) {
             res.headers().add(Names.CONTENT_LENGTH, EMPTY_CONTENT_LENGTH);
         }
         transformResponseHeaders(res);
@@ -165,7 +164,7 @@ public class NettyHttpResponse implements HttpResponse {
     }
 
     private void transformResponseHeaders(io.netty.handler.codec.http.HttpResponse res) {
-        RestHttpResponseEncoder.transformHeaders(this, res);
+        transformHeaders(this, res);
     }
 
 
@@ -211,5 +210,22 @@ public class NettyHttpResponse implements HttpResponse {
         }
 
         values.add(value);
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public static void transformHeaders(NettyHttpResponse nettyResponse, io.netty.handler.codec.http.HttpResponse response) {
+        if (nettyResponse.isKeepAlive()) {
+            response.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
+        } else {
+            response.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.CLOSE);
+        }
+
+        for (Map.Entry<String, List<String>> entry : nettyResponse.getOutputHeaders().entrySet()) {
+            String key = entry.getKey();
+            for (String value : entry.getValue()) {
+                response.headers().set(key, value);
+            }
+        }
+
     }
 }
