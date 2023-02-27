@@ -29,6 +29,7 @@ import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.SslConfig;
+import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.qos.command.CommandContext;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -58,8 +59,12 @@ class GetConfigTest {
         moduleModel.getConfigManager().setModule(new ModuleConfig());
         moduleModel.getConfigManager().addConsumer(new ConsumerConfig());
         moduleModel.getConfigManager().addProvider(new ProviderConfig());
-        moduleModel.getConfigManager().addReference(new ReferenceConfig<>());
-        moduleModel.getConfigManager().addService(new ServiceConfig<>());
+        ReferenceConfig<Object> referenceConfig = new ReferenceConfig<>();
+        referenceConfig.setInterface(MetadataService.class);
+        moduleModel.getConfigManager().addReference(referenceConfig);
+        ServiceConfig<Object> serviceConfig = new ServiceConfig<>();
+        serviceConfig.setInterface(MetadataService.class);
+        moduleModel.getConfigManager().addService(serviceConfig);
 
         CommandContext commandContext = new CommandContext("getConfig");
         commandContext.setHttp(true);
@@ -87,8 +92,12 @@ class GetConfigTest {
         moduleModel.getConfigManager().setModule(new ModuleConfig());
         moduleModel.getConfigManager().addConsumer(new ConsumerConfig());
         moduleModel.getConfigManager().addProvider(new ProviderConfig());
-        moduleModel.getConfigManager().addReference(new ReferenceConfig<>());
-        moduleModel.getConfigManager().addService(new ServiceConfig<>());
+        ReferenceConfig<Object> referenceConfig = new ReferenceConfig<>();
+        referenceConfig.setInterface(MetadataService.class);
+        moduleModel.getConfigManager().addReference(referenceConfig);
+        ServiceConfig<Object> serviceConfig = new ServiceConfig<>();
+        serviceConfig.setInterface(MetadataService.class);
+        moduleModel.getConfigManager().addService(serviceConfig);
 
         CommandContext commandContext = new CommandContext("getConfig");
         commandContext.setHttp(true);
@@ -116,8 +125,12 @@ class GetConfigTest {
         moduleModel.getConfigManager().setModule(new ModuleConfig());
         moduleModel.getConfigManager().addConsumer(new ConsumerConfig());
         moduleModel.getConfigManager().addProvider(new ProviderConfig());
-        moduleModel.getConfigManager().addReference(new ReferenceConfig<>());
-        moduleModel.getConfigManager().addService(new ServiceConfig<>());
+        ReferenceConfig<Object> referenceConfig = new ReferenceConfig<>();
+        referenceConfig.setInterface(MetadataService.class);
+        moduleModel.getConfigManager().addReference(referenceConfig);
+        ServiceConfig<Object> serviceConfig = new ServiceConfig<>();
+        serviceConfig.setInterface(MetadataService.class);
+        moduleModel.getConfigManager().addService(serviceConfig);
 
         CommandContext commandContext = new CommandContext("getConfig");
         commandContext.setHttp(true);
