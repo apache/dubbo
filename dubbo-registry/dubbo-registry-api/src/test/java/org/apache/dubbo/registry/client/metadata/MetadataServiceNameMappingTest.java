@@ -103,7 +103,7 @@ class MetadataServiceNameMappingTest {
             private int counter = 0;
 
             @Override
-            public Boolean answer(InvocationOnMock invocationOnMock) throws Throwable {
+            public Boolean answer(InvocationOnMock invocationOnMock) {
                 if (++counter == 10) {
                     return true;
                 }
