@@ -45,6 +45,7 @@ public class TimerMetricRegister implements MetricRegister<TimerMetricSample, Ti
         });
 
         return Timer.builder(sample.getName()).description(sample.getDescription()).tags(tags)
+            .publishPercentiles(0.5, 0.75, 0.9)
             .publishPercentileHistogram(true).register(registry);
     }
 }
