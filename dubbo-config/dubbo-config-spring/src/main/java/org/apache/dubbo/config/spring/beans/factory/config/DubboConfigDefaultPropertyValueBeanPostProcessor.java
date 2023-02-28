@@ -55,11 +55,15 @@ public class DubboConfigDefaultPropertyValueBeanPostProcessor implements BeanPos
             if (!beanName.contains("#")) {
                 // [Feature] https://github.com/apache/dubbo/issues/5721
                 setPropertyIfAbsent(bean, Constants.ID, beanName);
-
                 // beanName should not be used as config name, fix https://github.com/apache/dubbo/pull/7624
                 //setPropertyIfAbsent(dubboConfigBean, "name", beanName);
             }
         }
+        return bean;
+    }
+
+    @Override
+    public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
         return bean;
     }
 
