@@ -186,7 +186,7 @@ public class GenericImplFilter implements Filter, Filter.Listener {
                     Throwable targetException = null;
                     Throwable lastException = null;
                     try {
-                        targetException = (Throwable) clazz.newInstance();
+                        targetException = (Throwable) clazz.getDeclaredConstructor().newInstance();
                     } catch (Throwable e) {
                         lastException = e;
                         for (Constructor<?> constructor : clazz.getConstructors()) {
