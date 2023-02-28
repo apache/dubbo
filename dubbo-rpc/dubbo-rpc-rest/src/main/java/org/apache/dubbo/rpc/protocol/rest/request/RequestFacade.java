@@ -21,17 +21,69 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Map;
 
 
 public abstract class RequestFacade<T> implements Request {
+    protected Map<String, ArrayList<String>> headers = new HashMap<>();
+    protected Map<String, ArrayList<String>> parameters = new HashMap<>();
 
-
+    protected String path;
     protected T request;
 
     public RequestFacade(T request) {
         this.request = request;
+        initHeaders();
+        initParameters();
+    }
+
+    protected void initHeaders() {
+
+    }
+
+
+    protected void initParameters() {
+        String requestURI = getRequestURI();
+
+        if (requestURI != null && requestURI.contains("?")) {
+
+            String queryString = requestURI.substring(requestURI.indexOf("?") + 1);
+            path = requestURI.substring(0, requestURI.indexOf("?"));
+
+
+            String[] split = queryString.split("&");
+
+            for (String params : split) {
+
+                String[] splits = params.split("=");
+
+                String name = splits[0];
+
+                if (name.length() == 0) {
+                    continue;
+                }
+
+                ArrayList<String> values = parameters.get(name);
+
+                if (values == null) {
+                    values = new ArrayList<>();
+                    parameters.put(name, values);
+                }
+
+                if (splits.length == 1) {
+
+                    values.add("");
+
+                } else {
+                    values.add(splits[1]);
+                }
+            }
+        } else {
+            path = requestURI;
+        }
     }
 
 

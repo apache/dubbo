@@ -79,7 +79,7 @@ public class JavaxServletRequestFacade extends RequestFacade<HttpServletRequest>
 
 
     public String getPathInfo() {
-        return request.getPathInfo();
+        return path;
     }
 
 

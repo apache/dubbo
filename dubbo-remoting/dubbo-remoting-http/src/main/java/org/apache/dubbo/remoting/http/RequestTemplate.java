@@ -99,7 +99,7 @@ public class RequestTemplate implements Serializable {
             }
         }
 
-        return queryBuilder.toString();
+        return queryBuilder.toString().replace("?&", "?");
 
     }
 
