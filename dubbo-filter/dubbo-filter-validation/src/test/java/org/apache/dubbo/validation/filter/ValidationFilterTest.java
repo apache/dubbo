@@ -43,12 +43,12 @@ class ValidationFilterTest {
     private ValidationFilter validationFilter;
 
     @BeforeEach
-    public void setUp() throws Exception {
+    public void setUp() {
         this.validationFilter = new ValidationFilter();
     }
 
     @Test
-    void testItWithNotExistClass() throws Exception {
+    void testItWithNotExistClass() {
         URL url = URL.valueOf("test://test:11/test?validation=true");
 
         given(validation.getValidator(url)).willThrow(new IllegalStateException("Not found class test, cause: test"));
@@ -66,7 +66,7 @@ class ValidationFilterTest {
     }
 
     @Test
-    void testItWithExistClass() throws Exception {
+    void testItWithExistClass() {
         URL url = URL.valueOf("test://test:11/test?validation=true");
 
         given(validation.getValidator(url)).willReturn(validator);
@@ -83,7 +83,7 @@ class ValidationFilterTest {
     }
 
     @Test
-    void testItWithoutUrlParameters() throws Exception {
+    void testItWithoutUrlParameters() {
         URL url = URL.valueOf("test://test:11/test");
 
         given(validation.getValidator(url)).willReturn(validator);
@@ -100,7 +100,7 @@ class ValidationFilterTest {
     }
 
     @Test
-    void testItWhileMethodNameStartWithDollar() throws Exception {
+    void testItWhileMethodNameStartWithDollar() {
         URL url = URL.valueOf("test://test:11/test");
 
         given(validation.getValidator(url)).willReturn(validator);
@@ -119,7 +119,7 @@ class ValidationFilterTest {
 
 
     @Test
-    void testItWhileThrowoutRpcException() throws Exception {
+    void testItWhileThrowoutRpcException() {
         Assertions.assertThrows(RpcException.class, () -> {
             URL url = URL.valueOf("test://test:11/test?validation=true");
 

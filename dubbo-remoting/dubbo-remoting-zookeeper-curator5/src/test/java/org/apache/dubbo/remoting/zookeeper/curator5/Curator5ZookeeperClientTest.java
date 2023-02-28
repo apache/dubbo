@@ -88,7 +88,7 @@ class Curator5ZookeeperClientTest {
         curatorClient.addTargetChildListener(path, new Curator5ZookeeperClient.CuratorWatcherImpl() {
 
             @Override
-            public void process(WatchedEvent watchedEvent) throws Exception {
+            public void process(WatchedEvent watchedEvent) {
                 countDownLatch.countDown();
             }
         });
@@ -201,7 +201,7 @@ class Curator5ZookeeperClientTest {
         final AtomicInteger atomicInteger = new AtomicInteger(0);
         curatorClient.addTargetDataListener(path + "/d.json", new Curator5ZookeeperClient.NodeCacheListenerImpl() {
             @Override
-            public void nodeChanged() throws Exception {
+            public void nodeChanged() {
                 atomicInteger.incrementAndGet();
             }
         });
@@ -280,7 +280,7 @@ class Curator5ZookeeperClientTest {
     }
 
     @Test
-    void testPersistentCas2() throws Exception {
+    void testPersistentCas2() {
         // test update failed when others create success
         String path = "/dubbo/mapping/org.apache.dubbo.demo.DemoService";
         Curator5ZookeeperClient curatorClient = new Curator5ZookeeperClient(URL.valueOf(zookeeperConnectionAddress1 + "/org.apache.dubbo.registry.RegistryService"));
@@ -405,7 +405,7 @@ class Curator5ZookeeperClientTest {
     }
 
     @Test
-    void testEphemeralCas2() throws Exception {
+    void testEphemeralCas2() {
         // test update failed when others create success
         String path = "/dubbo/mapping/org.apache.dubbo.demo.DemoService";
         Curator5ZookeeperClient curatorClient = new Curator5ZookeeperClient(URL.valueOf(zookeeperConnectionAddress1 + "/org.apache.dubbo.registry.RegistryService"));
