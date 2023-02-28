@@ -115,7 +115,7 @@ public class RPCInvocationBuilder {
 
 
     private static Pair<Invoker, RestMethodMetadata> getRestMethodMetadata(RequestFacade request) {
-        String path = request.getRequestURI();
+        String path = request.getPathInfo();
         String version = request.getHeader(RestConstant.VERSION);
         String group = request.getHeader(RestConstant.GROUP);
         int port = request.getIntHeader(RestConstant.REST_PORT);

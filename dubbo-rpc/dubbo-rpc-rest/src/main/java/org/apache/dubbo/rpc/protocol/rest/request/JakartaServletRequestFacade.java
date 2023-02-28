@@ -84,7 +84,7 @@ public class JakartaServletRequestFacade extends RequestFacade<HttpServletReques
 
 
     public String getPathInfo() {
-        return request.getPathInfo();
+        return path;
     }
 
 

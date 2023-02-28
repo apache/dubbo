@@ -36,15 +36,12 @@ import java.util.Map;
 import java.util.Set;
 
 public class NettyRequestFacade extends RequestFacade<FullHttpRequest> {
-    protected Map<String, ArrayList<String>> headers;
+
 
     private ChannelHandlerContext context;
 
     public NettyRequestFacade(Object request, ChannelHandlerContext context) {
-
         super((FullHttpRequest) request);
-        headers = new HashMap<>();
-        initHeaders();
         this.context = context;
     }
 
@@ -159,7 +156,7 @@ public class NettyRequestFacade extends RequestFacade<FullHttpRequest> {
 
     @Override
     public String getPathInfo() {
-        return null;
+        return path;
     }
 
     @Override
@@ -269,22 +266,48 @@ public class NettyRequestFacade extends RequestFacade<FullHttpRequest> {
 
     @Override
     public String getParameter(String name) {
-        return null;
+        ArrayList<String> strings = parameters.get(name);
+
+        String value = null;
+        if (strings != null && !strings.isEmpty()) {
+            value = strings.get(0);
+
+        }
+        return value;
     }
 
     @Override
     public Enumeration<String> getParameterNames() {
-        return null;
+
+        Set<String> strings = parameters.keySet();
+
+        return new Enumeration<String>() {
+            @Override
+            public boolean hasMoreElements() {
+                return strings.iterator().hasNext();
+            }
+
+            @Override
+            public String nextElement() {
+                return strings.iterator().next();
+            }
+        };
+
     }
 
     @Override
     public String[] getParameterValues(String name) {
-        return new String[0];
+        return parameters.keySet().toArray(new String[0]);
     }
 
     @Override
     public Map<String, String[]> getParameterMap() {
-        return null;
+        HashMap<String, String[]> map = new HashMap<>();
+        parameters.entrySet().forEach(entry -> {
+            map.put(entry.getKey(), entry.getValue().toArray(new String[0]));
+        });
+        return map;
+
     }
 
     @Override
