@@ -61,6 +61,7 @@ public interface AnnotationUtils {
      * @param <A>                 the type of annotation
      * @return If resolved, return the type of annotation, or <code>null</code>
      */
+    @SuppressWarnings("unchecked")
     static <A extends Annotation> Class<A> resolveAnnotationType(AnnotatedElement annotatedElement,
                                                                  String annotationClassName) {
         ClassLoader classLoader = annotatedElement.getClass().getClassLoader();
@@ -192,6 +193,7 @@ public interface AnnotationUtils {
      * @param annotationsToFilter the annotations to filter
      * @return non-null read-only {@link List}
      */
+    @SuppressWarnings("unchecked")
     static List<Annotation> getAllDeclaredAnnotations(Class<?> type, Predicate<Annotation>... annotationsToFilter) {
 
         if (type == null) {
@@ -223,6 +225,7 @@ public interface AnnotationUtils {
      * @param metaAnnotationsToFilter the meta annotations to filter
      * @return non-null read-only {@link List}
      */
+    @SuppressWarnings("unchecked")
     static List<Annotation> getMetaAnnotations(Class<? extends Annotation> annotationType,
                                                Predicate<Annotation>... metaAnnotationsToFilter) {
         return getDeclaredAnnotations(annotationType,
@@ -243,6 +246,7 @@ public interface AnnotationUtils {
      * @param annotationsToFilter the annotations to filter
      * @return non-null read-only {@link List}
      */
+    @SuppressWarnings("unchecked")
     static List<Annotation> getAllMetaAnnotations(Class<? extends Annotation> annotationType,
                                                   Predicate<Annotation>... annotationsToFilter) {
 
@@ -280,6 +284,7 @@ public interface AnnotationUtils {
      * @param <A>              the required type of annotation
      * @return If found, return first matched-type {@link Annotation annotation}, or <code>null</code>
      */
+    @SuppressWarnings("unchecked")
     static <A extends Annotation> A findAnnotation(AnnotatedElement annotatedElement, Class<A> annotationType) {
         return (A) filterFirst(getAllDeclaredAnnotations(annotatedElement), a -> isSameType(a, annotationType));
     }
@@ -292,6 +297,7 @@ public interface AnnotationUtils {
      * @param <A>                the type of required annotation
      * @return if found, return all matched results, or get an {@link Collections#emptyList() empty list}
      */
+    @SuppressWarnings("unchecked")
     static <A extends Annotation> List<A> findMetaAnnotations(Class<? extends Annotation> annotationType,
                                                               Class<A> metaAnnotationType) {
         return (List<A>) getAllMetaAnnotations(annotationType, a -> isSameType(a, metaAnnotationType));
@@ -305,6 +311,7 @@ public interface AnnotationUtils {
      * @param <A>                the type of required annotation
      * @return if found, return all matched results, or get an {@link Collections#emptyList() empty list}
      */
+    @SuppressWarnings("unchecked")
     static <A extends Annotation> List<A> findMetaAnnotations(AnnotatedElement annotatedElement,
                                                               Class<A> metaAnnotationType) {
         List<A> metaAnnotations = new LinkedList<>();
@@ -395,6 +402,7 @@ public interface AnnotationUtils {
      * @param annotationType the class of annotation
      * @return If the specified annotation type is present, return <code>true</code>, or <code>false</code>
      */
+    @SuppressWarnings("unchecked")
     static boolean isAnnotationPresent(Class<?> type, Class<? extends Annotation> annotationType) {
         return isAnnotationPresent(type, true, annotationType);
     }
@@ -406,6 +414,7 @@ public interface AnnotationUtils {
      * @param annotationClassName the class name of annotation
      * @return If any specified annotation types are present, return <code>true</code>
      */
+    @SuppressWarnings("unchecked")
     static boolean isAnnotationPresent(AnnotatedElement annotatedElement, String annotationClassName) {
         ClassLoader classLoader = annotatedElement.getClass().getClassLoader();
         Class<?> resolvedType = resolveClass(annotationClassName, classLoader);
@@ -477,6 +486,7 @@ public interface AnnotationUtils {
      * @return <code>null</code> if not found
      * @since 2.7.9
      */
+    @SuppressWarnings("unchecked")
     static <T> T getDefaultValue(Class<? extends Annotation> annotationType, String attributeName) {
         Method method = findMethod(annotationType, attributeName);
         return (T) (method == null ? null : method.getDefaultValue());

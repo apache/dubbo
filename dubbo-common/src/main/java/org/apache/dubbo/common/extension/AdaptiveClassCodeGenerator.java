@@ -74,7 +74,7 @@ public class AdaptiveClassCodeGenerator {
 
     private final Class<?> type;
 
-    private String defaultExtName;
+    private final String defaultExtName;
 
     public AdaptiveClassCodeGenerator(Class<?> type, String defaultExtName) {
         this.type = type;
