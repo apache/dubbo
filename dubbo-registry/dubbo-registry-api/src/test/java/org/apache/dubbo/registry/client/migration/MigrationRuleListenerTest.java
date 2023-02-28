@@ -86,7 +86,7 @@ class MigrationRuleListenerTest {
      * Check local rule take effect
      */
     @Test
-    void test() throws InterruptedException {
+    void test() {
         DynamicConfiguration dynamicConfiguration = Mockito.mock(DynamicConfiguration.class);
 
         ApplicationModel.reset();
@@ -166,7 +166,7 @@ class MigrationRuleListenerTest {
      * 2. remote rule change and all invokers gets notified
      */
     @Test
-    void testWithConfigurationListenerAndLocalRule() throws InterruptedException {
+    void testWithConfigurationListenerAndLocalRule() {
         DynamicConfiguration dynamicConfiguration = Mockito.mock(DynamicConfiguration.class);
         Mockito.doReturn(remoteRule).when(dynamicConfiguration).getConfig(Mockito.anyString(), Mockito.anyString());
 

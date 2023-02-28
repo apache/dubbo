@@ -41,7 +41,12 @@ public class MetricsConfig extends AbstractConfig {
     private Boolean enableJvmMetrics;
 
     /**
-     * Enable jvm metrics when collecting.
+     * Enable registry metrics.
+     */
+    private Boolean enableRegistryMetrics;
+
+    /**
+     * Enable metadata metrics.
      */
     private Boolean enableMetadataMetrics;
 
@@ -101,6 +106,14 @@ public class MetricsConfig extends AbstractConfig {
 
     public void setEnableJvmMetrics(Boolean enableJvmMetrics) {
         this.enableJvmMetrics = enableJvmMetrics;
+    }
+
+    public Boolean getEnableRegistryMetrics() {
+        return enableRegistryMetrics;
+    }
+
+    public void setEnableRegistryMetrics(Boolean enableRegistryMetrics) {
+        this.enableRegistryMetrics = enableRegistryMetrics;
     }
 
     public String getPort() {

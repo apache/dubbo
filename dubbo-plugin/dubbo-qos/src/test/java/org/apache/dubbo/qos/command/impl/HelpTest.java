@@ -27,7 +27,7 @@ import static org.hamcrest.Matchers.containsString;
 
 class HelpTest {
     @Test
-    void testMainHelp() throws Exception {
+    void testMainHelp() {
         Help help = new Help(FrameworkModel.defaultModel());
         String output = help.execute(Mockito.mock(CommandContext.class), null);
         assertThat(output, containsString("greeting"));
@@ -39,7 +39,7 @@ class HelpTest {
     }
 
     @Test
-    void testGreeting() throws Exception {
+    void testGreeting() {
         Help help = new Help(FrameworkModel.defaultModel());
         String output = help.execute(Mockito.mock(CommandContext.class), new String[]{"greeting"});
         assertThat(output, containsString("COMMAND NAME"));

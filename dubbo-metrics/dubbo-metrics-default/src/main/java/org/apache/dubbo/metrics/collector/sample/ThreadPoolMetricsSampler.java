@@ -66,7 +66,6 @@ public class ThreadPoolMetricsSampler implements MetricsSampler {
 
     private List<MetricSample> createMetricsSample(String name,ThreadPoolExecutor executor) {
         List<MetricSample> list = new ArrayList<>();
-
         ThreadPoolMetric poolMetrics = new ThreadPoolMetric(collector.getApplicationName(), name, executor);
 
         list.add(new GaugeMetricSample(MetricsKey.THREAD_POOL_CORE_SIZE, poolMetrics.getTags(), THREAD_POOL, poolMetrics::getCorePoolSize));

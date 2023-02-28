@@ -27,37 +27,37 @@ public class MockConfigService implements ConfigService {
     }
 
     @Override
-    public String getConfigAndSignListener(String dataId, String group, long timeoutMs, Listener listener) throws NacosException {
+    public String getConfigAndSignListener(String dataId, String group, long timeoutMs, Listener listener) {
         return null;
     }
 
     @Override
-    public void addListener(String dataId, String group, Listener listener) throws NacosException {
+    public void addListener(String dataId, String group, Listener listener) {
 
     }
 
     @Override
-    public boolean publishConfig(String dataId, String group, String content) throws NacosException {
+    public boolean publishConfig(String dataId, String group, String content) {
         return false;
     }
 
     @Override
-    public boolean publishConfig(String dataId, String group, String content, String type) throws NacosException {
+    public boolean publishConfig(String dataId, String group, String content, String type) {
         return false;
     }
 
     @Override
-    public boolean publishConfigCas(String dataId, String group, String content, String casMd5) throws NacosException {
+    public boolean publishConfigCas(String dataId, String group, String content, String casMd5) {
         return false;
     }
 
     @Override
-    public boolean publishConfigCas(String dataId, String group, String content, String casMd5, String type) throws NacosException {
+    public boolean publishConfigCas(String dataId, String group, String content, String casMd5, String type) {
         return false;
     }
 
     @Override
-    public boolean removeConfig(String dataId, String group) throws NacosException {
+    public boolean removeConfig(String dataId, String group) {
         return false;
     }
 
@@ -72,7 +72,7 @@ public class MockConfigService implements ConfigService {
     }
 
     @Override
-    public void shutDown() throws NacosException {
+    public void shutDown() {
 
     }
 }

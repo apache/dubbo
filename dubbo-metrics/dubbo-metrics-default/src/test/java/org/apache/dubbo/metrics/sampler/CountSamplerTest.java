@@ -19,8 +19,13 @@ package org.apache.dubbo.metrics.sampler;
 
 import org.apache.dubbo.metrics.collector.sample.MetricsCountSampleConfigurer;
 import org.apache.dubbo.metrics.collector.sample.SimpleMetricsCountSampler;
+import org.apache.dubbo.metrics.model.MethodMetric;
 import org.apache.dubbo.metrics.model.Metric;
+import org.apache.dubbo.metrics.model.MetricsCategory;
+import org.apache.dubbo.metrics.model.MetricsKey;
+import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
+import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,9 +34,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.LongAccumulator;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+
+import static org.apache.dubbo.metrics.model.MetricsCategory.RT;
 
 public class CountSamplerTest {
 
@@ -46,52 +52,84 @@ public class CountSamplerTest {
     public void rtTest() {
         String applicationName = "test";
 
-        sampler.addRT(applicationName, RT.METHOD_REQUEST, 2L);
-        RequestMethodMetrics metrics = new RequestMethodMetrics(applicationName);
+        sampler.addRT(applicationName, RTType.METHOD_REQUEST, 2L);
+        Map<String, GaugeMetricSample> collect = getCollect(RTType.METHOD_REQUEST);
 
-        ConcurrentMap<RequestMethodMetrics, AtomicLong> avgRT = sampler.getAvgRT(RT.METHOD_REQUEST);
-        Assertions.assertTrue(avgRT != null && avgRT.get(metrics) != null && avgRT.get(metrics).intValue() == 0);
+        Assertions.assertNotNull(collect);
 
-        ConcurrentMap<RequestMethodMetrics, LongAccumulator> maxRT = sampler.getMaxRT(RT.METHOD_REQUEST);
-        Assertions.assertTrue(null != maxRT && null != maxRT.get(metrics) && maxRT.get(metrics).intValue()==2);
+        Assertions.assertTrue(
+            null != collect.get(MetricsKey.METRIC_RT_LAST.getName()) && collect.get(
+                MetricsKey.METRIC_RT_LAST.getName()).getSupplier().get().longValue() == 2);
+        Assertions.assertTrue(
+            null != collect.get(MetricsKey.METRIC_RT_MIN.getName()) && collect.get(
+                MetricsKey.METRIC_RT_MIN.getName()).getSupplier().get().longValue() == 2);
+        Assertions.assertTrue(
+            null != collect.get(MetricsKey.METRIC_RT_MAX.getName()) && collect.get(
+                MetricsKey.METRIC_RT_MAX.getName()).getSupplier().get().longValue() == 2);
+        Assertions.assertTrue(
+            null != collect.get(MetricsKey.METRIC_RT_AVG.getName()) && collect.get(
+                MetricsKey.METRIC_RT_AVG.getName()).getSupplier().get().longValue() == 2);
+        Assertions.assertTrue(
+            null != collect.get(MetricsKey.METRIC_RT_SUM.getName()) && collect.get(
+                MetricsKey.METRIC_RT_SUM.getName()).getSupplier().get().longValue() == 2);
 
-        ConcurrentMap<RequestMethodMetrics, AtomicLong> totalRT = sampler.getTotalRT(RT.METHOD_REQUEST);
-        Assertions.assertTrue(null != totalRT && totalRT.get(metrics) != null && totalRT.get(metrics).intValue()==2);
+        sampler.addRT(applicationName, RTType.METHOD_REQUEST, 1L);
+        collect = getCollect(RTType.METHOD_REQUEST);
 
-        ConcurrentMap<RequestMethodMetrics, AtomicLong> rtCount = sampler.getRtCount(RT.METHOD_REQUEST);
-        Assertions.assertTrue(null != rtCount && null != rtCount.get(metrics) && rtCount.get(metrics).intValue() == 1);
+        Assertions.assertTrue(
+            null != collect.get(MetricsKey.METRIC_RT_LAST.getName()) && collect.get(
+                MetricsKey.METRIC_RT_LAST.getName()).getSupplier().get().longValue() == 1);
+        Assertions.assertTrue(
+            null != collect.get(MetricsKey.METRIC_RT_MIN.getName()) && collect.get(
+                MetricsKey.METRIC_RT_MIN.getName()).getSupplier().get().longValue() == 1);
+        Assertions.assertTrue(
+            null != collect.get(MetricsKey.METRIC_RT_MAX.getName()) && collect.get(
+                MetricsKey.METRIC_RT_MAX.getName()).getSupplier().get().longValue() == 2);
+        Assertions.assertTrue(
+            null != collect.get(MetricsKey.METRIC_RT_AVG.getName()) && collect.get(
+                MetricsKey.METRIC_RT_AVG.getName()).getSupplier().get().longValue() == 1);
+        Assertions.assertTrue(
+            null != collect.get(MetricsKey.METRIC_RT_SUM.getName()) && collect.get(
+                MetricsKey.METRIC_RT_SUM.getName()).getSupplier().get().longValue() == 3);
 
-        ConcurrentMap<RequestMethodMetrics, AtomicLong> lastRT = sampler.getLastRT(RT.METHOD_REQUEST);
-        Assertions.assertTrue(null != lastRT && null != lastRT.get(metrics) && lastRT.get(metrics).intValue() == 2);
+        sampler.addRT(applicationName, RTType.APPLICATION, 4L);
+        collect = getCollect(RTType.APPLICATION);
 
-        ConcurrentMap<RequestMethodMetrics, LongAccumulator> minRT = sampler.getMinRT(RT.METHOD_REQUEST);
-        Assertions.assertTrue(null != minRT && null != minRT.get(metrics) && minRT.get(metrics).intValue() == 2);
-
-        sampler.addRT(applicationName, RT.METHOD_REQUEST, 4L);
-
-        ConcurrentMap<RequestMethodMetrics, AtomicLong> avgRT2 = sampler.getAvgRT(RT.METHOD_REQUEST);
-        Assertions.assertTrue(null != avgRT2 && null != avgRT2.get(metrics) && avgRT2.get(metrics).intValue() == 0);
-
-        ConcurrentMap<RequestMethodMetrics, LongAccumulator> maxRT2 = sampler.getMaxRT(RT.METHOD_REQUEST);
-        Assertions.assertTrue(null != maxRT2 && null != maxRT2.get(metrics) && maxRT2.get(metrics).intValue()==4);
-
-        ConcurrentMap<RequestMethodMetrics, AtomicLong> totalRT2 = sampler.getTotalRT(RT.METHOD_REQUEST);
-        Assertions.assertTrue(null != totalRT2 && null != totalRT2.get(metrics) && totalRT2.get(metrics).intValue()==6);
-
-        ConcurrentMap<RequestMethodMetrics, AtomicLong> rtCount2 = sampler.getRtCount(RT.METHOD_REQUEST);
-        Assertions.assertTrue(null != rtCount2 && null != rtCount2.get(metrics) && rtCount2.get(metrics)
-                .intValue() == 2);
-
-        ConcurrentMap<RequestMethodMetrics, AtomicLong> lastRT2 = sampler.getLastRT(RT.METHOD_REQUEST);
-        Assertions.assertTrue(null != lastRT2 && null != lastRT2.get(metrics) &&  lastRT2.get(metrics).intValue()==4);
-
-        ConcurrentMap<RequestMethodMetrics, LongAccumulator> minRT2 = sampler.getMinRT(RT.METHOD_REQUEST);
-        Assertions.assertTrue(null != minRT2 && null != minRT2.get(metrics) && minRT2.get(metrics).intValue()==2);
-
+        Assertions.assertTrue(
+            null != collect.get(MetricsKey.METRIC_RT_LAST.getName()) && collect.get(
+                MetricsKey.METRIC_RT_LAST.getName()).getSupplier().get().longValue() == 4);
+        Assertions.assertTrue(
+            null != collect.get(MetricsKey.METRIC_RT_MIN.getName()) && collect.get(
+                MetricsKey.METRIC_RT_MIN.getName()).getSupplier().get().longValue() == 4);
+        Assertions.assertTrue(
+            null != collect.get(MetricsKey.METRIC_RT_MAX.getName()) && collect.get(
+                MetricsKey.METRIC_RT_MAX.getName()).getSupplier().get().longValue() == 4);
+        Assertions.assertTrue(
+            null != collect.get(MetricsKey.METRIC_RT_AVG.getName()) && collect.get(
+                MetricsKey.METRIC_RT_AVG.getName()).getSupplier().get().longValue() == 4);
+        Assertions.assertTrue(
+            null != collect.get(MetricsKey.METRIC_RT_SUM.getName()) && collect.get(
+                MetricsKey.METRIC_RT_SUM.getName()).getSupplier().get().longValue() == 4);
     }
 
+    @NotNull
+    private Map<String, GaugeMetricSample> getCollect(RTType rtType) {
+        List<GaugeMetricSample> metricSamples = sampler.collectRT((key, metric, count) -> new GaugeMetricSample(key.formatName("consumer"), metric.getTags(), RT, () -> count),rtType);
+
+        Map<String, GaugeMetricSample> collect = metricSamples.stream()
+            .collect(Collectors.toMap(MetricSample::getName, v -> v));
+        return collect;
+    }
+
+    private GaugeMetricSample getGaugeMetricSample(MetricsKey metricsKey, MethodMetric methodMetric,
+                                                   MetricsCategory metricsCategory, Supplier<Number> get) {
+        return new GaugeMetricSample(metricsKey.getNameByType(methodMetric.getSide()), metricsKey.getDescription(),
+            methodMetric.getTags(), metricsCategory, get);
+    }
+
+
     public class RequestMetricsCountSampler
-        extends SimpleMetricsCountSampler<String, RT, RequestMethodMetrics> {
+        extends SimpleMetricsCountSampler<String, RTType, RequestMethodMetrics> {
 
         @Override
         public List<MetricSample> sample() {
@@ -100,7 +138,7 @@ public class CountSamplerTest {
 
         @Override
         protected void countConfigure(
-            MetricsCountSampleConfigurer<String, RT, RequestMethodMetrics> sampleConfigure) {
+            MetricsCountSampleConfigurer<String, RTType, RequestMethodMetrics> sampleConfigure) {
             sampleConfigure.configureMetrics(
                 configure -> new RequestMethodMetrics(configure.getSource()));
             sampleConfigure.configureEventHandler(configure -> {
@@ -110,7 +148,7 @@ public class CountSamplerTest {
 
         @Override
         public void rtConfigure(
-            MetricsCountSampleConfigurer<String, RT, RequestMethodMetrics> sampleConfigure) {
+            MetricsCountSampleConfigurer<String, RTType, RequestMethodMetrics> sampleConfigure) {
             sampleConfigure.configureMetrics(configure -> new RequestMethodMetrics(configure.getSource()));
             sampleConfigure.configureEventHandler(configure -> {
                 System.out.println("rt event");
@@ -118,8 +156,9 @@ public class CountSamplerTest {
         }
     }
 
-    static enum RT{
-        METHOD_REQUEST
+    static enum RTType{
+        METHOD_REQUEST,
+        APPLICATION
     }
 
     static class RequestMethodMetrics implements Metric {
