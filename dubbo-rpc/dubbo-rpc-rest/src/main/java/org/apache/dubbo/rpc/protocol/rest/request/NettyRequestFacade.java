@@ -19,32 +19,42 @@ package org.apache.dubbo.rpc.protocol.rest.request;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufInputStream;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.DefaultHttpRequest;
+import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpContent;
 
-import java.io.*;
-import java.util.*;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Map;
+import java.util.Set;
 
-public class NettyRequestFacade extends RequestFacade<DefaultHttpRequest> {
-    protected Map<String, List<String>> headers = new HashMap<>();
+public class NettyRequestFacade extends RequestFacade<FullHttpRequest> {
+    protected Map<String, ArrayList<String>> headers;
 
     private ChannelHandlerContext context;
 
     public NettyRequestFacade(Object request, ChannelHandlerContext context) {
 
-        super((DefaultHttpRequest) request);
+        super((FullHttpRequest) request);
+        headers = new HashMap<>();
         initHeaders();
         this.context = context;
     }
 
 
-    @Override
     protected void initHeaders() {
         for (Map.Entry<String, String> header : request.headers()) {
 
             String key = header.getKey();
 
-            List<String> tmpHeaders = headers.get(header);
+            ArrayList<String> tmpHeaders = headers.get(key);
 
             if (tmpHeaders == null) {
                 tmpHeaders = new ArrayList<>();
@@ -98,17 +108,17 @@ public class NettyRequestFacade extends RequestFacade<DefaultHttpRequest> {
         }
 
 
-        List<String> finalList = list;
+        ListIterator<String> stringListIterator = list.listIterator();
 
         return new Enumeration<String>() {
             @Override
             public boolean hasMoreElements() {
-                return finalList.iterator().hasNext();
+                return stringListIterator.hasNext();
             }
 
             @Override
             public String nextElement() {
-                return finalList.iterator().next();
+                return stringListIterator.next();
             }
         };
     }
@@ -134,7 +144,12 @@ public class NettyRequestFacade extends RequestFacade<DefaultHttpRequest> {
 
     @Override
     public int getIntHeader(String name) {
-        return Integer.parseInt(getHeader(name));
+
+        String header = getHeader(name);
+        if (header == null) {
+            return -1;
+        }
+        return Integer.parseInt(header);
     }
 
     @Override
@@ -179,7 +194,7 @@ public class NettyRequestFacade extends RequestFacade<DefaultHttpRequest> {
 
     @Override
     public String getRequestURI() {
-        return null;
+        return request.uri();
     }
 
     @Override
@@ -299,7 +314,7 @@ public class NettyRequestFacade extends RequestFacade<DefaultHttpRequest> {
 
     @Override
     public String getRemoteAddr() {
-        return context.channel().remoteAddress().toString();
+        return null;
     }
 
     @Override
