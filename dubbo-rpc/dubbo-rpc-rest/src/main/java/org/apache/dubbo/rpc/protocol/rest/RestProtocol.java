@@ -116,9 +116,9 @@ public class RestProtocol extends AbstractProxyProtocol {
         String contextPath = getContextPath(url);
 
         // TODO  addAll metadataMap to RPCInvocationBuilder metadataMap
-        Map<PathMatcher, RestMethodMetadata> metadataMap = MetadataResolver.resolveProviderServiceMetadata(implClass,url);
+        Map<PathMatcher, RestMethodMetadata> metadataMap = MetadataResolver.resolveProviderServiceMetadata(implClass, url);
 
-        PathAndInvokerMapper.addPathAndInvoker(metadataMap, invoker,contextPath);
+        PathAndInvokerMapper.addPathAndInvoker(metadataMap, invoker, contextPath);
 
 
         final Runnable runnable = doExport(proxyFactory.getProxy(invoker, true), invoker.getInterface(), invoker.getUrl());
@@ -143,13 +143,22 @@ public class RestProtocol extends AbstractProxyProtocol {
     @Override
     protected <T> Runnable doExport(T impl, Class<T> type, URL url) throws RpcException {
         String addr = getAddr(url);
-        Class<?> implClass = url.getServiceModel().getProxyObject().getClass();
+
+        // TODO add Extension filter
+        String serverName = url.getParameter(SERVER_KEY, DEFAULT_SERVER);
         RestProtocolServer server = (RestProtocolServer) ConcurrentHashMapUtils.computeIfAbsent(serverMap, addr, restServer -> {
-            RestProtocolServer s = serverFactory.createServer(url.getParameter(SERVER_KEY, DEFAULT_SERVER));
+            RestProtocolServer s = serverFactory.createServer(serverName);
             s.setAddress(url.getAddress());
             s.start(url);
             return s;
         });
+
+        if (Constants.NETTY_HTTP.equalsIgnoreCase(serverName)) {
+            return () -> {
+            };
+        }
+
+        Class<?> implClass = url.getServiceModel().getProxyObject().getClass();
 
         String contextPath = getContextPath(url);
         if (Constants.SERVLET.equalsIgnoreCase(url.getParameter(SERVER_KEY, DEFAULT_SERVER))) {
@@ -237,6 +246,7 @@ public class RestProtocol extends AbstractProxyProtocol {
 
                                 if (400 < responseCode && responseCode < 500) {
                                     throw new HttpClientException(r.getMessage());
+                                    // TODO add Exception Mapper
                                 } else if (responseCode >= 500) {
                                     throw new RemoteServerInternalException(r.getMessage());
                                 } else if (responseCode < 400) {

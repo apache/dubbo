@@ -74,6 +74,7 @@ public class NettyHttpHandler implements HttpHandler<FullHttpRequest,NettyHttpRe
                 }
 
 
+
                 nettyHttpResponse.setStatus(200);
             } catch (Exception e) {
                 nettyHttpResponse.setStatus(500);

@@ -16,8 +16,10 @@
  */
 package org.apache.dubbo.rpc.protocol.rest;
 
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.rest.RestMethodMetadata;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.protocol.rest.annotation.ParamParserManager;
 import org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.provider.ProviderParseContext;
@@ -101,11 +103,15 @@ public class RPCInvocationBuilder {
         Enumeration<String> attachments = request.getHeaders(RestConstant.DUBBO_ATTACHMENT_HEADER);
 
         while (attachments != null && attachments.hasMoreElements()) {
-            String s =  attachments.nextElement();
-
-            String[] split = s.split("=");
-
-            rpcInvocation.setAttachment(split[0], split[1]);
+            String header = attachments.nextElement();
+            int index = header.indexOf("=");
+            if (index > 0) {
+                String key = header.substring(0, index);
+                String value = header.substring(index + 1);
+                if (!StringUtils.isEmpty(key)) {
+                    RpcContext.getServerAttachment().setAttachment(key.trim(), value.trim());
+                }
+            }
         }
 
 

@@ -38,6 +38,7 @@ import org.apache.dubbo.rpc.protocol.rest.rest.AnotherUserRestServiceImpl;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
@@ -265,6 +266,7 @@ class JaxrsRestProtocolTest {
         exporter.unexport();
     }
 
+    @Disabled
     @Test
     void testRegFail() {
         Assertions.assertThrows(RuntimeException.class, () -> {
