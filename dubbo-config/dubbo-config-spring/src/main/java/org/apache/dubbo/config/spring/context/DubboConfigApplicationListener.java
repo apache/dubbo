@@ -68,7 +68,6 @@ public class DubboConfigApplicationListener implements ApplicationListener<Dubbo
         } else {
             logger.warn(CONFIG_DUBBO_BEAN_NOT_FOUND, "", "", "Bean '" + DubboConfigBeanInitializer.BEAN_NAME + "' was not found");
         }
-
         // All infrastructure config beans are loaded, initialize dubbo here
         moduleModel.getDeployer().prepare();
     }
