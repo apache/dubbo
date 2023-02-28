@@ -226,7 +226,7 @@ class ReferenceKeyTest {
 
     private Map<String, Object> getReferenceAttributes(String fieldName) throws NoSuchFieldException {
         Field field = ConsumerConfiguration7.class.getDeclaredField(fieldName);
-        AnnotationAttributes attributes = AnnotationUtils.getAnnotationAttributes(field, DubboReference.class, null, true);
+        AnnotationAttributes attributes = getAnnotationAttributes(field, DubboReference.class, null, true);
         ReferenceBeanSupport.convertReferenceProps(attributes, field.getType());
         return attributes;
     }
@@ -310,7 +310,7 @@ class ReferenceKeyTest {
             url = "dubbo://127.0.0.1:20813")
         private HelloService demoService;
 
-        @Autowired
+        //@Autowired
         private HelloService helloService;
     }
 
