@@ -81,6 +81,7 @@ class MetricsFilterTest {
         filter = new MetricsFilter();
 
         collector = applicationModel.getBeanFactory().getOrRegisterBean(DefaultMetricsCollector.class);
+        collector.collectApplication(applicationModel);
         filter.setApplicationModel(applicationModel);
         side = CommonConstants.CONSUMER;
         invocation.setInvoker(new TestMetricsInvoker(side));
@@ -99,6 +100,7 @@ class MetricsFilterTest {
 
         filter.invoke(invoker, invocation);
         Map<String, MetricSample> metricsMap = getMetricsMap();
+        metricsMap.remove(MetricsKey.APPLICATION_METRIC_INFO.getName());
         Assertions.assertTrue(metricsMap.isEmpty());
     }
 
