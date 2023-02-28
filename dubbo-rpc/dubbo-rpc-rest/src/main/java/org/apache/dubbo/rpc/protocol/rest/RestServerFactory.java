@@ -30,8 +30,10 @@ public class RestServerFactory {
     public RestProtocolServer createServer(String name) {
         if (Constants.SERVLET.equalsIgnoreCase(name) || Constants.JETTY.equalsIgnoreCase(name) || Constants.TOMCAT.equalsIgnoreCase(name)) {
             return new DubboHttpProtocolServer(httpBinder);
-        } else if (Constants.NETTY.equalsIgnoreCase(name)) {
-            return new NettyRestProtocolServer();
+        } else if (Constants.NETTY_JAXRS.equalsIgnoreCase(name)) {
+            return new NettyRestJaxrsServer();
+        } else if (Constants.NETTY_HTTP.equalsIgnoreCase(name)) {
+            return new NettyHttpRestServer();
         } else {
             throw new IllegalArgumentException("Unrecognized server name: " + name);
         }
