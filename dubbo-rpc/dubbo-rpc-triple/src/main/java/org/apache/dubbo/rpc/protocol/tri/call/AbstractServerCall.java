@@ -269,9 +269,9 @@ public abstract class AbstractServerCall implements ServerCall, ServerStream.Lis
         }
         // send header failed will reset stream and close request observer cause no more data will be sent
         stream.sendHeader(headers)
-            .addListener(f -> {
-                if (!f.isSuccess()) {
-                    cancelDual(TriRpcStatus.INTERNAL.withCause(f.cause()));
+            .whenComplete((v, e) -> {
+                if (e != null) {
+                    cancelDual(TriRpcStatus.INTERNAL.withCause(e));
                 }
             });
     }

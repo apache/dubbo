@@ -21,9 +21,9 @@ package org.apache.dubbo.rpc.protocol.tri.stream;
 import org.apache.dubbo.rpc.TriRpcStatus;
 
 import io.netty.handler.codec.http2.Http2Headers;
-import io.netty.util.concurrent.Future;
 
 import java.net.SocketAddress;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Stream is a bi-directional channel that manipulates the data flow between peers. Inbound data
@@ -60,7 +60,7 @@ public interface Stream {
      * @param headers headers to send to remote peer
      * @return future to callback when send headers is done
      */
-    Future<?> sendHeader(Http2Headers headers);
+    CompletableFuture<?> sendHeader(Http2Headers headers);
 
     /**
      * Cancel by this peer.
@@ -68,7 +68,7 @@ public interface Stream {
      * @param status cancel status to send to remote peer
      * @return future to callback when cancel is done
      */
-    Future<?> cancelByLocal(TriRpcStatus status);
+    CompletableFuture<?> cancelByLocal(TriRpcStatus status);
 
     /**
      * Get remote peer address.

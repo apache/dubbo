@@ -57,13 +57,13 @@ import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.handler.codec.http2.Http2Error;
 import io.netty.handler.codec.http2.Http2Headers;
-import io.netty.util.concurrent.Future;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
@@ -114,33 +114,38 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
     }
 
     @Override
-    public ChannelFuture sendHeader(Http2Headers headers) {
+    public CompletableFuture<ChannelFuture> sendHeader(Http2Headers headers) {
+        CompletableFuture<ChannelFuture> future = new CompletableFuture<>();
         if (reset) {
-            return writeQueue.failure(
-                new IllegalStateException("Stream already reset, no more headers allowed"));
+            future.complete(writeQueue.failure(
+                new IllegalStateException("Stream already reset, no more headers allowed")));
+            return future;
         }
         if (headerSent) {
-            return writeQueue.failure(new IllegalStateException("Header already sent"));
+            future.complete(writeQueue.failure(new IllegalStateException("Header already sent")));
+            return future;
         }
         if (trailersSent) {
-            return writeQueue.failure(new IllegalStateException("Trailers already sent"));
+            future.complete(writeQueue.failure(new IllegalStateException("Trailers already sent")));
+            return future;
         }
         headerSent = true;
 
-        return writeQueue.enqueue(HeaderQueueCommand.createHeaders(headers, false))
+        future.complete(writeQueue.enqueue(HeaderQueueCommand.createHeaders(headers, false))
             .addListener(f -> {
                 if (!f.isSuccess()) {
                     reset(Http2Error.INTERNAL_ERROR);
                 }
-            });
+            }));
+        return future;
     }
 
     @Override
-    public Future<?> cancelByLocal(TriRpcStatus status) {
+    public CompletableFuture<ChannelFuture> cancelByLocal(TriRpcStatus status) {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(String.format("Cancel stream:%s by local: %s", channel, status));
         }
-        return reset(Http2Error.CANCEL);
+        return CompletableFuture.completedFuture(reset(Http2Error.CANCEL));
     }
 
 

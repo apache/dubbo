@@ -58,6 +58,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_RESPONSE;
@@ -73,19 +74,23 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
     private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(TripleClientStream.class);
 
     public final ClientStream.Listener listener;
-    private final WriteQueue writeQueue;
+
+    private final CompletableFuture<WriteQueue> writeQueueCompletableFuture;
+
+    private volatile WriteQueue writeQueue;
+
     private Deframer deframer;
     private final Channel parent;
 
     // for test
     TripleClientStream(FrameworkModel frameworkModel,
                        Executor executor,
-                       WriteQueue writeQueue,
+                       CompletableFuture<WriteQueue> writeQueueCompletableFuture,
                        ClientStream.Listener listener) {
         super(executor, frameworkModel);
         this.parent = null;
         this.listener = listener;
-        this.writeQueue = writeQueue;
+        this.writeQueueCompletableFuture = writeQueueCompletableFuture;
     }
 
     public TripleClientStream(FrameworkModel frameworkModel,
@@ -95,7 +100,24 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
         super(executor, frameworkModel);
         this.parent = parent;
         this.listener = listener;
-        this.writeQueue = createWriteQueue(parent);
+        this.writeQueueCompletableFuture = createWriteQueueFuture(parent);
+    }
+
+    private CompletableFuture<WriteQueue> createWriteQueueFuture(Channel parent) {
+        CompletableFuture<WriteQueue> writeQueueCompletableFuture = new CompletableFuture<>();
+        final Http2StreamChannelBootstrap bootstrap = new Http2StreamChannelBootstrap(parent);
+        bootstrap.open()
+            .addListener(it -> {
+                    Http2StreamChannel channel = (Http2StreamChannel) it.getNow();
+                    channel.pipeline()
+                        .addLast(new TripleCommandOutBoundHandler())
+                        .addLast(new TripleHttp2ClientResponseHandler(createTransportListener()));
+                    channel.closeFuture()
+                        .addListener(f -> transportException(f.cause()));
+                    writeQueueCompletableFuture.complete(new WriteQueue(channel));
+                }
+            );
+        return writeQueueCompletableFuture;
     }
 
     private WriteQueue createWriteQueue(Channel parent) {
@@ -117,17 +139,25 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
         writeQueue.close();
     }
 
-    public ChannelFuture sendHeader(Http2Headers headers) {
-        if (this.writeQueue == null) {
-            // already processed at createStream()
-            return parent.newFailedFuture(new IllegalStateException("Stream already closed"));
-        }
-        final HeaderQueueCommand headerCmd = HeaderQueueCommand.createHeaders(headers);
-        return writeQueue.enqueue(headerCmd).addListener(future -> {
-            if (!future.isSuccess()) {
-                transportException(future.cause());
+    public CompletableFuture<ChannelFuture> sendHeader(Http2Headers headers) {
+        CompletableFuture<ChannelFuture> channelFutureCompletableFuture = new CompletableFuture<>();
+        writeQueueCompletableFuture.whenComplete(
+            (writeQueue, throwable) -> {
+                if (throwable != null) {
+                    // already processed at createStream()
+                    channelFutureCompletableFuture.complete(parent.newFailedFuture(new IllegalStateException("Stream already closed")));
+                } else {
+                    this.writeQueue = writeQueue;
+                    final HeaderQueueCommand headerCmd = HeaderQueueCommand.createHeaders(headers);
+                    channelFutureCompletableFuture.complete(writeQueue.enqueue(headerCmd).addListener(future -> {
+                        if (!future.isSuccess()) {
+                            transportException(future.cause());
+                        }
+                    }));
+                }
             }
-        });
+        );
+        return channelFutureCompletableFuture;
     }
 
     private void transportException(Throwable cause) {
@@ -136,9 +166,9 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
         listener.onComplete(status, null);
     }
 
-    public ChannelFuture cancelByLocal(TriRpcStatus status) {
+    public CompletableFuture<ChannelFuture> cancelByLocal(TriRpcStatus status) {
         final CancelQueueCommand cmd = CancelQueueCommand.createCommand(Http2Error.CANCEL);
-        return this.writeQueue.enqueue(cmd, true);
+        return CompletableFuture.completedFuture(this.writeQueue.enqueue(cmd, true));
     }
 
     @Override
@@ -334,7 +364,7 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
             if (null == metadata) {
                 return null;
             }
-            if (!getGrpcStatusDetailEnabled()){
+            if (!getGrpcStatusDetailEnabled()) {
                 return null;
             }
             // second get status detail

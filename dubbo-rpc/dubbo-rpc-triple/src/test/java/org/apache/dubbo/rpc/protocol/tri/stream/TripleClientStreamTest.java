@@ -46,6 +46,8 @@ import io.netty.util.concurrent.ImmediateEventExecutor;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.concurrent.CompletableFuture;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.mock;
@@ -70,7 +72,7 @@ class TripleClientStreamTest {
         final EmbeddedChannel channel = new EmbeddedChannel();
         when(writeQueue.enqueue(any())).thenReturn(channel.newPromise());
         TripleClientStream stream = new TripleClientStream(url.getOrDefaultFrameworkModel(),
-            ImmediateEventExecutor.INSTANCE, writeQueue, listener);
+            ImmediateEventExecutor.INSTANCE, CompletableFuture.completedFuture(writeQueue), listener);
 
         final RequestMetadata requestMetadata = new RequestMetadata();
         requestMetadata.method = methodDescriptor;
