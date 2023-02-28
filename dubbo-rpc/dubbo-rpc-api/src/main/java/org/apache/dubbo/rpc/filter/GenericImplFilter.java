@@ -155,7 +155,7 @@ public class GenericImplFilter implements Filter, Filter.Listener {
                             // find the real interface from url
                             String realInterface = invoker.getUrl().getParameter(Constants.INTERFACE);
                             invokerInterface = ReflectUtils.forName(realInterface);
-                        } catch (Throwable e) {
+                        } catch (Exception e) {
                             // ignore
                         }
                     }

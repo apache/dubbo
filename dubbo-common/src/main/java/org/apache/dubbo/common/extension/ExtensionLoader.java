@@ -741,7 +741,7 @@ public class ExtensionLoader<T> {
                     try {
                         instance = createAdaptiveExtension();
                         cachedAdaptiveInstance.set(instance);
-                    } catch (Throwable t) {
+                    } catch (Exception t) {
                         createAdaptiveInstanceError = t;
                         throw new IllegalStateException(
                             "Failed to create adaptive instance: " + t.toString(), t);
@@ -821,10 +821,10 @@ public class ExtensionLoader<T> {
             // Warning: After an instance of Lifecycle is wrapped by cachedWrapperClasses, it may not still be Lifecycle instance, this application may not invoke the lifecycle.initialize hook.
             initExtension(instance);
             return instance;
-        } catch (Throwable t) {
+        } catch (Exception e) {
             throw new IllegalStateException(
-                "Extension instance (name: " + name + ", class: " + type + ") couldn't be instantiated: " + t.getMessage(),
-                t);
+                "Extension instance (name: " + name + ", class: " + type + ") couldn't be instantiated: " + e.getMessage(),
+                e);
         }
     }
 
@@ -1134,17 +1134,17 @@ public class ExtensionLoader<T> {
                         loadClass(classLoader, extensionClasses, resourceURL,
                             Class.forName(clazz, true, classLoader), name, overridden);
                     }
-                } catch (Throwable t) {
+                } catch (Exception e1) {
                     IllegalStateException e = new IllegalStateException(
-                        "Failed to load extension class (interface: " + type + ", class line: " + line + ") in " + resourceURL + ", cause: " + t.getMessage(),
-                        t);
+                        "Failed to load extension class (interface: " + type + ", class line: " + line + ") in " + resourceURL + ", cause: " + e1.getMessage(),
+                        e1);
                     exceptions.put(line, e);
                 }
             }
-        } catch (Throwable t) {
+        } catch (Exception e) {
             logger.error(COMMON_ERROR_LOAD_EXTENSION, "", "",
                 "Exception occurred when loading extension class (interface: " + type + ", class file: " + resourceURL + ") in " + resourceURL,
-                t);
+                e);
         }
     }
 

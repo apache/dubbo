@@ -223,7 +223,7 @@ public class CompatibleTypeUtils {
             if (!type.isInterface()) {
                 try {
                     collection = (Collection) type.getDeclaredConstructor().newInstance();
-                } catch (Throwable e) {
+                } catch (Exception e) {
                     collection = new ArrayList<Object>(length);
                 }
             } else if (type == Set.class) {
