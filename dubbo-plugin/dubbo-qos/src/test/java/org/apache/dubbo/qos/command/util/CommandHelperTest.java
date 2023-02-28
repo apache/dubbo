@@ -72,13 +72,13 @@ class CommandHelperTest {
     private CommandHelper commandHelper = new CommandHelper(FrameworkModel.defaultModel());
 
     @Test
-    void testHasCommand() throws Exception {
+    void testHasCommand() {
         assertTrue(commandHelper.hasCommand("greeting"));
         assertFalse(commandHelper.hasCommand("not-exiting"));
     }
 
     @Test
-    void testGetAllCommandClass() throws Exception {
+    void testGetAllCommandClass() {
         List<Class<?>> classes = commandHelper.getAllCommandClass();
 
         // update this list when introduce a new command
@@ -125,7 +125,7 @@ class CommandHelperTest {
     }
 
     @Test
-    void testGetCommandClass() throws Exception {
+    void testGetCommandClass() {
         assertThat(commandHelper.getCommandClass("greeting"), equalTo(GreetingCommand.class));
         assertNull(commandHelper.getCommandClass("not-exiting"));
     }

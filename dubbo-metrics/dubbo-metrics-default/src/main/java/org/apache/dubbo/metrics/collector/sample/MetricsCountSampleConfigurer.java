@@ -18,7 +18,6 @@
 package org.apache.dubbo.metrics.collector.sample;
 
 import org.apache.dubbo.metrics.model.Metric;
-
 import java.util.function.Consumer;
 import java.util.function.Function;
 

@@ -17,11 +17,6 @@
 
 package org.apache.dubbo.metrics.collector;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
 import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.context.ConfigManager;
@@ -37,7 +32,11 @@ import org.apache.dubbo.metrics.model.MetricsKey;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import static org.apache.dubbo.metrics.model.MetricsCategory.QPS;
 import static org.apache.dubbo.metrics.model.MetricsCategory.REQUESTS;
 import static org.apache.dubbo.metrics.model.MetricsCategory.RT;
@@ -49,24 +48,17 @@ import static org.apache.dubbo.metrics.model.MetricsCategory.RT;
 public class AggregateMetricsCollector implements MetricsCollector, MetricsListener {
     private int bucketNum;
     private int timeWindowSeconds;
-
-    private final ConcurrentMap<MethodMetric, TimeWindowCounter> totalRequests = new ConcurrentHashMap<>();
-    private final ConcurrentMap<MethodMetric, TimeWindowCounter> succeedRequests = new ConcurrentHashMap<>();
-    private final ConcurrentMap<MethodMetric, TimeWindowCounter> unknownFailedRequests = new ConcurrentHashMap<>();
-    private final ConcurrentMap<MethodMetric, TimeWindowCounter> businessFailedRequests = new ConcurrentHashMap<>();
-    private final ConcurrentMap<MethodMetric, TimeWindowCounter> timeoutRequests = new ConcurrentHashMap<>();
-    private final ConcurrentMap<MethodMetric, TimeWindowCounter> limitRequests = new ConcurrentHashMap<>();
-    private final ConcurrentMap<MethodMetric, TimeWindowCounter> totalFailedRequests = new ConcurrentHashMap<>();
-    private final ConcurrentMap<MethodMetric, TimeWindowCounter> qps = new ConcurrentHashMap<>();
+    private final Map<MetricsEvent.Type, ConcurrentHashMap<MethodMetric, TimeWindowCounter>> methodTypeCounter = new ConcurrentHashMap<>();
     private final ConcurrentMap<MethodMetric, TimeWindowQuantile> rt = new ConcurrentHashMap<>();
-
+    private final ConcurrentHashMap<MethodMetric, TimeWindowCounter> qps = new ConcurrentHashMap<>();
     private final ApplicationModel applicationModel;
-
     private static final Integer DEFAULT_COMPRESSION = 100;
     private static final Integer DEFAULT_BUCKET_NUM = 10;
     private static final Integer DEFAULT_TIME_WINDOW_SECONDS = 120;
 
     public AggregateMetricsCollector(ApplicationModel applicationModel) {
+        this.registryerEventTypeHandler();
+
         this.applicationModel = applicationModel;
         ConfigManager configManager = applicationModel.getApplicationConfigManager();
         MetricsConfig config = configManager.getMetrics().orElse(null);
@@ -78,10 +70,6 @@ public class AggregateMetricsCollector implements MetricsCollector, MetricsListe
             this.bucketNum = aggregation.getBucketNum() == null ? DEFAULT_BUCKET_NUM : aggregation.getBucketNum();
             this.timeWindowSeconds = aggregation.getTimeWindowSeconds() == null ? DEFAULT_TIME_WINDOW_SECONDS : aggregation.getTimeWindowSeconds();
         }
-    }
-
-    private void registerListener() {
-        applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class).addListener(this);
     }
 
     @Override
@@ -100,45 +88,24 @@ public class AggregateMetricsCollector implements MetricsCollector, MetricsListe
         quantile.add(responseTime);
     }
 
+
     private void onRequestEvent(RequestEvent event) {
         MethodMetric metric = (MethodMetric) event.getSource();
-        RequestEvent.Type type = event.getType();
-        TimeWindowCounter counter = null;
-        switch (type) {
-            case TOTAL:
-                counter = ConcurrentHashMapUtils.computeIfAbsent(totalRequests, metric, k -> new TimeWindowCounter(bucketNum, timeWindowSeconds));
-                TimeWindowCounter qpsCounter = ConcurrentHashMapUtils.computeIfAbsent(qps, metric, k -> new TimeWindowCounter(bucketNum, timeWindowSeconds));
-                qpsCounter.increment();
-                break;
-            case SUCCEED:
-                counter = ConcurrentHashMapUtils.computeIfAbsent(succeedRequests, metric, k -> new TimeWindowCounter(bucketNum, timeWindowSeconds));
-                break;
-            case UNKNOWN_FAILED:
-                counter = ConcurrentHashMapUtils.computeIfAbsent(unknownFailedRequests, metric, k -> new TimeWindowCounter(bucketNum, timeWindowSeconds));
-                break;
-            case BUSINESS_FAILED:
-                counter = ConcurrentHashMapUtils.computeIfAbsent(businessFailedRequests, metric, k -> new TimeWindowCounter(bucketNum, timeWindowSeconds));
-                break;
 
-            case REQUEST_TIMEOUT:
-                counter = ConcurrentHashMapUtils.computeIfAbsent(timeoutRequests, metric, k -> new TimeWindowCounter(bucketNum, timeWindowSeconds));
-                break;
+        MetricsEvent.Type type = event.getType();
 
-            case REQUEST_LIMIT:
-                counter = ConcurrentHashMapUtils.computeIfAbsent(limitRequests, metric, k -> new TimeWindowCounter(bucketNum, timeWindowSeconds));
-                break;
+        ConcurrentMap<MethodMetric, TimeWindowCounter> counter = methodTypeCounter.get(type);
 
-            case TOTAL_FAILED:
-                counter = ConcurrentHashMapUtils.computeIfAbsent(totalFailedRequests, metric, k -> new TimeWindowCounter(bucketNum, timeWindowSeconds));
-                break;
-
-            default:
-                break;
+        if (counter == null) {
+            return;
         }
+        TimeWindowCounter windowCounter = ConcurrentHashMapUtils.computeIfAbsent(counter, metric, methodMetric -> new TimeWindowCounter(bucketNum, timeWindowSeconds));
 
-        if (counter != null) {
-            counter.increment();
+        if (type == MetricsEvent.Type.TOTAL) {
+            TimeWindowCounter qpsCounter = ConcurrentHashMapUtils.computeIfAbsent(qps, metric, methodMetric -> new TimeWindowCounter(bucketNum, timeWindowSeconds));
+            qpsCounter.increment();
         }
+        windowCounter.increment();
     }
 
     @Override
@@ -152,39 +119,51 @@ public class AggregateMetricsCollector implements MetricsCollector, MetricsListe
     }
 
     private void collectRequests(List<MetricSample> list) {
-        totalRequests.forEach((k, v) ->
-            list.add(getGaugeMetricSample(MetricsKey.METRIC_REQUESTS_TOTAL_AGG, k, v)));
-        succeedRequests.forEach((k, v) ->
-            list.add(getGaugeMetricSample(MetricsKey.METRIC_REQUESTS_SUCCEED_AGG, k, v)));
-        unknownFailedRequests.forEach((k, v) ->
-            list.add(getGaugeMetricSample(MetricsKey.METRIC_REQUESTS_FAILED_AGG, k, v)));
-        businessFailedRequests.forEach((k, v) ->
-            list.add(getGaugeMetricSample(MetricsKey.METRIC_REQUESTS_BUSINESS_FAILED_AGG, k, v)));
-        timeoutRequests.forEach((k, v) ->
-            list.add(getGaugeMetricSample(MetricsKey.METRIC_REQUESTS_TIMEOUT_AGG, k, v)));
-        limitRequests.forEach((k, v) ->
-            list.add(getGaugeMetricSample(MetricsKey.METRIC_REQUESTS_LIMIT_AGG, k, v)));
-        totalFailedRequests.forEach((k, v) ->
-            list.add(getGaugeMetricSample(MetricsKey.METRIC_REQUESTS_TOTAL_FAILED_AGG, k, v)));
-
+        collectMethod(list, MetricsEvent.Type.TOTAL, MetricsKey.METRIC_REQUESTS_TOTAL_AGG);
+        collectMethod(list, MetricsEvent.Type.SUCCEED, MetricsKey.METRIC_REQUESTS_SUCCEED_AGG);
+        collectMethod(list, MetricsEvent.Type.UNKNOWN_FAILED, MetricsKey.METRIC_REQUESTS_FAILED_AGG);
+        collectMethod(list, MetricsEvent.Type.BUSINESS_FAILED, MetricsKey.METRIC_REQUESTS_BUSINESS_FAILED_AGG);
+        collectMethod(list, MetricsEvent.Type.REQUEST_TIMEOUT, MetricsKey.METRIC_REQUESTS_TIMEOUT_AGG);
+        collectMethod(list, MetricsEvent.Type.REQUEST_LIMIT, MetricsKey.METRIC_REQUESTS_LIMIT_AGG);
+        collectMethod(list, MetricsEvent.Type.TOTAL_FAILED, MetricsKey.METRIC_REQUESTS_TOTAL_FAILED_AGG);
+        collectMethod(list, MetricsEvent.Type.NETWORK_EXCEPTION, MetricsKey.METRIC_REQUESTS_TOTAL_NETWORK_FAILED_AGG);
+        collectMethod(list, MetricsEvent.Type.CODEC_EXCEPTION, MetricsKey.METRIC_REQUESTS_TOTAL_CODEC_FAILED_AGG);
+        collectMethod(list, MetricsEvent.Type.SERVICE_UNAVAILABLE, MetricsKey.METRIC_REQUESTS_TOTAL_SERVICE_UNAVAILABLE_FAILED_AGG);
     }
 
-    private GaugeMetricSample getGaugeMetricSample(MetricsKey metricRequestsTotalAgg, MethodMetric k, TimeWindowCounter v) {
-        return new GaugeMetricSample(metricRequestsTotalAgg.getNameByType(k.getSide()),
-            metricRequestsTotalAgg.getDescription(), k.getTags(), REQUESTS, v::get);
+    private void collectMethod(List<MetricSample> list, MetricsEvent.Type eventType, MetricsKey metricsKey) {
+        ConcurrentHashMap<MethodMetric, TimeWindowCounter> windowCounter = methodTypeCounter.get(eventType);
+        if (windowCounter != null) {
+            windowCounter.forEach((k, v) -> list.add(new GaugeMetricSample(metricsKey.formatName(k.getSide()), k.getTags(), REQUESTS, v::get)));
+        }
     }
 
     private void collectQPS(List<MetricSample> list) {
-        qps.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.METRIC_QPS.getNameByType(k.getSide()),
-            MetricsKey.METRIC_QPS.getDescription(), k.getTags(), QPS, () -> v.get() / v.bucketLivedSeconds())));
+        qps.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.METRIC_QPS.formatName(k.getSide()), k.getTags(), QPS, () -> v.get() / v.bucketLivedSeconds())));
     }
 
     private void collectRT(List<MetricSample> list) {
         rt.forEach((k, v) -> {
-            list.add(new GaugeMetricSample(MetricsKey.METRIC_RT_P99.getNameByType(k.getSide()),
-                MetricsKey.METRIC_RT_P99.getDescription(), k.getTags(), RT, () -> v.quantile(0.99)));
-            list.add(new GaugeMetricSample(MetricsKey.METRIC_RT_P95.getNameByType(k.getSide()),
-                MetricsKey.METRIC_RT_P95.getDescription(), k.getTags(), RT, () -> v.quantile(0.95)));
+            list.add(new GaugeMetricSample(MetricsKey.METRIC_RT_P99.formatName(k.getSide()), k.getTags(), RT, () -> v.quantile(0.99)));
+            list.add(new GaugeMetricSample(MetricsKey.METRIC_RT_P95.formatName(k.getSide()), k.getTags(), RT, () -> v.quantile(0.95)));
         });
     }
+
+    private void registryerEventTypeHandler() {
+        methodTypeCounter.put(MetricsEvent.Type.TOTAL, new ConcurrentHashMap<>());
+        methodTypeCounter.put(MetricsEvent.Type.SUCCEED, new ConcurrentHashMap<>());
+        methodTypeCounter.put(MetricsEvent.Type.UNKNOWN_FAILED, new ConcurrentHashMap<>());
+        methodTypeCounter.put(MetricsEvent.Type.BUSINESS_FAILED, new ConcurrentHashMap<>());
+        methodTypeCounter.put(MetricsEvent.Type.REQUEST_TIMEOUT, new ConcurrentHashMap<>());
+        methodTypeCounter.put(MetricsEvent.Type.REQUEST_LIMIT, new ConcurrentHashMap<>());
+        methodTypeCounter.put(MetricsEvent.Type.TOTAL_FAILED, new ConcurrentHashMap<>());
+        methodTypeCounter.put(MetricsEvent.Type.SERVICE_UNAVAILABLE, new ConcurrentHashMap<>());
+        methodTypeCounter.put(MetricsEvent.Type.NETWORK_EXCEPTION, new ConcurrentHashMap<>());
+        methodTypeCounter.put(MetricsEvent.Type.CODEC_EXCEPTION, new ConcurrentHashMap<>());
+    }
+
+    private void registerListener() {
+        applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class).addListener(this);
+    }
+
 }

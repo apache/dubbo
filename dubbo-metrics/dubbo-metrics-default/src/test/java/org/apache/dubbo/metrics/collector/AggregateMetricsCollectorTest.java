@@ -105,10 +105,14 @@ class AggregateMetricsCollectorTest {
         defaultCollector.setApplicationName(applicationName);
         MethodMetricsSampler methodMetricsCountSampler = defaultCollector.getMethodSampler();
 
-        methodMetricsCountSampler.incOnEvent(invocation, MetricsEvent.Type.TOTAL);
-        methodMetricsCountSampler.incOnEvent(invocation, MetricsEvent.Type.SUCCEED);
-        methodMetricsCountSampler.incOnEvent(invocation, MetricsEvent.Type.UNKNOWN_FAILED);
-        methodMetricsCountSampler.incOnEvent(invocation, MetricsEvent.Type.BUSINESS_FAILED);
+        methodMetricsCountSampler.incOnEvent(invocation,MetricsEvent.Type.TOTAL);
+        methodMetricsCountSampler.incOnEvent(invocation,MetricsEvent.Type.SUCCEED);
+        methodMetricsCountSampler.incOnEvent(invocation,MetricsEvent.Type.UNKNOWN_FAILED);
+        methodMetricsCountSampler.incOnEvent(invocation,MetricsEvent.Type.BUSINESS_FAILED);
+        methodMetricsCountSampler.incOnEvent(invocation,MetricsEvent.Type.NETWORK_EXCEPTION);
+        methodMetricsCountSampler.incOnEvent(invocation,MetricsEvent.Type.SERVICE_UNAVAILABLE);
+        methodMetricsCountSampler.incOnEvent(invocation,MetricsEvent.Type.CODEC_EXCEPTION);
+
 
         List<MetricSample> samples = collector.collect();
         for (MetricSample sample : samples) {
@@ -130,6 +134,10 @@ class AggregateMetricsCollectorTest {
         Assertions.assertEquals(sampleMap.get(MetricsKey.METRIC_REQUESTS_SUCCEED_AGG.getNameByType(side)), 1L);
         Assertions.assertEquals(sampleMap.get(MetricsKey.METRIC_REQUESTS_FAILED_AGG.getNameByType(side)), 1L);
         Assertions.assertEquals(sampleMap.get(MetricsKey.METRIC_REQUESTS_BUSINESS_FAILED_AGG.getNameByType(side)), 1L);
+
+        Assertions.assertEquals(sampleMap.get(MetricsKey.METRIC_REQUESTS_TOTAL_NETWORK_FAILED_AGG.getNameByType(side)), 1L);
+        Assertions.assertEquals(sampleMap.get(MetricsKey.METRIC_REQUESTS_TOTAL_CODEC_FAILED_AGG.getNameByType(side)), 1L);
+        Assertions.assertEquals(sampleMap.get(MetricsKey.METRIC_REQUESTS_TOTAL_SERVICE_UNAVAILABLE_FAILED_AGG.getNameByType(side)), 1L);
 
         Assertions.assertTrue(sampleMap.containsKey(MetricsKey.METRIC_QPS.getNameByType(side)));
     }

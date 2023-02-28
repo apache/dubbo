@@ -22,11 +22,11 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class LFUCache<K, V> {
 
-    private Map<K, CacheNode<K, V>> map;
-    private CacheDeque<K, V>[] freqTable;
+    private final Map<K, CacheNode<K, V>> map;
+    private final CacheDeque<K, V>[] freqTable;
 
     private final int capacity;
-    private int evictionCount;
+    private final int evictionCount;
     private int curSize = 0;
 
     private final ReentrantLock lock = new ReentrantLock();
