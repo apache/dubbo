@@ -67,8 +67,6 @@ import java.util.stream.Collectors;
 
 /**
  * provider Brave when you are using Boot <3.0 or you are not using spring-boot-starter-actuator
- *
- * @author shenfeng
  */
 @AutoConfiguration(before = DubboMicrometerTracingAutoConfiguration.class, afterName = "org.springframework.boot.actuate.autoconfigure.tracing.BraveAutoConfiguration")
 @ConditionalOnClass({Tracer.class, BraveTracer.class})

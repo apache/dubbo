@@ -45,7 +45,6 @@ import java.util.Arrays;
 /**
  * Register observationRegistry to ApplicationModel.
  * Create observationRegistry when you are using Boot <3.0 or you are not using spring-boot-starter-actuator
- * @author shenfeng
  */
 @AutoConfiguration(after =DubboMicrometerTracingAutoConfiguration.class,afterName = "org.springframework.boot.actuate.autoconfigure.observation.ObservationAutoConfiguration")
 @ConditionalOnDubboTracingEnable

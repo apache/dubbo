@@ -32,7 +32,6 @@ import org.springframework.core.annotation.Order;
 /**
  * copy from {@link org.springframework.boot.actuate.autoconfigure.tracing.MicrometerTracingAutoConfiguration}
  * this class is available starting from Boot 3.0. It's not available if you're using Boot < 3.0
- * @author shenfeng
  */
 @ConditionalOnClass(Tracer.class)
 @ConditionalOnDubboTracingEnable

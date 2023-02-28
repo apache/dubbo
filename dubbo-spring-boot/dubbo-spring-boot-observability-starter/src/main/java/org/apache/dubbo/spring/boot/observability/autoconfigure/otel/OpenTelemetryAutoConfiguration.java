@@ -69,7 +69,6 @@ import java.util.stream.Collectors;
 
 /**
  * provider OpenTelemetry when you are using Boot <3.0 or you are not using spring-boot-starter-actuator
- * @author shenfeng
  */
 @AutoConfiguration(before = DubboMicrometerTracingAutoConfiguration.class, afterName = "org.springframework.boot.actuate.autoconfigure.tracing.OpenTelemetryAutoConfiguration")
 @ConditionalOnDubboTracingEnable

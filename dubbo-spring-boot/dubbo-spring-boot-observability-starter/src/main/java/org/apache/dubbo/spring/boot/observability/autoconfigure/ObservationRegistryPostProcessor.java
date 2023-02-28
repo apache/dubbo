@@ -27,7 +27,6 @@ import java.util.stream.Collectors;
 
 /**
  * registry observationHandlers to observationConfig
- * @author shenfeng
  */
 public class ObservationRegistryPostProcessor implements BeanPostProcessor {
     private final ObjectProvider<ObservationHandlerGrouping> observationHandlerGrouping;
