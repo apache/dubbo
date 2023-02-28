@@ -16,8 +16,10 @@
  */
 package org.apache.dubbo.config.spring.reference;
 
+import com.alibaba.spring.util.AnnotationUtils;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.config.annotation.ProvidedBy;
 import org.apache.dubbo.config.spring.Constants;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.util.DubboAnnotationUtils;
@@ -77,6 +79,26 @@ public class ReferenceBeanSupport {
             interfaceName = defaultInterfaceClass.getName();
         }
         Assert.notEmptyString(interfaceName, "The interface class or name of reference was not found");
+        ProvidedBy providedbBy = null;
+        if (defaultInterfaceClass != null) {
+            providedbBy = (ProvidedBy) defaultInterfaceClass.getAnnotation(ProvidedBy.class);
+        }
+        if (providedbBy != null && providedbBy.name() != null && providedbBy.name().length > 0) {
+            int providedByReferenceLength = providedbBy.name().length;
+            Object providedByServices = attributes.get(ReferenceAttributes.PROVIDED_BY);
+            int providedByInterfaceLength = 0;
+            String[] providedByInterfaceServices = null;
+            if (providedByServices != null) {
+                providedByInterfaceLength = ((String[]) providedByServices).length;
+                providedByInterfaceServices = (String[]) providedByServices;
+            }
+            String[] providedbByServices = new String[providedByReferenceLength + providedByInterfaceLength];
+            System.arraycopy(providedbBy.name(), 0, providedbByServices, 0, providedByReferenceLength);
+            if (providedByInterfaceLength > 0) {
+                System.arraycopy(providedByInterfaceServices, 0, providedbByServices, providedByReferenceLength, providedByInterfaceLength);
+            }
+            attributes.put(ReferenceAttributes.PROVIDED_BY, providedbByServices);
+        }
         attributes.put(ReferenceAttributes.INTERFACE, interfaceName);
         attributes.remove(ReferenceAttributes.INTERFACE_NAME);
         attributes.remove(ReferenceAttributes.INTERFACE_CLASS);
@@ -99,6 +121,7 @@ public class ReferenceBeanSupport {
         }
 
     }
+
 
     public static String generateReferenceKey(Map<String, Object> attributes, ApplicationContext applicationContext) {
 

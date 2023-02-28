@@ -28,6 +28,7 @@ import org.apache.dubbo.rpc.model.ServiceMetadata;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
+import java.beans.Transient;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -59,7 +60,7 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
     /**
      * The reference of the interface implementation
      */
-    protected T ref;
+    protected transient T ref;
 
     /**
      * The service name
@@ -296,6 +297,7 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
         }
     }
 
+    @Transient
     public T getRef() {
         return ref;
     }
@@ -346,11 +348,13 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
         }
     }
 
+    @Transient
     public ServiceMetadata getServiceMetadata() {
         return serviceMetadata;
     }
 
     @Override
+    @Transient
     @Parameter(excluded = true, attribute = false)
     public List<String> getPrefixes() {
         List<String> prefixes = new ArrayList<>();

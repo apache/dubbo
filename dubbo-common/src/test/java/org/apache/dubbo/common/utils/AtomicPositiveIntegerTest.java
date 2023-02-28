@@ -35,14 +35,14 @@ class AtomicPositiveIntegerTest {
     private AtomicPositiveInteger i3 = new AtomicPositiveInteger(Integer.MAX_VALUE);
 
     @Test
-    void testGet() throws Exception {
+    void testGet() {
         assertEquals(0, i1.get());
         assertEquals(127, i2.get());
         assertEquals(Integer.MAX_VALUE, i3.get());
     }
 
     @Test
-    void testSet() throws Exception {
+    void testSet() {
         i1.set(100);
         assertEquals(100, i1.get());
 
@@ -56,7 +56,7 @@ class AtomicPositiveIntegerTest {
     }
 
     @Test
-    void testGetAndIncrement() throws Exception {
+    void testGetAndIncrement() {
         int get = i1.getAndIncrement();
         assertEquals(0, get);
         assertEquals(1, i1.get());
@@ -71,7 +71,7 @@ class AtomicPositiveIntegerTest {
     }
 
     @Test
-    void testGetAndDecrement() throws Exception {
+    void testGetAndDecrement() {
         int get = i1.getAndDecrement();
         assertEquals(0, get);
         assertEquals(Integer.MAX_VALUE, i1.get());
@@ -86,7 +86,7 @@ class AtomicPositiveIntegerTest {
     }
 
     @Test
-    void testIncrementAndGet() throws Exception {
+    void testIncrementAndGet() {
         int get = i1.incrementAndGet();
         assertEquals(1, get);
         assertEquals(1, i1.get());
@@ -101,7 +101,7 @@ class AtomicPositiveIntegerTest {
     }
 
     @Test
-    void testDecrementAndGet() throws Exception {
+    void testDecrementAndGet() {
         int get = i1.decrementAndGet();
         assertEquals(Integer.MAX_VALUE, get);
         assertEquals(Integer.MAX_VALUE, i1.get());
@@ -116,7 +116,7 @@ class AtomicPositiveIntegerTest {
     }
 
     @Test
-    void testGetAndSet() throws Exception {
+    void testGetAndSet() {
         int get = i1.getAndSet(100);
         assertEquals(0, get);
         assertEquals(100, i1.get());
@@ -130,7 +130,7 @@ class AtomicPositiveIntegerTest {
     }
 
     @Test
-    void testGetAndAnd() throws Exception {
+    void testGetAndAnd() {
         int get = i1.getAndAdd(3);
         assertEquals(0, get);
         assertEquals(3, i1.get());
@@ -146,7 +146,7 @@ class AtomicPositiveIntegerTest {
 
 
     @Test
-    void testAddAndGet() throws Exception {
+    void testAddAndGet() {
         int get = i1.addAndGet(3);
         assertEquals(3, get);
         assertEquals(3, i1.get());
@@ -187,7 +187,7 @@ class AtomicPositiveIntegerTest {
     }
 
     @Test
-    void testValues() throws Exception {
+    void testValues() {
         Integer i = i1.get();
         assertThat(i1.byteValue(), equalTo(i.byteValue()));
         assertThat(i1.shortValue(), equalTo(i.shortValue()));

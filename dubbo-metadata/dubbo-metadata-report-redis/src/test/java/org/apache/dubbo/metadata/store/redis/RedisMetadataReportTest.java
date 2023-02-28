@@ -59,7 +59,7 @@ class RedisMetadataReportTest {
     URL registryUrl;
 
     @BeforeEach
-    public void constructor(final TestInfo testInfo) throws IOException {
+    public void constructor(final TestInfo testInfo) {
         final boolean usesAuthentication = usesAuthentication(testInfo);
         int redisPort = 0;
         IOException exception = null;

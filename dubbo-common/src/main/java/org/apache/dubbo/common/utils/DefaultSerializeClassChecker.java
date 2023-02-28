@@ -201,4 +201,8 @@ public class DefaultSerializeClassChecker implements AllowClassNotifyListener {
     public static DefaultSerializeClassChecker getInstance() {
         return FrameworkModel.defaultModel().getBeanFactory().getBean(DefaultSerializeClassChecker.class);
     }
+
+    public boolean isCheckSerializable() {
+        return checkSerializable;
+    }
 }

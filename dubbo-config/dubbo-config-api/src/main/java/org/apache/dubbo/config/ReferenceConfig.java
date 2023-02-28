@@ -52,6 +52,7 @@ import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.stub.StubSuppliers;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
+import java.beans.Transient;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -217,6 +218,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
     }
 
     @Override
+    @Transient
     public T get() {
         if (destroyed) {
             throw new IllegalStateException("The invoker of ReferenceConfig(" + url + ") has already destroyed!");
@@ -765,10 +767,12 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
      * @return
      */
     @Deprecated
+    @Transient
     public Invoker<?> getInvoker() {
         return invoker;
     }
 
+    @Transient
     public Runnable getDestroyRunner() {
         return this::destroy;
     }

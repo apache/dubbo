@@ -34,7 +34,7 @@
         <skip_maven_deploy>true</skip_maven_deploy>
         <source.level>1.8</source.level>
         <target.level>1.8</target.level>
-        <protobuf-java.version>3.21.12</protobuf-java.version>
+        <protobuf-java.version>3.22.0</protobuf-java.version>
         <maven-compiler-plugin.version>3.10.1</maven-compiler-plugin.version>
     </properties>
 

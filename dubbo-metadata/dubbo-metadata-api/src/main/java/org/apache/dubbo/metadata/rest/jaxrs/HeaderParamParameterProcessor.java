@@ -23,6 +23,7 @@ import org.apache.dubbo.metadata.rest.RestMethodMetadata;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 
 import static org.apache.dubbo.metadata.rest.AnnotatedMethodParameterProcessor.buildDefaultValue;
 import static org.apache.dubbo.metadata.rest.RestMetadataConstants.JAX_RS.HEADER_PARAM_ANNOTATION_CLASS_NAME;
@@ -35,12 +36,12 @@ import static org.apache.dubbo.metadata.rest.RestMetadataConstants.JAX_RS.HEADER
 public class HeaderParamParameterProcessor extends AbstractAnnotatedMethodParameterProcessor {
 
     @Override
-    public String getAnnotationType() {
+    public String getAnnotationName() {
         return HEADER_PARAM_ANNOTATION_CLASS_NAME;
     }
 
     @Override
-    protected void process(String headerName, String defaultValue, Annotation annotation, Object parameter,
+    protected void process(String headerName, String defaultValue, Annotation annotation, Parameter parameter,
                            int parameterIndex, Method method, RestMethodMetadata restMethodMetadata) {
         RequestMetadata requestMetadata = restMethodMetadata.getRequest();
         // Add the placeholder as header value
