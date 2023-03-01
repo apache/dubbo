@@ -18,11 +18,10 @@ package org.apache.dubbo.rpc.listener;
 
 import org.apache.dubbo.rpc.Exporter;
 
-import java.util.Map;
 
 public interface ExporterChangeListener {
 
-    void onExporterChangeExport(Map<String, Exporter<?>> exporters);
+    void onExporterChangeExport(Exporter<?> exporter);
 
-    void onExporterChangeUnExport(Exporter<?> exporters);
+    void onExporterChangeUnExport(Exporter<?> exporter);
 }

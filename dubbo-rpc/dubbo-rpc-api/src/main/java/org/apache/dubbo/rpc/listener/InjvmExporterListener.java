@@ -34,7 +34,7 @@ public class InjvmExporterListener extends ExporterListenerAdapter {
         exporters.putIfAbsent(exporter.getInvoker().getUrl().getServiceKey(), exporter);
         ExporterChangeListener exporterChangeListener = exporterChangeListeners.get(serviceKey);
         if (exporterChangeListener != null) {
-            exporterChangeListener.onExporterChangeExport(exporters);
+            exporterChangeListener.onExporterChangeExport(exporter);
         }
         super.exported(exporter);
     }
@@ -53,12 +53,13 @@ public class InjvmExporterListener extends ExporterListenerAdapter {
     public synchronized void addExporterChangeListener(ExporterChangeListener listener, String serviceKey) {
         exporterChangeListeners.putIfAbsent(serviceKey, listener);
         if (exporters.get(serviceKey) != null) {
-            listener.onExporterChangeExport(exporters);
+            Exporter<?> exporter = exporters.get(serviceKey);
+            listener.onExporterChangeExport(exporter);
         }
     }
 
-    public synchronized void removeExporterChangeListener(ExporterChangeListener listener) {
-        exporterChangeListeners.remove(listener);
+    public synchronized void removeExporterChangeListener(String listenerKey) {
+        exporterChangeListeners.remove(listenerKey);
     }
 
 
