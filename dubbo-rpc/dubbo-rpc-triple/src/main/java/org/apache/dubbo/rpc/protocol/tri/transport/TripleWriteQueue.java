@@ -25,6 +25,13 @@ import org.apache.dubbo.rpc.protocol.tri.command.QueuedCommand;
 
 public class TripleWriteQueue extends BatchExecutorQueue<QueuedCommand> {
 
+    public TripleWriteQueue() {
+    }
+
+    public TripleWriteQueue(int chunkSize) {
+        super(chunkSize);
+    }
+
     public ChannelFuture enqueue(QueuedCommand command, boolean rst) {
         return enqueue(command);
     }

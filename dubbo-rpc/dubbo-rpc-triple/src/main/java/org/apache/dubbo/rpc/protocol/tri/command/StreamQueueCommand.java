@@ -17,25 +17,30 @@
 
 package org.apache.dubbo.rpc.protocol.tri.command;
 
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelPromise;
-import io.netty.handler.codec.http2.DefaultHttp2ResetFrame;
-import io.netty.handler.codec.http2.Http2Error;
+import io.netty.channel.Channel;
+import org.apache.dubbo.rpc.protocol.tri.stream.TripleStreamChannelFuture;
 
-public class CancelQueueCommand extends StreamQueueCommand {
-    private final Http2Error error;
+public abstract class StreamQueueCommand extends QueuedCommand {
 
-    public CancelQueueCommand(Http2Error error) {
-        this.error = error;
-    }
-
-    public static CancelQueueCommand createCommand(Http2Error error) {
-        return new CancelQueueCommand(error);
-    }
-
+    protected TripleStreamChannelFuture streamChannelFuture;
 
     @Override
-    public void doSend(ChannelHandlerContext ctx, ChannelPromise promise) {
-        ctx.write(new DefaultHttp2ResetFrame(error), promise);
+    public void run(Channel channel) {
+        if (streamChannelFuture.isSuccess()) {
+            channel = streamChannelFuture.getNow();
+            super.run(channel);
+        } else {
+            promise().setFailure(streamChannelFuture.cause());
+        }
+    }
+
+    public StreamQueueCommand streamChannelFuture(TripleStreamChannelFuture streamChannelFuture) {
+        this.streamChannelFuture = streamChannelFuture;
+        return this;
+    }
+
+    @Override
+    public Channel channel() {
+        return this.streamChannelFuture.getNow();
     }
 }

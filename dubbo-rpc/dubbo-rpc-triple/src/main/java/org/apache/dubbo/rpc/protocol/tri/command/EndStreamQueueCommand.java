@@ -21,7 +21,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http2.DefaultHttp2DataFrame;
 
-public class EndStreamQueueCommand extends QueuedCommand {
+public class EndStreamQueueCommand extends StreamQueueCommand {
 
     public static EndStreamQueueCommand create() {
         return new EndStreamQueueCommand();

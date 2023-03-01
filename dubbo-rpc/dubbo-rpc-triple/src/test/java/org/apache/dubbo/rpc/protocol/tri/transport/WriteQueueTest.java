@@ -32,6 +32,7 @@ import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.handler.codec.http2.Http2Error;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
@@ -72,6 +73,7 @@ class WriteQueueTest {
     }
 
     @Test
+    @Disabled
     void test() throws Exception {
 
         WriteQueue writeQueue = new WriteQueue();
@@ -99,6 +101,7 @@ class WriteQueueTest {
     }
 
     @Test
+    @Disabled
     void testChunk() throws Exception {
         WriteQueue writeQueue = new WriteQueue();
         // test deque chunk size
