@@ -20,6 +20,7 @@ package org.apache.dubbo.rpc.cluster.support.wrapper;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 
+import org.apache.dubbo.metrics.event.GlobalMetricsEventMulticaster;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -34,6 +35,7 @@ import org.apache.dubbo.rpc.cluster.support.AbstractClusterInvoker;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -53,8 +55,13 @@ public class ScopeClusterInvokerTest {
 
     private final List<Exporter<?>> exporters = new ArrayList<>();
 
+    @BeforeEach
+    void beforeMonth() {
+        ApplicationModel.defaultModel().getBeanFactory().registerBean(GlobalMetricsEventMulticaster.class);
+    }
+
     @AfterEach
-    public void after() throws Exception {
+    void after() throws Exception {
         for (Exporter<?> exporter : exporters) {
             exporter.unexport();
         }
