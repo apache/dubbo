@@ -1385,7 +1385,7 @@ public class ExtensionLoader<T> {
     @SuppressWarnings("unchecked")
     private T createAdaptiveExtension() {
         try {
-            T instance = (T) getAdaptiveExtensionClass().getDeclaredConstructor().newInstance();
+            T instance = (T) getAdaptiveExtensionClass().newInstance();
             instance = postProcessBeforeInitialization(instance, null);
             injectExtension(instance);
             instance = postProcessAfterInitialization(instance, null);
