@@ -111,6 +111,7 @@ public class RegistryStatComposite implements MetricsExport {
     }
 
     @Override
+    @SuppressWarnings({"rawtypes"})
     public List<GaugeMetricSample> exportNumMetrics() {
         List<GaugeMetricSample> list = new ArrayList<>();
         for (RegistryEvent.Type type : numStats.keySet()) {
@@ -123,29 +124,32 @@ public class RegistryStatComposite implements MetricsExport {
     }
 
     @Override
+    @SuppressWarnings({"rawtypes"})
     public List<GaugeMetricSample> exportRtMetrics() {
         List<GaugeMetricSample> list = new ArrayList<>();
         for (LongContainer<? extends Number> rtContainer : rtStats) {
             MetricsKeyWrapper metricsKeyWrapper = rtContainer.getMetricsKeyWrapper();
             for (Map.Entry<String, ? extends Number> entry : rtContainer.entrySet()) {
-                list.add(new GaugeMetricSample(metricsKeyWrapper.targetKey(), metricsKeyWrapper.targetDesc(), ApplicationMetric.getTagsByName(entry.getKey()), MetricsCategory.RT, () -> rtContainer.getValueSupplier().apply(entry.getKey())));
+                list.add(new GaugeMetricSample<>(metricsKeyWrapper.targetKey(), metricsKeyWrapper.targetDesc(), ApplicationMetric.getTagsByName(entry.getKey()), MetricsCategory.RT, entry, value -> rtContainer.getValueSupplier().apply(value.getKey())));
             }
         }
         return list;
     }
 
+    @SuppressWarnings({"rawtypes"})
     public List<GaugeMetricSample> exportSkMetrics() {
         List<GaugeMetricSample> list = new ArrayList<>();
         for (RegistryEvent.Type type : skStats.keySet()) {
             Map<ServiceKeyMetric, AtomicLong> stringAtomicLongMap = skStats.get(type);
             for (ServiceKeyMetric serviceKeyMetric : stringAtomicLongMap.keySet()) {
-                list.add(new GaugeMetricSample(type.getMetricsKey(), serviceKeyMetric.getTags(), MetricsCategory.REGISTRY, stringAtomicLongMap.get(serviceKeyMetric)::get));
+                list.add(new GaugeMetricSample<>(type.getMetricsKey(), serviceKeyMetric.getTags(), MetricsCategory.REGISTRY, stringAtomicLongMap, value -> value.get(serviceKeyMetric).get()));
             }
         }
         return list;
     }
 
+    @SuppressWarnings({"rawtypes"})
     public GaugeMetricSample convertToSample(String applicationName, RegistryEvent.Type type, MetricsCategory category, AtomicLong targetNumber) {
-        return new GaugeMetricSample(type.getMetricsKey(), ApplicationMetric.getTagsByName(applicationName), category, targetNumber::get);
+        return new GaugeMetricSample<>(type.getMetricsKey(), ApplicationMetric.getTagsByName(applicationName), category, targetNumber, AtomicLong::get);
     }
 }

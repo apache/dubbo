@@ -74,10 +74,8 @@ class RegistryMetricsSampleTest {
             Assertions.assertEquals(tags.get(TAG_APPLICATION_NAME), applicationName);
         }
 
-        Map<String, Long> sampleMap = samples.stream().collect(Collectors.toMap(MetricSample::getName, k -> {
-            Number number = ((GaugeMetricSample) k).getSupplier().get();
-            return number.longValue();
-        }));
+        @SuppressWarnings("rawtypes")
+        Map<String, Long> sampleMap = samples.stream().collect(Collectors.toMap(MetricSample::getName, k -> ((GaugeMetricSample) k).applyAsLong()));
 
         Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(RegistryStatComposite.OP_TYPE_REGISTER, MetricsKey.METRIC_RT_LAST).targetKey()), 0L);
         Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(RegistryStatComposite.OP_TYPE_REGISTER, MetricsKey.METRIC_RT_MIN).targetKey()), 0L);

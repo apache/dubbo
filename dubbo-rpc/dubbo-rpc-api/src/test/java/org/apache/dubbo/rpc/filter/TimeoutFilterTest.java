@@ -36,7 +36,7 @@ class TimeoutFilterTest {
     private TimeoutFilter timeoutFilter = new TimeoutFilter();
 
     @Test
-    void testInvokeWithoutTimeout() throws Exception {
+    void testInvokeWithoutTimeout() {
         int timeout = 3000;
 
         Invoker invoker = Mockito.mock(Invoker.class);
@@ -51,7 +51,7 @@ class TimeoutFilterTest {
     }
 
     @Test
-    void testInvokeWithTimeout() throws Exception {
+    void testInvokeWithTimeout() {
         int timeout = 100;
 
         URL url = URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&timeout=" + timeout);

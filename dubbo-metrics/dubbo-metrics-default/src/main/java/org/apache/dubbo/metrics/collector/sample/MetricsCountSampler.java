@@ -38,9 +38,13 @@ public interface MetricsCountSampler<S, K, M extends Metric> extends MetricsSamp
 
     void addRT(S source, Long rt);
 
+    void addRT(S source, K metricName, Long rt);
+
     Optional<ConcurrentMap<M, AtomicLong>> getCount(K metricName);
 
     <R extends MetricSample> List<R> collectRT(MetricSampleFactory<M, R> factory);
+
+    <R extends MetricSample> List<R> collectRT(MetricSampleFactory<M, R> factory,K metricName);
 
     interface MetricSampleFactory<M, R extends MetricSample> {
         R newInstance(MetricsKey key, M metric, Long count);
