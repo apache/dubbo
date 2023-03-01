@@ -50,9 +50,9 @@ public abstract class SimpleMetricsCountSampler<S, K, M extends Metric>
     private final ConcurrentMap<M, LongAccumulator> minRT = new ConcurrentHashMap<>();
     private final ConcurrentMap<M, LongAccumulator> maxRT = new ConcurrentHashMap<>();
 
-    private final ConcurrentMap<K, ConcurrentMap<M,AtomicLongArray>> rtGroupSample = new ConcurrentHashMap<>();
-    private final ConcurrentMap<K, ConcurrentMap<M,LongAccumulator>> groupMinRT   = new ConcurrentHashMap<>();
-    private final ConcurrentMap<K, ConcurrentMap<M,LongAccumulator>> groupMaxRT  = new ConcurrentHashMap<>();
+    private final ConcurrentMap<K, ConcurrentMap<M, AtomicLongArray>> rtGroupSample = new ConcurrentHashMap<>();
+    private final ConcurrentMap<K, ConcurrentMap<M, LongAccumulator>> groupMinRT = new ConcurrentHashMap<>();
+    private final ConcurrentMap<K, ConcurrentMap<M, LongAccumulator>> groupMaxRT = new ConcurrentHashMap<>();
 
     @Override
     public void inc(S source, K metricName) {
@@ -85,6 +85,7 @@ public abstract class SimpleMetricsCountSampler<S, K, M extends Metric>
             return true;
         });
     }
+
     @Override
     public void addRT(S source, Long rt) {
         MetricsCountSampleConfigurer<S, K, M> sampleConfigure = new MetricsCountSampleConfigurer<>();
@@ -121,7 +122,7 @@ public abstract class SimpleMetricsCountSampler<S, K, M extends Metric>
 
     @Override
     public void addRT(S source, K metricName, Long rt) {
-        MetricsCountSampleConfigurer<S,K,M> sampleConfigure = new MetricsCountSampleConfigurer<>();
+        MetricsCountSampleConfigurer<S, K, M> sampleConfigure = new MetricsCountSampleConfigurer<>();
         sampleConfigure.setSource(source);
         sampleConfigure.setMetricsName(metricName);
 
@@ -135,7 +136,7 @@ public abstract class SimpleMetricsCountSampler<S, K, M extends Metric>
             ConcurrentHashMap<M, AtomicLongArray> calculator = new ConcurrentHashMap<>();
             calculator.put(metric, new AtomicLongArray(4));
 
-            rtGroupSample.put(metricName,calculator);
+            rtGroupSample.put(metricName, calculator);
 
             nameToCalculator = rtGroupSample.get(metricName);
         }
@@ -174,32 +175,30 @@ public abstract class SimpleMetricsCountSampler<S, K, M extends Metric>
         return collect(factory, rtSample, this.minRT, this.maxRT);
     }
 
-    public  <R extends MetricSample> List<R> collectRT(MetricSampleFactory<M, R> factory,K metricName){
-        return collect(factory, rtGroupSample.get(metricName), groupMinRT.get(metricName),
-            groupMaxRT.get(metricName));
+    @Override
+    public <R extends MetricSample> List<R> collectRT(MetricSampleFactory<M, R> factory, K metricName) {
+        return collect(factory, rtGroupSample.get(metricName), groupMinRT.get(metricName), groupMaxRT.get(metricName));
     }
 
     private <R extends MetricSample> List<R> collect(MetricSampleFactory<M, R> factory,
-                                                  ConcurrentMap<M, AtomicLongArray> rtSample,
-                                                  ConcurrentMap<M, LongAccumulator> min,
-                                                  ConcurrentMap<M, LongAccumulator> max){
+                                                     ConcurrentMap<M, AtomicLongArray> rtSample,
+                                                     ConcurrentMap<M, LongAccumulator> min,
+                                                     ConcurrentMap<M, LongAccumulator> max) {
         final List<R> result = new ArrayList<>();
         rtSample.forEach((k, v) -> {
             // lastRT
-            result.add(factory.newInstance(MetricsKey.METRIC_RT_LAST, k, v.get(0)));
+            result.add(factory.newInstance(MetricsKey.METRIC_RT_LAST, k, v, value -> value.get(0)));
             // totalRT
-            long totalRT = v.get(1);
-            long rtCount = v.get(2);
-            result.add(factory.newInstance(MetricsKey.METRIC_RT_SUM, k, totalRT));
+            result.add(factory.newInstance(MetricsKey.METRIC_RT_SUM, k, v, value -> value.get(1)));
             // avgRT
-            result.add(factory.newInstance(MetricsKey.METRIC_RT_AVG, k, Math.floorDiv(totalRT, rtCount)));
+            result.add(factory.newInstance(MetricsKey.METRIC_RT_AVG, k, v, value -> Math.floorDiv(value.get(1), value.get(2))));
         });
 
         min.forEach((k, v) ->
-            result.add(factory.newInstance(MetricsKey.METRIC_RT_MIN, k, v.get())));
+            result.add(factory.newInstance(MetricsKey.METRIC_RT_MIN, k, v, LongAccumulator::get)));
 
         max.forEach((k, v) ->
-            result.add(factory.newInstance(MetricsKey.METRIC_RT_MAX, k, v.get())));
+            result.add(factory.newInstance(MetricsKey.METRIC_RT_MAX, k, v, LongAccumulator::get)));
 
         return result;
     }

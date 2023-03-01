@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.ToDoubleFunction;
 
 public interface MetricsCountSampler<S, K, M extends Metric> extends MetricsSampler {
 
@@ -44,9 +45,9 @@ public interface MetricsCountSampler<S, K, M extends Metric> extends MetricsSamp
 
     <R extends MetricSample> List<R> collectRT(MetricSampleFactory<M, R> factory);
 
-    <R extends MetricSample> List<R> collectRT(MetricSampleFactory<M, R> factory,K metricName);
+    <R extends MetricSample> List<R> collectRT(MetricSampleFactory<M, R> factory, K metricName);
 
     interface MetricSampleFactory<M, R extends MetricSample> {
-        R newInstance(MetricsKey key, M metric, Long count);
+        <T> R newInstance(MetricsKey key, M metric, T value, ToDoubleFunction<T> apply);
     }
 }
