@@ -172,7 +172,7 @@ public class ThreadlessExecutor extends AbstractExecutorService {
     }
 
     private static class RunnableWrapper implements Runnable {
-        private Runnable runnable;
+        private final Runnable runnable;
 
         public RunnableWrapper(Runnable runnable) {
             this.runnable = runnable;

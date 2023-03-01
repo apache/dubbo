@@ -539,10 +539,12 @@ public abstract class AbstractConfig implements Serializable {
      * @see AbstractConfig#checkDefault()
      * @see AbstractConfig#appendParameters(Map, Object, String)
      */
+    @Transient
     public Map<String, String> getMetaData() {
         return getMetaData(null);
     }
 
+    @Transient
     public Map<String, String> getMetaData(String prefix) {
         Map<String, String> metaData = new HashMap<>();
         appendAttributes(metaData, this, prefix);
@@ -569,6 +571,7 @@ public abstract class AbstractConfig implements Serializable {
     }
 
     @Parameter(excluded = true, attribute = false)
+    @Transient
     public List<String> getPrefixes() {
         List<String> prefixes = new ArrayList<>();
         if (StringUtils.hasText(this.getId())) {
@@ -595,6 +598,7 @@ public abstract class AbstractConfig implements Serializable {
         return CommonConstants.DUBBO + "." + getTagName(cls);
     }
 
+    @Transient
     public ConfigMode getConfigMode() {
         return getApplicationModel().getApplicationConfigManager().getConfigMode();
     }
@@ -1030,6 +1034,7 @@ public abstract class AbstractConfig implements Serializable {
         return hashCode;
     }
 
+    @Transient
     private List<Method> getAttributedMethods() {
         Class<? extends AbstractConfig> cls = this.getClass();
         return ConcurrentHashMapUtils.computeIfAbsent(attributedMethodCache, cls, (key) -> computeAttributedMethods());
@@ -1063,6 +1068,7 @@ public abstract class AbstractConfig implements Serializable {
         return methods;
     }
 
+    @Transient
     protected ConfigManager getConfigManager() {
         return getApplicationModel().getApplicationConfigManager();
     }

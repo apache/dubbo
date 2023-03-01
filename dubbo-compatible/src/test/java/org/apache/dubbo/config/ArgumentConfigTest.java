@@ -30,28 +30,28 @@ import static org.hamcrest.Matchers.is;
 
 class ArgumentConfigTest {
     @Test
-    void testIndex() throws Exception {
+    void testIndex() {
         ArgumentConfig argument = new ArgumentConfig();
         argument.setIndex(1);
         assertThat(argument.getIndex(), is(1));
     }
 
     @Test
-    void testType() throws Exception {
+    void testType() {
         ArgumentConfig argument = new ArgumentConfig();
         argument.setType("int");
         assertThat(argument.getType(), equalTo("int"));
     }
 
     @Test
-    void testCallback() throws Exception {
+    void testCallback() {
         ArgumentConfig argument = new ArgumentConfig();
         argument.setCallback(true);
         assertThat(argument.isCallback(), is(true));
     }
 
     @Test
-    void testArguments() throws Exception {
+    void testArguments() {
         ArgumentConfig argument = new ArgumentConfig();
         argument.setIndex(1);
         argument.setType("int");

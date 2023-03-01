@@ -16,79 +16,76 @@
  */
 
 package org.apache.dubbo.metrics.filter;
-
 import org.apache.dubbo.metrics.collector.sample.MethodMetricsSampler;
 import org.apache.dubbo.metrics.event.MetricsEvent;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
-
-import java.util.function.Supplier;
-
 import static org.apache.dubbo.common.constants.MetricsConstants.METRIC_FILTER_START_TIME;
 
 public class MethodMetricsInterceptor {
 
-    private MethodMetricsSampler sampler;
+    private final MethodMetricsSampler sampler;
 
     public MethodMetricsInterceptor(MethodMetricsSampler sampler) {
         this.sampler = sampler;
     }
 
-    public void beforeExecute(Invocation invocation) {
+    public void beforeMethod(Invocation invocation) {
         sampler.incOnEvent(invocation, MetricsEvent.Type.TOTAL);
         sampler.incOnEvent(invocation,MetricsEvent.Type.PROCESSING);
         invocation.put(METRIC_FILTER_START_TIME, System.currentTimeMillis());
     }
 
-    public void postExecute(Invocation invocation, Result result) {
+    public void afterMethod(Invocation invocation, Result result) {
         if (result.hasException()) {
-            throwExecute(invocation, result.getException());
-            return;
+            handleMethodException(invocation, result.getException());
+        }else{
+            sampler.incOnEvent(invocation,MetricsEvent.Type.SUCCEED);
+            onCompleted(invocation);
         }
-        sampler.incOnEvent(invocation,MetricsEvent.Type.SUCCEED);
-        endExecute(invocation);
     }
 
-    public void throwExecute(Invocation invocation, Throwable throwable) {
+    public void handleMethodException(Invocation invocation, Throwable throwable) {
+        if (throwable == null) {
+            return;
+        }
+
         if (throwable instanceof RpcException) {
-            RpcException rpcException = (RpcException) throwable;
-            switch (rpcException.getCode()) {
+            RpcException e = (RpcException) throwable;
 
-                case RpcException.TIMEOUT_EXCEPTION:
-                    sampler.incOnEvent(invocation,MetricsEvent.Type.REQUEST_TIMEOUT);
-                    break;
+            MetricsEvent.Type eventType = MetricsEvent.Type.UNKNOWN_FAILED;
 
-                case RpcException.LIMIT_EXCEEDED_EXCEPTION:
-                    sampler.incOnEvent(invocation,MetricsEvent.Type.REQUEST_LIMIT);
-                    break;
-
-                case RpcException.BIZ_EXCEPTION:
-                    sampler.incOnEvent(invocation,MetricsEvent.Type.BUSINESS_FAILED);
-                    break;
-
-                default:
-                    sampler.incOnEvent(invocation,MetricsEvent.Type.UNKNOWN_FAILED);
+            if (e.isTimeout()) {
+                eventType = MetricsEvent.Type.REQUEST_TIMEOUT;
             }
+            if (e.isLimitExceed()) {
+                eventType = MetricsEvent.Type.REQUEST_LIMIT;
+            }
+            if (e.isBiz()) {
+                eventType = MetricsEvent.Type.BUSINESS_FAILED;
+            }
+            if (e.isSerialization()) {
+                eventType = MetricsEvent.Type.CODEC_EXCEPTION;
+            }
+            if (e.isNetwork()) {
+                eventType = MetricsEvent.Type.NETWORK_EXCEPTION;
+            }
+            sampler.incOnEvent(invocation,eventType);
+        }
+
+        if (throwable instanceof RpcException && ((RpcException) throwable).isBiz()) {
+            onCompleted(invocation);
         }
 
         sampler.incOnEvent(invocation,MetricsEvent.Type.TOTAL_FAILED);
-
-        endExecute(invocation, () -> throwable instanceof RpcException && ((RpcException) throwable).isBiz());
     }
 
-    private void endExecute(Invocation invocation) {
-        endExecute(invocation, () -> true);
-    }
-
-    private void endExecute(Invocation invocation, Supplier<Boolean> rtStat) {
-        if (rtStat.get()) {
-            Long endTime = System.currentTimeMillis();
-            Long beginTime = (Long) invocation.get(METRIC_FILTER_START_TIME);
-            Long rt = endTime - beginTime;
-            sampler.addRT(invocation, rt);
-        }
+    private void onCompleted(Invocation invocation) {
+        Long endTime = System.currentTimeMillis();
+        Long beginTime = (Long) invocation.get(METRIC_FILTER_START_TIME);
+        Long rt = endTime - beginTime;
+        sampler.addRT(invocation, rt);
         sampler.dec(invocation,MetricsEvent.Type.PROCESSING);
     }
-
 }

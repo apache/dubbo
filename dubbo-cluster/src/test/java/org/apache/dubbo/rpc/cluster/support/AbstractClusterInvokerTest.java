@@ -16,18 +16,11 @@
  */
 package org.apache.dubbo.rpc.cluster.support;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
-
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.metrics.event.GlobalMetricsEventMulticaster;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
@@ -41,6 +34,8 @@ import org.apache.dubbo.rpc.cluster.filter.DemoService;
 import org.apache.dubbo.rpc.cluster.loadbalance.LeastActiveLoadBalance;
 import org.apache.dubbo.rpc.cluster.loadbalance.RandomLoadBalance;
 import org.apache.dubbo.rpc.cluster.loadbalance.RoundRobinLoadBalance;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -49,6 +44,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 import static org.apache.dubbo.common.constants.CommonConstants.ENABLE_CONNECTIVITY_VALIDATION;
@@ -104,6 +107,7 @@ class AbstractClusterInvokerTest {
     @SuppressWarnings({"unchecked"})
     @BeforeEach
     public void setUp() throws Exception {
+        ApplicationModel.defaultModel().getBeanFactory().registerBean(GlobalMetricsEventMulticaster.class);
         Map<String, Object> attributes = new HashMap<>();
         attributes.put("application", "abstractClusterInvokerTest");
         url = url.putAttribute(REFER_KEY, attributes);
@@ -191,7 +195,7 @@ class AbstractClusterInvokerTest {
     }
 
     @Test
-    void testSelect_Invokersize0() throws Exception {
+    void testSelect_Invokersize0() {
         LoadBalance l = cluster.initLoadBalance(invokers, invocation);
         Assertions.assertNotNull(l,"cluster.initLoadBalance returns null!");
         {
@@ -225,7 +229,7 @@ class AbstractClusterInvokerTest {
     }
 
     @Test
-    void testSelect_Invokersize1() throws Exception {
+    void testSelect_Invokersize1() {
         invokers.clear();
         invokers.add(invoker1);
         LoadBalance l = cluster.initLoadBalance(invokers, invocation);
@@ -235,7 +239,7 @@ class AbstractClusterInvokerTest {
     }
 
     @Test
-    void testSelect_Invokersize2AndselectNotNull() throws Exception {
+    void testSelect_Invokersize2AndselectNotNull() {
         invokers.clear();
         invokers.add(invoker2);
         invokers.add(invoker4);
@@ -256,7 +260,7 @@ class AbstractClusterInvokerTest {
     }
 
     @Test
-    void testSelect_multiInvokers() throws Exception {
+    void testSelect_multiInvokers() {
         testSelect_multiInvokers(RoundRobinLoadBalance.NAME);
         testSelect_multiInvokers(LeastActiveLoadBalance.NAME);
         testSelect_multiInvokers(RandomLoadBalance.NAME);
@@ -409,7 +413,7 @@ class AbstractClusterInvokerTest {
     }
 
 
-    public void testSelect_multiInvokers(String lbname) throws Exception {
+    public void testSelect_multiInvokers(String lbname) {
 
         int min = 100, max = 500;
         Double d = (Math.random() * (max - min + 1) + min);
