@@ -79,15 +79,6 @@ jobs:
         with:
           name: "class-file"
           path: ${{ github.workspace }}/class.zip
-      - name: "Pack rat file if failure"
-        if: failure()
-        run: 7z a ${{ github.workspace }}/rat.zip *rat.txt -r
-      - name: "Upload rat file if failure"
-        if: failure()
-        uses: actions/upload-artifact@v3
-        with:
-          name: "rat-file"
-          path: ${{ github.workspace }}/rat.zip
       - name: "Pack checkstyle file if failure"
         if: failure()
         run: 7z a ${{ github.workspace }}/checkstyle.zip *checkstyle* -r
@@ -440,8 +431,8 @@ jobs:
       - name: "Compile and run Dubbo demo for native (Linux)"
         run: |
           cd ${{ github.workspace }}/dubbo/dubbo-demo/dubbo-demo-native/dubbo-demo-native-provider
-          ${{ github.workspace }}/dubbo/mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast -T 2C clean package -P native -Dmaven.test.skip=true
-          nohup ./target/demo-native-provider &
+          ${{ github.workspace }}/dubbo/mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast -T 2C clean package -P native -Dmaven.test.skip=true native:compile
+          nohup ./target/dubbo-demo-native-provider &
           cd ${{ github.workspace }}/dubbo/dubbo-demo/dubbo-demo-native/dubbo-demo-native-consumer
-          ${{ github.workspace }}/dubbo/mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast -T 2C clean package -P native -Dmaven.test.skip=true
-          ./target/demo-native-consumer
+          ${{ github.workspace }}/dubbo/mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast -T 2C clean package -P native -Dmaven.test.skip=true native:compile
+          ./target/dubbo-demo-native-consumer

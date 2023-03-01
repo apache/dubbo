@@ -16,9 +16,6 @@
  */
 package org.apache.dubbo.qos.command.util;
 
-import java.util.LinkedList;
-import java.util.List;
-
 import org.apache.dubbo.qos.command.GreetingCommand;
 import org.apache.dubbo.qos.command.impl.ChangeTelnet;
 import org.apache.dubbo.qos.command.impl.CountTelnet;
@@ -28,6 +25,7 @@ import org.apache.dubbo.qos.command.impl.DisableSimpleProfiler;
 import org.apache.dubbo.qos.command.impl.EnableDetailProfiler;
 import org.apache.dubbo.qos.command.impl.EnableRouterSnapshot;
 import org.apache.dubbo.qos.command.impl.EnableSimpleProfiler;
+import org.apache.dubbo.qos.command.impl.GetConfig;
 import org.apache.dubbo.qos.command.impl.GetEnabledRouterSnapshot;
 import org.apache.dubbo.qos.command.impl.GetRecentRouterSnapshot;
 import org.apache.dubbo.qos.command.impl.GetRouterSnapshot;
@@ -57,7 +55,11 @@ import org.apache.dubbo.qos.command.impl.SwitchLogLevel;
 import org.apache.dubbo.qos.command.impl.SwitchLogger;
 import org.apache.dubbo.qos.command.impl.Version;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+
 import org.junit.jupiter.api.Test;
+
+import java.util.LinkedList;
+import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -70,13 +72,13 @@ class CommandHelperTest {
     private CommandHelper commandHelper = new CommandHelper(FrameworkModel.defaultModel());
 
     @Test
-    void testHasCommand() throws Exception {
+    void testHasCommand() {
         assertTrue(commandHelper.hasCommand("greeting"));
         assertFalse(commandHelper.hasCommand("not-exiting"));
     }
 
     @Test
-    void testGetAllCommandClass() throws Exception {
+    void testGetAllCommandClass() {
         List<Class<?>> classes = commandHelper.getAllCommandClass();
 
         // update this list when introduce a new command
@@ -118,11 +120,12 @@ class CommandHelperTest {
         expectedClasses.add(SwitchLogLevel.class);
         expectedClasses.add(SerializeCheckStatus.class);
         expectedClasses.add(SerializeWarnedClasses.class);
+        expectedClasses.add(GetConfig.class);
         assertThat(classes, containsInAnyOrder(expectedClasses.toArray(new Class<?>[0])));
     }
 
     @Test
-    void testGetCommandClass() throws Exception {
+    void testGetCommandClass() {
         assertThat(commandHelper.getCommandClass("greeting"), equalTo(GreetingCommand.class));
         assertNull(commandHelper.getCommandClass("not-exiting"));
     }

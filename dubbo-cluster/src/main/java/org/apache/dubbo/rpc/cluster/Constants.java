@@ -72,8 +72,6 @@ public interface Constants {
      */
     boolean DEFAULT_CLUSTER_STICKY = false;
 
-    String ADDRESS_KEY = "address";
-
     /**
      * When this attribute appears in invocation's attachment, mock invoker will be used
      */
@@ -137,4 +135,8 @@ public interface Constants {
     String SHORTEST_RESPONSE_SLIDE_PERIOD = "shortestResponseSlidePeriod";
 
     String SHOULD_FAIL_FAST_KEY = "dubbo.router.should-fail-fast";
+
+    String RULE_VERSION_V27 = "v2.7";
+
+    String RULE_VERSION_V30 = "v3.0";
 }

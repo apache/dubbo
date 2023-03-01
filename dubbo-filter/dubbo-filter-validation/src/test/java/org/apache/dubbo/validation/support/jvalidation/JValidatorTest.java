@@ -30,7 +30,7 @@ import java.util.Map;
 
 class JValidatorTest {
     @Test
-    void testItWithNonExistMethod() throws Exception {
+    void testItWithNonExistMethod() {
         Assertions.assertThrows(NoSuchMethodException.class, () -> {
             URL url = URL.valueOf("test://test:11/org.apache.dubbo.validation.support.jvalidation.mock.JValidatorTestTarget");
             JValidator jValidator = new JValidator(url);
@@ -46,7 +46,7 @@ class JValidatorTest {
     }
 
     @Test
-    void testItWhenItViolatedConstraint() throws Exception {
+    void testItWhenItViolatedConstraint() {
         Assertions.assertThrows(ValidationException.class, () -> {
             URL url = URL.valueOf("test://test:11/org.apache.dubbo.validation.support.jvalidation.mock.JValidatorTestTarget");
             JValidator jValidator = new JValidator(url);

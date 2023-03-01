@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.cluster.router.state;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Adaptive;
 import org.apache.dubbo.common.extension.SPI;
 
@@ -29,6 +30,6 @@ public interface StateRouterFactory {
      * @return router instance
      * @since 3.0
      */
-    @Adaptive("protocol")
+    @Adaptive(CommonConstants.PROTOCOL_KEY)
     <T> StateRouter<T> getRouter(Class<T> interfaceClass, URL url);
 }
