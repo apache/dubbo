@@ -61,6 +61,8 @@ public class NacosConnectionManager {
 
     private final boolean check;
 
+    private volatile boolean shutdown = false;
+
     public NacosConnectionManager(URL connectionURL, boolean check, int retryTimes, int sleepMsBetweenRetries) {
         this.connectionURL = connectionURL;
         this.check = check;
@@ -81,6 +83,10 @@ public class NacosConnectionManager {
         this.check = false;
         // create default one
         this.namingServiceList.add(namingService);
+    }
+
+    public boolean isShutdown() {
+        return this.shutdown;
     }
 
     public synchronized NamingService getNamingService() {
@@ -109,6 +115,7 @@ public class NacosConnectionManager {
             }
         }
         this.namingServiceList.clear();
+        this.shutdown = true;
     }
 
     /**
@@ -117,6 +124,9 @@ public class NacosConnectionManager {
      * @return {@link NamingService}
      */
     protected NamingService createNamingService() {
+        if (shutdown) {
+            throw new RuntimeException("Nacos connection manager is closed.");
+        }
         Properties nacosProperties = buildNacosProperties(this.connectionURL);
         NamingService namingService = null;
         try {
