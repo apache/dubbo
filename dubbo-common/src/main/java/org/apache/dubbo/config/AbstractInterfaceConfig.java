@@ -208,8 +208,9 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     /**
      * The url of the reference service
      */
-    protected final List<URL> urls = new ArrayList<URL>();
+    protected transient final List<URL> urls = new ArrayList<URL>();
 
+    @Transient
     public List<URL> getExportedUrls() {
         return urls;
     }
@@ -912,6 +913,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         this.interfaceName = interfaceName;
     }
 
+    @Transient
     public ClassLoader getInterfaceClassLoader() {
         return interfaceClassLoader;
     }

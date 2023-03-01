@@ -50,6 +50,7 @@ import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.service.GenericService;
 
+import java.beans.Transient;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -927,6 +928,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         }
     }
 
+    @Transient
     public Runnable getDestroyRunner() {
         return this::unexport;
     }

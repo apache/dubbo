@@ -37,7 +37,7 @@ public class CompositeDynamicConfiguration implements DynamicConfiguration {
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(CompositeDynamicConfiguration.class);
 
-    private Set<DynamicConfiguration> configurations = new HashSet<>();
+    private final Set<DynamicConfiguration> configurations = new HashSet<>();
 
     public void addConfiguration(DynamicConfiguration configuration) {
         if (configuration != null) {

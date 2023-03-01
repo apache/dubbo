@@ -16,6 +16,16 @@
  */
 package org.apache.dubbo.registry.nacos;
 
+import org.apache.dubbo.common.URL;
+
+import com.alibaba.nacos.api.exception.NacosException;
+import com.alibaba.nacos.api.naming.NamingService;
+import com.alibaba.nacos.api.naming.listener.EventListener;
+import com.alibaba.nacos.api.naming.pojo.Instance;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -23,16 +33,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import org.apache.dubbo.common.URL;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-
-import com.alibaba.nacos.api.exception.NacosException;
-import com.alibaba.nacos.api.naming.NamingService;
-import com.alibaba.nacos.api.naming.listener.EventListener;
-import com.alibaba.nacos.api.naming.pojo.Instance;
 
 class NacosNamingServiceWrapperTest {
     @Test
@@ -501,12 +501,12 @@ class NacosNamingServiceWrapperTest {
     void testSuccess() {
         NamingService namingService = new MockNamingService() {
             @Override
-            public void registerInstance(String serviceName, String groupName, Instance instance) throws NacosException {
+            public void registerInstance(String serviceName, String groupName, Instance instance) {
 
             }
 
             @Override
-            public List<Instance> getAllInstances(String serviceName, String groupName) throws NacosException {
+            public List<Instance> getAllInstances(String serviceName, String groupName) {
                 return null;
             }
         };

@@ -16,10 +16,15 @@
  */
 package org.apache.dubbo.registry.kubernetes;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-
+import io.fabric8.kubernetes.api.model.Endpoints;
+import io.fabric8.kubernetes.api.model.EndpointsBuilder;
+import io.fabric8.kubernetes.api.model.Pod;
+import io.fabric8.kubernetes.api.model.PodBuilder;
+import io.fabric8.kubernetes.api.model.Service;
+import io.fabric8.kubernetes.api.model.ServiceBuilder;
+import io.fabric8.kubernetes.client.Config;
+import io.fabric8.kubernetes.client.NamespacedKubernetesClient;
+import io.fabric8.kubernetes.client.server.mock.KubernetesServer;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
@@ -38,15 +43,9 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import io.fabric8.kubernetes.api.model.Endpoints;
-import io.fabric8.kubernetes.api.model.EndpointsBuilder;
-import io.fabric8.kubernetes.api.model.Pod;
-import io.fabric8.kubernetes.api.model.PodBuilder;
-import io.fabric8.kubernetes.api.model.Service;
-import io.fabric8.kubernetes.api.model.ServiceBuilder;
-import io.fabric8.kubernetes.client.Config;
-import io.fabric8.kubernetes.client.NamespacedKubernetesClient;
-import io.fabric8.kubernetes.client.server.mock.KubernetesServer;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 
 import static org.apache.dubbo.registry.kubernetes.util.KubernetesClientConst.NAMESPACE;
 import static org.awaitility.Awaitility.await;
@@ -121,7 +120,7 @@ class KubernetesServiceDiscoveryTest {
     }
 
     @Test
-    void testEndpointsUpdate() throws Exception {
+    void testEndpointsUpdate() {
         serviceDiscovery.setCurrentHostname(POD_NAME);
         serviceDiscovery.setKubernetesClient(mockClient);
 
@@ -191,7 +190,7 @@ class KubernetesServiceDiscoveryTest {
     }
 
     @Test
-    void testServiceUpdate() throws Exception {
+    void testServiceUpdate() {
         serviceDiscovery.setCurrentHostname(POD_NAME);
         serviceDiscovery.setKubernetesClient(mockClient);
 

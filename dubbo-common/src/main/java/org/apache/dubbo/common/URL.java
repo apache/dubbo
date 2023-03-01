@@ -116,7 +116,7 @@ class URL implements Serializable {
 
     private static final long serialVersionUID = -1985165475234910535L;
 
-    private static Map<String, URL> cachedURLs = new LRUCache<>();
+    private static final Map<String, URL> cachedURLs = new LRUCache<>();
 
     private final URLAddress urlAddress;
     private final URLParam urlParam;
