@@ -21,6 +21,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http2.DefaultHttp2DataFrame;
+import org.apache.dubbo.rpc.protocol.tri.stream.TripleStreamChannelFuture;
 
 public class DataQueueCommand extends StreamQueueCommand {
 
@@ -30,15 +31,16 @@ public class DataQueueCommand extends StreamQueueCommand {
 
     private final boolean endStream;
 
-    private DataQueueCommand(byte[] data, int compressFlag, boolean endStream) {
+    private DataQueueCommand(TripleStreamChannelFuture streamChannelFuture, byte[] data, int compressFlag, boolean endStream) {
+        super(streamChannelFuture);
         this.data = data;
         this.compressFlag = compressFlag;
         this.endStream = endStream;
     }
 
-    public static DataQueueCommand createGrpcCommand(byte[] data, boolean endStream,
-        int compressFlag) {
-        return new DataQueueCommand(data, compressFlag, endStream);
+    public static DataQueueCommand create(TripleStreamChannelFuture streamChannelFuture, byte[] data, boolean endStream,
+                                          int compressFlag) {
+        return new DataQueueCommand(streamChannelFuture, data, compressFlag, endStream);
     }
 
     @Override

@@ -18,25 +18,26 @@
 package org.apache.dubbo.rpc.protocol.tri.command;
 
 import io.netty.channel.Channel;
+import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.rpc.protocol.tri.stream.TripleStreamChannelFuture;
 
 public abstract class StreamQueueCommand extends QueuedCommand {
 
-    protected TripleStreamChannelFuture streamChannelFuture;
+    protected final TripleStreamChannelFuture streamChannelFuture;
+
+    protected StreamQueueCommand(TripleStreamChannelFuture streamChannelFuture) {
+        Assert.notNull(streamChannelFuture, "streamChannelFuture cannot be null.");
+        this.streamChannelFuture = streamChannelFuture;
+        this.promise(streamChannelFuture.getParentChannel().newPromise());
+    }
 
     @Override
     public void run(Channel channel) {
         if (streamChannelFuture.isSuccess()) {
-            channel = streamChannelFuture.getNow();
             super.run(channel);
-        } else {
-            promise().setFailure(streamChannelFuture.cause());
+            return;
         }
-    }
-
-    public StreamQueueCommand streamChannelFuture(TripleStreamChannelFuture streamChannelFuture) {
-        this.streamChannelFuture = streamChannelFuture;
-        return this;
+        promise().setFailure(streamChannelFuture.cause());
     }
 
     @Override

@@ -17,22 +17,31 @@
 
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
+import io.netty.channel.Channel;
 import io.netty.handler.codec.http2.Http2StreamChannel;
+import org.apache.dubbo.common.utils.Assert;
 
 import java.util.concurrent.CompletableFuture;
 
 public class TripleStreamChannelFuture extends CompletableFuture<Http2StreamChannel> {
 
-    private volatile Throwable cause;
+    private final Channel parentChannel;
 
-    public TripleStreamChannelFuture() {
+    private Throwable cause;
 
+    public TripleStreamChannelFuture(Channel parentChannel) {
+        Assert.notNull(parentChannel, "parentChannel cannot be null.");
+        this.parentChannel = parentChannel;
     }
 
     public TripleStreamChannelFuture(Http2StreamChannel channel) {
         this.complete(channel);
+        this.parentChannel = channel.parent();
     }
 
+    public Channel getParentChannel() {
+        return parentChannel;
+    }
 
     @Override
     public boolean completeExceptionally(Throwable cause) {

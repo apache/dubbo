@@ -34,6 +34,8 @@ public class CreateStreamQueueCommand extends QueuedCommand {
                                      TripleStreamChannelFuture streamChannelFuture) {
         this.bootstrap = bootstrap;
         this.streamChannelFuture = streamChannelFuture;
+        this.promise(streamChannelFuture.getParentChannel().newPromise());
+        this.channel(streamChannelFuture.getParentChannel());
     }
 
     public static CreateStreamQueueCommand create(Http2StreamChannelBootstrap bootstrap,
