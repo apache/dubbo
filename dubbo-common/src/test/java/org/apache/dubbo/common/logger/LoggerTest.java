@@ -48,7 +48,7 @@ class LoggerTest {
 
     @ParameterizedTest
     @MethodSource("data")
-    public void testAllLogMethod(Class<? extends LoggerAdapter> loggerAdapter) throws Exception {
+    void testAllLogMethod(Class<? extends LoggerAdapter> loggerAdapter) throws Exception {
         LoggerAdapter adapter = loggerAdapter.getDeclaredConstructor().newInstance();
         adapter.setLevel(Level.ALL);
         Logger logger = adapter.getLogger(this.getClass());
@@ -73,7 +73,7 @@ class LoggerTest {
 
     @ParameterizedTest
     @MethodSource("data")
-    public void testLevelEnable(Class<? extends LoggerAdapter> loggerAdapter) throws IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException {
+    void testLevelEnable(Class<? extends LoggerAdapter> loggerAdapter) throws IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException {
         LoggerAdapter adapter = loggerAdapter.getDeclaredConstructor().newInstance();
         adapter.setLevel(Level.ALL);
         Logger logger = adapter.getLogger(this.getClass());

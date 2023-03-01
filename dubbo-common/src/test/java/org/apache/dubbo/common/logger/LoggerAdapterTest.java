@@ -50,7 +50,7 @@ class LoggerAdapterTest {
 
     @ParameterizedTest
     @MethodSource("data")
-    public void testGetLogger(Class<? extends LoggerAdapter> loggerAdapterClass, Class<? extends Logger> loggerClass) throws IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException {
+    void testGetLogger(Class<? extends LoggerAdapter> loggerAdapterClass, Class<? extends Logger> loggerClass) throws IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException {
         LoggerAdapter loggerAdapter = loggerAdapterClass.getDeclaredConstructor().newInstance();
         Logger logger = loggerAdapter.getLogger(this.getClass());
         assertThat(logger.getClass().isAssignableFrom(loggerClass), is(true));
@@ -62,7 +62,7 @@ class LoggerAdapterTest {
 
     @ParameterizedTest
     @MethodSource("data")
-    public void testLevel(Class<? extends LoggerAdapter> loggerAdapterClass) throws IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException {
+    void testLevel(Class<? extends LoggerAdapter> loggerAdapterClass) throws IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException {
         LoggerAdapter loggerAdapter = loggerAdapterClass.getDeclaredConstructor().newInstance();
         for (Level targetLevel : Level.values()) {
             loggerAdapter.setLevel(targetLevel);
