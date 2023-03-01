@@ -73,7 +73,7 @@ class TripleClientStreamTest {
         MockClientStreamListener listener = new MockClientStreamListener();
         TripleWriteQueue writeQueue = mock(TripleWriteQueue.class);
         final EmbeddedChannel channel = new EmbeddedChannel();
-        when(writeQueue.enqueue(any())).thenReturn(channel.newPromise());
+        when(writeQueue.enqueueFuture(any(QueuedCommand.class), any(Executor.class))).thenReturn(channel.newPromise());
         Http2StreamChannel http2StreamChannel = mock(Http2StreamChannel.class);
         when(http2StreamChannel.isActive()).thenReturn(true);
         when(http2StreamChannel.newSucceededFuture()).thenReturn(channel.newSucceededFuture());
@@ -94,19 +94,19 @@ class TripleClientStreamTest {
         requestMetadata.group = url.getGroup();
         requestMetadata.version = url.getVersion();
         stream.sendHeader(requestMetadata.toHeaders());
-        verify(writeQueue).enqueue(any(HeaderQueueCommand.class), any(Executor.class));
+        verify(writeQueue).enqueueFuture(any(HeaderQueueCommand.class), any(Executor.class));
         // no other commands
         verify(writeQueue).enqueue(any(QueuedCommand.class));
         stream.sendMessage(new byte[0], 0, false);
-        verify(writeQueue).enqueue(any(DataQueueCommand.class), any(Executor.class));
-        verify(writeQueue, times(2)).enqueue(any(QueuedCommand.class), any(Executor.class));
+        verify(writeQueue).enqueueFuture(any(DataQueueCommand.class), any(Executor.class));
+        verify(writeQueue, times(2)).enqueueFuture(any(QueuedCommand.class), any(Executor.class));
         stream.halfClose();
-        verify(writeQueue).enqueue(any(EndStreamQueueCommand.class), any(Executor.class));
-        verify(writeQueue, times(3)).enqueue(any(QueuedCommand.class), any(Executor.class));
+        verify(writeQueue).enqueueFuture(any(EndStreamQueueCommand.class), any(Executor.class));
+        verify(writeQueue, times(3)).enqueueFuture(any(QueuedCommand.class), any(Executor.class));
 
         stream.cancelByLocal(TriRpcStatus.CANCELLED);
-        verify(writeQueue, times(1)).enqueue(any(CancelQueueCommand.class), anyBoolean());
-        verify(writeQueue, times(3)).enqueue(any(QueuedCommand.class), any(Executor.class));
+        verify(writeQueue, times(1)).enqueue(any(CancelQueueCommand.class));
+        verify(writeQueue, times(3)).enqueueFuture(any(QueuedCommand.class), any(Executor.class));
 
         H2TransportListener transportListener = stream.createTransportListener();
         DefaultHttp2Headers headers = new DefaultHttp2Headers();
