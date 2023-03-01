@@ -18,12 +18,15 @@ package org.apache.dubbo.metrics.collector.sample;
 
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.store.DataStore;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
 import org.apache.dubbo.metrics.model.MetricsKey;
 import org.apache.dubbo.metrics.model.ThreadPoolMetric;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +37,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 
+import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_SERVICE_COMPONENT_KEY;
+
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_METRICS_COLLECTOR_EXCEPTION;
 import static org.apache.dubbo.metrics.model.MetricsCategory.THREAD_POOL;
 
@@ -43,6 +48,7 @@ public class ThreadPoolMetricsSampler implements MetricsSampler {
 
     private final DefaultMetricsCollector collector;
     private FrameworkExecutorRepository frameworkExecutorRepository;
+    private DataStore dataStore;
     private final Map<String, ThreadPoolExecutor> sampleThreadPoolExecutor = new ConcurrentHashMap<>();
 
     public ThreadPoolMetricsSampler(DefaultMetricsCollector collector) {
@@ -82,14 +88,29 @@ public class ThreadPoolMetricsSampler implements MetricsSampler {
     }
 
     private void registryDefaultSampleThreadPoolExecutor() {
+        ApplicationModel applicationModel = collector.getApplicationModel();
+        if (applicationModel == null) {
+            return;
+        }
         try {
             if (this.frameworkExecutorRepository == null) {
-                this.frameworkExecutorRepository = collector.getApplicationModel()
-                    .getFrameworkModel().getBeanFactory()
+                this.frameworkExecutorRepository = collector.getApplicationModel().getBeanFactory()
                     .getBean(FrameworkExecutorRepository.class);
             }
         } catch (Exception ex) {
             logger.warn(COMMON_METRICS_COLLECTOR_EXCEPTION, "", "", "ThreadPoolMetricsSampler! frameworkExecutorRepository non-init");
+        }
+        if (this.dataStore == null) {
+            this.dataStore = collector.getApplicationModel().getExtensionLoader(DataStore.class).getDefaultExtension();
+        }
+        if (dataStore != null) {
+            Map<String, Object> executors = dataStore.get(EXECUTOR_SERVICE_COMPONENT_KEY);
+            for (Map.Entry<String, Object> entry : executors.entrySet()) {
+                ExecutorService executor = (ExecutorService) entry.getValue();
+                if (executor instanceof ThreadPoolExecutor) {
+                    this.addExecutors(entry.getKey(), executor);
+                }
+            }
         }
         if (this.frameworkExecutorRepository != null) {
             this.addExecutors("sharedExecutor", frameworkExecutorRepository.getSharedExecutor());
