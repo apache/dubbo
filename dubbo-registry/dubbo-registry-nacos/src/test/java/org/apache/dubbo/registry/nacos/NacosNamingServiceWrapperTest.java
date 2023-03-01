@@ -40,6 +40,7 @@ class NacosNamingServiceWrapperTest {
         NacosConnectionManager connectionManager = Mockito.mock(NacosConnectionManager.class);
         NamingService namingService = Mockito.mock(NamingService.class);
         Mockito.when(connectionManager.getNamingService()).thenReturn(namingService);
+        Mockito.when(connectionManager.isAvailable()).thenReturn(true);
 
         NacosNamingServiceWrapper nacosNamingServiceWrapper = new NacosNamingServiceWrapper(connectionManager, 0, 0);
 
@@ -63,6 +64,7 @@ class NacosNamingServiceWrapperTest {
     @Test
     void testSubscribeMultiManager() throws NacosException {
         NacosConnectionManager connectionManager = Mockito.mock(NacosConnectionManager.class);
+        Mockito.when(connectionManager.isAvailable()).thenReturn(true);
         NamingService namingService1 = Mockito.mock(NamingService.class);
         NamingService namingService2 = Mockito.mock(NamingService.class);
 
