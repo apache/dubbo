@@ -28,6 +28,7 @@ import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -100,10 +101,9 @@ class MetadataMetricsCollectorTest {
             Map<String, String> tags = sample.getTags();
             Assertions.assertEquals(tags.get(TAG_APPLICATION_NAME), applicationModel.getApplicationName());
         }
-        Map<String, Long> sampleMap = metricSamples.stream().collect(Collectors.toMap(MetricSample::getName, k -> {
-            Number number = ((GaugeMetricSample) k).getSupplier().get();
-            return number.longValue();
-        }));
+
+        @SuppressWarnings("rawtypes")
+        Map<String, Long> sampleMap = metricSamples.stream().collect(Collectors.toMap(MetricSample::getName, k -> ((GaugeMetricSample) k).applyAsLong()));
 
         Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_PUSH, MetricsKey.METRIC_RT_LAST).targetKey()), lastTimePair.calc());
         Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_PUSH, MetricsKey.METRIC_RT_MIN).targetKey()), Math.min(c1, c2));
@@ -150,10 +150,9 @@ class MetadataMetricsCollectorTest {
             Map<String, String> tags = sample.getTags();
             Assertions.assertEquals(tags.get(TAG_APPLICATION_NAME), applicationModel.getApplicationName());
         }
-        Map<String, Long> sampleMap = metricSamples.stream().collect(Collectors.toMap(MetricSample::getName, k -> {
-            Number number = ((GaugeMetricSample) k).getSupplier().get();
-            return number.longValue();
-        }));
+
+        @SuppressWarnings("rawtypes")
+        Map<String, Long> sampleMap = metricSamples.stream().collect(Collectors.toMap(MetricSample::getName, k -> ((GaugeMetricSample) k).applyAsLong()));
 
         Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_SUBSCRIBE, MetricsKey.METRIC_RT_LAST).targetKey()), lastTimePair.calc());
         Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_SUBSCRIBE, MetricsKey.METRIC_RT_MIN).targetKey()), Math.min(c1, c2));

@@ -31,6 +31,7 @@ import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -105,13 +106,13 @@ class AggregateMetricsCollectorTest {
         defaultCollector.setApplicationName(applicationName);
         MethodMetricsSampler methodMetricsCountSampler = defaultCollector.getMethodSampler();
 
-        methodMetricsCountSampler.incOnEvent(invocation,MetricsEvent.Type.TOTAL);
-        methodMetricsCountSampler.incOnEvent(invocation,MetricsEvent.Type.SUCCEED);
-        methodMetricsCountSampler.incOnEvent(invocation,MetricsEvent.Type.UNKNOWN_FAILED);
-        methodMetricsCountSampler.incOnEvent(invocation,MetricsEvent.Type.BUSINESS_FAILED);
-        methodMetricsCountSampler.incOnEvent(invocation,MetricsEvent.Type.NETWORK_EXCEPTION);
-        methodMetricsCountSampler.incOnEvent(invocation,MetricsEvent.Type.SERVICE_UNAVAILABLE);
-        methodMetricsCountSampler.incOnEvent(invocation,MetricsEvent.Type.CODEC_EXCEPTION);
+        methodMetricsCountSampler.incOnEvent(invocation, MetricsEvent.Type.TOTAL);
+        methodMetricsCountSampler.incOnEvent(invocation, MetricsEvent.Type.SUCCEED);
+        methodMetricsCountSampler.incOnEvent(invocation, MetricsEvent.Type.UNKNOWN_FAILED);
+        methodMetricsCountSampler.incOnEvent(invocation, MetricsEvent.Type.BUSINESS_FAILED);
+        methodMetricsCountSampler.incOnEvent(invocation, MetricsEvent.Type.NETWORK_EXCEPTION);
+        methodMetricsCountSampler.incOnEvent(invocation, MetricsEvent.Type.SERVICE_UNAVAILABLE);
+        methodMetricsCountSampler.incOnEvent(invocation, MetricsEvent.Type.CODEC_EXCEPTION);
 
 
         List<MetricSample> samples = collector.collect();
@@ -125,10 +126,9 @@ class AggregateMetricsCollectorTest {
         }
 
         samples = collector.collect();
-        Map<String, Long> sampleMap = samples.stream().collect(Collectors.toMap(MetricSample::getName, k -> {
-            Number number = ((GaugeMetricSample) k).getSupplier().get();
-            return number.longValue();
-        }));
+
+        @SuppressWarnings("rawtypes")
+        Map<String, Long> sampleMap = samples.stream().collect(Collectors.toMap(MetricSample::getName, k -> ((GaugeMetricSample) k).applyAsLong()));
 
         Assertions.assertEquals(sampleMap.get(MetricsKey.METRIC_REQUESTS_TOTAL_AGG.getNameByType(side)), 1L);
         Assertions.assertEquals(sampleMap.get(MetricsKey.METRIC_REQUESTS_SUCCEED_AGG.getNameByType(side)), 1L);
@@ -162,10 +162,8 @@ class AggregateMetricsCollectorTest {
             Assertions.assertEquals(tags.get(TAG_VERSION_KEY), version);
         }
 
-        Map<String, Long> sampleMap = samples.stream().collect(Collectors.toMap(MetricSample::getName, k -> {
-            Number number = ((GaugeMetricSample) k).getSupplier().get();
-            return number.longValue();
-        }));
+        @SuppressWarnings("rawtypes")
+        Map<String, Long> sampleMap = samples.stream().collect(Collectors.toMap(MetricSample::getName, k -> ((GaugeMetricSample) k).applyAsLong()));
 
         Assertions.assertTrue(sampleMap.containsKey(MetricsKey.METRIC_RT_P99.getNameByType(side)));
         Assertions.assertTrue(sampleMap.containsKey(MetricsKey.METRIC_RT_P95.getNameByType(side)));

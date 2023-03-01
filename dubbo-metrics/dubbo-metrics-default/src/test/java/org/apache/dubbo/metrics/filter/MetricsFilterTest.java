@@ -187,10 +187,10 @@ class MetricsFilterTest {
         Assertions.assertTrue(metricsMap.containsKey(MetricsKey.METRIC_REQUESTS_TOTAL_FAILED.getNameByType(side)));
 
         MetricSample timeoutSample = metricsMap.get(MetricsKey.METRIC_REQUESTS_TIMEOUT.getNameByType(side));
-        Assertions.assertSame(((GaugeMetricSample) timeoutSample).getSupplier().get().longValue(), count);
+        Assertions.assertSame(((GaugeMetricSample) timeoutSample).applyAsLong(), count);
 
         GaugeMetricSample failedSample = (GaugeMetricSample) metricsMap.get(MetricsKey.METRIC_REQUESTS_TOTAL_FAILED.getNameByType(side));
-        Assertions.assertSame(failedSample.getSupplier().get().longValue(), count);
+        Assertions.assertSame(failedSample.applyAsLong(), count);
     }
 
     @Test
@@ -215,7 +215,7 @@ class MetricsFilterTest {
 
         MetricSample sample = metricsMap.get(MetricsKey.METRIC_REQUESTS_LIMIT.getNameByType(side));
 
-        Assertions.assertSame(((GaugeMetricSample) sample).getSupplier().get().longValue(), count);
+        Assertions.assertSame(((GaugeMetricSample) sample).applyAsLong(), count);
     }
 
     @Test
@@ -297,7 +297,7 @@ class MetricsFilterTest {
 
         MetricSample sample = metricsMap.get(metricsKey.getName());
 
-        Assertions.assertSame(((GaugeMetricSample) sample).getSupplier().get().longValue(), count);
+        Assertions.assertSame(((GaugeMetricSample) sample).applyAsLong(), count);
         teardown();
     }
 
@@ -322,7 +322,7 @@ class MetricsFilterTest {
 
         MetricSample sample = metricsMap.get(metricsKey.getName());
 
-        Assertions.assertSame(((GaugeMetricSample) sample).getSupplier().get().longValue(), count);
+        Assertions.assertSame(((GaugeMetricSample) sample).applyAsLong(), count);
 
 
         Assertions.assertTrue(metricsMap.containsKey(metricsKey.getName()));

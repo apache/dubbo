@@ -32,11 +32,13 @@ import org.apache.dubbo.metrics.model.MetricsKey;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+
 import static org.apache.dubbo.metrics.model.MetricsCategory.QPS;
 import static org.apache.dubbo.metrics.model.MetricsCategory.REQUESTS;
 import static org.apache.dubbo.metrics.model.MetricsCategory.RT;
@@ -134,18 +136,18 @@ public class AggregateMetricsCollector implements MetricsCollector, MetricsListe
     private void collectMethod(List<MetricSample> list, MetricsEvent.Type eventType, MetricsKey metricsKey) {
         ConcurrentHashMap<MethodMetric, TimeWindowCounter> windowCounter = methodTypeCounter.get(eventType);
         if (windowCounter != null) {
-            windowCounter.forEach((k, v) -> list.add(new GaugeMetricSample(metricsKey.formatName(k.getSide()), k.getTags(), REQUESTS, v::get)));
+            windowCounter.forEach((k, v) -> list.add(new GaugeMetricSample<>(metricsKey.formatName(k.getSide()), k.getTags(), REQUESTS, v, TimeWindowCounter::get)));
         }
     }
 
     private void collectQPS(List<MetricSample> list) {
-        qps.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.METRIC_QPS.formatName(k.getSide()), k.getTags(), QPS, () -> v.get() / v.bucketLivedSeconds())));
+        qps.forEach((k, v) -> list.add(new GaugeMetricSample<>(MetricsKey.METRIC_QPS.formatName(k.getSide()), k.getTags(), QPS, v, value -> value.get() / value.bucketLivedSeconds())));
     }
 
     private void collectRT(List<MetricSample> list) {
         rt.forEach((k, v) -> {
-            list.add(new GaugeMetricSample(MetricsKey.METRIC_RT_P99.formatName(k.getSide()), k.getTags(), RT, () -> v.quantile(0.99)));
-            list.add(new GaugeMetricSample(MetricsKey.METRIC_RT_P95.formatName(k.getSide()), k.getTags(), RT, () -> v.quantile(0.95)));
+            list.add(new GaugeMetricSample<>(MetricsKey.METRIC_RT_P99.formatName(k.getSide()), k.getTags(), RT, v, value -> value.quantile(0.99)));
+            list.add(new GaugeMetricSample<>(MetricsKey.METRIC_RT_P95.formatName(k.getSide()), k.getTags(), RT, v, value -> value.quantile(0.95)));
         });
     }
 

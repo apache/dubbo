@@ -44,7 +44,7 @@ public abstract class SimpleMetricsCountSampler<S, K, M extends Metric>
     implements MetricsCountSampler<S, K, M> {
 
     private final ConcurrentMap<M, AtomicLong> EMPTY_COUNT = new ConcurrentHashMap<>();
-    private Map<K, ConcurrentMap<M, AtomicLong>> metricCounter = new ConcurrentHashMap<>();
+    private final Map<K, ConcurrentMap<M, AtomicLong>> metricCounter = new ConcurrentHashMap<>();
     // lastRT, totalRT, rtCount, avgRT share a container, can utilize the system cache line
     private final ConcurrentMap<M, AtomicLongArray> rtSample = new ConcurrentHashMap<>();
     private final ConcurrentMap<M, LongAccumulator> minRT = new ConcurrentHashMap<>();
