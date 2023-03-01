@@ -110,24 +110,30 @@ public class ScopeClusterInvoker<T> implements ClusterInvoker<T>, ExporterChange
             return invoker.invoke(invocation);
         }
         String scope = getUrl().getParameter(SCOPE_KEY);
+
+        if (shouldInvokeInjvm(getUrl().getParameter(LOCAL_PROTOCOL), scope)) {
+            return selectInjvmInvoker().invoke(invocation);
+        }
+        return invoker.invoke(invocation);
+    }
+
+    private boolean shouldInvokeInjvm(String isInjvm, String scope) {
         if (injvmInvoker == null && LOCAL_PROTOCOL.equals(getRegistryUrl().getProtocol())) {
             isExported.compareAndSet(false, true);
             injvmInvoker = invoker;
+            return true;
         }
-        String isInjvm = getUrl().getParameter(LOCAL_PROTOCOL);
-        if (isInjvm == null) {
-            if (!SCOPE_REMOTE.equalsIgnoreCase(scope) &&
-                !getUrl().getParameter(GENERIC_KEY, false)) {
-                if (isInjvmExported(scope)) {
-                    return selectInjvmInvoker().invoke(invocation);
-                }
-            }
-        } else if (Boolean.parseBoolean(isInjvm)) {
-            if (isInjvmExported(scope)) {
-                return selectInjvmInvoker().invoke(invocation);
-            }
+        if (Boolean.TRUE.toString().equals(isInjvm)) {
+            return isInjvmExported(scope);
+        } else if (isInjvm == null) {
+            return isInjvmExportedAndNotRemoteOrGeneric(scope);
         }
-        return invoker.invoke(invocation);
+        return false;
+    }
+
+    private boolean isInjvmExportedAndNotRemoteOrGeneric(String scope) {
+        return !SCOPE_REMOTE.equalsIgnoreCase(scope) &&
+            !getUrl().getParameter(GENERIC_KEY, false) && isInjvmExported(scope);
     }
 
     private boolean isInjvmExported(String scope) {
@@ -179,9 +185,17 @@ public class ScopeClusterInvoker<T> implements ClusterInvoker<T>, ExporterChange
             return;
         }
         Exporter<?> exporter = exporters.get(getUrl().getServiceKey());
-        if (exporter.getInvoker().getInterface().equals(getInterface())
+        if (getUrl().getServiceKey().equals(exporter.getInvoker().getUrl().getServiceKey())
             && exporter.getInvoker().getUrl().getProtocol().equals(LOCAL_PROTOCOL)) {
             isExported.compareAndSet(false, true);
+        }
+    }
+
+    @Override
+    public void onExporterChangeUnExport(Exporter<?> exporter) {
+        if (getUrl().getServiceKey().equals(exporter.getInvoker().getUrl().getServiceKey())
+            && exporter.getInvoker().getUrl().getProtocol().equals(LOCAL_PROTOCOL)) {
+            isExported.compareAndSet(true, false);
         }
     }
 

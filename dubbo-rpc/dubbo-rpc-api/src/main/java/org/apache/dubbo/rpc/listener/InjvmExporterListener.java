@@ -19,34 +19,39 @@ package org.apache.dubbo.rpc.listener;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.RpcException;
 
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 public class InjvmExporterListener extends ExporterListenerAdapter {
 
-    private final List<ExporterChangeListener> exporterChangeListeners = new CopyOnWriteArrayList<>();
+    private final Map<String, ExporterChangeListener> exporterChangeListeners = new ConcurrentHashMap<>();
 
     private final Map<String, Exporter<?>> exporters = new ConcurrentHashMap<>();
 
     @Override
     public void exported(Exporter<?> exporter) throws RpcException {
+        String serviceKey = exporter.getInvoker().getUrl().getServiceKey();
         exporters.putIfAbsent(exporter.getInvoker().getUrl().getServiceKey(), exporter);
-        for (ExporterChangeListener listener : exporterChangeListeners) {
-            listener.onExporterChangeExport(exporters);
+        ExporterChangeListener exporterChangeListener = exporterChangeListeners.get(serviceKey);
+        if (exporterChangeListener != null) {
+            exporterChangeListener.onExporterChangeExport(exporters);
         }
         super.exported(exporter);
     }
 
     @Override
     public void unexported(Exporter<?> exporter) throws RpcException {
-        exporters.remove(exporter.getInvoker().getUrl().getServiceKey(), exporter);
+        String serviceKey = exporter.getInvoker().getUrl().getServiceKey();
+        exporters.remove(serviceKey, exporter);
+        ExporterChangeListener exporterChangeListener = exporterChangeListeners.remove(serviceKey);
+        if (exporterChangeListener != null) {
+            exporterChangeListener.onExporterChangeUnExport(exporter);
+        }
         super.unexported(exporter);
     }
 
     public synchronized void addExporterChangeListener(ExporterChangeListener listener, String serviceKey) {
-        exporterChangeListeners.add(listener);
+        exporterChangeListeners.putIfAbsent(serviceKey, listener);
         if (exporters.get(serviceKey) != null) {
             listener.onExporterChangeExport(exporters);
         }

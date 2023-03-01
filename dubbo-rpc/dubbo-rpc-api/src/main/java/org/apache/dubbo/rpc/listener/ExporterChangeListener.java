@@ -23,4 +23,6 @@ import java.util.Map;
 public interface ExporterChangeListener {
 
     void onExporterChangeExport(Map<String, Exporter<?>> exporters);
+
+    void onExporterChangeUnExport(Exporter<?> exporters);
 }
