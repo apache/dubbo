@@ -15,23 +15,16 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.metrics.aggregate;
+package org.apache.dubbo.common.utils;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-class TimeWindowQuantileTest {
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class TimeUtilsTest {
 
     @Test
-    void test() throws Exception {
-        TimeWindowQuantile quantile = new TimeWindowQuantile(100, 10, 1);
-        for (int i = 1; i <= 100; i++) {
-            quantile.add(i);
-        }
-
-        Assertions.assertEquals(quantile.quantile(0.01), 2);
-        Assertions.assertEquals(quantile.quantile(0.99), 100);
-        Thread.sleep(1000);
-        Assertions.assertEquals(quantile.quantile(0.99), Double.NaN);
+    void testCurrentTimeMillis() {
+        assertTrue(0 < TimeUtils.currentTimeMillis());
     }
 }
