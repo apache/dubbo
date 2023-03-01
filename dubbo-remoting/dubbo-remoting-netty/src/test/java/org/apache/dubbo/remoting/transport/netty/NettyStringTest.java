@@ -18,13 +18,16 @@ package org.apache.dubbo.remoting.transport.netty;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.remoting.exchange.ExchangeChannel;
 import org.apache.dubbo.remoting.exchange.ExchangeServer;
 import org.apache.dubbo.remoting.exchange.Exchangers;
-
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+
+import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_MANAGEMENT_MODE_DEFAULT;
 
 /**
  * Date: 4/26/11
@@ -40,8 +43,17 @@ class NettyStringTest {
         //int port = 10001;
         int port = NetUtils.getAvailablePort();
         System.out.println(port);
-        server = Exchangers.bind(URL.valueOf("telnet://0.0.0.0:" + port + "?server=netty3&codec=telnet"), new TelnetServerHandler());
-        client = Exchangers.connect(URL.valueOf("telnet://127.0.0.1:" + port + "?client=netty3&codec=telnet"), new TelnetClientHandler());
+        URL serverURL = URL.valueOf("telnet://0.0.0.0:" + port + "?server=netty3&codec=telnet");
+        ApplicationModel applicationModel = ApplicationModel.defaultModel();
+        ApplicationConfig applicationConfig = new ApplicationConfig("provider-app");
+        applicationConfig.setExecutorManagementMode(EXECUTOR_MANAGEMENT_MODE_DEFAULT);
+        applicationModel.getApplicationConfigManager().setApplication(applicationConfig);
+        serverURL = serverURL.setScopeModel(applicationModel);
+
+        URL clientURL = URL.valueOf("telnet://127.0.0.1:" + port + "?client=netty3&codec=telnet");
+        clientURL = clientURL.setScopeModel(applicationModel);
+        server = Exchangers.bind(serverURL, new TelnetServerHandler());
+        client = Exchangers.connect(clientURL, new TelnetClientHandler());
     }
 
     @AfterAll
