@@ -490,7 +490,7 @@ public class NacosNamingServiceWrapper {
     private void accept(NacosConsumer command) throws NacosException {
         NacosException le = null;
         int times = 0;
-        for (; !nacosConnectionManager.isShutdown() && times < retryTimes + 1; times++) {
+        for (; nacosConnectionManager.isAvailable() && times < retryTimes + 1; times++) {
             try {
                 command.accept();
                 le = null;

@@ -61,7 +61,7 @@ public class NacosConnectionManager {
 
     private final boolean check;
 
-    private volatile boolean shutdown = false;
+    private volatile boolean available = true;
 
     public NacosConnectionManager(URL connectionURL, boolean check, int retryTimes, int sleepMsBetweenRetries) {
         this.connectionURL = connectionURL;
@@ -85,8 +85,8 @@ public class NacosConnectionManager {
         this.namingServiceList.add(namingService);
     }
 
-    public boolean isShutdown() {
-        return this.shutdown;
+    public boolean isAvailable() {
+        return this.available;
     }
 
     public synchronized NamingService getNamingService() {
@@ -111,11 +111,11 @@ public class NacosConnectionManager {
             try {
                 namingService.shutDown();
             } catch (Exception e) {
-                logger.warn(REGISTRY_NACOS_EXCEPTION, "", "", "Unable to shutdown nacos naming service", e);
+                logger.warn(REGISTRY_NACOS_EXCEPTION, "", "", "Unable to available nacos naming service", e);
             }
         }
         this.namingServiceList.clear();
-        this.shutdown = true;
+        this.available = false;
     }
 
     /**
@@ -124,7 +124,7 @@ public class NacosConnectionManager {
      * @return {@link NamingService}
      */
     protected NamingService createNamingService() {
-        if (shutdown) {
+        if (!available) {
             throw new RuntimeException("Nacos connection manager is closed.");
         }
         Properties nacosProperties = buildNacosProperties(this.connectionURL);
