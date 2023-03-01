@@ -31,7 +31,6 @@ import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.listener.ExporterChangeListener;
 import org.apache.dubbo.rpc.listener.InjvmExporterListener;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -85,7 +84,7 @@ public class ScopeClusterInvoker<T> implements ClusterInvoker<T>, ExporterChange
     @Override
     public boolean isAvailable() {
         if (injvmExporterListener == null) {
-            injvmExporterListener = (InjvmExporterListener) ApplicationModel.defaultModel().getExtensionLoader(ExporterListener.class).getExtension("injvm");
+            injvmExporterListener = (InjvmExporterListener) getUrl().getApplicationModel().getExtensionLoader(ExporterListener.class).getExtension(LOCAL_PROTOCOL);
         }
         injvmExporterListener.addExporterChangeListener(this, getUrl().getServiceKey());
         return isExported.get() || directory.isAvailable();
@@ -117,23 +116,23 @@ public class ScopeClusterInvoker<T> implements ClusterInvoker<T>, ExporterChange
         }
         String isInjvm = getUrl().getParameter(LOCAL_PROTOCOL);
         if (isInjvm == null) {
-            if  (!SCOPE_REMOTE.equalsIgnoreCase(scope) &&
+            if (!SCOPE_REMOTE.equalsIgnoreCase(scope) &&
                 !getUrl().getParameter(GENERIC_KEY, false)) {
-                if (isInjvmExported(invocation, scope)) {
+                if (isInjvmExported(scope)) {
                     return selectInjvmInvoker().invoke(invocation);
                 }
             }
         } else if (Boolean.parseBoolean(isInjvm)) {
-            if (isInjvmExported(invocation, scope)) {
+            if (isInjvmExported(scope)) {
                 return selectInjvmInvoker().invoke(invocation);
             }
         }
         return invoker.invoke(invocation);
     }
 
-    private boolean isInjvmExported(Invocation invocation, String scope) {
+    private boolean isInjvmExported(String scope) {
         if (injvmExporterListener == null) {
-            injvmExporterListener = (InjvmExporterListener) ApplicationModel.defaultModel().getExtensionLoader(ExporterListener.class).getExtension("injvm");
+            injvmExporterListener = (InjvmExporterListener) getUrl().getApplicationModel().getExtensionLoader(ExporterListener.class).getExtension("injvm");
             injvmExporterListener.addExporterChangeListener(this, getUrl().getServiceKey());
         }
         if (!isExported.get() && SCOPE_LOCAL.equalsIgnoreCase(scope)) {
@@ -151,7 +150,7 @@ public class ScopeClusterInvoker<T> implements ClusterInvoker<T>, ExporterChange
             return injvmInvoker;
         }
         if (injvmInvoker == null && protocolSPI == null) {
-            protocolSPI = ApplicationModel.defaultModel().getExtensionLoader(Protocol.class).getAdaptiveExtension();
+            protocolSPI = getUrl().getApplicationModel().getExtensionLoader(Protocol.class).getAdaptiveExtension();
         }
         if (injvmInvoker == null) {
             synchronized (this) {
