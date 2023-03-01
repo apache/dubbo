@@ -48,6 +48,7 @@ public interface Constants {
 
     String TAGS_KEY = "tags";
 
+    String CIRCUIT_BREAKER_KEY = "circuitBreakers";
     /**
      * To decide whether to exclude unavailable invoker from the cluster
      */
