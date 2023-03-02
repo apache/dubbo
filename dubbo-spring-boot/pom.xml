@@ -36,6 +36,7 @@
         <module>dubbo-spring-boot-autoconfigure</module>
         <module>dubbo-spring-boot-compatible</module>
         <module>dubbo-spring-boot-starter</module>
+        <module>dubbo-spring-boot-observability-starter</module>
     </modules>
 
     <properties>
@@ -45,6 +46,7 @@
         <log4j2_version>2.19.0</log4j2_version>
         <!-- Spring boot buddy is lower than the delivery dependency package version and can only show the defined dependency version -->
         <byte-buddy.version>1.13.0</byte-buddy.version>
+        <micrometer-core.version>1.10.4</micrometer-core.version>
     </properties>
 
     <dependencyManagement>
@@ -56,6 +58,11 @@
                 <version>${spring-boot.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.micrometer</groupId>
+                <artifactId>micrometer-core</artifactId>
+                <version>${micrometer-core.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

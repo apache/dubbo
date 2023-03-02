@@ -14,24 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.spring.boot.observability.annotation;
 
-package org.apache.dubbo.metrics.aggregate;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-class TimeWindowQuantileTest {
-
-    @Test
-    void test() throws Exception {
-        TimeWindowQuantile quantile = new TimeWindowQuantile(100, 10, 1);
-        for (int i = 1; i <= 100; i++) {
-            quantile.add(i);
-        }
-
-        Assertions.assertEquals(quantile.quantile(0.01), 2);
-        Assertions.assertEquals(quantile.quantile(0.99), 100);
-        Thread.sleep(1000);
-        Assertions.assertEquals(quantile.quantile(0.99), Double.NaN);
-    }
+@Target({ElementType.TYPE,ElementType.METHOD})
+@Retention(RetentionPolicy.RUNTIME)
+@Inherited
+@Documented
+@ConditionalOnProperty(prefix = "dubbo.tracing", name = "enabled", matchIfMissing = true)
+public @interface ConditionalOnDubboTracingEnable {
 }
