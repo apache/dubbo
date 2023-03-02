@@ -125,7 +125,7 @@ public class NacosConnectionManager {
      */
     protected NamingService createNamingService() {
         if (!available) {
-            throw new RuntimeException("Nacos connection manager is closed.");
+            throw new IllegalStateException("Nacos connection manager is closed.");
         }
         Properties nacosProperties = buildNacosProperties(this.connectionURL);
         NamingService namingService = null;
