@@ -36,7 +36,9 @@ import com.alibaba.nacos.api.naming.NamingService;
 import com.alibaba.nacos.api.naming.pojo.Instance;
 import com.alibaba.nacos.api.naming.pojo.ListView;
 import com.alibaba.nacos.client.naming.NacosNamingService;
+import org.mockito.Mockito;
 
+import static com.alibaba.nacos.client.constant.Constants.HealthCheck.UP;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
@@ -160,6 +162,7 @@ class NacosRegistryTest {
     @Test
     void testSubscribe() {
         NamingService namingService = mock(NacosNamingService.class);
+        Mockito.when(namingService.getServerStatus()).thenReturn(UP);
 
         try {
 
@@ -197,6 +200,7 @@ class NacosRegistryTest {
     @Test
     void testUnSubscribe() {
         NamingService namingService = mock(NacosNamingService.class);
+        Mockito.when(namingService.getServerStatus()).thenReturn(UP);
 
         try {
 
@@ -242,6 +246,7 @@ class NacosRegistryTest {
     @Test
     void testIsConformRules() {
         NamingService namingService = mock(NacosNamingService.class);
+        Mockito.when(namingService.getServerStatus()).thenReturn(UP);
         URL serviceUrlWithoutCategory = URL.valueOf("nacos://127.0.0.1:3333/" + serviceInterface + "?interface=" +
             serviceInterface + "&notify=false&methods=test1,test2&version=1.0.0&group=default");
         try {
