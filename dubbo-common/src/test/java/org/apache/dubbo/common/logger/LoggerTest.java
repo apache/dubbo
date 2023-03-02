@@ -26,6 +26,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.stream.Stream;
 
 import static org.hamcrest.CoreMatchers.not;
@@ -47,8 +48,8 @@ class LoggerTest {
 
     @ParameterizedTest
     @MethodSource("data")
-    public void testAllLogMethod(Class<? extends LoggerAdapter> loggerAdapter) throws Exception {
-        LoggerAdapter adapter = loggerAdapter.newInstance();
+    void testAllLogMethod(Class<? extends LoggerAdapter> loggerAdapter) throws Exception {
+        LoggerAdapter adapter = loggerAdapter.getDeclaredConstructor().newInstance();
         adapter.setLevel(Level.ALL);
         Logger logger = adapter.getLogger(this.getClass());
         logger.error("error");
@@ -72,8 +73,8 @@ class LoggerTest {
 
     @ParameterizedTest
     @MethodSource("data")
-    public void testLevelEnable(Class<? extends LoggerAdapter> loggerAdapter) throws IllegalAccessException, InstantiationException {
-        LoggerAdapter adapter = loggerAdapter.newInstance();
+    void testLevelEnable(Class<? extends LoggerAdapter> loggerAdapter) throws IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException {
+        LoggerAdapter adapter = loggerAdapter.getDeclaredConstructor().newInstance();
         adapter.setLevel(Level.ALL);
         Logger logger = adapter.getLogger(this.getClass());
         assertThat(logger.isWarnEnabled(), not(nullValue()));
