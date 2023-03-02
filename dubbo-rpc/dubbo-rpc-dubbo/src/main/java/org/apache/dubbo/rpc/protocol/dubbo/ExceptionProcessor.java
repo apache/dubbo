@@ -20,13 +20,10 @@ package org.apache.dubbo.rpc.protocol.dubbo;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.Decodeable;
-import org.apache.dubbo.remoting.RetryHandleException;
-import org.apache.dubbo.remoting.exchange.ExchangeChannel;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.io.InputStream;
-import java.util.Map;
 
 import static org.apache.dubbo.common.extension.ExtensionScope.FRAMEWORK;
 
@@ -43,48 +40,6 @@ import static org.apache.dubbo.common.extension.ExtensionScope.FRAMEWORK;
  */
 @SPI(scope = FRAMEWORK)
 public interface ExceptionProcessor {
-
-    /**
-     * Whether to custom handle error when an exception
-     * with the specified parameter is encountered
-     *
-     * @param throwable specified exception
-     */
-    boolean shouldHandleError(Throwable throwable);
-
-    /**
-     * Determined to execute by {@link ExceptionProcessor#shouldHandleError(Throwable)}}
-     * <p>When encountering an exception in decode phase, allow developer customize the behavior before return.
-     * <p>If exceptions are allowed and want to reprocess the request,
-     * you can add custom content and throw a retry exception{@link RetryHandleException} so that decode will continue processing.
-     * <p>Decode will not re-read the read content, so you need to save the decoded content, refer to default impl {snf}.
-     * <p>The number of times decode handle exceptions will not exceed 2.
-     * <p>If decode still cannot process the request, the error message of retry exception will be returned eventually,
-     * and the real reason that cannot be processed needs to be set instead of the literal exception information of retry.
-     *
-     * @return Msg information, If non-null, means that the exception is customized
-     */
-    String wrapAndHandleException(ExchangeChannel channel, Request req) throws RetryHandleException;
-
-
-    /**
-     * Custom handling of parameter types that can preserve the original parameter type
-     *
-     * @param pts The actual parameters passed by consumer
-     */
-    void customPts(Object context, Class<?>[] pts);
-
-    /**
-     * Custom handling of attachment
-     *
-     * @param map The actual attachment passed by consumer
-     */
-    void customAttachment(Object context, Map<String, Object> map);
-
-    /**
-     * release resources
-     */
-    void cleanUp(Object context);
 
     DecodeableRpcInvocation getRetryDecodeableRpcInvocation(FrameworkModel frameworkModel, Channel channel, Request req, InputStream is, byte proto);
 }

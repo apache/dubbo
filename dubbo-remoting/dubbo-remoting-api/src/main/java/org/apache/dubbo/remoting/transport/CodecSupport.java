@@ -27,7 +27,6 @@ import org.apache.dubbo.common.serialize.Serialization;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.remoting.utils.UrlUtils;
-import org.apache.dubbo.remoting.ServiceNotFoundException;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.FrameworkServiceRepository;
 
@@ -167,7 +166,7 @@ public class CodecSupport {
     public static void checkSerialization(FrameworkServiceRepository serviceRepository, String path, String version, Byte id) throws IOException {
         List<URL> urls = serviceRepository.lookupRegisteredProviderUrlsWithoutGroup(keyWithoutGroup(path, version));
         if (CollectionUtils.isEmpty(urls)) {
-            throw new ServiceNotFoundException("Service " + path + " with version " + version + " not found, invocation rejected.");
+            throw new IOException("Service " + path + " with version " + version + " not found, invocation rejected.");
         } else {
             boolean match = urls.stream().anyMatch(url -> isMatch(url, id));
             if (!match) {
