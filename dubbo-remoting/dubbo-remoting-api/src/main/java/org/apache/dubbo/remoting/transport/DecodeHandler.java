@@ -23,9 +23,6 @@ import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Decodeable;
 import org.apache.dubbo.remoting.RemotingException;
-import org.apache.dubbo.remoting.RetryDecodeable;
-import org.apache.dubbo.remoting.RetryHandleException;
-import org.apache.dubbo.remoting.exchange.ErrorData;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.Response;
 
@@ -44,25 +41,16 @@ public class DecodeHandler extends AbstractChannelHandlerDelegate {
         if (message instanceof Decodeable) {
             decode(message);
         }
+
         if (message instanceof Request) {
             decode(((Request) message).getData());
         }
+
         if (message instanceof Response) {
             decode(((Response) message).getResult());
         }
 
-        try {
-            handler.received(channel, message);
-        } catch (RetryHandleException e) {
-            if (message instanceof Request) {
-                ErrorData errorData = (ErrorData) ((Request) message).getData();
-                retry(errorData.getData());
-            } else {
-                // Retry only once, and only Request will throw an RetryHandleException
-                throw new RemotingException(channel, "Unknown error encountered when retry handle: " + e.getMessage());
-            }
-            handler.received(channel, message);
-        }
+        handler.received(channel, message);
     }
 
     private void decode(Object message) {
@@ -80,13 +68,5 @@ public class DecodeHandler extends AbstractChannelHandlerDelegate {
                 log.warn(TRANSPORT_FAILED_DECODE, "", "", "Call Decodeable.decode failed: " + e.getMessage(), e);
             }
         }
-    }
-
-    private void retry(Object message) {
-        if (!(message instanceof RetryDecodeable)) {
-            return;
-        }
-
-        ((RetryDecodeable) message).retry();
     }
 }

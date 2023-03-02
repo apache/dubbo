@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.dubbo;
 
 import org.apache.dubbo.common.Version;
+import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.io.Bytes;
 import org.apache.dubbo.common.io.UnsafeByteArrayInputStream;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
@@ -35,6 +36,7 @@ import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.io.ByteArrayInputStream;
@@ -152,23 +154,30 @@ public class DubboCodec extends ExchangeCodec {
                 } else {
                     DecodeableRpcInvocation inv;
                     String exPs = System.getProperty(EXCEPTION_PROCESSOR_KEY);
+                    boolean existExpHandler = false;
+                    ExtensionLoader<ExceptionProcessor> extensionLoader;
+                    ExceptionProcessor expProcessor = null;
+                    if (StringUtils.isNotBlank(exPs)) {
+                        existExpHandler = true;
+                        extensionLoader = ApplicationModel.defaultModel().getDefaultModule().getExtensionLoader(ExceptionProcessor.class);
+                        expProcessor = extensionLoader.getOrDefaultExtension(exPs);
+                    }
 
                     if (isDecodeDataInIoThread(channel)) {
-                        if (StringUtils.isBlank(exPs)) {
-                            inv = new DecodeableRpcInvocation(frameworkModel, channel, req, is, proto);
+                        if (existExpHandler) {
+                            inv = expProcessor.getRetryDecodeableRpcInvocation(frameworkModel, channel, req, is, proto);
                         } else {
-                            inv = new RetryDecodeableRpcInvocation(frameworkModel, channel, req, is, proto);
+                            inv = new DecodeableRpcInvocation(frameworkModel, channel, req, is, proto);
                         }
                         inv.decode();
                     } else {
-                        if (StringUtils.isBlank(exPs)) {
-                            inv = new DecodeableRpcInvocation(frameworkModel, channel, req,
+                        if (existExpHandler) {
+                            inv = expProcessor.getRetryDecodeableRpcInvocation(frameworkModel, channel, req,
                                 new UnsafeByteArrayInputStream(readMessageData(is)), proto);
                         } else {
-                            inv = new RetryDecodeableRpcInvocation(frameworkModel, channel, req,
+                            inv = new DecodeableRpcInvocation(frameworkModel, channel, req,
                                 new UnsafeByteArrayInputStream(readMessageData(is)), proto);
                         }
-
                     }
                     data = inv;
                 }

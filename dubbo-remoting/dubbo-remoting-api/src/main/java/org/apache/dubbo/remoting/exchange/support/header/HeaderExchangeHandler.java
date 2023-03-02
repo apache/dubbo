@@ -17,7 +17,6 @@
 package org.apache.dubbo.remoting.exchange.support.header;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -25,10 +24,8 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Constants;
-import org.apache.dubbo.remoting.ExceptionProcessor;
 import org.apache.dubbo.remoting.ExecutionException;
 import org.apache.dubbo.remoting.RemotingException;
-import org.apache.dubbo.remoting.exchange.ErrorData;
 import org.apache.dubbo.remoting.exchange.ExchangeChannel;
 import org.apache.dubbo.remoting.exchange.ExchangeHandler;
 import org.apache.dubbo.remoting.exchange.Request;
@@ -38,10 +35,8 @@ import org.apache.dubbo.remoting.exchange.support.MultiMessage;
 import org.apache.dubbo.remoting.transport.ChannelHandlerDelegate;
 
 import java.net.InetSocketAddress;
-import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 
-import static org.apache.dubbo.common.constants.CommonConstants.EXCEPTION_PROCESSOR_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.READONLY_EVENT;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_RESPONSE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_UNSUPPORTED_MESSAGE;
@@ -87,36 +82,15 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
         Response res = new Response(req.getId(), req.getVersion());
         if (req.isBroken()) {
             Object data = req.getData();
-            Throwable error = null;
 
             String msg;
             if (data == null) {
                 msg = null;
             } else if (data instanceof Throwable) {
-                error = (Throwable) data;
-                msg = StringUtils.toString(error);
-            } else if (data instanceof ErrorData) {
-                error = ((ErrorData) data).getThrowable();
-                msg = StringUtils.toString(error);
+                msg = StringUtils.toString((Throwable) data);
             } else {
                 msg = data.toString();
             }
-
-            if (error != null) {
-                // Give ExceptionProcessors a chance to retry request handle or custom exception information.
-                String exPs = System.getProperty(EXCEPTION_PROCESSOR_KEY);
-                if (StringUtils.isNotBlank(exPs)) {
-                    ExtensionLoader<ExceptionProcessor> extensionLoader = channel.getUrl().getOrDefaultFrameworkModel().getExtensionLoader(ExceptionProcessor.class);
-                    ExceptionProcessor expProcessor = extensionLoader.getOrDefaultExtension(exPs);
-                    boolean handleError = expProcessor.shouldHandleError(error);
-                    if (handleError) {
-                        // Allow to custom error message, return directly
-                        // Or interrupt, reHandle the process, process req, and continue to return normal information
-                        msg = Optional.ofNullable(expProcessor.wrapAndHandleException(channel, req)).orElse(msg);
-                    }
-                }
-            }
-
             res.setErrorMessage("Fail to decode request due to: " + msg);
             res.setStatus(Response.BAD_REQUEST);
 

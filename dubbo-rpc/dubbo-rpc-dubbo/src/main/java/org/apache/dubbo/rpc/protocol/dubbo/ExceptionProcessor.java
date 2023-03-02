@@ -15,12 +15,17 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.remoting;
+package org.apache.dubbo.rpc.protocol.dubbo;
 
 import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.remoting.Channel;
+import org.apache.dubbo.remoting.Decodeable;
+import org.apache.dubbo.remoting.RetryHandleException;
 import org.apache.dubbo.remoting.exchange.ExchangeChannel;
 import org.apache.dubbo.remoting.exchange.Request;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
+import java.io.InputStream;
 import java.util.Map;
 
 import static org.apache.dubbo.common.extension.ExtensionScope.FRAMEWORK;
@@ -81,4 +86,5 @@ public interface ExceptionProcessor {
      */
     void cleanUp(Object context);
 
+    DecodeableRpcInvocation getRetryDecodeableRpcInvocation(FrameworkModel frameworkModel, Channel channel, Request req, InputStream is, byte proto);
 }
