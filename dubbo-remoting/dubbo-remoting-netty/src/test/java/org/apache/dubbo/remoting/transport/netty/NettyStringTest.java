@@ -57,7 +57,7 @@ class NettyStringTest {
     }
 
     @AfterAll
-    public static void tearDown() throws Exception {
+    public static void tearDown() {
         try {
             if (server != null)
                 server.close();
@@ -68,7 +68,7 @@ class NettyStringTest {
     }
 
     @Test
-    void testHandler() throws Exception {
+    void testHandler() {
         //Thread.sleep(20000);
         /*client.request("world\r\n");
         Future future = client.request("world", 10000);

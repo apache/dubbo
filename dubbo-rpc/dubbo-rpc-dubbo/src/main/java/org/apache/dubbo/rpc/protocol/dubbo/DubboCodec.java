@@ -27,6 +27,8 @@ import org.apache.dubbo.common.serialize.Serialization;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Channel;
+import org.apache.dubbo.remoting.exchange.HeartBeatRequest;
+import org.apache.dubbo.remoting.exchange.HeartBeatResponse;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.exchange.codec.ExchangeCodec;
@@ -131,24 +133,24 @@ public class DubboCodec extends ExchangeCodec {
             return res;
         } else {
             // decode request.
-            Request req = new Request(id);
-            req.setVersion(Version.getProtocolVersion());
-            req.setTwoWay((flag & FLAG_TWOWAY) != 0);
-            if ((flag & FLAG_EVENT) != 0) {
-                req.setEvent(true);
-            }
+            Request req;
             try {
                 Object data;
-                if (req.isEvent()) {
+                if ((flag & FLAG_EVENT) != 0) {
                     byte[] eventPayload = CodecSupport.getPayload(is);
                     if (CodecSupport.isHeartBeat(eventPayload, proto)) {
                         // heart beat response data is always null;
+                        req = new HeartBeatRequest(id);
+                        ((HeartBeatRequest) req).setProto(proto);
                         data = null;
                     } else {
+                        req = new Request(id);
                         ObjectInput in = CodecSupport.deserialize(channel.getUrl(), new ByteArrayInputStream(eventPayload), proto);
                         data = decodeEventData(channel, in, eventPayload);
                     }
+                    req.setEvent(true);
                 } else {
+                    req = new HeartBeatRequest(id);
                     DecodeableRpcInvocation inv;
                     if (isDecodeDataInIoThread(channel)) {
                         inv = new DecodeableRpcInvocation(frameworkModel, channel, req, is, proto);
@@ -165,9 +167,12 @@ public class DubboCodec extends ExchangeCodec {
                     log.warn(PROTOCOL_FAILED_DECODE, "", "", "Decode request failed: " + t.getMessage(), t);
                 }
                 // bad request
+                req = new HeartBeatRequest(id);
                 req.setBroken(true);
                 req.setData(t);
             }
+            req.setVersion(Version.getProtocolVersion());
+            req.setTwoWay((flag & FLAG_TWOWAY) != 0);
 
             return req;
         }
@@ -267,6 +272,9 @@ public class DubboCodec extends ExchangeCodec {
 
     @Override
     protected Serialization getSerialization(Channel channel, Response res) {
+        if (res instanceof HeartBeatResponse) {
+            return CodecSupport.getSerializationById(((HeartBeatResponse) res).getProto());
+        }
         if (!(res.getResult() instanceof AppResponse)) {
             return super.getSerialization(channel, res);
         }

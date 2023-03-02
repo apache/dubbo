@@ -47,7 +47,7 @@ class DubboInvokerAvailableTest {
     private static ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
 
     @BeforeAll
-    public static void setUpBeforeClass() throws Exception {
+    public static void setUpBeforeClass() {
     }
 
     @BeforeEach
@@ -91,7 +91,7 @@ class DubboInvokerAvailableTest {
 
     @Disabled
     @Test
-    void test_normal_channel_close_wait_gracefully() throws Exception {
+    void test_normal_channel_close_wait_gracefully() {
         int testPort = NetUtils.getAvailablePort();
         URL url = URL.valueOf("dubbo://127.0.0.1:" + testPort + "/org.apache.dubbo.rpc.protocol.dubbo.IDemoService?scope=true&lazy=false");
         Exporter<IDemoService> exporter = ProtocolUtils.export(new DemoServiceImpl(), IDemoService.class, url);

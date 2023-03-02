@@ -16,26 +16,23 @@
  */
 package org.apache.dubbo.rpc.protocol.rest;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
 
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-@Path("/demoService")
+@RestController()
+@RequestMapping("/demoService")
 public interface DemoService {
-    @GET
-    @Path("/hello")
-    Integer hello(@QueryParam("a") Integer a, @QueryParam("b") Integer b);
+    @RequestMapping(value = "/hello", method = RequestMethod.GET)
+    Integer hello(@RequestParam Integer a, @RequestParam Integer b);
 
-    @GET
-    @Path("/error")
+    @RequestMapping(value = "/error", method = RequestMethod.GET)
     String error();
 
-    @POST
-    @Path("/say")
-    @Consumes({MediaType.TEXT_PLAIN})
-    String sayHello(String name);
+    @RequestMapping(value = "/say", method = RequestMethod.POST, consumes = MediaType.TEXT_PLAIN_VALUE)
+    String sayHello(@RequestBody String name);
 }

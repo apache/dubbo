@@ -48,5 +48,4 @@ public interface JSON {
     List<Map<String, ?>> checkObjectList(List<?> rawList);
 
     List<String> checkStringList(List<?> rawList);
-
 }

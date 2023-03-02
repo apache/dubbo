@@ -31,8 +31,8 @@
     <description>The xDS Integration</description>
     <properties>
         <skip_maven_deploy>false</skip_maven_deploy>
-        <protobuf-java.version>3.21.12</protobuf-java.version>
-        <grpc.version>1.41.0</grpc.version>
+        <protobuf-java.version>3.22.0</protobuf-java.version>
+        <grpc.version>1.53.0</grpc.version>
     </properties>
 
     <dependencies>

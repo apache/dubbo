@@ -159,7 +159,7 @@ class DefaultFutureTest {
     }
 
     @Test
-    void testClose() throws Exception {
+    void testClose() {
         Channel channel = new MockedChannel();
         Request request = new Request(123);
         ExecutorService executor = ExtensionLoader.getExtensionLoader(ExecutorRepository.class)

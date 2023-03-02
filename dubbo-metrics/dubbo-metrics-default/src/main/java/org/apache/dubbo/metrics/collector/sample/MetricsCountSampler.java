@@ -18,13 +18,15 @@
 package org.apache.dubbo.metrics.collector.sample;
 
 import org.apache.dubbo.metrics.model.Metric;
+import org.apache.dubbo.metrics.model.MetricsKey;
+import org.apache.dubbo.metrics.model.sample.MetricSample;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.LongAccumulator;
 
-public interface MetricsCountSampler<S, K,M extends Metric> extends MetricsSampler {
+public interface MetricsCountSampler<S, K, M extends Metric> extends MetricsSampler {
 
     void inc(S source, K metricName);
 
@@ -36,18 +38,15 @@ public interface MetricsCountSampler<S, K,M extends Metric> extends MetricsSampl
 
     void addRT(S source, Long rt);
 
+    void addRT(S source, K metricName, Long rt);
+
     Optional<ConcurrentMap<M, AtomicLong>> getCount(K metricName);
 
-    ConcurrentMap<M, AtomicLong> getLastRT();
+    <R extends MetricSample> List<R> collectRT(MetricSampleFactory<M, R> factory);
 
-    ConcurrentMap<M, LongAccumulator> getMinRT();
+    <R extends MetricSample> List<R> collectRT(MetricSampleFactory<M, R> factory,K metricName);
 
-    ConcurrentMap<M, LongAccumulator> getMaxRT();
-
-    ConcurrentMap<M, AtomicLong> getAvgRT();
-
-    ConcurrentMap<M, AtomicLong> getTotalRT();
-
-    ConcurrentMap<M, AtomicLong> getRtCount();
-
+    interface MetricSampleFactory<M, R extends MetricSample> {
+        R newInstance(MetricsKey key, M metric, Long count);
+    }
 }

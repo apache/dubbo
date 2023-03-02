@@ -55,7 +55,7 @@ class JavassistCompilerTest extends JavaCodeTest {
     }
 
     @Test
-    void testCompileJavaClass1() throws Exception {
+    void testCompileJavaClass1() {
         Assertions.assertThrows(IllegalStateException.class, () -> {
             JavassistCompiler compiler = new JavassistCompiler();
             Class<?> clazz = compiler.compile(JavaCodeTest.class, getSimpleCodeWithSyntax0(), JavassistCompiler.class.getClassLoader());

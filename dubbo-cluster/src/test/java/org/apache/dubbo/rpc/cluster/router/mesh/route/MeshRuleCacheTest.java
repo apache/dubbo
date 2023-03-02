@@ -34,7 +34,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -51,7 +50,11 @@ class MeshRuleCacheTest {
     @Test
     void containMapKeyValue() {
         URL url = mock(URL.class);
-        when(url.getServiceKey()).thenReturn("test");
+        when(url.getOriginalServiceParameter("test", "key1")).thenReturn("value1");
+        when(url.getOriginalServiceParameter("test", "key2")).thenReturn("value2");
+        when(url.getOriginalServiceParameter("test", "key3")).thenReturn("value3");
+        when(url.getOriginalServiceParameter("test", "key4")).thenReturn("value4");
+
 
         Map<String, String> originMap = new HashMap<>();
 
@@ -64,14 +67,10 @@ class MeshRuleCacheTest {
         inputMap.put("key1", "value1");
         inputMap.put("key2", "value2");
 
-        assertTrue(MeshRuleCache.containMapKeyValue(originMap, inputMap));
+        assertTrue(MeshRuleCache.isLabelMatch(url, "test", inputMap));
 
         inputMap.put("key4", "value4");
-        assertFalse(MeshRuleCache.containMapKeyValue(originMap, inputMap));
-
-
-        assertTrue(MeshRuleCache.containMapKeyValue(originMap, null));
-        assertTrue(MeshRuleCache.containMapKeyValue(originMap, new HashMap<>()));
+        assertTrue(MeshRuleCache.isLabelMatch(url, "test", inputMap));
 
     }
 
