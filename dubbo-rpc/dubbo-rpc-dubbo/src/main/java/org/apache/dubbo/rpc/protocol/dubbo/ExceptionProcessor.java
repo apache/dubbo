@@ -28,13 +28,11 @@ import java.io.InputStream;
 import static org.apache.dubbo.common.extension.ExtensionScope.FRAMEWORK;
 
 /**
- * <p>Interface for handling exceptions in specific spi-extended classes.
+ * <p>Interface for custom decoding logic in specific spi-extended classes.
  *
- * <p>Mainly works in the decode phase {@link Decodeable#decode()},
+ * <p>Mainly works in decode phase {@link Decodeable#decode()},
  * and can only handle exception types in this phase.
  *
- * <p>Allow three kinds of customized operations, customize abnormal results and return,
- * customize normal results and return, interrupt and retry the process.
  *
  * @since 3.2.0
  */
