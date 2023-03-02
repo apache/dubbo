@@ -16,26 +16,16 @@
  */
 package org.apache.dubbo.registry.client;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.stream.Collectors;
-
 import org.apache.dubbo.common.ProtocolServiceKey;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.url.component.DubboServiceAddressURL;
+import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
@@ -60,9 +50,24 @@ import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Collectors;
+
+import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DISABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_DESTROY_INVOKER;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_REFER_INVOKER;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_UNSUPPORTED;
@@ -179,12 +184,57 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
     }
 
     // RefreshOverrideAndInvoker will be executed by registryCenter and configCenter, so it should be synchronized.
-    private synchronized void refreshOverrideAndInvoker(List<URL> instanceUrls) {
+    @Override
+    protected synchronized void refreshOverrideAndInvoker(List<URL> instanceUrls) {
         // mock zookeeper://xxx?mock=return null
+        this.directoryUrl = overrideDirectoryWithConfigurator(getOriginalConsumerUrl());
         refreshInvoker(instanceUrls);
     }
 
-    private InstanceAddressURL overrideWithConfigurator(InstanceAddressURL providerUrl) {
+
+    protected URL overrideDirectoryWithConfigurator(URL url) {
+        // override url with configurator from "app-name.configurators"
+        url = overrideWithConfigurators(getConsumerConfigurationListener(moduleModel).getConfigurators(), url);
+
+        // override url with configurator from configurators from "service-name.configurators"
+        if (referenceConfigurationListener != null) {
+            url = overrideWithConfigurators(referenceConfigurationListener.getConfigurators(), url);
+        }
+
+        return url;
+    }
+
+    private URL overrideWithConfigurators(List<Configurator> configurators, URL url) {
+        if (CollectionUtils.isNotEmpty(configurators)) {
+            if (url instanceof DubboServiceAddressURL) {
+                DubboServiceAddressURL interfaceAddressURL = (DubboServiceAddressURL) url;
+                URL overriddenURL = interfaceAddressURL.getOverrideURL();
+                if (overriddenURL == null) {
+                    String appName = interfaceAddressURL.getApplication();
+                    String side = interfaceAddressURL.getSide();
+                    overriddenURL = URLBuilder.from(interfaceAddressURL)
+                        .clearParameters()
+                        .addParameter(APPLICATION_KEY, appName)
+                        .addParameter(SIDE_KEY, side).build();
+                }
+                for (Configurator configurator : configurators) {
+                    overriddenURL = configurator.configure(overriddenURL);
+                }
+                url = new DubboServiceAddressURL(
+                    interfaceAddressURL.getUrlAddress(),
+                    interfaceAddressURL.getUrlParam(),
+                    interfaceAddressURL.getConsumerURL(),
+                    (ServiceConfigURL) overriddenURL);
+            } else {
+                for (Configurator configurator : configurators) {
+                    url = configurator.configure(url);
+                }
+            }
+        }
+        return url;
+    }
+
+    protected InstanceAddressURL overrideWithConfigurator(InstanceAddressURL providerUrl) {
         // override url with configurator from "app-name.configurators"
         providerUrl = overrideWithConfigurators(getConsumerConfigurationListener(moduleModel).getConfigurators(), providerUrl);
 

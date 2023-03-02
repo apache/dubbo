@@ -17,18 +17,19 @@
 
 package org.apache.dubbo.config;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
-
 import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.config.api.DemoService;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -47,7 +48,7 @@ class ConsumerConfigTest {
     }
 
     @Test
-    void testTimeout() throws Exception {
+    void testTimeout() {
         System.clearProperty("sun.rmi.transport.tcp.responseTimeout");
         ConsumerConfig consumer = new ConsumerConfig();
         consumer.setTimeout(10);
@@ -63,35 +64,35 @@ class ConsumerConfigTest {
     }
 
     @Test
-    void testClient() throws Exception {
+    void testClient() {
         ConsumerConfig consumer = new ConsumerConfig();
         consumer.setClient("client");
         assertThat(consumer.getClient(), equalTo("client"));
     }
 
     @Test
-    void testThreadpool() throws Exception {
+    void testThreadpool() {
         ConsumerConfig consumer = new ConsumerConfig();
         consumer.setThreadpool("fixed");
         assertThat(consumer.getThreadpool(), equalTo("fixed"));
     }
 
     @Test
-    void testCorethreads() throws Exception {
+    void testCorethreads() {
         ConsumerConfig consumer = new ConsumerConfig();
         consumer.setCorethreads(10);
         assertThat(consumer.getCorethreads(), equalTo(10));
     }
 
     @Test
-    void testThreads() throws Exception {
+    void testThreads() {
         ConsumerConfig consumer = new ConsumerConfig();
         consumer.setThreads(20);
         assertThat(consumer.getThreads(), equalTo(20));
     }
 
     @Test
-    void testQueues() throws Exception {
+    void testQueues() {
         ConsumerConfig consumer = new ConsumerConfig();
         consumer.setQueues(5);
         assertThat(consumer.getQueues(), equalTo(5));

@@ -208,8 +208,10 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
     }
 
     // RefreshOverrideAndInvoker will be executed by registryCenter and configCenter, so it should be synchronized.
-    private synchronized void refreshOverrideAndInvoker(List<URL> urls) {
+    @Override
+    protected synchronized void refreshOverrideAndInvoker(List<URL> urls) {
         // mock zookeeper://xxx?mock=return null
+        this.directoryUrl = overrideWithConfigurator(getOriginalConsumerUrl());
         refreshInvoker(urls);
     }
 
@@ -510,7 +512,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
         return providerUrl;
     }
 
-    private URL overrideWithConfigurator(URL providerUrl) {
+    protected URL overrideWithConfigurator(URL providerUrl) {
         // override url with configurator from "override://" URL for dubbo 2.6 and before
         providerUrl = overrideWithConfigurators(this.configurators, providerUrl);
 

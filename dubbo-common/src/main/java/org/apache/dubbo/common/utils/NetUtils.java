@@ -679,7 +679,26 @@ public final class NetUtils {
         }
     }
 
-    public static boolean matchIpExpression(String pattern, String host, int port) throws UnknownHostException {
+    /**
+     * Check if address matches with specified pattern, currently only supports ipv4, use {@link this#matchIpExpression(String, String, int)} for ipv6 addresses.
+     *
+     * @param pattern cird pattern
+     * @param address 'ip:port'
+     * @return true if address matches with the pattern
+     */
+    public static boolean matchIpExpression(String pattern, String address) throws UnknownHostException {
+        if (address == null) {
+            return false;
+        }
+
+        String host = address;
+        int port = 0;
+        // only works for ipv4 address with 'ip:port' format
+        if (address.endsWith(":")) {
+            String[] hostPort = address.split(":");
+            host = hostPort[0];
+            port = StringUtils.parseInteger(hostPort[1]);
+        }
 
         // if the pattern is subnet format, it will not be allowed to config port param in pattern.
         if (pattern.contains("/")) {
@@ -687,6 +706,16 @@ public final class NetUtils {
             return utils.isInRange(host);
         }
 
+        return matchIpRange(pattern, host, port);
+    }
+
+    public static boolean matchIpExpression(String pattern, String host, int port) throws UnknownHostException {
+
+        // if the pattern is subnet format, it will not be allowed to config port param in pattern.
+        if (pattern.contains("/")) {
+            CIDRUtils utils = new CIDRUtils(pattern);
+            return utils.isInRange(host);
+        }
 
         return matchIpRange(pattern, host, port);
     }

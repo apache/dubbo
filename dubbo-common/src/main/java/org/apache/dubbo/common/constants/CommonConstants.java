@@ -213,6 +213,8 @@ public interface CommonConstants {
 
     String PATH_KEY = "path";
 
+    String ADDRESS_KEY = "address";
+
     String INTERFACE_KEY = "interface";
 
     String FILE_KEY = "file";
@@ -622,4 +624,6 @@ public interface CommonConstants {
      * @since 3.2.0
      */
     String EXCEPTION_PROCESSOR_KEY = "exception.processor";
+
+    String PAYLOAD = "payload";
 }
