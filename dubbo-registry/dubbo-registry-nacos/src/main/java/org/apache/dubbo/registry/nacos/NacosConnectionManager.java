@@ -111,7 +111,7 @@ public class NacosConnectionManager {
             try {
                 namingService.shutDown();
             } catch (Exception e) {
-                logger.warn(REGISTRY_NACOS_EXCEPTION, "", "", "Unable to available nacos naming service", e);
+                logger.warn(REGISTRY_NACOS_EXCEPTION, "", "", "Unable to shutdown nacos naming service", e);
             }
         }
         this.namingServiceList.clear();
