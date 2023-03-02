@@ -38,7 +38,6 @@ import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.io.ByteArrayInputStream;
@@ -161,7 +160,7 @@ public class DubboCodec extends ExchangeCodec {
                     ExceptionProcessor expProcessor = null;
                     if (StringUtils.isNotBlank(exPs)) {
                         existExpHandler = true;
-                        extensionLoader = ApplicationModel.defaultModel().getDefaultModule().getExtensionLoader(ExceptionProcessor.class);
+                        extensionLoader = channel.getUrl().getApplicationModel().getExtensionLoader(ExceptionProcessor.class);
                         expProcessor = extensionLoader.getOrDefaultExtension(exPs);
                     }
 
