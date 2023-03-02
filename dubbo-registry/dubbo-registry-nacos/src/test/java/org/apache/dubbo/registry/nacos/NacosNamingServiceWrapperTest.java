@@ -34,6 +34,8 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static com.alibaba.nacos.client.constant.Constants.HealthCheck.UP;
+
 class NacosNamingServiceWrapperTest {
     @Test
     void testSubscribe() throws NacosException {
@@ -41,6 +43,7 @@ class NacosNamingServiceWrapperTest {
         NamingService namingService = Mockito.mock(NamingService.class);
         Mockito.when(connectionManager.getNamingService()).thenReturn(namingService);
         Mockito.when(connectionManager.isAvailable()).thenReturn(true);
+        Mockito.when(namingService.getServerStatus()).thenReturn(UP);
 
         NacosNamingServiceWrapper nacosNamingServiceWrapper = new NacosNamingServiceWrapper(connectionManager, 0, 0);
 
@@ -67,6 +70,8 @@ class NacosNamingServiceWrapperTest {
         Mockito.when(connectionManager.isAvailable()).thenReturn(true);
         NamingService namingService1 = Mockito.mock(NamingService.class);
         NamingService namingService2 = Mockito.mock(NamingService.class);
+        Mockito.when(namingService1.getServerStatus()).thenReturn(UP);
+        Mockito.when(namingService2.getServerStatus()).thenReturn(UP);
 
         NacosNamingServiceWrapper nacosNamingServiceWrapper = new NacosNamingServiceWrapper(connectionManager, 0, 0);
 
@@ -97,6 +102,7 @@ class NacosNamingServiceWrapperTest {
             @Override
             protected NamingService createNamingService() {
                 NamingService namingService = Mockito.mock(NamingService.class);
+                Mockito.when(namingService.getServerStatus()).thenReturn(UP);
                 namingServiceList.add(namingService);
                 return namingService;
             }
@@ -146,6 +152,7 @@ class NacosNamingServiceWrapperTest {
             @Override
             protected NamingService createNamingService() {
                 NamingService namingService = Mockito.mock(NamingService.class);
+                Mockito.when(namingService.getServerStatus()).thenReturn(UP);
                 try {
                     Mockito.doThrow(new NacosException()).when(namingService).batchRegisterInstance(Mockito.anyString(), Mockito.anyString(), Mockito.any(List.class));
                 } catch (NacosException e) {
@@ -210,6 +217,7 @@ class NacosNamingServiceWrapperTest {
             @Override
             protected NamingService createNamingService() {
                 NamingService namingService = Mockito.mock(NamingService.class);
+                Mockito.when(namingService.getServerStatus()).thenReturn(UP);
                 namingServiceList.add(namingService);
                 return namingService;
             }
@@ -313,6 +321,7 @@ class NacosNamingServiceWrapperTest {
             @Override
             protected NamingService createNamingService() {
                 NamingService namingService = Mockito.mock(NamingService.class);
+                Mockito.when(namingService.getServerStatus()).thenReturn(UP);
                 namingServiceList.add(namingService);
                 return namingService;
             }
@@ -415,6 +424,7 @@ class NacosNamingServiceWrapperTest {
         CountDownLatch startLatch = new CountDownLatch(1);
         CountDownLatch stopLatch = new CountDownLatch(1);
         NamingService namingService = Mockito.mock(NamingService.class);
+        Mockito.when(namingService.getServerStatus()).thenReturn(UP);
         Mockito.when(connectionManager.getNamingService()).thenReturn(namingService);
 
         NacosNamingServiceWrapper nacosNamingServiceWrapper = new NacosNamingServiceWrapper(connectionManager, false, 0, 0);
@@ -425,7 +435,7 @@ class NacosNamingServiceWrapperTest {
         NacosNamingServiceWrapper.InstancesInfo instancesInfo = nacosNamingServiceWrapper.getRegisterStatus().get(new NacosNamingServiceWrapper.InstanceId("service_name", "test"));
         Assertions.assertEquals(1, instancesInfo.getInstances().size());
 
-        nacosNamingServiceWrapper.getRegisterStatus().put(new NacosNamingServiceWrapper.InstanceId("service_name", "test"), new NacosNamingServiceWrapper.InstancesInfo(){
+        nacosNamingServiceWrapper.getRegisterStatus().put(new NacosNamingServiceWrapper.InstanceId("service_name", "test"), new NacosNamingServiceWrapper.InstancesInfo() {
             private final NacosNamingServiceWrapper.InstancesInfo delegate = instancesInfo;
 
             @Override
@@ -473,7 +483,7 @@ class NacosNamingServiceWrapperTest {
             }
         });
 
-        new Thread(()->{
+        new Thread(() -> {
             try {
                 startLatch.await();
                 nacosNamingServiceWrapper.registerInstance("service_name", "test", instance);
@@ -483,7 +493,7 @@ class NacosNamingServiceWrapperTest {
             }
         }).start();
 
-        new Thread(()->{
+        new Thread(() -> {
             try {
                 nacosNamingServiceWrapper.deregisterInstance("service_name", "test", instance);
             } catch (NacosException e) {
@@ -538,6 +548,11 @@ class NacosNamingServiceWrapperTest {
             public List<Instance> getAllInstances(String serviceName, String groupName) throws NacosException {
                 throw new NacosException();
             }
+
+            @Override
+            public String getServerStatus() {
+                return UP;
+            }
         };
 
         NacosNamingServiceWrapper nacosNamingServiceWrapper = new NacosNamingServiceWrapper(new NacosConnectionManager(namingService), 0, 0);
@@ -565,6 +580,11 @@ class NacosNamingServiceWrapperTest {
                     throw new NacosException();
                 }
                 return null;
+            }
+
+            @Override
+            public String getServerStatus() {
+                return UP;
             }
         };
 
