@@ -85,7 +85,7 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
         this.request = request;
         this.inputStream = is;
         this.serializationType = id;
-        this.callbackServiceCodecFactory = CacheableSupplier.newSupplier(()->
+        this.callbackServiceCodecFactory = CacheableSupplier.newSupplier(() ->
             new CallbackServiceCodec(frameworkModel));
     }
 
@@ -109,10 +109,6 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
     @Override
     public void encode(Channel channel, OutputStream output, Object message) throws IOException {
         throw new UnsupportedOperationException();
-    }
-
-    private void checkSerializationTypeFromRemote() {
-
     }
 
     @Override
@@ -143,78 +139,14 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
             Object[] args = DubboCodec.EMPTY_OBJECT_ARRAY;
             Class<?>[] pts = DubboCodec.EMPTY_CLASS_ARRAY;
             if (desc.length() > 0) {
-//                if (RpcUtils.isGenericCall(path, getMethodName()) || RpcUtils.isEcho(path, getMethodName())) {
-//                    pts = ReflectUtils.desc2classArray(desc);
-//                } else {
-                FrameworkServiceRepository repository = frameworkModel.getServiceRepository();
-                List<ProviderModel> providerModels = repository.lookupExportedServicesWithoutGroup(keyWithoutGroup(path, version));
-                ServiceDescriptor serviceDescriptor = null;
-                if (CollectionUtils.isNotEmpty(providerModels)) {
-                    for (ProviderModel providerModel : providerModels) {
-                        serviceDescriptor = providerModel.getServiceModel();
-                        if (serviceDescriptor != null) {
-                            break;
-                        }
-                    }
-                }
-                if (serviceDescriptor == null) {
-                    // Unable to find ProviderModel from Exported Services
-                    for (ApplicationModel applicationModel : frameworkModel.getApplicationModels()) {
-                        for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
-                            serviceDescriptor = moduleModel.getServiceRepository().lookupService(path);
-                            if (serviceDescriptor != null) {
-                                break;
-                            }
-                        }
-                    }
-                }
-
-                if (serviceDescriptor != null) {
-                    MethodDescriptor methodDescriptor = serviceDescriptor.getMethod(getMethodName(), desc);
-                    if (methodDescriptor != null) {
-                        pts = methodDescriptor.getParameterClasses();
-                        this.setReturnTypes(methodDescriptor.getReturnTypes());
-
-                        // switch TCCL
-                        if (CollectionUtils.isNotEmpty(providerModels)) {
-                            if (providerModels.size() == 1) {
-                                Thread.currentThread().setContextClassLoader(providerModels.get(0).getClassLoader());
-                            } else {
-                                // try all providerModels' classLoader can load pts, use the first one
-                                for (ProviderModel providerModel : providerModels) {
-                                    ClassLoader classLoader = providerModel.getClassLoader();
-                                    boolean match = true;
-                                    for (Class<?> pt : pts) {
-                                        try {
-                                            if (!pt.equals(classLoader.loadClass(pt.getName()))) {
-                                                match = false;
-                                            }
-                                        } catch (ClassNotFoundException e) {
-                                            match = false;
-                                        }
-                                    }
-                                    if (match) {
-                                        Thread.currentThread().setContextClassLoader(classLoader);
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
+                pts = drawPts(path, version, desc, pts);
                 if (pts == DubboCodec.EMPTY_CLASS_ARRAY) {
                     if (!RpcUtils.isGenericCall(desc, getMethodName()) && !RpcUtils.isEcho(desc, getMethodName())) {
                         throw new IllegalArgumentException("Service not found:" + path + ", " + getMethodName());
                     }
                     pts = ReflectUtils.desc2classArray(desc);
                 }
-//                }
-
-                args = new Object[pts.length];
-                for (int i = 0; i < args.length; i++) {
-                    args[i] = in.readObject(pts[i]);
-                }
+                args = drawArgs(in, pts);
             }
             setParameterTypes(pts);
 
@@ -223,17 +155,7 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
                 addObjectAttachments(map);
             }
 
-            //decode argument ,may be callback
-            CallbackServiceCodec callbackServiceCodec = callbackServiceCodecFactory.get();
-            for (int i = 0; i < args.length; i++) {
-                args[i] = callbackServiceCodec.decodeInvocationArgument(channel, this, pts, i, args[i]);
-            }
-
-            setArguments(args);
-            String targetServiceName = buildKey(getAttachment(PATH_KEY),
-                getAttachment(GROUP_KEY),
-                getAttachment(VERSION_KEY));
-            setTargetServiceUniqueName(targetServiceName);
+            decodeArgument(channel, pts, args);
         } catch (ClassNotFoundException e) {
             throw new IOException(StringUtils.toString("Read invocation data failed.", e));
         } finally {
@@ -245,4 +167,86 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
         return this;
     }
 
+
+    protected void decodeArgument(Channel channel, Class<?>[] pts, Object[] args) throws IOException {
+        CallbackServiceCodec callbackServiceCodec = callbackServiceCodecFactory.get();
+        for (int i = 0; i < args.length; i++) {
+            args[i] = callbackServiceCodec.decodeInvocationArgument(channel, this, pts, i, args[i]);
+        }
+
+        setArguments(args);
+        String targetServiceName = buildKey(getAttachment(PATH_KEY),
+            getAttachment(GROUP_KEY),
+            getAttachment(VERSION_KEY));
+        setTargetServiceUniqueName(targetServiceName);
+    }
+
+    protected Class<?>[] drawPts(String path, String version, String desc, Class<?>[] pts) {
+        FrameworkServiceRepository repository = frameworkModel.getServiceRepository();
+        List<ProviderModel> providerModels = repository.lookupExportedServicesWithoutGroup(keyWithoutGroup(path, version));
+        ServiceDescriptor serviceDescriptor = null;
+        if (CollectionUtils.isNotEmpty(providerModels)) {
+            for (ProviderModel providerModel : providerModels) {
+                serviceDescriptor = providerModel.getServiceModel();
+                if (serviceDescriptor != null) {
+                    break;
+                }
+            }
+        }
+        if (serviceDescriptor == null) {
+            // Unable to find ProviderModel from Exported Services
+            for (ApplicationModel applicationModel : frameworkModel.getApplicationModels()) {
+                for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
+                    serviceDescriptor = moduleModel.getServiceRepository().lookupService(path);
+                    if (serviceDescriptor != null) {
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (serviceDescriptor != null) {
+            MethodDescriptor methodDescriptor = serviceDescriptor.getMethod(getMethodName(), desc);
+            if (methodDescriptor != null) {
+                pts = methodDescriptor.getParameterClasses();
+                this.setReturnTypes(methodDescriptor.getReturnTypes());
+
+                // switch TCCL
+                if (CollectionUtils.isNotEmpty(providerModels)) {
+                    if (providerModels.size() == 1) {
+                        Thread.currentThread().setContextClassLoader(providerModels.get(0).getClassLoader());
+                    } else {
+                        // try all providerModels' classLoader can load pts, use the first one
+                        for (ProviderModel providerModel : providerModels) {
+                            ClassLoader classLoader = providerModel.getClassLoader();
+                            boolean match = true;
+                            for (Class<?> pt : pts) {
+                                try {
+                                    if (!pt.equals(classLoader.loadClass(pt.getName()))) {
+                                        match = false;
+                                    }
+                                } catch (ClassNotFoundException e) {
+                                    match = false;
+                                }
+                            }
+                            if (match) {
+                                Thread.currentThread().setContextClassLoader(classLoader);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return pts;
+    }
+
+    protected Object[] drawArgs(ObjectInput in, Class<?>[] pts) throws IOException, ClassNotFoundException {
+        Object[] args;
+        args = new Object[pts.length];
+        for (int i = 0; i < args.length; i++) {
+            args[i] = in.readObject(pts[i]);
+        }
+        return args;
+    }
 }
