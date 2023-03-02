@@ -160,6 +160,7 @@
         <module>dubbo-kubernetes</module>
         <module>dubbo-xds</module>
         <module>dubbo-native-plugin</module>
+        <module>dubbo-maven-plugin</module>
     </modules>
 
     <dependencyManagement>
@@ -317,6 +318,21 @@
                                     <skip>${checkstyle.skip}</skip>
                                     <excludes>
                                         **/JSONWriter.java,
+                                        **/org/apache/dubbo/maven/plugin/aot/AbstractAotMojo.java,
+                                        **/org/apache/dubbo/maven/plugin/aot/AbstractDependencyFilterMojo.java,
+                                        **/org/apache/dubbo/maven/plugin/aot/CommandLineBuilder.java,
+                                        **/org/apache/dubbo/maven/plugin/aot/DependencyFilter.java,
+                                        **/org/apache/dubbo/maven/plugin/aot/Exclude.java,
+                                        **/org/apache/dubbo/maven/plugin/aot/ExcludeFilter.java,
+                                        **/org/apache/dubbo/maven/plugin/aot/FilterableDependency.java,
+                                        **/org/apache/dubbo/maven/plugin/aot/Include.java,
+                                        **/org/apache/dubbo/maven/plugin/aot/IncludeFilter.java,
+                                        **/org/apache/dubbo/maven/plugin/aot/JavaCompilerPluginConfiguration.java,
+                                        **/org/apache/dubbo/maven/plugin/aot/JavaExecutable.java,
+                                        **/org/apache/dubbo/maven/plugin/aot/JavaProcessExecutor.java,
+                                        **/org/apache/dubbo/maven/plugin/aot/MatchingGroupIdFilter.java,
+                                        **/org/apache/dubbo/maven/plugin/aot/RunArguments.java,
+                                        **/org/apache/dubbo/maven/plugin/aot/RunProcess.java,
                                         **/org/apache/dubbo/common/threadpool/serial/SerializingExecutor.java,
                                         **/org/apache/dubbo/common/threadlocal/InternalThreadLocal.java,
                                         **/org/apache/dubbo/common/threadlocal/InternalThreadLocalMap.java,

@@ -34,3 +34,4 @@ switchLogger=org.apache.dubbo.qos.command.impl.SwitchLogger
 switchLogLevel=org.apache.dubbo.qos.command.impl.SwitchLogLevel
 serializeCheckStatus=org.apache.dubbo.qos.command.impl.SerializeCheckStatus
 serializeWarnedClasses=org.apache.dubbo.qos.command.impl.SerializeWarnedClasses
+getConfig=org.apache.dubbo.qos.command.impl.GetConfig

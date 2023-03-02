@@ -272,6 +272,12 @@
                 <version>${project.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>org.apache.dubbo</groupId>
+                <artifactId>dubbo-maven-plugin</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
             <!-- plugin -->
             <dependency>
                 <groupId>org.apache.dubbo</groupId>
@@ -469,6 +475,11 @@
                 <groupId>org.apache.dubbo</groupId>
                 <artifactId>dubbo-dependencies-zookeeper</artifactId>
                 <type>pom</type>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.dubbo</groupId>
+                <artifactId>dubbo-spring-boot-observability-starter</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

@@ -82,7 +82,7 @@ class InjvmProtocolTest {
     }
 
     @Test
-    void testLocalProtocolWithToken() throws Exception {
+    void testLocalProtocolWithToken() {
         DemoService service = new DemoServiceImpl();
         Invoker<?> invoker = proxy.getInvoker(service, DemoService.class, URL.valueOf("injvm://127.0.0.1/TestService?token=abc").addParameter(INTERFACE_KEY, DemoService.class.getName()));
         assertTrue(invoker.isAvailable());
@@ -93,7 +93,7 @@ class InjvmProtocolTest {
     }
 
     @Test
-    void testIsInjvmRefer() throws Exception {
+    void testIsInjvmRefer() {
         DemoService service = new DemoServiceImpl();
         URL url = URL.valueOf("injvm://127.0.0.1/TestService")
             .addParameter(INTERFACE_KEY, DemoService.class.getName());
@@ -124,7 +124,7 @@ class InjvmProtocolTest {
     }
 
     @Test
-    void testLocalProtocolAsync() throws Exception {
+    void testLocalProtocolAsync() {
         DemoService service = new DemoServiceImpl();
         URL url = URL.valueOf("injvm://127.0.0.1/TestService")
             .addParameter(ASYNC_KEY, true)

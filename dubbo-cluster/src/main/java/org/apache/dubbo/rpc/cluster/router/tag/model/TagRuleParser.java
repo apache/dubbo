@@ -24,7 +24,7 @@ import org.yaml.snakeyaml.constructor.SafeConstructor;
 import java.util.Map;
 
 /**
- *
+ * Parse raw rule into structured tag rule
  */
 public class TagRuleParser {
 
@@ -37,7 +37,6 @@ public class TagRuleParser {
             rule.setValid(false);
         }
 
-        rule.init();
         return rule;
     }
 }
