@@ -24,7 +24,7 @@ import org.apache.dubbo.rpc.cluster.router.state.StateRouter;
 /**
  * Tag router factory
  */
-@Activate(order = 100)
+@Activate(order = 200)
 public class CircuitBreakerRouterFactory extends CacheableStateRouterFactory {
 
     public static final String NAME = "tag";
