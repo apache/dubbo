@@ -42,6 +42,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static org.apache.dubbo.common.constants.CommonConstants.CIRCUIT_BREAKER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TAG_KEY;
 import static org.mockito.Mockito.when;
 
@@ -112,8 +113,9 @@ class CircuitBreakerRouterTest {
         BitList<Invoker<String>> invokers = new BitList<>(originInvokers);
 
         RpcInvocation invocation = new RpcInvocation();
-        invocation.setAttachment(TAG_KEY, "tag2");
-        CircuitBreakerRule rule = getTagRule();
+//        invocation.setAttachment(TAG_KEY, "tag2");
+        invocation.setAttachment(CIRCUIT_BREAKER_KEY, "tag2");
+        CircuitBreakerRule rule = getCircuitBreakerRule();
         Mockito.when(router.getInvokers()).thenReturn(invokers);
         rule.init(router);
         router.setCircuitBreakerRule(rule);
@@ -150,7 +152,7 @@ class CircuitBreakerRouterTest {
             "enabled: false\n" +
             "priority: 1\n" +
             "key: demo-provider\n" +
-            "tags:\n" +
+            "circuitBreakers:\n" +
             "  - name: tag1\n" +
             "    addresses: null\n" +
             "  - name: tag2\n" +
@@ -169,10 +171,10 @@ class CircuitBreakerRouterTest {
         // assert tags
         assert circuitBreakerRule.getKey().equals("demo-provider");
         assert circuitBreakerRule.getPriority() == 1;
-        assert circuitBreakerRule.getTagNames().contains("tag1");
-        assert circuitBreakerRule.getTagNames().contains("tag2");
-        assert circuitBreakerRule.getTagNames().contains("tag3");
-        assert circuitBreakerRule.getTagNames().contains("tag4");
+        assert circuitBreakerRule.getCircuitBreakerNames().contains("tag1");
+        assert circuitBreakerRule.getCircuitBreakerNames().contains("tag2");
+        assert circuitBreakerRule.getCircuitBreakerNames().contains("tag3");
+        assert circuitBreakerRule.getCircuitBreakerNames().contains("tag4");
         // assert addresses
         assert circuitBreakerRule.getAddresses().contains("30.5.120.37:20880");
         assert circuitBreakerRule.getCircuitBreakernameToAddresses().get("tag1") == null;
@@ -192,7 +194,7 @@ class CircuitBreakerRouterTest {
             "enabled: true\n" +
             "priority: 1\n" +
             "key: demo-provider\n" +
-            "tags:\n" +
+            "circuitBreakers:\n" +
             "  - name: tag1\n" +
             "    match:\n" +
             "    - key: match_key1\n" +
@@ -231,10 +233,10 @@ class CircuitBreakerRouterTest {
         // assert tags
         assert circuitBreakerRule.getKey().equals("demo-provider");
         assert circuitBreakerRule.getPriority() == 1;
-        assert circuitBreakerRule.getTagNames().contains("tag1");
-        assert circuitBreakerRule.getTagNames().contains("tag2");
-        assert circuitBreakerRule.getTagNames().contains("tag3");
-        assert circuitBreakerRule.getTagNames().contains("tag4");
+        assert circuitBreakerRule.getCircuitBreakerNames().contains("tag1");
+        assert circuitBreakerRule.getCircuitBreakerNames().contains("tag2");
+        assert circuitBreakerRule.getCircuitBreakerNames().contains("tag3");
+        assert circuitBreakerRule.getCircuitBreakerNames().contains("tag4");
         // assert addresses
         assert circuitBreakerRule.getAddresses().size() == 2;
         assert circuitBreakerRule.getAddresses().contains("10.20.3.3:20880");
@@ -257,7 +259,7 @@ class CircuitBreakerRouterTest {
         return invokers;
     }
 
-    private CircuitBreakerRule getTagRule() {
+    private CircuitBreakerRule getCircuitBreakerRule() {
         String circuitBreakerRuleConfig = "---\n" +
             "configVersion: v3.0\n" +
             "force: false\n" +
@@ -265,7 +267,7 @@ class CircuitBreakerRouterTest {
             "enabled: true\n" +
             "priority: 1\n" +
             "key: demo-provider\n" +
-            "tags:\n" +
+            "circuitBreakers:\n" +
             "  - name: tag2\n" +
             "    match:\n" +
             "    - key: match_key\n" +

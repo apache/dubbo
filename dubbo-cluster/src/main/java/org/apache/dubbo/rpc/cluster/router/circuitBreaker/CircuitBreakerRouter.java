@@ -40,6 +40,7 @@ import java.util.Set;
 import java.util.function.Predicate;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.CIRCUIT_BREAKER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TAG_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_TAG_ROUTE_EMPTY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_TAG_ROUTE_INVALID;
@@ -161,7 +162,7 @@ public class CircuitBreakerRouter<T> extends AbstractStateRouter<T> implements C
                 messageHolder.set("filter using the static tag group");
             }
             return filterInvoker(result, invoker -> {
-                String localTag = invoker.getUrl().getParameter(TAG_KEY);
+                String localTag = invoker.getUrl().getParameter(CIRCUIT_BREAKER_KEY);
                 return StringUtils.isEmpty(localTag);
             });
         }

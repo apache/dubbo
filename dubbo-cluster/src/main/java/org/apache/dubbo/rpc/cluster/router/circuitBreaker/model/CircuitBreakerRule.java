@@ -31,7 +31,6 @@ import java.util.stream.Collectors;
 
 import static org.apache.dubbo.rpc.cluster.Constants.CIRCUIT_BREAKER_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.RULE_VERSION_V30;
-import static org.apache.dubbo.rpc.cluster.Constants.TAGS_KEY;
 
 /**
  * %YAML1.2
@@ -118,7 +117,11 @@ public class CircuitBreakerRule extends AbstractRouterRule {
             .collect(Collectors.toSet());
     }
 
-    public List<String> getTagNames() {
+//    public List<String> getTagNames() {
+//        return circuitBreakers.stream().map(CircuitBreaker::getName).collect(Collectors.toList());
+//    }
+
+    public List<String> getCircuitBreakerNames() {
         return circuitBreakers.stream().map(CircuitBreaker::getName).collect(Collectors.toList());
     }
 
