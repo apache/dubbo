@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
  *
  */
 public class ConfiguratorConfig {
+    public static final String MATCH_CONDITION = "MATCH_CONDITION";
     public static final String SCOPE_SERVICE = "service";
     public static final String SCOPE_APPLICATION = "application";
     public static final String CONFIG_VERSION_KEY = "configVersion";

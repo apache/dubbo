@@ -213,6 +213,8 @@ public interface CommonConstants {
 
     String PATH_KEY = "path";
 
+    String ADDRESS_KEY = "address";
+
     String INTERFACE_KEY = "interface";
 
     String FILE_KEY = "file";
@@ -617,4 +619,6 @@ public interface CommonConstants {
 
     String ENCODE_IN_IO_THREAD_KEY = "encode.in.io";
     boolean DEFAULT_ENCODE_IN_IO_THREAD = false;
+
+    String PAYLOAD = "payload";
 }
