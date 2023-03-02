@@ -19,6 +19,7 @@ package org.apache.dubbo.config.spring.beans.factory.annotation;
 
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -399,8 +400,22 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
         }
 
         //check bean definition
-        if (beanDefinitionRegistry.containsBeanDefinition(referenceBeanName)) {
-            BeanDefinition prevBeanDefinition = beanDefinitionRegistry.getBeanDefinition(referenceBeanName);
+        boolean isContains;
+        if ((isContains = beanDefinitionRegistry.containsBeanDefinition(referenceBeanName)) || beanDefinitionRegistry.isAlias(referenceBeanName)) {
+            String preReferenceBeanName = referenceBeanName;
+            if (!isContains){
+                // Look in the alias for the origin bean name
+                String[] aliases = beanDefinitionRegistry.getAliases(referenceBeanName);
+                if (ArrayUtils.isNotEmpty(aliases)) {
+                    for (String alias : aliases) {
+                        if (beanDefinitionRegistry.containsBeanDefinition(alias)) {
+                            preReferenceBeanName = alias;
+                            break;
+                        }
+                    }
+                }
+            }
+            BeanDefinition prevBeanDefinition = beanDefinitionRegistry.getBeanDefinition(preReferenceBeanName);
             String prevBeanType = prevBeanDefinition.getBeanClassName();
             String prevBeanDesc = referenceBeanName + "[" + prevBeanType + "]";
             String newBeanDesc = referenceBeanName + "[" + referenceKey + "]";
