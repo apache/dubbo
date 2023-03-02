@@ -34,6 +34,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.MethodUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.registry.nacos.function.HealthChecker;
 import org.apache.dubbo.registry.nacos.function.NacosConsumer;
 import org.apache.dubbo.registry.nacos.function.NacosFunction;
 
@@ -42,6 +43,8 @@ import com.alibaba.nacos.api.naming.NamingService;
 import com.alibaba.nacos.api.naming.listener.EventListener;
 import com.alibaba.nacos.api.naming.pojo.Instance;
 import com.alibaba.nacos.api.naming.pojo.ListView;
+
+import static com.alibaba.nacos.client.constant.Constants.HealthCheck.UP;
 
 public class NacosNamingServiceWrapper {
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(NacosNamingServiceWrapper.class);
@@ -89,7 +92,8 @@ public class NacosNamingServiceWrapper {
         String nacosServiceName = handleInnerSymbol(serviceName);
         SubscribeInfo subscribeInfo = new SubscribeInfo(nacosServiceName, group, eventListener);
         NamingService namingService = ConcurrentHashMapUtils.computeIfAbsent(subscribeStatus, subscribeInfo, info -> nacosConnectionManager.getNamingService());
-        accept(() -> namingService.subscribe(nacosServiceName, group, eventListener));
+        accept(() -> namingService.subscribe(nacosServiceName, group, eventListener),
+            () -> nacosConnectionManager.isAvailable() && UP.equals(namingService.getServerStatus()));
     }
 
     public void unsubscribe(String serviceName, String group, EventListener eventListener) throws NacosException {
@@ -97,13 +101,16 @@ public class NacosNamingServiceWrapper {
         SubscribeInfo subscribeInfo = new SubscribeInfo(nacosServiceName, group, eventListener);
         NamingService namingService = subscribeStatus.get(subscribeInfo);
         if (namingService != null) {
-            accept(() -> namingService.unsubscribe(nacosServiceName, group, eventListener));
+            accept(() -> namingService.unsubscribe(nacosServiceName, group, eventListener),
+                () -> nacosConnectionManager.isAvailable() && UP.equals(namingService.getServerStatus()));
             subscribeStatus.remove(subscribeInfo);
         }
     }
 
     public List<Instance> getAllInstances(String serviceName, String group) throws NacosException {
-        return apply(() -> nacosConnectionManager.getNamingService().getAllInstances(handleInnerSymbol(serviceName), group));
+        NamingService namingService = nacosConnectionManager.getNamingService();
+        return apply(() -> namingService.getAllInstances(handleInnerSymbol(serviceName), group),
+            () -> nacosConnectionManager.isAvailable() && UP.equals(namingService.getServerStatus()));
     }
 
     public void registerInstance(String serviceName, String group, Instance instance) throws NacosException {
@@ -125,7 +132,8 @@ public class NacosNamingServiceWrapper {
             if (instancesInfo.getInstances().isEmpty()) {
                 // directly register
                 NamingService namingService = nacosConnectionManager.getNamingService();
-                accept(() -> namingService.registerInstance(nacosServiceName, group, instance));
+                accept(() -> namingService.registerInstance(nacosServiceName, group, instance),
+                    () -> nacosConnectionManager.isAvailable() && UP.equals(namingService.getServerStatus()));
                 instancesInfo.getInstances().add(new InstanceInfo(instance, namingService));
                 return;
             }
@@ -139,7 +147,8 @@ public class NacosNamingServiceWrapper {
                 instanceListToRegister.add(instance);
 
                 try {
-                    accept(() -> namingService.batchRegisterInstance(nacosServiceName, group, instanceListToRegister));
+                    accept(() -> namingService.batchRegisterInstance(nacosServiceName, group, instanceListToRegister),
+                        () -> nacosConnectionManager.isAvailable() && UP.equals(namingService.getServerStatus()));
                     instancesInfo.getInstances().add(new InstanceInfo(instance, namingService));
                     instancesInfo.setBatchRegistered(true);
                     return;
@@ -156,7 +165,8 @@ public class NacosNamingServiceWrapper {
                     instanceListToRegister.add(instanceInfo.getInstance());
                 }
                 instanceListToRegister.add(instance);
-                accept(() -> namingService.batchRegisterInstance(nacosServiceName, group, instanceListToRegister));
+                accept(() -> namingService.batchRegisterInstance(nacosServiceName, group, instanceListToRegister),
+                    () -> nacosConnectionManager.isAvailable() && UP.equals(namingService.getServerStatus()));
                 instancesInfo.getInstances().add(new InstanceInfo(instance, namingService));
                 return;
             }
@@ -167,7 +177,8 @@ public class NacosNamingServiceWrapper {
                 .map(InstanceInfo::getNamingService)
                 .collect(Collectors.toSet());
             NamingService namingService = nacosConnectionManager.getNamingService(selectedNamingServices);
-            accept(() -> namingService.registerInstance(nacosServiceName, group, instance));
+            accept(() -> namingService.registerInstance(nacosServiceName, group, instance),
+                () -> nacosConnectionManager.isAvailable() && UP.equals(namingService.getServerStatus()));
             instancesInfo.getInstances().add(new InstanceInfo(instance, namingService));
         } finally {
             instancesInfo.unlock();
@@ -209,12 +220,15 @@ public class NacosNamingServiceWrapper {
                     .map(InstanceInfo::getInstance)
                     .collect(Collectors.toList());
 
-                accept(() -> namingService.batchRegisterInstance(nacosServiceName, group, instanceListToRegister));
+                accept(() -> namingService.batchRegisterInstance(nacosServiceName, group, instanceListToRegister),
+                    () -> nacosConnectionManager.isAvailable() && UP.equals(namingService.getServerStatus()));
                 return;
             }
 
             // fallback to register one by one
-            accept(() -> oldInstanceInfo.getNamingService().registerInstance(nacosServiceName, group, newInstance));
+            NamingService oldNamingService = oldInstanceInfo.getNamingService();
+            accept(() -> oldNamingService.registerInstance(nacosServiceName, group, newInstance),
+                () -> nacosConnectionManager.isAvailable() && UP.equals(oldNamingService.getServerStatus()));
         } finally {
             instancesInfo.unlock();
         }
@@ -282,7 +296,9 @@ public class NacosNamingServiceWrapper {
             // only one registered
             if (instancesInfo.getInstances().isEmpty()) {
                 // directly unregister
-                accept(() -> instanceInfo.getNamingService().deregisterInstance(nacosServiceName, group, instance));
+                NamingService namingService = instanceInfo.getNamingService();
+                accept(() -> namingService.deregisterInstance(nacosServiceName, group, instance),
+                    () -> nacosConnectionManager.isAvailable() && UP.equals(namingService.getServerStatus()));
                 instancesInfo.setBatchRegistered(false);
                 return;
             }
@@ -293,10 +309,14 @@ public class NacosNamingServiceWrapper {
                 for (InstanceInfo info : instancesInfo.getInstances()) {
                     instanceListToRegister.add(info.getInstance());
                 }
-                accept(() -> instanceInfo.getNamingService().batchRegisterInstance(nacosServiceName, group, instanceListToRegister));
+                NamingService namingService = instanceInfo.getNamingService();
+                accept(() -> namingService.batchRegisterInstance(nacosServiceName, group, instanceListToRegister),
+                    () -> nacosConnectionManager.isAvailable() && UP.equals(namingService.getServerStatus()));
             } else {
                 // unregister one
-                accept(() -> instanceInfo.getNamingService().deregisterInstance(nacosServiceName, group, instance));
+                NamingService namingService = instanceInfo.getNamingService();
+                accept(() -> namingService.deregisterInstance(nacosServiceName, group, instance),
+                    () -> nacosConnectionManager.isAvailable() && UP.equals(namingService.getServerStatus()));
             }
         } finally {
             instancesInfo.unlock();
@@ -304,11 +324,15 @@ public class NacosNamingServiceWrapper {
     }
 
     public ListView<String> getServicesOfServer(int pageNo, int pageSize, String group) throws NacosException {
-        return apply(() -> nacosConnectionManager.getNamingService().getServicesOfServer(pageNo, pageSize, group));
+        NamingService namingService = nacosConnectionManager.getNamingService();
+        return apply(() -> namingService.getServicesOfServer(pageNo, pageSize, group),
+            () -> nacosConnectionManager.isAvailable() && UP.equals(namingService.getServerStatus()));
     }
 
     public List<Instance> selectInstances(String serviceName, String group, boolean healthy) throws NacosException {
-        return apply(() -> nacosConnectionManager.getNamingService().selectInstances(handleInnerSymbol(serviceName), group, healthy));
+        NamingService namingService = nacosConnectionManager.getNamingService();
+        return apply(() -> namingService.selectInstances(handleInnerSymbol(serviceName), group, healthy),
+            () -> nacosConnectionManager.isAvailable() && UP.equals(namingService.getServerStatus()));
     }
 
     public void shutdown() throws NacosException {
@@ -452,11 +476,11 @@ public class NacosNamingServiceWrapper {
     }
 
 
-    private <R> R apply(NacosFunction<R> command) throws NacosException {
+    private <R> R apply(NacosFunction<R> command, HealthChecker healthChecker) throws NacosException {
         NacosException le = null;
         R result = null;
         int times = 0;
-        for (; times < retryTimes + 1; times++) {
+        for (; healthChecker.check() && times < retryTimes + 1; times++) {
             try {
                 result = command.apply();
                 le = null;
@@ -487,10 +511,10 @@ public class NacosNamingServiceWrapper {
         return result;
     }
 
-    private void accept(NacosConsumer command) throws NacosException {
+    private void accept(NacosConsumer command, HealthChecker healthChecker) throws NacosException {
         NacosException le = null;
         int times = 0;
-        for (; nacosConnectionManager.isAvailable() && times < retryTimes + 1; times++) {
+        for (; healthChecker.check() && times < retryTimes + 1; times++) {
             try {
                 command.accept();
                 le = null;
