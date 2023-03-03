@@ -39,5 +39,9 @@ import static org.apache.dubbo.common.extension.ExtensionScope.FRAMEWORK;
 @SPI(scope = FRAMEWORK)
 public interface ExceptionProcessor {
 
+    /**
+     *  Get an enhanced DecodeableRpcInvocation subclass to allow custom decode.
+     *  The parameters are the same as {@link DecodeableRpcInvocation}
+     */
     DecodeableRpcInvocation getRetryDecodeableRpcInvocation(FrameworkModel frameworkModel, Channel channel, Request req, InputStream is, byte proto);
 }
