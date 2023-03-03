@@ -318,6 +318,11 @@
             <artifactId>dubbo-spring-boot-starter</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-spring-boot-observability-starter</artifactId>
+        </dependency>
+
         <!-- test -->
         <dependency>
             <groupId>org.apache.dubbo</groupId>

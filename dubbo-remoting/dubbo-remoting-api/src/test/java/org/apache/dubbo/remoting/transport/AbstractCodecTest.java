@@ -56,6 +56,34 @@ class AbstractCodecTest {
     }
 
     @Test
+    void testCheckProviderPayload() throws Exception {
+        Channel channel = mock(Channel.class);
+        given(channel.getUrl()).willReturn(URL.valueOf("dubbo://1.1.1.1"));
+
+        AbstractCodec.checkPayload(channel, 1024 * 1024 + 1, 1024 * 1024);
+
+        try {
+            AbstractCodec.checkPayload(channel, 1024 * 1024, 1024 * 1024);
+        } catch (IOException expected) {
+            assertThat(expected.getMessage(), allOf(
+                containsString("Data length too large: "),
+                containsString("max payload: " + 1024 * 1024)
+            ));
+        }
+
+        try {
+            AbstractCodec.checkPayload(channel, 0, 15 * 1024 * 1024);
+        } catch (IOException expected) {
+            assertThat(expected.getMessage(), allOf(
+                containsString("Data length too large: "),
+                containsString("max payload: " + 8 * 1024 * 1024)
+            ));
+        }
+
+        verify(channel, VerificationModeFactory.atLeastOnce()).getUrl();
+    }
+
+    @Test
     void tesCheckPayloadMinusPayloadNoLimit() throws Exception {
         Channel channel = mock(Channel.class);
         given(channel.getUrl()).willReturn(URL.valueOf("dubbo://1.1.1.1?payload=-1"));
