@@ -172,9 +172,6 @@ public class ScopeClusterInvoker<T> implements ClusterInvoker<T>, ExporterChange
         }
         if (getUrl().getServiceKey().equals(exporter.getInvoker().getUrl().getServiceKey())
             && exporter.getInvoker().getUrl().getProtocol().equals(LOCAL_PROTOCOL)) {
-            boolean de = isDestroyed();
-            boolean available = getDirectory().isAvailable();
-            boolean adw = isAvailable();
             createInjvmInvoker();
             isExported.compareAndSet(false, true);
         }

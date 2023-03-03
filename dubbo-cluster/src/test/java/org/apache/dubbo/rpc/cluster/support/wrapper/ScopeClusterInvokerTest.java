@@ -151,6 +151,7 @@ public class ScopeClusterInvokerTest {
         exporters.add(exporter);
 
         Invoker<DemoService> cluster = getClusterInvoker(url);
+        invokers.add(cluster);
 
         //Configured with mock
         RpcInvocation invocation = new RpcInvocation();
