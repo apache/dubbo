@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.metrics.prometheus;
 
+import com.sun.net.httpserver.HttpServer;
 import io.micrometer.prometheus.PrometheusConfig;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
 import io.prometheus.client.exporter.BasicAuthHttpConnectionFactory;
@@ -27,9 +28,6 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metrics.report.AbstractMetricsReporter;
-import org.apache.dubbo.qos.command.BaseCommand;
-import org.apache.dubbo.qos.command.CommandContext;
-import org.apache.dubbo.qos.command.annotation.Cmd;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.io.IOException;
@@ -50,8 +48,7 @@ import static org.apache.dubbo.common.constants.MetricsConstants.PROMETHEUS_PUSH
 /**
  * Metrics reporter for prometheus.
  */
-@Cmd(name = "prometheusReport", summary = "online report")
-public class PrometheusMetricsReporter extends AbstractMetricsReporter implements BaseCommand {
+public class PrometheusMetricsReporter extends AbstractMetricsReporter {
 
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(PrometheusMetricsReporter.class);
 
@@ -68,17 +65,7 @@ public class PrometheusMetricsReporter extends AbstractMetricsReporter implement
         schedulePushJob();
     }
 
-    @Override
-    public String execute(CommandContext commandContext, String[] args) {
-        long begin = System.currentTimeMillis();
-        if (logger.isDebugEnabled()) {
-            logger.debug("scrape begin");
-        }
-        refreshData();
-        if (logger.isDebugEnabled()) {
-            logger.debug(String.format("scrape end,Elapsed Time：%s", System.currentTimeMillis() - begin));
-        }
-
+    public String getResponse() {
         return prometheusRegistry.scrape();
     }
 

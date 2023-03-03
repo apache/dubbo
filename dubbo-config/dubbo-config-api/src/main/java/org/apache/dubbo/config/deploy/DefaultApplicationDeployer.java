@@ -373,6 +373,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 MetricsReporterFactory metricsReporterFactory = getExtensionLoader(MetricsReporterFactory.class).getAdaptiveExtension();
                 MetricsReporter metricsReporter = metricsReporterFactory.createMetricsReporter(metricsConfig.toUrl());
                 metricsReporter.init();
+                applicationModel.getBeanFactory().registerBean(metricsReporter);
             }
         }
     }

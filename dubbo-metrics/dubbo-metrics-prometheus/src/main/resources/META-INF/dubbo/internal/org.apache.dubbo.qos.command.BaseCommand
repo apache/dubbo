@@ -1,1 +1,1 @@
-metrics=org.apache.dubbo.metrics.prometheus.PrometheusMetricsReporter
+metrics=org.apache.dubbo.metrics.prometheus.PrometheusMetricsReporterCmd
