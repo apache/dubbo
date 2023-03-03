@@ -160,7 +160,7 @@ public class DubboCodec extends ExchangeCodec {
                     ExceptionProcessor expProcessor = null;
                     if (StringUtils.isNotBlank(exPs)) {
                         existExpHandler = true;
-                        extensionLoader = channel.getUrl().getFrameworkModel().getExtensionLoader(ExceptionProcessor.class);
+                        extensionLoader = channel.getUrl().getOrDefaultFrameworkModel().getExtensionLoader(ExceptionProcessor.class);
                         expProcessor = extensionLoader.getOrDefaultExtension(exPs);
                     }
 
