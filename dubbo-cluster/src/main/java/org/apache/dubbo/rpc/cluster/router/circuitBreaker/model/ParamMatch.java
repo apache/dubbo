@@ -19,8 +19,10 @@ package org.apache.dubbo.rpc.cluster.router.circuitBreaker.model;
 import org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.match.StringMatch;
 
 public class ParamMatch {
+
     private String key;
-    private StringMatch value;
+
+    private CircuitBreakerValueMatch value;
 
     public String getKey() {
         return key;
@@ -30,11 +32,11 @@ public class ParamMatch {
         this.key = key;
     }
 
-    public StringMatch getValue() {
+    public CircuitBreakerValueMatch getValue() {
         return value;
     }
 
-    public void setValue(StringMatch value) {
+    public void setValue(CircuitBreakerValueMatch value) {
         this.value = value;
     }
 
@@ -43,5 +45,13 @@ public class ParamMatch {
             return getValue().isMatch(input);
         }
         return false;
+    }
+
+    @Override
+    public String toString() {
+        return "ParamMatch{" +
+            "key='" + key + '\'' +
+            ", value=" + value +
+            '}';
     }
 }

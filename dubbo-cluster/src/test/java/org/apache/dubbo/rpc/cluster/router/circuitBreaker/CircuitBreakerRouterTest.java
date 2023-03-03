@@ -101,7 +101,7 @@ class CircuitBreakerRouterTest {
 
         List<Invoker<String>> originInvokers = new ArrayList<>();
 
-        URL url1 = URL.valueOf("test://127.0.0.1:7777/DemoInterface?application=foo&dubbo.tag=tag2&match_key=value").setScopeModel(moduleModel);
+        URL url1 = URL.valueOf("test://127.0.0.1:7777/DemoInterface?application=foo&dubbo.circuitBreaker=tag2&match_key=value").setScopeModel(moduleModel);
         URL url2 = URL.valueOf("test://127.0.0.1:7778/DemoInterface?application=foo&match_key=value").setScopeModel(moduleModel);
         URL url3 = URL.valueOf("test://127.0.0.1:7779/DemoInterface?application=foo").setScopeModel(moduleModel);
         Invoker<String> invoker1 = new MockInvoker<>(url1, true);
@@ -111,7 +111,6 @@ class CircuitBreakerRouterTest {
         originInvokers.add(invoker2);
         originInvokers.add(invoker3);
         BitList<Invoker<String>> invokers = new BitList<>(originInvokers);
-
         RpcInvocation invocation = new RpcInvocation();
 //        invocation.setAttachment(TAG_KEY, "tag2");
         invocation.setAttachment(CIRCUIT_BREAKER_KEY, "tag2");
@@ -146,84 +145,60 @@ class CircuitBreakerRouterTest {
      */
     @Test
     void CircuitBreakerRuleParseTest() {
-        String circuitBreakerRuleConfig = "---\n" +
-            "force: false\n" +
-            "runtime: true\n" +
-            "enabled: false\n" +
-            "priority: 1\n" +
-            "key: demo-provider\n" +
+        String circuitBreakerRuleConfig = "" +
+            "configVersion: v3.0\n" +
+            "force: true\n" +
+            "enabled: true\n" +
+            "key: dubbo-consumer-1\n" +
             "circuitBreakers:\n" +
-            "  - name: tag1\n" +
-            "    addresses: null\n" +
-            "  - name: tag2\n" +
-            "    addresses: [\"30.5.120.37:20880\"]\n" +
-            "  - name: tag3\n" +
-            "    addresses: []\n" +
-            "  - name: tag4\n" +
-            "    addresses: ~\n" +
-            "...";
+            "  - name: rule-1\n" +
+            "    match:\n" +
+            "     - key: rule-1\n" +
+            "       value:\n" +
+            "            timeThreshold: 1000\n" +
+            "            errorThresholdPercentage: 10\n" +
+            "            sleepWindowThreshold: 5000\n" +
+            "  - name: rule-2\n" +
+            "    match:\n" +
+            "     - key: rule-2\n" +
+            "       value:\n" +
+            "            timeThreshold: 1000\n" +
+            "            errorThresholdPercentage: 10\n" +
+            "            sleepWindowThreshold: 5000";
 
         CircuitBreakerRule circuitBreakerRule = CircuitBreakerRuleParser.parse(circuitBreakerRuleConfig);
         CircuitBreakerRouter<?> router = Mockito.mock(CircuitBreakerRouter.class);
         Mockito.when(router.getInvokers()).thenReturn(BitList.emptyList());
         circuitBreakerRule.init(router);
-
         // assert tags
-        assert circuitBreakerRule.getKey().equals("demo-provider");
-        assert circuitBreakerRule.getPriority() == 1;
-        assert circuitBreakerRule.getCircuitBreakerNames().contains("tag1");
-        assert circuitBreakerRule.getCircuitBreakerNames().contains("tag2");
-        assert circuitBreakerRule.getCircuitBreakerNames().contains("tag3");
-        assert circuitBreakerRule.getCircuitBreakerNames().contains("tag4");
-        // assert addresses
-        assert circuitBreakerRule.getAddresses().contains("30.5.120.37:20880");
-        assert circuitBreakerRule.getCircuitBreakernameToAddresses().get("tag1") == null;
-        assert circuitBreakerRule.getCircuitBreakernameToAddresses().get("tag2").size() == 1;
-        assert circuitBreakerRule.getCircuitBreakernameToAddresses().get("tag3") == null;
-        assert circuitBreakerRule.getCircuitBreakernameToAddresses().get("tag4") == null;
-        assert circuitBreakerRule.getAddresses().size() == 1;
+        assert circuitBreakerRule.getKey().equals("dubbo-consumer-1");
+        assert circuitBreakerRule.getCircuitBreakerNames().contains("rule-1");
+        assert circuitBreakerRule.getCircuitBreakerNames().contains("rule-2");
     }
 
 
     @Test
     void CircuitBreakerRuleParseTestV3() {
-        String circuitBreakerRuleConfig = "---\n" +
+        String circuitBreakerRuleConfig = "" +
             "configVersion: v3.0\n" +
-            "force: false\n" +
-            "runtime: true\n" +
+            "force: true\n" +
             "enabled: true\n" +
-            "priority: 1\n" +
-            "key: demo-provider\n" +
+            "key: dubbo-consumer-1\n" +
             "circuitBreakers:\n" +
-            "  - name: tag1\n" +
+            "  - name: rule-1\n" +
             "    match:\n" +
-            "    - key: match_key1\n" +
-            "      value:\n" +
-            "       exact: value1\n" +
-            "  - name: tag2\n" +
-            "    addresses:\n" +
-            "     - \"10.20.3.3:20880\"\n" +
-            "     - \"10.20.3.4:20880\"\n" +
+            "     - key: rule-1\n" +
+            "       value:\n" +
+            "            timeThreshold: 1000\n" +
+            "            errorThresholdPercentage: 10\n" +
+            "            sleepWindowThreshold: 5000\n" +
+            "  - name: rule-2\n" +
             "    match:\n" +
-            "    - key: match_key2\n" +
-            "      value:\n" +
-            "       exact: value2\n" +
-            "  - name: tag3\n" +
-            "    match:\n" +
-            "    - key: match_key2\n" +
-            "      value:\n" +
-            "       exact: value2\n" +
-            "  - name: tag4\n" +
-            "    match:\n" +
-            "    - key: not_exist\n" +
-            "      value:\n" +
-            "       exact: not_exist\n" +
-            "  - name: tag5\n" +
-            "    match:\n" +
-            "    - key: match_key2\n" +
-            "      value:\n" +
-            "       wildcard: \"*\"\n" +
-            "...";
+            "     - key: rule-2\n" +
+            "       value:\n" +
+            "            timeThreshold: 1000\n" +
+            "            errorThresholdPercentage: 10\n" +
+            "            sleepWindowThreshold: 5000";
 
         CircuitBreakerRule circuitBreakerRule = CircuitBreakerRuleParser.parse(circuitBreakerRuleConfig);
         CircuitBreakerRouter<String> router = Mockito.mock(CircuitBreakerRouter.class);
@@ -231,21 +206,10 @@ class CircuitBreakerRouterTest {
         circuitBreakerRule.init(router);
 
         // assert tags
-        assert circuitBreakerRule.getKey().equals("demo-provider");
-        assert circuitBreakerRule.getPriority() == 1;
-        assert circuitBreakerRule.getCircuitBreakerNames().contains("tag1");
-        assert circuitBreakerRule.getCircuitBreakerNames().contains("tag2");
-        assert circuitBreakerRule.getCircuitBreakerNames().contains("tag3");
-        assert circuitBreakerRule.getCircuitBreakerNames().contains("tag4");
-        // assert addresses
-        assert circuitBreakerRule.getAddresses().size() == 2;
-        assert circuitBreakerRule.getAddresses().contains("10.20.3.3:20880");
-        assert circuitBreakerRule.getCircuitBreakernameToAddresses().get("tag1").size() == 2;
-        assert circuitBreakerRule.getCircuitBreakernameToAddresses().get("tag2").size() == 2;
-        assert circuitBreakerRule.getCircuitBreakernameToAddresses().get("tag3").size() == 1;
-        assert circuitBreakerRule.getCircuitBreakernameToAddresses().get("tag5").size() == 1;
-        assert circuitBreakerRule.getCircuitBreakernameToAddresses().get("tag4") == null;
-
+        assert circuitBreakerRule.getKey().equals("dubbo-consumer-1");
+//        assert circuitBreakerRule.getPriority() == 1;
+        assert circuitBreakerRule.getCircuitBreakerNames().contains("rule-1");
+        assert circuitBreakerRule.getCircuitBreakerNames().contains("rule-2");
     }
 
     public BitList<Invoker<String>> getInvokers() {
@@ -260,20 +224,26 @@ class CircuitBreakerRouterTest {
     }
 
     private CircuitBreakerRule getCircuitBreakerRule() {
-        String circuitBreakerRuleConfig = "---\n" +
+        String circuitBreakerRuleConfig = "" +
             "configVersion: v3.0\n" +
-            "force: false\n" +
-            "runtime: true\n" +
+            "force: true\n" +
             "enabled: true\n" +
-            "priority: 1\n" +
-            "key: demo-provider\n" +
+            "key: dubbo-consumer-1\n" +
             "circuitBreakers:\n" +
-            "  - name: tag2\n" +
+            "  - name: rule-1\n" +
             "    match:\n" +
-            "    - key: match_key\n" +
-            "      value:\n" +
-            "       exact: value\n" +
-            "...";
+            "     - key: rule-1\n" +
+            "       value:\n" +
+            "            timeThreshold: 1000\n" +
+            "            errorThresholdPercentage: 10\n" +
+            "            sleepWindowThreshold: 5000\n" +
+            "  - name: rule-2\n" +
+            "    match:\n" +
+            "     - key: rule-2\n" +
+            "       value:\n" +
+            "            timeThreshold: 1000\n" +
+            "            errorThresholdPercentage: 10\n" +
+            "            sleepWindowThreshold: 5000";
 
         CircuitBreakerRule circuitBreakerRule = CircuitBreakerRuleParser.parse(circuitBreakerRuleConfig);
         return circuitBreakerRule;

@@ -54,10 +54,10 @@ public class CircuitBreaker {
             }
         }
 
-        Object addresses = map.get("addresses");
-        if (addresses != null && List.class.isAssignableFrom(addresses.getClass())) {
-            circuitBreaker.setAddresses(((List<Object>) addresses).stream().map(String::valueOf).collect(Collectors.toList()));
-        }
+//        Object addresses = map.get("addresses");
+//        if (addresses != null && List.class.isAssignableFrom(addresses.getClass())) {
+//            circuitBreaker.setAddresses(((List<Object>) addresses).stream().map(String::valueOf).collect(Collectors.toList()));
+//        }
 
         return circuitBreaker;
     }
