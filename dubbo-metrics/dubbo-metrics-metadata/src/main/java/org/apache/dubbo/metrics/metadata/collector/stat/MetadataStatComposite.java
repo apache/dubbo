@@ -19,12 +19,15 @@ package org.apache.dubbo.metrics.metadata.collector.stat;
 
 import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.metrics.collector.MetricsCollector;
+import org.apache.dubbo.metrics.metadata.event.MetadataEvent;
 import org.apache.dubbo.metrics.model.ApplicationMetric;
 import org.apache.dubbo.metrics.model.MetricsCategory;
 import org.apache.dubbo.metrics.model.MetricsKey;
 import org.apache.dubbo.metrics.model.MetricsKeyWrapper;
+import org.apache.dubbo.metrics.model.container.AtomicLongContainer;
+import org.apache.dubbo.metrics.model.container.LongAccumulatorContainer;
+import org.apache.dubbo.metrics.model.container.LongContainer;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
-import org.apache.dubbo.metrics.metadata.event.MetadataEvent;
 import org.apache.dubbo.metrics.report.MetricsExport;
 
 import java.util.ArrayList;
@@ -33,9 +36,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.LongAccumulator;
-import java.util.function.BiConsumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -123,93 +123,5 @@ public class MetadataStatComposite implements MetricsExport {
     public GaugeMetricSample convertToSample(String applicationName, MetadataEvent.Type type, MetricsCategory category, AtomicLong targetNumber) {
         return new GaugeMetricSample<>(type.getMetricsKey(), ApplicationMetric.getTagsByName(applicationName), category, targetNumber, AtomicLong::get);
     }
-
-
-    /**
-     * Collect Number type data
-     *
-     * @param <NUMBER>
-     */
-    public static class LongContainer<NUMBER extends Number> extends ConcurrentHashMap<String, NUMBER> {
-
-        /**
-         * Provide the metric type name
-         */
-        private final MetricsKeyWrapper metricsKeyWrapper;
-        /**
-         * The initial value corresponding to the key is generally 0 of different data types
-         */
-        private final Function<String, NUMBER> initFunc;
-        /**
-         * Statistical data calculation function, which can be self-increment, self-decrement, or more complex avg function
-         */
-        private final BiConsumer<Long, NUMBER> consumerFunc;
-        /**
-         * Data output function required by  {@link GaugeMetricSample GaugeMetricSample}
-         */
-        private Function<String, Long> valueSupplier;
-
-
-        public LongContainer(MetricsKeyWrapper metricsKeyWrapper, Supplier<NUMBER> initFunc, BiConsumer<Long, NUMBER> consumerFunc) {
-            this.metricsKeyWrapper = metricsKeyWrapper;
-            this.initFunc = s -> initFunc.get();
-            this.consumerFunc = consumerFunc;
-            this.valueSupplier = k -> this.get(k).longValue();
-        }
-
-        public boolean specifyType(String type) {
-            return type.equals(getMetricsKeyWrapper().getType());
-        }
-
-        public MetricsKeyWrapper getMetricsKeyWrapper() {
-            return metricsKeyWrapper;
-        }
-
-        public boolean isKeyWrapper(MetricsKey metricsKey, String registryOpType) {
-            return metricsKeyWrapper.isKey(metricsKey,registryOpType);
-        }
-
-        public Function<String, NUMBER> getInitFunc() {
-            return initFunc;
-        }
-
-        public BiConsumer<Long, NUMBER> getConsumerFunc() {
-            return consumerFunc;
-        }
-
-        public Function<String, Long> getValueSupplier() {
-            return valueSupplier;
-        }
-
-        public void setValueSupplier(Function<String, Long> valueSupplier) {
-            this.valueSupplier = valueSupplier;
-        }
-
-        @Override
-        public String toString() {
-            return "LongContainer{" +
-                "metricsKeyWrapper=" + metricsKeyWrapper +
-                '}';
-        }
-    }
-
-    public static class AtomicLongContainer extends LongContainer<AtomicLong> {
-
-        public AtomicLongContainer(MetricsKeyWrapper metricsKeyWrapper) {
-            super(metricsKeyWrapper, AtomicLong::new, (responseTime, longAccumulator) -> longAccumulator.set(responseTime));
-        }
-
-        public AtomicLongContainer(MetricsKeyWrapper metricsKeyWrapper, BiConsumer<Long, AtomicLong> consumerFunc) {
-            super(metricsKeyWrapper, AtomicLong::new, consumerFunc);
-        }
-
-    }
-
-    public static class LongAccumulatorContainer extends LongContainer<LongAccumulator> {
-        public LongAccumulatorContainer(MetricsKeyWrapper metricsKeyWrapper, LongAccumulator accumulator) {
-            super(metricsKeyWrapper, () -> accumulator, (responseTime, longAccumulator) -> longAccumulator.accumulate(responseTime));
-        }
-    }
-
 
 }
