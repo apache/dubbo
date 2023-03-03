@@ -53,6 +53,12 @@ public class ScopeClusterInvoker<T> implements ClusterInvoker<T>, ExporterChange
     private volatile Invoker<T> injvmInvoker;
     private volatile InjvmExporterListener injvmExporterListener;
 
+    private Boolean peer;
+
+    private String scope;
+
+    private String injvm;
+
     private final Object createLock = new Object();
 
 
@@ -64,13 +70,17 @@ public class ScopeClusterInvoker<T> implements ClusterInvoker<T>, ExporterChange
     }
 
     private void init() {
+        peer = (Boolean) getUrl().getAttribute(PEER_KEY);
+        scope = getUrl().getParameter(SCOPE_KEY);
+        injvm = getUrl().getParameter(LOCAL_PROTOCOL);
         if (injvmInvoker == null && LOCAL_PROTOCOL.equals(getRegistryUrl().getProtocol())) {
             isExported.compareAndSet(false, true);
             injvmInvoker = invoker;
+        } else {
+            protocolSPI = getUrl().getApplicationModel().getExtensionLoader(Protocol.class).getAdaptiveExtension();
+            injvmExporterListener = (InjvmExporterListener) getUrl().getApplicationModel().getExtensionLoader(ExporterListener.class).getExtension(LOCAL_PROTOCOL);
+            injvmExporterListener.addExporterChangeListener(this, getUrl().getServiceKey());
         }
-        protocolSPI = getUrl().getApplicationModel().getExtensionLoader(Protocol.class).getAdaptiveExtension();
-        injvmExporterListener = (InjvmExporterListener) getUrl().getApplicationModel().getExtensionLoader(ExporterListener.class).getExtension("injvm");
-        injvmExporterListener.addExporterChangeListener(this, getUrl().getServiceKey());
     }
 
     @Override
@@ -95,18 +105,12 @@ public class ScopeClusterInvoker<T> implements ClusterInvoker<T>, ExporterChange
 
     @Override
     public boolean isAvailable() {
-        if (injvmExporterListener == null) {
-            injvmExporterListener = (InjvmExporterListener) getUrl().getApplicationModel().getExtensionLoader(ExporterListener.class).getExtension(LOCAL_PROTOCOL);
-        }
-        injvmExporterListener.addExporterChangeListener(this, getUrl().getServiceKey());
         return isExported.get() || directory.isAvailable();
     }
 
     @Override
     public void destroy() {
-        if (injvmExporterListener != null) {
-            injvmExporterListener.removeExporterChangeListener(getUrl().getServiceKey());
-        }
+        injvmExporterListener.removeExporterChangeListener(getUrl().getServiceKey());
         this.invoker.destroy();
     }
 
@@ -117,12 +121,10 @@ public class ScopeClusterInvoker<T> implements ClusterInvoker<T>, ExporterChange
 
     @Override
     public Result invoke(Invocation invocation) throws RpcException {
-        Boolean peer = (Boolean) getUrl().getAttribute(PEER_KEY);
         if (peer != null && peer) {
             return invoker.invoke(invocation);
         }
-        String scope = getUrl().getParameter(SCOPE_KEY);
-        if (shouldInvokeInjvm(getUrl().getParameter(LOCAL_PROTOCOL), scope)) {
+        if (shouldInvokeInjvm(injvm, scope)) {
             return injvmInvoker.invoke(invocation);
         }
         return invoker.invoke(invocation);
@@ -150,11 +152,17 @@ public class ScopeClusterInvoker<T> implements ClusterInvoker<T>, ExporterChange
     }
 
 
-    private Invoker<T> createInjvmInvoker() {
-        URL url = new ServiceConfigURL(LOCAL_PROTOCOL, NetUtils.getLocalHost(), getUrl().getPort(), getInterface().getName(), getUrl().getParameters());
-        url = url.setScopeModel(getUrl().getScopeModel());
-        url = url.setServiceModel(getUrl().getServiceModel());
-        return protocolSPI.refer(getInterface(), url);
+    private void createInjvmInvoker() {
+        if (injvmInvoker == null) {
+            synchronized (createLock) {
+                if (injvmInvoker == null) {
+                    URL url = new ServiceConfigURL(LOCAL_PROTOCOL, NetUtils.getLocalHost(), getUrl().getPort(), getInterface().getName(), getUrl().getParameters());
+                    url = url.setScopeModel(getUrl().getScopeModel());
+                    url = url.setServiceModel(getUrl().getServiceModel());
+                    injvmInvoker = protocolSPI.refer(getInterface(), url);
+                }
+            }
+        }
     }
 
     @Override
@@ -164,16 +172,11 @@ public class ScopeClusterInvoker<T> implements ClusterInvoker<T>, ExporterChange
         }
         if (getUrl().getServiceKey().equals(exporter.getInvoker().getUrl().getServiceKey())
             && exporter.getInvoker().getUrl().getProtocol().equals(LOCAL_PROTOCOL)) {
+            boolean de = isDestroyed();
+            boolean available = getDirectory().isAvailable();
+            boolean adw = isAvailable();
+            createInjvmInvoker();
             isExported.compareAndSet(false, true);
-        }
-        if (isExported.get() && injvmInvoker == null) {
-            if (injvmInvoker == null) {
-                synchronized (createLock) {
-                    if (injvmInvoker == null) {
-                        injvmInvoker = createInjvmInvoker();
-                    }
-                }
-            }
         }
     }
 
@@ -181,7 +184,15 @@ public class ScopeClusterInvoker<T> implements ClusterInvoker<T>, ExporterChange
     public void onExporterChangeUnExport(Exporter<?> exporter) {
         if (getUrl().getServiceKey().equals(exporter.getInvoker().getUrl().getServiceKey())
             && exporter.getInvoker().getUrl().getProtocol().equals(LOCAL_PROTOCOL)) {
+            destroyInjvmInvoker();
             isExported.compareAndSet(true, false);
+        }
+    }
+
+    private void destroyInjvmInvoker() {
+        if (injvmInvoker != null) {
+            injvmInvoker.destroy();
+            injvmInvoker = null;
         }
     }
 

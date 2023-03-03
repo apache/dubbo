@@ -43,7 +43,7 @@ public class InjvmExporterListener extends ExporterListenerAdapter {
     public void unexported(Exporter<?> exporter) throws RpcException {
         String serviceKey = exporter.getInvoker().getUrl().getServiceKey();
         exporters.remove(serviceKey, exporter);
-        ExporterChangeListener exporterChangeListener = exporterChangeListeners.remove(serviceKey);
+        ExporterChangeListener exporterChangeListener = exporterChangeListeners.get(serviceKey);
         if (exporterChangeListener != null) {
             exporterChangeListener.onExporterChangeUnExport(exporter);
         }
