@@ -17,7 +17,6 @@
 
 package org.apache.dubbo.metrics.prometheus;
 
-import com.sun.net.httpserver.HttpServer;
 import io.micrometer.prometheus.PrometheusConfig;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
 import io.prometheus.client.exporter.BasicAuthHttpConnectionFactory;
