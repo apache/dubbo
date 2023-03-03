@@ -35,6 +35,7 @@ import org.apache.dubbo.rpc.listener.InjvmExporterListener;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
+import static org.apache.dubbo.rpc.Constants.LOCAL_KEY;
 import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
 import static org.apache.dubbo.rpc.Constants.SCOPE_KEY;
 import static org.apache.dubbo.rpc.Constants.SCOPE_REMOTE;
@@ -53,11 +54,9 @@ public class ScopeClusterInvoker<T> implements ClusterInvoker<T>, ExporterChange
     private volatile Invoker<T> injvmInvoker;
     private volatile InjvmExporterListener injvmExporterListener;
 
-    private Boolean peer;
+    private boolean peerFlag;
 
-    private String scope;
-
-    private String injvm;
+    private boolean injvmFlag;
 
     private final Object createLock = new Object();
 
@@ -70,13 +69,24 @@ public class ScopeClusterInvoker<T> implements ClusterInvoker<T>, ExporterChange
     }
 
     private void init() {
-        peer = (Boolean) getUrl().getAttribute(PEER_KEY);
-        scope = getUrl().getParameter(SCOPE_KEY);
-        injvm = getUrl().getParameter(LOCAL_PROTOCOL);
+        Boolean peer = (Boolean) getUrl().getAttribute(PEER_KEY);
+        String isInjvm = getUrl().getParameter(LOCAL_PROTOCOL);
+        if (peer != null && peer) {
+            peerFlag = true;
+            return;
+        }
         if (injvmInvoker == null && LOCAL_PROTOCOL.equals(getRegistryUrl().getProtocol())) {
-            isExported.compareAndSet(false, true);
             injvmInvoker = invoker;
-        } else {
+            isExported.compareAndSet(false, true);
+            injvmFlag = true;
+            return;
+        }
+        if (Boolean.TRUE.toString().equals(isInjvm) || LOCAL_KEY.equalsIgnoreCase(getUrl().getParameter(SCOPE_KEY))) {
+            injvmFlag = true;
+        } else if (isInjvm == null) {
+            injvmFlag = isNotRemoteOrGeneric();
+        }
+        if (injvmFlag) {
             protocolSPI = getUrl().getApplicationModel().getExtensionLoader(Protocol.class).getAdaptiveExtension();
             injvmExporterListener = (InjvmExporterListener) getUrl().getApplicationModel().getExtensionLoader(ExporterListener.class).getExtension(LOCAL_PROTOCOL);
             injvmExporterListener.addExporterChangeListener(this, getUrl().getServiceKey());
@@ -110,7 +120,9 @@ public class ScopeClusterInvoker<T> implements ClusterInvoker<T>, ExporterChange
 
     @Override
     public void destroy() {
-        injvmExporterListener.removeExporterChangeListener(getUrl().getServiceKey());
+        if (injvmExporterListener != null) {
+            injvmExporterListener.removeExporterChangeListener(getUrl().getServiceKey());
+        }
         this.invoker.destroy();
     }
 
@@ -121,31 +133,22 @@ public class ScopeClusterInvoker<T> implements ClusterInvoker<T>, ExporterChange
 
     @Override
     public Result invoke(Invocation invocation) throws RpcException {
-        if (peer != null && peer) {
+        if (peerFlag) {
             return invoker.invoke(invocation);
         }
-        if (shouldInvokeInjvm(injvm, scope)) {
+        if (injvmFlag && isInjvmExported()) {
             return injvmInvoker.invoke(invocation);
         }
         return invoker.invoke(invocation);
     }
 
-    private boolean shouldInvokeInjvm(String isInjvm, String scope) {
-        if (Boolean.TRUE.toString().equals(isInjvm)) {
-            return isInjvmExported(scope);
-        } else if (isInjvm == null) {
-            return isInjvmExportedAndNotRemoteOrGeneric(scope);
-        }
-        return false;
+    private boolean isNotRemoteOrGeneric() {
+        return !SCOPE_REMOTE.equalsIgnoreCase(getUrl().getParameter(SCOPE_KEY)) &&
+            !getUrl().getParameter(GENERIC_KEY, false);
     }
 
-    private boolean isInjvmExportedAndNotRemoteOrGeneric(String scope) {
-        return !SCOPE_REMOTE.equalsIgnoreCase(scope) &&
-            !getUrl().getParameter(GENERIC_KEY, false) && isInjvmExported(scope);
-    }
-
-    private boolean isInjvmExported(String scope) {
-        if (!isExported.get() && SCOPE_LOCAL.equalsIgnoreCase(scope)) {
+    private boolean isInjvmExported() {
+        if (!isExported.get() && SCOPE_LOCAL.equalsIgnoreCase(getUrl().getParameter(SCOPE_KEY))) {
             throw new RpcException("Local service has not been exposed yet!");
         }
         return isExported.get();
