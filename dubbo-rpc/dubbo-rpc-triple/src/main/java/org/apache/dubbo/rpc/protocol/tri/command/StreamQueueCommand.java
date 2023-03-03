@@ -17,23 +17,31 @@
 
 package org.apache.dubbo.rpc.protocol.tri.command;
 
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelPromise;
-import io.netty.handler.codec.http2.DefaultHttp2DataFrame;
+import io.netty.channel.Channel;
+import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.rpc.protocol.tri.stream.TripleStreamChannelFuture;
 
-public class EndStreamQueueCommand extends StreamQueueCommand {
+public abstract class StreamQueueCommand extends QueuedCommand {
 
-    public EndStreamQueueCommand(TripleStreamChannelFuture streamChannelFuture) {
-        super(streamChannelFuture);
-    }
+    protected final TripleStreamChannelFuture streamChannelFuture;
 
-    public static EndStreamQueueCommand create(TripleStreamChannelFuture streamChannelFuture) {
-        return new EndStreamQueueCommand(streamChannelFuture);
+    protected StreamQueueCommand(TripleStreamChannelFuture streamChannelFuture) {
+        Assert.notNull(streamChannelFuture, "streamChannelFuture cannot be null.");
+        this.streamChannelFuture = streamChannelFuture;
+        this.promise(streamChannelFuture.getParentChannel().newPromise());
     }
 
     @Override
-    public void doSend(ChannelHandlerContext ctx, ChannelPromise promise) {
-        ctx.write(new DefaultHttp2DataFrame(true), promise);
+    public void run(Channel channel) {
+        if (streamChannelFuture.isSuccess()) {
+            super.run(channel);
+            return;
+        }
+        promise().setFailure(streamChannelFuture.cause());
+    }
+
+    @Override
+    public Channel channel() {
+        return this.streamChannelFuture.getNow();
     }
 }
