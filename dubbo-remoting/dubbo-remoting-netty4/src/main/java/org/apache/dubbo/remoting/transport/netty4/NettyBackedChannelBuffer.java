@@ -22,6 +22,7 @@ import org.apache.dubbo.remoting.buffer.ChannelBufferFactory;
 import org.apache.dubbo.remoting.buffer.ChannelBuffers;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.util.ReferenceCountUtil;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -446,5 +447,10 @@ public class NettyBackedChannelBuffer implements ChannelBuffer {
     @Override
     public int compareTo(ChannelBuffer o) {
         return ChannelBuffers.compare(this, o);
+    }
+
+    @Override
+    public void release() {
+        ReferenceCountUtil.safeRelease(buffer);
     }
 }
