@@ -41,7 +41,13 @@ public abstract class QueuedCommand {
 
     public void run(Channel channel) {
         if (channel.isActive()) {
-            channel.write(this, promise);
+            channel.write(this).addListener(future -> {
+                if (future.isSuccess()) {
+                    promise.setSuccess();
+                } else {
+                    promise.setFailure(future.cause());
+                }
+            });
         } else {
             promise.trySuccess();
         }
