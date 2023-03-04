@@ -19,7 +19,7 @@ package org.apache.dubbo.metrics;
 
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
-import org.apache.dubbo.metrics.collector.TimerMetricsCollector;
+import org.apache.dubbo.metrics.collector.RtHistogramMetricsCollector;
 import org.apache.dubbo.metrics.event.GlobalMetricsEventMulticaster;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -38,7 +38,6 @@ public class MetricsScopeModelInitializer implements ScopeModelInitializer {
         ScopeBeanFactory beanFactory = applicationModel.getBeanFactory();
         beanFactory.registerBean(DefaultMetricsCollector.class);
         beanFactory.registerBean(GlobalMetricsEventMulticaster.class);
-        beanFactory.registerBean(TimerMetricsCollector.class);
     }
 
     @Override

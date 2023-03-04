@@ -50,6 +50,7 @@ import org.springframework.context.annotation.Configuration;
         "dubbo.metrics.aggregation.enabled=true",
         "dubbo.metrics.aggregation.bucket-num=5",
         "dubbo.metrics.aggregation.time-window-seconds=120",
+        "dubbo.metrics.rtHistogram.enabled=true",
         "dubbo.metadata-report.address=${zookeeper.connection.address.2}"
     },
     classes = {

@@ -33,6 +33,7 @@ import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.nested.AggregationConfig;
 import org.apache.dubbo.config.nested.PrometheusConfig;
+import org.apache.dubbo.config.nested.RtHistogramConfig;
 import org.apache.dubbo.config.spring.Constants;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.ServiceBean;
@@ -265,6 +266,10 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                 AggregationConfig aggregation = new AggregationConfig();
                 assignProperties(aggregation, child, parserContext);
                 beanDefinition.getPropertyValues().addPropertyValue("aggregation", aggregation);
+            }else if("rtHistogram".equals(child.getNodeName()) || "rtHistogram".equals(child.getLocalName())){
+                RtHistogramConfig rtHistogram = new RtHistogramConfig();
+                assignProperties(rtHistogram, child, parserContext);
+                beanDefinition.getPropertyValues().addPropertyValue("rtHistogram", rtHistogram);
             } else if ("prometheus-exporter".equals(child.getNodeName()) || "prometheus-exporter".equals(child.getLocalName())) {
                 if (prometheus == null) {
                     prometheus = new PrometheusConfig();

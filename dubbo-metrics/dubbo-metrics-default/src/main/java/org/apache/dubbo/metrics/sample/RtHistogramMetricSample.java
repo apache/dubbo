@@ -22,13 +22,13 @@ import org.apache.dubbo.metrics.model.sample.MetricSample;
 
 import java.util.Map;
 
-public class TimerMetricSample extends MetricSample {
+public class RtHistogramMetricSample extends MetricSample {
 
-    public TimerMetricSample(String name, String description, Map<String, String> tags, MetricsCategory category) {
+    public RtHistogramMetricSample(String name, String description, Map<String, String> tags, MetricsCategory category) {
         super(name, description, tags, Type.TIMER, category);
     }
 
-    public TimerMetricSample(String name, String description, Map<String, String> tags, Type type, MetricsCategory category, String baseUnit) {
+    public RtHistogramMetricSample(String name, String description, Map<String, String> tags, Type type, MetricsCategory category, String baseUnit) {
         super(name, description, tags, type, category, baseUnit);
     }
 }
