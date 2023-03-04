@@ -102,8 +102,8 @@ public class CircuitBreakerRouter<T> extends AbstractStateRouter<T> implements C
         }
 
         BitList<Invoker<T>> result = invokers;
-        String tag = StringUtils.isEmpty(invocation.getAttachment(TAG_KEY)) ? url.getParameter(TAG_KEY) :
-            invocation.getAttachment(TAG_KEY);
+        String tag = StringUtils.isEmpty(invocation.getAttachment(CIRCUIT_BREAKER_KEY)) ? url.getParameter(CIRCUIT_BREAKER_KEY) :
+            invocation.getAttachment(CIRCUIT_BREAKER_KEY);
 
         // if we are requesting for a Provider with a specific tag
         if (StringUtils.isNotEmpty(tag)) {
@@ -121,7 +121,7 @@ public class CircuitBreakerRouter<T> extends AbstractStateRouter<T> implements C
             } else {
                 // dynamic tag group doesn't have any item about the requested app OR it's null after filtered by
                 // dynamic tag group but force=false. check static tag
-                result = filterInvoker(invokers, invoker -> tag.equals(invoker.getUrl().getParameter(TAG_KEY)));
+                result = filterInvoker(invokers, invoker -> tag.equals(invoker.getUrl().getParameter(CIRCUIT_BREAKER_KEY)));
             }
             // If there's no tagged providers that can match the current tagged request. force.tag is set by default
             // to false, which means it will invoke any providers without a tag unless it's explicitly disallowed.

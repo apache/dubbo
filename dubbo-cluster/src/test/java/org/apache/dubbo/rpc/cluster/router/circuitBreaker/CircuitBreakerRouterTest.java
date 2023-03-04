@@ -101,8 +101,8 @@ class CircuitBreakerRouterTest {
 
         List<Invoker<String>> originInvokers = new ArrayList<>();
 
-        URL url1 = URL.valueOf("test://127.0.0.1:7777/DemoInterface?application=foo&dubbo.circuitBreaker=tag2&match_key=value").setScopeModel(moduleModel);
-        URL url2 = URL.valueOf("test://127.0.0.1:7778/DemoInterface?application=foo&match_key=value").setScopeModel(moduleModel);
+        URL url1 = URL.valueOf("test://127.0.0.1:7777/DemoInterface?application=foo&dubbo.circuitBreaker=tag1").setScopeModel(moduleModel);
+        URL url2 = URL.valueOf("test://127.0.0.1:7778/DemoInterface?application=foo").setScopeModel(moduleModel);
         URL url3 = URL.valueOf("test://127.0.0.1:7779/DemoInterface?application=foo").setScopeModel(moduleModel);
         Invoker<String> invoker1 = new MockInvoker<>(url1, true);
         Invoker<String> invoker2 = new MockInvoker<>(url2, true);
@@ -113,13 +113,13 @@ class CircuitBreakerRouterTest {
         BitList<Invoker<String>> invokers = new BitList<>(originInvokers);
         RpcInvocation invocation = new RpcInvocation();
 //        invocation.setAttachment(TAG_KEY, "tag2");
-        invocation.setAttachment(CIRCUIT_BREAKER_KEY, "tag2");
+        invocation.setAttachment(CIRCUIT_BREAKER_KEY, "tag1");
         CircuitBreakerRule rule = getCircuitBreakerRule();
         Mockito.when(router.getInvokers()).thenReturn(invokers);
         rule.init(router);
         router.setCircuitBreakerRule(rule);
         List<Invoker<String>> filteredInvokers = router.route(invokers, invokers.get(0).getUrl(), invocation, false, new Holder<>());
-        Assertions.assertEquals(2, filteredInvokers.size());
+        Assertions.assertEquals(1, filteredInvokers.size());
 //        Assertions.(invoker1, filteredInvokers.get(0));
     }
 
@@ -144,7 +144,7 @@ class CircuitBreakerRouterTest {
      *           exact: gray
      */
     @Test
-    void CircuitBreakerRuleParseTest() {
+    void circuitBreakerRuleParseTest() {
         String circuitBreakerRuleConfig = "" +
             "configVersion: v3.0\n" +
             "force: true\n" +
@@ -178,7 +178,7 @@ class CircuitBreakerRouterTest {
 
 
     @Test
-    void CircuitBreakerRuleParseTestV3() {
+    void circuitBreakerRuleParseTestV3() {
         String circuitBreakerRuleConfig = "" +
             "configVersion: v3.0\n" +
             "force: true\n" +
@@ -232,14 +232,14 @@ class CircuitBreakerRouterTest {
             "circuitBreakers:\n" +
             "  - name: rule-1\n" +
             "    match:\n" +
-            "     - key: rule-1\n" +
+            "     - key: rule-1-key\n" +
             "       value:\n" +
             "            timeThreshold: 1000\n" +
             "            errorThresholdPercentage: 10\n" +
             "            sleepWindowThreshold: 5000\n" +
             "  - name: rule-2\n" +
             "    match:\n" +
-            "     - key: rule-2\n" +
+            "     - key: rule-2-key\n" +
             "       value:\n" +
             "            timeThreshold: 1000\n" +
             "            errorThresholdPercentage: 10\n" +
