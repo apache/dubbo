@@ -538,7 +538,7 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
     }
 
     private <T extends AbstractConfig> T createConfig(Class<T> cls, ScopeModel scopeModel) throws ReflectiveOperationException {
-        T config = cls.newInstance();
+        T config = cls.getDeclaredConstructor().newInstance();
         config.setScopeModel(scopeModel);
         return config;
     }

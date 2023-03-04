@@ -33,6 +33,7 @@ import java.util.Map;
  */
 public class DefaultMetricsService implements MetricsService {
 
+    @SuppressWarnings("rawtypes")
     protected final List<MetricsCollector> collectors = new ArrayList<>();
 
     public DefaultMetricsService(ApplicationModel applicationModel) {
@@ -52,7 +53,7 @@ public class DefaultMetricsService implements MetricsService {
     @Override
     public Map<MetricsCategory, List<MetricsEntity>> getMetricsByCategories(String serviceUniqueName, String methodName, Class<?>[] parameterTypes, List<MetricsCategory> categories) {
         Map<MetricsCategory, List<MetricsEntity>> result = new HashMap<>();
-        for (MetricsCollector collector : collectors) {
+        for (MetricsCollector<?> collector : collectors) {
             List<MetricSample> samples = collector.collect();
             for (MetricSample sample : samples) {
                 if (categories.contains(sample.getCategory())) {
@@ -65,6 +66,7 @@ public class DefaultMetricsService implements MetricsService {
         return result;
     }
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
     private MetricsEntity sampleToEntity(MetricSample sample) {
         MetricsEntity entity = new MetricsEntity();
 
@@ -74,7 +76,7 @@ public class DefaultMetricsService implements MetricsService {
         switch (sample.getType()) {
             case GAUGE:
                 GaugeMetricSample gaugeSample = (GaugeMetricSample) sample;
-                entity.setValue(gaugeSample.getSupplier().get());
+                entity.setValue(gaugeSample.getApply().applyAsDouble(gaugeSample.getValue()));
                 break;
             case COUNTER:
             case LONG_TASK_TIMER:

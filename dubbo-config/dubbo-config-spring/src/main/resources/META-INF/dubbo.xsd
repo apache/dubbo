@@ -371,6 +371,11 @@
                             <![CDATA[ Bean name of service executor(thread pool), used for thread pool isolation between services. ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
+                <xsd:attribute name="payload" type="xsd:string">
+                    <xsd:annotation>
+                        <xsd:documentation><![CDATA[ The max payload. ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
                 <xsd:anyAttribute namespace="##other" processContents="lax"/>
             </xsd:extension>
         </xsd:complexContent>
@@ -1022,6 +1027,18 @@
             </xsd:annotation>
         </xsd:attribute>
 
+        <xsd:attribute name="enable-registry-metrics" type="xsd:boolean" default="false">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Enable registry metrics when collecting. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+
+        <xsd:attribute name="enable-metadata-metrics" type="xsd:boolean" default="false">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Enable metadata metrics when collecting. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+
         <xsd:attribute name="port" type="xsd:string">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ Deprecated. No longer use. ]]></xsd:documentation>
@@ -1592,11 +1609,6 @@
                 <xsd:attribute name="charset" type="xsd:string">
                     <xsd:annotation>
                         <xsd:documentation><![CDATA[ The protocol charset. ]]></xsd:documentation>
-                    </xsd:annotation>
-                </xsd:attribute>
-                <xsd:attribute name="payload" type="xsd:string">
-                    <xsd:annotation>
-                        <xsd:documentation><![CDATA[ The max payload. ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
                 <xsd:attribute name="buffer" type="xsd:string">

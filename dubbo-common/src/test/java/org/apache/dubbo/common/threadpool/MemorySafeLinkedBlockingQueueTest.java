@@ -31,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class MemorySafeLinkedBlockingQueueTest {
     @Test
-    void test() throws Exception {
+    void test() {
         ByteBuddyAgent.install();
         final Instrumentation instrumentation = ByteBuddyAgent.getInstrumentation();
         final long objectSize = instrumentation.getObjectSize((Runnable) () -> {
@@ -49,7 +49,7 @@ class MemorySafeLinkedBlockingQueueTest {
     }
 
     @Test
-    void testCustomReject() throws Exception {
+    void testCustomReject() {
         MemorySafeLinkedBlockingQueue<Runnable> queue = new MemorySafeLinkedBlockingQueue<>(Integer.MAX_VALUE);
         queue.setRejector(new AbortPolicy<>());
         assertThrows(RejectException.class, () -> queue.offer(() -> {

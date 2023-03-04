@@ -15,10 +15,8 @@
  * limitations under the License.
  */
 
-package metrics.metrics.collector;
+package org.apache.dubbo.metrics.metadata;
 
-import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.metrics.event.GlobalMetricsEventMulticaster;
 import org.apache.dubbo.metrics.metadata.collector.MetadataMetricsCollector;
@@ -30,6 +28,7 @@ import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -76,7 +75,7 @@ class MetadataMetricsCollectorTest {
         List<MetricSample> metricSamples = collector.collect();
 
         // push success +1
-        Assertions.assertEquals(metricSamples.size(), 1);
+        Assertions.assertEquals(1, metricSamples.size());
         Assertions.assertTrue(metricSamples.get(0) instanceof GaugeMetricSample);
         Assertions.assertEquals(metricSamples.get(0).getName(), MetricsKey.METADATA_PUSH_METRIC_NUM.getName());
 
@@ -84,7 +83,7 @@ class MetadataMetricsCollectorTest {
         // push finish rt +1
         metricSamples = collector.collect();
         //num(total+success) + rt(5) = 7
-        Assertions.assertEquals(metricSamples.size(), 7);
+        Assertions.assertEquals(7, metricSamples.size());
         long c1 = timePair.calc();
         TimePair lastTimePair = TimePair.start();
         eventMulticaster.publishEvent(new MetadataEvent.PushEvent(applicationModel, lastTimePair));
@@ -95,23 +94,22 @@ class MetadataMetricsCollectorTest {
         metricSamples = collector.collect();
 
         // num(total+success+error) + rt(5)
-        Assertions.assertEquals(metricSamples.size(), 8);
+        Assertions.assertEquals(8, metricSamples.size());
 
         // calc rt
         for (MetricSample sample : metricSamples) {
             Map<String, String> tags = sample.getTags();
             Assertions.assertEquals(tags.get(TAG_APPLICATION_NAME), applicationModel.getApplicationName());
         }
-        Map<String, Long> sampleMap = metricSamples.stream().collect(Collectors.toMap(MetricSample::getName, k -> {
-            Number number = ((GaugeMetricSample) k).getSupplier().get();
-            return number.longValue();
-        }));
 
-        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_PUSH, MetricsKey.GENERIC_METRIC_RT_LAST).targetKey()), lastTimePair.calc());
-        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_PUSH, MetricsKey.GENERIC_METRIC_RT_MIN).targetKey()), Math.min(c1, c2));
-        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_PUSH, MetricsKey.GENERIC_METRIC_RT_MAX).targetKey()), Math.max(c1, c2));
-        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_PUSH, MetricsKey.GENERIC_METRIC_RT_AVG).targetKey()), (c1 + c2) / 2);
-        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_PUSH, MetricsKey.GENERIC_METRIC_RT_SUM).targetKey()), c1 + c2);
+        @SuppressWarnings("rawtypes")
+        Map<String, Long> sampleMap = metricSamples.stream().collect(Collectors.toMap(MetricSample::getName, k -> ((GaugeMetricSample) k).applyAsLong()));
+
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_PUSH, MetricsKey.METRIC_RT_LAST).targetKey()), lastTimePair.calc());
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_PUSH, MetricsKey.METRIC_RT_MIN).targetKey()), Math.min(c1, c2));
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_PUSH, MetricsKey.METRIC_RT_MAX).targetKey()), Math.max(c1, c2));
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_PUSH, MetricsKey.METRIC_RT_AVG).targetKey()), (c1 + c2) / 2);
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_PUSH, MetricsKey.METRIC_RT_SUM).targetKey()), c1 + c2);
     }
 
     @Test
@@ -126,7 +124,7 @@ class MetadataMetricsCollectorTest {
         List<MetricSample> metricSamples = collector.collect();
 
         // push success +1
-        Assertions.assertEquals(metricSamples.size(), 1);
+        Assertions.assertEquals(1, metricSamples.size());
         Assertions.assertTrue(metricSamples.get(0) instanceof GaugeMetricSample);
         Assertions.assertEquals(metricSamples.get(0).getName(), MetricsKey.METADATA_SUBSCRIBE_METRIC_NUM.getName());
 
@@ -134,7 +132,7 @@ class MetadataMetricsCollectorTest {
         // push finish rt +1
         metricSamples = collector.collect();
         //num(total+success) + rt(5) = 7
-        Assertions.assertEquals(metricSamples.size(), 7);
+        Assertions.assertEquals(7, metricSamples.size());
         long c1 = timePair.calc();
         TimePair lastTimePair = TimePair.start();
         eventMulticaster.publishEvent(new MetadataEvent.SubscribeEvent(applicationModel, lastTimePair));
@@ -145,23 +143,22 @@ class MetadataMetricsCollectorTest {
         metricSamples = collector.collect();
 
         // num(total+success+error) + rt(5)
-        Assertions.assertEquals(metricSamples.size(), 8);
+        Assertions.assertEquals(8, metricSamples.size());
 
         // calc rt
         for (MetricSample sample : metricSamples) {
             Map<String, String> tags = sample.getTags();
             Assertions.assertEquals(tags.get(TAG_APPLICATION_NAME), applicationModel.getApplicationName());
         }
-        Map<String, Long> sampleMap = metricSamples.stream().collect(Collectors.toMap(MetricSample::getName, k -> {
-            Number number = ((GaugeMetricSample) k).getSupplier().get();
-            return number.longValue();
-        }));
 
-        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_SUBSCRIBE, MetricsKey.GENERIC_METRIC_RT_LAST).targetKey()), lastTimePair.calc());
-        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_SUBSCRIBE, MetricsKey.GENERIC_METRIC_RT_MIN).targetKey()), Math.min(c1, c2));
-        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_SUBSCRIBE, MetricsKey.GENERIC_METRIC_RT_MAX).targetKey()), Math.max(c1, c2));
-        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_SUBSCRIBE, MetricsKey.GENERIC_METRIC_RT_AVG).targetKey()), (c1 + c2) / 2);
-        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_SUBSCRIBE, MetricsKey.GENERIC_METRIC_RT_SUM).targetKey()), c1 + c2);
+        @SuppressWarnings("rawtypes")
+        Map<String, Long> sampleMap = metricSamples.stream().collect(Collectors.toMap(MetricSample::getName, k -> ((GaugeMetricSample) k).applyAsLong()));
+
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_SUBSCRIBE, MetricsKey.METRIC_RT_LAST).targetKey()), lastTimePair.calc());
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_SUBSCRIBE, MetricsKey.METRIC_RT_MIN).targetKey()), Math.min(c1, c2));
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_SUBSCRIBE, MetricsKey.METRIC_RT_MAX).targetKey()), Math.max(c1, c2));
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_SUBSCRIBE, MetricsKey.METRIC_RT_AVG).targetKey()), (c1 + c2) / 2);
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_SUBSCRIBE, MetricsKey.METRIC_RT_SUM).targetKey()), c1 + c2);
     }
 
 
