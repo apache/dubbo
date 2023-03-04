@@ -28,7 +28,7 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.util.Optional;
 
-@Cmd(name = "metrics", summary = "online report")
+@Cmd(name = "metrics", summary = "http report")
 public class PrometheusMetricsReporterCmd implements BaseCommand {
 
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(PrometheusMetricsReporterCmd.class);
