@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.protocol.rest;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.StringUtils;
 
+import org.apache.dubbo.rpc.protocol.rest.exception.mapper.ExceptionMapper;
 import org.jboss.resteasy.spi.ResteasyDeployment;
 
 import java.util.Map;
@@ -40,11 +41,19 @@ public abstract class BaseRestProtocolServer implements RestProtocolServer {
         getDeployment().getMediaTypeMappings().put("xml", "text/xml");
         getDeployment().getProviderClasses().add(RpcContextFilter.class.getName());
 
-        loadProviders(url.getParameter(EXCEPTION_MAPPER_KEY, RpcExceptionMapper.class.getName()));
+        loadExceptionMapper(url.getParameter(EXCEPTION_MAPPER_KEY, ""));
 
         loadProviders(url.getParameter(EXTENSION_KEY, ""));
 
         doStart(url);
+    }
+
+    private void loadExceptionMapper(String value) {
+        for (String clazz : COMMA_SPLIT_PATTERN.split(value)) {
+            if (!StringUtils.isEmpty(clazz)) {
+                ExceptionMapper.registerMapper(clazz);
+            }
+        }
     }
 
     @Override

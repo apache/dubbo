@@ -31,9 +31,11 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
 import org.apache.dubbo.rpc.protocol.rest.exception.PathNoFoundException;
+import org.apache.dubbo.rpc.protocol.rest.exception.mapper.ExceptionMapper;
 import org.apache.dubbo.rpc.protocol.rest.message.HttpMessageCodecManager;
 import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
 import org.apache.dubbo.rpc.protocol.rest.request.RequestFacadeFactory;
+import org.apache.dubbo.rpc.protocol.rest.util.HttpHeaderUtil;
 import org.apache.dubbo.rpc.protocol.rest.util.MediaTypeUtil;
 import org.apache.dubbo.rpc.protocol.rest.util.Pair;
 import org.jboss.resteasy.plugins.server.servlet.HttpServletDispatcher;
@@ -111,36 +113,44 @@ public class DubboHttpProtocolServer extends BaseRestProtocolServer {
 
             Result invoke = invoker.invoke(build.getFirst());
 
-            // TODO handling  exceptions
             if (invoke.hasException()) {
-                servletResponse.setStatus(500);
-            } else {
 
-                try {
-                    Object value = invoke.getValue();
-                    String accept = request.getHeader(RestConstant.ACCEPT);
-                    MediaType mediaType = MediaTypeUtil.convertMediaType(accept);
-                    // TODO write response
-                    Pair<Boolean, MediaType> booleanMediaTypePair = HttpMessageCodecManager.httpMessageEncode(servletResponse.getOutputStream(), value, invoker.getUrl(), mediaType);
-
-                    Boolean encoded = booleanMediaTypePair.getFirst();
-
-                    if (encoded) {
-                        servletResponse.addHeader(RestConstant.CONTENT_TYPE, booleanMediaTypePair.getSecond().value);
-                    }
-
-
-                    servletResponse.setStatus(200);
-                } catch (Exception e) {
+                if (ExceptionMapper.hasExceptionMapper(invoke.getException())) {
+                    writeResult(servletResponse, request, invoker, ExceptionMapper.exceptionToResult(invoke.getException()));
+                } else {
                     servletResponse.setStatus(500);
                 }
 
-
+            } else {
+                Object value = invoke.getValue();
+                writeResult(servletResponse, request, invoker, value);
             }
 
-            // TODO add Attachment header
+            HttpHeaderUtil.addProviderAttachments(servletResponse);
 
 
+
+        }
+
+
+        private void writeResult(HttpServletResponse httpServletResponse, RequestFacade request, Invoker invoker, Object value) {
+            try {
+                String accept = request.getHeader(RestConstant.ACCEPT);
+                MediaType mediaType = MediaTypeUtil.convertMediaType(accept);
+
+                Pair<Boolean, MediaType> booleanMediaTypePair = HttpMessageCodecManager.httpMessageEncode(httpServletResponse.getOutputStream(), value, invoker.getUrl(), mediaType);
+
+                Boolean encoded = booleanMediaTypePair.getFirst();
+
+                if (encoded) {
+                    httpServletResponse.addHeader(RestConstant.CONTENT_TYPE, booleanMediaTypePair.getSecond().value);
+                }
+
+
+                httpServletResponse.setStatus(200);
+            } catch (Throwable e) {
+                httpServletResponse.setStatus(500);
+            }
         }
     }
 

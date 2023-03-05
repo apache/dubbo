@@ -32,6 +32,8 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ModuleServiceRepository;
 import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
+import org.apache.dubbo.rpc.protocol.rest.exception.mapper.ExceptionHandler;
+import org.apache.dubbo.rpc.protocol.rest.exception.mapper.ExceptionMapper;
 import org.apache.dubbo.rpc.protocol.rest.mvc.SpringDemoServiceImpl;
 
 import org.apache.dubbo.rpc.protocol.rest.mvc.SpringRestDemoService;
@@ -47,6 +49,7 @@ import java.util.Arrays;
 import java.util.Map;
 
 import static org.apache.dubbo.remoting.Constants.SERVER_KEY;
+import static org.apache.dubbo.rpc.protocol.rest.Constants.EXCEPTION_MAPPER_KEY;
 import static org.apache.dubbo.rpc.protocol.rest.Constants.EXTENSION_KEY;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -60,9 +63,6 @@ public class SpringMvcRestProtocolTest {
     private final static int availablePort = NetUtils.getAvailablePort();
     private final static URL exportUrl = URL.valueOf("rest://127.0.0.1:" + availablePort + "/rest?interface=org.apache.dubbo.rpc.protocol.rest.mvc.SpringRestDemoService");
 
-    static {
-        exportUrl.addParameter(SERVER_KEY, Constants.NETTY_HTTP);
-    }
 
     private final ModuleServiceRepository repository = ApplicationModel.defaultModel().getDefaultModule().getServiceRepository();
 
@@ -83,6 +83,12 @@ public class SpringMvcRestProtocolTest {
 
     public Exporter<SpringRestDemoService> getExport(URL url, SpringRestDemoService server) {
         url = url.addParameter(SERVER_KEY, Constants.NETTY_HTTP);
+        return protocol.export(proxy.getInvoker(server, getServerClass(), url));
+    }
+
+    public Exporter<SpringRestDemoService> getExceptionHandlerExport(URL url, SpringRestDemoService server) {
+        url = url.addParameter(SERVER_KEY, Constants.NETTY_HTTP);
+        url = url.addParameter(EXCEPTION_MAPPER_KEY, TestExceptionMapper.class.getName());
         return protocol.export(proxy.getInvoker(server, getServerClass(), url));
     }
 
@@ -184,7 +190,7 @@ public class SpringMvcRestProtocolTest {
         URL nettyUrl = this.registerProvider(exportUrl, server, SpringRestDemoService.class);
 
 
-        Exporter<SpringRestDemoService> exporter =getExport(nettyUrl,server);
+        Exporter<SpringRestDemoService> exporter = getExport(nettyUrl, server);
 
         SpringRestDemoService demoService = this.proxy.getProxy(protocol.refer(SpringRestDemoService.class, nettyUrl));
 
@@ -210,6 +216,7 @@ public class SpringMvcRestProtocolTest {
     @Test
     void testErrorHandler() {
         Assertions.assertThrows(RpcException.class, () -> {
+            ExceptionMapper.unRegisterMapper(RuntimeException.class);
             SpringRestDemoService server = getServerImpl();
 
             URL nettyUrl = this.registerProvider(exportUrl, server, SpringRestDemoService.class);
@@ -262,7 +269,7 @@ public class SpringMvcRestProtocolTest {
         // use RpcContextFilter
 //        URL nettyUrl = url.addParameter(SERVER_KEY, "netty")
 //            .addParameter(EXTENSION_KEY, "org.apache.dubbo.rpc.protocol.rest.RpcContextFilter");
-        Exporter<SpringRestDemoService> exporter =  getExport(nettyUrl, server);
+        Exporter<SpringRestDemoService> exporter = getExport(nettyUrl, server);
 
         SpringRestDemoService demoService = this.proxy.getProxy(protocol.refer(SpringRestDemoService.class, nettyUrl));
 
@@ -302,6 +309,32 @@ public class SpringMvcRestProtocolTest {
     @Test
     void testDefaultPort() {
         assertThat(protocol.getDefaultPort(), is(80));
+    }
+
+
+    @Test
+    void testExceptionMapper() {
+
+        SpringRestDemoService server = getServerImpl();
+
+        URL exceptionUrl = this.registerProvider(exportUrl, server, SpringRestDemoService.class);
+
+        Exporter<SpringRestDemoService> exporter = getExceptionHandlerExport(exceptionUrl, server);
+
+
+        SpringRestDemoService referDemoService = this.proxy.getProxy(protocol.refer(SpringRestDemoService.class, exceptionUrl));
+
+        Assertions.assertEquals("test-exception", referDemoService.error());
+
+        exporter.unexport();
+    }
+
+    public static class TestExceptionMapper implements ExceptionHandler<RuntimeException> {
+
+        @Override
+        public String result(RuntimeException e) {
+            return "test-exception";
+        }
     }
 
     private URL registerProvider(URL url, Object impl, Class<?> interfaceClass) {
