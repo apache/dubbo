@@ -59,7 +59,7 @@ public enum MetricsKey {
     REGISTER_METRIC_REQUESTS("dubbo.registry.register.requests.total", "Total Register Requests"),
     REGISTER_METRIC_REQUESTS_SUCCEED("dubbo.registry.register.requests.succeed.total", "Succeed Register Requests"),
     REGISTER_METRIC_REQUESTS_FAILED("dubbo.registry.register.requests.failed.total", "Failed Register Requests"),
-    PROVIDER_METRIC_RT_HISTOGRAM("dubbo.%s.rt.seconds.histogram", "Response Time Histogram"),
+    PROVIDER_METRIC_RT_HISTOGRAM("dubbo.%s.rt.milliseconds.histogram", "Response Time Histogram"),
 
 
     GENERIC_METRIC_REQUESTS("dubbo.%s.requests.total", "Total %s Requests"),
