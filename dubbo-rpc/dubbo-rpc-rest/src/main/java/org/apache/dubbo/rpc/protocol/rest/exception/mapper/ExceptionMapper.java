@@ -27,6 +27,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class ExceptionMapper {
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ExceptionMapper.class);
+
+    // TODO static or instance ? think about influence  between  difference url exception
     private static final Map<Class, ExceptionHandler> exceptionHandlerMap = new ConcurrentHashMap<>();
 
     public static Object exceptionToResult(Object throwable) {
