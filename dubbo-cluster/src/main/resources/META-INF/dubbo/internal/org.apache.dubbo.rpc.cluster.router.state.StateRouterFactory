@@ -6,3 +6,5 @@ provider-app=org.apache.dubbo.rpc.cluster.router.condition.config.ProviderAppSta
 script-app=org.apache.dubbo.rpc.cluster.router.script.config.AppScriptRouterFactory
 mock=org.apache.dubbo.rpc.cluster.router.mock.MockStateRouterFactory
 standard-mesh-rule=org.apache.dubbo.rpc.cluster.router.mesh.route.StandardMeshRuleRouterFactory
+circuitBreaker=org.apache.dubbo.rpc.cluster.router.circuitBreaker.CircuitBreakerRouterFactory
+
