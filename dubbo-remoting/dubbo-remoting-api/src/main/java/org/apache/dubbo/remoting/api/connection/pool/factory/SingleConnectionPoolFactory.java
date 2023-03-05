@@ -35,7 +35,6 @@ public class SingleConnectionPoolFactory implements ConnectionPoolFactory {
     @Override
     public <C extends Client> ConnectionPool<C> getConnectionPool(URL url, ConnectionProvider<C> connectionProvider) {
         String address = url.getAddress();
-
         ConcurrentHashMapUtils.computeIfAbsent(connectionPoolMap, address, s -> new SingleConnectionPool<>(url, connectionProvider));
         ConnectionPool<C> connectionPool = connectionPoolMap.get(address);
 
