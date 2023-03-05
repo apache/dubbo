@@ -39,11 +39,11 @@ public class ModuleEnvironment extends Environment implements ModuleExt {
 
     public static final String NAME = "moduleEnvironment";
 
-    private AtomicBoolean initialized = new AtomicBoolean(false);
+    private final AtomicBoolean initialized = new AtomicBoolean(false);
 
     private final ModuleModel moduleModel;
 
-    private Environment applicationDelegate;
+    private final Environment applicationDelegate;
 
     private OrderedPropertiesConfiguration orderedPropertiesConfiguration;
 
@@ -220,7 +220,7 @@ public class ModuleEnvironment extends Environment implements ModuleExt {
     }
 
     @Override
-    public void refreshClassLoaders() {
+    public synchronized void refreshClassLoaders() {
         orderedPropertiesConfiguration.refresh();
         applicationDelegate.refreshClassLoaders();
     }

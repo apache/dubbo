@@ -17,12 +17,12 @@
 
 package org.apache.dubbo.common.constants;
 
+import org.apache.dubbo.common.URL;
+
 import java.net.NetworkInterface;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.regex.Pattern;
-
-import org.apache.dubbo.common.URL;
 
 public interface CommonConstants {
     String DUBBO = "dubbo";
@@ -213,6 +213,8 @@ public interface CommonConstants {
 
     String PATH_KEY = "path";
 
+    String ADDRESS_KEY = "address";
+
     String INTERFACE_KEY = "interface";
 
     String FILE_KEY = "file";
@@ -365,7 +367,7 @@ public interface CommonConstants {
     /**
      * Whether to cache locally, default is true
      */
-    String REGISTRY_LOCAL_FILE_CACHE_ENABLED = "file.cache";
+    String REGISTRY_LOCAL_FILE_CACHE_ENABLED = "file-cache";
 
     String METADATA_INFO_CACHE_EXPIRE_KEY = "metadata-info-cache.expire";
 
@@ -617,4 +619,6 @@ public interface CommonConstants {
 
     String ENCODE_IN_IO_THREAD_KEY = "encode.in.io";
     boolean DEFAULT_ENCODE_IN_IO_THREAD = false;
+
+    String PAYLOAD = "payload";
 }

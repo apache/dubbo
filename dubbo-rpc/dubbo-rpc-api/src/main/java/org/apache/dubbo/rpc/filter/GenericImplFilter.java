@@ -155,7 +155,7 @@ public class GenericImplFilter implements Filter, Filter.Listener {
                             // find the real interface from url
                             String realInterface = invoker.getUrl().getParameter(Constants.INTERFACE);
                             invokerInterface = ReflectUtils.forName(realInterface);
-                        } catch (Throwable e) {
+                        } catch (Exception e) {
                             // ignore
                         }
                     }
@@ -186,7 +186,7 @@ public class GenericImplFilter implements Filter, Filter.Listener {
                     Throwable targetException = null;
                     Throwable lastException = null;
                     try {
-                        targetException = (Throwable) clazz.newInstance();
+                        targetException = (Throwable) clazz.getDeclaredConstructor().newInstance();
                     } catch (Throwable e) {
                         lastException = e;
                         for (Constructor<?> constructor : clazz.getConstructors()) {

@@ -30,4 +30,7 @@ public interface MetricsStatHandler {
     MetricsEvent increase(String applicationName, Invocation invocation);
 
     MetricsEvent decrease(String applicationName, Invocation invocation);
+
+    MetricsEvent addApplication(String applicationName);
+
 }

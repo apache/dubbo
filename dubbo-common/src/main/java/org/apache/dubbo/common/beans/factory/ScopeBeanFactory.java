@@ -47,12 +47,12 @@ public class ScopeBeanFactory {
     protected static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(ScopeBeanFactory.class);
 
     private final ScopeBeanFactory parent;
-    private ExtensionAccessor extensionAccessor;
-    private List<ExtensionPostProcessor> extensionPostProcessors;
-    private ConcurrentHashMap<Class, AtomicInteger> beanNameIdCounterMap = new ConcurrentHashMap<>();
-    private List<BeanInfo> registeredBeanInfos = new CopyOnWriteArrayList<>();
+    private final ExtensionAccessor extensionAccessor;
+    private final List<ExtensionPostProcessor> extensionPostProcessors;
+    private final ConcurrentHashMap<Class<?>, AtomicInteger> beanNameIdCounterMap = new ConcurrentHashMap<>();
+    private final List<BeanInfo> registeredBeanInfos = new CopyOnWriteArrayList<>();
     private InstantiationStrategy instantiationStrategy;
-    private AtomicBoolean destroyed = new AtomicBoolean();
+    private final AtomicBoolean destroyed = new AtomicBoolean();
 
     public ScopeBeanFactory(ScopeBeanFactory parent, ExtensionAccessor extensionAccessor) {
         this.parent = parent;
@@ -186,6 +186,15 @@ public class ScopeBeanFactory {
         return ConcurrentHashMapUtils.computeIfAbsent(beanNameIdCounterMap, beanClass, key -> new AtomicInteger()).incrementAndGet();
     }
 
+    @SuppressWarnings("unchecked")
+    public <T> List<T> getBeansOfType(Class<T> type) {
+        List<T> currentBeans = (List<T>) registeredBeanInfos.stream().filter(beanInfo -> type.isInstance(beanInfo.instance)).map(beanInfo -> beanInfo.instance).collect(Collectors.toList());
+        if (parent != null) {
+            currentBeans.addAll(parent.getBeansOfType(type));
+        }
+        return currentBeans;
+    }
+
     public <T> T getBean(Class<T> type) {
         return this.getBean(null, type);
     }
@@ -198,6 +207,7 @@ public class ScopeBeanFactory {
         return bean;
     }
 
+    @SuppressWarnings("unchecked")
     private <T> T getBeanInternal(String name, Class<T> type) {
         checkDestroyed();
         // All classes are derived from java.lang.Object, cannot filter bean by it
@@ -263,8 +273,8 @@ public class ScopeBeanFactory {
     }
 
     static class BeanInfo {
-        private String name;
-        private Object instance;
+        private final String name;
+        private final Object instance;
 
         public BeanInfo(String name, Object instance) {
             this.name = name;

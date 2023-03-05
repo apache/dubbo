@@ -44,4 +44,20 @@ public abstract class MetricsEvent {
     public String toString() {
         return getClass().getName() + "[source=" + source + "]";
     }
+
+    public enum Type {
+        TOTAL,
+        SUCCEED,
+        BUSINESS_FAILED,
+        REQUEST_TIMEOUT,
+        REQUEST_LIMIT,
+        PROCESSING,
+        UNKNOWN_FAILED,
+        TOTAL_FAILED,
+        APPLICATION_INFO,
+        NETWORK_EXCEPTION,
+        SERVICE_UNAVAILABLE,
+        CODEC_EXCEPTION;
+
+    }
 }

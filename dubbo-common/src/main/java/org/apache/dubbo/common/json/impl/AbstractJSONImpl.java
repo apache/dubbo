@@ -17,11 +17,30 @@
 package org.apache.dubbo.common.json.impl;
 
 import org.apache.dubbo.common.json.JSON;
+import org.apache.dubbo.common.utils.CollectionUtils;
 
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 public abstract class AbstractJSONImpl implements JSON {
+    @Override
+    public boolean isSupport() {
+        try {
+            Map<String, String> map = new HashMap<>();
+            map.put("json", "test");
+            if (!CollectionUtils.mapEquals(map, toJavaObject(toJson(map), Map.class))) {
+                return false;
+            }
+
+            List<String> list = new LinkedList<>();
+            list.add("json");
+            return CollectionUtils.equals(list, toJavaList(toJson(list), String.class));
+        } catch (Throwable t) {
+            return false;
+        }
+    }
 
     @Override
     public List<?> getList(Map<String, ?> obj, String key) {

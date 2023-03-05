@@ -46,7 +46,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class MethodConfigTest {
     @Test
-    void testName() throws Exception {
+    void testName() {
         MethodConfig method = new MethodConfig();
         method.setName("hello");
         assertThat(method.getName(), equalTo("hello"));
@@ -56,42 +56,42 @@ class MethodConfigTest {
     }
 
     @Test
-    void testStat() throws Exception {
+    void testStat() {
         MethodConfig method = new MethodConfig();
         method.setStat(10);
         assertThat(method.getStat(), equalTo(10));
     }
 
     @Test
-    void testRetry() throws Exception {
+    void testRetry() {
         MethodConfig method = new MethodConfig();
         method.setRetry(true);
         assertThat(method.isRetry(), is(true));
     }
 
     @Test
-    void testReliable() throws Exception {
+    void testReliable() {
         MethodConfig method = new MethodConfig();
         method.setReliable(true);
         assertThat(method.isReliable(), is(true));
     }
 
     @Test
-    void testExecutes() throws Exception {
+    void testExecutes() {
         MethodConfig method = new MethodConfig();
         method.setExecutes(10);
         assertThat(method.getExecutes(), equalTo(10));
     }
 
     @Test
-    void testDeprecated() throws Exception {
+    void testDeprecated() {
         MethodConfig method = new MethodConfig();
         method.setDeprecated(true);
         assertThat(method.getDeprecated(), is(true));
     }
 
     @Test
-    void testArguments() throws Exception {
+    void testArguments() {
         MethodConfig method = new MethodConfig();
         ArgumentConfig argument = new ArgumentConfig();
         method.setArguments(Collections.singletonList(argument));
@@ -100,7 +100,7 @@ class MethodConfigTest {
     }
 
     @Test
-    void testSticky() throws Exception {
+    void testSticky() {
         MethodConfig method = new MethodConfig();
         method.setSticky(true);
         assertThat(method.getSticky(), is(true));
@@ -118,7 +118,7 @@ class MethodConfigTest {
     }
 
     //@Test
-    public void testOnreturn() throws Exception {
+    public void testOnreturn() {
         MethodConfig method = new MethodConfig();
         method.setOnreturn("on-return-object");
         assertThat(method.getOnreturn(), equalTo((Object) "on-return-object"));
@@ -131,7 +131,7 @@ class MethodConfigTest {
     }
 
     @Test
-    void testOnreturnMethod() throws Exception {
+    void testOnreturnMethod() {
         MethodConfig method = new MethodConfig();
         method.setOnreturnMethod("on-return-method");
         assertThat(method.getOnreturnMethod(), equalTo("on-return-method"));
@@ -144,7 +144,7 @@ class MethodConfigTest {
     }
 
     //@Test
-    public void testOnthrow() throws Exception {
+    public void testOnthrow() {
         MethodConfig method = new MethodConfig();
         method.setOnthrow("on-throw-object");
         assertThat(method.getOnthrow(), equalTo((Object) "on-throw-object"));
@@ -157,7 +157,7 @@ class MethodConfigTest {
     }
 
     @Test
-    void testOnthrowMethod() throws Exception {
+    void testOnthrowMethod() {
         MethodConfig method = new MethodConfig();
         method.setOnthrowMethod("on-throw-method");
         assertThat(method.getOnthrowMethod(), equalTo("on-throw-method"));
@@ -170,7 +170,7 @@ class MethodConfigTest {
     }
 
     //@Test
-    public void testOninvoke() throws Exception {
+    public void testOninvoke() {
         MethodConfig method = new MethodConfig();
         method.setOninvoke("on-invoke-object");
         assertThat(method.getOninvoke(), equalTo((Object) "on-invoke-object"));
@@ -183,7 +183,7 @@ class MethodConfigTest {
     }
 
     @Test
-    void testOninvokeMethod() throws Exception {
+    void testOninvokeMethod() {
         MethodConfig method = new MethodConfig();
         method.setOninvokeMethod("on-invoke-method");
         assertThat(method.getOninvokeMethod(), equalTo("on-invoke-method"));
@@ -196,7 +196,7 @@ class MethodConfigTest {
     }
 
     @Test
-    void testReturn() throws Exception {
+    void testReturn() {
         MethodConfig method = new MethodConfig();
         method.setReturn(true);
         assertThat(method.isReturn(), is(true));

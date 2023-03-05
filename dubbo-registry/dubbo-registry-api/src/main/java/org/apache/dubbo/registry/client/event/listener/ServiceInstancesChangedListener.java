@@ -16,6 +16,32 @@
  */
 package org.apache.dubbo.registry.client.event.listener;
 
+import org.apache.dubbo.common.ProtocolServiceKey;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.URLBuilder;
+import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
+import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
+import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.ConcurrentHashSet;
+import org.apache.dubbo.metadata.MetadataInfo;
+import org.apache.dubbo.metadata.MetadataInfo.ServiceInfo;
+import org.apache.dubbo.metrics.event.SimpleMetricsEventMulticaster;
+import org.apache.dubbo.metrics.model.TimePair;
+import org.apache.dubbo.metrics.registry.event.RegistryEvent;
+import org.apache.dubbo.registry.NotifyListener;
+import org.apache.dubbo.registry.client.DefaultServiceInstance;
+import org.apache.dubbo.registry.client.ServiceDiscovery;
+import org.apache.dubbo.registry.client.ServiceInstance;
+import org.apache.dubbo.registry.client.event.RetryServiceInstancesChangedEvent;
+import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
+import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
+import org.apache.dubbo.registry.client.metadata.ServiceInstanceNotificationCustomizer;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -31,28 +57,6 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import org.apache.dubbo.common.ProtocolServiceKey;
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.URLBuilder;
-import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
-import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.common.utils.ConcurrentHashSet;
-import org.apache.dubbo.metadata.MetadataInfo;
-import org.apache.dubbo.metadata.MetadataInfo.ServiceInfo;
-import org.apache.dubbo.registry.NotifyListener;
-import org.apache.dubbo.registry.client.DefaultServiceInstance;
-import org.apache.dubbo.registry.client.ServiceDiscovery;
-import org.apache.dubbo.registry.client.ServiceInstance;
-import org.apache.dubbo.registry.client.event.RetryServiceInstancesChangedEvent;
-import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
-import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
-import org.apache.dubbo.registry.client.metadata.ServiceInstanceNotificationCustomizer;
-import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
@@ -87,6 +91,7 @@ public class ServiceInstancesChangedListener {
     private final ScheduledExecutorService scheduler;
     private volatile boolean hasEmptyMetadata;
     private final Set<ServiceInstanceNotificationCustomizer> serviceInstanceNotificationCustomizers;
+    private final ApplicationModel applicationModel;
 
 
     public ServiceInstancesChangedListener(Set<String> serviceNames, ServiceDiscovery serviceDiscovery) {
@@ -99,6 +104,7 @@ public class ServiceInstancesChangedListener {
         ApplicationModel applicationModel = ScopeModelUtil.getApplicationModel(serviceDiscovery == null || serviceDiscovery.getUrl() == null ? null : serviceDiscovery.getUrl().getScopeModel());
         this.scheduler = applicationModel.getBeanFactory().getBean(FrameworkExecutorRepository.class).getMetadataRetryExecutor();
         this.serviceInstanceNotificationCustomizers = applicationModel.getExtensionLoader(ServiceInstanceNotificationCustomizer.class).getSupportedExtensionInstances();
+        this.applicationModel = applicationModel;
     }
 
     /**
@@ -398,6 +404,13 @@ public class ServiceInstancesChangedListener {
      * race condition is protected by onEvent/doOnEvent
      */
     protected void notifyAddressChanged() {
+
+        ScopeBeanFactory beanFactory = applicationModel.getFrameworkModel().getBeanFactory();
+        SimpleMetricsEventMulticaster eventMulticaster = beanFactory.getOrRegisterBean(SimpleMetricsEventMulticaster.class);
+
+        TimePair timePair = TimePair.start();
+        eventMulticaster.publishEvent(new RegistryEvent.MetricsNotifyEvent(applicationModel, timePair, null));
+        Map<String, Integer> lastNumMap = new HashMap<>();
         // 1 different services
         listeners.forEach((serviceKey, listenerSet) -> {
             // 2 multiple subscription listener of the same service
@@ -407,8 +420,11 @@ public class ServiceInstancesChangedListener {
                 List<URL> urls = toUrlsWithEmpty(getAddresses(listenerWithKey.getProtocolServiceKey(), notifyListener.getConsumerUrl()));
                 logger.info("Notify service " + listenerWithKey.getProtocolServiceKey() + " with urls " + urls.size());
                 notifyListener.notify(urls);
+                lastNumMap.put(serviceKey, urls.size());
             }
         });
+        eventMulticaster.publishFinishEvent(new RegistryEvent.MetricsNotifyEvent(applicationModel, timePair, lastNumMap));
+
     }
 
     protected List<URL> toUrlsWithEmpty(List<URL> urls) {

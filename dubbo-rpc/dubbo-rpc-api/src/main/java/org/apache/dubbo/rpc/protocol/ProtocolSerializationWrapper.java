@@ -30,7 +30,7 @@ import static org.apache.dubbo.rpc.model.ScopeModelUtil.getFrameworkModel;
 
 @Activate
 public class ProtocolSerializationWrapper implements Protocol {
-    private Protocol protocol;
+    private final Protocol protocol;
 
     public ProtocolSerializationWrapper(Protocol protocol) {
         this.protocol = protocol;

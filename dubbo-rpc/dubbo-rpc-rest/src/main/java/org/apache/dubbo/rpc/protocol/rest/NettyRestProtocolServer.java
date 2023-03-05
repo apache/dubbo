@@ -16,15 +16,15 @@
  */
 package org.apache.dubbo.rpc.protocol.rest;
 
-import io.netty.channel.ChannelOption;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
+
+import io.netty.channel.ChannelOption;
 import org.jboss.resteasy.plugins.server.netty.NettyJaxrsServer;
 import org.jboss.resteasy.spi.ResteasyDeployment;
 
 import java.util.HashMap;
 import java.util.Map;
-
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_THREADS;
 import static org.apache.dubbo.common.constants.CommonConstants.IO_THREADS_KEY;
@@ -46,13 +46,14 @@ public class NettyRestProtocolServer extends BaseRestProtocolServer {
     private final NettyJaxrsServer server = new NettyJaxrsServer();
 
     @Override
+    @SuppressWarnings("rawtypes")
     protected void doStart(URL url) {
         String bindIp = url.getParameter(BIND_IP_KEY, url.getHost());
         if (!url.isAnyHost() && NetUtils.isValidLocalHost(bindIp)) {
             server.setHostname(bindIp);
         }
         server.setPort(url.getParameter(BIND_PORT_KEY, url.getPort()));
-        Map<ChannelOption, Object> channelOption = new HashMap<ChannelOption, Object>();
+        Map<ChannelOption, Object> channelOption = new HashMap<>();
         channelOption.put(ChannelOption.SO_KEEPALIVE, url.getParameter(KEEP_ALIVE_KEY, DEFAULT_KEEP_ALIVE));
         server.setChildChannelOptions(channelOption);
         server.setExecutorThreadCount(url.getParameter(THREADS_KEY, DEFAULT_THREADS));

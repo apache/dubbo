@@ -78,7 +78,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
     private final Set<Invoker<?>> invokers;
     private final ExecutorService streamExecutor;
     private final String acceptEncodings;
-    private final TripleWriteQueue writeQueue = new TripleWriteQueue();
+    private final TripleWriteQueue writeQueue = new TripleWriteQueue(256);
 
     public TripleInvoker(Class<T> serviceType,
                          URL url,
@@ -200,7 +200,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
                     "No time left for making the following call: " + invocation.getServiceName() + "."
                             + invocation.getMethodName() + ", terminate directly."), invocation);
         }
-        invocation.setAttachment(TIMEOUT_KEY, timeout);
+        invocation.setAttachment(TIMEOUT_KEY, String.valueOf(timeout));
 
         final AsyncRpcResult result;
         DeadlineFuture future = DeadlineFuture.newFuture(getUrl().getPath(),
