@@ -16,17 +16,24 @@
  */
 package org.apache.dubbo.rpc.cluster.router.circuitBreaker.model;
 
+import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.metrics.aggregate.TimeWindowCounter;
+import org.apache.dubbo.metrics.collector.AggregateMetricsCollector;
+import org.apache.dubbo.metrics.event.MetricsEvent;
+import org.apache.dubbo.metrics.model.MethodMetric;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.cluster.router.AbstractRouterRule;
 import org.apache.dubbo.rpc.cluster.router.circuitBreaker.CircuitBreakerRouter;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.rpc.cluster.Constants.CIRCUIT_BREAKER_KEY;
@@ -48,11 +55,15 @@ import static org.apache.dubbo.rpc.cluster.Constants.RULE_VERSION_V30;
  * ...
  */
 public class CircuitBreakerRule extends AbstractRouterRule {
-    
+
     private List<CircuitBreaker> circuitBreakers;
 
     private final Map<String, Set<String>> addressToCircuitBreakernames = new HashMap<>();
     private final Map<String, Set<String>> circuitBreakernameToAddresses = new HashMap<>();
+
+    ScopeBeanFactory beanFactory = ApplicationModel.defaultModel().getBeanFactory();
+
+    AggregateMetricsCollector collector = beanFactory.getOrRegisterBean(AggregateMetricsCollector.class);
 
     @SuppressWarnings("unchecked")
     public static CircuitBreakerRule parseFromMap(Map<String, Object> map) {
@@ -97,6 +108,18 @@ public class CircuitBreakerRule extends AbstractRouterRule {
                                 isMatch = false;
                                 break;
                             }
+                            String appName = matcher.getKey();
+                            String longTimeThreshold = matcher.getValue().getTimeThreshold();
+                            String errorThresholdPercentage = matcher.getValue().getErrorThresholdPercentage();
+                            String sleepWindowThreshold = matcher.getValue().getSleepWindowThreshold();
+                            ConcurrentHashMap<MethodMetric, TimeWindowCounter> totalWindowCounterConcurrentHashMap = collector.getMethodTypeCounter().get(MetricsEvent.Type.TOTAL);
+                            ConcurrentHashMap<MethodMetric, TimeWindowCounter> failedWindowCounterConcurrentHashMap = collector.getMethodTypeCounter().get(MetricsEvent.Type.TOTAL_FAILED);
+                            totalWindowCounterConcurrentHashMap.forEach((k, v) -> {
+                                if (k.getApplicationName().equals(appName)) {
+                                    double totalResult = v.getLatestPaneValue(Long.parseLong(longTimeThreshold));
+                                }
+                            });
+
                         }
                         if (isMatch) {
                             addresses.add(invoker.getUrl().getAddress());

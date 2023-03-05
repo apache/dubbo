@@ -258,6 +258,44 @@ public abstract class SlidingWindow<T> {
     }
 
     /**
+     * Get aggregated value list for latest sliding window by timeThreshold.
+     * The list will only contain value from "valid" panes.
+     *
+     * @return aggregated value list for latest sliding window.
+     */
+    public List<T> getLatestPaneValues(long timeThreshold) {
+        List<T> paneValuesList = new ArrayList<>();
+        if (timeThreshold < 0) {
+            return paneValuesList;
+        }
+        long currentTimeMillis = TimeUtils.currentTimeMillis();
+        long paneStart = calculatePaneStart(currentTimeMillis - timeThreshold);
+        int  paneStartIdx =  calculatePaneIdx(paneStart);
+        int  paneEndIdx = calculatePaneIdx(currentTimeMillis);
+        List<Pane<T>> paneList = getPanesListByIdx(paneStartIdx, paneEndIdx);
+        if (paneList.size() > paneCount) {
+            return paneValuesList;
+        }
+        for (Pane<T> pane : paneList) {
+            paneValuesList.add(pane.getValue());
+        }
+        return paneValuesList;
+    }
+
+    private List<Pane<T>> getPanesListByIdx(int paneStartIdx, int paneEndIdx) {
+        if (paneEndIdx < paneStartIdx) {
+            paneEndIdx += paneCount;
+        }
+        List<Pane<T>> result = new ArrayList<>();
+        for (int i = paneStartIdx; i < paneEndIdx; i++) {
+            int paneIdx = i % paneCount;
+            Pane<T> pane = referenceArray.get(paneIdx);
+            result.add(pane);
+        }
+        return result;
+    }
+
+    /**
      * Get aggregated value list for entire sliding window at the specified time.
      * The list will only contain value from "valid" panes.
      *

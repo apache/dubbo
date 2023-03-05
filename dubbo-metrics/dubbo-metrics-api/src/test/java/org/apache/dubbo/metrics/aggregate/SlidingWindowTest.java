@@ -20,6 +20,7 @@ package org.apache.dubbo.metrics.aggregate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.LongAdder;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -51,6 +52,20 @@ class SlidingWindowTest {
             window.currentPane(1 + timeInMs + window.getPaneIntervalInMs() * paneCount));
     }
 
+    @Test
+    void testCurrentPanev2() throws InterruptedException {
+        CompletableFuture.runAsync(() -> {
+            window.currentPane(200L);
+        });
+        window.currentPane(210L);
+
+//        long timeInMs = System.currentTimeMillis();
+//        Pane<LongAdder> currentPane = window.currentPane(timeInMs);
+//        assertNotNull(currentPane);
+//        // reuse test
+//        assertEquals(currentPane,
+//            window.currentPane(1 + timeInMs + window.getPaneIntervalInMs() * paneCount));
+    }
     @Test
     void testGetPaneData() {
         assertNull(window.getPaneValue(/* invalid time*/-1L));
