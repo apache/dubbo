@@ -33,8 +33,11 @@ import org.apache.dubbo.rpc.model.ModuleServiceRepository;
 import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 
+import org.apache.dubbo.rpc.protocol.rest.exception.mapper.ExceptionHandler;
+import org.apache.dubbo.rpc.protocol.rest.exception.mapper.ExceptionMapper;
 import org.apache.dubbo.rpc.protocol.rest.rest.AnotherUserRestService;
 import org.apache.dubbo.rpc.protocol.rest.rest.AnotherUserRestServiceImpl;
+
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -45,6 +48,7 @@ import java.util.Arrays;
 import java.util.Map;
 
 import static org.apache.dubbo.remoting.Constants.SERVER_KEY;
+import static org.apache.dubbo.rpc.protocol.rest.Constants.EXCEPTION_MAPPER_KEY;
 import static org.apache.dubbo.rpc.protocol.rest.Constants.EXTENSION_KEY;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -52,8 +56,8 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 class JaxrsRestProtocolTest {
-    private Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getExtension("rest");
-    private ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+    private final Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getExtension("rest");
+    private final ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
     private final int availablePort = NetUtils.getAvailablePort();
     private final URL exportUrl = URL.valueOf("rest://127.0.0.1:" + availablePort + "/rest?interface=org.apache.dubbo.rpc.protocol.rest.DemoService");
     private final ModuleServiceRepository repository = ApplicationModel.defaultModel().getDefaultModule().getServiceRepository();
@@ -187,6 +191,7 @@ class JaxrsRestProtocolTest {
     @Test
     void testErrorHandler() {
         Assertions.assertThrows(RpcException.class, () -> {
+            ExceptionMapper.unRegisterMapper(RuntimeException.class);
             DemoService server = new DemoServiceImpl();
 
             URL url = this.registerProvider(exportUrl, server, DemoService.class);
@@ -282,6 +287,30 @@ class JaxrsRestProtocolTest {
     @Test
     void testDefaultPort() {
         assertThat(protocol.getDefaultPort(), is(80));
+    }
+
+    @Test
+    void testExceptionMapper() {
+
+        DemoService server = new DemoServiceImpl();
+
+        URL url = this.registerProvider(exportUrl, server, DemoService.class);
+
+        URL exceptionUrl = url.addParameter(EXCEPTION_MAPPER_KEY, TestExceptionMapper.class.getName());
+
+        protocol.export(proxy.getInvoker(server, DemoService.class, exceptionUrl));
+
+        DemoService referDemoService = this.proxy.getProxy(protocol.refer(DemoService.class, exceptionUrl));
+
+        Assertions.assertEquals("test-exception", referDemoService.error());
+    }
+
+    public static class TestExceptionMapper implements ExceptionHandler<RuntimeException> {
+
+        @Override
+        public String result(RuntimeException e) {
+            return "test-exception";
+        }
     }
 
     private URL registerProvider(URL url, Object impl, Class<?> interfaceClass) {

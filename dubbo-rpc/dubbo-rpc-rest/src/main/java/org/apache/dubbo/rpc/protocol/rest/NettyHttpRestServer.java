@@ -19,12 +19,15 @@ package org.apache.dubbo.rpc.protocol.rest;
 import io.netty.channel.ChannelOption;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.rpc.protocol.rest.exception.mapper.ExceptionMapper;
 import org.apache.dubbo.rpc.protocol.rest.netty.NettyServer;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_THREADS;
 import static org.apache.dubbo.common.constants.CommonConstants.IO_THREADS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
@@ -34,6 +37,7 @@ import static org.apache.dubbo.remoting.Constants.DEFAULT_IO_THREADS;
 import static org.apache.dubbo.remoting.Constants.DEFAULT_PAYLOAD;
 import static org.apache.dubbo.remoting.Constants.PAYLOAD_KEY;
 import static org.apache.dubbo.rpc.protocol.rest.Constants.DEFAULT_KEEP_ALIVE;
+import static org.apache.dubbo.rpc.protocol.rest.Constants.EXCEPTION_MAPPER_KEY;
 import static org.apache.dubbo.rpc.protocol.rest.Constants.KEEP_ALIVE_KEY;
 
 
@@ -70,6 +74,8 @@ public class NettyHttpRestServer implements RestProtocolServer {
     @Override
     public void start(URL url) {
 
+        registerExceptionMapper(url);
+
         String bindIp = url.getParameter(BIND_IP_KEY, url.getHost());
         if (!url.isAnyHost() && NetUtils.isValidLocalHost(bindIp)) {
             server.setHostname(bindIp);
@@ -83,6 +89,17 @@ public class NettyHttpRestServer implements RestProtocolServer {
         server.setIoWorkerCount(url.getParameter(IO_THREADS_KEY, DEFAULT_IO_THREADS));
         server.setMaxRequestSize(url.getParameter(PAYLOAD_KEY, DEFAULT_PAYLOAD));
         server.start();
+    }
+
+    private void registerExceptionMapper(URL url) {
+
+        for (String clazz : COMMA_SPLIT_PATTERN.split(url.getParameter(EXCEPTION_MAPPER_KEY, ""))) {
+            if (!StringUtils.isEmpty(clazz)) {
+                ExceptionMapper.registerMapper(clazz);
+            }
+        }
+
+
     }
 
     @Override

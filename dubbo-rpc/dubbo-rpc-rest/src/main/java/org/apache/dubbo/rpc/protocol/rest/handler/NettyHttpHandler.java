@@ -25,17 +25,19 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.protocol.rest.RPCInvocationBuilder;
 import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
 import org.apache.dubbo.rpc.protocol.rest.exception.PathNoFoundException;
+import org.apache.dubbo.rpc.protocol.rest.exception.mapper.ExceptionMapper;
 import org.apache.dubbo.rpc.protocol.rest.message.HttpMessageCodecManager;
 import org.apache.dubbo.rpc.protocol.rest.netty.NettyHttpResponse;
 import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
 import org.apache.dubbo.rpc.protocol.rest.request.RequestFacadeFactory;
+import org.apache.dubbo.rpc.protocol.rest.util.HttpHeaderUtil;
 import org.apache.dubbo.rpc.protocol.rest.util.MediaTypeUtil;
 import org.apache.dubbo.rpc.protocol.rest.util.Pair;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
 
-public class NettyHttpHandler implements HttpHandler<FullHttpRequest,NettyHttpResponse>  {
+public class NettyHttpHandler implements HttpHandler<FullHttpRequest, NettyHttpResponse> {
 
     @Override
     public void handle(FullHttpRequest nettyHttpRequest, NettyHttpResponse nettyHttpResponse) throws IOException, ServletException {
@@ -55,34 +57,39 @@ public class NettyHttpHandler implements HttpHandler<FullHttpRequest,NettyHttpRe
 
         Result invoke = invoker.invoke(build.getFirst());
 
-        // TODO handling  exceptions
         if (invoke.hasException()) {
-            nettyHttpResponse.setStatus(500);
-        } else {
 
-            try {
-                Object value = invoke.getValue();
-                String accept = request.getHeader(RestConstant.ACCEPT);
-                MediaType mediaType = MediaTypeUtil.convertMediaType(accept);
-                // TODO write response
-                Pair<Boolean, MediaType> booleanMediaTypePair = HttpMessageCodecManager.httpMessageEncode(nettyHttpResponse.getOutputStream(), value, invoker.getUrl(), mediaType);
-
-                Boolean encoded = booleanMediaTypePair.getFirst();
-
-                if (encoded) {
-                    nettyHttpResponse.addOutputHeaders(RestConstant.CONTENT_TYPE, booleanMediaTypePair.getSecond().value);
-                }
-
-
-
-                nettyHttpResponse.setStatus(200);
-            } catch (Exception e) {
+            if (ExceptionMapper.hasExceptionMapper(invoke.getException())) {
+                writeResult(nettyHttpResponse, request, invoker, ExceptionMapper.exceptionToResult(invoke.getException()));
+            } else {
                 nettyHttpResponse.setStatus(500);
             }
 
-
+        } else {
+            Object value = invoke.getValue();
+            writeResult(nettyHttpResponse, request, invoker, value);
         }
 
-        // TODO add Attachment header
+        HttpHeaderUtil.addProviderAttachments(nettyHttpResponse);
+    }
+
+    private void writeResult(NettyHttpResponse nettyHttpResponse, RequestFacade request, Invoker invoker, Object value) {
+        try {
+            String accept = request.getHeader(RestConstant.ACCEPT);
+            MediaType mediaType = MediaTypeUtil.convertMediaType(accept);
+
+            Pair<Boolean, MediaType> booleanMediaTypePair = HttpMessageCodecManager.httpMessageEncode(nettyHttpResponse.getOutputStream(), value, invoker.getUrl(), mediaType);
+
+            Boolean encoded = booleanMediaTypePair.getFirst();
+
+            if (encoded) {
+                nettyHttpResponse.addOutputHeaders(RestConstant.CONTENT_TYPE, booleanMediaTypePair.getSecond().value);
+            }
+
+
+            nettyHttpResponse.setStatus(200);
+        } catch (Throwable e) {
+            nettyHttpResponse.setStatus(500);
+        }
     }
 }
