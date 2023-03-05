@@ -41,6 +41,7 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -73,6 +74,8 @@ class MetricsFilterTest {
     private static final String VERSION = "1.0.0";
     private String side;
 
+    private AtomicBoolean initApplication = new AtomicBoolean(false);
+
 
     @BeforeEach
     public void setup() {
@@ -87,6 +90,10 @@ class MetricsFilterTest {
         filter = new MetricsFilter();
 
         collector = applicationModel.getBeanFactory().getOrRegisterBean(DefaultMetricsCollector.class);
+        if(!initApplication.get()) {
+            collector.collectApplication(applicationModel);
+            initApplication.set(true);
+        }
         filter.setApplicationModel(applicationModel);
         side = CommonConstants.CONSUMER;
         invocation.setInvoker(new TestMetricsInvoker(side));
@@ -107,6 +114,7 @@ class MetricsFilterTest {
 
         filter.invoke(invoker, invocation);
         Map<String, MetricSample> metricsMap = getMetricsMap();
+        metricsMap.remove(MetricsKey.APPLICATION_METRIC_INFO.getName());
         Assertions.assertTrue(metricsMap.isEmpty());
     }
 
@@ -187,10 +195,10 @@ class MetricsFilterTest {
         Assertions.assertTrue(metricsMap.containsKey(MetricsKey.METRIC_REQUESTS_TOTAL_FAILED.getNameByType(side)));
 
         MetricSample timeoutSample = metricsMap.get(MetricsKey.METRIC_REQUESTS_TIMEOUT.getNameByType(side));
-        Assertions.assertSame(((GaugeMetricSample) timeoutSample).getSupplier().get().longValue(), count);
+        Assertions.assertSame(((GaugeMetricSample) timeoutSample).applyAsLong(), count);
 
         GaugeMetricSample failedSample = (GaugeMetricSample) metricsMap.get(MetricsKey.METRIC_REQUESTS_TOTAL_FAILED.getNameByType(side));
-        Assertions.assertSame(failedSample.getSupplier().get().longValue(), count);
+        Assertions.assertSame(failedSample.applyAsLong(), count);
     }
 
     @Test
@@ -215,7 +223,7 @@ class MetricsFilterTest {
 
         MetricSample sample = metricsMap.get(MetricsKey.METRIC_REQUESTS_LIMIT.getNameByType(side));
 
-        Assertions.assertSame(((GaugeMetricSample) sample).getSupplier().get().longValue(), count);
+        Assertions.assertSame(((GaugeMetricSample) sample).applyAsLong(), count);
     }
 
     @Test
@@ -277,7 +285,7 @@ class MetricsFilterTest {
     }
 
     private void testClusterFilterError(int errorCode,MetricsKey metricsKey){
-        setup();
+//        setup();
         collector.setCollectEnabled(true);
         given(invoker.invoke(invocation)).willThrow(new RpcException(errorCode));
         initParam();
@@ -297,7 +305,7 @@ class MetricsFilterTest {
 
         MetricSample sample = metricsMap.get(metricsKey.getName());
 
-        Assertions.assertSame(((GaugeMetricSample) sample).getSupplier().get().longValue(), count);
+        Assertions.assertSame(((GaugeMetricSample) sample).applyAsLong(), count);
         teardown();
     }
 
@@ -322,7 +330,7 @@ class MetricsFilterTest {
 
         MetricSample sample = metricsMap.get(metricsKey.getName());
 
-        Assertions.assertSame(((GaugeMetricSample) sample).getSupplier().get().longValue(), count);
+        Assertions.assertSame(((GaugeMetricSample) sample).applyAsLong(), count);
 
 
         Assertions.assertTrue(metricsMap.containsKey(metricsKey.getName()));

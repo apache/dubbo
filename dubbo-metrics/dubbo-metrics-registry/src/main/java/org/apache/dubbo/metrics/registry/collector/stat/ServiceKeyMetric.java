@@ -41,10 +41,6 @@ public class ServiceKeyMetric implements Metric {
         this.serviceKey = serviceKey;
     }
 
-    public String getServiceKey() {
-        return serviceKey;
-    }
-
     public Map<String, String> getTags() {
         Map<String, String> tags = new HashMap<>();
         tags.put(TAG_IP, getLocalHost());
