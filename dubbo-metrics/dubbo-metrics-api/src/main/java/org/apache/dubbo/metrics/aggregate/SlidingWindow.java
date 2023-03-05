@@ -131,6 +131,17 @@ public abstract class SlidingWindow<T> {
         }
     }
 
+    public Pane<T> getPaneByStepAccordingCurrentPane(long timeMillis, int step) {
+        if (timeMillis < 0) {
+            return null;
+        }
+        if (timeMillis == 0) {
+            timeMillis = System.currentTimeMillis() + paneIntervalInMs * step;
+        } else {
+            timeMillis += paneIntervalInMs * step;
+        }
+        return currentPane(timeMillis);
+    }
     /**
      * Get statistic value from pane at the specified timestamp.
      *
@@ -287,10 +298,12 @@ public abstract class SlidingWindow<T> {
             paneEndIdx += paneCount;
         }
         List<Pane<T>> result = new ArrayList<>();
-        for (int i = paneStartIdx; i < paneEndIdx; i++) {
+        for (int i = paneStartIdx; i <= paneEndIdx; i++) {
             int paneIdx = i % paneCount;
             Pane<T> pane = referenceArray.get(paneIdx);
-            result.add(pane);
+            if (pane != null) {
+                result.add(pane);
+            }
         }
         return result;
     }

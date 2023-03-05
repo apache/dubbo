@@ -20,6 +20,8 @@ package org.apache.dubbo.metrics.aggregate;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.concurrent.atomic.LongAdder;
+
 class TimeWindowCounterTest {
 
     @Test
@@ -33,5 +35,11 @@ class TimeWindowCounterTest {
         Thread.sleep(1000);
         Assertions.assertEquals(counter.get(), 0);
         Assertions.assertTrue(counter.bucketLivedSeconds() < 1);
+    }
+
+    @Test
+    void testCurrentPanev2() throws InterruptedException {
+        TimeWindowCounter counter = new TimeWindowCounter(10, 1);
+        System.out.println(counter.getLatestPaneValue(2300));
     }
 }

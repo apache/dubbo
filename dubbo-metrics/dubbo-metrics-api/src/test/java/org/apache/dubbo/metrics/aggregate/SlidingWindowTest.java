@@ -17,10 +17,11 @@
 
 package org.apache.dubbo.metrics.aggregate;
 
+import org.apache.dubbo.common.utils.TimeUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.concurrent.CompletableFuture;
+import java.util.List;
 import java.util.concurrent.atomic.LongAdder;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -54,17 +55,16 @@ class SlidingWindowTest {
 
     @Test
     void testCurrentPanev2() throws InterruptedException {
-        CompletableFuture.runAsync(() -> {
-            window.currentPane(200L);
-        });
-        window.currentPane(210L);
-
-//        long timeInMs = System.currentTimeMillis();
-//        Pane<LongAdder> currentPane = window.currentPane(timeInMs);
-//        assertNotNull(currentPane);
-//        // reuse test
-//        assertEquals(currentPane,
-//            window.currentPane(1 + timeInMs + window.getPaneIntervalInMs() * paneCount));
+        long timeMillis = TimeUtils.currentTimeMillis();
+        Pane<LongAdder> currentPane = window.currentPane(timeMillis);
+        currentPane.getValue().add(2);
+        currentPane.getValue().add(1);
+        Pane<LongAdder> pre1StepPane = window.getPaneByStepAccordingCurrentPane(timeMillis, -1);
+        pre1StepPane.getValue().add(4);
+        Pane<LongAdder> pre2StepPane = window.getPaneByStepAccordingCurrentPane(timeMillis, -2);
+        pre2StepPane.getValue().add(5);
+        List<LongAdder> result = window.getLatestPaneValues(100);
+        System.out.println(result.toString());
     }
     @Test
     void testGetPaneData() {
