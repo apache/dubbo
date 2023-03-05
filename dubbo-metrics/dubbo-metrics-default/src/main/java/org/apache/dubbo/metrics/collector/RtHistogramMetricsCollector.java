@@ -43,7 +43,7 @@ public class RtHistogramMetricsCollector implements MetricsListener {
     private RtHistogramMetricRegister metricRegister;
     private final ApplicationModel applicationModel;
 
-    private static final Integer[] DEFAULT_BUCKETS_MS = new Integer[]{100, 200, 300, 400, 500, 1000, 3000, 10000};
+    private static final Integer[] DEFAULT_BUCKETS_MS = new Integer[]{100, 300, 500, 1000, 3000, 5000, 10000};
 
     public RtHistogramMetricsCollector(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
