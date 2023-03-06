@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metrics.filter.observation;
+package org.apache.dubbo.metrics.observation;
 
 import io.micrometer.common.KeyValues;
 import io.micrometer.common.docs.KeyName;
@@ -25,9 +25,9 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
-import static org.apache.dubbo.metrics.filter.observation.DubboObservation.LowCardinalityKeyNames.RPC_METHOD;
-import static org.apache.dubbo.metrics.filter.observation.DubboObservation.LowCardinalityKeyNames.RPC_SERVICE;
-import static org.apache.dubbo.metrics.filter.observation.DubboObservation.LowCardinalityKeyNames.RPC_SYSTEM;
+import static org.apache.dubbo.metrics.observation.DubboObservation.LowCardinalityKeyNames.RPC_METHOD;
+import static org.apache.dubbo.metrics.observation.DubboObservation.LowCardinalityKeyNames.RPC_SERVICE;
+import static org.apache.dubbo.metrics.observation.DubboObservation.LowCardinalityKeyNames.RPC_SYSTEM;
 
 class AbstractDefaultDubboObservationConvention {
     KeyValues getLowCardinalityKeyValues(Invocation invocation) {
