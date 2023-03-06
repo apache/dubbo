@@ -53,7 +53,6 @@ public class ThreadPoolMetricsSampler implements MetricsSampler {
 
     public ThreadPoolMetricsSampler(DefaultMetricsCollector collector) {
         this.collector = collector;
-        this.registryDefaultSampleThreadPoolExecutor();
     }
 
     public void addExecutors(String name, ExecutorService executorService) {
@@ -87,7 +86,7 @@ public class ThreadPoolMetricsSampler implements MetricsSampler {
         return list;
     }
 
-    private void registryDefaultSampleThreadPoolExecutor() {
+    public void registryDefaultSampleThreadPoolExecutor() {
         ApplicationModel applicationModel = collector.getApplicationModel();
         if (applicationModel == null) {
             return;
@@ -114,9 +113,7 @@ public class ThreadPoolMetricsSampler implements MetricsSampler {
         }
         if (this.frameworkExecutorRepository != null) {
             this.addExecutors("sharedExecutor", frameworkExecutorRepository.getSharedExecutor());
-            this.addExecutors("mappingRefreshingExecutor", frameworkExecutorRepository.getMappingRefreshingExecutor());
-            this.addExecutors("poolRouterExecutor", frameworkExecutorRepository.getPoolRouterExecutor());
-        }
+           }
     }
 
 }
