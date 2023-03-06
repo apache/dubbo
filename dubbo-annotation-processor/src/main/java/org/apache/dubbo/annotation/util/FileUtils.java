@@ -149,7 +149,6 @@ public final class FileUtils {
                     .collect(Collectors.toList());
 
         } catch (IOException e) {
-            e.printStackTrace();
             return Collections.emptyList();
         }
     }
