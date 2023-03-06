@@ -166,14 +166,14 @@ public class DubboCodec extends ExchangeCodec {
 
                     if (isDecodeDataInIoThread(channel)) {
                         if (existExpHandler) {
-                            inv = expProcessor.getRetryDecodeableRpcInvocation(frameworkModel, channel, req, is, proto);
+                            inv = expProcessor.getRetryDecodeableRpcInvocation(channel, req, is, proto);
                         } else {
                             inv = new DecodeableRpcInvocation(frameworkModel, channel, req, is, proto);
                         }
                         inv.decode();
                     } else {
                         if (existExpHandler) {
-                            inv = expProcessor.getRetryDecodeableRpcInvocation(frameworkModel, channel, req,
+                            inv = expProcessor.getRetryDecodeableRpcInvocation( channel, req,
                                 new UnsafeByteArrayInputStream(readMessageData(is)), proto);
                         } else {
                             inv = new DecodeableRpcInvocation(frameworkModel, channel, req,

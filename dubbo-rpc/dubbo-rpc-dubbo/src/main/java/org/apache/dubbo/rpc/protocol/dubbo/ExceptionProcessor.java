@@ -21,7 +21,6 @@ import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.Decodeable;
 import org.apache.dubbo.remoting.exchange.Request;
-import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.io.InputStream;
 
@@ -43,5 +42,5 @@ public interface ExceptionProcessor {
      *  Get an enhanced DecodeableRpcInvocation subclass to allow custom decode.
      *  The parameters are the same as {@link DecodeableRpcInvocation}
      */
-    DecodeableRpcInvocation getRetryDecodeableRpcInvocation(FrameworkModel frameworkModel, Channel channel, Request req, InputStream is, byte proto);
+    DecodeableRpcInvocation getRetryDecodeableRpcInvocation(Channel channel, Request req, InputStream is, byte proto);
 }
