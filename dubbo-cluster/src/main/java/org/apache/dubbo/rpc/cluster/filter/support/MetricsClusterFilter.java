@@ -15,7 +15,8 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.metrics.filter;
+package org.apache.dubbo.rpc.cluster.filter.support;
+
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
 import org.apache.dubbo.metrics.event.MetricsEvent;
@@ -27,6 +28,7 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.filter.ClusterFilter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
+
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 
 @Activate(group = CONSUMER)
