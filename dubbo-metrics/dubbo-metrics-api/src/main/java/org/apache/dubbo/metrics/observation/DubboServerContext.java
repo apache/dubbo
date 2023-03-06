@@ -14,17 +14,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metrics.filter.observation;
+package org.apache.dubbo.metrics.observation;
 
-import io.micrometer.observation.Observation;
-import io.micrometer.observation.ObservationConvention;
+import io.micrometer.observation.transport.ReceiverContext;
+import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.Invoker;
 
 /**
- * {@link ObservationConvention} for a {@link DubboServerContext}.
+ * Consumer context for RPC.
  */
-public interface DubboServerObservationConvention extends ObservationConvention<DubboServerContext> {
-    @Override
-    default boolean supportsContext(Observation.Context context) {
-        return context instanceof DubboServerContext;
+public class DubboServerContext extends ReceiverContext<Invocation> {
+
+    private final Invoker<?> invoker;
+
+    private final Invocation invocation;
+
+    public DubboServerContext(Invoker<?> invoker, Invocation invocation) {
+        super((stringObjectMap, s) -> String.valueOf(stringObjectMap.getAttachment(s)));
+        this.invoker = invoker;
+        this.invocation = invocation;
+        setCarrier(invocation);
+    }
+
+    public Invoker<?> getInvoker() {
+        return invoker;
+    }
+
+    public Invocation getInvocation() {
+        return invocation;
     }
 }

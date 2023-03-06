@@ -40,13 +40,12 @@
     </modules>
 
     <properties>
-        <spring-boot.version>2.7.8</spring-boot.version>
+        <spring-boot.version>2.7.9</spring-boot.version>
         <dubbo.version>${revision}</dubbo.version>
         <!-- Fix the bug of log4j refer:https://github.com/apache/logging-log4j2/pull/608 -->
-        <log4j2_version>2.19.0</log4j2_version>
+        <log4j2_version>2.20.0</log4j2_version>
         <!-- Spring boot buddy is lower than the delivery dependency package version and can only show the defined dependency version -->
-        <byte-buddy.version>1.13.0</byte-buddy.version>
-        <micrometer-core.version>1.10.4</micrometer-core.version>
+        <byte-buddy.version>1.14.0</byte-buddy.version>
     </properties>
 
     <dependencyManagement>
@@ -58,11 +57,6 @@
                 <version>${spring-boot.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
-            </dependency>
-            <dependency>
-                <groupId>io.micrometer</groupId>
-                <artifactId>micrometer-core</artifactId>
-                <version>${micrometer-core.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
