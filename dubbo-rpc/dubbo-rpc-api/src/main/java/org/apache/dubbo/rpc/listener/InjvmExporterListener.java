@@ -16,25 +16,30 @@
  */
 package org.apache.dubbo.rpc.listener;
 
+import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.RpcException;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class InjvmExporterListener extends ExporterListenerAdapter {
 
-    private final Map<String, ExporterChangeListener> exporterChangeListeners = new ConcurrentHashMap<>();
+    private final Map<String, Set<ExporterChangeListener>> exporterChangeListeners = new ConcurrentHashMap<>();
 
     private final Map<String, Exporter<?>> exporters = new ConcurrentHashMap<>();
 
     @Override
     public void exported(Exporter<?> exporter) throws RpcException {
         String serviceKey = exporter.getInvoker().getUrl().getServiceKey();
-        exporters.putIfAbsent(exporter.getInvoker().getUrl().getServiceKey(), exporter);
-        ExporterChangeListener exporterChangeListener = exporterChangeListeners.get(serviceKey);
-        if (exporterChangeListener != null) {
-            exporterChangeListener.onExporterChangeExport(exporter);
+        exporters.putIfAbsent(serviceKey, exporter);
+        Set<ExporterChangeListener> listeners = exporterChangeListeners.get(serviceKey);
+        if (!CollectionUtils.isEmpty(listeners)) {
+            for (ExporterChangeListener listener : listeners) {
+                listener.onExporterChangeExport(exporter);
+            }
         }
         super.exported(exporter);
     }
@@ -43,23 +48,31 @@ public class InjvmExporterListener extends ExporterListenerAdapter {
     public void unexported(Exporter<?> exporter) throws RpcException {
         String serviceKey = exporter.getInvoker().getUrl().getServiceKey();
         exporters.remove(serviceKey, exporter);
-        ExporterChangeListener exporterChangeListener = exporterChangeListeners.get(serviceKey);
-        if (exporterChangeListener != null) {
-            exporterChangeListener.onExporterChangeUnExport(exporter);
+        Set<ExporterChangeListener> listeners = exporterChangeListeners.get(serviceKey);
+        if (!CollectionUtils.isEmpty(listeners)) {
+            for (ExporterChangeListener listener : listeners) {
+                listener.onExporterChangeUnExport(exporter);
+            }
         }
+
         super.unexported(exporter);
     }
 
     public synchronized void addExporterChangeListener(ExporterChangeListener listener, String serviceKey) {
-        exporterChangeListeners.putIfAbsent(serviceKey, listener);
+        exporterChangeListeners.putIfAbsent(serviceKey, new ConcurrentHashSet<>());
+        exporterChangeListeners.get(serviceKey).add(listener);
         if (exporters.get(serviceKey) != null) {
             Exporter<?> exporter = exporters.get(serviceKey);
             listener.onExporterChangeExport(exporter);
         }
     }
 
-    public synchronized void removeExporterChangeListener(String listenerKey) {
-        exporterChangeListeners.remove(listenerKey);
+    public synchronized void removeExporterChangeListener(ExporterChangeListener listener, String listenerKey) {
+        Set<ExporterChangeListener> listeners = exporterChangeListeners.get(listenerKey);
+        listeners.remove(listener);
+        if (CollectionUtils.isEmpty(listeners)) {
+            exporterChangeListeners.remove(listenerKey);
+        }
     }
 
 

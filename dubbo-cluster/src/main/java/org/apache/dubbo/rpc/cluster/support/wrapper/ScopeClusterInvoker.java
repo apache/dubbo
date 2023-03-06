@@ -121,7 +121,7 @@ public class ScopeClusterInvoker<T> implements ClusterInvoker<T>, ExporterChange
     @Override
     public void destroy() {
         if (injvmExporterListener != null) {
-            injvmExporterListener.removeExporterChangeListener(getUrl().getServiceKey());
+            injvmExporterListener.removeExporterChangeListener(this,getUrl().getServiceKey());
         }
         destroyInjvmInvoker();
         this.invoker.destroy();
