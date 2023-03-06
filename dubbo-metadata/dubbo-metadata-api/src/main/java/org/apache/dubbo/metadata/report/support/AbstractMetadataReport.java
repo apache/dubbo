@@ -288,6 +288,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
             if (metadataReportRetry != null) {
                 metadataReportRetry.startRetryTask();
             }
+
             logger.error(PROXY_FAILED_EXPORT_SERVICE, "", "", "Failed to put provider metadata " + providerMetadataIdentifier + " in  " + serviceDefinition + ", cause: " + e.getMessage(), e);
         }
     }
