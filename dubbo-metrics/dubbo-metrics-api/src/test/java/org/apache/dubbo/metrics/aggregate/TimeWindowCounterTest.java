@@ -24,7 +24,7 @@ class TimeWindowCounterTest {
 
     @Test
     void test() throws Exception {
-        TimeWindowCounter counter = new TimeWindowCounter(12, 1);
+        TimeWindowCounter counter = new TimeWindowCounter(10, 1);
         counter.increment();
         Assertions.assertEquals(counter.get(), 1);
         counter.decrement();

@@ -20,9 +20,9 @@ import org.apache.dubbo.common.utils.StringUtils;
 
 public class PrefixedConfiguration implements Configuration {
 
-    private String prefix;
+    private final String prefix;
 
-    private Configuration origin;
+    private final Configuration origin;
 
     public PrefixedConfiguration(Configuration origin, String prefix) {
         this.origin = origin;

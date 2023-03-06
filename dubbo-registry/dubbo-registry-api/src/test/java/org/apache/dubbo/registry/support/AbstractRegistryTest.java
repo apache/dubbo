@@ -90,10 +90,9 @@ class AbstractRegistryTest {
      * Test method for
      * {@link org.apache.dubbo.registry.support.AbstractRegistry#register(URL)}.
      *
-     * @throws Exception
      */
     @Test
-    void testRegister() throws Exception {
+    void testRegister() {
         //test one url
         abstractRegistry.register(mockUrl);
         assert abstractRegistry.getRegistered().contains(mockUrl);

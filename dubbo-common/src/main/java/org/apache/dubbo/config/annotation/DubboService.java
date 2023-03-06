@@ -323,4 +323,9 @@ public @interface DubboService {
      * @return
      */
     String executor() default "";
+
+    /**
+     * Payload max length.
+     */
+    String payload() default "";
 }

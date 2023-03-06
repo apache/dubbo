@@ -17,17 +17,6 @@
 
 package org.apache.dubbo.metrics.report;
 
-import io.micrometer.core.instrument.Gauge;
-import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.Tag;
-import io.micrometer.core.instrument.Tags;
-import io.micrometer.core.instrument.binder.jvm.ClassLoaderMetrics;
-import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics;
-import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics;
-import io.micrometer.core.instrument.binder.jvm.JvmThreadMetrics;
-import io.micrometer.core.instrument.binder.system.ProcessorMetrics;
-import io.micrometer.core.instrument.binder.system.UptimeMetrics;
-import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.common.constants.MetricsConstants;
@@ -40,6 +29,18 @@ import org.apache.dubbo.metrics.collector.MetricsCollector;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
+import io.micrometer.core.instrument.Gauge;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tag;
+import io.micrometer.core.instrument.Tags;
+import io.micrometer.core.instrument.binder.jvm.ClassLoaderMetrics;
+import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics;
+import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics;
+import io.micrometer.core.instrument.binder.jvm.JvmThreadMetrics;
+import io.micrometer.core.instrument.binder.system.ProcessorMetrics;
+import io.micrometer.core.instrument.binder.system.UptimeMetrics;
+import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -62,6 +63,7 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
     private final AtomicBoolean initialized = new AtomicBoolean(false);
 
     protected final URL url;
+    @SuppressWarnings("rawtypes")
     protected final List<MetricsCollector> collectors = new ArrayList<>();
     public static final CompositeMeterRegistry compositeRegistry = new CompositeMeterRegistry();
 
@@ -120,6 +122,7 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
         }
     }
 
+    @SuppressWarnings("rawtypes")
     private void initCollectors() {
         ScopeBeanFactory beanFactory = applicationModel.getBeanFactory();
         beanFactory.getOrRegisterBean(AggregateMetricsCollector.class);
@@ -130,11 +133,10 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
     private void scheduleMetricsCollectorSyncJob() {
         NamedThreadFactory threadFactory = new NamedThreadFactory("metrics-collector-sync-job", true);
         collectorSyncJobExecutor = Executors.newScheduledThreadPool(1, threadFactory);
-        collectorSyncJobExecutor.scheduleWithFixedDelay(() -> {
-            refreshData();
-        }, DEFAULT_SCHEDULE_INITIAL_DELAY, DEFAULT_SCHEDULE_PERIOD, TimeUnit.SECONDS);
+        collectorSyncJobExecutor.scheduleWithFixedDelay(this::refreshData, DEFAULT_SCHEDULE_INITIAL_DELAY, DEFAULT_SCHEDULE_PERIOD, TimeUnit.SECONDS);
     }
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public void refreshData() {
         collectors.forEach(collector -> {
             List<MetricSample> samples = collector.collect();
@@ -152,7 +154,7 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
                                 tags.add(Tag.of(k, v));
                             });
 
-                            Gauge.builder(gaugeSample.getName(), gaugeSample.getSupplier())
+                            Gauge.builder(gaugeSample.getName(), gaugeSample.getValue(), gaugeSample.getApply())
                                 .description(gaugeSample.getDescription()).tags(tags).register(compositeRegistry);
                             break;
                         case COUNTER:
