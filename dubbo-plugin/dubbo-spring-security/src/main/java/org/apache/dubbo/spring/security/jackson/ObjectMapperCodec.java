@@ -103,7 +103,7 @@ public class ObjectMapperCodec {
         for (String moduleClassName : jacksonModuleClassNameList) {
             try {
                 SimpleModule objectMapperModule = (SimpleModule) ClassUtils.forName(moduleClassName,
-                    ObjectMapperCodec.class.getClassLoader()).newInstance();
+                    ObjectMapperCodec.class.getClassLoader()).getDeclaredConstructor().newInstance();
                 mapper.registerModule(objectMapperModule);
 
             } catch (Throwable ex) {

@@ -30,7 +30,7 @@ class JavassistCompilerTest extends JavaCodeTest {
         Class<?> clazz = compiler.compile(JavaCodeTest.class, getSimpleCode(), JavassistCompiler.class.getClassLoader());
 
         // Because javassist compiles using the caller class loader, we should't use HelloService directly
-        Object instance = clazz.newInstance();
+        Object instance = clazz.getDeclaredConstructor().newInstance();
         Method sayHello = instance.getClass().getMethod("sayHello");
         Assertions.assertEquals("Hello world!", sayHello.invoke(instance));
     }
@@ -48,7 +48,7 @@ class JavassistCompilerTest extends JavaCodeTest {
             Assertions.assertThrows(RuntimeException.class, () -> compiler.compile(null, getSimpleCodeWithoutPackage(), JavassistCompiler.class.getClassLoader()));
         } else {
             Class<?> clazz = compiler.compile(null, getSimpleCodeWithoutPackage(), JavassistCompiler.class.getClassLoader());
-            Object instance = clazz.newInstance();
+            Object instance = clazz.getDeclaredConstructor().newInstance();
             Method sayHello = instance.getClass().getMethod("sayHello");
             Assertions.assertEquals("Hello world!", sayHello.invoke(instance));
         }
@@ -59,7 +59,7 @@ class JavassistCompilerTest extends JavaCodeTest {
         Assertions.assertThrows(IllegalStateException.class, () -> {
             JavassistCompiler compiler = new JavassistCompiler();
             Class<?> clazz = compiler.compile(JavaCodeTest.class, getSimpleCodeWithSyntax0(), JavassistCompiler.class.getClassLoader());
-            Object instance = clazz.newInstance();
+            Object instance = clazz.getDeclaredConstructor().newInstance();
             Method sayHello = instance.getClass().getMethod("sayHello");
             Assertions.assertEquals("Hello world!", sayHello.invoke(instance));
         });
@@ -69,7 +69,7 @@ class JavassistCompilerTest extends JavaCodeTest {
     void testCompileJavaClassWithImport() throws Exception {
         JavassistCompiler compiler = new JavassistCompiler();
         Class<?> clazz = compiler.compile(JavaCodeTest.class, getSimpleCodeWithImports(), JavassistCompiler.class.getClassLoader());
-        Object instance = clazz.newInstance();
+        Object instance = clazz.getDeclaredConstructor().newInstance();
         Method sayHello = instance.getClass().getMethod("sayHello");
         Assertions.assertEquals("Hello world!", sayHello.invoke(instance));
     }
@@ -78,7 +78,7 @@ class JavassistCompilerTest extends JavaCodeTest {
     void testCompileJavaClassWithExtends() throws Exception {
         JavassistCompiler compiler = new JavassistCompiler();
         Class<?> clazz = compiler.compile(JavaCodeTest.class, getSimpleCodeWithWithExtends(), JavassistCompiler.class.getClassLoader());
-        Object instance = clazz.newInstance();
+        Object instance = clazz.getDeclaredConstructor().newInstance();
         Method sayHello = instance.getClass().getMethod("sayHello");
         Assertions.assertEquals("Hello world3!", sayHello.invoke(instance));
     }

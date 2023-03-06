@@ -14,17 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metrics.filter.observation;
 
-import io.micrometer.observation.Observation;
-import io.micrometer.observation.ObservationConvention;
+package org.apache.dubbo.metrics.model.container;
 
-/**
- * {@link ObservationConvention} for a {@link DubboServerContext}.
- */
-public interface DubboServerObservationConvention extends ObservationConvention<DubboServerContext> {
-    @Override
-    default boolean supportsContext(Observation.Context context) {
-        return context instanceof DubboServerContext;
+import org.apache.dubbo.metrics.model.MetricsKeyWrapper;
+
+import java.util.concurrent.atomic.LongAccumulator;
+
+public class LongAccumulatorContainer extends LongContainer<LongAccumulator> {
+    public LongAccumulatorContainer(MetricsKeyWrapper metricsKeyWrapper, LongAccumulator accumulator) {
+        super(metricsKeyWrapper, () -> accumulator, (responseTime, longAccumulator) -> longAccumulator.accumulate(responseTime));
     }
 }

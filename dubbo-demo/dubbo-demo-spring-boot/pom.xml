@@ -36,8 +36,8 @@
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
         <skip_maven_deploy>true</skip_maven_deploy>
-        <spring-boot.version>2.7.8</spring-boot.version>
-        <spring-boot-maven-plugin.version>2.7.8</spring-boot-maven-plugin.version>
+        <spring-boot.version>2.7.9</spring-boot.version>
+        <spring-boot-maven-plugin.version>2.7.9</spring-boot-maven-plugin.version>
         <micrometer-core.version>1.10.4</micrometer-core.version>
     </properties>
     <dependencyManagement>
