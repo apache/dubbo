@@ -33,16 +33,21 @@ import org.apache.dubbo.rpc.cluster.LoadBalance;
 import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
 import org.apache.dubbo.rpc.cluster.support.AbstractClusterInvoker;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
+import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
 import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.SCOPE_KEY;
 
@@ -157,9 +162,61 @@ public class ScopeClusterInvokerTest {
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("doSomething4");
         invocation.setParameterTypes(new Class[]{});
-        Assertions.assertTrue(cluster.isAvailable(),"");
+        Assertions.assertTrue(cluster.isAvailable(), "");
         Result ret = cluster.invoke(invocation);
         Assertions.assertEquals("doSomething4", ret.getValue());
+    }
+
+    @Test
+    void testInjvmRefer() {
+        URL url = new URL(LOCAL_PROTOCOL, LOCALHOST_VALUE, 0, DemoService.class.getName());
+        url = url.addParameter(REFER_KEY,
+            URL.encode(PATH_KEY + "=" + DemoService.class.getName()));
+        url = url.setScopeModel(ApplicationModel.defaultModel().getDefaultModule());
+
+        URL injvmUrl = URL.valueOf("injvm://127.0.0.1/TestService")
+            .addParameter(INTERFACE_KEY, DemoService.class.getName());
+        Exporter<?> exporter = protocol.export(proxy.getInvoker(new DemoServiceImpl(), DemoService.class, injvmUrl));
+        exporters.add(exporter);
+
+        Invoker<DemoService> cluster = getClusterInvoker(url);
+        invokers.add(cluster);
+
+        //Configured with mock
+        RpcInvocation invocation = new RpcInvocation();
+        invocation.setMethodName("doSomething4");
+        invocation.setParameterTypes(new Class[]{});
+        Assertions.assertTrue(cluster.isAvailable(), "");
+        Result ret = cluster.invoke(invocation);
+        Assertions.assertEquals("doSomething4", ret.getValue());
+    }
+
+    @Test
+    void testListenUnExport() throws NoSuchFieldException, IllegalAccessException {
+        URL url = URL.valueOf("remote://1.2.3.4/" + DemoService.class.getName());
+        url = url.addParameter(REFER_KEY,
+            URL.encode(PATH_KEY + "=" + DemoService.class.getName()));
+        url = url.addParameter(SCOPE_KEY, "local");
+        url = url.setScopeModel(ApplicationModel.defaultModel().getDefaultModule());
+
+        URL injvmUrl = URL.valueOf("injvm://127.0.0.1/TestService")
+            .addParameter(INTERFACE_KEY, DemoService.class.getName());
+        Exporter<?> exporter = protocol.export(proxy.getInvoker(new DemoServiceImpl(), DemoService.class, injvmUrl));
+
+        Invoker<DemoService> cluster = getClusterInvoker(url);
+        invokers.add(cluster);
+
+        exporter.unexport();
+
+        Assertions.assertTrue(cluster instanceof ScopeClusterInvoker);
+
+        Field injvmInvoker = cluster.getClass().getDeclaredField("injvmInvoker");
+        injvmInvoker.setAccessible(true);
+        Assertions.assertNull(injvmInvoker.get(cluster));
+
+        Field isExported = cluster.getClass().getDeclaredField("isExported");
+        isExported.setAccessible(true);
+        Assertions.assertFalse(((AtomicBoolean) isExported.get(cluster)).get());
     }
 
     private Invoker<DemoService> getClusterInvoker(URL url) {
