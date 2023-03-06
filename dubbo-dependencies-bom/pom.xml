@@ -144,7 +144,7 @@
         <okhttp_version>4.10.0</okhttp_version>
 
         <rs_api_version>2.1.1</rs_api_version>
-        <resteasy_version>3.15.3.Final</resteasy_version>
+        <resteasy_version>3.15.6.Final</resteasy_version>
         <codehaus-jackson_version>1.9.13</codehaus-jackson_version>
         <tomcat_embed_version>8.5.87</tomcat_embed_version>
         <jetcd_version>0.7.5</jetcd_version>
