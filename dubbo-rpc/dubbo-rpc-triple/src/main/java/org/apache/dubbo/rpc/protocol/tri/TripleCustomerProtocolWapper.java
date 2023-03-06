@@ -344,7 +344,7 @@ public class TripleCustomerProtocolWapper {
             }
 
             public Builder addArgTypes(String argsType) {
-                Assert.notEmptyString(argsType, "argsType不能为空");
+                Assert.notEmptyString(argsType, "argsType cannot be empty.");
                 argTypes.add(argsType);
                 return this;
             }

@@ -363,19 +363,19 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
         }
         TimePair timePair = TimePair.start();
         GlobalMetricsEventMulticaster eventMulticaster = applicationModel.getBeanFactory().getBean(GlobalMetricsEventMulticaster.class);
-        eventMulticaster.publishEvent(new MetadataEvent.PushEvent(applicationModel, timePair));
         if (metadataReport != null) {
             SubscriberMetadataIdentifier identifier = new SubscriberMetadataIdentifier(serviceName, metadataInfo.getRevision());
             if ((DEFAULT_METADATA_STORAGE_TYPE.equals(metadataType) && metadataReport.shouldReportMetadata()) || REMOTE_METADATA_STORAGE_TYPE.equals(metadataType)) {
                 try {
+                    eventMulticaster.publishEvent(new MetadataEvent.PushEvent(applicationModel, timePair));
                     metadataReport.publishAppMetadata(identifier, metadataInfo);
+                    eventMulticaster.publishFinishEvent(new MetadataEvent.PushEvent(applicationModel, timePair));
                 } catch (IllegalStateException e) {
                     eventMulticaster.publishErrorEvent(new MetadataEvent.PushEvent(applicationModel, timePair));
                     throw e;
                 }
             }
         }
-        eventMulticaster.publishFinishEvent(new MetadataEvent.PushEvent(applicationModel, timePair));
         MetadataInfo clonedMetadataInfo = metadataInfo.clone();
         metadataInfos.put(metadataInfo.getRevision(), new MetadataInfoStat(clonedMetadataInfo));
     }
