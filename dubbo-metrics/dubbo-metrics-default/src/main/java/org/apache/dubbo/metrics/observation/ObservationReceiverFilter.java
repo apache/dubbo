@@ -20,10 +20,6 @@ import io.micrometer.observation.Observation;
 import io.micrometer.observation.ObservationRegistry;
 
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.metrics.filter.observation.DefaultDubboServerObservationConvention;
-import org.apache.dubbo.metrics.filter.observation.DubboObservation;
-import org.apache.dubbo.metrics.filter.observation.DubboServerContext;
-import org.apache.dubbo.metrics.filter.observation.DubboServerObservationConvention;
 import org.apache.dubbo.rpc.BaseFilter;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;

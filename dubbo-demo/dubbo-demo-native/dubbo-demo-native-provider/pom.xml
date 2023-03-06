@@ -117,7 +117,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-compiler-plugin</artifactId>
-                        <version>3.7.0</version>
+                        <version>3.11.0</version>
                         <configuration>
                             <source>1.8</source>
                             <target>1.8</target>
@@ -134,7 +134,7 @@
                     <plugin>
                         <groupId>org.graalvm.buildtools</groupId>
                         <artifactId>native-maven-plugin</artifactId>
-                        <version>0.9.19</version>
+                        <version>0.9.20</version>
                         <configuration>
                             <classesDirectory>${project.build.outputDirectory}</classesDirectory>
                             <metadataRepository>
