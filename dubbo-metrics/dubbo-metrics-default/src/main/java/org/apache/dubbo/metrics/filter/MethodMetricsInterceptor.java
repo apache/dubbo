@@ -89,16 +89,22 @@ public class MethodMetricsInterceptor {
 
         if (throwable instanceof RpcException && ((RpcException) throwable).isBiz()) {
             onCompleted(invocation);
+        }else{
+            rtTime(invocation);
         }
 
         sampler.incOnEvent(invocation, MetricsEvent.Type.TOTAL_FAILED.getNameByType(side));
     }
 
-    private void onCompleted(Invocation invocation) {
+    private void rtTime(Invocation invocation){
         Long endTime = System.currentTimeMillis();
         Long beginTime = (Long) invocation.get(METRIC_FILTER_START_TIME);
         Long rt = endTime - beginTime;
         sampler.addRT(invocation, rt);
+    }
+
+    private void onCompleted(Invocation invocation) {
+        rtTime(invocation);
         sampler.dec(invocation, MetricsEvent.Type.PROCESSING.getNameByType(getSide(invocation)));
     }
 }

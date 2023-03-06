@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metrics.filter.observation;
+package org.apache.dubbo.metrics.observation;
 
 import java.util.List;
 
@@ -24,8 +24,8 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcContextAttachment;
 
-import static org.apache.dubbo.metrics.filter.observation.DubboObservation.LowCardinalityKeyNames.NET_PEER_NAME;
-import static org.apache.dubbo.metrics.filter.observation.DubboObservation.LowCardinalityKeyNames.NET_PEER_PORT;
+import static org.apache.dubbo.metrics.observation.DubboObservation.LowCardinalityKeyNames.NET_PEER_NAME;
+import static org.apache.dubbo.metrics.observation.DubboObservation.LowCardinalityKeyNames.NET_PEER_PORT;
 
 /**
  * Default implementation of the {@link DubboClientObservationConvention}.

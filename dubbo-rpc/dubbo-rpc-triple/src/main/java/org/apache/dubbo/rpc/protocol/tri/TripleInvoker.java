@@ -76,7 +76,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
     private final Set<Invoker<?>> invokers;
     private final ExecutorService streamExecutor;
     private final String acceptEncodings;
-    private final TripleWriteQueue writeQueue = new TripleWriteQueue();
+    private final TripleWriteQueue writeQueue = new TripleWriteQueue(256);
 
     public TripleInvoker(Class<T> serviceType,
         URL url,
