@@ -48,7 +48,7 @@ class FileTest {
         ignoredModules.add(Pattern.compile("dubbo-parent"));
         ignoredModules.add(Pattern.compile("dubbo-core-spi"));
         ignoredModules.add(Pattern.compile("dubbo-demo.*"));
-        ignoredModulesInDubboAll.add(Pattern.compile("dubbo-annotation-processor"));
+        ignoredModules.add(Pattern.compile("dubbo-annotation-processor"));
 
         ignoredModulesInDubboAll.add(Pattern.compile("dubbo"));
         ignoredModulesInDubboAll.add(Pattern.compile("dubbo-bom"));
