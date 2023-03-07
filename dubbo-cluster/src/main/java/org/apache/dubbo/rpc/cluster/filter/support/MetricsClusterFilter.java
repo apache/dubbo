@@ -31,7 +31,7 @@ import org.apache.dubbo.rpc.model.ScopeModelAware;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 
-@Activate(group = CONSUMER)
+@Activate(group = CONSUMER,onClass = "org.apache.dubbo.metrics.collector.DefaultMetricsCollector")
 public class MetricsClusterFilter implements ClusterFilter, BaseFilter.Listener, ScopeModelAware {
 
     private DefaultMetricsCollector collector;
