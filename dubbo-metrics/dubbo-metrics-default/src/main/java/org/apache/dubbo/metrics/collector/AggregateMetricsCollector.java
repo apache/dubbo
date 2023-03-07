@@ -39,7 +39,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import static org.apache.dubbo.common.constants.CommonConstants.*;
+import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
+import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.metrics.model.MetricsCategory.QPS;
 import static org.apache.dubbo.metrics.model.MetricsCategory.REQUESTS;
 import static org.apache.dubbo.metrics.model.MetricsCategory.RT;
