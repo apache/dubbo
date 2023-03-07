@@ -57,7 +57,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.THREAD_NAME_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_ERROR_USE_THREAD_POOL;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_EXECUTORS_NO_FOUND;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXPECTED_EXECUTORS_SHUTDOWN;
-import static org.apache.dubbo.config.Constants.SERVER_THREAD_POOL_NAME;
 
 /**
  * Consider implementing {@code Lifecycle} to enable executors shutdown when the process stops.
