@@ -37,9 +37,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 
+import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SHARED_EXECUTOR_SERVICE_COMPONENT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_SERVICE_COMPONENT_KEY;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_METRICS_COLLECTOR_EXCEPTION;
+import static org.apache.dubbo.config.Constants.CLIENT_THREAD_POOL_NAME;
+import static org.apache.dubbo.config.Constants.SERVER_THREAD_POOL_NAME;
 import static org.apache.dubbo.metrics.model.MetricsCategory.THREAD_POOL;
 
 public class ThreadPoolMetricsSampler implements MetricsSampler {
@@ -102,12 +105,20 @@ public class ThreadPoolMetricsSampler implements MetricsSampler {
         if (this.dataStore == null) {
             this.dataStore = collector.getApplicationModel().getExtensionLoader(DataStore.class).getDefaultExtension();
         }
+
         if (dataStore != null) {
             Map<String, Object> executors = dataStore.get(EXECUTOR_SERVICE_COMPONENT_KEY);
             for (Map.Entry<String, Object> entry : executors.entrySet()) {
                 ExecutorService executor = (ExecutorService) entry.getValue();
                 if (executor instanceof ThreadPoolExecutor) {
-                    this.addExecutors(entry.getKey(), executor);
+                    this.addExecutors( SERVER_THREAD_POOL_NAME + "-" + entry.getKey(), executor);
+                }
+            }
+            executors = dataStore.get(CONSUMER_SHARED_EXECUTOR_SERVICE_COMPONENT_KEY);
+            for (Map.Entry<String, Object> entry : executors.entrySet()) {
+                ExecutorService executor = (ExecutorService) entry.getValue();
+                if (executor instanceof ThreadPoolExecutor) {
+                    this.addExecutors(CLIENT_THREAD_POOL_NAME + "-" + entry.getKey(), executor);
                 }
             }
         }

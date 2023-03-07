@@ -109,8 +109,6 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
             executor = createExecutor(url);
             executors.put(executorCacheKey, executor);
         }
-
-        executorCacheKey= (CONSUMER_SIDE.equalsIgnoreCase(url.getParameter(SIDE_KEY)) ? "DubboClientHandler" : SERVER_THREAD_POOL_NAME ) + "-" + executorCacheKey;
         dataStore.put(executorKey, executorCacheKey, executor);
         return executor;
     }
