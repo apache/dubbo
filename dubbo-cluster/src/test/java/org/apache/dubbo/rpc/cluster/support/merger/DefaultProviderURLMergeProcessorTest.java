@@ -57,7 +57,7 @@ class DefaultProviderURLMergeProcessorTest {
     }
 
     @Test
-    void testMergeUrl() throws Exception {
+    void testMergeUrl() {
         URL providerURL = URL.valueOf("dubbo://localhost:55555");
         providerURL = providerURL.setPath("path")
             .setUsername("username")

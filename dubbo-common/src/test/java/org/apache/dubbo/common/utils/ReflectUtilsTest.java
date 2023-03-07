@@ -46,14 +46,14 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 class ReflectUtilsTest {
     @Test
-    void testIsPrimitives() throws Exception {
+    void testIsPrimitives() {
         assertTrue(ReflectUtils.isPrimitives(boolean[].class));
         assertTrue(ReflectUtils.isPrimitives(byte.class));
         assertFalse(ReflectUtils.isPrimitive(Map[].class));
     }
 
     @Test
-    void testIsPrimitive() throws Exception {
+    void testIsPrimitive() {
         assertTrue(ReflectUtils.isPrimitive(boolean.class));
         assertTrue(ReflectUtils.isPrimitive(String.class));
         assertTrue(ReflectUtils.isPrimitive(Boolean.class));
@@ -64,7 +64,7 @@ class ReflectUtilsTest {
     }
 
     @Test
-    void testGetBoxedClass() throws Exception {
+    void testGetBoxedClass() {
         assertThat(ReflectUtils.getBoxedClass(int.class), sameInstance(Integer.class));
         assertThat(ReflectUtils.getBoxedClass(boolean.class), sameInstance(Boolean.class));
         assertThat(ReflectUtils.getBoxedClass(long.class), sameInstance(Long.class));

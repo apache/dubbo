@@ -134,27 +134,27 @@ public class ExtensionLoader<T> {
 
     private Set<Class<?>> cachedWrapperClasses;
 
-    private Map<String, IllegalStateException> exceptions = new ConcurrentHashMap<>();
+    private final Map<String, IllegalStateException> exceptions = new ConcurrentHashMap<>();
 
     private static volatile LoadingStrategy[] strategies = loadLoadingStrategies();
 
-    private static Map<String, String> specialSPILoadingStrategyMap = getSpecialSPILoadingStrategyMap();
+    private static final Map<String, String> specialSPILoadingStrategyMap = getSpecialSPILoadingStrategyMap();
 
     private static SoftReference<Map<java.net.URL, List<String>>> urlListMapCache = new SoftReference<>(
         new ConcurrentHashMap<>());
 
-    private static List<String> ignoredInjectMethodsDesc = getIgnoredInjectMethodsDesc();
+    private static final List<String> ignoredInjectMethodsDesc = getIgnoredInjectMethodsDesc();
 
     /**
      * Record all unacceptable exceptions when using SPI
      */
-    private Set<String>                  unacceptableExceptions = new ConcurrentHashSet<>();
-    private ExtensionDirector            extensionDirector;
-    private List<ExtensionPostProcessor> extensionPostProcessors;
+    private final Set<String>                  unacceptableExceptions = new ConcurrentHashSet<>();
+    private final ExtensionDirector            extensionDirector;
+    private final List<ExtensionPostProcessor> extensionPostProcessors;
     private InstantiationStrategy        instantiationStrategy;
-    private ActivateComparator           activateComparator;
-    private ScopeModel                   scopeModel;
-    private AtomicBoolean                destroyed              = new AtomicBoolean();
+    private final ActivateComparator           activateComparator;
+    private final ScopeModel                   scopeModel;
+    private final AtomicBoolean                destroyed              = new AtomicBoolean();
 
     public static void setLoadingStrategies(LoadingStrategy... strategies) {
         if (ArrayUtils.isNotEmpty(strategies)) {

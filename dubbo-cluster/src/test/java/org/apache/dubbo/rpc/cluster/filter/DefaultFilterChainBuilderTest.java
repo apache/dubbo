@@ -43,7 +43,7 @@ class DefaultFilterChainBuilderTest {
         urlWithoutFilter = urlWithoutFilter.setScopeModel(ApplicationModel.defaultModel());
         AbstractInvoker<DemoService> invokerWithoutFilter = new AbstractInvoker<DemoService>(DemoService.class, urlWithoutFilter) {
             @Override
-            protected Result doInvoke(Invocation invocation) throws Throwable {
+            protected Result doInvoke(Invocation invocation) {
                 return null;
             }
         };
@@ -58,7 +58,7 @@ class DefaultFilterChainBuilderTest {
         urlWithFilter = urlWithFilter.setScopeModel(ApplicationModel.defaultModel());
         AbstractInvoker<DemoService> invokerWithFilter = new AbstractInvoker<DemoService>(DemoService.class, urlWithFilter) {
             @Override
-            protected Result doInvoke(Invocation invocation) throws Throwable {
+            protected Result doInvoke(Invocation invocation) {
                 return null;
             }
         };
@@ -78,7 +78,7 @@ class DefaultFilterChainBuilderTest {
         urlWithoutFilter = urlWithoutFilter.setScopeModel(ApplicationModel.defaultModel());
         AbstractInvoker<DemoService> invokerWithoutFilter = new AbstractInvoker<DemoService>(DemoService.class, urlWithoutFilter) {
             @Override
-            protected Result doInvoke(Invocation invocation) throws Throwable {
+            protected Result doInvoke(Invocation invocation) {
                 return null;
             }
         };
@@ -93,7 +93,7 @@ class DefaultFilterChainBuilderTest {
         urlWithFilter = urlWithFilter.setScopeModel(ApplicationModel.defaultModel());
         AbstractInvoker<DemoService> invokerWithFilter = new AbstractInvoker<DemoService>(DemoService.class, urlWithFilter) {
             @Override
-            protected Result doInvoke(Invocation invocation) throws Throwable {
+            protected Result doInvoke(Invocation invocation) {
                 return null;
             }
         };

@@ -22,6 +22,7 @@ import org.apache.dubbo.common.utils.IOUtils;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import java.beans.Transient;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -179,6 +180,7 @@ public class SslConfig extends AbstractConfig {
         this.oidcTokenPath = oidcTokenPath;
     }
 
+    @Transient
     public InputStream getServerKeyCertChainPathStream() throws IOException {
         if (serverKeyCertChainPath != null) {
             serverKeyCertChainPathStream = IOUtils.getURL(serverKeyCertChainPath).openStream();
@@ -190,6 +192,7 @@ public class SslConfig extends AbstractConfig {
         this.serverKeyCertChainPathStream = serverKeyCertChainPathStream;
     }
 
+    @Transient
     public InputStream getServerPrivateKeyPathStream() throws IOException {
         if (serverPrivateKeyPath != null) {
             serverPrivateKeyPathStream = IOUtils.getURL(serverPrivateKeyPath).openStream();
@@ -201,6 +204,7 @@ public class SslConfig extends AbstractConfig {
         this.serverPrivateKeyPathStream = serverPrivateKeyPathStream;
     }
 
+    @Transient
     public InputStream getServerTrustCertCollectionPathStream() throws IOException {
         if (serverTrustCertCollectionPath != null) {
             serverTrustCertCollectionPathStream = IOUtils.getURL(serverTrustCertCollectionPath).openStream();
@@ -212,6 +216,7 @@ public class SslConfig extends AbstractConfig {
         this.serverTrustCertCollectionPathStream = serverTrustCertCollectionPathStream;
     }
 
+    @Transient
     public InputStream getClientKeyCertChainPathStream() throws IOException {
         if (clientKeyCertChainPath != null) {
             clientKeyCertChainPathStream = IOUtils.getURL(clientKeyCertChainPath).openStream();
@@ -223,6 +228,7 @@ public class SslConfig extends AbstractConfig {
         this.clientKeyCertChainPathStream = clientKeyCertChainPathStream;
     }
 
+    @Transient
     public InputStream getClientPrivateKeyPathStream() throws IOException {
         if (clientPrivateKeyPath != null) {
             clientPrivateKeyPathStream = IOUtils.getURL(clientPrivateKeyPath).openStream();
@@ -234,6 +240,7 @@ public class SslConfig extends AbstractConfig {
         this.clientPrivateKeyPathStream = clientPrivateKeyPathStream;
     }
 
+    @Transient
     public InputStream getClientTrustCertCollectionPathStream() throws IOException {
         if (clientTrustCertCollectionPath != null) {
             clientTrustCertCollectionPathStream = IOUtils.getURL(clientTrustCertCollectionPath).openStream();

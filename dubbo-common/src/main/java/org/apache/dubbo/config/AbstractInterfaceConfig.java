@@ -16,15 +16,6 @@
  */
 package org.apache.dubbo.config;
 
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.config.ConfigurationUtils;
@@ -42,6 +33,16 @@ import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 import org.apache.dubbo.rpc.model.ServiceMetadata;
+
+import java.beans.Transient;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
@@ -207,8 +208,9 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     /**
      * The url of the reference service
      */
-    protected final List<URL> urls = new ArrayList<URL>();
+    protected transient final List<URL> urls = new ArrayList<URL>();
 
+    @Transient
     public List<URL> getExportedUrls() {
         return urls;
     }
@@ -903,6 +905,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         this.interfaceName = interfaceName;
     }
 
+    @Transient
     public ClassLoader getInterfaceClassLoader() {
         return interfaceClassLoader;
     }

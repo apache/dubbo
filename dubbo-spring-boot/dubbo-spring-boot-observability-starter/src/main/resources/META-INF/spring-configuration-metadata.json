@@ -1,0 +1,82 @@
+{
+  "groups": [
+    {
+      "name": "dubbo.tracing",
+      "type": "org.apache.dubbo.spring.boot.observability.config.DubboTracingProperties",
+      "sourceType": "org.apache.dubbo.spring.boot.observability.config.DubboTracingProperties"
+    },
+    {
+      "name": "dubbo.tracing.baggage",
+      "type": "org.apache.dubbo.spring.boot.observability.config.DubboTracingProperties$Baggage",
+      "sourceType": "org.apache.dubbo.spring.boot.observability.config.DubboTracingProperties",
+      "sourceMethod": "getBaggage()"
+    },
+    {
+      "name": "dubbo.tracing.baggage.correlation",
+      "type": "org.apache.dubbo.spring.boot.observability.config.DubboTracingProperties$Baggage$Correlation",
+      "sourceType": "org.apache.dubbo.spring.boot.observability.config.DubboTracingProperties$Baggage",
+      "sourceMethod": "getCorrelation()"
+    },
+    {
+      "name": "dubbo.tracing.propagation",
+      "type": "org.apache.dubbo.spring.boot.observability.config.DubboTracingProperties$Propagation",
+      "sourceType": "org.apache.dubbo.spring.boot.observability.config.DubboTracingProperties",
+      "sourceMethod": "getPropagation()"
+    },
+    {
+      "name": "dubbo.tracing.sampling",
+      "type": "org.apache.dubbo.spring.boot.observability.config.DubboTracingProperties$Sampling",
+      "sourceType": "org.apache.dubbo.spring.boot.observability.config.DubboTracingProperties",
+      "sourceMethod": "getSampling()"
+    }
+  ],
+  "properties": [
+    {
+      "name": "dubbo.tracing.baggage.correlation.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Whether to enable correlation of the baggage context with logging contexts.",
+      "sourceType": "org.apache.dubbo.spring.boot.observability.config.DubboTracingProperties$Baggage$Correlation",
+      "defaultValue": true
+    },
+    {
+      "name": "dubbo.tracing.baggage.correlation.fields",
+      "type": "java.util.List<java.lang.String>",
+      "description": "List of fields that should be correlated with the logging context. That means that these fields would end up as key-value pairs in e.g. MDC.",
+      "sourceType": "org.apache.dubbo.spring.boot.observability.config.DubboTracingProperties$Baggage$Correlation"
+    },
+    {
+      "name": "dubbo.tracing.baggage.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Whether to enable Micrometer Tracing baggage propagation.",
+      "sourceType": "org.apache.dubbo.spring.boot.observability.config.DubboTracingProperties$Baggage",
+      "defaultValue": true
+    },
+    {
+      "name": "dubbo.tracing.baggage.remote-fields",
+      "type": "java.util.List<java.lang.String>",
+      "description": "List of fields that are referenced the same in-process as it is on the wire. For example, the field \"x-vcap-request-id\" would be set as-is including the prefix.",
+      "sourceType": "org.apache.dubbo.spring.boot.observability.config.DubboTracingProperties$Baggage"
+    },
+    {
+      "name": "dubbo.tracing.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Whether auto-configuration of tracing is enabled.",
+      "sourceType": "org.apache.dubbo.spring.boot.observability.config.DubboTracingProperties",
+      "defaultValue": true
+    },
+    {
+      "name": "dubbo.tracing.propagation.type",
+      "type": "org.apache.dubbo.spring.boot.observability.config.DubboTracingProperties$Propagation$PropagationType",
+      "description": "Tracing context propagation type.",
+      "sourceType": "org.apache.dubbo.spring.boot.observability.config.DubboTracingProperties$Propagation"
+    },
+    {
+      "name": "dubbo.tracing.sampling.probability",
+      "type": "java.lang.Float",
+      "description": "Probability in the range from 0.0 to 1.0 that a trace will be sampled.",
+      "sourceType": "org.apache.dubbo.spring.boot.observability.config.DubboTracingProperties$Sampling",
+      "defaultValue": 0.1
+    }
+  ],
+  "hints": []
+}

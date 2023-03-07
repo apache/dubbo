@@ -39,7 +39,7 @@ public class LRU2Cache<K, V> extends LinkedHashMap<K, V> {
     private volatile int maxCapacity;
 
     // as history list
-    private PreCache<K, Boolean> preCache;
+    private final PreCache<K, Boolean> preCache;
 
     public LRU2Cache() {
         this(DEFAULT_MAX_CAPACITY);

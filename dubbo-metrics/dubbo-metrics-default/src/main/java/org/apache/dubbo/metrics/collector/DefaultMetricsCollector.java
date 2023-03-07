@@ -32,6 +32,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static org.apache.dubbo.metrics.model.MetricsCategory.APPLICATION;
 import static org.apache.dubbo.metrics.model.MetricsKey.APPLICATION_METRIC_INFO;
@@ -84,6 +85,10 @@ public class DefaultMetricsCollector implements MetricsCollector {
         return this.methodSampler;
     }
 
+    public ThreadPoolMetricsSampler getThreadPoolSampler() {
+        return this.threadPoolSampler;
+    }
+
     public void collectApplication(ApplicationModel applicationModel) {
         this.setApplicationName(applicationModel.getApplicationName());
         this.applicationModel = applicationModel;
@@ -109,8 +114,9 @@ public class DefaultMetricsCollector implements MetricsCollector {
         public List<MetricSample> sample() {
             List<MetricSample> samples = new ArrayList<>();
             this.getCount(MetricsEvent.Type.APPLICATION_INFO).filter(e -> !e.isEmpty())
-                .ifPresent(map -> map.forEach((k, v) -> samples.add(new GaugeMetricSample(APPLICATION_METRIC_INFO, k.getTags(),
-                    APPLICATION, v::get))));
+                .ifPresent(map -> map.forEach((k, v) ->
+                    samples.add(new GaugeMetricSample<>(APPLICATION_METRIC_INFO, k.getTags(), APPLICATION, v, AtomicLong::get)))
+                );
             return samples;
         }
 
