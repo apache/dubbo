@@ -14,17 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metrics.filter.observation;
+package org.apache.dubbo.metrics.observation;
 
 import io.micrometer.observation.Observation;
 import io.micrometer.observation.ObservationConvention;
 
 /**
- * {@link ObservationConvention} for a {@link DubboClientContext}.
+ * {@link ObservationConvention} for a {@link DubboServerContext}.
  */
-public interface DubboClientObservationConvention extends ObservationConvention<DubboClientContext> {
+public interface DubboServerObservationConvention extends ObservationConvention<DubboServerContext> {
     @Override
     default boolean supportsContext(Observation.Context context) {
-        return context instanceof DubboClientContext;
+        return context instanceof DubboServerContext;
     }
 }
