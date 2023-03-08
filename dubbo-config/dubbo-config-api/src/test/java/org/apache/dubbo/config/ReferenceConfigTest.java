@@ -32,8 +32,8 @@ import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.context.ModuleConfigManager;
 import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
 import org.apache.dubbo.registry.client.migration.MigrationInvoker;
-import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.cluster.filter.FilterChainBuilder;
 import org.apache.dubbo.rpc.cluster.support.registry.ZoneAwareClusterInvoker;
@@ -417,7 +417,7 @@ class ReferenceConfigTest {
         ScopeClusterInvoker<?> scopeClusterInvoker = (ScopeClusterInvoker<?>) referenceConfig.getInvoker();
         Invoker<?> mockInvoker = scopeClusterInvoker.getInvoker();
         Assertions.assertTrue(mockInvoker instanceof MockClusterInvoker);
-        Invoker<?> withFilter = ((MockClusterInvoker<?>)mockInvoker).getDirectory().getAllInvokers().get(0);
+        Invoker<?> withFilter = ((MockClusterInvoker<?>) mockInvoker).getDirectory().getAllInvokers().get(0);
 
         Assertions.assertTrue(withFilter instanceof ListenerInvokerWrapper
             || withFilter instanceof FilterChainBuilder.CallbackRegistrationInvoker);
@@ -519,8 +519,11 @@ class ReferenceConfigTest {
             .initialize();
 
         referenceConfig.init();
-        Assertions.assertTrue(referenceConfig.getInvoker() instanceof MockClusterInvoker);
-        Assertions.assertEquals(Boolean.TRUE, referenceConfig.getInvoker().getUrl().getAttribute(PEER_KEY));
+        Assertions.assertTrue(referenceConfig.getInvoker() instanceof ScopeClusterInvoker);
+        ScopeClusterInvoker scopeClusterInvoker = (ScopeClusterInvoker) referenceConfig.getInvoker();
+        Assertions.assertTrue(scopeClusterInvoker.getInvoker() instanceof MockClusterInvoker);
+
+        Assertions.assertEquals(Boolean.TRUE, scopeClusterInvoker.getInvoker().getUrl().getAttribute(PEER_KEY));
         dubboBootstrap.destroy();
 
     }
@@ -691,9 +694,10 @@ class ReferenceConfigTest {
             System.setProperty("java.net.preferIPv4Stack", "true");
             ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
             DemoService service = new DemoServiceImpl();
-            URL url = URL.valueOf("dubbo://127.0.0.1/DemoService")
+            URL url = URL.valueOf("injvm://127.0.0.1/DemoService")
                 .addParameter(INTERFACE_KEY, DemoService.class.getName());
-            InjvmProtocol.getInjvmProtocol(FrameworkModel.defaultModel()).export(proxy.getInvoker(service, DemoService.class, url));
+            Protocol protocol = ApplicationModel.defaultModel().getExtensionLoader(Protocol.class).getAdaptiveExtension();
+            protocol.export(proxy.getInvoker(service, DemoService.class, url));
             demoService = rc.get();
             success = true;
         } catch (Exception e) {
@@ -915,9 +919,9 @@ class ReferenceConfigTest {
     @Test
     void testDifferentClassLoader() throws Exception {
         ApplicationConfig applicationConfig = new ApplicationConfig("TestApp");
-        ApplicationModel applicationModel = new ApplicationModel(FrameworkModel.defaultModel());
+        ApplicationModel applicationModel = ApplicationModel.defaultModel();
         applicationModel.getApplicationConfigManager().setApplication(applicationConfig);
-        ModuleModel moduleModel = new ModuleModel(applicationModel);
+        ModuleModel moduleModel = applicationModel.newModule();
 
         DemoService demoService = new DemoServiceImpl();
         ServiceConfig<DemoService> serviceConfig = new ServiceConfig<>();
@@ -996,9 +1000,9 @@ class ReferenceConfigTest {
         TestClassLoader2 classLoader3 = new TestClassLoader2(classLoader2, basePath);
 
         ApplicationConfig applicationConfig = new ApplicationConfig("TestApp");
-        ApplicationModel applicationModel = new ApplicationModel(frameworkModel);
+        ApplicationModel applicationModel = frameworkModel.newApplication();
         applicationModel.getApplicationConfigManager().setApplication(applicationConfig);
-        ModuleModel moduleModel = new ModuleModel(applicationModel);
+        ModuleModel moduleModel = applicationModel.newModule();
 
         Class<?> clazz1 = classLoader1.loadClass(MultiClassLoaderService.class.getName(), false);
         Class<?> clazz1impl = classLoader1.loadClass(MultiClassLoaderServiceImpl.class.getName(), false);
@@ -1059,7 +1063,8 @@ class ReferenceConfigTest {
         applicationModel.getApplicationConfigManager().setApplication(new ApplicationConfig("Test"));
 
         ClassLoader originClassLoader = Thread.currentThread().getContextClassLoader();
-        ClassLoader classLoader = new ClassLoader(originClassLoader) {};
+        ClassLoader classLoader = new ClassLoader(originClassLoader) {
+        };
         Thread.currentThread().setContextClassLoader(classLoader);
 
         ServiceConfig<DemoService> serviceConfig = new ServiceConfig<>(applicationModel.newModule());
