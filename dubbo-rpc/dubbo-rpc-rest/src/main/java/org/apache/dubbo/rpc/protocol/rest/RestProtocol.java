@@ -115,10 +115,9 @@ public class RestProtocol extends AbstractProxyProtocol {
 
         String contextPath = getContextPath(url);
 
-        // TODO  addAll metadataMap to RPCInvocationBuilder metadataMap
-        Map<PathMatcher, RestMethodMetadata> metadataMap = MetadataResolver.resolveProviderServiceMetadata(implClass, url);
+        Map<PathMatcher, RestMethodMetadata> metadataMap = MetadataResolver.resolveProviderServiceMetadata(implClass, url, contextPath);
 
-        PathAndInvokerMapper.addPathAndInvoker(metadataMap, invoker, contextPath);
+        PathAndInvokerMapper.addPathAndInvoker(metadataMap, invoker);
 
 
         final Runnable runnable = doExport(proxyFactory.getProxy(invoker, true), invoker.getInterface(), invoker.getUrl());
@@ -207,17 +206,20 @@ public class RestProtocol extends AbstractProxyProtocol {
         }
         refClient.retain();
 
-        // resolve metadata
-        Map<String, Map<ParameterTypesComparator, RestMethodMetadata>> metadataMap = MetadataResolver.resolveConsumerServiceMetadata(type, url);
+        final ReferenceCountedClient<? extends RestClient> glueRefClient = refClient;
 
-        ReferenceCountedClient<? extends RestClient> finalRefClient = refClient;
+        String contextPathFromUrl = getContextPath(url);
+
+        // resolve metadata
+        Map<String, Map<ParameterTypesComparator, RestMethodMetadata>> metadataMap = MetadataResolver.resolveConsumerServiceMetadata(type, url, contextPathFromUrl);
+
         Invoker<T> invoker = new AbstractInvoker<T>(type, url, new String[]{INTERFACE_KEY, GROUP_KEY, TOKEN_KEY}) {
             @Override
             protected Result doInvoke(Invocation invocation) {
                 try {
                     RestMethodMetadata restMethodMetadata = metadataMap.get(invocation.getMethodName()).get(ParameterTypesComparator.getInstance(invocation.getParameterTypes()));
 
-                    RequestTemplate requestTemplate = new RequestTemplate(invocation, restMethodMetadata.getRequest().getMethod(), url.getAddress(), getContextPath(url));
+                    RequestTemplate requestTemplate = new RequestTemplate(invocation, restMethodMetadata.getRequest().getMethod(), url.getAddress());
 
                     HttpConnectionCreateContext httpConnectionCreateContext = new HttpConnectionCreateContext();
                     // TODO  dynamic load config
@@ -231,8 +233,7 @@ public class RestProtocol extends AbstractProxyProtocol {
                         intercept.intercept(httpConnectionCreateContext);
                     }
 
-
-                    CompletableFuture<RestResult> future = finalRefClient.getClient().send(requestTemplate);
+                    CompletableFuture<RestResult> future = glueRefClient.getClient().send(requestTemplate);
                     CompletableFuture<AppResponse> responseFuture = new CompletableFuture<>();
                     AsyncRpcResult asyncRpcResult = new AsyncRpcResult(responseFuture, invocation);
                     future.whenComplete((r, t) -> {

@@ -30,11 +30,10 @@ public class PathAndInvokerMapper {
     private static final Map<PathMatcher, Pair<Invoker, RestMethodMetadata>> pathToServiceMapNoPathVariable = new ConcurrentHashMap<>();
 
 
-    public static void addPathAndInvoker(Map<PathMatcher, RestMethodMetadata> metadataMap, Invoker invoker, String contextPath) {
+    public static void addPathAndInvoker(Map<PathMatcher, RestMethodMetadata> metadataMap, Invoker invoker) {
 
         metadataMap.entrySet().stream().forEach(entry -> {
             PathMatcher pathMatcher = entry.getKey();
-            pathMatcher.setContextPath(contextPath);
             if (pathMatcher.hasPathVariable()) {
                 pathToServiceMapContainPathVariable.put(pathMatcher, Pair.make(invoker, entry.getValue()));
             } else {

@@ -39,12 +39,13 @@ public class MetadataResolver {
      * @return rest metadata
      * @throws CodeStyleNotSupportException not support type
      */
-    public static Map<String, Map<ParameterTypesComparator, RestMethodMetadata>> resolveConsumerServiceMetadata(Class<?> targetClass, URL url) {
+    public static Map<String, Map<ParameterTypesComparator, RestMethodMetadata>> resolveConsumerServiceMetadata(Class<?> targetClass, URL url, String contextPathFromUrl) {
         ExtensionLoader<ServiceRestMetadataResolver> extensionLoader = url.getOrDefaultApplicationModel().getExtensionLoader(ServiceRestMetadataResolver.class);
 
         for (ServiceRestMetadataResolver serviceRestMetadataResolver : extensionLoader.getSupportedExtensionInstances()) {
             if (serviceRestMetadataResolver.supports(targetClass, true)) {
                 ServiceRestMetadata serviceRestMetadata = new ServiceRestMetadata(url.getServiceInterface(), url.getVersion(), url.getGroup(), true);
+                serviceRestMetadata.setContextPathFromUrl(contextPathFromUrl);
                 ServiceRestMetadata resolve = serviceRestMetadataResolver.resolve(targetClass, serviceRestMetadata);
                 return resolve.getMethodToServiceMap();
             }
@@ -55,15 +56,14 @@ public class MetadataResolver {
     }
 
 
-
-
-    public static Map<PathMatcher, RestMethodMetadata> resolveProviderServiceMetadata(Class serviceImpl, URL url) {
+    public static Map<PathMatcher, RestMethodMetadata> resolveProviderServiceMetadata(Class serviceImpl, URL url, String contextPathFromUrl) {
         ExtensionLoader<ServiceRestMetadataResolver> extensionLoader = url.getOrDefaultApplicationModel().getExtensionLoader(ServiceRestMetadataResolver.class);
 
         for (ServiceRestMetadataResolver serviceRestMetadataResolver : extensionLoader.getSupportedExtensionInstances()) {
             boolean supports = serviceRestMetadataResolver.supports(serviceImpl);
             if (supports) {
                 ServiceRestMetadata serviceRestMetadata = new ServiceRestMetadata(url.getServiceInterface(), url.getVersion(), url.getGroup(), false);
+                serviceRestMetadata.setContextPathFromUrl(contextPathFromUrl);
                 ServiceRestMetadata resolve = serviceRestMetadataResolver.resolve(serviceImpl, serviceRestMetadata);
                 return resolve.getPathToServiceMap();
             }
