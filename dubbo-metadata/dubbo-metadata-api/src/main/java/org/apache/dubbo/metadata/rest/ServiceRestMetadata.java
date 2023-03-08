@@ -47,6 +47,8 @@ public class ServiceRestMetadata implements Serializable {
 
     private boolean consumer;
 
+    private String contextPathFromUrl;
+
     /**
      * make a distinction between mvc & resteasy
      */
@@ -166,6 +168,14 @@ public class ServiceRestMetadata implements Serializable {
 
     public void setCodeStyle(Class codeStyle) {
         this.codeStyle = codeStyle;
+    }
+
+    public String getContextPathFromUrl() {
+        return contextPathFromUrl;
+    }
+
+    public void setContextPathFromUrl(String contextPathFromUrl) {
+        this.contextPathFromUrl = contextPathFromUrl;
     }
 
     @Override

@@ -199,6 +199,10 @@ public class RequestMetadata implements Serializable {
         return this;
     }
 
+    public void appendContextPathFromUrl(String contextPathFromUrl) {
+        setPath(contextPathFromUrl + path);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {

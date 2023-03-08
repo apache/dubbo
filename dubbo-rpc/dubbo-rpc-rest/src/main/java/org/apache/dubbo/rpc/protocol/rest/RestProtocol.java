@@ -115,10 +115,9 @@ public class RestProtocol extends AbstractProxyProtocol {
 
         String contextPath = getContextPath(url);
 
-        // TODO  addAll metadataMap to RPCInvocationBuilder metadataMap
-        Map<PathMatcher, RestMethodMetadata> metadataMap = MetadataResolver.resolveProviderServiceMetadata(implClass, url);
+        Map<PathMatcher, RestMethodMetadata> metadataMap = MetadataResolver.resolveProviderServiceMetadata(implClass, url, contextPath);
 
-        PathAndInvokerMapper.addPathAndInvoker(metadataMap, invoker, contextPath);
+        PathAndInvokerMapper.addPathAndInvoker(metadataMap, invoker);
 
 
         final Runnable runnable = doExport(proxyFactory.getProxy(invoker, true), invoker.getInterface(), invoker.getUrl());
@@ -209,8 +208,10 @@ public class RestProtocol extends AbstractProxyProtocol {
 
         final ReferenceCountedClient<? extends RestClient> glueRefClient = refClient;
 
+        String contextPathFromUrl = getContextPath(url);
+
         // resolve metadata
-        Map<String, Map<ParameterTypesComparator, RestMethodMetadata>> metadataMap = MetadataResolver.resolveConsumerServiceMetadata(type, url);
+        Map<String, Map<ParameterTypesComparator, RestMethodMetadata>> metadataMap = MetadataResolver.resolveConsumerServiceMetadata(type, url, contextPathFromUrl);
 
         Invoker<T> invoker = new AbstractInvoker<T>(type, url, new String[]{INTERFACE_KEY, GROUP_KEY, TOKEN_KEY}) {
             @Override
@@ -218,7 +219,7 @@ public class RestProtocol extends AbstractProxyProtocol {
                 try {
                     RestMethodMetadata restMethodMetadata = metadataMap.get(invocation.getMethodName()).get(ParameterTypesComparator.getInstance(invocation.getParameterTypes()));
 
-                    RequestTemplate requestTemplate = new RequestTemplate(invocation, restMethodMetadata.getRequest().getMethod(), url.getAddress(), getContextPath(url));
+                    RequestTemplate requestTemplate = new RequestTemplate(invocation, restMethodMetadata.getRequest().getMethod(), url.getAddress());
 
                     HttpConnectionCreateContext httpConnectionCreateContext = new HttpConnectionCreateContext();
                     // TODO  dynamic load config
