@@ -27,7 +27,7 @@ import java.util.Map;
  */
 public class ConfigConfigurationAdapter implements Configuration {
 
-    private Map<String, String> metaData;
+    private final Map<String, String> metaData;
 
     public ConfigConfigurationAdapter(AbstractConfig config, String prefix) {
         if (StringUtils.hasText(prefix)) {
