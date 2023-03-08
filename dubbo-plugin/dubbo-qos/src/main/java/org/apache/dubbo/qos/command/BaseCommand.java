@@ -21,5 +21,10 @@ import org.apache.dubbo.common.extension.SPI;
 
 @SPI(scope = ExtensionScope.FRAMEWORK)
 public interface BaseCommand {
-    String execute(CommandContext commandContext,String[] args);
+
+    default boolean logResult() {
+        return true;
+    }
+
+    String execute(CommandContext commandContext, String[] args);
 }

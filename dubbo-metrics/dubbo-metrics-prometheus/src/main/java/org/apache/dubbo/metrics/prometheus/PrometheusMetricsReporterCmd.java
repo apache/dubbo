@@ -55,6 +55,10 @@ public class PrometheusMetricsReporterCmd implements BaseCommand {
         }
     }
 
+    @Override
+    public boolean logResult() {
+        return false;
+    }
 
     private String getResponseByApplication(ApplicationModel applicationModel) {
 
