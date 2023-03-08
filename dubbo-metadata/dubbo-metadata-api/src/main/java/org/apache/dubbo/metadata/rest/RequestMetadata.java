@@ -200,6 +200,9 @@ public class RequestMetadata implements Serializable {
     }
 
     public void appendContextPathFromUrl(String contextPathFromUrl) {
+        if (contextPathFromUrl == null) {
+            return;
+        }
         setPath(contextPathFromUrl + path);
     }
 

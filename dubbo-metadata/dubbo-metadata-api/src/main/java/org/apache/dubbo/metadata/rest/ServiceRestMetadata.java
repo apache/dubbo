@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.metadata.rest;
 
+import org.apache.dubbo.common.utils.PathUtils;
 import org.apache.dubbo.metadata.ParameterTypesComparator;
 
 import java.io.Serializable;
@@ -171,11 +172,11 @@ public class ServiceRestMetadata implements Serializable {
     }
 
     public String getContextPathFromUrl() {
-        return contextPathFromUrl;
+        return contextPathFromUrl == null ? "" : contextPathFromUrl;
     }
 
     public void setContextPathFromUrl(String contextPathFromUrl) {
-        this.contextPathFromUrl = contextPathFromUrl;
+        this.contextPathFromUrl = PathUtils.normalize(contextPathFromUrl);
     }
 
     @Override
