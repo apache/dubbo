@@ -67,6 +67,7 @@ header:
     - 'CNAME'
     - 'Jenkinsfile'
     - '**/vendor/**'
+    - '**/src/test/resources/certs/**'
     - 'dubbo-common/src/main/java/org/apache/dubbo/common/threadlocal/InternalThreadLocal.java'
     - 'dubbo-common/src/main/java/org/apache/dubbo/common/threadlocal/InternalThreadLocalMap.java'
     - 'dubbo-common/src/main/java/org/apache/dubbo/common/timer/HashedWheelTimer.java'
@@ -192,6 +193,10 @@ dependency:
       license: Apache-2.0
     - name: org.sonatype.plexus:plexus-cipher
       license: Apache-2.0
+    - name: com.google.protobuf:protobuf-java
+      license: BSD 3-clause
+    - name: com.google.protobuf:protobuf-java-util
+      license: BSD 3-clause
     # multi license
     - name: org.javassist:javassist
       license: Apache-2.0
