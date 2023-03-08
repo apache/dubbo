@@ -27,16 +27,22 @@ public class BiStreamServerCallListener extends AbstractServerCallListener {
 
     private StreamObserver<Object> requestObserver;
 
-    public BiStreamServerCallListener(RpcInvocation invocation, Invoker<?> invoker,
-        ServerCallToObserverAdapter<Object> responseObserver) {
+    public BiStreamServerCallListener(RpcInvocation invocation,
+                                      Invoker<?> invoker,
+                                      ServerCallToObserverAdapter<Object> responseObserver) {
         super(invocation, invoker, responseObserver);
         invocation.setArguments(new Object[]{responseObserver});
         invoke();
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public void onReturn(Object value) {
-        this.requestObserver = (StreamObserver<Object>) value;
+        if (value instanceof Throwable) {
+            responseObserver.onError((Throwable) value);
+        } else if (value instanceof StreamObserver) {
+            this.requestObserver = (StreamObserver<Object>) value;
+        }
     }
 
     @Override
@@ -44,7 +50,9 @@ public class BiStreamServerCallListener extends AbstractServerCallListener {
         if (message instanceof Object[]) {
             message = ((Object[]) message)[0];
         }
-        requestObserver.onNext(message);
+        if (requestObserver != null) {
+            requestObserver.onNext(message);
+        }
         if (responseObserver.isAutoRequestN()) {
             responseObserver.request(1);
         }
@@ -58,6 +66,10 @@ public class BiStreamServerCallListener extends AbstractServerCallListener {
 
     @Override
     public void onComplete() {
-        requestObserver.onCompleted();
+        if (requestObserver != null) {
+            requestObserver.onCompleted();
+        } else {
+            responseObserver.onCompleted();
+        }
     }
 }
