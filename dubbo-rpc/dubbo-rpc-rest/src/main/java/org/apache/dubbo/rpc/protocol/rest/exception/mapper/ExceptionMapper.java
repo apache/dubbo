@@ -17,8 +17,7 @@
 
 package org.apache.dubbo.rpc.protocol.rest.exception.mapper;
 
-import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
-import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.protocol.rest.util.TypesUtil;
 
 import java.lang.reflect.Type;
@@ -26,7 +25,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ExceptionMapper {
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ExceptionMapper.class);
 
     // TODO static or instance ? think about influence  between  difference url exception
     private static final Map<Class, ExceptionHandler> exceptionHandlerMap = new ConcurrentHashMap<>();
@@ -49,7 +47,7 @@ public class ExceptionMapper {
             Object handler = exceptionHandler.newInstance();
             exceptionHandlerMap.put(exceptionClass, (ExceptionHandler) handler);
         } catch (Exception e) {
-            logger.error("dubbo rest protocol exception mapper register error ", e);
+            throw new RpcException("dubbo rest protocol exception mapper register error ", e);
         }
 
 
