@@ -1008,7 +1008,7 @@ class ReferenceConfigTest {
         classLoader1.loadedClass.put(resultClazzCustom1.getName(), resultClazzCustom1);
         AtomicReference innerRequestReference = new AtomicReference();
         AtomicReference innerResultReference = new AtomicReference();
-        innerResultReference.set(resultClazzCustom1.newInstance());
+        innerResultReference.set(resultClazzCustom1.getDeclaredConstructor().newInstance());
         Constructor<?> declaredConstructor = clazz1impl.getDeclaredConstructor(AtomicReference.class, AtomicReference.class);
 
         ServiceConfig serviceConfig = new ServiceConfig<>();
@@ -1036,14 +1036,14 @@ class ReferenceConfigTest {
 
         java.lang.reflect.Method callBean1 = object1.getClass().getDeclaredMethod("call", requestClazzOrigin);
         callBean1.setAccessible(true);
-        Object result1 = callBean1.invoke(object1, requestClazzCustom2.newInstance());
+        Object result1 = callBean1.invoke(object1, requestClazzCustom2.getDeclaredConstructor().newInstance());
 
         Assertions.assertEquals(resultClazzCustom3, result1.getClass());
         Assertions.assertNotEquals(classLoader2, result1.getClass().getClassLoader());
         Assertions.assertEquals(classLoader1, innerRequestReference.get().getClass().getClassLoader());
 
         Thread.currentThread().setContextClassLoader(classLoader1);
-        callBean1.invoke(object1, requestClazzCustom2.newInstance());
+        callBean1.invoke(object1, requestClazzCustom2.getDeclaredConstructor().newInstance());
         Assertions.assertEquals(classLoader1, Thread.currentThread().getContextClassLoader());
 
         applicationModel.destroy();

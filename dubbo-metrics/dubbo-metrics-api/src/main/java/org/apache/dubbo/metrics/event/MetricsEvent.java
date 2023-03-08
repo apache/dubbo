@@ -54,7 +54,10 @@ public abstract class MetricsEvent {
         PROCESSING,
         UNKNOWN_FAILED,
         TOTAL_FAILED,
-        APPLICATION_INFO
+        APPLICATION_INFO,
+        NETWORK_EXCEPTION,
+        SERVICE_UNAVAILABLE,
+        CODEC_EXCEPTION;
 
     }
 }

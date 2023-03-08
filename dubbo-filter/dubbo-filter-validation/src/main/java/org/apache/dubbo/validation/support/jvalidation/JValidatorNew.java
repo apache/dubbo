@@ -111,7 +111,7 @@ public class JValidatorNew implements Validator {
             } catch (ClassNotFoundException e) {
                 parameterClass = generateMethodParameterClass(clazz, method, parameterClassName);
             }
-            Object parameterBean = parameterClass.newInstance();
+            Object parameterBean = parameterClass.getDeclaredConstructor().newInstance();
             for (int i = 0; i < args.length; i++) {
                 Field field = parameterClass.getField(method.getName() + "Argument" + i);
                 field.set(parameterBean, args[i]);
