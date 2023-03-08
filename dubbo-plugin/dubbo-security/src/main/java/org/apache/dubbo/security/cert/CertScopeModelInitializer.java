@@ -17,6 +17,8 @@
 package org.apache.dubbo.security.cert;
 
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -24,12 +26,17 @@ import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ScopeModelInitializer;
 
 public class CertScopeModelInitializer implements ScopeModelInitializer {
+
+    private static final Logger logger = LoggerFactory.getLogger(CertScopeModelInitializer.class);
+
     public static boolean isSupported() {
         try {
             ClassUtils.forName("io.grpc.Channel");
             ClassUtils.forName("org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequestBuilder");
+            logger.info("Found dubbo-security dependencies.");
             return true;
         } catch (Throwable t) {
+            logger.info("Unable to find dubbo-security dependencies. Will disable dubbo authority.");
             return false;
         }
     }

@@ -29,17 +29,28 @@ public class CertConfig {
      */
     private final String oidcTokenPath;
 
+    private final String oidcTokenType;
+
     private final int refreshInterval;
 
     public CertConfig(String remoteAddress, String envType, String caCertPath, String oidcTokenPath) {
-        this(remoteAddress, envType, caCertPath, oidcTokenPath, DEFAULT_REFRESH_INTERVAL);
+        this(remoteAddress, envType, caCertPath, oidcTokenPath, null, DEFAULT_REFRESH_INTERVAL);
     }
 
     public CertConfig(String remoteAddress, String envType, String caCertPath, String oidcTokenPath, int refreshInterval) {
+        this(remoteAddress, envType, caCertPath, oidcTokenPath, null, refreshInterval);
+    }
+
+    public CertConfig(String remoteAddress, String envType, String caCertPath, String oidcTokenPath, String oidcTokenType) {
+        this(remoteAddress, envType, caCertPath, oidcTokenPath, oidcTokenType, DEFAULT_REFRESH_INTERVAL);
+    }
+
+    public CertConfig(String remoteAddress, String envType, String caCertPath, String oidcTokenPath, String oidcTokenType, int refreshInterval) {
         this.remoteAddress = remoteAddress;
         this.envType = envType;
         this.caCertPath = caCertPath;
         this.oidcTokenPath = oidcTokenPath;
+        this.oidcTokenType = oidcTokenType;
         this.refreshInterval = refreshInterval;
     }
 
@@ -63,6 +74,10 @@ public class CertConfig {
         return refreshInterval;
     }
 
+    public String getOidcTokenType() {
+        return oidcTokenType;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -72,11 +87,11 @@ public class CertConfig {
             return false;
         }
         CertConfig that = (CertConfig) o;
-        return Objects.equals(remoteAddress, that.remoteAddress) && Objects.equals(envType, that.envType) && Objects.equals(caCertPath, that.caCertPath) && Objects.equals(oidcTokenPath, that.oidcTokenPath);
+        return refreshInterval == that.refreshInterval && Objects.equals(remoteAddress, that.remoteAddress) && Objects.equals(envType, that.envType) && Objects.equals(caCertPath, that.caCertPath) && Objects.equals(oidcTokenPath, that.oidcTokenPath) && Objects.equals(oidcTokenType, that.oidcTokenType);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(remoteAddress, envType, caCertPath, oidcTokenPath);
+        return Objects.hash(remoteAddress, envType, caCertPath, oidcTokenPath, oidcTokenType, refreshInterval);
     }
 }

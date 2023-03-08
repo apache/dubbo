@@ -68,6 +68,7 @@ public class SslConfig extends AbstractConfig {
     private String envType;
     private String caCertPath;
     private String oidcTokenPath;
+    private String oidcTokenType;
 
     public SslConfig() {
     }
@@ -178,6 +179,14 @@ public class SslConfig extends AbstractConfig {
 
     public void setOidcTokenPath(String oidcTokenPath) {
         this.oidcTokenPath = oidcTokenPath;
+    }
+
+    public String getOidcTokenType() {
+        return oidcTokenType;
+    }
+
+    public void setOidcTokenType(String oidcTokenType) {
+        this.oidcTokenType = oidcTokenType;
     }
 
     @Transient

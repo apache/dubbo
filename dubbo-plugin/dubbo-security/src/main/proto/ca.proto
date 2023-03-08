@@ -45,3 +45,21 @@ service DubboCertificateService {
       returns (DubboCertificateResponse) {
   }
 }
+
+message ObserveRequest {
+  string nonce = 1;
+  string type = 2;
+}
+
+message ObserveResponse {
+  string nonce = 1;
+  string type = 2;
+  int64 revision = 3;
+  string data = 4;
+}
+
+service ObserveService {
+  rpc Observe(stream ObserveRequest)
+      returns (stream ObserveResponse) {
+  }
+}

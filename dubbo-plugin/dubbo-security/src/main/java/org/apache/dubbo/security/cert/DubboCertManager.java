@@ -112,6 +112,8 @@ public class DubboCertManager {
         generateCert();
         // Schedule refresh task
         scheduleRefresh();
+
+        frameworkModel.getBeanFactory().registerBean(new RuleManager(frameworkModel, certConfig));
     }
 
     /**
@@ -231,6 +233,7 @@ public class DubboCertManager {
 
     private DubboCertificateServiceGrpc.DubboCertificateServiceBlockingStub setHeaderIfNeed(DubboCertificateServiceGrpc.DubboCertificateServiceBlockingStub stub) throws IOException {
         String oidcTokenPath = certConfig.getOidcTokenPath();
+        String oidcTokenType = certConfig.getOidcTokenType();
         if (StringUtils.isNotEmpty(oidcTokenPath)) {
             Metadata header = new Metadata();
             Metadata.Key<String> key = Metadata.Key.of("authorization", Metadata.ASCII_STRING_MARSHALLER);
@@ -247,6 +250,14 @@ public class DubboCertManager {
             logger.warn(CONFIG_SSL_CONNECT_INSECURE, "", "",
                 "Use insecure connection to connect to Dubbo Certificate Authority. Reason: No oidc token is provided.");
         }
+
+        if (StringUtils.isNotEmpty(oidcTokenType)) {
+            Metadata header = new Metadata();
+            Metadata.Key<String> key = Metadata.Key.of("authorization-type", Metadata.ASCII_STRING_MARSHALLER);
+            header.put(key, oidcTokenType);
+            stub = stub.withInterceptors(newAttachHeadersInterceptor(header));
+        }
+
         return stub;
     }
 

@@ -16,11 +16,15 @@
  */
 package org.apache.dubbo.security.cert;
 
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.deploy.ApplicationDeployListener;
+import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.config.SslConfig;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.util.Objects;
+import java.util.Optional;
 
 public class CertDeployerListener implements ApplicationDeployListener {
     private final DubboCertManager dubboCertManager;
@@ -32,15 +36,44 @@ public class CertDeployerListener implements ApplicationDeployListener {
 
     @Override
     public void onStarting(ApplicationModel scopeModel) {
-        scopeModel.getApplicationConfigManager().getSsl().ifPresent(sslConfig -> {
+        Optional<SslConfig> config = scopeModel.getApplicationConfigManager().getSsl();
+        if (config.isPresent()) {
+            SslConfig sslConfig = config.get();
             if (Objects.nonNull(sslConfig.getCaAddress()) && dubboCertManager != null) {
                 CertConfig certConfig = new CertConfig(sslConfig.getCaAddress(),
                     sslConfig.getEnvType(),
                     sslConfig.getCaCertPath(),
-                    sslConfig.getOidcTokenPath());
+                    sslConfig.getOidcTokenPath(),
+                    sslConfig.getOidcTokenType());
                 dubboCertManager.connect(certConfig);
+
+                if (dubboCertManager.generateCert() == null) {
+                    System.exit(0);
+                }
+                return;
             }
-        });
+        }
+        String caAddress = ConfigurationUtils.getProperty(scopeModel, "DUBBO_CA_ADDRESS");
+        String caCertPath = ConfigurationUtils.getProperty(scopeModel, "DUBBO_CA_CERT_PATH");
+        String oidcToken = ConfigurationUtils.getProperty(scopeModel, "DUBBO_OIDC_TOKEN");
+        String oidcTokenType = ConfigurationUtils.getProperty(scopeModel, "DUBBO_OIDC_TOKEN_TYPE");
+
+        if (StringUtils.isNotEmpty(caAddress) &&
+            StringUtils.isNotEmpty(caCertPath) &&
+            StringUtils.isNotEmpty(oidcToken) &&
+            StringUtils.isNotEmpty(oidcTokenType) &&
+            dubboCertManager != null) {
+            CertConfig certConfig = new CertConfig(caAddress,
+                null,
+                caCertPath,
+                oidcToken,
+                oidcTokenType);
+            dubboCertManager.connect(certConfig);
+
+            if (dubboCertManager.generateCert() == null) {
+                System.exit(0);
+            }
+        }
     }
 
     @Override
