@@ -62,14 +62,29 @@ public class Application {
         System.out.println(genericInvokeResult);
     }
 
+    /**
+     * 思考:
+     * <p>
+     * ReferenceConfig是什么?
+     * <p>
+     * 答: 首先Reference是某个Provider服务实例的一个引用
+     * <p> ReferenceConfig则是要调用的某个Provider服务实例引用的配置信息,通过泛型传递了将会调用的服务实例对外暴露的某个接口
+     */
     private static void runWithRefer() {
         ReferenceConfig<DemoService> reference = new ReferenceConfig<>();
+        // 配置服务消费方的服务名称,服务消费方自己本身也是一个服务实例
         reference.setApplication(new ApplicationConfig("dubbo-demo-api-consumer"));
+        // 配置注册中心
         reference.setRegistry(new RegistryConfig("zookeeper://127.0.0.1:2181"));
+        // 消费方的元数据上报配置
         reference.setMetadataReportConfig(new MetadataReportConfig("zookeeper://127.0.0.1:2181"));
+        // 配置要调用的接口类
         reference.setInterface(DemoService.class);
-        DemoService service = reference.get();
-        String message = service.sayHello("dubbo");
+        // 拉取要调用的接口实现类的实例.
+        // 这个实例必然是基于接口生成的一个动态代理,实现了DemoService接口
+        // 消费方只需要调用这个代理类的方法即可,dubbo底层会想办法调用Provider服务实例对应的接口实现类方法
+        DemoService proxyDemoService = reference.get();
+        String message = proxyDemoService.sayHello("dubbo");
         System.out.println(message);
     }
 }

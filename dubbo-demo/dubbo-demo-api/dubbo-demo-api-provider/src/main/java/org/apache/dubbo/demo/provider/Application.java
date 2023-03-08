@@ -29,6 +29,7 @@ import java.util.concurrent.CountDownLatch;
 
 public class Application {
     public static void main(String[] args) throws Exception {
+        // 经典模式
         if (isClassic(args)) {
             startWithExport();
         } else {
@@ -54,13 +55,37 @@ public class Application {
             .await();
     }
 
+    /**
+     * 思考:
+     * <p>
+     * - ServiceConfig 到底是什么?
+     * <p>
+     * - 对于dubbo来说, Service是什么?
+     * <p>
+     * 答:
+     * <p>
+     * Service被定义成一个dubbo服务,每个服务可以提供多个接口.
+     * <p>
+     * 所以ServiceConfig顾名思义,就是针对当前Service的配置信息.
+     */
     private static void startWithExport() throws InterruptedException {
+        // 泛型里是当前service的具体实现
         ServiceConfig<DemoServiceImpl> service = new ServiceConfig<>();
+        // 设置要暴露的接口
         service.setInterface(DemoService.class);
+        // 设置暴露接口的实现类
         service.setRef(new DemoServiceImpl());
+        // 配置暴露服务的名称
         service.setApplication(new ApplicationConfig("dubbo-demo-api-provider"));
+        // 配置注册中心
         service.setRegistry(new RegistryConfig("zookeeper://127.0.0.1:2181"));
+        // 配置元数据上报,dubbo服务实例启动之后,肯定有自己的元数据,必须上报到zk上去
         service.setMetadataReportConfig(new MetadataReportConfig("zookeeper://127.0.0.1:2181"));
+
+        // 配置了服务的接口、实现类、服务名、注册中心、元数据之后，进行服务暴露
+        // 我们先推断: 服务暴露后,此时服务提供方会初始化并启动一个网络监听程序.
+        // 网络监听程序作用: 当服务消费端调用暴露的服务时,需要跟服务提供端建立网络连接后进行通信. 根据数据传输协议,发送请求数据,执行rpc调用.
+        // TODO: 2023/3/8 在这里debug,查看服务暴露的原理
         service.export();
 
         System.out.println("dubbo service started");
