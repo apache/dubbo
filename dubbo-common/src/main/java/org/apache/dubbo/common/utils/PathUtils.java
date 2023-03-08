@@ -67,11 +67,6 @@ public interface PathUtils {
         while (normalizedPath.contains("//")) {
             normalizedPath = replace(normalizedPath, "//", "/");
         }
-
-        if (!normalizedPath.startsWith(SLASH)) {
-            normalizedPath = SLASH + normalizedPath;
-        }
-
         return normalizedPath;
     }
 
