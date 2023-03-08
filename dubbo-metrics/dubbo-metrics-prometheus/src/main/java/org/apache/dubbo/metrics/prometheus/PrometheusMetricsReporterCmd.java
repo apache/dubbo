@@ -19,6 +19,7 @@ package org.apache.dubbo.metrics.prometheus;
 
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.metrics.report.MetricsReporter;
 import org.apache.dubbo.qos.command.BaseCommand;
 import org.apache.dubbo.qos.command.CommandContext;
@@ -26,6 +27,12 @@ import org.apache.dubbo.qos.command.annotation.Cmd;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
+import java.io.CharArrayReader;
+import java.io.IOException;
+import java.io.LineNumberReader;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Cmd(name = "metrics", summary = "http report")
@@ -41,18 +48,57 @@ public class PrometheusMetricsReporterCmd implements BaseCommand {
 
     @Override
     public String execute(CommandContext commandContext, String[] args) {
-        if (args == null || args.length == 0) {
-            ApplicationModel applicationModel = ApplicationModel.defaultModel();
-            return getResponseByApplication(applicationModel);
+
+        List<ApplicationModel> models = frameworkModel.getApplicationModels();
+        String result = "There is no application with data";
+
+        if (notSpecifyApplication(args)) {
+            result = useFirst(models, result);
         } else {
-            String appName = args[0];
-            Optional<ApplicationModel> modelOptional = frameworkModel.getApplicationModels().stream().filter(applicationModel -> appName.equals(applicationModel.getApplicationName())).findFirst();
-            if (modelOptional.isPresent()) {
-                return getResponseByApplication(modelOptional.get());
-            } else {
-                return "Not exist application: " + appName;
+            result = specifyApplication(args[0], models);
+        }
+        return result;
+    }
+
+    private boolean notSpecifyApplication(String[] args) {
+        return args == null || args.length == 0;
+    }
+
+    private String useFirst(List<ApplicationModel> models, String result) {
+        for (ApplicationModel model : models) {
+            String current = getResponseByApplication(model);
+            // Contains at least one line "text/plain; version=0.0.4; charset=utf-8"
+            if (getLineNumber(current) > 1) {
+                result = current;
+                break;
             }
         }
+        return result;
+    }
+
+    private String specifyApplication(String appName, List<ApplicationModel> models) {
+        if ("application_all".equals(appName)) {
+            return allApplication(models);
+        } else {
+            return specifySingleApplication(appName, models);
+        }
+    }
+
+    private String specifySingleApplication(String appName, List<ApplicationModel> models) {
+        Optional<ApplicationModel> modelOptional = models.stream().filter(applicationModel -> appName.equals(applicationModel.getApplicationName())).findFirst();
+        if (modelOptional.isPresent()) {
+            return getResponseByApplication(modelOptional.get());
+        } else {
+            return "Not exist application: " + appName;
+        }
+    }
+
+    private String allApplication(List<ApplicationModel> models) {
+        Map<String, String> appResultMap = new HashMap<>();
+        for (ApplicationModel model : models) {
+            appResultMap.put(model.getApplicationName(), getResponseByApplication(model));
+        }
+        return JsonUtils.getJson().toJson(appResultMap);
     }
 
     @Override
@@ -80,4 +126,17 @@ public class PrometheusMetricsReporterCmd implements BaseCommand {
         }
         return response;
     }
+
+
+    private static long getLineNumber(String content) {
+
+        LineNumberReader lnr = new LineNumberReader(new CharArrayReader(content.toCharArray()));
+        try {
+            lnr.skip(Long.MAX_VALUE);
+            lnr.close();
+        } catch (IOException ignore) {
+        }
+        return lnr.getLineNumber();
+    }
+
 }
