@@ -144,18 +144,22 @@ public class AggregateMetricsCollector implements MetricsCollector, MetricsListe
     private void collectMethod(List<MetricSample> list, String eventType, MetricsKey metricsKey) {
         ConcurrentHashMap<MethodMetric, TimeWindowCounter> windowCounter = methodTypeCounter.get(eventType);
         if (windowCounter != null) {
-            windowCounter.forEach((k, v) -> list.add(new GaugeMetricSample<>(metricsKey.formatName(k.getSide()), k.getTags(), REQUESTS, v, TimeWindowCounter::get)));
+            windowCounter.forEach((k, v) -> list.add(new GaugeMetricSample<>(metricsKey.getNameByType(k.getSide()),
+                metricsKey.getDescription(), k.getTags(), REQUESTS, v, TimeWindowCounter::get)));
         }
     }
 
     private void collectQPS(List<MetricSample> list) {
-        qps.forEach((k, v) -> list.add(new GaugeMetricSample<>(MetricsKey.METRIC_QPS.formatName(k.getSide()), k.getTags(), QPS, v, value -> value.get() / value.bucketLivedSeconds())));
+        qps.forEach((k, v) -> list.add(new GaugeMetricSample<>(MetricsKey.METRIC_QPS.getNameByType(k.getSide()),
+            MetricsKey.METRIC_QPS.getDescription(), k.getTags(), QPS, v, value -> value.get() / value.bucketLivedSeconds())));
     }
 
     private void collectRT(List<MetricSample> list) {
         rt.forEach((k, v) -> {
-            list.add(new GaugeMetricSample<>(MetricsKey.METRIC_RT_P99.formatName(k.getSide()), k.getTags(), RT, v, value -> value.quantile(0.99)));
-            list.add(new GaugeMetricSample<>(MetricsKey.METRIC_RT_P95.formatName(k.getSide()), k.getTags(), RT, v, value -> value.quantile(0.95)));
+            list.add(new GaugeMetricSample<>(MetricsKey.METRIC_RT_P99.getNameByType(k.getSide()),
+                MetricsKey.METRIC_RT_P99.getDescription(), k.getTags(), RT, v, value -> value.quantile(0.99)));
+            list.add(new GaugeMetricSample<>(MetricsKey.METRIC_RT_P95.getNameByType(k.getSide()),
+                MetricsKey.METRIC_RT_P99.getDescription(), k.getTags(), RT, v, value -> value.quantile(0.95)));
         });
     }
 
