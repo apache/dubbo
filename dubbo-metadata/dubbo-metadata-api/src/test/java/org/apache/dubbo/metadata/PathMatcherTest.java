@@ -24,9 +24,10 @@ public class PathMatcherTest {
 
     @Test
     public void testPathMatcher() {
-        PathMatcher pathMather = new PathMatcher("/a/b/c/{path1}/d/{path2}/e");
+        PathMatcher pathMatherMeta = new PathMatcher("/a/b/c/{path1}/d/{path2}/e", true);
 
-        PathMatcher pathMather1 = new PathMatcher("/a/b/c/1/d/2/e");
-        Assertions.assertEquals(true, pathMather.equals(pathMather1));
+
+        PathMatcher requestPathMather = new PathMatcher("/a/b/c/1/d/2/e", true);
+        Assertions.assertEquals(requestPathMather, pathMatherMeta);
     }
 }
