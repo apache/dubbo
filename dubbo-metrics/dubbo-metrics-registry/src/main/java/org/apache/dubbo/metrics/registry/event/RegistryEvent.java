@@ -75,6 +75,10 @@ public class RegistryEvent extends MetricsEvent implements TimeCounter {
 
         N_TOTAL(MetricsKey.NOTIFY_METRIC_REQUESTS),
         N_LAST_NUM(MetricsKey.NOTIFY_METRIC_NUM_LAST),
+
+        R_SERVICE_TOTAL(MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS),
+        R_SERVICE_SUCCEED(MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS_SUCCEED),
+        R_SERVICE_FAILED(MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS_FAILED),
         ;
 
 
@@ -151,6 +155,26 @@ public class RegistryEvent extends MetricsEvent implements TimeCounter {
 
         public int getSize() {
             return size;
+        }
+    }
+
+    public static class MetricsServiceRegisterEvent extends RegistryEvent {
+
+        private final int size;
+        private final String uniqueServiceName;
+
+        public MetricsServiceRegisterEvent(ApplicationModel applicationModel, TimePair timePair, String uniqueServiceName, int size) {
+            super(applicationModel, timePair);
+            this.size = size;
+            this.uniqueServiceName = uniqueServiceName;
+        }
+
+        public int getSize() {
+            return size;
+        }
+
+        public String getUniqueServiceName() {
+            return uniqueServiceName;
         }
     }
 }

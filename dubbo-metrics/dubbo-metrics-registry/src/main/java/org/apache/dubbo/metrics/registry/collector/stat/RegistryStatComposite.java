@@ -52,6 +52,7 @@ public class RegistryStatComposite implements MetricsExport {
     public static String OP_TYPE_REGISTER = "register";
     public static String OP_TYPE_SUBSCRIBE = "subscribe";
     public static String OP_TYPE_NOTIFY = "notify";
+    public static String OP_TYPE_REGISTER_SERVICE = "register.service";
 
     public RegistryStatComposite() {
         for (RegistryEvent.Type type : RegistryEvent.Type.values()) {
