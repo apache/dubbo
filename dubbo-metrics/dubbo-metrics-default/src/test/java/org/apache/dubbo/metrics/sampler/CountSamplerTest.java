@@ -59,20 +59,15 @@ public class CountSamplerTest {
 
         Assertions.assertNotNull(collect);
 
-        Assertions.assertTrue(
-            null != collect.get(MetricsKey.METRIC_RT_LAST.getNameByType(side)) && collect.get(
+        Assertions.assertTrue(null != collect.get(MetricsKey.METRIC_RT_LAST.getNameByType(side)) && collect.get(
                 MetricsKey.METRIC_RT_LAST.getNameByType(side)).applyAsLong() == 2);
-        Assertions.assertTrue(
-            null != collect.get(MetricsKey.METRIC_RT_MIN.getNameByType(side)) && collect.get(
+        Assertions.assertTrue(null != collect.get(MetricsKey.METRIC_RT_MIN.getNameByType(side)) && collect.get(
                 MetricsKey.METRIC_RT_MIN.getNameByType(side)).applyAsLong() == 2);
-        Assertions.assertTrue(
-            null != collect.get(MetricsKey.METRIC_RT_MAX.getNameByType(side)) && collect.get(
+        Assertions.assertTrue(null != collect.get(MetricsKey.METRIC_RT_MAX.getNameByType(side)) && collect.get(
                 MetricsKey.METRIC_RT_MAX.getNameByType(side)).applyAsLong() == 2);
-        Assertions.assertTrue(
-            null != collect.get(MetricsKey.METRIC_RT_AVG.getNameByType(side)) && collect.get(
+        Assertions.assertTrue(null != collect.get(MetricsKey.METRIC_RT_AVG.getNameByType(side)) && collect.get(
                 MetricsKey.METRIC_RT_AVG.getNameByType(side)).applyAsLong() == 2);
-        Assertions.assertTrue(
-            null != collect.get(MetricsKey.METRIC_RT_SUM.getNameByType(side)) && collect.get(
+        Assertions.assertTrue(null != collect.get(MetricsKey.METRIC_RT_SUM.getNameByType(side)) && collect.get(
                 MetricsKey.METRIC_RT_SUM.getNameByType(side)).applyAsLong() == 2);
 
         sampler.addRT(applicationName, RTType.METHOD_REQUEST, 1L);
