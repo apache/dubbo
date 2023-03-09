@@ -78,8 +78,8 @@ public class RtHistogramMetricsCollector implements MetricsListener {
             MethodMetric metric = (MethodMetric) event.getSource();
             Long responseTime = event.getRt();
 
-            RtHistogramMetricSample sample = new RtHistogramMetricSample(MetricsKey.PROVIDER_METRIC_RT_HISTOGRAM.getNameByType(metric.getSide()),
-                MetricsKey.PROVIDER_METRIC_RT_HISTOGRAM.getDescription(), metric.getTags(), RT);
+            RtHistogramMetricSample sample = new RtHistogramMetricSample(MetricsKey.METRIC_RT_HISTOGRAM.getNameByType(metric.getSide()),
+                MetricsKey.METRIC_RT_HISTOGRAM.getDescription(), metric.getTags(), RT);
 
             Timer timer = ConcurrentHashMapUtils.computeIfAbsent(rt, metric, k -> metricRegister.register(sample));
             timer.record(responseTime, TimeUnit.MILLISECONDS);
