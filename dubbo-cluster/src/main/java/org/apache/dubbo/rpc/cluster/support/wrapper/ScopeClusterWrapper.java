@@ -36,7 +36,7 @@ public class ScopeClusterWrapper implements Cluster {
 
     @Override
     public <T> Invoker<T> join(Directory<T> directory, boolean buildFilterChain) throws RpcException {
-        return new ScopeClusterInvoker<T>(directory,
+        return new ScopeClusterInvoker<>(directory,
             this.cluster.join(directory, buildFilterChain));
     }
 

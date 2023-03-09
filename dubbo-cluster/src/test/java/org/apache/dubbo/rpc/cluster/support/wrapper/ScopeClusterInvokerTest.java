@@ -51,7 +51,7 @@ import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
 import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.SCOPE_KEY;
 
-public class ScopeClusterInvokerTest {
+class ScopeClusterInvokerTest {
 
     private final List<Invoker<DemoService>> invokers = new ArrayList<>();
 
