@@ -18,15 +18,13 @@
 package org.apache.dubbo.metrics.sampler;
 
 import org.apache.dubbo.metrics.collector.sample.MetricsCountSampleConfigurer;
+import org.apache.dubbo.metrics.collector.sample.MetricsCountSampler;
 import org.apache.dubbo.metrics.collector.sample.SimpleMetricsCountSampler;
-import org.apache.dubbo.metrics.model.MethodMetric;
 import org.apache.dubbo.metrics.model.Metric;
-import org.apache.dubbo.metrics.model.MetricsCategory;
 import org.apache.dubbo.metrics.model.MetricsKey;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 
-import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,7 +33,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.Supplier;
+import java.util.function.ToDoubleFunction;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.metrics.model.MetricsCategory.RT;
@@ -114,16 +112,19 @@ public class CountSamplerTest {
                 MetricsKey.METRIC_RT_SUM.getName()).applyAsLong() == 4);
     }
 
-    @NotNull
     @SuppressWarnings("rawtypes")
     private Map<String, GaugeMetricSample> getCollect(RTType rtType) {
-        List<GaugeMetricSample> metricSamples = sampler.collectRT((key, metric, count) ->
-            new GaugeMetricSample<>(key.formatName("consumer"), metric.getTags(), RT, count, __ -> count), rtType);
+        List<GaugeMetricSample<?>> metricSamples = sampler.collectRT(
+            new MetricsCountSampler.MetricSampleFactory<RequestMethodMetrics, GaugeMetricSample<?>>() {
+                @Override
+                public <T> GaugeMetricSample<?> newInstance(MetricsKey key, RequestMethodMetrics metric, T value, ToDoubleFunction<T> apply) {
+                    return new GaugeMetricSample<>(key.formatName("consumer"), metric.getTags(), RT, value, apply);
+                }
+            }, rtType);
 
         return metricSamples.stream()
             .collect(Collectors.toMap(MetricSample::getName, v -> v));
     }
-
 
     public class RequestMetricsCountSampler extends SimpleMetricsCountSampler<String, RTType, RequestMethodMetrics> {
 
@@ -152,7 +153,7 @@ public class CountSamplerTest {
         }
     }
 
-    static enum RTType {
+    enum RTType {
         METHOD_REQUEST,
         APPLICATION
     }

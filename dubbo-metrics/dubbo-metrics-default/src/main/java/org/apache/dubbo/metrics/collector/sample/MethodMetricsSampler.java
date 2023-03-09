@@ -31,6 +31,7 @@ import org.apache.dubbo.rpc.Invocation;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.ToDoubleFunction;
 
 import static org.apache.dubbo.metrics.model.MetricsCategory.REQUESTS;
@@ -64,7 +65,12 @@ public class MethodMetricsSampler extends SimpleMetricsCountSampler<Invocation, 
 
         collect(metricSamples);
         metricSamples.addAll(
-            this.collectRT((key, metric, count) -> getGaugeMetricSample(key, metric, RT, count, Number::longValue)));
+            this.collectRT(new MetricSampleFactory<MethodMetric, GaugeMetricSample<?>>() {
+                @Override
+                public <T> GaugeMetricSample<?> newInstance(MetricsKey key, MethodMetric metric, T value, ToDoubleFunction<T> apply) {
+                    return getGaugeMetricSample(key, metric, RT, value, apply);
+                }
+            }));
 
         return metricSamples;
     }
@@ -84,11 +90,11 @@ public class MethodMetricsSampler extends SimpleMetricsCountSampler<Invocation, 
     }
 
 
-    private GaugeMetricSample<Number> getGaugeMetricSample(MetricsKey metricsKey,
+    private <T> GaugeMetricSample<T> getGaugeMetricSample(MetricsKey metricsKey,
                                                            MethodMetric methodMetric,
                                                            MetricsCategory metricsCategory,
-                                                           Number value,
-                                                           ToDoubleFunction<Number> apply) {
+                                                           T value,
+                                                           ToDoubleFunction<T> apply) {
         return new GaugeMetricSample<>(
             metricsKey.getNameByType(methodMetric.getSide()),
             metricsKey.getDescription(),
@@ -101,6 +107,6 @@ public class MethodMetricsSampler extends SimpleMetricsCountSampler<Invocation, 
     private <T extends Metric> void count(List<MetricSample> list, MetricsEvent.Type eventType, MetricsKey metricsKey) {
         getCount(eventType).filter(e -> !e.isEmpty())
             .ifPresent(map -> map.forEach((k, v) ->
-                list.add(getGaugeMetricSample(metricsKey, k, REQUESTS, v, value -> v.get()))));
+                list.add(getGaugeMetricSample(metricsKey, k, REQUESTS, v, AtomicLong::get))));
     }
 }

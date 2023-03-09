@@ -25,8 +25,10 @@ import io.micrometer.observation.ObservationRegistry;
 import io.micrometer.tracing.Tracer;
 import io.micrometer.tracing.handler.TracingAwareMeterObservationHandler;
 import io.micrometer.tracing.handler.TracingObservationHandler;
+
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.spring.boot.observability.annotation.ConditionalOnDubboTracingEnable;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
@@ -46,7 +48,7 @@ import java.util.Arrays;
  * Register observationRegistry to ApplicationModel.
  * Create observationRegistry when you are using Boot <3.0 or you are not using spring-boot-starter-actuator
  */
-@AutoConfiguration(after =DubboMicrometerTracingAutoConfiguration.class,afterName = "org.springframework.boot.actuate.autoconfigure.observation.ObservationAutoConfiguration")
+@AutoConfiguration(after = DubboMicrometerTracingAutoConfiguration.class, afterName = "org.springframework.boot.actuate.autoconfigure.observation.ObservationAutoConfiguration")
 @ConditionalOnDubboTracingEnable
 public class DubboObservationAutoConfiguration implements BeanFactoryAware, SmartInitializingSingleton {
 
@@ -108,14 +110,14 @@ public class DubboObservationAutoConfiguration implements BeanFactoryAware, Smar
     }
 
     @Configuration(proxyBeanMethods = false)
-    @ConditionalOnClass({ MeterRegistry.class, Tracer.class })
+    @ConditionalOnClass({MeterRegistry.class, Tracer.class})
     @ConditionalOnMissingBean(type = "org.springframework.boot.actuate.autoconfigure.observation.ObservationRegistryPostProcessor")
     static class MetricsWithTracingConfiguration {
 
         @Bean
         ObservationHandlerGrouping metricsAndTracingObservationHandlerGrouping() {
             return new ObservationHandlerGrouping(
-               Arrays.asList(TracingObservationHandler.class, MeterObservationHandler.class));
+                    Arrays.asList(TracingObservationHandler.class, MeterObservationHandler.class));
         }
 
     }
@@ -142,7 +144,7 @@ public class DubboObservationAutoConfiguration implements BeanFactoryAware, Smar
 
             @Bean
             TracingAwareMeterObservationHandler<Observation.Context> tracingAwareMeterObservationHandler(
-                MeterRegistry meterRegistry, Tracer tracer) {
+                    MeterRegistry meterRegistry, Tracer tracer) {
                 DefaultMeterObservationHandler delegate = new DefaultMeterObservationHandler(meterRegistry);
                 return new TracingAwareMeterObservationHandler<>(delegate, tracer);
             }

@@ -948,4 +948,12 @@ public interface ChannelBuffer extends Comparable<ChannelBuffer> {
      *                                       array
      */
     int arrayOffset();
+
+    /**
+     * If this buffer is backed by an NIO direct buffer,
+     * in some scenarios it may be necessary to manually release.
+     */
+    default void release() {
+
+    }
 }

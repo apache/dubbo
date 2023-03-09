@@ -1005,7 +1005,7 @@ class AbstractConfigTest {
                 ModuleConfig.class, SslConfig.class, MetricsConfig.class, MonitorConfig.class, MethodConfig.class);
 
         for (Class<? extends AbstractConfig> configClass : configClasses) {
-            AbstractConfig config = configClass.newInstance();
+            AbstractConfig config = configClass.getDeclaredConstructor().newInstance();
             Map<String, String> metaData = config.getMetaData();
             Assertions.assertEquals(0, metaData.size(), "Expect empty metadata for new instance but found: "+metaData +" of "+configClass.getSimpleName());
             System.out.println(configClass.getSimpleName() + " metadata is checked.");
