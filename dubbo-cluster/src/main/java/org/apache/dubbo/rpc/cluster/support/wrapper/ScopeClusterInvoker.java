@@ -27,11 +27,15 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 import org.apache.dubbo.rpc.cluster.Directory;
+import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
 import org.apache.dubbo.rpc.listener.ExporterChangeListener;
 import org.apache.dubbo.rpc.listener.InjvmExporterListener;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
@@ -121,7 +125,7 @@ public class ScopeClusterInvoker<T> implements ClusterInvoker<T>, ExporterChange
     @Override
     public void destroy() {
         if (injvmExporterListener != null) {
-            injvmExporterListener.removeExporterChangeListener(this,getUrl().getServiceKey());
+            injvmExporterListener.removeExporterChangeListener(this, getUrl().getServiceKey());
         }
         destroyInjvmInvoker();
         this.invoker.destroy();
@@ -165,6 +169,9 @@ public class ScopeClusterInvoker<T> implements ClusterInvoker<T>, ExporterChange
                     url = url.setScopeModel(getUrl().getScopeModel());
                     url = url.setServiceModel(getUrl().getServiceModel());
                     injvmInvoker = protocolSPI.refer(getInterface(), url);
+                    List<Invoker<?>> invokers = new ArrayList<>();
+                    invokers.add(injvmInvoker);
+                    injvmInvoker = Cluster.getCluster(url.getScopeModel(), Cluster.DEFAULT, false).join(new StaticDirectory(url, invokers), true);
                 }
             }
         }
