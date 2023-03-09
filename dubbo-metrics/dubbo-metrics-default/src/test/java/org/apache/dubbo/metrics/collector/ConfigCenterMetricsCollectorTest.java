@@ -68,7 +68,7 @@ class ConfigCenterMetricsCollectorTest {
 
     @Test
     void increase4Initialized() {
-        ConfigCenterMetricsCollector collector = new ConfigCenterMetricsCollector();
+        ConfigCenterMetricsCollector collector = new ConfigCenterMetricsCollector(applicationModel);
         collector.setCollectEnabled(true);
         String applicationName = applicationModel.getApplicationName();
         collector.increase4Initialized("key", "group", "nacos", applicationName, 1);
@@ -77,18 +77,17 @@ class ConfigCenterMetricsCollectorTest {
         List<MetricSample> samples = collector.collect();
         for (MetricSample sample : samples) {
             Assertions.assertTrue(sample instanceof GaugeMetricSample);
-            GaugeMetricSample gaugeSample = (GaugeMetricSample) sample;
+            GaugeMetricSample<Long> gaugeSample = (GaugeMetricSample) sample;
             Map<String, String> tags = gaugeSample.getTags();
-            Supplier<Number> supplier = gaugeSample.getSupplier();
 
-            Assertions.assertEquals(supplier.get().longValue(), 2);
+            Assertions.assertEquals(gaugeSample.applyAsLong(), 2);
             Assertions.assertEquals(tags.get(TAG_APPLICATION_NAME), applicationName);
         }
     }
 
     @Test
     void increaseUpdated() {
-        ConfigCenterMetricsCollector collector = new ConfigCenterMetricsCollector();
+        ConfigCenterMetricsCollector collector = new ConfigCenterMetricsCollector(applicationModel);
         collector.setCollectEnabled(true);
         String applicationName = applicationModel.getApplicationName();
 
@@ -100,11 +99,10 @@ class ConfigCenterMetricsCollectorTest {
         List<MetricSample> samples = collector.collect();
         for (MetricSample sample : samples) {
             Assertions.assertTrue(sample instanceof GaugeMetricSample);
-            GaugeMetricSample gaugeSample = (GaugeMetricSample) sample;
+            GaugeMetricSample<Long> gaugeSample = (GaugeMetricSample) sample;
             Map<String, String> tags = gaugeSample.getTags();
-            Supplier<Number> supplier = gaugeSample.getSupplier();
 
-            Assertions.assertEquals(supplier.get().longValue(), 2);
+            Assertions.assertEquals(gaugeSample.applyAsLong(), 2);
             Assertions.assertEquals(tags.get(TAG_APPLICATION_NAME), applicationName);
         }
     }
