@@ -24,6 +24,7 @@ import org.apache.dubbo.metrics.report.MetricsReporter;
 import org.apache.dubbo.qos.command.BaseCommand;
 import org.apache.dubbo.qos.command.CommandContext;
 import org.apache.dubbo.qos.command.annotation.Cmd;
+import org.apache.dubbo.qos.permission.PermissionLevel;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
@@ -35,7 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-@Cmd(name = "metrics", summary = "http report")
+@Cmd(name = "metrics", summary = "http report",requiredPermissionLevel = PermissionLevel.PUBLIC)
 public class PrometheusMetricsReporterCmd implements BaseCommand {
 
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(PrometheusMetricsReporterCmd.class);
