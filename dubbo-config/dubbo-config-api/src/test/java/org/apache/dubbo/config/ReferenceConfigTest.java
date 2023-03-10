@@ -421,15 +421,12 @@ class ReferenceConfigTest {
         Invoker<?> withCount = ((MockClusterInvoker<?>) mockInvoker).getDirectory().getAllInvokers().get(0);
 
         Assertions.assertTrue(withCount instanceof ReferenceCountInvokerWrapper);
-        Assertions.assertTrue(((ReferenceCountInvokerWrapper<?>) withCount).getInvoker() instanceof ListenerInvokerWrapper);
-        Assertions.assertTrue(((ListenerInvokerWrapper<?>)(((ReferenceCountInvokerWrapper<?>) withCount).getInvoker())).getInvoker() instanceof InjvmInvoker);
-        if (((ReferenceCountInvokerWrapper<?>) withCount).getInvoker() instanceof FilterChainBuilder.CallbackRegistrationInvoker) {
-            Invoker filterInvoker = ((FilterChainBuilder.CallbackRegistrationInvoker) withFilter).getFilterInvoker();
-            FilterChainBuilder.CopyOfFilterChainNode filterInvoker1 = (FilterChainBuilder.CopyOfFilterChainNode) filterInvoker;
-            ListenerInvokerWrapper originalInvoker = (ListenerInvokerWrapper) filterInvoker1.getOriginalInvoker();
-            Invoker invoker = originalInvoker.getInvoker();
-            Assertions.assertTrue(invoker instanceof InjvmInvoker);
-        }
+        Assertions.assertTrue(((ReferenceCountInvokerWrapper<?>) withCount).getInvoker() instanceof FilterChainBuilder.CallbackRegistrationInvoker);
+        Invoker filterInvoker = ((FilterChainBuilder.CallbackRegistrationInvoker) ((ReferenceCountInvokerWrapper<?>) withCount).getInvoker()).getFilterInvoker();
+        FilterChainBuilder.CopyOfFilterChainNode filterInvoker1 = (FilterChainBuilder.CopyOfFilterChainNode) filterInvoker;
+        ListenerInvokerWrapper originalInvoker = (ListenerInvokerWrapper) filterInvoker1.getOriginalInvoker();
+        Invoker invoker = originalInvoker.getInvoker();
+        Assertions.assertTrue(invoker instanceof InjvmInvoker);
         URL url = withCount.getUrl();
         Assertions.assertEquals("application1", url.getParameter("application"));
         Assertions.assertEquals("value1", url.getParameter("key1"));
