@@ -421,12 +421,20 @@ class ReferenceConfigTest {
         Invoker<?> withCount = ((MockClusterInvoker<?>) mockInvoker).getDirectory().getAllInvokers().get(0);
 
         Assertions.assertTrue(withCount instanceof ReferenceCountInvokerWrapper);
-        Assertions.assertTrue(((ReferenceCountInvokerWrapper<?>) withCount).getInvoker() instanceof FilterChainBuilder.CallbackRegistrationInvoker);
-        Invoker filterInvoker = ((FilterChainBuilder.CallbackRegistrationInvoker) ((ReferenceCountInvokerWrapper<?>) withCount).getInvoker()).getFilterInvoker();
-        FilterChainBuilder.CopyOfFilterChainNode filterInvoker1 = (FilterChainBuilder.CopyOfFilterChainNode) filterInvoker;
-        ListenerInvokerWrapper originalInvoker = (ListenerInvokerWrapper) filterInvoker1.getOriginalInvoker();
-        Invoker invoker = originalInvoker.getInvoker();
-        Assertions.assertTrue(invoker instanceof InjvmInvoker);
+        Assertions.assertTrue(((ReferenceCountInvokerWrapper<?>) withCount).getInvoker() instanceof ListenerInvokerWrapper);
+        Invoker<?> withFilter = ((ReferenceCountInvokerWrapper<?>) withCount).getInvoker();
+        Assertions.assertTrue(withFilter instanceof ListenerInvokerWrapper
+            || withFilter instanceof FilterChainBuilder.CallbackRegistrationInvoker);
+        if (withFilter instanceof ListenerInvokerWrapper) {
+            Assertions.assertTrue(((ListenerInvokerWrapper<?>)(((ReferenceCountInvokerWrapper<?>) withCount).getInvoker())).getInvoker() instanceof InjvmInvoker);
+        }
+        if (withFilter instanceof FilterChainBuilder.CallbackRegistrationInvoker) {
+            Invoker filterInvoker = ((FilterChainBuilder.CallbackRegistrationInvoker) withFilter).getFilterInvoker();
+            FilterChainBuilder.CopyOfFilterChainNode filterInvoker1 = (FilterChainBuilder.CopyOfFilterChainNode) filterInvoker;
+            ListenerInvokerWrapper originalInvoker = (ListenerInvokerWrapper) filterInvoker1.getOriginalInvoker();
+            Invoker invoker = originalInvoker.getInvoker();
+            Assertions.assertTrue(invoker instanceof InjvmInvoker);
+        }
         URL url = withCount.getUrl();
         Assertions.assertEquals("application1", url.getParameter("application"));
         Assertions.assertEquals("value1", url.getParameter("key1"));
@@ -515,11 +523,8 @@ class ReferenceConfigTest {
             .initialize();
 
         referenceConfig.init();
-        Assertions.assertTrue(referenceConfig.getInvoker() instanceof ScopeClusterInvoker);
-        ScopeClusterInvoker scopeClusterInvoker = (ScopeClusterInvoker) referenceConfig.getInvoker();
-        Assertions.assertTrue(scopeClusterInvoker.getInvoker() instanceof MockClusterInvoker);
-
-        Assertions.assertEquals(Boolean.TRUE, scopeClusterInvoker.getInvoker().getUrl().getAttribute(PEER_KEY));
+        Assertions.assertTrue(referenceConfig.getInvoker() instanceof MockClusterInvoker);
+        Assertions.assertEquals(Boolean.TRUE, referenceConfig.getInvoker().getUrl().getAttribute(PEER_KEY));
         dubboBootstrap.destroy();
 
     }
@@ -690,10 +695,9 @@ class ReferenceConfigTest {
             System.setProperty("java.net.preferIPv4Stack", "true");
             ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
             DemoService service = new DemoServiceImpl();
-            URL url = URL.valueOf("injvm://127.0.0.1/DemoService")
+            URL url = URL.valueOf("dubbo://127.0.0.1/DemoService")
                 .addParameter(INTERFACE_KEY, DemoService.class.getName());
-            Protocol protocol = ApplicationModel.defaultModel().getExtensionLoader(Protocol.class).getAdaptiveExtension();
-            protocol.export(proxy.getInvoker(service, DemoService.class, url));
+            InjvmProtocol.getInjvmProtocol(FrameworkModel.defaultModel()).export(proxy.getInvoker(service, DemoService.class, url));
             demoService = rc.get();
             success = true;
         } catch (Exception e) {
@@ -1059,8 +1063,7 @@ class ReferenceConfigTest {
         applicationModel.getApplicationConfigManager().setApplication(new ApplicationConfig("Test"));
 
         ClassLoader originClassLoader = Thread.currentThread().getContextClassLoader();
-        ClassLoader classLoader = new ClassLoader(originClassLoader) {
-        };
+        ClassLoader classLoader = new ClassLoader(originClassLoader) {};
         Thread.currentThread().setContextClassLoader(classLoader);
 
         ServiceConfig<DemoService> serviceConfig = new ServiceConfig<>(applicationModel.newModule());
