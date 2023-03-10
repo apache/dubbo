@@ -116,7 +116,8 @@ public class RestProtocol extends AbstractProxyProtocol {
 
         String contextPath = getContextPath(url);
 
-        Map<PathMatcher, RestMethodMetadata> metadataMap = MetadataResolver.resolveProviderServiceMetadata(implClass, url, contextPath);
+        Map<PathMatcher, RestMethodMetadata> metadataMap =
+            MetadataResolver.resolveProviderServiceMetadata(implClass, url, contextPath);
 
         PathAndInvokerMapper.addPathAndInvoker(metadataMap, invoker);
 
@@ -202,7 +203,7 @@ public class RestProtocol extends AbstractProxyProtocol {
             synchronized (clients) {
                 refClient = clients.get(url.getAddress());
                 if (refClient == null || refClient.isDestroyed()) {
-                    refClient = ConcurrentHashMapUtils.computeIfAbsent(clients, url.getAddress(), _key -> createReferenceCountedClient(url,clients));
+                    refClient = ConcurrentHashMapUtils.computeIfAbsent(clients, url.getAddress(), _key -> createReferenceCountedClient(url, clients));
                 }
             }
         }
@@ -212,14 +213,16 @@ public class RestProtocol extends AbstractProxyProtocol {
         String contextPathFromUrl = getContextPath(url);
 
         // resolve metadata
-        Map<String, Map<ParameterTypesComparator, RestMethodMetadata>> metadataMap = MetadataResolver.resolveConsumerServiceMetadata(type, url, contextPathFromUrl);
+        Map<String, Map<ParameterTypesComparator, RestMethodMetadata>> metadataMap =
+            MetadataResolver.resolveConsumerServiceMetadata(type, url, contextPathFromUrl);
 
         ReferenceCountedClient<? extends RestClient> finalRefClient = refClient;
         Invoker<T> invoker = new AbstractInvoker<T>(type, url, new String[]{INTERFACE_KEY, GROUP_KEY, TOKEN_KEY}) {
             @Override
             protected Result doInvoke(Invocation invocation) {
                 try {
-                    RestMethodMetadata restMethodMetadata = metadataMap.get(invocation.getMethodName()).get(ParameterTypesComparator.getInstance(invocation.getParameterTypes()));
+                    RestMethodMetadata restMethodMetadata =
+                        metadataMap.get(invocation.getMethodName()).get(ParameterTypesComparator.getInstance(invocation.getParameterTypes()));
 
                     RequestTemplate requestTemplate = new RequestTemplate(invocation, restMethodMetadata.getRequest().getMethod(), url.getAddress());
 
