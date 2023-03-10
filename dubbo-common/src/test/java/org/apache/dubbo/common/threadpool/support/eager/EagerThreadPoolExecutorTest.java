@@ -101,7 +101,7 @@ class EagerThreadPoolExecutorTest {
     }
 
     @Test
-    void testEagerThreadPoolFast() throws Exception {
+    void testEagerThreadPoolFast() {
         String name = "eager-tf";
         int queues = 5;
         int cores = 5;
@@ -171,7 +171,7 @@ class EagerThreadPoolExecutorTest {
     }
 
     @Test
-    void testEagerThreadPool_rejectExecution1() throws Exception {
+    void testEagerThreadPool_rejectExecution1() {
         String name = "eager-tf";
         int cores = 1;
         int threads = 3;
@@ -213,7 +213,7 @@ class EagerThreadPoolExecutorTest {
 
 
     @Test
-    void testEagerThreadPool_rejectExecution2() throws Exception {
+    void testEagerThreadPool_rejectExecution2() {
         String name = "eager-tf";
         int cores = 1;
         int threads = 3;

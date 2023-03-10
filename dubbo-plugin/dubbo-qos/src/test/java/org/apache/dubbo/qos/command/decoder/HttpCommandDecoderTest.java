@@ -37,7 +37,7 @@ import static org.mockito.Mockito.when;
 
 class HttpCommandDecoderTest {
     @Test
-    void decodeGet() throws Exception {
+    void decodeGet() {
         HttpRequest request = mock(HttpRequest.class);
         when(request.uri()).thenReturn("localhost:80/test");
         when(request.method()).thenReturn(HttpMethod.GET);
@@ -50,7 +50,7 @@ class HttpCommandDecoderTest {
     }
 
     @Test
-    void decodePost() throws Exception {
+    void decodePost() {
         FullHttpRequest request = mock(FullHttpRequest.class);
         when(request.uri()).thenReturn("localhost:80/test");
         when(request.method()).thenReturn(HttpMethod.POST);

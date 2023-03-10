@@ -34,7 +34,7 @@ public class RpcMessageHandler implements Replier<RpcMessage> {
             String impl = service + "Impl";
             try {
                 Class<?> cl = Thread.currentThread().getContextClassLoader().loadClass(impl);
-                return cl.newInstance();
+                return cl.getDeclaredConstructor().newInstance();
             } catch (Exception e) {
                 e.printStackTrace();
             }

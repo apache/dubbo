@@ -23,20 +23,33 @@ import io.netty.channel.ChannelPromise;
 import org.apache.dubbo.common.BatchExecutorQueue;
 import org.apache.dubbo.rpc.protocol.tri.command.QueuedCommand;
 
+import java.util.concurrent.Executor;
+
 public class TripleWriteQueue extends BatchExecutorQueue<QueuedCommand> {
+
+    public TripleWriteQueue() {
+    }
+
+    public TripleWriteQueue(int chunkSize) {
+        super(chunkSize);
+    }
 
     public ChannelFuture enqueue(QueuedCommand command, boolean rst) {
         return enqueue(command);
     }
 
     public ChannelFuture enqueue(QueuedCommand command) {
+        return this.enqueueFuture(command, command.channel().eventLoop());
+    }
+
+    public ChannelFuture enqueueFuture(QueuedCommand command, Executor executor) {
         ChannelPromise promise = command.promise();
         if (promise == null) {
             Channel ch = command.channel();
             promise = ch.newPromise();
             command.promise(promise);
         }
-        super.enqueue(command, command.channel().eventLoop());
+        super.enqueue(command, executor);
         return promise;
     }
 

@@ -36,7 +36,7 @@ import org.apache.dubbo.rpc.cluster.router.state.BitList;
 import org.apache.dubbo.rpc.cluster.router.tag.model.TagRouterRule;
 import org.apache.dubbo.rpc.cluster.router.tag.model.TagRuleParser;
 
-import java.util.List;
+import java.util.Set;
 import java.util.function.Predicate;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
@@ -53,8 +53,9 @@ public class TagStateRouter<T> extends AbstractStateRouter<T> implements Configu
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(TagStateRouter.class);
     private static final String RULE_SUFFIX = ".tag-router";
 
-    private TagRouterRule tagRouterRule;
+    private volatile TagRouterRule tagRouterRule;
     private String application;
+    private volatile BitList<Invoker<T>> invokers = BitList.emptyList();
 
     public TagStateRouter(URL url) {
         super(url);
@@ -71,7 +72,9 @@ public class TagStateRouter<T> extends AbstractStateRouter<T> implements Configu
             if (event.getChangeType().equals(ConfigChangeType.DELETED)) {
                 this.tagRouterRule = null;
             } else {
-                this.tagRouterRule = TagRuleParser.parse(event.getContent());
+                TagRouterRule rule = TagRuleParser.parse(event.getContent());
+                rule.init(this);
+                this.tagRouterRule = rule;
             }
         } catch (Exception e) {
             logger.error(CLUSTER_TAG_ROUTE_INVALID,"Failed to parse the raw tag router rule","","Failed to parse the raw tag router rule and it will not take effect, please check if the " +
@@ -103,9 +106,9 @@ public class TagStateRouter<T> extends AbstractStateRouter<T> implements Configu
 
         // if we are requesting for a Provider with a specific tag
         if (StringUtils.isNotEmpty(tag)) {
-            List<String> addresses = tagRouterRuleCopy.getTagnameToAddresses().get(tag);
+            Set<String> addresses = tagRouterRuleCopy.getTagnameToAddresses().get(tag);
             // filter by dynamic tag group first
-            if (CollectionUtils.isNotEmpty(addresses)) {
+            if (addresses != null) { // null means tag not set
                 result = filterInvoker(invokers, invoker -> addressMatches(invoker.getUrl(), addresses));
                 // if result is not null OR it's null but force=true, return result directly
                 if (CollectionUtils.isNotEmpty(result) || tagRouterRuleCopy.isForce()) {
@@ -129,8 +132,10 @@ public class TagStateRouter<T> extends AbstractStateRouter<T> implements Configu
             }
             // FAILOVER: return all Providers without any tags.
             else {
-                BitList<Invoker<T>> tmp = filterInvoker(invokers, invoker -> addressNotMatches(invoker.getUrl(),
-                    tagRouterRuleCopy.getAddresses()));
+                BitList<Invoker<T>> tmp = filterInvoker(
+                    invokers,
+                    invoker -> addressNotMatches(invoker.getUrl(), tagRouterRuleCopy.getAddresses())
+                );
                 if (needToPrintMessage) {
                     messageHolder.set("FAILOVER: return all Providers without any tags");
                 }
@@ -139,7 +144,7 @@ public class TagStateRouter<T> extends AbstractStateRouter<T> implements Configu
         } else {
             // List<String> addresses = tagRouterRule.filter(providerApp);
             // return all addresses in dynamic tag group.
-            List<String> addresses = tagRouterRuleCopy.getAddresses();
+            Set<String> addresses = tagRouterRuleCopy.getAddresses();
             if (CollectionUtils.isNotEmpty(addresses)) {
                 result = filterInvoker(invokers, invoker -> addressNotMatches(invoker.getUrl(), addresses));
                 // 1. all addresses are in dynamic tag group, return empty list.
@@ -157,7 +162,7 @@ public class TagStateRouter<T> extends AbstractStateRouter<T> implements Configu
             }
             return filterInvoker(result, invoker -> {
                 String localTag = invoker.getUrl().getParameter(TAG_KEY);
-                return StringUtils.isEmpty(localTag) || !tagRouterRuleCopy.getTagNames().contains(localTag);
+                return StringUtils.isEmpty(localTag);
             });
         }
     }
@@ -219,15 +224,15 @@ public class TagStateRouter<T> extends AbstractStateRouter<T> implements Configu
         return newInvokers;
     }
 
-    private boolean addressMatches(URL url, List<String> addresses) {
+    private boolean addressMatches(URL url, Set<String> addresses) {
         return addresses != null && checkAddressMatch(addresses, url.getHost(), url.getPort());
     }
 
-    private boolean addressNotMatches(URL url, List<String> addresses) {
+    private boolean addressNotMatches(URL url, Set<String> addresses) {
         return addresses == null || !checkAddressMatch(addresses, url.getHost(), url.getPort());
     }
 
-    private boolean checkAddressMatch(List<String> addresses, String host, int port) {
+    private boolean checkAddressMatch(Set<String> addresses, String host, int port) {
         for (String address : addresses) {
             try {
                 if (NetUtils.matchIpExpression(address, host, port)) {
@@ -237,7 +242,7 @@ public class TagStateRouter<T> extends AbstractStateRouter<T> implements Configu
                     return true;
                 }
             } catch (Exception e) {
-                logger.error(CLUSTER_TAG_ROUTE_INVALID,"tag route address is invalid","","The format of ip address is invalid in tag route. Address :" + address,e);
+                logger.error(CLUSTER_TAG_ROUTE_INVALID, "tag route address is invalid", "", "The format of ip address is invalid in tag route. Address :" + address, e);
             }
         }
         return false;
@@ -249,6 +254,7 @@ public class TagStateRouter<T> extends AbstractStateRouter<T> implements Configu
 
     @Override
     public void notify(BitList<Invoker<T>> invokers) {
+        this.invokers = invokers;
         if (CollectionUtils.isEmpty(invokers)) {
             return;
         }
@@ -275,8 +281,18 @@ public class TagStateRouter<T> extends AbstractStateRouter<T> implements Configu
                 if (StringUtils.isNotEmpty(rawRule)) {
                     this.process(new ConfigChangedEvent(key, DynamicConfiguration.DEFAULT_GROUP, rawRule));
                 }
+            } else {
+                if (this.tagRouterRule != null) {
+                    TagRouterRule newRule = TagRuleParser.parse(this.tagRouterRule.getRawRule());
+                    newRule.init(this);
+                    this.tagRouterRule = newRule;
+                }
             }
         }
+    }
+
+    public BitList<Invoker<T>> getInvokers() {
+        return invokers;
     }
 
     @Override
@@ -284,5 +300,10 @@ public class TagStateRouter<T> extends AbstractStateRouter<T> implements Configu
         if (StringUtils.isNotEmpty(application)) {
             this.getRuleRepository().removeListener(application + RULE_SUFFIX, this);
         }
+    }
+
+    // for testing purpose
+    public void setTagRouterRule(TagRouterRule tagRouterRule) {
+        this.tagRouterRule = tagRouterRule;
     }
 }
