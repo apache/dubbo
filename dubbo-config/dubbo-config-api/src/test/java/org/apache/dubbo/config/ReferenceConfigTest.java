@@ -483,7 +483,9 @@ class ReferenceConfigTest {
         Assertions.assertTrue(referenceConfig.getInvoker() instanceof MockClusterInvoker);
         Invoker<?> withCount = ((MockClusterInvoker<?>) referenceConfig.getInvoker()).getDirectory().getAllInvokers().get(0);
         Assertions.assertTrue(withCount instanceof ReferenceCountInvokerWrapper);
-        Assertions.assertTrue(((ReferenceCountInvokerWrapper<?>) withCount).getInvoker() instanceof ListenerInvokerWrapper
+        Assertions.assertTrue(((ReferenceCountInvokerWrapper<?>) withCount).getInvoker() instanceof ListenerInvokerWrapper);
+        Invoker<?> withFilter = ((ReferenceCountInvokerWrapper<?>) withCount).getInvoker();
+        Assertions.assertTrue(withFilter instanceof ListenerInvokerWrapper
             || withFilter instanceof FilterChainBuilder.CallbackRegistrationInvoker);
         if (withFilter instanceof ListenerInvokerWrapper) {
             Assertions.assertTrue(((ListenerInvokerWrapper<?>)(((ReferenceCountInvokerWrapper<?>) withCount).getInvoker())).getInvoker() instanceof InjvmInvoker);
