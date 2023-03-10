@@ -35,7 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-@Cmd(name = "metrics", summary = "http report")
+@Cmd(name = "metrics", summary = "reuse qos report")
 public class PrometheusMetricsReporterCmd implements BaseCommand {
 
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(PrometheusMetricsReporterCmd.class);
