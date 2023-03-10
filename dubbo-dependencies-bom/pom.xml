@@ -112,13 +112,13 @@
         <consul_client_version>1.5.3</consul_client_version>
         <xmemcached_version>1.4.3</xmemcached_version>
         <cxf_version>3.5.5</cxf_version>
-        <thrift_version>0.18.0</thrift_version>
+        <thrift_version>0.18.1</thrift_version>
         <hessian_version>4.0.66</hessian_version>
-        <protobuf-java_version>3.19.6</protobuf-java_version>
+        <protobuf-java_version>3.22.0</protobuf-java_version>
         <javax_annotation-api_version>1.3.2</javax_annotation-api_version>
         <servlet_version>3.1.0</servlet_version>
         <jakarta.servlet_version>5.0.0</jakarta.servlet_version>
-        <jetty_version>9.4.50.v20221201</jetty_version>
+        <jetty_version>9.4.51.v20230217</jetty_version>
         <validation_new_version>3.0.1</validation_new_version>
         <validation_version>1.1.0.Final</validation_version>
         <hibernate_validator_version>5.4.3.Final</hibernate_validator_version>
@@ -141,12 +141,12 @@
         <prometheus_client.version>0.16.0</prometheus_client.version>
         <reactive.version>1.0.4</reactive.version>
         <reactor.version>3.5.3</reactor.version>
-        <okhttp_version>4.10.0</okhttp_version>
+        <okhttp_version>3.14.2</okhttp_version>
 
         <rs_api_version>2.1.1</rs_api_version>
-        <resteasy_version>3.15.3.Final</resteasy_version>
+        <resteasy_version>3.15.6.Final</resteasy_version>
         <codehaus-jackson_version>1.9.13</codehaus-jackson_version>
-        <tomcat_embed_version>8.5.85</tomcat_embed_version>
+        <tomcat_embed_version>8.5.87</tomcat_embed_version>
         <jetcd_version>0.7.5</jetcd_version>
         <nacos_version>2.1.2</nacos_version>
         <grpc.version>1.53.0</grpc.version>
@@ -158,7 +158,7 @@
         <log4j_version>1.2.17</log4j_version>
         <logback_version>1.2.11</logback_version>
         <!-- Fix the bug of log4j refer:https://github.com/apache/logging-log4j2/pull/608 -->
-        <log4j2_version>2.19.0</log4j2_version>
+        <log4j2_version>2.20.0</log4j2_version>
         <commons_io_version>2.11.0</commons_io_version>
 
         <embedded_redis_version>0.13.0</embedded_redis_version>

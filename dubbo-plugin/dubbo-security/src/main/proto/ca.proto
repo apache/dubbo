@@ -14,33 +14,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metrics.filter.observation;
 
-import io.micrometer.observation.transport.ReceiverContext;
-import org.apache.dubbo.rpc.Invocation;
-import org.apache.dubbo.rpc.Invoker;
+syntax = "proto3";
 
-/**
- * Consumer context for RPC.
- */
-public class DubboServerContext extends ReceiverContext<Invocation> {
+import "google/protobuf/struct.proto";
 
-    private final Invoker<?> invoker;
+package org.apache.dubbo.auth.v1alpha1;
 
-    private final Invocation invocation;
+option go_package = "github.com/apache/dubbo-admin/ca/v1alpha1";
+option java_multiple_files = true;
 
-    public DubboServerContext(Invoker<?> invoker, Invocation invocation) {
-        super((stringObjectMap, s) -> String.valueOf(stringObjectMap.getAttachment(s)));
-        this.invoker = invoker;
-        this.invocation = invocation;
-        setCarrier(invocation);
-    }
 
-    public Invoker<?> getInvoker() {
-        return invoker;
-    }
+message DubboCertificateRequest {
+  string csr = 1;
+  string type = 2;
 
-    public Invocation getInvocation() {
-        return invocation;
-    }
+  google.protobuf.Struct metadata = 3;
+}
+
+message DubboCertificateResponse {
+  bool success = 1;
+  string cert_pem = 2;
+  repeated string trust_certs = 3;
+  int64 expire_time = 4;
+  string message = 5;
+}
+
+service DubboCertificateService {
+  rpc CreateCertificate(DubboCertificateRequest)
+      returns (DubboCertificateResponse) {
+  }
 }
