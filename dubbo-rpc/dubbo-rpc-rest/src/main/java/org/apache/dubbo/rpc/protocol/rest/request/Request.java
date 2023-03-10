@@ -16,9 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.rest.request;
 
-
-import org.apache.dubbo.common.extension.SPI;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,7 +24,6 @@ import java.util.Enumeration;
 import java.util.Map;
 
 
-@SPI
 public interface Request {
 
     Object getParts() throws Exception;
