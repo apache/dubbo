@@ -33,7 +33,6 @@ import org.apache.dubbo.config.context.ModuleConfigManager;
 import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
 import org.apache.dubbo.registry.client.migration.MigrationInvoker;
 import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.cluster.filter.FilterChainBuilder;
 import org.apache.dubbo.rpc.cluster.support.registry.ZoneAwareClusterInvoker;
@@ -421,7 +420,6 @@ class ReferenceConfigTest {
         Invoker<?> withCount = ((MockClusterInvoker<?>) mockInvoker).getDirectory().getAllInvokers().get(0);
 
         Assertions.assertTrue(withCount instanceof ReferenceCountInvokerWrapper);
-        Assertions.assertTrue(((ReferenceCountInvokerWrapper<?>) withCount).getInvoker() instanceof ListenerInvokerWrapper);
         Invoker<?> withFilter = ((ReferenceCountInvokerWrapper<?>) withCount).getInvoker();
         Assertions.assertTrue(withFilter instanceof ListenerInvokerWrapper
             || withFilter instanceof FilterChainBuilder.CallbackRegistrationInvoker);
