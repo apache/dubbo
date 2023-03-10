@@ -25,7 +25,6 @@ import org.apache.dubbo.metrics.model.MetricsKey;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 
-import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -113,7 +112,6 @@ public class CountSamplerTest {
                 MetricsKey.METRIC_RT_SUM.getName()).applyAsLong() == 4);
     }
 
-    @NotNull
     @SuppressWarnings("rawtypes")
     private Map<String, GaugeMetricSample> getCollect(RTType rtType) {
         List<GaugeMetricSample<?>> metricSamples = sampler.collectRT(
