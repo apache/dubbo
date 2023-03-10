@@ -19,6 +19,7 @@ package org.apache.dubbo.common.utils;
 import org.apache.dubbo.common.constants.CommonConstants;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -275,6 +276,17 @@ public class IOUtils {
                 throw new FileNotFoundException("Resource location [" + resourceLocation +
                     "] is neither a URL not a well-formed file path");
             }
+        }
+    }
+
+    public static byte[] toByteArray(final InputStream inputStream) throws IOException {
+        try (final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
+            byte[] buffer = new byte[1024];
+            int n;
+            while (-1 != (n = inputStream.read(buffer))) {
+                byteArrayOutputStream.write(buffer, 0, n);
+            }
+            return byteArrayOutputStream.toByteArray();
         }
     }
 }
