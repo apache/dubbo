@@ -16,11 +16,17 @@
  */
 
 package org.apache.dubbo.metrics.filter;
+
 import org.apache.dubbo.metrics.collector.sample.MethodMetricsSampler;
 import org.apache.dubbo.metrics.event.MetricsEvent;
 import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
+
+import java.util.Optional;
+
+import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.common.constants.MetricsConstants.METRIC_FILTER_START_TIME;
 
 public class MethodMetricsInterceptor {
@@ -32,16 +38,23 @@ public class MethodMetricsInterceptor {
     }
 
     public void beforeMethod(Invocation invocation) {
-        sampler.incOnEvent(invocation, MetricsEvent.Type.TOTAL);
-        sampler.incOnEvent(invocation,MetricsEvent.Type.PROCESSING);
+        String side = getSide(invocation);
+        sampler.incOnEvent(invocation, MetricsEvent.Type.TOTAL.getNameByType(side));
+        sampler.incOnEvent(invocation, MetricsEvent.Type.PROCESSING.getNameByType(side));
         invocation.put(METRIC_FILTER_START_TIME, System.currentTimeMillis());
+    }
+
+    private String getSide(Invocation invocation) {
+        Optional<? extends Invoker<?>> invoker = Optional.ofNullable(invocation.getInvoker());
+        String side = invoker.isPresent() ? invoker.get().getUrl().getSide() : PROVIDER_SIDE;
+        return side;
     }
 
     public void afterMethod(Invocation invocation, Result result) {
         if (result.hasException()) {
             handleMethodException(invocation, result.getException());
-        }else{
-            sampler.incOnEvent(invocation,MetricsEvent.Type.SUCCEED);
+        } else {
+            sampler.incOnEvent(invocation, MetricsEvent.Type.SUCCEED.getNameByType(getSide(invocation)));
             onCompleted(invocation);
         }
     }
@@ -50,7 +63,7 @@ public class MethodMetricsInterceptor {
         if (throwable == null) {
             return;
         }
-
+        String side = getSide(invocation);
         if (throwable instanceof RpcException) {
             RpcException e = (RpcException) throwable;
 
@@ -71,21 +84,27 @@ public class MethodMetricsInterceptor {
             if (e.isNetwork()) {
                 eventType = MetricsEvent.Type.NETWORK_EXCEPTION;
             }
-            sampler.incOnEvent(invocation,eventType);
+            sampler.incOnEvent(invocation, eventType.getNameByType(side));
         }
 
         if (throwable instanceof RpcException && ((RpcException) throwable).isBiz()) {
             onCompleted(invocation);
+        }else{
+            rtTime(invocation);
         }
 
-        sampler.incOnEvent(invocation,MetricsEvent.Type.TOTAL_FAILED);
+        sampler.incOnEvent(invocation, MetricsEvent.Type.TOTAL_FAILED.getNameByType(side));
     }
 
-    private void onCompleted(Invocation invocation) {
+    private void rtTime(Invocation invocation){
         Long endTime = System.currentTimeMillis();
         Long beginTime = (Long) invocation.get(METRIC_FILTER_START_TIME);
         Long rt = endTime - beginTime;
         sampler.addRT(invocation, rt);
-        sampler.dec(invocation,MetricsEvent.Type.PROCESSING);
+    }
+
+    private void onCompleted(Invocation invocation) {
+        rtTime(invocation);
+        sampler.dec(invocation, MetricsEvent.Type.PROCESSING.getNameByType(getSide(invocation)));
     }
 }

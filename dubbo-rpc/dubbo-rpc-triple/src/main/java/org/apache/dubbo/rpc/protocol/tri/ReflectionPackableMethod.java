@@ -388,11 +388,12 @@ public class ReflectionPackableMethod implements PackableMethod {
             for (String type : argumentsType) {
                 builder.addArgTypes(type);
             }
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
             for (int i = 0; i < arguments.length; i++) {
                 Object argument = arguments[i];
-                ByteArrayOutputStream bos = new ByteArrayOutputStream();
                 multipleSerialization.serialize(url, serialize, actualRequestTypes[i], argument, bos);
                 builder.addArgs(bos.toByteArray());
+                bos.reset();
             }
             return builder.build().toByteArray();
         }

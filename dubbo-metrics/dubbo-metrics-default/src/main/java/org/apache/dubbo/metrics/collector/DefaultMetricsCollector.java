@@ -95,6 +95,10 @@ public class DefaultMetricsCollector implements MetricsCollector {
         applicationSampler.inc(applicationName, MetricsEvent.Type.APPLICATION_INFO);
     }
 
+    public void registryDefaultSample(){
+        this.threadPoolSampler.registryDefaultSampleThreadPoolExecutor();
+    }
+
     @Override
     public List<MetricSample> collect() {
         List<MetricSample> list = new ArrayList<>();
