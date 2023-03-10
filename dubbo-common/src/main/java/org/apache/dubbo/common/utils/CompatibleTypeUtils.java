@@ -204,7 +204,7 @@ public class CompatibleTypeUtils {
             }
             if (!type.isInterface()) {
                 try {
-                    Collection result = (Collection) type.newInstance();
+                    Collection result = (Collection) type.getDeclaredConstructor().newInstance();
                     result.addAll(collection);
                     return result;
                 } catch (Throwable ignored) {
@@ -222,8 +222,8 @@ public class CompatibleTypeUtils {
             Collection collection;
             if (!type.isInterface()) {
                 try {
-                    collection = (Collection) type.newInstance();
-                } catch (Throwable e) {
+                    collection = (Collection) type.getDeclaredConstructor().newInstance();
+                } catch (Exception e) {
                     collection = new ArrayList<Object>(length);
                 }
             } else if (type == Set.class) {

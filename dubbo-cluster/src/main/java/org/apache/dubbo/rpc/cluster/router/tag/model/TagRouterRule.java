@@ -17,14 +17,19 @@
 package org.apache.dubbo.rpc.cluster.router.tag.model;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.cluster.router.AbstractRouterRule;
+import org.apache.dubbo.rpc.cluster.router.state.BitList;
+import org.apache.dubbo.rpc.cluster.router.tag.TagStateRouter;
 
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
+import static org.apache.dubbo.rpc.cluster.Constants.RULE_VERSION_V30;
 import static org.apache.dubbo.rpc.cluster.Constants.TAGS_KEY;
 
 /**
@@ -45,8 +50,8 @@ import static org.apache.dubbo.rpc.cluster.Constants.TAGS_KEY;
 public class TagRouterRule extends AbstractRouterRule {
     private List<Tag> tags;
 
-    private final Map<String, List<String>> addressToTagnames = new HashMap<>();
-    private final Map<String, List<String>> tagnameToAddresses = new HashMap<>();
+    private final Map<String, Set<String>> addressToTagnames = new HashMap<>();
+    private final Map<String, Set<String>> tagnameToAddresses = new HashMap<>();
 
     @SuppressWarnings("unchecked")
     public static TagRouterRule parseFromMap(Map<String, Object> map) {
@@ -56,43 +61,71 @@ public class TagRouterRule extends AbstractRouterRule {
         Object tags = map.get(TAGS_KEY);
         if (tags != null && List.class.isAssignableFrom(tags.getClass())) {
             tagRouterRule.setTags(((List<Map<String, Object>>) tags).stream()
-                    .map(Tag::parseFromMap).collect(Collectors.toList()));
+                .map(objMap -> Tag.parseFromMap(objMap, tagRouterRule.getVersion())).collect(Collectors.toList()));
         }
 
         return tagRouterRule;
     }
 
-    public void init() {
+    public void init(TagStateRouter<?> router) {
         if (!isValid()) {
             return;
         }
 
+        BitList<? extends Invoker<?>> invokers = router.getInvokers();
+
+        // for tags with 'addresses` field set and 'match' field not set
         tags.stream().filter(tag -> CollectionUtils.isNotEmpty(tag.getAddresses())).forEach(tag -> {
-            tagnameToAddresses.put(tag.getName(), tag.getAddresses());
+            tagnameToAddresses.put(tag.getName(), new HashSet<>(tag.getAddresses()));
             tag.getAddresses().forEach(addr -> {
-                List<String> tagNames = addressToTagnames.computeIfAbsent(addr, k -> new ArrayList<>());
+                Set<String> tagNames = addressToTagnames.computeIfAbsent(addr, k -> new HashSet<>());
                 tagNames.add(tag.getName());
             });
         });
+
+        if (this.getVersion() != null && this.getVersion().startsWith(RULE_VERSION_V30)) {
+            // for tags with 'match` field set and 'addresses' field not set
+            if (CollectionUtils.isNotEmpty(invokers)) {
+                tags.stream().filter(tag -> CollectionUtils.isEmpty(tag.getAddresses())).forEach(tag -> {
+                    Set<String> addresses = new HashSet<>();
+                    List<ParamMatch> paramMatchers = tag.getMatch();
+                    invokers.forEach(invoker -> {
+                        boolean isMatch = true;
+                        for (ParamMatch matcher : paramMatchers) {
+                            if (!matcher.isMatch(invoker.getUrl().getOriginalParameter(matcher.getKey()))) {
+                                isMatch = false;
+                                break;
+                            }
+                        }
+                        if (isMatch) {
+                            addresses.add(invoker.getUrl().getAddress());
+                        }
+                    });
+                    if (CollectionUtils.isNotEmpty(addresses)) {// null means tag not set
+                        tagnameToAddresses.put(tag.getName(), addresses);
+                    }
+                });
+            }
+        }
     }
 
-    public List<String> getAddresses() {
-        return tags.stream()
-                .filter(tag -> CollectionUtils.isNotEmpty(tag.getAddresses()))
-                .flatMap(tag -> tag.getAddresses().stream())
-                .collect(Collectors.toList());
+    public Set<String> getAddresses() {
+        return tagnameToAddresses.entrySet().stream()
+            .filter(entry -> CollectionUtils.isNotEmpty(entry.getValue()))
+            .flatMap(entry -> entry.getValue().stream())
+            .collect(Collectors.toSet());
     }
 
     public List<String> getTagNames() {
         return tags.stream().map(Tag::getName).collect(Collectors.toList());
     }
 
-    public Map<String, List<String>> getAddressToTagnames() {
+    public Map<String, Set<String>> getAddressToTagnames() {
         return addressToTagnames;
     }
 
 
-    public Map<String, List<String>> getTagnameToAddresses() {
+    public Map<String, Set<String>> getTagnameToAddresses() {
         return tagnameToAddresses;
     }
 

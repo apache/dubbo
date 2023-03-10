@@ -74,7 +74,7 @@ class DubboProtocolTest {
     }
 
     @Test
-    void testDemoProtocol() throws Exception {
+    void testDemoProtocol() {
         DemoService service = new DemoServiceImpl();
         int port = NetUtils.getAvailablePort();
         protocol.export(proxy.getInvoker(service, DemoService.class, URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName() + "?codec=exchange")));
@@ -187,7 +187,7 @@ class DubboProtocolTest {
     }
 
     @Test
-    void testPerm() throws Exception {
+    void testPerm() {
         DemoService service = new DemoServiceImpl();
         int port = NetUtils.getAvailablePort();
         protocol.export(proxy.getInvoker(service, DemoService.class, URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName() + "?codec=exchange")));
@@ -201,7 +201,7 @@ class DubboProtocolTest {
 
     @Test
     @Disabled
-    public void testNonSerializedParameter() throws Exception {
+    public void testNonSerializedParameter() {
         DemoService service = new DemoServiceImpl();
         int port = NetUtils.getAvailablePort();
         protocol.export(proxy.getInvoker(service, DemoService.class, URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName() + "?codec=exchange")));
@@ -217,7 +217,7 @@ class DubboProtocolTest {
 
     @Test
     @Disabled
-    public void testReturnNonSerialized() throws Exception {
+    public void testReturnNonSerialized() {
         DemoService service = new DemoServiceImpl();
         int port = NetUtils.getAvailablePort();
         protocol.export(proxy.getInvoker(service, DemoService.class, URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName() + "?codec=exchange")));
@@ -256,7 +256,7 @@ class DubboProtocolTest {
     }
 
     @Test
-    void testPayloadOverException() throws Exception {
+    void testPayloadOverException() {
         DemoService service = new DemoServiceImpl();
         int port = NetUtils.getAvailablePort();
         protocol.export(proxy.getInvoker(service, DemoService.class,

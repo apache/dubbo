@@ -90,6 +90,9 @@ public interface LoggerCodeConstants {
 
     String COMMON_ISOLATED_EXECUTOR_CONFIGURATION_ERROR = "0-27";
 
+    String VULNERABILITY_WARNING = "0-28";
+
+
     // Registry module
 
     String REGISTRY_ADDRESS_INVALID = "1-1";
@@ -376,6 +379,12 @@ public interface LoggerCodeConstants {
     String CONFIG_DUBBO_BEAN_INITIALIZER = "5-39";
 
     String CONFIG_DUBBO_BEAN_NOT_FOUND = "5-40";
+
+    String CONFIG_SSL_PATH_LOAD_FAILED = "5-41";
+
+    String CONFIG_SSL_CERT_GENERATE_FAILED = "5-42";
+
+    String CONFIG_SSL_CONNECT_INSECURE = "5-43";
 
     // Transport module
     String TRANSPORT_FAILED_CONNECT_PROVIDER = "6-1";
