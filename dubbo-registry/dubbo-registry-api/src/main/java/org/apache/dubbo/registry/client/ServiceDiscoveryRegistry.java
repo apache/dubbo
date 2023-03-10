@@ -192,8 +192,6 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
 
         serviceDiscovery.subscribe(url, listener);
 
-        boolean check = url.getParameter(CHECK_KEY, false);
-
         Set<String> mappingByUrl = ServiceNameMapping.getMappingByUrl(url);
 
         String key = ServiceNameMapping.buildMappingKey(url);
