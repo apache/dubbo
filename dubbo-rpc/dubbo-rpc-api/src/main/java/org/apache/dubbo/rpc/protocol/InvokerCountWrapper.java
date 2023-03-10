@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
@@ -43,6 +44,9 @@ public class InvokerCountWrapper implements Protocol {
 
     @Override
     public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
+        if (UrlUtils.isRegistry(url)) {
+            return protocol.refer(type, url);
+        }
         return new ReferenceCountInvokerWrapper<>(protocol.refer(type, url));
     }
 

@@ -80,4 +80,8 @@ public class ReferenceCountInvokerWrapper<T> implements Invoker<T> {
             lock.readLock().unlock();
         }
     }
+
+    public Invoker<T> getInvoker() {
+        return invoker;
+    }
 }
