@@ -20,9 +20,7 @@ package org.apache.dubbo.metrics.collector;
 import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
 import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
 import org.apache.dubbo.config.context.ConfigManager;
-import org.apache.dubbo.metrics.model.ApplicationMetric;
 import org.apache.dubbo.metrics.model.ConfigCenterMetric;
-import org.apache.dubbo.metrics.model.MetricsCategory;
 import org.apache.dubbo.metrics.model.MetricsKey;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
@@ -37,11 +35,6 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import static org.apache.dubbo.metrics.model.MetricsCategory.CONFIGCENTER;
 
-/**
- * @author guiyi.yuan
- * @date 2/8/23 10:06 PM
- * @description Metrics collector for Config-Center
- */
 public class ConfigCenterMetricsCollector implements MetricsCollector {
 
     private Boolean collectEnabled = null;

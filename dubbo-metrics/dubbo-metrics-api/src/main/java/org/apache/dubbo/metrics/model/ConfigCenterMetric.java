@@ -31,11 +31,6 @@ import static org.apache.dubbo.common.constants.MetricsConstants.TAG_KEY_KEY;
 import static org.apache.dubbo.common.utils.NetUtils.getLocalHost;
 import static org.apache.dubbo.common.utils.NetUtils.getLocalHostName;
 
-/**
- * @author guiyi.yuan
- * @date 2/9/23 9:21 PM
- * @description Metric metadata for config-center
- */
 public class ConfigCenterMetric implements Metric {
 
     private String applicationName;

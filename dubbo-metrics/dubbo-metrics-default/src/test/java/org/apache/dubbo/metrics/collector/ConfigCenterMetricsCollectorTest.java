@@ -41,11 +41,6 @@ import static org.apache.dubbo.common.constants.MetricsConstants.TAG_METHOD_KEY;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_VERSION_KEY;
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * @author guiyi.yuan
- * @date 2/20/23 9:08 AM
- * @description
- */
 class ConfigCenterMetricsCollectorTest {
 
     private FrameworkModel frameworkModel;
