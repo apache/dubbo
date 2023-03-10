@@ -70,6 +70,7 @@ import static org.apache.dubbo.rpc.protocol.rest.constans.RestConstant.PATH_SEPA
 public class RestProtocol extends AbstractProxyProtocol {
 
     private static final int DEFAULT_PORT = 80;
+    private static final String DEFAULT_CLIENT = org.apache.dubbo.remoting.Constants.OK_HTTP;
     private static final String DEFAULT_SERVER = Constants.JETTY;
 
     private final RestServerFactory serverFactory = new RestServerFactory();
@@ -136,6 +137,7 @@ public class RestProtocol extends AbstractProxyProtocol {
         };
     }
 
+
     @Override
     protected <T> Invoker<T> protocolBindingRefer(final Class<T> type, final URL url) throws RpcException {
 
@@ -144,17 +146,16 @@ public class RestProtocol extends AbstractProxyProtocol {
             synchronized (clients) {
                 refClient = clients.get(url.getAddress());
                 if (refClient == null || refClient.isDestroyed()) {
-                    refClient = ConcurrentHashMapUtils.computeIfAbsent(clients, url.getAddress(), _key -> createReferenceCountedClient(url));
+                    refClient = ConcurrentHashMapUtils.computeIfAbsent(clients, url.getAddress(), _key -> createReferenceCountedClient(url,clients));
                 }
             }
         }
         refClient.retain();
 
-        final ReferenceCountedClient<? extends RestClient> glueRefClient = refClient;
-
         // resolve metadata
         Map<String, Map<ParameterTypesComparator, RestMethodMetadata>> metadataMap = MetadataResolver.resolveConsumerServiceMetadata(type, url);
 
+        ReferenceCountedClient<? extends RestClient> finalRefClient = refClient;
         Invoker<T> invoker = new AbstractInvoker<T>(type, url, new String[]{INTERFACE_KEY, GROUP_KEY, TOKEN_KEY}) {
             @Override
             protected Result doInvoke(Invocation invocation) {
@@ -175,7 +176,8 @@ public class RestProtocol extends AbstractProxyProtocol {
                         intercept.intercept(httpConnectionCreateContext);
                     }
 
-                    CompletableFuture<RestResult> future = glueRefClient.getClient().send(requestTemplate);
+
+                    CompletableFuture<RestResult> future = finalRefClient.getClient().send(requestTemplate);
                     CompletableFuture<AppResponse> responseFuture = new CompletableFuture<>();
                     AsyncRpcResult asyncRpcResult = new AsyncRpcResult(responseFuture, invocation);
                     future.whenComplete((r, t) -> {
@@ -231,12 +233,14 @@ public class RestProtocol extends AbstractProxyProtocol {
     }
 
 
-    private ReferenceCountedClient<? extends RestClient> createReferenceCountedClient(URL url) throws RpcException {
+    private ReferenceCountedClient<? extends RestClient> createReferenceCountedClient(URL url, ConcurrentMap<String, ReferenceCountedClient<? extends RestClient>> clients) throws RpcException {
 
         // url -> RestClient
         RestClient restClient = clientFactory.createRestClient(url);
 
-        return new ReferenceCountedClient<>(restClient);
+        ReferenceCountedClient refClient = new ReferenceCountedClient(restClient, clients, clientFactory, url);
+
+        return refClient;
     }
 
     @Override

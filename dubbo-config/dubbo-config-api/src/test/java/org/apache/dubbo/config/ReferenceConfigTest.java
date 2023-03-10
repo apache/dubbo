@@ -44,6 +44,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ServiceMetadata;
+import org.apache.dubbo.rpc.protocol.ReferenceCountInvokerWrapper;
 import org.apache.dubbo.rpc.protocol.injvm.InjvmInvoker;
 import org.apache.dubbo.rpc.protocol.injvm.InjvmProtocol;
 import org.apache.dubbo.rpc.service.GenericService;
@@ -417,21 +418,19 @@ class ReferenceConfigTest {
         ScopeClusterInvoker<?> scopeClusterInvoker = (ScopeClusterInvoker<?>) referenceConfig.getInvoker();
         Invoker<?> mockInvoker = scopeClusterInvoker.getInvoker();
         Assertions.assertTrue(mockInvoker instanceof MockClusterInvoker);
-        Invoker<?> withFilter = ((MockClusterInvoker<?>) mockInvoker).getDirectory().getAllInvokers().get(0);
+        Invoker<?> withCount = ((MockClusterInvoker<?>) mockInvoker).getDirectory().getAllInvokers().get(0);
 
-        Assertions.assertTrue(withFilter instanceof ListenerInvokerWrapper
-            || withFilter instanceof FilterChainBuilder.CallbackRegistrationInvoker);
-        if (withFilter instanceof ListenerInvokerWrapper) {
-            Assertions.assertTrue(((ListenerInvokerWrapper<?>) withFilter).getInvoker() instanceof InjvmInvoker);
-        }
-        if (withFilter instanceof FilterChainBuilder.CallbackRegistrationInvoker) {
+        Assertions.assertTrue(withCount instanceof ReferenceCountInvokerWrapper);
+        Assertions.assertTrue(((ReferenceCountInvokerWrapper<?>) withCount).getInvoker() instanceof ListenerInvokerWrapper);
+        Assertions.assertTrue(((ListenerInvokerWrapper<?>)(((ReferenceCountInvokerWrapper<?>) withCount).getInvoker())).getInvoker() instanceof InjvmInvoker);
+        if (((ReferenceCountInvokerWrapper<?>) withCount).getInvoker() instanceof FilterChainBuilder.CallbackRegistrationInvoker) {
             Invoker filterInvoker = ((FilterChainBuilder.CallbackRegistrationInvoker) withFilter).getFilterInvoker();
             FilterChainBuilder.CopyOfFilterChainNode filterInvoker1 = (FilterChainBuilder.CopyOfFilterChainNode) filterInvoker;
             ListenerInvokerWrapper originalInvoker = (ListenerInvokerWrapper) filterInvoker1.getOriginalInvoker();
             Invoker invoker = originalInvoker.getInvoker();
             Assertions.assertTrue(invoker instanceof InjvmInvoker);
         }
-        URL url = withFilter.getUrl();
+        URL url = withCount.getUrl();
         Assertions.assertEquals("application1", url.getParameter("application"));
         Assertions.assertEquals("value1", url.getParameter("key1"));
         Assertions.assertEquals("value2", url.getParameter("key2"));
