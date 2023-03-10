@@ -16,6 +16,7 @@
  */
 
 package org.apache.dubbo.metrics.filter;
+
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
 import org.apache.dubbo.metrics.event.MetricsEvent;
@@ -27,7 +28,11 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.filter.ClusterFilter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
+
+import java.util.Optional;
+
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
+import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 
 @Activate(group = CONSUMER)
 public class MetricsClusterFilter implements ClusterFilter, BaseFilter.Listener, ScopeModelAware {
@@ -61,8 +66,15 @@ public class MetricsClusterFilter implements ClusterFilter, BaseFilter.Listener,
         if (t != null && t instanceof RpcException) {
             RpcException e = (RpcException) t;
             if (e.isForbidden()) {
-                collector.getMethodSampler().incOnEvent(invocation, MetricsEvent.Type.SERVICE_UNAVAILABLE);
+                collector.getMethodSampler().incOnEvent(invocation,
+                    MetricsEvent.Type.SERVICE_UNAVAILABLE.getNameByType(getSide(invocation)));
             }
         }
+    }
+
+    private String getSide(Invocation invocation) {
+        Optional<? extends Invoker<?>> invoker = Optional.ofNullable(invocation.getInvoker());
+        String side = invoker.isPresent() ? invoker.get().getUrl().getSide() : PROVIDER_SIDE;
+        return side;
     }
 }

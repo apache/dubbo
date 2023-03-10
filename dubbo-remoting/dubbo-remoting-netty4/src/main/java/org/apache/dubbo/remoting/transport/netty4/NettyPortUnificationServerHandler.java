@@ -20,12 +20,15 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.io.Bytes;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.ssl.CertManager;
+import org.apache.dubbo.common.ssl.ProviderCert;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.api.ProtocolDetector;
 import org.apache.dubbo.remoting.api.WireProtocol;
 import org.apache.dubbo.remoting.buffer.ChannelBuffer;
+import org.apache.dubbo.remoting.transport.netty4.ssl.SslContexts;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -33,7 +36,9 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.ByteToMessageDecoder;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslHandler;
+import io.netty.handler.ssl.SslHandshakeCompletionEvent;
 
+import javax.net.ssl.SSLSession;
 import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.Map;
@@ -45,8 +50,6 @@ public class NettyPortUnificationServerHandler extends ByteToMessageDecoder {
 
     private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(
         NettyPortUnificationServerHandler.class);
-
-    private final SslContext sslCtx;
     private final URL url;
     private final ChannelHandler handler;
     private final boolean detectSsl;
@@ -56,11 +59,10 @@ public class NettyPortUnificationServerHandler extends ByteToMessageDecoder {
     private final Map<String, ChannelHandler> handlerMapper;
 
 
-    public NettyPortUnificationServerHandler(URL url, SslContext sslCtx, boolean detectSsl,
+    public NettyPortUnificationServerHandler(URL url, boolean detectSsl,
                                              List<WireProtocol> protocols, ChannelHandler handler,
                                              Map<String, Channel> dubboChannels, Map<String, URL> urlMapper, Map<String, ChannelHandler> handlerMapper) {
         this.url = url;
-        this.sslCtx = sslCtx;
         this.protocols = protocols;
         this.detectSsl = detectSsl;
         this.handler = handler;
@@ -85,6 +87,21 @@ public class NettyPortUnificationServerHandler extends ByteToMessageDecoder {
     }
 
     @Override
+    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+        if (evt instanceof SslHandshakeCompletionEvent) {
+            SslHandshakeCompletionEvent handshakeEvent = (SslHandshakeCompletionEvent) evt;
+            if (handshakeEvent.isSuccess()) {
+                SSLSession session = ctx.pipeline().get(SslHandler.class).engine().getSession();
+                LOGGER.info("TLS negotiation succeed with session: " + session);
+            } else {
+                LOGGER.error(INTERNAL_ERROR, "", "", "TLS negotiation failed when trying to accept new connection.", handshakeEvent.cause());
+                ctx.close();
+            }
+        }
+        super.userEventTriggered(ctx, evt);
+    }
+
+    @Override
     protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out)
         throws Exception {
         NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), url, handler);
@@ -94,8 +111,11 @@ public class NettyPortUnificationServerHandler extends ByteToMessageDecoder {
             return;
         }
 
-        if (isSsl(in)) {
-            enableSsl(ctx);
+        CertManager certManager = url.getOrDefaultFrameworkModel().getBeanFactory().getBean(CertManager.class);
+        ProviderCert providerConnectionConfig = certManager.getProviderConnectionConfig(url, ctx.channel().remoteAddress());
+
+        if (providerConnectionConfig != null && isSsl(in)) {
+            enableSsl(ctx, providerConnectionConfig);
         } else {
             for (final WireProtocol protocol : protocols) {
                 in.markReaderIndex();
@@ -136,13 +156,12 @@ public class NettyPortUnificationServerHandler extends ByteToMessageDecoder {
         }
     }
 
-    private void enableSsl(ChannelHandlerContext ctx) {
+    private void enableSsl(ChannelHandlerContext ctx, ProviderCert providerConnectionConfig) {
         ChannelPipeline p = ctx.pipeline();
-        if (sslCtx != null) {
-            p.addLast("ssl", sslCtx.newHandler(ctx.alloc()));
-        }
+        SslContext sslContext = SslContexts.buildServerSslContext(providerConnectionConfig);
+        p.addLast("ssl", sslContext.newHandler(ctx.alloc()));
         p.addLast("unificationA",
-            new NettyPortUnificationServerHandler(url, sslCtx, false, protocols,
+            new NettyPortUnificationServerHandler(url, false, protocols,
                 handler, dubboChannels, urlMapper, handlerMapper));
         p.remove(this);
     }

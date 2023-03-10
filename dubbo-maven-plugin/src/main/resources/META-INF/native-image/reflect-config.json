@@ -2312,13 +2312,13 @@
     "name": "org.apache.dubbo.rpc.filter.GenericImplFilter",
     "allPublicMethods": true,
     "methods": [
-      {
-        "name": "<init>",
-        "parameterTypes": [
-          "org.apache.dubbo.rpc.model.ModuleModel"
-        ]
-      }
-    ]
+       {
+         "name": "<init>",
+         "parameterTypes": [
+           "org.apache.dubbo.rpc.model.ModuleModel"
+         ]
+       }
+     ]
   },
   {
     "name": "org.apache.dubbo.rpc.filter.TimeoutFilter",
@@ -2596,6 +2596,36 @@
       {
         "name": "<init>",
         "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.common.ssl.impl.SSLConfigCertProvider",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.security.cert.DubboCertManager",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": ["org.apache.dubbo.rpc.model.FrameworkModel"]
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.common.ssl.CertManager",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": ["org.apache.dubbo.rpc.model.FrameworkModel"]
       }
     ]
   },
