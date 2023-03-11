@@ -168,9 +168,9 @@ public class ScopeClusterInvoker<T> implements ClusterInvoker<T>, ExporterChange
                     URL url = new ServiceConfigURL(LOCAL_PROTOCOL, NetUtils.getLocalHost(), getUrl().getPort(), getInterface().getName(), getUrl().getParameters());
                     url = url.setScopeModel(getUrl().getScopeModel());
                     url = url.setServiceModel(getUrl().getServiceModel());
-                    injvmInvoker = protocolSPI.refer(getInterface(), url);
+                    Invoker<?> invoker = protocolSPI.refer(getInterface(), url);
                     List<Invoker<?>> invokers = new ArrayList<>();
-                    invokers.add(injvmInvoker);
+                    invokers.add(invoker);
                     injvmInvoker = Cluster.getCluster(url.getScopeModel(), Cluster.DEFAULT, false).join(new StaticDirectory(url, invokers), true);
                 }
             }
