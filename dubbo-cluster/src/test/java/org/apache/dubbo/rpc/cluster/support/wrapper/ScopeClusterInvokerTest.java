@@ -44,6 +44,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static org.apache.dubbo.common.constants.CommonConstants.EXPORTER_LISTENER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
@@ -152,13 +153,13 @@ class ScopeClusterInvokerTest {
 
         URL injvmUrl = URL.valueOf("injvm://127.0.0.1/TestService")
             .addParameter(INTERFACE_KEY, DemoService.class.getName());
+        injvmUrl = injvmUrl.addParameter(EXPORTER_LISTENER_KEY, LOCAL_PROTOCOL);
         Exporter<?> exporter = protocol.export(proxy.getInvoker(new DemoServiceImpl(), DemoService.class, injvmUrl));
         exporters.add(exporter);
 
         Invoker<DemoService> cluster = getClusterInvoker(url);
         invokers.add(cluster);
 
-        //Configured with mock
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("doSomething4");
         invocation.setParameterTypes(new Class[]{});
