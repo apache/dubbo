@@ -30,6 +30,7 @@ import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
+import org.apache.dubbo.rpc.protocol.rest.exception.ParamParseException;
 import org.apache.dubbo.rpc.protocol.rest.exception.PathNoFoundException;
 import org.apache.dubbo.rpc.protocol.rest.exception.mapper.ExceptionMapper;
 import org.apache.dubbo.rpc.protocol.rest.message.HttpMessageCodecManager;
@@ -102,12 +103,25 @@ public class DubboHttpProtocolServer extends BaseRestProtocolServer {
             RpcContext.getServiceContext().setRemoteAddress(request.getRemoteAddr(), request.getRemotePort());
 //            dispatcher.service(request, servletResponse);
 
+
+            HttpHeaderUtil.addProviderAttachments(servletResponse);
+
             Pair<RpcInvocation, Invoker> build = null;
             try {
                 build = RPCInvocationBuilder.build(request, servletRequest, servletResponse);
             } catch (PathNoFoundException e) {
                 servletResponse.setStatus(404);
+            } catch (ParamParseException e) {
+                servletResponse.setStatus(400);
+            } catch (Throwable throwable) {
+                servletResponse.setStatus(500);
             }
+
+            // build RpcInvocation failed ,directly return
+            if (build == null) {
+                return;
+            }
+
 
             Invoker invoker = build.getSecond();
 
@@ -125,9 +139,6 @@ public class DubboHttpProtocolServer extends BaseRestProtocolServer {
                 Object value = invoke.getValue();
                 writeResult(servletResponse, request, invoker, value);
             }
-
-            HttpHeaderUtil.addProviderAttachments(servletResponse);
-
 
 
         }

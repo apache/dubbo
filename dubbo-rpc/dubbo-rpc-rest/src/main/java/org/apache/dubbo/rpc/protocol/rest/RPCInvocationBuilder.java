@@ -24,6 +24,7 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.protocol.rest.annotation.ParamParserManager;
 import org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.provider.ProviderParseContext;
 import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
+import org.apache.dubbo.rpc.protocol.rest.exception.ParamParseException;
 import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
 import org.apache.dubbo.rpc.protocol.rest.util.Pair;
 
@@ -46,9 +47,13 @@ public class RPCInvocationBuilder {
 
         ProviderParseContext parseContext = createParseContext(request, servletRequest, servletResponse, invokerRestMethodMetadataPair.getSecond());
 
-        Object[] args = paramParser.providerParamParse(parseContext);
+        try {
+            Object[] args = paramParser.providerParamParse(parseContext);
 
-        rpcInvocation.setArguments(args);
+            rpcInvocation.setArguments(args);
+        } catch (Exception paramParseException) {
+            throw new ParamParseException(paramParseException.getMessage());
+        }
 
         return Pair.make(rpcInvocation, invokerRestMethodMetadataPair.getFirst());
 
