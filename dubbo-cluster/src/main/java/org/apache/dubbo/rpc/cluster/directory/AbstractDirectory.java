@@ -28,6 +28,7 @@ import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metrics.event.GlobalMetricsEventMulticaster;
+import org.apache.dubbo.metrics.event.MetricsEvent;
 import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -387,9 +388,15 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         invokersToRemove.removeAll(needToRemove);
     }
 
+    private void publishMetricsEvent(MetricsEvent event) {
+        if (eventMulticaster != null) {
+            eventMulticaster.publishEvent(event);
+        }
+    }
+
     @Override
     public void addDisabledInvoker(Invoker<T> invoker) {
-        eventMulticaster.publishEvent(new RegistryEvent.MetricsDirectoryEvent(applicationModel, RegistryEvent.Type.D_DISABLE));
+        publishMetricsEvent(new RegistryEvent.MetricsDirectoryEvent(applicationModel, RegistryEvent.Type.D_DISABLE));
         if (invokers.contains(invoker)) {
             disabledInvokers.add(invoker);
             removeValidInvoker(invoker);
@@ -399,7 +406,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
 
     @Override
     public void recoverDisabledInvoker(Invoker<T> invoker) {
-        eventMulticaster.publishEvent(new RegistryEvent.MetricsDirectoryEvent(applicationModel, RegistryEvent.Type.D_RECOVER_DISABLE));
+        publishMetricsEvent(new RegistryEvent.MetricsDirectoryEvent(applicationModel, RegistryEvent.Type.D_RECOVER_DISABLE));
         if (disabledInvokers.remove(invoker)) {
             try {
                 addValidInvoker(invoker);
@@ -463,7 +470,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         this.invokers = invokers;
         refreshInvokerInternal();
         this.invokersInitialized = true;
-        eventMulticaster.publishEvent(new RegistryEvent.MetricsDirectoryEvent(applicationModel, RegistryEvent.Type.D_CURRENT, invokers.size()));
+        publishMetricsEvent(new RegistryEvent.MetricsDirectoryEvent(applicationModel, RegistryEvent.Type.D_CURRENT, invokers.size()));
     }
 
     protected void destroyInvokers() {
@@ -474,14 +481,14 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
     }
 
     private boolean addValidInvoker(Invoker<T> invoker) {
-        eventMulticaster.publishEvent(new RegistryEvent.MetricsDirectoryEvent(applicationModel, RegistryEvent.Type.D_VALID));
+        publishMetricsEvent(new RegistryEvent.MetricsDirectoryEvent(applicationModel, RegistryEvent.Type.D_VALID));
         synchronized (this.validInvokers) {
             return this.validInvokers.add(invoker);
         }
     }
 
     private boolean removeValidInvoker(Invoker<T> invoker) {
-        eventMulticaster.publishEvent(new RegistryEvent.MetricsDirectoryEvent(applicationModel, RegistryEvent.Type.D_UN_VALID));
+        publishMetricsEvent(new RegistryEvent.MetricsDirectoryEvent(applicationModel, RegistryEvent.Type.D_UN_VALID));
         synchronized (this.validInvokers) {
             return this.validInvokers.remove(invoker);
         }
