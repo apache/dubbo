@@ -16,101 +16,36 @@
  */
 package org.apache.dubbo.rpc.protocol.rest.request;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.util.Enumeration;
 import java.util.Map;
 
 
 public interface Request {
 
-    Object getParts() throws Exception;
-
-    Object getPart(String var1) throws Exception;
-
-    Object getCookies();
-
-    long getDateHeader(String name);
-
-
     String getHeader(String name);
-
 
     Enumeration<String> getHeaders(String name);
 
-
     Enumeration<String> getHeaderNames();
-
 
     int getIntHeader(String name);
 
-
     String getMethod();
-
 
     String getPathInfo();
 
-
-    String getPathTranslated();
-
-
     String getContextPath();
-
 
     String getQueryString();
 
 
-    String getRemoteUser();
-
-
-    boolean isUserInRole(String role);
-
-
-    String getRequestedSessionId();
-
-
     String getRequestURI();
-
 
     StringBuffer getRequestURL();
 
-
     String getServletPath();
-
-
-    String changeSessionId();
-
-
-    boolean isRequestedSessionIdValid();
-
-
-    boolean isRequestedSessionIdFromCookie();
-
-
-    boolean isRequestedSessionIdFromURL();
-
-
-    boolean isRequestedSessionIdFromUrl();
-
-    Object getAttribute(String name);
-
-
-    Enumeration<String> getAttributeNames();
-
-
-    String getCharacterEncoding();
-
-
-    void setCharacterEncoding(String env) throws UnsupportedEncodingException;
-
-
-    int getContentLength();
-
-
-    long getContentLengthLong();
-
 
     String getContentType();
 
@@ -127,20 +62,7 @@ public interface Request {
     Map<String, String[]> getParameterMap();
 
 
-    String getProtocol();
-
-
-    String getScheme();
-
-
-    String getServerName();
-
-
     int getServerPort();
-
-
-    BufferedReader getReader() throws IOException;
-
 
     String getRemoteAddr();
 
@@ -148,23 +70,7 @@ public interface Request {
     String getRemoteHost();
 
 
-    void setAttribute(String name, Object o);
-
-
-    void removeAttribute(String name);
-
-
-    boolean isSecure();
-
-
-    String getRealPath(String path);
-
-
     int getRemotePort();
-
-
-    String getLocalName();
-
 
     String getLocalAddr();
 

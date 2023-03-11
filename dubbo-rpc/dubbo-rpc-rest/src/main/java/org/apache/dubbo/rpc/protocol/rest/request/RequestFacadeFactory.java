@@ -17,6 +17,8 @@
 package org.apache.dubbo.rpc.protocol.rest.request;
 
 
+import org.apache.dubbo.common.utils.ClassUtils;
+
 public class RequestFacadeFactory {
     private final static String JakartaServlet = "jakarta.servlet.http.HttpServletRequest";
     private final static String JavaxServlet = "javax.servlet.http.HttpServletRequest";
@@ -35,12 +37,8 @@ public class RequestFacadeFactory {
         }
 
         if (tryLoad(FullHttpRequest, request)) {
-            return new NettyRequestFacade(request,null);
+            return new NettyRequestFacade(request, null);
         }
-
-
-
-
 
 
         throw new RuntimeException("no compatible  ServletRequestFacade and request type is " + request.getClass());
@@ -49,16 +47,16 @@ public class RequestFacadeFactory {
 
     public static boolean tryLoad(String requestClassName, Object request) {
 
-        ClassLoader classLoader = request.getClass().getClassLoader();
 
-        try {
-            Class<?> requestClass = classLoader.loadClass(requestClassName);
-
-            return requestClass.isAssignableFrom(request.getClass());
-
-        } catch (ClassNotFoundException e) {
+        if (!ClassUtils.isPresent(requestClassName, request.getClass().getClassLoader())) {
             return false;
         }
+
+        Class<?> requestClass = ClassUtils.resolveClass(requestClassName, request.getClass().getClassLoader());
+
+
+        return requestClass.isAssignableFrom(request.getClass());
+
 
     }
 
