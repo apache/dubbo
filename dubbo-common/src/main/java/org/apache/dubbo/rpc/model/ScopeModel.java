@@ -110,21 +110,23 @@ public abstract class ScopeModel implements ExtensionAccessor {
     }
 
     public void destroy() {
-        if (destroyed.compareAndSet(false, true)) {
-            try {
-                onDestroy();
-                HashSet<ClassLoader> copyOfClassLoaders = new HashSet<>(classLoaders);
-                for (ClassLoader classLoader : copyOfClassLoaders) {
-                    removeClassLoader(classLoader);
+        synchronized (instLock) {
+            if (destroyed.compareAndSet(false, true)) {
+                try {
+                    onDestroy();
+                    HashSet<ClassLoader> copyOfClassLoaders = new HashSet<>(classLoaders);
+                    for (ClassLoader classLoader : copyOfClassLoaders) {
+                        removeClassLoader(classLoader);
+                    }
+                    if (beanFactory != null) {
+                        beanFactory.destroy();
+                    }
+                    if (extensionDirector != null) {
+                        extensionDirector.destroy();
+                    }
+                } catch (Throwable t) {
+                    LOGGER.error(CONFIG_UNABLE_DESTROY_MODEL, "", "", "Error happened when destroying ScopeModel.", t);
                 }
-                if (beanFactory != null) {
-                    beanFactory.destroy();
-                }
-                if (extensionDirector != null) {
-                    extensionDirector.destroy();
-                }
-            } catch (Throwable t) {
-                LOGGER.error(CONFIG_UNABLE_DESTROY_MODEL, "", "", "Error happened when destroying ScopeModel.", t);
             }
         }
     }
