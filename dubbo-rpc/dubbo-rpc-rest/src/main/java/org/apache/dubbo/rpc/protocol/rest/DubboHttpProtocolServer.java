@@ -97,7 +97,7 @@ public class DubboHttpProtocolServer extends BaseRestProtocolServer {
     private class RestHandler implements HttpHandler<HttpServletRequest, HttpServletResponse> {
 
         @Override
-        public void handle(HttpServletRequest servletRequest, HttpServletResponse servletResponse) throws IOException, ServletException {
+        public void handle(HttpServletRequest servletRequest, HttpServletResponse servletResponse) throws IOException {
 
             RequestFacade request = RequestFacadeFactory.createRequestFacade(servletRequest);
             RpcContext.getServiceContext().setRemoteAddress(request.getRemoteAddr(), request.getRemotePort());

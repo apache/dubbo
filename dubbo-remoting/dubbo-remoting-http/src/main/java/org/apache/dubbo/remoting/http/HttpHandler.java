@@ -16,13 +16,12 @@
  */
 package org.apache.dubbo.remoting.http;
 
-import javax.servlet.ServletException;
 import java.io.IOException;
 
 /**
  * http invocation handler.
  */
-public interface HttpHandler<REQUEST,RESPONSE> {
+public interface HttpHandler<REQUEST, RESPONSE> {
 
     /**
      * invoke.
@@ -30,8 +29,7 @@ public interface HttpHandler<REQUEST,RESPONSE> {
      * @param request  request.
      * @param response response.
      * @throws IOException
-     * @throws ServletException
      */
-    void handle(REQUEST request, RESPONSE response) throws IOException, ServletException;
+    void handle(REQUEST request, RESPONSE response) throws IOException;
 
 }

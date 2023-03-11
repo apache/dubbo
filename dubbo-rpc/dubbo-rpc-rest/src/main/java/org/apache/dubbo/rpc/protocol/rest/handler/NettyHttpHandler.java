@@ -34,13 +34,12 @@ import org.apache.dubbo.rpc.protocol.rest.util.HttpHeaderUtil;
 import org.apache.dubbo.rpc.protocol.rest.util.MediaTypeUtil;
 import org.apache.dubbo.rpc.protocol.rest.util.Pair;
 
-import javax.servlet.ServletException;
 import java.io.IOException;
 
 public class NettyHttpHandler implements HttpHandler<FullHttpRequest, NettyHttpResponse> {
 
     @Override
-    public void handle(FullHttpRequest nettyHttpRequest, NettyHttpResponse nettyHttpResponse) throws IOException, ServletException {
+    public void handle(FullHttpRequest nettyHttpRequest, NettyHttpResponse nettyHttpResponse) throws IOException {
 
         RequestFacade request = RequestFacadeFactory.createRequestFacade(nettyHttpRequest);
 //        RpcContext.getServiceContext().setRemoteAddress(request.getRemoteAddr(), request.getRemotePort());
