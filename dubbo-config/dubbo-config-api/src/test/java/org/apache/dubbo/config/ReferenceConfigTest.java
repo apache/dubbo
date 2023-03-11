@@ -33,6 +33,7 @@ import org.apache.dubbo.config.context.ModuleConfigManager;
 import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
 import org.apache.dubbo.registry.client.migration.MigrationInvoker;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.cluster.filter.FilterChainBuilder;
 import org.apache.dubbo.rpc.cluster.support.registry.ZoneAwareClusterInvoker;
@@ -424,7 +425,7 @@ class ReferenceConfigTest {
         Assertions.assertTrue(withFilter instanceof ListenerInvokerWrapper
             || withFilter instanceof FilterChainBuilder.CallbackRegistrationInvoker);
         if (withFilter instanceof ListenerInvokerWrapper) {
-            Assertions.assertTrue(((ListenerInvokerWrapper<?>)(((ReferenceCountInvokerWrapper<?>) withCount).getInvoker())).getInvoker() instanceof InjvmInvoker);
+            Assertions.assertTrue(((ListenerInvokerWrapper<?>) (((ReferenceCountInvokerWrapper<?>) withCount).getInvoker())).getInvoker() instanceof InjvmInvoker);
         }
         if (withFilter instanceof FilterChainBuilder.CallbackRegistrationInvoker) {
             Invoker filterInvoker = ((FilterChainBuilder.CallbackRegistrationInvoker) withFilter).getFilterInvoker();
@@ -521,8 +522,10 @@ class ReferenceConfigTest {
             .initialize();
 
         referenceConfig.init();
-        Assertions.assertTrue(referenceConfig.getInvoker() instanceof MockClusterInvoker);
-        Assertions.assertEquals(Boolean.TRUE, referenceConfig.getInvoker().getUrl().getAttribute(PEER_KEY));
+        Assertions.assertTrue(referenceConfig.getInvoker() instanceof ScopeClusterInvoker);
+        Invoker scopeClusterInvoker = referenceConfig.getInvoker();
+        Assertions.assertTrue(((ScopeClusterInvoker) scopeClusterInvoker).getInvoker() instanceof MockClusterInvoker);
+        Assertions.assertEquals(Boolean.TRUE, ((ScopeClusterInvoker) scopeClusterInvoker).getInvoker().getUrl().getAttribute(PEER_KEY));
         dubboBootstrap.destroy();
 
     }
@@ -693,9 +696,10 @@ class ReferenceConfigTest {
             System.setProperty("java.net.preferIPv4Stack", "true");
             ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
             DemoService service = new DemoServiceImpl();
-            URL url = URL.valueOf("dubbo://127.0.0.1/DemoService")
+            URL url = URL.valueOf("injvm://127.0.0.1/DemoService")
                 .addParameter(INTERFACE_KEY, DemoService.class.getName());
-            InjvmProtocol.getInjvmProtocol(FrameworkModel.defaultModel()).export(proxy.getInvoker(service, DemoService.class, url));
+            Protocol protocolSPI = ApplicationModel.defaultModel().getExtensionLoader(Protocol.class).getAdaptiveExtension();
+            protocolSPI.export(proxy.getInvoker(service, DemoService.class, url));
             demoService = rc.get();
             success = true;
         } catch (Exception e) {
@@ -1061,7 +1065,8 @@ class ReferenceConfigTest {
         applicationModel.getApplicationConfigManager().setApplication(new ApplicationConfig("Test"));
 
         ClassLoader originClassLoader = Thread.currentThread().getContextClassLoader();
-        ClassLoader classLoader = new ClassLoader(originClassLoader) {};
+        ClassLoader classLoader = new ClassLoader(originClassLoader) {
+        };
         Thread.currentThread().setContextClassLoader(classLoader);
 
         ServiceConfig<DemoService> serviceConfig = new ServiceConfig<>(applicationModel.newModule());
