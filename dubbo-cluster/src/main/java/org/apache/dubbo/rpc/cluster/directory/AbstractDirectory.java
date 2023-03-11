@@ -16,6 +16,31 @@
  */
 package org.apache.dubbo.rpc.cluster.directory;
 
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.Version;
+import org.apache.dubbo.common.config.Configuration;
+import org.apache.dubbo.common.config.ConfigurationUtils;
+import org.apache.dubbo.common.constants.LoggerCodeConstants;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
+import org.apache.dubbo.common.utils.ConcurrentHashSet;
+import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.metrics.event.GlobalMetricsEventMulticaster;
+import org.apache.dubbo.metrics.registry.event.RegistryEvent;
+import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.RpcContext;
+import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.cluster.Directory;
+import org.apache.dubbo.rpc.cluster.Router;
+import org.apache.dubbo.rpc.cluster.RouterChain;
+import org.apache.dubbo.rpc.cluster.SingleRouterChain;
+import org.apache.dubbo.rpc.cluster.router.state.BitList;
+import org.apache.dubbo.rpc.cluster.support.ClusterUtils;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -30,29 +55,6 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.Version;
-import org.apache.dubbo.common.config.Configuration;
-import org.apache.dubbo.common.config.ConfigurationUtils;
-import org.apache.dubbo.common.constants.LoggerCodeConstants;
-import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
-import org.apache.dubbo.common.utils.ConcurrentHashSet;
-import org.apache.dubbo.common.utils.NetUtils;
-import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.rpc.Invocation;
-import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.RpcContext;
-import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.cluster.Directory;
-import org.apache.dubbo.rpc.cluster.Router;
-import org.apache.dubbo.rpc.cluster.RouterChain;
-import org.apache.dubbo.rpc.cluster.SingleRouterChain;
-import org.apache.dubbo.rpc.cluster.router.state.BitList;
-import org.apache.dubbo.rpc.cluster.support.ClusterUtils;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_RECONNECT_TASK_PERIOD;
@@ -128,6 +130,10 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
      */
     private final int reconnectTaskPeriod;
 
+    private final GlobalMetricsEventMulticaster eventMulticaster;
+
+    private ApplicationModel applicationModel;
+
     public AbstractDirectory(URL url) {
         this(url, null, false);
     }
@@ -153,7 +159,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         }
 
         // remove some local only parameters
-        ApplicationModel applicationModel = url.getOrDefaultApplicationModel();
+        applicationModel = url.getOrDefaultApplicationModel();
         this.queryMap = applicationModel.getBeanFactory().getBean(ClusterUtils.class).mergeLocalParams(queryMap);
 
         if (consumerUrl == null) {
@@ -179,12 +185,14 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         this.reconnectTaskTryCount = configuration.getInt(RECONNECT_TASK_TRY_COUNT, DEFAULT_RECONNECT_TASK_TRY_COUNT);
         this.reconnectTaskPeriod = configuration.getInt(RECONNECT_TASK_PERIOD, DEFAULT_RECONNECT_TASK_PERIOD);
         setRouterChain(routerChain);
+
+        eventMulticaster = applicationModel.getBeanFactory().getBean(GlobalMetricsEventMulticaster.class);
     }
 
     @Override
     public List<Invoker<T>> list(Invocation invocation) throws RpcException {
         if (destroyed) {
-            throw new RpcException("Directory of type " + this.getClass().getSimpleName() +  " already destroyed for service " + getConsumerUrl().getServiceKey() + " from registry " + getUrl());
+            throw new RpcException("Directory of type " + this.getClass().getSimpleName() + " already destroyed for service " + getConsumerUrl().getServiceKey() + " from registry " + getUrl());
         }
 
         BitList<Invoker<T>> availableInvokers;
@@ -381,6 +389,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
 
     @Override
     public void addDisabledInvoker(Invoker<T> invoker) {
+        eventMulticaster.publishEvent(new RegistryEvent.MetricsDirectoryEvent(applicationModel, RegistryEvent.Type.D_DISABLE));
         if (invokers.contains(invoker)) {
             disabledInvokers.add(invoker);
             removeValidInvoker(invoker);
@@ -390,6 +399,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
 
     @Override
     public void recoverDisabledInvoker(Invoker<T> invoker) {
+        eventMulticaster.publishEvent(new RegistryEvent.MetricsDirectoryEvent(applicationModel, RegistryEvent.Type.D_RECOVER_DISABLE));
         if (disabledInvokers.remove(invoker)) {
             try {
                 addValidInvoker(invoker);
@@ -453,6 +463,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         this.invokers = invokers;
         refreshInvokerInternal();
         this.invokersInitialized = true;
+        eventMulticaster.publishEvent(new RegistryEvent.MetricsDirectoryEvent(applicationModel, RegistryEvent.Type.D_CURRENT, invokers.size()));
     }
 
     protected void destroyInvokers() {
@@ -463,12 +474,14 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
     }
 
     private boolean addValidInvoker(Invoker<T> invoker) {
+        eventMulticaster.publishEvent(new RegistryEvent.MetricsDirectoryEvent(applicationModel, RegistryEvent.Type.D_VALID));
         synchronized (this.validInvokers) {
             return this.validInvokers.add(invoker);
         }
     }
 
     private boolean removeValidInvoker(Invoker<T> invoker) {
+        eventMulticaster.publishEvent(new RegistryEvent.MetricsDirectoryEvent(applicationModel, RegistryEvent.Type.D_UN_VALID));
         synchronized (this.validInvokers) {
             return this.validInvokers.remove(invoker);
         }

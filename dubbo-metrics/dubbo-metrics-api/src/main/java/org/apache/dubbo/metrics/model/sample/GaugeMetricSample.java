@@ -21,30 +21,45 @@ import org.apache.dubbo.metrics.model.MetricsCategory;
 import org.apache.dubbo.metrics.model.MetricsKey;
 
 import java.util.Map;
-import java.util.function.Supplier;
+import java.util.Objects;
+import java.util.function.ToDoubleFunction;
 
 /**
  * GaugeMetricSample.
  */
-public class GaugeMetricSample extends MetricSample {
+public class GaugeMetricSample<T> extends MetricSample {
 
-    private Supplier<Number> supplier;
+    private final T value;
 
-    public GaugeMetricSample(MetricsKey metricsKey, Map<String, String> tags, MetricsCategory category, Supplier<Number> supplier) {
-        super(metricsKey.getName(), metricsKey.getDescription(), tags, Type.GAUGE, category);
-        this.supplier = supplier;
+    private final ToDoubleFunction<T> apply;
+
+    public GaugeMetricSample(MetricsKey metricsKey, Map<String, String> tags, MetricsCategory category, T value, ToDoubleFunction<T> apply) {
+        this(metricsKey.getName(), metricsKey.getDescription(), tags, category, null, value, apply);
     }
 
-    public GaugeMetricSample(String name, String description, Map<String, String> tags, MetricsCategory category, String baseUnit, Supplier<Number> supplier) {
+    public GaugeMetricSample(String name, String description, Map<String, String> tags, MetricsCategory category, T value, ToDoubleFunction<T> apply) {
+        this(name, description, tags, category, null, value, apply);
+    }
+
+    public GaugeMetricSample(String name, String description, Map<String, String> tags, MetricsCategory category, String baseUnit, T value, ToDoubleFunction<T> apply) {
         super(name, description, tags, Type.GAUGE, category, baseUnit);
-        this.supplier = supplier;
+        this.value = Objects.requireNonNull(value, "The GaugeMetricSample value cannot be null");
+        this.apply = Objects.requireNonNull(apply, "The GaugeMetricSample apply cannot be null");
     }
 
-    public Supplier<Number> getSupplier() {
-        return supplier;
+    public T getValue() {
+        return this.value;
     }
 
-    public void setSupplier(Supplier<Number> supplier) {
-        this.supplier = supplier;
+    public ToDoubleFunction<T> getApply() {
+        return this.apply;
+    }
+
+    public long applyAsLong() {
+        return (long) getApply().applyAsDouble(getValue());
+    }
+
+    public double applyAsDouble() {
+        return getApply().applyAsDouble(getValue());
     }
 }

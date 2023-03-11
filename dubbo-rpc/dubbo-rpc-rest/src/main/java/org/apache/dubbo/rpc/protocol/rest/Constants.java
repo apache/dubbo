@@ -18,7 +18,7 @@
 package org.apache.dubbo.rpc.protocol.rest;
 
 /**
- *
+ * Constants definition.
  */
 public interface Constants {
     String KEEP_ALIVE_KEY = "keepalive";
@@ -26,4 +26,16 @@ public interface Constants {
     boolean DEFAULT_KEEP_ALIVE = true;
 
     String EXTENSION_KEY = "extension";
+
+    // http server
+    String SERVLET = "servlet";
+
+    String JETTY = "jetty";
+
+    String TOMCAT = "tomcat";
+
+    String NETTY = "netty";
+
+    // exception mapper
+    String EXCEPTION_MAPPER_KEY = "exception.mapper";
 }

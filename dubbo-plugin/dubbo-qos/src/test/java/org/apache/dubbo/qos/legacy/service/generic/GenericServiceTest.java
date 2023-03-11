@@ -216,7 +216,7 @@ class GenericServiceTest {
     }
 
     @Test
-    void testGenericInvokeWithBeanSerialization() throws Exception {
+    void testGenericInvokeWithBeanSerialization() {
         ServiceConfig<DemoService> service = new ServiceConfig<DemoService>();
         service.setInterface(DemoService.class);
         DemoServiceImpl impl = new DemoServiceImpl();
@@ -256,7 +256,7 @@ class GenericServiceTest {
     }
 
     @Test
-    void testGenericImplementationWithBeanSerialization() throws Exception {
+    void testGenericImplementationWithBeanSerialization() {
         final AtomicReference reference = new AtomicReference();
 
         ServiceConfig<GenericService> service = new ServiceConfig<GenericService>();

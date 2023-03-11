@@ -371,6 +371,11 @@
                             <![CDATA[ Bean name of service executor(thread pool), used for thread pool isolation between services. ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
+                <xsd:attribute name="payload" type="xsd:string">
+                    <xsd:annotation>
+                        <xsd:documentation><![CDATA[ The max payload. ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
                 <xsd:anyAttribute namespace="##other" processContents="lax"/>
             </xsd:extension>
         </xsd:complexContent>
@@ -1592,11 +1597,6 @@
                 <xsd:attribute name="charset" type="xsd:string">
                     <xsd:annotation>
                         <xsd:documentation><![CDATA[ The protocol charset. ]]></xsd:documentation>
-                    </xsd:annotation>
-                </xsd:attribute>
-                <xsd:attribute name="payload" type="xsd:string">
-                    <xsd:annotation>
-                        <xsd:documentation><![CDATA[ The max payload. ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
                 <xsd:attribute name="buffer" type="xsd:string">

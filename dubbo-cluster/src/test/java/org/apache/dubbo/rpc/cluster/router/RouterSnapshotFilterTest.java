@@ -23,10 +23,16 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ServiceModel;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 class RouterSnapshotFilterTest {
+
+    @BeforeAll
+    static void setUp() {
+        RpcContext.getServiceContext().setNeedPrintRouterSnapshot(false);
+    }
 
     @Test
     void test() {

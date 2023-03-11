@@ -57,6 +57,7 @@ import java.util.TreeMap;
 import java.util.function.Predicate;
 
 import static org.apache.dubbo.common.BaseServiceMetadata.COLON_SEPARATOR;
+import static org.apache.dubbo.common.constants.CommonConstants.ADDRESS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
@@ -115,7 +116,7 @@ class URL implements Serializable {
 
     private static final long serialVersionUID = -1985165475234910535L;
 
-    private static Map<String, URL> cachedURLs = new LRUCache<>();
+    private static final Map<String, URL> cachedURLs = new LRUCache<>();
 
     private final URLAddress urlAddress;
     private final URLParam urlParam;
@@ -532,6 +533,10 @@ class URL implements Serializable {
         return path;
     }
 
+    public Map<String, String> getOriginalParameters() {
+        return this.getParameters();
+    }
+
     public Map<String, String> getParameters() {
         return urlParam.getParameters();
     }
@@ -564,6 +569,10 @@ class URL implements Serializable {
 
     public String getParameterAndDecoded(String key, String defaultValue) {
         return decode(getParameter(key, defaultValue));
+    }
+
+    public String getOriginalParameter(String key) {
+        return getParameter(key);
     }
 
     public String getParameter(String key) {
@@ -1097,8 +1106,17 @@ class URL implements Serializable {
         return urlParam.getParameter(key);
     }
 
+    public Map<String, String> toOriginalMap() {
+        Map<String, String> map = new HashMap<>(getOriginalParameters());
+        return addSpecialKeys(map);
+    }
+
     public Map<String, String> toMap() {
         Map<String, String> map = new HashMap<>(getParameters());
+        return addSpecialKeys(map);
+    }
+
+    private Map<String, String> addSpecialKeys(Map<String, String> map) {
         if (getProtocol() != null) {
             map.put(PROTOCOL_KEY, getProtocol());
         }
@@ -1116,6 +1134,9 @@ class URL implements Serializable {
         }
         if (getPath() != null) {
             map.put(PATH_KEY, getPath());
+        }
+        if (getAddress() != null) {
+            map.put(ADDRESS_KEY, getAddress());
         }
         return map;
     }
@@ -1596,8 +1617,16 @@ class URL implements Serializable {
     }
 
     /* add service scope operations, see InstanceAddressURL */
+    public Map<String, String> getOriginalServiceParameters(String service) {
+        return getServiceParameters(service);
+    }
+
     public Map<String, String> getServiceParameters(String service) {
         return getParameters();
+    }
+
+    public String getOriginalServiceParameter(String service, String key) {
+        return this.getServiceParameter(service, key);
     }
 
     public String getServiceParameter(String service, String key) {

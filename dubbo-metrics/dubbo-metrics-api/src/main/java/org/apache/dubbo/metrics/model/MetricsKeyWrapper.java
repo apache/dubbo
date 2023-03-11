@@ -38,8 +38,8 @@ public class MetricsKeyWrapper {
         return metricsKey;
     }
 
-    public boolean isKey(MetricsKey metricsKey) {
-        return metricsKey == getMetricsKey();
+    public boolean isKey(MetricsKey metricsKey, String registryOpType) {
+        return metricsKey == getMetricsKey() && registryOpType.equals(getType());
     }
 
     public String targetKey() {
