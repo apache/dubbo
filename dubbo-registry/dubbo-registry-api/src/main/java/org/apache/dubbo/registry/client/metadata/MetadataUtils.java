@@ -137,7 +137,7 @@ public class MetadataUtils {
         ModuleModel internalModel = applicationModel.getInternalModule();
         ConsumerModel consumerModel = applicationModel.getInternalModule().registerInternalConsumer(MetadataService.class, url);
 
-        Protocol protocol = applicationModel.getExtensionLoader(Protocol.class).getAdaptiveExtension();
+        Protocol protocol = applicationModel.getExtensionLoader(Protocol.class).getExtension(url.getProtocol(), false);
 
         url = url.setServiceModel(consumerModel);
 
