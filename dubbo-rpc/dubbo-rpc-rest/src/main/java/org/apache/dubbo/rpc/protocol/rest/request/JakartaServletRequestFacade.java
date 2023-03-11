@@ -16,17 +16,11 @@
  */
 package org.apache.dubbo.rpc.protocol.rest.request;
 
-import jakarta.servlet.DispatcherType;
-import jakarta.servlet.RequestDispatcher;
-import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpServletRequest;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.util.Enumeration;
-import java.util.Locale;
 import java.util.Map;
 
 
@@ -37,25 +31,6 @@ public class JakartaServletRequestFacade extends RequestFacade<HttpServletReques
         super((HttpServletRequest) request);
     }
 
-    @Override
-    public Object getParts() throws Exception {
-        return request.getParts();
-    }
-
-    @Override
-    public Object getPart(String var1) throws Exception {
-        return request.getPart(var1);
-    }
-
-    @Override
-    public Object getCookies() {
-        return request.getCookies();
-    }
-
-
-    public long getDateHeader(String name) {
-        return request.getDateHeader(name);
-    }
 
 
     public String getHeader(String name) {
@@ -87,12 +62,6 @@ public class JakartaServletRequestFacade extends RequestFacade<HttpServletReques
         return path;
     }
 
-
-    public String getPathTranslated() {
-        return request.getPathTranslated();
-    }
-
-
     public String getContextPath() {
         return request.getContextPath();
     }
@@ -100,21 +69,6 @@ public class JakartaServletRequestFacade extends RequestFacade<HttpServletReques
 
     public String getQueryString() {
         return request.getQueryString();
-    }
-
-
-    public String getRemoteUser() {
-        return request.getRemoteUser();
-    }
-
-
-    public boolean isUserInRole(String role) {
-        return request.isUserInRole(role);
-    }
-
-
-    public String getRequestedSessionId() {
-        return request.getRequestedSessionId();
     }
 
 
@@ -130,62 +84,6 @@ public class JakartaServletRequestFacade extends RequestFacade<HttpServletReques
 
     public String getServletPath() {
         return request.getServletPath();
-    }
-
-
-    public String changeSessionId() {
-        return request.changeSessionId();
-    }
-
-
-    public boolean isRequestedSessionIdValid() {
-        return request.isRequestedSessionIdValid();
-    }
-
-
-    public boolean isRequestedSessionIdFromCookie() {
-        return request.isRequestedSessionIdFromCookie();
-    }
-
-
-    public boolean isRequestedSessionIdFromURL() {
-        return isRequestedSessionIdFromUrl();
-    }
-
-
-    public boolean isRequestedSessionIdFromUrl() {
-        return request.isRequestedSessionIdFromURL();
-    }
-
-
-    public Object getAttribute(String name) {
-        return request.getAttribute(name);
-    }
-
-
-    public Enumeration<String> getAttributeNames() {
-        return request.getAttributeNames();
-    }
-
-
-    public String getCharacterEncoding() {
-        return request.getCharacterEncoding();
-    }
-
-
-    public void setCharacterEncoding(String env) throws UnsupportedEncodingException {
-
-        request.setCharacterEncoding(env);
-    }
-
-
-    public int getContentLength() {
-        return request.getContentLength();
-    }
-
-
-    public long getContentLengthLong() {
-        return request.getContentLengthLong();
     }
 
 
@@ -219,28 +117,8 @@ public class JakartaServletRequestFacade extends RequestFacade<HttpServletReques
     }
 
 
-    public String getProtocol() {
-        return request.getProtocol();
-    }
-
-
-    public String getScheme() {
-        return request.getScheme();
-    }
-
-
-    public String getServerName() {
-        return request.getServerName();
-    }
-
-
     public int getServerPort() {
         return request.getServerPort();
-    }
-
-
-    public BufferedReader getReader() throws IOException {
-        return request.getReader();
     }
 
 
@@ -253,50 +131,8 @@ public class JakartaServletRequestFacade extends RequestFacade<HttpServletReques
         return request.getRemoteHost();
     }
 
-
-    public void setAttribute(String name, Object o) {
-
-        request.setAttribute(name, o);
-    }
-
-
-    public void removeAttribute(String name) {
-        request.removeAttribute(name);
-    }
-
-
-    public Locale getLocale() {
-        return request.getLocale();
-    }
-
-
-    public Enumeration<Locale> getLocales() {
-        return request.getLocales();
-    }
-
-
-    public boolean isSecure() {
-        return request.isSecure();
-    }
-
-
-    public RequestDispatcher getRequestDispatcher(String path) {
-        return getRequestDispatcher(path);
-    }
-
-
-    public String getRealPath(String path) {
-        return request.getRealPath(path);
-    }
-
-
     public int getRemotePort() {
         return request.getRemotePort();
-    }
-
-
-    public String getLocalName() {
-        return request.getLocalName();
     }
 
 
@@ -309,13 +145,4 @@ public class JakartaServletRequestFacade extends RequestFacade<HttpServletReques
         return request.getRemotePort();
     }
 
-
-    public ServletContext getServletContext() {
-        return request.getServletContext();
-    }
-
-
-    public DispatcherType getDispatcherType() {
-        return request.getDispatcherType();
-    }
 }
