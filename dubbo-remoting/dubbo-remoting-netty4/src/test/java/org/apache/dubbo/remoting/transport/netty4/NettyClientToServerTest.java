@@ -19,6 +19,7 @@ package org.apache.dubbo.remoting.transport.netty4;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.exchange.ExchangeChannel;
@@ -26,6 +27,7 @@ import org.apache.dubbo.remoting.exchange.ExchangeServer;
 import org.apache.dubbo.remoting.exchange.Exchangers;
 import org.apache.dubbo.remoting.exchange.support.Replier;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ModuleModel;
 
 import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_MANAGEMENT_MODE_DEFAULT;
 
@@ -41,8 +43,14 @@ class NettyClientToServerTest extends ClientToServerTest {
         ApplicationConfig applicationConfig = new ApplicationConfig("provider-app");
         applicationConfig.setExecutorManagementMode(EXECUTOR_MANAGEMENT_MODE_DEFAULT);
         applicationModel.getApplicationConfigManager().setApplication(applicationConfig);
+        ConfigManager configManager = new ConfigManager(applicationModel);
+        configManager.setApplication(applicationConfig);
+        configManager.getApplication();
+        applicationModel.setConfigManager(configManager);
         url = url.addParameter(Constants.HEARTBEAT_KEY, 600 * 1000).putAttribute(CommonConstants.SCOPE_MODEL, applicationModel);
         url = url.setScopeModel(applicationModel);
+        ModuleModel moduleModel = new ModuleModel(applicationModel);
+        url = url.putAttribute(CommonConstants.SCOPE_MODEL, moduleModel);
         return Exchangers.bind(url, receiver);
     }
 
@@ -54,7 +62,13 @@ class NettyClientToServerTest extends ClientToServerTest {
         ApplicationConfig applicationConfig = new ApplicationConfig("provider-app");
         applicationConfig.setExecutorManagementMode(EXECUTOR_MANAGEMENT_MODE_DEFAULT);
         applicationModel.getApplicationConfigManager().setApplication(applicationConfig);
+        ConfigManager configManager = new ConfigManager(applicationModel);
+        configManager.setApplication(applicationConfig);
+        configManager.getApplication();
+        applicationModel.setConfigManager(configManager);
         url = url.setScopeModel(applicationModel);
+        ModuleModel moduleModel = new ModuleModel(applicationModel);
+        url = url.putAttribute(CommonConstants.SCOPE_MODEL, moduleModel);
         return Exchangers.connect(url);
     }
 

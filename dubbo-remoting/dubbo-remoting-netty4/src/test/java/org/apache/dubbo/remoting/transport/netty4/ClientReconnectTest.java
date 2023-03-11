@@ -21,6 +21,7 @@ import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.utils.DubboAppender;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.Client;
 import org.apache.dubbo.remoting.Constants;
@@ -30,12 +31,10 @@ import org.apache.dubbo.remoting.exchange.Exchangers;
 import org.apache.dubbo.remoting.exchange.support.ExchangeHandlerAdapter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
-
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import sun.security.pkcs11.Secmod;
 
 import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_MANAGEMENT_MODE_DEFAULT;
 
@@ -83,32 +82,30 @@ class ClientReconnectTest {
 
     public Client startClient(int port, int heartbeat) throws RemotingException {
         URL url = URL.valueOf("exchange://127.0.0.1:" + port + "/client.reconnect.test?client=netty4&check=false&" + Constants.HEARTBEAT_KEY + "=" + heartbeat);
-//        ApplicationModel applicationModel = ApplicationModel.defaultModel();
-//        ApplicationConfig applicationConfig = new ApplicationConfig("provider-app");
-//        applicationConfig.setExecutorManagementMode(EXECUTOR_MANAGEMENT_MODE_DEFAULT);
-//        applicationModel.getApplicationConfigManager().setApplication(applicationConfig);
-//        ModuleModel moduleModel = applicationModel.getDefaultModule();
-//        moduleModel.s
-//        url = url.setScopeModel(applicationModel);
-//        url.putAttribute(CommonConstants.SCOPE_MODEL, applicationModel);
         FrameworkModel frameworkModel = new FrameworkModel();
         ApplicationModel applicationModel = frameworkModel.newApplication();
         ApplicationConfig applicationConfig = new ApplicationConfig("provider-app");
         applicationConfig.setExecutorManagementMode(EXECUTOR_MANAGEMENT_MODE_DEFAULT);
-        applicationModel.getApplicationConfigManager().setApplication(applicationConfig);
-        url.setScopeModel(frameworkModel);
+        ConfigManager configManager = new ConfigManager(applicationModel);
+        configManager.setApplication(applicationConfig);
+        configManager.getApplication();
+        applicationModel.setConfigManager(configManager);
+        url = url.putAttribute(CommonConstants.SCOPE_MODEL, applicationModel);
         return Exchangers.connect(url);
     }
 
     public RemotingServer startServer(int port) throws RemotingException {
         URL url = URL.valueOf("exchange://127.0.0.1:" + port + "/client.reconnect.test?server=netty4");
-        ApplicationModel applicationModel = ApplicationModel.defaultModel();
+        FrameworkModel frameworkModel = new FrameworkModel();
+        ApplicationModel applicationModel = frameworkModel.newApplication();
         ApplicationConfig applicationConfig = new ApplicationConfig("provider-app");
         applicationConfig.setExecutorManagementMode(EXECUTOR_MANAGEMENT_MODE_DEFAULT);
-        applicationModel.getApplicationConfigManager().setApplication(applicationConfig);
-        ModuleModel moduleModel = applicationModel.getDefaultModule();
-        url.putAttribute(CommonConstants.SCOPE_MODEL, moduleModel);
-        url = url.setScopeModel(applicationModel);
+        ConfigManager configManager = new ConfigManager(applicationModel);
+        configManager.setApplication(applicationConfig);
+        configManager.getApplication();
+        applicationModel.setConfigManager(configManager);
+        ModuleModel moduleModel = new ModuleModel(applicationModel);
+        url = url.putAttribute(CommonConstants.SCOPE_MODEL, moduleModel);
         return Exchangers.bind(url, new HandlerAdapter());
     }
 
