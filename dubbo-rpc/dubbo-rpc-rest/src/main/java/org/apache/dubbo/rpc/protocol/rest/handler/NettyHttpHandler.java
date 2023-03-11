@@ -24,6 +24,7 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.protocol.rest.RPCInvocationBuilder;
 import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
+import org.apache.dubbo.rpc.protocol.rest.exception.ParamParseException;
 import org.apache.dubbo.rpc.protocol.rest.exception.PathNoFoundException;
 import org.apache.dubbo.rpc.protocol.rest.exception.mapper.ExceptionMapper;
 import org.apache.dubbo.rpc.protocol.rest.message.HttpMessageCodecManager;
@@ -50,6 +51,19 @@ public class NettyHttpHandler implements HttpHandler<FullHttpRequest, NettyHttpR
             build = RPCInvocationBuilder.build(request, nettyHttpRequest, nettyHttpResponse);
         } catch (PathNoFoundException e) {
             nettyHttpResponse.setStatus(404);
+        } catch (ParamParseException e) {
+            nettyHttpResponse.setStatus(400);
+        } catch (Throwable throwable) {
+            nettyHttpResponse.setStatus(500);
+        }
+
+
+        HttpHeaderUtil.addProviderAttachments(nettyHttpResponse);
+
+
+        // build RpcInvocation failed ,directly return
+        if (build == null) {
+            return;
         }
 
         Invoker invoker = build.getSecond();
@@ -69,7 +83,6 @@ public class NettyHttpHandler implements HttpHandler<FullHttpRequest, NettyHttpR
             writeResult(nettyHttpResponse, request, invoker, value);
         }
 
-        HttpHeaderUtil.addProviderAttachments(nettyHttpResponse);
     }
 
     private void writeResult(NettyHttpResponse nettyHttpResponse, RequestFacade request, Invoker invoker, Object value) {

@@ -16,9 +16,9 @@
  */
 package org.apache.dubbo.rpc.protocol.rest.exception;
 
-public class HttpClientException extends RuntimeException {
+public class ParamParseException extends RuntimeException {
 
-    public HttpClientException(String message) {
+    public ParamParseException(String message) {
         super("dubbo http rest protocol param error :"+message);
     }
 }

@@ -45,7 +45,7 @@ import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.HttpConnectionConf
 import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.HttpConnectionCreateContext;
 import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.HttpConnectionPreBuildIntercept;
 import org.apache.dubbo.rpc.protocol.rest.annotation.metadata.MetadataResolver;
-import org.apache.dubbo.rpc.protocol.rest.exception.HttpClientException;
+import org.apache.dubbo.rpc.protocol.rest.exception.ParamParseException;
 import org.apache.dubbo.rpc.protocol.rest.exception.RemoteServerInternalException;
 import org.apache.dubbo.rpc.protocol.rest.message.HttpMessageCodecManager;
 import org.apache.dubbo.rpc.protocol.rest.util.MediaTypeUtil;
@@ -246,7 +246,7 @@ public class RestProtocol extends AbstractProxyProtocol {
                                 MediaType mediaType = MediaType.TEXT_PLAIN;
 
                                 if (400 < responseCode && responseCode < 500) {
-                                    throw new HttpClientException(r.getMessage());
+                                    throw new ParamParseException(r.getMessage());
                                     // TODO add Exception Mapper
                                 } else if (responseCode >= 500) {
                                     throw new RemoteServerInternalException(r.getMessage());
