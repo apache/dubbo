@@ -32,6 +32,7 @@ import org.apache.dubbo.config.context.ModuleConfigManager;
 
 import java.util.HashMap;
 import java.util.Set;
+import java.util.concurrent.locks.Lock;
 
 /**
  * Model of a service module
@@ -170,6 +171,11 @@ public class ModuleModel extends ScopeModel {
 
     public void setDeployer(ModuleDeployer deployer) {
         this.deployer = deployer;
+    }
+
+    @Override
+    protected Lock acquireDestroyLock() {
+        return getApplicationModel().getFrameworkModel().acquireDestroyLock();
     }
 
     /**
