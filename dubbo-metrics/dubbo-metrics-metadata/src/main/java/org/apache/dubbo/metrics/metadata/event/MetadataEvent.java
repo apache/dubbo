@@ -64,6 +64,11 @@ public class MetadataEvent extends MetricsEvent implements TimeCounter {
         S_TOTAL(MetricsKey.METADATA_SUBSCRIBE_METRIC_NUM),
         S_SUCCEED(MetricsKey.METADATA_SUBSCRIBE_METRIC_NUM_SUCCEED),
         S_FAILED(MetricsKey.METADATA_SUBSCRIBE_METRIC_NUM_FAILED),
+
+        S_P_TOTAL(MetricsKey.STORE_PROVIDER_METADATA),
+        S_P_SUCCEED(MetricsKey.STORE_PROVIDER_METADATA_SUCCEED),
+        S_P_FAILED(MetricsKey.STORE_PROVIDER_METADATA_FAILED),
+
         ;
 
         private final MetricsKey metricsKey;

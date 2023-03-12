@@ -39,8 +39,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_APPLICATION_NAME;
-import static org.apache.dubbo.metrics.metadata.collector.stat.MetadataStatComposite.OP_TYPE_PUSH;
-import static org.apache.dubbo.metrics.metadata.collector.stat.MetadataStatComposite.OP_TYPE_SUBSCRIBE;
+import static org.apache.dubbo.metrics.metadata.collector.stat.MetadataStatComposite.*;
 
 
 class MetadataMetricsCollectorTest {
@@ -159,6 +158,56 @@ class MetadataMetricsCollectorTest {
         Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_SUBSCRIBE, MetricsKey.METRIC_RT_MAX).targetKey()), Math.max(c1, c2));
         Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_SUBSCRIBE, MetricsKey.METRIC_RT_AVG).targetKey()), (c1 + c2) / 2);
         Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_SUBSCRIBE, MetricsKey.METRIC_RT_SUM).targetKey()), c1 + c2);
+    }
+
+
+    @Test
+    void testStoreProviderMetadataMetrics() throws InterruptedException {
+
+        TimePair timePair = TimePair.start();
+        GlobalMetricsEventMulticaster eventMulticaster = applicationModel.getBeanFactory().getOrRegisterBean(GlobalMetricsEventMulticaster.class);
+        MetadataMetricsCollector collector = applicationModel.getBeanFactory().getOrRegisterBean(MetadataMetricsCollector.class);
+        collector.setCollectEnabled(true);
+
+        eventMulticaster.publishEvent(new MetadataEvent.StoreProviderMetadataEvent(applicationModel, timePair));
+        List<MetricSample> metricSamples = collector.collect();
+
+        // push success +1
+        Assertions.assertEquals(1, metricSamples.size());
+        Assertions.assertTrue(metricSamples.get(0) instanceof GaugeMetricSample);
+        Assertions.assertEquals(metricSamples.get(0).getName(), MetricsKey.STORE_PROVIDER_METADATA.getName());
+
+        eventMulticaster.publishFinishEvent(new MetadataEvent.StoreProviderMetadataEvent(applicationModel, timePair));
+        // push finish rt +1
+        metricSamples = collector.collect();
+        //num(total+success) + rt(5) = 7
+        Assertions.assertEquals(7, metricSamples.size());
+        long c1 = timePair.calc();
+        TimePair lastTimePair = TimePair.start();
+        eventMulticaster.publishEvent(new MetadataEvent.StoreProviderMetadataEvent(applicationModel, lastTimePair));
+        Thread.sleep(50);
+        // push error rt +1
+        eventMulticaster.publishErrorEvent(new MetadataEvent.StoreProviderMetadataEvent(applicationModel, lastTimePair));
+        long c2 = lastTimePair.calc();
+        metricSamples = collector.collect();
+
+        // num(total+success+error) + rt(5)
+        Assertions.assertEquals(8, metricSamples.size());
+
+        // calc rt
+        for (MetricSample sample : metricSamples) {
+            Map<String, String> tags = sample.getTags();
+            Assertions.assertEquals(tags.get(TAG_APPLICATION_NAME), applicationModel.getApplicationName());
+        }
+
+        @SuppressWarnings("rawtypes")
+        Map<String, Long> sampleMap = metricSamples.stream().collect(Collectors.toMap(MetricSample::getName, k -> ((GaugeMetricSample) k).applyAsLong()));
+
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_STORE_PROVIDER, MetricsKey.METRIC_RT_LAST).targetKey()), lastTimePair.calc());
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_STORE_PROVIDER, MetricsKey.METRIC_RT_MIN).targetKey()), Math.min(c1, c2));
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_STORE_PROVIDER, MetricsKey.METRIC_RT_MAX).targetKey()), Math.max(c1, c2));
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_STORE_PROVIDER, MetricsKey.METRIC_RT_AVG).targetKey()), (c1 + c2) / 2);
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_STORE_PROVIDER, MetricsKey.METRIC_RT_SUM).targetKey()), c1 + c2);
     }
 
 }

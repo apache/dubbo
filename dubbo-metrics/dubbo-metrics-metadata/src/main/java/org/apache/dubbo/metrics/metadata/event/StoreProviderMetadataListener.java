@@ -33,18 +33,18 @@ public class StoreProviderMetadataListener implements MetricsLifeListener<Metada
 
     @Override
     public void onEvent(MetadataEvent.StoreProviderMetadataEvent event) {
-        event.getCollector().increment(event.getSource().getApplicationName(), MetadataEvent.Type.P_TOTAL);
+        event.getCollector().increment(event.getSource().getApplicationName(), MetadataEvent.Type.S_P_TOTAL);
     }
 
     @Override
     public void onEventFinish(MetadataEvent.StoreProviderMetadataEvent event) {
-        event.getCollector().increment(event.getSource().getApplicationName(), MetadataEvent.Type.P_SUCCEED);
+        event.getCollector().increment(event.getSource().getApplicationName(), MetadataEvent.Type.S_P_SUCCEED);
         event.getCollector().addRT(event.getSource().getApplicationName(), OP_TYPE_STORE_PROVIDER, event.getTimePair().calc());
     }
 
     @Override
     public void onEventError(MetadataEvent.StoreProviderMetadataEvent event) {
-        event.getCollector().increment(event.getSource().getApplicationName(), MetadataEvent.Type.P_FAILED);
+        event.getCollector().increment(event.getSource().getApplicationName(), MetadataEvent.Type.S_P_FAILED);
         event.getCollector().addRT(event.getSource().getApplicationName(), OP_TYPE_STORE_PROVIDER, event.getTimePair().calc());
     }
 }
