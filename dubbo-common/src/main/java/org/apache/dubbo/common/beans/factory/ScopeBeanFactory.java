@@ -51,6 +51,9 @@ public class ScopeBeanFactory {
     private List<ExtensionPostProcessor> extensionPostProcessors;
     private ConcurrentHashMap<Class, AtomicInteger> beanNameIdCounterMap = new ConcurrentHashMap<>();
     private List<BeanInfo> registeredBeanInfos = new CopyOnWriteArrayList<>();
+
+    private List<Class<?>> registeredClasses = new ArrayList<>();
+
     private InstantiationStrategy instantiationStrategy;
     private AtomicBoolean destroyed = new AtomicBoolean();
 
@@ -131,6 +134,7 @@ public class ScopeBeanFactory {
                 }
             }
         }
+        registeredClasses.add(type);
         return bean;
     }
 
@@ -279,5 +283,9 @@ public class ScopeBeanFactory {
             this.name = name;
             this.instance = instance;
         }
+    }
+
+    public List<Class<?>> getRegisteredClasses() {
+        return registeredClasses;
     }
 }
