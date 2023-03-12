@@ -50,6 +50,7 @@ public class MetadataStatComposite implements MetricsExport {
     public List<LongContainer<? extends Number>> rtStats = new ArrayList<>();
     public static String OP_TYPE_PUSH = "push";
     public static String OP_TYPE_SUBSCRIBE = "subscribe";
+    public static String OP_TYPE_STORE_PROVIDER = "store.provider";
 
     public MetadataStatComposite() {
         for (MetadataEvent.Type type : MetadataEvent.Type.values()) {
@@ -58,6 +59,7 @@ public class MetadataStatComposite implements MetricsExport {
 
         rtStats.addAll(initStats(OP_TYPE_PUSH));
         rtStats.addAll(initStats(OP_TYPE_SUBSCRIBE));
+        rtStats.addAll(initStats(OP_TYPE_STORE_PROVIDER));
     }
 
     private List<LongContainer<? extends Number>> initStats(String registryOpType) {

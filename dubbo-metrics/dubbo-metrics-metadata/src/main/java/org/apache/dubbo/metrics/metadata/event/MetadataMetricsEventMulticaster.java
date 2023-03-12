@@ -24,7 +24,7 @@ public final class MetadataMetricsEventMulticaster extends SimpleMetricsEventMul
     public MetadataMetricsEventMulticaster() {
         super.addListener(new MetricsPushListener());
         super.addListener(new MetricsSubscribeListener());
-
+        super.addListener(new StoreProviderMetadataListener());
         setAvailable();
     }
 

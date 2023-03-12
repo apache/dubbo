@@ -161,5 +161,4 @@ class MetadataMetricsCollectorTest {
         Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_SUBSCRIBE, MetricsKey.METRIC_RT_SUM).targetKey()), c1 + c2);
     }
 
-
 }

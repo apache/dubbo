@@ -64,13 +64,10 @@ public class MetadataEvent extends MetricsEvent implements TimeCounter {
         S_TOTAL(MetricsKey.METADATA_SUBSCRIBE_METRIC_NUM),
         S_SUCCEED(MetricsKey.METADATA_SUBSCRIBE_METRIC_NUM_SUCCEED),
         S_FAILED(MetricsKey.METADATA_SUBSCRIBE_METRIC_NUM_FAILED),
-
         ;
-
 
         private final MetricsKey metricsKey;
         private final boolean isIncrement;
-
 
         Type(MetricsKey metricsKey) {
             this(metricsKey, true);
@@ -101,6 +98,14 @@ public class MetadataEvent extends MetricsEvent implements TimeCounter {
     public static class SubscribeEvent extends MetadataEvent {
 
         public SubscribeEvent(ApplicationModel applicationModel, TimePair timePair) {
+            super(applicationModel, timePair);
+        }
+
+    }
+
+    public static class StoreProviderMetadataEvent extends MetadataEvent {
+
+        public StoreProviderMetadataEvent(ApplicationModel applicationModel, TimePair timePair) {
             super(applicationModel, timePair);
         }
 

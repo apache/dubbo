@@ -46,7 +46,6 @@ public class ServiceKeyMetric implements Metric {
         tags.put(TAG_IP, getLocalHost());
         tags.put(TAG_HOSTNAME, getLocalHostName());
         tags.put(TAG_APPLICATION_NAME, applicationName);
-
         tags.put(TAG_INTERFACE_KEY, serviceKey);
         return tags;
     }
