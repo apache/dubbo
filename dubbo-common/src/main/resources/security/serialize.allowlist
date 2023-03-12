@@ -124,4 +124,4 @@ java.util.UUID
 java.util.WeakHashMap
 org.apache.dubbo
 com.alibaba.dubbo
-com.alibaba.com.caucho.hessian.io.java8
+com.alibaba.com.caucho.hessian.io
