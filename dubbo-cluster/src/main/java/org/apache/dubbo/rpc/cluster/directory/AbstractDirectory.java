@@ -389,7 +389,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
 
     @Override
     public void addDisabledInvoker(Invoker<T> invoker) {
-        eventMulticaster.publishEvent(new RegistryEvent.MetricsDirectoryEvent(applicationModel, RegistryEvent.Type.D_DISABLE));
+        eventMulticaster.publishEvent(new RegistryEvent.MetricsDirectoryEvent(applicationModel, RegistryEvent.ApplicationType.D_DISABLE));
         if (invokers.contains(invoker)) {
             disabledInvokers.add(invoker);
             removeValidInvoker(invoker);
@@ -399,7 +399,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
 
     @Override
     public void recoverDisabledInvoker(Invoker<T> invoker) {
-        eventMulticaster.publishEvent(new RegistryEvent.MetricsDirectoryEvent(applicationModel, RegistryEvent.Type.D_RECOVER_DISABLE));
+        eventMulticaster.publishEvent(new RegistryEvent.MetricsDirectoryEvent(applicationModel, RegistryEvent.ApplicationType.D_RECOVER_DISABLE));
         if (disabledInvokers.remove(invoker)) {
             try {
                 addValidInvoker(invoker);
@@ -463,7 +463,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         this.invokers = invokers;
         refreshInvokerInternal();
         this.invokersInitialized = true;
-        eventMulticaster.publishEvent(new RegistryEvent.MetricsDirectoryEvent(applicationModel, RegistryEvent.Type.D_CURRENT, invokers.size()));
+        eventMulticaster.publishEvent(new RegistryEvent.MetricsDirectoryEvent(applicationModel, RegistryEvent.ApplicationType.D_CURRENT, invokers.size()));
     }
 
     protected void destroyInvokers() {
@@ -474,14 +474,14 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
     }
 
     private boolean addValidInvoker(Invoker<T> invoker) {
-        eventMulticaster.publishEvent(new RegistryEvent.MetricsDirectoryEvent(applicationModel, RegistryEvent.Type.D_VALID));
+        eventMulticaster.publishEvent(new RegistryEvent.MetricsDirectoryEvent(applicationModel, RegistryEvent.ApplicationType.D_VALID));
         synchronized (this.validInvokers) {
             return this.validInvokers.add(invoker);
         }
     }
 
     private boolean removeValidInvoker(Invoker<T> invoker) {
-        eventMulticaster.publishEvent(new RegistryEvent.MetricsDirectoryEvent(applicationModel, RegistryEvent.Type.D_UN_VALID));
+        eventMulticaster.publishEvent(new RegistryEvent.MetricsDirectoryEvent(applicationModel, RegistryEvent.ApplicationType.D_UN_VALID));
         synchronized (this.validInvokers) {
             return this.validInvokers.remove(invoker);
         }

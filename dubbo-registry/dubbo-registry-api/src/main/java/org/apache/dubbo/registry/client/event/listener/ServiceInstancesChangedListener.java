@@ -134,7 +134,7 @@ public class ServiceInstancesChangedListener {
         }
 
         Map<String, List<ServiceInstance>> revisionToInstances = new HashMap<>();
-        Map<ServiceInfo, Set<String>> localServiceToRevisions = new HashMap<>();
+         Map<ServiceInfo, Set<String>> localServiceToRevisions = new HashMap<>();
 
         // grouping all instances of this app(service name) by revision
         for (Map.Entry<String, List<ServiceInstance>> entry : allInstances.entrySet()) {

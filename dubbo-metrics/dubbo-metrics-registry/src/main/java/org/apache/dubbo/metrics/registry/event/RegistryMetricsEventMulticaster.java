@@ -27,6 +27,7 @@ public final class RegistryMetricsEventMulticaster extends SimpleMetricsEventMul
         super.addListener(new MetricsNotifyListener());
         super.addListener(new MetricsDirectoryListener());
         super.addListener(new MetricsServiceRegisterListener());
+        super.addListener(new MetricsServiceSubscribeListener());
 
         setAvailable();
     }

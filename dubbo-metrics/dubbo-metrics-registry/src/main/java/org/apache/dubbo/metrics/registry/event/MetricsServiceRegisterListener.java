@@ -34,18 +34,18 @@ public class MetricsServiceRegisterListener implements MetricsLifeListener<Regis
         if (!event.isAvailable()) {
             return;
         }
-        event.getCollector().increment(event.getSource().getApplicationName(), RegistryEvent.Type.R_SERVICE_TOTAL);
+        event.getCollector().incrementServiceKey(event.getSource().getApplicationName(), event.getServiceKey(), RegistryEvent.ServiceType.R_SERVICE_TOTAL, event.getSize());
     }
 
     @Override
     public void onEventFinish(RegistryEvent.MetricsServiceRegisterEvent event) {
-        event.getCollector().increment(event.getSource().getApplicationName(), RegistryEvent.Type.R_SERVICE_SUCCEED);
-        event.getCollector().addRT(event.getSource().getApplicationName(), OP_TYPE_REGISTER_SERVICE, event.getTimePair().calc());
+        event.getCollector().incrementServiceKey(event.getSource().getApplicationName(), event.getServiceKey(), RegistryEvent.ServiceType.R_SERVICE_SUCCEED, event.getSize());
+        event.getCollector().addServiceKeyRT(event.getSource().getApplicationName(), event.getServiceKey(), OP_TYPE_REGISTER_SERVICE, event.getTimePair().calc());
     }
 
     @Override
     public void onEventError(RegistryEvent.MetricsServiceRegisterEvent event) {
-        event.getCollector().increment(event.getSource().getApplicationName(), RegistryEvent.Type.R_SERVICE_FAILED);
-        event.getCollector().addRT(event.getSource().getApplicationName(), OP_TYPE_REGISTER_SERVICE, event.getTimePair().calc());
+        event.getCollector().incrementServiceKey(event.getSource().getApplicationName(), event.getServiceKey(), RegistryEvent.ServiceType.R_SERVICE_FAILED, event.getSize());
+        event.getCollector().addApplicationRT(event.getSource().getApplicationName(), OP_TYPE_REGISTER_SERVICE, event.getTimePair().calc());
     }
 }
