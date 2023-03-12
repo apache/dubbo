@@ -33,6 +33,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 /**
@@ -48,7 +50,7 @@ public class FrameworkModel extends ScopeModel {
     private static final AtomicLong index = new AtomicLong(1);
 
     private static final Object globalLock = new Object();
-    
+
     private volatile static FrameworkModel defaultInstance;
 
     private static final List<FrameworkModel> allInstances = new CopyOnWriteArrayList<>();
@@ -67,6 +69,8 @@ public class FrameworkModel extends ScopeModel {
     private final FrameworkServiceRepository serviceRepository;
 
     private final ApplicationModel internalApplicationModel;
+
+    private final ReentrantLock destroyLock = new ReentrantLock();
 
     /**
      * Use {@link FrameworkModel#newModel()} to create a new model
@@ -354,6 +358,12 @@ public class FrameworkModel extends ScopeModel {
 
     public FrameworkServiceRepository getServiceRepository() {
         return serviceRepository;
+    }
+
+
+    @Override
+    protected Lock acquireDestroyLock() {
+        return destroyLock;
     }
 
     @Override
