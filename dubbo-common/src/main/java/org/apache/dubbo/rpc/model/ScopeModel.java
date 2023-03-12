@@ -34,6 +34,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.Lock;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_UNABLE_DESTROY_MODEL;
 
@@ -109,23 +110,31 @@ public abstract class ScopeModel implements ExtensionAccessor {
         }
     }
 
+    protected abstract Lock acquireDestroyLock();
+
     public void destroy() {
-        if (destroyed.compareAndSet(false, true)) {
-            try {
-                onDestroy();
-                HashSet<ClassLoader> copyOfClassLoaders = new HashSet<>(classLoaders);
-                for (ClassLoader classLoader : copyOfClassLoaders) {
-                    removeClassLoader(classLoader);
+        Lock lock = acquireDestroyLock();
+        try {
+            lock.lock();
+            if (destroyed.compareAndSet(false, true)) {
+                try {
+                    onDestroy();
+                    HashSet<ClassLoader> copyOfClassLoaders = new HashSet<>(classLoaders);
+                    for (ClassLoader classLoader : copyOfClassLoaders) {
+                        removeClassLoader(classLoader);
+                    }
+                    if (beanFactory != null) {
+                        beanFactory.destroy();
+                    }
+                    if (extensionDirector != null) {
+                        extensionDirector.destroy();
+                    }
+                } catch (Throwable t) {
+                    LOGGER.error(CONFIG_UNABLE_DESTROY_MODEL, "", "", "Error happened when destroying ScopeModel.", t);
                 }
-                if (beanFactory != null) {
-                    beanFactory.destroy();
-                }
-                if (extensionDirector != null) {
-                    extensionDirector.destroy();
-                }
-            } catch (Throwable t) {
-                LOGGER.error(CONFIG_UNABLE_DESTROY_MODEL, "", "", "Error happened when destroying ScopeModel.", t);
             }
+        } finally {
+            lock.unlock();
         }
     }
 
