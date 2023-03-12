@@ -18,7 +18,6 @@ package org.apache.dubbo.rpc.protocol.rest;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
-import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.ParameterTypesComparator;
 import org.apache.dubbo.metadata.rest.PathMatcher;
 import org.apache.dubbo.metadata.rest.RestMethodMetadata;
@@ -27,8 +26,6 @@ import org.apache.dubbo.remoting.http.RequestTemplate;
 import org.apache.dubbo.remoting.http.RestClient;
 import org.apache.dubbo.remoting.http.RestResult;
 import org.apache.dubbo.remoting.http.factory.RestClientFactory;
-import org.apache.dubbo.remoting.http.servlet.BootstrapListener;
-import org.apache.dubbo.remoting.http.servlet.ServletManager;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Invocation;
@@ -50,9 +47,7 @@ import org.apache.dubbo.rpc.protocol.rest.exception.RemoteServerInternalExceptio
 import org.apache.dubbo.rpc.protocol.rest.message.HttpMessageCodecManager;
 import org.apache.dubbo.rpc.protocol.rest.util.MediaTypeUtil;
 
-import org.jboss.resteasy.util.GetRestful;
 
-import javax.servlet.ServletContext;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.WebApplicationException;
 import java.util.Map;
