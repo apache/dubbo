@@ -374,7 +374,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     private boolean verifyMethodConfig(MethodConfig methodConfig, Class<?> interfaceClass, boolean ignoreInvalidMethodConfig) {
-        if (isNeedCheckMethod() && methodConfig.getTimeout() != null) {
+        if (!isNeedCheckMethod()) {
             return true;
         }
         String methodName = methodConfig.getName();
