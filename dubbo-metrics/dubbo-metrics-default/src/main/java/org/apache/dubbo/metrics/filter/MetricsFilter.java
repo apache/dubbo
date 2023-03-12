@@ -34,9 +34,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
 public class MetricsFilter implements Filter, BaseFilter.Listener, ScopeModelAware {
 
     private DefaultMetricsCollector collector = null;
-
     private MethodMetricsInterceptor metricsInterceptor;
-
 
     @Override
     public void setApplicationModel(ApplicationModel applicationModel) {
@@ -45,7 +43,6 @@ public class MetricsFilter implements Filter, BaseFilter.Listener, ScopeModelAwa
         if (collector != null) {
             metricsInterceptor = new MethodMetricsInterceptor(collector.getMethodSampler());
         }
-
     }
 
     @Override
@@ -54,10 +51,9 @@ public class MetricsFilter implements Filter, BaseFilter.Listener, ScopeModelAwa
             return invoker.invoke(invocation);
         }
 
-        metricsInterceptor.beforeExecute(invocation);
+        metricsInterceptor.beforeMethod(invocation);
 
         return invoker.invoke(invocation);
-
     }
 
     @Override
@@ -65,7 +61,7 @@ public class MetricsFilter implements Filter, BaseFilter.Listener, ScopeModelAwa
         if (collector == null || !collector.isCollectEnabled()) {
             return;
         }
-        metricsInterceptor.postExecute(invocation, result);
+        metricsInterceptor.afterMethod(invocation, result);
     }
 
     @Override
@@ -73,7 +69,7 @@ public class MetricsFilter implements Filter, BaseFilter.Listener, ScopeModelAwa
         if (collector == null || !collector.isCollectEnabled()) {
             return;
         }
-        metricsInterceptor.throwExecute(invocation, t);
+        metricsInterceptor.handleMethodException(invocation, t);
     }
 
 }

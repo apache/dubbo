@@ -25,14 +25,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class ArrayUtilsTest {
 
     @Test
-    void isEmpty() throws Exception {
+    void isEmpty() {
         assertTrue(ArrayUtils.isEmpty(null));
         assertTrue(ArrayUtils.isEmpty(new Object[0]));
         assertFalse(ArrayUtils.isEmpty(new Object[]{"abc"}));
     }
 
     @Test
-    void isNotEmpty() throws Exception {
+    void isNotEmpty() {
         assertFalse(ArrayUtils.isNotEmpty(null));
         assertFalse(ArrayUtils.isNotEmpty(new Object[0]));
         assertTrue(ArrayUtils.isNotEmpty(new Object[]{"abc"}));

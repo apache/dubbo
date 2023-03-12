@@ -29,7 +29,7 @@ import org.assertj.core.api.BDDAssertions;
 class ObservationSenderFilterTest extends AbstractObservationFilterTest {
 
     @Override
-    public SampleTestRunnerConsumer yourCode() throws Exception {
+    public SampleTestRunnerConsumer yourCode() {
         return (buildingBlocks, meterRegistry) -> {
             setupConfig();
             setupAttachments();
