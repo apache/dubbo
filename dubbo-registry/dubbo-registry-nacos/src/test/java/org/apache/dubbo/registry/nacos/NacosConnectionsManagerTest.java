@@ -16,23 +16,23 @@
  */
 package org.apache.dubbo.registry.nacos;
 
+import org.apache.dubbo.common.URL;
+
+import com.alibaba.nacos.api.NacosFactory;
+import com.alibaba.nacos.api.exception.NacosException;
+import com.alibaba.nacos.api.naming.NamingService;
+import com.alibaba.nacos.api.naming.pojo.Instance;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import org.apache.dubbo.common.URL;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
-
-import com.alibaba.nacos.api.NacosFactory;
-import com.alibaba.nacos.api.exception.NacosException;
-import com.alibaba.nacos.api.naming.NamingService;
-import com.alibaba.nacos.api.naming.pojo.Instance;
 
 import static com.alibaba.nacos.client.constant.Constants.HealthCheck.DOWN;
 import static com.alibaba.nacos.client.constant.Constants.HealthCheck.UP;
@@ -93,7 +93,7 @@ public class NacosConnectionsManagerTest {
     }
 
     @Test
-    void testRetryCreate() throws NacosException {
+    void testRetryCreate() {
         try (MockedStatic<NacosFactory> nacosFactoryMockedStatic = Mockito.mockStatic(NacosFactory.class)) {
             AtomicInteger atomicInteger = new AtomicInteger(0);
             NamingService mock = new MockNamingService() {
@@ -115,7 +115,7 @@ public class NacosConnectionsManagerTest {
         }
     }
     @Test
-    void testNoCheck() throws NacosException {
+    void testNoCheck() {
         try (MockedStatic<NacosFactory> nacosFactoryMockedStatic = Mockito.mockStatic(NacosFactory.class)) {
             NamingService mock = new MockNamingService() {
                 @Override

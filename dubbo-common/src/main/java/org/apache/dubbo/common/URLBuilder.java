@@ -43,9 +43,9 @@ public final class URLBuilder extends ServiceConfigURL {
 
     private String path;
 
-    private Map<String, String> parameters;
+    private final Map<String, String> parameters;
 
-    private Map<String, Object> attributes;
+    private final Map<String, Object> attributes;
 
     private Map<String, Map<String, String>> methodParameters;
 

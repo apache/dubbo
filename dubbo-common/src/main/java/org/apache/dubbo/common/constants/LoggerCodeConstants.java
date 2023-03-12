@@ -380,6 +380,12 @@ public interface LoggerCodeConstants {
 
     String CONFIG_DUBBO_BEAN_NOT_FOUND = "5-40";
 
+    String CONFIG_SSL_PATH_LOAD_FAILED = "5-41";
+
+    String CONFIG_SSL_CERT_GENERATE_FAILED = "5-42";
+
+    String CONFIG_SSL_CONNECT_INSECURE = "5-43";
+
     // Transport module
     String TRANSPORT_FAILED_CONNECT_PROVIDER = "6-1";
 

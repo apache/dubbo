@@ -24,7 +24,7 @@ class TimeWindowQuantileTest {
 
     @Test
     void test() throws Exception {
-        TimeWindowQuantile quantile = new TimeWindowQuantile(100, 12, 1);
+        TimeWindowQuantile quantile = new TimeWindowQuantile(100, 10, 1);
         for (int i = 1; i <= 100; i++) {
             quantile.add(i);
         }
