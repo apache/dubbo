@@ -1200,7 +1200,7 @@
     ]
   },
   {
-    "name": "org.apache.dubbo.common.threadpool.manager.DefaultExecutorRepository",
+    "name": "org.apache.dubbo.common.threadpool.manager.IsolationExecutorRepository",
     "allPublicMethods": true,
     "methods": [
       {
