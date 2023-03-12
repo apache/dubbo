@@ -25,7 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 
-public abstract class RequestFacade<T> implements Request {
+public abstract class RequestFacade<T> {
     protected Map<String, ArrayList<String>> headers = new HashMap<>();
     protected Map<String, ArrayList<String>> parameters = new HashMap<>();
 
@@ -115,9 +115,6 @@ public abstract class RequestFacade<T> implements Request {
 
 
     public abstract StringBuffer getRequestURL();
-
-
-    public abstract String getServletPath();
 
     public abstract String getParameter(String name);
 

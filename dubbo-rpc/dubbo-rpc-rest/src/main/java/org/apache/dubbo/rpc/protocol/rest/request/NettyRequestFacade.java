@@ -33,6 +33,8 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 
+
+// TODO add some methods return
 public class NettyRequestFacade extends RequestFacade<FullHttpRequest> {
 
 
@@ -154,16 +156,6 @@ public class NettyRequestFacade extends RequestFacade<FullHttpRequest> {
 
     @Override
     public StringBuffer getRequestURL() {
-        return null;
-    }
-
-    @Override
-    public String getServletPath() {
-        return null;
-    }
-
-    @Override
-    public String getContentType() {
         return null;
     }
 

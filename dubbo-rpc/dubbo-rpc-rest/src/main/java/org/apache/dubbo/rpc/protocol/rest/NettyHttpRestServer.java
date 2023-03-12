@@ -104,7 +104,7 @@ public class NettyHttpRestServer implements RestProtocolServer {
 
     private void registerExceptionMapper(URL url) {
 
-        for (String clazz : COMMA_SPLIT_PATTERN.split(url.getParameter(EXCEPTION_MAPPER_KEY, ""))) {
+        for (String clazz : COMMA_SPLIT_PATTERN.split(url.getParameter(EXCEPTION_MAPPER_KEY, RpcExceptionMapper.class.getName()))) {
             if (!StringUtils.isEmpty(clazz)) {
                 ExceptionMapper.registerMapper(clazz);
             }

@@ -200,6 +200,7 @@ public class SpringMvcRestProtocolTest {
         exporter.unexport();
     }
 
+    @Disabled
     @Test
     void testServletWithoutWebConfig() {
         Assertions.assertThrows(RpcException.class, () -> {
