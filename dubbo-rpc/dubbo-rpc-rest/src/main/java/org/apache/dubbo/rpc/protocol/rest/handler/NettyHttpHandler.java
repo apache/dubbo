@@ -29,8 +29,8 @@ import org.apache.dubbo.rpc.protocol.rest.exception.PathNoFoundException;
 import org.apache.dubbo.rpc.protocol.rest.exception.mapper.ExceptionMapper;
 import org.apache.dubbo.rpc.protocol.rest.message.HttpMessageCodecManager;
 import org.apache.dubbo.rpc.protocol.rest.netty.NettyHttpResponse;
+import org.apache.dubbo.rpc.protocol.rest.request.NettyRequestFacade;
 import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
-import org.apache.dubbo.rpc.protocol.rest.request.RequestFacadeFactory;
 import org.apache.dubbo.rpc.protocol.rest.util.HttpHeaderUtil;
 import org.apache.dubbo.rpc.protocol.rest.util.MediaTypeUtil;
 import org.apache.dubbo.rpc.protocol.rest.util.Pair;
@@ -42,7 +42,10 @@ public class NettyHttpHandler implements HttpHandler<FullHttpRequest, NettyHttpR
     @Override
     public void handle(FullHttpRequest nettyHttpRequest, NettyHttpResponse nettyHttpResponse) throws IOException {
 
-        RequestFacade request = RequestFacadeFactory.createRequestFacade(nettyHttpRequest);
+        RequestFacade request = new NettyRequestFacade(nettyHttpRequest, null);
+
+        // TODO add request filter chain
+
 //        RpcContext.getServiceContext().setRemoteAddress(request.getRemoteAddr(), request.getRemotePort());
 //            dispatcher.service(request, servletResponse);
 

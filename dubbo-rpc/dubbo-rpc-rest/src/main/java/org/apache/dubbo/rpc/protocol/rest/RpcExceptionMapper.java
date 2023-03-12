@@ -17,35 +17,29 @@
 package org.apache.dubbo.rpc.protocol.rest;
 
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.protocol.rest.support.ContentType;
+import org.apache.dubbo.rpc.protocol.rest.exception.mapper.ExceptionHandler;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.ExceptionMapper;
 
-public class RpcExceptionMapper implements ExceptionMapper<RpcException> {
+public class RpcExceptionMapper implements ExceptionHandler<RpcException> {
+
+    protected Object handleConstraintViolationException(ConstraintViolationException cve) {
+        ViolationReport report = new ViolationReport();
+        for (ConstraintViolation<?> cv : cve.getConstraintViolations()) {
+            report.addConstraintViolation(new RestConstraintViolation(
+                cv.getPropertyPath().toString(),
+                cv.getMessage(),
+                cv.getInvalidValue() == null ? "null" : cv.getInvalidValue().toString()));
+        }
+        return report;
+    }
 
     @Override
-    public Response toResponse(RpcException e) {
-        // TODO do more sophisticated exception handling and output
+    public Object result(RpcException e) {
         if (e.getCause() instanceof ConstraintViolationException) {
             return handleConstraintViolationException((ConstraintViolationException) e.getCause());
         }
-        // we may want to avoid exposing the dubbo exception details to certain clients
-        // TODO for now just do plain text output
-        return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Internal server error: " + e.getMessage()).type(ContentType.TEXT_PLAIN_UTF_8).build();
-    }
-
-    protected Response handleConstraintViolationException(ConstraintViolationException cve) {
-        ViolationReport report = new ViolationReport();
-        for (ConstraintViolation cv : cve.getConstraintViolations()) {
-            report.addConstraintViolation(new RestConstraintViolation(
-                    cv.getPropertyPath().toString(),
-                    cv.getMessage(),
-                    cv.getInvalidValue() == null ? "null" : cv.getInvalidValue().toString()));
-        }
-        // TODO for now just do xml output
-        return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(report).type(ContentType.TEXT_XML_UTF_8).build();
+        return "Internal server error: " + e.getMessage();
     }
 }
