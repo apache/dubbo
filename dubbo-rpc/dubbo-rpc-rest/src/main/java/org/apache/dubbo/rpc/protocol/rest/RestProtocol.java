@@ -75,7 +75,7 @@ import static org.apache.dubbo.rpc.protocol.rest.constans.RestConstant.PATH_SEPA
 public class RestProtocol extends AbstractProxyProtocol {
 
     private static final int DEFAULT_PORT = 80;
-    private static final String DEFAULT_SERVER = Constants.JETTY;
+    private static final String DEFAULT_SERVER = Constants.NETTY_HTTP;
 
     private final RestServerFactory serverFactory = new RestServerFactory();
 
@@ -120,14 +120,23 @@ public class RestProtocol extends AbstractProxyProtocol {
         PathAndInvokerMapper.addPathAndInvoker(metadataMap, invoker);
 
 
-        final Runnable runnable = doExport(proxyFactory.getProxy(invoker, true), invoker.getInterface(), invoker.getUrl());
+        Runnable runnable = doExport(proxyFactory.getProxy(invoker, true), invoker.getInterface(), invoker.getUrl());
+
+        runnable = new Runnable() {
+            @Override
+            public void run() {
+                metadataMap.keySet().stream().forEach(PathAndInvokerMapper::removePath);
+            }
+        };
+
+        Runnable finalRunnable = runnable;
         exporter = new AbstractExporter<T>(invoker) {
             @Override
             public void afterUnExport() {
                 exporterMap.remove(uri);
-                if (runnable != null) {
+                if (finalRunnable != null) {
                     try {
-                        runnable.run();
+                        finalRunnable.run();
                     } catch (Throwable t) {
                         logger.warn(PROTOCOL_UNSUPPORTED, "", "", t.getMessage(), t);
                     }
@@ -141,6 +150,7 @@ public class RestProtocol extends AbstractProxyProtocol {
 
     @Override
     protected <T> Runnable doExport(T impl, Class<T> type, URL url) throws RpcException {
+
         String addr = getAddr(url);
 
         // TODO add Extension filter
@@ -151,44 +161,7 @@ public class RestProtocol extends AbstractProxyProtocol {
             s.start(url);
             return s;
         });
-
-        if (Constants.NETTY_HTTP.equalsIgnoreCase(serverName)) {
-            return () -> {
-            };
-        }
-
-        Class<?> implClass = url.getServiceModel().getProxyObject().getClass();
-
-        String contextPath = getContextPath(url);
-        if (Constants.SERVLET.equalsIgnoreCase(url.getParameter(SERVER_KEY, DEFAULT_SERVER))) {
-            ServletContext servletContext = ServletManager.getInstance().getServletContext(ServletManager.EXTERNAL_SERVER_PORT);
-            if (servletContext == null) {
-                throw new RpcException("No servlet context found. Since you are using server='servlet', " +
-                    "make sure that you've configured " + BootstrapListener.class.getName() + " in web.xml");
-            }
-            String webappPath = servletContext.getContextPath();
-            if (StringUtils.isNotEmpty(webappPath)) {
-                webappPath = webappPath.substring(1);
-                if (!contextPath.startsWith(webappPath)) {
-                    throw new RpcException("Since you are using server='servlet', " +
-                        "make sure that the 'contextpath' property starts with the path of external webapp");
-                }
-                contextPath = contextPath.substring(webappPath.length());
-                if (contextPath.startsWith(PATH_SEPARATOR)) {
-                    contextPath = contextPath.substring(1);
-                }
-            }
-        }
-
-        final Class<?> resourceDef = GetRestful.getRootResourceClass(implClass) != null ? implClass : type;
-
-        server.deploy(resourceDef, impl, contextPath);
-
-        final RestProtocolServer s = server;
         return () -> {
-            // TODO due to dubbo's current architecture,
-            // it will be called from registry protocol in the shutdown process and won't appear in logs
-            s.undeploy(resourceDef);
         };
     }
 

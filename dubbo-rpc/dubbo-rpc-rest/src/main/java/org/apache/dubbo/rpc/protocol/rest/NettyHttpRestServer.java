@@ -20,6 +20,7 @@ import io.netty.channel.ChannelOption;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.metadata.rest.PathMatcher;
 import org.apache.dubbo.rpc.protocol.rest.exception.mapper.ExceptionMapper;
 import org.apache.dubbo.rpc.protocol.rest.netty.NettyServer;
 
@@ -91,6 +92,16 @@ public class NettyHttpRestServer implements RestProtocolServer {
         server.start();
     }
 
+    @Override
+    public void deploy(PathMatcher pathMatcher) {
+
+    }
+
+    @Override
+    public void undeploy(PathMatcher pathMatcher) {
+
+    }
+
     private void registerExceptionMapper(URL url) {
 
         for (String clazz : COMMA_SPLIT_PATTERN.split(url.getParameter(EXCEPTION_MAPPER_KEY, ""))) {
@@ -102,13 +113,5 @@ public class NettyHttpRestServer implements RestProtocolServer {
 
     }
 
-    @Override
-    public void deploy(Class<?> resourceDef, Object resourceInstance, String contextPath) {
 
-    }
-
-    @Override
-    public void undeploy(Class<?> resourceDef) {
-
-    }
 }

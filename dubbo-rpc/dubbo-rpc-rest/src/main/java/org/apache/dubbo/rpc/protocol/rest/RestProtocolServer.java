@@ -17,17 +17,16 @@
 package org.apache.dubbo.rpc.protocol.rest;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.metadata.rest.PathMatcher;
 import org.apache.dubbo.rpc.ProtocolServer;
 
 public interface RestProtocolServer extends ProtocolServer {
 
     void start(URL url);
 
-    /**
-     * @param resourceDef it could be either resource interface or resource impl
-     */
-    void deploy(Class<?> resourceDef, Object resourceInstance, String contextPath);
 
-    void undeploy(Class<?> resourceDef);
+    void deploy(PathMatcher pathMatcher);
+
+    void undeploy(PathMatcher pathMatcher);
 
 }

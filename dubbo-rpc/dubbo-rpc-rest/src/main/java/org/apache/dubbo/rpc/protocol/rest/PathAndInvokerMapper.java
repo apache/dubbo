@@ -60,4 +60,10 @@ public class PathAndInvokerMapper {
 
         throw new PathNoFoundException("rest service Path no found, current path info:" + pathMather);
     }
+
+    public static void removePath(PathMatcher pathMatcher) {
+        pathToServiceMapContainPathVariable.remove(pathMatcher);
+
+        pathToServiceMapNoPathVariable.remove(pathMatcher);
+    }
 }
