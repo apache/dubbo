@@ -49,7 +49,9 @@ public class CertDeployerListener implements ApplicationDeployListener {
 
     @Override
     public void onStopping(ApplicationModel scopeModel) {
-        dubboCertManager.disConnect();
+        if (dubboCertManager != null) {
+            dubboCertManager.disConnect();
+        }
     }
 
     @Override
@@ -59,6 +61,8 @@ public class CertDeployerListener implements ApplicationDeployListener {
 
     @Override
     public void onFailure(ApplicationModel scopeModel, Throwable cause) {
-        dubboCertManager.disConnect();
+        if (dubboCertManager != null) {
+            dubboCertManager.disConnect();
+        }
     }
 }
