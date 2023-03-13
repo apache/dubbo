@@ -698,7 +698,7 @@ class ReferenceConfigTest {
             ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
             DemoService service = new DemoServiceImpl();
             URL url = URL.valueOf("injvm://127.0.0.1/DemoService")
-                .addParameter(INTERFACE_KEY, DemoService.class.getName());
+                .addParameter(INTERFACE_KEY, DemoService.class.getName()).setScopeModel(ApplicationModel.defaultModel().getDefaultModule());
             url = url.addParameter(EXPORTER_LISTENER_KEY, LOCAL_PROTOCOL);
             Protocol protocolSPI = ApplicationModel.defaultModel().getExtensionLoader(Protocol.class).getAdaptiveExtension();
             protocolSPI.export(proxy.getInvoker(service, DemoService.class, url));
