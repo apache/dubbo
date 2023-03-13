@@ -18,8 +18,10 @@
 package org.apache.dubbo.metrics.prometheus;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.metrics.report.MetricsReporter;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.metrics.report.AbstractMetricsReporterFactory;
+import org.apache.dubbo.metrics.report.MetricsReporter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 /**
@@ -27,12 +29,35 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
  */
 public class PrometheusMetricsReporterFactory extends AbstractMetricsReporterFactory {
 
+    private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(PrometheusMetricsReporterFactory.class);
+
     public PrometheusMetricsReporterFactory(ApplicationModel applicationModel) {
         super(applicationModel);
     }
 
     @Override
     public MetricsReporter createMetricsReporter(URL url) {
-        return new PrometheusMetricsReporter(url, getApplicationModel());
+        try {
+            return new PrometheusMetricsReporter(url, getApplicationModel());
+        } catch (NoClassDefFoundError ncde) {
+            String msg = ncde.getMessage();
+            if (messageContainsPrometheusMetricsReporter(msg)) {
+                logger.error("Failed to load class \"org.apache.dubbo.metrics.prometheus.PrometheusMetricsReporter\".");
+                logger.error("Defaulting to no-operation (NOP) metricsReporter implementation");
+                logger.error("Introduce the micrometer-core package to use the ability of metrics");
+                return new NopMetricsReporter();
+            } else {
+                logger.error("Failed to instantiate PrometheusMetricsReporter", ncde);
+                throw ncde;
+            }
+        }
+    }
+
+    private static boolean messageContainsPrometheusMetricsReporter(String msg) {
+        if (msg == null)
+            return false;
+        if (msg.contains("io/micrometer/core/instrument/composite/CompositeMeterRegistry"))
+            return true;
+        return msg.contains("io.micrometer.core.instrument.composite.CompositeMeterRegistry");
     }
 }
