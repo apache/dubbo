@@ -103,7 +103,7 @@ class ScopeClusterInvokerTest {
         url = url.setScopeModel(ApplicationModel.defaultModel().getDefaultModule());
 
         URL injvmUrl = URL.valueOf("injvm://127.0.0.1/TestService")
-            .addParameter(INTERFACE_KEY, DemoService.class.getName());
+            .addParameter(INTERFACE_KEY, DemoService.class.getName()).setScopeModel(ApplicationModel.defaultModel().getDefaultModule()) ;
         Exporter<?> exporter = protocol.export(proxy.getInvoker(new DemoServiceImpl(), DemoService.class, injvmUrl));
         exporters.add(exporter);
 
@@ -128,7 +128,7 @@ class ScopeClusterInvokerTest {
         url = url.setScopeModel(ApplicationModel.defaultModel().getDefaultModule());
 
         URL injvmUrl = URL.valueOf("injvm://127.0.0.1/TestService")
-            .addParameter(INTERFACE_KEY, DemoService.class.getName());
+            .addParameter(INTERFACE_KEY, DemoService.class.getName()).setScopeModel(ApplicationModel.defaultModel().getDefaultModule());
         Exporter<?> exporter = protocol.export(proxy.getInvoker(new DemoServiceImpl(), DemoService.class, injvmUrl));
         exporters.add(exporter);
 
@@ -153,7 +153,7 @@ class ScopeClusterInvokerTest {
 
         URL injvmUrl = URL.valueOf("injvm://127.0.0.1/TestService")
             .addParameter(INTERFACE_KEY, DemoService.class.getName());
-        injvmUrl = injvmUrl.addParameter(EXPORTER_LISTENER_KEY, LOCAL_PROTOCOL);
+        injvmUrl = injvmUrl.addParameter(EXPORTER_LISTENER_KEY, LOCAL_PROTOCOL).setScopeModel(ApplicationModel.defaultModel().getDefaultModule());
         Exporter<?> exporter = protocol.export(proxy.getInvoker(new DemoServiceImpl(), DemoService.class, injvmUrl));
         exporters.add(exporter);
 
@@ -176,7 +176,7 @@ class ScopeClusterInvokerTest {
         url = url.setScopeModel(ApplicationModel.defaultModel().getDefaultModule());
 
         URL injvmUrl = URL.valueOf("injvm://127.0.0.1/TestService")
-            .addParameter(INTERFACE_KEY, DemoService.class.getName());
+            .addParameter(INTERFACE_KEY, DemoService.class.getName()).setScopeModel(ApplicationModel.defaultModel().getDefaultModule());
         Exporter<?> exporter = protocol.export(proxy.getInvoker(new DemoServiceImpl(), DemoService.class, injvmUrl));
         exporters.add(exporter);
 
@@ -201,7 +201,7 @@ class ScopeClusterInvokerTest {
         url = url.setScopeModel(ApplicationModel.defaultModel().getDefaultModule());
 
         URL injvmUrl = URL.valueOf("injvm://127.0.0.1/TestService")
-            .addParameter(INTERFACE_KEY, DemoService.class.getName());
+            .addParameter(INTERFACE_KEY, DemoService.class.getName()).setScopeModel(ApplicationModel.defaultModel().getDefaultModule());
         Exporter<?> exporter = protocol.export(proxy.getInvoker(new DemoServiceImpl(), DemoService.class, injvmUrl));
 
         Invoker<DemoService> cluster = getClusterInvoker(url);

@@ -21,7 +21,6 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.rpc.Exporter;
-import org.apache.dubbo.rpc.ExporterListener;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
@@ -92,7 +91,7 @@ public class ScopeClusterInvoker<T> implements ClusterInvoker<T>, ExporterChange
         }
         if (injvmFlag) {
             protocolSPI = getUrl().getApplicationModel().getExtensionLoader(Protocol.class).getAdaptiveExtension();
-            injvmExporterListener = (InjvmExporterListener) getUrl().getApplicationModel().getExtensionLoader(ExporterListener.class).getExtension(LOCAL_PROTOCOL);
+            injvmExporterListener = getUrl().getOrDefaultFrameworkModel().getBeanFactory().getBean(InjvmExporterListener.class);
             injvmExporterListener.addExporterChangeListener(this, getUrl().getServiceKey());
         }
     }
