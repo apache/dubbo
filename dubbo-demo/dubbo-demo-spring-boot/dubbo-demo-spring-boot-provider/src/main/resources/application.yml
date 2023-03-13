@@ -21,10 +21,9 @@ spring:
 dubbo:
   application:
     name: ${spring.application.name}
-    qos-enable: false
   protocol:
     name: dubbo
-    port: 20880
+    port: -1
   registry:
     id: zk-registry
     address: zookeeper://127.0.0.1:2181
@@ -32,17 +31,6 @@ dubbo:
     address: zookeeper://127.0.0.1:2181
   metadata-report:
     address: zookeeper://127.0.0.1:2181
-  metrics:
-    protocol: prometheus
-    enable-jvm-metrics: true
-    enable-metadata-metrics: true
-    enable-registry-metrics: true
-    aggregation:
-      enabled: true
-    prometheus:
-      exporter:
-        enabled: true
-        metrics-port: 20888
 
 logging:
   pattern:
