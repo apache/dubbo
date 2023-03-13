@@ -35,6 +35,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.Lock;
 
 /**
  * {@link ExtensionLoader}, {@code DubboBootstrap} and this class are at present designed to be
@@ -342,6 +343,11 @@ public class ApplicationModel extends ScopeModel {
 
     public void setDeployer(ApplicationDeployer deployer) {
         this.deployer = deployer;
+    }
+
+    @Override
+    protected Lock acquireDestroyLock() {
+        return frameworkModel.acquireDestroyLock();
     }
 
     // =============================== Deprecated Methods Start =======================================
