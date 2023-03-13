@@ -20,7 +20,6 @@ package org.apache.dubbo.metrics.metadata.event;
 import org.apache.dubbo.metrics.event.MetricsEvent;
 import org.apache.dubbo.metrics.listener.MetricsLifeListener;
 
-import static org.apache.dubbo.metrics.metadata.collector.stat.MetadataStatComposite.OP_TYPE_PUSH;
 import static org.apache.dubbo.metrics.metadata.collector.stat.MetadataStatComposite.OP_TYPE_STORE_PROVIDER;
 
 public class StoreProviderMetadataListener implements MetricsLifeListener<MetadataEvent.StoreProviderMetadataEvent> {
