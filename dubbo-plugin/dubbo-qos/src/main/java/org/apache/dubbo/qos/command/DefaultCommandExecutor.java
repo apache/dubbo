@@ -16,10 +16,7 @@
  */
 package org.apache.dubbo.qos.command;
 
-import java.util.Arrays;
-import java.util.Objects;
-import java.util.Optional;
-
+import io.netty.channel.Channel;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.qos.command.annotation.Cmd;
@@ -31,7 +28,9 @@ import org.apache.dubbo.qos.permission.PermissionChecker;
 import org.apache.dubbo.qos.permission.PermissionLevel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
-import io.netty.channel.Channel;
+import java.util.Arrays;
+import java.util.Objects;
+import java.util.Optional;
 
 public class DefaultCommandExecutor implements CommandExecutor {
     private final static Logger logger = LoggerFactory.getLogger(DefaultCommandExecutor.class);
@@ -83,9 +82,11 @@ public class DefaultCommandExecutor implements CommandExecutor {
 
         try {
             String result = command.execute(commandContext, commandContext.getArgs());
-            logger.info("[Dubbo QoS] Command Process success. Command: " + commandContext.getCommandName() +
-                ", Args: " + Arrays.toString(commandContext.getArgs()) + ", Result: " + result +
-                ", Remote Address: " + remoteAddress);
+            if (command.logResult()) {
+                logger.info("[Dubbo QoS] Command Process success. Command: " + commandContext.getCommandName() +
+                    ", Args: " + Arrays.toString(commandContext.getArgs()) + ", Result: " + result +
+                    ", Remote Address: " + remoteAddress);
+            }
             return result;
         } catch (Throwable t) {
             logger.info("[Dubbo QoS] Command Process Failed. Command: " + commandContext.getCommandName() +
