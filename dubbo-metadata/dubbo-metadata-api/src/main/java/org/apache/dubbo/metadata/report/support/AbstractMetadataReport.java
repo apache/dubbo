@@ -30,6 +30,12 @@ import org.apache.dubbo.metadata.report.identifier.KeyTypeEnum;
 import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.ServiceMetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
+import org.apache.dubbo.metrics.event.GlobalMetricsEventMulticaster;
+import org.apache.dubbo.metrics.metadata.collector.MetadataMetricsCollector;
+import org.apache.dubbo.metrics.metadata.event.MetadataEvent;
+import org.apache.dubbo.metrics.model.TimePair;
+import org.apache.dubbo.metrics.model.sample.MetricSample;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -103,9 +109,11 @@ public abstract class AbstractMetadataReport implements MetadataReport {
 
     private final boolean reportMetadata;
     private final boolean reportDefinition;
+    protected ApplicationModel applicationModel;
 
     public AbstractMetadataReport(URL reportServerURL) {
         setUrl(reportServerURL);
+        applicationModel = reportServerURL.getApplicationModel();
 
         boolean localCacheEnabled = reportServerURL.getParameter(REGISTRY_LOCAL_FILE_CACHE_ENABLED, true);
         // Start file save timer
@@ -265,7 +273,6 @@ public abstract class AbstractMetadataReport implements MetadataReport {
 
     @Override
     public void storeProviderMetadata(MetadataIdentifier providerMetadataIdentifier, ServiceDefinition serviceDefinition) {
-
         if (syncReport) {
             storeProviderMetadataTask(providerMetadataIdentifier, serviceDefinition);
         } else {
@@ -274,6 +281,9 @@ public abstract class AbstractMetadataReport implements MetadataReport {
     }
 
     private void storeProviderMetadataTask(MetadataIdentifier providerMetadataIdentifier, ServiceDefinition serviceDefinition) {
+        TimePair timePair = TimePair.start();
+        GlobalMetricsEventMulticaster eventMulticaster = applicationModel.getBeanFactory().getBean(GlobalMetricsEventMulticaster.class);
+        eventMulticaster.publishEvent(new MetadataEvent.StoreProviderMetadataEvent(applicationModel, timePair));
         try {
             if (logger.isInfoEnabled()) {
                 logger.info("store provider metadata. Identifier : " + providerMetadataIdentifier + "; definition: " + serviceDefinition);
@@ -288,7 +298,11 @@ public abstract class AbstractMetadataReport implements MetadataReport {
             failedReports.put(providerMetadataIdentifier, serviceDefinition);
             metadataReportRetry.startRetryTask();
             logger.error(PROXY_FAILED_EXPORT_SERVICE, "", "", "Failed to put provider metadata " + providerMetadataIdentifier + " in  " + serviceDefinition + ", cause: " + e.getMessage(), e);
+            // fail
+            eventMulticaster.publishErrorEvent(new MetadataEvent.StoreProviderMetadataEvent(applicationModel, timePair));
+            return;
         }
+        eventMulticaster.publishFinishEvent(new MetadataEvent.StoreProviderMetadataEvent(applicationModel, timePair));
     }
 
     @Override
