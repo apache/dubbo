@@ -32,7 +32,7 @@ import static java.lang.Math.min;
 
 public class TelnetDetector implements ProtocolDetector {
 
-    private FrameworkModel frameworkModel;
+    private final FrameworkModel frameworkModel;
     private final int MaxSize = 2048;
     private final ChannelBuffer AytPreface = new HeapChannelBuffer(new byte[]{(byte) 0xff, (byte) 0xf6});
 
@@ -46,7 +46,7 @@ public class TelnetDetector implements ProtocolDetector {
             return Result.UNRECOGNIZED;
         }
         Result resCommand = commandDetect(in);
-        if (resCommand.equals(Result.RECOGNIZED)){
+        if (resCommand.equals(Result.RECOGNIZED)) {
             return resCommand;
         }
         Result resAyt = telnetAytDetect(in);
@@ -62,14 +62,19 @@ public class TelnetDetector implements ProtocolDetector {
     private Result commandDetect(ChannelBuffer in) {
         // detect if remote channel send a qos command to server
         ChannelBuffer back = in.copy();
-        byte[] backBytes = new byte[back.readableBytes()];
-        back.getBytes(back.readerIndex(), backBytes);
+        byte[] backBytes;
+        try {
+            backBytes = new byte[back.readableBytes()];
+            back.getBytes(back.readerIndex(), backBytes);
+        } finally {
+            back.release();
+        }
 
         String s = new String(backBytes, CharsetUtil.UTF_8);
         // trim /r/n to let parser work for input
         s = s.trim();
         CommandContext commandContext = TelnetCommandDecoder.decode(s);
-        if(frameworkModel.getExtensionLoader(BaseCommand.class).hasExtension(commandContext.getCommandName())){
+        if (frameworkModel.getExtensionLoader(BaseCommand.class).hasExtension(commandContext.getCommandName())) {
             return Result.RECOGNIZED;
         }
         return Result.UNRECOGNIZED;
@@ -79,10 +84,10 @@ public class TelnetDetector implements ProtocolDetector {
         // detect if remote channel send a telnet ayt command to server
         int prefaceLen = AytPreface.readableBytes();
         int bytesRead = min(in.readableBytes(), prefaceLen);
-        if(bytesRead == 0 || !ChannelBuffers.prefixEquals(in, AytPreface, bytesRead)) {
+        if (bytesRead == 0 || !ChannelBuffers.prefixEquals(in, AytPreface, bytesRead)) {
             return Result.UNRECOGNIZED;
         }
-        if(bytesRead == prefaceLen) {
+        if (bytesRead == prefaceLen) {
             // we need to consume preface because it's not a qos command
             // consume and remember to mark, pu server handler reset reader index
             in.readBytes(AytPreface.readableBytes());
