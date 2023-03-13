@@ -70,7 +70,6 @@ public class MetadataEvent extends MetricsEvent implements TimeCounter {
         S_P_FAILED(MetricsKey.STORE_PROVIDER_METADATA_FAILED),
 
         ;
-
         private final MetricsKey metricsKey;
         private final boolean isIncrement;
 
