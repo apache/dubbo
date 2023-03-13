@@ -228,11 +228,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
             // ensure start module, compatible with old api usage
             getScopeModel().getDeployer().start();
 
-            synchronized (this) {
-                if (ref == null) {
-                    init();
-                }
-            }
+            init();
         }
 
         return ref;
