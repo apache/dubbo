@@ -37,6 +37,6 @@ public class NopMetricsReporter implements MetricsReporter {
 
     @Override
     public String getResponse() {
-        return null;
+        return "";
     }
 }
