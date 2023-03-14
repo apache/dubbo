@@ -21,6 +21,8 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.rest.PathMatcher;
+import org.apache.dubbo.metadata.rest.RestMethodMetadata;
+import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.protocol.rest.exception.mapper.ExceptionMapper;
 import org.apache.dubbo.rpc.protocol.rest.netty.NettyServer;
 
@@ -43,7 +45,15 @@ import static org.apache.dubbo.rpc.protocol.rest.Constants.KEEP_ALIVE_KEY;
 
 
 public class NettyHttpRestServer implements RestProtocolServer {
-    private NettyServer server = new NettyServer();
+    private NettyServer server = getNettyServer();
+
+    /**
+     *  for triple override
+     * @return
+     */
+    protected NettyServer getNettyServer() {
+        return new NettyServer();
+    }
 
     private String address;
 
@@ -93,13 +103,13 @@ public class NettyHttpRestServer implements RestProtocolServer {
     }
 
     @Override
-    public void deploy(PathMatcher pathMatcher) {
-
+    public void deploy(Map<PathMatcher, RestMethodMetadata> metadataMap, Invoker invoker) {
+        PathAndInvokerMapper.addPathAndInvoker(metadataMap, invoker);
     }
 
     @Override
     public void undeploy(PathMatcher pathMatcher) {
-
+        PathAndInvokerMapper.removePath(pathMatcher);
     }
 
     private void registerExceptionMapper(URL url) {

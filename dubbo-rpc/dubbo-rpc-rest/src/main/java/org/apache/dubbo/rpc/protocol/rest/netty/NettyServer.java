@@ -237,7 +237,7 @@ public class NettyServer {
         }
     }
 
-    private void setupHandlers(SocketChannel ch, String protocol) {
+    protected void setupHandlers(SocketChannel ch, String protocol) {
         ChannelPipeline channelPipeline = ch.pipeline();
         channelPipeline.addLast(channelHandlers.toArray(new ChannelHandler[channelHandlers.size()]));
         if (idleTimeout > 0) {

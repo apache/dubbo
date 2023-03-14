@@ -37,7 +37,7 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.AbstractExporter;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
-import org.apache.dubbo.rpc.protocol.AbstractProxyProtocol;
+import org.apache.dubbo.rpc.protocol.AbstractProtocol;
 import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.HttpConnectionConfig;
 import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.HttpConnectionCreateContext;
 import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.HttpConnectionPreBuildIntercept;
@@ -48,8 +48,6 @@ import org.apache.dubbo.rpc.protocol.rest.message.HttpMessageCodecManager;
 import org.apache.dubbo.rpc.protocol.rest.util.MediaTypeUtil;
 
 
-import javax.ws.rs.ProcessingException;
-import javax.ws.rs.WebApplicationException;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -62,12 +60,11 @@ import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERROR_CLOSE_CLIENT;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERROR_CLOSE_SERVER;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_UNSUPPORTED;
 import static org.apache.dubbo.remoting.Constants.SERVER_KEY;
 import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 import static org.apache.dubbo.rpc.protocol.rest.constans.RestConstant.PATH_SEPARATOR;
 
-public class RestProtocol extends AbstractProxyProtocol {
+public class RestProtocol extends AbstractProtocol {
 
     private static final int DEFAULT_PORT = 80;
     private static final String DEFAULT_SERVER = Constants.NETTY_HTTP;
@@ -81,7 +78,6 @@ public class RestProtocol extends AbstractProxyProtocol {
     private final Set<HttpConnectionPreBuildIntercept> httpConnectionPreBuildIntercepts;
 
     public RestProtocol(FrameworkModel frameworkModel) {
-        super(WebApplicationException.class, ProcessingException.class);
         this.clientFactory = frameworkModel.getExtensionLoader(RestClientFactory.class).getAdaptiveExtension();
         this.httpConnectionPreBuildIntercepts = frameworkModel.getExtensionLoader(HttpConnectionPreBuildIntercept.class).getSupportedExtensionInstances();
     }
@@ -112,40 +108,6 @@ public class RestProtocol extends AbstractProxyProtocol {
 
         Map<PathMatcher, RestMethodMetadata> metadataMap = MetadataResolver.resolveProviderServiceMetadata(implClass, url, contextPath);
 
-        PathAndInvokerMapper.addPathAndInvoker(metadataMap, invoker);
-
-
-        Runnable runnable = doExport(proxyFactory.getProxy(invoker, true), invoker.getInterface(), invoker.getUrl());
-
-        runnable = new Runnable() {
-            @Override
-            public void run() {
-                metadataMap.keySet().stream().forEach(PathAndInvokerMapper::removePath);
-            }
-        };
-
-        Runnable finalRunnable = runnable;
-        exporter = new AbstractExporter<T>(invoker) {
-            @Override
-            public void afterUnExport() {
-                exporterMap.remove(uri);
-                if (finalRunnable != null) {
-                    try {
-                        finalRunnable.run();
-                    } catch (Throwable t) {
-                        logger.warn(PROTOCOL_UNSUPPORTED, "", "", t.getMessage(), t);
-                    }
-                }
-            }
-        };
-        exporterMap.put(uri, exporter);
-        return exporter;
-    }
-
-
-    @Override
-    protected <T> Runnable doExport(T impl, Class<T> type, URL url) throws RpcException {
-
         String addr = getAddr(url);
 
         // TODO add Extension filter
@@ -156,9 +118,22 @@ public class RestProtocol extends AbstractProxyProtocol {
             s.start(url);
             return s;
         });
-        return () -> {
+
+        server.deploy(metadataMap, invoker);
+
+        exporter = new AbstractExporter<T>(invoker) {
+            @Override
+            public void afterUnExport() {
+                exporterMap.remove(uri);
+                metadataMap.keySet().stream().forEach(pathMatcher -> {
+                    server.undeploy(pathMatcher);
+                });
+            }
         };
+        exporterMap.put(uri, exporter);
+        return exporter;
     }
+
 
     @Override
     protected <T> Invoker<T> protocolBindingRefer(final Class<T> type, final URL url) throws RpcException {
@@ -239,9 +214,6 @@ public class RestProtocol extends AbstractProxyProtocol {
                     });
                     return asyncRpcResult;
                 } catch (RpcException e) {
-                    if (e.getCode() == RpcException.UNKNOWN_EXCEPTION) {
-                        e.setCode(getErrorCode(e.getCause()));
-                    }
                     throw e;
                 }
             }
@@ -266,11 +238,6 @@ public class RestProtocol extends AbstractProxyProtocol {
         return new ReferenceCountedClient<>(restClient, clients, clientFactory, url);
     }
 
-    @Override
-    protected int getErrorCode(Throwable e) {
-        // TODO
-        return super.getErrorCode(e);
-    }
 
     @Override
     public void destroy() {
@@ -312,7 +279,7 @@ public class RestProtocol extends AbstractProxyProtocol {
      *
      * @return return path only if user has explicitly gave then a value.
      */
-    protected String getContextPath(URL url) {
+    private String getContextPath(URL url) {
         String contextPath = url.getPath();
         if (contextPath != null) {
             if (contextPath.equalsIgnoreCase(url.getParameter(INTERFACE_KEY))) {
@@ -327,8 +294,8 @@ public class RestProtocol extends AbstractProxyProtocol {
         }
     }
 
-    @Override
-    protected void destroyInternal(URL url) {
+
+    private void destroyInternal(URL url) {
         try {
             ReferenceCountedClient<?> referenceCountedClient = clients.get(url.getAddress());
             if (referenceCountedClient != null && referenceCountedClient.release()) {
