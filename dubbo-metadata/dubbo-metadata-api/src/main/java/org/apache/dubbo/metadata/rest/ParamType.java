@@ -42,7 +42,8 @@ public enum ParamType {
     PATH(addSupportTypes(JAXRSClassConstants.PATH_PARAM_ANNOTATION_CLASS,
         SpringMvcClassConstants.PATH_VARIABLE_ANNOTATION_CLASS)),
 
-    FORM(addSupportTypes(JAXRSClassConstants.FORM_PARAM_ANNOTATION_CLASS)),
+    FORM(addSupportTypes(JAXRSClassConstants.FORM_PARAM_ANNOTATION_CLASS,
+        SpringMvcClassConstants.REQUEST_BODY_ANNOTATION_CLASS)),
 
     EMPTY(addSupportTypes());
     private List<Class> annotationClasses;

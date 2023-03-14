@@ -91,6 +91,7 @@ public class RPCInvocationBuilder {
         String[] PARAMETER_TYPES_DESC = restMethodMetadata.getMethod().getParameterTypes();
 
         rpcInvocation.setParameterTypes(restMethodMetadata.getReflectMethod().getParameterTypes());
+        rpcInvocation.setReturnType(restMethodMetadata.getReflectMethod().getReturnType());
 
 
         rpcInvocation.setMethodName(METHOD);

@@ -50,4 +50,6 @@ public class AnotherUserRestServiceImpl implements AnotherUserRestService {
     public Long number(Long number) {
         return number;
     }
+
+
 }

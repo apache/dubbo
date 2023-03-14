@@ -116,6 +116,7 @@ class JaxrsRestProtocolTest {
 
         Assertions.assertEquals(1l, client.number(1l));
 
+
         invoker.destroy();
         exporter.unexport();
     }
@@ -304,6 +305,23 @@ class JaxrsRestProtocolTest {
         DemoService referDemoService = this.proxy.getProxy(protocol.refer(DemoService.class, exceptionUrl));
 
         Assertions.assertEquals("test-exception", referDemoService.error());
+    }
+
+    @Test
+    void testFormConsumerParser() {
+        DemoService server = new DemoServiceImpl();
+        URL nettyUrl = this.registerProvider(exportUrl, server, DemoService.class);
+
+
+        Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(server, DemoService.class, nettyUrl));
+
+        DemoService demoService = this.proxy.getProxy(protocol.refer(DemoService.class, nettyUrl));
+
+
+        Long number = demoService.testFormBody(18l);
+        Assertions.assertEquals(18l, number);
+
+        exporter.unexport();
     }
 
     public static class TestExceptionMapper implements ExceptionHandler<RuntimeException> {

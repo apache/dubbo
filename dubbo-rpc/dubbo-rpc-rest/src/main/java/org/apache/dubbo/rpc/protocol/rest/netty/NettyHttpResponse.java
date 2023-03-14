@@ -30,6 +30,8 @@ import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http.LastHttpContent;
+import org.apache.dubbo.metadata.rest.media.MediaType;
+import org.apache.dubbo.rpc.protocol.rest.RestHeaderEnum;
 
 
 import java.io.IOException;
@@ -76,6 +78,9 @@ public class NettyHttpResponse implements HttpResponse {
 
     @Override
     public void setStatus(int status) {
+        if (status > 200) {
+            addOutputHeaders(RestHeaderEnum.CONTENT_TYPE.getHeader(), MediaType.TEXT_PLAIN.value);
+        }
         this.status = status;
     }
 

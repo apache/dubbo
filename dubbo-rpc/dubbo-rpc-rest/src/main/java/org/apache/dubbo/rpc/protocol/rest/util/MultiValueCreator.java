@@ -29,7 +29,7 @@ public class MultiValueCreator {
 
     static {
         multiValueMapClass = ReflectUtils.findClassTryException(SPRING_MultiValueMap, JAVAX_MultiValueMap);
-        multiValueMapAdd = ReflectUtils.getMethodAndTryCatch(multiValueMapClass, "add", new Class[]{Object.class, Object.class});
+        multiValueMapAdd = ReflectUtils.getMethodByName(multiValueMapClass, "add");
     }
 
 
@@ -43,9 +43,9 @@ public class MultiValueCreator {
         return null;
     }
 
-    public static void add(Object multiValueMap, String key, String value) {
+    public static void add(Object multiValueMap, String key, Object value) {
         try {
-            ReflectUtils.invokeAndTryCatch(multiValueMap, multiValueMapAdd, new String[]{key, value});
+            ReflectUtils.invokeAndTryCatch(multiValueMap, multiValueMapAdd, new Object[]{key, value});
         } catch (Exception e) {
 
         }

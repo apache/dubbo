@@ -39,22 +39,19 @@ public class HttpMessageCodecManager {
         throw new UnSupportContentTypeException("UnSupport content-type :" + mediaType.value);
     }
 
-    public static Pair<Boolean, MediaType> httpMessageEncode(OutputStream outputStream, Object unSerializedBody, URL url, MediaType mediaType) throws Exception {
+    public static Pair<Boolean, MediaType> httpMessageEncode(OutputStream outputStream, Object unSerializedBody, URL url, MediaType mediaType, Class bodyType) throws Exception {
+
 
         if (unSerializedBody == null) {
-            return Pair.make(false, mediaType);
-        }
-
-        for (HttpMessageCodec httpMessageCodec : httpMessageCodecs) {
-            if (httpMessageCodec.contentTypeSupport(mediaType, unSerializedBody.getClass())) {
-                httpMessageCodec.encode(outputStream, unSerializedBody, url);
-                return Pair.make(true, httpMessageCodec.contentType());
+            for (HttpMessageCodec httpMessageCodec : httpMessageCodecs) {
+                if (httpMessageCodec.typeSupport(bodyType)) {
+                    return Pair.make(false, httpMessageCodec.contentType());
+                }
             }
         }
 
-
         for (HttpMessageCodec httpMessageCodec : httpMessageCodecs) {
-            if (httpMessageCodec.typeSupport(unSerializedBody.getClass())) {
+            if (httpMessageCodec.contentTypeSupport(mediaType, bodyType) || httpMessageCodec.typeSupport(bodyType)) {
                 httpMessageCodec.encode(outputStream, unSerializedBody, url);
                 return Pair.make(true, httpMessageCodec.contentType());
             }

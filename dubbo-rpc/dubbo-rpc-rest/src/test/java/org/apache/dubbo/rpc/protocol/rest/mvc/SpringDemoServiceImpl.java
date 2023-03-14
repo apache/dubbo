@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol.rest.mvc;
 
 
 import org.apache.dubbo.rpc.RpcContext;
+import org.apache.dubbo.rpc.protocol.rest.User;
 
 import java.util.Map;
 
@@ -36,6 +37,11 @@ public class SpringDemoServiceImpl implements SpringRestDemoService {
     @Override
     public boolean isCalled() {
         return called;
+    }
+
+    @Override
+    public String testFormBody(User user) {
+        return user.getName();
     }
 
     @Override

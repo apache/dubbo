@@ -18,26 +18,68 @@ package org.apache.dubbo.rpc.protocol.rest.message.codec;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.metadata.rest.media.MediaType;
 import org.apache.dubbo.rpc.protocol.rest.message.HttpMessageCodec;
 import org.apache.dubbo.rpc.protocol.rest.message.MediaTypeMatcher;
 import org.apache.dubbo.rpc.protocol.rest.util.DataParseUtils;
 
 import java.io.OutputStream;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Activate("multiValue")
-public class MultiValueCodec implements HttpMessageCodec<byte[],OutputStream> {
+public class MultiValueCodec implements HttpMessageCodec<byte[], OutputStream> {
 
 
     @Override
     public Object decode(byte[] body, Class targetType) throws Exception {
         // TODO java bean  get set convert
-        return DataParseUtils.multipartFormConvert(body);
+        Object map = DataParseUtils.multipartFormConvert(body);
+        Map valuesMap = (Map) map;
+        if (targetType.isAssignableFrom(Map.class)) {
+            return map;
+        } else if (DataParseUtils.isTextType(targetType)) {
+
+            // only fetch  first
+            Set set = valuesMap.keySet();
+            ArrayList arrayList = new ArrayList<>(set);
+            Object key = arrayList.get(0);
+            Object value = valuesMap.get(key);
+            if (value == null) {
+                return null;
+            }
+            return DataParseUtils.stringTypeConvert(targetType, String.valueOf(((List) value).get(0)));
+
+
+        } else {
+
+
+            Map<String, Field> beanPropertyFields = ReflectUtils.getBeanPropertyFields(targetType);
+
+            Object emptyObject = ReflectUtils.getEmptyObject(targetType);
+
+            beanPropertyFields.entrySet().stream().forEach(entry -> {
+                try {
+                    List values = (List) valuesMap.get(entry.getKey());
+                    String value = values == null ? null : String.valueOf(values.get(0));
+                    entry.getValue().set(emptyObject, DataParseUtils.stringTypeConvert(entry.getValue().getType(), value));
+                } catch (IllegalAccessException e) {
+
+                }
+            });
+
+            return emptyObject;
+        }
+
     }
 
+
     @Override
-    public boolean contentTypeSupport(MediaType mediaType,Class targetType) {
+    public boolean contentTypeSupport(MediaType mediaType, Class targetType) {
         return MediaTypeMatcher.MULTI_VALUE.mediaSupport(mediaType);
     }
 
