@@ -20,6 +20,7 @@ package org.apache.dubbo.rpc.protocol.rest.annotation.consumer.inercept;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.metadata.rest.RestMethodMetadata;
 import org.apache.dubbo.remoting.http.RequestTemplate;
+import org.apache.dubbo.rpc.protocol.rest.RestHeaderEnum;
 import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.HttpConnectionCreateContext;
 import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.HttpConnectionPreBuildIntercept;
 import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
@@ -27,7 +28,7 @@ import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
 import java.util.Collection;
 import java.util.Set;
 
-@Activate(value = RestConstant.REQUEST_HEADER_INTERCEPT,order = 2)
+@Activate(value = RestConstant.REQUEST_HEADER_INTERCEPT, order = 2)
 public class RequestHeaderIntercept implements HttpConnectionPreBuildIntercept {
 
     @Override
@@ -37,14 +38,13 @@ public class RequestHeaderIntercept implements HttpConnectionPreBuildIntercept {
         RequestTemplate requestTemplate = connectionCreateContext.getRequestTemplate();
 
 
-
         Set<String> consumes = restMethodMetadata.getRequest().getConsumes();
 
-        requestTemplate.addHeaders(RestConstant.CONTENT_TYPE, consumes);
+        requestTemplate.addHeaders(RestHeaderEnum.CONTENT_TYPE.getHeader(), consumes);
 
         Collection<String> headers = requestTemplate.getHeaders(RestConstant.ACCEPT);
         if (headers == null || headers.isEmpty()) {
-            requestTemplate.addHeader(RestConstant.ACCEPT, RestConstant.DEFAULT_ACCEPT);
+            requestTemplate.addHeader(RestHeaderEnum.ACCEPT.getHeader(), RestConstant.DEFAULT_ACCEPT);
         }
 
 

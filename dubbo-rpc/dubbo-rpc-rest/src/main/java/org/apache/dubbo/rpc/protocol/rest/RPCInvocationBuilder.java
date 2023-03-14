@@ -16,21 +16,19 @@
  */
 package org.apache.dubbo.rpc.protocol.rest;
 
-import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.rest.RestMethodMetadata;
 import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.protocol.rest.annotation.ParamParserManager;
 import org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.provider.ProviderParseContext;
 import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
 import org.apache.dubbo.rpc.protocol.rest.exception.ParamParseException;
 import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
+import org.apache.dubbo.rpc.protocol.rest.util.HttpHeaderUtil;
 import org.apache.dubbo.rpc.protocol.rest.util.Pair;
 
 
 import java.util.Arrays;
-import java.util.Enumeration;
 
 
 public class RPCInvocationBuilder {
@@ -106,22 +104,9 @@ public class RPCInvocationBuilder {
         rpcInvocation.setAttachment(RestConstant.REMOTE_PORT, remotePort);
         rpcInvocation.setAttachment(RestConstant.LOCAL_PORT, localPort);
 
-        Enumeration<String> attachments = request.getHeaders(RestConstant.DUBBO_ATTACHMENT_HEADER);
-
-        while (attachments != null && attachments.hasMoreElements()) {
-            String header = attachments.nextElement();
-            int index = header.indexOf("=");
-            if (index > 0) {
-                String key = header.substring(0, index);
-                String value = header.substring(index + 1);
-                if (!StringUtils.isEmpty(key)) {
-                    RpcContext.getServerAttachment().setAttachment(key.trim(), value.trim());
-                }
-            }
-        }
+        HttpHeaderUtil.parseServerContextAttachment(request);
 
 
-        // TODO set path,version,group and so on
         return rpcInvocation;
     }
 

@@ -28,6 +28,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -104,17 +105,17 @@ public class NettyRequestFacade extends RequestFacade<FullHttpRequest> {
     @Override
     public Enumeration<String> getHeaderNames() {
 
-        Set<String> strings = headers.keySet();
+        Iterator<String> strings = headers.keySet().iterator();
 
         return new Enumeration<String>() {
             @Override
             public boolean hasMoreElements() {
-                return strings.iterator().hasNext();
+                return strings.hasNext();
             }
 
             @Override
             public String nextElement() {
-                return strings.iterator().next();
+                return strings.next();
             }
         };
     }

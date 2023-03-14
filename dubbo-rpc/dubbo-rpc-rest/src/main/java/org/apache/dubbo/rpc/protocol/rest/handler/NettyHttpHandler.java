@@ -17,6 +17,8 @@
 package org.apache.dubbo.rpc.protocol.rest.handler;
 
 import io.netty.handler.codec.http.FullHttpRequest;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.metadata.rest.media.MediaType;
 import org.apache.dubbo.remoting.http.HttpHandler;
 import org.apache.dubbo.rpc.Invoker;
@@ -36,8 +38,10 @@ import org.apache.dubbo.rpc.protocol.rest.util.MediaTypeUtil;
 import org.apache.dubbo.rpc.protocol.rest.util.Pair;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 public class NettyHttpHandler implements HttpHandler<FullHttpRequest, NettyHttpResponse> {
+    private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
 
     @Override
     public void handle(FullHttpRequest nettyHttpRequest, NettyHttpResponse nettyHttpResponse) throws IOException {
@@ -53,15 +57,18 @@ public class NettyHttpHandler implements HttpHandler<FullHttpRequest, NettyHttpR
         try {
             build = RPCInvocationBuilder.build(request, nettyHttpRequest, nettyHttpResponse);
         } catch (PathNoFoundException e) {
+            logger.error("", e.getMessage(), Arrays.toString(e.getStackTrace()), "dubbo rest protocol provider path   no found ,raw request is :" + nettyHttpRequest);
             nettyHttpResponse.setStatus(404);
         } catch (ParamParseException e) {
+            logger.error("", e.getMessage(), Arrays.toString(e.getStackTrace()), "dubbo rest protocol provider param parse error ,and raw request is :" + nettyHttpRequest);
             nettyHttpResponse.setStatus(400);
         } catch (Throwable throwable) {
+            logger.error("", throwable.getMessage(), Arrays.toString(throwable.getStackTrace()), "dubbo rest protocol provider error ,and raw request is  " + nettyHttpRequest);
             nettyHttpResponse.setStatus(500);
         }
 
 
-        HttpHeaderUtil.addProviderAttachments(nettyHttpResponse);
+        HttpHeaderUtil.addResponseAttachments(nettyHttpResponse);
 
 
         // build RpcInvocation failed ,directly return

@@ -20,6 +20,7 @@ package org.apache.dubbo.rpc.protocol.rest.annotation.consumer.inercept;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.metadata.rest.ServiceRestMetadata;
 import org.apache.dubbo.remoting.http.RequestTemplate;
+import org.apache.dubbo.rpc.protocol.rest.RestHeaderEnum;
 import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.HttpConnectionConfig;
 import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.HttpConnectionCreateContext;
 import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.HttpConnectionPreBuildIntercept;
@@ -36,9 +37,9 @@ public class AddMustAttachmentIntercept implements HttpConnectionPreBuildInterce
         HttpConnectionConfig connectionConfig = connectionCreateContext.getConnectionConfig();
 
 
-        requestTemplate.addHeader(RestConstant.GROUP, serviceRestMetadata.getGroup());
-        requestTemplate.addHeader(RestConstant.VERSION, serviceRestMetadata.getVersion());
-        requestTemplate.addHeader(RestConstant.PATH, serviceRestMetadata.getServiceInterface());
+        requestTemplate.addHeader(RestHeaderEnum.GROUP.getHeader(), serviceRestMetadata.getGroup());
+        requestTemplate.addHeader(RestHeaderEnum.VERSION.getHeader(), serviceRestMetadata.getVersion());
+        requestTemplate.addHeader(RestHeaderEnum.PATH.getHeader(), serviceRestMetadata.getServiceInterface());
         requestTemplate.addKeepAliveHeader(connectionConfig.getKeepAlive());
 
 

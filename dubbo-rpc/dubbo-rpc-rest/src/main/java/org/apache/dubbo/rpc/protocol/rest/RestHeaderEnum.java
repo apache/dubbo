@@ -16,9 +16,16 @@
  */
 package org.apache.dubbo.rpc.protocol.rest;
 
+import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
+
 public enum RestHeaderEnum {
-    CONTENT_TYPE("content-type"),
-    ACCEPT("Accept"),
+    CONTENT_TYPE(RestConstant.CONTENT_TYPE),
+    ACCEPT(RestConstant.ACCEPT),
+    GROUP(RestConstant.GROUP),
+    VERSION(RestConstant.VERSION),
+    PATH(RestConstant.PATH),
+    KEEP_ALIVE_HEADER(RestConstant.KEEP_ALIVE_HEADER),
+    CONNECTION(RestConstant.CONNECTION),
 
 
     ;
