@@ -14,33 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.aot.generate;
 
-package org.apache.dubbo.metrics.report.nop;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.metrics.report.MetricsReporter;
-
-/**
- * Metrics reporter without any operations.
- */
-public class NopMetricsReporter implements MetricsReporter {
-
-    public NopMetricsReporter(URL url) {
-
-    }
-
-    @Override
-    public void init() {
-
-    }
-
-    @Override
-    public void refreshData() {
-
-    }
-
-    @Override
-    public String getResponse() {
-        return null;
+public class ResourcePatternDescriberTest {
+    @Test
+    public void testToRegex() {
+        ResourcePatternDescriber describer = new ResourcePatternDescriber("META-INF/dubbo/internal/org.apache.dubbo.common.extension.ExtensionInjector", null);
+        Assertions.assertEquals("\\QMETA-INF/dubbo/internal/org.apache.dubbo.common.extension.ExtensionInjector\\E",describer.toRegex().toString());
     }
 }

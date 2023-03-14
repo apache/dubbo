@@ -17,13 +17,13 @@
 
 package org.apache.dubbo.metrics.prometheus;
 
+import com.sun.net.httpserver.HttpServer;
+import io.micrometer.prometheus.PrometheusMeterRegistry;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.nested.PrometheusConfig;
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-
-import io.micrometer.prometheus.PrometheusMeterRegistry;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -35,8 +35,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Collectors;
@@ -96,8 +99,9 @@ class PrometheusMetricsReporterTest {
         ApplicationModel.defaultModel().getApplicationConfigManager().setApplication(new ApplicationConfig("metrics-test"));
         PrometheusMetricsReporter reporter = new PrometheusMetricsReporter(metricsConfig.toUrl(), applicationModel);
         reporter.init();
+        exportHttpServer(reporter, port);
         try {
-            Thread.sleep(60000);
+            Thread.sleep(5000);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -134,4 +138,26 @@ class PrometheusMetricsReporterTest {
         reporter.destroy();
         Assertions.assertTrue(executor.isTerminated() || executor.isShutdown());
     }
+
+
+    private void exportHttpServer(PrometheusMetricsReporter reporter, int port) {
+
+        try {
+            HttpServer prometheusExporterHttpServer = HttpServer.create(new InetSocketAddress(port), 0);
+            prometheusExporterHttpServer.createContext("/metrics", httpExchange -> {
+                reporter.refreshData();
+                String response = reporter.getPrometheusRegistry().scrape();
+                httpExchange.sendResponseHeaders(200, response.getBytes().length);
+                try (OutputStream os = httpExchange.getResponseBody()) {
+                    os.write(response.getBytes());
+                }
+            });
+
+            Thread httpServerThread = new Thread(prometheusExporterHttpServer::start);
+            httpServerThread.start();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 }
