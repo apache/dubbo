@@ -14,33 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.apache.dubbo.metrics.report.nop;
-
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.metrics.report.MetricsReporter;
+package org.apache.dubbo.aot.generate;
 
 /**
- * Metrics reporter without any operations.
+ * A describer that describes the conditions for the configuration to take effect.
  */
-public class NopMetricsReporter implements MetricsReporter {
+public interface ConditionalDescriber {
 
-    public NopMetricsReporter(URL url) {
+    String getReachableType();
 
-    }
-
-    @Override
-    public void init() {
-
-    }
-
-    @Override
-    public void refreshData() {
-
-    }
-
-    @Override
-    public String getResponse() {
-        return null;
-    }
 }
