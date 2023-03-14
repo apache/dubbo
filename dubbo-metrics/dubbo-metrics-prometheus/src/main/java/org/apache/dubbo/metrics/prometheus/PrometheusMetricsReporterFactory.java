@@ -44,9 +44,9 @@ public class PrometheusMetricsReporterFactory extends AbstractMetricsReporterFac
         } catch (NoClassDefFoundError ncde) {
             String msg = ncde.getMessage();
             if (messageContainsPrometheusMetricsReporter(msg)) {
-                logger.warn("Failed to load class \"org.apache.dubbo.metrics.prometheus.PrometheusMetricsReporter\".");
-                logger.warn("Defaulting to no-operation (NOP) metricsReporter implementation");
-                logger.warn("Introduce the micrometer-core package to use the ability of metrics");
+                logger.error(PROMETHEUS_NOP_ERROR, "", "", "Failed to load class \"org.apache.dubbo.metrics.prometheus.PrometheusMetricsReporter\".", ncde);
+                logger.error(PROMETHEUS_NOP_ERROR, "", "", "Defaulting to no-operation (NOP) metricsReporter implementation", ncde);
+                logger.error(PROMETHEUS_NOP_ERROR, "", "", "Introduce the micrometer-core package to use the ability of metrics", ncde);
                 return new NopMetricsReporter();
             } else {
                 logger.error(PROMETHEUS_NOP_ERROR, "", "", "Failed to instantiate PrometheusMetricsReporter", ncde);
