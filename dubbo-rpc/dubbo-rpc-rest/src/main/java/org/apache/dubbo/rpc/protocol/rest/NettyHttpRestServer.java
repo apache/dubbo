@@ -45,7 +45,15 @@ import static org.apache.dubbo.rpc.protocol.rest.Constants.KEEP_ALIVE_KEY;
 
 
 public class NettyHttpRestServer implements RestProtocolServer {
-    private NettyServer server = new NettyServer();
+    private NettyServer server = getNettyServer();
+
+    /**
+     *  for triple override
+     * @return
+     */
+    protected NettyServer getNettyServer() {
+        return new NettyServer();
+    }
 
     private String address;
 
