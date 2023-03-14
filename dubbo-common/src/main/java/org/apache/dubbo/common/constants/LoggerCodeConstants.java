@@ -446,8 +446,6 @@ public interface LoggerCodeConstants {
 
     String TESTING_INIT_ZOOKEEPER_SERVER_ERROR = "81-4";
 
-    String PROMETHEUS_NOP_ERROR = "82-1";
-
     // Internal unknown error.
 
     /**
