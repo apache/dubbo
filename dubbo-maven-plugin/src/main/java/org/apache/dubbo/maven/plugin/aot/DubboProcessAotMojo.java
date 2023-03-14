@@ -17,18 +17,14 @@
 package org.apache.dubbo.maven.plugin.aot;
 
 
-import org.apache.commons.io.FileUtils;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
-import org.apache.maven.project.MavenProject;
 
 import java.io.File;
-import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 @Mojo(name = "dubbo-process-aot", defaultPhase = LifecyclePhase.PREPARE_PACKAGE, threadSafe = true,
@@ -36,7 +32,7 @@ import java.util.List;
     requiresDependencyCollection = ResolutionScope.COMPILE_PLUS_RUNTIME)
 public class DubboProcessAotMojo extends AbstractAotMojo {
 
-    private static final String AOT_PROCESSOR_CLASS_NAME = "org.apache.dubbo.aot.generate.CodeGenerator";
+    private static final String AOT_PROCESSOR_CLASS_NAME = "org.apache.dubbo.aot.generate.AotProcessor";
 
     /**
      * Directory containing the classes and resource files that should be packaged into
@@ -83,7 +79,6 @@ public class DubboProcessAotMojo extends AbstractAotMojo {
         URL[] classPath = getClassPath().toArray(new URL[0]);
         generateAotAssets(classPath, AOT_PROCESSOR_CLASS_NAME, getAotArguments(mainClass));
         compileSourceFiles(classPath, this.generatedSources, this.classesDirectory);
-        copyNativeConfigFile(project);
         copyAll(this.generatedResources.toPath(), this.classesDirectory.toPath());
         copyAll(this.generatedClasses.toPath(), this.classesDirectory.toPath());
     }
@@ -104,35 +99,4 @@ public class DubboProcessAotMojo extends AbstractAotMojo {
         File[] directories = new File[]{this.classesDirectory, this.generatedClasses};
         return getClassPath(directories, new ExcludeTestScopeArtifactFilter());
     }
-
-    private void copyNativeConfigFile(MavenProject project) {
-        String[] nativeFiles = {"META-INF/native-image/reflect-config.json",
-            "META-INF/native-image/jni-config.json",
-            "META-INF/native-image/proxy-config.json",
-            "META-INF/native-image/resource-config.json",
-            "META-INF/native-image/serialization-config.json"};
-
-        Arrays.stream(nativeFiles).forEach(nativeFile -> {
-            InputStream is = this.getClass().getClassLoader().getResourceAsStream(nativeFile);
-            project.getResources().stream().findFirst().ifPresent(resource -> {
-                try {
-                    String path = generatedResources + File.separator + "META-INF" + File.separator + "native-image" + File.separator
-                        + File.separator + this.project.getGroupId() + File.separator + this.project.getArtifactId();
-                    FileUtils.forceMkdir(new File(path));
-                    String[] str = nativeFile.split("/");
-                    File file = new File(path + File.separator + str[str.length - 1]);
-                    if (!file.exists()) {
-                        FileUtils.copyInputStreamToFile(is, file);
-                        getLog().info("Copy native config file:" + file);
-                    } else {
-                        getLog().info("Skip copy config file:" + file);
-                    }
-                } catch (Throwable ex) {
-                    getLog().error("Copy native config file error:" + ex.getMessage());
-                }
-            });
-        });
-    }
-
-
 }

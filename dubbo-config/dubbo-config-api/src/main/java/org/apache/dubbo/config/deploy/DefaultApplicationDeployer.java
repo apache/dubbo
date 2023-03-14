@@ -373,6 +373,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 MetricsReporterFactory metricsReporterFactory = getExtensionLoader(MetricsReporterFactory.class).getAdaptiveExtension();
                 MetricsReporter metricsReporter = metricsReporterFactory.createMetricsReporter(metricsConfig.toUrl());
                 metricsReporter.init();
+                applicationModel.getBeanFactory().registerBean(metricsReporter);
             }
         }
     }
@@ -1088,6 +1089,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 return;
             }
             setStarted();
+            startMetricsCollector();
             if (logger.isInfoEnabled()) {
                 logger.info(getIdentifier() + " is ready.");
             }
@@ -1103,6 +1105,11 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             // complete future
             completeStartFuture(true);
         }
+    }
+
+    private void startMetricsCollector(){
+        DefaultMetricsCollector collector = applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class);
+        collector.registryDefaultSample();
     }
 
     private void completeStartFuture(boolean success) {
