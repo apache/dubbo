@@ -32,7 +32,7 @@ public class AttachmentIntercept implements HttpConnectionPreBuildIntercept {
 
         RequestTemplate requestTemplate = connectionCreateContext.getRequestTemplate();
 
-        HttpHeaderUtil.addConsumerAttachments(requestTemplate, connectionCreateContext.getInvocation().getObjectAttachments());
+        HttpHeaderUtil.addRequestAttachments(requestTemplate, connectionCreateContext.getInvocation().getObjectAttachments());
     }
 
 }

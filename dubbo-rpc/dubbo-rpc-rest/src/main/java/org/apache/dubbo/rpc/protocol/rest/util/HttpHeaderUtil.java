@@ -17,44 +17,41 @@
 
 package org.apache.dubbo.rpc.protocol.rest.util;
 
+import io.netty.handler.codec.http.DefaultFullHttpRequest;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.http.RequestTemplate;
 import org.apache.dubbo.rpc.RpcContext;
+import org.apache.dubbo.rpc.protocol.rest.RestHeaderEnum;
 import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
 import org.apache.dubbo.rpc.protocol.rest.netty.NettyHttpResponse;
+import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class HttpHeaderUtil {
-    public static boolean illegalHttpHeaderKey(String key) {
-        if (StringUtils.isNotEmpty(key)) {
-            return key.contains(",") || key.contains("=");
-        }
-        return false;
-    }
 
-    public static boolean illegalHttpHeaderValue(String value) {
-        if (StringUtils.isNotEmpty(value)) {
-            return value.contains(",");
-        }
-        return false;
-    }
+    private static final List<String> serverForbiddenAttachments = Arrays.asList(RestHeaderEnum.ACCEPT.getHeader(),
+        RestHeaderEnum.VERSION.getHeader(),
+        RestHeaderEnum.PATH.getHeader(),
+        RestHeaderEnum.CONNECTION.getHeader(),
+        RestHeaderEnum.KEEP_ALIVE_HEADER.getHeader(),
+        RestHeaderEnum.KEEP_ALIVE_HEADER.getHeader(),
+        RestHeaderEnum.CONTENT_TYPE.getHeader());
 
 
-    public static List<String> createAttachments(Map<String, Object> attachmentMap) {
-        List<String> attachments = new ArrayList<>();
+    public static Map<String, List<String>> createAttachments(Map<String, Object> attachmentMap) {
+        Map<String, List<String>> attachments = new HashMap<>();
         int size = 0;
         for (Map.Entry<String, Object> entry : attachmentMap.entrySet()) {
             String key = entry.getKey();
             String value = String.valueOf(entry.getValue());
-            if (illegalHttpHeaderKey(key) || illegalHttpHeaderValue(value)) {
-                throw new IllegalArgumentException("The attachments of " + RpcContext.class.getSimpleName() + " must not contain ',' or '=' when using rest protocol");
-            }
 
-            // TODO for now we don't consider the differences of encoding and server limit
             if (value != null) {
                 size += value.getBytes(StandardCharsets.UTF_8).length;
             }
@@ -62,26 +59,49 @@ public class HttpHeaderUtil {
                 throw new IllegalArgumentException("The attachments of " + RpcContext.class.getSimpleName() + " is too big");
             }
 
-            String attachment = key + "=" + value;
-            attachments.add(attachment);
+            List<String> strings = attachments.get(key);
+            if (strings == null) {
+                strings = new ArrayList<>();
+                attachments.put(key, strings);
+            }
+            strings.add(value);
         }
 
         return attachments;
     }
 
 
-    public static void addConsumerAttachments(RequestTemplate requestTemplate, Map<String, Object> attachmentMap) {
-        List<String> attachments = createAttachments(attachmentMap);
+    public static void addRequestAttachments(RequestTemplate requestTemplate, Map<String, Object> attachmentMap) {
+        Map<String, List<String>> attachments = createAttachments(attachmentMap);
 
-        attachments.stream().forEach(attachment -> {
-            requestTemplate.addHeader(RestConstant.DUBBO_ATTACHMENT_HEADER, attachment);
+        attachments.entrySet().forEach(attachment -> {
+            requestTemplate.addHeaders(attachment.getKey(), attachment.getValue());
         });
 
     }
 
-    public static void addProviderAttachments(NettyHttpResponse nettyHttpResponse) {
-        List<String> attachments = createAttachments(RpcContext.getServerContext().getObjectAttachments());
-        nettyHttpResponse.getOutputHeaders().put(RestConstant.DUBBO_ATTACHMENT_HEADER, attachments);
+    public static void addResponseAttachments(NettyHttpResponse nettyHttpResponse) {
+        Map<String, List<String>> attachments = createAttachments(RpcContext.getServerContext().getObjectAttachments());
+
+        attachments.entrySet().stream().forEach(attachment -> {
+            nettyHttpResponse.getOutputHeaders().put(attachment.getKey(), attachment.getValue());
+        });
+    }
+
+    public static void parseServerContextAttachment(RequestFacade<DefaultFullHttpRequest> requestFacade) {
+
+        Enumeration<String> headerNames = requestFacade.getHeaderNames();
+
+        while (headerNames.hasMoreElements()) {
+            String header = headerNames.nextElement();
+
+            if (StringUtils.isEmpty(header) || serverForbiddenAttachments.contains(header)) {
+                continue;
+            }
+
+            RpcContext.getServerAttachment().setAttachment(header.trim(), requestFacade.getHeader(header));
+
+        }
     }
 
 }

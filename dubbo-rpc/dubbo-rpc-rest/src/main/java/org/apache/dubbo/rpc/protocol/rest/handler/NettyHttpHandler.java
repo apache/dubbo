@@ -61,7 +61,7 @@ public class NettyHttpHandler implements HttpHandler<FullHttpRequest, NettyHttpR
         }
 
 
-        HttpHeaderUtil.addProviderAttachments(nettyHttpResponse);
+        HttpHeaderUtil.addResponseAttachments(nettyHttpResponse);
 
 
         // build RpcInvocation failed ,directly return
