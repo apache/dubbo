@@ -25,7 +25,6 @@ import org.apache.dubbo.metrics.model.MetricsKey;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 
-import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -40,6 +39,7 @@ import java.util.stream.Collectors;
 import static org.apache.dubbo.metrics.model.MetricsCategory.RT;
 
 public class CountSamplerTest {
+    String side = "consumer";
 
     public RequestMetricsCountSampler sampler = new RequestMetricsCountSampler();
 
@@ -58,69 +58,64 @@ public class CountSamplerTest {
 
         Assertions.assertNotNull(collect);
 
-        Assertions.assertTrue(
-            null != collect.get(MetricsKey.METRIC_RT_LAST.getName()) && collect.get(
-                MetricsKey.METRIC_RT_LAST.getName()).applyAsLong() == 2);
-        Assertions.assertTrue(
-            null != collect.get(MetricsKey.METRIC_RT_MIN.getName()) && collect.get(
-                MetricsKey.METRIC_RT_MIN.getName()).applyAsLong() == 2);
-        Assertions.assertTrue(
-            null != collect.get(MetricsKey.METRIC_RT_MAX.getName()) && collect.get(
-                MetricsKey.METRIC_RT_MAX.getName()).applyAsLong() == 2);
-        Assertions.assertTrue(
-            null != collect.get(MetricsKey.METRIC_RT_AVG.getName()) && collect.get(
-                MetricsKey.METRIC_RT_AVG.getName()).applyAsLong() == 2);
-        Assertions.assertTrue(
-            null != collect.get(MetricsKey.METRIC_RT_SUM.getName()) && collect.get(
-                MetricsKey.METRIC_RT_SUM.getName()).applyAsLong() == 2);
+        Assertions.assertTrue(null != collect.get(MetricsKey.METRIC_RT_LAST.getNameByType(side)) && collect.get(
+                MetricsKey.METRIC_RT_LAST.getNameByType(side)).applyAsLong() == 2);
+        Assertions.assertTrue(null != collect.get(MetricsKey.METRIC_RT_MIN.getNameByType(side)) && collect.get(
+                MetricsKey.METRIC_RT_MIN.getNameByType(side)).applyAsLong() == 2);
+        Assertions.assertTrue(null != collect.get(MetricsKey.METRIC_RT_MAX.getNameByType(side)) && collect.get(
+                MetricsKey.METRIC_RT_MAX.getNameByType(side)).applyAsLong() == 2);
+        Assertions.assertTrue(null != collect.get(MetricsKey.METRIC_RT_AVG.getNameByType(side)) && collect.get(
+                MetricsKey.METRIC_RT_AVG.getNameByType(side)).applyAsLong() == 2);
+        Assertions.assertTrue(null != collect.get(MetricsKey.METRIC_RT_SUM.getNameByType(side)) && collect.get(
+                MetricsKey.METRIC_RT_SUM.getNameByType(side)).applyAsLong() == 2);
 
         sampler.addRT(applicationName, RTType.METHOD_REQUEST, 1L);
         collect = getCollect(RTType.METHOD_REQUEST);
 
         Assertions.assertTrue(
-            null != collect.get(MetricsKey.METRIC_RT_LAST.getName()) && collect.get(
-                MetricsKey.METRIC_RT_LAST.getName()).applyAsLong() == 1);
+            null != collect.get(MetricsKey.METRIC_RT_LAST.getNameByType(side)) && collect.get(
+                MetricsKey.METRIC_RT_LAST.getNameByType(side)).applyAsLong() == 1);
         Assertions.assertTrue(
-            null != collect.get(MetricsKey.METRIC_RT_MIN.getName()) && collect.get(
-                MetricsKey.METRIC_RT_MIN.getName()).applyAsLong() == 1);
+            null != collect.get(MetricsKey.METRIC_RT_MIN.getNameByType(side)) && collect.get(
+                MetricsKey.METRIC_RT_MIN.getNameByType(side)).applyAsLong() == 1);
         Assertions.assertTrue(
-            null != collect.get(MetricsKey.METRIC_RT_MAX.getName()) && collect.get(
-                MetricsKey.METRIC_RT_MAX.getName()).applyAsLong() == 2);
+            null != collect.get(MetricsKey.METRIC_RT_MAX.getNameByType(side)) && collect.get(
+                MetricsKey.METRIC_RT_MAX.getNameByType(side)).applyAsLong() == 2);
         Assertions.assertTrue(
-            null != collect.get(MetricsKey.METRIC_RT_AVG.getName()) && collect.get(
-                MetricsKey.METRIC_RT_AVG.getName()).applyAsLong() == 1);
+            null != collect.get(MetricsKey.METRIC_RT_AVG.getNameByType(side)) && collect.get(
+                MetricsKey.METRIC_RT_AVG.getNameByType(side)).applyAsLong() == 1);
         Assertions.assertTrue(
-            null != collect.get(MetricsKey.METRIC_RT_SUM.getName()) && collect.get(
-                MetricsKey.METRIC_RT_SUM.getName()).applyAsLong() == 3);
+            null != collect.get(MetricsKey.METRIC_RT_SUM.getNameByType(side)) && collect.get(
+                MetricsKey.METRIC_RT_SUM.getNameByType(side)).applyAsLong() == 3);
 
         sampler.addRT(applicationName, RTType.APPLICATION, 4L);
         collect = getCollect(RTType.APPLICATION);
 
         Assertions.assertTrue(
-            null != collect.get(MetricsKey.METRIC_RT_LAST.getName()) && collect.get(
-                MetricsKey.METRIC_RT_LAST.getName()).applyAsLong() == 4);
+            null != collect.get(MetricsKey.METRIC_RT_LAST.getNameByType(side)) && collect.get(
+                MetricsKey.METRIC_RT_LAST.getNameByType(side)).applyAsLong() == 4);
         Assertions.assertTrue(
-            null != collect.get(MetricsKey.METRIC_RT_MIN.getName()) && collect.get(
-                MetricsKey.METRIC_RT_MIN.getName()).applyAsLong() == 4);
+            null != collect.get(MetricsKey.METRIC_RT_MIN.getNameByType(side)) && collect.get(
+                MetricsKey.METRIC_RT_MIN.getNameByType(side)).applyAsLong() == 4);
         Assertions.assertTrue(
-            null != collect.get(MetricsKey.METRIC_RT_MAX.getName()) && collect.get(
-                MetricsKey.METRIC_RT_MAX.getName()).applyAsLong() == 4);
+            null != collect.get(MetricsKey.METRIC_RT_MAX.getNameByType(side)) && collect.get(
+                MetricsKey.METRIC_RT_MAX.getNameByType(side)).applyAsLong() == 4);
         Assertions.assertTrue(
-            null != collect.get(MetricsKey.METRIC_RT_AVG.getName()) && collect.get(
-                MetricsKey.METRIC_RT_AVG.getName()).applyAsLong() == 4);
+            null != collect.get(MetricsKey.METRIC_RT_AVG.getNameByType(side)) && collect.get(
+                MetricsKey.METRIC_RT_AVG.getNameByType(side)).applyAsLong() == 4);
         Assertions.assertTrue(
-            null != collect.get(MetricsKey.METRIC_RT_SUM.getName()) && collect.get(
-                MetricsKey.METRIC_RT_SUM.getName()).applyAsLong() == 4);
+            null != collect.get(MetricsKey.METRIC_RT_SUM.getNameByType(side)) && collect.get(
+                MetricsKey.METRIC_RT_SUM.getNameByType(side)).applyAsLong() == 4);
     }
 
-    @NotNull
     @SuppressWarnings("rawtypes")
     private Map<String, GaugeMetricSample> getCollect(RTType rtType) {
         List<GaugeMetricSample<?>> metricSamples = sampler.collectRT(
             new MetricsCountSampler.MetricSampleFactory<RequestMethodMetrics, GaugeMetricSample<?>>() {
                 @Override
                 public <T> GaugeMetricSample<?> newInstance(MetricsKey key, RequestMethodMetrics metric, T value, ToDoubleFunction<T> apply) {
-                    return new GaugeMetricSample<>(key.formatName("consumer"), metric.getTags(), RT, value, apply);
+                    return new GaugeMetricSample<>(key.getNameByType(side), key.getDescription(),
+                        metric.getTags(), RT, value, apply);
                 }
             }, rtType);
 

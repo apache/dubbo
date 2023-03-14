@@ -106,12 +106,6 @@ public enum MetricsKey {
         return String.format(name, type);
     }
 
-
-    public final MetricsKey formatName(String type) {
-        this.name = String.format(name, type);
-        return this;
-    }
-
     public final String getDescription() {
         return this.description;
     }
