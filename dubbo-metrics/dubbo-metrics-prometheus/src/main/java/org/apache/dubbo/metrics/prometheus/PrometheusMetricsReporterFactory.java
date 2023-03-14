@@ -24,6 +24,8 @@ import org.apache.dubbo.metrics.report.AbstractMetricsReporterFactory;
 import org.apache.dubbo.metrics.report.MetricsReporter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROMETHEUS_NOP_ERROR;
+
 /**
  * MetricsReporterFactory to create PrometheusMetricsReporter.
  */
@@ -42,12 +44,12 @@ public class PrometheusMetricsReporterFactory extends AbstractMetricsReporterFac
         } catch (NoClassDefFoundError ncde) {
             String msg = ncde.getMessage();
             if (messageContainsPrometheusMetricsReporter(msg)) {
-                logger.error("Failed to load class \"org.apache.dubbo.metrics.prometheus.PrometheusMetricsReporter\".");
-                logger.error("Defaulting to no-operation (NOP) metricsReporter implementation");
-                logger.error("Introduce the micrometer-core package to use the ability of metrics");
+                logger.warn("Failed to load class \"org.apache.dubbo.metrics.prometheus.PrometheusMetricsReporter\".");
+                logger.warn("Defaulting to no-operation (NOP) metricsReporter implementation");
+                logger.warn("Introduce the micrometer-core package to use the ability of metrics");
                 return new NopMetricsReporter();
             } else {
-                logger.error("Failed to instantiate PrometheusMetricsReporter", ncde);
+                logger.error(PROMETHEUS_NOP_ERROR, "", "", "Failed to instantiate PrometheusMetricsReporter", ncde);
                 throw ncde;
             }
         }
