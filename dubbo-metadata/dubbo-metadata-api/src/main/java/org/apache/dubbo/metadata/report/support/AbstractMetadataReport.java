@@ -111,7 +111,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
 
     public AbstractMetadataReport(URL reportServerURL) {
         setUrl(reportServerURL);
-        applicationModel = reportServerURL.getApplicationModel();
+        applicationModel = reportServerURL.getOrDefaultApplicationModel();
 
         boolean localCacheEnabled = reportServerURL.getParameter(REGISTRY_LOCAL_FILE_CACHE_ENABLED, true);
         // Start file save timer
