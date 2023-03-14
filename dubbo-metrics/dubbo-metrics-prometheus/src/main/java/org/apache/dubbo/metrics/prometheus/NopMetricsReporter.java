@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.metrics.prometheus;
 
+import jdk.internal.joptsimple.internal.Strings;
 import org.apache.dubbo.metrics.report.MetricsReporter;
 
 /**
@@ -37,6 +38,6 @@ public class NopMetricsReporter implements MetricsReporter {
 
     @Override
     public String getResponse() {
-        return "";
+        return Strings.EMPTY;
     }
 }
