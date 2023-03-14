@@ -42,7 +42,6 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
@@ -194,8 +193,6 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
         url = addRegistryClusterKey(url);
 
         serviceDiscovery.subscribe(url, listener);
-
-        boolean check = url.getParameter(CHECK_KEY, false);
 
         Set<String> mappingByUrl = ServiceNameMapping.getMappingByUrl(url);
 
