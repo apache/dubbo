@@ -29,4 +29,14 @@ public class NopMetricsReporter implements MetricsReporter {
     public void init() {
 
     }
+
+    @Override
+    public void refreshData() {
+
+    }
+
+    @Override
+    public String getResponse() {
+        return null;
+    }
 }
