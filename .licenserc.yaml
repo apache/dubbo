@@ -95,6 +95,9 @@ header:
     - 'dubbo-maven-plugin/src/main/java/org/apache/dubbo/maven/plugin/aot/MatchingGroupIdFilter.java'
     - 'dubbo-maven-plugin/src/main/java/org/apache/dubbo/maven/plugin/aot/RunArguments.java'
     - 'dubbo-maven-plugin/src/main/java/org/apache/dubbo/maven/plugin/aot/RunProcess.java'
+    - 'dubbo-native/src/main/java/org/apache/dubbo/aot/generate/BasicJsonWriter.java'
+    - 'dubbo-native/src/main/java/org/apache/dubbo/aot/generate/ExecutableMode.java'
+    - 'dubbo-native/src/main/java/org/apache/dubbo/aot/generate/MemberCategory.java'
 
   comment: on-failure
 

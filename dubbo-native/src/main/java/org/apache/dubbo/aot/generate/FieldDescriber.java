@@ -14,33 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.aot.generate;
 
-package org.apache.dubbo.metrics.report.nop;
-
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.metrics.report.MetricsReporter;
+import java.lang.reflect.Field;
 
 /**
- * Metrics reporter without any operations.
+ * A describer that describes the need for reflection on a {@link Field}.
  */
-public class NopMetricsReporter implements MetricsReporter {
-
-    public NopMetricsReporter(URL url) {
-
+public class FieldDescriber extends MemberDescriber {
+    protected FieldDescriber(String name) {
+        super(name);
     }
 
     @Override
-    public void init() {
-
+    public int hashCode() {
+        return super.hashCode();
     }
 
     @Override
-    public void refreshData() {
-
-    }
-
-    @Override
-    public String getResponse() {
-        return null;
+    public boolean equals(Object obj) {
+        return super.equals(obj);
     }
 }
