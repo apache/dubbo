@@ -47,14 +47,14 @@ public class LongContainer<N extends Number> extends ConcurrentHashMap<String, N
     /**
      * Data output function required by  {@link GaugeMetricSample GaugeMetricSample}
      */
-    private transient Function<String, Long> valueSupplier;
+    private transient Function<Number, Long> valueSupplier;
 
 
     public LongContainer(MetricsKeyWrapper metricsKeyWrapper, Supplier<N> initFunc, BiConsumer<Long, N> consumerFunc) {
         this.metricsKeyWrapper = metricsKeyWrapper;
         this.initFunc = s -> initFunc.get();
         this.consumerFunc = consumerFunc;
-        this.valueSupplier = k -> this.get(k).longValue();
+        this.valueSupplier = v->v.longValue();
     }
 
     public boolean specifyType(String type) {
@@ -77,11 +77,11 @@ public class LongContainer<N extends Number> extends ConcurrentHashMap<String, N
         return consumerFunc;
     }
 
-    public Function<String, Long> getValueSupplier() {
+   public Function<Number, Long> getValueSupplier() {
         return valueSupplier;
     }
 
-    public void setValueSupplier(Function<String, Long> valueSupplier) {
+    public void setValueSupplier(Function<Number, Long> valueSupplier) {
         this.valueSupplier = valueSupplier;
     }
 
