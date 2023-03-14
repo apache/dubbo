@@ -146,14 +146,6 @@ public abstract class AbstractProxyProtocol extends AbstractProtocol {
         return re;
     }
 
-    protected String getAddr(URL url) {
-        String bindIp = url.getParameter(Constants.BIND_IP_KEY, url.getHost());
-        if (url.getParameter(ANYHOST_KEY, false)) {
-            bindIp = ANYHOST_VALUE;
-        }
-        return NetUtils.getIpByHost(bindIp) + ":" + url.getParameter(Constants.BIND_PORT_KEY, url.getPort());
-    }
-
     protected int getErrorCode(Throwable e) {
         return RpcException.UNKNOWN_EXCEPTION;
     }
