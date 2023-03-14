@@ -50,9 +50,9 @@ public class QosProtocolWrapper implements Protocol, ScopeModelAware {
 
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(QosProtocolWrapper.class);
 
-    private AtomicBoolean hasStarted = new AtomicBoolean(false);
+    private final AtomicBoolean hasStarted = new AtomicBoolean(false);
 
-    private Protocol protocol;
+    private final Protocol protocol;
 
     private FrameworkModel frameworkModel;
 

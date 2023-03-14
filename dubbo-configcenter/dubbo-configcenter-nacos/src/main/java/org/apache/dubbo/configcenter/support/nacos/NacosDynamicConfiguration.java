@@ -67,7 +67,7 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
      */
     private static final long DEFAULT_TIMEOUT = 5000L;
 
-    private Properties nacosProperties;
+    private final Properties nacosProperties;
 
     private static final String NACOS_RETRY_KEY = "nacos.retry";
 
@@ -85,7 +85,7 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
      */
     private final ConcurrentMap<String, NacosConfigListener> watchListenerMap;
 
-    private MD5Utils md5Utils = new MD5Utils();
+    private final MD5Utils md5Utils = new MD5Utils();
 
     NacosDynamicConfiguration(URL url) {
         this.nacosProperties = buildNacosProperties(url);

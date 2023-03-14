@@ -45,7 +45,7 @@ import static org.apache.dubbo.qos.server.handler.QosProcessHandler.PROMPT;
     "count [service] [method] [times]"
 })
 public class CountTelnet implements BaseCommand {
-    private DubboProtocol dubboProtocol;
+    private final DubboProtocol dubboProtocol;
 
     public CountTelnet(FrameworkModel frameworkModel) {
         this.dubboProtocol = DubboProtocol.getDubboProtocol(frameworkModel);

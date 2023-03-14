@@ -70,7 +70,7 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
 
     private volatile boolean enableConnectivityValidation = true;
 
-    private AtomicBoolean destroyed = new AtomicBoolean(false);
+    private final AtomicBoolean destroyed = new AtomicBoolean(false);
 
     private volatile Invoker<T> stickyInvoker = null;
 

@@ -146,7 +146,7 @@ import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
 
 public class ConfigValidationUtils {
-    private static ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ConfigValidationUtils.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ConfigValidationUtils.class);
     /**
      * The maximum length of a <b>parameter's value</b>
      */

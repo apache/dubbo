@@ -81,7 +81,7 @@ public final class DubboBootstrap {
 
     private static final Logger logger = LoggerFactory.getLogger(DubboBootstrap.class);
 
-    private static volatile ConcurrentMap<ApplicationModel, DubboBootstrap> instanceMap = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<ApplicationModel, DubboBootstrap> instanceMap = new ConcurrentHashMap<>();
     private static volatile DubboBootstrap instance;
 
     private final AtomicBoolean awaited = new AtomicBoolean(false);
@@ -92,15 +92,11 @@ public final class DubboBootstrap {
 
     private final Condition condition = lock.newCondition();
 
-    private ExecutorRepository executorRepository;
-
     private final ApplicationModel applicationModel;
 
-    protected final ConfigManager configManager;
+    private final ConfigManager configManager;
 
-    protected final Environment environment;
-
-    private ApplicationDeployer applicationDeployer;
+    private final ApplicationDeployer applicationDeployer;
 
     /**
      * See {@link ApplicationModel} and {@link ExtensionLoader} for why DubboBootstrap is designed to be singleton.
@@ -161,9 +157,9 @@ public final class DubboBootstrap {
     private DubboBootstrap(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
         configManager = applicationModel.getApplicationConfigManager();
-        environment = applicationModel.getModelEnvironment();
+        Environment environment = applicationModel.getModelEnvironment();
 
-        executorRepository = ExecutorRepository.getInstance(applicationModel);
+        ExecutorRepository executorRepository = ExecutorRepository.getInstance(applicationModel);
         applicationDeployer = applicationModel.getDeployer();
         // listen deploy events
         applicationDeployer.addDeployListener(new DeployListenerAdapter<ApplicationModel>() {

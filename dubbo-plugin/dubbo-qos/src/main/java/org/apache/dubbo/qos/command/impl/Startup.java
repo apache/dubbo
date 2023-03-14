@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
 @Cmd(name = "startup", summary = "Judge if service has started? ", requiredPermissionLevel = PermissionLevel.PUBLIC)
 public class Startup implements BaseCommand {
 
-    private FrameworkModel frameworkModel;
+    private final FrameworkModel frameworkModel;
 
     public Startup(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;

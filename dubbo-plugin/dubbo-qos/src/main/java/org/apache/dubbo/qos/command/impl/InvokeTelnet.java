@@ -50,7 +50,7 @@ public class InvokeTelnet implements BaseCommand {
     public static final AttributeKey<List<Method>> INVOKE_METHOD_LIST_KEY = AttributeKey.valueOf("telnet.invoke.method.list");
     public static final AttributeKey<ProviderModel> INVOKE_METHOD_PROVIDER_KEY = AttributeKey.valueOf("telnet.invoke.method.provider");
 
-    private FrameworkModel frameworkModel;
+    private final FrameworkModel frameworkModel;
 
     public InvokeTelnet(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
