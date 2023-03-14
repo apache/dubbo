@@ -47,6 +47,7 @@ public class RequestTemplate implements Serializable {
     private String protocol = "http://";
     private final Invocation invocation;
     private String contextPath = "";
+    private Class bodyType;
 
 
     public RequestTemplate(Invocation invocation, String httpMethod, String address) {
@@ -131,8 +132,9 @@ public class RequestTemplate implements Serializable {
         return getUnSerializedBody() == null;
     }
 
-    public RequestTemplate body(Object body) {
+    public RequestTemplate body(Object body,Class bodyType) {
         this.body = body;
+        setBodyType(bodyType);
         return this;
     }
 
@@ -299,5 +301,13 @@ public class RequestTemplate implements Serializable {
 
     public void setContextPath(String contextPath) {
         this.contextPath = contextPath;
+    }
+
+    public Class getBodyType() {
+        return bodyType;
+    }
+
+    public void setBodyType(Class bodyType) {
+        this.bodyType = bodyType;
     }
 }

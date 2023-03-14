@@ -16,37 +16,19 @@
  */
 package org.apache.dubbo.rpc.protocol.rest;
 
+public enum RestHeaderEnum {
+    CONTENT_TYPE("content-type"),
+    ACCEPT("Accept"),
 
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.FormParam;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
+    ;
+    private final String header;
 
-@Path("/demoService")
-public interface DemoService {
-    @GET
-    @Path("/hello")
-    Integer hello(@QueryParam("a")Integer a, @QueryParam("b") Integer b);
+    RestHeaderEnum(String header) {
+        this.header = header;
+    }
 
-    @GET
-    @Path("/error")
-    String error();
-
-    @POST
-    @Path("/say")
-    @Consumes({javax.ws.rs.core.MediaType.TEXT_PLAIN})
-    String sayHello(String name);
-
-    @POST
-    @Path("number")
-    @Produces({javax.ws.rs.core.MediaType.APPLICATION_FORM_URLENCODED})
-    @Consumes({MediaType.APPLICATION_FORM_URLENCODED})
-    Long testFormBody(@FormParam("number") Long number);
-
-    boolean isCalled();
+    public String getHeader() {
+        return header;
+    }
 }

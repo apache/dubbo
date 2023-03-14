@@ -53,7 +53,7 @@ public class SerializeBodyIntercept implements HttpConnectionPreBuildIntercept {
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             Collection<String> headers = requestTemplate.getHeaders(RestConstant.CONTENT_TYPE);
             MediaType mediaType = MediaTypeUtil.convertMediaType(headers.toArray(new String[0]));
-            HttpMessageCodecManager.httpMessageEncode(outputStream, unSerializedBody, url, mediaType);
+            HttpMessageCodecManager.httpMessageEncode(outputStream, unSerializedBody, url, mediaType,requestTemplate.getBodyType());
             requestTemplate.serializeBody(outputStream.toByteArray());
         } catch (Exception e) {
             logger.error(LoggerCodeConstants.PROTOCOL_ERROR_DESERIALIZE, "", "", "Rest SerializeBodyIntercept serialize error: {}", e);

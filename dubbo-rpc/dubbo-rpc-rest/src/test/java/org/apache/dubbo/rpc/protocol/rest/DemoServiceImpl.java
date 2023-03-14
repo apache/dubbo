@@ -19,13 +19,10 @@ package org.apache.dubbo.rpc.protocol.rest;
 
 import org.apache.dubbo.rpc.RpcContext;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.Map;
+
 @Path("/demoService")
 public class DemoServiceImpl implements DemoService {
     private static Map<String, Object> context;
@@ -38,6 +35,15 @@ public class DemoServiceImpl implements DemoService {
     public String sayHello(String name) {
         called = true;
         return "Hello, " + name;
+    }
+
+    @POST
+    @Path("number")
+    @Produces({javax.ws.rs.core.MediaType.APPLICATION_FORM_URLENCODED})
+    @Consumes({MediaType.APPLICATION_FORM_URLENCODED})
+    @Override
+    public Long testFormBody(Long number) {
+        return number;
     }
 
 

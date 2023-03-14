@@ -330,6 +330,28 @@ public class SpringMvcRestProtocolTest {
         exporter.unexport();
     }
 
+
+    @Test
+    void testFormConsumerParser() {
+        SpringRestDemoService server = getServerImpl();
+
+        URL nettyUrl = this.registerProvider(exportUrl, server, SpringRestDemoService.class);
+
+
+        Exporter<SpringRestDemoService> exporter = getExport(nettyUrl, server);
+
+        SpringRestDemoService demoService = this.proxy.getProxy(protocol.refer(SpringRestDemoService.class, nettyUrl));
+
+        User user = new User();
+        user.setAge(18);
+        user.setName("dubbo");
+        user.setId(404l);
+        String name = demoService.testFormBody(user);
+        Assertions.assertEquals("dubbo", name);
+
+        exporter.unexport();
+    }
+
     public static class TestExceptionMapper implements ExceptionHandler<RuntimeException> {
 
         @Override

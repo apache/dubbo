@@ -23,7 +23,7 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.protocol.rest.RPCInvocationBuilder;
-import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
+import org.apache.dubbo.rpc.protocol.rest.RestHeaderEnum;
 import org.apache.dubbo.rpc.protocol.rest.exception.ParamParseException;
 import org.apache.dubbo.rpc.protocol.rest.exception.PathNoFoundException;
 import org.apache.dubbo.rpc.protocol.rest.exception.mapper.ExceptionMapper;
@@ -76,31 +76,26 @@ public class NettyHttpHandler implements HttpHandler<FullHttpRequest, NettyHttpR
         if (invoke.hasException()) {
 
             if (ExceptionMapper.hasExceptionMapper(invoke.getException())) {
-                writeResult(nettyHttpResponse, request, invoker, ExceptionMapper.exceptionToResult(invoke.getException()));
+                writeResult(nettyHttpResponse, request, invoker, ExceptionMapper.exceptionToResult(invoke.getException()), build.getFirst().getReturnType());
             } else {
                 nettyHttpResponse.setStatus(500);
             }
 
         } else {
             Object value = invoke.getValue();
-            writeResult(nettyHttpResponse, request, invoker, value);
+            writeResult(nettyHttpResponse, request, invoker, value, build.getFirst().getReturnType());
         }
 
     }
 
-    private void writeResult(NettyHttpResponse nettyHttpResponse, RequestFacade request, Invoker invoker, Object value) {
+    private void writeResult(NettyHttpResponse nettyHttpResponse, RequestFacade request, Invoker invoker, Object value, Class returnType) {
         try {
-            String accept = request.getHeader(RestConstant.ACCEPT);
+            String accept = request.getHeader(RestHeaderEnum.ACCEPT.getHeader());
             MediaType mediaType = MediaTypeUtil.convertMediaType(accept);
 
-            Pair<Boolean, MediaType> booleanMediaTypePair = HttpMessageCodecManager.httpMessageEncode(nettyHttpResponse.getOutputStream(), value, invoker.getUrl(), mediaType);
+            Pair<Boolean, MediaType> booleanMediaTypePair = HttpMessageCodecManager.httpMessageEncode(nettyHttpResponse.getOutputStream(), value, invoker.getUrl(), mediaType, returnType);
 
-            Boolean encoded = booleanMediaTypePair.getFirst();
-
-            if (encoded) {
-                nettyHttpResponse.addOutputHeaders(RestConstant.CONTENT_TYPE, booleanMediaTypePair.getSecond().value);
-            }
-
+            nettyHttpResponse.addOutputHeaders(RestHeaderEnum.CONTENT_TYPE.getHeader(), booleanMediaTypePair.getSecond().value);
 
             nettyHttpResponse.setStatus(200);
         } catch (Throwable e) {

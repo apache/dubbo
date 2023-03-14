@@ -17,12 +17,16 @@
 package org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.consumer;
 
 import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.metadata.rest.ArgInfo;
 import org.apache.dubbo.metadata.rest.ParamType;
 import org.apache.dubbo.remoting.http.RequestTemplate;
+import org.apache.dubbo.rpc.protocol.rest.util.DataParseUtils;
 import org.apache.dubbo.rpc.protocol.rest.util.MultiValueCreator;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @Activate("consumer-form")
 public class FormConsumerParamParser implements BaseConsumerParamParser {
@@ -35,14 +39,34 @@ public class FormConsumerParamParser implements BaseConsumerParamParser {
         RequestTemplate requestTemplate = parseContext.getRequestTemplate();
         Object value = args.get(argInfo.getIndex());
 
-        Object unSerializedBody = requestTemplate.getUnSerializedBody();
-        if (unSerializedBody == null) {
-            unSerializedBody = MultiValueCreator.createMultiValueMap();
+        if (value == null) {
+            return;
         }
 
-        MultiValueCreator.add(unSerializedBody, argInfo.getAnnotationNameAttribute(), String.valueOf(value));
 
-        requestTemplate.body(unSerializedBody);
+        Object unSerializedBody = MultiValueCreator.createMultiValueMap();
+
+
+        if (DataParseUtils.isTextType(value.getClass())) {
+            MultiValueCreator.add(unSerializedBody, argInfo.getAnnotationNameAttribute(), String.valueOf(value));
+
+        } else if (value instanceof Map) {
+            unSerializedBody = value;
+        } else {
+            Set<String> allFieldNames = ReflectUtils.getAllFieldNames(value.getClass());
+
+            Object finalUnSerializedBody = unSerializedBody;
+
+            allFieldNames.stream().forEach(entry -> {
+
+                    Object fieldValue = ReflectUtils.getFieldValue(value, entry);
+                    MultiValueCreator.add(finalUnSerializedBody, entry, fieldValue);
+                }
+            );
+        }
+
+
+        requestTemplate.body(unSerializedBody,String.class);
 
 
     }

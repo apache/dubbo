@@ -23,7 +23,6 @@ import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
 import org.apache.dubbo.rpc.protocol.rest.netty.NettyHttpResponse;
 
-import javax.servlet.http.HttpServletResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -84,15 +83,5 @@ public class HttpHeaderUtil {
         List<String> attachments = createAttachments(RpcContext.getServerContext().getObjectAttachments());
         nettyHttpResponse.getOutputHeaders().put(RestConstant.DUBBO_ATTACHMENT_HEADER, attachments);
     }
-
-
-    public static void addProviderAttachments(HttpServletResponse httpServletResponse) {
-        List<String> attachments = createAttachments(RpcContext.getServerContext().getObjectAttachments());
-
-        attachments.stream().forEach(attachment -> {
-            httpServletResponse.addHeader(RestConstant.DUBBO_ATTACHMENT_HEADER, attachment);
-        });
-    }
-
 
 }

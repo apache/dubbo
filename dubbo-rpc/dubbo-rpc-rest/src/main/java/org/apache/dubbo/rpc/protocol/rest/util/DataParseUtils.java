@@ -56,7 +56,7 @@ public class DataParseUtils {
 
         return targetType == Boolean.class ||
             targetType == String.class ||
-            Number.class.isAssignableFrom(targetType);
+            Number.class.isAssignableFrom(targetType)||targetType.isPrimitive();
     }
 
 
