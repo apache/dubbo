@@ -27,4 +27,8 @@ public interface MetricsReporter {
      * Initialize metrics reporter.
      */
     void init();
+
+    void refreshData();
+
+    String getResponse();
 }

@@ -149,5 +149,5 @@ public interface Constants {
 
     String SERVER_THREAD_POOL_NAME = "DubboServerHandler";
 
-
+    String CLIENT_THREAD_POOL_NAME = "DubboClientHandler";
 }
