@@ -33,10 +33,10 @@ public class AuthorizationPolicyRule {
     }
 
     public boolean match(URL peer, URL local, Invocation invocation) {
-        if (from != null && !from.match(local)) {
+        if (from != null && !from.match(peer)) {
             return false;
         }
-        if (to != null && !to.match(peer)) {
+        if (to != null && !to.match(local)) {
             return false;
         }
         return when == null || when.match(invocation);

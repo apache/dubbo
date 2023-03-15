@@ -81,14 +81,14 @@ public class AuthorizationSource {
 
     public boolean match(URL url) {
         if (namespaces != null && !namespaces.isEmpty()) {
-            String namespace = url.getParameter("kuberentesEnv.namespace");
+            String namespace = url.getParameter("kubernetesEnv.namespace");
             if (namespace == null || !namespaces.contains(namespace)) {
                 return false;
             }
         }
 
         if (notNamespaces != null && !notNamespaces.isEmpty()) {
-            String namespace = url.getParameter("kuberentesEnv.namespace");
+            String namespace = url.getParameter("kubernetesEnv.namespace");
             if (namespace != null && notNamespaces.contains(namespace)) {
                 return false;
             }
