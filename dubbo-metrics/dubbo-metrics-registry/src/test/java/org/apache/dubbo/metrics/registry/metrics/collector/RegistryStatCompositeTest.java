@@ -44,7 +44,7 @@ public class RegistryStatCompositeTest {
         statComposite.rtStats.forEach(rtContainer ->
         {
             for (Map.Entry<String, ? extends Number> entry : rtContainer.entrySet()) {
-                Assertions.assertEquals(0L, rtContainer.getValueSupplier().apply(entry.getKey()));
+                Assertions.assertEquals(0L, rtContainer.getValueSupplier().apply(entry.getValue()));
             }
         });
     }
