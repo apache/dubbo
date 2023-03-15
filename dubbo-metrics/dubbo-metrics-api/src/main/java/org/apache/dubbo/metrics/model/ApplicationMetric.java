@@ -18,20 +18,19 @@
 package org.apache.dubbo.metrics.model;
 
 import org.apache.dubbo.common.Version;
+import org.apache.dubbo.common.constants.MetricsConstants;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.apache.dubbo.common.constants.MetricsConstants.TAG_APPLICATION_NAME;
-import static org.apache.dubbo.common.constants.MetricsConstants.TAG_APPLICATION_VERSION_KEY;
-import static org.apache.dubbo.common.constants.MetricsConstants.TAG_HOSTNAME;
-import static org.apache.dubbo.common.constants.MetricsConstants.TAG_IP;
+import static org.apache.dubbo.common.constants.MetricsConstants.*;
 import static org.apache.dubbo.common.utils.NetUtils.getLocalHost;
 import static org.apache.dubbo.common.utils.NetUtils.getLocalHostName;
 
 public class ApplicationMetric implements Metric {
     private final String applicationName;
     private static final String version = Version.getVersion();
+    private static final String commitId = Version.getLastCommitId();
 
     public ApplicationMetric(String applicationName) {
         this.applicationName = applicationName;
@@ -56,6 +55,7 @@ public class ApplicationMetric implements Metric {
         tags.put(TAG_HOSTNAME, getLocalHostName());
         tags.put(TAG_APPLICATION_NAME, applicationName);
         tags.put(TAG_APPLICATION_VERSION_KEY, version);
+        tags.put(MetricsKey.METADATA_GIT_COMMITID_METRIC.getName(), commitId);
         return tags;
     }
 }
