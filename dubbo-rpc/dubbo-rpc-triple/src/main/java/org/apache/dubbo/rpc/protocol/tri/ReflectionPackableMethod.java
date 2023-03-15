@@ -318,11 +318,6 @@ public class ReflectionPackableMethod implements PackableMethod {
         private final Class<?> actualResponseType;
         String serialize;
 
-        @Override
-        public boolean needWrapper() {
-            return true;
-        }
-
         private WrapResponsePack(MultipleSerialization multipleSerialization, URL url,
                                  Class<?> actualResponseType) {
             this.multipleSerialization = multipleSerialization;
@@ -349,11 +344,6 @@ public class ReflectionPackableMethod implements PackableMethod {
         private final URL url;
         private final Class<?> returnClass;
 
-        @Override
-        public boolean needWrapper() {
-            return true;
-        }
-
         private WrapResponseUnpack(MultipleSerialization serialization, URL url, Class<?> returnClass) {
             this.serialization = serialization;
             this.url = url;
@@ -379,11 +369,6 @@ public class ReflectionPackableMethod implements PackableMethod {
         private final URL url;
         private final boolean singleArgument;
 
-
-        @Override
-        public boolean needWrapper() {
-            return true;
-        }
 
         private WrapRequestPack(MultipleSerialization multipleSerialization,
                                 URL url,
@@ -460,11 +445,6 @@ public class ReflectionPackableMethod implements PackableMethod {
         private final URL url;
 
         private final Class<?>[] actualRequestTypes;
-
-        @Override
-        public boolean needWrapper() {
-            return true;
-        }
 
         private WrapRequestUnpack(MultipleSerialization serialization, URL url, Class<?>[] actualRequestTypes) {
             this.serialization = serialization;
