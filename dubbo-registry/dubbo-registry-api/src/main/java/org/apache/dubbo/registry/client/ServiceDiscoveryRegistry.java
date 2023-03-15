@@ -36,6 +36,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -325,7 +326,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
                 serviceListeners.put(serviceNamesKey, serviceInstancesChangedListener);
             }
 
-            ApplicationModel applicationModel = url.getApplicationModel();
+            ApplicationModel applicationModel = Optional.ofNullable(url.getApplicationModel()).orElse(ApplicationModel.defaultModel()) ;
             GlobalMetricsEventMulticaster eventMulticaster = applicationModel.getBeanFactory().getBean(GlobalMetricsEventMulticaster.class);
             TimePair timePair = TimePair.start();
 
