@@ -53,6 +53,13 @@ public class ReflectionPackableMethod implements PackableMethod {
     private final UnPack requestUnpack;
     private final UnPack responseUnpack;
 
+    private final boolean needWrapper;
+
+    @Override
+    public boolean needWrapper() {
+        return this.needWrapper;
+    }
+
     public ReflectionPackableMethod(MethodDescriptor method, URL url, String serializeName) {
         Class<?>[] actualRequestTypes;
         Class<?> actualResponseType;
@@ -79,7 +86,8 @@ public class ReflectionPackableMethod implements PackableMethod {
         }
 
         boolean singleArgument = method.getRpcType() != MethodDescriptor.RpcType.UNARY;
-        if (!needWrap(method, actualRequestTypes, actualResponseType)) {
+        this.needWrapper = needWrap(method, actualRequestTypes, actualResponseType);
+        if (!needWrapper) {
             requestPack = new PbArrayPacker(singleArgument);
             responsePack = PB_PACK;
             requestUnpack = new PbUnpack<>(actualRequestTypes[0]);
@@ -310,6 +318,11 @@ public class ReflectionPackableMethod implements PackableMethod {
         private final Class<?> actualResponseType;
         String serialize;
 
+        @Override
+        public boolean needWrapper() {
+            return true;
+        }
+
         private WrapResponsePack(MultipleSerialization multipleSerialization, URL url,
                                  Class<?> actualResponseType) {
             this.multipleSerialization = multipleSerialization;
@@ -336,6 +349,10 @@ public class ReflectionPackableMethod implements PackableMethod {
         private final URL url;
         private final Class<?> returnClass;
 
+        @Override
+        public boolean needWrapper() {
+            return true;
+        }
 
         private WrapResponseUnpack(MultipleSerialization serialization, URL url, Class<?> returnClass) {
             this.serialization = serialization;
@@ -361,6 +378,12 @@ public class ReflectionPackableMethod implements PackableMethod {
         private final Class<?>[] actualRequestTypes;
         private final URL url;
         private final boolean singleArgument;
+
+
+        @Override
+        public boolean needWrapper() {
+            return true;
+        }
 
         private WrapRequestPack(MultipleSerialization multipleSerialization,
                                 URL url,
@@ -437,6 +460,11 @@ public class ReflectionPackableMethod implements PackableMethod {
         private final URL url;
 
         private final Class<?>[] actualRequestTypes;
+
+        @Override
+        public boolean needWrapper() {
+            return true;
+        }
 
         private WrapRequestUnpack(MultipleSerialization serialization, URL url, Class<?>[] actualRequestTypes) {
             this.serialization = serialization;
