@@ -92,6 +92,10 @@ public final class DubboBootstrap {
 
     private final Condition condition = lock.newCondition();
 
+    private final ExecutorRepository executorRepository;
+
+    private final Environment environment;
+
     private final ApplicationModel applicationModel;
 
     private final ConfigManager configManager;
@@ -157,9 +161,9 @@ public final class DubboBootstrap {
     private DubboBootstrap(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
         configManager = applicationModel.getApplicationConfigManager();
-        Environment environment = applicationModel.getModelEnvironment();
+        environment = applicationModel.getModelEnvironment();
 
-        ExecutorRepository executorRepository = ExecutorRepository.getInstance(applicationModel);
+        executorRepository = ExecutorRepository.getInstance(applicationModel);
         applicationDeployer = applicationModel.getDeployer();
         // listen deploy events
         applicationDeployer.addDeployListener(new DeployListenerAdapter<ApplicationModel>() {
