@@ -18,12 +18,14 @@
 package org.apache.dubbo.metrics.model;
 
 import org.apache.dubbo.common.Version;
-import org.apache.dubbo.common.constants.MetricsConstants;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.apache.dubbo.common.constants.MetricsConstants.*;
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_HOSTNAME;
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_IP;
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_APPLICATION_NAME;
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_APPLICATION_VERSION_KEY;
 import static org.apache.dubbo.common.utils.NetUtils.getLocalHost;
 import static org.apache.dubbo.common.utils.NetUtils.getLocalHostName;
 
