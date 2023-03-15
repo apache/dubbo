@@ -59,8 +59,9 @@ class MemorySafeLinkedBlockingQueueTest {
 
     @Test
     void testEfficiency() throws InterruptedException {
-        // -Xms=1024m -Xmx=2048m
-        int length = 5000000, times = 10;
+        // if length is vert large(unit test may runs for a long time), so you may need to modify JVM param such as : -Xms=1024m -Xmx=2048m
+        // if you want to test efficiency of MemorySafeLinkedBlockingQueue, you may modify following param: length and times
+        int length = 1000, times = 1;
 
         // LinkedBlockingQueue insert Integer: 500W * 20 times
         long spent1 = spend(new LinkedBlockingQueue<>(), length, times);
