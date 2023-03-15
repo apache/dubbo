@@ -54,7 +54,7 @@ public class LongContainer<N extends Number> extends ConcurrentHashMap<String, N
         this.metricsKeyWrapper = metricsKeyWrapper;
         this.initFunc = s -> initFunc.get();
         this.consumerFunc = consumerFunc;
-        this.valueSupplier = v->v.longValue();
+        this.valueSupplier = v -> v.longValue();
     }
 
     public boolean specifyType(String type) {
@@ -77,7 +77,7 @@ public class LongContainer<N extends Number> extends ConcurrentHashMap<String, N
         return consumerFunc;
     }
 
-   public Function<Number, Long> getValueSupplier() {
+    public Function<Number, Long> getValueSupplier() {
         return valueSupplier;
     }
 
