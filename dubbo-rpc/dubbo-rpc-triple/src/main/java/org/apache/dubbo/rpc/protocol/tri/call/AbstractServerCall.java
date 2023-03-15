@@ -178,6 +178,11 @@ public abstract class AbstractServerCall implements ServerCall, ServerStream.Lis
             // It will enter here when there is an error in the header
             return;
         }
+        //Both 'onError' and 'onComplete' are termination operators.
+        // The stream will be closed when 'onError' was called, and 'onComplete' is not allowed to be called again.
+        if (isClosed()) {
+            return;
+        }
         listener.onComplete();
     }
 
