@@ -38,7 +38,7 @@ public class ForeignHostPermitHandler extends ChannelHandlerAdapter {
     // the whitelist of foreign IP when acceptForeignIp = false, the delimiter is colon(,)
     // support specific ip and an ip range from CIDR specification
     private final String acceptForeignIpWhitelist;
-    private Predicate<String> whitelistPredicate;
+    private final Predicate<String> whitelistPredicate;
 
     private final QosConfiguration qosConfiguration;
 

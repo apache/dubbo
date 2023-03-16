@@ -36,7 +36,7 @@ public class ProviderAppStateRouter<T> extends ListenableStateRouter<T> {
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ListenableStateRouter.class);
     public static final String NAME = "PROVIDER_APP_ROUTER";
     private String application;
-    private String currentApplication;
+    private final String currentApplication;
 
     public ProviderAppStateRouter(URL url) {
         super(url, url.getApplication());

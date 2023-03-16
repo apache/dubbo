@@ -30,7 +30,7 @@ import java.util.function.Consumer;
 
 public class ObjectMapperCodec {
 
-    private ObjectMapper mapper = new ObjectMapper();
+    private final ObjectMapper mapper = new ObjectMapper();
 
     public ObjectMapperCodec() {
         registerDefaultModule();

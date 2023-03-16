@@ -36,11 +36,11 @@ import java.util.WeakHashMap;
 })
 public class Help implements BaseCommand {
 
-    private CommandHelper commandHelper;
+    private final CommandHelper commandHelper;
 
     private static final String MAIN_HELP = "mainHelp";
 
-    private static Map<String, String> processedTable = new WeakHashMap<>();
+    private static final Map<String, String> processedTable = new WeakHashMap<>();
 
     public Help(FrameworkModel frameworkModel) {
         this.commandHelper = new CommandHelper(frameworkModel);
@@ -49,7 +49,7 @@ public class Help implements BaseCommand {
     @Override
     public String execute(CommandContext commandContext, String[] args) {
         if (ArrayUtils.isNotEmpty(args)) {
-            return processedTable.computeIfAbsent(args[0], commandName -> commandHelp(commandName));
+            return processedTable.computeIfAbsent(args[0], this::commandHelp);
         } else {
             return processedTable.computeIfAbsent(MAIN_HELP, commandName -> mainHelp());
         }

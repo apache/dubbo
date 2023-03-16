@@ -32,7 +32,7 @@ import java.util.Collection;
     "ps -l [port]", "ps", "ps -l", "ps -l 20880"
 })
 public class PortTelnet implements BaseCommand {
-    private DubboProtocol dubboProtocol;
+    private final DubboProtocol dubboProtocol;
 
     public PortTelnet(FrameworkModel frameworkModel) {
         this.dubboProtocol = DubboProtocol.getDubboProtocol(frameworkModel);

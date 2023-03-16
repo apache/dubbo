@@ -40,10 +40,10 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ZOO
 
 public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration {
 
-    private Executor executor;
+    private final Executor executor;
     private ZookeeperClient zkClient;
 
-    private CacheListener cacheListener;
+    private final CacheListener cacheListener;
     private static final int DEFAULT_ZK_EXECUTOR_THREADS_NUM = 1;
     private static final int DEFAULT_QUEUE = 10000;
     private static final Long THREAD_KEEP_ALIVE_TIME = 0L;
