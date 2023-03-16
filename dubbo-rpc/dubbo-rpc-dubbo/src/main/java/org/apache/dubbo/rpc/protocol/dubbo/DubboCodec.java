@@ -17,7 +17,6 @@
 package org.apache.dubbo.rpc.protocol.dubbo;
 
 import org.apache.dubbo.common.Version;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.io.Bytes;
 import org.apache.dubbo.common.io.UnsafeByteArrayInputStream;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
@@ -43,10 +42,11 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.EXCEPTION_PROCESSOR_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.BYTE_ACCESSOR_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_MANAGEMENT_MODE_ISOLATION;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
@@ -80,14 +80,7 @@ public class DubboCodec extends ExchangeCodec {
     public DubboCodec(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
         callbackServiceCodec = new CallbackServiceCodec(frameworkModel);
-        String exPs = System.getProperty(EXCEPTION_PROCESSOR_KEY);
-        ExtensionLoader<ByteAccessor> extensionLoader;
-
-        if (StringUtils.isNotBlank(exPs)) {
-            extensionLoader = frameworkModel.getExtensionLoader(ByteAccessor.class);
-            customByteAccessor = extensionLoader.getOrDefaultExtension(exPs);
-        }
-
+        Optional.ofNullable(System.getProperty(BYTE_ACCESSOR_KEY)).ifPresent(spiKey -> customByteAccessor = frameworkModel.getExtensionLoader(ByteAccessor.class).getOrDefaultExtension(spiKey));
     }
 
     @Override

@@ -623,7 +623,7 @@ public interface CommonConstants {
     /**
      * @since 3.2.0
      */
-    String EXCEPTION_PROCESSOR_KEY = "exception.processor";
+    String BYTE_ACCESSOR_KEY = "byte.accessor";
 
     String PAYLOAD = "payload";
 }
