@@ -23,7 +23,7 @@ import org.apache.dubbo.metrics.report.MetricsReporter;
  * NopMetricsReporter is a trivial implementation of MetricsReporter
  * which do nothing when micro-meter package is not exist.
  */
-public class NopMetricsReporter implements MetricsReporter {
+public class NopPrometheusMetricsReporter implements MetricsReporter {
 
     @Override
     public void init() {

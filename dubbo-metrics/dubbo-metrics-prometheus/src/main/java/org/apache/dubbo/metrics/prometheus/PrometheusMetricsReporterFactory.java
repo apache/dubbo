@@ -47,7 +47,7 @@ public class PrometheusMetricsReporterFactory extends AbstractMetricsReporterFac
                 logger.error(INTERNAL_ERROR, "", "", "Failed to load class \"org.apache.dubbo.metrics.prometheus.PrometheusMetricsReporter\".", ncde);
                 logger.error(INTERNAL_ERROR, "", "", "Defaulting to no-operation (NOP) metricsReporter implementation", ncde);
                 logger.error(INTERNAL_ERROR, "", "", "Introduce the micrometer-core package to use the ability of metrics", ncde);
-                return new NopMetricsReporter();
+                return new NopPrometheusMetricsReporter();
             } else {
                 logger.error(INTERNAL_ERROR, "", "", "Failed to instantiate PrometheusMetricsReporter", ncde);
                 throw ncde;
