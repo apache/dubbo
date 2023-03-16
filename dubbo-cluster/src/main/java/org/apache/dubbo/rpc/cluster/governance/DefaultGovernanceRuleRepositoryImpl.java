@@ -22,7 +22,7 @@ import org.apache.dubbo.rpc.model.ModuleModel;
 
 public class DefaultGovernanceRuleRepositoryImpl implements GovernanceRuleRepository {
 
-    private ModuleModel moduleModel;
+    private final ModuleModel moduleModel;
 
     public DefaultGovernanceRuleRepositoryImpl(ModuleModel moduleModel) {
         this.moduleModel = moduleModel;

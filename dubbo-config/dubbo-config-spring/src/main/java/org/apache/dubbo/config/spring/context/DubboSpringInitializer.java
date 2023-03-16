@@ -41,7 +41,7 @@ public class DubboSpringInitializer {
 
     private static final Logger logger = LoggerFactory.getLogger(DubboSpringInitializer.class);
 
-    private static Map<BeanDefinitionRegistry, DubboSpringInitContext> contextMap = new ConcurrentHashMap<>();
+    private static final Map<BeanDefinitionRegistry, DubboSpringInitContext> contextMap = new ConcurrentHashMap<>();
 
     private DubboSpringInitializer() {
     }
