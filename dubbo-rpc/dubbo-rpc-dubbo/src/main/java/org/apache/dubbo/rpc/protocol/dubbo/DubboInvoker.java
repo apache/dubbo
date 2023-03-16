@@ -29,6 +29,7 @@ import org.apache.dubbo.rpc.FutureContext;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
+import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
@@ -103,6 +104,9 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
             }
 
             invocation.setAttachment(TIMEOUT_KEY, String.valueOf(timeout));
+
+            RpcContext.getServiceContext().setRemoteAddress(currentClient.getRemoteAddress());
+
             if (isOneway) {
                 boolean isSent = getUrl().getMethodParameter(methodName, Constants.SENT_KEY, false);
                 currentClient.send(inv, isSent);
