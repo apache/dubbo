@@ -428,6 +428,11 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
         TimePair timePair = TimePair.start();
         ApplicationModel applicationModel = module.getApplicationModel();
+        try {
+            applicationModel.getBeanFactory().getBean(GlobalMetricsEventMulticaster.class);
+        } catch (Throwable t) {
+            applicationModel = ApplicationModel.defaultModel();
+        }
         GlobalMetricsEventMulticaster eventMulticaster = applicationModel.getBeanFactory().getBean(GlobalMetricsEventMulticaster.class);
         int size = protocols.size() * registryURLs.size();
         eventMulticaster.publishEvent(new RegistryEvent.MetricsServiceRegisterEvent(applicationModel, timePair, getUniqueServiceName(), size));
