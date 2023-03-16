@@ -23,7 +23,7 @@ public enum MetricsKey {
     // provider metrics key
     METRIC_REQUESTS("dubbo.%s.requests.total", "Total Requests"),
     METRIC_REQUESTS_SUCCEED("dubbo.%s.requests.succeed.total", "Total Succeed Requests"),
-    METRIC_REQUEST_BUSINESS_FAILED("dubbo.%s.requests.business.failed.total","Total Failed Business Requests"),
+    METRIC_REQUEST_BUSINESS_FAILED("dubbo.%s.requests.business.failed.total", "Total Failed Business Requests"),
 
     METRIC_REQUESTS_PROCESSING("dubbo.%s.requests.processing", "Processing Requests"),
     METRIC_REQUESTS_TIMEOUT("dubbo.%s.requests.timeout.total", "Total Timeout Failed Requests"),
@@ -91,7 +91,7 @@ public enum MetricsKey {
     METADATA_SUBSCRIBE_METRIC_NUM("dubbo.metadata.subscribe.num.total", "Total Metadata Subscribe Num"),
     METADATA_SUBSCRIBE_METRIC_NUM_SUCCEED("dubbo.metadata.subscribe.num.succeed.total", "Succeed Metadata Subscribe Num"),
     METADATA_SUBSCRIBE_METRIC_NUM_FAILED("dubbo.metadata.subscribe.num.failed.total", "Failed Metadata Subscribe Num"),
-    METADATA_GIT_COMMITID_METRIC("git.commit.id","Git Commit Id Metrics");
+    METADATA_GIT_COMMITID_METRIC("git.commit.id", "Git Commit Id Metrics"),
 
     // store provider metadata key
     STORE_PROVIDER_METADATA("dubbo.metadata.store.provider.total", "Store Provider Metadata"),
