@@ -80,7 +80,8 @@ public class DubboCodec extends ExchangeCodec {
     public DubboCodec(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
         callbackServiceCodec = new CallbackServiceCodec(frameworkModel);
-        Optional.ofNullable(System.getProperty(BYTE_ACCESSOR_KEY)).ifPresent(spiKey -> customByteAccessor = frameworkModel.getExtensionLoader(ByteAccessor.class).getOrDefaultExtension(spiKey));
+        Optional.ofNullable(System.getProperty(BYTE_ACCESSOR_KEY))
+            .ifPresent(spiKey -> customByteAccessor = frameworkModel.getExtensionLoader(ByteAccessor.class).getOrDefaultExtension(spiKey));
     }
 
     @Override
