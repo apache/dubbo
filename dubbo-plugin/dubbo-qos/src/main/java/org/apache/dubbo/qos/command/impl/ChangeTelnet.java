@@ -34,7 +34,7 @@ public class ChangeTelnet implements BaseCommand {
 
     public static final AttributeKey<String> SERVICE_KEY = AttributeKey.valueOf("telnet.service");
 
-    private DubboProtocol dubboProtocol;
+    private final DubboProtocol dubboProtocol;
 
     public ChangeTelnet(FrameworkModel frameworkModel) {
         this.dubboProtocol = DubboProtocol.getDubboProtocol(frameworkModel);

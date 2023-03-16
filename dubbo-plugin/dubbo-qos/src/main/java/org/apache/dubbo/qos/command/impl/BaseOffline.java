@@ -32,7 +32,7 @@ import java.util.Collection;
 import java.util.List;
 
 public class BaseOffline implements BaseCommand {
-    private Logger logger = LoggerFactory.getLogger(BaseOffline.class);
+    private static final Logger logger = LoggerFactory.getLogger(BaseOffline.class);
     public FrameworkServiceRepository serviceRepository;
 
     public BaseOffline(FrameworkModel frameworkModel) {

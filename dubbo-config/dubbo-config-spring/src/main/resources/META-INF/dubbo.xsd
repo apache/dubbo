@@ -512,6 +512,36 @@
                 <xsd:documentation><![CDATA[ Whether restrict the serialized should implement Serializable interface. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
+        <xsd:attribute name="qos-enable" type="xsd:boolean">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Whether to enable qos or not. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="qos-host" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The qos host to listen. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="qos-port" type="xsd:integer">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The qos host to listen. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="qos-accept-foreign-ip" type="xsd:boolean">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Whether to accept foreign ip. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="qos-accept-foreign-ip-whitelist" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Support specifying foreign ip in whitelist when accepting foreign ip is disabled. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="qos-anonymous-access-permission-level" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Anonymous (any foreign ip) access level, the default is NONE, can not access any cmd. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
     </xsd:complexType>
 
     <xsd:complexType name="moduleType">

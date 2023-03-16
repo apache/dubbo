@@ -16,54 +16,27 @@
  */
 package org.apache.dubbo.aot.generate;
 
-import org.apache.dubbo.common.extension.Adaptive;
+import org.apache.commons.io.FileUtils;
 import org.apache.dubbo.common.extension.AdaptiveClassCodeGenerator;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.common.utils.StringUtils;
 
-import org.apache.commons.io.FileUtils;
-
 import java.io.File;
 import java.io.IOException;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.regex.Matcher;
-import java.util.stream.Collectors;
 
 /**
- * generate related self-adaptive code (native image does not support dynamic code generation. Therefore, code needs to be generated before compilation)
+ * Write the Adaptive bytecode class dynamically generated.
  */
-public class CodeGenerator {
+public class NativeClassSourceWriter {
 
-    private static final String PACKAGE_NAME_PREFIX = "org.apache.dubbo";
+    public static final NativeClassSourceWriter INSTANCE = new NativeClassSourceWriter();
 
-    public static void main(String[] args) {
-        String generatedSources = args[1];
-
-        List<Class<?>> classes = new ClassSourceFinder().findClassSet(PACKAGE_NAME_PREFIX).stream().map(it -> {
-            try {
-                return Class.forName(it);
-            } catch (Throwable e) {
-            }
-            return null;
-        }).collect(Collectors.toList());
-        new ArrayList<>(classes).stream().filter(it -> {
-            if (null == it) {
-                return false;
-            }
-            Annotation anno = it.getAnnotation(SPI.class);
-            if (null == anno) {
-                return false;
-            }
-            Optional<Method> optional = Arrays.stream(it.getMethods()).filter(it2 -> it2.getAnnotation(Adaptive.class) != null).findAny();
-            return optional.isPresent();
-        }).forEach(it -> {
+    public void writeTo(List<Class<?>> classes, String generatedSources) {
+        classes.forEach(it -> {
             SPI spi = it.getAnnotation(SPI.class);
             String value = spi.value();
             if (StringUtils.isEmpty(value)) {
@@ -76,13 +49,13 @@ public class CodeGenerator {
                 String dir = Paths.get(file).getParent().toString();
                 FileUtils.forceMkdir(new File(dir));
                 code = LICENSED_STR + code + "\n";
-                FileUtils.write(new File(file + "$Adaptive.java"), code, Charset.defaultCharset());
+                String fileName = file + "$Adaptive.java";
+                FileUtils.write(new File(fileName), code, Charset.defaultCharset());
             } catch (IOException e) {
                 throw new IllegalStateException("Failed to generated adaptive class sources", e);
             }
         });
     }
-
 
     private static final String LICENSED_STR = "/*\n" +
         " * Licensed to the Apache Software Foundation (ASF) under one or more\n" +
@@ -100,5 +73,4 @@ public class CodeGenerator {
         " * See the License for the specific language governing permissions and\n" +
         " * limitations under the License.\n" +
         " */\n";
-
 }
