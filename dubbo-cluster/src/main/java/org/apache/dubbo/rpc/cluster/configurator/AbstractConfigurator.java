@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.cluster.configurator;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -155,12 +156,12 @@ public abstract class AbstractConfigurator implements Configurator {
         String providers = configuratorUrl.getParameter(OVERRIDE_PROVIDERS_KEY);
         if (StringUtils.isNotEmpty(providers)) {
             boolean match = false;
-            String[] providerAddresses = providers.split(",");
+            String[] providerAddresses = providers.split(CommonConstants.COMMA_SEPARATOR);
             for (String address : providerAddresses) {
                 if (address.equals(url.getAddress())
                     || address.equals(ANYHOST_VALUE)
-                    || address.equals(ANYHOST_VALUE + ":" + ANY_VALUE)
-                    || address.equals(ANYHOST_VALUE + ":" + url.getPort())
+                    || address.equals(ANYHOST_VALUE + CommonConstants.GROUP_CHAR_SEPARATOR + ANY_VALUE)
+                    || address.equals(ANYHOST_VALUE + CommonConstants.GROUP_CHAR_SEPARATOR + url.getPort())
                     || address.equals(url.getHost())) {
                     match = true;
                 }
@@ -228,10 +229,7 @@ public abstract class AbstractConfigurator implements Configurator {
     }
 
     private boolean startWithTilde(String key) {
-        if (StringUtils.isNotEmpty(key) && key.startsWith(TILDE)) {
-            return true;
-        }
-        return false;
+        return StringUtils.isNotEmpty(key) && key.startsWith(TILDE);
     }
 
     protected abstract URL doConfigure(URL currentUrl, URL configUrl);
