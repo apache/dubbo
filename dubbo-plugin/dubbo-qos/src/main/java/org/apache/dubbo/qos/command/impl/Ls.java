@@ -31,7 +31,7 @@ import java.util.Collection;
         "ls"
 })
 public class Ls implements BaseCommand {
-    private FrameworkModel frameworkModel;
+    private final FrameworkModel frameworkModel;
 
     public Ls(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;

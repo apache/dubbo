@@ -53,7 +53,7 @@ public abstract class ListenableStateRouter<T> extends AbstractStateRouter<T> im
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ListenableStateRouter.class);
     private volatile ConditionRouterRule routerRule;
     private volatile List<ConditionStateRouter<T>> conditionRouters = Collections.emptyList();
-    private String ruleKey;
+    private final String ruleKey;
 
     public ListenableStateRouter(URL url, String ruleKey) {
         super(url);

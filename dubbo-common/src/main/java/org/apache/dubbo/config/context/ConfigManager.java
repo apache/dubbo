@@ -298,9 +298,7 @@ public class ConfigManager extends AbstractConfigManager implements ApplicationE
         // Log the current configurations.
         logger.info("The current configurations or effective configurations are as follows:");
         for (Class<? extends AbstractConfig> configType : multipleConfigTypes) {
-            getConfigs(configType).stream().forEach((config) -> {
-                logger.info(config.toString());
-            });
+            getConfigs(configType).forEach((config) -> logger.info(config.toString()));
         }
     }
 
