@@ -64,6 +64,11 @@ public class SslConfig extends AbstractConfig {
     private InputStream clientPrivateKeyPathStream;
     private InputStream clientTrustCertCollectionPathStream;
 
+    private String caAddress;
+    private String envType;
+    private String caCertPath;
+    private String oidcTokenPath;
+
     public SslConfig() {
     }
 
@@ -141,6 +146,38 @@ public class SslConfig extends AbstractConfig {
 
     public void setClientTrustCertCollectionPath(String clientTrustCertCollectionPath) {
         this.clientTrustCertCollectionPath = clientTrustCertCollectionPath;
+    }
+
+    public String getCaAddress() {
+        return caAddress;
+    }
+
+    public void setCaAddress(String caAddress) {
+        this.caAddress = caAddress;
+    }
+
+    public String getEnvType() {
+        return envType;
+    }
+
+    public void setEnvType(String envType) {
+        this.envType = envType;
+    }
+
+    public String getCaCertPath() {
+        return caCertPath;
+    }
+
+    public void setCaCertPath(String caCertPath) {
+        this.caCertPath = caCertPath;
+    }
+
+    public String getOidcTokenPath() {
+        return oidcTokenPath;
+    }
+
+    public void setOidcTokenPath(String oidcTokenPath) {
+        this.oidcTokenPath = oidcTokenPath;
     }
 
     @Transient

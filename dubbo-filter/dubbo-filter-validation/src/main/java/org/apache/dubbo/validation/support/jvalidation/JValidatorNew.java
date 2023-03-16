@@ -81,7 +81,7 @@ public class JValidatorNew implements Validator {
 
     private final Class<?> clazz;
 
-    private final Map<String, Class> methodClassMap;
+    private final Map<String, Class<?>> methodClassMap;
 
     private final jakarta.validation.Validator validator;
 
@@ -202,7 +202,7 @@ public class JValidatorNew implements Validator {
 
     private static boolean hasConstraintParameter(Method method) {
         Annotation[][] parameterAnnotations = method.getParameterAnnotations();
-        if (parameterAnnotations != null && parameterAnnotations.length > 0) {
+        if (parameterAnnotations.length > 0) {
             for (Annotation[] annotations : parameterAnnotations) {
                 for (Annotation annotation : annotations) {
                     if (annotation.annotationType().isAnnotationPresent(Constraint.class)) {
@@ -298,10 +298,10 @@ public class JValidatorNew implements Validator {
         }
     }
 
-    private Class methodClass(String methodName) {
+    private Class<?> methodClass(String methodName) {
         Class<?> methodClass = null;
         String methodClassName = clazz.getName() + "$" + toUpperMethoName(methodName);
-        Class cached = methodClassMap.get(methodClassName);
+        Class<?> cached = methodClassMap.get(methodClassName);
         if (cached != null) {
             return cached == clazz ? null : cached;
         }

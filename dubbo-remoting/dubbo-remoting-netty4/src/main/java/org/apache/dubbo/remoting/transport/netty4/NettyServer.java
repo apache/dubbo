@@ -49,7 +49,6 @@ import java.util.Map;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.dubbo.common.constants.CommonConstants.IO_THREADS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.KEEP_ALIVE_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.SSL_ENABLED_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_CLOSE;
 import static org.apache.dubbo.remoting.Constants.EVENT_LOOP_BOSS_POOL_NAME;
 import static org.apache.dubbo.remoting.Constants.EVENT_LOOP_WORKER_POOL_NAME;
@@ -128,7 +127,6 @@ public class NettyServer extends AbstractServer {
 
     protected void initServerBootstrap(NettyServerHandler nettyServerHandler) {
         boolean keepalive = getUrl().getParameter(KEEP_ALIVE_KEY, Boolean.FALSE);
-
         bootstrap.group(bossGroup, workerGroup)
             .channel(NettyEventLoopFactory.serverSocketChannelClass())
             .option(ChannelOption.SO_REUSEADDR, Boolean.TRUE)
@@ -141,9 +139,7 @@ public class NettyServer extends AbstractServer {
                     // FIXME: should we use getTimeout()?
                     int idleTimeout = UrlUtils.getIdleTimeout(getUrl());
                     NettyCodecAdapter adapter = new NettyCodecAdapter(getCodec(), getUrl(), NettyServer.this);
-                    if (getUrl().getParameter(SSL_ENABLED_KEY, false)) {
-                        ch.pipeline().addLast("negotiation", new SslServerTlsHandler(getUrl()));
-                    }
+                    ch.pipeline().addLast("negotiation", new SslServerTlsHandler(getUrl()));
                     ch.pipeline()
                         .addLast("decoder", adapter.getDecoder())
                         .addLast("encoder", adapter.getEncoder())
