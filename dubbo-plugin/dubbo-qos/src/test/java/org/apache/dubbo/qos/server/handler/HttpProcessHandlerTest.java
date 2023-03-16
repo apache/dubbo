@@ -16,8 +16,8 @@
  */
 package org.apache.dubbo.qos.server.handler;
 
-import org.apache.dubbo.qos.common.QosConfiguration;
-import org.apache.dubbo.qos.permission.PermissionLevel;
+import org.apache.dubbo.qos.api.QosConfiguration;
+import org.apache.dubbo.qos.api.PermissionLevel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import io.netty.channel.ChannelFuture;
