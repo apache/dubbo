@@ -19,7 +19,6 @@ package org.apache.dubbo.rpc.protocol.dubbo;
 
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.remoting.Channel;
-import org.apache.dubbo.remoting.Decodeable;
 import org.apache.dubbo.remoting.exchange.Request;
 
 import java.io.InputStream;
@@ -27,20 +26,16 @@ import java.io.InputStream;
 import static org.apache.dubbo.common.extension.ExtensionScope.FRAMEWORK;
 
 /**
- * <p>Interface for custom decoding logic in specific spi-extended classes.
- *
- * <p>Mainly works in decode phase {@link Decodeable#decode()},
- * and can only handle exception types in this phase.
- *
- *
+ * Extension of Byte Accessor, holding attributes as RpcInvocation objects
+ * so that the decoded service can be used more flexibly
  * @since 3.2.0
  */
 @SPI(scope = FRAMEWORK)
-public interface ExceptionProcessor {
+public interface ByteAccessor {
 
     /**
      *  Get an enhanced DecodeableRpcInvocation subclass to allow custom decode.
      *  The parameters are the same as {@link DecodeableRpcInvocation}
      */
-    DecodeableRpcInvocation getRetryDecodeableRpcInvocation(Channel channel, Request req, InputStream is, byte proto);
+    DecodeableRpcInvocation getRpcInvocation(Channel channel, Request req, InputStream is, byte proto);
 }

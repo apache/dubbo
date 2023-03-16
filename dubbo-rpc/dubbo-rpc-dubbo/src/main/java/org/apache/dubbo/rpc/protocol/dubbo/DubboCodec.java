@@ -75,17 +75,17 @@ public class DubboCodec extends ExchangeCodec {
     private static final AtomicBoolean decodeInUserThreadLogged = new AtomicBoolean(false);
     private final CallbackServiceCodec callbackServiceCodec;
     private final FrameworkModel frameworkModel;
-    private ExceptionProcessor expProcessor;
+    private ByteAccessor customByteAccessor;
 
     public DubboCodec(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
         callbackServiceCodec = new CallbackServiceCodec(frameworkModel);
         String exPs = System.getProperty(EXCEPTION_PROCESSOR_KEY);
-        ExtensionLoader<ExceptionProcessor> extensionLoader;
+        ExtensionLoader<ByteAccessor> extensionLoader;
 
         if (StringUtils.isNotBlank(exPs)) {
-            extensionLoader = frameworkModel.getExtensionLoader(ExceptionProcessor.class);
-            expProcessor = extensionLoader.getOrDefaultExtension(exPs);
+            extensionLoader = frameworkModel.getExtensionLoader(ByteAccessor.class);
+            customByteAccessor = extensionLoader.getOrDefaultExtension(exPs);
         }
 
     }
@@ -164,15 +164,15 @@ public class DubboCodec extends ExchangeCodec {
                     req = new HeartBeatRequest(id);
                     DecodeableRpcInvocation inv;
                     if (isDecodeDataInIoThread(channel)) {
-                        if (expProcessor != null) {
-                            inv = expProcessor.getRetryDecodeableRpcInvocation(channel, req, is, proto);
+                        if (customByteAccessor != null) {
+                            inv = customByteAccessor.getRpcInvocation(channel, req, is, proto);
                         } else {
                             inv = new DecodeableRpcInvocation(frameworkModel, channel, req, is, proto);
                         }
                         inv.decode();
                     } else {
-                        if (expProcessor != null) {
-                            inv = expProcessor.getRetryDecodeableRpcInvocation(channel, req,
+                        if (customByteAccessor != null) {
+                            inv = customByteAccessor.getRpcInvocation(channel, req,
                                 new UnsafeByteArrayInputStream(readMessageData(is)), proto);
                         } else {
                             inv = new DecodeableRpcInvocation(frameworkModel, channel, req,
