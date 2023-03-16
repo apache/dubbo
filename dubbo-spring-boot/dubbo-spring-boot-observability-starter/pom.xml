@@ -30,7 +30,7 @@
 
     <properties>
         <micrometer.version>1.10.5</micrometer.version>
-        <micrometer-tracing.version>1.0.2</micrometer-tracing.version>
+        <micrometer-tracing.version>1.0.3</micrometer-tracing.version>
     </properties>
 
     <dependencyManagement>
