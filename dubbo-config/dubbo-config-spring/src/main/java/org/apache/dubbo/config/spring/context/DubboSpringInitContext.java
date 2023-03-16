@@ -40,7 +40,7 @@ public class DubboSpringInitContext {
 
     private ModuleModel moduleModel;
 
-    private Map<String, Object> moduleAttributes = new HashMap<>();
+    private final Map<String, Object> moduleAttributes = new HashMap<>();
 
     private volatile boolean bound;
 

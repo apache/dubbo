@@ -25,7 +25,7 @@ import java.util.Set;
 
 public class CommandHelper {
 
-    private FrameworkModel frameworkModel;
+    private final FrameworkModel frameworkModel;
 
     public CommandHelper(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;

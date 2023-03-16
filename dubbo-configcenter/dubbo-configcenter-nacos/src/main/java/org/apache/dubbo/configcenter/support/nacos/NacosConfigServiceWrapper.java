@@ -31,7 +31,7 @@ public class NacosConfigServiceWrapper {
 
     private static final long DEFAULT_TIMEOUT = 3000L;
 
-    private ConfigService configService;
+    private final ConfigService configService;
 
     public NacosConfigServiceWrapper(ConfigService configService) {
         this.configService = configService;

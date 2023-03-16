@@ -36,11 +36,11 @@ public class RoundRobinLoadBalance extends AbstractLoadBalance {
 
     private static final int RECYCLE_PERIOD = 60000;
 
-    private ConcurrentMap<String, ConcurrentMap<String, WeightedRoundRobin>> methodWeightMap = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, ConcurrentMap<String, WeightedRoundRobin>> methodWeightMap = new ConcurrentHashMap<>();
 
     protected static class WeightedRoundRobin {
         private int weight;
-        private AtomicLong current = new AtomicLong(0);
+        private final AtomicLong current = new AtomicLong(0);
         private long lastUpdate;
 
         public int getWeight() {

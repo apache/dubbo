@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -34,22 +35,22 @@ public class ReflectConfigMetadataRepository {
     }
 
     public ReflectConfigMetadataRepository registerSpiExtensionType(List<Class<?>> classes) {
-        types.addAll(classes.stream().map(this::buildTypeDescriberWithConstructor).collect(Collectors.toList()));
+        types.addAll(classes.stream().filter(Objects::nonNull).map(this::buildTypeDescriberWithConstructor).collect(Collectors.toList()));
         return this;
     }
 
     public ReflectConfigMetadataRepository registerAdaptiveType(List<Class<?>> classes) {
-        types.addAll(classes.stream().map(this::buildTypeDescriberWithConstructor).collect(Collectors.toList()));
+        types.addAll(classes.stream().filter(Objects::nonNull).map(this::buildTypeDescriberWithConstructor).collect(Collectors.toList()));
         return this;
     }
 
     public ReflectConfigMetadataRepository registerBeanType(List<Class<?>> classes) {
-        types.addAll(classes.stream().map(this::buildTypeDescriberWithConstructor).collect(Collectors.toList()));
+        types.addAll(classes.stream().filter(Objects::nonNull).map(this::buildTypeDescriberWithConstructor).collect(Collectors.toList()));
         return this;
     }
 
     public ReflectConfigMetadataRepository registerConfigType(List<Class<?>> classes) {
-        types.addAll(classes.stream().map(this::buildTypeDescriberWithConstructor).collect(Collectors.toList()));
+        types.addAll(classes.stream().filter(Objects::nonNull).map(this::buildTypeDescriberWithConstructor).collect(Collectors.toList()));
         return this;
     }
 

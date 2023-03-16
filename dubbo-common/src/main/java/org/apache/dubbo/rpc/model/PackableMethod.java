@@ -62,6 +62,11 @@ public interface PackableMethod {
         return getResponsePack().pack(response);
     }
 
+
+    default boolean needWrapper() {
+        return false;
+    }
+
     Pack getRequestPack();
 
     Pack getResponsePack();
