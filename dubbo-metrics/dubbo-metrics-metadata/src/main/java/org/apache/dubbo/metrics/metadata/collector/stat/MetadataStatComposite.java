@@ -49,7 +49,6 @@ public class MetadataStatComposite implements MetricsExport {
 
     public Map<MetadataEvent.ApplicationType, Map<String, AtomicLong>> applicationNumStats = new ConcurrentHashMap<>();
     public Map<MetadataEvent.ServiceType, Map<ServiceKeyMetric, AtomicLong>> serviceNumStats = new ConcurrentHashMap<>();
-    public Map<MetadataEvent.ServiceType, Map<ServiceKeyMetric, AtomicLong>> skStats = new ConcurrentHashMap<>();
     public List<LongContainer<? extends Number>> appRtStats = new ArrayList<>();
 
     public List<LongContainer<? extends Number>> serviceRtStats = new ArrayList<>();
@@ -62,7 +61,7 @@ public class MetadataStatComposite implements MetricsExport {
             applicationNumStats.put(applicationType, new ConcurrentHashMap<>());
         }
         for (MetadataEvent.ServiceType serviceType : MetadataEvent.ServiceType.values()) {
-            skStats.put(serviceType, new ConcurrentHashMap<>());
+            serviceNumStats.put(serviceType, new ConcurrentHashMap<>());
         }
 
         appRtStats.addAll(initStats(OP_TYPE_PUSH, appRtStats));
@@ -95,10 +94,10 @@ public class MetadataStatComposite implements MetricsExport {
     }
 
     public void incrementServiceKey(MetadataEvent.ServiceType type, String applicationName, String serviceKey, int size) {
-        if (!skStats.containsKey(type)) {
+        if (!serviceNumStats.containsKey(type)) {
             return;
         }
-        skStats.get(type).computeIfAbsent(new ServiceKeyMetric(applicationName, serviceKey), k -> new AtomicLong(0L)).getAndAdd(size);
+        serviceNumStats.get(type).computeIfAbsent(new ServiceKeyMetric(applicationName, serviceKey), k -> new AtomicLong(0L)).getAndAdd(size);
     }
 
     public void incrementSize(MetadataEvent.ApplicationType type, String applicationName, int size) {
@@ -157,10 +156,10 @@ public class MetadataStatComposite implements MetricsExport {
     }
 
     @SuppressWarnings({"rawtypes"})
-    public List<GaugeMetricSample> exportSkMetrics() {
+    public List<GaugeMetricSample> exportServiceNumMetrics() {
         List<GaugeMetricSample> list = new ArrayList<>();
-        for (MetadataEvent.ServiceType type : skStats.keySet()) {
-            Map<ServiceKeyMetric, AtomicLong> stringAtomicLongMap = skStats.get(type);
+        for (MetadataEvent.ServiceType type : serviceNumStats.keySet()) {
+            Map<ServiceKeyMetric, AtomicLong> stringAtomicLongMap = serviceNumStats.get(type);
             for (ServiceKeyMetric serviceKeyMetric : stringAtomicLongMap.keySet()) {
                 list.add(new GaugeMetricSample<>(type.getMetricsKey(), serviceKeyMetric.getTags(), MetricsCategory.REGISTRY, stringAtomicLongMap, value -> value.get(serviceKeyMetric).get()));
             }

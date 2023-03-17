@@ -31,7 +31,6 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 
@@ -93,7 +92,7 @@ public class MetadataMetricsCollector implements ApplicationMetricsCollector<Met
         }
         list.addAll(stats.exportNumMetrics());
         list.addAll(stats.exportRtMetrics());
-        list.addAll(stats.exportSkMetrics());
+        list.addAll(stats.exportServiceNumMetrics());
 
         return list;
     }

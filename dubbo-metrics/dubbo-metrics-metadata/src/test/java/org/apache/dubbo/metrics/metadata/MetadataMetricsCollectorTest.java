@@ -171,25 +171,27 @@ class MetadataMetricsCollectorTest {
         MetadataMetricsCollector collector = applicationModel.getBeanFactory().getOrRegisterBean(MetadataMetricsCollector.class);
         collector.setCollectEnabled(true);
 
-        eventMulticaster.publishEvent(new MetadataEvent.StoreProviderMetadataEvent(applicationModel, timePair));
+        String serviceKey = "store.provider.test";
+        eventMulticaster.publishEvent(new MetadataEvent.StoreProviderMetadataEvent(applicationModel, timePair, serviceKey));
         List<MetricSample> metricSamples = collector.collect();
 
         // push success +1
         Assertions.assertEquals(1, metricSamples.size());
         Assertions.assertTrue(metricSamples.get(0) instanceof GaugeMetricSample);
         Assertions.assertEquals(metricSamples.get(0).getName(), MetricsKey.STORE_PROVIDER_METADATA.getName());
+        Assertions.assertEquals(metricSamples.get(0).getTags().get("interface"), serviceKey);
 
-        eventMulticaster.publishFinishEvent(new MetadataEvent.StoreProviderMetadataEvent(applicationModel, timePair));
+        eventMulticaster.publishFinishEvent(new MetadataEvent.StoreProviderMetadataEvent(applicationModel, timePair, serviceKey));
         // push finish rt +1
         metricSamples = collector.collect();
         //num(total+success) + rt(5) = 7
         Assertions.assertEquals(7, metricSamples.size());
         long c1 = timePair.calc();
         TimePair lastTimePair = TimePair.start();
-        eventMulticaster.publishEvent(new MetadataEvent.StoreProviderMetadataEvent(applicationModel, lastTimePair));
+        eventMulticaster.publishEvent(new MetadataEvent.StoreProviderMetadataEvent(applicationModel, lastTimePair, serviceKey));
         Thread.sleep(50);
         // push error rt +1
-        eventMulticaster.publishErrorEvent(new MetadataEvent.StoreProviderMetadataEvent(applicationModel, lastTimePair));
+        eventMulticaster.publishErrorEvent(new MetadataEvent.StoreProviderMetadataEvent(applicationModel, lastTimePair, serviceKey));
         long c2 = lastTimePair.calc();
         metricSamples = collector.collect();
 

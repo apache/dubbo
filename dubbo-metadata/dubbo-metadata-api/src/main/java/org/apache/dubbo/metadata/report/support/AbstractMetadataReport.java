@@ -269,6 +269,10 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         }
     }
 
+    public String getInterfaceMethodName() {
+        return this.getClass().getName() + Thread.currentThread().getStackTrace()[1].getMethodName();
+    }
+
     @Override
     public void storeProviderMetadata(MetadataIdentifier providerMetadataIdentifier, ServiceDefinition serviceDefinition) {
         if (syncReport) {
@@ -281,7 +285,8 @@ public abstract class AbstractMetadataReport implements MetadataReport {
     private void storeProviderMetadataTask(MetadataIdentifier providerMetadataIdentifier, ServiceDefinition serviceDefinition) {
         TimePair timePair = TimePair.start();
         GlobalMetricsEventMulticaster eventMulticaster = applicationModel.getBeanFactory().getBean(GlobalMetricsEventMulticaster.class);
-        eventMulticaster.publishEvent(new MetadataEvent.StoreProviderMetadataEvent(applicationModel, timePair));
+        String interfaceMethodName = getInterfaceMethodName();
+        eventMulticaster.publishEvent(new MetadataEvent.StoreProviderMetadataEvent(applicationModel, timePair, interfaceMethodName));
         try {
             if (logger.isInfoEnabled()) {
                 logger.info("store provider metadata. Identifier : " + providerMetadataIdentifier + "; definition: " + serviceDefinition);
@@ -297,10 +302,10 @@ public abstract class AbstractMetadataReport implements MetadataReport {
             metadataReportRetry.startRetryTask();
             logger.error(PROXY_FAILED_EXPORT_SERVICE, "", "", "Failed to put provider metadata " + providerMetadataIdentifier + " in  " + serviceDefinition + ", cause: " + e.getMessage(), e);
             // fail
-            eventMulticaster.publishErrorEvent(new MetadataEvent.StoreProviderMetadataEvent(applicationModel, timePair));
+            eventMulticaster.publishErrorEvent(new MetadataEvent.StoreProviderMetadataEvent(applicationModel, timePair, interfaceMethodName));
             return;
         }
-        eventMulticaster.publishFinishEvent(new MetadataEvent.StoreProviderMetadataEvent(applicationModel, timePair));
+        eventMulticaster.publishFinishEvent(new MetadataEvent.StoreProviderMetadataEvent(applicationModel, timePair, interfaceMethodName));
     }
 
     @Override
