@@ -30,7 +30,7 @@ class TimeWindowCounterTest {
         counter.decrement();
         Assertions.assertEquals(counter.get(), 0);
         counter.increment();
-        Thread.sleep(1000);
+        Thread.sleep(1001);
         Assertions.assertEquals(counter.get(), 0);
         Assertions.assertTrue(counter.bucketLivedSeconds() < 1);
     }

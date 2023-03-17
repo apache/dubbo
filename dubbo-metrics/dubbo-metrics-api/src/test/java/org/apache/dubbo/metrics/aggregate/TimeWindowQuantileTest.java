@@ -31,7 +31,7 @@ class TimeWindowQuantileTest {
 
         Assertions.assertEquals(quantile.quantile(0.01), 2);
         Assertions.assertEquals(quantile.quantile(0.99), 100);
-        Thread.sleep(1000);
+        Thread.sleep(1001);
         Assertions.assertEquals(quantile.quantile(0.99), Double.NaN);
     }
 }
