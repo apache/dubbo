@@ -154,18 +154,24 @@ public class ScopeClusterInvoker<T> implements ClusterInvoker<T>, ExporterChange
     private boolean isInjvmExported() {
         Boolean localInvoke = RpcContext.getServiceContext().getLocalInvoke();
         boolean isExportedValue = isExported.get();
-        if (isExportedValue && (localInvoke == null || localInvoke)) {
+        boolean local = (localInvoke != null && localInvoke);
+        // Determine whether this call is local
+        if (isExportedValue && local) {
             return true;
         }
 
-        if (!injvmFlag) {
+        // Determine whether this call is remote
+        if (localInvoke != null && !localInvoke) {
             return false;
         }
+
+        // When calling locally, determine whether it does not meet the requirements
         if (!isExportedValue && (SCOPE_LOCAL.equalsIgnoreCase(getUrl().getParameter(SCOPE_KEY)) ||
-            Boolean.TRUE.toString().equalsIgnoreCase(getUrl().getParameter(LOCAL_PROTOCOL)) || (localInvoke != null && localInvoke) )) {
+            Boolean.TRUE.toString().equalsIgnoreCase(getUrl().getParameter(LOCAL_PROTOCOL))|| local)) {
             throw new RpcException("Local service has not been exposed yet!");
         }
-        return isExportedValue;
+
+        return isExportedValue && injvmFlag;
     }
 
 
