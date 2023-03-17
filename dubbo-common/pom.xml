@@ -90,7 +90,6 @@
         <dependency>
             <groupId>com.alibaba.fastjson2</groupId>
             <artifactId>fastjson2</artifactId>
-            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>
