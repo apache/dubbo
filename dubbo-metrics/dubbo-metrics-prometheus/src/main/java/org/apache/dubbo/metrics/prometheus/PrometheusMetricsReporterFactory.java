@@ -43,7 +43,7 @@ public class PrometheusMetricsReporterFactory extends AbstractMetricsReporterFac
             return new PrometheusMetricsReporter(url, getApplicationModel());
         } catch (NoClassDefFoundError ncde) {
             String msg = ncde.getMessage();
-            if (messageContainsPrometheusMetricsReporter(msg)) {
+            if (dependenciesNotFound(msg)) {
                 logger.error(INTERNAL_ERROR, "", "", "Failed to load class \"org.apache.dubbo.metrics.prometheus.PrometheusMetricsReporter\".", ncde);
                 logger.error(INTERNAL_ERROR, "", "", "Defaulting to no-operation (NOP) metricsReporter implementation", ncde);
                 logger.error(INTERNAL_ERROR, "", "", "Introduce the micrometer-core package to use the ability of metrics", ncde);
@@ -55,11 +55,13 @@ public class PrometheusMetricsReporterFactory extends AbstractMetricsReporterFac
         }
     }
 
-    private static boolean messageContainsPrometheusMetricsReporter(String msg) {
-        if (msg == null)
+    private static boolean dependenciesNotFound(String msg) {
+        if (msg == null) {
             return false;
-        if (msg.contains("io/micrometer/core/instrument/composite/CompositeMeterRegistry"))
+        }
+        if (msg.contains("io/micrometer/core/instrument/composite/CompositeMeterRegistry")) {
             return true;
+        }
         return msg.contains("io.micrometer.core.instrument.composite.CompositeMeterRegistry");
     }
 }
