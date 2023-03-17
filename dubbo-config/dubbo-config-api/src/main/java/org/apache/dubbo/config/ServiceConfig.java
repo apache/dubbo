@@ -36,13 +36,18 @@ import org.apache.dubbo.config.invoker.DelegateProviderMetaDataInvoker;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.metadata.ServiceNameMapping;
+import org.apache.dubbo.metrics.event.GlobalMetricsEventMulticaster;
+import org.apache.dubbo.metrics.model.TimePair;
+import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.registry.client.metadata.MetadataUtils;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
+import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.ServerService;
 import org.apache.dubbo.rpc.cluster.ConfiguratorFactory;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ModuleServiceRepository;
 import org.apache.dubbo.rpc.model.ProviderModel;
@@ -421,6 +426,17 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
         List<URL> registryURLs = ConfigValidationUtils.loadRegistries(this, true);
 
+        TimePair timePair = TimePair.start();
+        ApplicationModel applicationModel = module.getApplicationModel();
+        try {
+            applicationModel.getBeanFactory().getBean(GlobalMetricsEventMulticaster.class);
+        } catch (Throwable t) {
+            applicationModel = ApplicationModel.defaultModel();
+        }
+        GlobalMetricsEventMulticaster eventMulticaster = applicationModel.getBeanFactory().getBean(GlobalMetricsEventMulticaster.class);
+        int size = protocols.size() * registryURLs.size();
+        eventMulticaster.publishEvent(new RegistryEvent.MetricsServiceRegisterEvent(applicationModel, timePair, getUniqueServiceName(), size));
+
         for (ProtocolConfig protocolConfig : protocols) {
             String pathKey = URL.buildKey(getContextPath(protocolConfig)
                 .map(p -> p + "/" + path)
@@ -430,9 +446,14 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                 // In case user specified path, register service one more time to map it to path.
                 repository.registerService(pathKey, interfaceClass);
             }
-            doExportUrlsFor1Protocol(protocolConfig, registryURLs);
+            try {
+                doExportUrlsFor1Protocol(protocolConfig, registryURLs);
+            } catch (RpcException e) {
+                eventMulticaster.publishErrorEvent(new RegistryEvent.MetricsServiceRegisterEvent(applicationModel, timePair, getUniqueServiceName(), registryURLs.size()));
+                throw e;
+            }
         }
-
+        eventMulticaster.publishFinishEvent(new RegistryEvent.MetricsServiceRegisterEvent(applicationModel, timePair, getUniqueServiceName(), size));
         providerModel.setServiceUrls(urls);
     }
 
@@ -665,8 +686,8 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                     protocols.addAll(Arrays.asList(extProtocols));
                 }
                 // export extra protocols
-                for(String protocol : protocols) {
-                    if(StringUtils.isNotBlank(protocol)){
+                for (String protocol : protocols) {
+                    if (StringUtils.isNotBlank(protocol)) {
                         URL localUrl = URLBuilder.from(url).
                             setProtocol(protocol).
                             build();
