@@ -268,11 +268,6 @@ public abstract class AbstractMetadataReport implements MetadataReport {
             doSaveProperties(version);
         }
     }
-
-    public String getInterfaceMethodName() {
-        return this.getClass().getName() + Thread.currentThread().getStackTrace()[1].getMethodName();
-    }
-
     @Override
     public void storeProviderMetadata(MetadataIdentifier providerMetadataIdentifier, ServiceDefinition serviceDefinition) {
         if (syncReport) {
@@ -285,7 +280,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
     private void storeProviderMetadataTask(MetadataIdentifier providerMetadataIdentifier, ServiceDefinition serviceDefinition) {
         TimePair timePair = TimePair.start();
         GlobalMetricsEventMulticaster eventMulticaster = applicationModel.getBeanFactory().getBean(GlobalMetricsEventMulticaster.class);
-        String interfaceMethodName = getInterfaceMethodName();
+        String interfaceMethodName = this.getClass().getName() + Thread.currentThread().getStackTrace()[1].getMethodName();
         eventMulticaster.publishEvent(new MetadataEvent.StoreProviderMetadataEvent(applicationModel, timePair, interfaceMethodName));
         try {
             if (logger.isInfoEnabled()) {
