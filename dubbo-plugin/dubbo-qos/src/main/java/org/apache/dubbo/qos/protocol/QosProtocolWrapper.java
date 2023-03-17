@@ -21,7 +21,7 @@ import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.qos.permission.PermissionLevel;
+import org.apache.dubbo.qos.api.PermissionLevel;
 import org.apache.dubbo.qos.common.QosConstants;
 import org.apache.dubbo.qos.pu.QosWireProtocol;
 import org.apache.dubbo.qos.server.Server;

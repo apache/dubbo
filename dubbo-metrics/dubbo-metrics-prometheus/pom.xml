@@ -56,7 +56,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-qos</artifactId>
+            <artifactId>dubbo-qos-api</artifactId>
             <version>${project.parent.version}</version>
             <scope>compile</scope>
         </dependency>
