@@ -17,9 +17,9 @@
 package org.apache.dubbo.qos.command.impl;
 
 import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.qos.command.BaseCommand;
-import org.apache.dubbo.qos.command.CommandContext;
-import org.apache.dubbo.qos.command.annotation.Cmd;
+import org.apache.dubbo.qos.api.BaseCommand;
+import org.apache.dubbo.qos.api.CommandContext;
+import org.apache.dubbo.qos.api.Cmd;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.client.migration.MigrationInvoker;
 import org.apache.dubbo.rpc.cluster.Directory;
