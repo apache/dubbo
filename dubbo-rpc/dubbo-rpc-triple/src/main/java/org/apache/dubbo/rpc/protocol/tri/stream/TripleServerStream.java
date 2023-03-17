@@ -157,8 +157,8 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
 
 
     @Override
-    public ChannelFuture complete(TriRpcStatus status, Map<String, Object> attachments) {
-        Http2Headers trailers = getTrailers(status, attachments);
+    public ChannelFuture complete(TriRpcStatus status, Map<String, Object> attachments, boolean isNeedReturnException, int exceptionCode) {
+        Http2Headers trailers = getTrailers(status, attachments, isNeedReturnException, exceptionCode);
         return sendTrailers(trailers);
     }
 
@@ -183,7 +183,7 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
             });
     }
 
-    private Http2Headers getTrailers(TriRpcStatus rpcStatus, Map<String, Object> attachments) {
+    private Http2Headers getTrailers(TriRpcStatus rpcStatus, Map<String, Object> attachments, boolean isNeedReturnException, int exceptionCode) {
         DefaultHttp2Headers headers = new DefaultHttp2Headers();
         if (!headerSent) {
             headers.status(HttpResponseStatus.OK.codeAsText());
@@ -191,6 +191,9 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
         }
         StreamUtils.convertAttachment(headers, attachments, TripleProtocol.CONVERT_NO_LOWER_HEADER);
         headers.set(TripleHeaderEnum.STATUS_KEY.getHeader(), String.valueOf(rpcStatus.code.code));
+        if (isNeedReturnException) {
+            headers.set(TripleHeaderEnum.TRI_HEADER_EXCEPTION_CODE.getHeader(), String.valueOf(exceptionCode));
+        }
         if (rpcStatus.isOk()) {
             return headers;
         }

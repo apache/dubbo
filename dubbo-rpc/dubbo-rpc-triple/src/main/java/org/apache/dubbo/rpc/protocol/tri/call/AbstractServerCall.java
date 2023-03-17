@@ -24,6 +24,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.CancellationContext;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcContext;
+import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -78,6 +79,26 @@ public abstract class AbstractServerCall implements ServerCall, ServerStream.Lis
     protected MethodDescriptor methodDescriptor;
     protected PackableMethod packableMethod;
     protected Map<String, Object> requestMetadata;
+
+    private Integer exceptionCode;
+
+    public Integer getExceptionCode() {
+        return exceptionCode;
+    }
+
+    public void setExceptionCode(int exceptionCode) {
+        this.exceptionCode = exceptionCode;
+    }
+
+    private boolean isNeedReturnException;
+
+    public boolean isNeedReturnException() {
+        return isNeedReturnException;
+    }
+
+    public void setNeedReturnException(boolean needReturnException) {
+        isNeedReturnException = needReturnException;
+    }
 
     AbstractServerCall(Invoker<?> invoker,
                        ServerStream stream,
@@ -142,7 +163,11 @@ public abstract class AbstractServerCall implements ServerCall, ServerStream.Lis
         }
         final byte[] data;
         try {
-            data = packableMethod.packResponse(message);
+            if (message instanceof Exception) {
+                data = packableMethod.packResponse(new RpcException((Exception) message));
+            } else  {
+                data = packableMethod.packResponse(message);
+            }
         } catch (Exception e) {
             close(TriRpcStatus.INTERNAL.withDescription("Serialize response failed")
                 .withCause(e), null);
@@ -323,7 +348,7 @@ public abstract class AbstractServerCall implements ServerCall, ServerStream.Lis
             return;
         }
         closed = true;
-        stream.complete(status, attachments);
+        stream.complete(status, attachments, isNeedReturnException, exceptionCode);
     }
 
     protected Long parseTimeoutToMills(String timeoutVal) {
@@ -361,7 +386,7 @@ public abstract class AbstractServerCall implements ServerCall, ServerStream.Lis
             return;
         }
         closed = true;
-        stream.complete(status, null);
+        stream.complete(status, null, false, 0);
         LOGGER.error(PROTOCOL_FAILED_REQUEST, "", "", "Triple request error: service=" + serviceName + " method" + methodName,
             status.asException());
     }
