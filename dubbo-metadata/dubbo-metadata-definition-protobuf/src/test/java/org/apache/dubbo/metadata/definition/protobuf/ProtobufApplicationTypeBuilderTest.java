@@ -36,7 +36,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 /**
  * 2019-07-01
  */
-class ProtobufTypeBuilderTest {
+class ProtobufApplicationTypeBuilderTest {
     @Test
     void testProtobufBuilder() {
         TypeDefinitionBuilder.initBuilders(FrameworkModel.defaultModel());

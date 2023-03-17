@@ -20,7 +20,7 @@ package org.apache.dubbo.metrics.metadata.event;
 import org.apache.dubbo.metrics.event.MetricsEvent;
 import org.apache.dubbo.metrics.listener.MetricsLifeListener;
 
-import static org.apache.dubbo.metrics.metadata.collector.stat.MetadataStatComposite.OP_TYPE_STORE_PROVIDER;
+import static org.apache.dubbo.metrics.metadata.collector.stat.MetadataStatComposite.OP_TYPE_STORE_PROVIDER_INTERFACE;
 
 public class StoreProviderMetadataListener implements MetricsLifeListener<MetadataEvent.StoreProviderMetadataEvent> {
 
@@ -32,18 +32,18 @@ public class StoreProviderMetadataListener implements MetricsLifeListener<Metada
 
     @Override
     public void onEvent(MetadataEvent.StoreProviderMetadataEvent event) {
-        event.getCollector().increment(event.getSource().getApplicationName(), MetadataEvent.Type.S_P_TOTAL);
+        event.getCollector().increment(event.getSource().getApplicationName(), MetadataEvent.ServiceType.S_P_TOTAL);
     }
 
     @Override
     public void onEventFinish(MetadataEvent.StoreProviderMetadataEvent event) {
-        event.getCollector().increment(event.getSource().getApplicationName(), MetadataEvent.Type.S_P_SUCCEED);
-        event.getCollector().addRT(event.getSource().getApplicationName(), OP_TYPE_STORE_PROVIDER, event.getTimePair().calc());
+        event.getCollector().increment(event.getSource().getApplicationName(), MetadataEvent.ServiceType.S_P_SUCCEED);
+        event.getCollector().addServiceKeyRT(event.getSource().getApplicationName(),event.getSource(), OP_TYPE_STORE_PROVIDER_INTERFACE, event.getTimePair().calc());
     }
 
     @Override
     public void onEventError(MetadataEvent.StoreProviderMetadataEvent event) {
-        event.getCollector().increment(event.getSource().getApplicationName(), MetadataEvent.Type.S_P_FAILED);
-        event.getCollector().addRT(event.getSource().getApplicationName(), OP_TYPE_STORE_PROVIDER, event.getTimePair().calc());
+        event.getCollector().increment(event.getSource().getApplicationName(), MetadataEvent.ServiceType.S_P_FAILED);
+        event.getCollector().addServiceKeyRT(event.getSource().getApplicationName(), OP_TYPE_STORE_PROVIDER_INTERFACE, event.getTimePair().calc());
     }
 }

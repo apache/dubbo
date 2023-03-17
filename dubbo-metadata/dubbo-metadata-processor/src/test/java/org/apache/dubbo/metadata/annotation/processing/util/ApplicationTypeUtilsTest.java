@@ -82,7 +82,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  * @since 2.7.6
  */
-class TypeUtilsTest extends AbstractAnnotationProcessingTest {
+class ApplicationTypeUtilsTest extends AbstractAnnotationProcessingTest {
 
     private TypeElement testType;
 

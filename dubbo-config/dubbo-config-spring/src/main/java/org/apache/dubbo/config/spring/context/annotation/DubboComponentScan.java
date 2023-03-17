@@ -63,7 +63,7 @@ public @interface DubboComponentScan {
     String[] basePackages() default {};
 
     /**
-     * Type-safe alternative to {@link #basePackages()} for specifying the packages to
+     * ApplicationType-safe alternative to {@link #basePackages()} for specifying the packages to
      * scan for annotated @Service classes. The package of each class specified will be
      * scanned.
      *

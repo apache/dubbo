@@ -23,7 +23,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 /**
- * {@link Map} Type model
+ * {@link Map} ApplicationType model
  *
  * @since 2.7.6
  */

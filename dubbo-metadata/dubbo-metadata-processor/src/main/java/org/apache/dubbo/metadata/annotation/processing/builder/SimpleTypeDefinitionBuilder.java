@@ -27,7 +27,7 @@ import static org.apache.dubbo.metadata.annotation.processing.util.TypeUtils.isS
 
 
 /**
- * {@link TypeBuilder} for {@link TypeUtils#SIMPLE_TYPES Java Simple Type}
+ * {@link TypeBuilder} for {@link TypeUtils#SIMPLE_TYPES Java Simple ApplicationType}
  *
  * @since 2.7.6
  */

@@ -41,7 +41,7 @@ import java.util.stream.Collectors;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_APPLICATION_NAME;
 import static org.apache.dubbo.metrics.metadata.collector.stat.MetadataStatComposite.OP_TYPE_PUSH;
 import static org.apache.dubbo.metrics.metadata.collector.stat.MetadataStatComposite.OP_TYPE_SUBSCRIBE;
-import static org.apache.dubbo.metrics.metadata.collector.stat.MetadataStatComposite.OP_TYPE_STORE_PROVIDER;
+import static org.apache.dubbo.metrics.metadata.collector.stat.MetadataStatComposite.OP_TYPE_STORE_PROVIDER_INTERFACE;
 
 
 class MetadataMetricsCollectorTest {
@@ -205,11 +205,11 @@ class MetadataMetricsCollectorTest {
         @SuppressWarnings("rawtypes")
         Map<String, Long> sampleMap = metricSamples.stream().collect(Collectors.toMap(MetricSample::getName, k -> ((GaugeMetricSample) k).applyAsLong()));
 
-        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_STORE_PROVIDER, MetricsKey.METRIC_RT_LAST).targetKey()), lastTimePair.calc());
-        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_STORE_PROVIDER, MetricsKey.METRIC_RT_MIN).targetKey()), Math.min(c1, c2));
-        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_STORE_PROVIDER, MetricsKey.METRIC_RT_MAX).targetKey()), Math.max(c1, c2));
-        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_STORE_PROVIDER, MetricsKey.METRIC_RT_AVG).targetKey()), (c1 + c2) / 2);
-        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_STORE_PROVIDER, MetricsKey.METRIC_RT_SUM).targetKey()), c1 + c2);
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_STORE_PROVIDER_INTERFACE, MetricsKey.METRIC_RT_LAST).targetKey()), lastTimePair.calc());
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_STORE_PROVIDER_INTERFACE, MetricsKey.METRIC_RT_MIN).targetKey()), Math.min(c1, c2));
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_STORE_PROVIDER_INTERFACE, MetricsKey.METRIC_RT_MAX).targetKey()), Math.max(c1, c2));
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_STORE_PROVIDER_INTERFACE, MetricsKey.METRIC_RT_AVG).targetKey()), (c1 + c2) / 2);
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_STORE_PROVIDER_INTERFACE, MetricsKey.METRIC_RT_SUM).targetKey()), c1 + c2);
     }
 
 }

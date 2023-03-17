@@ -25,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  *
  * @since 2.7.8
  */
-class KeyTypeEnumTest {
+class KeyApplicationTypeEnumTest {
 
     /**
      * {@link KeyTypeEnum#build(String, String...)}

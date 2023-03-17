@@ -17,7 +17,7 @@
 package org.apache.dubbo.metadata.annotation.processing.model;
 
 /**
- * Primitive Type model
+ * Primitive ApplicationType model
  *
  * @since 2.7.6
  */

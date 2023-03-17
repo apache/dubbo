@@ -21,7 +21,7 @@ import java.math.BigInteger;
 import java.util.Date;
 
 /**
- * Simple Type model
+ * Simple ApplicationType model
  *
  * @since 2.7.6
  */

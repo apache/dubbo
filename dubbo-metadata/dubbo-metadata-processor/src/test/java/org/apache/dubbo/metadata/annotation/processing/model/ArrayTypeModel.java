@@ -17,7 +17,7 @@
 package org.apache.dubbo.metadata.annotation.processing.model;
 
 /**
- * Array Type Model
+ * Array ApplicationType Model
  *
  * @since 2.7.6
  */

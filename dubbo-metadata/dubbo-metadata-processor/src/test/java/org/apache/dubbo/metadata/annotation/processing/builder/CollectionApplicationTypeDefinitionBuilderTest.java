@@ -35,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  * @since 2.7.6
  */
-class CollectionTypeDefinitionBuilderTest extends AbstractAnnotationProcessingTest {
+class CollectionApplicationTypeDefinitionBuilderTest extends AbstractAnnotationProcessingTest {
 
     private CollectionTypeDefinitionBuilder builder;
 

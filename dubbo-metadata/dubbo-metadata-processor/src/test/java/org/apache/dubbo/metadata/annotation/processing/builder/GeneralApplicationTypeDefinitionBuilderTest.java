@@ -36,7 +36,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  * @since 2.7.6
  */
-class GeneralTypeDefinitionBuilderTest extends AbstractAnnotationProcessingTest {
+class GeneralApplicationTypeDefinitionBuilderTest extends AbstractAnnotationProcessingTest {
 
     private GeneralTypeDefinitionBuilder builder;
 
