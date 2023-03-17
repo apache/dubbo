@@ -49,6 +49,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
+import static org.apache.dubbo.rpc.Constants.SCOPE_LOCAL;
 import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.SCOPE_KEY;
 
@@ -148,7 +149,7 @@ class ScopeClusterInvokerTest {
         URL url = URL.valueOf("remote://1.2.3.4/" + DemoService.class.getName());
         url = url.addParameter(REFER_KEY,
             URL.encode(PATH_KEY + "=" + DemoService.class.getName()));
-        url = url.addParameter(SCOPE_KEY, "local");
+        url = url.addParameter(SCOPE_KEY, SCOPE_LOCAL);
         url = url.setScopeModel(ApplicationModel.defaultModel().getDefaultModule());
 
         URL injvmUrl = URL.valueOf("injvm://127.0.0.1/TestService")

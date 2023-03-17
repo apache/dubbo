@@ -25,6 +25,7 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.Result;
+import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.cluster.ClusterInvoker;
@@ -89,11 +90,10 @@ public class ScopeClusterInvoker<T> implements ClusterInvoker<T>, ExporterChange
         } else if (isInjvm == null) {
             injvmFlag = isNotRemoteOrGeneric();
         }
-        if (injvmFlag) {
-            protocolSPI = getUrl().getApplicationModel().getExtensionLoader(Protocol.class).getAdaptiveExtension();
-            injvmExporterListener = getUrl().getOrDefaultFrameworkModel().getBeanFactory().getBean(InjvmExporterListener.class);
-            injvmExporterListener.addExporterChangeListener(this, getUrl().getServiceKey());
-        }
+
+        protocolSPI = getUrl().getApplicationModel().getExtensionLoader(Protocol.class).getAdaptiveExtension();
+        injvmExporterListener = getUrl().getOrDefaultFrameworkModel().getBeanFactory().getBean(InjvmExporterListener.class);
+        injvmExporterListener.addExporterChangeListener(this, getUrl().getServiceKey());
     }
 
     @Override
@@ -140,7 +140,7 @@ public class ScopeClusterInvoker<T> implements ClusterInvoker<T>, ExporterChange
         if (peerFlag) {
             return invoker.invoke(invocation);
         }
-        if (injvmFlag && isInjvmExported()) {
+        if (isInjvmExported() && injvmFlag) {
             return injvmInvoker.invoke(invocation);
         }
         return invoker.invoke(invocation);
@@ -152,8 +152,11 @@ public class ScopeClusterInvoker<T> implements ClusterInvoker<T>, ExporterChange
     }
 
     private boolean isInjvmExported() {
+        Boolean localInvoke = RpcContext.getServiceContext().getLocalInvoke();
+        injvmFlag = localInvoke == null || localInvoke;
         if (!isExported.get() && (SCOPE_LOCAL.equalsIgnoreCase(getUrl().getParameter(SCOPE_KEY)) ||
-            Boolean.TRUE.toString().equalsIgnoreCase(getUrl().getParameter(LOCAL_PROTOCOL)))) {
+            Boolean.TRUE.toString().equalsIgnoreCase(getUrl().getParameter(LOCAL_PROTOCOL))
+            || (localInvoke != null && localInvoke))) {
             throw new RpcException("Local service has not been exposed yet!");
         }
         return isExported.get();
