@@ -91,7 +91,7 @@ public enum MetricsKey {
     METADATA_SUBSCRIBE_METRIC_NUM("dubbo.metadata.subscribe.num.total", "Total Metadata Subscribe Num"),
     METADATA_SUBSCRIBE_METRIC_NUM_SUCCEED("dubbo.metadata.subscribe.num.succeed.total", "Succeed Metadata Subscribe Num"),
     METADATA_SUBSCRIBE_METRIC_NUM_FAILED("dubbo.metadata.subscribe.num.failed.total", "Failed Metadata Subscribe Num"),
-
+    METADATA_GIT_COMMITID_METRIC("git.commit.id","Git Commit Id Metrics");
     // consumer metrics key
     ;
 
