@@ -15,9 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.metrics.registry.collector.stat;
-
-import org.apache.dubbo.metrics.model.Metric;
+package org.apache.dubbo.metrics.model;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -41,6 +39,7 @@ public class ServiceKeyMetric implements Metric {
         this.serviceKey = serviceKey;
     }
 
+    @Override
     public Map<String, String> getTags() {
         Map<String, String> tags = new HashMap<>();
         tags.put(TAG_IP, getLocalHost());
