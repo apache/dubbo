@@ -37,8 +37,8 @@ public class MetadataStatCompositeTest {
     void testInit() {
         MetadataStatComposite statComposite = new MetadataStatComposite();
         Assertions.assertEquals(statComposite.applicationNumStats.size(), MetadataEvent.ApplicationType.values().length);
-        //(rt)5 * (push,subscribe,storeProvider)3
-        Assertions.assertEquals(5 * 3, statComposite.appRtStats.size());
+        //(rt)5 * (push,subscribe)2
+        Assertions.assertEquals(5 * 2, statComposite.appRtStats.size());
         statComposite.applicationNumStats.values().forEach((v ->
             Assertions.assertEquals(v, new ConcurrentHashMap<>())));
         statComposite.appRtStats.forEach(rtContainer ->
