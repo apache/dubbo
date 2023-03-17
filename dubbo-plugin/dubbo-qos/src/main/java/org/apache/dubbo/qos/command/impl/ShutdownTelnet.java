@@ -31,7 +31,7 @@ import java.util.List;
 })
 public class ShutdownTelnet implements BaseCommand {
 
-    private FrameworkModel frameworkModel;
+    private final FrameworkModel frameworkModel;
 
     public ShutdownTelnet(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;

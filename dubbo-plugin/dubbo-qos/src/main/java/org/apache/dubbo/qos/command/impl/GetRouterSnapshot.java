@@ -33,7 +33,7 @@ import java.util.Map;
 
 @Cmd(name = "getRouterSnapshot", summary = "Get State Router Snapshot.", example = "getRouterSnapshot xx.xx.xxx.service")
 public class GetRouterSnapshot implements BaseCommand {
-    private FrameworkModel frameworkModel;
+    private final FrameworkModel frameworkModel;
 
     public GetRouterSnapshot(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
