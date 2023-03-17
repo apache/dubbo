@@ -38,7 +38,7 @@ import java.util.Optional;
  * Registry implementation of {@link MetricsCollector}
  */
 @Activate
-public class MetadataMetricsCollector implements ApplicationMetricsCollector<MetadataEvent.Type, MetadataEvent> {
+public class MetadataMetricsCollector implements ApplicationMetricsCollector<MetadataEvent.ApplicationType, MetadataEvent> {
 
     private Boolean collectEnabled = null;
     private final MetadataStatComposite stats;
@@ -67,7 +67,7 @@ public class MetadataMetricsCollector implements ApplicationMetricsCollector<Met
     }
 
     @Override
-    public void increment(String applicationName, MetadataEvent.Type registryType) {
+    public void increment(String applicationName, MetadataEvent.ApplicationType registryType) {
         this.stats.increment(registryType, applicationName);
     }
 

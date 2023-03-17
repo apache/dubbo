@@ -56,7 +56,7 @@ public class MetadataEvent extends MetricsEvent implements TimeCounter {
         return timePair;
     }
 
-    public enum Type {
+    public enum ApplicationType {
         P_TOTAL(MetricsKey.METADATA_PUSH_METRIC_NUM),
         P_SUCCEED(MetricsKey.METADATA_PUSH_METRIC_NUM_SUCCEED),
         P_FAILED(MetricsKey.METADATA_PUSH_METRIC_NUM_FAILED),
@@ -69,11 +69,11 @@ public class MetadataEvent extends MetricsEvent implements TimeCounter {
         private final MetricsKey metricsKey;
         private final boolean isIncrement;
 
-        Type(MetricsKey metricsKey) {
+        ApplicationType(MetricsKey metricsKey) {
             this(metricsKey, true);
         }
 
-        Type(MetricsKey metricsKey, boolean isIncrement) {
+        ApplicationType(MetricsKey metricsKey, boolean isIncrement) {
             this.metricsKey = metricsKey;
             this.isIncrement = isIncrement;
         }
