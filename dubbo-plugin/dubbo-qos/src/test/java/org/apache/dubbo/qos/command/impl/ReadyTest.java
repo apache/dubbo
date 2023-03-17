@@ -22,7 +22,7 @@ import org.apache.dubbo.common.deploy.ModuleDeployer;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.context.ConfigManager;
-import org.apache.dubbo.qos.command.CommandContext;
+import org.apache.dubbo.qos.api.CommandContext;
 import org.apache.dubbo.qos.probe.ReadinessProbe;
 import org.apache.dubbo.qos.probe.impl.DeployerReadinessProbe;
 import org.apache.dubbo.qos.probe.impl.ProviderReadinessProbe;

@@ -51,6 +51,11 @@ public interface Invoker<T> extends org.apache.dubbo.rpc.Invoker<T> {
         }
 
         @Override
+        public org.apache.dubbo.rpc.Result invoke(org.apache.dubbo.rpc.Invocation invocation) throws org.apache.dubbo.rpc.RpcException {
+            return new Result.CompatibleResult(invoker.invoke(invocation));
+        }
+        
+        @Override
         public Result invoke(Invocation invocation) throws RpcException {
             return new Result.CompatibleResult(invoker.invoke(invocation.getOriginal()));
         }
