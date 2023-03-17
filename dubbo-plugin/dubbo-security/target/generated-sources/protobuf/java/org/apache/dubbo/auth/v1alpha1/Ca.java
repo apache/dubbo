@@ -57,7 +57,7 @@ public final class Ca {
     internal_static_org_apache_dubbo_auth_v1alpha1_DubboCertificateRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_org_apache_dubbo_auth_v1alpha1_DubboCertificateRequest_descriptor,
-        new java.lang.String[] { "Csr", "ApplicationType", "Metadata", });
+        new java.lang.String[] { "Csr", "Type", "Metadata", });
     internal_static_org_apache_dubbo_auth_v1alpha1_DubboCertificateResponse_descriptor =
       getDescriptor().getMessageTypes().get(1);
     internal_static_org_apache_dubbo_auth_v1alpha1_DubboCertificateResponse_fieldAccessorTable = new

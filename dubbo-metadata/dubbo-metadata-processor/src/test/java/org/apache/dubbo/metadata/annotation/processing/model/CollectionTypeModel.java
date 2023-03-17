@@ -23,7 +23,7 @@ import java.util.Queue;
 import java.util.Set;
 
 /**
- * {@link Collection} ApplicationType Model
+ * {@link Collection} Type Model
  *
  * @since 2.7.6
  */

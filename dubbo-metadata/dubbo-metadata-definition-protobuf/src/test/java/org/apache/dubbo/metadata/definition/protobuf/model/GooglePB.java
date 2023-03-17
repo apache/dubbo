@@ -3873,7 +3873,7 @@ public final class GooglePB {
     internal_static_org_apache_dubbo_metadata_definition_protobuf_model_PhoneNumber_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_org_apache_dubbo_metadata_definition_protobuf_model_PhoneNumber_descriptor,
-        new java.lang.String[] { "Number", "ApplicationType", });
+        new java.lang.String[] { "Number", "Type", });
   }
 
   // @@protoc_insertion_point(outer_class_scope)

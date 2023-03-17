@@ -82,9 +82,9 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
     }
 
     /**
-     * Abstract method to obtain ApplicationType-URL from sub-class
+     * Abstract method to obtain Type-URL from sub-class
      *
-     * @return ApplicationType-URL of xDS
+     * @return Type-URL of xDS
      */
     public abstract String getTypeUrl();
 
@@ -148,7 +148,7 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
             Set<String> resourceNamesToObserve = new HashSet<>(resourceNames);
             resourceNamesToObserve.addAll(resourcesMap.keySet());
             adsObserver.request(buildDiscoveryRequest(resourceNamesToObserve));
-            logger.info("Send xDS Observe request to remote. Resource count: " + resourceNamesToObserve.size() + ". Resource ApplicationType: " + getTypeUrl());
+            logger.info("Send xDS Observe request to remote. Resource count: " + resourceNamesToObserve.size() + ". Resource Type: " + getTypeUrl());
 
             try {
                 Map<String, T> result = future.get();
@@ -238,7 +238,7 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
             return;
         }
 
-        logger.info("Receive resource update notification from xds server. Change resource count: " + changedResourceNames.stream() + ". ApplicationType: " + getTypeUrl());
+        logger.info("Receive resource update notification from xds server. Change resource count: " + changedResourceNames.stream() + ". Type: " + getTypeUrl());
 
         // call once for full data
         try {

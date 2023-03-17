@@ -35,7 +35,7 @@ public class ArgInfo {
     private Class paramAnnotationType;
 
     /**
-     * param ApplicationType
+     * param Type
      */
     private Class paramType;
 

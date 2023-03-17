@@ -47,7 +47,7 @@ public class MapTypeDefinitionBuilder implements DeclaredTypeDefinitionBuilder {
     @Override
     public TypeDefinition build(ProcessingEnvironment processingEnv, DeclaredType type, Map<String, TypeDefinition> typeCache) {
         TypeDefinition typeDefinition = new TypeDefinition(type.toString());
-        // Generic ApplicationType arguments
+        // Generic Type arguments
         type.getTypeArguments()
                 .stream()
                 .map(typeArgument -> TypeDefinitionBuilder.build(processingEnv, typeArgument, typeCache)) // build the TypeDefinition from typeArgument

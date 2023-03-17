@@ -150,7 +150,7 @@ public class ProtobufTypeBuilder implements TypeBuilder, Prioritized {
     private void validateMapType(String fieldName, String typeName) {
         Matcher matcher = MAP_PATTERN.matcher(typeName);
         if (!matcher.matches()) {
-            throw new IllegalArgumentException("Map protobuf property " + fieldName + "of ApplicationType " +
+            throw new IllegalArgumentException("Map protobuf property " + fieldName + "of Type " +
                     typeName + " can't be parsed.The type name should mathch[" + MAP_PATTERN.toString() + "].");
         }
     }

@@ -49,7 +49,7 @@ public class CollectionTypeDefinitionBuilder implements DeclaredTypeDefinitionBu
     public TypeDefinition build(ProcessingEnvironment processingEnv, DeclaredType type, Map<String, TypeDefinition> typeCache) {
         String typeName = type.toString();
         TypeDefinition typeDefinition = new TypeDefinition(typeName);
-        // Generic ApplicationType arguments
+        // Generic Type arguments
         type.getTypeArguments()
                 .stream()
                 .map(typeArgument -> TypeDefinitionBuilder.build(processingEnv, typeArgument, typeCache)) // build the TypeDefinition from typeArgument

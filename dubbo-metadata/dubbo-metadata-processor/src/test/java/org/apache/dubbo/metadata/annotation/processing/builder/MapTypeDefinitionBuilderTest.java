@@ -40,7 +40,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  * @since 2.7.6
  */
-class MapApplicationTypeDefinitionBuilderTest extends AbstractAnnotationProcessingTest {
+class MapTypeDefinitionBuilderTest extends AbstractAnnotationProcessingTest {
 
     private MapTypeDefinitionBuilder builder;
 

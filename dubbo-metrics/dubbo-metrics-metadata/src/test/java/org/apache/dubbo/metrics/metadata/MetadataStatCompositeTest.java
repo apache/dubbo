@@ -36,7 +36,7 @@ public class MetadataStatCompositeTest {
     @Test
     void testInit() {
         MetadataStatComposite statComposite = new MetadataStatComposite();
-        Assertions.assertEquals(statComposite.applicationNumStats.size(), MetadataEvent.ApplicationType.values().length);
+        Assertions.assertEquals(statComposite.applicationNumStats.size(), MetadataEvent.Type.values().length);
         //(rt)5 * (push,subscribe)2
         Assertions.assertEquals(5 * 2, statComposite.appRtStats.size());
         statComposite.applicationNumStats.values().forEach((v ->
@@ -52,8 +52,8 @@ public class MetadataStatCompositeTest {
     @Test
     void testIncrement() {
         MetadataStatComposite statComposite = new MetadataStatComposite();
-        statComposite.increment(MetadataEvent.ApplicationType.P_TOTAL, applicationName);
-        Assertions.assertEquals(1L, statComposite.applicationNumStats.get(MetadataEvent.ApplicationType.P_TOTAL).get(applicationName).get());
+        statComposite.increment(MetadataEvent.Type.P_TOTAL, applicationName);
+        Assertions.assertEquals(1L, statComposite.applicationNumStats.get(MetadataEvent.Type.P_TOTAL).get(applicationName).get());
     }
 
     @Test

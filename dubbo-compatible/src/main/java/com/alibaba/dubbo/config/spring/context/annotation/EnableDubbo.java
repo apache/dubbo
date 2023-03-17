@@ -52,7 +52,7 @@ public @interface EnableDubbo {
     String[] scanBasePackages() default {};
 
     /**
-     * ApplicationType-safe alternative to {@link #scanBasePackages()} for specifying the packages to
+     * Type-safe alternative to {@link #scanBasePackages()} for specifying the packages to
      * scan for annotated @Service classes. The package of each class specified will be
      * scanned.
      *
