@@ -140,7 +140,7 @@ public class ScopeClusterInvoker<T> implements ClusterInvoker<T>, ExporterChange
         if (peerFlag) {
             return invoker.invoke(invocation);
         }
-        if (isInjvmExported() && injvmFlag) {
+        if (isInjvmExported()) {
             return injvmInvoker.invoke(invocation);
         }
         return invoker.invoke(invocation);
@@ -153,13 +153,19 @@ public class ScopeClusterInvoker<T> implements ClusterInvoker<T>, ExporterChange
 
     private boolean isInjvmExported() {
         Boolean localInvoke = RpcContext.getServiceContext().getLocalInvoke();
-        injvmFlag = localInvoke == null || localInvoke;
-        if (!isExported.get() && (SCOPE_LOCAL.equalsIgnoreCase(getUrl().getParameter(SCOPE_KEY)) ||
-            Boolean.TRUE.toString().equalsIgnoreCase(getUrl().getParameter(LOCAL_PROTOCOL))
-            || (localInvoke != null && localInvoke))) {
+        boolean isExportedValue = isExported.get();
+        if (isExportedValue && (localInvoke == null || localInvoke)) {
+            return true;
+        }
+
+        if (!injvmFlag) {
+            return false;
+        }
+        if (!isExportedValue && (SCOPE_LOCAL.equalsIgnoreCase(getUrl().getParameter(SCOPE_KEY)) ||
+            Boolean.TRUE.toString().equalsIgnoreCase(getUrl().getParameter(LOCAL_PROTOCOL)) || (localInvoke != null && localInvoke) )) {
             throw new RpcException("Local service has not been exposed yet!");
         }
-        return isExported.get();
+        return isExportedValue;
     }
 
 
