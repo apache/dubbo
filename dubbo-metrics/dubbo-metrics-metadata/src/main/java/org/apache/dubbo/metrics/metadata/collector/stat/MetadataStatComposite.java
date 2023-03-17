@@ -90,20 +90,6 @@ public class MetadataStatComposite implements MetricsExport {
         return singleRtStats;
     }
 
-    public void setApplicationKey(MetadataEvent.ApplicationType type, String applicationName, int num) {
-        if (!applicationNumStats.containsKey(type)) {
-            return;
-        }
-        applicationNumStats.get(type).computeIfAbsent(applicationName, k -> new AtomicLong(0L)).set(num);
-    }
-
-    public void setServiceKey(MetadataEvent.ServiceType type, String applicationName, String serviceKey, int num) {
-        if (!skStats.containsKey(type)) {
-            return;
-        }
-        skStats.get(type).computeIfAbsent(new ServiceKeyMetric(applicationName, serviceKey), k -> new AtomicLong(0L)).set(num);
-    }
-
     public void increment(MetadataEvent.ApplicationType type, String applicationName) {
         incrementSize(type, applicationName, 1);
     }

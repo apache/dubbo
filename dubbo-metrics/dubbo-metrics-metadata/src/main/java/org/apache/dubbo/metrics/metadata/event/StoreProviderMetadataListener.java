@@ -32,18 +32,18 @@ public class StoreProviderMetadataListener implements MetricsLifeListener<Metada
 
     @Override
     public void onEvent(MetadataEvent.StoreProviderMetadataEvent event) {
-        event.getCollector().increment(event.getSource().getApplicationName(), MetadataEvent.ServiceType.S_P_TOTAL);
+        event.getCollector().incrementServiceKey(event.getSource().getApplicationName(), event.getServiceKey(), MetadataEvent.ServiceType.S_P_TOTAL, 1);
     }
 
     @Override
     public void onEventFinish(MetadataEvent.StoreProviderMetadataEvent event) {
-        event.getCollector().increment(event.getSource().getApplicationName(), MetadataEvent.ServiceType.S_P_SUCCEED);
-        event.getCollector().addServiceKeyRT(event.getSource().getApplicationName(),event.getSource(), OP_TYPE_STORE_PROVIDER_INTERFACE, event.getTimePair().calc());
+        event.getCollector().incrementServiceKey(event.getSource().getApplicationName(), event.getServiceKey(), MetadataEvent.ServiceType.S_P_SUCCEED, 1);
+        event.getCollector().addServiceKeyRT(event.getSource().getApplicationName(), event.getServiceKey(), OP_TYPE_STORE_PROVIDER_INTERFACE, event.getTimePair().calc());
     }
 
     @Override
     public void onEventError(MetadataEvent.StoreProviderMetadataEvent event) {
-        event.getCollector().increment(event.getSource().getApplicationName(), MetadataEvent.ServiceType.S_P_FAILED);
-        event.getCollector().addServiceKeyRT(event.getSource().getApplicationName(), OP_TYPE_STORE_PROVIDER_INTERFACE, event.getTimePair().calc());
+        event.getCollector().incrementServiceKey(event.getSource().getApplicationName(), event.getServiceKey(), MetadataEvent.ServiceType.S_P_FAILED, 1);
+        event.getCollector().addServiceKeyRT(event.getSource().getApplicationName(), event.getServiceKey(), OP_TYPE_STORE_PROVIDER_INTERFACE, event.getTimePair().calc());
     }
 }
