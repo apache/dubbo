@@ -52,12 +52,18 @@ public class ServiceKeyMetric implements Metric {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
         ServiceKeyMetric that = (ServiceKeyMetric) o;
 
-        if (!applicationName.equals(that.applicationName)) return false;
+        if (!applicationName.equals(that.applicationName)) {
+            return false;
+        }
         return serviceKey.equals(that.serviceKey);
     }
 
