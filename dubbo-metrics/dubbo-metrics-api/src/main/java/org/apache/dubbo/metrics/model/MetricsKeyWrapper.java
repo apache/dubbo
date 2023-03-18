@@ -17,17 +17,28 @@
 
 package org.apache.dubbo.metrics.model;
 
+import java.util.Map;
+
 /**
  * Let {@link MetricsKey MetricsKey}  output dynamic, custom string content
  */
 public class MetricsKeyWrapper {
 
+    // Register、subscribe、notify etc
     private final String type;
+    // Metrics key when exporting
     private final MetricsKey metricsKey;
 
+    private final boolean serviceLevel;
+
     public MetricsKeyWrapper(String type, MetricsKey metricsKey) {
+        this(type, metricsKey, false);
+    }
+
+    public MetricsKeyWrapper(String type, MetricsKey metricsKey, boolean serviceLevel) {
         this.type = type;
         this.metricsKey = metricsKey;
+        this.serviceLevel = serviceLevel;
     }
 
     public String getType() {
@@ -40,6 +51,10 @@ public class MetricsKeyWrapper {
 
     public boolean isKey(MetricsKey metricsKey, String registryOpType) {
         return metricsKey == getMetricsKey() && registryOpType.equals(getType());
+    }
+
+    public boolean isServiceLevel() {
+        return serviceLevel;
     }
 
     public String targetKey() {
@@ -58,4 +73,7 @@ public class MetricsKeyWrapper {
         }
     }
 
+    public Map<String, String> tagName(String key) {
+        return isServiceLevel() ? MetricsSupport.serviceTags(key) : MetricsSupport.applicationTags(key);
+    }
 }
