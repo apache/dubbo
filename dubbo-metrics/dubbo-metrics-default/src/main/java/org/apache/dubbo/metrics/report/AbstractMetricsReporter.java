@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.metrics.report;
 
+import io.micrometer.core.instrument.binder.MeterBinder;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.common.constants.MetricsConstants;
@@ -67,6 +68,8 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
     protected final URL url;
     @SuppressWarnings("rawtypes")
     protected final List<MetricsCollector> collectors = new ArrayList<>();
+    // Avoid instances being gc due to weak references
+    protected final List<MeterBinder> instanceHolder = new ArrayList<>();
     protected final CompositeMeterRegistry compositeRegistry;
 
     private final ApplicationModel applicationModel;
@@ -119,10 +122,15 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
             jvmGcMetrics.bindTo(compositeRegistry);
             Runtime.getRuntime().addShutdownHook(new Thread(jvmGcMetrics::close));
 
-            new ProcessorMetrics(extraTags).bindTo(compositeRegistry);
+            bindTo(new ProcessorMetrics(extraTags));
             new JvmThreadMetrics(extraTags).bindTo(compositeRegistry);
-            new UptimeMetrics(extraTags).bindTo(compositeRegistry);
+            bindTo(new UptimeMetrics(extraTags));
         }
+    }
+
+    private void bindTo(MeterBinder binder) {
+        binder.bindTo(compositeRegistry);
+        instanceHolder.add(binder);
     }
 
     @SuppressWarnings("rawtypes")

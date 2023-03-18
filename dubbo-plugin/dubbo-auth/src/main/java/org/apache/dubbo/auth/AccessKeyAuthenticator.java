@@ -29,7 +29,7 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 public class AccessKeyAuthenticator implements Authenticator {
-    private ApplicationModel applicationModel;
+    private final ApplicationModel applicationModel;
 
     public AccessKeyAuthenticator(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;

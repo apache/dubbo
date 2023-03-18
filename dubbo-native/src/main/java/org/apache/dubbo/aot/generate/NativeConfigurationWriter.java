@@ -1,0 +1,85 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.dubbo.aot.generate;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Writer;
+import java.nio.file.Path;
+import java.util.function.Consumer;
+
+/**
+ * Write Write configuration metadata information in
+ * {@link ResourceConfigMetadataRepository} and {@link ReflectConfigMetadataRepository}
+ * as GraalVM native configuration.
+ * @see <a href="https://www.graalvm.org/latest/reference-manual/native-image/overview/BuildConfiguration/">Native Image Build Configuration</a>
+ */
+public class NativeConfigurationWriter {
+
+    private final Path basePath;
+
+    private final String groupId;
+
+    private final String artifactId;
+
+    public NativeConfigurationWriter(Path basePath, String groupId, String artifactId) {
+        this.basePath = basePath;
+        this.groupId = groupId;
+        this.artifactId = artifactId;
+    }
+
+    protected void writeTo(String fileName, Consumer<BasicJsonWriter> writer) {
+        try {
+            File file = createIfNecessary(fileName);
+            try (FileWriter out = new FileWriter(file)) {
+                writer.accept(createJsonWriter(out));
+            }
+        }
+        catch (IOException ex) {
+            throw new IllegalStateException("Failed to write native configuration for " + fileName, ex);
+        }
+    }
+
+    private File createIfNecessary(String filename) throws IOException {
+        Path outputDirectory = this.basePath.resolve("META-INF").resolve("native-image");
+        if (this.groupId != null && this.artifactId != null) {
+            outputDirectory = outputDirectory.resolve(this.groupId).resolve(this.artifactId);
+        }
+        outputDirectory.toFile().mkdirs();
+        File file = outputDirectory.resolve(filename).toFile();
+        file.createNewFile();
+        return file;
+    }
+
+
+    public void writeReflectionConfig(ReflectConfigMetadataRepository repository) {
+        writeTo("reflect-config.json", writer ->
+            ReflectionConfigWriter.INSTANCE.write(writer, repository));
+    }
+
+    public void writeResourceConfig(ResourceConfigMetadataRepository repository) {
+        writeTo("resource-config.json", writer ->
+            ResourceConfigWriter.INSTANCE.write(writer, repository));
+    }
+
+    private BasicJsonWriter createJsonWriter(Writer out) {
+        return new BasicJsonWriter(out);
+    }
+
+
+}
