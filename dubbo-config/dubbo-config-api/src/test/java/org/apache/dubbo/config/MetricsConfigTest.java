@@ -19,7 +19,7 @@ package org.apache.dubbo.config;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.config.nested.AggregationConfig;
 import org.apache.dubbo.config.nested.PrometheusConfig;
-
+import org.apache.dubbo.config.nested.RtHistogramConfig;
 import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMETHEUS;
@@ -46,6 +46,10 @@ class MetricsConfigTest {
         AggregationConfig aggregation = new AggregationConfig();
         aggregation.setEnabled(true);
         metrics.setAggregation(aggregation);
+
+        RtHistogramConfig rtHistogram = new RtHistogramConfig();
+        rtHistogram.setEnabled(true);
+        metrics.setRtHistogram(rtHistogram);
 
         URL url = metrics.toUrl();
 
