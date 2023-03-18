@@ -831,13 +831,13 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     private void registerServiceInstance() {
         TimePair timePair = TimePair.start();
         GlobalMetricsEventMulticaster eventMulticaster = applicationModel.getBeanFactory().getBean(GlobalMetricsEventMulticaster.class);
-        eventMulticaster.publishEvent(new RegistryEvent.MetricsRegisterEvent(applicationModel, timePair));
+        eventMulticaster.publishEvent(new RegistryEvent.MetricsApplicationRegisterEvent(applicationModel, timePair));
         try {
             registered = true;
             ServiceInstanceMetadataUtils.registerMetadataAndInstance(applicationModel);
-            eventMulticaster.publishFinishEvent(new RegistryEvent.MetricsRegisterEvent(applicationModel, timePair));
+            eventMulticaster.publishFinishEvent(new RegistryEvent.MetricsApplicationRegisterEvent(applicationModel, timePair));
         } catch (Exception e) {
-            eventMulticaster.publishErrorEvent(new RegistryEvent.MetricsRegisterEvent(applicationModel, timePair));
+            eventMulticaster.publishErrorEvent(new RegistryEvent.MetricsApplicationRegisterEvent(applicationModel, timePair));
             logger.error(CONFIG_REGISTER_INSTANCE_ERROR, "configuration server disconnected", "", "Register instance error.", e);
         }
         if (registered) {

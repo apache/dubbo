@@ -19,8 +19,8 @@ package org.apache.dubbo.qos.server;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.qos.permission.PermissionLevel;
-import org.apache.dubbo.qos.common.QosConfiguration;
+import org.apache.dubbo.qos.api.PermissionLevel;
+import org.apache.dubbo.qos.api.QosConfiguration;
 import org.apache.dubbo.qos.server.handler.QosProcessHandler;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 

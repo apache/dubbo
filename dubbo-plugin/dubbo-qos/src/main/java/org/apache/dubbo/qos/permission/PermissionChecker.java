@@ -18,7 +18,8 @@ package org.apache.dubbo.qos.permission;
 
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.qos.command.CommandContext;
+import org.apache.dubbo.qos.api.CommandContext;
+import org.apache.dubbo.qos.api.PermissionLevel;
 
 // qosPermissionChecker=xxx.xxx.xxxPermissionChecker
 @SPI(scope = ExtensionScope.FRAMEWORK)

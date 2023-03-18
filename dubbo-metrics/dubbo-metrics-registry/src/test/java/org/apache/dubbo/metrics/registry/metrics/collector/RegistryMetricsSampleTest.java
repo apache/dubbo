@@ -65,8 +65,8 @@ class RegistryMetricsSampleTest {
         RegistryMetricsCollector collector = new RegistryMetricsCollector(applicationModel);
         collector.setCollectEnabled(true);
         String applicationName = applicationModel.getApplicationName();
-        collector.addRT(applicationName, RegistryStatComposite.OP_TYPE_REGISTER, 10L);
-        collector.addRT(applicationName, RegistryStatComposite.OP_TYPE_REGISTER, 0L);
+        collector.addApplicationRT(applicationName, RegistryStatComposite.OP_TYPE_REGISTER, 10L);
+        collector.addApplicationRT(applicationName, RegistryStatComposite.OP_TYPE_REGISTER, 0L);
 
         List<MetricSample> samples = collector.collect();
         for (MetricSample sample : samples) {
@@ -89,7 +89,7 @@ class RegistryMetricsSampleTest {
         RegistryMetricsCollector collector = new RegistryMetricsCollector(applicationModel);
         collector.setCollectEnabled(true);
         String applicationName = applicationModel.getApplicationName();
-        collector.increment(applicationName,RegistryEvent.Type.R_TOTAL);
+        collector.increment(applicationName, RegistryEvent.ApplicationType.R_TOTAL);
     }
 
 }

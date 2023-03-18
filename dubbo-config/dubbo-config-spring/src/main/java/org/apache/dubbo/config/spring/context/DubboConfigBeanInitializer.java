@@ -61,7 +61,7 @@ public class DubboConfigBeanInitializer implements BeanFactoryAware, Initializin
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private AtomicBoolean initialized = new AtomicBoolean(false);
+    private final AtomicBoolean initialized = new AtomicBoolean(false);
     private ConfigurableListableBeanFactory beanFactory;
     private ReferenceBeanManager referenceBeanManager;
 

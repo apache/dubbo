@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.qos.command;
 
+import org.apache.dubbo.qos.api.CommandContext;
+
 public class CommandContextFactory {
     public static CommandContext newInstance(String commandName) {
         return new CommandContext(commandName);
