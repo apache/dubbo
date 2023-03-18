@@ -17,11 +17,11 @@
 package org.apache.dubbo.rpc.protocol.rest.exception;
 
 /**
- *  response status code : 500
+ *  path mapper contains current path will throw
  */
-public class RemoteServerInternalException extends RestException {
+public class DoublePathCheckException extends RuntimeException {
 
-    public RemoteServerInternalException(String message) {
-        super("dubbo http rest protocol remote error :"+message);
+    public DoublePathCheckException(String message) {
+        super(message);
     }
 }

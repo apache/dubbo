@@ -17,11 +17,11 @@
 package org.apache.dubbo.rpc.protocol.rest.exception;
 
 /**
- *  response status code : 500
+ *  rest exception super
  */
-public class RemoteServerInternalException extends RestException {
+public class RestException extends RuntimeException {
 
-    public RemoteServerInternalException(String message) {
-        super("dubbo http rest protocol remote error :"+message);
+    public RestException(String message) {
+        super(message);
     }
 }

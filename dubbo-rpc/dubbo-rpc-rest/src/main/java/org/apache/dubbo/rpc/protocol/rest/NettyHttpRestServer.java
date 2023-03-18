@@ -43,7 +43,9 @@ import static org.apache.dubbo.rpc.protocol.rest.Constants.DEFAULT_KEEP_ALIVE;
 import static org.apache.dubbo.rpc.protocol.rest.Constants.EXCEPTION_MAPPER_KEY;
 import static org.apache.dubbo.rpc.protocol.rest.Constants.KEEP_ALIVE_KEY;
 
-
+/**
+ *  netty http server
+ */
 public class NettyHttpRestServer implements RestProtocolServer {
     private NettyServer server = getNettyServer();
 
@@ -119,8 +121,6 @@ public class NettyHttpRestServer implements RestProtocolServer {
                 ExceptionMapper.registerMapper(clazz);
             }
         }
-
-
     }
 
 
