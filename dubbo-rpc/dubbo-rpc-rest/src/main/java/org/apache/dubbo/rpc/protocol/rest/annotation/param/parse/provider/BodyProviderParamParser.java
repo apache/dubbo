@@ -22,6 +22,7 @@ import org.apache.dubbo.metadata.rest.ArgInfo;
 import org.apache.dubbo.metadata.rest.ParamType;
 import org.apache.dubbo.metadata.rest.media.MediaType;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.protocol.rest.RestHeaderEnum;
 import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
 import org.apache.dubbo.rpc.protocol.rest.message.HttpMessageCodecManager;
 import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
@@ -42,7 +43,7 @@ public class BodyProviderParamParser extends ProviderParamParser {
         RequestFacade request = parseContext.getRequestFacade();
 
         try {
-            String contentType = parseContext.getRequestFacade().getHeader(RestConstant.CONTENT_TYPE);
+            String contentType = parseContext.getRequestFacade().getHeader(RestHeaderEnum.CONTENT_TYPE.getHeader());
             //TODO MAP<String,String> convert
             // TODO  url builder
 

@@ -14,34 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.rest.util;
+package org.apache.dubbo.rpc.protocol.rest.exception;
 
 import org.apache.dubbo.metadata.rest.media.MediaType;
-import org.apache.dubbo.rpc.protocol.rest.exception.UnSupportContentTypeException;
 
-import java.util.Arrays;
-import java.util.List;
+public class UnSupportAcceptException extends MediaTypeUnSupportException {
 
-public class MediaTypeUtil {
-    private static final List<MediaType> mediaTypes = Arrays.asList(MediaType.values());
+    public UnSupportAcceptException(String message) {
 
-    /**
-     *  return first match , if any multiple content-type
-     * @param contentTypes
-     * @return
-     */
-    public static MediaType convertMediaType(String... contentTypes) {
-
-        for (String contentType : contentTypes) {
-            for (MediaType mediaType : mediaTypes) {
-
-                if (contentType != null && contentType.contains(mediaType.value)) {
-                    return mediaType;
-                }
-            }
-        }
-
-        throw new UnSupportContentTypeException(Arrays.toString(contentTypes));
-
+        super("Current Support response accept : " + MediaType.getAllContentType() + "; Do not support  accept type" + message);
     }
 }

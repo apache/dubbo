@@ -46,7 +46,7 @@ public class ParamParserManager {
      * <p>
      * args=toArray(new Object[0]);
      */
-    public Object[] providerParamParse(ProviderParseContext parseContext) {
+    public static Object[] providerParamParse(ProviderParseContext parseContext) {
 
         List<ArgInfo> args = parseContext.getArgInfos();
 
@@ -70,7 +70,7 @@ public class ParamParserManager {
      * <p>
      * args=toArray(new Object[0]);
      */
-    public void consumerParamParse(ConsumerParseContext parseContext) {
+    public static void consumerParamParse(ConsumerParseContext parseContext) {
 
         List<Object> args = parseContext.getArgs();
 

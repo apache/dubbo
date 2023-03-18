@@ -42,9 +42,11 @@ public class RequestHeaderIntercept implements HttpConnectionPreBuildIntercept {
 
         requestTemplate.addHeaders(RestHeaderEnum.CONTENT_TYPE.getHeader(), consumes);
 
-        Collection<String> headers = requestTemplate.getHeaders(RestConstant.ACCEPT);
+        Collection<String> headers = requestTemplate.getHeaders(RestHeaderEnum.ACCEPT.getHeader());
         if (headers == null || headers.isEmpty()) {
             requestTemplate.addHeader(RestHeaderEnum.ACCEPT.getHeader(), RestConstant.DEFAULT_ACCEPT);
+        } else {
+            requestTemplate.addHeader(RestHeaderEnum.ACCEPT.getHeader(), headers);
         }
 
 

@@ -17,7 +17,6 @@
 package org.apache.dubbo.rpc.protocol.rest.netty;
 
 
-import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
@@ -25,10 +24,8 @@ import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.DefaultHttpResponse;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpHeaders.Names;
-import io.netty.handler.codec.http.HttpHeaders.Values;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http.LastHttpContent;
 import org.apache.dubbo.metadata.rest.media.MediaType;
 import org.apache.dubbo.rpc.protocol.rest.RestHeaderEnum;
@@ -36,6 +33,7 @@ import org.apache.dubbo.rpc.protocol.rest.RestHeaderEnum;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -102,36 +100,10 @@ public class NettyHttpResponse implements HttpResponse {
 
     @Override
     public void sendError(int status, String message) throws IOException {
-        if (committed) {
-            throw new IllegalStateException();
-        }
-
-        final HttpResponseStatus responseStatus;
         if (message != null) {
-            responseStatus = new HttpResponseStatus(status, message);
-            setStatus(status);
-        } else {
-            responseStatus = HttpResponseStatus.valueOf(status);
-            setStatus(status);
+            getOutputStream().write(message.getBytes(StandardCharsets.UTF_8));
         }
-        io.netty.handler.codec.http.HttpResponse response = null;
-        if (message != null) {
-            ByteBuf byteBuf = ctx.alloc().buffer();
-            byteBuf.writeBytes(message.getBytes());
-
-            response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, responseStatus, byteBuf);
-        } else {
-            response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, responseStatus);
-
-        }
-        if (keepAlive) {
-            // Add keep alive and content length if needed
-            response.headers().add(Names.CONNECTION, Values.KEEP_ALIVE);
-            if (message == null) response.headers().add(Names.CONTENT_LENGTH, 0);
-            else response.headers().add(Names.CONTENT_LENGTH, message.getBytes().length);
-        }
-        ctx.writeAndFlush(response);
-        committed = true;
+        setStatus(status);
     }
 
     @Override

@@ -16,12 +16,8 @@
  */
 package org.apache.dubbo.rpc.protocol.rest.exception;
 
-import org.apache.dubbo.metadata.rest.media.MediaType;
-
-public class UnSupportContentTypeException extends MediaTypeUnSupportException {
-
-    public UnSupportContentTypeException(String message) {
-
-        super("Current Support content type: " + MediaType.getAllContentType() + "; Do not support  content type" + message);
+public class MediaTypeUnSupportException extends RestException{
+    public MediaTypeUnSupportException(String message) {
+        super(message);
     }
 }
