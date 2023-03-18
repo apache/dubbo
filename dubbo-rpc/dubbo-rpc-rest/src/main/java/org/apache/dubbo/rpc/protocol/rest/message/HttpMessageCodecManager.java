@@ -44,7 +44,7 @@ public class HttpMessageCodecManager {
 
         if (unSerializedBody == null) {
             for (HttpMessageCodec httpMessageCodec : httpMessageCodecs) {
-                if (httpMessageCodec.typeSupport(bodyType)) {
+                if (httpMessageCodec.contentTypeSupport(mediaType, bodyType) || httpMessageCodec.typeSupport(bodyType)) {
                     return Pair.make(false, httpMessageCodec.contentType());
                 }
             }
@@ -60,5 +60,18 @@ public class HttpMessageCodecManager {
 
         throw new UnSupportContentTypeException("UnSupport content-type :" + mediaType.value);
     }
+
+    public static MediaType typeSupport(Class<?> type) {
+        for (HttpMessageCodec httpMessageCodec : httpMessageCodecs) {
+
+            if (httpMessageCodec.typeSupport(type)) {
+                return httpMessageCodec.contentType();
+            }
+
+        }
+
+        return null;
+    }
+
 
 }
