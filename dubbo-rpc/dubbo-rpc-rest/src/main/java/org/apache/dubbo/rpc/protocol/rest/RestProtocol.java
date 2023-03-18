@@ -22,46 +22,30 @@ import org.apache.dubbo.metadata.ParameterTypesComparator;
 import org.apache.dubbo.metadata.rest.PathMatcher;
 import org.apache.dubbo.metadata.rest.RestMethodMetadata;
 import org.apache.dubbo.metadata.rest.ServiceRestMetadata;
-import org.apache.dubbo.metadata.rest.media.MediaType;
-import org.apache.dubbo.remoting.http.RequestTemplate;
 import org.apache.dubbo.remoting.http.RestClient;
-import org.apache.dubbo.remoting.http.RestResult;
 import org.apache.dubbo.remoting.http.factory.RestClientFactory;
-import org.apache.dubbo.rpc.AppResponse;
-import org.apache.dubbo.rpc.AsyncRpcResult;
-import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.ProtocolServer;
-import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.AbstractExporter;
-import org.apache.dubbo.rpc.protocol.AbstractInvoker;
 import org.apache.dubbo.rpc.protocol.AbstractProtocol;
-import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.HttpConnectionConfig;
-import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.HttpConnectionCreateContext;
 import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.HttpConnectionPreBuildIntercept;
 import org.apache.dubbo.rpc.protocol.rest.annotation.metadata.MetadataResolver;
-import org.apache.dubbo.rpc.protocol.rest.message.HttpMessageCodecManager;
-import org.apache.dubbo.rpc.protocol.rest.util.HttpHeaderUtil;
-import org.apache.dubbo.rpc.protocol.rest.util.MediaTypeUtil;
 import org.apache.dubbo.rpc.protocol.rest.util.Pair;
 
 
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERROR_CLOSE_CLIENT;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERROR_CLOSE_SERVER;
 import static org.apache.dubbo.remoting.Constants.SERVER_KEY;
-import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 import static org.apache.dubbo.rpc.protocol.rest.constans.RestConstant.PATH_SEPARATOR;
 
 public class RestProtocol extends AbstractProtocol {
@@ -102,18 +86,17 @@ public class RestProtocol extends AbstractProtocol {
             }
         }
 
-        Class<?> implClass = url.getServiceModel().getProxyObject().getClass();
 
-        String contextPath = getContextPath(url);
+        // resolve metadata
+        Map<PathMatcher, RestMethodMetadata> metadataMap =
+            MetadataResolver.resolveProviderServiceMetadata(url.getServiceModel().getProxyObject().getClass(),
+                url, getContextPath(url));
 
-        Map<PathMatcher, RestMethodMetadata> metadataMap = MetadataResolver.resolveProviderServiceMetadata(implClass, url, contextPath);
-
-        String addr = getAddr(url);
 
         // TODO add Extension filter
-        String serverName = url.getParameter(SERVER_KEY, DEFAULT_SERVER);
-        RestProtocolServer server = (RestProtocolServer) ConcurrentHashMapUtils.computeIfAbsent(serverMap, addr, restServer -> {
-            RestProtocolServer s = serverFactory.createServer(serverName);
+        // create rest server
+        RestProtocolServer server = (RestProtocolServer) ConcurrentHashMapUtils.computeIfAbsent(serverMap, getAddr(url), restServer -> {
+            RestProtocolServer s = serverFactory.createServer(url.getParameter(SERVER_KEY, DEFAULT_SERVER));
             s.setAddress(url.getAddress());
             s.start(url);
             return s;
@@ -127,6 +110,7 @@ public class RestProtocol extends AbstractProtocol {
                 exporterMap.remove(uri);
                 metadataMap.keySet().stream().forEach(pathMatcher -> {
                     server.undeploy(pathMatcher);
+                    destroyInternal(url);
                 });
             }
         };
@@ -149,87 +133,28 @@ public class RestProtocol extends AbstractProtocol {
         }
         refClient.retain();
 
-        final ReferenceCountedClient<? extends RestClient> glueRefClient = refClient;
+        final ReferenceCountedClient<? extends RestClient> referenceCountedClient = refClient;
 
         String contextPathFromUrl = getContextPath(url);
 
         // resolve metadata
-        Pair<ServiceRestMetadata, Map<String, Map<ParameterTypesComparator, RestMethodMetadata>>> metadataMapPair = MetadataResolver.resolveConsumerServiceMetadata(type, url, contextPathFromUrl);
+        Pair<ServiceRestMetadata, Map<String, Map<ParameterTypesComparator, RestMethodMetadata>>> metadataMapPair =
+            MetadataResolver.resolveConsumerServiceMetadata(type, url, contextPathFromUrl);
 
-        Invoker<T> invoker = new AbstractInvoker<T>(type, url, new String[]{INTERFACE_KEY, GROUP_KEY, TOKEN_KEY}) {
-            @Override
-            protected Result doInvoke(Invocation invocation) {
-                try {
-                    ServiceRestMetadata serviceRestMetadata = metadataMapPair.getFirst();
+        Invoker<T> invoker = new RestInvoker<T>(type, url,
+            referenceCountedClient, httpConnectionPreBuildIntercepts, metadataMapPair);
 
-                    Map<String, Map<ParameterTypesComparator, RestMethodMetadata>> metadataMap = metadataMapPair.getSecond();
-                    RestMethodMetadata restMethodMetadata = metadataMap.get(invocation.getMethodName()).get(ParameterTypesComparator.getInstance(invocation.getParameterTypes()));
-
-                    RequestTemplate requestTemplate = new RequestTemplate(invocation, restMethodMetadata.getRequest().getMethod(), url.getAddress());
-
-                    HttpConnectionCreateContext httpConnectionCreateContext = new HttpConnectionCreateContext();
-                    // TODO  dynamic load config
-                    httpConnectionCreateContext.setConnectionConfig(new HttpConnectionConfig());
-                    httpConnectionCreateContext.setRequestTemplate(requestTemplate);
-                    httpConnectionCreateContext.setRestMethodMetadata(restMethodMetadata);
-                    httpConnectionCreateContext.setServiceRestMetadata(serviceRestMetadata);
-                    httpConnectionCreateContext.setInvocation(invocation);
-                    httpConnectionCreateContext.setUrl(url);
-
-                    for (HttpConnectionPreBuildIntercept intercept : httpConnectionPreBuildIntercepts) {
-                        intercept.intercept(httpConnectionCreateContext);
-                    }
-
-                    CompletableFuture<RestResult> future = glueRefClient.getClient().send(requestTemplate);
-                    CompletableFuture<AppResponse> responseFuture = new CompletableFuture<>();
-                    AsyncRpcResult asyncRpcResult = new AsyncRpcResult(responseFuture, invocation);
-                    future.whenComplete((r, t) -> {
-                        if (t != null) {
-                            responseFuture.completeExceptionally(t);
-                        } else {
-                            AppResponse appResponse = new AppResponse();
-                            try {
-                                int responseCode = r.getResponseCode();
-                                MediaType mediaType = MediaType.TEXT_PLAIN;
-
-                                if (400 < responseCode && responseCode < 500) {
-                                    throw new RpcException(r.getMessage());
-                                    // TODO add Exception Mapper
-                                } else if (responseCode >= 500) {
-                                    throw new RpcException(r.getMessage());
-                                } else if (responseCode < 400) {
-                                    mediaType = MediaTypeUtil.convertMediaType(r.getContentType());
-                                }
-
-
-                                Object value = HttpMessageCodecManager.httpMessageDecode(r.getBody(),
-                                    restMethodMetadata.getReflectMethod().getReturnType(), mediaType);
-                                appResponse.setValue(value);
-                                HttpHeaderUtil.parseResponseHeader(appResponse, r);
-                                responseFuture.complete(appResponse);
-                            } catch (Exception e) {
-                                responseFuture.completeExceptionally(e);
-                            }
-                        }
-                    });
-                    return asyncRpcResult;
-                } catch (RpcException e) {
-                    throw e;
-                }
-            }
-
-            @Override
-            public void destroy() {
-                super.destroy();
-                invokers.remove(this);
-                destroyInternal(url);
-            }
-        };
         invokers.add(invoker);
         return invoker;
     }
 
 
+    /**
+     *  create rest ReferenceCountedClient
+     * @param url
+     * @return
+     * @throws RpcException
+     */
     private ReferenceCountedClient<? extends RestClient> createReferenceCountedClient(URL url) throws RpcException {
 
         // url -> RestClient
