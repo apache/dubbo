@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.rest;
 
+import org.apache.dubbo.common.BaseServiceMetadata;
 import org.apache.dubbo.metadata.rest.RestMethodMetadata;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
@@ -68,12 +69,15 @@ public class RestRPCInvocationUtil {
         rpcInvocation.put(RestConstant.METHOD, method);
 
 
-        // TODO set setTargetServiceUniqueName  protocolServiceKey
-//        rpcInvocation.setTargetServiceUniqueName();
-//        rpcInvocation.protocolServiceKey();
+        // TODO set   protocolServiceKey
+//
 
         HttpHeaderUtil.parseRequest(rpcInvocation, request);
 
+        String serviceKey = BaseServiceMetadata.buildServiceKey(request.getPathInfo(),
+            request.getHeader(RestHeaderEnum.GROUP.getHeader()),
+            request.getHeader(RestHeaderEnum.VERSION.getHeader()));
+        rpcInvocation.setTargetServiceUniqueName(serviceKey);
 
         return rpcInvocation;
     }
