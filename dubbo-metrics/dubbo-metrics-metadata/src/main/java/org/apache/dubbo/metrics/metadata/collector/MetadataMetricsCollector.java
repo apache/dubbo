@@ -72,7 +72,7 @@ public class MetadataMetricsCollector implements ApplicationMetricsCollector<Met
     }
 
     @Override
-    public void addRT(String applicationName, String registryOpType, Long responseTime) {
+    public void addApplicationRT(String applicationName, String registryOpType, Long responseTime) {
         stats.calcRt(applicationName, registryOpType, responseTime);
     }
 

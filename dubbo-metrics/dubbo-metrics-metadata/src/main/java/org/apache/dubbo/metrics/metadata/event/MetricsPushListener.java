@@ -38,12 +38,12 @@ public class MetricsPushListener implements MetricsLifeListener<MetadataEvent.Pu
     @Override
     public void onEventFinish(MetadataEvent.PushEvent event) {
         event.getCollector().increment(event.getSource().getApplicationName(), MetadataEvent.Type.P_SUCCEED);
-        event.getCollector().addRT(event.getSource().getApplicationName(), OP_TYPE_PUSH, event.getTimePair().calc());
+        event.getCollector().addApplicationRT(event.getSource().getApplicationName(), OP_TYPE_PUSH, event.getTimePair().calc());
     }
 
     @Override
     public void onEventError(MetadataEvent.PushEvent event) {
         event.getCollector().increment(event.getSource().getApplicationName(), MetadataEvent.Type.P_FAILED);
-        event.getCollector().addRT(event.getSource().getApplicationName(), OP_TYPE_PUSH, event.getTimePair().calc());
+        event.getCollector().addApplicationRT(event.getSource().getApplicationName(), OP_TYPE_PUSH, event.getTimePair().calc());
     }
 }

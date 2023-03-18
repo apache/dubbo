@@ -18,9 +18,9 @@
 package com.alibaba.dubbo.qos.command;
 
 @Deprecated
-public class CommandContext extends org.apache.dubbo.qos.command.CommandContext {
+public class CommandContext extends org.apache.dubbo.qos.api.CommandContext {
 
-    public CommandContext(org.apache.dubbo.qos.command.CommandContext context) {
+    public CommandContext(org.apache.dubbo.qos.api.CommandContext context) {
         super(context.getCommandName(), context.getArgs(), context.isHttp());
         setRemote(context.getRemote());
         setOriginRequest(context.getOriginRequest());

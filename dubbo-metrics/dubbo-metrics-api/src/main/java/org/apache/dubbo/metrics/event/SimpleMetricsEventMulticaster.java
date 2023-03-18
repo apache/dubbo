@@ -19,6 +19,7 @@ package org.apache.dubbo.metrics.event;
 
 import org.apache.dubbo.metrics.listener.MetricsLifeListener;
 import org.apache.dubbo.metrics.listener.MetricsListener;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,7 +27,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 /**
- *  A simple event publisher that defines lifecycle events and supports rt events
+ * A simple event publisher that defines lifecycle events and supports rt events
  */
 public class SimpleMetricsEventMulticaster implements MetricsEventMulticaster {
     private final List<MetricsListener<?>> listeners = Collections.synchronizedList(new ArrayList<>());
@@ -52,11 +53,20 @@ public class SimpleMetricsEventMulticaster implements MetricsEventMulticaster {
         if (event instanceof EmptyEvent) {
             return;
         }
+        if (validateIfSourceInstanceOfApplicationModel(event)) return;
         for (MetricsListener listener : listeners) {
             if (listener.isSupport(event)) {
                 listener.onEvent(event);
             }
         }
+    }
+
+    private boolean validateIfSourceInstanceOfApplicationModel(MetricsEvent event) {
+        if (event.getSource() instanceof ApplicationModel) {
+            // Check if exist application config
+            return ((ApplicationModel) event.getSource()).NotExistApplicationConfig();
+        }
+        return false;
     }
 
     @Override
@@ -73,6 +83,7 @@ public class SimpleMetricsEventMulticaster implements MetricsEventMulticaster {
 
     @SuppressWarnings({"rawtypes"})
     private void publishTimeEvent(MetricsEvent event, Consumer<MetricsLifeListener> consumer) {
+        if (validateIfSourceInstanceOfApplicationModel(event)) return;
         if (event instanceof EmptyEvent) {
             return;
         }

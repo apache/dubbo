@@ -58,7 +58,7 @@ public class RegistryEvent extends MetricsEvent implements TimeCounter {
         return timePair;
     }
 
-    public enum Type {
+    public enum ApplicationType {
         R_TOTAL(MetricsKey.REGISTER_METRIC_REQUESTS),
         R_SUCCEED(MetricsKey.REGISTER_METRIC_REQUESTS_SUCCEED),
         R_FAILED(MetricsKey.REGISTER_METRIC_REQUESTS_FAILED),
@@ -74,19 +74,17 @@ public class RegistryEvent extends MetricsEvent implements TimeCounter {
         D_RECOVER_DISABLE(MetricsKey.DIRECTORY_METRIC_NUM_RECOVER_DISABLE),
 
         N_TOTAL(MetricsKey.NOTIFY_METRIC_REQUESTS),
-        N_LAST_NUM(MetricsKey.NOTIFY_METRIC_NUM_LAST),
         ;
-
 
         private final MetricsKey metricsKey;
         private final boolean isIncrement;
 
 
-        Type(MetricsKey metricsKey) {
+        ApplicationType(MetricsKey metricsKey) {
             this(metricsKey, true);
         }
 
-        Type(MetricsKey metricsKey, boolean isIncrement) {
+        ApplicationType(MetricsKey metricsKey, boolean isIncrement) {
             this.metricsKey = metricsKey;
             this.isIncrement = isIncrement;
         }
@@ -100,9 +98,44 @@ public class RegistryEvent extends MetricsEvent implements TimeCounter {
         }
     }
 
-    public static class MetricsRegisterEvent extends RegistryEvent {
+    public enum ServiceType {
 
-        public MetricsRegisterEvent(ApplicationModel applicationModel, TimePair timePair) {
+        N_LAST_NUM(MetricsKey.NOTIFY_METRIC_NUM_LAST),
+
+        R_SERVICE_TOTAL(MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS),
+        R_SERVICE_SUCCEED(MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS_SUCCEED),
+        R_SERVICE_FAILED(MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS_FAILED),
+
+        S_SERVICE_TOTAL(MetricsKey.SERVICE_SUBSCRIBE_METRIC_NUM),
+        S_SERVICE_SUCCEED(MetricsKey.SERVICE_SUBSCRIBE_METRIC_NUM_SUCCEED),
+        S_SERVICE_FAILED(MetricsKey.SERVICE_SUBSCRIBE_METRIC_NUM_FAILED),
+        ;
+
+        private final MetricsKey metricsKey;
+        private final boolean isIncrement;
+
+
+        ServiceType(MetricsKey metricsKey) {
+            this(metricsKey, true);
+        }
+
+        ServiceType(MetricsKey metricsKey, boolean isIncrement) {
+            this.metricsKey = metricsKey;
+            this.isIncrement = isIncrement;
+        }
+
+        public MetricsKey getMetricsKey() {
+            return metricsKey;
+        }
+
+        public boolean isIncrement() {
+            return isIncrement;
+        }
+    }
+
+    public static class MetricsApplicationRegisterEvent extends RegistryEvent {
+
+        public MetricsApplicationRegisterEvent(ApplicationModel applicationModel, TimePair timePair) {
             super(applicationModel, timePair);
         }
 
@@ -132,25 +165,59 @@ public class RegistryEvent extends MetricsEvent implements TimeCounter {
 
     public static class MetricsDirectoryEvent extends RegistryEvent {
 
-        private final RegistryEvent.Type type;
+        private final ApplicationType type;
         private final int size;
 
-        public MetricsDirectoryEvent(ApplicationModel applicationModel, RegistryEvent.Type type) {
+        public MetricsDirectoryEvent(ApplicationModel applicationModel, ApplicationType type) {
             this(applicationModel, type, 1);
         }
 
-        public MetricsDirectoryEvent(ApplicationModel applicationModel, RegistryEvent.Type type, int size) {
+        public MetricsDirectoryEvent(ApplicationModel applicationModel, ApplicationType type, int size) {
             super(applicationModel, TimePair.empty());
             this.type = type;
             this.size = size;
         }
 
-        public RegistryEvent.Type getType() {
+        public ApplicationType getType() {
             return type;
         }
 
         public int getSize() {
             return size;
+        }
+    }
+
+    public static class MetricsServiceRegisterEvent extends RegistryEvent {
+
+        private final int size;
+        private final String serviceKey;
+
+        public MetricsServiceRegisterEvent(ApplicationModel applicationModel, TimePair timePair, String serviceKey, int size) {
+            super(applicationModel, timePair);
+            this.size = size;
+            this.serviceKey = serviceKey;
+        }
+
+        public int getSize() {
+            return size;
+        }
+
+        public String getServiceKey() {
+            return serviceKey;
+        }
+    }
+
+    public static class MetricsServiceSubscribeEvent extends RegistryEvent {
+
+        private final String uniqueServiceName;
+
+        public MetricsServiceSubscribeEvent(ApplicationModel applicationModel, TimePair timePair, String uniqueServiceName) {
+            super(applicationModel, timePair);
+            this.uniqueServiceName = uniqueServiceName;
+        }
+
+        public String getUniqueServiceName() {
+            return uniqueServiceName;
         }
     }
 }

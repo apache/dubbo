@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_HOSTNAME;
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_IP;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_APPLICATION_NAME;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_APPLICATION_VERSION_KEY;
@@ -58,6 +59,13 @@ public class ApplicationMetric implements Metric {
         tags.put(TAG_APPLICATION_NAME, applicationName);
         tags.put(TAG_APPLICATION_VERSION_KEY, version);
         tags.put(MetricsKey.METADATA_GIT_COMMITID_METRIC.getName(), commitId);
+        return tags;
+    }
+
+    public static Map<String, String> getServiceTags(String appAndServiceName) {
+        String[] keys = appAndServiceName.split("_");
+        Map<String, String> tags = getTagsByName(keys[0]);
+        tags.put(TAG_INTERFACE_KEY, keys[1]);
         return tags;
     }
 }
