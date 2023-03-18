@@ -33,6 +33,7 @@ import org.apache.dubbo.metrics.report.MetricsExport;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.LongAccumulator;
@@ -83,11 +84,16 @@ public class RegistryStatComposite implements MetricsExport {
         singleRtStats.add(new AtomicLongContainer(new MetricsKeyWrapper(registryOpType, MetricsKey.METRIC_RT_LAST)));
         singleRtStats.add(new LongAccumulatorContainer(new MetricsKeyWrapper(registryOpType, MetricsKey.METRIC_RT_MIN), new LongAccumulator(Long::min, Long.MAX_VALUE)));
         singleRtStats.add(new LongAccumulatorContainer(new MetricsKeyWrapper(registryOpType, MetricsKey.METRIC_RT_MAX), new LongAccumulator(Long::max, Long.MIN_VALUE)));
-        singleRtStats.add(new AtomicLongContainer(new MetricsKeyWrapper(registryOpType, MetricsKey.METRIC_RT_SUM), (responseTime, longAccumulator) -> longAccumulator.addAndGet(responseTime)));
+        AtomicLongContainer initTotalContainer = new AtomicLongContainer(new MetricsKeyWrapper(registryOpType, MetricsKey.METRIC_RT_SUM), (responseTime, longAccumulator) -> longAccumulator.addAndGet(responseTime));
+        singleRtStats.add(initTotalContainer);
         // AvgContainer is a special counter that stores the number of times but outputs function of sum/times
         AtomicLongContainer avgContainer = new AtomicLongContainer(new MetricsKeyWrapper(registryOpType, MetricsKey.METRIC_RT_AVG), (k, v) -> v.incrementAndGet());
         avgContainer.setValueSupplier(applicationName -> {
-            LongContainer<? extends Number> totalContainer = appRtStats.stream().filter(longContainer -> longContainer.isKeyWrapper(MetricsKey.METRIC_RT_SUM, registryOpType)).findFirst().get();
+            Optional<LongContainer<? extends Number>> first = appRtStats.stream().filter(longContainer -> longContainer.isKeyWrapper(MetricsKey.METRIC_RT_SUM, registryOpType)).findFirst();
+             if(!first.isPresent()){
+                 return 0L;
+             }
+            LongContainer<? extends Number> totalContainer =  first.get();
             AtomicLong totalRtTimes = avgContainer.get(applicationName);
             AtomicLong totalRtSum = (AtomicLong) totalContainer.get(applicationName);
             return totalRtSum.get() / totalRtTimes.get();

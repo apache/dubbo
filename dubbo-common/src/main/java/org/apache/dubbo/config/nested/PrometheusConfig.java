@@ -26,6 +26,7 @@ public class PrometheusConfig implements Serializable {
      * Prometheus exporter configuration
      */
     @Nested
+    @Deprecated
     private Exporter exporter;
 
     /**
@@ -55,26 +56,31 @@ public class PrometheusConfig implements Serializable {
         /**
          * Enable prometheus exporter
          */
+        @Deprecated
         private Boolean enabled;
 
         /**
          * Enable http service discovery for prometheus
          */
+        @Deprecated
         private Boolean enableHttpServiceDiscovery;
 
         /**
          * Http service discovery url
          */
+        @Deprecated
         private String httpServiceDiscoveryUrl;
 
         /**
          * When using pull method, which port to expose
          */
+        @Deprecated
         private Integer metricsPort;
 
         /**
          * When using pull mode, which path to expose metrics
          */
+        @Deprecated
         private String metricsPath;
 
         public Boolean getEnabled() {
