@@ -30,7 +30,6 @@ import org.apache.dubbo.rpc.protocol.rest.RestHeaderEnum;
 import org.apache.dubbo.rpc.protocol.rest.exception.MediaTypeUnSupportException;
 import org.apache.dubbo.rpc.protocol.rest.exception.ParamParseException;
 import org.apache.dubbo.rpc.protocol.rest.exception.PathNoFoundException;
-import org.apache.dubbo.rpc.protocol.rest.exception.UnSupportAcceptException;
 import org.apache.dubbo.rpc.protocol.rest.exception.UnSupportContentTypeException;
 import org.apache.dubbo.rpc.protocol.rest.exception.mapper.ExceptionMapper;
 import org.apache.dubbo.rpc.protocol.rest.message.HttpMessageCodecManager;
@@ -83,12 +82,12 @@ public class NettyHttpHandler implements HttpHandler<FullHttpRequest, NettyHttpR
         //  acquire metadata by request
         Pair<Invoker, RestMethodMetadata> restMethodMetadataPair = RestRPCInvocationUtil.getRestMethodMetadata(request);
 
-        // content-type  support judge,throw unSupportException
-        acceptSupportJudge(request);
-
         Invoker invoker = restMethodMetadataPair.getFirst();
 
         RestMethodMetadata restMethodMetadata = restMethodMetadataPair.getSecond();
+
+        // content-type  support judge,throw unSupportException
+        acceptSupportJudge(request, restMethodMetadata.getReflectMethod().getReturnType());
 
         // build RpcInvocation
         RpcInvocation rpcInvocation = RestRPCInvocationUtil.createBaseRpcInvocation(request, restMethodMetadata);
@@ -155,20 +154,36 @@ public class NettyHttpHandler implements HttpHandler<FullHttpRequest, NettyHttpR
      *
      * @param requestFacade
      */
-    private void acceptSupportJudge(RequestFacade requestFacade) {
+    private void acceptSupportJudge(RequestFacade requestFacade, Class<?> returnType) {
         try {
+            // media type judge
             getAcceptMediaType(requestFacade);
         } catch (UnSupportContentTypeException e) {
-            throw new UnSupportAcceptException(requestFacade.getHeader(RestHeaderEnum.ACCEPT.getHeader()));
+            // return type judge
+            MediaType mediaType = HttpMessageCodecManager.typeSupport(returnType);
+
+            String accept = requestFacade.getHeader(RestHeaderEnum.ACCEPT.getHeader());
+            if (mediaType == null || accept == null) {
+                throw e;
+            }
+
+
+            if (!accept.contains(mediaType.value)) {
+
+                throw e;
+            }
+
         }
     }
 
 
     public static String stackTraceToString(Throwable throwable) {
         StackTraceElement[] stackTrace = throwable.getStackTrace();
+
         StringBuilder stringBuilder = new StringBuilder();
-        for (StackTraceElement traceElement : stackTrace)
+        for (StackTraceElement traceElement : stackTrace) {
             stringBuilder.append("\tat " + traceElement);
+        }
 
         return stringBuilder.toString();
     }
