@@ -60,7 +60,7 @@ class MetricsConfigTest {
         assertThat(url.getParameter("prometheus.exporter.enabled"), equalTo("true"));
         assertThat(url.getParameter("prometheus.pushgateway.enabled"), equalTo("true"));
         assertThat(url.getParameter("aggregation.enabled"), equalTo("true"));
-        assertThat(url.getParameter("rthistogram.enabled"), equalTo("true"));
+        assertThat(url.getParameter("rt-histogram.enabled"), equalTo("true"));
     }
 
     @Test
