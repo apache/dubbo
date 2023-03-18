@@ -75,7 +75,7 @@ public class DubboCodec extends ExchangeCodec {
     private static final AtomicBoolean decodeInUserThreadLogged = new AtomicBoolean(false);
     private final CallbackServiceCodec callbackServiceCodec;
     private final FrameworkModel frameworkModel;
-    private ByteAccessor customByteAccessor;
+    private final ByteAccessor customByteAccessor;
 
     public DubboCodec(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
