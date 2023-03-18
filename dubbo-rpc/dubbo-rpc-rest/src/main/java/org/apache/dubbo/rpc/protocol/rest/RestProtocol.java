@@ -45,6 +45,7 @@ import org.apache.dubbo.rpc.protocol.rest.annotation.metadata.MetadataResolver;
 import org.apache.dubbo.rpc.protocol.rest.exception.ParamParseException;
 import org.apache.dubbo.rpc.protocol.rest.exception.RemoteServerInternalException;
 import org.apache.dubbo.rpc.protocol.rest.message.HttpMessageCodecManager;
+import org.apache.dubbo.rpc.protocol.rest.util.HttpHeaderUtil;
 import org.apache.dubbo.rpc.protocol.rest.util.MediaTypeUtil;
 
 
@@ -54,7 +55,6 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
@@ -201,11 +201,7 @@ public class RestProtocol extends AbstractProtocol {
                                 Object value = HttpMessageCodecManager.httpMessageDecode(r.getBody(),
                                     restMethodMetadata.getReflectMethod().getReturnType(), mediaType);
                                 appResponse.setValue(value);
-                                Map<String, String> headers = r.headers()
-                                    .entrySet()
-                                    .stream()
-                                    .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().get(0)));
-                                appResponse.setAttachments(headers);
+                                HttpHeaderUtil.parseResponseHeader(appResponse,r);
                                 responseFuture.complete(appResponse);
                             } catch (Exception e) {
                                 responseFuture.completeExceptionally(e);

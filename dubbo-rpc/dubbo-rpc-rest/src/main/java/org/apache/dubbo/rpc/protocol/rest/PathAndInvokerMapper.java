@@ -43,7 +43,7 @@ public class PathAndInvokerMapper {
     }
 
 
-    public static Pair<Invoker, RestMethodMetadata> getRestMethodMetadata(String path, String version, String group, int port) {
+    public static Pair<Invoker, RestMethodMetadata> getRestMethodMetadata(String path, String version, String group, Integer port) {
 
 
         PathMatcher pathMather = PathMatcher.getInvokeCreatePathMatcher(path, version, group, port);

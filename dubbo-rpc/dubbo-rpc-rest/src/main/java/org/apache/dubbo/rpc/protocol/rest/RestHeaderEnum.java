@@ -21,11 +21,12 @@ import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
 public enum RestHeaderEnum {
     CONTENT_TYPE(RestConstant.CONTENT_TYPE),
     ACCEPT(RestConstant.ACCEPT),
-    GROUP(RestConstant.GROUP),
-    VERSION(RestConstant.VERSION),
-    PATH(RestConstant.PATH),
+    GROUP(RestConstant.REST_HEADER_PREFIX + RestConstant.GROUP),
+    VERSION(RestConstant.REST_HEADER_PREFIX + RestConstant.VERSION),
+    PATH(RestConstant.REST_HEADER_PREFIX + RestConstant.PATH),
     KEEP_ALIVE_HEADER(RestConstant.KEEP_ALIVE_HEADER),
     CONNECTION(RestConstant.CONNECTION),
+    REST_HEADER_PREFIX(RestConstant.REST_HEADER_PREFIX),
 
 
     ;
