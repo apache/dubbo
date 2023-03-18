@@ -14,17 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metrics.filter.observation;
+package org.apache.dubbo.security.cert;
 
-import io.micrometer.observation.Observation;
-import io.micrometer.observation.ObservationConvention;
-
-/**
- * {@link ObservationConvention} for a {@link DubboClientContext}.
- */
-public interface DubboClientObservationConvention extends ObservationConvention<DubboClientContext> {
-    @Override
-    default boolean supportsContext(Observation.Context context) {
-        return context instanceof DubboClientContext;
-    }
+public interface Constants {
+    int DEFAULT_REFRESH_INTERVAL = 30_000;
 }

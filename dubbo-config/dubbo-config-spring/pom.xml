@@ -27,7 +27,7 @@
     <description>The spring config module of dubbo project</description>
     <properties>
         <skip_maven_deploy>false</skip_maven_deploy>
-        <spring-boot.version>2.7.8</spring-boot.version>
+        <spring-boot.version>2.7.9</spring-boot.version>
         <!-- Uncomment spring_version property to check Spring 4.x compatibility -->
         <!-- <spring_version>4.3.30.RELEASE</spring_version> -->
     </properties>
