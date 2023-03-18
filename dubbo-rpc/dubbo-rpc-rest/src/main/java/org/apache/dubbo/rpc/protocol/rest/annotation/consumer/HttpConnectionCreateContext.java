@@ -27,6 +27,7 @@ public class HttpConnectionCreateContext {
     private RequestTemplate requestTemplate;
     private HttpConnectionConfig connectionConfig;
     private RestMethodMetadata restMethodMetadata;
+    private ServiceRestMetadata serviceRestMetadata;
     private Invocation invocation;
     private URL url;
 
@@ -52,7 +53,7 @@ public class HttpConnectionCreateContext {
     }
 
     public ServiceRestMetadata getServiceRestMetadata() {
-        return restMethodMetadata.getServiceRestMetadata();
+        return serviceRestMetadata;
     }
 
     public RestMethodMetadata getRestMethodMetadata() {
@@ -77,5 +78,9 @@ public class HttpConnectionCreateContext {
 
     public void setUrl(URL url) {
         this.url = url;
+    }
+
+    public void setServiceRestMetadata(ServiceRestMetadata serviceRestMetadata) {
+        this.serviceRestMetadata = serviceRestMetadata;
     }
 }

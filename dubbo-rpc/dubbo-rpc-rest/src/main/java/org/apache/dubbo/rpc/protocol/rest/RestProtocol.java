@@ -21,6 +21,7 @@ import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.metadata.ParameterTypesComparator;
 import org.apache.dubbo.metadata.rest.PathMatcher;
 import org.apache.dubbo.metadata.rest.RestMethodMetadata;
+import org.apache.dubbo.metadata.rest.ServiceRestMetadata;
 import org.apache.dubbo.metadata.rest.media.MediaType;
 import org.apache.dubbo.remoting.http.RequestTemplate;
 import org.apache.dubbo.remoting.http.RestClient;
@@ -47,6 +48,7 @@ import org.apache.dubbo.rpc.protocol.rest.exception.RemoteServerInternalExceptio
 import org.apache.dubbo.rpc.protocol.rest.message.HttpMessageCodecManager;
 import org.apache.dubbo.rpc.protocol.rest.util.HttpHeaderUtil;
 import org.apache.dubbo.rpc.protocol.rest.util.MediaTypeUtil;
+import org.apache.dubbo.rpc.protocol.rest.util.Pair;
 
 
 import java.util.Map;
@@ -154,12 +156,15 @@ public class RestProtocol extends AbstractProtocol {
         String contextPathFromUrl = getContextPath(url);
 
         // resolve metadata
-        Map<String, Map<ParameterTypesComparator, RestMethodMetadata>> metadataMap = MetadataResolver.resolveConsumerServiceMetadata(type, url, contextPathFromUrl);
+        Pair<ServiceRestMetadata, Map<String, Map<ParameterTypesComparator, RestMethodMetadata>>> metadataMapPair = MetadataResolver.resolveConsumerServiceMetadata(type, url, contextPathFromUrl);
 
         Invoker<T> invoker = new AbstractInvoker<T>(type, url, new String[]{INTERFACE_KEY, GROUP_KEY, TOKEN_KEY}) {
             @Override
             protected Result doInvoke(Invocation invocation) {
                 try {
+                    ServiceRestMetadata serviceRestMetadata = metadataMapPair.getFirst();
+
+                    Map<String, Map<ParameterTypesComparator, RestMethodMetadata>> metadataMap = metadataMapPair.getSecond();
                     RestMethodMetadata restMethodMetadata = metadataMap.get(invocation.getMethodName()).get(ParameterTypesComparator.getInstance(invocation.getParameterTypes()));
 
                     RequestTemplate requestTemplate = new RequestTemplate(invocation, restMethodMetadata.getRequest().getMethod(), url.getAddress());
@@ -169,6 +174,7 @@ public class RestProtocol extends AbstractProtocol {
                     httpConnectionCreateContext.setConnectionConfig(new HttpConnectionConfig());
                     httpConnectionCreateContext.setRequestTemplate(requestTemplate);
                     httpConnectionCreateContext.setRestMethodMetadata(restMethodMetadata);
+                    httpConnectionCreateContext.setServiceRestMetadata(serviceRestMetadata);
                     httpConnectionCreateContext.setInvocation(invocation);
                     httpConnectionCreateContext.setUrl(url);
 
@@ -201,7 +207,7 @@ public class RestProtocol extends AbstractProtocol {
                                 Object value = HttpMessageCodecManager.httpMessageDecode(r.getBody(),
                                     restMethodMetadata.getReflectMethod().getReturnType(), mediaType);
                                 appResponse.setValue(value);
-                                HttpHeaderUtil.parseResponseHeader(appResponse,r);
+                                HttpHeaderUtil.parseResponseHeader(appResponse, r);
                                 responseFuture.complete(appResponse);
                             } catch (Exception e) {
                                 responseFuture.completeExceptionally(e);

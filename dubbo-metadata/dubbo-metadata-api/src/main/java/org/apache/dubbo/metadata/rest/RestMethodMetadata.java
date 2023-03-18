@@ -57,8 +57,6 @@ public class RestMethodMetadata implements Serializable {
 
     private Map<Integer, Boolean> indexToEncoded;
 
-    private ServiceRestMetadata serviceRestMetadata;
-
     private List<ArgInfo> argInfos;
 
     private Method reflectMethod;
@@ -167,15 +165,6 @@ public class RestMethodMetadata implements Serializable {
 
     public void setIndexToEncoded(Map<Integer, Boolean> indexToEncoded) {
         this.indexToEncoded = indexToEncoded;
-    }
-
-
-    public ServiceRestMetadata getServiceRestMetadata() {
-        return serviceRestMetadata;
-    }
-
-    public void setServiceRestMetadata(ServiceRestMetadata serviceRestMetadata) {
-        this.serviceRestMetadata = serviceRestMetadata;
     }
 
     public List<ArgInfo> getArgInfos() {
