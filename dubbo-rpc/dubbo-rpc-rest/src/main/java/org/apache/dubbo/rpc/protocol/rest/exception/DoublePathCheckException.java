@@ -14,29 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.rest;
+package org.apache.dubbo.rpc.protocol.rest.exception;
 
-import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
+/**
+ *  path mapper contains current path will throw
+ */
+public class DoublePathCheckException extends RuntimeException {
 
-public enum RestHeaderEnum {
-    CONTENT_TYPE(RestConstant.CONTENT_TYPE),
-    ACCEPT(RestConstant.ACCEPT),
-    GROUP(RestConstant.REST_HEADER_PREFIX + RestConstant.GROUP),
-    VERSION(RestConstant.REST_HEADER_PREFIX + RestConstant.VERSION),
-    PATH(RestConstant.REST_HEADER_PREFIX + RestConstant.PATH),
-    KEEP_ALIVE_HEADER(RestConstant.KEEP_ALIVE_HEADER),
-    CONNECTION(RestConstant.CONNECTION),
-    REST_HEADER_PREFIX(RestConstant.REST_HEADER_PREFIX),
-
-
-    ;
-    private final String header;
-
-    RestHeaderEnum(String header) {
-        this.header = header;
-    }
-
-    public String getHeader() {
-        return header;
+    public DoublePathCheckException(String message) {
+        super(message);
     }
 }

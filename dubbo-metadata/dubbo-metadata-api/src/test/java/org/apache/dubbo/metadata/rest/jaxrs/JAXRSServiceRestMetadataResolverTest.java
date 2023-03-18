@@ -111,7 +111,6 @@ class JAXRSServiceRestMetadataResolverTest {
 
         List<String> jsonsTmp = new ArrayList<>();
         for (RestMethodMetadata restMethodMetadata : jaxrsMetadata.getMeta()) {
-            restMethodMetadata.setServiceRestMetadata(null);
             restMethodMetadata.setReflectMethod(null);
             restMethodMetadata.setMethod(null);
             jsonsTmp.add(JsonUtils.getJson().toJson(restMethodMetadata));

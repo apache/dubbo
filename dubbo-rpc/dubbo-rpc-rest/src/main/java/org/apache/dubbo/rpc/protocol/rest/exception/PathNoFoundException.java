@@ -16,7 +16,10 @@
  */
 package org.apache.dubbo.rpc.protocol.rest.exception;
 
-public class PathNoFoundException extends RuntimeException{
+/**
+ *  response code : 404 path no found exception
+ */
+public class PathNoFoundException extends RestException{
 
     public PathNoFoundException(String message) {
         super(message);

@@ -17,19 +17,21 @@
 package org.apache.dubbo.metadata.rest;
 
 
-import java.util.Arrays;
 import java.util.Objects;
 
+/**
+ *  for http request  path match
+ */
 public class PathMatcher {
     private static final String SEPARATOR = "/";
     private String path;
-    private String version;
-    private String group;
-    private Integer port;
+    private String version;// service version
+    private String group;// service group
+    private Integer port;// service port
     private String[] pathSplits;
     private boolean hasPathVariable;
     private String contextPath;
-    private boolean invokeCreate;
+    private boolean invokeCreate;// distinguish create  from metadata resolve create
 
 
     public PathMatcher(String path,boolean invokeCreate) {
@@ -198,7 +200,6 @@ public class PathMatcher {
             ", version='" + version + '\'' +
             ", group='" + group + '\'' +
             ", port=" + port +
-            ", pathSplits=" + Arrays.toString(pathSplits) +
             ", hasPathVariable=" + hasPathVariable +
             ", contextPath='" + contextPath + '\'' +
             '}';

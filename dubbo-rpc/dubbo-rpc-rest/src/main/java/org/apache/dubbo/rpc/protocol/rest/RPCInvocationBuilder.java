@@ -73,38 +73,21 @@ public class RPCInvocationBuilder {
     private static RpcInvocation createBaseRpcInvocation(RequestFacade request, RestMethodMetadata restMethodMetadata) {
         RpcInvocation rpcInvocation = new RpcInvocation();
 
-
-        int localPort = request.getLocalPort();
-        String localAddr = request.getLocalAddr();
-        int remotePort = request.getRemotePort();
-        String remoteAddr = request.getRemoteAddr();
-
-        String HOST = request.getHeader(RestConstant.HOST);
-        String GROUP = request.getHeader(RestConstant.GROUP);
-
-        String PATH = request.getHeader(RestConstant.PATH);
-        String VERSION = request.getHeader(RestConstant.VERSION);
-
-        String METHOD = restMethodMetadata.getMethod().getName();
-        String[] PARAMETER_TYPES_DESC = restMethodMetadata.getMethod().getParameterTypes();
+        String method = restMethodMetadata.getMethod().getName();
+        String[] parameterTypes = restMethodMetadata.getMethod().getParameterTypes();
 
         rpcInvocation.setParameterTypes(restMethodMetadata.getReflectMethod().getParameterTypes());
         rpcInvocation.setReturnType(restMethodMetadata.getReflectMethod().getReturnType());
+        rpcInvocation.setMethodName(method);
+        rpcInvocation.put(RestConstant.PARAMETER_TYPES_DESC, parameterTypes);
+        rpcInvocation.put(RestConstant.METHOD, method);
 
 
-        rpcInvocation.setMethodName(METHOD);
-        rpcInvocation.setAttachment(RestConstant.GROUP, GROUP);
-        rpcInvocation.setAttachment(RestConstant.METHOD, METHOD);
-        rpcInvocation.setAttachment(RestConstant.PARAMETER_TYPES_DESC, PARAMETER_TYPES_DESC);
-        rpcInvocation.setAttachment(RestConstant.PATH, PATH);
-        rpcInvocation.setAttachment(RestConstant.VERSION, VERSION);
-        rpcInvocation.setAttachment(RestConstant.HOST, HOST);
-        rpcInvocation.setAttachment(RestConstant.REMOTE_ADDR, remoteAddr);
-        rpcInvocation.setAttachment(RestConstant.LOCAL_ADDR, localAddr);
-        rpcInvocation.setAttachment(RestConstant.REMOTE_PORT, remotePort);
-        rpcInvocation.setAttachment(RestConstant.LOCAL_PORT, localPort);
+        // TODO set setTargetServiceUniqueName  protocolServiceKey
+//        rpcInvocation.setTargetServiceUniqueName();
+//        rpcInvocation.protocolServiceKey();
 
-        HttpHeaderUtil.parseServerContextAttachment(request);
+        HttpHeaderUtil.parseRequest(rpcInvocation, request);
 
 
         return rpcInvocation;
@@ -113,11 +96,10 @@ public class RPCInvocationBuilder {
 
     private static Pair<Invoker, RestMethodMetadata> getRestMethodMetadata(RequestFacade request) {
         String path = request.getPathInfo();
-        String version = request.getHeader(RestConstant.VERSION);
-        String group = request.getHeader(RestConstant.GROUP);
-        int port = request.getIntHeader(RestConstant.REST_PORT);
+        String version = request.getHeader(RestHeaderEnum.VERSION.getHeader());
+        String group = request.getHeader(RestHeaderEnum.GROUP.getHeader());
 
-        return PathAndInvokerMapper.getRestMethodMetadata(path, version, group, port);
+        return PathAndInvokerMapper.getRestMethodMetadata(path, version, group, null);
     }
 
 

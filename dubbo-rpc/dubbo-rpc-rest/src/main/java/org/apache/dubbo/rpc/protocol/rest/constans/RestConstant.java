@@ -58,4 +58,5 @@ public interface RestConstant {
     String ACCEPT = "Accept";
     String DEFAULT_ACCEPT = "*/*";
     String REST_PORT = "rest-port";
+    String REST_HEADER_PREFIX = "#rest#";
 }

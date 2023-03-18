@@ -104,7 +104,6 @@ class SpringMvcServiceRestMetadataResolverTest {
 
         List<String> jsonsTmp = new ArrayList<>();
         for (RestMethodMetadata restMethodMetadata : springMetadata.getMeta()) {
-            restMethodMetadata.setServiceRestMetadata(null);
             restMethodMetadata.setReflectMethod(null);
             restMethodMetadata.setMethod(null);
             jsonsTmp.add(JsonUtils.getJson().toJson(restMethodMetadata));

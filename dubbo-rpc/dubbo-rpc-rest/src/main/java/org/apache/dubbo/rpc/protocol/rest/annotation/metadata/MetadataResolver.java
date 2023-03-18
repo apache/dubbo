@@ -24,6 +24,7 @@ import org.apache.dubbo.metadata.rest.RestMethodMetadata;
 import org.apache.dubbo.metadata.rest.ServiceRestMetadata;
 import org.apache.dubbo.metadata.rest.ServiceRestMetadataResolver;
 import org.apache.dubbo.rpc.protocol.rest.exception.CodeStyleNotSupportException;
+import org.apache.dubbo.rpc.protocol.rest.util.Pair;
 
 import java.util.Map;
 
@@ -35,11 +36,11 @@ public class MetadataResolver {
      * for consumer
      *
      * @param targetClass target service class
-     * @param url consumer url
+     * @param url         consumer url
      * @return rest metadata
      * @throws CodeStyleNotSupportException not support type
      */
-    public static Map<String, Map<ParameterTypesComparator, RestMethodMetadata>> resolveConsumerServiceMetadata(Class<?> targetClass, URL url, String contextPathFromUrl) {
+    public static Pair<ServiceRestMetadata, Map<String, Map<ParameterTypesComparator, RestMethodMetadata>>> resolveConsumerServiceMetadata(Class<?> targetClass, URL url, String contextPathFromUrl) {
         ExtensionLoader<ServiceRestMetadataResolver> extensionLoader = url.getOrDefaultApplicationModel().getExtensionLoader(ServiceRestMetadataResolver.class);
 
         for (ServiceRestMetadataResolver serviceRestMetadataResolver : extensionLoader.getSupportedExtensionInstances()) {
@@ -47,7 +48,7 @@ public class MetadataResolver {
                 ServiceRestMetadata serviceRestMetadata = new ServiceRestMetadata(url.getServiceInterface(), url.getVersion(), url.getGroup(), true);
                 serviceRestMetadata.setContextPathFromUrl(contextPathFromUrl);
                 ServiceRestMetadata resolve = serviceRestMetadataResolver.resolve(targetClass, serviceRestMetadata);
-                return resolve.getMethodToServiceMap();
+                return Pair.make(resolve, resolve.getMethodToServiceMap());
             }
         }
 
