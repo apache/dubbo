@@ -22,7 +22,6 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.protocol.rest.annotation.ParamParserManager;
 import org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.provider.ProviderParseContext;
 import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
-import org.apache.dubbo.rpc.protocol.rest.exception.ParamParseException;
 import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
 import org.apache.dubbo.rpc.protocol.rest.util.HttpHeaderUtil;
 import org.apache.dubbo.rpc.protocol.rest.util.Pair;
@@ -31,30 +30,16 @@ import org.apache.dubbo.rpc.protocol.rest.util.Pair;
 import java.util.Arrays;
 
 
-public class RPCInvocationBuilder {
+public class RestRPCInvocationUtil {
 
 
-    private static final ParamParserManager paramParser = new ParamParserManager();
+    public static void parseMethodArgs(RpcInvocation rpcInvocation, RequestFacade request, Object servletRequest,
+                                       Object servletResponse,
+                                       RestMethodMetadata restMethodMetadata) {
 
-
-    public static Pair<RpcInvocation, Invoker> build(RequestFacade request, Object servletRequest, Object servletResponse) {
-
-        Pair<Invoker, RestMethodMetadata> invokerRestMethodMetadataPair = getRestMethodMetadata(request);
-
-        RpcInvocation rpcInvocation = createBaseRpcInvocation(request, invokerRestMethodMetadataPair.getSecond());
-
-        ProviderParseContext parseContext = createParseContext(request, servletRequest, servletResponse, invokerRestMethodMetadataPair.getSecond());
-
-        try {
-            Object[] args = paramParser.providerParamParse(parseContext);
-
-            rpcInvocation.setArguments(args);
-        } catch (Exception paramParseException) {
-            throw new ParamParseException(paramParseException.getMessage());
-        }
-
-        return Pair.make(rpcInvocation, invokerRestMethodMetadataPair.getFirst());
-
+        ProviderParseContext parseContext = createParseContext(request, servletRequest, servletResponse, restMethodMetadata);
+        Object[] args = ParamParserManager.providerParamParse(parseContext);
+        rpcInvocation.setArguments(args);
     }
 
     private static ProviderParseContext createParseContext(RequestFacade request, Object servletRequest, Object servletResponse, RestMethodMetadata restMethodMetadata) {
@@ -70,7 +55,7 @@ public class RPCInvocationBuilder {
         return parseContext;
     }
 
-    private static RpcInvocation createBaseRpcInvocation(RequestFacade request, RestMethodMetadata restMethodMetadata) {
+    public static RpcInvocation createBaseRpcInvocation(RequestFacade request, RestMethodMetadata restMethodMetadata) {
         RpcInvocation rpcInvocation = new RpcInvocation();
 
         String method = restMethodMetadata.getMethod().getName();
@@ -94,7 +79,7 @@ public class RPCInvocationBuilder {
     }
 
 
-    private static Pair<Invoker, RestMethodMetadata> getRestMethodMetadata(RequestFacade request) {
+    public static Pair<Invoker, RestMethodMetadata> getRestMethodMetadata(RequestFacade request) {
         String path = request.getPathInfo();
         String version = request.getHeader(RestHeaderEnum.VERSION.getHeader());
         String group = request.getHeader(RestHeaderEnum.GROUP.getHeader());
