@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.rpc.protocol.rest.netty;
 
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageDecoder;
 
@@ -27,6 +28,7 @@ import io.netty.handler.codec.http.HttpRequest;
 import org.apache.dubbo.remoting.http.HttpHandler;
 
 
+@ChannelHandler.Sharable
 public class RestHttpRequestDecoder extends MessageToMessageDecoder<io.netty.handler.codec.http.FullHttpRequest> {
 
 
