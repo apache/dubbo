@@ -14,12 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.qos.command;
+package org.apache.dubbo.aot.generate;
 
-import org.apache.dubbo.common.extension.ExtensionScope;
-import org.apache.dubbo.common.extension.SPI;
+import java.lang.reflect.Member;
 
-@SPI(scope = ExtensionScope.FRAMEWORK)
-public interface BaseCommand {
-    String execute(CommandContext commandContext,String[] args);
+/**
+ * Base describer that describes the need for reflection on a {@link Member}.
+ *
+ */
+public class MemberDescriber {
+
+    private final String name;
+
+    protected MemberDescriber(String name) {
+        this.name = name;
+    }
+
+    /**
+     * Return the name of the member.
+     * @return the name
+     */
+    public String getName() {
+        return this.name;
+    }
 }

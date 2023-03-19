@@ -18,6 +18,7 @@
 package org.apache.dubbo.qos.command;
 
 import io.netty.channel.Channel;
+import org.apache.dubbo.qos.api.CommandContext;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
