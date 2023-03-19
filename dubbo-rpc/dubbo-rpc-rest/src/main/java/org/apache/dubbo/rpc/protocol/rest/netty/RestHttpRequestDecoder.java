@@ -19,7 +19,9 @@ package org.apache.dubbo.rpc.protocol.rest.netty;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageDecoder;
+
 import java.util.List;
+
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpRequest;
 import org.apache.dubbo.remoting.http.HttpHandler;
@@ -28,14 +30,16 @@ import org.apache.dubbo.remoting.http.HttpHandler;
 public class RestHttpRequestDecoder extends MessageToMessageDecoder<io.netty.handler.codec.http.FullHttpRequest> {
 
 
-    private final String proto;
+    private String proto;
     private final HttpHandler<HttpRequest, Object> handler;
 
 
-    public RestHttpRequestDecoder(HttpHandler handler, String proto) {
+    public RestHttpRequestDecoder(HttpHandler handler) {
         this.handler = handler;
-        this.proto = proto;
+    }
 
+    public void setProto(String proto) {
+        this.proto = proto;
     }
 
     @Override

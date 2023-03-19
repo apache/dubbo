@@ -34,8 +34,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public class PathAndInvokerMapper {
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(PathAndInvokerMapper.class);
 
-    private static final Map<PathMatcher, Pair<Invoker, RestMethodMetadata>> pathToServiceMapContainPathVariable = new ConcurrentHashMap<>();
-    private static final Map<PathMatcher, Pair<Invoker, RestMethodMetadata>> pathToServiceMapNoPathVariable = new ConcurrentHashMap<>();
+    private final Map<PathMatcher, Pair<Invoker, RestMethodMetadata>> pathToServiceMapContainPathVariable = new ConcurrentHashMap<>();
+    private final Map<PathMatcher, Pair<Invoker, RestMethodMetadata>> pathToServiceMapNoPathVariable = new ConcurrentHashMap<>();
 
 
     /**
@@ -44,7 +44,7 @@ public class PathAndInvokerMapper {
      * @param metadataMap
      * @param invoker
      */
-    public static void addPathAndInvoker(Map<PathMatcher, RestMethodMetadata> metadataMap, Invoker invoker) {
+    public void addPathAndInvoker(Map<PathMatcher, RestMethodMetadata> metadataMap, Invoker invoker) {
 
         metadataMap.entrySet().stream().forEach(entry -> {
             PathMatcher pathMatcher = entry.getKey();
@@ -65,7 +65,7 @@ public class PathAndInvokerMapper {
      * @param port
      * @return
      */
-    public static Pair<Invoker, RestMethodMetadata> getRestMethodMetadata(String path, String version, String group, Integer port) {
+    public Pair<Invoker, RestMethodMetadata> getRestMethodMetadata(String path, String version, String group, Integer port) {
 
 
         PathMatcher pathMather = PathMatcher.getInvokeCreatePathMatcher(path, version, group, port);
@@ -88,7 +88,7 @@ public class PathAndInvokerMapper {
      *
      * @param pathMatcher
      */
-    public static void removePath(PathMatcher pathMatcher) {
+    public void removePath(PathMatcher pathMatcher) {
 
         Pair<Invoker, RestMethodMetadata> containPathVariablePair = pathToServiceMapContainPathVariable.remove(pathMatcher);
 
@@ -100,9 +100,9 @@ public class PathAndInvokerMapper {
 
     }
 
-    public static void addPathMatcherToPathMap(PathMatcher pathMatcher,
-                                               Map<PathMatcher, Pair<Invoker, RestMethodMetadata>> pathMatcherPairMap,
-                                               Pair<Invoker, RestMethodMetadata> invokerRestMethodMetadataPair) {
+    public void addPathMatcherToPathMap(PathMatcher pathMatcher,
+                                        Map<PathMatcher, Pair<Invoker, RestMethodMetadata>> pathMatcherPairMap,
+                                        Pair<Invoker, RestMethodMetadata> invokerRestMethodMetadataPair) {
 
         if (pathMatcherPairMap.containsKey(pathMatcher)) {
 

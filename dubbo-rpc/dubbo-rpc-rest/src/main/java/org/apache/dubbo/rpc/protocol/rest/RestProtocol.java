@@ -18,9 +18,6 @@ package org.apache.dubbo.rpc.protocol.rest;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
-import org.apache.dubbo.metadata.ParameterTypesComparator;
-import org.apache.dubbo.metadata.rest.PathMatcher;
-import org.apache.dubbo.metadata.rest.RestMethodMetadata;
 import org.apache.dubbo.metadata.rest.ServiceRestMetadata;
 import org.apache.dubbo.remoting.http.RestClient;
 import org.apache.dubbo.remoting.http.factory.RestClientFactory;
@@ -33,7 +30,6 @@ import org.apache.dubbo.rpc.protocol.AbstractExporter;
 import org.apache.dubbo.rpc.protocol.AbstractProtocol;
 import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.HttpConnectionPreBuildIntercept;
 import org.apache.dubbo.rpc.protocol.rest.annotation.metadata.MetadataResolver;
-import org.apache.dubbo.rpc.protocol.rest.util.Pair;
 
 
 import java.util.Map;
@@ -88,7 +84,7 @@ public class RestProtocol extends AbstractProtocol {
 
 
         // resolve metadata
-        Map<PathMatcher, RestMethodMetadata> metadataMap =
+        ServiceRestMetadata serviceRestMetadata =
             MetadataResolver.resolveProviderServiceMetadata(url.getServiceModel().getProxyObject().getClass(),
                 url, getContextPath(url));
 
@@ -102,16 +98,15 @@ public class RestProtocol extends AbstractProtocol {
             return s;
         });
 
-        server.deploy(metadataMap, invoker);
+
+        server.deploy(serviceRestMetadata, invoker);
 
         exporter = new AbstractExporter<T>(invoker) {
             @Override
             public void afterUnExport() {
+                destroyInternal(url);
                 exporterMap.remove(uri);
-                metadataMap.keySet().stream().forEach(pathMatcher -> {
-                    server.undeploy(pathMatcher);
-                    destroyInternal(url);
-                });
+                server.undeploy(serviceRestMetadata);
             }
         };
         exporterMap.put(uri, exporter);
@@ -133,16 +128,15 @@ public class RestProtocol extends AbstractProtocol {
         }
         refClient.retain();
 
-        final ReferenceCountedClient<? extends RestClient> referenceCountedClient = refClient;
 
         String contextPathFromUrl = getContextPath(url);
 
         // resolve metadata
-        Pair<ServiceRestMetadata, Map<String, Map<ParameterTypesComparator, RestMethodMetadata>>> metadataMapPair =
+        ServiceRestMetadata serviceRestMetadata =
             MetadataResolver.resolveConsumerServiceMetadata(type, url, contextPathFromUrl);
 
         Invoker<T> invoker = new RestInvoker<T>(type, url,
-            referenceCountedClient, httpConnectionPreBuildIntercepts, metadataMapPair);
+            refClient, httpConnectionPreBuildIntercepts, serviceRestMetadata);
 
         invokers.add(invoker);
         return invoker;
@@ -150,7 +144,8 @@ public class RestProtocol extends AbstractProtocol {
 
 
     /**
-     *  create rest ReferenceCountedClient
+     * create rest ReferenceCountedClient
+     *
      * @param url
      * @return
      * @throws RpcException

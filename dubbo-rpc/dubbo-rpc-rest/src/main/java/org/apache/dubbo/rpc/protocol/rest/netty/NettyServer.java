@@ -32,6 +32,7 @@ import io.netty.handler.codec.http.HttpRequestDecoder;
 import io.netty.handler.codec.http.HttpResponseEncoder;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.EventExecutor;
+import org.apache.dubbo.rpc.protocol.rest.PathAndInvokerMapper;
 import org.apache.dubbo.rpc.protocol.rest.handler.NettyHttpHandler;
 
 import javax.net.ssl.SSLContext;
@@ -50,9 +51,7 @@ public class NettyServer {
 
     protected String root = "";
     private EventLoopGroup eventLoopGroup;
-    private EventLoopGroup eventExecutor;
     private int ioWorkerCount = Runtime.getRuntime().availableProcessors() * 2;
-    private int executorThreadCount = 16;
     private SSLContext sslContext;
     private int maxRequestSize = 1024 * 1024 * 10;
     private int maxInitialLineLength = 4096;
@@ -65,6 +64,14 @@ public class NettyServer {
     private Map<ChannelOption, Object> channelOptions = Collections.emptyMap();
     private Map<ChannelOption, Object> childChannelOptions = Collections.emptyMap();
     private List<ChannelHandler> httpChannelHandlers = Collections.emptyList();
+
+
+    private final RestHttpRequestDecoder restHttpRequestDecoder;
+
+
+    public NettyServer(PathAndInvokerMapper pathAndInvokerMapper) {
+        this.restHttpRequestDecoder = new RestHttpRequestDecoder(new NettyHttpHandler(pathAndInvokerMapper));
+    }
 
     public void setSSLContext(SSLContext sslContext) {
         this.sslContext = sslContext;
@@ -87,9 +94,6 @@ public class NettyServer {
      *
      * @param executorThreadCount thread count
      */
-    public void setExecutorThreadCount(int executorThreadCount) {
-        this.executorThreadCount = executorThreadCount;
-    }
 
     /**
      * Set the max. request size in bytes. If this size is exceed we will send a "413 Request Entity Too Large" to the client.
@@ -190,7 +194,6 @@ public class NettyServer {
 
     public void start() {
         eventLoopGroup = new NioEventLoopGroup(ioWorkerCount);
-        eventExecutor = new NioEventLoopGroup(executorThreadCount);
 
         // Configure the server.
         bootstrap.group(eventLoopGroup)
@@ -247,7 +250,8 @@ public class NettyServer {
         channelPipeline.addLast(new HttpObjectAggregator(maxRequestSize));
         channelPipeline.addLast(new HttpResponseEncoder());
         channelPipeline.addLast(httpChannelHandlers.toArray(new ChannelHandler[httpChannelHandlers.size()]));
-        channelPipeline.addLast(new RestHttpRequestDecoder(new NettyHttpHandler(), protocol));
+        restHttpRequestDecoder.setProto(protocol);
+        channelPipeline.addLast(restHttpRequestDecoder);
 
     }
 
@@ -255,6 +259,5 @@ public class NettyServer {
     public void stop() {
         runtimePort = -1;
         eventLoopGroup.shutdownGracefully();
-        eventExecutor.shutdownGracefully();
     }
 }
