@@ -51,9 +51,7 @@ public class NettyServer {
 
     protected String root = "";
     private EventLoopGroup eventLoopGroup;
-    private EventLoopGroup eventExecutor;
     private int ioWorkerCount = Runtime.getRuntime().availableProcessors() * 2;
-    private int executorThreadCount = 16;
     private SSLContext sslContext;
     private int maxRequestSize = 1024 * 1024 * 10;
     private int maxInitialLineLength = 4096;
@@ -96,9 +94,6 @@ public class NettyServer {
      *
      * @param executorThreadCount thread count
      */
-    public void setExecutorThreadCount(int executorThreadCount) {
-        this.executorThreadCount = executorThreadCount;
-    }
 
     /**
      * Set the max. request size in bytes. If this size is exceed we will send a "413 Request Entity Too Large" to the client.
@@ -199,7 +194,6 @@ public class NettyServer {
 
     public void start() {
         eventLoopGroup = new NioEventLoopGroup(ioWorkerCount);
-        eventExecutor = new NioEventLoopGroup(executorThreadCount);
 
         // Configure the server.
         bootstrap.group(eventLoopGroup)
@@ -265,6 +259,5 @@ public class NettyServer {
     public void stop() {
         runtimePort = -1;
         eventLoopGroup.shutdownGracefully();
-        eventExecutor.shutdownGracefully();
     }
 }
