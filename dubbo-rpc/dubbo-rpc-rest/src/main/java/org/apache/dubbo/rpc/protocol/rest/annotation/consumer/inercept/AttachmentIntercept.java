@@ -23,7 +23,9 @@ import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.HttpConnectionPreB
 import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
 import org.apache.dubbo.rpc.protocol.rest.util.HttpHeaderUtil;
 
-
+/**
+ *  add client rpc context to request geader
+ */
 @Activate(value = RestConstant.RPCCONTEXT_INTERCEPT, order = 3)
 public class AttachmentIntercept implements HttpConnectionPreBuildIntercept {
 

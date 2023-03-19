@@ -31,6 +31,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ *  body is form
+ */
 @Activate("multiValue")
 public class MultiValueCodec implements HttpMessageCodec<byte[], OutputStream> {
 

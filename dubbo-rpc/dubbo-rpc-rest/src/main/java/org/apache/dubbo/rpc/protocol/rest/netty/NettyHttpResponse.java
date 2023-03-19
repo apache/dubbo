@@ -42,6 +42,9 @@ import java.util.Map;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 
+/**
+ *  netty http response
+ */
 public class NettyHttpResponse implements HttpResponse {
     private static final int EMPTY_CONTENT_LENGTH = 0;
     private int status = 200;

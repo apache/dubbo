@@ -26,6 +26,9 @@ import org.apache.dubbo.rpc.protocol.rest.util.DataParseUtils;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 
+/**
+ *  content-type is text/html
+ */
 @Activate("text")
 public class TextCodec implements HttpMessageCodec<byte[], OutputStream> {
 

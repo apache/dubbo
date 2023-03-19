@@ -24,6 +24,9 @@ import org.apache.dubbo.rpc.protocol.rest.message.HttpMessageCodec;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 
+/**
+ *  body is string
+ */
 @Activate("string")
 public class StringCodec implements HttpMessageCodec<byte[], OutputStream> {
 

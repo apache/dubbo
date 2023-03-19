@@ -33,6 +33,9 @@ import javax.xml.transform.sax.SAXSource;
 import java.io.OutputStream;
 import java.io.StringReader;
 
+/**
+ *  body content-type is xml
+ */
 @Activate("xml")
 public class XMLCodec implements HttpMessageCodec<byte[], OutputStream> {
 

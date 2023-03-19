@@ -63,13 +63,16 @@ public class RestInvoker<T> extends AbstractInvoker<T> {
         try {
 
             Map<String, Map<ParameterTypesComparator, RestMethodMetadata>> metadataMap = serviceRestMetadata.getMethodToServiceMap();
+            //  get metadata
             RestMethodMetadata restMethodMetadata = metadataMap.get(invocation.getMethodName()).get(ParameterTypesComparator.getInstance(invocation.getParameterTypes()));
 
+            // create requestTemplate
             RequestTemplate requestTemplate = new RequestTemplate(invocation, restMethodMetadata.getRequest().getMethod(), getUrl().getAddress());
 
             HttpConnectionCreateContext httpConnectionCreateContext =
                 creatHttpConnectionCreateContext(invocation, serviceRestMetadata, restMethodMetadata, requestTemplate);
 
+            // fill real  data
             for (HttpConnectionPreBuildIntercept intercept : httpConnectionPreBuildIntercepts) {
                 intercept.intercept(httpConnectionCreateContext);
             }
@@ -100,6 +103,7 @@ public class RestInvoker<T> extends AbstractInvoker<T> {
                         Object value = HttpMessageCodecManager.httpMessageDecode(r.getBody(),
                             restMethodMetadata.getReflectMethod().getReturnType(), mediaType);
                         appResponse.setValue(value);
+                        // resolve response attribute & attachment
                         HttpHeaderUtil.parseResponseHeader(appResponse, r);
                         responseFuture.complete(appResponse);
                     } catch (Exception e) {
@@ -113,6 +117,14 @@ public class RestInvoker<T> extends AbstractInvoker<T> {
         }
     }
 
+    /**
+     *  create intercept context
+     * @param invocation
+     * @param serviceRestMetadata
+     * @param restMethodMetadata
+     * @param requestTemplate
+     * @return
+     */
     private HttpConnectionCreateContext creatHttpConnectionCreateContext(Invocation invocation, ServiceRestMetadata serviceRestMetadata, RestMethodMetadata restMethodMetadata, RequestTemplate requestTemplate) {
         HttpConnectionCreateContext httpConnectionCreateContext = new HttpConnectionCreateContext();
         // TODO  dynamic load config

@@ -29,6 +29,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ *  body is json
+ */
 @Activate("json")
 public class JsonCodec implements HttpMessageCodec<byte[], OutputStream> {
     private static final Set<Class> unSupportClasses = new HashSet<>();

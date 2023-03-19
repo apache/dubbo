@@ -23,6 +23,9 @@ import org.apache.dubbo.rpc.protocol.rest.message.HttpMessageCodec;
 
 import java.io.OutputStream;
 
+/**
+ *  body type is byte array
+ */
 @Activate("byteArray")
 public class ByteArrayCodec implements HttpMessageCodec<byte[], OutputStream> {
 
