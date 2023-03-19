@@ -25,8 +25,7 @@ import org.apache.dubbo.metadata.AbstractServiceNameMapping;
 import org.apache.dubbo.metadata.MappingChangedEvent;
 import org.apache.dubbo.metadata.MappingListener;
 import org.apache.dubbo.metadata.ServiceNameMapping;
-import org.apache.dubbo.metrics.event.GlobalMetricsEventMulticaster;
-import org.apache.dubbo.metrics.model.TimePair;
+import org.apache.dubbo.metrics.event.EventBus;
 import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
@@ -326,25 +325,21 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
                 serviceListeners.put(serviceNamesKey, serviceInstancesChangedListener);
             }
 
-            ApplicationModel applicationModel = Optional.ofNullable(url.getApplicationModel()).orElse(ApplicationModel.defaultModel()) ;
-            GlobalMetricsEventMulticaster eventMulticaster = applicationModel.getBeanFactory().getBean(GlobalMetricsEventMulticaster.class);
-            TimePair timePair = TimePair.start();
+            ApplicationModel applicationModel = Optional.ofNullable(url.getApplicationModel()).orElse(ApplicationModel.defaultModel());
 
-            eventMulticaster.publishEvent(new RegistryEvent.MetricsServiceSubscribeEvent(applicationModel, timePair, serviceKey));
             if (!serviceInstancesChangedListener.isDestroyed()) {
                 listener.addServiceListener(serviceInstancesChangedListener);
                 serviceInstancesChangedListener.addListenerAndNotify(url, listener);
-                try {
-                    serviceDiscovery.addServiceInstancesChangedListener(serviceInstancesChangedListener);
-                } catch (Throwable t) {
-                    eventMulticaster.publishErrorEvent(new RegistryEvent.MetricsServiceSubscribeEvent(applicationModel, timePair, serviceKey));
-                    throw t;
-                }
-                eventMulticaster.publishFinishEvent(new RegistryEvent.MetricsServiceSubscribeEvent(applicationModel, timePair, serviceKey));
+                ServiceInstancesChangedListener finalServiceInstancesChangedListener = serviceInstancesChangedListener;
+                EventBus.post(new RegistryEvent.MetricsServiceSubscribeEvent(applicationModel, serviceKey),
+                    () -> {
+                        serviceDiscovery.addServiceInstancesChangedListener(finalServiceInstancesChangedListener);
+                        return null;
+                    }
+                );
             } else {
                 logger.info(String.format("Listener of %s has been destroyed by another thread.", serviceNamesKey));
                 serviceListeners.remove(serviceNamesKey);
-                eventMulticaster.publishErrorEvent(new RegistryEvent.MetricsSubscribeEvent(applicationModel, timePair));
             }
         } finally {
             appSubscriptionLock.unlock();

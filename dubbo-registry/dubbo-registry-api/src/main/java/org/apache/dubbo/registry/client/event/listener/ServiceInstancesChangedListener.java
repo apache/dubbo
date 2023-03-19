@@ -409,7 +409,7 @@ public class ServiceInstancesChangedListener {
         SimpleMetricsEventMulticaster eventMulticaster = beanFactory.getOrRegisterBean(SimpleMetricsEventMulticaster.class);
 
         TimePair timePair = TimePair.start();
-        eventMulticaster.publishEvent(new RegistryEvent.MetricsNotifyEvent(applicationModel, timePair, null));
+        eventMulticaster.publishEvent(new RegistryEvent.MetricsNotifyEvent(applicationModel, null));
         Map<String, Integer> lastNumMap = new HashMap<>();
         // 1 different services
         listeners.forEach((serviceKey, listenerSet) -> {
@@ -423,7 +423,7 @@ public class ServiceInstancesChangedListener {
                 lastNumMap.put(serviceKey, urls.size());
             }
         });
-        eventMulticaster.publishFinishEvent(new RegistryEvent.MetricsNotifyEvent(applicationModel, timePair, lastNumMap));
+        eventMulticaster.publishFinishEvent(new RegistryEvent.MetricsNotifyEvent(applicationModel, lastNumMap));
 
     }
 

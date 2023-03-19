@@ -20,9 +20,19 @@ package org.apache.dubbo.metrics.event;
 import org.apache.dubbo.metrics.model.TimePair;
 
 /**
- *  Mark certain types of events, allow automatic recording of start and end times, and provide time pairs
+ * Mark certain types of events, allow automatic recording of start and end times, and provide time pairs
  */
-public interface TimeCounter {
+public abstract class TimeCounterEvent extends MetricsEvent {
 
-    TimePair getTimePair();
+    private final TimePair timePair;
+
+    public TimeCounterEvent(Object source) {
+        super(source);
+        this.timePair = TimePair.start();
+    }
+
+    public TimePair getTimePair() {
+        return timePair;
+    }
+
 }

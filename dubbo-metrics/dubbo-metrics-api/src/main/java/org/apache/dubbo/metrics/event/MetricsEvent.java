@@ -18,6 +18,9 @@
 package org.apache.dubbo.metrics.event;
 
 import org.apache.dubbo.metrics.model.MethodMetric;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+
+import java.util.Optional;
 
 /**
  * BaseMetricsEvent.
@@ -29,12 +32,18 @@ public abstract class MetricsEvent {
      */
     protected transient Object source;
 
+    @SuppressWarnings({"unchecked"})
     public MetricsEvent(Object source) {
         if (source == null) {
-            throw new IllegalArgumentException("null source");
+            throw new IllegalArgumentException("Null source");
         }
 
-        this.source = source;
+        // ApplicationModel is often empty in testcase scene
+        if (source instanceof Optional) {
+            this.source = ((Optional<ApplicationModel>) source).orElse(ApplicationModel.defaultModel());
+        } else {
+            this.source = source;
+        }
     }
 
     public Object getSource() {
@@ -57,7 +66,8 @@ public abstract class MetricsEvent {
         APPLICATION_INFO("APPLICATION_INFO_%s"),
         NETWORK_EXCEPTION("NETWORK_EXCEPTION_%s"),
         SERVICE_UNAVAILABLE("SERVICE_UNAVAILABLE_%s"),
-        CODEC_EXCEPTION("CODEC_EXCEPTION_%s"),;
+        CODEC_EXCEPTION("CODEC_EXCEPTION_%s"),
+        ;
 
         private String name;
 

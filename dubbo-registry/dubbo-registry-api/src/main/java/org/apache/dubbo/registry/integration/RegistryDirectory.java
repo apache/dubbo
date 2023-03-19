@@ -30,7 +30,7 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
-import org.apache.dubbo.metrics.event.GlobalMetricsEventMulticaster;
+import org.apache.dubbo.metrics.event.Dispatcher;
 import org.apache.dubbo.metrics.model.TimePair;
 import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.registry.AddressListener;
@@ -120,12 +120,12 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
     @Override
     public void subscribe(URL url) {
         ApplicationModel applicationModel = url.getApplicationModel();
-        GlobalMetricsEventMulticaster eventMulticaster = applicationModel.getBeanFactory().getBean(GlobalMetricsEventMulticaster.class);
+        Dispatcher eventMulticaster = applicationModel.getBeanFactory().getBean(Dispatcher.class);
         TimePair timePair = TimePair.start();
 
-        eventMulticaster.publishEvent(new RegistryEvent.MetricsSubscribeEvent(applicationModel, timePair));
+        eventMulticaster.publishEvent(new RegistryEvent.MetricsSubscribeEvent(applicationModel));
         super.subscribe(url);
-        eventMulticaster.publishFinishEvent(new RegistryEvent.MetricsSubscribeEvent(applicationModel, timePair));
+        eventMulticaster.publishFinishEvent(new RegistryEvent.MetricsSubscribeEvent(applicationModel));
         if (moduleModel.getModelEnvironment().getConfiguration().convert(Boolean.class, org.apache.dubbo.registry.Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
             consumerConfigurationListener.addNotifyListener(this);
             referenceConfigurationListener = new ReferenceConfigurationListener(moduleModel, this, url);

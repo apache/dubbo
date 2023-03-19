@@ -18,7 +18,8 @@
 package org.apache.dubbo.metrics.metadata;
 
 import org.apache.dubbo.config.ApplicationConfig;
-import org.apache.dubbo.metrics.event.GlobalMetricsEventMulticaster;
+import org.apache.dubbo.metrics.event.Dispatcher;
+import org.apache.dubbo.metrics.event.EventBus;
 import org.apache.dubbo.metrics.metadata.collector.MetadataMetricsCollector;
 import org.apache.dubbo.metrics.metadata.event.MetadataEvent;
 import org.apache.dubbo.metrics.model.MetricsKey;
@@ -36,6 +37,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_APPLICATION_NAME;
@@ -66,30 +68,42 @@ class MetadataMetricsCollectorTest {
     @Test
     void testPushMetrics() throws InterruptedException {
 
-        TimePair timePair = TimePair.start();
-        GlobalMetricsEventMulticaster eventMulticaster = applicationModel.getBeanFactory().getOrRegisterBean(GlobalMetricsEventMulticaster.class);
+        applicationModel.getBeanFactory().getOrRegisterBean(Dispatcher.class);
         MetadataMetricsCollector collector = applicationModel.getBeanFactory().getOrRegisterBean(MetadataMetricsCollector.class);
         collector.setCollectEnabled(true);
 
-        eventMulticaster.publishEvent(new MetadataEvent.PushEvent(applicationModel, timePair));
-        List<MetricSample> metricSamples = collector.collect();
+        MetadataEvent.PushEvent pushEvent = new MetadataEvent.PushEvent(applicationModel);
+        EventBus.post(pushEvent,
+            () -> {
+                List<MetricSample> metricSamples = collector.collect();
 
-        // push success +1
-        Assertions.assertEquals(1, metricSamples.size());
-        Assertions.assertTrue(metricSamples.get(0) instanceof GaugeMetricSample);
-        Assertions.assertEquals(metricSamples.get(0).getName(), MetricsKey.METADATA_PUSH_METRIC_NUM.getName());
+                // push success +1
+                Assertions.assertEquals(1, metricSamples.size());
+                Assertions.assertTrue(metricSamples.get(0) instanceof GaugeMetricSample);
+                Assertions.assertEquals(metricSamples.get(0).getName(), MetricsKey.METADATA_PUSH_METRIC_NUM.getName());
+                return null;
+            }
+        );
 
-        eventMulticaster.publishFinishEvent(new MetadataEvent.PushEvent(applicationModel, timePair));
         // push finish rt +1
-        metricSamples = collector.collect();
+        List<MetricSample> metricSamples = collector.collect();
         //num(total+success) + rt(5) = 7
         Assertions.assertEquals(7, metricSamples.size());
-        long c1 = timePair.calc();
-        TimePair lastTimePair = TimePair.start();
-        eventMulticaster.publishEvent(new MetadataEvent.PushEvent(applicationModel, lastTimePair));
-        Thread.sleep(50);
+        long c1 = pushEvent.getTimePair().calc();
+
+        pushEvent = new MetadataEvent.PushEvent(applicationModel);
+        TimePair lastTimePair = pushEvent.getTimePair();
+        EventBus.post(pushEvent,
+            () -> {
+                try {
+                    Thread.sleep(50);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                return null;
+            }, Objects::nonNull
+        );
         // push error rt +1
-        eventMulticaster.publishErrorEvent(new MetadataEvent.PushEvent(applicationModel, lastTimePair));
         long c2 = lastTimePair.calc();
         metricSamples = collector.collect();
 
@@ -113,32 +127,44 @@ class MetadataMetricsCollectorTest {
     }
 
     @Test
-    void testSubscribeMetrics() throws InterruptedException {
+    void testSubscribeMetrics() {
 
-        TimePair timePair = TimePair.start();
-        GlobalMetricsEventMulticaster eventMulticaster = applicationModel.getBeanFactory().getOrRegisterBean(GlobalMetricsEventMulticaster.class);
+        applicationModel.getBeanFactory().getOrRegisterBean(Dispatcher.class);
         MetadataMetricsCollector collector = applicationModel.getBeanFactory().getOrRegisterBean(MetadataMetricsCollector.class);
         collector.setCollectEnabled(true);
 
-        eventMulticaster.publishEvent(new MetadataEvent.SubscribeEvent(applicationModel, timePair));
-        List<MetricSample> metricSamples = collector.collect();
+        MetadataEvent.SubscribeEvent subscribeEvent = new MetadataEvent.SubscribeEvent(applicationModel);
+        EventBus.post(subscribeEvent,
+            () -> {
+                List<MetricSample> metricSamples = collector.collect();
 
-        // push success +1
-        Assertions.assertEquals(1, metricSamples.size());
-        Assertions.assertTrue(metricSamples.get(0) instanceof GaugeMetricSample);
-        Assertions.assertEquals(metricSamples.get(0).getName(), MetricsKey.METADATA_SUBSCRIBE_METRIC_NUM.getName());
+                // push success +1
+                Assertions.assertEquals(1, metricSamples.size());
+                Assertions.assertTrue(metricSamples.get(0) instanceof GaugeMetricSample);
+                Assertions.assertEquals(metricSamples.get(0).getName(), MetricsKey.METADATA_SUBSCRIBE_METRIC_NUM.getName());
+                return null;
+            }
+        );
+        long c1 = subscribeEvent.getTimePair().calc();
 
-        eventMulticaster.publishFinishEvent(new MetadataEvent.SubscribeEvent(applicationModel, timePair));
         // push finish rt +1
-        metricSamples = collector.collect();
+        List<MetricSample> metricSamples = collector.collect();
         //num(total+success) + rt(5) = 7
         Assertions.assertEquals(7, metricSamples.size());
-        long c1 = timePair.calc();
-        TimePair lastTimePair = TimePair.start();
-        eventMulticaster.publishEvent(new MetadataEvent.SubscribeEvent(applicationModel, lastTimePair));
-        Thread.sleep(50);
+        subscribeEvent = new MetadataEvent.SubscribeEvent(applicationModel);
+        TimePair lastTimePair = subscribeEvent.getTimePair();
+        EventBus.post(subscribeEvent,
+            () -> {
+                try {
+                    Thread.sleep(50);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                return null;
+            }, Objects::nonNull
+        );
+
         // push error rt +1
-        eventMulticaster.publishErrorEvent(new MetadataEvent.SubscribeEvent(applicationModel, lastTimePair));
         long c2 = lastTimePair.calc();
         metricSamples = collector.collect();
 

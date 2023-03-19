@@ -17,10 +17,8 @@
 
 package org.apache.dubbo.metrics.registry.event;
 
-import org.apache.dubbo.metrics.event.MetricsEvent;
-import org.apache.dubbo.metrics.event.TimeCounter;
+import org.apache.dubbo.metrics.event.TimeCounterEvent;
 import org.apache.dubbo.metrics.model.MetricsKey;
-import org.apache.dubbo.metrics.model.TimePair;
 import org.apache.dubbo.metrics.registry.collector.RegistryMetricsCollector;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
@@ -29,14 +27,12 @@ import java.util.Map;
 /**
  * Registry related events
  */
-public class RegistryEvent extends MetricsEvent implements TimeCounter {
-    private final TimePair timePair;
+public class RegistryEvent extends TimeCounterEvent {
     private final RegistryMetricsCollector collector;
     private final boolean available;
 
-    public RegistryEvent(ApplicationModel applicationModel, TimePair timePair) {
+    public RegistryEvent(ApplicationModel applicationModel) {
         super(applicationModel);
-        this.timePair = timePair;
         this.collector = applicationModel.getBeanFactory().getBean(RegistryMetricsCollector.class);
         this.available = this.collector != null && collector.isCollectEnabled();
     }
@@ -51,11 +47,6 @@ public class RegistryEvent extends MetricsEvent implements TimeCounter {
 
     public boolean isAvailable() {
         return available;
-    }
-
-    @Override
-    public TimePair getTimePair() {
-        return timePair;
     }
 
     public enum ApplicationType {
@@ -135,16 +126,16 @@ public class RegistryEvent extends MetricsEvent implements TimeCounter {
 
     public static class MetricsApplicationRegisterEvent extends RegistryEvent {
 
-        public MetricsApplicationRegisterEvent(ApplicationModel applicationModel, TimePair timePair) {
-            super(applicationModel, timePair);
+        public MetricsApplicationRegisterEvent(ApplicationModel applicationModel) {
+            super(applicationModel);
         }
 
     }
 
     public static class MetricsSubscribeEvent extends RegistryEvent {
 
-        public MetricsSubscribeEvent(ApplicationModel applicationModel, TimePair timePair) {
-            super(applicationModel, timePair);
+        public MetricsSubscribeEvent(ApplicationModel applicationModel) {
+            super(applicationModel);
         }
 
     }
@@ -153,8 +144,8 @@ public class RegistryEvent extends MetricsEvent implements TimeCounter {
 
         private final Map<String, Integer> lastNumMap;
 
-        public MetricsNotifyEvent(ApplicationModel applicationModel, TimePair timePair, Map<String, Integer> lastNumMap) {
-            super(applicationModel, timePair);
+        public MetricsNotifyEvent(ApplicationModel applicationModel, Map<String, Integer> lastNumMap) {
+            super(applicationModel);
             this.lastNumMap = lastNumMap;
         }
 
@@ -173,7 +164,7 @@ public class RegistryEvent extends MetricsEvent implements TimeCounter {
         }
 
         public MetricsDirectoryEvent(ApplicationModel applicationModel, ApplicationType type, int size) {
-            super(applicationModel, TimePair.empty());
+            super(applicationModel);
             this.type = type;
             this.size = size;
         }
@@ -192,8 +183,8 @@ public class RegistryEvent extends MetricsEvent implements TimeCounter {
         private final int size;
         private final String serviceKey;
 
-        public MetricsServiceRegisterEvent(ApplicationModel applicationModel, TimePair timePair, String serviceKey, int size) {
-            super(applicationModel, timePair);
+        public MetricsServiceRegisterEvent(ApplicationModel applicationModel, String serviceKey, int size) {
+            super(applicationModel);
             this.size = size;
             this.serviceKey = serviceKey;
         }
@@ -211,8 +202,8 @@ public class RegistryEvent extends MetricsEvent implements TimeCounter {
 
         private final String uniqueServiceName;
 
-        public MetricsServiceSubscribeEvent(ApplicationModel applicationModel, TimePair timePair, String uniqueServiceName) {
-            super(applicationModel, timePair);
+        public MetricsServiceSubscribeEvent(ApplicationModel applicationModel, String uniqueServiceName) {
+            super(applicationModel);
             this.uniqueServiceName = uniqueServiceName;
         }
 

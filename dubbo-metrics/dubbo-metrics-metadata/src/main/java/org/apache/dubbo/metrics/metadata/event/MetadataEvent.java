@@ -17,24 +17,20 @@
 
 package org.apache.dubbo.metrics.metadata.event;
 
-import org.apache.dubbo.metrics.event.MetricsEvent;
-import org.apache.dubbo.metrics.event.TimeCounter;
+import org.apache.dubbo.metrics.event.TimeCounterEvent;
 import org.apache.dubbo.metrics.metadata.collector.MetadataMetricsCollector;
 import org.apache.dubbo.metrics.model.MetricsKey;
-import org.apache.dubbo.metrics.model.TimePair;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 /**
  * Registry related events
  */
-public class MetadataEvent extends MetricsEvent implements TimeCounter {
-    private final TimePair timePair;
+public class MetadataEvent extends TimeCounterEvent {
     private final MetadataMetricsCollector collector;
     private final boolean available;
 
-    public MetadataEvent(ApplicationModel applicationModel, TimePair timePair) {
+    public MetadataEvent(ApplicationModel applicationModel) {
         super(applicationModel);
-        this.timePair = timePair;
         this.collector = applicationModel.getBeanFactory().getBean(MetadataMetricsCollector.class);
         this.available = this.collector != null && collector.isCollectEnabled();
     }
@@ -49,11 +45,6 @@ public class MetadataEvent extends MetricsEvent implements TimeCounter {
 
     public boolean isAvailable() {
         return available;
-    }
-
-    @Override
-    public TimePair getTimePair() {
-        return timePair;
     }
 
     public enum Type {
@@ -92,16 +83,16 @@ public class MetadataEvent extends MetricsEvent implements TimeCounter {
 
     public static class PushEvent extends MetadataEvent {
 
-        public PushEvent(ApplicationModel applicationModel, TimePair timePair) {
-            super(applicationModel, timePair);
+        public PushEvent(ApplicationModel applicationModel) {
+            super(applicationModel);
         }
 
     }
 
     public static class SubscribeEvent extends MetadataEvent {
 
-        public SubscribeEvent(ApplicationModel applicationModel, TimePair timePair) {
-            super(applicationModel, timePair);
+        public SubscribeEvent(ApplicationModel applicationModel) {
+            super(applicationModel);
         }
 
     }

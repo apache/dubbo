@@ -87,8 +87,8 @@ public class SimpleMetricsEventMulticaster implements MetricsEventMulticaster {
         if (event instanceof EmptyEvent) {
             return;
         }
-        if (event instanceof TimeCounter) {
-            ((TimeCounter) event).getTimePair().end();
+        if (event instanceof TimeCounterEvent) {
+            ((TimeCounterEvent) event).getTimePair().end();
         }
         for (MetricsListener listener : listeners) {
             if (listener instanceof MetricsLifeListener && listener.isSupport(event)) {
