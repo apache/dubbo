@@ -102,7 +102,7 @@ public class NettyHttpRestServer implements RestProtocolServer {
         server.setChildChannelOptions(channelOption);
         server.setIoWorkerCount(url.getParameter(IO_THREADS_KEY, DEFAULT_IO_THREADS));
         server.setMaxRequestSize(url.getParameter(PAYLOAD_KEY, DEFAULT_PAYLOAD));
-        server.start();
+        server.start(url);
     }
 
     @Override

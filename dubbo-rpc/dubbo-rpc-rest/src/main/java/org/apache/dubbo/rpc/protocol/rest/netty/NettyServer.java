@@ -31,7 +31,8 @@ import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpRequestDecoder;
 import io.netty.handler.codec.http.HttpResponseEncoder;
 import io.netty.handler.timeout.IdleStateHandler;
-import io.netty.util.concurrent.EventExecutor;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.threadpool.ThreadPool;
 import org.apache.dubbo.rpc.protocol.rest.PathAndInvokerMapper;
 import org.apache.dubbo.rpc.protocol.rest.handler.NettyHttpHandler;
 
@@ -192,8 +193,8 @@ public class NettyServer {
     }
 
 
-    public void start() {
-        eventLoopGroup = new NioEventLoopGroup(ioWorkerCount);
+    public void start(URL url) {
+        eventLoopGroup = new NioEventLoopGroup(ioWorkerCount,url.getOrDefaultFrameworkModel().getExtensionLoader(ThreadPool.class).getAdaptiveExtension().getExecutor(url));
 
         // Configure the server.
         bootstrap.group(eventLoopGroup)
