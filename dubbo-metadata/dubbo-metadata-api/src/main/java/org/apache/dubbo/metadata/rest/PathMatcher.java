@@ -20,7 +20,7 @@ package org.apache.dubbo.metadata.rest;
 import java.util.Objects;
 
 /**
- *  for http request  path match
+ * for http request  path match
  */
 public class PathMatcher {
     private static final String SEPARATOR = "/";
@@ -34,7 +34,7 @@ public class PathMatcher {
     private boolean invokeCreate;// distinguish create  from metadata resolve create
 
 
-    public PathMatcher(String path,boolean invokeCreate) {
+    public PathMatcher(String path, boolean invokeCreate) {
         this(path, null, null, null, invokeCreate);
     }
 
@@ -107,7 +107,7 @@ public class PathMatcher {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         PathMatcher that = (PathMatcher) o;
-        return invokeCreate && pathEqual(that)
+        return pathEqual(that)
             && Objects.equals(version, that.version)
             && Objects.equals(group, that.group) && Objects.equals(port, that.port);
     }

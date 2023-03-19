@@ -37,15 +37,13 @@ import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.HttpConnectionPreB
 import org.apache.dubbo.rpc.protocol.rest.message.HttpMessageCodecManager;
 import org.apache.dubbo.rpc.protocol.rest.util.HttpHeaderUtil;
 import org.apache.dubbo.rpc.protocol.rest.util.MediaTypeUtil;
-import org.apache.dubbo.rpc.protocol.rest.util.Pair;
 
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 public class RestInvoker<T> extends AbstractInvoker<T> {
-    private final Pair<ServiceRestMetadata,
-        Map<String, Map<ParameterTypesComparator, RestMethodMetadata>>> metadataMapPair;
+    private final ServiceRestMetadata serviceRestMetadata;
     private final ReferenceCountedClient<? extends RestClient> referenceCountedClient;
     private final Set<HttpConnectionPreBuildIntercept> httpConnectionPreBuildIntercepts;
 
@@ -53,10 +51,9 @@ public class RestInvoker<T> extends AbstractInvoker<T> {
     public RestInvoker(Class type, URL url,
                        ReferenceCountedClient<? extends RestClient> referenceCountedClient,
                        Set<HttpConnectionPreBuildIntercept> httpConnectionPreBuildIntercepts,
-                       Pair<ServiceRestMetadata, Map<String, Map<ParameterTypesComparator,
-                           RestMethodMetadata>>> metadataMapPair) {
+                       ServiceRestMetadata serviceRestMetadata) {
         super(type, url);
-        this.metadataMapPair = metadataMapPair;
+        this.serviceRestMetadata = serviceRestMetadata;
         this.referenceCountedClient = referenceCountedClient;
         this.httpConnectionPreBuildIntercepts = httpConnectionPreBuildIntercepts;
     }
@@ -64,9 +61,8 @@ public class RestInvoker<T> extends AbstractInvoker<T> {
     @Override
     protected Result doInvoke(Invocation invocation) {
         try {
-            ServiceRestMetadata serviceRestMetadata = metadataMapPair.getFirst();
 
-            Map<String, Map<ParameterTypesComparator, RestMethodMetadata>> metadataMap = metadataMapPair.getSecond();
+            Map<String, Map<ParameterTypesComparator, RestMethodMetadata>> metadataMap = serviceRestMetadata.getMethodToServiceMap();
             RestMethodMetadata restMethodMetadata = metadataMap.get(invocation.getMethodName()).get(ParameterTypesComparator.getInstance(invocation.getParameterTypes()));
 
             RequestTemplate requestTemplate = new RequestTemplate(invocation, restMethodMetadata.getRequest().getMethod(), getUrl().getAddress());

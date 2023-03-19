@@ -83,12 +83,12 @@ public class RestRPCInvocationUtil {
     }
 
 
-    public static Pair<Invoker, RestMethodMetadata> getRestMethodMetadata(RequestFacade request) {
+    public static Pair<Invoker, RestMethodMetadata> getRestMethodMetadata(RequestFacade request,PathAndInvokerMapper pathAndInvokerMapper) {
         String path = request.getPathInfo();
         String version = request.getHeader(RestHeaderEnum.VERSION.getHeader());
         String group = request.getHeader(RestHeaderEnum.GROUP.getHeader());
 
-        return PathAndInvokerMapper.getRestMethodMetadata(path, version, group, null);
+        return pathAndInvokerMapper.getRestMethodMetadata(path, version, group, null);
     }
 
 

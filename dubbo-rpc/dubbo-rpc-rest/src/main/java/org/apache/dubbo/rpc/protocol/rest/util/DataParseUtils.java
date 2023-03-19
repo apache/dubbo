@@ -53,10 +53,13 @@ public class DataParseUtils {
     }
 
     public static boolean isTextType(Class targetType) {
+        if (targetType == null) {
+            return false;
+        }
 
         return targetType == Boolean.class ||
             targetType == String.class ||
-            Number.class.isAssignableFrom(targetType)||targetType.isPrimitive();
+            Number.class.isAssignableFrom(targetType) || targetType.isPrimitive();
     }
 
 

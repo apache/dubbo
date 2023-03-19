@@ -25,6 +25,7 @@ import org.apache.dubbo.remoting.http.HttpHandler;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.protocol.rest.PathAndInvokerMapper;
 import org.apache.dubbo.rpc.protocol.rest.RestRPCInvocationUtil;
 import org.apache.dubbo.rpc.protocol.rest.RestHeaderEnum;
 import org.apache.dubbo.rpc.protocol.rest.exception.MediaTypeUnSupportException;
@@ -46,6 +47,12 @@ import java.io.IOException;
  */
 public class NettyHttpHandler implements HttpHandler<FullHttpRequest, NettyHttpResponse> {
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
+    private final PathAndInvokerMapper pathAndInvokerMapper;
+
+
+    public NettyHttpHandler(PathAndInvokerMapper pathAndInvokerMapper) {
+        this.pathAndInvokerMapper = pathAndInvokerMapper;
+    }
 
     @Override
     public void handle(FullHttpRequest nettyHttpRequest, NettyHttpResponse nettyHttpResponse) throws IOException {
@@ -80,7 +87,7 @@ public class NettyHttpHandler implements HttpHandler<FullHttpRequest, NettyHttpR
 
     private void doHandler(FullHttpRequest nettyHttpRequest, NettyHttpResponse nettyHttpResponse, RequestFacade request) throws Exception {
         //  acquire metadata by request
-        Pair<Invoker, RestMethodMetadata> restMethodMetadataPair = RestRPCInvocationUtil.getRestMethodMetadata(request);
+        Pair<Invoker, RestMethodMetadata> restMethodMetadataPair = RestRPCInvocationUtil.getRestMethodMetadata(request,pathAndInvokerMapper);
 
         Invoker invoker = restMethodMetadataPair.getFirst();
 

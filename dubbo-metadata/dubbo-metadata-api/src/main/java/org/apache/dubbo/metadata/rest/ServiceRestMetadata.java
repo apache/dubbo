@@ -18,6 +18,7 @@ package org.apache.dubbo.metadata.rest;
 
 import org.apache.dubbo.common.utils.PathUtils;
 import org.apache.dubbo.metadata.ParameterTypesComparator;
+import org.apache.dubbo.rpc.RpcException;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -55,7 +56,8 @@ public class ServiceRestMetadata implements Serializable {
      */
     private Class codeStyle;
 
-    private Map<PathMatcher, RestMethodMetadata> pathToServiceMap = new HashMap<>();
+    private Map<PathMatcher, RestMethodMetadata> pathToServiceMapContainPathVariable = new HashMap<>();
+    private Map<PathMatcher, RestMethodMetadata> pathToServiceMapUnContainPathVariable = new HashMap<>();
     private Map<String, Map<ParameterTypesComparator, RestMethodMetadata>> methodToServiceMap = new HashMap<>();
 
     public ServiceRestMetadata(String serviceInterface, String version, String group, boolean consumer) {
@@ -115,19 +117,44 @@ public class ServiceRestMetadata implements Serializable {
         getMeta().add(restMethodMetadata);
     }
 
-    public Map<PathMatcher, RestMethodMetadata> getPathToServiceMap() {
-        return pathToServiceMap;
+
+    public Map<PathMatcher, RestMethodMetadata> getPathContainPathVariableToServiceMap() {
+        return pathToServiceMapContainPathVariable;
+    }
+
+    public Map<PathMatcher, RestMethodMetadata> getPathUnContainPathVariableToServiceMap() {
+        return pathToServiceMapUnContainPathVariable;
     }
 
     public void addPathToServiceMap(PathMatcher pathMather, RestMethodMetadata restMethodMetadata) {
-        if (this.pathToServiceMap == null) {
-            this.pathToServiceMap = new HashMap<>();
-        }
 
-        this.pathToServiceMap.put(pathMather, restMethodMetadata);
+        if (pathMather.hasPathVariable()) {
+            doublePathCheck(pathToServiceMapContainPathVariable, pathMather, restMethodMetadata, true);
+        } else {
+            doublePathCheck(pathToServiceMapUnContainPathVariable, pathMather, restMethodMetadata, false);
+        }
 
 
     }
+
+    private void doublePathCheck(Map<PathMatcher, RestMethodMetadata> pathMatcherRestMethodMetadataMap,
+                                 PathMatcher pathMather,
+                                 RestMethodMetadata restMethodMetadata, boolean containPathVariable) {
+        if (pathMatcherRestMethodMetadataMap.containsKey(pathMather)) {
+            if (containPathVariable) {
+                throw new RpcException("dubbo rest metadata resolve double path error,and contain path variable  is:  "
+                    + pathMather + ", rest method metadata is: " + restMethodMetadata);
+
+            } else {
+                throw new RpcException("dubbo rest metadata resolve double path error,and do not  contain path variable  is: "
+                    + pathMather + ", rest method metadata is: " + restMethodMetadata);
+            }
+        }
+
+        pathMatcherRestMethodMetadataMap.put(pathMather, restMethodMetadata);
+
+    }
+
 
     public Integer getPort() {
         return port;
@@ -135,8 +162,12 @@ public class ServiceRestMetadata implements Serializable {
 
     public void setPort(Integer port) {
         this.port = port;
-        Map<PathMatcher, RestMethodMetadata> pathToServiceMap = getPathToServiceMap();
-        for (PathMatcher pathMather : pathToServiceMap.keySet()) {
+        setPort(port, getPathContainPathVariableToServiceMap());
+        setPort(port, getPathUnContainPathVariableToServiceMap());
+    }
+
+    private void setPort(Integer port, Map<PathMatcher, RestMethodMetadata> pathToServiceMapContainPathVariable) {
+        for (PathMatcher pathMather : pathToServiceMapContainPathVariable.keySet()) {
             pathMather.setPort(port);
         }
     }

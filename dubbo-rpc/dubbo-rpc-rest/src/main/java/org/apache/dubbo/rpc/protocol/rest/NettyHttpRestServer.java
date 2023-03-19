@@ -22,6 +22,7 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.rest.PathMatcher;
 import org.apache.dubbo.metadata.rest.RestMethodMetadata;
+import org.apache.dubbo.metadata.rest.ServiceRestMetadata;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.protocol.rest.exception.mapper.ExceptionMapper;
 import org.apache.dubbo.rpc.protocol.rest.netty.NettyServer;
@@ -44,17 +45,20 @@ import static org.apache.dubbo.rpc.protocol.rest.Constants.EXCEPTION_MAPPER_KEY;
 import static org.apache.dubbo.rpc.protocol.rest.Constants.KEEP_ALIVE_KEY;
 
 /**
- *  netty http server
+ * netty http server
  */
 public class NettyHttpRestServer implements RestProtocolServer {
+
+    private final PathAndInvokerMapper pathAndInvokerMapper = new PathAndInvokerMapper();
     private NettyServer server = getNettyServer();
 
     /**
-     *  for triple override
+     * for triple override
+     *
      * @return
      */
     protected NettyServer getNettyServer() {
-        return new NettyServer();
+        return new NettyServer(pathAndInvokerMapper);
     }
 
     private String address;
@@ -105,13 +109,26 @@ public class NettyHttpRestServer implements RestProtocolServer {
     }
 
     @Override
-    public void deploy(Map<PathMatcher, RestMethodMetadata> metadataMap, Invoker invoker) {
-        PathAndInvokerMapper.addPathAndInvoker(metadataMap, invoker);
+    public void deploy(ServiceRestMetadata serviceRestMetadata, Invoker invoker) {
+        Map<PathMatcher, RestMethodMetadata> pathToServiceMapContainPathVariable =
+            serviceRestMetadata.getPathContainPathVariableToServiceMap();
+        pathAndInvokerMapper.addPathAndInvoker(pathToServiceMapContainPathVariable, invoker);
+
+        Map<PathMatcher, RestMethodMetadata> pathToServiceMapUnContainPathVariable =
+            serviceRestMetadata.getPathUnContainPathVariableToServiceMap();
+        pathAndInvokerMapper.addPathAndInvoker(pathToServiceMapUnContainPathVariable, invoker);
     }
 
     @Override
-    public void undeploy(PathMatcher pathMatcher) {
-        PathAndInvokerMapper.removePath(pathMatcher);
+    public void undeploy(ServiceRestMetadata serviceRestMetadata) {
+        Map<PathMatcher, RestMethodMetadata> pathToServiceMapContainPathVariable =
+            serviceRestMetadata.getPathContainPathVariableToServiceMap();
+        pathToServiceMapContainPathVariable.keySet().stream().forEach(pathAndInvokerMapper::removePath);
+
+        Map<PathMatcher, RestMethodMetadata> pathToServiceMapUnContainPathVariable =
+            serviceRestMetadata.getPathUnContainPathVariableToServiceMap();
+        pathToServiceMapUnContainPathVariable.keySet().stream().forEach(pathAndInvokerMapper::removePath);
+
     }
 
     private void registerExceptionMapper(URL url) {
