@@ -24,12 +24,9 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 
 public class ZookeeperDynamicConfigurationFactory extends AbstractDynamicConfigurationFactory {
 
-    private ZookeeperTransporter zookeeperTransporter;
-
-    private ApplicationModel applicationModel;
+    private final ZookeeperTransporter zookeeperTransporter;
 
     public ZookeeperDynamicConfigurationFactory(ApplicationModel applicationModel) {
-        this.applicationModel = applicationModel;
         this.zookeeperTransporter = ZookeeperTransporter.getExtension(applicationModel);
     }
 

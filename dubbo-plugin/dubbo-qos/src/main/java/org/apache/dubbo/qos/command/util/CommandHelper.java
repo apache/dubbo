@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.qos.command.util;
 
-import org.apache.dubbo.qos.command.BaseCommand;
+import org.apache.dubbo.qos.api.BaseCommand;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.util.ArrayList;
@@ -25,7 +25,7 @@ import java.util.Set;
 
 public class CommandHelper {
 
-    private FrameworkModel frameworkModel;
+    private final FrameworkModel frameworkModel;
 
     public CommandHelper(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;

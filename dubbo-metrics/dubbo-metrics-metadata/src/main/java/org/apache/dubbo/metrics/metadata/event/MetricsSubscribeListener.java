@@ -37,13 +37,13 @@ public class MetricsSubscribeListener implements MetricsLifeListener<MetadataEve
     @Override
     public void onEventFinish(MetadataEvent.SubscribeEvent event) {
         event.getCollector().increment(event.getSource().getApplicationName(), MetadataEvent.Type.S_SUCCEED);
-        event.getCollector().addRT(event.getSource().getApplicationName(), OP_TYPE_SUBSCRIBE, event.getTimePair().calc());
+        event.getCollector().addApplicationRT(event.getSource().getApplicationName(), OP_TYPE_SUBSCRIBE, event.getTimePair().calc());
     }
 
     @Override
     public void onEventError(MetadataEvent.SubscribeEvent event) {
         event.getCollector().increment(event.getSource().getApplicationName(), MetadataEvent.Type.S_FAILED);
-        event.getCollector().addRT(event.getSource().getApplicationName(), OP_TYPE_SUBSCRIBE, event.getTimePair().calc());
+        event.getCollector().addApplicationRT(event.getSource().getApplicationName(), OP_TYPE_SUBSCRIBE, event.getTimePair().calc());
     }
 
 }

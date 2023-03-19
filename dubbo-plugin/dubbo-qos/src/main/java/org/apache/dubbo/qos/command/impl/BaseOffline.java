@@ -19,8 +19,8 @@ package org.apache.dubbo.qos.command.impl;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ArrayUtils;
-import org.apache.dubbo.qos.command.BaseCommand;
-import org.apache.dubbo.qos.command.CommandContext;
+import org.apache.dubbo.qos.api.BaseCommand;
+import org.apache.dubbo.qos.api.CommandContext;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.RegistryFactory;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -32,7 +32,7 @@ import java.util.Collection;
 import java.util.List;
 
 public class BaseOffline implements BaseCommand {
-    private Logger logger = LoggerFactory.getLogger(BaseOffline.class);
+    private static final Logger logger = LoggerFactory.getLogger(BaseOffline.class);
     public FrameworkServiceRepository serviceRepository;
 
     public BaseOffline(FrameworkModel frameworkModel) {

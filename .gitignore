@@ -48,3 +48,5 @@ dubbo-demo/dubbo-demo-triple/build/*
 # global registry center
 .tmp
 
+.git.exec.error
+

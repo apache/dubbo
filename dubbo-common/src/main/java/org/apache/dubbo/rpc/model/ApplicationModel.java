@@ -84,6 +84,7 @@ public class ApplicationModel extends ScopeModel {
      * During destroying the default FrameworkModel, the FrameworkModel.defaultModel() or ApplicationModel.defaultModel()
      * will return a broken model, maybe cause unpredictable problem.
      * Recommendation: Avoid using the default model as much as possible.
+     *
      * @return the global default ApplicationModel
      */
     public static ApplicationModel defaultModel() {
@@ -222,6 +223,10 @@ public class ApplicationModel extends ScopeModel {
 
     public ExecutorRepository getApplicationExecutorRepository() {
         return ExecutorRepository.getInstance(this);
+    }
+
+    public boolean NotExistApplicationConfig() {
+        return !getApplicationConfigManager().getApplication().isPresent();
     }
 
     public ApplicationConfig getCurrentConfig() {

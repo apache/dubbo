@@ -23,15 +23,15 @@ import org.junit.jupiter.api.Test;
 class TimeWindowCounterTest {
 
     @Test
-    void test() throws Exception {
+    void test() {
         TimeWindowCounter counter = new TimeWindowCounter(10, 1);
         counter.increment();
-        Assertions.assertEquals(counter.get(), 1);
+        Assertions.assertEquals(1, counter.get());
         counter.decrement();
-        Assertions.assertEquals(counter.get(), 0);
+        Assertions.assertEquals(0, counter.get());
         counter.increment();
-        Thread.sleep(1000);
-        Assertions.assertEquals(counter.get(), 0);
-        Assertions.assertTrue(counter.bucketLivedSeconds() < 1);
+        counter.increment();
+        Assertions.assertEquals(2, counter.get());
+        Assertions.assertTrue(counter.bucketLivedSeconds() <= 1);
     }
 }

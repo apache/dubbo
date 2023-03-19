@@ -32,6 +32,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
  * one path has multi configurationListeners
  */
 public class ZookeeperDataListener implements DataListener {
+
     private String path;
     private String key;
     private String group;
