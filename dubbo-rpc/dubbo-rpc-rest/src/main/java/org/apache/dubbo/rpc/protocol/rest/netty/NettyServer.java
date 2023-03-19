@@ -60,7 +60,7 @@ public class NettyServer {
     private int maxChunkSize = 8192;
     private int backlog = 128;
     // default no idle timeout.
-    private int idleTimeout = -1;
+    private int idleTimeout = 60;
     private List<ChannelHandler> channelHandlers = Collections.emptyList();
     private Map<ChannelOption, Object> channelOptions = Collections.emptyMap();
     private Map<ChannelOption, Object> childChannelOptions = Collections.emptyMap();
