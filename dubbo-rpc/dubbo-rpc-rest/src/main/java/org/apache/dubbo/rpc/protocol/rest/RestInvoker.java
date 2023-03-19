@@ -74,6 +74,7 @@ public class RestInvoker<T> extends AbstractInvoker<T> {
                 intercept.intercept(httpConnectionCreateContext);
             }
 
+            // TODO check rest client cannot be reused
             CompletableFuture<RestResult> future = referenceCountedClient.getClient().send(requestTemplate);
             CompletableFuture<AppResponse> responseFuture = new CompletableFuture<>();
             AsyncRpcResult asyncRpcResult = new AsyncRpcResult(responseFuture, invocation);

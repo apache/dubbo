@@ -90,8 +90,17 @@ class JaxrsRestProtocolTest {
 
 
     @Test
-    void testAnotherUserRestProtocol() {
-        URL url = URL.valueOf("rest://127.0.0.1:" + NetUtils.getAvailablePort() + "/?version=1.0.0&interface=org.apache.dubbo.rpc.protocol.rest.rest.AnotherUserRestService");
+    void testAnotherUserRestProtocolByDifferentRestClient() {
+        testAnotherUserRestProtocol(org.apache.dubbo.remoting.Constants.OK_HTTP);
+        testAnotherUserRestProtocol(org.apache.dubbo.remoting.Constants.APACHE_HTTP_CLIENT);
+        testAnotherUserRestProtocol(org.apache.dubbo.remoting.Constants.URL_CONNECTION);
+    }
+
+
+    void testAnotherUserRestProtocol(String restClient) {
+        URL url = URL.valueOf("rest://127.0.0.1:" + NetUtils.getAvailablePort()
+            + "/?version=1.0.0&interface=org.apache.dubbo.rpc.protocol.rest.rest.AnotherUserRestService&"
+            + org.apache.dubbo.remoting.Constants.CLIENT_KEY + "=" + restClient);
 
         AnotherUserRestServiceImpl server = new AnotherUserRestServiceImpl();
 
