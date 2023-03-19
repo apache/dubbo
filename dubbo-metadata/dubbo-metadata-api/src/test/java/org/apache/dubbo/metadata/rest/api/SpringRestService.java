@@ -35,7 +35,7 @@ public interface SpringRestService {
     @RequestMapping(value = "/param", method = RequestMethod.GET, consumes = MediaType.TEXT_PLAIN_VALUE, produces = MediaType.TEXT_PLAIN_VALUE)
     String param(@RequestParam("param") String param);
 
-    @RequestMapping(value = "/header", method = RequestMethod.GET, consumes = MediaType.TEXT_PLAIN_VALUE, produces = MediaType.TEXT_PLAIN_VALUE)
+    @RequestMapping(value = "/header1", method = RequestMethod.GET, consumes = MediaType.TEXT_PLAIN_VALUE, produces = MediaType.TEXT_PLAIN_VALUE)
     String header(@RequestHeader("header") String header);
 
     @RequestMapping(value = "/header", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
