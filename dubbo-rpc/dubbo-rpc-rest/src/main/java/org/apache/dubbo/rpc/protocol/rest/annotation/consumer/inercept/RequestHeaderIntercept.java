@@ -28,6 +28,9 @@ import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
 import java.util.Collection;
 import java.util.Set;
 
+/**
+ *  resolve method args from header
+ */
 @Activate(value = RestConstant.REQUEST_HEADER_INTERCEPT, order = 2)
 public class RequestHeaderIntercept implements HttpConnectionPreBuildIntercept {
 

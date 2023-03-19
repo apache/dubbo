@@ -24,6 +24,9 @@ import org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.consumer.Consum
 
 import java.util.Arrays;
 
+/**
+ *  resolve method args  by args info
+ */
 @Activate(value = "paramparse",order = 5)
 public class ParamParseIntercept implements HttpConnectionPreBuildIntercept {
 

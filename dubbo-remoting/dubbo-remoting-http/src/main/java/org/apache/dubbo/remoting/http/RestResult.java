@@ -20,6 +20,9 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+/**
+ *  rest response facade
+ */
 public interface RestResult {
     String getContentType();
 

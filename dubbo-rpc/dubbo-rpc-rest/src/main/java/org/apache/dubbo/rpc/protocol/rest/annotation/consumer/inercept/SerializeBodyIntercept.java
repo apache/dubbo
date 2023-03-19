@@ -33,6 +33,9 @@ import org.apache.dubbo.rpc.protocol.rest.util.MediaTypeUtil;
 import java.io.ByteArrayOutputStream;
 import java.util.Collection;
 
+/**
+ *  for request body Serialize
+ */
 @Activate(value = RestConstant.SERIALIZE_INTERCEPT, order = Integer.MAX_VALUE)
 public class SerializeBodyIntercept implements HttpConnectionPreBuildIntercept {
 
