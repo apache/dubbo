@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.metrics.event;
 
+import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Optional;
@@ -35,7 +36,15 @@ public class EventBus {
      */
     public static void solo(MetricsEvent event) {
         if (event.getSource() instanceof ApplicationModel) {
-            Dispatcher dispatcher = ((ApplicationModel) event.getSource()).getBeanFactory().getBean(Dispatcher.class);
+            ApplicationModel applicationModel = (ApplicationModel) event.getSource();
+            if (applicationModel.isDestroyed()) {
+                return;
+            }
+            ScopeBeanFactory beanFactory = applicationModel.getBeanFactory();
+            if (beanFactory.isDestroyed()) {
+                return;
+            }
+            Dispatcher dispatcher = beanFactory.getBean(Dispatcher.class);
             Optional.ofNullable(dispatcher).ifPresent(d -> d.publishEvent(event));
         }
     }
@@ -66,7 +75,14 @@ public class EventBus {
             return supplier.get();
         }
         ApplicationModel applicationModel = (ApplicationModel) event.getSource();
-        Dispatcher dispatcher = applicationModel.getBeanFactory().getBean(Dispatcher.class);
+        if (applicationModel.isDestroyed()) {
+            return supplier.get();
+        }
+        ScopeBeanFactory beanFactory = applicationModel.getBeanFactory();
+        if (beanFactory.isDestroyed()) {
+            return supplier.get();
+        }
+        Dispatcher dispatcher = beanFactory.getBean(Dispatcher.class);
         if (dispatcher == null) {
             return supplier.get();
         }
