@@ -238,6 +238,13 @@
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-qos-api</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-qos</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
@@ -522,6 +529,7 @@
                                     <include>org.apache.dubbo:dubbo-monitor-api</include>
                                     <include>org.apache.dubbo:dubbo-monitor-default</include>
                                     <include>org.apache.dubbo:dubbo-qos</include>
+                                    <include>org.apache.dubbo:dubbo-qos-api</include>
                                     <include>org.apache.dubbo:dubbo-security</include>
                                     <include>org.apache.dubbo:dubbo-reactive</include>
                                     <include>org.apache.dubbo:dubbo-spring-security</include>
@@ -823,7 +831,7 @@
                                 <transformer
                                     implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                     <resource>
-                                        META-INF/dubbo/internal/org.apache.dubbo.qos.command.BaseCommand
+                                        META-INF/dubbo/internal/org.apache.dubbo.qos.api.BaseCommand
                                     </resource>
                                 </transformer>
                                 <transformer

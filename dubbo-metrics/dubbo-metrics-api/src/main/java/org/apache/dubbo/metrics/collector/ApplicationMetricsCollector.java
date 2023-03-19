@@ -29,6 +29,6 @@ public interface ApplicationMetricsCollector<T, E extends MetricsEvent> extends 
 
     void increment(String applicationName, T type);
 
-    void addRT(String applicationName, String registryOpType, Long responseTime);
+    void addApplicationRT(String applicationName, String registryOpType, Long responseTime);
 }
 

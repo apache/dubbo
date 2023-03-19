@@ -29,7 +29,7 @@ import java.util.concurrent.ConcurrentMap;
  */
 public class CacheListener {
 
-    private ConcurrentMap<String, ZookeeperDataListener> pathKeyListeners = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, ZookeeperDataListener> pathKeyListeners = new ConcurrentHashMap<>();
 
     public CacheListener() {
     }

@@ -61,7 +61,7 @@ public class RandomLoadBalance extends AbstractLoadBalance {
 
         // Every invoker has the same weight?
         boolean sameWeight = true;
-        // the maxWeight of every invokers, the minWeight = 0 or the maxWeight of the last invoker
+        // the maxWeight of every invoker, the minWeight = 0 or the maxWeight of the last invoker
         int[] weights = new int[length];
         // The sum of weights
         int totalWeight = 0;
@@ -78,7 +78,7 @@ public class RandomLoadBalance extends AbstractLoadBalance {
         if (totalWeight > 0 && !sameWeight) {
             // If (not every invoker has the same weight & at least one invoker's weight>0), select randomly based on totalWeight.
             int offset = ThreadLocalRandom.current().nextInt(totalWeight);
-            // Return a invoker based on the random value.
+            // Return an invoker based on the random value.
             for (int i = 0; i < length; i++) {
                 if (offset < weights[i]) {
                     return invokers.get(i);

@@ -18,6 +18,8 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.Configuration;
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -33,9 +35,11 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.TriRpcStatus;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.PackableMethod;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.model.StubMethodDescriptor;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
@@ -44,6 +48,7 @@ import org.apache.dubbo.rpc.protocol.tri.call.ObserverToClientCallListenerAdapte
 import org.apache.dubbo.rpc.protocol.tri.call.TripleClientCall;
 import org.apache.dubbo.rpc.protocol.tri.call.UnaryClientCallListener;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
+import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
 import org.apache.dubbo.rpc.protocol.tri.observer.ClientCallToObserverAdapter;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleWriteQueue;
 import org.apache.dubbo.rpc.support.RpcUtils;
@@ -62,6 +67,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_DESTROY_INVOKER;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_REQUEST;
+import static org.apache.dubbo.rpc.Constants.COMPRESSOR_KEY;
 import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 
 /**
@@ -94,6 +100,12 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
     private static AsciiString getSchemeFromUrl(URL url) {
         boolean ssl = url.getParameter(CommonConstants.SSL_ENABLED_KEY, false);
         return ssl ? TripleConstant.HTTPS_SCHEME : TripleConstant.HTTP_SCHEME;
+    }
+
+    private static Compressor getCompressorFromEnv() {
+        Configuration configuration = ConfigurationUtils.getEnvConfiguration(ApplicationModel.defaultModel());
+        String compressorKey = configuration.getString(COMPRESSOR_KEY, Identity.MESSAGE_ENCODING);
+        return Compressor.getCompressor(ScopeModelUtil.getFrameworkModel(ApplicationModel.defaultModel()), compressorKey);
     }
 
     @Override
@@ -240,8 +252,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         meta.ignoreDefaultVersion = TripleProtocol.IGNORE_1_0_0_VERSION;
         meta.method = methodDescriptor;
         meta.scheme = getSchemeFromUrl(url);
-        // TODO read compressor from config
-        meta.compressor = Compressor.NONE;
+        meta.compressor = getCompressorFromEnv();
         meta.cancellationContext = RpcContext.getCancellationContext();
         meta.address = url.getAddress();
         meta.service = url.getPath();

@@ -1,0 +1,13 @@
+{
+  "resources": {
+    "includes": [
+      {
+        "pattern": "\\Qdubbo.properties\\E"
+      },
+      {
+        "pattern": "\\Qlog4j.properties\\E"
+      }
+    ]
+  },
+  "bundles": []
+}

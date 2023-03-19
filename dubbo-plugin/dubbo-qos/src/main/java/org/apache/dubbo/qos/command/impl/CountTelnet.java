@@ -18,9 +18,9 @@ package org.apache.dubbo.qos.command.impl;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.qos.command.BaseCommand;
-import org.apache.dubbo.qos.command.CommandContext;
-import org.apache.dubbo.qos.command.annotation.Cmd;
+import org.apache.dubbo.qos.api.BaseCommand;
+import org.apache.dubbo.qos.api.CommandContext;
+import org.apache.dubbo.qos.api.Cmd;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.telnet.support.TelnetUtils;
 import org.apache.dubbo.remoting.utils.PayloadDropper;
@@ -45,7 +45,7 @@ import static org.apache.dubbo.qos.server.handler.QosProcessHandler.PROMPT;
     "count [service] [method] [times]"
 })
 public class CountTelnet implements BaseCommand {
-    private DubboProtocol dubboProtocol;
+    private final DubboProtocol dubboProtocol;
 
     public CountTelnet(FrameworkModel frameworkModel) {
         this.dubboProtocol = DubboProtocol.getDubboProtocol(frameworkModel);
