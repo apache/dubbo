@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.metrics.registry.event;
 
+import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.metrics.event.TimeCounterEvent;
 import org.apache.dubbo.metrics.model.MetricsKey;
 import org.apache.dubbo.metrics.registry.collector.RegistryMetricsCollector;
@@ -33,8 +34,14 @@ public class RegistryEvent extends TimeCounterEvent {
 
     public RegistryEvent(ApplicationModel applicationModel) {
         super(applicationModel);
-        this.collector = applicationModel.getBeanFactory().getBean(RegistryMetricsCollector.class);
-        this.available = this.collector != null && collector.isCollectEnabled();
+        ScopeBeanFactory beanFactory = applicationModel.getBeanFactory();
+        if (beanFactory.isDestroyed()) {
+            this.available = false;
+            this.collector = null;
+        } else {
+            this.collector = beanFactory.getBean(RegistryMetricsCollector.class);
+            this.available = this.collector != null && collector.isCollectEnabled();
+        }
     }
 
     public ApplicationModel getSource() {
