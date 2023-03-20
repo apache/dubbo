@@ -14,29 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.http;
+package org.apache.dubbo.rpc.protocol.rest.rest;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MediaType;
 
-/**
- * rest response facade
- */
-public interface RestResult {
-    String getContentType();
+@Path("/demoService")
+public interface RestDemoForTestException {
 
-    byte[] getBody() throws IOException;
+    @POST
+    @Path("/noFound")
+    @Produces(MediaType.TEXT_PLAIN)
+    String test404();
 
-    Map<String, List<String>> headers();
-
-    byte[] getErrorResponse() throws IOException;
-
-    int getResponseCode() throws IOException;
-
-    String getMessage() throws IOException;
-
-    default String appendErrorMessage(String message, String errorInfo) {
-        return message + "\n error info is: " + errorInfo;
-    }
+    @GET
+    @Consumes({MediaType.TEXT_PLAIN})
+    @Path("/hello")
+    Integer test400(@QueryParam("a")String a,@QueryParam("b") String b);
 }

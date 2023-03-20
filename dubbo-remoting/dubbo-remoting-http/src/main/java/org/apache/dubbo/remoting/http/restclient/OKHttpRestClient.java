@@ -109,7 +109,7 @@ public class OKHttpRestClient implements RestClient {
 
                     @Override
                     public String getMessage() throws IOException {
-                        return response.message() + "\n error info is: " + new String(getBody());
+                        return appendErrorMessage(response.message(), new String(getBody()));
                     }
                 });
             }
