@@ -30,7 +30,7 @@ import java.util.function.Supplier;
 public class EventBus {
 
     /**
-     * Posts an event to all registered subscribers.
+     * Posts an event to all registered subscribers and only once.
      *
      * @param event event to post.
      */
@@ -51,6 +51,7 @@ public class EventBus {
 
     /**
      * Posts an event to all registered subscribers.
+     * Go through post, fail or finish stages
      * Loop around the event target and return the original processing result
      *
      * @param event    event to post.
