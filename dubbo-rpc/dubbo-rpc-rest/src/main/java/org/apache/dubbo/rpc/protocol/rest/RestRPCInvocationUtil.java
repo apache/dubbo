@@ -23,6 +23,7 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.protocol.rest.annotation.ParamParserManager;
 import org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.provider.ProviderParseContext;
 import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
+import org.apache.dubbo.rpc.protocol.rest.exception.ParamParseException;
 import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
 import org.apache.dubbo.rpc.protocol.rest.util.HttpHeaderUtil;
 import org.apache.dubbo.rpc.protocol.rest.util.Pair;
@@ -38,9 +39,13 @@ public class RestRPCInvocationUtil {
                                        Object servletResponse,
                                        RestMethodMetadata restMethodMetadata) {
 
-        ProviderParseContext parseContext = createParseContext(request, servletRequest, servletResponse, restMethodMetadata);
-        Object[] args = ParamParserManager.providerParamParse(parseContext);
-        rpcInvocation.setArguments(args);
+        try {
+            ProviderParseContext parseContext = createParseContext(request, servletRequest, servletResponse, restMethodMetadata);
+            Object[] args = ParamParserManager.providerParamParse(parseContext);
+            rpcInvocation.setArguments(args);
+        } catch (Exception e) {
+            throw new ParamParseException(e.getMessage());
+        }
     }
 
     private static ProviderParseContext createParseContext(RequestFacade request, Object servletRequest, Object servletResponse, RestMethodMetadata restMethodMetadata) {
@@ -83,7 +88,7 @@ public class RestRPCInvocationUtil {
     }
 
 
-    public static Pair<Invoker, RestMethodMetadata> getRestMethodMetadata(RequestFacade request,PathAndInvokerMapper pathAndInvokerMapper) {
+    public static Pair<Invoker, RestMethodMetadata> getRestMethodMetadata(RequestFacade request, PathAndInvokerMapper pathAndInvokerMapper) {
         String path = request.getPathInfo();
         String version = request.getHeader(RestHeaderEnum.VERSION.getHeader());
         String group = request.getHeader(RestHeaderEnum.GROUP.getHeader());

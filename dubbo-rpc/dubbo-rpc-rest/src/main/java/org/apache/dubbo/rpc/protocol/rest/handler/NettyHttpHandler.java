@@ -45,7 +45,7 @@ import java.io.IOException;
 /**
  * netty http request handler
  */
-public class NettyHttpHandler implements HttpHandler<FullHttpRequest, NettyHttpResponse> {
+public class NettyHttpHandler implements HttpHandler<NettyRequestFacade, NettyHttpResponse> {
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
     private final PathAndInvokerMapper pathAndInvokerMapper;
 
@@ -55,18 +55,18 @@ public class NettyHttpHandler implements HttpHandler<FullHttpRequest, NettyHttpR
     }
 
     @Override
-    public void handle(FullHttpRequest nettyHttpRequest, NettyHttpResponse nettyHttpResponse) throws IOException {
+    public void handle(NettyRequestFacade requestFacade, NettyHttpResponse nettyHttpResponse) throws IOException {
 
-        RequestFacade request = new NettyRequestFacade(nettyHttpRequest, null);
 
         // TODO add request filter chain
 
 //        RpcContext.getServiceContext().setRemoteAddress(request.getRemoteAddr(), request.getRemotePort());
 //            dispatcher.service(request, servletResponse);
 
+        FullHttpRequest nettyHttpRequest = requestFacade.getRequest();
 
         try {
-            doHandler(nettyHttpRequest, nettyHttpResponse, request);
+            doHandler(nettyHttpRequest, nettyHttpResponse, requestFacade);
         } catch (PathNoFoundException pathNoFoundException) {
             logger.error("", pathNoFoundException.getMessage(), "", "dubbo rest protocol provider path   no found ,raw request is :" + nettyHttpRequest, pathNoFoundException);
             nettyHttpResponse.sendError(404, pathNoFoundException.getMessage());
@@ -87,7 +87,7 @@ public class NettyHttpHandler implements HttpHandler<FullHttpRequest, NettyHttpR
 
     private void doHandler(FullHttpRequest nettyHttpRequest, NettyHttpResponse nettyHttpResponse, RequestFacade request) throws Exception {
         //  acquire metadata by request
-        Pair<Invoker, RestMethodMetadata> restMethodMetadataPair = RestRPCInvocationUtil.getRestMethodMetadata(request,pathAndInvokerMapper);
+        Pair<Invoker, RestMethodMetadata> restMethodMetadataPair = RestRPCInvocationUtil.getRestMethodMetadata(request, pathAndInvokerMapper);
 
         Invoker invoker = restMethodMetadataPair.getFirst();
 

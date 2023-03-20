@@ -43,7 +43,7 @@ import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 
 /**
- *  netty http response
+ * netty http response
  */
 public class NettyHttpResponse implements HttpResponse {
     private static final int EMPTY_CONTENT_LENGTH = 0;
@@ -62,7 +62,8 @@ public class NettyHttpResponse implements HttpResponse {
     public NettyHttpResponse(final ChannelHandlerContext ctx, final boolean keepAlive, final HttpMethod method) {
         outputHeaders = new HashMap<>();
         this.method = method;
-        os = (method == null || !method.equals(HttpMethod.HEAD)) ? new ChunkOutputStream(this, ctx, 1000) : null; //[RESTEASY-1627]
+        // TODO chunk size to config
+        os = new ChunkOutputStream(this, ctx, 1000);
         this.ctx = ctx;
         this.keepAlive = keepAlive;
     }
@@ -103,10 +104,11 @@ public class NettyHttpResponse implements HttpResponse {
 
     @Override
     public void sendError(int status, String message) throws IOException {
+        setStatus(status);
         if (message != null) {
             getOutputStream().write(message.getBytes(StandardCharsets.UTF_8));
         }
-        setStatus(status);
+
     }
 
     @Override
@@ -170,6 +172,7 @@ public class NettyHttpResponse implements HttpResponse {
             future.addListener(ChannelFutureListener.CLOSE);
         }
 
+        getOutputStream().close();
     }
 
     @Override

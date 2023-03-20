@@ -38,6 +38,7 @@ import org.apache.dubbo.rpc.protocol.rest.exception.mapper.ExceptionMapper;
 import org.apache.dubbo.rpc.protocol.rest.rest.AnotherUserRestService;
 import org.apache.dubbo.rpc.protocol.rest.rest.AnotherUserRestServiceImpl;
 
+import org.apache.dubbo.rpc.protocol.rest.rest.RestDemoForTestException;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -331,6 +332,46 @@ class JaxrsRestProtocolTest {
         Assertions.assertEquals(18l, number);
 
         exporter.unexport();
+    }
+
+    @Test
+    void test404() {
+        Assertions.assertThrows(RpcException.class, () -> {
+            DemoService server = new DemoServiceImpl();
+            URL nettyUrl = this.registerProvider(exportUrl, server, DemoService.class);
+
+
+            Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(server, DemoService.class, nettyUrl));
+
+            URL referUrl = URL.valueOf("rest://127.0.0.1:" + availablePort + "/rest?interface=org.apache.dubbo.rpc.protocol.rest.rest.RestDemoForTestException");
+
+            RestDemoForTestException restDemoForTestException = this.proxy.getProxy(protocol.refer(RestDemoForTestException.class, referUrl));
+
+            restDemoForTestException.test404();
+
+            exporter.unexport();
+        });
+
+    }
+
+    @Test
+    void test400() {
+        Assertions.assertThrows(RpcException.class, () -> {
+            DemoService server = new DemoServiceImpl();
+            URL nettyUrl = this.registerProvider(exportUrl, server, DemoService.class);
+
+
+            Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(server, DemoService.class, nettyUrl));
+
+            URL referUrl = URL.valueOf("rest://127.0.0.1:" + availablePort + "/rest?interface=org.apache.dubbo.rpc.protocol.rest.rest.RestDemoForTestException");
+
+            RestDemoForTestException restDemoForTestException = this.proxy.getProxy(protocol.refer(RestDemoForTestException.class, referUrl));
+
+            restDemoForTestException.test400("abc","edf");
+
+            exporter.unexport();
+        });
+
     }
 
     public static class TestExceptionMapper implements ExceptionHandler<RuntimeException> {
