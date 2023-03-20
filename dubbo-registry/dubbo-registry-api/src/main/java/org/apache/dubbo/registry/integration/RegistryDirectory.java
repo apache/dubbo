@@ -114,11 +114,11 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
 
     @Override
     public void subscribe(URL url) {
-        super.subscribe(url);
         if (moduleModel.getModelEnvironment().getConfiguration().convert(Boolean.class, org.apache.dubbo.registry.Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
             consumerConfigurationListener.addNotifyListener(this);
             referenceConfigurationListener = new ReferenceConfigurationListener(moduleModel, this, url);
         }
+        super.subscribe(url);
     }
 
     private ConsumerConfigurationListener getConsumerConfigurationListener(ModuleModel moduleModel) {
