@@ -46,6 +46,10 @@ public abstract class MetricsEvent {
         }
     }
 
+    public void afterPost(Object postResult) {
+
+    }
+
     public Object getSource() {
         return source;
     }

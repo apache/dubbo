@@ -54,10 +54,10 @@ public class EventBus {
      * Loop around the event target and return the original processing result
      *
      * @param event    event to post.
-     * @param supplier original processing result supplier
+     * @param targetSupplier original processing result targetSupplier
      */
-    public static <T> T post(MetricsEvent event, Supplier<T> supplier) {
-        return post(event, supplier, null);
+    public static <T> T post(MetricsEvent event, Supplier<T> targetSupplier) {
+        return post(event, targetSupplier, null);
 
     }
 
@@ -65,40 +65,43 @@ public class EventBus {
      * Same as above, the difference is that you can customize success/failure
      *
      * @param event      event to post.
-     * @param supplier   original processing result supplier
+     * @param targetSupplier   original processing result supplier
      * @param trFunction Custom event success criteria, judged according to the returned boolean type
      * @param <T>        Biz result type
      * @return Biz result
      */
-    public static <T> T post(MetricsEvent event, Supplier<T> supplier, Function<T, Boolean> trFunction) {
+    public static <T> T post(MetricsEvent event, Supplier<T> targetSupplier, Function<T, Boolean> trFunction) {
         if (!(event.getSource() instanceof ApplicationModel)) {
-            return supplier.get();
+            return targetSupplier.get();
         }
         ApplicationModel applicationModel = (ApplicationModel) event.getSource();
         if (applicationModel.isDestroyed()) {
-            return supplier.get();
+            return targetSupplier.get();
         }
         ScopeBeanFactory beanFactory = applicationModel.getBeanFactory();
         if (beanFactory.isDestroyed()) {
-            return supplier.get();
+            return targetSupplier.get();
         }
         Dispatcher dispatcher = beanFactory.getBean(Dispatcher.class);
         if (dispatcher == null) {
-            return supplier.get();
+            return targetSupplier.get();
         }
         dispatcher.publishEvent(event);
         T result;
         if (trFunction == null) {
             try {
-                result = supplier.get();
+                result = targetSupplier.get();
             } catch (Throwable e) {
                 dispatcher.publishErrorEvent(event);
                 throw e;
             }
+            event.afterPost(result);
             dispatcher.publishFinishEvent(event);
         } else {
-            result = supplier.get();
+            // Custom failure status
+            result = targetSupplier.get();
             if (trFunction.apply(result)) {
+                event.afterPost(result);
                 dispatcher.publishFinishEvent(event);
             } else {
                 dispatcher.publishErrorEvent(event);
@@ -106,4 +109,6 @@ public class EventBus {
         }
         return result;
     }
+
+
 }

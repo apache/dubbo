@@ -53,7 +53,7 @@ public class SimpleMetricsEventMulticaster implements MetricsEventMulticaster {
         if (event instanceof EmptyEvent) {
             return;
         }
-        if (validateIfSourceInstanceOfApplicationModel(event)) return;
+        if (validateIfApplicationConfigExist(event)) return;
         for (MetricsListener listener : listeners) {
             if (listener.isSupport(event)) {
                 listener.onEvent(event);
@@ -61,7 +61,7 @@ public class SimpleMetricsEventMulticaster implements MetricsEventMulticaster {
         }
     }
 
-    private boolean validateIfSourceInstanceOfApplicationModel(MetricsEvent event) {
+    private boolean validateIfApplicationConfigExist(MetricsEvent event) {
         if (event.getSource() instanceof ApplicationModel) {
             // Check if exist application config
             return ((ApplicationModel) event.getSource()).NotExistApplicationConfig();
@@ -83,7 +83,7 @@ public class SimpleMetricsEventMulticaster implements MetricsEventMulticaster {
 
     @SuppressWarnings({"rawtypes"})
     private void publishTimeEvent(MetricsEvent event, Consumer<MetricsLifeListener> consumer) {
-        if (validateIfSourceInstanceOfApplicationModel(event)) return;
+        if (validateIfApplicationConfigExist(event)) return;
         if (event instanceof EmptyEvent) {
             return;
         }

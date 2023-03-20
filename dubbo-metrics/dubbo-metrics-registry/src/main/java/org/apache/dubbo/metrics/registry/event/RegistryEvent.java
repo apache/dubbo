@@ -149,15 +149,20 @@ public class RegistryEvent extends TimeCounterEvent {
 
     public static class MetricsNotifyEvent extends RegistryEvent {
 
-        private final Map<String, Integer> lastNumMap;
+        private Map<String, Integer> lastNumMap;
 
-        public MetricsNotifyEvent(ApplicationModel applicationModel, Map<String, Integer> lastNumMap) {
+        public MetricsNotifyEvent(ApplicationModel applicationModel) {
             super(applicationModel);
-            this.lastNumMap = lastNumMap;
         }
 
         public Map<String, Integer> getLastNotifyNum() {
             return lastNumMap;
+        }
+
+        @Override
+        @SuppressWarnings("unchecked")
+        public void afterPost(Object postResult) {
+            this.lastNumMap = (Map<String, Integer>) postResult;
         }
     }
 

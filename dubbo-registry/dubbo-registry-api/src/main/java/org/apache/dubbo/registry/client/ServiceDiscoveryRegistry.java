@@ -35,7 +35,6 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -325,13 +324,11 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
                 serviceListeners.put(serviceNamesKey, serviceInstancesChangedListener);
             }
 
-            ApplicationModel applicationModel = Optional.ofNullable(url.getApplicationModel()).orElse(ApplicationModel.defaultModel());
-
             if (!serviceInstancesChangedListener.isDestroyed()) {
                 listener.addServiceListener(serviceInstancesChangedListener);
                 serviceInstancesChangedListener.addListenerAndNotify(url, listener);
                 ServiceInstancesChangedListener finalServiceInstancesChangedListener = serviceInstancesChangedListener;
-                EventBus.post(new RegistryEvent.MetricsServiceSubscribeEvent(applicationModel, serviceKey),
+                EventBus.post(new RegistryEvent.MetricsServiceSubscribeEvent(url.getApplicationModel(), serviceKey),
                     () -> {
                         serviceDiscovery.addServiceInstancesChangedListener(finalServiceInstancesChangedListener);
                         return null;
