@@ -36,6 +36,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.LongAccumulator;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -46,21 +47,35 @@ import java.util.stream.Collectors;
 public class RegistryStatComposite implements MetricsExport {
 
 
-    public Map<RegistryEvent.Type, Map<String, AtomicLong>> numStats = new ConcurrentHashMap<>();
-    public Map<RegistryEvent.Type, Map<ServiceKeyMetric, AtomicLong>> skStats = new ConcurrentHashMap<>();
-    public List<LongContainer<? extends Number>> rtStats = new ArrayList<>();
+    public Map<RegistryEvent.ApplicationType, Map<String, AtomicLong>> applicationNumStats = new ConcurrentHashMap<>();
+    public Map<RegistryEvent.ServiceType, Map<ServiceKeyMetric, AtomicLong>> serviceNumStats = new ConcurrentHashMap<>();
+    public Map<RegistryEvent.ServiceType, Map<ServiceKeyMetric, AtomicLong>> skStats = new ConcurrentHashMap<>();
+    public List<LongContainer<? extends Number>> appRtStats = new ArrayList<>();
+    public List<LongContainer<? extends Number>> serviceRtStats = new ArrayList<>();
     public static String OP_TYPE_REGISTER = "register";
     public static String OP_TYPE_SUBSCRIBE = "subscribe";
     public static String OP_TYPE_NOTIFY = "notify";
+    public static String OP_TYPE_REGISTER_SERVICE = "register.service";
+    public static String OP_TYPE_SUBSCRIBE_SERVICE = "subscribe.service";
 
     public RegistryStatComposite() {
-        for (RegistryEvent.Type type : RegistryEvent.Type.values()) {
-            numStats.put(type, new ConcurrentHashMap<>());
+        for (RegistryEvent.ApplicationType type : RegistryEvent.ApplicationType.values()) {
+            // Application key and increment val
+            applicationNumStats.put(type, new ConcurrentHashMap<>());
         }
 
-        rtStats.addAll(initStats(OP_TYPE_REGISTER));
-        rtStats.addAll(initStats(OP_TYPE_SUBSCRIBE));
-        rtStats.addAll(initStats(OP_TYPE_NOTIFY));
+        for (RegistryEvent.ServiceType type : RegistryEvent.ServiceType.values()) {
+            // Service key
+            skStats.put(type, new ConcurrentHashMap<>());
+        }
+
+
+        appRtStats.addAll(initStats(OP_TYPE_REGISTER));
+        appRtStats.addAll(initStats(OP_TYPE_SUBSCRIBE));
+        appRtStats.addAll(initStats(OP_TYPE_NOTIFY));
+
+        serviceRtStats.addAll(initStats(OP_TYPE_REGISTER_SERVICE));
+        serviceRtStats.addAll(initStats(OP_TYPE_SUBSCRIBE_SERVICE));
     }
 
     private List<LongContainer<? extends Number>> initStats(String registryOpType) {
@@ -72,7 +87,7 @@ public class RegistryStatComposite implements MetricsExport {
         // AvgContainer is a special counter that stores the number of times but outputs function of sum/times
         AtomicLongContainer avgContainer = new AtomicLongContainer(new MetricsKeyWrapper(registryOpType, MetricsKey.METRIC_RT_AVG), (k, v) -> v.incrementAndGet());
         avgContainer.setValueSupplier(applicationName -> {
-            LongContainer<? extends Number> totalContainer = rtStats.stream().filter(longContainer -> longContainer.isKeyWrapper(MetricsKey.METRIC_RT_SUM, registryOpType)).findFirst().get();
+            LongContainer<? extends Number> totalContainer = appRtStats.stream().filter(longContainer -> longContainer.isKeyWrapper(MetricsKey.METRIC_RT_SUM, registryOpType)).findFirst().get();
             AtomicLong totalRtTimes = avgContainer.get(applicationName);
             AtomicLong totalRtSum = (AtomicLong) totalContainer.get(applicationName);
             return totalRtSum.get() / totalRtTimes.get();
@@ -81,31 +96,50 @@ public class RegistryStatComposite implements MetricsExport {
         return singleRtStats;
     }
 
-    public void setApplicationKey(RegistryEvent.Type type, String applicationName, int num) {
-        if (!numStats.containsKey(type)) {
+    public void setApplicationKey(RegistryEvent.ApplicationType type, String applicationName, int num) {
+        if (!applicationNumStats.containsKey(type)) {
             return;
         }
-        numStats.get(type).computeIfAbsent(applicationName, k -> new AtomicLong(0L)).set(num);
+        applicationNumStats.get(type).computeIfAbsent(applicationName, k -> new AtomicLong(0L)).set(num);
     }
 
-    public void setServiceKey(RegistryEvent.Type type, String applicationName, String serviceKey, int num) {
+    public void setServiceKey(RegistryEvent.ServiceType type, String applicationName, String serviceKey, int num) {
         if (!skStats.containsKey(type)) {
             return;
         }
         skStats.get(type).computeIfAbsent(new ServiceKeyMetric(applicationName, serviceKey), k -> new AtomicLong(0L)).set(num);
     }
 
-    public void increment(RegistryEvent.Type type, String applicationName) {
-        if (!numStats.containsKey(type)) {
+    public void increment(RegistryEvent.ApplicationType type, String applicationName) {
+        incrementSize(type, applicationName, 1);
+    }
+
+    public void incrementServiceKey(RegistryEvent.ServiceType type, String applicationName, String serviceKey, int size) {
+        if (!skStats.containsKey(type)) {
             return;
         }
-        numStats.get(type).computeIfAbsent(applicationName, k -> new AtomicLong(0L)).incrementAndGet();
+        skStats.get(type).computeIfAbsent(new ServiceKeyMetric(applicationName, serviceKey), k -> new AtomicLong(0L)).getAndAdd(size);
+    }
+
+    public void incrementSize(RegistryEvent.ApplicationType type, String applicationName, int size) {
+        if (!applicationNumStats.containsKey(type)) {
+            return;
+        }
+        applicationNumStats.get(type).computeIfAbsent(applicationName, k -> new AtomicLong(0L)).getAndAdd(size);
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    public void calcRt(String applicationName, String registryOpType, Long responseTime) {
-        for (LongContainer container : rtStats.stream().filter(longContainer -> longContainer.specifyType(registryOpType)).collect(Collectors.toList())) {
+    public void calcApplicationRt(String applicationName, String registryOpType, Long responseTime) {
+        for (LongContainer container : appRtStats.stream().filter(longContainer -> longContainer.specifyType(registryOpType)).collect(Collectors.toList())) {
             Number current = (Number) ConcurrentHashMapUtils.computeIfAbsent(container, applicationName, container.getInitFunc());
+            container.getConsumerFunc().accept(responseTime, current);
+        }
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public void calcServiceKeyRt(String applicationName, String serviceKey, String registryOpType, Long responseTime) {
+        for (LongContainer container : serviceRtStats.stream().filter(longContainer -> longContainer.specifyType(registryOpType)).collect(Collectors.toList())) {
+            Number current = (Number) ConcurrentHashMapUtils.computeIfAbsent(container, applicationName + "_" + serviceKey, container.getInitFunc());
             container.getConsumerFunc().accept(responseTime, current);
         }
     }
@@ -114,8 +148,8 @@ public class RegistryStatComposite implements MetricsExport {
     @SuppressWarnings({"rawtypes"})
     public List<GaugeMetricSample> exportNumMetrics() {
         List<GaugeMetricSample> list = new ArrayList<>();
-        for (RegistryEvent.Type type : numStats.keySet()) {
-            Map<String, AtomicLong> stringAtomicLongMap = numStats.get(type);
+        for (RegistryEvent.ApplicationType type : applicationNumStats.keySet()) {
+            Map<String, AtomicLong> stringAtomicLongMap = applicationNumStats.get(type);
             for (String applicationName : stringAtomicLongMap.keySet()) {
                 list.add(convertToSample(applicationName, type, MetricsCategory.REGISTRY, stringAtomicLongMap.get(applicationName)));
             }
@@ -126,20 +160,26 @@ public class RegistryStatComposite implements MetricsExport {
     @Override
     @SuppressWarnings({"rawtypes"})
     public List<GaugeMetricSample> exportRtMetrics() {
-        List<GaugeMetricSample> list = new ArrayList<>();
+        List<GaugeMetricSample> result = new ArrayList<>();
+        doExportRt(result, appRtStats, ApplicationMetric::getTagsByName);
+        doExportRt(result, serviceRtStats, ApplicationMetric::getServiceTags);
+        return result;
+    }
+
+    @SuppressWarnings({"rawtypes"})
+    private void doExportRt(List<GaugeMetricSample> list, List<LongContainer<? extends Number>> rtStats, Function<String, Map<String, String>> tagNameFunc) {
         for (LongContainer<? extends Number> rtContainer : rtStats) {
             MetricsKeyWrapper metricsKeyWrapper = rtContainer.getMetricsKeyWrapper();
             for (Map.Entry<String, ? extends Number> entry : rtContainer.entrySet()) {
-                list.add(new GaugeMetricSample<>(metricsKeyWrapper.targetKey(), metricsKeyWrapper.targetDesc(), ApplicationMetric.getTagsByName(entry.getKey()), MetricsCategory.RT, entry.getKey().intern(), value -> rtContainer.getValueSupplier().apply(value.intern())));
+                list.add(new GaugeMetricSample<>(metricsKeyWrapper.targetKey(), metricsKeyWrapper.targetDesc(), tagNameFunc.apply(entry.getKey()), MetricsCategory.RT, entry.getKey().intern(), value -> rtContainer.getValueSupplier().apply(value.intern())));
             }
         }
-        return list;
     }
 
     @SuppressWarnings({"rawtypes"})
     public List<GaugeMetricSample> exportSkMetrics() {
         List<GaugeMetricSample> list = new ArrayList<>();
-        for (RegistryEvent.Type type : skStats.keySet()) {
+        for (RegistryEvent.ServiceType type : skStats.keySet()) {
             Map<ServiceKeyMetric, AtomicLong> stringAtomicLongMap = skStats.get(type);
             for (ServiceKeyMetric serviceKeyMetric : stringAtomicLongMap.keySet()) {
                 list.add(new GaugeMetricSample<>(type.getMetricsKey(), serviceKeyMetric.getTags(), MetricsCategory.REGISTRY, stringAtomicLongMap, value -> value.get(serviceKeyMetric).get()));
@@ -149,7 +189,7 @@ public class RegistryStatComposite implements MetricsExport {
     }
 
     @SuppressWarnings({"rawtypes"})
-    public GaugeMetricSample convertToSample(String applicationName, RegistryEvent.Type type, MetricsCategory category, AtomicLong targetNumber) {
+    public GaugeMetricSample convertToSample(String applicationName, RegistryEvent.ApplicationType type, MetricsCategory category, AtomicLong targetNumber) {
         return new GaugeMetricSample<>(type.getMetricsKey(), ApplicationMetric.getTagsByName(applicationName), category, targetNumber, AtomicLong::get);
     }
 }

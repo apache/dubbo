@@ -113,8 +113,8 @@
         <file_encoding>UTF-8</file_encoding>
         <!-- Maven plugins -->
         <maven_jar_version>3.3.0</maven_jar_version>
-        <maven_surefire_version>3.0.0-M9</maven_surefire_version>
-        <maven_failsafe_version>3.0.0-M9</maven_failsafe_version>
+        <maven_surefire_version>3.0.0</maven_surefire_version>
+        <maven_failsafe_version>3.0.0</maven_failsafe_version>
         <maven_deploy_version>2.8.2</maven_deploy_version>
         <maven_compiler_version>3.11.0</maven_compiler_version>
         <maven_source_version>3.2.1</maven_source_version>
@@ -130,7 +130,7 @@
         <checkstyle_unix.skip>true</checkstyle_unix.skip>
         <rat.skip>true</rat.skip>
         <jacoco.skip>true</jacoco.skip>
-        <revision>3.2.0-beta.6-SNAPSHOT</revision>
+        <revision>3.2.0-beta.7-SNAPSHOT</revision>
     </properties>
 
     <modules>

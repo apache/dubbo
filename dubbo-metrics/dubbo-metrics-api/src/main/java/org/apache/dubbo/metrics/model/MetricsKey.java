@@ -91,6 +91,16 @@ public enum MetricsKey {
     METADATA_SUBSCRIBE_METRIC_NUM("dubbo.metadata.subscribe.num.total", "Total Metadata Subscribe Num"),
     METADATA_SUBSCRIBE_METRIC_NUM_SUCCEED("dubbo.metadata.subscribe.num.succeed.total", "Succeed Metadata Subscribe Num"),
     METADATA_SUBSCRIBE_METRIC_NUM_FAILED("dubbo.metadata.subscribe.num.failed.total", "Failed Metadata Subscribe Num"),
+
+    // register service metrics key
+    SERVICE_REGISTER_METRIC_REQUESTS("dubbo.registry.register.service.total", "Total Service-Level Register Requests"),
+    SERVICE_REGISTER_METRIC_REQUESTS_SUCCEED("dubbo.registry.register.service.succeed.total", "Succeed Service-Level Register Requests"),
+    SERVICE_REGISTER_METRIC_REQUESTS_FAILED("dubbo.registry.register.service.failed.total", "Failed Service-Level Register Requests"),
+
+    // subscribe metrics key
+    SERVICE_SUBSCRIBE_METRIC_NUM("dubbo.registry.subscribe.service.num.total", "Total Service-Level Subscribe Num"),
+    SERVICE_SUBSCRIBE_METRIC_NUM_SUCCEED("dubbo.registry.subscribe.service.num.succeed.total", "Succeed Service-Level Num"),
+    SERVICE_SUBSCRIBE_METRIC_NUM_FAILED("dubbo.registry.subscribe.service.num.failed.total", "Failed Service-Level Num"),
     METADATA_GIT_COMMITID_METRIC("git.commit.id","Git Commit Id Metrics");
     // consumer metrics key
     ;

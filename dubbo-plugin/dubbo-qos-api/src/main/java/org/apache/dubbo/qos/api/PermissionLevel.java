@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.qos.permission;
+package org.apache.dubbo.qos.api;
 
 import org.apache.dubbo.common.utils.StringUtils;
 

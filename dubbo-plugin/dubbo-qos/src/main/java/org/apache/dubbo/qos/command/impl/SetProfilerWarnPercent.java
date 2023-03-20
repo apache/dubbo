@@ -19,9 +19,9 @@ package org.apache.dubbo.qos.command.impl;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.profiler.ProfilerSwitch;
-import org.apache.dubbo.qos.command.BaseCommand;
-import org.apache.dubbo.qos.command.CommandContext;
-import org.apache.dubbo.qos.command.annotation.Cmd;
+import org.apache.dubbo.qos.api.BaseCommand;
+import org.apache.dubbo.qos.api.CommandContext;
+import org.apache.dubbo.qos.api.Cmd;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.QOS_PROFILER_WARN_PERCENT;
 
