@@ -51,7 +51,7 @@ public class EventBus {
 
     /**
      * Posts an event to all registered subscribers.
-     * Go through post, fail or finish stages
+     * Full lifecycle post, judging success or failure by whether there is an exception
      * Loop around the event target and return the original processing result
      *
      * @param event    event to post.
@@ -63,7 +63,7 @@ public class EventBus {
     }
 
     /**
-     * Same as above, the difference is that you can customize success/failure
+     * Full lifecycle post, success and failure conditions can be customized
      *
      * @param event      event to post.
      * @param targetSupplier   original processing result supplier
