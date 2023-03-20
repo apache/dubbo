@@ -251,6 +251,8 @@ public final class NetUtils {
 
     private static volatile String HOST_ADDRESS;
 
+    private static volatile String HOST_NAME;
+
     private static volatile String HOST_ADDRESS_V6;
 
     public static String getLocalHost() {
@@ -585,11 +587,15 @@ public final class NetUtils {
     }
 
     public static String getLocalHostName() {
-        try {
-            return InetAddress.getLocalHost().getHostName();
-        } catch (UnknownHostException e) {
-            return getLocalAddress().getHostName();
+        if (HOST_NAME != null) {
+            return HOST_NAME;
         }
+        try {
+            HOST_NAME= InetAddress.getLocalHost().getHostName();
+        } catch (UnknownHostException e) {
+            HOST_NAME= getLocalAddress().getHostName();
+        }
+        return HOST_NAME;
     }
 
     /**

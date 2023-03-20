@@ -29,11 +29,9 @@ import org.apache.dubbo.metrics.model.ApplicationMetric;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
-
 import static org.apache.dubbo.metrics.model.MetricsCategory.APPLICATION;
 import static org.apache.dubbo.metrics.model.MetricsKey.APPLICATION_METRIC_INFO;
 
@@ -43,6 +41,8 @@ import static org.apache.dubbo.metrics.model.MetricsKey.APPLICATION_METRIC_INFO;
 public class DefaultMetricsCollector implements MetricsCollector {
 
     private boolean collectEnabled = false;
+
+    private boolean threadpoolCollectEnabled=false;
     private final SimpleMetricsEventMulticaster eventMulticaster;
     private final MethodMetricsSampler methodSampler = new MethodMetricsSampler(this);
     private final ThreadPoolMetricsSampler threadPoolSampler = new ThreadPoolMetricsSampler(this);
@@ -57,6 +57,9 @@ public class DefaultMetricsCollector implements MetricsCollector {
         samplers.add(threadPoolSampler);
     }
 
+    public void addSampler(MetricsSampler sampler){
+        samplers.add(sampler);
+    }
     public void setApplicationName(String applicationName) {
         this.applicationName = applicationName;
     }
@@ -79,6 +82,15 @@ public class DefaultMetricsCollector implements MetricsCollector {
 
     public boolean isCollectEnabled() {
         return collectEnabled;
+    }
+
+
+    public boolean isThreadpoolCollectEnabled() {
+        return threadpoolCollectEnabled;
+    }
+
+    public void setThreadpoolCollectEnabled(boolean threadpoolCollectEnabled) {
+        this.threadpoolCollectEnabled = threadpoolCollectEnabled;
     }
 
     public MethodMetricsSampler getMethodSampler() {
