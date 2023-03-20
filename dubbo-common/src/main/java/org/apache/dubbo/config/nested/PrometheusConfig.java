@@ -24,6 +24,7 @@ public class PrometheusConfig implements Serializable {
 
     /**
      * Prometheus exporter configuration
+     * @deprecated use metrics qos instead
      */
     @Nested
     @Deprecated
@@ -55,30 +56,35 @@ public class PrometheusConfig implements Serializable {
 
         /**
          * Enable prometheus exporter
+         * @deprecated use metrics qos instead
          */
         @Deprecated
         private Boolean enabled;
 
         /**
          * Enable http service discovery for prometheus
+         * @deprecated use metrics qos instead
          */
         @Deprecated
         private Boolean enableHttpServiceDiscovery;
 
         /**
          * Http service discovery url
+         * @deprecated use metrics qos instead
          */
         @Deprecated
         private String httpServiceDiscoveryUrl;
 
         /**
          * When using pull method, which port to expose
+         * @deprecated use metrics qos instead
          */
         @Deprecated
         private Integer metricsPort;
 
         /**
          * When using pull mode, which path to expose metrics
+         * @deprecated use metrics qos instead
          */
         @Deprecated
         private String metricsPath;
