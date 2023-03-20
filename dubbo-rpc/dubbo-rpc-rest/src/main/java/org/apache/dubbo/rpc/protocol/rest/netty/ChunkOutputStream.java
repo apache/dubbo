@@ -35,6 +35,7 @@ public class ChunkOutputStream extends OutputStream {
         if (chunksize < 1) {
             throw new IllegalArgumentException();
         }
+        // TODO  buffer pool
         this.buffer = Unpooled.buffer(0, chunksize);
         this.ctx = ctx;
     }

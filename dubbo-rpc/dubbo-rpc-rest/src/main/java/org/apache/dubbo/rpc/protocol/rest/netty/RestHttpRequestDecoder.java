@@ -24,8 +24,8 @@ import io.netty.handler.codec.MessageToMessageDecoder;
 import java.util.List;
 
 import io.netty.handler.codec.http.HttpHeaders;
-import io.netty.handler.codec.http.HttpRequest;
-import org.apache.dubbo.remoting.http.HttpHandler;
+import org.apache.dubbo.rpc.protocol.rest.handler.NettyHttpHandler;
+import org.apache.dubbo.rpc.protocol.rest.request.NettyRequestFacade;
 
 
 @ChannelHandler.Sharable
@@ -33,10 +33,10 @@ public class RestHttpRequestDecoder extends MessageToMessageDecoder<io.netty.han
 
 
     private String proto;
-    private final HttpHandler<HttpRequest, Object> handler;
+    private final NettyHttpHandler handler;
 
 
-    public RestHttpRequestDecoder(HttpHandler handler) {
+    public RestHttpRequestDecoder(NettyHttpHandler handler) {
         this.handler = handler;
     }
 
@@ -50,7 +50,9 @@ public class RestHttpRequestDecoder extends MessageToMessageDecoder<io.netty.han
 
 
         NettyHttpResponse nettyHttpResponse = new NettyHttpResponse(ctx, keepAlive);
-        handler.handle(request, nettyHttpResponse);
+        NettyRequestFacade requestFacade = new NettyRequestFacade(request, ctx);
+
+        handler.handle(requestFacade, nettyHttpResponse);
 
         nettyHttpResponse.finish();
 

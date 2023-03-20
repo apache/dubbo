@@ -96,7 +96,8 @@ public class URLConnectionRestClient implements RestClient {
 
                     @Override
                     public String getMessage() throws IOException {
-                        return connection.getResponseMessage();
+                        return appendErrorMessage(connection.getResponseMessage(), new String(getErrorResponse()));
+
                     }
                 });
                 return future;
@@ -153,7 +154,7 @@ public class URLConnectionRestClient implements RestClient {
 
                 @Override
                 public String getMessage() throws IOException {
-                    return connection.getResponseMessage();
+                    return appendErrorMessage(connection.getResponseMessage(), new String(getErrorResponse()));
                 }
             });
         } catch (Exception e) {

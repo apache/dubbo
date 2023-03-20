@@ -35,6 +35,8 @@ public interface DemoService {
 
     @GET
     @Path("/error")
+    @Consumes({javax.ws.rs.core.MediaType.TEXT_PLAIN})
+    @Produces({javax.ws.rs.core.MediaType.TEXT_PLAIN})
     String error();
 
     @POST

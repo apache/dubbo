@@ -34,6 +34,9 @@ import org.apache.dubbo.rpc.protocol.AbstractInvoker;
 import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.HttpConnectionConfig;
 import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.HttpConnectionCreateContext;
 import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.HttpConnectionPreBuildIntercept;
+import org.apache.dubbo.rpc.protocol.rest.exception.ParamParseException;
+import org.apache.dubbo.rpc.protocol.rest.exception.PathNoFoundException;
+import org.apache.dubbo.rpc.protocol.rest.exception.RemoteServerInternalException;
 import org.apache.dubbo.rpc.protocol.rest.message.HttpMessageCodecManager;
 import org.apache.dubbo.rpc.protocol.rest.util.HttpHeaderUtil;
 import org.apache.dubbo.rpc.protocol.rest.util.MediaTypeUtil;
@@ -90,11 +93,13 @@ public class RestInvoker<T> extends AbstractInvoker<T> {
                         int responseCode = r.getResponseCode();
                         MediaType mediaType = MediaType.TEXT_PLAIN;
 
-                        if (400 < responseCode && responseCode < 500) {
-                            throw new RpcException(r.getMessage());
+                        if (responseCode == 404) {
+                            throw new PathNoFoundException(r.getMessage());
+                        } else if (400 <= responseCode && responseCode < 500) {
+                            throw new ParamParseException(r.getMessage());
                             // TODO add Exception Mapper
                         } else if (responseCode >= 500) {
-                            throw new RpcException(r.getMessage());
+                            throw new RemoteServerInternalException(r.getMessage());
                         } else if (responseCode < 400) {
                             mediaType = MediaTypeUtil.convertMediaType(r.getContentType());
                         }
@@ -118,7 +123,8 @@ public class RestInvoker<T> extends AbstractInvoker<T> {
     }
 
     /**
-     *  create intercept context
+     * create intercept context
+     *
      * @param invocation
      * @param serviceRestMetadata
      * @param restMethodMetadata

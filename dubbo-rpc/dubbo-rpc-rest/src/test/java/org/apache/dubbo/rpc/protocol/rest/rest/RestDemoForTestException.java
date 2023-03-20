@@ -14,8 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.test.common.api;
+package org.apache.dubbo.rpc.protocol.rest.rest;
 
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MediaType;
 
-public interface SpringmvcDemoService {
+@Path("/demoService")
+public interface RestDemoForTestException {
+
+    @POST
+    @Path("/noFound")
+    @Produces(MediaType.TEXT_PLAIN)
+    String test404();
+
+    @GET
+    @Consumes({MediaType.TEXT_PLAIN})
+    @Path("/hello")
+    Integer test400(@QueryParam("a")String a,@QueryParam("b") String b);
 }
