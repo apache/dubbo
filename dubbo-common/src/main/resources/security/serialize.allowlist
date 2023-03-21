@@ -82,6 +82,7 @@ java.util.Calendar
 java.util.Collections$EmptyList
 java.util.Collections$EmptyMap
 java.util.Collections$SingletonSet
+java.util.Collections$SingletonList
 java.util.Collections$UnmodifiableCollection
 java.util.Collections$UnmodifiableList
 java.util.Collections$UnmodifiableMap
@@ -107,6 +108,8 @@ java.util.concurrent.TimeUnit
 java.util.Currency
 java.util.Date
 java.util.EnumSet
+java.util.RegularEnumSet
+java.util.JumboEnumSet
 java.util.HashMap
 java.util.HashSet
 java.util.Hashtable

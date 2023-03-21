@@ -14,18 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.rpc.listener;
 
-package org.apache.dubbo.metrics.metadata.event;
+import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.model.ModuleModel;
+import org.apache.dubbo.rpc.model.ScopeModelInitializer;
 
-import org.apache.dubbo.metrics.event.SimpleMetricsEventMulticaster;
-
-public final class MetadataMetricsEventMulticaster extends SimpleMetricsEventMulticaster {
-
-    public MetadataMetricsEventMulticaster() {
-        super.addListener(new MetricsPushListener());
-        super.addListener(new MetricsSubscribeListener());
-        super.addListener(new StoreProviderMetadataListener());
-        setAvailable();
+public class ExporterScopeModelInitializer implements ScopeModelInitializer {
+    @Override
+    public void initializeFrameworkModel(FrameworkModel frameworkModel) {
+        ScopeBeanFactory beanFactory = frameworkModel.getBeanFactory();
+        beanFactory.registerBean(InjvmExporterListener.class);
     }
 
+    @Override
+    public void initializeApplicationModel(ApplicationModel applicationModel) {
+
+    }
+
+    @Override
+    public void initializeModuleModel(ModuleModel moduleModel) {
+
+    }
 }
