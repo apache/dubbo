@@ -69,29 +69,29 @@ class RegistryMetricsCollectorTest {
         RegistryMetricsCollector collector = applicationModel.getBeanFactory().getOrRegisterBean(RegistryMetricsCollector.class);
         collector.setCollectEnabled(true);
 
-        eventMulticaster.publishEvent(new RegistryEvent.MetricsRegisterEvent(applicationModel, timePair));
+        eventMulticaster.publishEvent(new RegistryEvent.MetricsApplicationRegisterEvent(applicationModel, timePair));
         List<MetricSample> metricSamples = collector.collect();
 
         // push success +1
-        Assertions.assertEquals(metricSamples.size(), 1);
+        Assertions.assertEquals(1, metricSamples.size());
         Assertions.assertTrue(metricSamples.get(0) instanceof GaugeMetricSample);
 
-        eventMulticaster.publishFinishEvent(new RegistryEvent.MetricsRegisterEvent(applicationModel, timePair));
+        eventMulticaster.publishFinishEvent(new RegistryEvent.MetricsApplicationRegisterEvent(applicationModel, timePair));
         // push finish rt +1
         metricSamples = collector.collect();
         //num(total+success) + rt(5) = 7
-        Assertions.assertEquals(metricSamples.size(), 7);
+        Assertions.assertEquals(7, metricSamples.size());
         long c1 = timePair.calc();
         TimePair lastTimePair = TimePair.start();
-        eventMulticaster.publishEvent(new RegistryEvent.MetricsRegisterEvent(applicationModel, lastTimePair));
+        eventMulticaster.publishEvent(new RegistryEvent.MetricsApplicationRegisterEvent(applicationModel, lastTimePair));
         Thread.sleep(50);
         // push error rt +1
-        eventMulticaster.publishErrorEvent(new RegistryEvent.MetricsRegisterEvent(applicationModel, lastTimePair));
+        eventMulticaster.publishErrorEvent(new RegistryEvent.MetricsApplicationRegisterEvent(applicationModel, lastTimePair));
         long c2 = lastTimePair.calc();
         metricSamples = collector.collect();
 
         // num(total+success+error) + rt(5)
-        Assertions.assertEquals(metricSamples.size(), 8);
+        Assertions.assertEquals(8, metricSamples.size());
 
         // calc rt
         for (MetricSample sample : metricSamples) {
@@ -108,7 +108,6 @@ class RegistryMetricsCollectorTest {
         Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_REGISTER, MetricsKey.METRIC_RT_AVG).targetKey()), (c1 + c2) / 2);
         Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_REGISTER, MetricsKey.METRIC_RT_SUM).targetKey()), c1 + c2);
     }
-
 
 
 }

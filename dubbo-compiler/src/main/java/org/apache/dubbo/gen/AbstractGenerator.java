@@ -104,7 +104,7 @@ public abstract class AbstractGenerator extends Generator {
                 }
                 serviceContext.commonPackageName = extractCommonPackageName(fileProto);
                 serviceContext.multipleFiles =
-                    fileProto.getOptions() != null && fileProto.getOptions().getJavaMultipleFiles();
+                    fileProto.getOptions().getJavaMultipleFiles();
                 contexts.add(serviceContext);
             }
         });
@@ -114,11 +114,9 @@ public abstract class AbstractGenerator extends Generator {
 
     private String extractPackageName(FileDescriptorProto proto) {
         FileOptions options = proto.getOptions();
-        if (options != null) {
-            String javaPackage = options.getJavaPackage();
-            if (!Strings.isNullOrEmpty(javaPackage)) {
-                return javaPackage;
-            }
+        String javaPackage = options.getJavaPackage();
+        if (!Strings.isNullOrEmpty(javaPackage)) {
+            return javaPackage;
         }
 
         return Strings.nullToEmpty(proto.getPackage());
@@ -139,7 +137,7 @@ public abstract class AbstractGenerator extends Generator {
         serviceContext.interfaceClassName = serviceProto.getName();
         serviceContext.serviceName = serviceProto.getName();
         serviceContext.deprecated =
-            serviceProto.getOptions() != null && serviceProto.getOptions().getDeprecated();
+            serviceProto.getOptions().getDeprecated();
 
         List<Location> allLocationsForService = locations.stream()
             .filter(location ->
@@ -179,7 +177,7 @@ public abstract class AbstractGenerator extends Generator {
         methodContext.inputType = typeMap.toJavaTypeName(methodProto.getInputType());
         methodContext.outputType = typeMap.toJavaTypeName(methodProto.getOutputType());
         methodContext.deprecated =
-            methodProto.getOptions() != null && methodProto.getOptions().getDeprecated();
+            methodProto.getOptions().getDeprecated();
         methodContext.isManyInput = methodProto.getClientStreaming();
         methodContext.isManyOutput = methodProto.getServerStreaming();
         methodContext.methodNumber = methodNumber;
@@ -265,11 +263,6 @@ public abstract class AbstractGenerator extends Generator {
 
     private String absoluteDir(ServiceContext ctx) {
         return ctx.packageName.replace('.', '/');
-//        if (Strings.isNullOrEmpty(dir)) {
-//            return ctx.fileName;
-//        } else {
-//            return dir + "/" + ctx.fileName;
-//        }if ()
     }
 
     private String getFileName(String dir, String fileName) {
@@ -359,7 +352,7 @@ public abstract class AbstractGenerator extends Generator {
     /**
      * Template class for proto RPC objects.
      */
-    private class MethodContext {
+    private static class MethodContext {
 
         // CHECKSTYLE DISABLE VisibilityModifier FOR 10 LINES
         public String originMethodName;

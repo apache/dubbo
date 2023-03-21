@@ -18,7 +18,6 @@
 package org.apache.dubbo.metrics.aggregate;
 
 import org.apache.dubbo.common.utils.Assert;
-import org.apache.dubbo.common.utils.TimeUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -77,7 +76,7 @@ public abstract class SlidingWindow<T> {
      * @return the pane at current timestamp.
      */
     public Pane<T> currentPane() {
-        return currentPane(TimeUtils.currentTimeMillis());
+        return currentPane(System.currentTimeMillis());
     }
 
     /**
@@ -197,7 +196,7 @@ public abstract class SlidingWindow<T> {
      * @return true if the pane is deprecated; otherwise false.
      */
     public boolean isPaneDeprecated(final Pane<T> pane) {
-        return isPaneDeprecated(TimeUtils.currentTimeMillis(), pane);
+        return isPaneDeprecated(System.currentTimeMillis(), pane);
     }
 
     /**
@@ -219,7 +218,7 @@ public abstract class SlidingWindow<T> {
      * @return valid pane list for entire sliding window.
      */
     public List<Pane<T>> list() {
-        return list(TimeUtils.currentTimeMillis());
+        return list(System.currentTimeMillis());
     }
 
     /**
@@ -254,7 +253,7 @@ public abstract class SlidingWindow<T> {
      * @return aggregated value list for entire sliding window.
      */
     public List<T> values() {
-        return values(TimeUtils.currentTimeMillis());
+        return values(System.currentTimeMillis());
     }
 
     /**

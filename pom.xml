@@ -113,13 +113,13 @@
         <file_encoding>UTF-8</file_encoding>
         <!-- Maven plugins -->
         <maven_jar_version>3.3.0</maven_jar_version>
-        <maven_surefire_version>3.0.0-M9</maven_surefire_version>
-        <maven_failsafe_version>3.0.0-M9</maven_failsafe_version>
+        <maven_surefire_version>3.0.0</maven_surefire_version>
+        <maven_failsafe_version>3.0.0</maven_failsafe_version>
         <maven_deploy_version>2.8.2</maven_deploy_version>
-        <maven_compiler_version>3.10.1</maven_compiler_version>
+        <maven_compiler_version>3.11.0</maven_compiler_version>
         <maven_source_version>3.2.1</maven_source_version>
         <maven_javadoc_version>3.5.0</maven_javadoc_version>
-        <maven_jetty_version>9.4.50.v20221201</maven_jetty_version>
+        <maven_jetty_version>9.4.51.v20230217</maven_jetty_version>
         <maven_checkstyle_version>3.2.1</maven_checkstyle_version>
         <maven_jacoco_version>0.8.8</maven_jacoco_version>
         <maven_flatten_version>1.3.0</maven_flatten_version>
@@ -130,7 +130,7 @@
         <checkstyle_unix.skip>true</checkstyle_unix.skip>
         <rat.skip>true</rat.skip>
         <jacoco.skip>true</jacoco.skip>
-        <revision>3.2.0-beta.6-SNAPSHOT</revision>
+        <revision>3.2.0-beta.7-SNAPSHOT</revision>
     </properties>
 
     <modules>
@@ -334,6 +334,9 @@
                                         **/org/apache/dubbo/maven/plugin/aot/MatchingGroupIdFilter.java,
                                         **/org/apache/dubbo/maven/plugin/aot/RunArguments.java,
                                         **/org/apache/dubbo/maven/plugin/aot/RunProcess.java,
+                                        **/org/apache/dubbo/aot/generate/BasicJsonWriter.java,
+                                        **/org/apache/dubbo/aot/generate/ExecutableMode.java,
+                                        **/org/apache/dubbo/aot/generate/MemberCategory.java,
                                         **/org/apache/dubbo/common/threadpool/serial/SerializingExecutor.java,
                                         **/org/apache/dubbo/common/threadlocal/InternalThreadLocal.java,
                                         **/org/apache/dubbo/common/threadlocal/InternalThreadLocalMap.java,

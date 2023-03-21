@@ -75,7 +75,7 @@ public class LoggerFactory {
                 // try to use the first available adapter
                 for (Class<? extends LoggerAdapter> clazz : candidates) {
                     try {
-                        LoggerAdapter loggerAdapter = clazz.getConstructor().newInstance();
+                        LoggerAdapter loggerAdapter = clazz.getDeclaredConstructor().newInstance();
                         loggerAdapter.getLogger(LoggerFactory.class);
                         if (loggerAdapter.isConfigured()) {
                             setLoggerAdapter(loggerAdapter);
@@ -93,7 +93,7 @@ public class LoggerFactory {
                 System.err.println("Dubbo: Unable to find a proper configured logger to log out.");
                 for (Class<? extends LoggerAdapter> clazz : candidates) {
                     try {
-                        LoggerAdapter loggerAdapter = clazz.getConstructor().newInstance();
+                        LoggerAdapter loggerAdapter = clazz.getDeclaredConstructor().newInstance();
                         loggerAdapter.getLogger(LoggerFactory.class);
                         setLoggerAdapter(loggerAdapter);
                         found = true;
@@ -221,7 +221,7 @@ public class LoggerFactory {
         List<String> result = new LinkedList<>();
         for (Map.Entry<Class<? extends LoggerAdapter>, String> entry : candidates.entrySet()) {
             try {
-                LoggerAdapter loggerAdapter = entry.getKey().getConstructor().newInstance();
+                LoggerAdapter loggerAdapter = entry.getKey().getDeclaredConstructor().newInstance();
                 loggerAdapter.getLogger(LoggerFactory.class);
                 result.add(entry.getValue());
             } catch (Exception ignored) {
