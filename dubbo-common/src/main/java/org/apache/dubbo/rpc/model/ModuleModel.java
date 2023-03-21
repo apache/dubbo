@@ -49,7 +49,7 @@ public class ModuleModel extends ScopeModel {
     private volatile ModuleDeployer deployer;
     private boolean lifeCycleManagedExternally = false;
 
-    public ModuleModel(ApplicationModel applicationModel) {
+    protected ModuleModel(ApplicationModel applicationModel) {
         this(applicationModel, false);
     }
 
