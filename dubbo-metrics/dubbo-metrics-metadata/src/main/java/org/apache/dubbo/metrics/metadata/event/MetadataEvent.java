@@ -28,17 +28,15 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
  */
 public class MetadataEvent extends TimeCounterEvent {
     private final MetadataMetricsCollector collector;
-    private final boolean available;
 
     public MetadataEvent(ApplicationModel applicationModel) {
         super(applicationModel);
         ScopeBeanFactory beanFactory = applicationModel.getBeanFactory();
         if (beanFactory.isDestroyed()) {
-            this.available = false;
             this.collector = null;
         } else {
             this.collector = beanFactory.getBean(MetadataMetricsCollector.class);
-            this.available = this.collector != null && collector.isCollectEnabled();
+            super.setAvailable(this.collector != null && collector.isCollectEnabled());
         }
     }
 
@@ -48,10 +46,6 @@ public class MetadataEvent extends TimeCounterEvent {
 
     public MetadataMetricsCollector getCollector() {
         return collector;
-    }
-
-    public boolean isAvailable() {
-        return available;
     }
 
     public enum Type {

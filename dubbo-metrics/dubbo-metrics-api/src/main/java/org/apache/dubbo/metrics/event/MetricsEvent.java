@@ -31,20 +31,29 @@ public abstract class MetricsEvent {
      * Metric object. (eg. {@link MethodMetric})
      */
     protected transient Object source;
+    private boolean available = true;
 
     @SuppressWarnings({"unchecked"})
     public MetricsEvent(Object source) {
         if (source == null) {
-            throw new IllegalArgumentException("Null source");
-        }
-
-        // ApplicationModel is often empty in testcase scene
-        if (source instanceof Optional) {
+            this.source = ApplicationModel.defaultModel();
+            this.available = false;
+        } else if (source instanceof Optional) {
+            // ApplicationModel is often empty in testcase scene
             this.source = ((Optional<ApplicationModel>) source).orElse(ApplicationModel.defaultModel());
         } else {
             this.source = source;
         }
     }
+
+    public void setAvailable(boolean available) {
+        this.available = available;
+    }
+
+    public boolean isAvailable() {
+        return available;
+    }
+
 
     public void afterPost(Object postResult) {
 

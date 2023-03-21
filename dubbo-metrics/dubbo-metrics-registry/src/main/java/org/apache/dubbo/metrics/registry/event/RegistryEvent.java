@@ -30,17 +30,15 @@ import java.util.Map;
  */
 public class RegistryEvent extends TimeCounterEvent {
     private final RegistryMetricsCollector collector;
-    private final boolean available;
 
     public RegistryEvent(ApplicationModel applicationModel) {
         super(applicationModel);
-        ScopeBeanFactory beanFactory = applicationModel.getBeanFactory();
+        ScopeBeanFactory beanFactory = getSource().getBeanFactory();
         if (beanFactory.isDestroyed()) {
-            this.available = false;
             this.collector = null;
         } else {
             this.collector = beanFactory.getBean(RegistryMetricsCollector.class);
-            this.available = this.collector != null && collector.isCollectEnabled();
+            super.setAvailable(this.collector != null && collector.isCollectEnabled());
         }
     }
 
@@ -52,9 +50,6 @@ public class RegistryEvent extends TimeCounterEvent {
         return collector;
     }
 
-    public boolean isAvailable() {
-        return available;
-    }
 
     public enum ApplicationType {
         R_TOTAL(MetricsKey.REGISTER_METRIC_REQUESTS),
