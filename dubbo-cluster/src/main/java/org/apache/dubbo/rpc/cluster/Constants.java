@@ -118,6 +118,17 @@ public interface Constants {
      */
     String EXPORT_KEY = "export";
 
+
+    /**
+     * Specify the expression context builder in order for evaluating the expression
+     */
+    String CONTEXT_BUILDER_KEY = "context.builder";
+
+    /**
+     * The default strategy name for context builder
+     */
+    String DEFAULT_CONTEXT_BUILDER = "default";
+
     String PEER_KEY = "peer";
 
     String CONSUMER_URL_KEY = "CONSUMER_URL";
