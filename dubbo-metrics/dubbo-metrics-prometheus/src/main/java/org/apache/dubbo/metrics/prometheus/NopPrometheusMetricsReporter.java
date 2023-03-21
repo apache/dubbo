@@ -15,17 +15,28 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.metrics.metadata.event;
+package org.apache.dubbo.metrics.prometheus;
 
-import org.apache.dubbo.metrics.event.SimpleMetricsEventMulticaster;
+import org.apache.dubbo.metrics.report.MetricsReporter;
 
-public final class MetadataMetricsEventMulticaster extends SimpleMetricsEventMulticaster {
+/**
+ * NopMetricsReporter is a trivial implementation of MetricsReporter
+ * which do nothing when micro-meter package is not exist.
+ */
+public class NopPrometheusMetricsReporter implements MetricsReporter {
 
-    public MetadataMetricsEventMulticaster() {
-        super.addListener(new MetricsPushListener());
-        super.addListener(new MetricsSubscribeListener());
-        super.addListener(new StoreProviderMetadataListener());
-        setAvailable();
+    @Override
+    public void init() {
+
     }
 
+    @Override
+    public void refreshData() {
+
+    }
+
+    @Override
+    public String getResponse() {
+        return "";
+    }
 }

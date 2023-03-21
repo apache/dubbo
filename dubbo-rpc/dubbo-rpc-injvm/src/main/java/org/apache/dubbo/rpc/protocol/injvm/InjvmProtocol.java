@@ -69,7 +69,7 @@ public class InjvmProtocol extends AbstractProtocol {
         if (result == null) {
             return null;
         } else if (ProtocolUtils.isGeneric(
-                result.getInvoker().getUrl().getParameter(GENERIC_KEY))) {
+            result.getInvoker().getUrl().getParameter(GENERIC_KEY))) {
             return null;
         } else {
             return result;
@@ -90,6 +90,7 @@ public class InjvmProtocol extends AbstractProtocol {
     public <T> Invoker<T> protocolBindingRefer(Class<T> serviceType, URL url) throws RpcException {
         return new InjvmInvoker<T>(serviceType, url, url.getServiceKey(), exporterMap);
     }
+
 
     public boolean isInjvmRefer(URL url) {
         String scope = url.getParameter(SCOPE_KEY);
