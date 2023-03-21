@@ -53,7 +53,7 @@ public class ModuleModel extends ScopeModel {
         this(applicationModel, false);
     }
 
-    protected ModuleModel(ApplicationModel applicationModel, boolean isInternal) {
+    public ModuleModel(ApplicationModel applicationModel, boolean isInternal) {
         super(applicationModel, ExtensionScope.MODULE, isInternal);
         synchronized (instLock) {
             Assert.notNull(applicationModel, "ApplicationModel can not be null");
