@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.protocol.rest.request;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufInputStream;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpContent;
 
@@ -121,44 +122,27 @@ public class NettyRequestFacade extends RequestFacade<FullHttpRequest> {
     }
 
     @Override
-    public int getIntHeader(String name) {
-
-        String header = getHeader(name);
-        if (header == null) {
-            return -1;
-        }
-        return Integer.parseInt(header);
-    }
-
-    @Override
     public String getMethod() {
         return request.method().name();
     }
 
     @Override
-    public String getPathInfo() {
+    public String getPath() {
         return path;
     }
 
     @Override
     public String getContextPath() {
+        // TODO add ContextPath
         return null;
     }
 
-    @Override
-    public String getQueryString() {
-        return null;
-    }
 
     @Override
     public String getRequestURI() {
         return request.uri();
     }
 
-    @Override
-    public StringBuffer getRequestURL() {
-        return null;
-    }
 
     @Override
     public String getParameter(String name) {
@@ -206,34 +190,39 @@ public class NettyRequestFacade extends RequestFacade<FullHttpRequest> {
 
     }
 
-    @Override
-    public int getServerPort() {
-        return 0;
-    }
 
     @Override
     public String getRemoteAddr() {
-        return null;
+        return getChannel().remoteAddress().getHostString();
     }
 
     @Override
     public String getRemoteHost() {
-        return null;
+        return getRemoteHost() + ":" + getRemotePort();
     }
 
     @Override
     public int getRemotePort() {
-        return 0;
+        return getChannel().remoteAddress().getPort();
     }
 
     @Override
     public String getLocalAddr() {
-        return null;
+        return getChannel().localAddress().getHostString();
+    }
+
+    @Override
+    public String getLocalHost() {
+        return getLocalHost() + ":" + getLocalPort();
+    }
+
+    private NioSocketChannel getChannel() {
+        return (NioSocketChannel) context.channel();
     }
 
     @Override
     public int getLocalPort() {
-        return 0;
+        return getChannel().localAddress().getPort();
     }
 
     @Override

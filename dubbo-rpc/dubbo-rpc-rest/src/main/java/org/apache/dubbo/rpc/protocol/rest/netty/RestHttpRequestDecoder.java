@@ -24,6 +24,7 @@ import io.netty.handler.codec.MessageToMessageDecoder;
 import java.util.List;
 
 import io.netty.handler.codec.http.HttpHeaders;
+import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.protocol.rest.handler.NettyHttpHandler;
 import org.apache.dubbo.rpc.protocol.rest.request.NettyRequestFacade;
 
@@ -51,7 +52,13 @@ public class RestHttpRequestDecoder extends MessageToMessageDecoder<io.netty.han
 
         NettyHttpResponse nettyHttpResponse = new NettyHttpResponse(ctx, keepAlive);
         NettyRequestFacade requestFacade = new NettyRequestFacade(request, ctx);
+        // set remote address
+        RpcContext.getServiceContext().setRemoteAddress(requestFacade.getRemoteAddr(), requestFacade.getRemotePort());
 
+        // set local address
+        RpcContext.getServiceContext().setLocalAddress(requestFacade.getLocalAddr(), requestFacade.getLocalPort());
+
+        // business handler
         handler.handle(requestFacade, nettyHttpResponse);
 
         nettyHttpResponse.finish();

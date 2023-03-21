@@ -17,6 +17,8 @@
 package org.apache.dubbo.rpc.protocol.rest;
 
 import org.apache.dubbo.common.BaseServiceMetadata;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.metadata.rest.RestMethodMetadata;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
@@ -34,7 +36,16 @@ import java.util.Arrays;
 
 public class RestRPCInvocationUtil {
 
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(RestRPCInvocationUtil.class);
 
+    /**
+     *  service method real args parse
+     * @param rpcInvocation
+     * @param request
+     * @param servletRequest
+     * @param servletResponse
+     * @param restMethodMetadata
+     */
     public static void parseMethodArgs(RpcInvocation rpcInvocation, RequestFacade request, Object servletRequest,
                                        Object servletResponse,
                                        RestMethodMetadata restMethodMetadata) {
@@ -44,10 +55,19 @@ public class RestRPCInvocationUtil {
             Object[] args = ParamParserManager.providerParamParse(parseContext);
             rpcInvocation.setArguments(args);
         } catch (Exception e) {
+            logger.error("", e.getMessage(), "", "dubbo rest method args parse error: ", e);
             throw new ParamParseException(e.getMessage());
         }
     }
 
+    /**
+     *  create parseMethodArgs context
+     * @param request
+     * @param servletRequest
+     * @param servletResponse
+     * @param restMethodMetadata
+     * @return
+     */
     private static ProviderParseContext createParseContext(RequestFacade request, Object servletRequest, Object servletResponse, RestMethodMetadata restMethodMetadata) {
         ProviderParseContext parseContext = new ProviderParseContext(request);
         parseContext.setResponse(servletResponse);
@@ -61,6 +81,12 @@ public class RestRPCInvocationUtil {
         return parseContext;
     }
 
+    /**
+     *  build RpcInvocation
+     * @param request
+     * @param restMethodMetadata
+     * @return
+     */
     public static RpcInvocation createBaseRpcInvocation(RequestFacade request, RestMethodMetadata restMethodMetadata) {
         RpcInvocation rpcInvocation = new RpcInvocation();
 
@@ -74,12 +100,12 @@ public class RestRPCInvocationUtil {
         rpcInvocation.put(RestConstant.METHOD, method);
 
 
-        // TODO set   protocolServiceKey
+        // TODO set   protocolServiceKey ,but no set method
 //
 
         HttpHeaderUtil.parseRequest(rpcInvocation, request);
 
-        String serviceKey = BaseServiceMetadata.buildServiceKey(request.getPathInfo(),
+        String serviceKey = BaseServiceMetadata.buildServiceKey(request.getHeader(RestHeaderEnum.PATH.getHeader()),
             request.getHeader(RestHeaderEnum.GROUP.getHeader()),
             request.getHeader(RestHeaderEnum.VERSION.getHeader()));
         rpcInvocation.setTargetServiceUniqueName(serviceKey);
@@ -88,8 +114,14 @@ public class RestRPCInvocationUtil {
     }
 
 
+    /**
+     * get  path mapping
+     * @param request
+     * @param pathAndInvokerMapper
+     * @return
+     */
     public static Pair<Invoker, RestMethodMetadata> getRestMethodMetadata(RequestFacade request, PathAndInvokerMapper pathAndInvokerMapper) {
-        String path = request.getPathInfo();
+        String path = request.getPath();
         String version = request.getHeader(RestHeaderEnum.VERSION.getHeader());
         String group = request.getHeader(RestHeaderEnum.GROUP.getHeader());
 
