@@ -21,6 +21,7 @@ import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.metrics.event.TimeCounterEvent;
 import org.apache.dubbo.metrics.metadata.collector.MetadataMetricsCollector;
 import org.apache.dubbo.metrics.model.MetricsKey;
+import org.apache.dubbo.metrics.model.TimePair;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 /**
@@ -48,7 +49,7 @@ public class MetadataEvent extends TimeCounterEvent {
         return collector;
     }
 
-    public enum Type {
+    public enum ApplicationType {
         P_TOTAL(MetricsKey.METADATA_PUSH_METRIC_NUM),
         P_SUCCEED(MetricsKey.METADATA_PUSH_METRIC_NUM_SUCCEED),
         P_FAILED(MetricsKey.METADATA_PUSH_METRIC_NUM_FAILED),
@@ -58,17 +59,44 @@ public class MetadataEvent extends TimeCounterEvent {
         S_FAILED(MetricsKey.METADATA_SUBSCRIBE_METRIC_NUM_FAILED),
 
         ;
+        private final MetricsKey metricsKey;
+        private final boolean isIncrement;
 
+        ApplicationType(MetricsKey metricsKey) {
+            this(metricsKey, true);
+        }
+
+        ApplicationType(MetricsKey metricsKey, boolean isIncrement) {
+            this.metricsKey = metricsKey;
+            this.isIncrement = isIncrement;
+        }
+
+        public MetricsKey getMetricsKey() {
+            return metricsKey;
+        }
+
+        public boolean isIncrement() {
+            return isIncrement;
+        }
+    }
+
+    public enum ServiceType {
+
+        S_P_TOTAL(MetricsKey.STORE_PROVIDER_METADATA),
+        S_P_SUCCEED(MetricsKey.STORE_PROVIDER_METADATA_SUCCEED),
+        S_P_FAILED(MetricsKey.STORE_PROVIDER_METADATA_FAILED),
+
+        ;
 
         private final MetricsKey metricsKey;
         private final boolean isIncrement;
 
 
-        Type(MetricsKey metricsKey) {
+        ServiceType(MetricsKey metricsKey) {
             this(metricsKey, true);
         }
 
-        Type(MetricsKey metricsKey, boolean isIncrement) {
+        ServiceType(MetricsKey metricsKey, boolean isIncrement) {
             this.metricsKey = metricsKey;
             this.isIncrement = isIncrement;
         }
@@ -94,6 +122,20 @@ public class MetadataEvent extends TimeCounterEvent {
 
         public SubscribeEvent(ApplicationModel applicationModel) {
             super(applicationModel);
+        }
+
+    }
+
+    public static class StoreProviderMetadataEvent extends MetadataEvent {
+        private final String serviceKey;
+
+        public StoreProviderMetadataEvent(ApplicationModel applicationModel, String serviceKey) {
+            super(applicationModel);
+            this.serviceKey = serviceKey;
+        }
+
+        public String getServiceKey() {
+            return serviceKey;
         }
 
     }

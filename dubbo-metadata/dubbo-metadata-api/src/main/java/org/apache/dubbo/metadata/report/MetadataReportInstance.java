@@ -57,7 +57,7 @@ public class MetadataReportInstance implements Disposable {
 
     // mapping of registry id to metadata report instance, registry instances will use this mapping to find related metadata reports
     private final Map<String, MetadataReport> metadataReports = new HashMap<>();
-    private ApplicationModel applicationModel;
+    private final ApplicationModel applicationModel;
     private final NopMetadataReport nopMetadataReport;
 
     public MetadataReportInstance(ApplicationModel applicationModel) {
