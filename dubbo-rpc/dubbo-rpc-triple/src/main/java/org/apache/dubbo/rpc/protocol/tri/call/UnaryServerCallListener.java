@@ -47,7 +47,6 @@ public class UnaryServerCallListener extends AbstractServerCallListener {
             responseObserver.setExceptionCode(exceptionCode);
         }
         responseObserver.setNeedReturnException(isNeedReturnException);
-        responseObserver.setExceptionCode(exceptionCode);
         responseObserver.onNext(value);
         responseObserver.onCompleted();
     }

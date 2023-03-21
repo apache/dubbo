@@ -80,7 +80,7 @@ public abstract class AbstractServerCall implements ServerCall, ServerStream.Lis
     protected PackableMethod packableMethod;
     protected Map<String, Object> requestMetadata;
 
-    private Integer exceptionCode;
+    private Integer exceptionCode = 0;
 
     public Integer getExceptionCode() {
         return exceptionCode;
@@ -90,7 +90,7 @@ public abstract class AbstractServerCall implements ServerCall, ServerStream.Lis
         this.exceptionCode = exceptionCode;
     }
 
-    private boolean isNeedReturnException;
+    private boolean isNeedReturnException = false;
 
     public boolean isNeedReturnException() {
         return isNeedReturnException;

@@ -38,7 +38,7 @@ public class ServerCallToObserverAdapter<T> extends CancelableStreamObserver<T> 
 
     private boolean isNeedReturnException = false;
 
-    private Integer exceptionCode;
+    private Integer exceptionCode = 0;
 
     public Integer getExceptionCode() {
         return exceptionCode;
