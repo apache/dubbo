@@ -81,7 +81,7 @@ public class JValidator implements Validator {
 
     private final Class<?> clazz;
 
-    private final Map<String, Class> methodClassMap;
+    private final Map<String, Class<?>> methodClassMap;
 
     private final javax.validation.Validator validator;
 
@@ -111,7 +111,7 @@ public class JValidator implements Validator {
             } catch (ClassNotFoundException e) {
                 parameterClass = generateMethodParameterClass(clazz, method, parameterClassName);
             }
-            Object parameterBean = parameterClass.newInstance();
+            Object parameterBean = parameterClass.getDeclaredConstructor().newInstance();
             for (int i = 0; i < args.length; i++) {
                 Field field = parameterClass.getField(method.getName() + "Argument" + i);
                 field.set(parameterBean, args[i]);
@@ -298,10 +298,10 @@ public class JValidator implements Validator {
         }
     }
 
-    private Class methodClass(String methodName) {
+    private Class<?> methodClass(String methodName) {
         Class<?> methodClass = null;
         String methodClassName = clazz.getName() + "$" + toUpperMethoName(methodName);
-        Class cached = methodClassMap.get(methodClassName);
+        Class<?> cached = methodClassMap.get(methodClassName);
         if (cached != null) {
             return cached == clazz ? null : cached;
         }

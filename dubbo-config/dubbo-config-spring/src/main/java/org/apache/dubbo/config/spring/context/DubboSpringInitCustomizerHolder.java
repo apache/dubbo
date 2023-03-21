@@ -34,8 +34,7 @@ import java.util.Set;
  */
 public class DubboSpringInitCustomizerHolder {
 
-    private static final ThreadLocal<DubboSpringInitCustomizerHolder> holders = ThreadLocal.withInitial(() ->
-        new DubboSpringInitCustomizerHolder());
+    private static final ThreadLocal<DubboSpringInitCustomizerHolder> holders = ThreadLocal.withInitial(DubboSpringInitCustomizerHolder::new);
 
     public static DubboSpringInitCustomizerHolder get() {
         return holders.get();

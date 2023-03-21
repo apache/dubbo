@@ -70,7 +70,7 @@ public abstract class AbstractServerCallListener implements AbstractServerCall.L
                     return;
                 }
                 if (response.hasException()) {
-                    onReturn(response.getException());
+                    doOnResponseHasException(response.getException());
                     return;
                 }
                 final long cost = System.currentTimeMillis() - stInMillis;
@@ -85,12 +85,17 @@ public abstract class AbstractServerCallListener implements AbstractServerCall.L
                 }
                 onReturn(r.getValue());
             });
-        } catch (Throwable t) {
-            responseObserver.onError(t);
+        } catch (Exception e) {
+            responseObserver.onError(e);
         } finally {
             RpcContext.removeCancellationContext();
             RpcContext.removeContext();
         }
+    }
+
+
+    protected void doOnResponseHasException(Throwable t) {
+        responseObserver.onError(t);
     }
 
     public abstract void onReturn(Object value);

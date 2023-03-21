@@ -18,7 +18,9 @@ package org.apache.dubbo.config.nested;
 
 import org.apache.dubbo.config.support.Nested;
 
-public class PrometheusConfig {
+import java.io.Serializable;
+
+public class PrometheusConfig implements Serializable {
 
     /**
      * Prometheus exporter configuration
@@ -48,7 +50,7 @@ public class PrometheusConfig {
         this.pushgateway = pushgateway;
     }
 
-    public static class Exporter {
+    public static class Exporter implements Serializable {
 
         /**
          * Enable prometheus exporter
@@ -116,7 +118,7 @@ public class PrometheusConfig {
         }
     }
 
-    public static class Pushgateway {
+    public static class Pushgateway implements Serializable {
 
         /**
          * Enable publishing via a Prometheus Pushgateway

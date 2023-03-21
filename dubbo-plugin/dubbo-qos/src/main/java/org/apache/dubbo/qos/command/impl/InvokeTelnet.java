@@ -21,9 +21,9 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.qos.command.BaseCommand;
-import org.apache.dubbo.qos.command.CommandContext;
-import org.apache.dubbo.qos.command.annotation.Cmd;
+import org.apache.dubbo.qos.api.BaseCommand;
+import org.apache.dubbo.qos.api.CommandContext;
+import org.apache.dubbo.qos.api.Cmd;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
@@ -50,7 +50,7 @@ public class InvokeTelnet implements BaseCommand {
     public static final AttributeKey<List<Method>> INVOKE_METHOD_LIST_KEY = AttributeKey.valueOf("telnet.invoke.method.list");
     public static final AttributeKey<ProviderModel> INVOKE_METHOD_PROVIDER_KEY = AttributeKey.valueOf("telnet.invoke.method.provider");
 
-    private FrameworkModel frameworkModel;
+    private final FrameworkModel frameworkModel;
 
     public InvokeTelnet(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;

@@ -17,18 +17,18 @@
 
 package org.apache.dubbo.metrics.collector;
 
+import org.apache.dubbo.metrics.event.MetricsEvent;
+
 /**
  * Application-level collector.
  * registration center, configuration center and other scenarios
  *
  * @Params <T>  metrics type
  */
-public interface ApplicationMetricsCollector<T> extends MetricsCollector {
+public interface ApplicationMetricsCollector<T, E extends MetricsEvent> extends MetricsCollector<E> {
 
     void increment(String applicationName, T type);
 
-    void decrease(String applicationName, T type);
-
-    void addRT(String applicationName, Long responseTime);
+    void addApplicationRT(String applicationName, String registryOpType, Long responseTime);
 }
 

@@ -27,7 +27,7 @@ import static org.hamcrest.Matchers.is;
 
 class LogTest {
     @Test
-    void testLogName() throws Exception {
+    void testLogName() {
         Log log1 = new Log();
         Log log2 = new Log();
         Log log3 = new Log();
@@ -41,7 +41,7 @@ class LogTest {
     }
 
     @Test
-    void testLogLevel() throws Exception {
+    void testLogLevel() {
         Log log1 = new Log();
         Log log2 = new Log();
         Log log3 = new Log();
@@ -55,7 +55,7 @@ class LogTest {
     }
 
     @Test
-    void testLogMessage() throws Exception {
+    void testLogMessage() {
         Log log1 = new Log();
         Log log2 = new Log();
         Log log3 = new Log();
@@ -69,7 +69,7 @@ class LogTest {
     }
 
     @Test
-    void testLogThread() throws Exception {
+    void testLogThread() {
         Log log1 = new Log();
         Log log2 = new Log();
         Log log3 = new Log();

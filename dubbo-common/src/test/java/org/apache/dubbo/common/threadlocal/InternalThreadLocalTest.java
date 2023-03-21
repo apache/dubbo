@@ -49,7 +49,7 @@ class InternalThreadLocalTest {
     }
 
     @Test
-    void testInternalThreadLocal() throws InterruptedException {
+    void testInternalThreadLocal() {
         final AtomicInteger index = new AtomicInteger(0);
 
         final InternalThreadLocal<Integer> internalThreadLocal = new InternalThreadLocal<Integer>() {
@@ -71,7 +71,7 @@ class InternalThreadLocalTest {
     }
 
     @Test
-    void testRemoveAll() throws InterruptedException {
+    void testRemoveAll() {
         final InternalThreadLocal<Integer> internalThreadLocal = new InternalThreadLocal<Integer>();
         internalThreadLocal.set(1);
         Assertions.assertEquals(1, (int)internalThreadLocal.get(), "set failed");
@@ -86,7 +86,7 @@ class InternalThreadLocalTest {
     }
 
     @Test
-    void testSize() throws InterruptedException {
+    void testSize() {
         final InternalThreadLocal<Integer> internalThreadLocal = new InternalThreadLocal<Integer>();
         internalThreadLocal.set(1);
         Assertions.assertEquals(1, InternalThreadLocal.size(), "size method is wrong!");
@@ -120,7 +120,7 @@ class InternalThreadLocalTest {
         final Integer[] valueToRemove = {null};
         final InternalThreadLocal<Integer> internalThreadLocal = new InternalThreadLocal<Integer>() {
             @Override
-            protected void onRemoval(Integer value) throws Exception {
+            protected void onRemoval(Integer value) {
                 //value calculate
                 valueToRemove[0] = value + 1;
             }
