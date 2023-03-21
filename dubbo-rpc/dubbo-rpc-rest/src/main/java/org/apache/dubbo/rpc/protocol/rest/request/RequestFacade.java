@@ -17,6 +17,8 @@
 package org.apache.dubbo.rpc.protocol.rest.request;
 
 
+import org.apache.dubbo.common.utils.StringUtils;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -51,32 +53,26 @@ public abstract class RequestFacade<T> {
             String queryString = requestURI.substring(requestURI.indexOf("?") + 1);
             path = requestURI.substring(0, requestURI.indexOf("?"));
 
-
             String[] split = queryString.split("&");
 
             for (String params : split) {
-
-                String[] splits = params.split("=");
-
-                String name = splits[0];
-
-                if (name.length() == 0) {
+                // key a=  ;value b==c
+                int index = params.indexOf("=");
+                if (index <= 0) {
                     continue;
                 }
 
-                ArrayList<String> values = parameters.get(name);
+                String name = params.substring(0, index);
+                String value = params.substring(index + 1);
+                if (!StringUtils.isEmpty(name)) {
+                    ArrayList<String> values = parameters.get(name);
 
-                if (values == null) {
-                    values = new ArrayList<>();
-                    parameters.put(name, values);
-                }
+                    if (values == null) {
+                        values = new ArrayList<>();
+                        parameters.put(name, values);
+                    }
+                    values.add(value);
 
-                if (splits.length == 1) {
-
-                    values.add("");
-
-                } else {
-                    values.add(splits[1]);
                 }
             }
         } else {
@@ -97,24 +93,14 @@ public abstract class RequestFacade<T> {
 
     public abstract Enumeration<String> getHeaderNames();
 
-
-    public abstract int getIntHeader(String name);
-
-
     public abstract String getMethod();
 
 
-    public abstract String getPathInfo();
+    public abstract String getPath();
 
     public abstract String getContextPath();
 
-
-    public abstract String getQueryString();
-
     public abstract String getRequestURI();
-
-
-    public abstract StringBuffer getRequestURL();
 
     public abstract String getParameter(String name);
 
@@ -124,10 +110,7 @@ public abstract class RequestFacade<T> {
 
     public abstract Map<String, String[]> getParameterMap();
 
-    public abstract int getServerPort();
-
     public abstract String getRemoteAddr();
-
 
     public abstract String getRemoteHost();
 
@@ -135,6 +118,7 @@ public abstract class RequestFacade<T> {
 
     public abstract String getLocalAddr();
 
+    public abstract String getLocalHost();
 
     public abstract int getLocalPort();
 

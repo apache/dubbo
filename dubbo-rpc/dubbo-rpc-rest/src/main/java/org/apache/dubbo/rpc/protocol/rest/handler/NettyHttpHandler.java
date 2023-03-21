@@ -60,9 +60,6 @@ public class NettyHttpHandler implements HttpHandler<NettyRequestFacade, NettyHt
 
         // TODO add request filter chain
 
-//        RpcContext.getServiceContext().setRemoteAddress(request.getRemoteAddr(), request.getRemotePort());
-//            dispatcher.service(request, servletResponse);
-
         FullHttpRequest nettyHttpRequest = requestFacade.getRequest();
 
         try {
