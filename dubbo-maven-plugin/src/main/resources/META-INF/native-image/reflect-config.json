@@ -1210,16 +1210,6 @@
     ]
   },
   {
-    "name": "org.apache.dubbo.common.threadpool.manager.IsolationExecutorRepository",
-    "allPublicMethods": true,
-    "methods": [
-      {
-        "name": "<init>",
-        "parameterTypes": ["org.apache.dubbo.rpc.model.ApplicationModel"]
-      }
-    ]
-  },
-  {
     "name": "org.apache.dubbo.common.threadpool.support.cached.CachedThreadPool",
     "allPublicMethods": true,
     "methods": [

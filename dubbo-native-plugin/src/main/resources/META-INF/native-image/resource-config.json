@@ -35,9 +35,6 @@
         "pattern": "\\QMETA-INF/dubbo/internal/org.apache.dubbo.common.threadpool.manager.ExecutorRepository\\E"
       },
       {
-        "pattern": "\\QMETA-INF/dubbo/internal/org.apache.dubbo.common.threadpool.manager.IsolationExecutorSupport\\E"
-      },
-      {
         "pattern": "\\QMETA-INF/dubbo/internal/org.apache.dubbo.common.url.component.param.DynamicParamSource\\E"
       },
       {
