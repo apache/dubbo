@@ -23,7 +23,7 @@ public enum MetricsKey {
     // provider metrics key
     METRIC_REQUESTS("dubbo.%s.requests.total", "Total Requests"),
     METRIC_REQUESTS_SUCCEED("dubbo.%s.requests.succeed.total", "Total Succeed Requests"),
-    METRIC_REQUEST_BUSINESS_FAILED("dubbo.%s.requests.business.failed.total","Total Failed Business Requests"),
+    METRIC_REQUEST_BUSINESS_FAILED("dubbo.%s.requests.business.failed.total", "Total Failed Business Requests"),
 
     METRIC_REQUESTS_PROCESSING("dubbo.%s.requests.processing", "Processing Requests"),
     METRIC_REQUESTS_TIMEOUT("dubbo.%s.requests.timeout.total", "Total Timeout Failed Requests"),
@@ -101,7 +101,14 @@ public enum MetricsKey {
     SERVICE_SUBSCRIBE_METRIC_NUM("dubbo.registry.subscribe.service.num.total", "Total Service-Level Subscribe Num"),
     SERVICE_SUBSCRIBE_METRIC_NUM_SUCCEED("dubbo.registry.subscribe.service.num.succeed.total", "Succeed Service-Level Num"),
     SERVICE_SUBSCRIBE_METRIC_NUM_FAILED("dubbo.registry.subscribe.service.num.failed.total", "Failed Service-Level Num"),
-    METADATA_GIT_COMMITID_METRIC("git.commit.id","Git Commit Id Metrics");
+    // store provider metadata service key
+    STORE_PROVIDER_METADATA("dubbo.metadata.store.provider.total", "Store Provider Metadata"),
+
+    STORE_PROVIDER_METADATA_SUCCEED("dubbo.metadata.store.provider.succeed.total", "Succeed Store Provider Metadata"),
+
+    STORE_PROVIDER_METADATA_FAILED("dubbo.metadata.store.provider.failed.total", "Failed Store Provider Metadata"),
+    METADATA_GIT_COMMITID_METRIC("git.commit.id", "Git Commit Id Metrics"),
+
     // consumer metrics key
     ;
 
