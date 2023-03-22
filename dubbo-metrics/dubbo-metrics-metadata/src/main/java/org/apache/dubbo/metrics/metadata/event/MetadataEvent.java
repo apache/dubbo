@@ -56,7 +56,7 @@ public class MetadataEvent extends MetricsEvent implements TimeCounter {
         return timePair;
     }
 
-    public enum Type {
+    public enum ApplicationType {
         P_TOTAL(MetricsKey.METADATA_PUSH_METRIC_NUM),
         P_SUCCEED(MetricsKey.METADATA_PUSH_METRIC_NUM_SUCCEED),
         P_FAILED(MetricsKey.METADATA_PUSH_METRIC_NUM_FAILED),
@@ -66,17 +66,44 @@ public class MetadataEvent extends MetricsEvent implements TimeCounter {
         S_FAILED(MetricsKey.METADATA_SUBSCRIBE_METRIC_NUM_FAILED),
 
         ;
+        private final MetricsKey metricsKey;
+        private final boolean isIncrement;
 
+        ApplicationType(MetricsKey metricsKey) {
+            this(metricsKey, true);
+        }
+
+        ApplicationType(MetricsKey metricsKey, boolean isIncrement) {
+            this.metricsKey = metricsKey;
+            this.isIncrement = isIncrement;
+        }
+
+        public MetricsKey getMetricsKey() {
+            return metricsKey;
+        }
+
+        public boolean isIncrement() {
+            return isIncrement;
+        }
+    }
+
+    public enum ServiceType {
+
+        S_P_TOTAL(MetricsKey.STORE_PROVIDER_METADATA),
+        S_P_SUCCEED(MetricsKey.STORE_PROVIDER_METADATA_SUCCEED),
+        S_P_FAILED(MetricsKey.STORE_PROVIDER_METADATA_FAILED),
+
+        ;
 
         private final MetricsKey metricsKey;
         private final boolean isIncrement;
 
 
-        Type(MetricsKey metricsKey) {
+        ServiceType(MetricsKey metricsKey) {
             this(metricsKey, true);
         }
 
-        Type(MetricsKey metricsKey, boolean isIncrement) {
+        ServiceType(MetricsKey metricsKey, boolean isIncrement) {
             this.metricsKey = metricsKey;
             this.isIncrement = isIncrement;
         }
@@ -102,6 +129,20 @@ public class MetadataEvent extends MetricsEvent implements TimeCounter {
 
         public SubscribeEvent(ApplicationModel applicationModel, TimePair timePair) {
             super(applicationModel, timePair);
+        }
+
+    }
+
+    public static class StoreProviderMetadataEvent extends MetadataEvent {
+        private final String serviceKey;
+
+        public StoreProviderMetadataEvent(ApplicationModel applicationModel, TimePair timePair, String serviceKey) {
+            super(applicationModel, timePair);
+            this.serviceKey = serviceKey;
+        }
+
+        public String getServiceKey() {
+            return serviceKey;
         }
 
     }

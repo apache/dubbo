@@ -36,12 +36,12 @@ public class MetadataStatCompositeTest {
     @Test
     void testInit() {
         MetadataStatComposite statComposite = new MetadataStatComposite();
-        Assertions.assertEquals(statComposite.numStats.size(), MetadataEvent.Type.values().length);
+        Assertions.assertEquals(statComposite.applicationNumStats.size(), MetadataEvent.ApplicationType.values().length);
         //(rt)5 * (push,subscribe)2
-        Assertions.assertEquals(5 * 2, statComposite.rtStats.size());
-        statComposite.numStats.values().forEach((v ->
+        Assertions.assertEquals(5 * 2, statComposite.appRtStats.size());
+        statComposite.applicationNumStats.values().forEach((v ->
             Assertions.assertEquals(v, new ConcurrentHashMap<>())));
-        statComposite.rtStats.forEach(rtContainer ->
+        statComposite.appRtStats.forEach(rtContainer ->
         {
             for (Map.Entry<String, ? extends Number> entry : rtContainer.entrySet()) {
                 Assertions.assertEquals(0L, rtContainer.getValueSupplier().apply(entry.getKey()));
@@ -52,16 +52,16 @@ public class MetadataStatCompositeTest {
     @Test
     void testIncrement() {
         MetadataStatComposite statComposite = new MetadataStatComposite();
-        statComposite.increment(MetadataEvent.Type.P_TOTAL, applicationName);
-        Assertions.assertEquals(1L, statComposite.numStats.get(MetadataEvent.Type.P_TOTAL).get(applicationName).get());
+        statComposite.increment(MetadataEvent.ApplicationType.P_TOTAL, applicationName);
+        Assertions.assertEquals(1L, statComposite.applicationNumStats.get(MetadataEvent.ApplicationType.P_TOTAL).get(applicationName).get());
     }
 
     @Test
     void testCalcRt() {
         MetadataStatComposite statComposite = new MetadataStatComposite();
-        statComposite.calcRt(applicationName, OP_TYPE_SUBSCRIBE, 10L);
-        Assertions.assertTrue(statComposite.rtStats.stream().anyMatch(longContainer -> longContainer.specifyType(OP_TYPE_SUBSCRIBE)));
-        Optional<LongContainer<? extends Number>> subContainer = statComposite.rtStats.stream().filter(longContainer -> longContainer.specifyType(OP_TYPE_SUBSCRIBE)).findFirst();
+        statComposite.calcApplicationRt(applicationName, OP_TYPE_SUBSCRIBE, 10L);
+        Assertions.assertTrue(statComposite.appRtStats.stream().anyMatch(longContainer -> longContainer.specifyType(OP_TYPE_SUBSCRIBE)));
+        Optional<LongContainer<? extends Number>> subContainer = statComposite.appRtStats.stream().filter(longContainer -> longContainer.specifyType(OP_TYPE_SUBSCRIBE)).findFirst();
         subContainer.ifPresent(v -> Assertions.assertEquals(10L, v.get(applicationName).longValue()));
     }
 }
