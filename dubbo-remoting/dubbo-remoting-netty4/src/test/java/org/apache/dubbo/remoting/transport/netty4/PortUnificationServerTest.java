@@ -46,7 +46,7 @@ class PortUnificationServerTest {
         configManager.getApplication();
         applicationModel.setConfigManager(configManager);
         url = url.setScopeModel(applicationModel);
-        ModuleModel moduleModel = new ModuleModel(applicationModel);
+        ModuleModel moduleModel = applicationModel.getDefaultModule();
         url = url.putAttribute(CommonConstants.SCOPE_MODEL, moduleModel);
         // abstract endpoint need to get codec of url(which is in triple package)
         final NettyPortUnificationServer server = new NettyPortUnificationServer(url, new DefaultPuHandler());

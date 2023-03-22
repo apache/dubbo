@@ -49,7 +49,9 @@ class NettyClientToServerTest extends ClientToServerTest {
         applicationModel.setConfigManager(configManager);
         url = url.addParameter(Constants.HEARTBEAT_KEY, 600 * 1000).putAttribute(CommonConstants.SCOPE_MODEL, applicationModel);
         url = url.setScopeModel(applicationModel);
-        ModuleModel moduleModel = new ModuleModel(applicationModel);
+//        ModuleModel moduleModel = applicationModel.getDefaultModule();
+
+        ModuleModel moduleModel = applicationModel.getDefaultModule();
         url = url.putAttribute(CommonConstants.SCOPE_MODEL, moduleModel);
         return Exchangers.bind(url, receiver);
     }
@@ -67,7 +69,7 @@ class NettyClientToServerTest extends ClientToServerTest {
         configManager.getApplication();
         applicationModel.setConfigManager(configManager);
         url = url.setScopeModel(applicationModel);
-        ModuleModel moduleModel = new ModuleModel(applicationModel);
+        ModuleModel moduleModel = applicationModel.getDefaultModule();
         url = url.putAttribute(CommonConstants.SCOPE_MODEL, moduleModel);
         return Exchangers.connect(url);
     }

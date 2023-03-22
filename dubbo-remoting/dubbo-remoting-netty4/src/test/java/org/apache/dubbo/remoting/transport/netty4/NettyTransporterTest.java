@@ -54,7 +54,7 @@ class NettyTransporterTest {
         configManager.getApplication();
         applicationModel.setConfigManager(configManager);
         url = url.setScopeModel(applicationModel);
-        ModuleModel moduleModel = new ModuleModel(applicationModel);
+        ModuleModel moduleModel = applicationModel.getDefaultModule();
         url = url.putAttribute(CommonConstants.SCOPE_MODEL, moduleModel);
         RemotingServer server = new NettyTransporter().bind(url, new ChannelHandlerAdapter());
 
@@ -77,7 +77,7 @@ class NettyTransporterTest {
         configManager.getApplication();
         applicationModel.setConfigManager(configManager);
         url = url.setScopeModel(applicationModel);
-        ModuleModel moduleModel = new ModuleModel(applicationModel);
+        ModuleModel moduleModel = applicationModel.getDefaultModule();
         url = url.putAttribute(CommonConstants.SCOPE_MODEL, moduleModel);
         new NettyTransporter().bind(url, new ChannelHandlerAdapter() {
 

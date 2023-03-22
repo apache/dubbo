@@ -73,7 +73,7 @@ class ReplierDispatcherTest {
         configManager.getApplication();
         applicationModel.setConfigManager(configManager);
         url = url.setScopeModel(applicationModel);
-        ModuleModel moduleModel = new ModuleModel(applicationModel);
+        ModuleModel moduleModel = applicationModel.getDefaultModule();
         url = url.putAttribute(CommonConstants.SCOPE_MODEL, moduleModel);
         exchangeServer = Exchangers.bind(url, dispatcher);
     }

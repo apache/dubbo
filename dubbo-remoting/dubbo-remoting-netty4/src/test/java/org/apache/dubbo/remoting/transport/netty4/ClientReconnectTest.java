@@ -104,7 +104,7 @@ class ClientReconnectTest {
         configManager.setApplication(applicationConfig);
         configManager.getApplication();
         applicationModel.setConfigManager(configManager);
-        ModuleModel moduleModel = new ModuleModel(applicationModel);
+        ModuleModel moduleModel = applicationModel.getDefaultModule();
         url = url.putAttribute(CommonConstants.SCOPE_MODEL, moduleModel);
         return Exchangers.bind(url, new HandlerAdapter());
     }

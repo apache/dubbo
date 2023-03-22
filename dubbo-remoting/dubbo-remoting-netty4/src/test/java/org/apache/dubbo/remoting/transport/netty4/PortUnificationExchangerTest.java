@@ -50,7 +50,7 @@ class PortUnificationExchangerTest {
         configManager.getApplication();
         applicationModel.setConfigManager(configManager);
         url = url.setScopeModel(applicationModel);
-        ModuleModel moduleModel = new ModuleModel(applicationModel);
+        ModuleModel moduleModel = applicationModel.getDefaultModule();
         url = url.putAttribute(CommonConstants.SCOPE_MODEL, moduleModel);
     }
 
