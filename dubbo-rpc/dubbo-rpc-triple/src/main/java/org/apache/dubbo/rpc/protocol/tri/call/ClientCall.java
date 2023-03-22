@@ -112,7 +112,7 @@ public interface ClientCall {
 
     interface MessageProducer {
 
-        Object getMessage();
+        Object getMessage() throws Throwable;
 
     }
 

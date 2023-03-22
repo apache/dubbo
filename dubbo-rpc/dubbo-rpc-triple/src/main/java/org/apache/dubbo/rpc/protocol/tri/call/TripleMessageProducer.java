@@ -26,35 +26,13 @@ class TripleMessageProducer implements ClientCall.MessageProducer {
 
     private final ThrowableSupplier<Object> throwableSupplier;
 
-    private Consumer<Throwable> throwableConsumer = (throwable) -> {
-    };
-
     private TripleMessageProducer(ThrowableSupplier<Object> throwableSupplier) {
         this.throwableSupplier = throwableSupplier;
     }
 
-    public TripleMessageProducer onException(Consumer<Throwable> throwableConsumer) {
-        this.throwableConsumer = throwableConsumer;
-        return this;
-    }
-
     @Override
-    public Object getMessage() {
-        try {
-            return throwableSupplier.get();
-        } catch (Throwable t) {
-            if (throwableConsumer != null) {
-                throwableConsumer.accept(t);
-            }
-            if (t instanceof RuntimeException) {
-                throw (RuntimeException) t;
-            }
-            if (t instanceof InvocationTargetException) {
-                Throwable targetException = ((InvocationTargetException) t).getTargetException();
-                throw new RuntimeException(targetException);
-            }
-            throw new RuntimeException(t);
-        }
+    public Object getMessage() throws Throwable {
+        return throwableSupplier.get();
     }
 
     public static TripleMessageProducer withSupplier(ThrowableSupplier<Object> supplier) {
