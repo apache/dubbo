@@ -44,7 +44,7 @@ public class ServerCallToObserverAdapter<T> extends CancelableStreamObserver<T> 
         return exceptionCode;
     }
 
-    public void setExceptionCode(int exceptionCode) {
+    public void setExceptionCode(Integer exceptionCode) {
         this.exceptionCode = exceptionCode;
     }
 

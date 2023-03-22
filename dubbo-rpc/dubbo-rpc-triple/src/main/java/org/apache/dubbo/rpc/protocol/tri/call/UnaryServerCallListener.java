@@ -36,7 +36,7 @@ public class UnaryServerCallListener extends AbstractServerCallListener {
     @Override
     public void onReturn(Object value) {
         boolean isNeedReturnException = false;
-        int exceptionCode = 0;
+        Integer exceptionCode = 0;
         if (value instanceof Exception) {
             isNeedReturnException = true;
             TriRpcStatus status = TriRpcStatus.getStatus((Exception) value);

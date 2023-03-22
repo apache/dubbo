@@ -86,7 +86,7 @@ public abstract class AbstractServerCall implements ServerCall, ServerStream.Lis
         return exceptionCode;
     }
 
-    public void setExceptionCode(int exceptionCode) {
+    public void setExceptionCode(Integer exceptionCode) {
         this.exceptionCode = exceptionCode;
     }
 
