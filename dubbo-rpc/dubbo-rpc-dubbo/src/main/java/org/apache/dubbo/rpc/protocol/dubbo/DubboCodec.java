@@ -151,6 +151,11 @@ public class DubboCodec extends ExchangeCodec {
                     req.setEvent(true);
                 } else {
                     req = new HeartBeatRequest(id);
+
+                    // get data length.
+                    int len = Bytes.bytes2int(header, 12);
+                    req.setPayload(len);
+
                     DecodeableRpcInvocation inv;
                     if (isDecodeDataInIoThread(channel)) {
                         inv = new DecodeableRpcInvocation(frameworkModel, channel, req, is, proto);
