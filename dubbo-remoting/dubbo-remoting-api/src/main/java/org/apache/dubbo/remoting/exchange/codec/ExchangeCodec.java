@@ -227,7 +227,7 @@ public class ExchangeCodec extends TelnetCodec {
 
         logger.warn(PROTOCOL_TIMEOUT_SERVER, "", "", "The timeout response finally returned at "
             + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date()))
-            + ", response status is " + response.getStatus()
+            + ", response status is " + response.getStatus() + ", response id is " + response.getId()
             + (channel == null ? "" : ", channel: " + channel.getLocalAddress()
             + " -> " + channel.getRemoteAddress()) + ", please check provider side for detailed result.");
         throw new IllegalArgumentException("Failed to find any request match the response, response id: " + id);
@@ -439,7 +439,7 @@ public class ExchangeCodec extends TelnetCodec {
         try {
             if (eventBytes != null) {
                 int dataLen = eventBytes.length;
-                int threshold = ConfigurationUtils.getSystemConfiguration(channel.getUrl().getScopeModel()).getInt("deserialization.event.size", 50);
+                int threshold = ConfigurationUtils.getSystemConfiguration(channel.getUrl().getScopeModel()).getInt("deserialization.event.size", 15);
                 if (dataLen > threshold) {
                     throw new IllegalArgumentException("Event data too long, actual size " + threshold + ", threshold " + threshold + " rejected for security consideration.");
                 }
