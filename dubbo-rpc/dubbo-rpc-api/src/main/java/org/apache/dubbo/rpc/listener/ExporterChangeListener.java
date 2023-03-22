@@ -14,18 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.rpc.listener;
 
-package org.apache.dubbo.metrics.metadata.event;
+import org.apache.dubbo.rpc.Exporter;
 
-import org.apache.dubbo.metrics.event.SimpleMetricsEventMulticaster;
 
-public final class MetadataMetricsEventMulticaster extends SimpleMetricsEventMulticaster {
+public interface ExporterChangeListener {
 
-    public MetadataMetricsEventMulticaster() {
-        super.addListener(new MetricsPushListener());
-        super.addListener(new MetricsSubscribeListener());
-        super.addListener(new StoreProviderMetadataListener());
-        setAvailable();
-    }
+    void onExporterChangeExport(Exporter<?> exporter);
 
+    void onExporterChangeUnExport(Exporter<?> exporter);
 }
