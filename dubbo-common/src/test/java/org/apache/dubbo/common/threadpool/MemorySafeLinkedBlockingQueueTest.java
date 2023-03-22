@@ -17,10 +17,10 @@
 
 package org.apache.dubbo.common.threadpool;
 
+import net.bytebuddy.agent.ByteBuddyAgent;
 import org.apache.dubbo.common.concurrent.AbortPolicy;
 import org.apache.dubbo.common.concurrent.RejectException;
-
-import net.bytebuddy.agent.ByteBuddyAgent;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.lang.instrument.Instrumentation;
@@ -69,9 +69,10 @@ class MemorySafeLinkedBlockingQueueTest {
         // MemorySafeLinkedBlockingQueue insert Integer: 500W * 20 times
         long spent2 = spend(newMemorySafeLinkedBlockingQueue(),  length, times);
         System.gc();
-        Thread.sleep(1000);
 
         System.out.println(String.format("LinkedBlockingQueue spent %s millis, MemorySafeLinkedBlockingQueue spent %s millis", spent1, spent2));
+        // efficiency between LinkedBlockingQueue and MemorySafeLinkedBlockingQueue is very nearly the same
+        Assertions.assertTrue(spent1 - spent2 <= 1);
     }
 
     private static long spend(LinkedBlockingQueue<Integer> lbq, int length, int times) throws InterruptedException {
@@ -96,7 +97,6 @@ class MemorySafeLinkedBlockingQueueTest {
 
         // gc
         System.gc();
-        Thread.sleep(1000);
 
         return result;
     }
