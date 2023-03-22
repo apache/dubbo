@@ -198,7 +198,7 @@ public class NettyRequestFacade extends RequestFacade<FullHttpRequest> {
 
     @Override
     public String getRemoteHost() {
-        return getRemoteHost() + ":" + getRemotePort();
+        return getRemoteAddr() + ":" + getRemotePort();
     }
 
     @Override
@@ -213,7 +213,7 @@ public class NettyRequestFacade extends RequestFacade<FullHttpRequest> {
 
     @Override
     public String getLocalHost() {
-        return getLocalHost() + ":" + getLocalPort();
+        return getRemoteAddr() + ":" + getLocalPort();
     }
 
     private NioSocketChannel getChannel() {
