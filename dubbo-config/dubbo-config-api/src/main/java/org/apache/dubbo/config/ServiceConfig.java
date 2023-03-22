@@ -628,6 +628,13 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         }
         url = url.setScopeModel(getScopeModel());
         url = url.setServiceModel(providerModel);
+
+        // Customize parameters to registry
+        List<ConfigPostProcessor> configPostProcessors = this.getExtensionLoader(ConfigPostProcessor.class)
+            .getActivateExtension(URL.valueOf("configPostProcessor://", getScopeModel()), (String[]) null);
+        for (ConfigPostProcessor configPostProcessor : configPostProcessors) {
+            url = configPostProcessor.portProcessServiceConfig(this, url);
+        }
         return url;
     }
 

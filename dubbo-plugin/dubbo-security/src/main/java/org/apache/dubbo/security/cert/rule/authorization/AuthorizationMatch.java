@@ -1,4 +1,4 @@
-package org.apache.dubbo.security.cert.rule;
+package org.apache.dubbo.security.cert.rule.authorization;
 
 public class AuthorizationMatch {
     private String type;

@@ -1,6 +1,6 @@
-package org.apache.dubbo.security.cert.rule;
+package org.apache.dubbo.security.cert.rule.authorization;
 
-import org.apache.dubbo.common.URL;
+import org.apache.dubbo.security.cert.Endpoint;
 
 public class AuthorizationExtend {
     private String key;
@@ -22,12 +22,12 @@ public class AuthorizationExtend {
         this.value = value;
     }
 
-    public boolean match(URL url) {
+    public boolean match(Endpoint endpoint) {
         if (key == null) {
             return true;
         }
 
-        String valueFromUrl = url.getParameter(key);
+        String valueFromUrl = endpoint.getParameter(key);
         if (valueFromUrl == null) {
             return false;
         }

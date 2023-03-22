@@ -18,7 +18,6 @@ package org.apache.dubbo.security.cert;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.common.ssl.AuthPolicy;
 import org.apache.dubbo.common.ssl.Cert;
 import org.apache.dubbo.common.ssl.CertProvider;
 import org.apache.dubbo.common.ssl.ProviderCert;
@@ -27,38 +26,65 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import java.nio.charset.StandardCharsets;
 
 @Activate
-public class DubboCertProvider implements CertProvider {
-    private final DubboCertManager dubboCertManager;
+public class AuthorityCertProvider implements CertProvider {
+    private final FrameworkModel frameworkModel;
+    private volatile AuthorityCertFactory authorityCertFactory;
+    private volatile AuthenticationGovernor authenticationGovernor;
 
-
-    public DubboCertProvider(FrameworkModel frameworkModel) {
-        dubboCertManager = frameworkModel.getBeanFactory().getBean(DubboCertManager.class);
+    public AuthorityCertProvider(FrameworkModel frameworkModel) {
+        this.frameworkModel = frameworkModel;
     }
 
     @Override
     public boolean isSupport(URL address) {
-        return dubboCertManager != null && dubboCertManager.isConnected();
+        return authorityCertFactory != null && authorityCertFactory.isConnected();
     }
 
     @Override
     public ProviderCert getProviderConnectionConfig(URL localAddress) {
-        CertPair certPair = dubboCertManager.generateCert();
+        obtainAuthorityCertFactory();
+        obtainAuthenticationGovernor();
+        if (authorityCertFactory == null) {
+            return null;
+        }
+        if (authenticationGovernor != null) {
+            return null;
+        }
+
+        CertPair certPair = authorityCertFactory.generateCert();
         if (certPair == null) {
             return null;
         }
         return new ProviderCert(certPair.getCertificate().getBytes(StandardCharsets.UTF_8),
             certPair.getPrivateKey().getBytes(StandardCharsets.UTF_8),
-            certPair.getTrustCerts().getBytes(StandardCharsets.UTF_8), AuthPolicy.NONE);
+            certPair.getTrustCerts().getBytes(StandardCharsets.UTF_8),
+            authenticationGovernor.getPortPolicy(localAddress.getPort()));
     }
 
     @Override
     public Cert getConsumerConnectionConfig(URL remoteAddress) {
-        CertPair certPair = dubboCertManager.generateCert();
+        obtainAuthorityCertFactory();
+        if (authorityCertFactory == null) {
+            return null;
+        }
+        CertPair certPair = authorityCertFactory.generateCert();
         if (certPair == null) {
             return null;
         }
         return new Cert(certPair.getCertificate().getBytes(StandardCharsets.UTF_8),
             certPair.getPrivateKey().getBytes(StandardCharsets.UTF_8),
             certPair.getTrustCerts().getBytes(StandardCharsets.UTF_8));
+    }
+
+    private void obtainAuthorityCertFactory() {
+        if (authorityCertFactory == null) {
+            authorityCertFactory = frameworkModel.getBeanFactory().getBean(AuthorityCertFactory.class);
+        }
+    }
+
+    private void obtainAuthenticationGovernor() {
+        if (authenticationGovernor == null) {
+            authenticationGovernor = frameworkModel.getBeanFactory().getBean(AuthenticationGovernor.class);
+        }
     }
 }

@@ -1,7 +1,7 @@
-package org.apache.dubbo.security.cert.rule;
+package org.apache.dubbo.security.cert.rule.authorization;
 
-import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.security.cert.Endpoint;
 
 import java.util.List;
 
@@ -43,15 +43,15 @@ public class AuthorizationPolicySpec {
         this.matchType = matchType;
     }
 
-    public AuthorizationAction match(URL peer, URL local, Invocation invocation) {
-        AuthorizationAction action = this.action == null ? AuthorizationAction.ALLOW : this.action;
+    public AuthorizationAction match(Endpoint peer, Endpoint local, Invocation invocation) {
+        AuthorizationAction safeAction = this.action == null ? AuthorizationAction.ALLOW : this.action;
         if (rules == null || rules.isEmpty()) {
             return AuthorizationAction.ALLOW;
         }
         if (matchType == null || matchType == AuthorizationMatchType.ANY_MATCH) {
             for (AuthorizationPolicyRule rule : rules) {
                 if (rule.match(peer, local, invocation)) {
-                    return action;
+                    return safeAction;
                 }
             }
         } else {
@@ -60,7 +60,7 @@ public class AuthorizationPolicySpec {
                     return AuthorizationAction.ALLOW;
                 }
             }
-            return action;
+            return safeAction;
         }
         return AuthorizationAction.ALLOW;
     }

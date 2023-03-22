@@ -35,11 +35,11 @@ import java.util.concurrent.atomic.AtomicReference;
 import static org.awaitility.Awaitility.await;
 import static org.mockito.Answers.CALLS_REAL_METHODS;
 
-class DubboCertManagerTest {
+class AuthorityCertFactoryTest {
     @Test
     void test1() {
         FrameworkModel frameworkModel = new FrameworkModel();
-        DubboCertManager certManager = new DubboCertManager(frameworkModel) {
+        AuthorityCertFactory certManager = new AuthorityCertFactory(frameworkModel) {
             @Override
             protected void connect0(CertConfig certConfig) {
                 Assertions.assertEquals("127.0.0.1:30060", certConfig.getRemoteAddress());
@@ -86,7 +86,7 @@ class DubboCertManagerTest {
     void testRefresh() {
         FrameworkModel frameworkModel = new FrameworkModel();
         AtomicInteger count = new AtomicInteger(0);
-        DubboCertManager certManager = new DubboCertManager(frameworkModel) {
+        AuthorityCertFactory certManager = new AuthorityCertFactory(frameworkModel) {
             @Override
             protected CertPair generateCert() {
                 count.incrementAndGet();
@@ -106,7 +106,7 @@ class DubboCertManagerTest {
     @Test
     void testConnect1() {
         FrameworkModel frameworkModel = new FrameworkModel();
-        DubboCertManager certManager = new DubboCertManager(frameworkModel);
+        AuthorityCertFactory certManager = new AuthorityCertFactory(frameworkModel);
         CertConfig certConfig = new CertConfig("127.0.0.1:30062", null, null, null);
         certManager.connect0(certConfig);
         Assertions.assertNotNull(certManager.channel);
@@ -118,7 +118,7 @@ class DubboCertManagerTest {
     @Test
     void testConnect2() {
         FrameworkModel frameworkModel = new FrameworkModel();
-        DubboCertManager certManager = new DubboCertManager(frameworkModel);
+        AuthorityCertFactory certManager = new AuthorityCertFactory(frameworkModel);
         String file = this.getClass().getClassLoader().getResource("certs/ca.crt").getFile();
         CertConfig certConfig = new CertConfig("127.0.0.1:30062", null, file, null);
         certManager.connect0(certConfig);
@@ -131,7 +131,7 @@ class DubboCertManagerTest {
     @Test
     void testConnect3() {
         FrameworkModel frameworkModel = new FrameworkModel();
-        DubboCertManager certManager = new DubboCertManager(frameworkModel);
+        AuthorityCertFactory certManager = new AuthorityCertFactory(frameworkModel);
         String file = this.getClass().getClassLoader().getResource("certs/broken-ca.crt").getFile();
         CertConfig certConfig = new CertConfig("127.0.0.1:30062", null, file, null);
         Assertions.assertThrows(RuntimeException.class, () -> certManager.connect0(certConfig));
@@ -142,7 +142,7 @@ class DubboCertManagerTest {
     @Test
     void testDisconnect() {
         FrameworkModel frameworkModel = new FrameworkModel();
-        DubboCertManager certManager = new DubboCertManager(frameworkModel);
+        AuthorityCertFactory certManager = new AuthorityCertFactory(frameworkModel);
         ScheduledFuture scheduledFuture = Mockito.mock(ScheduledFuture.class);
         certManager.refreshFuture = scheduledFuture;
         certManager.disConnect();
@@ -160,7 +160,7 @@ class DubboCertManagerTest {
     @Test
     void testConnected() {
         FrameworkModel frameworkModel = new FrameworkModel();
-        DubboCertManager certManager = new DubboCertManager(frameworkModel);
+        AuthorityCertFactory certManager = new AuthorityCertFactory(frameworkModel);
 
         Assertions.assertFalse(certManager.isConnected());
 
@@ -182,7 +182,7 @@ class DubboCertManagerTest {
 
         AtomicBoolean exception = new AtomicBoolean(false);
         AtomicReference<CertPair> certPairReference = new AtomicReference<>();
-        DubboCertManager certManager = new DubboCertManager(frameworkModel) {
+        AuthorityCertFactory certManager = new AuthorityCertFactory(frameworkModel) {
             @Override
             protected CertPair refreshCert() throws IOException {
                 if (exception.get()) {
@@ -215,7 +215,7 @@ class DubboCertManagerTest {
 
     @Test
     void testSignWithRsa() {
-        DubboCertManager.KeyPair keyPair = DubboCertManager.signWithRsa();
+        AuthorityCertFactory.KeyPair keyPair = AuthorityCertFactory.signWithRsa();
         Assertions.assertNotNull(keyPair);
         Assertions.assertNotNull(keyPair.getPrivateKey());
         Assertions.assertNotNull(keyPair.getPublicKey());
@@ -224,7 +224,7 @@ class DubboCertManagerTest {
 
     @Test
     void testSignWithEcdsa() {
-        DubboCertManager.KeyPair keyPair = DubboCertManager.signWithEcdsa();
+        AuthorityCertFactory.KeyPair keyPair = AuthorityCertFactory.signWithEcdsa();
         Assertions.assertNotNull(keyPair);
         Assertions.assertNotNull(keyPair.getPrivateKey());
         Assertions.assertNotNull(keyPair.getPublicKey());
@@ -234,15 +234,15 @@ class DubboCertManagerTest {
 
     @Test
     void testRefreshCert() throws IOException {
-        try (MockedStatic<DubboCertManager> managerMock = Mockito.mockStatic(DubboCertManager.class, CALLS_REAL_METHODS)) {
+        try (MockedStatic<AuthorityCertFactory> managerMock = Mockito.mockStatic(AuthorityCertFactory.class, CALLS_REAL_METHODS)) {
             FrameworkModel frameworkModel = new FrameworkModel();
-            DubboCertManager certManager = new DubboCertManager(frameworkModel);
-            managerMock.when(DubboCertManager::signWithEcdsa).thenReturn(null);
-            managerMock.when(DubboCertManager::signWithRsa).thenReturn(null);
+            AuthorityCertFactory certManager = new AuthorityCertFactory(frameworkModel);
+            managerMock.when(AuthorityCertFactory::signWithEcdsa).thenReturn(null);
+            managerMock.when(AuthorityCertFactory::signWithRsa).thenReturn(null);
 
             Assertions.assertNull(certManager.refreshCert());
 
-            managerMock.when(DubboCertManager::signWithEcdsa).thenCallRealMethod();
+            managerMock.when(AuthorityCertFactory::signWithEcdsa).thenCallRealMethod();
 
             certManager.channel = Mockito.mock(Channel.class);
             try (MockedStatic<DubboCertificateServiceGrpc> mockGrpc = Mockito.mockStatic(DubboCertificateServiceGrpc.class, CALLS_REAL_METHODS)) {

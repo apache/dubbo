@@ -51,7 +51,7 @@ public class SSLConfigCertProvider implements CertProvider {
                         IOUtils.toByteArray(sslConfig.getServerKeyCertChainPathStream()),
                         IOUtils.toByteArray(sslConfig.getServerPrivateKeyPathStream()),
                         sslConfig.getServerTrustCertCollectionPath() != null ? IOUtils.toByteArray(sslConfig.getServerTrustCertCollectionPathStream()) : null,
-                        sslConfig.getServerKeyPassword(), AuthPolicy.CLIENT_AUTH);
+                        sslConfig.getServerKeyPassword(), AuthPolicy.PERMISSIVE);
                 } catch (IOException e) {
                     logger.warn(LoggerCodeConstants.CONFIG_SSL_PATH_LOAD_FAILED, "", "", "Failed to load ssl config.", e);
                     return null;

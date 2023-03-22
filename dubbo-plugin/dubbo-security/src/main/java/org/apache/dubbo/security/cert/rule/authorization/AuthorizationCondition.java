@@ -1,4 +1,4 @@
-package org.apache.dubbo.security.cert.rule;
+package org.apache.dubbo.security.cert.rule.authorization;
 
 import org.apache.dubbo.rpc.Invocation;
 

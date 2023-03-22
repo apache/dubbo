@@ -1,0 +1,1 @@
+security=org.apache.dubbo.security.cert.SecurityConfigPostProcessor

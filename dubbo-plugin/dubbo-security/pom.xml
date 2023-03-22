@@ -51,6 +51,12 @@
             <artifactId>dubbo-common</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-config-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
         <!-- dubbo -->
 
 
@@ -89,13 +95,6 @@
             <artifactId>bcprov-ext-jdk15on</artifactId>
         </dependency>
 
-        <!-- test -->
-        <dependency>
-            <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-config-api</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 
     <build>

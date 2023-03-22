@@ -1,12 +1,12 @@
-package org.apache.dubbo.security.cert.rule;
+package org.apache.dubbo.security.cert.rule.authorization;
 
-import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.security.cert.Endpoint;
 
 import java.util.List;
 
 public class AuthorizationMatcher {
-    public static boolean match(List<AuthorizationPolicy> policies, URL peer, URL local, Invocation invocation) {
+    public static boolean match(List<AuthorizationPolicy> policies, Endpoint peer, Endpoint local, Invocation invocation) {
         if (policies.isEmpty()) {
             return true;
         }

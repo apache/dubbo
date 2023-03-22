@@ -1,12 +1,12 @@
-package org.apache.dubbo.security.cert.rule;
+package org.apache.dubbo.security.cert.rule.authorization;
 
-import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.security.cert.Endpoint;
 
 import java.util.List;
 
-public class AuthorizationPolicy implements Rule {
+public class AuthorizationPolicy {
     private String name;
     private AuthorizationPolicySpec spec;
 
@@ -26,7 +26,7 @@ public class AuthorizationPolicy implements Rule {
         this.spec = spec;
     }
 
-    public AuthorizationAction match(URL peer, URL local, Invocation invocation) {
+    public AuthorizationAction match(Endpoint peer, Endpoint local, Invocation invocation) {
         if (spec == null) {
             return AuthorizationAction.ALLOW;
         }

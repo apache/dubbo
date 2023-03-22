@@ -1,12 +1,12 @@
-package org.apache.dubbo.security.cert.rule;
+package org.apache.dubbo.security.cert.rule.authorization;
 
-import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.security.cert.Endpoint;
 
+import java.net.UnknownHostException;
 import java.util.List;
 
-public class AuthorizationSource {
-    private List<String> namespaces;
-    private List<String> notNamespaces;
+public class AuthorizationTarget {
     private List<String> ipBlocks;
     private List<String> notIpBlocks;
     private List<String> principals;
@@ -14,22 +14,6 @@ public class AuthorizationSource {
 
     private List<AuthorizationExtend> sourceExtends;
     private List<AuthorizationExtend> sourceNotExtends;
-
-    public List<String> getNamespaces() {
-        return namespaces;
-    }
-
-    public void setNamespaces(List<String> namespaces) {
-        this.namespaces = namespaces;
-    }
-
-    public List<String> getNotNamespaces() {
-        return notNamespaces;
-    }
-
-    public void setNotNamespaces(List<String> notNamespaces) {
-        this.notNamespaces = notNamespaces;
-    }
 
     public List<String> getIpBlocks() {
         return ipBlocks;
@@ -79,39 +63,44 @@ public class AuthorizationSource {
         this.sourceNotExtends = sourceNotExtends;
     }
 
-    public boolean match(URL url) {
-        if (namespaces != null && !namespaces.isEmpty()) {
-            String namespace = url.getParameter("kubernetesEnv.namespace");
-            if (namespace == null || !namespaces.contains(namespace)) {
-                return false;
-            }
+    public boolean match(Endpoint endpoint) {
+        String ip = endpoint.getIp();
+        if (ipBlocks != null && !ipBlocks.isEmpty() &&
+            (ip == null || ipBlocks.stream().noneMatch(ipBlock -> {
+                try {
+                    return NetUtils.matchIpExpression(ipBlock, ip);
+                } catch (UnknownHostException e) {
+                    return false;
+                }
+            }))) {
+            return false;
         }
 
-        if (notNamespaces != null && !notNamespaces.isEmpty()) {
-            String namespace = url.getParameter("kubernetesEnv.namespace");
-            if (namespace != null && notNamespaces.contains(namespace)) {
+        if (notIpBlocks != null && !notIpBlocks.isEmpty() &&
+            ip != null && notIpBlocks.stream().anyMatch(ipBlock -> {
+            try {
+                return NetUtils.matchIpExpression(ipBlock, ip);
+            } catch (UnknownHostException e) {
                 return false;
             }
+        })) {
+            return false;
         }
 
-        if (ipBlocks != null && !ipBlocks.isEmpty()) {
-            String ip = url.getHost();
-            if (ip == null || !ipBlocks.contains(ip)) {
-                return false;
-            }
-        }
-        if (notIpBlocks != null && !notIpBlocks.isEmpty()) {
-            String ip = url.getHost();
-            if (ip != null && notIpBlocks.contains(ip)) {
-                return false;
-            }
+        String principal = endpoint.getPrincipal();
+        if (principals != null && !principals.isEmpty() &&
+            (principal == null || !principals.contains(principal))) {
+            return false;
         }
 
-        // TODO principals
+        if (notPrincipals != null && !notPrincipals.isEmpty() &&
+            principal != null && notPrincipals.contains(principal)) {
+            return false;
+        }
 
         if (sourceExtends != null && !sourceExtends.isEmpty()) {
             for (AuthorizationExtend extend : sourceExtends) {
-                if (!extend.match(url)) {
+                if (!extend.match(endpoint)) {
                     return false;
                 }
             }
@@ -119,7 +108,7 @@ public class AuthorizationSource {
 
         if (sourceNotExtends != null && !sourceNotExtends.isEmpty()) {
             for (AuthorizationExtend extend : sourceNotExtends) {
-                if (extend.match(url)) {
+                if (extend.match(endpoint)) {
                     return false;
                 }
             }

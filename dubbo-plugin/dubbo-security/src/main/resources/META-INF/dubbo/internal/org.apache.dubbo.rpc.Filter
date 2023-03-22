@@ -1,1 +1,1 @@
-security=org.apache.dubbo.security.cert.SecurityFilter
+authentication=org.apache.dubbo.security.cert.AuthenticationFilter

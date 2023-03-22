@@ -104,7 +104,7 @@ public class SslServerTlsHandler extends ByteToMessageDecoder {
             return;
         }
 
-        if (providerConnectionConfig.getAuthPolicy() == AuthPolicy.NONE) {
+        if (providerConnectionConfig.getAuthPolicy() != AuthPolicy.STRICT) {
             ChannelPipeline p = channelHandlerContext.pipeline();
             p.remove(this);
         }

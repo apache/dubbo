@@ -49,6 +49,7 @@ import io.netty.util.concurrent.EventExecutorGroup;
 import java.net.InetSocketAddress;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static org.apache.dubbo.common.constants.CommonConstants.SSL_ENABLED_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_CLIENT_CONNECT_TIMEOUT;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_CONNECT_PROVIDER;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_DISCONNECT_PROVIDER;
@@ -120,7 +121,8 @@ public class NettyClient extends AbstractClient {
             .channel(socketChannelClass());
 
         bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, Math.max(DEFAULT_CONNECT_TIMEOUT, getConnectTimeout()));
-        SslContext sslContext = SslContexts.buildClientSslContext(getUrl());
+        SslContext sslContext = getUrl().getParameter(SSL_ENABLED_KEY, false) ?
+            SslContexts.buildClientSslContext(getUrl()) : null;
         bootstrap.handler(new ChannelInitializer<SocketChannel>() {
 
             @Override

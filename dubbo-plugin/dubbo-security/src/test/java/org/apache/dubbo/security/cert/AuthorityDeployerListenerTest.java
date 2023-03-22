@@ -31,12 +31,12 @@ import org.mockito.Mockito;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-class CertDeployerListenerTest {
+class AuthorityDeployerListenerTest {
     @Test
     void testEmpty1() {
-        AtomicReference<DubboCertManager> reference = new AtomicReference<>();
-        try (MockedConstruction<DubboCertManager> construction =
-                 Mockito.mockConstruction(DubboCertManager.class, (mock, context) -> {
+        AtomicReference<AuthorityCertFactory> reference = new AtomicReference<>();
+        try (MockedConstruction<AuthorityCertFactory> construction =
+                 Mockito.mockConstruction(AuthorityCertFactory.class, (mock, context) -> {
                      reference.set(mock);
                  })) {
             FrameworkModel frameworkModel = new FrameworkModel();
@@ -53,9 +53,9 @@ class CertDeployerListenerTest {
 
     @Test
     void testEmpty2() {
-        AtomicReference<DubboCertManager> reference = new AtomicReference<>();
-        try (MockedConstruction<DubboCertManager> construction =
-                 Mockito.mockConstruction(DubboCertManager.class, (mock, context) -> {
+        AtomicReference<AuthorityCertFactory> reference = new AtomicReference<>();
+        try (MockedConstruction<AuthorityCertFactory> construction =
+                 Mockito.mockConstruction(AuthorityCertFactory.class, (mock, context) -> {
                      reference.set(mock);
                  })) {
             FrameworkModel frameworkModel = new FrameworkModel();
@@ -73,9 +73,9 @@ class CertDeployerListenerTest {
 
     @Test
     void testCreate() {
-        AtomicReference<DubboCertManager> reference = new AtomicReference<>();
-        try (MockedConstruction<DubboCertManager> construction =
-                 Mockito.mockConstruction(DubboCertManager.class, (mock, context) -> {
+        AtomicReference<AuthorityCertFactory> reference = new AtomicReference<>();
+        try (MockedConstruction<AuthorityCertFactory> construction =
+                 Mockito.mockConstruction(AuthorityCertFactory.class, (mock, context) -> {
                      reference.set(mock);
                  })) {
             FrameworkModel frameworkModel = new FrameworkModel();
@@ -97,9 +97,9 @@ class CertDeployerListenerTest {
 
     @Test
     void testFailure() {
-        AtomicReference<DubboCertManager> reference = new AtomicReference<>();
-        try (MockedConstruction<DubboCertManager> construction =
-                 Mockito.mockConstruction(DubboCertManager.class, (mock, context) -> {
+        AtomicReference<AuthorityCertFactory> reference = new AtomicReference<>();
+        try (MockedConstruction<AuthorityCertFactory> construction =
+                 Mockito.mockConstruction(AuthorityCertFactory.class, (mock, context) -> {
                      reference.set(mock);
                  })) {
             FrameworkModel frameworkModel = new FrameworkModel();
@@ -133,8 +133,8 @@ class CertDeployerListenerTest {
             }
         };
         Thread.currentThread().setContextClassLoader(newClassLoader);
-        try (MockedConstruction<DubboCertManager> construction =
-                 Mockito.mockConstruction(DubboCertManager.class, (mock, context) -> {
+        try (MockedConstruction<AuthorityCertFactory> construction =
+                 Mockito.mockConstruction(AuthorityCertFactory.class, (mock, context) -> {
                      // ignore
                  })) {
             FrameworkModel frameworkModel = new FrameworkModel();
@@ -165,8 +165,8 @@ class CertDeployerListenerTest {
             }
         };
         Thread.currentThread().setContextClassLoader(newClassLoader);
-        try (MockedConstruction<DubboCertManager> construction =
-                 Mockito.mockConstruction(DubboCertManager.class, (mock, context) -> {
+        try (MockedConstruction<AuthorityCertFactory> construction =
+                 Mockito.mockConstruction(AuthorityCertFactory.class, (mock, context) -> {
                      // ignore
                  })) {
             FrameworkModel frameworkModel = new FrameworkModel();
@@ -186,9 +186,9 @@ class CertDeployerListenerTest {
 
     @Test
     void testParams1() {
-        AtomicReference<DubboCertManager> reference = new AtomicReference<>();
-        try (MockedConstruction<DubboCertManager> construction =
-                 Mockito.mockConstruction(DubboCertManager.class, (mock, context) -> {
+        AtomicReference<AuthorityCertFactory> reference = new AtomicReference<>();
+        try (MockedConstruction<AuthorityCertFactory> construction =
+                 Mockito.mockConstruction(AuthorityCertFactory.class, (mock, context) -> {
                      reference.set(mock);
                  })) {
             FrameworkModel frameworkModel = new FrameworkModel();
@@ -214,9 +214,9 @@ class CertDeployerListenerTest {
     @Disabled("Enable me until properties from envs work.")
     @Test
     void testParams2() {
-        AtomicReference<DubboCertManager> reference = new AtomicReference<>();
-        try (MockedConstruction<DubboCertManager> construction =
-                 Mockito.mockConstruction(DubboCertManager.class, (mock, context) -> {
+        AtomicReference<AuthorityCertFactory> reference = new AtomicReference<>();
+        try (MockedConstruction<AuthorityCertFactory> construction =
+                 Mockito.mockConstruction(AuthorityCertFactory.class, (mock, context) -> {
                      reference.set(mock);
                  })) {
             System.setProperty("dubbo.ssl.ca-address", "127.0.0.1:30060");

@@ -28,16 +28,16 @@ import org.mockito.Mockito;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-class DubboCertProviderTest {
+class AuthorityCertProviderTest {
     @Test
     void testEnable() {
-        AtomicReference<DubboCertManager> reference = new AtomicReference<>();
-        try (MockedConstruction<DubboCertManager> construction =
-                 Mockito.mockConstruction(DubboCertManager.class, (mock, context) -> {
+        AtomicReference<AuthorityCertFactory> reference = new AtomicReference<>();
+        try (MockedConstruction<AuthorityCertFactory> construction =
+                 Mockito.mockConstruction(AuthorityCertFactory.class, (mock, context) -> {
                      reference.set(mock);
                  })) {
             FrameworkModel frameworkModel = new FrameworkModel();
-            DubboCertProvider provider = new DubboCertProvider(frameworkModel);
+            AuthorityCertProvider provider = new AuthorityCertProvider(frameworkModel);
 
             Mockito.when(reference.get().isConnected()).thenReturn(true);
             Assertions.assertTrue(provider.isSupport(null));
@@ -62,12 +62,12 @@ class DubboCertProviderTest {
             }
         };
         Thread.currentThread().setContextClassLoader(newClassLoader);
-        try (MockedConstruction<DubboCertManager> construction =
-                 Mockito.mockConstruction(DubboCertManager.class, (mock, context) -> {
+        try (MockedConstruction<AuthorityCertFactory> construction =
+                 Mockito.mockConstruction(AuthorityCertFactory.class, (mock, context) -> {
                      // ignore
                  })) {
             FrameworkModel frameworkModel = new FrameworkModel();
-            DubboCertProvider provider = new DubboCertProvider(frameworkModel);
+            AuthorityCertProvider provider = new AuthorityCertProvider(frameworkModel);
 
             Assertions.assertFalse(provider.isSupport(null));
 
@@ -89,12 +89,12 @@ class DubboCertProviderTest {
             }
         };
         Thread.currentThread().setContextClassLoader(newClassLoader);
-        try (MockedConstruction<DubboCertManager> construction =
-                 Mockito.mockConstruction(DubboCertManager.class, (mock, context) -> {
+        try (MockedConstruction<AuthorityCertFactory> construction =
+                 Mockito.mockConstruction(AuthorityCertFactory.class, (mock, context) -> {
                      // ignore
                  })) {
             FrameworkModel frameworkModel = new FrameworkModel();
-            DubboCertProvider provider = new DubboCertProvider(frameworkModel);
+            AuthorityCertProvider provider = new AuthorityCertProvider(frameworkModel);
 
             Assertions.assertFalse(provider.isSupport(null));
 
@@ -105,13 +105,13 @@ class DubboCertProviderTest {
 
     @Test
     void getProviderConnectionConfigTest() {
-        AtomicReference<DubboCertManager> reference = new AtomicReference<>();
-        try (MockedConstruction<DubboCertManager> construction =
-                 Mockito.mockConstruction(DubboCertManager.class, (mock, context) -> {
+        AtomicReference<AuthorityCertFactory> reference = new AtomicReference<>();
+        try (MockedConstruction<AuthorityCertFactory> construction =
+                 Mockito.mockConstruction(AuthorityCertFactory.class, (mock, context) -> {
                      reference.set(mock);
                  })) {
             FrameworkModel frameworkModel = new FrameworkModel();
-            DubboCertProvider provider = new DubboCertProvider(frameworkModel);
+            AuthorityCertProvider provider = new AuthorityCertProvider(frameworkModel);
             Assertions.assertNull(provider.getProviderConnectionConfig(null));
 
             CertPair certPair = new CertPair("privateKey", "publicKey", "trustCerts", 12345);
@@ -128,13 +128,13 @@ class DubboCertProviderTest {
 
     @Test
     void getConsumerConnectionConfigTest() {
-        AtomicReference<DubboCertManager> reference = new AtomicReference<>();
-        try (MockedConstruction<DubboCertManager> construction =
-                 Mockito.mockConstruction(DubboCertManager.class, (mock, context) -> {
+        AtomicReference<AuthorityCertFactory> reference = new AtomicReference<>();
+        try (MockedConstruction<AuthorityCertFactory> construction =
+                 Mockito.mockConstruction(AuthorityCertFactory.class, (mock, context) -> {
                      reference.set(mock);
                  })) {
             FrameworkModel frameworkModel = new FrameworkModel();
-            DubboCertProvider provider = new DubboCertProvider(frameworkModel);
+            AuthorityCertProvider provider = new AuthorityCertProvider(frameworkModel);
             Assertions.assertNull(provider.getConsumerConnectionConfig(null));
 
             CertPair certPair = new CertPair("privateKey", "publicKey", "trustCerts", 12345);

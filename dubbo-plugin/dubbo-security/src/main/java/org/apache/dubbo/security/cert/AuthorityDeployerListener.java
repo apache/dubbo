@@ -18,6 +18,9 @@ package org.apache.dubbo.security.cert;
 
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.deploy.ApplicationDeployListener;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.SslConfig;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -26,30 +29,39 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import java.util.Objects;
 import java.util.Optional;
 
-public class CertDeployerListener implements ApplicationDeployListener {
-    private final DubboCertManager dubboCertManager;
+public class AuthorityDeployerListener implements ApplicationDeployListener {
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(AuthorityDeployerListener.class);
 
+    private static final boolean IS_SUPPORTED = isSupported();
 
-    public CertDeployerListener(FrameworkModel frameworkModel) {
-        dubboCertManager = frameworkModel.getBeanFactory().getBean(DubboCertManager.class);
+    public static boolean isSupported() {
+        try {
+            ClassUtils.forName("io.grpc.Channel");
+            ClassUtils.forName("org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequestBuilder");
+            logger.info("Found dubbo-security dependencies.");
+            return true;
+        } catch (Throwable t) {
+            logger.info("Unable to find dubbo-security dependencies. Will disable dubbo authority.");
+            return false;
+        }
     }
 
     @Override
     public void onStarting(ApplicationModel scopeModel) {
+        FrameworkModel frameworkModel = scopeModel.getFrameworkModel();
         Optional<SslConfig> config = scopeModel.getApplicationConfigManager().getSsl();
         if (config.isPresent()) {
             SslConfig sslConfig = config.get();
-            if (Objects.nonNull(sslConfig.getCaAddress()) && dubboCertManager != null) {
+            if (Objects.nonNull(sslConfig.getCaAddress()) && IS_SUPPORTED) {
                 CertConfig certConfig = new CertConfig(sslConfig.getCaAddress(),
                     sslConfig.getEnvType(),
                     sslConfig.getCaCertPath(),
                     sslConfig.getOidcTokenPath(),
                     sslConfig.getOidcTokenType());
-                dubboCertManager.connect(certConfig);
 
-                if (dubboCertManager.generateCert() == null) {
-                    System.exit(0);
-                }
+                AuthorityConnector connector = new AuthorityConnector(frameworkModel, certConfig);
+                frameworkModel.getBeanFactory().registerBean(connector);
+                frameworkModel.addDestroyListener(scope -> connector.disConnect());
                 return;
             }
         }
@@ -62,17 +74,16 @@ public class CertDeployerListener implements ApplicationDeployListener {
             StringUtils.isNotEmpty(caCertPath) &&
             StringUtils.isNotEmpty(oidcToken) &&
             StringUtils.isNotEmpty(oidcTokenType) &&
-            dubboCertManager != null) {
+            IS_SUPPORTED) {
             CertConfig certConfig = new CertConfig(caAddress,
                 null,
                 caCertPath,
                 oidcToken,
                 oidcTokenType);
-            dubboCertManager.connect(certConfig);
 
-            if (dubboCertManager.generateCert() == null) {
-                System.exit(0);
-            }
+            AuthorityConnector connector = new AuthorityConnector(frameworkModel, certConfig);
+            frameworkModel.getBeanFactory().registerBean(connector);
+            frameworkModel.addDestroyListener(scope -> connector.disConnect());
         }
     }
 
@@ -82,7 +93,7 @@ public class CertDeployerListener implements ApplicationDeployListener {
 
     @Override
     public void onStopping(ApplicationModel scopeModel) {
-        dubboCertManager.disConnect();
+
     }
 
     @Override
@@ -92,6 +103,6 @@ public class CertDeployerListener implements ApplicationDeployListener {
 
     @Override
     public void onFailure(ApplicationModel scopeModel, Throwable cause) {
-        dubboCertManager.disConnect();
+
     }
 }

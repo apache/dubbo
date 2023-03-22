@@ -1,7 +1,7 @@
-package org.apache.dubbo.security.cert.rule;
+package org.apache.dubbo.security.cert.rule.authorization;
 
-import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.security.cert.Endpoint;
 
 public class AuthorizationPolicyRule {
     private AuthorizationSource from;
@@ -32,7 +32,7 @@ public class AuthorizationPolicyRule {
         this.when = when;
     }
 
-    public boolean match(URL peer, URL local, Invocation invocation) {
+    public boolean match(Endpoint peer, Endpoint local, Invocation invocation) {
         if (from != null && !from.match(peer)) {
             return false;
         }
