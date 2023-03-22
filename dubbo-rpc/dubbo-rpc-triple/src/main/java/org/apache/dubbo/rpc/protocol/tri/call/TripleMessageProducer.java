@@ -19,8 +19,6 @@ package org.apache.dubbo.rpc.protocol.tri.call;
 
 import org.apache.dubbo.common.function.ThrowableSupplier;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.function.Consumer;
 
 class TripleMessageProducer implements ClientCall.MessageProducer {
 
