@@ -32,6 +32,7 @@ import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.transport.CodecSupport;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.io.IOException;
@@ -59,7 +60,9 @@ public class DecodeableRpcResult extends AppResponse implements Codec, Decodeabl
 
     private volatile boolean hasDecoded;
 
-    public DecodeableRpcResult(Channel channel, Response response, InputStream is, Invocation invocation, byte id) {
+    private final Boolean useInvocationReturn;
+
+    public DecodeableRpcResult(Channel channel, Response response, InputStream is, Invocation invocation, byte id, Boolean useInvocationReturn) {
         Assert.notNull(channel, "channel == null");
         Assert.notNull(response, "response == null");
         Assert.notNull(is, "inputStream == null");
@@ -68,6 +71,7 @@ public class DecodeableRpcResult extends AppResponse implements Codec, Decodeabl
         this.inputStream = is;
         this.invocation = invocation;
         this.serializationType = id;
+        this.useInvocationReturn = useInvocationReturn;
     }
 
     @Override
@@ -150,7 +154,15 @@ public class DecodeableRpcResult extends AppResponse implements Codec, Decodeabl
 
     private void handleValue(ObjectInput in) throws IOException {
         try {
-            Type[] returnTypes = RpcUtils.getReturnTypes(invocation);
+            Type[] returnTypes = null;
+            if(useInvocationReturn) {
+                if(invocation instanceof RpcInvocation) {
+                    returnTypes = ((RpcInvocation) invocation).getReturnTypes();
+                }
+            }
+            if(returnTypes == null) {
+                returnTypes = RpcUtils.getReturnTypes(invocation);
+            }
             Object value;
             if (ArrayUtils.isEmpty(returnTypes)) {
                 // happens when generic invoke or void return

@@ -592,4 +592,8 @@ public interface CommonConstants {
      */
     String UNLOAD_CLUSTER_RELATED = "unloadClusterRelated";
 
+    /**
+     * use invocation return class
+     */
+    String USE_INVOCATION_RETURN_CLASS = "use-invocation-return-class";
 }
