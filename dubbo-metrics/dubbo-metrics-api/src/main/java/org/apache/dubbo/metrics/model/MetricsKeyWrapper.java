@@ -24,9 +24,13 @@ import java.util.Map;
  */
 public class MetricsKeyWrapper {
 
-    // Register、subscribe、notify etc
+    /**
+     * Register、subscribe、notify etc
+     */
     private final String type;
-    // Metrics key when exporting
+    /**
+     * Metrics key when exporting
+     */
     private final MetricsKey metricsKey;
 
     private final boolean serviceLevel;
