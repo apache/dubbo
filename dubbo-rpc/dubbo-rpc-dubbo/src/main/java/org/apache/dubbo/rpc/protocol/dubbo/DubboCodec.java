@@ -43,7 +43,6 @@ import java.io.InputStream;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.USE_INVOCATION_RETURN_CLASS;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_DECODE;
 import static org.apache.dubbo.rpc.protocol.dubbo.Constants.DECODE_IN_IO_THREAD_KEY;
@@ -68,12 +67,9 @@ public class DubboCodec extends ExchangeCodec {
     private CallbackServiceCodec callbackServiceCodec;
     private FrameworkModel frameworkModel;
 
-    private Boolean useInvocationReturn;
-
     public DubboCodec(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
         callbackServiceCodec = new CallbackServiceCodec(frameworkModel);
-        this.useInvocationReturn = Boolean.getBoolean(frameworkModel.getModelEnvironment().getAppConfigMap().getOrDefault(USE_INVOCATION_RETURN_CLASS, "false"));
     }
 
     @Override
@@ -106,12 +102,12 @@ public class DubboCodec extends ExchangeCodec {
                         DecodeableRpcResult result;
                         if (channel.getUrl().getParameter(DECODE_IN_IO_THREAD_KEY, DEFAULT_DECODE_IN_IO_THREAD)) {
                             result = new DecodeableRpcResult(channel, res, is,
-                                (Invocation) getRequestData(id), proto, useInvocationReturn);
+                                (Invocation) getRequestData(id), proto);
                             result.decode();
                         } else {
                             result = new DecodeableRpcResult(channel, res,
                                 new UnsafeByteArrayInputStream(readMessageData(is)),
-                                (Invocation) getRequestData(id), proto, useInvocationReturn);
+                                (Invocation) getRequestData(id), proto);
                         }
                         data = result;
                     }

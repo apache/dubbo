@@ -94,7 +94,7 @@ class DecodeableRpcResultTest {
 
         // The client reads and decode the buffer
         InputStream is = new ChannelBufferInputStream(buffer, buffer.readableBytes());
-        DecodeableRpcResult decodeableRpcResult = new DecodeableRpcResult(channel, response, is, rpcInvocation, proto, false);
+        DecodeableRpcResult decodeableRpcResult = new DecodeableRpcResult(channel, response, is, rpcInvocation, proto);
         decodeableRpcResult.decode();
 
         // Verify RESPONSE_VALUE_WITH_ATTACHMENTS
@@ -109,7 +109,7 @@ class DecodeableRpcResultTest {
         exResponse.setResult(exResult);
         buffer = writeBuffer(url, exResponse, proto, true);
         is = new ChannelBufferInputStream(buffer, buffer.readableBytes());
-        decodeableRpcResult = new DecodeableRpcResult(channel, response, is, rpcInvocation, proto, false);
+        decodeableRpcResult = new DecodeableRpcResult(channel, response, is, rpcInvocation, proto);
         decodeableRpcResult.decode();
         Assertions.assertEquals(((RpcException) decodeableRpcResult.getException()).getCode(), ((RpcException) exResult.getException()).getCode());
         Assertions.assertTrue(CollectionUtils.mapEquals(decodeableRpcResult.getObjectAttachments(), exResult.getObjectAttachments()));

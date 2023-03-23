@@ -40,11 +40,14 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Type;
 
+import static org.apache.dubbo.common.config.ConfigurationUtils.getGlobalConfiguration;
+import static org.apache.dubbo.common.constants.CommonConstants.USE_INVOCATION_RETURN_CLASS;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_DECODE;
 import static org.apache.dubbo.rpc.Constants.SERIALIZATION_ID_KEY;
 import static org.apache.dubbo.rpc.Constants.SERIALIZATION_SECURITY_CHECK_KEY;
 
 public class DecodeableRpcResult extends AppResponse implements Codec, Decodeable {
+    public static final String USE_INVOCATION_RETURN_KEY = "cache.use.invocation.return";
 
     private static final ErrorTypeAwareLogger log = LoggerFactory.getErrorTypeAwareLogger(DecodeableRpcResult.class);
 
@@ -62,7 +65,7 @@ public class DecodeableRpcResult extends AppResponse implements Codec, Decodeabl
 
     private final Boolean useInvocationReturn;
 
-    public DecodeableRpcResult(Channel channel, Response response, InputStream is, Invocation invocation, byte id, Boolean useInvocationReturn) {
+    public DecodeableRpcResult(Channel channel, Response response, InputStream is, Invocation invocation, byte id) {
         Assert.notNull(channel, "channel == null");
         Assert.notNull(response, "response == null");
         Assert.notNull(is, "inputStream == null");
@@ -71,7 +74,14 @@ public class DecodeableRpcResult extends AppResponse implements Codec, Decodeabl
         this.inputStream = is;
         this.invocation = invocation;
         this.serializationType = id;
-        this.useInvocationReturn = useInvocationReturn;
+        Object attribute = channel.getAttribute(USE_INVOCATION_RETURN_KEY);
+        if(attribute != null) {
+            useInvocationReturn = (Boolean) attribute;
+        }
+        else {
+            useInvocationReturn = getGlobalConfiguration(channel.getUrl().getScopeModel()).getBoolean(USE_INVOCATION_RETURN_CLASS, true);
+            channel.setAttribute(USE_INVOCATION_RETURN_KEY, useInvocationReturn);
+        }
     }
 
     @Override
