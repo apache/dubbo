@@ -136,10 +136,12 @@ public class NacosRegistry extends FailbackRegistry {
     private final Map<URL, Map<NotifyListener, NacosAggregateListener>> originToAggregateListener = new ConcurrentHashMap<>();
 
     private final Map<URL, Map<NacosAggregateListener, Map<String, EventListener>>> nacosListeners = new ConcurrentHashMap<>();
+    private final boolean supportLegacyServiceName;
 
     public NacosRegistry(URL url, NacosNamingServiceWrapper namingService) {
         super(url);
         this.namingService = namingService;
+        this.supportLegacyServiceName = url.getParameter("nacos.subscribe.legacy-name", true);
     }
 
     @Override
@@ -323,7 +325,7 @@ public class NacosRegistry extends FailbackRegistry {
 
         final Set<String> serviceNames;
 
-        if (serviceName.isConcrete()) { // is the concrete service name
+        if (supportLegacyServiceName && serviceName.isConcrete()) { // is the concrete service name
             serviceNames = new LinkedHashSet<>();
             serviceNames.add(serviceName.toString());
             // Add the legacy service name since 2.7.6

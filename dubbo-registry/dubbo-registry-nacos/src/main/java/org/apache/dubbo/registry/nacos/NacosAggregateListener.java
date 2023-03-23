@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.registry.nacos;
 
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.registry.NotifyListener;
 
@@ -26,12 +28,15 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 public class NacosAggregateListener {
+    private static final Logger logger = LoggerFactory.getErrorTypeAwareLogger(NacosAggregateListener.class);
     private final NotifyListener notifyListener;
     private final Set<String> serviceNames = new ConcurrentHashSet<>();
     private final Map<String, List<Instance>> serviceInstances = new ConcurrentHashMap<>();
+    private final AtomicBoolean warned = new AtomicBoolean(false);
 
     public NacosAggregateListener(NotifyListener notifyListener) {
         this.notifyListener = notifyListener;
@@ -44,7 +49,18 @@ public class NacosAggregateListener {
         } else {
             serviceInstances.put(serviceName, instances);
         }
+        if (isLegacyName(serviceName) && instances != null &&
+            !instances.isEmpty() && warned.compareAndSet(false, true)) {
+            logger.error("Received not empty notification for legacy service name: " + serviceName + ", " +
+                "instances: [" +  instances.stream().map(Instance::getIp).collect(Collectors.joining(" ,")) + "]. " +
+                "Please upgrade these Dubbo client(lower than 2.7.3) to the latest version. " +
+                "Dubbo will remove the support for legacy service name in the future.");
+        }
         return serviceInstances.values().stream().flatMap(List::stream).collect(Collectors.toList());
+    }
+
+    private static boolean isLegacyName(String serviceName) {
+        return !serviceName.matches(".*:.*:.*:.*");
     }
 
     public NotifyListener getNotifyListener() {
