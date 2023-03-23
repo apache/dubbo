@@ -620,5 +620,10 @@ public interface CommonConstants {
     String ENCODE_IN_IO_THREAD_KEY = "encode.in.io";
     boolean DEFAULT_ENCODE_IN_IO_THREAD = false;
 
+    /**
+     * @since 3.2.0
+     */
+    String BYTE_ACCESSOR_KEY = "byte.accessor";
+
     String PAYLOAD = "payload";
 }
