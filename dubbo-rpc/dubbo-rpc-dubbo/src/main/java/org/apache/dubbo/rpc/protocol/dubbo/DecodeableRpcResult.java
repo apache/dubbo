@@ -79,7 +79,7 @@ public class DecodeableRpcResult extends AppResponse implements Codec, Decodeabl
             useInvocationReturn = (Boolean) attribute;
         }
         else {
-            useInvocationReturn = getGlobalConfiguration(channel.getUrl().getScopeModel()).getBoolean(USE_INVOCATION_RETURN_CLASS, true);
+            useInvocationReturn = getGlobalConfiguration(channel.getUrl().getScopeModel()).getBoolean(USE_INVOCATION_RETURN_CLASS, false);
             channel.setAttribute(USE_INVOCATION_RETURN_KEY, useInvocationReturn);
         }
     }
