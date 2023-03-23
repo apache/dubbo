@@ -30,7 +30,7 @@ import org.apache.dubbo.metadata.report.identifier.KeyTypeEnum;
 import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.ServiceMetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
-import org.apache.dubbo.metrics.event.EventBus;
+import org.apache.dubbo.metrics.event.MetricsEventBus;
 import org.apache.dubbo.metrics.metadata.event.MetadataEvent;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
@@ -281,7 +281,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
 
         String interfaceMethodName = serviceDefinition.getCanonicalName();
         MetadataEvent metadataEvent = new MetadataEvent.StoreProviderMetadataEvent(applicationModel, interfaceMethodName);
-        EventBus.post(metadataEvent, () ->
+        MetricsEventBus.post(metadataEvent, () ->
             {
                 boolean result = true;
                 try {

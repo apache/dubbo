@@ -27,7 +27,7 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.MetadataInfo.ServiceInfo;
-import org.apache.dubbo.metrics.event.EventBus;
+import org.apache.dubbo.metrics.event.MetricsEventBus;
 import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
@@ -403,7 +403,7 @@ public class ServiceInstancesChangedListener {
      */
     protected void notifyAddressChanged() {
 
-        EventBus.post(new RegistryEvent.MetricsNotifyEvent(applicationModel),
+        MetricsEventBus.post(new RegistryEvent.MetricsNotifyEvent(applicationModel),
             () -> {
                 Map<String, Integer> lastNumMap = new HashMap<>();
                 // 1 different services

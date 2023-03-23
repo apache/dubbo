@@ -19,7 +19,7 @@ package org.apache.dubbo.metrics.registry.metrics.collector;
 
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.metrics.event.Dispatcher;
-import org.apache.dubbo.metrics.event.EventBus;
+import org.apache.dubbo.metrics.event.MetricsEventBus;
 import org.apache.dubbo.metrics.model.MetricsKey;
 import org.apache.dubbo.metrics.model.MetricsKeyWrapper;
 import org.apache.dubbo.metrics.model.TimePair;
@@ -71,7 +71,7 @@ class RegistryMetricsCollectorTest {
         collector.setCollectEnabled(true);
 
         RegistryEvent registryEvent = new RegistryEvent.MetricsApplicationRegisterEvent(applicationModel);
-        EventBus.post(registryEvent,
+        MetricsEventBus.post(registryEvent,
             () -> {
                 List<MetricSample> metricSamples = collector.collect();
                 // push success +1
@@ -90,7 +90,7 @@ class RegistryMetricsCollectorTest {
 
         registryEvent = new RegistryEvent.MetricsApplicationRegisterEvent(applicationModel);
         TimePair lastTimePair = registryEvent.getTimePair();
-        EventBus.post(registryEvent,
+        MetricsEventBus.post(registryEvent,
             () -> {
                 try {
                     Thread.sleep(50);

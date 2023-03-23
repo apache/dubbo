@@ -27,7 +27,7 @@ import java.util.function.Supplier;
 /**
  * Dispatches events to listeners, and provides ways for listeners to register themselves.
  */
-public class EventBus {
+public class MetricsEventBus {
 
     /**
      * Posts an event to all registered subscribers and only once.

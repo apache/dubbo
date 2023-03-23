@@ -19,7 +19,7 @@ package org.apache.dubbo.metrics.metadata;
 
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.metrics.event.Dispatcher;
-import org.apache.dubbo.metrics.event.EventBus;
+import org.apache.dubbo.metrics.event.MetricsEventBus;
 import org.apache.dubbo.metrics.metadata.collector.MetadataMetricsCollector;
 import org.apache.dubbo.metrics.metadata.event.MetadataEvent;
 import org.apache.dubbo.metrics.model.MetricsKey;
@@ -74,7 +74,7 @@ class MetadataMetricsCollectorTest {
         collector.setCollectEnabled(true);
 
         MetadataEvent.PushEvent pushEvent = new MetadataEvent.PushEvent(applicationModel);
-        EventBus.post(pushEvent,
+        MetricsEventBus.post(pushEvent,
             () -> {
                 List<MetricSample> metricSamples = collector.collect();
 
@@ -94,7 +94,7 @@ class MetadataMetricsCollectorTest {
 
         pushEvent = new MetadataEvent.PushEvent(applicationModel);
         TimePair lastTimePair = pushEvent.getTimePair();
-        EventBus.post(pushEvent,
+        MetricsEventBus.post(pushEvent,
             () -> {
                 try {
                     Thread.sleep(50);
@@ -135,7 +135,7 @@ class MetadataMetricsCollectorTest {
         collector.setCollectEnabled(true);
 
         MetadataEvent.SubscribeEvent subscribeEvent = new MetadataEvent.SubscribeEvent(applicationModel);
-        EventBus.post(subscribeEvent,
+        MetricsEventBus.post(subscribeEvent,
             () -> {
                 List<MetricSample> metricSamples = collector.collect();
 
@@ -154,7 +154,7 @@ class MetadataMetricsCollectorTest {
         Assertions.assertEquals(7, metricSamples.size());
         subscribeEvent = new MetadataEvent.SubscribeEvent(applicationModel);
         TimePair lastTimePair = subscribeEvent.getTimePair();
-        EventBus.post(subscribeEvent,
+        MetricsEventBus.post(subscribeEvent,
             () -> {
                 try {
                     Thread.sleep(50);
@@ -198,7 +198,7 @@ class MetadataMetricsCollectorTest {
 
         String serviceKey = "store.provider.test";
         MetadataEvent metadataEvent = new MetadataEvent.StoreProviderMetadataEvent(applicationModel, serviceKey);
-        EventBus.post(metadataEvent,
+        MetricsEventBus.post(metadataEvent,
             () -> {
                 List<MetricSample> metricSamples = collector.collect();
 
@@ -218,7 +218,7 @@ class MetadataMetricsCollectorTest {
         long c1 = metadataEvent.getTimePair().calc();
         metadataEvent = new MetadataEvent.StoreProviderMetadataEvent(applicationModel, serviceKey);
         TimePair lastTimePair = metadataEvent.getTimePair();
-        EventBus.post(metadataEvent,
+        MetricsEventBus.post(metadataEvent,
             () -> {
                 try {
                     Thread.sleep(50);

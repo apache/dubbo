@@ -30,7 +30,7 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
-import org.apache.dubbo.metrics.event.EventBus;
+import org.apache.dubbo.metrics.event.MetricsEventBus;
 import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.registry.AddressListener;
 import org.apache.dubbo.remoting.Constants;
@@ -119,7 +119,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
     @Override
     public void subscribe(URL url) {
         ApplicationModel applicationModel = url.getApplicationModel();
-        EventBus.post(new RegistryEvent.MetricsSubscribeEvent(applicationModel),() ->
+        MetricsEventBus.post(new RegistryEvent.MetricsSubscribeEvent(applicationModel),() ->
             {
                 super.subscribe(url);
                 return null;

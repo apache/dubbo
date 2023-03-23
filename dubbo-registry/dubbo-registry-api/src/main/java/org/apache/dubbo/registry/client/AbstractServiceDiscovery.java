@@ -26,7 +26,7 @@ import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.report.MetadataReport;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
 import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
-import org.apache.dubbo.metrics.event.EventBus;
+import org.apache.dubbo.metrics.event.MetricsEventBus;
 import org.apache.dubbo.metrics.metadata.event.MetadataEvent;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
@@ -228,7 +228,7 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
             int triedTimes = 0;
             while (triedTimes < 3) {
 
-                metadata = EventBus.post(new MetadataEvent.PushEvent(applicationModel),
+                metadata = MetricsEventBus.post(new MetadataEvent.PushEvent(applicationModel),
                     () -> MetadataUtils.getRemoteMetadata(revision, instances, metadataReport),
                     result -> result != MetadataInfo.EMPTY
                 );
@@ -361,7 +361,7 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
         if (metadataReport != null) {
             SubscriberMetadataIdentifier identifier = new SubscriberMetadataIdentifier(serviceName, metadataInfo.getRevision());
             if ((DEFAULT_METADATA_STORAGE_TYPE.equals(metadataType) && metadataReport.shouldReportMetadata()) || REMOTE_METADATA_STORAGE_TYPE.equals(metadataType)) {
-                EventBus.post(new MetadataEvent.PushEvent(applicationModel),
+                MetricsEventBus.post(new MetadataEvent.PushEvent(applicationModel),
                     () ->
                     {
                         metadataReport.publishAppMetadata(identifier, metadataInfo);
