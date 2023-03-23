@@ -76,7 +76,7 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
     private final ApplicationModel applicationModel;
     private final FrameworkExecutorRepository frameworkExecutorRepository;
 
-    private final ConcurrentHashMap<String, ExecutorSupport> executorSupports = new ConcurrentHashMap<>();
+    private ExecutorSupport executorSupport;
 
     private final DataStore dataStore;
 
@@ -441,8 +441,9 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
 
     @Override
     public ExecutorSupport getExecutorSupport(URL url) {
-        String executorKey = getExecutorKey(url) + "." + getExecutorSecondKey(url);
-        ExecutorSupport executorSupport = ConcurrentHashMapUtils.computeIfAbsent(executorSupports, executorKey, v -> new DefaultExecutorSupport(url));
+        if (executorSupport == null) {
+            executorSupport = new DefaultExecutorSupport(url);
+        }
         return executorSupport;
     }
 }
