@@ -28,7 +28,7 @@ import java.nio.charset.StandardCharsets;
 @Activate
 public class AuthorityCertProvider implements CertProvider {
     private final FrameworkModel frameworkModel;
-    private volatile AuthorityCertFactory authorityCertFactory;
+    private volatile AuthorityIdentityFactory authorityIdentityFactory;
     private volatile AuthenticationGovernor authenticationGovernor;
 
     public AuthorityCertProvider(FrameworkModel frameworkModel) {
@@ -37,48 +37,48 @@ public class AuthorityCertProvider implements CertProvider {
 
     @Override
     public boolean isSupport(URL address) {
-        return authorityCertFactory != null && authorityCertFactory.isConnected();
+        return authorityIdentityFactory != null && authorityIdentityFactory.isConnected();
     }
 
     @Override
     public ProviderCert getProviderConnectionConfig(URL localAddress) {
         obtainAuthorityCertFactory();
         obtainAuthenticationGovernor();
-        if (authorityCertFactory == null) {
+        if (authorityIdentityFactory == null) {
             return null;
         }
         if (authenticationGovernor != null) {
             return null;
         }
 
-        CertPair certPair = authorityCertFactory.generateCert();
-        if (certPair == null) {
+        IdentityInfo identityInfo = authorityIdentityFactory.generateIdentity();
+        if (identityInfo == null) {
             return null;
         }
-        return new ProviderCert(certPair.getCertificate().getBytes(StandardCharsets.UTF_8),
-            certPair.getPrivateKey().getBytes(StandardCharsets.UTF_8),
-            certPair.getTrustCerts().getBytes(StandardCharsets.UTF_8),
+        return new ProviderCert(identityInfo.getCertificate().getBytes(StandardCharsets.UTF_8),
+            identityInfo.getPrivateKey().getBytes(StandardCharsets.UTF_8),
+            identityInfo.getTrustCerts().getBytes(StandardCharsets.UTF_8),
             authenticationGovernor.getPortPolicy(localAddress.getPort()));
     }
 
     @Override
     public Cert getConsumerConnectionConfig(URL remoteAddress) {
         obtainAuthorityCertFactory();
-        if (authorityCertFactory == null) {
+        if (authorityIdentityFactory == null) {
             return null;
         }
-        CertPair certPair = authorityCertFactory.generateCert();
-        if (certPair == null) {
+        IdentityInfo identityInfo = authorityIdentityFactory.generateIdentity();
+        if (identityInfo == null) {
             return null;
         }
-        return new Cert(certPair.getCertificate().getBytes(StandardCharsets.UTF_8),
-            certPair.getPrivateKey().getBytes(StandardCharsets.UTF_8),
-            certPair.getTrustCerts().getBytes(StandardCharsets.UTF_8));
+        return new Cert(identityInfo.getCertificate().getBytes(StandardCharsets.UTF_8),
+            identityInfo.getPrivateKey().getBytes(StandardCharsets.UTF_8),
+            identityInfo.getTrustCerts().getBytes(StandardCharsets.UTF_8));
     }
 
     private void obtainAuthorityCertFactory() {
-        if (authorityCertFactory == null) {
-            authorityCertFactory = frameworkModel.getBeanFactory().getBean(AuthorityCertFactory.class);
+        if (authorityIdentityFactory == null) {
+            authorityIdentityFactory = frameworkModel.getBeanFactory().getBean(AuthorityIdentityFactory.class);
         }
     }
 

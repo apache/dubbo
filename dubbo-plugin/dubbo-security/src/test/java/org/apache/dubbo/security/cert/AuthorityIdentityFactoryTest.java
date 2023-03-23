@@ -27,6 +27,7 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -35,11 +36,11 @@ import java.util.concurrent.atomic.AtomicReference;
 import static org.awaitility.Awaitility.await;
 import static org.mockito.Answers.CALLS_REAL_METHODS;
 
-class AuthorityCertFactoryTest {
+class AuthorityIdentityFactoryTest {
     @Test
     void test1() {
         FrameworkModel frameworkModel = new FrameworkModel();
-        AuthorityCertFactory certManager = new AuthorityCertFactory(frameworkModel) {
+        AuthorityIdentityFactory certManager = new AuthorityIdentityFactory(frameworkModel) {
             @Override
             protected void connect0(CertConfig certConfig) {
                 Assertions.assertEquals("127.0.0.1:30060", certConfig.getRemoteAddress());
@@ -47,7 +48,7 @@ class AuthorityCertFactoryTest {
             }
 
             @Override
-            protected CertPair generateCert() {
+            protected IdentityInfo generateIdentity() {
                 return null;
             }
 
@@ -86,9 +87,9 @@ class AuthorityCertFactoryTest {
     void testRefresh() {
         FrameworkModel frameworkModel = new FrameworkModel();
         AtomicInteger count = new AtomicInteger(0);
-        AuthorityCertFactory certManager = new AuthorityCertFactory(frameworkModel) {
+        AuthorityIdentityFactory certManager = new AuthorityIdentityFactory(frameworkModel) {
             @Override
-            protected CertPair generateCert() {
+            protected IdentityInfo generateIdentity() {
                 count.incrementAndGet();
                 return null;
             }
@@ -106,7 +107,7 @@ class AuthorityCertFactoryTest {
     @Test
     void testConnect1() {
         FrameworkModel frameworkModel = new FrameworkModel();
-        AuthorityCertFactory certManager = new AuthorityCertFactory(frameworkModel);
+        AuthorityIdentityFactory certManager = new AuthorityIdentityFactory(frameworkModel);
         CertConfig certConfig = new CertConfig("127.0.0.1:30062", null, null, null);
         certManager.connect0(certConfig);
         Assertions.assertNotNull(certManager.channel);
@@ -118,7 +119,7 @@ class AuthorityCertFactoryTest {
     @Test
     void testConnect2() {
         FrameworkModel frameworkModel = new FrameworkModel();
-        AuthorityCertFactory certManager = new AuthorityCertFactory(frameworkModel);
+        AuthorityIdentityFactory certManager = new AuthorityIdentityFactory(frameworkModel);
         String file = this.getClass().getClassLoader().getResource("certs/ca.crt").getFile();
         CertConfig certConfig = new CertConfig("127.0.0.1:30062", null, file, null);
         certManager.connect0(certConfig);
@@ -131,7 +132,7 @@ class AuthorityCertFactoryTest {
     @Test
     void testConnect3() {
         FrameworkModel frameworkModel = new FrameworkModel();
-        AuthorityCertFactory certManager = new AuthorityCertFactory(frameworkModel);
+        AuthorityIdentityFactory certManager = new AuthorityIdentityFactory(frameworkModel);
         String file = this.getClass().getClassLoader().getResource("certs/broken-ca.crt").getFile();
         CertConfig certConfig = new CertConfig("127.0.0.1:30062", null, file, null);
         Assertions.assertThrows(RuntimeException.class, () -> certManager.connect0(certConfig));
@@ -142,7 +143,7 @@ class AuthorityCertFactoryTest {
     @Test
     void testDisconnect() {
         FrameworkModel frameworkModel = new FrameworkModel();
-        AuthorityCertFactory certManager = new AuthorityCertFactory(frameworkModel);
+        AuthorityIdentityFactory certManager = new AuthorityIdentityFactory(frameworkModel);
         ScheduledFuture scheduledFuture = Mockito.mock(ScheduledFuture.class);
         certManager.refreshFuture = scheduledFuture;
         certManager.disConnect();
@@ -160,7 +161,7 @@ class AuthorityCertFactoryTest {
     @Test
     void testConnected() {
         FrameworkModel frameworkModel = new FrameworkModel();
-        AuthorityCertFactory certManager = new AuthorityCertFactory(frameworkModel);
+        AuthorityIdentityFactory certManager = new AuthorityIdentityFactory(frameworkModel);
 
         Assertions.assertFalse(certManager.isConnected());
 
@@ -170,7 +171,7 @@ class AuthorityCertFactoryTest {
         certManager.channel = Mockito.mock(Channel.class);
         Assertions.assertFalse(certManager.isConnected());
 
-        certManager.certPair = Mockito.mock(CertPair.class);
+        certManager.identityInfo = Mockito.mock(IdentityInfo.class);
         Assertions.assertTrue(certManager.isConnected());
 
         frameworkModel.destroy();
@@ -181,10 +182,10 @@ class AuthorityCertFactoryTest {
         FrameworkModel frameworkModel = new FrameworkModel();
 
         AtomicBoolean exception = new AtomicBoolean(false);
-        AtomicReference<CertPair> certPairReference = new AtomicReference<>();
-        AuthorityCertFactory certManager = new AuthorityCertFactory(frameworkModel) {
+        AtomicReference<IdentityInfo> certPairReference = new AtomicReference<>();
+        AuthorityIdentityFactory certManager = new AuthorityIdentityFactory(frameworkModel) {
             @Override
-            protected CertPair refreshCert() throws IOException {
+            protected IdentityInfo refreshCert() throws IOException {
                 if (exception.get()) {
                     throw new IOException("test");
                 }
@@ -192,30 +193,30 @@ class AuthorityCertFactoryTest {
             }
         };
 
-        CertPair certPair = new CertPair("", "", "", Long.MAX_VALUE);
-        certPairReference.set(certPair);
+        IdentityInfo identityInfo = new IdentityInfo("", "", "", Long.MAX_VALUE, "", Collections.emptyList());
+        certPairReference.set(identityInfo);
 
-        Assertions.assertEquals(certPair, certManager.generateCert());
+        Assertions.assertEquals(identityInfo, certManager.generateIdentity());
 
-        certManager.certPair = new CertPair("", "", "", Long.MAX_VALUE - 10000);
-        Assertions.assertEquals(new CertPair("", "", "", Long.MAX_VALUE - 10000), certManager.generateCert());
+        certManager.identityInfo = new IdentityInfo("", "", "", Long.MAX_VALUE - 10000, "", Collections.emptyList());
+        Assertions.assertEquals(new IdentityInfo("", "", "", Long.MAX_VALUE - 10000, "", Collections.emptyList()), certManager.generateIdentity());
 
-        certManager.certPair = new CertPair("", "", "", 0);
-        Assertions.assertEquals(certPair, certManager.generateCert());
+        certManager.identityInfo = new IdentityInfo("", "", "", 0, "", Collections.emptyList());
+        Assertions.assertEquals(identityInfo, certManager.generateIdentity());
 
-        certManager.certPair = new CertPair("", "", "", 0);
+        certManager.identityInfo = new IdentityInfo("", "", "", 0, "", Collections.emptyList());
         certPairReference.set(null);
-        Assertions.assertEquals(new CertPair("", "", "", 0), certManager.generateCert());
+        Assertions.assertEquals(new IdentityInfo("", "", "", 0, "", Collections.emptyList()), certManager.generateIdentity());
 
         exception.set(true);
-        Assertions.assertEquals(new CertPair("", "", "", 0), certManager.generateCert());
+        Assertions.assertEquals(new IdentityInfo("", "", "", 0, "", Collections.emptyList()), certManager.generateIdentity());
 
         frameworkModel.destroy();
     }
 
     @Test
     void testSignWithRsa() {
-        AuthorityCertFactory.KeyPair keyPair = AuthorityCertFactory.signWithRsa();
+        CertUtils.KeyPair keyPair = CertUtils.signWithRsa();
         Assertions.assertNotNull(keyPair);
         Assertions.assertNotNull(keyPair.getPrivateKey());
         Assertions.assertNotNull(keyPair.getPublicKey());
@@ -224,7 +225,7 @@ class AuthorityCertFactoryTest {
 
     @Test
     void testSignWithEcdsa() {
-        AuthorityCertFactory.KeyPair keyPair = AuthorityCertFactory.signWithEcdsa();
+        CertUtils.KeyPair keyPair = CertUtils.signWithEcdsa();
         Assertions.assertNotNull(keyPair);
         Assertions.assertNotNull(keyPair.getPrivateKey());
         Assertions.assertNotNull(keyPair.getPublicKey());
@@ -234,15 +235,15 @@ class AuthorityCertFactoryTest {
 
     @Test
     void testRefreshCert() throws IOException {
-        try (MockedStatic<AuthorityCertFactory> managerMock = Mockito.mockStatic(AuthorityCertFactory.class, CALLS_REAL_METHODS)) {
+        try (MockedStatic<AuthorityIdentityFactory> managerMock = Mockito.mockStatic(AuthorityIdentityFactory.class, CALLS_REAL_METHODS)) {
             FrameworkModel frameworkModel = new FrameworkModel();
-            AuthorityCertFactory certManager = new AuthorityCertFactory(frameworkModel);
-            managerMock.when(AuthorityCertFactory::signWithEcdsa).thenReturn(null);
-            managerMock.when(AuthorityCertFactory::signWithRsa).thenReturn(null);
+            AuthorityIdentityFactory certManager = new AuthorityIdentityFactory(frameworkModel);
+            managerMock.when(CertUtils::signWithEcdsa).thenReturn(null);
+            managerMock.when(CertUtils::signWithRsa).thenReturn(null);
 
             Assertions.assertNull(certManager.refreshCert());
 
-            managerMock.when(AuthorityCertFactory::signWithEcdsa).thenCallRealMethod();
+            managerMock.when(AuthorityIdentityFactory::signWithEcdsa).thenCallRealMethod();
 
             certManager.channel = Mockito.mock(Channel.class);
             try (MockedStatic<DubboCertificateServiceGrpc> mockGrpc = Mockito.mockStatic(DubboCertificateServiceGrpc.class, CALLS_REAL_METHODS)) {
@@ -268,11 +269,11 @@ class AuthorityCertFactoryTest {
                         .setCertPem("certPem")
                         .addTrustCerts("trustCerts")
                         .setExpireTime(123456).build());
-                CertPair certPair = certManager.refreshCert();
-                Assertions.assertNotNull(certPair);
-                Assertions.assertEquals("certPem", certPair.getCertificate());
-                Assertions.assertEquals("trustCerts", certPair.getTrustCerts());
-                Assertions.assertEquals(123456, certPair.getExpireTime());
+                IdentityInfo identityInfo = certManager.refreshCert();
+                Assertions.assertNotNull(identityInfo);
+                Assertions.assertEquals("certPem", identityInfo.getCertificate());
+                Assertions.assertEquals("trustCerts", identityInfo.getTrustCerts());
+                Assertions.assertEquals(123456, identityInfo.getExpireTime());
 
                 Mockito.when(stub.createCertificate(Mockito.any())).thenReturn(null);
                 Assertions.assertNull(certManager.refreshCert());

@@ -4,59 +4,47 @@ import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.Channel;
-import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.model.FrameworkModel;
-import org.apache.dubbo.security.cert.rule.authorization.AuthorizationMatcher;
-import org.apache.dubbo.security.cert.rule.authorization.AuthorizationPolicy;
+import org.apache.dubbo.rpc.model.ModuleModel;
 
 import javax.net.ssl.SSLPeerUnverifiedException;
 import javax.net.ssl.SSLSession;
 import java.net.InetSocketAddress;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateParsingException;
-import java.util.List;
 
-@Activate(group = "provider", order = Integer.MIN_VALUE + 10000)
-public class AuthenticationFilter implements Filter {
-    private static final Logger logger = LoggerFactory.getLogger(AuthenticationFilter.class);
+@Activate(group = "provider", order = Integer.MIN_VALUE + 9000)
+public class AuthenticationProviderFilter implements Filter {
+    private static final Logger logger = LoggerFactory.getLogger(AuthenticationProviderFilter.class);
+    private volatile AuthorityIdentityFactory authorityIdentityFactory;
+    private volatile AuthenticationGovernor authenticationGovernor;
 
-    private final FrameworkModel frameworkModel;
+    private final ModuleModel moduleModel;
 
-    private volatile AuthorityRuleSync authorityRuleSync;
-
-    public AuthenticationFilter(FrameworkModel frameworkModel) {
-        this.frameworkModel = frameworkModel;
+    public AuthenticationProviderFilter(ModuleModel moduleModel) {
+        this.moduleModel = moduleModel;
     }
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
-        obtainAuthorityRuleSync();
-        if (authorityRuleSync == null) {
+        obtainAuthorityIdentityFactory();
+        obtainAuthenticationGovernor();
+        if (authorityIdentityFactory == null || authenticationGovernor == null) {
             return invoker.invoke(invocation);
         }
 
-        Endpoints endpoints = getEndpoints(invocation);
+        IdentityInfo identityInfo = authorityIdentityFactory.generateIdentity();
 
-        if (endpoints == null) {
-            return invoker.invoke(invocation);
-        }
+        Endpoint endpoint = null;
+        invocation.getAttributes().put("endpoint", endpoint);
 
-        List<AuthorizationPolicy> rules = authorityRuleSync.getLatestAuthorizationPolicies();
-        if (rules == null || rules.isEmpty()) {
-            return invoker.invoke(invocation);
-        }
-
-        if (AuthorizationMatcher.match(rules, endpoints.getPeerEndpoint(), endpoints.getLocalEndpoint(), invocation)) {
-            return invoker.invoke(invocation);
-        } else {
-            return AsyncRpcResult.newDefaultAsyncResult(new RpcException("Unauthorized"), invocation);
-        }
+        return invoker.invoke(invocation);
     }
+
 
     private static Endpoints getEndpoints(Invocation invocation) {
         Endpoints endpoints = null;
@@ -104,27 +92,18 @@ public class AuthenticationFilter implements Filter {
         return endpoints;
     }
 
-    private static class Endpoints {
-        private final Endpoint localEndpoint;
-        private final Endpoint peerEndpoint;
 
-        public Endpoints(Endpoint localEndpoint, Endpoint peerEndpoint) {
-            this.localEndpoint = localEndpoint;
-            this.peerEndpoint = peerEndpoint;
-        }
-
-        public Endpoint getLocalEndpoint() {
-            return localEndpoint;
-        }
-
-        public Endpoint getPeerEndpoint() {
-            return peerEndpoint;
+    private void obtainAuthorityIdentityFactory() {
+        if (authorityIdentityFactory == null) {
+            authorityIdentityFactory = moduleModel.getApplicationModel().getFrameworkModel()
+                .getBeanFactory().getBean(AuthorityIdentityFactory.class);
         }
     }
 
-    private void obtainAuthorityRuleSync() {
-        if (authorityRuleSync == null) {
-            authorityRuleSync = frameworkModel.getBeanFactory().getBean(AuthorityRuleSync.class);
+    private void obtainAuthenticationGovernor() {
+        if (authenticationGovernor == null) {
+            authenticationGovernor = moduleModel.getApplicationModel().getFrameworkModel()
+                .getBeanFactory().getBean(AuthenticationGovernor.class);
         }
     }
 }

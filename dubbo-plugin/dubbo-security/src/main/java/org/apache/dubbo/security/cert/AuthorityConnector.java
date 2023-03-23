@@ -1,29 +1,36 @@
 package org.apache.dubbo.security.cert;
 
+import org.apache.dubbo.auth.v1alpha1.AuthorityServiceGrpc;
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.common.constants.LoggerCodeConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
+import org.apache.dubbo.common.utils.IOUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import io.grpc.Channel;
+import io.grpc.Metadata;
 import io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts;
 import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
 import io.grpc.netty.shaded.io.netty.handler.ssl.OpenSsl;
 import io.grpc.netty.shaded.io.netty.handler.ssl.SslProvider;
 import io.grpc.netty.shaded.io.netty.handler.ssl.util.InsecureTrustManagerFactory;
+import io.grpc.stub.AbstractStub;
 
 import javax.net.ssl.SSLException;
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.Provider;
 import java.security.Security;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import static io.grpc.stub.MetadataUtils.newAttachHeadersInterceptor;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_SSL_CERT_GENERATE_FAILED;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_SSL_CONNECT_INSECURE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_GENERATE_CERT_ISTIO;
@@ -45,7 +52,7 @@ public class AuthorityConnector {
     /**
      * Cert pair for current Dubbo instance
      */
-    protected volatile CertPair rootCertPair;
+    protected volatile IdentityInfo rootIdentityInfo;
 
     /**
      * Refresh cert pair for current Dubbo instance
@@ -58,7 +65,7 @@ public class AuthorityConnector {
 
         connect();
         ScopeBeanFactory beanFactory = frameworkModel.getBeanFactory();
-        beanFactory.registerBean(new AuthorityCertFactory(frameworkModel, certConfig, this));
+        beanFactory.registerBean(new AuthorityIdentityFactory(frameworkModel, certConfig, this));
         beanFactory.registerBean(new AuthorityRuleSync(frameworkModel, certConfig, this));
         beanFactory.registerBean(AuthenticationGovernor.class);
     }
@@ -119,7 +126,7 @@ public class AuthorityConnector {
     }
 
     public synchronized void disConnect() {
-        frameworkModel.getBeanFactory().getBean(AuthorityCertFactory.class).disConnect();
+        frameworkModel.getBeanFactory().getBean(AuthorityIdentityFactory.class).disConnect();
         frameworkModel.getBeanFactory().getBean(AuthorityRuleSync.class).disConnect();
         if (refreshFuture != null) {
             refreshFuture.cancel(true);
@@ -131,20 +138,22 @@ public class AuthorityConnector {
     }
 
     public boolean isConnected() {
-        return certConfig != null && rootChannel != null && rootCertPair != null;
+        return certConfig != null && rootChannel != null && rootIdentityInfo != null;
     }
 
-    protected CertPair generateCert() {
-        if (rootCertPair != null && !rootCertPair.isExpire()) {
-            return rootCertPair;
+    protected IdentityInfo generateCert() {
+        if (rootIdentityInfo != null && !rootIdentityInfo.isExpire()) {
+            return rootIdentityInfo;
         }
         synchronized (this) {
-            if (rootCertPair == null || rootCertPair.isExpire()) {
+            if (rootIdentityInfo == null || rootIdentityInfo.isExpire()) {
                 try {
                     logger.info("Try to generate cert from Dubbo Certificate Authority.");
-                    CertPair certFromRemote = CertServiceUtil.refreshCert(rootChannel, certConfig, "CLIENT");
+                    AuthorityServiceGrpc.AuthorityServiceBlockingStub stub = AuthorityServiceGrpc.newBlockingStub(rootChannel);
+                    stub = setHeaderIfNeed(stub, certConfig);
+                    IdentityInfo certFromRemote = CertServiceUtil.refreshCert(stub, "CLIENT");
                     if (certFromRemote != null) {
-                        rootCertPair = certFromRemote;
+                        rootIdentityInfo = certFromRemote;
                     } else {
                         logger.error(CONFIG_SSL_CERT_GENERATE_FAILED, "", "", "Generate Cert from Dubbo Certificate Authority failed.");
                     }
@@ -153,20 +162,69 @@ public class AuthorityConnector {
                 }
             }
         }
-        return rootCertPair;
+        return rootIdentityInfo;
     }
 
     public Channel generateChannel() throws SSLException {
         return NettyChannelBuilder.forTarget(certConfig.getRemoteAddress())
             .sslContext(
                 GrpcSslContexts.forClient()
-                    .trustManager(new ByteArrayInputStream(rootCertPair.getTrustCerts().getBytes(StandardCharsets.UTF_8)))
-                    .keyManager(new ByteArrayInputStream(rootCertPair.getCertificate().getBytes(StandardCharsets.UTF_8)),
-                        new ByteArrayInputStream(rootCertPair.getPrivateKey().getBytes(StandardCharsets.UTF_8)))
+                    .trustManager(new ByteArrayInputStream(rootIdentityInfo.getTrustCerts().getBytes(StandardCharsets.UTF_8)))
+                    .keyManager(new ByteArrayInputStream(rootIdentityInfo.getCertificate().getBytes(StandardCharsets.UTF_8)),
+                        new ByteArrayInputStream(rootIdentityInfo.getPrivateKey().getBytes(StandardCharsets.UTF_8)))
                     .sslProvider(findSslProvider())
                     .build())
             .build();
     }
+
+    private static AuthorityServiceGrpc.AuthorityServiceBlockingStub setHeaderIfNeed(
+        AuthorityServiceGrpc.AuthorityServiceBlockingStub stub, CertConfig certConfig) throws IOException {
+        if (certConfig == null) {
+            return stub;
+        }
+
+        String oidcTokenPath = certConfig.getOidcTokenPath();
+        String oidcTokenType = certConfig.getOidcTokenType();
+        if (StringUtils.isNotEmpty(oidcTokenPath)) {
+            Metadata header = new Metadata();
+            Metadata.Key<String> key = Metadata.Key.of("authorization", Metadata.ASCII_STRING_MARSHALLER);
+            header.put(key, "Bearer " +
+                IOUtils.read(new FileReader(oidcTokenPath))
+                    .replace("\n", "")
+                    .replace("\t", "")
+                    .replace("\r", "")
+                    .trim());
+
+            stub = stub.withInterceptors(newAttachHeadersInterceptor(header));
+            logger.info("Use oidc token from " + oidcTokenPath + " to connect to Dubbo Certificate Authority.");
+        } else {
+            logger.warn(CONFIG_SSL_CONNECT_INSECURE, "", "",
+                "Use insecure connection to connect to Dubbo Certificate Authority. Reason: No oidc token is provided.");
+        }
+
+        if (StringUtils.isNotEmpty(oidcTokenType)) {
+            Metadata header = new Metadata();
+            Metadata.Key<String> key = Metadata.Key.of("authorization-type", Metadata.ASCII_STRING_MARSHALLER);
+            header.put(key, oidcTokenType);
+            stub = stub.withInterceptors(newAttachHeadersInterceptor(header));
+        }
+
+        return stub;
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T extends AbstractStub> T setHeaders(T t) {
+        if (rootIdentityInfo == null) {
+            return t;
+        }
+
+        Metadata header = new Metadata();
+        Metadata.Key<String> key = Metadata.Key.of("authorization", Metadata.ASCII_STRING_MARSHALLER);
+        header.put(key, "Bearer " + rootIdentityInfo.getToken());
+
+        return  (T) t.withInterceptors(newAttachHeadersInterceptor(header));
+    }
+
 
     /**
      * Returns OpenSSL if available, otherwise returns the JDK provider.

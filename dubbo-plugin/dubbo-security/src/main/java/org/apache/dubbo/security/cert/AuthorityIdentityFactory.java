@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.security.cert;
 
+import org.apache.dubbo.auth.v1alpha1.AuthorityServiceGrpc;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
@@ -27,9 +28,9 @@ import java.util.concurrent.TimeUnit;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_SSL_CERT_GENERATE_FAILED;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_GENERATE_CERT_ISTIO;
 
-public class AuthorityCertFactory {
+public class AuthorityIdentityFactory {
 
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(AuthorityCertFactory.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(AuthorityIdentityFactory.class);
 
     private final FrameworkModel frameworkModel;
     private final AuthorityConnector connector;
@@ -41,9 +42,9 @@ public class AuthorityCertFactory {
      * Refresh cert pair for current Dubbo instance
      */
     protected volatile ScheduledFuture<?> refreshFuture;
-    protected volatile CertPair certPair;
+    protected volatile IdentityInfo identityInfo;
 
-    public AuthorityCertFactory(FrameworkModel frameworkModel, CertConfig certConfig, AuthorityConnector connector) {
+    public AuthorityIdentityFactory(FrameworkModel frameworkModel, CertConfig certConfig, AuthorityConnector connector) {
         this.frameworkModel = frameworkModel;
         this.certConfig = certConfig;
         this.connector = connector;
@@ -52,7 +53,7 @@ public class AuthorityCertFactory {
 
     private void connect() {
         // Try to generate cert from remote
-        generateCert();
+        generateIdentity();
         // Schedule refresh task
         scheduleRefresh();
     }
@@ -62,7 +63,7 @@ public class AuthorityCertFactory {
      */
     protected void scheduleRefresh() {
         FrameworkExecutorRepository repository = frameworkModel.getBeanFactory().getBean(FrameworkExecutorRepository.class);
-        refreshFuture = repository.getSharedScheduledExecutor().scheduleAtFixedRate(this::generateCert,
+        refreshFuture = repository.getSharedScheduledExecutor().scheduleAtFixedRate(this::generateIdentity,
             certConfig.getRefreshInterval(), certConfig.getRefreshInterval(), TimeUnit.MILLISECONDS);
     }
 
@@ -74,20 +75,22 @@ public class AuthorityCertFactory {
     }
 
     public boolean isConnected() {
-        return certConfig != null && certPair != null;
+        return certConfig != null && identityInfo != null;
     }
 
-    protected CertPair generateCert() {
-        if (certPair != null && !certPair.isExpire()) {
-            return certPair;
+    protected IdentityInfo generateIdentity() {
+        if (identityInfo != null && !identityInfo.isExpire()) {
+            return identityInfo;
         }
         synchronized (this) {
-            if (certPair == null || certPair.isExpire()) {
+            if (identityInfo == null || identityInfo.isExpire()) {
                 try {
                     logger.info("Try to generate cert from Dubbo Certificate Authority.");
-                    CertPair certFromRemote = CertServiceUtil.refreshCert(connector.generateChannel(), certConfig, "CONNECTION");
+                    AuthorityServiceGrpc.AuthorityServiceBlockingStub stub = AuthorityServiceGrpc.newBlockingStub(connector.generateChannel());
+                    stub = connector.setHeaders(stub);
+                    IdentityInfo certFromRemote = CertServiceUtil.refreshCert(stub, "CONNECTION");
                     if (certFromRemote != null) {
-                        certPair = certFromRemote;
+                        identityInfo = certFromRemote;
                     } else {
                         logger.error(CONFIG_SSL_CERT_GENERATE_FAILED, "", "", "Generate Cert from Dubbo Certificate Authority failed.");
                     }
@@ -96,6 +99,6 @@ public class AuthorityCertFactory {
                 }
             }
         }
-        return certPair;
+        return identityInfo;
     }
 }

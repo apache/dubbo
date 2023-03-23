@@ -16,19 +16,24 @@
  */
 package org.apache.dubbo.security.cert;
 
+import java.util.List;
 import java.util.Objects;
 
-public class CertPair {
+public class IdentityInfo {
     private final String privateKey;
     private final String certificate;
     private final String trustCerts;
     private final long expireTime;
+    private final String token;
+    private final List<String> trustedTokenPublicKeys;
 
-    public CertPair(String privateKey, String certificate, String trustCerts, long expireTime) {
+    public IdentityInfo(String privateKey, String certificate, String trustCerts, long expireTime, String token, List<String> trustedTokenPublicKeys) {
         this.privateKey = privateKey;
         this.certificate = certificate;
         this.trustCerts = trustCerts;
         this.expireTime = expireTime;
+        this.token = token;
+        this.trustedTokenPublicKeys = trustedTokenPublicKeys;
     }
 
     public String getPrivateKey() {
@@ -47,6 +52,14 @@ public class CertPair {
         return expireTime;
     }
 
+    public String getToken() {
+        return token;
+    }
+
+    public List<String> getTrustedTokenPublicKeys() {
+        return trustedTokenPublicKeys;
+    }
+
     public boolean isExpire() {
         return System.currentTimeMillis() > expireTime;
     }
@@ -59,8 +72,8 @@ public class CertPair {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        CertPair certPair = (CertPair) o;
-        return expireTime == certPair.expireTime && Objects.equals(privateKey, certPair.privateKey) && Objects.equals(certificate, certPair.certificate) && Objects.equals(trustCerts, certPair.trustCerts);
+        IdentityInfo identityInfo = (IdentityInfo) o;
+        return expireTime == identityInfo.expireTime && Objects.equals(privateKey, identityInfo.privateKey) && Objects.equals(certificate, identityInfo.certificate) && Objects.equals(trustCerts, identityInfo.trustCerts);
     }
 
     @Override

@@ -75,6 +75,7 @@ public class AuthorityRuleSync {
 
     private void observe0() throws IOException {
         RuleServiceGrpc.RuleServiceStub stub = RuleServiceGrpc.newStub(connector.generateChannel());
+        stub = connector.setHeaders(stub);
         requestStreamObserver = stub.observe(new Handler(this));
         requestStreamObserver.onNext(ObserveRequest.newBuilder()
             .setNonce("")

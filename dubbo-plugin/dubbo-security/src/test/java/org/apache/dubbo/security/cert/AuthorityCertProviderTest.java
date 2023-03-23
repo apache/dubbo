@@ -31,9 +31,9 @@ import java.util.concurrent.atomic.AtomicReference;
 class AuthorityCertProviderTest {
     @Test
     void testEnable() {
-        AtomicReference<AuthorityCertFactory> reference = new AtomicReference<>();
-        try (MockedConstruction<AuthorityCertFactory> construction =
-                 Mockito.mockConstruction(AuthorityCertFactory.class, (mock, context) -> {
+        AtomicReference<AuthorityIdentityFactory> reference = new AtomicReference<>();
+        try (MockedConstruction<AuthorityIdentityFactory> construction =
+                 Mockito.mockConstruction(AuthorityIdentityFactory.class, (mock, context) -> {
                      reference.set(mock);
                  })) {
             FrameworkModel frameworkModel = new FrameworkModel();
@@ -62,8 +62,8 @@ class AuthorityCertProviderTest {
             }
         };
         Thread.currentThread().setContextClassLoader(newClassLoader);
-        try (MockedConstruction<AuthorityCertFactory> construction =
-                 Mockito.mockConstruction(AuthorityCertFactory.class, (mock, context) -> {
+        try (MockedConstruction<AuthorityIdentityFactory> construction =
+                 Mockito.mockConstruction(AuthorityIdentityFactory.class, (mock, context) -> {
                      // ignore
                  })) {
             FrameworkModel frameworkModel = new FrameworkModel();
@@ -89,8 +89,8 @@ class AuthorityCertProviderTest {
             }
         };
         Thread.currentThread().setContextClassLoader(newClassLoader);
-        try (MockedConstruction<AuthorityCertFactory> construction =
-                 Mockito.mockConstruction(AuthorityCertFactory.class, (mock, context) -> {
+        try (MockedConstruction<AuthorityIdentityFactory> construction =
+                 Mockito.mockConstruction(AuthorityIdentityFactory.class, (mock, context) -> {
                      // ignore
                  })) {
             FrameworkModel frameworkModel = new FrameworkModel();
@@ -105,17 +105,17 @@ class AuthorityCertProviderTest {
 
     @Test
     void getProviderConnectionConfigTest() {
-        AtomicReference<AuthorityCertFactory> reference = new AtomicReference<>();
-        try (MockedConstruction<AuthorityCertFactory> construction =
-                 Mockito.mockConstruction(AuthorityCertFactory.class, (mock, context) -> {
+        AtomicReference<AuthorityIdentityFactory> reference = new AtomicReference<>();
+        try (MockedConstruction<AuthorityIdentityFactory> construction =
+                 Mockito.mockConstruction(AuthorityIdentityFactory.class, (mock, context) -> {
                      reference.set(mock);
                  })) {
             FrameworkModel frameworkModel = new FrameworkModel();
             AuthorityCertProvider provider = new AuthorityCertProvider(frameworkModel);
             Assertions.assertNull(provider.getProviderConnectionConfig(null));
 
-            CertPair certPair = new CertPair("privateKey", "publicKey", "trustCerts", 12345);
-            Mockito.when(reference.get().generateCert()).thenReturn(certPair);
+            IdentityInfo identityInfo = new IdentityInfo("privateKey", "publicKey", "trustCerts", 12345);
+            Mockito.when(reference.get().generateIdentity()).thenReturn(identityInfo);
             ProviderCert providerConnectionConfig = provider.getProviderConnectionConfig(null);
             Assertions.assertArrayEquals("privateKey".getBytes(), providerConnectionConfig.getPrivateKey());
             Assertions.assertArrayEquals("publicKey".getBytes(), providerConnectionConfig.getKeyCertChain());
@@ -128,17 +128,17 @@ class AuthorityCertProviderTest {
 
     @Test
     void getConsumerConnectionConfigTest() {
-        AtomicReference<AuthorityCertFactory> reference = new AtomicReference<>();
-        try (MockedConstruction<AuthorityCertFactory> construction =
-                 Mockito.mockConstruction(AuthorityCertFactory.class, (mock, context) -> {
+        AtomicReference<AuthorityIdentityFactory> reference = new AtomicReference<>();
+        try (MockedConstruction<AuthorityIdentityFactory> construction =
+                 Mockito.mockConstruction(AuthorityIdentityFactory.class, (mock, context) -> {
                      reference.set(mock);
                  })) {
             FrameworkModel frameworkModel = new FrameworkModel();
             AuthorityCertProvider provider = new AuthorityCertProvider(frameworkModel);
             Assertions.assertNull(provider.getConsumerConnectionConfig(null));
 
-            CertPair certPair = new CertPair("privateKey", "publicKey", "trustCerts", 12345);
-            Mockito.when(reference.get().generateCert()).thenReturn(certPair);
+            IdentityInfo identityInfo = new IdentityInfo("privateKey", "publicKey", "trustCerts", 12345);
+            Mockito.when(reference.get().generateIdentity()).thenReturn(identityInfo);
             Cert connectionConfig = provider.getConsumerConnectionConfig(null);
             Assertions.assertArrayEquals("privateKey".getBytes(), connectionConfig.getPrivateKey());
             Assertions.assertArrayEquals("publicKey".getBytes(), connectionConfig.getKeyCertChain());
