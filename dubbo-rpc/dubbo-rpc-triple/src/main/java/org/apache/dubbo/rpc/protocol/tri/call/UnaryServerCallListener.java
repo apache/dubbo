@@ -73,7 +73,7 @@ public class UnaryServerCallListener extends AbstractServerCallListener {
             isNeedReturnException = true;
             TriRpcStatus status = TriRpcStatus.getStatus((Exception) value);
             exceptionCode = status.code.code;
-            if (status == TriRpcStatus.UNKNOWN) {
+            if (exceptionCode == TriRpcStatus.UNKNOWN.code.code) {
                 exceptionCode = RpcException.BIZ_EXCEPTION;
             }
             responseObserver.setExceptionCode(exceptionCode);

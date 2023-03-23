@@ -239,6 +239,10 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
                 return reserved.get(TripleHeaderEnum.TRI_HEADER_CONVERT.getHeader());
             });
             final TriRpcStatus detailStatus;
+            final Map<String, Object> exceptionAttachments = exceptionHeadersToMap(reserved, () -> {
+                return reserved.get(TripleHeaderEnum.TRI_HEADER_EXCEPTION_CODE.getHeader());
+            });
+            attachments.putAll(exceptionAttachments);
             final TriRpcStatus statusFromTrailers = getStatusFromTrailers(reserved);
             if (statusFromTrailers != null) {
                 detailStatus = statusFromTrailers;

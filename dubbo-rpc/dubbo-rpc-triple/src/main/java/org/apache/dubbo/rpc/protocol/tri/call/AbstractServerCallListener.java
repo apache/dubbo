@@ -83,6 +83,9 @@ public abstract class AbstractServerCallListener implements AbstractServerCall.L
                     responseObserver.onCompleted(TriRpcStatus.DEADLINE_EXCEEDED);
                     return;
                 }
+                if (r.getValue() instanceof Throwable) {
+                    responseObserver.setNeedReturnException(true);
+                }
                 onReturn(r.getValue());
             });
         } catch (Exception e) {

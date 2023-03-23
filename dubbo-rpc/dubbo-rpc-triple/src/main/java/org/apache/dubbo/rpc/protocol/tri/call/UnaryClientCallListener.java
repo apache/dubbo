@@ -20,6 +20,7 @@ package org.apache.dubbo.rpc.protocol.tri.call;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.DeadlineFuture;
+import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 
 import java.util.Map;
 
@@ -42,7 +43,8 @@ public class UnaryClientCallListener implements ClientCall.Listener {
         AppResponse result = new AppResponse();
         result.setObjectAttachments(trailers);
         if (status.isOk()) {
-            if (appResponse instanceof Exception) {
+            Object exceptionCode = trailers.get(TripleHeaderEnum.TRI_HEADER_EXCEPTION_CODE.getHeader());
+            if (appResponse instanceof Exception && exceptionCode == null) {
                 result.setException((Exception) appResponse);
             } else {
                 result.setValue(appResponse);

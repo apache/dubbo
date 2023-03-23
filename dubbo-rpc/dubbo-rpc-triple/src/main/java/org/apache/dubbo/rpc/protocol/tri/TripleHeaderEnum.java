@@ -55,7 +55,11 @@ public enum TripleHeaderEnum {
     static final Set<String> excludeAttachmentsSet = new HashSet<>();
 
     static {
+        Set<String> needToDeliveryHeaders = needToDeliveryHeaders();
         for (TripleHeaderEnum item : TripleHeaderEnum.values()) {
+            if (needToDeliveryHeaders.contains(item.getHeader())) {
+                continue;
+            }
             enumMap.put(item.getHeader(), item);
         }
         excludeAttachmentsSet.add(CommonConstants.GROUP_KEY);
@@ -70,6 +74,12 @@ public enum TripleHeaderEnum {
             excludeAttachmentsSet.add(value.value().toString());
         }
 
+    }
+
+    public static Set<String> needToDeliveryHeaders() {
+        Set<String> set = new HashSet<>();
+        set.add(TRI_HEADER_EXCEPTION_CODE.getHeader());
+        return set;
     }
 
     private final String header;

@@ -45,6 +45,26 @@ public abstract class AbstractH2TransportListener implements H2TransportListener
      * @param trailers the metadata from remote
      * @return KV pairs map
      */
+    protected Map<String, Object> exceptionHeadersToMap(Map<String, String> reserved, Supplier<Object> convertUpperHeaderSupplier) {
+        if (reserved == null) {
+            return Collections.emptyMap();
+        }
+        Map<String, Object> attachments = new HashMap<>(reserved.size());
+        for (Map.Entry<String, String> header : reserved.entrySet()) {
+            String key = header.getKey();
+            if (key.endsWith(TripleHeaderEnum.TRI_HEADER_EXCEPTION_CODE.getHeader())) {
+                try {
+                    attachments.put(key, header.getValue());
+                } catch (Exception e) {
+                    LOGGER.error(PROTOCOL_FAILED_PARSE, "", "", "Failed to parse response attachment key=" + key, e);
+                }
+            } else {
+                attachments.put(key, header.getValue().toString());
+            }
+        }
+        return attachments;
+    }
+
     protected Map<String, Object> headersToMap(Http2Headers trailers, Supplier<Object> convertUpperHeaderSupplier) {
         if (trailers == null) {
             return Collections.emptyMap();
@@ -89,7 +109,6 @@ public abstract class AbstractH2TransportListener implements H2TransportListener
         }
         return attachments;
     }
-
 
     protected Map<String, String> filterReservedHeaders(Http2Headers trailers) {
         if (trailers == null) {
