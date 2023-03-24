@@ -45,7 +45,7 @@ class DeadlineFutureTest {
         DeadlineFuture success = DeadlineFuture.newFuture(service, method, address, 1000,
             ImmediateEventExecutor.INSTANCE);
         AppResponse response = new AppResponse();
-        success.received(TriRpcStatus.OK, response);
+        success.received(TriRpcStatus.OK, () -> response);
         AppResponse response1 = success.get();
         Assertions.assertEquals(response, response1);
     }

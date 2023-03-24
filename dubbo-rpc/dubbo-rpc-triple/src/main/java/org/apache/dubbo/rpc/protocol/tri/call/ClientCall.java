@@ -43,9 +43,9 @@ public interface ClientCall {
         /**
          * Callback when message received.
          *
-         * @param message message received
+         * @param messageProducer message producer
          */
-        void onMessage(Object message);
+        void onMessage(MessageProducer messageProducer);
 
         /**
          * Callback when call is finished.
@@ -109,5 +109,11 @@ public interface ClientCall {
      * @param compression compression algorithm
      */
     void setCompression(String compression);
+
+    interface MessageProducer {
+
+        Object getMessage() throws Throwable;
+
+    }
 
 }
