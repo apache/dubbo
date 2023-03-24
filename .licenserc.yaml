@@ -98,6 +98,7 @@ header:
     - 'dubbo-native/src/main/java/org/apache/dubbo/aot/generate/BasicJsonWriter.java'
     - 'dubbo-native/src/main/java/org/apache/dubbo/aot/generate/ExecutableMode.java'
     - 'dubbo-native/src/main/java/org/apache/dubbo/aot/generate/MemberCategory.java'
+    - 'dubbo-annotation-processor/src/main/java/org/apache/dubbo/annotation/permit/**'
 
   comment: on-failure
 
