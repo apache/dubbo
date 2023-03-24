@@ -135,12 +135,12 @@
         <protostuff_version>1.8.0</protostuff_version>
         <envoy_api_version>0.1.35</envoy_api_version>
         <micrometer.version>1.10.5</micrometer.version>
-        
+
         <micrometer-tracing.version>1.0.3</micrometer-tracing.version>
         <t_digest.version>3.3</t_digest.version>
         <prometheus_client.version>0.16.0</prometheus_client.version>
         <reactive.version>1.0.4</reactive.version>
-        <reactor.version>3.5.3</reactor.version>
+        <reactor.version>3.5.4</reactor.version>
         <okhttp_version>3.14.2</okhttp_version>
 
         <rs_api_version>2.1.1</rs_api_version>
@@ -190,7 +190,7 @@
         <portlet_version>2.0</portlet_version>
         <maven_flatten_version>1.1.0</maven_flatten_version>
         <commons_compress_version>1.22</commons_compress_version>
-        <revision>3.2.0-beta.6-SNAPSHOT</revision>
+        <revision>3.2.0-beta.7-SNAPSHOT</revision>
     </properties>
 
     <dependencyManagement>

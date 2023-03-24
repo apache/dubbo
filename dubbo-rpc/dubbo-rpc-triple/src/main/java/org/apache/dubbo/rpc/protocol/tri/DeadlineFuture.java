@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 public class DeadlineFuture extends CompletableFuture<AppResponse> {
 
@@ -80,7 +81,7 @@ public class DeadlineFuture extends CompletableFuture<AppResponse> {
         return future;
     }
 
-    public void received(TriRpcStatus status, AppResponse appResponse) {
+    public void received(TriRpcStatus status, Supplier<AppResponse> appResponse) {
         if (status.code != TriRpcStatus.Code.DEADLINE_EXCEEDED) {
             // decrease Time
             if (!timeoutTask.isCancelled()) {
@@ -88,11 +89,13 @@ public class DeadlineFuture extends CompletableFuture<AppResponse> {
             }
         }
         if (getExecutor() != null) {
-            getExecutor().execute(() -> doReceived(status, appResponse));
+            getExecutor().execute(() -> doReceived(status, appResponse.get()));
         } else {
-            doReceived(status, appResponse);
+            doReceived(status, appResponse.get());
         }
-    }    private static final GlobalResourceInitializer<Timer> TIME_OUT_TIMER = new GlobalResourceInitializer<>(
+    }
+
+    private static final GlobalResourceInitializer<Timer> TIME_OUT_TIMER = new GlobalResourceInitializer<>(
         () -> new HashedWheelTimer(new NamedThreadFactory("dubbo-future-timeout", true), 30,
             TimeUnit.MILLISECONDS), DeadlineFuture::destroy);
 

@@ -14,15 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.qos.common;
+package org.apache.dubbo.qos.api;
+
+import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.common.utils.StringUtils;
 
 import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.function.Predicate;
-
-import org.apache.dubbo.common.utils.NetUtils;
-import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.qos.permission.PermissionLevel;
 
 public class QosConfiguration {
     private String welcome;

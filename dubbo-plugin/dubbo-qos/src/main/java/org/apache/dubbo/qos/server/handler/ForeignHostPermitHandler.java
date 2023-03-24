@@ -21,7 +21,7 @@ import java.net.InetSocketAddress;
 import java.util.function.Predicate;
 
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.qos.common.QosConfiguration;
+import org.apache.dubbo.qos.api.QosConfiguration;
 import org.apache.dubbo.qos.common.QosConstants;
 
 import io.netty.buffer.ByteBuf;

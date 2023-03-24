@@ -19,13 +19,15 @@ package org.apache.dubbo.qos.command;
 import io.netty.channel.Channel;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.qos.command.annotation.Cmd;
+import org.apache.dubbo.qos.api.BaseCommand;
+import org.apache.dubbo.qos.api.CommandContext;
+import org.apache.dubbo.qos.api.PermissionLevel;
+import org.apache.dubbo.qos.api.Cmd;
 import org.apache.dubbo.qos.command.exception.NoSuchCommandException;
 import org.apache.dubbo.qos.command.exception.PermissionDenyException;
 import org.apache.dubbo.qos.common.QosConstants;
 import org.apache.dubbo.qos.permission.DefaultAnonymousAccessPermissionChecker;
 import org.apache.dubbo.qos.permission.PermissionChecker;
-import org.apache.dubbo.qos.permission.PermissionLevel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.util.Arrays;
