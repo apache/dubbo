@@ -102,12 +102,12 @@ public class DubboCodec extends ExchangeCodec {
                         DecodeableRpcResult result;
                         if (channel.getUrl().getParameter(DECODE_IN_IO_THREAD_KEY, DEFAULT_DECODE_IN_IO_THREAD)) {
                             result = new DecodeableRpcResult(channel, res, is,
-                                (Invocation) getRequestData(id), proto);
+                                (Invocation) getRequestData(channel, res, id), proto);
                             result.decode();
                         } else {
                             result = new DecodeableRpcResult(channel, res,
                                 new UnsafeByteArrayInputStream(readMessageData(is)),
-                                (Invocation) getRequestData(id), proto);
+                                (Invocation) getRequestData(channel, res, id), proto);
                         }
                         data = result;
                     }
