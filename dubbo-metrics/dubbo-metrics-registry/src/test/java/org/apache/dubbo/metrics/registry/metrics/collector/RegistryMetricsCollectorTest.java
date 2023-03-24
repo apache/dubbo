@@ -125,34 +125,50 @@ class RegistryMetricsCollectorTest {
         Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_REGISTER, MetricsKey.METRIC_RT_SUM).targetKey()), c1 + c2);
     }
 
-    @Test
-    void testServicePushMetrics() throws InterruptedException {
 
-        TimePair timePair = TimePair.start();
-        GlobalMetricsEventMulticaster eventMulticaster = applicationModel.getBeanFactory().getOrRegisterBean(GlobalMetricsEventMulticaster.class);
+    @Test
+    void testServicePushMetrics() {
+
+        applicationModel.getBeanFactory().getOrRegisterBean(Dispatcher.class);
         RegistryMetricsCollector collector = applicationModel.getBeanFactory().getOrRegisterBean(RegistryMetricsCollector.class);
         collector.setCollectEnabled(true);
         String serviceName = "demo.gameService";
 
-        eventMulticaster.publishEvent(new RegistryEvent.MetricsServiceRegisterEvent(applicationModel, timePair,serviceName,2));
-        List<MetricSample> metricSamples = collector.collect();
+        RegistryEvent registryEvent = new RegistryEvent.MetricsServiceRegisterEvent(applicationModel, serviceName,2);
+        MetricsEventBus.post(registryEvent,
+            () -> {
+                List<MetricSample> metricSamples = collector.collect();
 
-        // push success +1
-        Assertions.assertEquals(1, metricSamples.size());
-        Assertions.assertTrue(metricSamples.get(0) instanceof GaugeMetricSample);
+                // push success +1
+                Assertions.assertEquals(1, metricSamples.size());
+                Assertions.assertTrue(metricSamples.get(0) instanceof GaugeMetricSample);
+                Assertions.assertEquals(metricSamples.get(0).getName(), MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS.getName());
+                Assertions.assertEquals(metricSamples.get(0).getTags().get("interface"), serviceName);
+                return null;
+            }
+        );
 
-        eventMulticaster.publishFinishEvent(new RegistryEvent.MetricsServiceRegisterEvent(applicationModel, timePair,serviceName,2));
         // push finish rt +1
-        metricSamples = collector.collect();
+        List<MetricSample> metricSamples = collector.collect();
         //num(total+success) + rt(5) = 7
         Assertions.assertEquals(7, metricSamples.size());
-        long c1 = timePair.calc();
-        TimePair lastTimePair = TimePair.start();
-        eventMulticaster.publishEvent(new RegistryEvent.MetricsServiceRegisterEvent(applicationModel, lastTimePair,serviceName,2));
-        Thread.sleep(50);
+
+        long c1 = registryEvent.getTimePair().calc();
+        registryEvent = new RegistryEvent.MetricsServiceRegisterEvent(applicationModel, serviceName,2);
+        TimePair lastTimePair = registryEvent.getTimePair();
+        MetricsEventBus.post(registryEvent,
+            () -> {
+                try {
+                    Thread.sleep(50);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                return null;
+            }, Objects::nonNull
+        );
         // push error rt +1
-        eventMulticaster.publishErrorEvent(new RegistryEvent.MetricsServiceRegisterEvent(applicationModel, lastTimePair,serviceName,2));
         long c2 = lastTimePair.calc();
+
         metricSamples = collector.collect();
 
         // num(total+success+error) + rt(5)
