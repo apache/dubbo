@@ -26,31 +26,38 @@ import java.util.Map;
 public class UnaryClientCallListener implements ClientCall.Listener {
 
     private final DeadlineFuture future;
-    private Object appResponse;
+    private ClientCall.MessageProducer messageProducer;
 
     public UnaryClientCallListener(DeadlineFuture deadlineFuture) {
         this.future = deadlineFuture;
     }
 
     @Override
-    public void onMessage(Object message) {
-        this.appResponse = message;
+    public void onMessage(ClientCall.MessageProducer messageProducer) {
+        this.messageProducer = messageProducer;
     }
 
     @Override
     public void onClose(TriRpcStatus status, Map<String, Object> trailers) {
-        AppResponse result = new AppResponse();
-        result.setObjectAttachments(trailers);
-        if (status.isOk()) {
-            if (appResponse instanceof Exception) {
-                result.setException((Exception) appResponse);
+        future.received(status, () -> {
+            AppResponse result = new AppResponse();
+            result.setObjectAttachments(trailers);
+            if (status.isOk()) {
+                try {
+                    Object appResponse = messageProducer.getMessage();
+                    if (appResponse instanceof Exception) {
+                        result.setException((Exception) appResponse);
+                    } else {
+                        result.setValue(appResponse);
+                    }
+                } catch (Throwable e) {
+                    result.setException(e);
+                }
             } else {
-                result.setValue(appResponse);
+                result.setException(status.asException());
             }
-         } else {
-            result.setException(status.asException());
-        }
-        future.received(status, result);
+            return result;
+        });
     }
 
     @Override

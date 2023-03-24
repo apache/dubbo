@@ -37,6 +37,8 @@ public class ExecutorUtil {
         new LinkedBlockingQueue<Runnable>(100),
         new NamedThreadFactory("Close-ExecutorService-Timer", true));
 
+    private static final Executor DIRECT_EXECUTOR = Runnable::run;
+
     public static boolean isTerminated(Executor executor) {
         if (executor instanceof ExecutorService) {
             if (((ExecutorService) executor).isTerminated()) {
@@ -134,5 +136,9 @@ public class ExecutorUtil {
         if (future != null && !future.isCancelled()) {
             future.cancel(true);
         }
+    }
+
+    public static Executor directExecutor() {
+        return DIRECT_EXECUTOR;
     }
 }

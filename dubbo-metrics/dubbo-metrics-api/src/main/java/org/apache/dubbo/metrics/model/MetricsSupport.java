@@ -15,64 +15,44 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.metrics.registry.collector.stat;
+package org.apache.dubbo.metrics.model;
 
-import org.apache.dubbo.metrics.model.Metric;
+import org.apache.dubbo.common.Version;
+import org.apache.dubbo.metrics.exception.MetricsException;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_APPLICATION_NAME;
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_APPLICATION_VERSION_KEY;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_HOSTNAME;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_IP;
 import static org.apache.dubbo.common.utils.NetUtils.getLocalHost;
 import static org.apache.dubbo.common.utils.NetUtils.getLocalHostName;
 
-/**
- * Metric class for service.
- */
-public class ServiceKeyMetric implements Metric {
-    private final String applicationName;
-    private final String serviceKey;
+public class MetricsSupport {
 
-    public ServiceKeyMetric(String applicationName, String serviceKey) {
-        this.applicationName = applicationName;
-        this.serviceKey = serviceKey;
-    }
+    private static final String version = Version.getVersion();
+    private static final String commitId = Version.getLastCommitId();
 
-    public Map<String, String> getTags() {
+    public static Map<String, String> applicationTags(String applicationName) {
         Map<String, String> tags = new HashMap<>();
         tags.put(TAG_IP, getLocalHost());
         tags.put(TAG_HOSTNAME, getLocalHostName());
         tags.put(TAG_APPLICATION_NAME, applicationName);
-        tags.put(TAG_INTERFACE_KEY, serviceKey);
+        tags.put(TAG_APPLICATION_VERSION_KEY, version);
+        tags.put(MetricsKey.METADATA_GIT_COMMITID_METRIC.getName(), commitId);
         return tags;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        ServiceKeyMetric that = (ServiceKeyMetric) o;
-
-        if (!applicationName.equals(that.applicationName)) return false;
-        return serviceKey.equals(that.serviceKey);
-    }
-
-    @Override
-    public int hashCode() {
-        int result = applicationName.hashCode();
-        result = 31 * result + serviceKey.hashCode();
-        return result;
-    }
-
-    @Override
-    public String toString() {
-        return "ServiceKeyMetric{" +
-            "applicationName='" + applicationName + '\'' +
-            ", serviceKey='" + serviceKey + '\'' +
-            '}';
+    public static Map<String, String> serviceTags(String appAndServiceName) {
+        String[] keys = appAndServiceName.split("_");
+        if (keys.length != 2) {
+            throw new MetricsException("Error service name: " + appAndServiceName);
+        }
+        Map<String, String> tags = applicationTags(keys[0]);
+        tags.put(TAG_INTERFACE_KEY, keys[1]);
+        return tags;
     }
 }
