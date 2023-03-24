@@ -592,7 +592,7 @@ public final class NetUtils {
         try {
             HOST_NAME= InetAddress.getLocalHost().getHostName();
         } catch (UnknownHostException e) {
-            HOST_NAME= getLocalAddress().getHostName();
+            HOST_NAME= Optional.ofNullable(getLocalAddress()).map(k->k.getHostName()).orElse(null);
         }
         return HOST_NAME;
     }
