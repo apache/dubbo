@@ -18,6 +18,7 @@
 package org.apache.dubbo.metrics.event;
 
 import org.apache.dubbo.metrics.model.TimePair;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 /**
  * Mark certain types of events, allow automatic recording of start and end times, and provide time pairs
@@ -26,7 +27,7 @@ public abstract class TimeCounterEvent extends MetricsEvent {
 
     private final TimePair timePair;
 
-    public TimeCounterEvent(Object source) {
+    public TimeCounterEvent(ApplicationModel source) {
         super(source);
         this.timePair = TimePair.start();
     }

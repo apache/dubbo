@@ -94,7 +94,7 @@ public class AggregateMetricsCollector implements MetricsCollector, MetricsListe
 
 
     private void onRequestEvent(MethodEvent event) {
-        MethodMetric metric = (MethodMetric) event.getSource();
+        MethodMetric metric =  event.getMethodMetric();
 
         String type = event.getType();
 

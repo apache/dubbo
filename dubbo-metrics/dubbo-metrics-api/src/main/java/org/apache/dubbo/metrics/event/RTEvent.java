@@ -17,15 +17,19 @@
 
 package org.apache.dubbo.metrics.event;
 
+import org.apache.dubbo.rpc.model.ApplicationModel;
+
 /**
  * RtEvent.
  */
 public class RTEvent extends MetricsEvent {
     private Long rt;
+    private Object metric;
 
-    public RTEvent(Object source, Long rt) {
-        super(source);
+    public RTEvent(ApplicationModel applicationModel, Object metric, Long rt) {
+        super(applicationModel);
         this.rt = rt;
+        this.metric = metric;
     }
 
     public Long getRt() {

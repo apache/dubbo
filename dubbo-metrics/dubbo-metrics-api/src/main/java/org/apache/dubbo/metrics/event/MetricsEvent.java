@@ -20,8 +20,6 @@ package org.apache.dubbo.metrics.event;
 import org.apache.dubbo.metrics.model.MethodMetric;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import java.util.Optional;
-
 /**
  * BaseMetricsEvent.
  */
@@ -30,17 +28,15 @@ public abstract class MetricsEvent {
     /**
      * Metric object. (eg. {@link MethodMetric})
      */
-    protected transient Object source;
+    protected transient ApplicationModel source;
     private boolean available = true;
 
     @SuppressWarnings({"unchecked"})
-    public MetricsEvent(Object source) {
+    public MetricsEvent(ApplicationModel source) {
         if (source == null) {
             this.source = ApplicationModel.defaultModel();
+            // Appears only in unit tests
             this.available = false;
-        } else if (source instanceof Optional) {
-            // ApplicationModel is often empty in testcase scene
-            this.source = ((Optional<ApplicationModel>) source).orElse(ApplicationModel.defaultModel());
         } else {
             this.source = source;
         }

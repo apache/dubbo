@@ -17,14 +17,16 @@
 
 package org.apache.dubbo.metrics.event;
 
+import org.apache.dubbo.rpc.model.ApplicationModel;
+
 /**
  * EmptyEvent, do nothing.
  */
 public class EmptyEvent extends MetricsEvent {
 
-    private static final EmptyEvent empty = new EmptyEvent(new Object());
+    private static final EmptyEvent empty = new EmptyEvent(null);
 
-    public EmptyEvent(Object source) {
+    private EmptyEvent(ApplicationModel source) {
         super(source);
     }
 
