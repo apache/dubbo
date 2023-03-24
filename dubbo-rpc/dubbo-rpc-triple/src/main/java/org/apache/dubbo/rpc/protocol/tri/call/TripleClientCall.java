@@ -77,21 +77,16 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
             return;
         }
         try {
-            TripleMessageProducer messageProducer = TripleMessageProducer.withSupplier(() ->
-                    requestMetadata.packableMethod.parseResponse(message));
-            listener.onMessage(messageProducer);
+            final Object unpacked = requestMetadata.packableMethod.parseResponse(message);
+            listener.onMessage(unpacked);
         } catch (Throwable t) {
-            onDeserializeError(t);
+            TriRpcStatus status = TriRpcStatus.INTERNAL.withDescription("Deserialize response failed")
+                .withCause(t);
+            cancelByLocal(status.asException());
+            listener.onClose(status,null);
+            LOGGER.error(PROTOCOL_FAILED_RESPONSE, "", "", String.format("Failed to deserialize triple response, service=%s, method=%s,connection=%s",
+                    connectionClient, requestMetadata.service, requestMetadata.method.getMethodName()), t);
         }
-    }
-
-    private void onDeserializeError(Throwable t){
-        TriRpcStatus status = TriRpcStatus.INTERNAL.withDescription("Deserialize response failed")
-            .withCause(t);
-        cancelByLocal(status.asException());
-        listener.onClose(status,null);
-        LOGGER.error(PROTOCOL_FAILED_RESPONSE, "", "", String.format("Failed to deserialize triple response, service=%s, method=%s,connection=%s",
-            connectionClient, requestMetadata.service, requestMetadata.method.getMethodName()), t);
     }
 
     @Override

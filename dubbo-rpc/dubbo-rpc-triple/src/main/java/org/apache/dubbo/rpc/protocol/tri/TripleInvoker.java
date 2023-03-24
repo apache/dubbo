@@ -24,7 +24,6 @@ import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.stream.StreamObserver;
-import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.remoting.api.connection.AbstractConnectionClient;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.AsyncRpcResult;
@@ -133,8 +132,6 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         try {
             switch (methodDescriptor.getRpcType()) {
                 case UNARY:
-                    call = new TripleClientCall(connectionClient, ExecutorUtil.directExecutor(),
-                        getUrl().getOrDefaultFrameworkModel(), writeQueue);
                     result = invokeUnary(methodDescriptor, invocation, call);
                     break;
                 case SERVER_STREAM:
