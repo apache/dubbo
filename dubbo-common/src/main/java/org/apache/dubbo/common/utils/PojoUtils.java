@@ -506,6 +506,17 @@ public class PojoUtils {
                 }
 
                 history.put(pojo, dest);
+
+                Map<String, Type> mapGeneric = new HashMap<>(8);
+                TypeVariable<? extends Class<?>>[] typeParameters = type.getTypeParameters();
+                if(genericType instanceof ParameterizedType && typeParameters.length > 0) {
+                    ParameterizedType parameterizedType = (ParameterizedType)genericType;
+                    Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
+                    for (int i = 0; i < typeParameters.length; i++) {
+                        mapGeneric.put(typeParameters[i].getTypeName(), actualTypeArguments[i]);
+                    }
+                }
+
                 for (Map.Entry<Object, Object> entry : map.entrySet()) {
                     Object key = entry.getKey();
                     if (key instanceof String) {
@@ -518,8 +529,20 @@ public class PojoUtils {
                                 if (!method.isAccessible()) {
                                     method.setAccessible(true);
                                 }
-                                Type ptype = method.getGenericParameterTypes()[0];
-                                value = realize0(value, method.getParameterTypes()[0], ptype, history);
+                                Type containType = mapGeneric.get(field.getGenericType().getTypeName());
+                                if(containType != null) {
+                                    //is generic
+                                    if(containType instanceof ParameterizedType) {
+                                        value = realize0(value, (Class<?>) ((ParameterizedType)containType).getRawType(), containType, history);
+                                    }
+                                    else {
+                                        value = realize0(value, (Class<?>) containType, containType, history);
+                                    }
+                                }
+                                else {
+                                    Type ptype = method.getGenericParameterTypes()[0];
+                                    value = realize0(value, method.getParameterTypes()[0], ptype, history);
+                                }
                                 try {
                                     method.invoke(dest, value);
                                 } catch (Exception e) {
@@ -672,10 +695,16 @@ public class PojoUtils {
         if (CLASS_FIELD_CACHE.containsKey(cls) && CLASS_FIELD_CACHE.get(cls).containsKey(fieldName)) {
             return CLASS_FIELD_CACHE.get(cls).get(fieldName);
         }
-        try {
-            result = cls.getDeclaredField(fieldName);
-            result.setAccessible(true);
-        } catch (NoSuchFieldException e) {
+        for(Class<?> acls = cls; acls != null; acls = acls.getSuperclass()) {
+            try {
+                result = acls.getDeclaredField(fieldName);
+                if (!Modifier.isPublic(result.getModifiers())) {
+                    result.setAccessible(true);
+                }
+            } catch (NoSuchFieldException e) {
+            }
+        }
+        if(result == null) {
             for (Field field : cls.getFields()) {
                 if (fieldName.equals(field.getName()) && ReflectUtils.isPublicInstanceField(field)) {
                     result = field;
@@ -683,6 +712,7 @@ public class PojoUtils {
                 }
             }
         }
+
         if (result != null) {
             ConcurrentMap<String, Field> fields = CLASS_FIELD_CACHE.computeIfAbsent(cls, k -> new ConcurrentHashMap<>());
             fields.putIfAbsent(fieldName, result);

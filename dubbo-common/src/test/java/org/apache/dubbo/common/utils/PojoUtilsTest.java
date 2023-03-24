@@ -34,11 +34,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import com.alibaba.fastjson.JSON;
 import org.apache.dubbo.common.model.Person;
 import org.apache.dubbo.common.model.SerializablePerson;
 import org.apache.dubbo.common.model.User;
 import org.apache.dubbo.common.model.person.BigPerson;
 import org.apache.dubbo.common.model.person.FullAddress;
+import org.apache.dubbo.common.model.person.PersonGenericInfo;
 import org.apache.dubbo.common.model.person.PersonInfo;
 import org.apache.dubbo.common.model.person.PersonMap;
 import org.apache.dubbo.common.model.person.PersonStatus;
@@ -788,6 +790,64 @@ class PojoUtilsTest {
         jsonObject.put("personName", "hand");
         Object result = PojoUtils.realize(jsonObject, PersonMap.class);
         assertEquals(PersonMap.class, result.getClass());
+    }
+
+
+    public PersonGenericInfo<PersonInfo> createGenericPersonInfo() {
+        PersonInfo dataPerson = new PersonInfo();
+        dataPerson.setName("testName");
+
+        PersonGenericInfo<PersonInfo> ret = new PersonGenericInfo();
+        ret.setName("myname");
+        ret.setData(dataPerson);
+        return ret;
+    }
+    public PersonGenericInfo<PersonGenericInfo<PersonInfo>> createGeneric2PersonInfo() {
+        PersonGenericInfo<PersonGenericInfo<PersonInfo>> ret = new PersonGenericInfo();
+        ret.setName("myname");
+        ret.setData(createGenericPersonInfo());
+        return ret;
+    }
+    @Test
+    public void testJSONObjectToPersonGenericPojo() throws NoSuchMethodException {
+        {
+            PersonGenericInfo<PersonInfo> genericPersonInfo = createGenericPersonInfo();
+
+            Object o = JSON.toJSON(genericPersonInfo);
+            {
+                PersonGenericInfo personInfo = (PersonGenericInfo) PojoUtils.realize(o, PersonGenericInfo.class);
+
+                assertEquals("myname", personInfo.getName());
+                assertTrue(personInfo.getData() instanceof Map);
+            }
+            {
+                Type[] createGenericPersonInfos = ReflectUtils.getReturnTypes(PojoUtilsTest.class.getMethod("createGenericPersonInfo"));
+                PersonGenericInfo personInfo = (PersonGenericInfo) PojoUtils.realize(o, (Class)createGenericPersonInfos[0], createGenericPersonInfos[1]);
+
+                assertEquals("myname", personInfo.getName());
+                assertEquals(personInfo.getData().getClass(), PersonInfo.class);
+                assertEquals("testName", ((PersonInfo)personInfo.getData()).getName());
+            }
+        }
+        {
+            PersonGenericInfo<PersonGenericInfo<PersonInfo>> generic2PersonInfo = createGeneric2PersonInfo();
+            Object o = JSON.toJSON(generic2PersonInfo);
+            {
+                PersonGenericInfo personInfo = (PersonGenericInfo) PojoUtils.realize(o, PersonGenericInfo.class);
+
+                assertEquals("myname", personInfo.getName());
+                assertTrue(personInfo.getData() instanceof Map);
+            }
+            {
+                Type[] createGenericPersonInfos = ReflectUtils.getReturnTypes(PojoUtilsTest.class.getMethod("createGeneric2PersonInfo"));
+                PersonGenericInfo personInfo = (PersonGenericInfo) PojoUtils.realize(o, (Class)createGenericPersonInfos[0], createGenericPersonInfos[1]);
+
+                assertEquals("myname", personInfo.getName());
+                assertEquals(personInfo.getData().getClass(), PersonGenericInfo.class);
+                assertEquals("myname", ((PersonGenericInfo)personInfo.getData()).getName());
+                assertEquals(((PersonGenericInfo)personInfo.getData()).getData().getClass(), PersonInfo.class);
+            }
+        }
     }
 
     public enum Day {
