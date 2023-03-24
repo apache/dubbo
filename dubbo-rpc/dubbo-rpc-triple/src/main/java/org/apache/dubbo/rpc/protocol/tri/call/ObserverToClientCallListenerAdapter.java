@@ -38,14 +38,10 @@ public class ObserverToClientCallListenerAdapter implements ClientCall.Listener 
     }
 
     @Override
-    public void onMessage(ClientCall.MessageProducer messageProducer) {
-        try {
-            delegate.onNext(messageProducer.getMessage());
-            if (call.isAutoRequest()) {
-                call.request(1);
-            }
-        } catch (Throwable e) {
-            delegate.onError(e);
+    public void onMessage(Object message) {
+        delegate.onNext(message);
+        if (call.isAutoRequest()) {
+            call.request(1);
         }
     }
 
