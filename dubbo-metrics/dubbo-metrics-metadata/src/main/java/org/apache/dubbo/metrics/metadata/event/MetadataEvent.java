@@ -41,7 +41,7 @@ public class MetadataEvent extends TimeCounterEvent {
     }
 
     public ApplicationModel getSource() {
-        return (ApplicationModel) source;
+        return source;
     }
 
     public MetadataMetricsCollector getCollector() {

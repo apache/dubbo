@@ -55,7 +55,7 @@ public abstract class MetricsEvent {
 
     }
 
-    public Object getSource() {
+    public ApplicationModel getSource() {
         return source;
     }
 

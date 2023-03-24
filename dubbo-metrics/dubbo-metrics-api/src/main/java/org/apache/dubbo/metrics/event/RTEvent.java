@@ -24,7 +24,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
  */
 public class RTEvent extends MetricsEvent {
     private Long rt;
-    private Object metric;
+    private final Object metric;
 
     public RTEvent(ApplicationModel applicationModel, Object metric, Long rt) {
         super(applicationModel);
@@ -38,5 +38,9 @@ public class RTEvent extends MetricsEvent {
 
     public void setRt(Long rt) {
         this.rt = rt;
+    }
+
+    public Object getMetric() {
+        return metric;
     }
 }
