@@ -81,7 +81,6 @@ public enum MetricsKey {
     THREAD_POOL_ACTIVE_SIZE("dubbo.thread.pool.active.size", "Thread Pool Active Size"),
     THREAD_POOL_THREAD_COUNT("dubbo.thread.pool.thread.count", "Thread Pool Thread Count"),
     THREAD_POOL_QUEUE_SIZE("dubbo.thread.pool.queue.size", "Thread Pool Queue Size"),
-
     THREAD_POOL_THREAD_REJECT_COUNT("dubbo.thread.pool.reject.thread.count", "Thread Pool Reject Thread Count"),
 
     // metadata push metrics key

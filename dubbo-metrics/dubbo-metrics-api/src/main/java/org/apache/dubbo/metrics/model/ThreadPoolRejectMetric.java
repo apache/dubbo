@@ -18,13 +18,16 @@
 package org.apache.dubbo.metrics.model;
 
 import org.apache.dubbo.common.utils.ConfigUtils;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import static org.apache.dubbo.common.constants.MetricsConstants.*;
 import static org.apache.dubbo.common.utils.NetUtils.getLocalHost;
 import static org.apache.dubbo.common.utils.NetUtils.getLocalHostName;
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_PID;
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_APPLICATION_NAME;
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_THREAD_NAME;
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_HOSTNAME;
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_IP;
 
 public class ThreadPoolRejectMetric implements Metric{
     private String applicationName;

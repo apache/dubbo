@@ -16,7 +16,6 @@
  */
 
 package org.apache.dubbo.metrics.collector;
-
 import org.apache.dubbo.metrics.collector.sample.MethodMetricsSampler;
 import org.apache.dubbo.metrics.collector.sample.MetricsCountSampleConfigurer;
 import org.apache.dubbo.metrics.collector.sample.MetricsSampler;
