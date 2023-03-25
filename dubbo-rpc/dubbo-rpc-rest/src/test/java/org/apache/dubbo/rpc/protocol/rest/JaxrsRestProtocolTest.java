@@ -389,7 +389,7 @@ class JaxrsRestProtocolTest {
         Integer result = demoService.primitiveInt(1, 2);
         Long resultLong = demoService.primitiveLong(1, 2l);
         long resultByte = demoService.primitiveByte((byte) 1, 2l);
-        long resultShort = demoService.primitiveShort((short) 1, 2l);
+        long resultShort = demoService.primitiveShort((short) 1, 2l, 1);
 
         assertThat(result, is(3));
         assertThat(resultShort, is(3l));

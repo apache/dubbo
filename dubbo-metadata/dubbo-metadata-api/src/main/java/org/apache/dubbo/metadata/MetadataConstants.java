@@ -39,6 +39,9 @@ public interface MetadataConstants {
     Class JAKARTA_SERVLET_REQ_CLASS = resolveClass(JAKARTA_SERVLET_REQ_CLASS_NAME, getClassLoader());
     String JAKARTA_SERVLET_RES_CLASS_NAME = "jakarta.servlet.ServletResponse";
     Class JAKARTA_SERVLET_RES_CLASS = resolveClass(JAKARTA_SERVLET_RES_CLASS_NAME, getClassLoader());
+
+    String FULL_HTTP_REQ_CLASS_NAME = "io.netty.handler.codec.http.FullHttpRequest";
+    Class FULL_HTTP_REQ_CLASS = resolveClass(FULL_HTTP_REQ_CLASS_NAME, getClassLoader());
     String PATH_SEPARATOR = "/";
     String APPLICATION_FORM_URLENCODED_VALUE = "application/x-www-form-urlencoded";
     String APPLICATION_JSON_VALUE = "application/json";

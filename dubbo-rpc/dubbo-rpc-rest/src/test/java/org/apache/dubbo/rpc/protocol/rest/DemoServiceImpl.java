@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.rest;
 
 
+import io.netty.handler.codec.http.DefaultFullHttpRequest;
 import org.apache.dubbo.rpc.RpcContext;
 
 import javax.ws.rs.Consumes;
@@ -72,8 +73,13 @@ public class DemoServiceImpl implements DemoService {
     }
 
     @Override
-    public long primitiveShort(short a, Long b) {
+    public long primitiveShort(short a, Long b, int c) {
         return a + b;
+    }
+
+    @Override
+    public void request(DefaultFullHttpRequest defaultFullHttpRequest) {
+
     }
 
     @GET

@@ -37,7 +37,8 @@ public enum ParamType {
     REQ_OR_RES(addSupportTypes(MetadataConstants.JAKARTA_SERVLET_REQ_CLASS,
         MetadataConstants.JAKARTA_SERVLET_RES_CLASS,
         MetadataConstants.JAVAX_SERVLET_REQ_CLASS,
-        MetadataConstants.JAKARTA_SERVLET_RES_CLASS)),
+        MetadataConstants.JAKARTA_SERVLET_RES_CLASS,
+        MetadataConstants.FULL_HTTP_REQ_CLASS)),
 
     PATH(addSupportTypes(JAXRSClassConstants.PATH_PARAM_ANNOTATION_CLASS,
         SpringMvcClassConstants.PATH_VARIABLE_ANNOTATION_CLASS)),

@@ -158,7 +158,7 @@ public class NettyHttpHandler implements HttpHandler<NettyRequestFacade, NettyHt
      */
     private MediaType getAcceptMediaType(RequestFacade request) {
         String accept = request.getHeader(RestHeaderEnum.ACCEPT.getHeader());
-        MediaType mediaType = MediaTypeUtil.convertMediaType(accept);
+        MediaType mediaType = MediaTypeUtil.convertMediaType(null, accept);
         return mediaType;
     }
 

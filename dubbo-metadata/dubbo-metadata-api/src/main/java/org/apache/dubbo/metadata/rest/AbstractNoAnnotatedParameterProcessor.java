@@ -39,7 +39,7 @@ public abstract class AbstractNoAnnotatedParameterProcessor implements NoAnnotat
     private boolean contentTypeSupport(RestMethodMetadata restMethodMetadata, MediaType mediaType, Class paramType) {
 
         // @RequestParam String,number param
-        if (mediaType.equals(MediaType.ALL_VALUE) && (String.class == paramType || Number.class.isAssignableFrom(paramType))) {
+        if (mediaType.equals(MediaType.ALL_VALUE) && (String.class == paramType || paramType.isPrimitive() || Number.class.isAssignableFrom(paramType))) {
             return true;
         }
 

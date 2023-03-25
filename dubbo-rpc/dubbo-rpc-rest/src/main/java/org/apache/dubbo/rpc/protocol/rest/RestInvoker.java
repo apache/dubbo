@@ -101,7 +101,7 @@ public class RestInvoker<T> extends AbstractInvoker<T> {
                         } else if (responseCode >= 500) {
                             throw new RemoteServerInternalException(r.getMessage());
                         } else if (responseCode < 400) {
-                            mediaType = MediaTypeUtil.convertMediaType(r.getContentType());
+                            mediaType = MediaTypeUtil.convertMediaType(restMethodMetadata.getReflectMethod().getReturnType(), r.getContentType());
                         }
 
 

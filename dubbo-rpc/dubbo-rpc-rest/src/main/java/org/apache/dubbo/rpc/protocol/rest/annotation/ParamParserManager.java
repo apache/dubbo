@@ -72,9 +72,9 @@ public class ParamParserManager {
      */
     public static void consumerParamParse(ConsumerParseContext parseContext) {
 
-        List<Object> args = parseContext.getArgs();
+        List<ArgInfo> argInfos = parseContext.getArgInfos();
 
-        for (int i = 0; i < args.size(); i++) {
+        for (int i = 0; i < argInfos.size(); i++) {
             for (BaseConsumerParamParser paramParser : consumerParamParsers) {
                 ArgInfo argInfoByIndex = parseContext.getArgInfoByIndex(i);
 

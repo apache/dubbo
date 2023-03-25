@@ -17,6 +17,8 @@
 package org.apache.dubbo.rpc.protocol.rest;
 
 
+import io.netty.handler.codec.http.DefaultFullHttpRequest;
+
 import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
@@ -63,7 +65,11 @@ public interface DemoService {
     @Path("/primitiveByte")
     long primitiveByte(@QueryParam("a") byte a, @QueryParam("b") Long b);
 
-    @GET
+    @POST
     @Path("/primitiveShort")
-    long primitiveShort(@QueryParam("a") short a, @QueryParam("b") Long b);
+    long primitiveShort(@QueryParam("a") short a, @QueryParam("b") Long b,int c);
+
+    @GET
+    @Path("/request")
+    void request(DefaultFullHttpRequest defaultFullHttpRequest);
 }
