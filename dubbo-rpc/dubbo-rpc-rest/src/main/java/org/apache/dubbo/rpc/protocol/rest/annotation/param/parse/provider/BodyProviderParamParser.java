@@ -44,11 +44,6 @@ public class BodyProviderParamParser extends ProviderParamParser {
 
         try {
             String contentType = parseContext.getRequestFacade().getHeader(RestHeaderEnum.CONTENT_TYPE.getHeader());
-            //TODO MAP<String,String> convert
-            // TODO  url builder
-
-            // TODO json utils no stream convert
-            // TODO add form parse
             InputStream inputStream = request.getInputStream();
             MediaType mediaType = MediaTypeUtil.convertMediaType(argInfo.getParamType(), contentType);
             Object param = HttpMessageCodecManager.httpMessageDecode(IOUtils.toByteArray(inputStream), argInfo.getParamType(), mediaType);

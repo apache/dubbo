@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.metadata.rest;
 
-import org.apache.dubbo.metadata.MetadataConstants;
 import org.apache.dubbo.metadata.rest.tag.BodyTag;
 import org.apache.dubbo.metadata.rest.tag.ParamTag;
 
@@ -33,12 +32,6 @@ public enum ParamType {
     BODY(addSupportTypes(
         JAXRSClassConstants.REST_EASY_BODY_ANNOTATION_CLASS,
         SpringMvcClassConstants.REQUEST_BODY_ANNOTATION_CLASS, BodyTag.class)),
-    // TODO how to match arg type ?
-    REQ_OR_RES(addSupportTypes(MetadataConstants.JAKARTA_SERVLET_REQ_CLASS,
-        MetadataConstants.JAKARTA_SERVLET_RES_CLASS,
-        MetadataConstants.JAVAX_SERVLET_REQ_CLASS,
-        MetadataConstants.JAKARTA_SERVLET_RES_CLASS,
-        MetadataConstants.FULL_HTTP_REQ_CLASS)),
 
     PATH(addSupportTypes(JAXRSClassConstants.PATH_PARAM_ANNOTATION_CLASS,
         SpringMvcClassConstants.PATH_VARIABLE_ANNOTATION_CLASS)),
@@ -60,16 +53,6 @@ public enum ParamType {
             return false;
         }
         return this.annotationClasses.contains(anno);
-    }
-
-    public boolean isReqOrRes(Class clazz) {
-        for (Class annotationClass : annotationClasses) {
-            if (annotationClass.isAssignableFrom(clazz)) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     /**

@@ -27,7 +27,7 @@ public class MediaTypeUtil {
     private static final List<MediaType> mediaTypes = Arrays.asList(MediaType.values());
 
     /**
-     * return first match , if any multiple content-type
+     * return first match , if any multiple content-type  ,acquire mediaType by targetClass type .if contentTypes is empty
      *
      * @param contentTypes
      * @return
