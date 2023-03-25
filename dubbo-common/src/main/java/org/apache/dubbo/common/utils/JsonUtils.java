@@ -86,11 +86,4 @@ public class JsonUtils {
         return json;
     }
 
-    /**
-     * @deprecated for uts only
-     */
-    @Deprecated
-    protected static void setJson(JSON json) {
-        JsonUtils.json = json;
-    }
 }
