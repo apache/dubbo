@@ -85,11 +85,4 @@ public class JsonUtils {
         }
         return json;
     }
-
-    /**
-     * For Unit testing only. Inject specified JSON Object into this class.
-     */
-    static void setJson(JSON json) {
-        JsonUtils.json = json;
-    }
 }
