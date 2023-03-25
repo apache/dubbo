@@ -23,7 +23,7 @@ import org.apache.dubbo.metadata.rest.RestMethodMetadata;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.protocol.rest.exception.DoublePathCheckException;
 import org.apache.dubbo.rpc.protocol.rest.exception.PathNoFoundException;
-import org.apache.dubbo.rpc.protocol.rest.util.Pair;
+import org.apache.dubbo.rpc.protocol.rest.pair.InvokerAndRestMethodMetadataPair;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -34,8 +34,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public class PathAndInvokerMapper {
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(PathAndInvokerMapper.class);
 
-    private final Map<PathMatcher, Pair<Invoker, RestMethodMetadata>> pathToServiceMapContainPathVariable = new ConcurrentHashMap<>();
-    private final Map<PathMatcher, Pair<Invoker, RestMethodMetadata>> pathToServiceMapNoPathVariable = new ConcurrentHashMap<>();
+    private final Map<PathMatcher, InvokerAndRestMethodMetadataPair> pathToServiceMapContainPathVariable = new ConcurrentHashMap<>();
+    private final Map<PathMatcher, InvokerAndRestMethodMetadataPair> pathToServiceMapNoPathVariable = new ConcurrentHashMap<>();
 
 
     /**
@@ -49,9 +49,9 @@ public class PathAndInvokerMapper {
         metadataMap.entrySet().stream().forEach(entry -> {
             PathMatcher pathMatcher = entry.getKey();
             if (pathMatcher.hasPathVariable()) {
-                addPathMatcherToPathMap(pathMatcher, pathToServiceMapContainPathVariable, Pair.make(invoker, entry.getValue()));
+                addPathMatcherToPathMap(pathMatcher, pathToServiceMapContainPathVariable, InvokerAndRestMethodMetadataPair.pair(invoker, entry.getValue()));
             } else {
-                addPathMatcherToPathMap(pathMatcher, pathToServiceMapNoPathVariable, Pair.make(invoker, entry.getValue()));
+                addPathMatcherToPathMap(pathMatcher, pathToServiceMapNoPathVariable, InvokerAndRestMethodMetadataPair.pair(invoker, entry.getValue()));
             }
         });
     }
@@ -65,7 +65,7 @@ public class PathAndInvokerMapper {
      * @param port
      * @return
      */
-    public Pair<Invoker, RestMethodMetadata> getRestMethodMetadata(String path, String version, String group, Integer port) {
+    public InvokerAndRestMethodMetadataPair getRestMethodMetadata(String path, String version, String group, Integer port) {
 
 
         PathMatcher pathMather = PathMatcher.getInvokeCreatePathMatcher(path, version, group, port);
@@ -90,35 +90,35 @@ public class PathAndInvokerMapper {
      */
     public void removePath(PathMatcher pathMatcher) {
 
-        Pair<Invoker, RestMethodMetadata> containPathVariablePair = pathToServiceMapContainPathVariable.remove(pathMatcher);
+        InvokerAndRestMethodMetadataPair containPathVariablePair = pathToServiceMapContainPathVariable.remove(pathMatcher);
 
-        Pair<Invoker, RestMethodMetadata> unContainPathVariablePair = pathToServiceMapNoPathVariable.remove(pathMatcher);
+        InvokerAndRestMethodMetadataPair unContainPathVariablePair = pathToServiceMapNoPathVariable.remove(pathMatcher);
         logger.info("dubbo rest undeploy pathMatcher:" + pathMatcher
-            + ", and path variable metadata is :" + (containPathVariablePair == null ? null : containPathVariablePair.getSecond())
-            + ", and no path variable  metadata is :" + (unContainPathVariablePair == null ? null : unContainPathVariablePair.getSecond()));
+            + ", and path variable method is :" + (containPathVariablePair == null ? null : containPathVariablePair.getRestMethodMetadata().getReflectMethod())
+            + ", and no path variable  method is :" + (unContainPathVariablePair == null ? null : unContainPathVariablePair.getRestMethodMetadata()).getReflectMethod());
 
 
     }
 
     public void addPathMatcherToPathMap(PathMatcher pathMatcher,
-                                        Map<PathMatcher, Pair<Invoker, RestMethodMetadata>> pathMatcherPairMap,
-                                        Pair<Invoker, RestMethodMetadata> invokerRestMethodMetadataPair) {
+                                        Map<PathMatcher, InvokerAndRestMethodMetadataPair> pathMatcherPairMap,
+                                        InvokerAndRestMethodMetadataPair invokerRestMethodMetadataPair) {
 
         if (pathMatcherPairMap.containsKey(pathMatcher)) {
 
-            Pair<Invoker, RestMethodMetadata> beforeMetadata = pathMatcherPairMap.get(pathMatcher);
+            InvokerAndRestMethodMetadataPair beforeMetadata = pathMatcherPairMap.get(pathMatcher);
 
             throw new DoublePathCheckException(
                 "dubbo rest double path check error, current path is: " + pathMatcher
-                    + " ,and metadata is: " + invokerRestMethodMetadataPair.getSecond()
-                    + "before  metadata is: " + beforeMetadata.getSecond()
+                    + " ,and service method is: " + invokerRestMethodMetadataPair.getRestMethodMetadata().getReflectMethod()
+                    + "before service  method is: " + beforeMetadata.getRestMethodMetadata().getReflectMethod()
             );
         }
 
         pathMatcherPairMap.put(pathMatcher, invokerRestMethodMetadataPair);
 
 
-        logger.info("dubbo rest deploy pathMatcher:" + pathMatcher + ", and metadata is :" + invokerRestMethodMetadataPair.getSecond());
+        logger.info("dubbo rest deploy pathMatcher:" + pathMatcher + ", and service method is :" + invokerRestMethodMetadataPair.getRestMethodMetadata().getReflectMethod());
     }
 
 }

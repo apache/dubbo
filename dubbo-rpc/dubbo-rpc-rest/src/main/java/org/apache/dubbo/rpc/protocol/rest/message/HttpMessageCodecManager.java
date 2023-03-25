@@ -20,7 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.metadata.rest.media.MediaType;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.rest.exception.UnSupportContentTypeException;
-import org.apache.dubbo.rpc.protocol.rest.util.Pair;
+import org.apache.dubbo.rpc.protocol.rest.pair.MessageCodecResultPair;
 
 import java.io.OutputStream;
 import java.util.Set;
@@ -39,13 +39,13 @@ public class HttpMessageCodecManager {
         throw new UnSupportContentTypeException("UnSupport content-type :" + mediaType.value);
     }
 
-    public static Pair<Boolean, MediaType> httpMessageEncode(OutputStream outputStream, Object unSerializedBody, URL url, MediaType mediaType, Class bodyType) throws Exception {
+    public static MessageCodecResultPair httpMessageEncode(OutputStream outputStream, Object unSerializedBody, URL url, MediaType mediaType, Class bodyType) throws Exception {
 
 
         if (unSerializedBody == null) {
             for (HttpMessageCodec httpMessageCodec : httpMessageCodecs) {
                 if (httpMessageCodec.contentTypeSupport(mediaType, bodyType) || httpMessageCodec.typeSupport(bodyType)) {
-                    return Pair.make(false, httpMessageCodec.contentType());
+                    return MessageCodecResultPair.pair(false, httpMessageCodec.contentType());
                 }
             }
         }
@@ -53,7 +53,7 @@ public class HttpMessageCodecManager {
         for (HttpMessageCodec httpMessageCodec : httpMessageCodecs) {
             if (httpMessageCodec.contentTypeSupport(mediaType, bodyType) || httpMessageCodec.typeSupport(bodyType)) {
                 httpMessageCodec.encode(outputStream, unSerializedBody, url);
-                return Pair.make(true, httpMessageCodec.contentType());
+                return MessageCodecResultPair.pair(true, httpMessageCodec.contentType());
             }
         }
 
