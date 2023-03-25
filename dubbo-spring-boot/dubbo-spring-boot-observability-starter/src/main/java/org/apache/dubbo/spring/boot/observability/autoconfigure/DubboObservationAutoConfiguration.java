@@ -42,7 +42,7 @@ import java.util.Arrays;
  */
 @AutoConfiguration(after = DubboMicrometerTracingAutoConfiguration.class, afterName = "org.springframework.boot.actuate.autoconfigure.observation.ObservationAutoConfiguration")
 @ConditionalOnDubboTracingEnable
-@ConditionalOnClass(name = "io.micrometer.observation.Observation")
+@ConditionalOnClass(name = {"io.micrometer.observation.Observation","io.micrometer.tracing.Tracer"})
 public class DubboObservationAutoConfiguration implements BeanFactoryAware, SmartInitializingSingleton {
 
     public DubboObservationAutoConfiguration(ApplicationModel applicationModel) {
