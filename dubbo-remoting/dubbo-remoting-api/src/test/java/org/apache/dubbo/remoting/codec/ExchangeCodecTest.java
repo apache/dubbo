@@ -30,11 +30,13 @@ import org.apache.dubbo.remoting.buffer.ChannelBuffers;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.exchange.codec.ExchangeCodec;
+import org.apache.dubbo.remoting.exchange.support.DefaultFuture;
 import org.apache.dubbo.remoting.telnet.codec.TelnetCodec;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -137,6 +139,8 @@ public class ExchangeCodecTest extends TelnetCodecTest {
 
     @Test
     public void test_Decode_Error_Length() throws IOException {
+        DefaultFuture future = DefaultFuture.newFuture(Mockito.mock(Channel.class), new Request(0), 100000, null);
+
         byte[] header = new byte[]{MAGIC_HIGH, MAGIC_LOW, 0x02, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
         Person person = new Person();
         byte[] request = getRequestBytes(person, header);
@@ -148,6 +152,8 @@ public class ExchangeCodecTest extends TelnetCodecTest {
         Assertions.assertEquals(person, obj.getResult());
         //only decode necessary bytes
         Assertions.assertEquals(request.length, buffer.readerIndex());
+
+        future.cancel();
     }
 
     @Test
@@ -226,6 +232,7 @@ public class ExchangeCodecTest extends TelnetCodecTest {
 
     @Test
     public void test_Decode_Return_Response_Person() throws IOException {
+        DefaultFuture future = DefaultFuture.newFuture(Mockito.mock(Channel.class), new Request(0), 100000, null);
         //00000010-response/oneway/hearbeat=false/hessian |20-stats=ok|id=0|length=0
         byte[] header = new byte[]{MAGIC_HIGH, MAGIC_LOW, 2, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
         Person person = new Person();
@@ -235,6 +242,8 @@ public class ExchangeCodecTest extends TelnetCodecTest {
         Assertions.assertEquals(20, obj.getStatus());
         Assertions.assertEquals(person, obj.getResult());
         System.out.println(obj);
+
+        future.cancel();
     }
 
     @Test //The status input has a problem, and the read information is wrong when the serialization is serialized.
@@ -324,6 +333,7 @@ public class ExchangeCodecTest extends TelnetCodecTest {
 
     @Test
     public void test_Header_Response_NoSerializationFlag() throws IOException {
+        DefaultFuture future = DefaultFuture.newFuture(Mockito.mock(Channel.class), new Request(0), 100000, null);
         //00000010-response/oneway/hearbeat=false/noset |20-stats=ok|id=0|length=0
         byte[] header = new byte[]{MAGIC_HIGH, MAGIC_LOW, (byte) 0x02, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
         Person person = new Person();
@@ -333,10 +343,13 @@ public class ExchangeCodecTest extends TelnetCodecTest {
         Assertions.assertEquals(20, obj.getStatus());
         Assertions.assertEquals(person, obj.getResult());
         System.out.println(obj);
+
+        future.cancel();
     }
 
     @Test
     public void test_Header_Response_Heartbeat() throws IOException {
+        DefaultFuture future = DefaultFuture.newFuture(Mockito.mock(Channel.class), new Request(0), 100000, null);
         //00000010-response/oneway/hearbeat=true |20-stats=ok|id=0|length=0
         byte[] header = new byte[]{MAGIC_HIGH, MAGIC_LOW, 0x02, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
         Person person = new Person();
@@ -346,6 +359,8 @@ public class ExchangeCodecTest extends TelnetCodecTest {
         Assertions.assertEquals(20, obj.getStatus());
         Assertions.assertEquals(person, obj.getResult());
         System.out.println(obj);
+
+        future.cancel();
     }
 
     @Test
@@ -371,6 +386,7 @@ public class ExchangeCodecTest extends TelnetCodecTest {
 
     @Test
     public void test_Encode_Response() throws IOException {
+        DefaultFuture future = DefaultFuture.newFuture(Mockito.mock(Channel.class), new Request(1001), 100000, null);
         ChannelBuffer encodeBuffer = ChannelBuffers.dynamicBuffer(1024);
         Channel channel = getClientSideChannel(url);
         Response response = new Response();
@@ -396,6 +412,7 @@ public class ExchangeCodecTest extends TelnetCodecTest {
         // encode response verson ??
 //        Assertions.assertEquals(response.getProtocolVersion(), obj.getVersion());
 
+        future.cancel();
     }
 
     @Test
