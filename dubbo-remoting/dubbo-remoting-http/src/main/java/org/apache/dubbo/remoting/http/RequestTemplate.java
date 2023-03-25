@@ -303,7 +303,7 @@ public class RequestTemplate implements Serializable {
         this.contextPath = contextPath;
     }
 
-    public Class getBodyType() {
+    public Class<?> getBodyType() {
         return bodyType;
     }
 

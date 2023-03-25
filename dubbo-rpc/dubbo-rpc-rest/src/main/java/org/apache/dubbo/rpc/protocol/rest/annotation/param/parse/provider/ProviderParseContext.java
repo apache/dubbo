@@ -42,14 +42,6 @@ public class ProviderParseContext extends BaseParseContext {
         this.args.set(index, value);
     }
 
-    public boolean isResponseArg(Class response) {
-        return response.isAssignableFrom(this.response.getClass());
-    }
-
-    public boolean isRequestArg(Class request) {
-        return request.isAssignableFrom(this.request.getClass());
-    }
-
     public Object getResponse() {
         return response;
     }

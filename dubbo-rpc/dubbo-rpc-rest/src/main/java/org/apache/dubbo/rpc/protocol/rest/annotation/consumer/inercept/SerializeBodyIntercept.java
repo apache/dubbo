@@ -34,7 +34,7 @@ import java.io.ByteArrayOutputStream;
 import java.util.Collection;
 
 /**
- *  for request body Serialize
+ * for request body Serialize
  */
 @Activate(value = RestConstant.SERIALIZE_INTERCEPT, order = Integer.MAX_VALUE)
 public class SerializeBodyIntercept implements HttpConnectionPreBuildIntercept {
@@ -53,11 +53,18 @@ public class SerializeBodyIntercept implements HttpConnectionPreBuildIntercept {
         try {
             Object unSerializedBody = requestTemplate.getUnSerializedBody();
             URL url = connectionCreateContext.getUrl();
+            // TODO pool
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             Collection<String> headers = requestTemplate.getHeaders(RestConstant.CONTENT_TYPE);
-            MediaType mediaType = MediaTypeUtil.convertMediaType(headers.toArray(new String[0]));
-            HttpMessageCodecManager.httpMessageEncode(outputStream, unSerializedBody, url, mediaType,requestTemplate.getBodyType());
+            MediaType mediaType = MediaTypeUtil.convertMediaType(requestTemplate.getBodyType(), headers.toArray(new String[0]));
+
+            // add mediaType by targetClass serialize
+            if (headers.isEmpty() && mediaType != null && !mediaType.equals(MediaType.ALL_VALUE)) {
+                headers.add(mediaType.value);
+            }
+            HttpMessageCodecManager.httpMessageEncode(outputStream, unSerializedBody, url, mediaType, requestTemplate.getBodyType());
             requestTemplate.serializeBody(outputStream.toByteArray());
+            outputStream.close();
         } catch (Exception e) {
             logger.error(LoggerCodeConstants.PROTOCOL_ERROR_DESERIALIZE, "", "", "Rest SerializeBodyIntercept serialize error: {}", e);
         }

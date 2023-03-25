@@ -22,13 +22,6 @@ import java.lang.reflect.Method;
 
 public class ReflectUtils {
 
-
-    public static Class findClass(String name) throws ClassNotFoundException {
-
-        return findClass(Thread.currentThread().getContextClassLoader(), name);
-
-    }
-
     public static Class findClass(String name, ClassLoader classLoader) throws ClassNotFoundException {
 
         return classLoader.loadClass(name);

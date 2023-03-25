@@ -24,61 +24,43 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 
 public class NumberUtilsTest {
-    @Test
-    public void testParseNumber() {
-        int integer = NumberUtils.parseNumber("1", Integer.class);
+    public void testParseNumber(String numberStr) {
+        int integer = NumberUtils.parseNumber(numberStr, Integer.class);
 
         Assertions.assertEquals(1, integer);
 
-        integer = NumberUtils.parseNumber("1", int.class);
+        integer = NumberUtils.parseNumber(numberStr, int.class);
 
         Assertions.assertEquals(1, integer);
 
-        long a = NumberUtils.parseNumber("1", Long.class);
+        long a = NumberUtils.parseNumber(numberStr, Long.class);
 
         Assertions.assertEquals(1, a);
 
-        a = NumberUtils.parseNumber("1", long.class);
+        a = NumberUtils.parseNumber(numberStr, long.class);
 
         Assertions.assertEquals(1, a);
 
-        byte b = NumberUtils.parseNumber("1", Byte.class);
+        byte b = NumberUtils.parseNumber(numberStr, Byte.class);
 
         Assertions.assertEquals(1, b);
 
-        b = NumberUtils.parseNumber("1", byte.class);
+        b = NumberUtils.parseNumber(numberStr, byte.class);
 
         Assertions.assertEquals(1, b);
 
-        short c = NumberUtils.parseNumber("1", Short.class);
+        short c = NumberUtils.parseNumber(numberStr, Short.class);
 
         Assertions.assertEquals(1, c);
 
-        c = NumberUtils.parseNumber("1", short.class);
+        c = NumberUtils.parseNumber(numberStr, short.class);
 
         Assertions.assertEquals(1, c);
 
-
-        double e = NumberUtils.parseNumber("1.0", Double.class);
-
-        Assertions.assertEquals(1.0, e);
-
-        e = NumberUtils.parseNumber("1.0", double.class);
-
-        Assertions.assertEquals(1.0, e);
-
-
-        BigInteger f = NumberUtils.parseNumber("1", BigInteger.class);
+        BigInteger f = NumberUtils.parseNumber(numberStr, BigInteger.class);
 
         Assertions.assertEquals(1, f.intValue());
 
-        BigDecimal g = NumberUtils.parseNumber("1", BigDecimal.class);
-
-        Assertions.assertEquals(1, g.intValue());
-
-        integer = NumberUtils.parseNumber("1", int.class);
-
-        Assertions.assertEquals(1, integer);
 
     }
 
@@ -117,4 +99,64 @@ public class NumberUtilsTest {
 
 
     }
+
+    @Test
+    public void testNumberStr() {
+        testParseNumber("1");
+        testParseNumber("0X0001");
+        testParseNumber("0x0001");
+        testParseNumber("#1");
+
+    }
+
+
+    @Test
+    public void testUnHexNumber() {
+        String numberStr = "1";
+        double e = NumberUtils.parseNumber(numberStr, Double.class);
+
+        Assertions.assertEquals(1.0, e);
+
+        e = NumberUtils.parseNumber(numberStr, double.class);
+
+        Assertions.assertEquals(1.0, e);
+
+        BigDecimal g = NumberUtils.parseNumber(numberStr, BigDecimal.class);
+
+        Assertions.assertEquals(1, g.intValue());
+
+        int integer = NumberUtils.parseNumber(numberStr, int.class);
+
+        Assertions.assertEquals(1, integer);
+    }
+
+    @Test
+    public void testNegative() {
+
+        Integer integer = NumberUtils.parseNumber("-0X1", int.class);
+        Assertions.assertEquals(-1, integer);
+
+        BigInteger bigInteger = NumberUtils.parseNumber("-0X1", BigInteger.class);
+        Assertions.assertEquals(-1, bigInteger.intValue());
+    }
+
+    @Test
+    public void testException() {
+
+        Assertions.assertThrowsExactly(IllegalArgumentException.class, () -> {
+            Object abc = NumberUtils.parseNumber("abc", Object.class);
+
+        });
+
+        Assertions.assertThrowsExactly(IllegalArgumentException.class, () -> {
+            Object abc = NumberUtils.parseNumber(null, Object.class);
+
+        });
+
+        Assertions.assertThrowsExactly(IllegalArgumentException.class, () -> {
+            Object abc = NumberUtils.parseNumber("1", null);
+
+        });
+    }
+
 }

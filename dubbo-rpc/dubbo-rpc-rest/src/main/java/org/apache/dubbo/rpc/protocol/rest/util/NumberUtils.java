@@ -21,28 +21,8 @@ import org.apache.dubbo.common.utils.StringUtils;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
 
 public class NumberUtils {
-
-
-    public static final Set<Class<?>> STANDARD_NUMBER_TYPES;
-
-    static {
-        Set<Class<?>> numberTypes = new HashSet<>(8);
-        numberTypes.add(Byte.class);
-        numberTypes.add(Short.class);
-        numberTypes.add(Integer.class);
-        numberTypes.add(Long.class);
-        numberTypes.add(BigInteger.class);
-        numberTypes.add(Float.class);
-        numberTypes.add(Double.class);
-        numberTypes.add(BigDecimal.class);
-        STANDARD_NUMBER_TYPES = Collections.unmodifiableSet(numberTypes);
-    }
-
 
     public static <T> T parseNumber(String text, Class<T> targetClass) {
         Assert.notNull(text, "Text must not be null");
