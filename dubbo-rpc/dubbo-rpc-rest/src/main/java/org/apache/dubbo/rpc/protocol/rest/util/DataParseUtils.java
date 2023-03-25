@@ -48,6 +48,10 @@ public class DataParseUtils {
             return NumberUtils.parseNumber(value, targetType);
         }
 
+        if (targetType != null && targetType.isPrimitive()) {
+            return NumberUtils.parseNumber(value, targetType);
+        }
+
         return value;
 
     }

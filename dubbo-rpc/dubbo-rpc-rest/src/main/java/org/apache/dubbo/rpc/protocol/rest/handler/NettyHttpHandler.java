@@ -193,9 +193,9 @@ public class NettyHttpHandler implements HttpHandler<NettyRequestFacade, NettyHt
     public static String stackTraceToString(Throwable throwable) {
         StackTraceElement[] stackTrace = throwable.getStackTrace();
 
-        StringBuilder stringBuilder = new StringBuilder();
+        StringBuilder stringBuilder = new StringBuilder("\n");
         for (StackTraceElement traceElement : stackTrace) {
-            stringBuilder.append("\tat " + traceElement);
+            stringBuilder.append("\tat " + traceElement).append("\n");
         }
 
         return stringBuilder.toString();

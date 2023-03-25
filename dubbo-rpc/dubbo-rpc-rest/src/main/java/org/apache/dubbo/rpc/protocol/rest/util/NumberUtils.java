@@ -49,19 +49,19 @@ public class NumberUtils {
         Assert.notNull(targetClass, "Target class must not be null");
         String trimmed = trimAllWhitespace(text);
 
-        if (Byte.class == targetClass) {
+        if (Byte.class == targetClass || byte.class == targetClass) {
             return (T) (isHexNumber(trimmed) ? Byte.decode(trimmed) : Byte.valueOf(trimmed));
-        } else if (Short.class == targetClass) {
+        } else if (Short.class == targetClass || short.class == targetClass) {
             return (T) (isHexNumber(trimmed) ? Short.decode(trimmed) : Short.valueOf(trimmed));
-        } else if (Integer.class == targetClass) {
+        } else if (Integer.class == targetClass || int.class == targetClass) {
             return (T) (isHexNumber(trimmed) ? Integer.decode(trimmed) : Integer.valueOf(trimmed));
-        } else if (Long.class == targetClass) {
+        } else if (Long.class == targetClass || long.class == targetClass) {
             return (T) (isHexNumber(trimmed) ? Long.decode(trimmed) : Long.valueOf(trimmed));
         } else if (BigInteger.class == targetClass) {
             return (T) (isHexNumber(trimmed) ? decodeBigInteger(trimmed) : new BigInteger(trimmed));
-        } else if (Float.class == targetClass) {
+        } else if (Float.class == targetClass || float.class == targetClass) {
             return (T) Float.valueOf(trimmed);
-        } else if (Double.class == targetClass) {
+        } else if (Double.class == targetClass || double.class == targetClass) {
             return (T) Double.valueOf(trimmed);
         } else if (BigDecimal.class == targetClass || Number.class == targetClass) {
             return (T) new BigDecimal(trimmed);

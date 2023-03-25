@@ -17,7 +17,6 @@
 package org.apache.dubbo.rpc.protocol.rest;
 
 
-
 import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
@@ -31,7 +30,7 @@ import javax.ws.rs.core.MediaType;
 public interface DemoService {
     @GET
     @Path("/hello")
-    Integer hello(@QueryParam("a")Integer a, @QueryParam("b") Integer b);
+    Integer hello(@QueryParam("a") Integer a, @QueryParam("b") Integer b);
 
     @GET
     @Path("/error")
@@ -51,4 +50,20 @@ public interface DemoService {
     Long testFormBody(@FormParam("number") Long number);
 
     boolean isCalled();
+
+    @GET
+    @Path("/primitive")
+    int primitiveInt(@QueryParam("a") int a, @QueryParam("b") int b);
+
+    @GET
+    @Path("/primitiveLong")
+    long primitiveLong(@QueryParam("a") long a, @QueryParam("b") Long b);
+
+    @GET
+    @Path("/primitiveByte")
+    long primitiveByte(@QueryParam("a") byte a, @QueryParam("b") Long b);
+
+    @GET
+    @Path("/primitiveShort")
+    long primitiveShort(@QueryParam("a") short a, @QueryParam("b") Long b);
 }
