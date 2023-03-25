@@ -27,5 +27,7 @@ public enum MetricsCategory {
     APPLICATION,
     CONFIGCENTER,
     REGISTRY,
-    THREAD_POOL
+    METADATA,
+    THREAD_POOL,
+    APPLICATION
 }
