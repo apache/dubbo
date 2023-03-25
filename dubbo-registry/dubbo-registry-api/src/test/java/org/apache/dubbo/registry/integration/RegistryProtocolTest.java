@@ -32,6 +32,7 @@ import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.cluster.support.FailoverCluster;
 import org.apache.dubbo.rpc.cluster.support.MergeableCluster;
 import org.apache.dubbo.rpc.cluster.support.wrapper.MockClusterWrapper;
+import org.apache.dubbo.rpc.cluster.support.wrapper.ScopeClusterWrapper;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
@@ -264,9 +265,10 @@ class RegistryProtocolTest {
         Invoker<?> invoker = registryProtocol.refer(DemoService.class, url);
 
         Assertions.assertTrue(invoker instanceof MigrationInvoker);
-        Assertions.assertTrue(((MigrationInvoker<?>) invoker).getCluster() instanceof MockClusterWrapper);
+        Assertions.assertTrue(((MigrationInvoker<?>) invoker).getCluster() instanceof ScopeClusterWrapper);
+        Assertions.assertTrue(((ScopeClusterWrapper) ((MigrationInvoker<?>) invoker).getCluster()).getCluster() instanceof MockClusterWrapper);
         Assertions.assertTrue(
-            ((MockClusterWrapper) ((MigrationInvoker<?>) invoker).getCluster()).getCluster() instanceof FailoverCluster);
+            ((MockClusterWrapper) ((ScopeClusterWrapper) ((MigrationInvoker<?>) invoker).getCluster()).getCluster()).getCluster() instanceof FailoverCluster);
     }
 
     /**
@@ -327,10 +329,11 @@ class RegistryProtocolTest {
 
         Assertions.assertTrue(invoker instanceof MigrationInvoker);
 
-        Assertions.assertTrue(((MigrationInvoker<?>) invoker).getCluster() instanceof MockClusterWrapper);
+        Assertions.assertTrue(((MigrationInvoker<?>) invoker).getCluster() instanceof ScopeClusterWrapper);
+        Assertions.assertTrue(((ScopeClusterWrapper) ((MigrationInvoker<?>) invoker).getCluster()).getCluster() instanceof MockClusterWrapper);
 
         Assertions.assertTrue(
-            ((MockClusterWrapper) ((MigrationInvoker<?>) invoker).getCluster()).getCluster() instanceof MergeableCluster);
+            ((MockClusterWrapper) ((ScopeClusterWrapper) ((MigrationInvoker<?>) invoker).getCluster()).getCluster()).getCluster() instanceof MergeableCluster);
 
     }
 
