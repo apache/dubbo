@@ -40,13 +40,13 @@ public class MetricsServiceSubscribeListener implements MetricsLifeListener<Regi
     @Override
     public void onEventFinish(RegistryEvent.MetricsServiceSubscribeEvent event) {
         event.getCollector().incrementServiceKey(event.getSource().getApplicationName(), event.getUniqueServiceName(), RegistryEvent.ServiceType.S_SERVICE_SUCCEED, 1);
-        event.getCollector().addApplicationRT(event.getSource().getApplicationName(), OP_TYPE_SUBSCRIBE_SERVICE, event.getTimePair().calc());
+        event.getCollector().addServiceKeyRT(event.getSource().getApplicationName(), event.getUniqueServiceName(), OP_TYPE_SUBSCRIBE_SERVICE, event.getTimePair().calc());
     }
 
     @Override
     public void onEventError(RegistryEvent.MetricsServiceSubscribeEvent event) {
         event.getCollector().incrementServiceKey(event.getSource().getApplicationName(), event.getUniqueServiceName(), RegistryEvent.ServiceType.S_SERVICE_FAILED, 1);
-        event.getCollector().addApplicationRT(event.getSource().getApplicationName(), OP_TYPE_SUBSCRIBE_SERVICE, event.getTimePair().calc());
+        event.getCollector().addServiceKeyRT(event.getSource().getApplicationName(), event.getUniqueServiceName(), OP_TYPE_SUBSCRIBE_SERVICE, event.getTimePair().calc());
     }
 
 }
