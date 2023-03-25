@@ -24,7 +24,8 @@ public enum MetricsCategory {
     RT,
     QPS,
     REQUESTS,
+    APPLICATION,
+    CONFIGCENTER,
     REGISTRY,
-    THREAD_POOL,
-    APPLICATION
+    THREAD_POOL
 }
