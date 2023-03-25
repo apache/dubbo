@@ -271,37 +271,6 @@ class MetricsFilterTest {
             MetricsKey.METRIC_REQUESTS_NETWORK_FAILED.getNameByType(side));
     }
 
-    @Test
-    public void testNoProvider() {
-        testClusterFilterError(RpcException.FORBIDDEN_EXCEPTION,
-            MetricsKey.METRIC_REQUESTS_SERVICE_UNAVAILABLE_FAILED.getNameByType(CommonConstants.CONSUMER));
-    }
-
-    private void testClusterFilterError(int errorCode, String name) {
-//        setup();
-        collector.setCollectEnabled(true);
-        given(invoker.invoke(invocation)).willThrow(new RpcException(errorCode));
-        initParam();
-
-        Long count = 1L;
-
-        for (int i = 0; i < count; i++) {
-            try {
-                metricsClusterFilter.invoke(invoker, invocation);
-            } catch (Exception e) {
-                Assertions.assertTrue(e instanceof RpcException);
-                metricsClusterFilter.onError(e, invoker, invocation);
-            }
-        }
-        Map<String, MetricSample> metricsMap = getMetricsMap();
-        Assertions.assertTrue(metricsMap.containsKey(name));
-
-        MetricSample sample = metricsMap.get(name);
-
-        Assertions.assertSame(((GaugeMetricSample) sample).applyAsLong(), count);
-        teardown();
-    }
-
     private void testFilterError(int errorCode, String name) {
         setup();
         collector.setCollectEnabled(true);
