@@ -90,15 +90,9 @@ public class RestRPCInvocationUtil {
     public static RpcInvocation createBaseRpcInvocation(RequestFacade request, RestMethodMetadata restMethodMetadata) {
         RpcInvocation rpcInvocation = new RpcInvocation();
 
-        String method = restMethodMetadata.getMethod().getName();
-        String[] parameterTypes = restMethodMetadata.getMethod().getParameterTypes();
-
         rpcInvocation.setParameterTypes(restMethodMetadata.getReflectMethod().getParameterTypes());
         rpcInvocation.setReturnType(restMethodMetadata.getReflectMethod().getReturnType());
-        rpcInvocation.setMethodName(method);
-        rpcInvocation.put(RestConstant.PARAMETER_TYPES_DESC, parameterTypes);
-        rpcInvocation.put(RestConstant.METHOD, method);
-
+        rpcInvocation.setMethodName(restMethodMetadata.getMethod().getName());
 
         // TODO set   protocolServiceKey ,but no set method
 //

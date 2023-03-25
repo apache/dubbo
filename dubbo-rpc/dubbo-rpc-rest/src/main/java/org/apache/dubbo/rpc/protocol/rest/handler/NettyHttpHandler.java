@@ -24,6 +24,7 @@ import org.apache.dubbo.metadata.rest.media.MediaType;
 import org.apache.dubbo.remoting.http.HttpHandler;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
+import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.protocol.rest.PathAndInvokerMapper;
 import org.apache.dubbo.rpc.protocol.rest.RestRPCInvocationUtil;
@@ -57,7 +58,11 @@ public class NettyHttpHandler implements HttpHandler<NettyRequestFacade, NettyHt
     @Override
     public void handle(NettyRequestFacade requestFacade, NettyHttpResponse nettyHttpResponse) throws IOException {
 
+        // set remote address
+        RpcContext.getServiceContext().setRemoteAddress(requestFacade.getRemoteAddr(), requestFacade.getRemotePort());
 
+        // set local address
+        RpcContext.getServiceContext().setLocalAddress(requestFacade.getLocalAddr(), requestFacade.getLocalPort());
         // TODO add request filter chain
 
         FullHttpRequest nettyHttpRequest = requestFacade.getRequest();
@@ -78,6 +83,9 @@ public class NettyHttpHandler implements HttpHandler<NettyRequestFacade, NettyHt
             nettyHttpResponse.sendError(500, "dubbo rest invoke Internal error, message is " + throwable.getMessage()
                 + " , stacktrace is: " + stackTraceToString(throwable));
         }
+
+        // write response
+        nettyHttpResponse.finish();
 
 
     }

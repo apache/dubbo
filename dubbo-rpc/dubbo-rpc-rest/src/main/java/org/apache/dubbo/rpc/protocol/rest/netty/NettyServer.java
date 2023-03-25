@@ -27,16 +27,11 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.codec.http.HttpObjectAggregator;
-import io.netty.handler.codec.http.HttpRequestDecoder;
-import io.netty.handler.codec.http.HttpResponseEncoder;
 import io.netty.handler.timeout.IdleStateHandler;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.threadpool.ThreadPool;
-import org.apache.dubbo.rpc.protocol.rest.PathAndInvokerMapper;
-import org.apache.dubbo.rpc.protocol.rest.handler.NettyHttpHandler;
+import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
 
-import javax.net.ssl.SSLContext;
 import java.net.InetSocketAddress;
 import java.util.Collections;
 import java.util.List;
@@ -50,32 +45,16 @@ public class NettyServer {
     protected int configuredPort = 8080;
     protected int runtimePort = -1;
 
-    protected String root = "";
     private EventLoopGroup eventLoopGroup;
     private int ioWorkerCount = Runtime.getRuntime().availableProcessors() * 2;
-    private SSLContext sslContext;
-    private int maxRequestSize = 1024 * 1024 * 10;
-    private int maxInitialLineLength = 4096;
-    private int maxHeaderSize = 8192;
-    private int maxChunkSize = 8192;
-    private int backlog = 128;
-    // default no idle timeout.
-    private int idleTimeout = 60;
+
     private List<ChannelHandler> channelHandlers = Collections.emptyList();
     private Map<ChannelOption, Object> channelOptions = Collections.emptyMap();
     private Map<ChannelOption, Object> childChannelOptions = Collections.emptyMap();
     private List<ChannelHandler> httpChannelHandlers = Collections.emptyList();
+    private UnSharedHandlerCreator unSharedHandlerCallBack;
 
-
-    private final RestHttpRequestDecoder restHttpRequestDecoder;
-
-
-    public NettyServer(PathAndInvokerMapper pathAndInvokerMapper) {
-        this.restHttpRequestDecoder = new RestHttpRequestDecoder(new NettyHttpHandler(pathAndInvokerMapper));
-    }
-
-    public void setSSLContext(SSLContext sslContext) {
-        this.sslContext = sslContext;
+    public NettyServer() {
     }
 
 
@@ -86,35 +65,6 @@ public class NettyServer {
      */
     public void setIoWorkerCount(int ioWorkerCount) {
         this.ioWorkerCount = ioWorkerCount;
-    }
-
-    /**
-     * Set the number of threads to use for the EventExecutor. For more information please see the javadocs of {@link EventExecutor}.
-     * If you want to disable the use of the {@link EventExecutor} specify a value {@literal <=} 0.  This should only be done if you are 100% sure that you don't have any blocking
-     * code in there.
-     *
-     * @param executorThreadCount thread count
-     */
-
-    /**
-     * Set the max. request size in bytes. If this size is exceed we will send a "413 Request Entity Too Large" to the client.
-     *
-     * @param maxRequestSize the max request size. This is 10mb by default.
-     */
-    public void setMaxRequestSize(int maxRequestSize) {
-        this.maxRequestSize = maxRequestSize;
-    }
-
-    public void setMaxInitialLineLength(int maxInitialLineLength) {
-        this.maxInitialLineLength = maxInitialLineLength;
-    }
-
-    public void setMaxHeaderSize(int maxHeaderSize) {
-        this.maxHeaderSize = maxHeaderSize;
-    }
-
-    public void setMaxChunkSize(int maxChunkSize) {
-        this.maxChunkSize = maxChunkSize;
     }
 
     public String getHostname() {
@@ -133,24 +83,6 @@ public class NettyServer {
         this.configuredPort = port;
     }
 
-    public void setBacklog(int backlog) {
-        this.backlog = backlog;
-    }
-
-    public int getIdleTimeout() {
-        return idleTimeout;
-    }
-
-    /**
-     * Set the idle timeout.
-     * Set this value to turn on idle connection cleanup.
-     * If there is no traffic within idleTimeoutSeconds, it'll close connection.
-     *
-     * @param idleTimeoutSeconds - How many seconds to cleanup client connection. default value -1 meaning no idle timeout.
-     */
-    public void setIdleTimeout(int idleTimeoutSeconds) {
-        this.idleTimeout = idleTimeoutSeconds;
-    }
 
     /**
      * Add additional {@link io.netty.channel.ChannelHandler}s to the {@link io.netty.bootstrap.ServerBootstrap}.
@@ -192,16 +124,18 @@ public class NettyServer {
         this.childChannelOptions = channelOptions == null ? Collections.<ChannelOption, Object>emptyMap() : channelOptions;
     }
 
+    public void setUnSharedHandlerCallBack(UnSharedHandlerCreator unSharedHandlerCallBack) {
+        this.unSharedHandlerCallBack = unSharedHandlerCallBack;
+    }
 
     public void start(URL url) {
-        eventLoopGroup = new NioEventLoopGroup(ioWorkerCount,url.getOrDefaultFrameworkModel().getExtensionLoader(ThreadPool.class).getAdaptiveExtension().getExecutor(url));
+        eventLoopGroup = new NioEventLoopGroup(ioWorkerCount, url.getOrDefaultFrameworkModel().getExtensionLoader(ThreadPool.class).getAdaptiveExtension().getExecutor(url));
 
         // Configure the server.
         bootstrap.group(eventLoopGroup)
             .channel(NioServerSocketChannel.class)
-            .childHandler(createChannelInitializer())
-            .option(ChannelOption.SO_BACKLOG, backlog)
-            .childOption(ChannelOption.SO_KEEPALIVE, true);
+            .childHandler(setupHandlers(url));
+
 
         for (Map.Entry<ChannelOption, Object> entry : channelOptions.entrySet()) {
             bootstrap.option(entry.getKey(), entry.getValue());
@@ -212,7 +146,7 @@ public class NettyServer {
         }
 
         final InetSocketAddress socketAddress;
-        if (null == hostname || hostname.isEmpty()) {
+        if (null == getHostname() || getHostname().isEmpty()) {
             socketAddress = new InetSocketAddress(configuredPort);
         } else {
             socketAddress = new InetSocketAddress(hostname, configuredPort);
@@ -222,37 +156,36 @@ public class NettyServer {
         runtimePort = ((InetSocketAddress) channel.localAddress()).getPort();
     }
 
-    private ChannelInitializer<SocketChannel> createChannelInitializer() {
-        if (sslContext == null) {
-            return new ChannelInitializer<SocketChannel>() {
-                @Override
-                public void initChannel(SocketChannel ch) throws Exception {
-                    setupHandlers(ch, "http");
-                }
-            };
-        } else {
-            return new ChannelInitializer<SocketChannel>() {
-                @Override
-                public void initChannel(SocketChannel ch) throws Exception {
-//                    ch.pipeline().addFirst(new SniHandler());
-                    setupHandlers(ch, "https");
-                }
-            };
-        }
-    }
 
-    protected void setupHandlers(SocketChannel ch, String protocol) {
-        ChannelPipeline channelPipeline = ch.pipeline();
-        channelPipeline.addLast(channelHandlers.toArray(new ChannelHandler[channelHandlers.size()]));
-        if (idleTimeout > 0) {
-            channelPipeline.addLast("idleStateHandler", new IdleStateHandler(0, 0, idleTimeout));
-        }
-        channelPipeline.addLast(new HttpRequestDecoder(maxInitialLineLength, maxHeaderSize, maxChunkSize));
-        channelPipeline.addLast(new HttpObjectAggregator(maxRequestSize));
-        channelPipeline.addLast(new HttpResponseEncoder());
-        channelPipeline.addLast(httpChannelHandlers.toArray(new ChannelHandler[httpChannelHandlers.size()]));
-        restHttpRequestDecoder.setProto(protocol);
-        channelPipeline.addLast(restHttpRequestDecoder);
+    protected ChannelHandler setupHandlers(URL url) {
+
+        return new ChannelInitializer<SocketChannel>() {
+            @Override
+            public void initChannel(SocketChannel ch) throws Exception {
+                ChannelPipeline channelPipeline = ch.pipeline();
+
+                int idleTimeout = url.getParameter(RestConstant.IDLE_TIMEOUT, RestConstant.idleTimeout);
+                if (idleTimeout > 0) {
+                    channelHandlers.add(new IdleStateHandler(0, 0, idleTimeout));
+                }
+
+
+                // TODO add SslServerTlsHandler
+//                channelPipeline.addLast(ch.pipeline().addLast("negotiation", new SslServerTlsHandler(url)));
+
+
+                channelPipeline.addLast(channelHandlers.toArray(new ChannelHandler[channelHandlers.size()]));
+
+                List<ChannelHandler> unSharedHandlers = unSharedHandlerCallBack.getUnSharedHandlers(url);
+
+                for (ChannelHandler unSharedHandler : unSharedHandlers) {
+                    channelPipeline.addLast(unSharedHandler);
+                }
+
+                channelPipeline.addLast(httpChannelHandlers.toArray(new ChannelHandler[httpChannelHandlers.size()]));
+
+            }
+        };
 
     }
 

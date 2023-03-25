@@ -16,7 +16,12 @@
  */
 package org.apache.dubbo.rpc.protocol.rest;
 
+import io.netty.buffer.PooledByteBufAllocator;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelOption;
+import io.netty.handler.codec.http.HttpObjectAggregator;
+import io.netty.handler.codec.http.HttpRequestDecoder;
+import io.netty.handler.codec.http.HttpResponseEncoder;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -24,20 +29,26 @@ import org.apache.dubbo.metadata.rest.PathMatcher;
 import org.apache.dubbo.metadata.rest.RestMethodMetadata;
 import org.apache.dubbo.metadata.rest.ServiceRestMetadata;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
 import org.apache.dubbo.rpc.protocol.rest.exception.mapper.ExceptionMapper;
+import org.apache.dubbo.rpc.protocol.rest.handler.NettyHttpHandler;
 import org.apache.dubbo.rpc.protocol.rest.netty.NettyServer;
+import org.apache.dubbo.rpc.protocol.rest.netty.RestHttpRequestDecoder;
+import org.apache.dubbo.rpc.protocol.rest.netty.UnSharedHandlerCreator;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static org.apache.dubbo.common.constants.CommonConstants.BACKLOG_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.IO_THREADS_KEY;
 import static org.apache.dubbo.remoting.Constants.BIND_IP_KEY;
 import static org.apache.dubbo.remoting.Constants.BIND_PORT_KEY;
 import static org.apache.dubbo.remoting.Constants.DEFAULT_IO_THREADS;
-import static org.apache.dubbo.remoting.Constants.DEFAULT_PAYLOAD;
-import static org.apache.dubbo.remoting.Constants.PAYLOAD_KEY;
 import static org.apache.dubbo.rpc.protocol.rest.Constants.DEFAULT_KEEP_ALIVE;
 import static org.apache.dubbo.rpc.protocol.rest.Constants.EXCEPTION_MAPPER_KEY;
 import static org.apache.dubbo.rpc.protocol.rest.Constants.KEEP_ALIVE_KEY;
@@ -56,7 +67,7 @@ public class NettyHttpRestServer implements RestProtocolServer {
      * @return
      */
     protected NettyServer getNettyServer() {
-        return new NettyServer(pathAndInvokerMapper);
+        return new NettyServer();
     }
 
     private String address;
@@ -97,12 +108,87 @@ public class NettyHttpRestServer implements RestProtocolServer {
         }
         server.setPort(url.getParameter(BIND_PORT_KEY, url.getPort()));
 
+        // child options
+        server.setChildChannelOptions(getChildChannelOptionMap(url));
+
+        // set options
+        server.setChannelOptions(getChannelOptionMap(url));
+
+        // set http handler and @Shared
+        server.setHttpChannelHandlers(getHttpChannelHandlers(url));
+        // set unshared callback
+        server.setUnSharedHandlerCallBack(getUnSharedHttpChannelHandlers());
+        // set channel handler  and @Shared
+        server.setChannelHandlers(getChannelHandlers(url));
+        server.setIoWorkerCount(url.getParameter(IO_THREADS_KEY, DEFAULT_IO_THREADS));
+        server.start(url);
+    }
+
+    private UnSharedHandlerCreator getUnSharedHttpChannelHandlers() {
+        return new UnSharedHandlerCreator() {
+            @Override
+            public List<ChannelHandler> getUnSharedHandlers(URL url) {
+                return Arrays.asList(
+
+                    new HttpRequestDecoder(
+                        url.getParameter(RestConstant.MAX_INITIAL_LINE_LENGTH, RestConstant.maxInitialLineLength),
+                        url.getParameter(RestConstant.MAX_HEADER_SIZE, RestConstant.maxHeaderSize),
+                        url.getParameter(RestConstant.MAX_CHUNK_SIZE, RestConstant.maxChunkSize)),
+                    new HttpObjectAggregator(url.getParameter(RestConstant.MAX_REQUEST_SIZE, RestConstant.maxRequestSize)),
+                    new HttpResponseEncoder());
+            }
+        };
+    }
+
+    /**
+     * create child channel options map
+     *
+     * @param url
+     * @return
+     */
+    protected Map<ChannelOption, Object> getChildChannelOptionMap(URL url) {
         Map<ChannelOption, Object> channelOption = new HashMap<>();
         channelOption.put(ChannelOption.SO_KEEPALIVE, url.getParameter(KEEP_ALIVE_KEY, DEFAULT_KEEP_ALIVE));
-        server.setChildChannelOptions(channelOption);
-        server.setIoWorkerCount(url.getParameter(IO_THREADS_KEY, DEFAULT_IO_THREADS));
-        server.setMaxRequestSize(url.getParameter(PAYLOAD_KEY, DEFAULT_PAYLOAD));
-        server.start(url);
+        return channelOption;
+    }
+
+    /**
+     * create channel options map
+     *
+     * @param url
+     * @return
+     */
+    protected Map<ChannelOption, Object> getChannelOptionMap(URL url) {
+        Map<ChannelOption, Object> options = new HashMap<>();
+
+        options.put(ChannelOption.SO_REUSEADDR, Boolean.TRUE);
+        options.put(ChannelOption.TCP_NODELAY, Boolean.TRUE);
+        options.put(ChannelOption.SO_BACKLOG, url.getPositiveParameter(BACKLOG_KEY, org.apache.dubbo.remoting.Constants.DEFAULT_BACKLOG));
+        options.put(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
+        return options;
+    }
+
+    /**
+     * create http channel handlers
+     *
+     * @param url
+     * @return
+     */
+    protected List<ChannelHandler> getHttpChannelHandlers(URL url) {
+        return Arrays.asList(
+            new RestHttpRequestDecoder(new NettyHttpHandler(pathAndInvokerMapper)));
+    }
+
+    /**
+     * create channel handler
+     *
+     * @param url
+     * @return
+     */
+    protected List<ChannelHandler> getChannelHandlers(URL url) {
+        List<ChannelHandler> channelHandlers = new ArrayList<>();
+
+        return channelHandlers;
     }
 
     @Override
