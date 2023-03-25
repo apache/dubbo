@@ -14,27 +14,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.rpc.protocol.rest.pair;
 
-package org.apache.dubbo.rpc.protocol.rest;
+import org.apache.dubbo.metadata.rest.media.MediaType;
 
 /**
- * Constants definition.
+ *  for http message codec result
  */
-public interface Constants {
-    String KEEP_ALIVE_KEY = "keepalive";
+public class MessageCodecResultPair {
+    /**
+     *  has coded
+     */
+    boolean coded;
 
-    boolean DEFAULT_KEEP_ALIVE = true;
-
-    String EXTENSION_KEY = "extension";
-
-    // http server
-
-    String NETTY_HTTP = "netty_http";
-
-    // exception mapper
-    String EXCEPTION_MAPPER_KEY = "exception.mapper";
+    /**
+     *  codec type
+     */
+    MediaType mediaType;
 
 
+    public MessageCodecResultPair(boolean coded, MediaType mediaType) {
+        this.coded = coded;
+        this.mediaType = mediaType;
+    }
 
 
+    public boolean isCoded() {
+        return coded;
+    }
+
+    public MediaType getMediaType() {
+        return mediaType;
+    }
+
+    public static MessageCodecResultPair pair(boolean coded, MediaType mediaType) {
+        return new MessageCodecResultPair(coded, mediaType);
+    }
 }

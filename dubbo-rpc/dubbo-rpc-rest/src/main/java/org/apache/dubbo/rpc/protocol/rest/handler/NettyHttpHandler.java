@@ -24,6 +24,7 @@ import org.apache.dubbo.metadata.rest.media.MediaType;
 import org.apache.dubbo.remoting.http.HttpHandler;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
+import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.protocol.rest.PathAndInvokerMapper;
 import org.apache.dubbo.rpc.protocol.rest.RestRPCInvocationUtil;
@@ -35,10 +36,11 @@ import org.apache.dubbo.rpc.protocol.rest.exception.UnSupportContentTypeExceptio
 import org.apache.dubbo.rpc.protocol.rest.exception.mapper.ExceptionMapper;
 import org.apache.dubbo.rpc.protocol.rest.message.HttpMessageCodecManager;
 import org.apache.dubbo.rpc.protocol.rest.netty.NettyHttpResponse;
+import org.apache.dubbo.rpc.protocol.rest.pair.InvokerAndRestMethodMetadataPair;
+import org.apache.dubbo.rpc.protocol.rest.pair.MessageCodecResultPair;
 import org.apache.dubbo.rpc.protocol.rest.request.NettyRequestFacade;
 import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
 import org.apache.dubbo.rpc.protocol.rest.util.MediaTypeUtil;
-import org.apache.dubbo.rpc.protocol.rest.util.Pair;
 
 import java.io.IOException;
 
@@ -57,7 +59,11 @@ public class NettyHttpHandler implements HttpHandler<NettyRequestFacade, NettyHt
     @Override
     public void handle(NettyRequestFacade requestFacade, NettyHttpResponse nettyHttpResponse) throws IOException {
 
+        // set remote address
+        RpcContext.getServiceContext().setRemoteAddress(requestFacade.getRemoteAddr(), requestFacade.getRemotePort());
 
+        // set local address
+        RpcContext.getServiceContext().setLocalAddress(requestFacade.getLocalAddr(), requestFacade.getLocalPort());
         // TODO add request filter chain
 
         FullHttpRequest nettyHttpRequest = requestFacade.getRequest();
@@ -79,16 +85,19 @@ public class NettyHttpHandler implements HttpHandler<NettyRequestFacade, NettyHt
                 + " , stacktrace is: " + stackTraceToString(throwable));
         }
 
+        // write response
+        nettyHttpResponse.finish();
+
 
     }
 
     private void doHandler(FullHttpRequest nettyHttpRequest, NettyHttpResponse nettyHttpResponse, RequestFacade request) throws Exception {
         //  acquire metadata by request
-        Pair<Invoker, RestMethodMetadata> restMethodMetadataPair = RestRPCInvocationUtil.getRestMethodMetadata(request, pathAndInvokerMapper);
+        InvokerAndRestMethodMetadataPair restMethodMetadataPair = RestRPCInvocationUtil.getRestMethodMetadata(request, pathAndInvokerMapper);
 
-        Invoker invoker = restMethodMetadataPair.getFirst();
+        Invoker invoker = restMethodMetadataPair.getInvoker();
 
-        RestMethodMetadata restMethodMetadata = restMethodMetadataPair.getSecond();
+        RestMethodMetadata restMethodMetadata = restMethodMetadataPair.getRestMethodMetadata();
 
         // content-type  support judge,throw unSupportException
         acceptSupportJudge(request, restMethodMetadata.getReflectMethod().getReturnType());
@@ -136,9 +145,9 @@ public class NettyHttpHandler implements HttpHandler<NettyRequestFacade, NettyHt
     private void writeResult(NettyHttpResponse nettyHttpResponse, RequestFacade request, Invoker invoker, Object value, Class returnType) throws Exception {
         MediaType mediaType = getAcceptMediaType(request);
 
-        Pair<Boolean, MediaType> booleanMediaTypePair = HttpMessageCodecManager.httpMessageEncode(nettyHttpResponse.getOutputStream(), value, invoker.getUrl(), mediaType, returnType);
+        MessageCodecResultPair booleanMediaTypePair = HttpMessageCodecManager.httpMessageEncode(nettyHttpResponse.getOutputStream(), value, invoker.getUrl(), mediaType, returnType);
 
-        nettyHttpResponse.addOutputHeaders(RestHeaderEnum.CONTENT_TYPE.getHeader(), booleanMediaTypePair.getSecond().value);
+        nettyHttpResponse.addOutputHeaders(RestHeaderEnum.CONTENT_TYPE.getHeader(), booleanMediaTypePair.getMediaType().value);
     }
 
     /**

@@ -20,15 +20,13 @@ import org.apache.dubbo.common.BaseServiceMetadata;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.metadata.rest.RestMethodMetadata;
-import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.protocol.rest.annotation.ParamParserManager;
 import org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.provider.ProviderParseContext;
-import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
 import org.apache.dubbo.rpc.protocol.rest.exception.ParamParseException;
+import org.apache.dubbo.rpc.protocol.rest.pair.InvokerAndRestMethodMetadataPair;
 import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
 import org.apache.dubbo.rpc.protocol.rest.util.HttpHeaderUtil;
-import org.apache.dubbo.rpc.protocol.rest.util.Pair;
 
 
 import java.util.Arrays;
@@ -90,15 +88,9 @@ public class RestRPCInvocationUtil {
     public static RpcInvocation createBaseRpcInvocation(RequestFacade request, RestMethodMetadata restMethodMetadata) {
         RpcInvocation rpcInvocation = new RpcInvocation();
 
-        String method = restMethodMetadata.getMethod().getName();
-        String[] parameterTypes = restMethodMetadata.getMethod().getParameterTypes();
-
         rpcInvocation.setParameterTypes(restMethodMetadata.getReflectMethod().getParameterTypes());
         rpcInvocation.setReturnType(restMethodMetadata.getReflectMethod().getReturnType());
-        rpcInvocation.setMethodName(method);
-        rpcInvocation.put(RestConstant.PARAMETER_TYPES_DESC, parameterTypes);
-        rpcInvocation.put(RestConstant.METHOD, method);
-
+        rpcInvocation.setMethodName(restMethodMetadata.getMethod().getName());
 
         // TODO set   protocolServiceKey ,but no set method
 //
@@ -120,7 +112,7 @@ public class RestRPCInvocationUtil {
      * @param pathAndInvokerMapper
      * @return
      */
-    public static Pair<Invoker, RestMethodMetadata> getRestMethodMetadata(RequestFacade request, PathAndInvokerMapper pathAndInvokerMapper) {
+    public static InvokerAndRestMethodMetadataPair getRestMethodMetadata(RequestFacade request, PathAndInvokerMapper pathAndInvokerMapper) {
         String path = request.getPath();
         String version = request.getHeader(RestHeaderEnum.VERSION.getHeader());
         String group = request.getHeader(RestHeaderEnum.GROUP.getHeader());

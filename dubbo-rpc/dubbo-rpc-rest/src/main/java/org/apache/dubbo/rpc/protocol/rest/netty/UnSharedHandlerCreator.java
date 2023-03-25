@@ -14,27 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.rpc.protocol.rest.netty;
 
-package org.apache.dubbo.rpc.protocol.rest;
+import io.netty.channel.ChannelHandler;
+import org.apache.dubbo.common.URL;
+
+import java.util.List;
 
 /**
- * Constants definition.
+ *  FOR create netty un shared (no @Shared) handler
  */
-public interface Constants {
-    String KEEP_ALIVE_KEY = "keepalive";
+public interface UnSharedHandlerCreator {
 
-    boolean DEFAULT_KEEP_ALIVE = true;
-
-    String EXTENSION_KEY = "extension";
-
-    // http server
-
-    String NETTY_HTTP = "netty_http";
-
-    // exception mapper
-    String EXCEPTION_MAPPER_KEY = "exception.mapper";
-
-
-
-
+    List<ChannelHandler> getUnSharedHandlers(URL url);
 }

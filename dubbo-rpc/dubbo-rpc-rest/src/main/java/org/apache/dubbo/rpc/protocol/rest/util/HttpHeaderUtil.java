@@ -54,9 +54,6 @@ public class HttpHeaderUtil {
             if (value != null) {
                 size += value.getBytes(StandardCharsets.UTF_8).length;
             }
-            if (size > RestConstant.MAX_HEADER_SIZE) {
-                throw new IllegalArgumentException("The attachments of " + RpcContext.class.getSimpleName() + " is too big");
-            }
 
             List<String> strings = attachments.get(key);
             if (strings == null) {
