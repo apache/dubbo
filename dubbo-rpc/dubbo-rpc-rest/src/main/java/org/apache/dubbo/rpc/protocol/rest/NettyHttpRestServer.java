@@ -129,6 +129,8 @@ public class NettyHttpRestServer implements RestProtocolServer {
             @Override
             public List<ChannelHandler> getUnSharedHandlers(URL url) {
                 return Arrays.asList(
+                    // TODO add SslServerTlsHandler
+//                channelPipeline.addLast(ch.pipeline().addLast("negotiation", new SslServerTlsHandler(url)));
 
                     new HttpRequestDecoder(
                         url.getParameter(RestConstant.MAX_INITIAL_LINE_LENGTH, RestConstant.maxInitialLineLength),

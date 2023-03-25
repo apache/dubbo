@@ -169,11 +169,6 @@ public class NettyServer {
                     channelHandlers.add(new IdleStateHandler(0, 0, idleTimeout));
                 }
 
-
-                // TODO add SslServerTlsHandler
-//                channelPipeline.addLast(ch.pipeline().addLast("negotiation", new SslServerTlsHandler(url)));
-
-
                 channelPipeline.addLast(channelHandlers.toArray(new ChannelHandler[channelHandlers.size()]));
 
                 List<ChannelHandler> unSharedHandlers = unSharedHandlerCallBack.getUnSharedHandlers(url);
