@@ -19,7 +19,7 @@ package org.apache.dubbo.config.nested;
 
 import java.io.Serializable;
 
-public class RtHistogramConfig implements Serializable {
+public class HistogramConfig implements Serializable {
 
     private Boolean enabled;
 

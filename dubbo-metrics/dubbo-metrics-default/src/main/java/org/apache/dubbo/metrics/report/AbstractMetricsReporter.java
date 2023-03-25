@@ -28,7 +28,7 @@ import org.apache.dubbo.metrics.MetricsGlobalRegistry;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.metrics.collector.AggregateMetricsCollector;
 import org.apache.dubbo.metrics.collector.MetricsCollector;
-import org.apache.dubbo.metrics.collector.RtHistogramMetricsCollector;
+import org.apache.dubbo.metrics.collector.HistogramMetricsCollector;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -137,7 +137,7 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
     private void initCollectors() {
         ScopeBeanFactory beanFactory = applicationModel.getBeanFactory();
         beanFactory.getOrRegisterBean(AggregateMetricsCollector.class);
-        beanFactory.getOrRegisterBean(RtHistogramMetricsCollector.class);
+        beanFactory.getOrRegisterBean(HistogramMetricsCollector.class);
         List<MetricsCollector> otherCollectors = beanFactory.getBeansOfType(MetricsCollector.class);
         collectors.addAll(otherCollectors);
     }

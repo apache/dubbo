@@ -20,26 +20,26 @@ package org.apache.dubbo.metrics.register;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.Timer;
-import org.apache.dubbo.config.nested.RtHistogramConfig;
-import org.apache.dubbo.metrics.sample.RtHistogramMetricSample;
+import org.apache.dubbo.config.nested.HistogramConfig;
+import org.apache.dubbo.metrics.sample.HistogramMetricSample;
 
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class RtHistogramMetricRegister implements MetricRegister<RtHistogramMetricSample, Timer> {
+public class HistogramMetricRegister implements MetricRegister<HistogramMetricSample, Timer> {
 
     private final MeterRegistry registry;
-    private final RtHistogramConfig config;
+    private final HistogramConfig config;
 
-    public RtHistogramMetricRegister(MeterRegistry registry, RtHistogramConfig config) {
+    public HistogramMetricRegister(MeterRegistry registry, HistogramConfig config) {
         this.registry = registry;
         this.config = config;
     }
 
     @Override
-    public Timer register(RtHistogramMetricSample sample) {
+    public Timer register(HistogramMetricSample sample) {
         List<Tag> tags = new ArrayList<>();
         sample.getTags().forEach((k, v) -> {
             if (v == null) {

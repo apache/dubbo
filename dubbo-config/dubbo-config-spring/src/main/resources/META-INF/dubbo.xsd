@@ -1044,7 +1044,7 @@
             <xsd:element ref="prometheus-exporter" minOccurs="0"/>
             <xsd:element ref="prometheus-pushgateway" minOccurs="0"/>
             <xsd:element ref="aggregation" minOccurs="0"/>
-            <xsd:element ref="rt-histogram" minOccurs="0"/>
+            <xsd:element ref="histogram" minOccurs="0"/>
         </xsd:all>
         <xsd:attribute name="protocol" type="xsd:string">
             <xsd:annotation>
@@ -1156,7 +1156,7 @@
         </xsd:attribute>
     </xsd:complexType>
 
-    <xsd:complexType name="rtHistogramType">
+    <xsd:complexType name="histogramType">
         <xsd:attribute name="enabled" type="xsd:boolean">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ Enable local rt histogram or not. ]]></xsd:documentation>
@@ -2055,7 +2055,7 @@
         </xsd:annotation>
     </xsd:element>
 
-    <xsd:element name="rt-histogram" type="rtHistogramType">
+    <xsd:element name="histogram" type="histogramType">
         <xsd:annotation>
             <xsd:documentation><![CDATA[ The metrics rt histogram config. ]]></xsd:documentation>
         </xsd:annotation>

@@ -19,7 +19,7 @@ package org.apache.dubbo.config;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.config.nested.AggregationConfig;
 import org.apache.dubbo.config.nested.PrometheusConfig;
-import org.apache.dubbo.config.nested.RtHistogramConfig;
+import org.apache.dubbo.config.nested.HistogramConfig;
 import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMETHEUS;
@@ -47,9 +47,9 @@ class MetricsConfigTest {
         aggregation.setEnabled(true);
         metrics.setAggregation(aggregation);
 
-        RtHistogramConfig rtHistogram = new RtHistogramConfig();
-        rtHistogram.setEnabled(true);
-        metrics.setRtHistogram(rtHistogram);
+        HistogramConfig histogram = new HistogramConfig();
+        histogram.setEnabled(true);
+        metrics.setHistogram(histogram);
 
         URL url = metrics.toUrl();
 
@@ -60,7 +60,7 @@ class MetricsConfigTest {
         assertThat(url.getParameter("prometheus.exporter.enabled"), equalTo("true"));
         assertThat(url.getParameter("prometheus.pushgateway.enabled"), equalTo("true"));
         assertThat(url.getParameter("aggregation.enabled"), equalTo("true"));
-        assertThat(url.getParameter("rtHistogram.enabled"), equalTo("true"));
+        assertThat(url.getParameter("histogram.enabled"), equalTo("true"));
     }
 
     @Test

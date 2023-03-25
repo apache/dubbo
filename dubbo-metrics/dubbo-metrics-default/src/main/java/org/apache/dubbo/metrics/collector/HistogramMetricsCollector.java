@@ -21,15 +21,15 @@ import io.micrometer.core.instrument.Timer;
 import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.context.ConfigManager;
-import org.apache.dubbo.config.nested.RtHistogramConfig;
+import org.apache.dubbo.config.nested.HistogramConfig;
 import org.apache.dubbo.metrics.MetricsGlobalRegistry;
 import org.apache.dubbo.metrics.event.MetricsEvent;
 import org.apache.dubbo.metrics.event.RTEvent;
 import org.apache.dubbo.metrics.listener.MetricsListener;
 import org.apache.dubbo.metrics.model.MethodMetric;
 import org.apache.dubbo.metrics.model.MetricsKey;
-import org.apache.dubbo.metrics.register.RtHistogramMetricRegister;
-import org.apache.dubbo.metrics.sample.RtHistogramMetricSample;
+import org.apache.dubbo.metrics.register.HistogramMetricRegister;
+import org.apache.dubbo.metrics.sample.HistogramMetricSample;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -37,28 +37,28 @@ import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.metrics.model.MetricsCategory.RT;
 
-public class RtHistogramMetricsCollector implements MetricsListener {
+public class HistogramMetricsCollector implements MetricsListener {
 
     private final ConcurrentHashMap<MethodMetric, Timer> rt = new ConcurrentHashMap<>();
-    private RtHistogramMetricRegister metricRegister;
+    private HistogramMetricRegister metricRegister;
     private final ApplicationModel applicationModel;
 
     private static final Integer[] DEFAULT_BUCKETS_MS = new Integer[]{100, 300, 500, 1000, 3000, 5000, 10000};
 
-    public RtHistogramMetricsCollector(ApplicationModel applicationModel) {
+    public HistogramMetricsCollector(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
 
         ConfigManager configManager = applicationModel.getApplicationConfigManager();
         MetricsConfig config = configManager.getMetrics().orElse(null);
-        if (config != null && config.getRtHistogram() != null && Boolean.TRUE.equals(config.getRtHistogram().getEnabled())) {
+        if (config != null && config.getHistogram() != null && Boolean.TRUE.equals(config.getHistogram().getEnabled())) {
             registerListener();
 
-            RtHistogramConfig rtHistogramConfig = config.getRtHistogram();
-            if (!Boolean.TRUE.equals(rtHistogramConfig.getEnabledPercentiles()) && rtHistogramConfig.getBucketsMs() == null) {
-                rtHistogramConfig.setBucketsMs(DEFAULT_BUCKETS_MS);
+            HistogramConfig histogram = config.getHistogram();
+            if (!Boolean.TRUE.equals(histogram.getEnabledPercentiles()) && histogram.getBucketsMs() == null) {
+                histogram.setBucketsMs(DEFAULT_BUCKETS_MS);
             }
 
-            metricRegister = new RtHistogramMetricRegister(MetricsGlobalRegistry.getCompositeRegistry(), rtHistogramConfig);
+            metricRegister = new HistogramMetricRegister(MetricsGlobalRegistry.getCompositeRegistry(), histogram);
         }
     }
 
@@ -78,7 +78,7 @@ public class RtHistogramMetricsCollector implements MetricsListener {
             MethodMetric metric = (MethodMetric) event.getSource();
             Long responseTime = event.getRt();
 
-            RtHistogramMetricSample sample = new RtHistogramMetricSample(MetricsKey.METRIC_RT_HISTOGRAM.getNameByType(metric.getSide()),
+            HistogramMetricSample sample = new HistogramMetricSample(MetricsKey.METRIC_RT_HISTOGRAM.getNameByType(metric.getSide()),
                 MetricsKey.METRIC_RT_HISTOGRAM.getDescription(), metric.getTags(), RT);
 
             Timer timer = ConcurrentHashMapUtils.computeIfAbsent(rt, metric, k -> metricRegister.register(sample));
