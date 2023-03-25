@@ -18,7 +18,7 @@
 package org.apache.dubbo.metrics.registry.metrics.collector;
 
 import org.apache.dubbo.config.ApplicationConfig;
-import org.apache.dubbo.metrics.event.Dispatcher;
+import org.apache.dubbo.metrics.event.MetricsDispatcher;
 import org.apache.dubbo.metrics.event.MetricsEventBus;
 import org.apache.dubbo.metrics.model.MetricsKey;
 import org.apache.dubbo.metrics.model.MetricsKeyWrapper;
@@ -68,7 +68,7 @@ class RegistryMetricsCollectorTest {
     @Test
     void testRegisterMetrics() {
 
-        applicationModel.getBeanFactory().getOrRegisterBean(Dispatcher.class);
+        applicationModel.getBeanFactory().getOrRegisterBean(MetricsDispatcher.class);
         RegistryMetricsCollector collector = applicationModel.getBeanFactory().getOrRegisterBean(RegistryMetricsCollector.class);
         collector.setCollectEnabled(true);
 
@@ -130,7 +130,7 @@ class RegistryMetricsCollectorTest {
     @Test
     void testServicePushMetrics() {
 
-        applicationModel.getBeanFactory().getOrRegisterBean(Dispatcher.class);
+        applicationModel.getBeanFactory().getOrRegisterBean(MetricsDispatcher.class);
         RegistryMetricsCollector collector = applicationModel.getBeanFactory().getOrRegisterBean(RegistryMetricsCollector.class);
         collector.setCollectEnabled(true);
         String serviceName = "demo.gameService";
@@ -195,7 +195,7 @@ class RegistryMetricsCollectorTest {
     @Test
     void testServiceSubscribeMetrics() {
 
-        applicationModel.getBeanFactory().getOrRegisterBean(Dispatcher.class);
+        applicationModel.getBeanFactory().getOrRegisterBean(MetricsDispatcher.class);
         RegistryMetricsCollector collector = applicationModel.getBeanFactory().getOrRegisterBean(RegistryMetricsCollector.class);
         collector.setCollectEnabled(true);
         String serviceName = "demo.gameService";

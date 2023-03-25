@@ -18,7 +18,7 @@
 package org.apache.dubbo.metrics.metadata;
 
 import org.apache.dubbo.config.ApplicationConfig;
-import org.apache.dubbo.metrics.event.Dispatcher;
+import org.apache.dubbo.metrics.event.MetricsDispatcher;
 import org.apache.dubbo.metrics.event.MetricsEventBus;
 import org.apache.dubbo.metrics.metadata.collector.MetadataMetricsCollector;
 import org.apache.dubbo.metrics.metadata.event.MetadataEvent;
@@ -69,7 +69,7 @@ class MetadataMetricsCollectorTest {
     @Test
     void testPushMetrics() throws InterruptedException {
 
-        applicationModel.getBeanFactory().getOrRegisterBean(Dispatcher.class);
+        applicationModel.getBeanFactory().getOrRegisterBean(MetricsDispatcher.class);
         MetadataMetricsCollector collector = applicationModel.getBeanFactory().getOrRegisterBean(MetadataMetricsCollector.class);
         collector.setCollectEnabled(true);
 
@@ -130,7 +130,7 @@ class MetadataMetricsCollectorTest {
     @Test
     void testSubscribeMetrics() {
 
-        applicationModel.getBeanFactory().getOrRegisterBean(Dispatcher.class);
+        applicationModel.getBeanFactory().getOrRegisterBean(MetricsDispatcher.class);
         MetadataMetricsCollector collector = applicationModel.getBeanFactory().getOrRegisterBean(MetadataMetricsCollector.class);
         collector.setCollectEnabled(true);
 
@@ -192,7 +192,7 @@ class MetadataMetricsCollectorTest {
     @Test
     void testStoreProviderMetadataMetrics() throws InterruptedException {
 
-        applicationModel.getBeanFactory().getOrRegisterBean(Dispatcher.class);
+        applicationModel.getBeanFactory().getOrRegisterBean(MetricsDispatcher.class);
         MetadataMetricsCollector collector = applicationModel.getBeanFactory().getOrRegisterBean(MetadataMetricsCollector.class);
         collector.setCollectEnabled(true);
 

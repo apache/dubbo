@@ -44,7 +44,7 @@ public class MetricsEventBus {
             if (beanFactory.isDestroyed()) {
                 return;
             }
-            Dispatcher dispatcher = beanFactory.getBean(Dispatcher.class);
+            MetricsDispatcher dispatcher = beanFactory.getBean(MetricsDispatcher.class);
             Optional.ofNullable(dispatcher).ifPresent(d -> d.publishEvent(event));
         }
     }
@@ -83,7 +83,7 @@ public class MetricsEventBus {
         if (beanFactory.isDestroyed()) {
             return targetSupplier.get();
         }
-        Dispatcher dispatcher = beanFactory.getBean(Dispatcher.class);
+        MetricsDispatcher dispatcher = beanFactory.getBean(MetricsDispatcher.class);
         if (dispatcher == null) {
             return targetSupplier.get();
         }
