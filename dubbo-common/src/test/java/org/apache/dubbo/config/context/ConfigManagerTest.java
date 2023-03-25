@@ -329,6 +329,7 @@ class ConfigManagerTest {
             applicationConfig22.setParameters(CollectionUtils.toStringMap("k1", "v11", "k2", "v22", "k3", "v3"));
             configManager.addConfig(applicationConfig11);
             configManager.addConfig(applicationConfig22);
+
             assertEquals(applicationConfig11, configManager.getApplicationOrElseThrow());
             assertEquals(applicationConfig11.getName(), "app22");
             assertEquals(applicationConfig11.getParameters(), CollectionUtils.toStringMap("k1", "v11", "k2", "v22", "k3", "v3"));
@@ -345,9 +346,10 @@ class ConfigManagerTest {
             applicationConfig44.setParameters(CollectionUtils.toStringMap("k1", "v11", "k2", "v22", "k3", "v3"));
             configManager.addConfig(applicationConfig33);
             configManager.addConfig(applicationConfig44);
+
             assertEquals(applicationConfig33, configManager.getApplicationOrElseThrow());
-            assertEquals(applicationConfig33.getName(), "app33");
-            assertEquals(applicationConfig33.getParameters(), CollectionUtils.toStringMap("k1", "v1", "k2", "v2", "k3", "v3"));
+            assertEquals("app33", applicationConfig33.getName());
+            assertEquals(CollectionUtils.toStringMap("k1", "v1", "k2", "v2", "k3", "v3"), applicationConfig33.getParameters());
         } finally {
             System.clearProperty(DUBBO_CONFIG_MODE);
         }
