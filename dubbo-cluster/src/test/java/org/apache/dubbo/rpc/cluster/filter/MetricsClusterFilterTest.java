@@ -100,10 +100,10 @@ class MetricsClusterFilterTest {
     @Test
     public void testNoProvider(){
         testClusterFilterError(RpcException.FORBIDDEN_EXCEPTION,
-            MetricsKey.METRIC_REQUESTS_SERVICE_UNAVAILABLE_FAILED.formatName(CommonConstants.CONSUMER));
+            MetricsKey.METRIC_REQUESTS_SERVICE_UNAVAILABLE_FAILED.getNameByType(CommonConstants.CONSUMER));
     }
 
-    private void testClusterFilterError(int errorCode,MetricsKey metricsKey){
+    private void testClusterFilterError(int errorCode,String name){
         collector.setCollectEnabled(true);
         given(invoker.invoke(invocation)).willThrow(new RpcException(errorCode));
         initParam();
@@ -119,9 +119,9 @@ class MetricsClusterFilterTest {
             }
         }
         Map<String, MetricSample> metricsMap = getMetricsMap();
-        Assertions.assertTrue(metricsMap.containsKey(metricsKey.getName()));
+        Assertions.assertTrue(metricsMap.containsKey(name));
 
-        MetricSample sample = metricsMap.get(metricsKey.getName());
+        MetricSample sample = metricsMap.get(name);
 
         Assertions.assertSame(((GaugeMetricSample) sample).applyAsLong(), count);
         teardown();
