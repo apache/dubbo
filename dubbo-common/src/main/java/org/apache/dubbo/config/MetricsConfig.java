@@ -41,11 +41,6 @@ public class MetricsConfig extends AbstractConfig {
     private Boolean enableJvmMetrics;
 
     /**
-     * Enable jvm metrics when collecting.
-     */
-    private Boolean enableThreadpoolMetrics;
-
-    /**
      * Enable registry metrics.
      */
     private Boolean enableRegistryMetrics;
@@ -168,12 +163,5 @@ public class MetricsConfig extends AbstractConfig {
     public void setEnableMetadataMetrics(Boolean enableMetadataMetrics) {
         this.enableMetadataMetrics = enableMetadataMetrics;
     }
-
-    public Boolean getEnableThreadpoolMetrics() {
-        return enableThreadpoolMetrics;
-    }
-
-    public void setEnableThreadpoolMetrics(Boolean enableThreadpoolMetrics) {
-        this.enableThreadpoolMetrics = enableThreadpoolMetrics;
-    }
 }
+

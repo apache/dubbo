@@ -368,7 +368,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         if (metricsConfig != null && PROTOCOL_PROMETHEUS.equals(metricsConfig.getProtocol())) {
             collector.setCollectEnabled(true);
             collector.collectApplication(applicationModel);
-            collector.setThreadpoolCollectEnabled(metricsConfig.getEnableThreadpoolMetrics());
             String protocol = metricsConfig.getProtocol();
             if (StringUtils.isNotEmpty(protocol)) {
                 MetricsReporterFactory metricsReporterFactory = getExtensionLoader(MetricsReporterFactory.class).getAdaptiveExtension();
@@ -1110,9 +1109,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
     private void startMetricsCollector(){
         DefaultMetricsCollector collector = applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class);
-        if(Objects.nonNull(collector) && collector.isThreadpoolCollectEnabled()) {
-            collector.registryDefaultSample();
-        }
+        collector.registryDefaultSample();
     }
 
     private void completeStartFuture(boolean success) {

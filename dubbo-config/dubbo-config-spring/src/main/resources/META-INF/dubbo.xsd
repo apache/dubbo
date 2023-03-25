@@ -1057,12 +1057,6 @@
             </xsd:annotation>
         </xsd:attribute>
 
-        <xsd:attribute name="enable-threadpool-metrics" type="xsd:boolean" default="false">
-            <xsd:annotation>
-                <xsd:documentation><![CDATA[ Enable threadpool metrics when collecting. ]]></xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-
         <xsd:attribute name="enable-registry-metrics" type="xsd:boolean" default="false">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ Enable registry metrics when collecting. ]]></xsd:documentation>
