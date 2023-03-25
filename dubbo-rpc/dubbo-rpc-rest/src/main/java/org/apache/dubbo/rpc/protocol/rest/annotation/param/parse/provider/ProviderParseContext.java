@@ -17,12 +17,9 @@
 package org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.provider;
 
 
-import org.apache.dubbo.metadata.rest.ArgInfo;
 import org.apache.dubbo.rpc.protocol.rest.annotation.BaseParseContext;
 import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
 
-import java.util.Arrays;
-import java.util.List;
 
 public class ProviderParseContext extends BaseParseContext {
 
@@ -31,19 +28,6 @@ public class ProviderParseContext extends BaseParseContext {
     private Object response;
     private Object request;
 
-
-    public ProviderParseContext() {
-    }
-
-    public ProviderParseContext(RequestFacade request, List<ArgInfo> argInfos) {
-        this.requestFacade = request;
-        this.argInfos = argInfos;
-        args = createDefaultListArgs(argInfos.size());
-    }
-
-    private List<Object> createDefaultListArgs(int size) {
-        return Arrays.asList(new Object[size]);
-    }
 
     public ProviderParseContext(RequestFacade request) {
         this.requestFacade = request;

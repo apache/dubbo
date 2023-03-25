@@ -19,7 +19,12 @@ package org.apache.dubbo.rpc.protocol.rest;
 
 import org.apache.dubbo.rpc.RpcContext;
 
-import javax.ws.rs.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import java.util.Map;
 
@@ -49,6 +54,26 @@ public class DemoServiceImpl implements DemoService {
 
     public boolean isCalled() {
         return called;
+    }
+
+    @Override
+    public int primitiveInt(int a, int b) {
+        return a + b;
+    }
+
+    @Override
+    public long primitiveLong(long a, Long b) {
+        return a + b;
+    }
+
+    @Override
+    public long primitiveByte(byte a, Long b) {
+        return a + b;
+    }
+
+    @Override
+    public long primitiveShort(short a, Long b) {
+        return a + b;
     }
 
     @GET

@@ -158,7 +158,7 @@ class JaxrsRestProtocolTest {
 
         URL url = this.registerProvider(exportUrl, server, DemoService.class);
 
-        RpcContext.getClientAttachment().setAttachment("timeout", "200");
+        RpcContext.getClientAttachment().setAttachment("timeout", "20000");
         Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(server, DemoService.class, url));
 
         DemoService demoService = this.proxy.getProxy(protocol.refer(DemoService.class, url));
@@ -367,11 +367,36 @@ class JaxrsRestProtocolTest {
 
             RestDemoForTestException restDemoForTestException = this.proxy.getProxy(protocol.refer(RestDemoForTestException.class, referUrl));
 
-            restDemoForTestException.test400("abc","edf");
+            restDemoForTestException.test400("abc", "edf");
 
             exporter.unexport();
         });
 
+    }
+
+    @Test
+    void testPrimitive() {
+        DemoService server = new DemoServiceImpl();
+
+        URL url = this.registerProvider(exportUrl, server, DemoService.class);
+
+        URL nettyUrl = url.addParameter(SERVER_KEY, "netty")
+            .addParameter(EXTENSION_KEY, "org.apache.dubbo.rpc.protocol.rest.support.LoggingFilter");
+        Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(server, DemoService.class, nettyUrl));
+
+        DemoService demoService = this.proxy.getProxy(protocol.refer(DemoService.class, nettyUrl));
+
+        Integer result = demoService.primitiveInt(1, 2);
+        Long resultLong = demoService.primitiveLong(1, 2l);
+        long resultByte = demoService.primitiveByte((byte) 1, 2l);
+        long resultShort = demoService.primitiveShort((short) 1, 2l);
+
+        assertThat(result, is(3));
+        assertThat(resultShort, is(3l));
+        assertThat(resultLong, is(3l));
+        assertThat(resultByte, is(3l));
+
+        exporter.unexport();
     }
 
     public static class TestExceptionMapper implements ExceptionHandler<RuntimeException> {
