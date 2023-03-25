@@ -64,7 +64,7 @@ public class RegistryMetricsCollector implements ApplicationMetricsCollector<Reg
             ConfigManager configManager = applicationModel.getApplicationConfigManager();
             configManager.getMetrics().ifPresent(metricsConfig -> setCollectEnabled(metricsConfig.getEnableRegistryMetrics()));
         }
-        return Optional.ofNullable(collectEnabled).orElse(false);
+        return Optional.ofNullable(collectEnabled).orElse(true);
     }
 
     public void setNum(RegistryEvent.ServiceType registryType, String applicationName, Map<String, Integer> lastNumMap) {
