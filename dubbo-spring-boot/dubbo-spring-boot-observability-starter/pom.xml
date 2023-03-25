@@ -80,12 +80,6 @@
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-common</artifactId>
-            <version>${project.version}</version>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
             <groupId>io.micrometer</groupId>
             <artifactId>micrometer-tracing-bridge-otel</artifactId>
             <optional>true</optional>
@@ -97,7 +91,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-metrics-default</artifactId>
+            <artifactId>dubbo-spring-boot-starter</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>
