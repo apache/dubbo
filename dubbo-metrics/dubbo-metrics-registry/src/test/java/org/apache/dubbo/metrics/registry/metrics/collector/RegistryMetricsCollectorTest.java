@@ -42,6 +42,7 @@ import java.util.stream.Collectors;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_APPLICATION_NAME;
 import static org.apache.dubbo.metrics.registry.collector.stat.RegistryStatComposite.OP_TYPE_REGISTER;
 import static org.apache.dubbo.metrics.registry.collector.stat.RegistryStatComposite.OP_TYPE_REGISTER_SERVICE;
+import static org.apache.dubbo.metrics.registry.collector.stat.RegistryStatComposite.OP_TYPE_SUBSCRIBE_SERVICE;
 
 
 class RegistryMetricsCollectorTest {
@@ -190,4 +191,68 @@ class RegistryMetricsCollectorTest {
         Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_REGISTER_SERVICE, MetricsKey.METRIC_RT_SUM).targetKey()), c1 + c2);
     }
 
+
+    @Test
+    void testServiceSubscribeMetrics() {
+
+        applicationModel.getBeanFactory().getOrRegisterBean(Dispatcher.class);
+        RegistryMetricsCollector collector = applicationModel.getBeanFactory().getOrRegisterBean(RegistryMetricsCollector.class);
+        collector.setCollectEnabled(true);
+        String serviceName = "demo.gameService";
+
+        RegistryEvent subscribeEvent = new RegistryEvent.MetricsServiceSubscribeEvent(applicationModel, serviceName);
+        MetricsEventBus.post(subscribeEvent,
+            () -> {
+                List<MetricSample> metricSamples = collector.collect();
+
+                // push success +1
+                Assertions.assertEquals(1, metricSamples.size());
+                Assertions.assertTrue(metricSamples.get(0) instanceof GaugeMetricSample);
+                Assertions.assertEquals(metricSamples.get(0).getName(), MetricsKey.SERVICE_SUBSCRIBE_METRIC_NUM.getName());
+                Assertions.assertEquals(metricSamples.get(0).getTags().get("interface"), serviceName);
+                return null;
+            }
+        );
+
+        // push finish rt +1
+        List<MetricSample> metricSamples = collector.collect();
+        //num(total+success) + rt(5) = 7
+        Assertions.assertEquals(7, metricSamples.size());
+
+        long c1 = subscribeEvent.getTimePair().calc();
+        subscribeEvent = new RegistryEvent.MetricsServiceSubscribeEvent(applicationModel, serviceName);
+        TimePair lastTimePair = subscribeEvent.getTimePair();
+        MetricsEventBus.post(subscribeEvent,
+            () -> {
+                try {
+                    Thread.sleep(50);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                return null;
+            }, Objects::nonNull
+        );
+        // push error rt +1
+        long c2 = lastTimePair.calc();
+
+        metricSamples = collector.collect();
+
+        // num(total+success+error) + rt(5)
+        Assertions.assertEquals(8, metricSamples.size());
+
+        // calc rt
+        for (MetricSample sample : metricSamples) {
+            Map<String, String> tags = sample.getTags();
+            Assertions.assertEquals(tags.get(TAG_APPLICATION_NAME), applicationModel.getApplicationName());
+        }
+
+        @SuppressWarnings("rawtypes")
+        Map<String, Long> sampleMap = metricSamples.stream().collect(Collectors.toMap(MetricSample::getName, k -> ((GaugeMetricSample) k).applyAsLong()));
+
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_SUBSCRIBE_SERVICE, MetricsKey.METRIC_RT_LAST).targetKey()), lastTimePair.calc());
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_SUBSCRIBE_SERVICE, MetricsKey.METRIC_RT_MIN).targetKey()), Math.min(c1, c2));
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_SUBSCRIBE_SERVICE, MetricsKey.METRIC_RT_MAX).targetKey()), Math.max(c1, c2));
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_SUBSCRIBE_SERVICE, MetricsKey.METRIC_RT_AVG).targetKey()), (c1 + c2) / 2);
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_SUBSCRIBE_SERVICE, MetricsKey.METRIC_RT_SUM).targetKey()), c1 + c2);
+    }
 }
