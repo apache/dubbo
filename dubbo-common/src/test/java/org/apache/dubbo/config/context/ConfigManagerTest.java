@@ -359,12 +359,22 @@ class ConfigManagerTest {
         registryConfig.setId("registryID_1");
         configManager.addRegistry(registryConfig);
         Optional<RegistryConfig> registryConfigOptional = configManager.getConfig(RegistryConfig.class, registryConfig.getId());
-        Assertions.assertEquals(registryConfigOptional.get(), registryConfig);
+
+        if (registryConfigOptional.isPresent()) {
+            Assertions.assertEquals(registryConfigOptional.get(), registryConfig);
+        } else {
+            fail("registryConfigOptional is empty! ");
+        }
 
         ProtocolConfig protocolConfig = new ProtocolConfig("dubbo");
         configManager.addProtocol(protocolConfig);
         Optional<ProtocolConfig> protocolConfigOptional = configManager.getConfig(ProtocolConfig.class, protocolConfig.getName());
-        Assertions.assertEquals(protocolConfigOptional.get(), protocolConfig);
+
+        if (protocolConfigOptional.isPresent()) {
+            Assertions.assertEquals(protocolConfigOptional.get(), protocolConfig);
+        } else {
+            fail("protocolConfigOptional is empty! ");
+        }
 
         // test multi config has same name(dubbo)
         ProtocolConfig protocolConfig2 = new ProtocolConfig("dubbo");
@@ -384,7 +394,7 @@ class ConfigManagerTest {
         moduleConfig.setId("moduleID_1");
         moduleConfigManager.setModule(moduleConfig);
         Optional<ModuleConfig> moduleConfigOptional = moduleConfigManager.getConfig(ModuleConfig.class, moduleConfig.getId());
-        Assertions.assertEquals(moduleConfigOptional.get(), moduleConfig);
+        Assertions.assertEquals(moduleConfig, moduleConfigOptional.get());
 
         Optional<RegistryConfig> config = moduleConfigManager.getConfig(RegistryConfig.class, registryConfig.getId());
         Assertions.assertEquals(config.get(), registryConfig);
@@ -405,7 +415,7 @@ class ConfigManagerTest {
             System.setProperty("dubbo.protocols.rest2.port", "8081");
             configManager.loadConfigsOfTypeFromProps(ProtocolConfig.class);
             Collection<ProtocolConfig> protocols = configManager.getProtocols();
-            Assertions.assertEquals(protocols.size(), 4);
+            Assertions.assertEquals(4, protocols.size());
 
             System.setProperty("dubbo.applications.app1.name", "app-demo1");
             System.setProperty("dubbo.applications.app2.name", "app-demo2");
