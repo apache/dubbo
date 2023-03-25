@@ -45,12 +45,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE;
 import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_PARAMETER_DESC;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_GROUP_KEY;
@@ -64,7 +58,6 @@ class MetricsFilterTest {
 
     private ApplicationModel applicationModel;
     private MetricsFilter filter;
-    private MetricsClusterFilter metricsClusterFilter;
     private DefaultMetricsCollector collector;
     private RpcInvocation invocation;
     private final Invoker<?> invoker = mock(Invoker.class);
@@ -99,9 +92,6 @@ class MetricsFilterTest {
         side = CommonConstants.CONSUMER;
         invocation.setInvoker(new TestMetricsInvoker(side));
         RpcContext.getServiceContext().setUrl(URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&side=" + side));
-
-        metricsClusterFilter = new MetricsClusterFilter();
-        metricsClusterFilter.setApplicationModel(applicationModel);
     }
 
     @AfterEach
