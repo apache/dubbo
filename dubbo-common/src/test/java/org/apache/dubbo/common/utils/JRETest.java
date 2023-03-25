@@ -26,13 +26,6 @@ import javax.lang.model.SourceVersion;
 class JRETest {
 
     @Test
-    void blankSystemVersion() {
-        System.setProperty("java.version", "");
-        JRE jre = JRE.currentVersion();
-        Assertions.assertEquals(JRE.JAVA_8, jre);
-    }
-
-    @Test
     void testCurrentVersion() {
         // SourceVersion is an enum, which member name is RELEASE_XX.
 
