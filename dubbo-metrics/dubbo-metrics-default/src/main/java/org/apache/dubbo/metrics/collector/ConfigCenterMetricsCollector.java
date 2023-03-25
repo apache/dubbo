@@ -19,7 +19,6 @@ package org.apache.dubbo.metrics.collector;
 
 import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
 import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
-import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.metrics.model.ConfigCenterMetric;
 import org.apache.dubbo.metrics.model.MetricsKey;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
@@ -29,21 +28,25 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_METRICS_CONFIGCENTER_ENABLE;
 import static org.apache.dubbo.metrics.model.MetricsCategory.CONFIGCENTER;
 
 public class ConfigCenterMetricsCollector implements MetricsCollector {
 
-    private Boolean collectEnabled = null;
+    private boolean collectEnabled = true;
     private final ApplicationModel applicationModel;
 
     private final Map<ConfigCenterMetric, AtomicLong> updatedMetrics = new ConcurrentHashMap<>();
 
     public ConfigCenterMetricsCollector(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
+        // default is true, disable when config false
+        if ("false".equals(System.getProperty(DUBBO_METRICS_CONFIGCENTER_ENABLE))) {
+            collectEnabled = false;
+        }
     }
 
     public void setCollectEnabled(Boolean collectEnabled) {
@@ -54,14 +57,13 @@ public class ConfigCenterMetricsCollector implements MetricsCollector {
 
     @Override
     public boolean isCollectEnabled() {
-        if (collectEnabled == null) {
-            ConfigManager configManager = applicationModel.getApplicationConfigManager();
-            configManager.getMetrics().ifPresent(metricsConfig -> setCollectEnabled(metricsConfig.getEnableMetadataMetrics()));
-        }
-        return Optional.ofNullable(collectEnabled).orElse(false);
+        return collectEnabled;
     }
 
     public void increase4Initialized(String key, String group, String protocol, String applicationName, int count) {
+        if (!isCollectEnabled()) {
+            return;
+        }
         if (count <= 0) {
             return;
         }
@@ -71,6 +73,9 @@ public class ConfigCenterMetricsCollector implements MetricsCollector {
     }
 
     public void increaseUpdated(String protocol, String applicationName, ConfigChangedEvent event) {
+        if (!isCollectEnabled()) {
+            return;
+        }
         ConfigCenterMetric metric = new ConfigCenterMetric(applicationName, event.getKey(), event.getGroup(), protocol, event.getChangeType().name());
         AtomicLong count = updatedMetrics.computeIfAbsent(metric, k -> new AtomicLong(0L));
         count.incrementAndGet();
@@ -80,6 +85,9 @@ public class ConfigCenterMetricsCollector implements MetricsCollector {
     public List<MetricSample> collect() {
         // Add metrics to reporter
         List<MetricSample> list = new ArrayList<>();
+        if (!isCollectEnabled()) {
+            return list;
+        }
         collect(list);
         return list;
     }
