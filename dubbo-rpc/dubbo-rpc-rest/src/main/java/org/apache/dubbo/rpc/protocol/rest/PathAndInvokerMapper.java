@@ -95,7 +95,7 @@ public class PathAndInvokerMapper {
         InvokerAndRestMethodMetadataPair unContainPathVariablePair = pathToServiceMapNoPathVariable.remove(pathMatcher);
         logger.info("dubbo rest undeploy pathMatcher:" + pathMatcher
             + ", and path variable method is :" + (containPathVariablePair == null ? null : containPathVariablePair.getRestMethodMetadata().getReflectMethod())
-            + ", and no path variable  method is :" + (unContainPathVariablePair == null ? null : unContainPathVariablePair.getRestMethodMetadata()).getReflectMethod());
+            + ", and no path variable  method is :" + (unContainPathVariablePair == null ? null : unContainPathVariablePair.getRestMethodMetadata().getReflectMethod()));
 
 
     }

@@ -28,6 +28,8 @@ public class InvokerAndRestMethodMetadataPair {
     RestMethodMetadata restMethodMetadata;
 
     public InvokerAndRestMethodMetadataPair(Invoker invoker, RestMethodMetadata restMethodMetadata) {
+        this.invoker = invoker;
+        this.restMethodMetadata = restMethodMetadata;
     }
 
     public Invoker getInvoker() {
