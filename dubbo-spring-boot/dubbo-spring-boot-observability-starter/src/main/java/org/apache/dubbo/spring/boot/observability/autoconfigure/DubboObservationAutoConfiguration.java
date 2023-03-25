@@ -18,6 +18,7 @@ package org.apache.dubbo.spring.boot.observability.autoconfigure;
 
 import io.micrometer.core.instrument.MeterRegistry;
 
+import io.micrometer.tracing.Tracer;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.spring.boot.observability.annotation.ConditionalOnDubboTracingEnable;
 
@@ -75,7 +76,11 @@ public class DubboObservationAutoConfiguration implements BeanFactoryAware, Smar
 
     @Override
     public void afterSingletonsInstantiated() {
-        applicationModel.getBeanFactory().registerBean(beanFactory.getBean(io.micrometer.tracing.Tracer.class));
+        Tracer bean = beanFactory.getBean(Tracer.class);
+        if(bean == null){
+            return;
+        }
+        applicationModel.getBeanFactory().registerBean(bean);
     }
 
     @Configuration(proxyBeanMethods = false)
