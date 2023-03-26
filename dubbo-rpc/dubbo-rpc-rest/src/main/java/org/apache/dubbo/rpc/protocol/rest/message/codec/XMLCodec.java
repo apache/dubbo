@@ -78,7 +78,6 @@ public class XMLCodec implements HttpMessageCodec<byte[], OutputStream> {
     public void encode(OutputStream outputStream, Object unSerializedBody, URL url) throws Exception {
         Marshaller marshaller = JAXBContext.newInstance(unSerializedBody.getClass()).createMarshaller();
         marshaller.marshal(unSerializedBody, outputStream);
-        outputStream.write((byte[]) unSerializedBody);
     }
 
 
