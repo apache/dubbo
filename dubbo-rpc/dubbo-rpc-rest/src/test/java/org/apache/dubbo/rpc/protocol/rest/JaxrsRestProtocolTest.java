@@ -19,6 +19,9 @@ package org.apache.dubbo.rpc.protocol.rest;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.metadata.rest.PathMatcher;
+import org.apache.dubbo.metadata.rest.RestMethodMetadata;
+import org.apache.dubbo.metadata.rest.ServiceRestMetadata;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
@@ -33,6 +36,8 @@ import org.apache.dubbo.rpc.model.ModuleServiceRepository;
 import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 
+import org.apache.dubbo.rpc.protocol.rest.annotation.metadata.MetadataResolver;
+import org.apache.dubbo.rpc.protocol.rest.exception.DoublePathCheckException;
 import org.apache.dubbo.rpc.protocol.rest.exception.mapper.ExceptionHandler;
 import org.apache.dubbo.rpc.protocol.rest.exception.mapper.ExceptionMapper;
 import org.apache.dubbo.rpc.protocol.rest.rest.AnotherUserRestService;
@@ -397,6 +402,32 @@ class JaxrsRestProtocolTest {
         assertThat(resultByte, is(3l));
 
         exporter.unexport();
+    }
+
+
+    @Test
+    void testDoubleCheckException() {
+
+
+        Assertions.assertThrows(DoublePathCheckException.class,()->{
+
+        DemoService server = new DemoServiceImpl();
+
+
+        Invoker<DemoService> invoker = proxy.getInvoker(server, DemoService.class, exportUrl);
+
+        PathAndInvokerMapper pathAndInvokerMapper = new PathAndInvokerMapper();
+
+        ServiceRestMetadata serviceRestMetadata = MetadataResolver.resolveConsumerServiceMetadata(DemoService.class, exportUrl, "");
+
+        Map<PathMatcher, RestMethodMetadata> pathContainPathVariableToServiceMap = serviceRestMetadata.getPathUnContainPathVariableToServiceMap();
+
+
+        pathAndInvokerMapper.addPathAndInvoker(pathContainPathVariableToServiceMap,invoker);
+        pathAndInvokerMapper.addPathAndInvoker(pathContainPathVariableToServiceMap,invoker);
+        });
+
+
     }
 
     public static class TestExceptionMapper implements ExceptionHandler<RuntimeException> {

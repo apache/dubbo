@@ -138,7 +138,7 @@ public class PathMatcher {
             if (equals) {
                 continue;
             } else {
-                if (placeHoldCompare(pathSplits[i])) {
+                if (placeHoldCompare(pathSplits[i], thisPathSplits[i])) {
                     continue;
                 } else {
                     return false;
@@ -150,8 +150,8 @@ public class PathMatcher {
 
     }
 
-    private boolean placeHoldCompare(String pathSplit) {
-        boolean startAndEndEqual = isPlaceHold(pathSplit);
+    private boolean placeHoldCompare(String pathSplit, String pathToCompare) {
+        boolean startAndEndEqual = isPlaceHold(pathSplit) || isPlaceHold(pathToCompare);
 
         // start {  end }
         if (!startAndEndEqual) {
@@ -159,7 +159,7 @@ public class PathMatcher {
         }
 
         // exclude  {}
-        boolean lengthCondition = pathSplit.length() >= 3;
+        boolean lengthCondition = pathSplit.length() >= 3 || pathToCompare.length() >= 3;
 
         if (!lengthCondition) {
             return false;

@@ -36,7 +36,7 @@ public class DataParseUtils {
     public static Object stringTypeConvert(Class targetType, String value) {
 
 
-        if (targetType == Boolean.class) {
+        if (targetType == Boolean.class || targetType == boolean.class) {
             return Boolean.valueOf(value);
         }
 
@@ -139,26 +139,7 @@ public class DataParseUtils {
             return ((String) object).getBytes();
         }
 
-        if (objectClass.isAssignableFrom(Number.class)) {
-            return (byte[]) NumberUtils.numberToBytes((Number) object);
-        }
-
-        return object.toString().getBytes();
-
-    }
-
-    public static byte[] objectJsonConvertToByteArray(Object object) {
-        Class<?> objectClass = object.getClass();
-
-        if (objectClass == Boolean.class) {
-            return object.toString().getBytes();
-        }
-
-        if (objectClass == String.class) {
-            return ((String) object).getBytes();
-        }
-
-        if (objectClass.isAssignableFrom(Number.class)) {
+        if (objectClass.isAssignableFrom(Number.class) || objectClass.isPrimitive()) {
             return (byte[]) NumberUtils.numberToBytes((Number) object);
         }
 
