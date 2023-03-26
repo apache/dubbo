@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.qos.command.decoder;
 
-import org.apache.dubbo.qos.command.CommandContext;
+import org.apache.dubbo.qos.api.CommandContext;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;

@@ -58,9 +58,14 @@ public class ReflectionPackableMethod implements PackableMethod {
     private final UnPack responseUnpack;
     private final Pack originalPack;
     private final UnPack originalUnpack;
+    private final boolean needWrapper;
 
-    public ReflectionPackableMethod(MethodDescriptor method, URL url, String serializeName, boolean isServer) {
-        Class<?>[] actualTypes;
+    @Override
+    public boolean needWrapper() {
+        return this.needWrapper;
+    }
+
+    public ReflectionPackableMethod(MethodDescriptor method, URL url, String serializeName) {
         Class<?>[] actualRequestTypes;
         Class<?> actualResponseType;
         switch (method.getRpcType()) {
@@ -86,7 +91,8 @@ public class ReflectionPackableMethod implements PackableMethod {
         }
 
         boolean singleArgument = method.getRpcType() != MethodDescriptor.RpcType.UNARY;
-        if (!needWrap(method, actualRequestTypes, actualResponseType)) {
+        this.needWrapper = needWrap(method, actualRequestTypes, actualResponseType);
+        if (!needWrapper) {
             requestPack = new PbArrayPacker(singleArgument);
             originalPack = new PbArrayPacker(singleArgument);
             responsePack = PB_PACK;
@@ -381,7 +387,6 @@ public class ReflectionPackableMethod implements PackableMethod {
         private final URL url;
         private final Class<?> returnClass;
 
-
         private WrapResponseUnpack(MultipleSerialization serialization, URL url, Class<?> returnClass) {
             this.serialization = serialization;
             this.url = url;
@@ -406,6 +411,7 @@ public class ReflectionPackableMethod implements PackableMethod {
         private final Class<?>[] actualRequestTypes;
         private final URL url;
         private final boolean singleArgument;
+
 
         private WrapRequestPack(MultipleSerialization multipleSerialization,
                                 URL url,
@@ -433,11 +439,12 @@ public class ReflectionPackableMethod implements PackableMethod {
             for (String type : argumentsType) {
                 builder.addArgTypes(type);
             }
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
             for (int i = 0; i < arguments.length; i++) {
                 Object argument = arguments[i];
-                ByteArrayOutputStream bos = new ByteArrayOutputStream();
                 multipleSerialization.serialize(url, serialize, actualRequestTypes[i], argument, bos);
                 builder.addArgs(bos.toByteArray());
+                bos.reset();
             }
             return builder.build().toByteArray();
         }

@@ -23,9 +23,9 @@ import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.metrics.TestMetricsInvoker;
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
 import org.apache.dubbo.metrics.collector.sample.MethodMetricsSampler;
+import org.apache.dubbo.metrics.event.MethodEvent;
 import org.apache.dubbo.metrics.event.MetricsEvent;
 import org.apache.dubbo.metrics.event.RTEvent;
-import org.apache.dubbo.metrics.event.RequestEvent;
 import org.apache.dubbo.metrics.listener.MetricsListener;
 import org.apache.dubbo.metrics.model.MetricsKey;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
@@ -34,6 +34,7 @@ import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,11 +42,9 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Map;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.*;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_GROUP_KEY;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_METHOD_KEY;
@@ -83,7 +82,7 @@ class DefaultMetricsCollectorTest {
         side = CommonConstants.CONSUMER;
 
         invocation.setInvoker(new TestMetricsInvoker(side));
-        RpcContext.getServiceContext().setUrl(URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&side="+side));
+        RpcContext.getServiceContext().setUrl(URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&side=" + side));
 
     }
 
@@ -93,6 +92,7 @@ class DefaultMetricsCollectorTest {
     }
 
     @Test
+    @SuppressWarnings("rawtypes")
     void testRequestsMetrics() {
         DefaultMetricsCollector collector = new DefaultMetricsCollector();
         collector.setCollectEnabled(true);
@@ -100,31 +100,28 @@ class DefaultMetricsCollectorTest {
 
         MethodMetricsSampler methodMetricsCountSampler = collector.getMethodSampler();
 
-        methodMetricsCountSampler.incOnEvent(invocation,MetricsEvent.Type.TOTAL);
-        methodMetricsCountSampler.incOnEvent(invocation,MetricsEvent.Type.PROCESSING);
-        methodMetricsCountSampler.incOnEvent(invocation,MetricsEvent.Type.SUCCEED);
-        methodMetricsCountSampler.incOnEvent(invocation,MetricsEvent.Type.UNKNOWN_FAILED);
+        methodMetricsCountSampler.incOnEvent(invocation, MetricsEvent.Type.TOTAL.getNameByType(side));
+        methodMetricsCountSampler.incOnEvent(invocation, MetricsEvent.Type.PROCESSING.getNameByType(side));
+        methodMetricsCountSampler.incOnEvent(invocation, MetricsEvent.Type.SUCCEED.getNameByType(side));
+        methodMetricsCountSampler.incOnEvent(invocation, MetricsEvent.Type.UNKNOWN_FAILED.getNameByType(side));
 
         List<MetricSample> samples = collector.collect();
         for (MetricSample sample : samples) {
             Assertions.assertTrue(sample instanceof GaugeMetricSample);
             GaugeMetricSample gaugeSample = (GaugeMetricSample) sample;
             Map<String, String> tags = gaugeSample.getTags();
-            Supplier<Number> supplier = gaugeSample.getSupplier();
 
             Assertions.assertEquals(tags.get(TAG_INTERFACE_KEY), interfaceName);
             Assertions.assertEquals(tags.get(TAG_METHOD_KEY), methodName);
             Assertions.assertEquals(tags.get(TAG_GROUP_KEY), group);
             Assertions.assertEquals(tags.get(TAG_VERSION_KEY), version);
-            Assertions.assertEquals(supplier.get().longValue(), 1);
+            Assertions.assertEquals(gaugeSample.applyAsLong(), 1);
         }
 
-        methodMetricsCountSampler.dec(invocation,MetricsEvent.Type.PROCESSING);
+        methodMetricsCountSampler.dec(invocation, MetricsEvent.Type.PROCESSING.getNameByType(side));
         samples = collector.collect();
-        Map<String, Long> sampleMap = samples.stream().collect(Collectors.toMap(MetricSample::getName, k -> {
-            Number number = ((GaugeMetricSample) k).getSupplier().get();
-            return number.longValue();
-        }));
+
+        Map<String, Long> sampleMap = samples.stream().collect(Collectors.toMap(MetricSample::getName, k -> ((GaugeMetricSample) k).applyAsLong()));
 
         Assertions.assertEquals(sampleMap.get(MetricsKey.METRIC_REQUESTS_PROCESSING.getNameByType(side)), 0L);
     }
@@ -151,10 +148,8 @@ class DefaultMetricsCollectorTest {
             Assertions.assertEquals(tags.get(TAG_VERSION_KEY), version);
         }
 
-        Map<String, Long> sampleMap = samples.stream().collect(Collectors.toMap(MetricSample::getName, k -> {
-            Number number = ((GaugeMetricSample) k).getSupplier().get();
-            return number.longValue();
-        }));
+        @SuppressWarnings("rawtypes")
+        Map<String, Long> sampleMap = samples.stream().collect(Collectors.toMap(MetricSample::getName, k -> ((GaugeMetricSample) k).applyAsLong()));
 
         Assertions.assertEquals(sampleMap.get(MetricsKey.METRIC_RT_LAST.getNameByType(side)), 0L);
         Assertions.assertEquals(sampleMap.get(MetricsKey.METRIC_RT_MIN.getNameByType(side)), 0L);
@@ -173,10 +168,11 @@ class DefaultMetricsCollectorTest {
         collector.addListener(mockListener);
         collector.setApplicationName(applicationModel.getApplicationName());
 
-        methodMetricsCountSampler.incOnEvent(invocation,MetricsEvent.Type.TOTAL);
+        methodMetricsCountSampler.incOnEvent(invocation, MetricsEvent.Type.TOTAL.getNameByType(side));
         Assertions.assertNotNull(mockListener.getCurEvent());
-        Assertions.assertTrue(mockListener.getCurEvent() instanceof RequestEvent);
-        Assertions.assertEquals(((RequestEvent) mockListener.getCurEvent()).getType(), MetricsEvent.Type.TOTAL);
+        Assertions.assertTrue(mockListener.getCurEvent() instanceof MethodEvent);
+        Assertions.assertEquals(((MethodEvent) mockListener.getCurEvent()).getType(),
+            MetricsEvent.Type.TOTAL.getNameByType(side));
 
         methodMetricsCountSampler.addRT(invocation, 5L);
         Assertions.assertTrue(mockListener.getCurEvent() instanceof RTEvent);

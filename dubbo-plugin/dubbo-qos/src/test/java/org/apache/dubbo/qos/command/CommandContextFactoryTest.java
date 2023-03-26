@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.qos.command;
 
+import org.apache.dubbo.qos.api.CommandContext;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 

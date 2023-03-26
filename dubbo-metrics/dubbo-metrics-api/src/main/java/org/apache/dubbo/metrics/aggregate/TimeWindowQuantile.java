@@ -19,57 +19,60 @@ package org.apache.dubbo.metrics.aggregate;
 
 import com.tdunning.math.stats.TDigest;
 
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
  * Wrapper around TDigest.
- * <p>
- * Maintains a ring buffer of TDigest to provide quantiles over a sliding windows of time.
  */
 public class TimeWindowQuantile {
+
     private final double compression;
-    private final TDigest[] ringBuffer;
-    private int currentBucket;
-    private long lastRotateTimestampMillis;
-    private final long durationBetweenRotatesMillis;
+
+    private final DigestSlidingWindow slidingWindow;
 
     public TimeWindowQuantile(double compression, int bucketNum, int timeWindowSeconds) {
         this.compression = compression;
-        this.ringBuffer = new TDigest[bucketNum];
-        for (int i = 0; i < bucketNum; i++) {
-            this.ringBuffer[i] = TDigest.createDigest(compression);
-        }
-
-        this.currentBucket = 0;
-        this.lastRotateTimestampMillis = System.currentTimeMillis();
-        this.durationBetweenRotatesMillis = TimeUnit.SECONDS.toMillis(timeWindowSeconds) / bucketNum;
+        this.slidingWindow = new DigestSlidingWindow(compression, bucketNum, TimeUnit.SECONDS.toMillis(timeWindowSeconds));
     }
 
-    public synchronized double quantile(double q) {
-        TDigest currentBucket = rotate();
-
+    public double quantile(double q) {
+        TDigest mergeDigest = TDigest.createDigest(compression);
+        List<TDigest> validWindows = this.slidingWindow.values();
+        for (TDigest window : validWindows) {
+            mergeDigest.add(window);
+        }
         // This may return Double.NaN, and it's correct behavior.
         // see: https://github.com/prometheus/client_golang/issues/85
-        return currentBucket.quantile(q);
+        return mergeDigest.quantile(q);
     }
 
-    public synchronized void add(double value) {
-        rotate();
-        for (TDigest bucket : ringBuffer) {
-            bucket.add(value);
-        }
+    public void add(double value) {
+        this.slidingWindow.currentPane().getValue().add(value);
     }
 
-    private TDigest rotate() {
-        long timeSinceLastRotateMillis = System.currentTimeMillis() - lastRotateTimestampMillis;
-        while (timeSinceLastRotateMillis > durationBetweenRotatesMillis) {
-            ringBuffer[currentBucket] = TDigest.createDigest(compression);
-            if (++currentBucket >= ringBuffer.length) {
-                currentBucket = 0;
-            }
-            timeSinceLastRotateMillis -= durationBetweenRotatesMillis;
-            lastRotateTimestampMillis += durationBetweenRotatesMillis;
+    /**
+     * Sliding window of type TDigest.
+     */
+    private static class DigestSlidingWindow extends SlidingWindow<TDigest> {
+
+        private final double compression;
+
+        public DigestSlidingWindow(double compression, int sampleCount, long intervalInMs) {
+            super(sampleCount, intervalInMs);
+            this.compression = compression;
         }
-        return ringBuffer[currentBucket];
+
+        @Override
+        public TDigest newEmptyValue(long timeMillis) {
+            return TDigest.createDigest(compression);
+        }
+
+        @Override
+        protected Pane<TDigest> resetPaneTo(final Pane<TDigest> pane, long startTime) {
+            pane.setStartInMs(startTime);
+            pane.setValue(TDigest.createDigest(compression));
+            return pane;
+        }
     }
 }

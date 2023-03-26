@@ -36,6 +36,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PAYLOAD;
 import static org.apache.dubbo.metadata.RevisionResolver.EMPTY_REVISION;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -65,6 +66,12 @@ class MetadataInfoTest {
         "&dynamic=true&generic=false&group=greeting&interface=org.apache.dubbo.registry.service.DemoService" +
         "&metadata-type=remote&methods=sayHello&sayHello.timeout=7000&pid=36621&release=&revision=1.0.0&service-name-mapping=true" +
         "&side=provider&timeout=5000&timestamp=1629970068002&version=1.0.0&params-filter=-customized,excluded");
+
+    private static URL url4 = URL.valueOf("dubbo://30.225.21.30:20880/org.apache.dubbo.registry.service.DemoService?" +
+        "REGISTRY_CLUSTER=registry1&anyhost=true&application=demo-provider2&delay=5000&deprecated=false&dubbo=2.0.2" +
+        "&dynamic=true&generic=false&group=greeting&interface=org.apache.dubbo.registry.service.DemoService" +
+        "&metadata-type=remote&methods=sayHello&sayHello.timeout=7000&pid=36621&release=&revision=1.0.0&service-name-mapping=true" +
+        "&side=provider&timeout=5000&timestamp=1629970068002&version=1.0.0&params-filter=-customized,excluded&payload=1024");
 
     @Test
     void testEmptyRevision() {
@@ -214,5 +221,15 @@ class MetadataInfoTest {
         Map<String, Object> ret  = JsonUtils.getJson().toJavaObject(metadataInfo.getContent(), Map.class);
         assertNull(ret.get("content"));
         assertNull(ret.get("rawMetadataInfo"));
+    }
+
+    @Test
+    void testPayload() {
+        MetadataInfo metadataInfo = new MetadataInfo("demo");
+
+        metadataInfo.addService(url4);
+        MetadataInfo.ServiceInfo serviceInfo4 = metadataInfo.getServiceInfo(url4.getProtocolServiceKey());
+        assertNotNull(serviceInfo4);
+        assertEquals("1024", serviceInfo4.getParameter(PAYLOAD));
     }
 }

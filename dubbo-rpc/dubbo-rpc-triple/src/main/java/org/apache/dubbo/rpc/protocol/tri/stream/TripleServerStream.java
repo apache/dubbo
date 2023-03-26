@@ -86,6 +86,7 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
     private Deframer deframer;
     private boolean rst = false;
     private final Http2StreamChannel http2StreamChannel;
+    private final TripleStreamChannelFuture tripleStreamChannelFuture;
 
     public TripleServerStream(Http2StreamChannel channel,
                               FrameworkModel frameworkModel,
@@ -101,6 +102,7 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
         this.writeQueue = writeQueue;
         this.remoteAddress = (InetSocketAddress) channel.remoteAddress();
         this.http2StreamChannel = channel;
+        this.tripleStreamChannelFuture = new TripleStreamChannelFuture(channel);
     }
 
     @Override
@@ -119,7 +121,7 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
             return checkResult;
         }
         this.rst = true;
-        return writeQueue.enqueue(CancelQueueCommand.createCommand(cause).channel(http2StreamChannel));
+        return writeQueue.enqueue(CancelQueueCommand.createCommand(tripleStreamChannelFuture, cause));
     }
 
     @Override
@@ -138,7 +140,7 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
             return checkResult;
         }
         headerSent = true;
-        return writeQueue.enqueue(HeaderQueueCommand.createHeaders(headers, false).channel(http2StreamChannel))
+        return writeQueue.enqueue(HeaderQueueCommand.createHeaders(tripleStreamChannelFuture, headers, false))
             .addListener(f -> {
                 if (!f.isSuccess()) {
                     reset(Http2Error.INTERNAL_ERROR);
@@ -174,7 +176,7 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
         }
         headerSent = true;
         trailersSent = true;
-        return writeQueue.enqueue(HeaderQueueCommand.createHeaders(trailers, true).channel(http2StreamChannel))
+        return writeQueue.enqueue(HeaderQueueCommand.createHeaders(tripleStreamChannelFuture, trailers, true))
             .addListener(f -> {
                 if (!f.isSuccess()) {
                     reset(Http2Error.INTERNAL_ERROR);
@@ -246,7 +248,7 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
         if (!checkResult.isSuccess()) {
             return checkResult;
         }
-        return writeQueue.enqueue(DataQueueCommand.createGrpcCommand(message, false, compressFlag).channel(http2StreamChannel));
+        return writeQueue.enqueue(DataQueueCommand.create(tripleStreamChannelFuture, message, false, compressFlag));
     }
 
     /**
@@ -264,8 +266,8 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
             .setInt(TripleHeaderEnum.STATUS_KEY.getHeader(), status.code.code)
             .set(TripleHeaderEnum.MESSAGE_KEY.getHeader(), status.description)
             .set(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader(), TripleConstant.TEXT_PLAIN_UTF8);
-        writeQueue.enqueue(HeaderQueueCommand.createHeaders( headers, false).channel(http2StreamChannel));
-        writeQueue.enqueue(TextDataQueueCommand.createCommand(status.description, true).channel(http2StreamChannel));
+        writeQueue.enqueue(HeaderQueueCommand.createHeaders(tripleStreamChannelFuture, headers, false));
+        writeQueue.enqueue(TextDataQueueCommand.createCommand(tripleStreamChannelFuture, status.description, true));
     }
 
     /**

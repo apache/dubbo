@@ -26,7 +26,7 @@ import org.springframework.context.ApplicationEvent;
  */
 public class DubboApplicationStateEvent extends ApplicationEvent {
 
-    private DeployState state;
+    private final DeployState state;
 
     private Throwable cause;
 

@@ -128,14 +128,29 @@ class ReferenceAnnotationBeanPostProcessorTest {
     @DubboReference(version = "2", url = "dubbo://127.0.0.1:12345?version=2", tag = "demo_tag")
     private HelloService helloService2;
 
-    // #7 ReferenceBean (Method Injection #3)
+    // #7 ReferenceBean (Field Injection #5)
+    // The HelloService is the same as above service(#6 ReferenceBean (Field Injection #4)), helloService3 will be registered as an alias of helloService2
+    @DubboReference(version = "2", url = "dubbo://127.0.0.1:12345?version=2", tag = "demo_tag")
+    private HelloService helloService3;
+
+    // #8 ReferenceBean (Method Injection #3)
     @DubboReference(version = "3", url = "dubbo://127.0.0.1:12345?version=2", tag = "demo_tag")
     public void setHelloService2(HelloService helloService2) {
         // The helloService2 beanName is the same as above(#6 ReferenceBean (Field Injection #4)), and this will rename to helloService2#2
         renamedHelloService2 = helloService2;
     }
 
+    // #9 ReferenceBean (Method Injection #4)
+    @DubboReference(version = "4", url = "dubbo://127.0.0.1:12345?version=2")
+    public void setHelloService3(DemoService helloService3){
+        // The helloService3 beanName is the same as above(#7 ReferenceBean (Field Injection #5) is an alias),
+        // The current beanName(helloService3) is not registered in the beanDefinitionMap, but it is already an alias. so this will rename to helloService3#2
+        this.renamedHelloService3 = helloService3;
+    }
+
     private HelloService renamedHelloService2;
+
+    private DemoService renamedHelloService3;
 
     @Test
     void testAop() throws Exception {
@@ -150,7 +165,7 @@ class ReferenceAnnotationBeanPostProcessorTest {
         Assertions.assertNotNull(testBean.getDemoServiceFromParent());
         Assertions.assertNotNull(testBean.getDemoService());
         Assertions.assertNotNull(testBean.myDemoService);
-        Assertions.assertEquals(2, demoServicesMap.size());
+        Assertions.assertEquals(3, demoServicesMap.size());
 
         Assertions.assertNotNull(context.getBean("demoServiceImpl"));
         Assertions.assertNotNull(context.getBean("myDemoService"));
@@ -189,12 +204,13 @@ class ReferenceAnnotationBeanPostProcessorTest {
         Map<InjectionMetadata.InjectedElement, ReferenceBean<?>> referenceBeanMap =
                 beanPostProcessor.getInjectedFieldReferenceBeanMap();
 
-        Assertions.assertEquals(4, referenceBeanMap.size());
+        Assertions.assertEquals(5, referenceBeanMap.size());
 
         Map<String, Integer> checkingFieldNames = new HashMap<>();
         checkingFieldNames.put("private org.apache.dubbo.config.spring.api.HelloService org.apache.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessorTest$MyConfiguration.helloService", 0);
         checkingFieldNames.put("private org.apache.dubbo.config.spring.api.HelloService org.apache.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessorTest.helloService", 0);
         checkingFieldNames.put("private org.apache.dubbo.config.spring.api.HelloService org.apache.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessorTest.helloService2", 0);
+        checkingFieldNames.put("private org.apache.dubbo.config.spring.api.HelloService org.apache.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessorTest.helloService3", 0);
         checkingFieldNames.put("private org.apache.dubbo.config.spring.api.DemoService org.apache.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessorTest$ParentBean.demoServiceFromParent", 0);
 
         for (Map.Entry<InjectionMetadata.InjectedElement, ReferenceBean<?>> entry : referenceBeanMap.entrySet()) {
@@ -222,12 +238,13 @@ class ReferenceAnnotationBeanPostProcessorTest {
         Map<InjectionMetadata.InjectedElement, ReferenceBean<?>> referenceBeanMap =
                 beanPostProcessor.getInjectedMethodReferenceBeanMap();
 
-        Assertions.assertEquals(3, referenceBeanMap.size());
+        Assertions.assertEquals(4, referenceBeanMap.size());
 
         Map<String, Integer> checkingMethodNames = new HashMap<>();
         checkingMethodNames.put("setDemoServiceFromAncestor", 0);
         checkingMethodNames.put("setDemoService", 0);
         checkingMethodNames.put("setHelloService2", 0);
+        checkingMethodNames.put("setHelloService3", 0);
 
         for (Map.Entry<InjectionMetadata.InjectedElement, ReferenceBean<?>> entry : referenceBeanMap.entrySet()) {
 
@@ -252,7 +269,7 @@ class ReferenceAnnotationBeanPostProcessorTest {
 
         Collection<ReferenceBean> referenceBeans = referenceBeanManager.getReferences();
 
-        Assertions.assertEquals(4, referenceBeans.size());
+        Assertions.assertEquals(5, referenceBeans.size());
 
         for (ReferenceBean referenceBean : referenceBeans) {
             ReferenceConfig referenceConfig = referenceBean.getReferenceConfig();

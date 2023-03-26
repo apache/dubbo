@@ -30,7 +30,7 @@ import java.util.function.Consumer;
 
 public class ObjectMapperCodec {
 
-    private ObjectMapper mapper = new ObjectMapper();
+    private final ObjectMapper mapper = new ObjectMapper();
 
     public ObjectMapperCodec() {
         registerDefaultModule();
@@ -103,7 +103,7 @@ public class ObjectMapperCodec {
         for (String moduleClassName : jacksonModuleClassNameList) {
             try {
                 SimpleModule objectMapperModule = (SimpleModule) ClassUtils.forName(moduleClassName,
-                    ObjectMapperCodec.class.getClassLoader()).newInstance();
+                    ObjectMapperCodec.class.getClassLoader()).getDeclaredConstructor().newInstance();
                 mapper.registerModule(objectMapperModule);
 
             } catch (Throwable ex) {

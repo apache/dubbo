@@ -65,8 +65,8 @@ class RegistryMetricsSampleTest {
         RegistryMetricsCollector collector = new RegistryMetricsCollector(applicationModel);
         collector.setCollectEnabled(true);
         String applicationName = applicationModel.getApplicationName();
-        collector.addRT(applicationName, RegistryStatComposite.OP_TYPE_REGISTER, 10L);
-        collector.addRT(applicationName, RegistryStatComposite.OP_TYPE_REGISTER, 0L);
+        collector.addApplicationRT(applicationName, RegistryStatComposite.OP_TYPE_REGISTER, 10L);
+        collector.addApplicationRT(applicationName, RegistryStatComposite.OP_TYPE_REGISTER, 0L);
 
         List<MetricSample> samples = collector.collect();
         for (MetricSample sample : samples) {
@@ -74,10 +74,8 @@ class RegistryMetricsSampleTest {
             Assertions.assertEquals(tags.get(TAG_APPLICATION_NAME), applicationName);
         }
 
-        Map<String, Long> sampleMap = samples.stream().collect(Collectors.toMap(MetricSample::getName, k -> {
-            Number number = ((GaugeMetricSample) k).getSupplier().get();
-            return number.longValue();
-        }));
+        @SuppressWarnings("rawtypes")
+        Map<String, Long> sampleMap = samples.stream().collect(Collectors.toMap(MetricSample::getName, k -> ((GaugeMetricSample) k).applyAsLong()));
 
         Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(RegistryStatComposite.OP_TYPE_REGISTER, MetricsKey.METRIC_RT_LAST).targetKey()), 0L);
         Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(RegistryStatComposite.OP_TYPE_REGISTER, MetricsKey.METRIC_RT_MIN).targetKey()), 0L);
@@ -91,7 +89,7 @@ class RegistryMetricsSampleTest {
         RegistryMetricsCollector collector = new RegistryMetricsCollector(applicationModel);
         collector.setCollectEnabled(true);
         String applicationName = applicationModel.getApplicationName();
-        collector.increment(applicationName,RegistryEvent.Type.R_TOTAL);
+        collector.increment(applicationName, RegistryEvent.ApplicationType.R_TOTAL);
     }
 
 }

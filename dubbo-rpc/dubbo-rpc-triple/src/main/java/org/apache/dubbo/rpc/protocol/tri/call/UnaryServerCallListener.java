@@ -24,9 +24,12 @@ import org.apache.dubbo.rpc.protocol.tri.observer.ServerCallToObserverAdapter;
 
 public class UnaryServerCallListener extends AbstractServerCallListener {
 
+    private final boolean needWrapper;
+
     public UnaryServerCallListener(RpcInvocation invocation, Invoker<?> invoker,
-        ServerCallToObserverAdapter<Object> responseObserver) {
+                                   ServerCallToObserverAdapter<Object> responseObserver, boolean needWrapper) {
         super(invocation, invoker, responseObserver);
+        this.needWrapper = needWrapper;
     }
 
     @Override
@@ -49,6 +52,14 @@ public class UnaryServerCallListener extends AbstractServerCallListener {
         // ignored
     }
 
+    @Override
+    protected void doOnResponseHasException(Throwable t) {
+        if (needWrapper) {
+            onReturn(t);
+        } else {
+            super.doOnResponseHasException(t);
+        }
+    }
 
     @Override
     public void onComplete() {

@@ -35,7 +35,7 @@ public class MultiValueCreator {
 
     public static Object createMultiValueMap() {
         try {
-            return multiValueMapClass.newInstance();
+            return multiValueMapClass.getDeclaredConstructor().newInstance();
         } catch (Exception e) {
 
         }

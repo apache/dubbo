@@ -78,7 +78,7 @@ class DefaultFilterChainBuilderTest {
         urlWithoutFilter = urlWithoutFilter.setScopeModel(ApplicationModel.defaultModel());
         AbstractInvoker<DemoService> invokerWithoutFilter = new AbstractInvoker<DemoService>(DemoService.class, urlWithoutFilter) {
             @Override
-            protected Result doInvoke(Invocation invocation) throws Throwable {
+            protected Result doInvoke(Invocation invocation) {
                 return null;
             }
         };
