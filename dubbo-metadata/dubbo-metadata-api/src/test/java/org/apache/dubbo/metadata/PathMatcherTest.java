@@ -24,13 +24,45 @@ public class PathMatcherTest {
 
     @Test
     public void testPathMatcher() {
-        PathMatcher pathMatherMeta = new PathMatcher("/a/b/c/{path1}/d/{path2}/e", true);
+        PathMatcher pathMatherMeta = new PathMatcher("/a/b/c/{path1}/d/{path2}/e");
 
 
-        PathMatcher requestPathMather = new PathMatcher("/a/b/c/1/d/2/e", true);
+        PathMatcher requestPathMather = new PathMatcher("/a/b/c/1/d/2/e");
         Assertions.assertEquals(requestPathMather, pathMatherMeta);
 
-        PathMatcher requestPathMather1 = new PathMatcher("/{c}/b/c/1/d/2/e", true);
+        PathMatcher requestPathMather1 = new PathMatcher("/{c}/b/c/1/d/2/e");
         Assertions.assertEquals(requestPathMather, requestPathMather1);
+
+        PathMatcher pathMatcher = new PathMatcher("/{d}/b/c/1/d/2/e");
+
+        pathMatcher.setGroup(null);
+        pathMatcher.setPort(null);
+        pathMatcher.setVersion(null);
+        pathMatcher.setContextPath("");
+
+        Assertions.assertEquals(pathMatherMeta, pathMatcher);
+    }
+
+    @Test
+    public void testEqual() {
+        PathMatcher pathMatherMeta = new PathMatcher("/a/b/c");
+        pathMatherMeta.setContextPath("/context");
+        PathMatcher pathMatherMeta1 = new PathMatcher("/a/b/d");
+
+        pathMatherMeta1.setContextPath("/context");
+        Assertions.assertNotEquals(pathMatherMeta, pathMatherMeta1);
+
+        pathMatherMeta1 = new PathMatcher("/a/b/c");
+        pathMatherMeta1.setContextPath("/context");
+
+        Assertions.assertEquals(pathMatherMeta,pathMatherMeta1);
+
+        pathMatherMeta.setContextPath("context");
+
+        pathMatherMeta1.setContextPath("context");
+
+
+        Assertions.assertEquals(pathMatherMeta,pathMatherMeta1);
+        Assertions.assertEquals(pathMatherMeta.toString(),pathMatherMeta1.toString());
     }
 }

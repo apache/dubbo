@@ -131,7 +131,7 @@ public class DataParseUtils {
     public static byte[] objectTextConvertToByteArray(Object object) {
         Class<?> objectClass = object.getClass();
 
-        if (objectClass == Boolean.class) {
+        if (objectClass == Boolean.class || objectClass == boolean.class) {
             return object.toString().getBytes();
         }
 
