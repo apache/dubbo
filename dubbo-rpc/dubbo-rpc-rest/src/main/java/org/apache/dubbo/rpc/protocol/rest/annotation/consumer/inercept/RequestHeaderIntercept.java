@@ -46,11 +46,11 @@ public class RequestHeaderIntercept implements HttpConnectionPreBuildIntercept {
 
         requestTemplate.addHeaders(RestHeaderEnum.CONTENT_TYPE.getHeader(), consumes);
 
-        Collection<String> headers = requestTemplate.getHeaders(RestHeaderEnum.ACCEPT.getHeader());
-        if (headers == null || headers.isEmpty()) {
+        Collection<String> produces = restMethodMetadata.getRequest().getProduces();
+        if (produces == null || produces.isEmpty()) {
             requestTemplate.addHeader(RestHeaderEnum.ACCEPT.getHeader(), RestConstant.DEFAULT_ACCEPT);
         } else {
-            requestTemplate.addHeader(RestHeaderEnum.ACCEPT.getHeader(), headers);
+            requestTemplate.addHeader(RestHeaderEnum.ACCEPT.getHeader(), produces);
         }
 
         URL url = connectionCreateContext.getUrl();

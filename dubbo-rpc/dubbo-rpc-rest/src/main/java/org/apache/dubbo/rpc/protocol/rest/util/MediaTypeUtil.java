@@ -34,8 +34,7 @@ public class MediaTypeUtil {
      */
     public static MediaType convertMediaType(Class<?> targetType, String... contentTypes) {
 
-        if ((contentTypes == null || contentTypes.length == 0) && targetType != null) {
-
+        if (contentTypes == null || contentTypes.length == 0) {
             return HttpMessageCodecManager.typeSupport(targetType);
         }
 
@@ -44,6 +43,10 @@ public class MediaTypeUtil {
 
                 if (contentType != null && contentType.contains(mediaType.value)) {
                     return mediaType;
+                }
+
+                if (contentType != null && contentType.contains(MediaType.ALL_VALUE.value)) {
+                    return HttpMessageCodecManager.typeSupport(targetType);
                 }
             }
         }

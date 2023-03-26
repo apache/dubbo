@@ -33,18 +33,18 @@ import java.nio.charset.StandardCharsets;
 public class TextCodec implements HttpMessageCodec<byte[], OutputStream> {
 
     @Override
-    public Object decode(byte[] body, Class targetType) throws Exception {
+    public Object decode(byte[] body, Class<?> targetType) throws Exception {
         return DataParseUtils.stringTypeConvert(targetType, new String(body, StandardCharsets.UTF_8));
     }
 
 
     @Override
-    public boolean contentTypeSupport(MediaType mediaType, Class targetType) {
+    public boolean contentTypeSupport(MediaType mediaType, Class<?> targetType) {
         return MediaTypeMatcher.TEXT_PLAIN.mediaSupport(mediaType);
     }
 
     @Override
-    public boolean typeSupport(Class targetType) {
+    public boolean typeSupport(Class<?> targetType) {
         return DataParseUtils.isTextType(targetType);
     }
 

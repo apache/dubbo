@@ -31,17 +31,17 @@ public class ByteArrayCodec implements HttpMessageCodec<byte[], OutputStream> {
 
 
     @Override
-    public Object decode(byte[] body, Class targetType) throws Exception {
+    public Object decode(byte[] body, Class<?> targetType) throws Exception {
         return body;
     }
 
     @Override
-    public boolean contentTypeSupport(MediaType mediaType, Class targetType) {
+    public boolean contentTypeSupport(MediaType mediaType, Class<?> targetType) {
         return byte[].class.equals(targetType);
     }
 
     @Override
-    public boolean typeSupport(Class targetType) {
+    public boolean typeSupport(Class<?> targetType) {
         return byte[].class.equals(targetType);
     }
 

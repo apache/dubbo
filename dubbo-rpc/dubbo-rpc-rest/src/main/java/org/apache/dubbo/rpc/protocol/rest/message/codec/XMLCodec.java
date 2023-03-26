@@ -41,7 +41,7 @@ public class XMLCodec implements HttpMessageCodec<byte[], OutputStream> {
 
 
     @Override
-    public Object decode(byte[] body, Class targetType) throws Exception {
+    public Object decode(byte[] body, Class<?> targetType) throws Exception {
 
 
         SAXParserFactory spf = SAXParserFactory.newInstance();
@@ -59,12 +59,12 @@ public class XMLCodec implements HttpMessageCodec<byte[], OutputStream> {
     }
 
     @Override
-    public boolean contentTypeSupport(MediaType mediaType, Class targetType) {
+    public boolean contentTypeSupport(MediaType mediaType, Class<?> targetType) {
         return MediaTypeMatcher.TEXT_XML.mediaSupport(mediaType);
     }
 
     @Override
-    public boolean typeSupport(Class targetType) {
+    public boolean typeSupport(Class<?> targetType) {
         return false;
     }
 
@@ -78,7 +78,6 @@ public class XMLCodec implements HttpMessageCodec<byte[], OutputStream> {
     public void encode(OutputStream outputStream, Object unSerializedBody, URL url) throws Exception {
         Marshaller marshaller = JAXBContext.newInstance(unSerializedBody.getClass()).createMarshaller();
         marshaller.marshal(unSerializedBody, outputStream);
-        outputStream.write((byte[]) unSerializedBody);
     }
 
 
