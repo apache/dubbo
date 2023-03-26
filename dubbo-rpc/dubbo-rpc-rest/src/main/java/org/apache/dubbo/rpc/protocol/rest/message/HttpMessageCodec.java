@@ -36,14 +36,14 @@ public interface HttpMessageCodec<InputStream, OutputStream> extends HttpMessage
      * @param targetType
      * @return
      */
-    boolean contentTypeSupport(MediaType mediaType, Class targetType);
+    boolean contentTypeSupport(MediaType mediaType, Class<?> targetType);
 
     /**
      *  class type support judge
      * @param targetType
      * @return
      */
-    boolean typeSupport(Class targetType);
+    boolean typeSupport(Class<?> targetType);
 
     MediaType contentType();
 

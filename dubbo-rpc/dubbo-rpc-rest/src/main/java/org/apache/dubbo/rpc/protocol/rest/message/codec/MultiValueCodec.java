@@ -39,7 +39,7 @@ public class MultiValueCodec implements HttpMessageCodec<byte[], OutputStream> {
 
 
     @Override
-    public Object decode(byte[] body, Class targetType) throws Exception {
+    public Object decode(byte[] body, Class<?> targetType) throws Exception {
         // TODO java bean  get set convert
         Object map = DataParseUtils.multipartFormConvert(body);
         Map valuesMap = (Map) map;
@@ -82,12 +82,12 @@ public class MultiValueCodec implements HttpMessageCodec<byte[], OutputStream> {
 
 
     @Override
-    public boolean contentTypeSupport(MediaType mediaType, Class targetType) {
+    public boolean contentTypeSupport(MediaType mediaType, Class<?> targetType) {
         return MediaTypeMatcher.MULTI_VALUE.mediaSupport(mediaType);
     }
 
     @Override
-    public boolean typeSupport(Class targetType) {
+    public boolean typeSupport(Class<?> targetType) {
         return false;
     }
 

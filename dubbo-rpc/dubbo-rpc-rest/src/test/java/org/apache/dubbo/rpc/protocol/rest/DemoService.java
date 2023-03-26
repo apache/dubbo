@@ -47,7 +47,7 @@ public interface DemoService {
 
     @POST
     @Path("number")
-    @Produces({javax.ws.rs.core.MediaType.APPLICATION_FORM_URLENCODED})
+    @Produces({MediaType.TEXT_PLAIN})
     @Consumes({MediaType.APPLICATION_FORM_URLENCODED})
     Long testFormBody(@FormParam("number") Long number);
 
