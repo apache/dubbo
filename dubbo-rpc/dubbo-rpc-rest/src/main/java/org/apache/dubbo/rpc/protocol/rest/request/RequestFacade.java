@@ -26,7 +26,10 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
-
+/**
+ *  request facade for different request
+ * @param <T>
+ */
 public abstract class RequestFacade<T> {
     protected Map<String, ArrayList<String>> headers = new HashMap<>();
     protected Map<String, ArrayList<String>> parameters = new HashMap<>();

@@ -35,8 +35,9 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 
-
-// TODO add some methods return
+/**
+ *  netty request facade
+ */
 public class NettyRequestFacade extends RequestFacade<FullHttpRequest> {
 
 
