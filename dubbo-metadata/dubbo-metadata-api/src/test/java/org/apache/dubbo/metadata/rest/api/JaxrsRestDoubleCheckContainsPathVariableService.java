@@ -14,23 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata;
+package org.apache.dubbo.metadata.rest.api;
 
-import org.apache.dubbo.metadata.rest.PathMatcher;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
 
-public class PathMatcherTest {
+@Path("/test")
+public interface JaxrsRestDoubleCheckContainsPathVariableService {
+    @Path("/a/{b}")
+    @Consumes(MediaType.TEXT_PLAIN)
+    @Produces(MediaType.TEXT_PLAIN)
+    @GET
+    String param(@QueryParam("param") String param);
 
-    @Test
-    public void testPathMatcher() {
-        PathMatcher pathMatherMeta = new PathMatcher("/a/b/c/{path1}/d/{path2}/e", true);
 
-
-        PathMatcher requestPathMather = new PathMatcher("/a/b/c/1/d/2/e", true);
-        Assertions.assertEquals(requestPathMather, pathMatherMeta);
-
-        PathMatcher requestPathMather1 = new PathMatcher("/{c}/b/c/1/d/2/e", true);
-        Assertions.assertEquals(requestPathMather, requestPathMather1);
-    }
+    @Path("/{b}/b")
+    @Consumes(MediaType.TEXT_PLAIN)
+    @Produces(MediaType.TEXT_PLAIN)
+    @GET
+    String header(@HeaderParam("header") String header);
 }

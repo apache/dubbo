@@ -42,10 +42,6 @@ public abstract class ProviderParamParser implements BaseProviderParamParser {
 
     protected abstract ParamType getParamType();
 
-    protected <T> T castReqOrRes(Class<T> reqOrResClass, Object reqOrRes) {
-        return reqOrResClass.cast(reqOrRes);
-    }
-
     protected Object paramTypeConvert(Class targetType, String value) {
 
 

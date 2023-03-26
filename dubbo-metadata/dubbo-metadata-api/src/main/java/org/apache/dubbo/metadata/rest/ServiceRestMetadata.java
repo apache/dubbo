@@ -18,7 +18,6 @@ package org.apache.dubbo.metadata.rest;
 
 import org.apache.dubbo.common.utils.PathUtils;
 import org.apache.dubbo.metadata.ParameterTypesComparator;
-import org.apache.dubbo.rpc.RpcException;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -142,11 +141,11 @@ public class ServiceRestMetadata implements Serializable {
                                  RestMethodMetadata restMethodMetadata, boolean containPathVariable) {
         if (pathMatcherRestMethodMetadataMap.containsKey(pathMather)) {
             if (containPathVariable) {
-                throw new RpcException("dubbo rest metadata resolve double path error,and contain path variable  is:  "
+                throw new IllegalArgumentException("dubbo rest metadata resolve double path error,and contain path variable  is:  "
                     + pathMather + ", rest method metadata is: " + restMethodMetadata);
 
             } else {
-                throw new RpcException("dubbo rest metadata resolve double path error,and do not  contain path variable  is: "
+                throw new IllegalArgumentException("dubbo rest metadata resolve double path error,and do not  contain path variable  is: "
                     + pathMather + ", rest method metadata is: " + restMethodMetadata);
             }
         }
