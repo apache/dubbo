@@ -164,7 +164,7 @@ public class NettyServer {
             public void initChannel(SocketChannel ch) throws Exception {
                 ChannelPipeline channelPipeline = ch.pipeline();
 
-                int idleTimeout = url.getParameter(RestConstant.IDLE_TIMEOUT, RestConstant.idleTimeout);
+                int idleTimeout = url.getParameter(RestConstant.IDLE_TIMEOUT_PARAM, RestConstant.IDLE_TIMEOUT);
                 if (idleTimeout > 0) {
                     channelHandlers.add(new IdleStateHandler(0, 0, idleTimeout));
                 }

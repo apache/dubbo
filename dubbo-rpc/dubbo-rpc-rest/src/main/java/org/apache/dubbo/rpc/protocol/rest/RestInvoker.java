@@ -31,7 +31,6 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
-import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.HttpConnectionConfig;
 import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.HttpConnectionCreateContext;
 import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.HttpConnectionPreBuildIntercept;
 import org.apache.dubbo.rpc.protocol.rest.exception.ParamParseException;
@@ -133,8 +132,6 @@ public class RestInvoker<T> extends AbstractInvoker<T> {
      */
     private HttpConnectionCreateContext creatHttpConnectionCreateContext(Invocation invocation, ServiceRestMetadata serviceRestMetadata, RestMethodMetadata restMethodMetadata, RequestTemplate requestTemplate) {
         HttpConnectionCreateContext httpConnectionCreateContext = new HttpConnectionCreateContext();
-        // TODO  dynamic load config
-        httpConnectionCreateContext.setConnectionConfig(new HttpConnectionConfig());
         httpConnectionCreateContext.setRequestTemplate(requestTemplate);
         httpConnectionCreateContext.setRestMethodMetadata(restMethodMetadata);
         httpConnectionCreateContext.setServiceRestMetadata(serviceRestMetadata);
