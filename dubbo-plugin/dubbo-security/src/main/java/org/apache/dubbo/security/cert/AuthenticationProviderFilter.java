@@ -104,7 +104,7 @@ public class AuthenticationProviderFilter implements Filter {
 
         Endpoint peerEndpoint = JwtUtils.decodeEndpointFromJwt(peerAuthorization, peerCN, identityInfo.getTrustedTokenPublicKeys(), remoteAddress);
         Endpoint localEndpoint = JwtUtils.decodeEndpointFromJwt(identityInfo.getToken(), null, identityInfo.getTrustedTokenPublicKeys(), localAddress);
-        return new Endpoints(peerEndpoint, localEndpoint);
+        return new Endpoints(localEndpoint, peerEndpoint);
     }
 
 
