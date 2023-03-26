@@ -65,7 +65,8 @@ public class ReflectionPackableMethod implements PackableMethod {
         return this.needWrapper;
     }
 
-    public ReflectionPackableMethod(MethodDescriptor method, URL url, String serializeName) {
+    public ReflectionPackableMethod(MethodDescriptor method, URL url, String serializeName, boolean isServer) {
+        Class<?>[] actualTypes;
         Class<?>[] actualRequestTypes;
         Class<?> actualResponseType;
         switch (method.getRpcType()) {
