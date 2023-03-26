@@ -53,7 +53,7 @@ public class RestRPCInvocationUtil {
             Object[] args = ParamParserManager.providerParamParse(parseContext);
             rpcInvocation.setArguments(args);
         } catch (Exception e) {
-            logger.error("", e.getMessage(), "", "dubbo rest method args parse error: ", e);
+            logger.error("", e.getMessage(), "", "dubbo rest provider method args parse error: ", e);
             throw new ParamParseException(e.getMessage());
         }
     }
