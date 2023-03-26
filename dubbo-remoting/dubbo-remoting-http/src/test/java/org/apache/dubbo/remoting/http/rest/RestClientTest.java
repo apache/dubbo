@@ -33,6 +33,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -56,7 +57,15 @@ public class RestClientTest {
 
         RequestTemplate requestTemplate = new RequestTemplate(null, "POST", "localhost:" + port);
 
+        requestTemplate.addParam("p1", "value1");
+        requestTemplate.addParam("p2", "value2");
+
+        requestTemplate.addParams("p3", Arrays.asList("value3", "value3.1"));
         requestTemplate.addHeader("test", "dubbo");
+        requestTemplate.addKeepAliveHeader(60);
+
+        requestTemplate.addHeaders("header", Arrays.asList("h1", "h2"));
+
         requestTemplate.path("/test");
         requestTemplate.serializeBody("test".getBytes(StandardCharsets.UTF_8));
 
@@ -104,8 +113,11 @@ public class RestClientTest {
             }
         });
 
-        RequestTemplate requestTemplate = new RequestTemplate(null, "POST", "localhost:" + port);
+        RequestTemplate requestTemplate = new RequestTemplate(null, null, null);
 
+        requestTemplate.httpMethod("POST");
+        requestTemplate.setAddress("localhost:" + port);
+        requestTemplate.setProtocol("http://");
         requestTemplate.addHeader("test", "dubbo");
         requestTemplate.path("/test");
         requestTemplate.serializeBody("test".getBytes(StandardCharsets.UTF_8));
@@ -132,7 +144,6 @@ public class RestClientTest {
         restResult = send.get();
 
 
-
         Assertions.assertEquals(500, restResult.getResponseCode());
         Assertions.assertEquals(error, restResult.getMessage());
         Assertions.assertEquals(contentType, restResult.getContentType());
@@ -151,5 +162,38 @@ public class RestClientTest {
 
 
         httpServer.close();
+    }
+
+    @Test
+    public void testMethod() {
+
+        RequestTemplate requestTemplate = new RequestTemplate(null, null, null);
+
+        requestTemplate.body(new Object(), Object.class);
+
+        Assertions.assertEquals(requestTemplate.getBodyType(),Object.class);
+
+
+        requestTemplate.addHeader("Content-Length",1);
+
+        Integer contentLength = requestTemplate.getContentLength();
+
+        Assertions.assertEquals(1,contentLength);
+
+        List<String> strings = Arrays.asList("h1", "h2");
+
+        requestTemplate.addHeaders("header",strings);
+
+
+        Assertions.assertArrayEquals(strings.toArray(new String[0]),requestTemplate.getHeaders("header").toArray(new String[0]));
+
+         strings = Arrays.asList("p1", "p2");
+
+        requestTemplate.addParams("param",strings);
+
+        Assertions.assertArrayEquals(strings.toArray(new String[0]),requestTemplate.getParam("param").toArray(new String[0]));
+
+
+
     }
 }
