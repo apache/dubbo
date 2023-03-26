@@ -36,18 +36,18 @@ public class SslClientTlsHandler extends ChannelInboundHandlerAdapter {
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(SslClientTlsHandler.class);
 
-    private final SslContext sslContext;
+    private final URL url;
 
     public SslClientTlsHandler(URL url) {
-        this(SslContexts.buildClientSslContext(url));
-    }
-
-    public SslClientTlsHandler(SslContext sslContext) {
-        this.sslContext = sslContext;
+        this.url = url;
     }
 
     @Override
     public void handlerAdded(ChannelHandlerContext ctx) {
+        SslContext sslContext = SslContexts.buildClientSslContext(url);
+        if (sslContext == null) {
+            return;
+        }
         SSLEngine sslEngine = sslContext.newEngine(ctx.alloc());
         ctx.pipeline().addAfter(ctx.name(), null, new SslHandler(sslEngine, false));
     }

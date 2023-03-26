@@ -46,7 +46,7 @@ public class AuthorizationPolicySpec {
     public AuthorizationAction match(Endpoint peer, Endpoint local, Invocation invocation) {
         AuthorizationAction safeAction = this.action == null ? AuthorizationAction.ALLOW : this.action;
         if (rules == null || rules.isEmpty()) {
-            return AuthorizationAction.ALLOW;
+            return safeAction;
         }
         if (matchType == null || matchType == AuthorizationMatchType.ANY_MATCH) {
             for (AuthorizationPolicyRule rule : rules) {

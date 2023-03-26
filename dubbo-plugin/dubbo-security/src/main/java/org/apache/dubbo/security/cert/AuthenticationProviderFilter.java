@@ -14,8 +14,9 @@ import org.apache.dubbo.rpc.model.ModuleModel;
 import javax.net.ssl.SSLPeerUnverifiedException;
 import javax.net.ssl.SSLSession;
 import java.net.InetSocketAddress;
+import java.security.Principal;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateParsingException;
+import java.security.cert.X509Certificate;
 
 @Activate(group = "provider", order = Integer.MIN_VALUE + 9000)
 public class AuthenticationProviderFilter implements Filter {
@@ -39,57 +40,54 @@ public class AuthenticationProviderFilter implements Filter {
 
         IdentityInfo identityInfo = authorityIdentityFactory.generateIdentity();
 
-        Endpoint endpoint = null;
-        invocation.getAttributes().put("endpoint", endpoint);
+        Endpoints endpoints = getEndpoints(invocation, identityInfo);
+        invocation.getAttributes().put("endpoints", endpoints);
 
         return invoker.invoke(invocation);
     }
 
 
-    private static Endpoints getEndpoints(Invocation invocation) {
-        Endpoints endpoints = null;
-
+    private static Endpoints getEndpoints(Invocation invocation, IdentityInfo identityInfo) {
         Channel channel = null;
         Object channelObj = invocation.getAttributes().get("channel");
         if (channelObj instanceof Channel) {
             channel = (Channel) channelObj;
         }
 
-        Object endpointsObj = null;
         InetSocketAddress localAddress = null;
         InetSocketAddress remoteAddress = null;
 
         if (channel != null) {
-            endpointsObj = channel.getAttribute("endpoints");
             localAddress = channel.getLocalAddress();
             remoteAddress = channel.getRemoteAddress();
         }
 
-        if (endpointsObj instanceof Endpoints) {
-            endpoints = (Endpoints) endpointsObj;
-        }
+        String peerAuthorization = invocation.getAttachment("authorization");
 
-        if (endpoints == null) {
-            Object sslSessionObj = invocation.getAttributes().get("dubbo.ssl.session");
-            if (sslSessionObj instanceof SSLSession) {
-                try {
-                    Certificate[] peerCertificates = ((SSLSession) sslSessionObj).getPeerCertificates();
-                    Endpoint peerEndpoint = Endpoint.decodeFromCertificates(peerCertificates, remoteAddress);
-
-                    Certificate[] localCertificates = ((SSLSession) sslSessionObj).getLocalCertificates();
-                    Endpoint localEndpoint = Endpoint.decodeFromCertificates(localCertificates, localAddress);
-
-                    endpoints = new Endpoints(peerEndpoint, localEndpoint);
-
-                    if (channel != null) {
-                        channel.setAttribute("endpoints", endpoints);
+        String peerCN = null;
+        Object sslSessionObj = invocation.getAttributes().get("dubbo.ssl.session");
+        if (sslSessionObj instanceof SSLSession) {
+            try {
+                Certificate[] peerCertificates = ((SSLSession) sslSessionObj).getPeerCertificates();
+                for (Certificate certificate : peerCertificates) {
+                    if (certificate instanceof X509Certificate) {
+                        X509Certificate x509Certificate = (X509Certificate) certificate;
+                        Principal subjectDN = x509Certificate.getSubjectDN();
+                        String name = subjectDN.getName();
+                        if (name.contains("CN=")) {
+                            peerCN = name.split("CN=")[1].split(",")[0].trim();
+                            break;
+                        }
                     }
-                } catch (SSLPeerUnverifiedException | CertificateParsingException e) {
-                    logger.info("Failed to get peer certificate", e);
                 }
+            } catch (SSLPeerUnverifiedException e) {
+                logger.info("Failed to get peer certificate", e);
             }
         }
-        return endpoints;
+
+        Endpoint peerEndpoint = JwtUtils.decodeEndpointFromJwt(peerAuthorization, peerCN, identityInfo.getTrustedTokenPublicKeys(), remoteAddress);
+        Endpoint localEndpoint = JwtUtils.decodeEndpointFromJwt(identityInfo.getToken(), null, identityInfo.getTrustedTokenPublicKeys(), localAddress);
+        return new Endpoints(peerEndpoint, localEndpoint);
     }
 
 

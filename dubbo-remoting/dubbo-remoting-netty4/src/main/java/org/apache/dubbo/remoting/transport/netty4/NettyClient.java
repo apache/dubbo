@@ -30,7 +30,6 @@ import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.transport.AbstractClient;
 import org.apache.dubbo.remoting.transport.netty4.ssl.SslClientTlsHandler;
-import org.apache.dubbo.remoting.transport.netty4.ssl.SslContexts;
 import org.apache.dubbo.remoting.utils.UrlUtils;
 
 import io.netty.bootstrap.Bootstrap;
@@ -42,7 +41,6 @@ import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.proxy.Socks5ProxyHandler;
-import io.netty.handler.ssl.SslContext;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.EventExecutorGroup;
 
@@ -121,16 +119,14 @@ public class NettyClient extends AbstractClient {
             .channel(socketChannelClass());
 
         bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, Math.max(DEFAULT_CONNECT_TIMEOUT, getConnectTimeout()));
-        SslContext sslContext = getUrl().getParameter(SSL_ENABLED_KEY, false) ?
-            SslContexts.buildClientSslContext(getUrl()) : null;
         bootstrap.handler(new ChannelInitializer<SocketChannel>() {
 
             @Override
             protected void initChannel(SocketChannel ch) throws Exception {
                 int heartbeatInterval = UrlUtils.getHeartbeat(getUrl());
 
-                if (sslContext != null) {
-                    ch.pipeline().addLast("negotiation", new SslClientTlsHandler(sslContext));
+                if (getUrl().getParameter(SSL_ENABLED_KEY, false)) {
+                    ch.pipeline().addLast("negotiation", new SslClientTlsHandler(getUrl()));
                 }
 
                 NettyCodecAdapter adapter = new NettyCodecAdapter(getCodec(), getUrl(), NettyClient.this);

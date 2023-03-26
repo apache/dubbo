@@ -1,15 +1,15 @@
 package org.apache.dubbo.security.cert;
 
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.cluster.filter.ClusterFilter;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
 @Activate(group = "consumer", order = Integer.MIN_VALUE + 9000)
-public class AuthenticationConsumerFilter implements Filter {
+public class AuthenticationConsumerFilter implements ClusterFilter {
     private volatile AuthorityIdentityFactory authorityIdentityFactory;
 
     private final ModuleModel moduleModel;

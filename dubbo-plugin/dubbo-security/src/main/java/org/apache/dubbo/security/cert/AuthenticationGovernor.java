@@ -6,6 +6,8 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.ssl.AuthPolicy;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
+import org.apache.dubbo.config.ServiceConfigBase;
+import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.RegistryFactory;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -13,10 +15,12 @@ import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.security.cert.rule.authentication.AuthenticationAction;
 import org.apache.dubbo.security.cert.rule.authentication.AuthenticationPolicy;
 
-import java.util.LinkedList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_SERVER_SHUTDOWN_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.SSL_ENABLED_KEY;
@@ -60,7 +64,7 @@ public class AuthenticationGovernor {
                 synchronized (this) {
                     frameworkModel.getBeanFactory().getBean(FrameworkExecutorRepository.class)
                         .getSharedScheduledExecutor().scheduleAtFixedRate(this::checkRuleUpdate,
-                            1, 1, TimeUnit.MINUTES);
+                            1, 1, TimeUnit.SECONDS);
                 }
             }
         }
@@ -72,7 +76,7 @@ public class AuthenticationGovernor {
     }
 
     protected void checkRuleUpdate0() {
-        if (inUpdating.compareAndSet(false, true)) {
+        if (!inUpdating.compareAndSet(false, true)) {
             return;
         }
         try {
@@ -82,7 +86,7 @@ public class AuthenticationGovernor {
                 return;
             }
 
-            List<ProviderModel> providersToReexport = new LinkedList<>();
+            Set<ProviderModel> providersToReexport = new HashSet<>();
 
             List<ProviderModel> providerModels = frameworkModel.getServiceRepository().allProviderModels();
             for (ProviderModel providerModel : providerModels) {
@@ -104,6 +108,10 @@ public class AuthenticationGovernor {
                 }
             }
 
+            if (providersToReexport.isEmpty()) {
+                return;
+            }
+
             logger.info("Wait for " + waitTime + "ms to re-export providers for ssl status changed purpose.");
             try {
                 Thread.sleep(waitTime);
@@ -111,10 +119,24 @@ public class AuthenticationGovernor {
                 Thread.currentThread().interrupt();
             }
 
+            List<ProviderModel> metadataServices = providersToReexport.stream()
+                .filter(providerModel -> MetadataService.class.equals(providerModel.getServiceInterfaceClass()))
+                .collect(Collectors.toList());
+
+            if (!metadataServices.isEmpty()) {
+                metadataServices.forEach(providersToReexport::remove);
+
+                for (ProviderModel metadataService : metadataServices) {
+                    ServiceConfigBase<?> serviceConfig = metadataService.getServiceConfig();
+                    serviceConfig.unexport();
+                    serviceConfig.export();
+                    logger.info("Re-export provider: " + metadataService.getServiceName() + " for ssl status changed purpose.");
+                }
+            }
+
             for (ProviderModel providerModel : providersToReexport) {
                 providerModel.getServiceConfig().unexport();
                 logger.info("Un-export provider: " + providerModel.getServiceName() + " for ssl status changed purpose.");
-
             }
 
             for (ProviderModel providerModel : providersToReexport) {

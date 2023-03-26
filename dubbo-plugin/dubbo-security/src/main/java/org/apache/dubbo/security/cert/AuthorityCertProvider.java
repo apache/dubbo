@@ -37,6 +37,8 @@ public class AuthorityCertProvider implements CertProvider {
 
     @Override
     public boolean isSupport(URL address) {
+        obtainAuthorityCertFactory();
+        obtainAuthenticationGovernor();
         return authorityIdentityFactory != null && authorityIdentityFactory.isConnected();
     }
 
@@ -47,7 +49,7 @@ public class AuthorityCertProvider implements CertProvider {
         if (authorityIdentityFactory == null) {
             return null;
         }
-        if (authenticationGovernor != null) {
+        if (authenticationGovernor == null) {
             return null;
         }
 

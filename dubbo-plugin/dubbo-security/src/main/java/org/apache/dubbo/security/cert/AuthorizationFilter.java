@@ -49,7 +49,7 @@ public class AuthorizationFilter implements Filter {
 
 
     private static Endpoints getEndpoints(Invocation invocation) {
-        Object endpointObj = invocation.getAttributes().get("endpoint");
+        Object endpointObj = invocation.getAttributes().get("endpoints");
         if (endpointObj instanceof Endpoints) {
             return (Endpoints) endpointObj;
         }

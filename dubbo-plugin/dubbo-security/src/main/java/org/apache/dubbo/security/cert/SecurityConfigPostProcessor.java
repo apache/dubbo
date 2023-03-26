@@ -1,6 +1,7 @@
 package org.apache.dubbo.security.cert;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.ssl.AuthPolicy;
 import org.apache.dubbo.config.ConfigPostProcessor;
 import org.apache.dubbo.config.ServiceConfig;
@@ -8,6 +9,7 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import static org.apache.dubbo.common.constants.CommonConstants.SSL_ENABLED_KEY;
 
+@Activate
 public class SecurityConfigPostProcessor implements ConfigPostProcessor {
     private final FrameworkModel frameworkModel;
 

@@ -107,6 +107,7 @@ public class SslServerTlsHandler extends ByteToMessageDecoder {
         if (providerConnectionConfig.getAuthPolicy() != AuthPolicy.STRICT) {
             ChannelPipeline p = channelHandlerContext.pipeline();
             p.remove(this);
+            return;
         }
 
         logger.error(INTERNAL_ERROR, "", "", "TLS negotiation failed when trying to accept new connection.");

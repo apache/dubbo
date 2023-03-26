@@ -1,27 +1,24 @@
 package org.apache.dubbo.security.cert;
 
-import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.json.JSON;
+import org.apache.dubbo.common.utils.JsonUtils;
 
 import java.net.InetSocketAddress;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateParsingException;
-import java.security.cert.X509Certificate;
-import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 public class Endpoint {
     private static final String SPIFFE_SCHEME = "spiffe://";
-    private static final String DUBBO_SCHEME = "dubbo://";
     private static final String NAMESPACE_SEGMENT = "ns";
     private static final String SERVICE_ACCOUNT_SEGMENT = "sa";
     private final String trustDomain;
     private final String namespace;
     private final String serviceAccount;
-    private final URL dubboUrl;
+    private final String extensions;
     private final InetSocketAddress socketAddress;
 
-    private Endpoint(String spiffeUrl, URL dubboUrl, InetSocketAddress socketAddress) {
-        this.dubboUrl = dubboUrl;
+    public Endpoint(String spiffeUrl, String extensions, InetSocketAddress socketAddress) {
+        this.extensions = extensions;
         this.socketAddress = socketAddress;
 
         String[] tags = null;
@@ -50,31 +47,8 @@ public class Endpoint {
         serviceAccount = tags[4];
     }
 
-    public static Endpoint decodeFromCertificates(Certificate[] certificates, InetSocketAddress socketAddress) throws CertificateParsingException {
-        String spiffeUrl = null;
-        URL dubboUrl = null;
-
-        for (Certificate certificate : certificates) {
-            if (certificate instanceof X509Certificate) {
-                X509Certificate x509Certificate = (X509Certificate) certificate;
-                Collection<List<?>> sans = x509Certificate.getSubjectAlternativeNames();
-                for (List<?> san : sans) {
-                    for (Object name : san) {
-                        if (name instanceof String) {
-                            String sanStr = (String) name;
-                            if (sanStr.startsWith(SPIFFE_SCHEME)) {
-                                spiffeUrl = sanStr;
-                            }
-                            if (sanStr.startsWith(DUBBO_SCHEME)) {
-                                dubboUrl = URL.valueOf(sanStr);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        return new Endpoint(spiffeUrl, dubboUrl, socketAddress);
+    public static Endpoint decodeFromCertificates(String commonName, String token, List<String> trustedKeys, InetSocketAddress socketAddress) {
+        return JwtUtils.decodeEndpointFromJwt(token, commonName, trustedKeys, socketAddress);
     }
 
     public String getPrincipal() {
@@ -85,8 +59,15 @@ public class Endpoint {
         if (namespace != null) {
             return namespace;
         }
-        if (dubboUrl != null) {
-            return dubboUrl.getParameter("kubernetesEnv.namespace");
+        if (extensions != null) {
+            JSON json = JsonUtils.getJson();
+            Map<?, ?> map = json.toJavaObject(extensions, Map.class);
+            if (map != null && map.containsKey("namespace")) {
+                Object ns = map.get("namespace");
+                if (ns instanceof String) {
+                    return (String) ns;
+                }
+            }
         }
         return null;
     }
@@ -95,15 +76,47 @@ public class Endpoint {
         if (socketAddress != null) {
             return socketAddress.getAddress().getHostAddress();
         }
-        if (dubboUrl != null) {
-            return dubboUrl.getHost();
+        if (extensions != null) {
+            JSON json = JsonUtils.getJson();
+            Map<?, ?> map = json.toJavaObject(extensions, Map.class);
+            if (map != null && map.containsKey("ips")) {
+                Object ips = map.get("ips");
+                if (ips instanceof List && !((List<?>) ips).isEmpty()) {
+                    Object ip = ((List<?>) ips).get(0);
+                    if (ip instanceof String) {
+                        return (String) ip;
+                    }
+                }
+            }
         }
         return null;
     }
 
     public String getParameter(String key) {
-        if (dubboUrl != null) {
-            return dubboUrl.getParameter(key);
+        // TODO support json path
+        if (extensions != null) {
+            JSON json = JsonUtils.getJson();
+            Map<?, ?> map = json.toJavaObject(extensions, Map.class);
+            return getParameter(map, key);
+        }
+        return null;
+    }
+
+    private String getParameter(Map<?, ?> map, String key) {
+        String[] subKeys = key.split("\\.", 2);
+        String current = key;
+        String next = null;
+        if (subKeys.length == 2) {
+            current = subKeys[0];
+            next = subKeys[1];
+        }
+        if (map != null && map.containsKey(current)) {
+            Object value = map.get(current);
+            if (value instanceof Map && next != null) {
+                return getParameter((Map<?, ?>) value, next);
+            } else if (value instanceof String && next == null) {
+                return (String) value;
+            }
         }
         return null;
     }

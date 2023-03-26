@@ -221,6 +221,8 @@ public class AuthorityConnector {
         Metadata header = new Metadata();
         Metadata.Key<String> key = Metadata.Key.of("authorization", Metadata.ASCII_STRING_MARSHALLER);
         header.put(key, "Bearer " + rootIdentityInfo.getToken());
+        key = Metadata.Key.of("authorization-type", Metadata.ASCII_STRING_MARSHALLER);
+        header.put(key, "dubbo-jwt");
 
         return  (T) t.withInterceptors(newAttachHeadersInterceptor(header));
     }
