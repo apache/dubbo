@@ -160,6 +160,11 @@ final class HeaderExchangeChannel implements ExchangeChannel {
         try {
             // graceful close
             DefaultFuture.closeChannel(channel);
+        } catch (Exception e) {
+            logger.warn(TRANSPORT_FAILED_CLOSE, "", "", e.getMessage(), e);
+        }
+
+        try {
             channel.close();
         } catch (Exception e) {
             logger.warn(TRANSPORT_FAILED_CLOSE, "", "", e.getMessage(), e);
@@ -245,7 +250,7 @@ final class HeaderExchangeChannel implements ExchangeChannel {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((channel == null) ? 0 : channel.hashCode());
+        result = prime * result + channel.hashCode();
         return result;
     }
 
@@ -261,14 +266,7 @@ final class HeaderExchangeChannel implements ExchangeChannel {
             return false;
         }
         HeaderExchangeChannel other = (HeaderExchangeChannel) obj;
-        if (channel == null) {
-            if (other.channel != null) {
-                return false;
-            }
-        } else if (!channel.equals(other.channel)) {
-            return false;
-        }
-        return true;
+        return channel.equals(other.channel);
     }
 
     @Override

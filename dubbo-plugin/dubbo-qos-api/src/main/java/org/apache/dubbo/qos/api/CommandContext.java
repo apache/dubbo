@@ -14,9 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.qos.command;
-
-import org.apache.dubbo.qos.common.QosConfiguration;
+package org.apache.dubbo.qos.api;
 
 import io.netty.channel.Channel;
 

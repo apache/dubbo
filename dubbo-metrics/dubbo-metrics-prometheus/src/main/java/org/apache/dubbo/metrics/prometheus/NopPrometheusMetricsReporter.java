@@ -14,17 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.qos.command;
 
-import org.apache.dubbo.common.extension.ExtensionScope;
-import org.apache.dubbo.common.extension.SPI;
+package org.apache.dubbo.metrics.prometheus;
 
-@SPI(scope = ExtensionScope.FRAMEWORK)
-public interface BaseCommand {
+import org.apache.dubbo.metrics.report.MetricsReporter;
 
-    default boolean logResult() {
-        return true;
+/**
+ * NopMetricsReporter is a trivial implementation of MetricsReporter
+ * which do nothing when micro-meter package is not exist.
+ */
+public class NopPrometheusMetricsReporter implements MetricsReporter {
+
+    @Override
+    public void init() {
+
     }
 
-    String execute(CommandContext commandContext, String[] args);
+    @Override
+    public void refreshData() {
+
+    }
+
+    @Override
+    public String getResponse() {
+        return "";
+    }
 }

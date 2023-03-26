@@ -14,8 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.handler;
-
+package org.apache.dubbo.rpc.protocol.dubbo.managemode;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
@@ -28,7 +27,6 @@ import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.exchange.support.DefaultFuture;
 import org.apache.dubbo.remoting.transport.dispatcher.WrappedChannelHandler;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -40,7 +38,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 class WrappedChannelHandlerTest {
     WrappedChannelHandler handler;
-    URL url = URL.valueOf("test://10.20.30.40:1234");
+    URL url = URL.valueOf("dubbo://10.20.30.40:1234");
 
     @BeforeEach
     public void setUp() throws Exception {
