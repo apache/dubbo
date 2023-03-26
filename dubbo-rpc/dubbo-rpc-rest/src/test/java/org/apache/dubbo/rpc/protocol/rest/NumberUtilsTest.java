@@ -16,12 +16,14 @@
  */
 package org.apache.dubbo.rpc.protocol.rest;
 
+import org.apache.dubbo.rpc.protocol.rest.util.DataParseUtils;
 import org.apache.dubbo.rpc.protocol.rest.util.NumberUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 
 public class NumberUtilsTest {
     public void testParseNumber(String numberStr) {
@@ -66,35 +68,48 @@ public class NumberUtilsTest {
 
     @Test
     public void testNumberToBytes() {
-        byte[] except = {49, 46, 48};
-        byte[] bytes = (byte[]) NumberUtils.numberToBytes(Integer.valueOf("1"));
+        byte[] except = {49};
+        byte[] bytes = (byte[]) DataParseUtils.objectTextConvertToByteArray(Integer.valueOf("1"));
 
         Assertions.assertArrayEquals(except, bytes);
 
-        bytes = (byte[]) NumberUtils.numberToBytes(NumberUtils.parseNumber("1", int.class));
-
-        Assertions.assertArrayEquals(except, bytes);
-
-        except = new byte[]{49};
-        bytes = (byte[]) NumberUtils.numberToBytes(Byte.valueOf("1"));
+        bytes = (byte[]) DataParseUtils.objectTextConvertToByteArray(NumberUtils.parseNumber("1", int.class));
 
         Assertions.assertArrayEquals(except, bytes);
 
         except = new byte[]{49};
-        bytes = (byte[]) NumberUtils.numberToBytes(Short.valueOf("1"));
-
-        Assertions.assertArrayEquals(except, bytes);
-        except = new byte[]{49};
-        Assertions.assertArrayEquals(except, bytes);
-
-        except = new byte[]{49};
-        bytes = (byte[]) NumberUtils.numberToBytes(Long.valueOf("1"));
+        bytes = (byte[]) DataParseUtils.objectTextConvertToByteArray(Byte.valueOf("1"));
 
         Assertions.assertArrayEquals(except, bytes);
 
         except = new byte[]{49};
-        bytes = (byte[]) NumberUtils.numberToBytes(BigDecimal.valueOf(1));
+        bytes = (byte[]) DataParseUtils.objectTextConvertToByteArray(Short.valueOf("1"));
 
+        Assertions.assertArrayEquals(except, bytes);
+
+        except = new byte[]{49};
+        bytes = (byte[]) DataParseUtils.objectTextConvertToByteArray(Long.valueOf("1"));
+
+        Assertions.assertArrayEquals(except, bytes);
+
+        except = new byte[]{49};
+        bytes = (byte[]) DataParseUtils.objectTextConvertToByteArray(BigDecimal.valueOf(1));
+
+        Assertions.assertArrayEquals(except, bytes);
+
+        except = new byte[]{116, 114, 117, 101};
+        bytes = (byte[]) DataParseUtils.objectTextConvertToByteArray(Boolean.TRUE);
+
+        Assertions.assertArrayEquals(except, bytes);
+
+        except = new byte[]{116, 114, 117, 101};
+        bytes = (byte[]) DataParseUtils.objectTextConvertToByteArray(true);
+
+        Assertions.assertArrayEquals(except, bytes);
+
+        bytes = (byte[]) DataParseUtils.objectTextConvertToByteArray(User.getInstance());
+
+        except = User.getInstance().toString().getBytes(StandardCharsets.UTF_8);
         Assertions.assertArrayEquals(except, bytes);
 
 
