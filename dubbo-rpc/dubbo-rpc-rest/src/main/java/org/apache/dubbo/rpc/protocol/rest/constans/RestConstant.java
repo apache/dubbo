@@ -47,15 +47,19 @@ public interface RestConstant {
 
 
     // http
-    String MAX_INITIAL_LINE_LENGTH = "max.initial.line.length";
-    String MAX_HEADER_SIZE = "max.header.size";
-    String MAX_CHUNK_SIZE = "max.chunk.size";
-    String MAX_REQUEST_SIZE = "max.request.size";
-    String IDLE_TIMEOUT = "idle.timeout";
+    String MAX_INITIAL_LINE_LENGTH_PARAM = "max.initial.line.length";
+    String MAX_HEADER_SIZE_PARAM = "max.header.size";
+    String MAX_CHUNK_SIZE_PARAM = "max.chunk.size";
+    String MAX_REQUEST_SIZE_PARAM = "max.request.size";
+    String IDLE_TIMEOUT_PARAM = "idle.timeout";
+    String KEEP_ALIVE_TIMEOUT_PARAM = "keep.alive.timeout";
 
-    int maxRequestSize = 1024 * 1024 * 10;
-    int maxInitialLineLength = 4096;
-    int maxHeaderSize = 8192;
-    int maxChunkSize = 8192;
-    int idleTimeout = -1;
+    int MAX_REQUEST_SIZE = 1024 * 1024 * 10;
+    int MAX_INITIAL_LINE_LENGTH = 4096;
+    int MAX_HEADER_SIZE = 8192;
+    int MAX_CHUNK_SIZE = 8192;
+    int IDLE_TIMEOUT = -1;
+    int KEEP_ALIVE_TIMEOUT = 60;
+
+
 }

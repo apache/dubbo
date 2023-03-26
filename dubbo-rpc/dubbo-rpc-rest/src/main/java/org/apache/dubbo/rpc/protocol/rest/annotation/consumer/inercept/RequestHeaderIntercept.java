@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.rest.annotation.consumer.inercept;
 
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.metadata.rest.RestMethodMetadata;
 import org.apache.dubbo.remoting.http.RequestTemplate;
@@ -51,6 +52,10 @@ public class RequestHeaderIntercept implements HttpConnectionPreBuildIntercept {
         } else {
             requestTemplate.addHeader(RestHeaderEnum.ACCEPT.getHeader(), headers);
         }
+
+        URL url = connectionCreateContext.getUrl();
+
+        requestTemplate.addKeepAliveHeader(url.getParameter(RestConstant.KEEP_ALIVE_TIMEOUT_PARAM,RestConstant.KEEP_ALIVE_TIMEOUT));
 
 
     }

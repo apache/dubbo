@@ -133,10 +133,10 @@ public class NettyHttpRestServer implements RestProtocolServer {
 //                channelPipeline.addLast(ch.pipeline().addLast("negotiation", new SslServerTlsHandler(url)));
 
                     new HttpRequestDecoder(
-                        url.getParameter(RestConstant.MAX_INITIAL_LINE_LENGTH, RestConstant.maxInitialLineLength),
-                        url.getParameter(RestConstant.MAX_HEADER_SIZE, RestConstant.maxHeaderSize),
-                        url.getParameter(RestConstant.MAX_CHUNK_SIZE, RestConstant.maxChunkSize)),
-                    new HttpObjectAggregator(url.getParameter(RestConstant.MAX_REQUEST_SIZE, RestConstant.maxRequestSize)),
+                        url.getParameter(RestConstant.MAX_INITIAL_LINE_LENGTH_PARAM, RestConstant.MAX_INITIAL_LINE_LENGTH),
+                        url.getParameter(RestConstant.MAX_HEADER_SIZE_PARAM, RestConstant.MAX_HEADER_SIZE),
+                        url.getParameter(RestConstant.MAX_CHUNK_SIZE_PARAM, RestConstant.MAX_CHUNK_SIZE)),
+                    new HttpObjectAggregator(url.getParameter(RestConstant.MAX_REQUEST_SIZE_PARAM, RestConstant.MAX_REQUEST_SIZE)),
                     new HttpResponseEncoder());
             }
         };
