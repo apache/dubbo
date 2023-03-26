@@ -24,6 +24,7 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.metadata.rest.media.MediaType;
 import org.apache.dubbo.remoting.http.RequestTemplate;
+import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.HttpConnectionCreateContext;
 import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.HttpConnectionPreBuildIntercept;
 import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
@@ -67,6 +68,7 @@ public class SerializeBodyIntercept implements HttpConnectionPreBuildIntercept {
             outputStream.close();
         } catch (Exception e) {
             logger.error(LoggerCodeConstants.PROTOCOL_ERROR_DESERIALIZE, "", "", "Rest SerializeBodyIntercept serialize error: {}", e);
+            throw new RpcException(e);
         }
 
 
