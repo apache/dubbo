@@ -14,8 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.rest.message;
+package org.apache.dubbo.rpc.protocol.rest;
 
-public abstract class AbstractMessageDecode implements HttpMessageDecode{
+import org.apache.dubbo.rpc.protocol.rest.exception.UnSupportContentTypeException;
+import org.apache.dubbo.rpc.protocol.rest.util.MediaTypeUtil;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
+public class MediaTypeUtilTest {
+
+    @Test
+    public void testException() {
+
+        Assertions.assertThrows(UnSupportContentTypeException.class,()->{
+            MediaTypeUtil.convertMediaType(null, "aaaaa");
+
+        });
+    }
 }
