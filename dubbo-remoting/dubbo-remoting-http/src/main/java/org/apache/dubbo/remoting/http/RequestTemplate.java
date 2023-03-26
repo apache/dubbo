@@ -47,7 +47,7 @@ public class RequestTemplate implements Serializable {
     private String protocol = "http://";
     private final Invocation invocation;
     private String contextPath = "";
-    private Class bodyType;
+    private Class<?> bodyType;
 
 
     public RequestTemplate(Invocation invocation, String httpMethod, String address) {
@@ -226,7 +226,7 @@ public class RequestTemplate implements Serializable {
 
         if (params == null) {
             params = new HashSet<>();
-            this.headers.put(key, params);
+            this.queries.put(key, params);
         }
         params.addAll(values);
     }
@@ -307,7 +307,7 @@ public class RequestTemplate implements Serializable {
         return bodyType;
     }
 
-    public void setBodyType(Class bodyType) {
+    public void setBodyType(Class<?> bodyType) {
         this.bodyType = bodyType;
     }
 }
