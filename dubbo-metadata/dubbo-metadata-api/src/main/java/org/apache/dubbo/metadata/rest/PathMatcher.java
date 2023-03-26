@@ -31,25 +31,20 @@ public class PathMatcher {
     private String[] pathSplits;
     private boolean hasPathVariable;
     private String contextPath;
-    private boolean invokeCreate;// distinguish create  from metadata resolve create
 
 
-    public PathMatcher(String path, boolean invokeCreate) {
-        this(path, null, null, null, invokeCreate);
+    public PathMatcher(String path) {
+        this(path, null, null, null);
     }
 
-    public PathMatcher(String path, String version, String group, Integer port, boolean invokeCreate) {
+    public PathMatcher(String path, String version, String group, Integer port) {
         this.path = path;
         dealPathVariable(path);
         this.version = version;
         this.group = group;
         this.port = (port == null || port == -1 || port == 0) ? null : port;
-        this.invokeCreate = invokeCreate;
     }
 
-    public PathMatcher(String path, String version, String group, Integer port) {
-        this(path, version, group, port, false);
-    }
 
     private void dealPathVariable(String path) {
         this.pathSplits = path.split(SEPARATOR);
@@ -63,7 +58,7 @@ public class PathMatcher {
         }
     }
 
-    public void setPath(String path) {
+    private void setPath(String path) {
         this.path = path;
     }
 
@@ -94,7 +89,7 @@ public class PathMatcher {
     }
 
     public static PathMatcher getInvokeCreatePathMatcher(String path, String version, String group, Integer port) {
-        return new PathMatcher(path, version, group, port, true);
+        return new PathMatcher(path, version, group, port);
     }
 
     public boolean hasPathVariable() {

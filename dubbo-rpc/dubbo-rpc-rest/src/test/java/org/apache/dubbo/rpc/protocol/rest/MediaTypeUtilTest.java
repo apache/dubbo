@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.rest;
 
+import org.apache.dubbo.metadata.rest.media.MediaType;
 import org.apache.dubbo.rpc.protocol.rest.exception.UnSupportContentTypeException;
 import org.apache.dubbo.rpc.protocol.rest.util.MediaTypeUtil;
 import org.junit.jupiter.api.Assertions;
@@ -26,9 +27,19 @@ public class MediaTypeUtilTest {
     @Test
     public void testException() {
 
-        Assertions.assertThrows(UnSupportContentTypeException.class,()->{
+        Assertions.assertThrows(UnSupportContentTypeException.class, () -> {
             MediaTypeUtil.convertMediaType(null, "aaaaa");
 
         });
+
+
+        MediaType mediaType = MediaTypeUtil.convertMediaType(null, new String[]{MediaType.APPLICATION_JSON_VALUE.value});
+
+        Assertions.assertEquals(MediaType.APPLICATION_JSON_VALUE, mediaType);
+
+
+        mediaType = MediaTypeUtil.convertMediaType(int.class, null);
+
+        Assertions.assertEquals(MediaType.TEXT_PLAIN, mediaType);
     }
 }
