@@ -14,26 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.rpc.executor;
 
-package org.apache.dubbo.rpc.protocol.tri.call;
+import org.apache.dubbo.common.URL;
 
-import org.apache.dubbo.common.function.ThrowableSupplier;
-
-
-class TripleMessageProducer implements ClientCall.MessageProducer {
-
-    private final ThrowableSupplier<Object> throwableSupplier;
-
-    private TripleMessageProducer(ThrowableSupplier<Object> throwableSupplier) {
-        this.throwableSupplier = throwableSupplier;
-    }
-
+public class DefaultIsolationExecutorSupportFactory implements IsolationExecutorSupportFactory {
     @Override
-    public Object getMessage() throws Throwable {
-        return throwableSupplier.get();
-    }
-
-    public static TripleMessageProducer withSupplier(ThrowableSupplier<Object> supplier) {
-        return new TripleMessageProducer(supplier);
+    public ExecutorSupport createIsolationExecutorSupport(URL url) {
+        return new DefaultExecutorSupport(url);
     }
 }

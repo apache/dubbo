@@ -14,14 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.function;
+package org.apache.dubbo.rpc.executor;
 
-public interface ThrowableSupplier<T> {
+import org.apache.dubbo.common.URL;
 
-    /**
-     * Gets a result.
-     *
-     * @return a result
-     */
-    T get() throws Throwable;
+public class Mock1IsolationExecutorSupportFactory implements IsolationExecutorSupportFactory {
+    @Override
+    public ExecutorSupport createIsolationExecutorSupport(URL url) {
+        return new Mock1ExecutorSupport();
+    }
 }
