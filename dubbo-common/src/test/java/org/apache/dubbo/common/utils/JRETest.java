@@ -18,12 +18,21 @@
 package org.apache.dubbo.common.utils;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import javax.lang.model.SourceVersion;
 
 
 class JRETest {
+
+    @Test
+    @Disabled
+    void blankSystemVersion() {
+        System.setProperty("java.version", "");
+        JRE jre = JRE.currentVersion();
+        Assertions.assertEquals(JRE.JAVA_8, jre);
+    }
 
     @Test
     void testCurrentVersion() {
