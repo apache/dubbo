@@ -42,7 +42,7 @@ public class MetricsConfig extends AbstractConfig {
     private Boolean enableJvmMetrics;
 
     /**
-     * Enable jvm metrics when collecting.
+     * Enable threadpool metrics when collecting.
      */
     private Boolean enableThreadpoolMetrics;
 
