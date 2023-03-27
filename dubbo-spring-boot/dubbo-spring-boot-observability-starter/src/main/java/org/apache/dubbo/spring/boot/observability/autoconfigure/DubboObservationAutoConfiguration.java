@@ -19,14 +19,14 @@ package org.apache.dubbo.spring.boot.observability.autoconfigure;
 import io.micrometer.core.instrument.MeterRegistry;
 
 import io.micrometer.tracing.Tracer;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.qos.protocol.QosProtocolWrapper;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.spring.boot.observability.annotation.ConditionalOnDubboTracingEnable;
 
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.BeanFactoryAware;
-import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.beans.factory.SmartInitializingSingleton;
+import org.springframework.beans.factory.*;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -45,6 +45,8 @@ import java.util.Arrays;
 @ConditionalOnDubboTracingEnable
 @ConditionalOnClass(name = {"io.micrometer.observation.Observation","io.micrometer.tracing.Tracer"})
 public class DubboObservationAutoConfiguration implements BeanFactoryAware, SmartInitializingSingleton {
+    private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(QosProtocolWrapper.class);
+
 
     public DubboObservationAutoConfiguration(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
@@ -76,11 +78,13 @@ public class DubboObservationAutoConfiguration implements BeanFactoryAware, Smar
 
     @Override
     public void afterSingletonsInstantiated() {
-        Tracer bean = beanFactory.getBean(Tracer.class);
-        if(bean == null){
-            return;
+
+        try {
+            Tracer bean = beanFactory.getBean(Tracer.class);
+            applicationModel.getBeanFactory().registerBean(bean);
+        } catch (NoSuchBeanDefinitionException e) {
+            logger.warn("Please use a version of micrometer higher than 1.10.0 ：{}",e);
         }
-        applicationModel.getBeanFactory().registerBean(bean);
     }
 
     @Configuration(proxyBeanMethods = false)
