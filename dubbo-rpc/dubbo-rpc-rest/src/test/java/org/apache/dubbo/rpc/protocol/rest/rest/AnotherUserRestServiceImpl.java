@@ -18,6 +18,8 @@ package org.apache.dubbo.rpc.protocol.rest.rest;
 
 import org.apache.dubbo.rpc.protocol.rest.User;
 
+import java.util.Map;
+
 
 public class AnotherUserRestServiceImpl implements AnotherUserRestService {
 
@@ -49,6 +51,11 @@ public class AnotherUserRestServiceImpl implements AnotherUserRestService {
     @Override
     public Long number(Long number) {
         return number;
+    }
+
+    @Override
+    public String headerMap(Map<String, String> headers) {
+        return headers.get("headers");
     }
 
 

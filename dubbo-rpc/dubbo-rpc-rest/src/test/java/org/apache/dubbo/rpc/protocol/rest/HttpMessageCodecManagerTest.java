@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol.rest;
 
 import org.apache.dubbo.metadata.rest.media.MediaType;
 import org.apache.dubbo.rpc.protocol.rest.message.HttpMessageCodecManager;
+import org.apache.dubbo.rpc.protocol.rest.message.codec.XMLCodec;
 import org.apache.dubbo.rpc.protocol.rest.pair.MessageCodecResultPair;
 import org.apache.dubbo.rpc.protocol.rest.rest.RegistrationResult;
 import org.junit.jupiter.api.Assertions;
@@ -46,6 +47,10 @@ public class HttpMessageCodecManagerTest {
         MediaType mediaType = messageCodecResultPair.getMediaType();
 
         Assertions.assertEquals(MediaType.APPLICATION_JSON_VALUE,mediaType);
+
+        XMLCodec xmlCodec = new XMLCodec();
+
+        Assertions.assertEquals(false,xmlCodec.typeSupport(null));
 
 
     }
