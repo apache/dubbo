@@ -15,9 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.metrics.metadata.collector.stat;
-
-import org.apache.dubbo.metrics.model.Metric;
+package org.apache.dubbo.metrics.model;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,7 +28,7 @@ import static org.apache.dubbo.common.utils.NetUtils.getLocalHost;
 import static org.apache.dubbo.common.utils.NetUtils.getLocalHostName;
 
 /**
- * Metric class for interface.
+ * Metric class for service.
  */
 public class ServiceKeyMetric implements Metric {
     private final String applicationName;
@@ -41,6 +39,7 @@ public class ServiceKeyMetric implements Metric {
         this.serviceKey = serviceKey;
     }
 
+    @Override
     public Map<String, String> getTags() {
         Map<String, String> tags = new HashMap<>();
         tags.put(TAG_IP, getLocalHost());
@@ -52,12 +51,18 @@ public class ServiceKeyMetric implements Metric {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
         ServiceKeyMetric that = (ServiceKeyMetric) o;
 
-        if (!applicationName.equals(that.applicationName)) return false;
+        if (!applicationName.equals(that.applicationName)) {
+            return false;
+        }
         return serviceKey.equals(that.serviceKey);
     }
 

@@ -39,6 +39,8 @@ import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_APPLICATION_NAME;
 import static org.apache.dubbo.metrics.registry.collector.stat.RegistryStatComposite.OP_TYPE_REGISTER;
+import static org.apache.dubbo.metrics.registry.collector.stat.RegistryStatComposite.OP_TYPE_REGISTER_SERVICE;
+import static org.apache.dubbo.metrics.registry.collector.stat.RegistryStatComposite.OP_TYPE_SUBSCRIBE_SERVICE;
 
 
 class RegistryMetricsCollectorTest {
@@ -109,5 +111,107 @@ class RegistryMetricsCollectorTest {
         Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_REGISTER, MetricsKey.METRIC_RT_SUM).targetKey()), c1 + c2);
     }
 
+    @Test
+    void testServicePushMetrics() throws InterruptedException {
 
+        TimePair timePair = TimePair.start();
+        GlobalMetricsEventMulticaster eventMulticaster = applicationModel.getBeanFactory().getOrRegisterBean(GlobalMetricsEventMulticaster.class);
+        RegistryMetricsCollector collector = applicationModel.getBeanFactory().getOrRegisterBean(RegistryMetricsCollector.class);
+        collector.setCollectEnabled(true);
+        String serviceName = "demo.gameService";
+
+        eventMulticaster.publishEvent(new RegistryEvent.MetricsServiceRegisterEvent(applicationModel, timePair, serviceName, 2));
+        List<MetricSample> metricSamples = collector.collect();
+
+        // push success +1
+        Assertions.assertEquals(1, metricSamples.size());
+        Assertions.assertTrue(metricSamples.get(0) instanceof GaugeMetricSample);
+
+        eventMulticaster.publishFinishEvent(new RegistryEvent.MetricsServiceRegisterEvent(applicationModel, timePair, serviceName, 2));
+        // push finish rt +1
+        metricSamples = collector.collect();
+        //num(total+success) + rt(5) = 7
+        Assertions.assertEquals(7, metricSamples.size());
+        long c1 = timePair.calc();
+        TimePair lastTimePair = TimePair.start();
+        eventMulticaster.publishEvent(new RegistryEvent.MetricsServiceRegisterEvent(applicationModel, lastTimePair, serviceName, 2));
+        Thread.sleep(50);
+        // push error rt +1
+        eventMulticaster.publishErrorEvent(new RegistryEvent.MetricsServiceRegisterEvent(applicationModel, lastTimePair, serviceName, 2));
+        long c2 = lastTimePair.calc();
+        metricSamples = collector.collect();
+
+        // num(total+success+error) + rt(5)
+        Assertions.assertEquals(8, metricSamples.size());
+
+        // calc rt
+        for (MetricSample sample : metricSamples) {
+            Map<String, String> tags = sample.getTags();
+            Assertions.assertEquals(tags.get(TAG_APPLICATION_NAME), applicationModel.getApplicationName());
+        }
+
+        @SuppressWarnings("rawtypes")
+        Map<String, Long> sampleMap = metricSamples.stream().collect(Collectors.toMap(MetricSample::getName, k -> ((GaugeMetricSample) k).applyAsLong()));
+
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_REGISTER_SERVICE, MetricsKey.METRIC_RT_LAST).targetKey()), lastTimePair.calc());
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_REGISTER_SERVICE, MetricsKey.METRIC_RT_MIN).targetKey()), Math.min(c1, c2));
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_REGISTER_SERVICE, MetricsKey.METRIC_RT_MAX).targetKey()), Math.max(c1, c2));
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_REGISTER_SERVICE, MetricsKey.METRIC_RT_AVG).targetKey()), (c1 + c2) / 2);
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_REGISTER_SERVICE, MetricsKey.METRIC_RT_SUM).targetKey()), c1 + c2);
+    }
+
+
+    @Test
+    void testServiceSubscribeMetrics() throws InterruptedException {
+
+        TimePair timePair = TimePair.start();
+        GlobalMetricsEventMulticaster eventMulticaster = applicationModel.getBeanFactory().getOrRegisterBean(GlobalMetricsEventMulticaster.class);
+        RegistryMetricsCollector collector = applicationModel.getBeanFactory().getOrRegisterBean(RegistryMetricsCollector.class);
+        collector.setCollectEnabled(true);
+        String serviceName = "demo.gameService";
+
+        eventMulticaster.publishEvent(new RegistryEvent.MetricsServiceSubscribeEvent(applicationModel, timePair, serviceName));
+
+
+        List<MetricSample> metricSamples = collector.collect();
+
+        // push success +1
+        Assertions.assertEquals(1, metricSamples.size());
+        Assertions.assertTrue(metricSamples.get(0) instanceof GaugeMetricSample);
+        Assertions.assertEquals(metricSamples.get(0).getName(), MetricsKey.SERVICE_SUBSCRIBE_METRIC_NUM.getName());
+        Assertions.assertEquals(metricSamples.get(0).getTags().get("interface"), serviceName);
+
+        eventMulticaster.publishFinishEvent(new RegistryEvent.MetricsServiceSubscribeEvent(applicationModel, timePair, serviceName));
+
+        // push finish rt +1
+        metricSamples = collector.collect();
+        //num(total+success) + rt(5) = 7
+        Assertions.assertEquals(7, metricSamples.size());
+        long c1 = timePair.calc();
+        TimePair lastTimePair = TimePair.start();
+        eventMulticaster.publishEvent(new RegistryEvent.MetricsServiceSubscribeEvent(applicationModel, lastTimePair, serviceName));
+        Thread.sleep(50);
+        // push error rt +1
+        eventMulticaster.publishErrorEvent(new RegistryEvent.MetricsServiceSubscribeEvent(applicationModel, lastTimePair, serviceName));
+        long c2 = lastTimePair.calc();
+        metricSamples = collector.collect();
+
+        // num(total+success+error) + rt(5)
+        Assertions.assertEquals(8, metricSamples.size());
+
+        // calc rt
+        for (MetricSample sample : metricSamples) {
+            Map<String, String> tags = sample.getTags();
+            Assertions.assertEquals(tags.get(TAG_APPLICATION_NAME), applicationModel.getApplicationName());
+        }
+
+        @SuppressWarnings("rawtypes")
+        Map<String, Long> sampleMap = metricSamples.stream().collect(Collectors.toMap(MetricSample::getName, k -> ((GaugeMetricSample) k).applyAsLong()));
+
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_SUBSCRIBE_SERVICE, MetricsKey.METRIC_RT_LAST).targetKey()), lastTimePair.calc());
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_SUBSCRIBE_SERVICE, MetricsKey.METRIC_RT_MIN).targetKey()), Math.min(c1, c2));
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_SUBSCRIBE_SERVICE, MetricsKey.METRIC_RT_MAX).targetKey()), Math.max(c1, c2));
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_SUBSCRIBE_SERVICE, MetricsKey.METRIC_RT_AVG).targetKey()), (c1 + c2) / 2);
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_SUBSCRIBE_SERVICE, MetricsKey.METRIC_RT_SUM).targetKey()), c1 + c2);
+    }
 }
