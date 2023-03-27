@@ -156,7 +156,7 @@ public class RegistryEvent extends TimeCounterEvent {
 
         @Override
         @SuppressWarnings("unchecked")
-        public void afterPost(Object postResult) {
+        public void customAfterPost(Object postResult) {
             this.lastNumMap = (Map<String, Integer>) postResult;
         }
     }

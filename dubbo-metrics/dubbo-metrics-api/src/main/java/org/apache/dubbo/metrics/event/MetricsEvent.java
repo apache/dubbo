@@ -51,7 +51,7 @@ public abstract class MetricsEvent {
     }
 
 
-    public void afterPost(Object postResult) {
+    public void customAfterPost(Object postResult) {
 
     }
 

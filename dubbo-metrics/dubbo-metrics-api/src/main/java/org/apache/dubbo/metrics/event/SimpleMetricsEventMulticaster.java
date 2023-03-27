@@ -24,6 +24,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 /**
@@ -62,9 +63,9 @@ public class SimpleMetricsEventMulticaster implements MetricsEventMulticaster {
     }
 
     private boolean validateIfApplicationConfigExist(MetricsEvent event) {
-        if (event.getSource() instanceof ApplicationModel) {
+        if (event.getSource() != null) {
             // Check if exist application config
-            return ((ApplicationModel) event.getSource()).NotExistApplicationConfig();
+            return event.getSource().NotExistApplicationConfig();
         }
         return false;
     }

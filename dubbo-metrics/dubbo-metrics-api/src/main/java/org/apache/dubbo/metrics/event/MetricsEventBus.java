@@ -96,13 +96,13 @@ public class MetricsEventBus {
                 dispatcher.publishErrorEvent(event);
                 throw e;
             }
-            event.afterPost(result);
+            event.customAfterPost(result);
             dispatcher.publishFinishEvent(event);
         } else {
             // Custom failure status
             result = targetSupplier.get();
             if (trFunction.apply(result)) {
-                event.afterPost(result);
+                event.customAfterPost(result);
                 dispatcher.publishFinishEvent(event);
             } else {
                 dispatcher.publishErrorEvent(event);
