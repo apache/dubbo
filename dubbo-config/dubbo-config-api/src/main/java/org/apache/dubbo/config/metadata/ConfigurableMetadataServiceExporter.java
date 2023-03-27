@@ -39,7 +39,6 @@ import org.apache.dubbo.rpc.model.ModuleModel;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -49,12 +48,9 @@ import java.util.stream.Stream;
 
 import static java.util.Collections.emptyList;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_PROTOCOL_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.CORE_THREADS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.METADATA_SERVICE_PORT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METADATA_SERVICE_PROTOCOL_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_FIND_PROTOCOL;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_METADATA_SERVICE_EXPORTED;
 import static org.apache.dubbo.remoting.Constants.BIND_PORT_KEY;
@@ -282,11 +278,6 @@ public class ConfigurableMetadataServiceExporter {
         serviceConfig.setMethods(generateMethodConfig());
         serviceConfig.setConnections(1); // separate connection
         serviceConfig.setExecutes(100); // max tasks running at the same time
-        Map<String, String> threadParams = new HashMap<>();
-        threadParams.put(THREADPOOL_KEY, "cached");
-        threadParams.put(THREADS_KEY, "100");
-        threadParams.put(CORE_THREADS_KEY, "2");
-        serviceConfig.setParameters(threadParams);
 
         return serviceConfig;
     }
