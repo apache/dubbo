@@ -16,21 +16,11 @@
  */
 package org.apache.dubbo.rpc.executor;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.rpc.model.ApplicationModel;
+import java.util.concurrent.Executor;
 
-@SPI("default")
-public interface IsolationExecutorSupportFactory {
-
-    ExecutorSupport createIsolationExecutorSupport(URL url);
-
-    static ExecutorSupport getIsolationExecutorSupport(URL url) {
-        ApplicationModel applicationModel = url.getOrDefaultApplicationModel();
-        ExtensionLoader<IsolationExecutorSupportFactory> extensionLoader = applicationModel.getExtensionLoader(IsolationExecutorSupportFactory.class);
-        IsolationExecutorSupportFactory factory = extensionLoader.getOrDefaultExtension(url.getProtocol());
-        return factory.createIsolationExecutorSupport(url);
+public class Mock1ExecutorSupport implements ExecutorSupport {
+    @Override
+    public Executor getExecutor(Object data) {
+        return null;
     }
-
 }
