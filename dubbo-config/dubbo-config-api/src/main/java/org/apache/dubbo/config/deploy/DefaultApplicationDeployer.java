@@ -50,6 +50,7 @@ import org.apache.dubbo.config.utils.CompositeReferenceCache;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.metadata.report.MetadataReportFactory;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
+import org.apache.dubbo.metrics.collector.ConfigCenterMetricsCollector;
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
 import org.apache.dubbo.metrics.event.GlobalMetricsEventMulticaster;
 import org.apache.dubbo.metrics.model.TimePair;
@@ -780,20 +781,33 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                     throw new IllegalStateException(e);
                 }
             }
+            ApplicationModel applicationModel = getApplicationModel();
+            ConfigCenterMetricsCollector collector =
+                applicationModel.getBeanFactory().getOrRegisterBean(ConfigCenterMetricsCollector.class);
 
             if (StringUtils.isNotEmpty(configCenter.getConfigFile())) {
                 String configContent = dynamicConfiguration.getProperties(configCenter.getConfigFile(), configCenter.getGroup());
                 String appGroup = getApplication().getName();
                 String appConfigContent = null;
+                String appConfigFile = null;
                 if (isNotEmpty(appGroup)) {
-                    appConfigContent = dynamicConfiguration.getProperties
-                        (isNotEmpty(configCenter.getAppConfigFile()) ? configCenter.getAppConfigFile() : configCenter.getConfigFile(),
-                            appGroup
-                        );
+                    appConfigFile = isNotEmpty(configCenter.getAppConfigFile()) ? configCenter.getAppConfigFile() : configCenter.getConfigFile();
+                    appConfigContent = dynamicConfiguration.getProperties(appConfigFile, appGroup);
                 }
                 try {
-                    environment.updateExternalConfigMap(parseProperties(configContent));
-                    environment.updateAppExternalConfigMap(parseProperties(appConfigContent));
+                    Map<String, String> configMap = parseProperties(configContent);
+                    Map<String, String> appConfigMap = parseProperties(appConfigContent);
+
+                    environment.updateExternalConfigMap(configMap);
+                    environment.updateAppExternalConfigMap(appConfigMap);
+
+                    // Add metrics
+                    collector.increase4Initialized(configCenter.getConfigFile(), configCenter.getGroup(),
+                        configCenter.getProtocol(), applicationModel.getApplicationName(), configMap.size());
+                    if (isNotEmpty(appGroup)) {
+                        collector.increase4Initialized(appConfigFile, appGroup,
+                            configCenter.getProtocol(), applicationModel.getApplicationName(), appConfigMap.size());
+                    }
                 } catch (IOException e) {
                     throw new IllegalStateException("Failed to parse configurations from Config Center.", e);
                 }

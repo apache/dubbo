@@ -15,21 +15,22 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.metrics.observation;
+package org.apache.dubbo.rpc.cluster.filter;
 
 import io.micrometer.common.KeyValues;
 import io.micrometer.core.tck.MeterRegistryAssert;
+import io.micrometer.tracing.test.SampleTestRunner;
 import io.micrometer.tracing.test.simple.SpansAssert;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.RpcContext;
-import org.apache.dubbo.rpc.cluster.filter.ClusterFilter;
+import org.apache.dubbo.rpc.cluster.filter.support.ObservationSenderFilter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.assertj.core.api.BDDAssertions;
 
 class ObservationSenderFilterTest extends AbstractObservationFilterTest {
 
     @Override
-    public SampleTestRunnerConsumer yourCode() {
+    public SampleTestRunner.SampleTestRunnerConsumer yourCode() {
         return (buildingBlocks, meterRegistry) -> {
             setupConfig();
             setupAttachments();

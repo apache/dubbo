@@ -43,7 +43,10 @@ import org.apache.dubbo.remoting.transport.ExceedPayloadLimitException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_TIMEOUT_SERVER;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_EXCEED_PAYLOAD_LIMIT;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_RESPONSE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_SKIP_UNUSED_STREAM;
@@ -172,7 +175,7 @@ public class ExchangeCodec extends TelnetCodec {
                             data = decodeEventData(channel, CodecSupport.deserialize(channel.getUrl(), new ByteArrayInputStream(eventPayload), proto), eventPayload);
                         }
                     } else {
-                        data = decodeResponseData(channel, CodecSupport.deserialize(channel.getUrl(), is, proto), getRequestData(id));
+                        data = decodeResponseData(channel, CodecSupport.deserialize(channel.getUrl(), is, proto), getRequestData(channel, res, id));
                     }
                     res.setResult(data);
                 } else {
@@ -217,16 +220,21 @@ public class ExchangeCodec extends TelnetCodec {
         }
     }
 
-    protected Object getRequestData(long id) {
+    protected Object getRequestData(Channel channel, Response response, long id) {
         DefaultFuture future = DefaultFuture.getFuture(id);
-        if (future == null) {
-            return null;
+        if (future != null) {
+            Request req = future.getRequest();
+            if (req != null) {
+                return req.getData();
+            }
         }
-        Request req = future.getRequest();
-        if (req == null) {
-            return null;
-        }
-        return req.getData();
+
+        logger.warn(PROTOCOL_TIMEOUT_SERVER, "", "", "The timeout response finally returned at "
+            + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date()))
+            + ", response status is " + response.getStatus() + ", response id is " + response.getId()
+            + (channel == null ? "" : ", channel: " + channel.getLocalAddress()
+            + " -> " + channel.getRemoteAddress()) + ", please check provider side for detailed result.");
+        throw new IllegalArgumentException("Failed to find any request match the response, response id: " + id);
     }
 
     protected void encodeRequest(Channel channel, ChannelBuffer buffer, Request req) throws IOException {
@@ -435,7 +443,7 @@ public class ExchangeCodec extends TelnetCodec {
         try {
             if (eventBytes != null) {
                 int dataLen = eventBytes.length;
-                int threshold = ConfigurationUtils.getSystemConfiguration(channel.getUrl().getScopeModel()).getInt("deserialization.event.size", 50);
+                int threshold = ConfigurationUtils.getSystemConfiguration(channel.getUrl().getScopeModel()).getInt("deserialization.event.size", 15);
                 if (dataLen > threshold) {
                     throw new IllegalArgumentException("Event data too long, actual size " + threshold + ", threshold " + threshold + " rejected for security consideration.");
                 }
