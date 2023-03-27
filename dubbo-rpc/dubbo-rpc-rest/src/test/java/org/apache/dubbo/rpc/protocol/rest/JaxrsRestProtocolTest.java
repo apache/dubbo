@@ -135,6 +135,7 @@ class JaxrsRestProtocolTest {
         HashMap<String, String> map = new HashMap<>();
         map.put("headers", "h1");
         Assertions.assertEquals("h1", client.headerMap(map));
+        Assertions.assertEquals(null, client.headerMap(null));
 
 
         invoker.destroy();
