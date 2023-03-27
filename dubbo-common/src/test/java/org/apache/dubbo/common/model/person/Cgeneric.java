@@ -23,7 +23,7 @@ public class Cgeneric<T> implements Serializable {
 
     private String name = NAME;
     private T data;
-    private Ageneric<PersonInfo> a;
+    private Ageneric<T> a;
     private Bgeneric<PersonInfo> b;
 
     public T getData() {
@@ -38,11 +38,11 @@ public class Cgeneric<T> implements Serializable {
         return name;
     }
 
-    public Ageneric<PersonInfo> getA() {
+    public Ageneric<T> getA() {
         return a;
     }
 
-    public void setA(Ageneric<PersonInfo> a) {
+    public void setA(Ageneric<T> a) {
         this.a = a;
     }
 

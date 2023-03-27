@@ -936,6 +936,9 @@ class PojoUtilsTest {
 
             assertEquals(Cgeneric.NAME, personInfo.getName());
             assertTrue(personInfo.getData() instanceof Map);
+            assertTrue(personInfo.getA().getData() instanceof Map);
+            assertTrue(personInfo.getB().getData() instanceof PersonInfo);
+
         }
         {
             Type[] createGenericPersonInfos = ReflectUtils.getReturnTypes(PojoUtilsTest.class.getDeclaredMethod("createCGenericPersonInfo", String.class));
