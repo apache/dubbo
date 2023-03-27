@@ -19,13 +19,21 @@ package org.apache.dubbo.configcenter.support.apollo;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.AbstractDynamicConfigurationFactory;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 /**
  *
  */
 public class ApolloDynamicConfigurationFactory extends AbstractDynamicConfigurationFactory {
+
+    private ApplicationModel applicationModel;
+    
+    public ApolloDynamicConfigurationFactory(ApplicationModel applicationModel) {
+        this.applicationModel = applicationModel;
+    }
+    
     @Override
     protected DynamicConfiguration createDynamicConfiguration(URL url) {
-        return new ApolloDynamicConfiguration(url);
+        return new ApolloDynamicConfiguration(url, applicationModel);
     }
 }

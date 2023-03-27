@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.config.nested.AggregationConfig;
 import org.apache.dubbo.config.nested.PrometheusConfig;
+import org.apache.dubbo.config.nested.HistogramConfig;
 import org.apache.dubbo.config.support.Nested;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
@@ -68,6 +69,9 @@ public class MetricsConfig extends AbstractConfig {
      */
     @Nested
     private AggregationConfig aggregation;
+
+    @Nested
+    private HistogramConfig histogram;
 
     private String exportServiceProtocol;
 
@@ -138,6 +142,14 @@ public class MetricsConfig extends AbstractConfig {
 
     public void setAggregation(AggregationConfig aggregation) {
         this.aggregation = aggregation;
+    }
+
+    public HistogramConfig getHistogram() {
+        return histogram;
+    }
+
+    public void setHistogram(HistogramConfig histogram) {
+        this.histogram = histogram;
     }
 
     public String getExportServiceProtocol() {

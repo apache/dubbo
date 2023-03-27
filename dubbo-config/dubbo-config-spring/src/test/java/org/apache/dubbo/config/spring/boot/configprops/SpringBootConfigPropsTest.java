@@ -64,6 +64,7 @@ import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMET
         "dubbo.metrics.aggregation.enabled=true",
         "dubbo.metrics.aggregation.bucket-num=5",
         "dubbo.metrics.aggregation.time-window-seconds=120",
+        "dubbo.metrics.histogram.enabled=true",
         "dubbo.monitor.address=zookeeper://127.0.0.1:32770",
         "dubbo.Config-center.address=${zookeeper.connection.address.1}",
         "dubbo.config-Center.group=group1",
@@ -116,6 +117,7 @@ class SpringBootConfigPropsTest {
         Assertions.assertEquals(5, metricsConfig.getAggregation().getBucketNum());
         Assertions.assertEquals(120, metricsConfig.getAggregation().getTimeWindowSeconds());
         Assertions.assertTrue(metricsConfig.getAggregation().getEnabled());
+        Assertions.assertTrue(metricsConfig.getHistogram().getEnabled());
 
         List<ProtocolConfig> defaultProtocols = configManager.getDefaultProtocols();
         Assertions.assertEquals(1, defaultProtocols.size());
