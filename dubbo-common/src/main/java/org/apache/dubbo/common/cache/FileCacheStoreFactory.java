@@ -31,6 +31,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -194,6 +195,14 @@ public final class FileCacheStoreFactory {
 
     static void removeCache(String cacheFileName) {
         cacheMap.remove(cacheFileName);
+    }
+
+    /**
+     * for unit test only
+     */
+    @Deprecated
+    static Map<String, FileCacheStore> getCacheMap() {
+        return cacheMap;
     }
 
     private static class PathNotExclusiveException extends Exception {

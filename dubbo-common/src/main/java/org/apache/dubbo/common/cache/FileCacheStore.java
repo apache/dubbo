@@ -158,6 +158,14 @@ public class FileCacheStore {
         FileCacheStoreFactory.removeCache(cacheFilePath);
     }
 
+    /**
+     * for unit test only
+     */
+    @Deprecated
+    protected String getCacheFilePath() {
+        return cacheFilePath;
+    }
+
     public static Builder newBuilder() {
         return new Builder();
     }

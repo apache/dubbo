@@ -21,22 +21,20 @@ import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Paths;
-import java.util.Map;
 
 class FileCacheStoreFactoryTest {
 
     @Test
     void testSafeName() throws URISyntaxException {
         FileCacheStore store1 = FileCacheStoreFactory.getInstance(getDirectoryOfClassPath(), "../../../dubbo");
-        Assertions.assertEquals(getDirectoryOfClassPath() + "..%002f..%002f..%002fdubbo.dubbo.cache", getCacheFilePath(store1));
+        Assertions.assertEquals(getDirectoryOfClassPath() + "..%002f..%002f..%002fdubbo.dubbo.cache", store1.getCacheFilePath());
         store1.destroy();
 
         FileCacheStore store2 = FileCacheStoreFactory.getInstance(getDirectoryOfClassPath(), "../../../中文");
-        Assertions.assertEquals(getDirectoryOfClassPath() + "..%002f..%002f..%002f%4e2d%6587.dubbo.cache", getCacheFilePath(store2));
+        Assertions.assertEquals(getDirectoryOfClassPath() + "..%002f..%002f..%002f%4e2d%6587.dubbo.cache", store2.getCacheFilePath());
         store2.destroy();
     }
 
@@ -51,20 +49,18 @@ class FileCacheStoreFactoryTest {
 
     @Test
     void testCacheContains() throws URISyntaxException {
-        String classPath = getDirectoryOfClassPath();
+        FileCacheStore store1 = FileCacheStoreFactory.getInstance(getDirectoryOfClassPath(), "testCacheContains");
+        Assertions.assertNotNull(store1.getCacheFilePath());
 
-        FileCacheStore store1 = FileCacheStoreFactory.getInstance(classPath, "testCacheContains");
-        Assertions.assertNotNull(getCacheFilePath(store1));
-
-        getCacheMap().remove(getCacheFilePath(store1));
-        FileCacheStore store2 = FileCacheStoreFactory.getInstance(classPath, "testCacheContains");
+        FileCacheStoreFactory.getCacheMap().remove(store1.getCacheFilePath());
+        FileCacheStore store2 = FileCacheStoreFactory.getInstance(getDirectoryOfClassPath(), "testCacheContains");
         Assertions.assertEquals(FileCacheStore.Empty.class, store2.getClass());
 
         store1.destroy();
         store2.destroy();
 
-        FileCacheStore store3 = FileCacheStoreFactory.getInstance(classPath, "testCacheContains");
-        Assertions.assertNotNull(getCacheFilePath(store3));
+        FileCacheStore store3 = FileCacheStoreFactory.getInstance(getDirectoryOfClassPath(), "testCacheContains");
+        Assertions.assertNotNull(store3.getCacheFilePath());
         store3.destroy();
     }
 
@@ -74,40 +70,5 @@ class FileCacheStoreFactoryTest {
         int index = path.indexOf("log4j.xml");
         String directoryPath = path.substring(0, index);
         return directoryPath;
-    }
-
-    private static class ReflectFieldCache {
-        Field cacheMapField;
-
-        Field cacheFilePathField;
-    }
-
-    private static final ReflectFieldCache REFLECT_FIELD_CACHE = new ReflectFieldCache();
-
-    private Map<String, FileCacheStore> getCacheMap() {
-
-        try {
-            if (REFLECT_FIELD_CACHE.cacheMapField == null) {
-                REFLECT_FIELD_CACHE.cacheMapField = FileCacheStoreFactory.class.getDeclaredField("cacheMap");
-                REFLECT_FIELD_CACHE.cacheMapField.setAccessible(true);
-            }
-
-            return (Map<String, FileCacheStore>) REFLECT_FIELD_CACHE.cacheMapField.get(null);
-        } catch (Exception e) {
-            throw new RuntimeException(e.getMessage(), e);
-        }
-    }
-
-    private String getCacheFilePath(FileCacheStore cacheStore) {
-        try {
-            if (REFLECT_FIELD_CACHE.cacheFilePathField == null) {
-                REFLECT_FIELD_CACHE.cacheFilePathField = FileCacheStore.class.getDeclaredField("cacheFilePath");
-                REFLECT_FIELD_CACHE.cacheFilePathField.setAccessible(true);
-            }
-
-            return (String) REFLECT_FIELD_CACHE.cacheFilePathField.get(cacheStore);
-        } catch (Exception e) {
-            throw new RuntimeException(e.getMessage(), e);
-        }
     }
 }
