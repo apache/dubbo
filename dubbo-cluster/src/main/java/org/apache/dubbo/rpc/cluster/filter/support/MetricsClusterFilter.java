@@ -15,7 +15,8 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.metrics.filter;
+package org.apache.dubbo.rpc.cluster.filter.support;
+
 
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
@@ -29,12 +30,13 @@ import org.apache.dubbo.rpc.cluster.filter.ClusterFilter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
 
+
 import java.util.Optional;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 
-@Activate(group = CONSUMER)
+@Activate(group = CONSUMER,onClass = "org.apache.dubbo.metrics.collector.DefaultMetricsCollector")
 public class MetricsClusterFilter implements ClusterFilter, BaseFilter.Listener, ScopeModelAware {
 
     private DefaultMetricsCollector collector;

@@ -24,6 +24,7 @@ import org.apache.dubbo.metrics.model.ApplicationMetric;
 import org.apache.dubbo.metrics.model.MetricsCategory;
 import org.apache.dubbo.metrics.model.MetricsKey;
 import org.apache.dubbo.metrics.model.MetricsKeyWrapper;
+import org.apache.dubbo.metrics.model.ServiceKeyMetric;
 import org.apache.dubbo.metrics.model.container.AtomicLongContainer;
 import org.apache.dubbo.metrics.model.container.LongAccumulatorContainer;
 import org.apache.dubbo.metrics.model.container.LongContainer;
@@ -140,7 +141,7 @@ public class MetadataStatComposite implements MetricsExport {
         for (MetadataEvent.ApplicationType type : applicationNumStats.keySet()) {
             Map<String, AtomicLong> stringAtomicLongMap = applicationNumStats.get(type);
             for (String applicationName : stringAtomicLongMap.keySet()) {
-                list.add(convertToSample(applicationName, type, MetricsCategory.REGISTRY, stringAtomicLongMap.get(applicationName)));
+                list.add(convertToSample(applicationName, type, MetricsCategory.METADATA, stringAtomicLongMap.get(applicationName)));
             }
         }
         return list;
@@ -161,7 +162,7 @@ public class MetadataStatComposite implements MetricsExport {
         for (MetadataEvent.ServiceType type : serviceNumStats.keySet()) {
             Map<ServiceKeyMetric, AtomicLong> stringAtomicLongMap = serviceNumStats.get(type);
             for (ServiceKeyMetric serviceKeyMetric : stringAtomicLongMap.keySet()) {
-                list.add(new GaugeMetricSample<>(type.getMetricsKey(), serviceKeyMetric.getTags(), MetricsCategory.REGISTRY, stringAtomicLongMap, value -> value.get(serviceKeyMetric).get()));
+                list.add(new GaugeMetricSample<>(type.getMetricsKey(), serviceKeyMetric.getTags(), MetricsCategory.METADATA, stringAtomicLongMap, value -> value.get(serviceKeyMetric).get()));
             }
         }
         return list;

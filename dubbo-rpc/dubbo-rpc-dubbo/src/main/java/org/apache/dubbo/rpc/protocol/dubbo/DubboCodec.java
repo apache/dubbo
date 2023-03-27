@@ -42,9 +42,11 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.BYTE_ACCESSOR_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_MANAGEMENT_MODE_ISOLATION;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
@@ -73,10 +75,15 @@ public class DubboCodec extends ExchangeCodec {
     private static final AtomicBoolean decodeInUserThreadLogged = new AtomicBoolean(false);
     private final CallbackServiceCodec callbackServiceCodec;
     private final FrameworkModel frameworkModel;
+    private final ByteAccessor customByteAccessor;
 
     public DubboCodec(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
         callbackServiceCodec = new CallbackServiceCodec(frameworkModel);
+        customByteAccessor = Optional.ofNullable(System.getProperty(BYTE_ACCESSOR_KEY))
+            .filter(StringUtils::isNotBlank)
+            .map(key -> frameworkModel.getExtensionLoader(ByteAccessor.class).getExtension(key))
+            .orElse(null);
     }
 
     @Override
@@ -109,12 +116,12 @@ public class DubboCodec extends ExchangeCodec {
                         DecodeableRpcResult result;
                         if (channel.getUrl().getParameter(DECODE_IN_IO_THREAD_KEY, DEFAULT_DECODE_IN_IO_THREAD)) {
                             result = new DecodeableRpcResult(channel, res, is,
-                                (Invocation) getRequestData(id), proto);
+                                (Invocation) getRequestData(channel, res, id), proto);
                             result.decode();
                         } else {
                             result = new DecodeableRpcResult(channel, res,
                                 new UnsafeByteArrayInputStream(readMessageData(is)),
-                                (Invocation) getRequestData(id), proto);
+                                (Invocation) getRequestData(channel, res, id), proto);
                         }
                         data = result;
                     }
@@ -153,11 +160,20 @@ public class DubboCodec extends ExchangeCodec {
                     req = new HeartBeatRequest(id);
                     DecodeableRpcInvocation inv;
                     if (isDecodeDataInIoThread(channel)) {
-                        inv = new DecodeableRpcInvocation(frameworkModel, channel, req, is, proto);
+                        if (customByteAccessor != null) {
+                            inv = customByteAccessor.getRpcInvocation(channel, req, is, proto);
+                        } else {
+                            inv = new DecodeableRpcInvocation(frameworkModel, channel, req, is, proto);
+                        }
                         inv.decode();
                     } else {
-                        inv = new DecodeableRpcInvocation(frameworkModel, channel, req,
-                            new UnsafeByteArrayInputStream(readMessageData(is)), proto);
+                        if (customByteAccessor != null) {
+                            inv = customByteAccessor.getRpcInvocation(channel, req,
+                                new UnsafeByteArrayInputStream(readMessageData(is)), proto);
+                        } else {
+                            inv = new DecodeableRpcInvocation(frameworkModel, channel, req,
+                                new UnsafeByteArrayInputStream(readMessageData(is)), proto);
+                        }
                     }
                     data = inv;
                 }

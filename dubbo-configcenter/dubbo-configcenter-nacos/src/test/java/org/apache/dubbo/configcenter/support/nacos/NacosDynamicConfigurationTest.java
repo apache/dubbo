@@ -17,14 +17,14 @@
 
 package org.apache.dubbo.configcenter.support.nacos;
 
+import com.alibaba.nacos.api.NacosFactory;
+import com.alibaba.nacos.api.config.ConfigService;
+import com.alibaba.nacos.api.exception.NacosException;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
-
-import com.alibaba.nacos.api.NacosFactory;
-import com.alibaba.nacos.api.config.ConfigService;
-import com.alibaba.nacos.api.exception.NacosException;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -132,7 +132,7 @@ class NacosDynamicConfigurationTest {
         // timeout in 15 seconds.
         URL url = URL.valueOf(urlForDubbo)
                 .addParameter(SESSION_TIMEOUT_KEY, 15000);
-        config = new NacosDynamicConfiguration(url);
+        config = new NacosDynamicConfiguration(url, ApplicationModel.defaultModel());
 
 
         try {

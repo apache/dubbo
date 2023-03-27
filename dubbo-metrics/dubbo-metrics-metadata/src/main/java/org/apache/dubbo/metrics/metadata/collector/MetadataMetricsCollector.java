@@ -63,7 +63,7 @@ public class MetadataMetricsCollector implements ApplicationMetricsCollector<Met
             ConfigManager configManager = applicationModel.getApplicationConfigManager();
             configManager.getMetrics().ifPresent(metricsConfig -> setCollectEnabled(metricsConfig.getEnableMetadataMetrics()));
         }
-        return Optional.ofNullable(collectEnabled).orElse(false);
+        return Optional.ofNullable(collectEnabled).orElse(true);
     }
 
     @Override
