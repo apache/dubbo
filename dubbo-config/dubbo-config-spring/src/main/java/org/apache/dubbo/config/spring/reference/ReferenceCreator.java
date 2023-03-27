@@ -18,6 +18,7 @@ package org.apache.dubbo.config.spring.reference;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ObjectUtils;
 import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.ArgumentConfig;
 import org.apache.dubbo.config.ConsumerConfig;
@@ -32,8 +33,6 @@ import org.apache.dubbo.config.spring.beans.factory.annotation.AnnotationPropert
 import org.apache.dubbo.config.spring.util.DubboAnnotationUtils;
 import org.apache.dubbo.config.spring.util.DubboBeanUtils;
 import org.apache.dubbo.rpc.model.ModuleModel;
-
-import com.alibaba.spring.util.AnnotationUtils;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.convert.support.DefaultConversionService;
@@ -43,8 +42,8 @@ import org.springframework.validation.DataBinder;
 
 import java.util.Map;
 
-import static com.alibaba.spring.util.AnnotationUtils.getAttribute;
-import static com.alibaba.spring.util.ObjectUtils.of;
+import static org.apache.dubbo.config.spring.util.SpringUtils.getAnnotationAttributes;
+import static org.apache.dubbo.config.spring.util.SpringUtils.getAttribute;
 
 /**
  * {@link ReferenceConfig} Creator for @{@link DubboReference}
@@ -54,7 +53,7 @@ import static com.alibaba.spring.util.ObjectUtils.of;
 public class ReferenceCreator {
 
     // Ignore those fields
-    static final String[] IGNORE_FIELD_NAMES = of("application", "module", "consumer", "monitor", "registry", "interfaceClass");
+    static final String[] IGNORE_FIELD_NAMES = ObjectUtils.of("application", "module", "consumer", "monitor", "registry", "interfaceClass");
 
     private static final String ONRETURN = "onreturn";
 
@@ -182,7 +181,7 @@ public class ReferenceCreator {
 
         //convert @Method to MethodConfig
         conversionService.addConverter(Method.class, MethodConfig.class, source -> {
-            Map<String, Object> methodAttributes = AnnotationUtils.getAnnotationAttributes(source, true);
+            Map<String, Object> methodAttributes = getAnnotationAttributes(source, true);
             return createMethodConfig(methodAttributes, conversionService);
         });
 

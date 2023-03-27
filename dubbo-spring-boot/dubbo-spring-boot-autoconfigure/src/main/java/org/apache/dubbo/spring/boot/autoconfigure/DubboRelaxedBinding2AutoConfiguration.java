@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.spring.boot.autoconfigure;
 
-import com.alibaba.spring.context.config.ConfigurationBeanBinder;
+import org.apache.dubbo.config.spring.context.config.ConfigurationBeanBinder;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -35,8 +35,8 @@ import org.springframework.core.env.PropertyResolver;
 import java.util.Map;
 import java.util.Set;
 
-import static com.alibaba.spring.util.PropertySourcesUtils.getSubProperties;
 import static java.util.Collections.emptySet;
+import static org.apache.dubbo.config.spring.util.SpringUtils.getSubProperties;
 import static org.apache.dubbo.spring.boot.util.DubboUtils.BASE_PACKAGES_BEAN_NAME;
 import static org.apache.dubbo.spring.boot.util.DubboUtils.BASE_PACKAGES_PROPERTY_NAME;
 import static org.apache.dubbo.spring.boot.util.DubboUtils.DUBBO_PREFIX;

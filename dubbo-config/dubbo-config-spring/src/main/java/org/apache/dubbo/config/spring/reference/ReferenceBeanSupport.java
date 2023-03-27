@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.config.spring.reference;
 
-import com.alibaba.spring.util.AnnotationUtils;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.annotation.ProvidedBy;
@@ -48,6 +47,7 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import static org.apache.dubbo.common.utils.StringUtils.join;
+import static org.apache.dubbo.config.spring.util.SpringUtils.getAnnotationAttributes;
 
 public class ReferenceBeanSupport {
 
@@ -185,7 +185,7 @@ public class ReferenceBeanSupport {
 
         //to string
         if (obj instanceof Annotation) {
-            AnnotationAttributes attributes = AnnotationUtils.getAnnotationAttributes((Annotation) obj, true);
+            AnnotationAttributes attributes = getAnnotationAttributes((Annotation) obj, true);
             for (Map.Entry<String, Object> entry : attributes.entrySet()) {
                 entry.setValue(convertToString(entry.getKey(), entry.getValue()));
             }

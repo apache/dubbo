@@ -295,7 +295,10 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         } catch (Exception e) {
             // retry again. If failed again, throw exception.
             failedReports.put(providerMetadataIdentifier, serviceDefinition);
-            metadataReportRetry.startRetryTask();
+            if (metadataReportRetry != null) {
+                metadataReportRetry.startRetryTask();
+            }
+
             logger.error(PROXY_FAILED_EXPORT_SERVICE, "", "", "Failed to put provider metadata " + providerMetadataIdentifier + " in  " + serviceDefinition + ", cause: " + e.getMessage(), e);
             // fail
             eventMulticaster.publishErrorEvent(new MetadataEvent.StoreProviderMetadataEvent(applicationModel, timePair, interfaceMethodName));
@@ -327,7 +330,10 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         } catch (Exception e) {
             // retry again. If failed again, throw exception.
             failedReports.put(consumerMetadataIdentifier, serviceParameterMap);
-            metadataReportRetry.startRetryTask();
+            if (metadataReportRetry != null) {
+                metadataReportRetry.startRetryTask();
+            }
+
             logger.error(PROXY_FAILED_EXPORT_SERVICE, "", "", "Failed to put consumer metadata " + consumerMetadataIdentifier + ";  " + serviceParameterMap + ", cause: " + e.getMessage(), e);
         }
     }

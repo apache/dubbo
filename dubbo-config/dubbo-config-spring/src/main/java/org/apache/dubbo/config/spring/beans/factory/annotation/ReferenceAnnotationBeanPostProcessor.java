@@ -65,9 +65,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import static com.alibaba.spring.util.AnnotationUtils.getAttribute;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_DUBBO_BEAN_INITIALIZER;
 import static org.apache.dubbo.common.utils.AnnotationUtils.filterDefaultValues;
+import static org.apache.dubbo.config.spring.util.SpringUtils.getAttribute;
 import static org.springframework.util.StringUtils.hasText;
 
 /**
@@ -314,6 +314,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
      * Alternatives to the {@link #postProcessProperties(PropertyValues, Object, String)}, that removed as of Spring
      * Framework 6.0.0, and in favor of {@link #postProcessProperties(PropertyValues, Object, String)}.
      * <p>In order to be compatible with the lower version of Spring, it is still retained.
+     *
      * @see #postProcessProperties
      */
     public PropertyValues postProcessPropertyValues(
@@ -323,6 +324,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
 
     /**
      * Alternatives to the {@link #postProcessPropertyValues(PropertyValues, PropertyDescriptor[], Object, String)}.
+     *
      * @see #postProcessPropertyValues
      */
     @Override

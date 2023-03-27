@@ -24,7 +24,7 @@ import org.springframework.core.env.PropertyResolver;
 import java.lang.annotation.Annotation;
 import java.util.Map;
 
-import static com.alibaba.spring.util.AnnotationUtils.getAttributes;
+import static org.apache.dubbo.config.spring.util.SpringUtils.getAttributes;
 
 /**
  * {@link Annotation} {@link PropertyValues} Adapter

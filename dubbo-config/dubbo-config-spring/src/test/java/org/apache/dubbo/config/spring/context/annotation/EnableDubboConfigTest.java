@@ -26,7 +26,6 @@ import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,7 +34,7 @@ import org.springframework.context.annotation.PropertySource;
 
 import java.util.Collection;
 
-import static com.alibaba.spring.util.BeanRegistrar.hasAlias;
+import static org.apache.dubbo.config.spring.util.SpringUtils.hasAlias;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
 

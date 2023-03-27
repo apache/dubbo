@@ -27,7 +27,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
 
-import static com.alibaba.spring.util.PropertySourcesUtils.getSubProperties;
+import static org.apache.dubbo.config.spring.util.SpringUtils.getSubProperties;
+
 
 /**
  * Default {@link DubboConfigBinder} implementation based on Spring {@link DataBinder}
@@ -57,7 +58,7 @@ public class DefaultDubboConfigBinder extends AbstractDubboConfigBinder {
 
     private String buildErrorMsg(List<FieldError> errors, String prefix, String config) {
         StringBuilder builder = new StringBuilder("Data bind error, please check config. config: " + config + ", prefix: " + prefix
-                + " , error fields: [" + errors.get(0).getField());
+            + " , error fields: [" + errors.get(0).getField());
         if (errors.size() > 1) {
             IntStream.range(1, errors.size()).forEach(i -> {
                 builder.append(", " + errors.get(i).getField());

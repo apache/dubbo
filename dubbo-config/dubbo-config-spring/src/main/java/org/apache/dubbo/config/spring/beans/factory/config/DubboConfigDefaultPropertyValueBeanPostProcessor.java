@@ -16,25 +16,22 @@
  */
 package org.apache.dubbo.config.spring.beans.factory.config;
 
+import org.apache.dubbo.common.utils.ObjectUtils;
 import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.Constants;
-
-import com.alibaba.spring.beans.factory.config.GenericBeanPostProcessorAdapter;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.InitDestroyAnnotationBeanPostProcessor;
 import org.springframework.beans.factory.config.BeanPostProcessor;
-import org.springframework.beans.factory.support.MergedBeanDefinitionPostProcessor;
-import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.context.annotation.CommonAnnotationBeanPostProcessor;
 import org.springframework.core.Ordered;
 import org.springframework.core.PriorityOrdered;
+import org.springframework.util.ClassUtils;
 
 import javax.annotation.PostConstruct;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 
-import static com.alibaba.spring.util.ObjectUtils.of;
 import static org.springframework.aop.support.AopUtils.getTargetClass;
 import static org.springframework.beans.BeanUtils.getPropertyDescriptor;
 import static org.springframework.util.ReflectionUtils.invokeMethod;
@@ -44,8 +41,7 @@ import static org.springframework.util.ReflectionUtils.invokeMethod;
  *
  * @since 2.7.6
  */
-public class DubboConfigDefaultPropertyValueBeanPostProcessor extends GenericBeanPostProcessorAdapter<AbstractConfig>
-        implements MergedBeanDefinitionPostProcessor, PriorityOrdered {
+public class DubboConfigDefaultPropertyValueBeanPostProcessor implements BeanPostProcessor, PriorityOrdered {
 
     /**
      * The bean name of {@link DubboConfigDefaultPropertyValueBeanPostProcessor}
@@ -53,20 +49,22 @@ public class DubboConfigDefaultPropertyValueBeanPostProcessor extends GenericBea
     public static final String BEAN_NAME = "dubboConfigDefaultPropertyValueBeanPostProcessor";
 
     @Override
-    protected void processBeforeInitialization(AbstractConfig dubboConfigBean, String beanName) throws BeansException {
-        // ignore auto generate bean name
-        if (!beanName.contains("#")) {
-            // [Feature] https://github.com/apache/dubbo/issues/5721
-            setPropertyIfAbsent(dubboConfigBean, Constants.ID, beanName);
-
-            // beanName should not be used as config name, fix https://github.com/apache/dubbo/pull/7624
-            //setPropertyIfAbsent(dubboConfigBean, "name", beanName);
+    public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+        if (ClassUtils.isAssignableValue(AbstractConfig.class, bean)) {
+            // ignore auto generate bean name
+            if (!beanName.contains("#")) {
+                // [Feature] https://github.com/apache/dubbo/issues/5721
+                setPropertyIfAbsent(bean, Constants.ID, beanName);
+                // beanName should not be used as config name, fix https://github.com/apache/dubbo/pull/7624
+                //setPropertyIfAbsent(dubboConfigBean, "name", beanName);
+            }
         }
+        return bean;
     }
 
     @Override
-    public void postProcessMergedBeanDefinition(RootBeanDefinition beanDefinition, Class<?> beanType, String beanName) {
-        // DO NOTHING
+    public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+        return bean;
     }
 
     protected void setPropertyIfAbsent(Object bean, String propertyName, String beanName) {
@@ -91,7 +89,7 @@ public class DubboConfigDefaultPropertyValueBeanPostProcessor extends GenericBea
 
             Method setterMethod = propertyDescriptor.getWriteMethod();
             if (setterMethod != null) { // the getter and setter methods are present
-                if (Arrays.equals(of(String.class), setterMethod.getParameterTypes())) { // the param type is String
+                if (Arrays.equals(ObjectUtils.of(String.class), setterMethod.getParameterTypes())) { // the param type is String
                     // set bean name to the value of the property
                     invokeMethod(setterMethod, bean, beanName);
                 }

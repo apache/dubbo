@@ -25,7 +25,7 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
 
-import static com.alibaba.spring.util.BeanRegistrar.hasAlias;
+import static org.apache.dubbo.config.spring.util.SpringUtils.hasAlias;
 import static org.springframework.util.ObjectUtils.nullSafeEquals;
 import static org.springframework.util.StringUtils.hasText;
 
@@ -64,8 +64,8 @@ public class DubboConfigAliasPostProcessor implements BeanDefinitionRegistryPost
         if (bean instanceof AbstractConfig) {
             String id = ((AbstractConfig) bean).getId();
             if (hasText(id)                                     // id MUST be present in AbstractConfig
-                    && !nullSafeEquals(id, beanName)            // id MUST NOT be equal to bean name
-                    && !hasAlias(registry, beanName, id)) {     // id MUST NOT be present in AliasRegistry
+                && !nullSafeEquals(id, beanName)            // id MUST NOT be equal to bean name
+                && !hasAlias(registry, beanName, id)) {     // id MUST NOT be present in AliasRegistry
                 registry.registerAlias(beanName, id);
             }
         }
