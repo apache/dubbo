@@ -16,14 +16,6 @@
  */
 package org.apache.dubbo.config;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.apache.dubbo.common.compiler.support.AdaptiveCompiler;
 import org.apache.dubbo.common.infra.InfraAdapter;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
@@ -33,6 +25,14 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_VERSION_KEY;
@@ -40,7 +40,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 import static org.apache.dubbo.common.constants.CommonConstants.DUMP_DIRECTORY;
 import static org.apache.dubbo.common.constants.CommonConstants.DUMP_ENABLE;
 import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_MANAGEMENT_MODE;
-import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_MANAGEMENT_MODE_DEFAULT;
+import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_MANAGEMENT_MODE_ISOLATION;
 import static org.apache.dubbo.common.constants.CommonConstants.HOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.LIVENESS_PROBE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METADATA_KEY;
@@ -274,7 +274,7 @@ public class ApplicationConfig extends AbstractConfig {
             }
         }
         if (executorManagementMode == null) {
-            executorManagementMode = EXECUTOR_MANAGEMENT_MODE_DEFAULT;
+            executorManagementMode = EXECUTOR_MANAGEMENT_MODE_ISOLATION;
         }
         if (enableFileCache == null) {
             enableFileCache = Boolean.TRUE;

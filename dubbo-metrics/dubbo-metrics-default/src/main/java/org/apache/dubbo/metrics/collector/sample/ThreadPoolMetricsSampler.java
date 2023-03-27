@@ -20,6 +20,7 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.store.DataStore;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
+import org.apache.dubbo.common.threadpool.support.AbortPolicyWithReport;
 import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
 import org.apache.dubbo.metrics.model.MetricsKey;
@@ -122,10 +123,18 @@ public class ThreadPoolMetricsSampler implements MetricsSampler {
                     this.addExecutors(CLIENT_THREAD_POOL_NAME + "-" + entry.getKey(), executor);
                 }
             }
+
+            ThreadRejectMetricsCountSampler threadRejectMetricsCountSampler = new ThreadRejectMetricsCountSampler(collector);
+            this.sampleThreadPoolExecutor.entrySet().stream().filter(entry->entry.getKey().startsWith(SERVER_THREAD_POOL_NAME)).forEach(entry->{
+                if(entry.getValue().getRejectedExecutionHandler() instanceof AbortPolicyWithReport) {
+                    MetricThreadPoolExhaustedListener metricThreadPoolExhaustedListener=new MetricThreadPoolExhaustedListener(entry.getKey(),threadRejectMetricsCountSampler);
+                    ((AbortPolicyWithReport) entry.getValue().getRejectedExecutionHandler()).addThreadPoolExhaustedEventListener(metricThreadPoolExhaustedListener);
+                }
+            });
         }
         if (this.frameworkExecutorRepository != null) {
             this.addExecutors("sharedExecutor", frameworkExecutorRepository.getSharedExecutor());
-           }
+        }
     }
 
 }

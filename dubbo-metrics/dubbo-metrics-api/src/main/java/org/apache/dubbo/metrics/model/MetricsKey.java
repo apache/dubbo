@@ -20,6 +20,8 @@ package org.apache.dubbo.metrics.model;
 public enum MetricsKey {
     APPLICATION_METRIC_INFO("dubbo.application.info.total", "Total Application Info"),
 
+    CONFIGCENTER_METRIC_TOTAL("dubbo.configcenter.total", "Config Changed Total"),
+
     // provider metrics key
     METRIC_REQUESTS("dubbo.%s.requests.total", "Total Requests"),
     METRIC_REQUESTS_SUCCEED("dubbo.%s.requests.succeed.total", "Total Succeed Requests"),
@@ -59,6 +61,12 @@ public enum MetricsKey {
     REGISTER_METRIC_REQUESTS("dubbo.registry.register.requests.total", "Total Register Requests"),
     REGISTER_METRIC_REQUESTS_SUCCEED("dubbo.registry.register.requests.succeed.total", "Succeed Register Requests"),
     REGISTER_METRIC_REQUESTS_FAILED("dubbo.registry.register.requests.failed.total", "Failed Register Requests"),
+    METRIC_RT_HISTOGRAM("dubbo.%s.rt.milliseconds.histogram", "Response Time Histogram"),
+
+
+    GENERIC_METRIC_REQUESTS("dubbo.%s.requests.total", "Total %s Requests"),
+    GENERIC_METRIC_REQUESTS_SUCCEED("dubbo.%s.requests.succeed.total", "Succeed %s Requests"),
+    GENERIC_METRIC_REQUESTS_FAILED("dubbo.%s.requests.failed.total", "Failed %s Requests"),
 
     // subscribe metrics key
     SUBSCRIBE_METRIC_NUM("dubbo.registry.subscribe.num.total", "Total Subscribe Num"),
@@ -81,6 +89,7 @@ public enum MetricsKey {
     THREAD_POOL_ACTIVE_SIZE("dubbo.thread.pool.active.size", "Thread Pool Active Size"),
     THREAD_POOL_THREAD_COUNT("dubbo.thread.pool.thread.count", "Thread Pool Thread Count"),
     THREAD_POOL_QUEUE_SIZE("dubbo.thread.pool.queue.size", "Thread Pool Queue Size"),
+    THREAD_POOL_THREAD_REJECT_COUNT("dubbo.thread.pool.reject.thread.count", "Thread Pool Reject Thread Count"),
 
     // metadata push metrics key
     METADATA_PUSH_METRIC_NUM("dubbo.metadata.push.num.total", "Total Push Num"),
