@@ -87,9 +87,10 @@ public class JsonUtils {
     }
 
     /**
-     * For Unit testing only. Inject specified JSON Object into this class.
+     * @deprecated for uts only
      */
-    static void setJson(JSON json) {
+    @Deprecated
+    protected static void setJson(JSON json) {
         JsonUtils.json = json;
     }
 }
