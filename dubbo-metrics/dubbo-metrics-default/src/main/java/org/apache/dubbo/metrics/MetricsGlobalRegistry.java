@@ -15,18 +15,15 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.metrics.model;
+package org.apache.dubbo.metrics;
 
-/**
- * Metric category.
- */
-public enum MetricsCategory {
-    RT,
-    QPS,
-    REQUESTS,
-    APPLICATION,
-    CONFIGCENTER,
-    REGISTRY,
-    METADATA,
-    THREAD_POOL,
+import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
+
+public class MetricsGlobalRegistry {
+
+    private static final CompositeMeterRegistry compositeRegistry = new CompositeMeterRegistry();
+
+    public static CompositeMeterRegistry getCompositeRegistry() {
+        return compositeRegistry;
+    }
 }

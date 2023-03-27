@@ -15,18 +15,13 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.metrics.model;
+package org.apache.dubbo.metrics.register;
 
-/**
- * Metric category.
- */
-public enum MetricsCategory {
-    RT,
-    QPS,
-    REQUESTS,
-    APPLICATION,
-    CONFIGCENTER,
-    REGISTRY,
-    METADATA,
-    THREAD_POOL,
+import io.micrometer.core.instrument.Meter;
+import org.apache.dubbo.metrics.model.sample.MetricSample;
+
+public interface MetricRegister<S extends MetricSample, M extends Meter> {
+
+    M register(S sample);
+
 }
