@@ -41,7 +41,7 @@ public class DefaultMetricsCollector implements MetricsCollector {
 
     private boolean collectEnabled = false;
 
-    private boolean threadpoolCollectEnabled=false;
+    private volatile boolean threadpoolCollectEnabled=false;
     private final SimpleMetricsEventMulticaster eventMulticaster;
     private final MethodMetricsSampler methodSampler = new MethodMetricsSampler(this);
     private final ThreadPoolMetricsSampler threadPoolSampler = new ThreadPoolMetricsSampler(this);
