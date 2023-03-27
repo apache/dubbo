@@ -39,6 +39,7 @@ import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.SslConfig;
+import org.apache.dubbo.config.TracingConfig;
 import org.apache.dubbo.config.bootstrap.builders.ApplicationBuilder;
 import org.apache.dubbo.config.bootstrap.builders.ConfigCenterBuilder;
 import org.apache.dubbo.config.bootstrap.builders.ConsumerBuilder;
@@ -700,6 +701,12 @@ public final class DubboBootstrap {
     public DubboBootstrap metrics(MetricsConfig metrics) {
         metrics.setScopeModel(applicationModel);
         configManager.setMetrics(metrics);
+        return this;
+    }
+
+    public DubboBootstrap tracing(TracingConfig tracing){
+        tracing.setScopeModel(applicationModel);
+        configManager.setTracing(tracing);
         return this;
     }
 

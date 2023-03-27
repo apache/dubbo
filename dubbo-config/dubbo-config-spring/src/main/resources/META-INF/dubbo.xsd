@@ -1083,6 +1083,17 @@
         </xsd:attribute>
     </xsd:complexType>
 
+    <xsd:complexType name="tracingType">
+        <xsd:all>
+            <xsd:element ref="sampling" minOccurs="0"/>
+        </xsd:all>
+        <xsd:attribute name="enabled" type="xsd:boolean" default="false">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Enable tracing. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+    </xsd:complexType>
+
     <xsd:complexType name="prometheusExporterType">
         <xsd:attribute name="enabled" type="xsd:boolean">
             <xsd:annotation>
@@ -1162,10 +1173,19 @@
         </xsd:attribute>
     </xsd:complexType>
 
+
     <xsd:complexType name="histogramType">
         <xsd:attribute name="enabled" type="xsd:boolean">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ Enable local rt histogram or not. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+    </xsd:complexType>
+
+    <xsd:complexType name="samplingType">
+        <xsd:attribute name="probability" type="xsd:float">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Probability in the range from 0.0 to 1.0 that a trace will be sampled. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
     </xsd:complexType>
@@ -2043,6 +2063,17 @@
         </xsd:annotation>
     </xsd:element>
 
+    <xsd:element name="tracing" type="tracingType">
+        <xsd:annotation>
+            <xsd:documentation><![CDATA[ The tracing service ]]></xsd:documentation>
+            <xsd:appinfo>
+                <tool:annotation>
+                    <tool:exports type="org.apache.dubbo.config.TracingConfig"/>
+                </tool:annotation>
+            </xsd:appinfo>
+        </xsd:annotation>
+    </xsd:element>
+
     <xsd:element name="prometheus-exporter" type="prometheusExporterType">
         <xsd:annotation>
             <xsd:documentation><![CDATA[ The metrics prometheus exporter config. ]]></xsd:documentation>
@@ -2064,6 +2095,12 @@
     <xsd:element name="histogram" type="histogramType">
         <xsd:annotation>
             <xsd:documentation><![CDATA[ The metrics rt histogram config. ]]></xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
+
+    <xsd:element name="sampling" type="samplingType">
+        <xsd:annotation>
+            <xsd:documentation><![CDATA[ The tracing sampling config. ]]></xsd:documentation>
         </xsd:annotation>
     </xsd:element>
 </xsd:schema>
