@@ -52,7 +52,10 @@ public class ObservationReceiverFilter implements Filter, BaseFilter.Listener, S
             return invoker.invoke(invocation);
         }
         final DubboServerContext receiverContext = new DubboServerContext(invoker, invocation);
-        final Observation observation = DubboObservationDocumentation.SERVER.observation(this.serverObservationConvention, DefaultDubboServerObservationConvention.getInstance(), () -> receiverContext, observationRegistry);
+        final Observation observation = DubboObservationDocumentation.SERVER.observation(
+                this.serverObservationConvention,
+                DefaultDubboServerObservationConvention.getInstance(),
+                () -> receiverContext, observationRegistry);
         invocation.put(Observation.class, observation.start());
         return observation.scoped(() -> invoker.invoke(invocation));
     }
