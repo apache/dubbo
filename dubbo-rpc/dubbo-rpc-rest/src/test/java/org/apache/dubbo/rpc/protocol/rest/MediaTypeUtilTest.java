@@ -41,5 +41,9 @@ public class MediaTypeUtilTest {
         mediaType = MediaTypeUtil.convertMediaType(int.class, null);
 
         Assertions.assertEquals(MediaType.TEXT_PLAIN, mediaType);
+
+        mediaType = MediaTypeUtil.convertMediaType(null, new String[]{MediaType.ALL_VALUE.value});
+
+        Assertions.assertEquals(MediaType.ALL_VALUE, mediaType);
     }
 }
