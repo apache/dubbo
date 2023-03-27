@@ -54,6 +54,8 @@ public interface MetricsConstants {
 
     String AGGREGATION_TIME_WINDOW_SECONDS_KEY = "aggregation.time.window.seconds";
 
+    String HISTOGRAM_ENABLED_KEY = "histogram.enabled";
+
     String PROMETHEUS_EXPORTER_ENABLED_KEY = "prometheus.exporter.enabled";
 
     String PROMETHEUS_EXPORTER_ENABLE_HTTP_SERVICE_DISCOVERY_KEY = "prometheus.exporter.enable.http.service.discovery";

@@ -14,27 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metrics;
 
-import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.binder.MeterBinder;
-import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
+package org.apache.dubbo.metrics.register;
 
+import io.micrometer.core.instrument.Meter;
+import org.apache.dubbo.metrics.model.sample.MetricSample;
 
-public class DubboMetrics implements MeterBinder {
+public interface MetricRegister<S extends MetricSample, M extends Meter> {
 
-    private MeterRegistry globalRegistry = null;
+    M register(S sample);
 
-    @Override
-    public void bindTo(MeterRegistry registry) {
-        globalRegistry = registry;
-        CompositeMeterRegistry compositeRegistry = MetricsGlobalRegistry.getCompositeRegistry();
-        if (compositeRegistry != null) {
-            compositeRegistry.add(registry);
-        }
-    }
-
-    public void destroy() {
-    }
 }
-

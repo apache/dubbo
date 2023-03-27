@@ -14,27 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metrics;
 
-import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.binder.MeterBinder;
-import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
+package org.apache.dubbo.metrics.sample;
 
+import org.apache.dubbo.metrics.model.MetricsCategory;
+import org.apache.dubbo.metrics.model.sample.MetricSample;
 
-public class DubboMetrics implements MeterBinder {
+import java.util.Map;
 
-    private MeterRegistry globalRegistry = null;
+public class HistogramMetricSample extends MetricSample {
 
-    @Override
-    public void bindTo(MeterRegistry registry) {
-        globalRegistry = registry;
-        CompositeMeterRegistry compositeRegistry = MetricsGlobalRegistry.getCompositeRegistry();
-        if (compositeRegistry != null) {
-            compositeRegistry.add(registry);
-        }
+    public HistogramMetricSample(String name, String description, Map<String, String> tags, MetricsCategory category) {
+        super(name, description, tags, Type.TIMER, category);
     }
 
-    public void destroy() {
+    public HistogramMetricSample(String name, String description, Map<String, String> tags, Type type, MetricsCategory category, String baseUnit) {
+        super(name, description, tags, type, category, baseUnit);
     }
 }
-
