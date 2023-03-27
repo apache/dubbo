@@ -626,4 +626,6 @@ public interface CommonConstants {
     String BYTE_ACCESSOR_KEY = "byte.accessor";
 
     String PAYLOAD = "payload";
+    
+    String DUBBO_METRICS_CONFIGCENTER_ENABLE = "dubbo.metrics.configcenter.enable";
 }

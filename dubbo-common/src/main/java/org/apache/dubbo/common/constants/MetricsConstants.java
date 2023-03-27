@@ -37,6 +37,12 @@ public interface MetricsConstants {
     String TAG_VERSION_KEY = "version";
 
     String TAG_APPLICATION_VERSION_KEY = "application.version";
+    
+    String TAG_KEY_KEY = "key";
+    
+    String TAG_CONFIG_CENTER = "config.center";
+    
+    String TAG_CHANGE_TYPE = "change.type";
 
     String ENABLE_JVM_METRICS_KEY = "enable.jvm.metrics";
 

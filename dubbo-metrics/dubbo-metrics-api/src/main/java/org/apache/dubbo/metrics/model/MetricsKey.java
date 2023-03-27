@@ -20,6 +20,8 @@ package org.apache.dubbo.metrics.model;
 public enum MetricsKey {
     APPLICATION_METRIC_INFO("dubbo.application.info.total", "Total Application Info"),
 
+    CONFIGCENTER_METRIC_TOTAL("dubbo.configcenter.total", "Config Changed Total"),
+
     // provider metrics key
     METRIC_REQUESTS("dubbo.%s.requests.total", "Total Requests"),
     METRIC_REQUESTS_SUCCEED("dubbo.%s.requests.succeed.total", "Total Succeed Requests"),
