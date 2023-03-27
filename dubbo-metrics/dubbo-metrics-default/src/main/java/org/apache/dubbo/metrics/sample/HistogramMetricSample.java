@@ -15,18 +15,20 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.metrics.model;
+package org.apache.dubbo.metrics.sample;
 
-/**
- * Metric category.
- */
-public enum MetricsCategory {
-    RT,
-    QPS,
-    REQUESTS,
-    APPLICATION,
-    CONFIGCENTER,
-    REGISTRY,
-    METADATA,
-    THREAD_POOL,
+import org.apache.dubbo.metrics.model.MetricsCategory;
+import org.apache.dubbo.metrics.model.sample.MetricSample;
+
+import java.util.Map;
+
+public class HistogramMetricSample extends MetricSample {
+
+    public HistogramMetricSample(String name, String description, Map<String, String> tags, MetricsCategory category) {
+        super(name, description, tags, Type.TIMER, category);
+    }
+
+    public HistogramMetricSample(String name, String description, Map<String, String> tags, Type type, MetricsCategory category, String baseUnit) {
+        super(name, description, tags, type, category, baseUnit);
+    }
 }

@@ -450,7 +450,6 @@ public class NettyBackedChannelBuffer implements ChannelBuffer {
         return ChannelBuffers.compare(this, o);
     }
 
-    @Override
     public void release() {
         ReferenceCountUtil.safeRelease(buffer);
     }
