@@ -26,8 +26,8 @@ import java.util.Collection;
 
 @Activate
 public class ProviderReadinessProbe implements ReadinessProbe {
-    private FrameworkModel frameworkModel;
-    private FrameworkServiceRepository serviceRepository;
+    private final FrameworkModel frameworkModel;
+    private final FrameworkServiceRepository serviceRepository;
 
     public ProviderReadinessProbe(FrameworkModel frameworkModel) {
         if (frameworkModel != null) {

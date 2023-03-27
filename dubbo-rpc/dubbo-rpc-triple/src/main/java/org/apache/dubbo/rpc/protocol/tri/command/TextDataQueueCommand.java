@@ -22,20 +22,22 @@ import io.netty.buffer.ByteBufUtil;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http2.DefaultHttp2DataFrame;
+import org.apache.dubbo.rpc.protocol.tri.stream.TripleStreamChannelFuture;
 
-public class TextDataQueueCommand extends QueuedCommand {
+public class TextDataQueueCommand extends StreamQueueCommand {
 
     private final String data;
 
     private final boolean endStream;
 
-    private TextDataQueueCommand(String text, boolean endStream) {
+    private TextDataQueueCommand(TripleStreamChannelFuture streamChannelFuture, String text, boolean endStream) {
+        super(streamChannelFuture);
         this.data = text;
         this.endStream = endStream;
     }
 
-    public static TextDataQueueCommand createCommand(String data, boolean endStream) {
-        return new TextDataQueueCommand(data, endStream);
+    public static TextDataQueueCommand createCommand(TripleStreamChannelFuture streamChannelFuture, String data, boolean endStream) {
+        return new TextDataQueueCommand(streamChannelFuture, data, endStream);
     }
 
     @Override

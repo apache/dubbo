@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.qos.command;
 
+import org.apache.dubbo.qos.api.CommandContext;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
@@ -26,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class CommandContextFactoryTest {
     @Test
-    void testNewInstance() throws Exception {
+    void testNewInstance() {
         CommandContext context = CommandContextFactory.newInstance("test");
         assertThat(context.getCommandName(), equalTo("test"));
         context = CommandContextFactory.newInstance("command", new String[]{"hello"}, true);

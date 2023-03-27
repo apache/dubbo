@@ -19,12 +19,16 @@ package org.apache.dubbo.metrics.metadata.collector.stat;
 
 import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.metrics.collector.MetricsCollector;
+import org.apache.dubbo.metrics.metadata.event.MetadataEvent;
 import org.apache.dubbo.metrics.model.ApplicationMetric;
 import org.apache.dubbo.metrics.model.MetricsCategory;
 import org.apache.dubbo.metrics.model.MetricsKey;
 import org.apache.dubbo.metrics.model.MetricsKeyWrapper;
+import org.apache.dubbo.metrics.model.ServiceKeyMetric;
+import org.apache.dubbo.metrics.model.container.AtomicLongContainer;
+import org.apache.dubbo.metrics.model.container.LongAccumulatorContainer;
+import org.apache.dubbo.metrics.model.container.LongContainer;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
-import org.apache.dubbo.metrics.metadata.event.MetadataEvent;
 import org.apache.dubbo.metrics.report.MetricsExport;
 
 import java.util.ArrayList;
@@ -33,9 +37,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.LongAccumulator;
-import java.util.function.BiConsumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -46,30 +48,40 @@ import java.util.stream.Collectors;
 public class MetadataStatComposite implements MetricsExport {
 
 
-    public Map<MetadataEvent.Type, Map<String, AtomicLong>> numStats = new ConcurrentHashMap<>();
-    public List<LongContainer<? extends Number>> rtStats = new ArrayList<>();
+    public Map<MetadataEvent.ApplicationType, Map<String, AtomicLong>> applicationNumStats = new ConcurrentHashMap<>();
+    public Map<MetadataEvent.ServiceType, Map<ServiceKeyMetric, AtomicLong>> serviceNumStats = new ConcurrentHashMap<>();
+    public List<LongContainer<? extends Number>> appRtStats = new ArrayList<>();
+
+    public List<LongContainer<? extends Number>> serviceRtStats = new ArrayList<>();
     public static String OP_TYPE_PUSH = "push";
     public static String OP_TYPE_SUBSCRIBE = "subscribe";
+    public static String OP_TYPE_STORE_PROVIDER_INTERFACE = "store.provider.interface";
 
     public MetadataStatComposite() {
-        for (MetadataEvent.Type type : MetadataEvent.Type.values()) {
-            numStats.put(type, new ConcurrentHashMap<>());
+        for (MetadataEvent.ApplicationType applicationType : MetadataEvent.ApplicationType.values()) {
+            applicationNumStats.put(applicationType, new ConcurrentHashMap<>());
+        }
+        for (MetadataEvent.ServiceType serviceType : MetadataEvent.ServiceType.values()) {
+            serviceNumStats.put(serviceType, new ConcurrentHashMap<>());
         }
 
-        rtStats.addAll(initStats(OP_TYPE_PUSH));
-        rtStats.addAll(initStats(OP_TYPE_SUBSCRIBE));
+        appRtStats.addAll(initStats(OP_TYPE_PUSH, appRtStats));
+        appRtStats.addAll(initStats(OP_TYPE_SUBSCRIBE, appRtStats));
+
+        serviceRtStats.addAll(initStats(OP_TYPE_STORE_PROVIDER_INTERFACE, serviceRtStats));
     }
 
-    private List<LongContainer<? extends Number>> initStats(String registryOpType) {
+    private List<LongContainer<? extends Number>> initStats(String registryOpType, List<LongContainer<? extends Number>> rtStats) {
+
         List<LongContainer<? extends Number>> singleRtStats = new ArrayList<>();
-        singleRtStats.add(new AtomicLongContainer(new MetricsKeyWrapper(registryOpType, MetricsKey.GENERIC_METRIC_RT_LAST)));
-        singleRtStats.add(new LongAccumulatorContainer(new MetricsKeyWrapper(registryOpType, MetricsKey.GENERIC_METRIC_RT_MIN), new LongAccumulator(Long::min, Long.MAX_VALUE)));
-        singleRtStats.add(new LongAccumulatorContainer(new MetricsKeyWrapper(registryOpType, MetricsKey.GENERIC_METRIC_RT_MAX), new LongAccumulator(Long::max, Long.MIN_VALUE)));
-        singleRtStats.add(new AtomicLongContainer(new MetricsKeyWrapper(registryOpType, MetricsKey.GENERIC_METRIC_RT_SUM), (responseTime, longAccumulator) -> longAccumulator.addAndGet(responseTime)));
+        singleRtStats.add(new AtomicLongContainer(new MetricsKeyWrapper(registryOpType, MetricsKey.METRIC_RT_LAST)));
+        singleRtStats.add(new LongAccumulatorContainer(new MetricsKeyWrapper(registryOpType, MetricsKey.METRIC_RT_MIN), new LongAccumulator(Long::min, Long.MAX_VALUE)));
+        singleRtStats.add(new LongAccumulatorContainer(new MetricsKeyWrapper(registryOpType, MetricsKey.METRIC_RT_MAX), new LongAccumulator(Long::max, Long.MIN_VALUE)));
+        singleRtStats.add(new AtomicLongContainer(new MetricsKeyWrapper(registryOpType, MetricsKey.METRIC_RT_SUM), (responseTime, longAccumulator) -> longAccumulator.addAndGet(responseTime)));
         // AvgContainer is a special counter that stores the number of times but outputs function of sum/times
-        AtomicLongContainer avgContainer = new AtomicLongContainer(new MetricsKeyWrapper(registryOpType, MetricsKey.GENERIC_METRIC_RT_AVG), (k, v) -> v.incrementAndGet());
+        AtomicLongContainer avgContainer = new AtomicLongContainer(new MetricsKeyWrapper(registryOpType, MetricsKey.METRIC_RT_AVG), (k, v) -> v.incrementAndGet());
         avgContainer.setValueSupplier(applicationName -> {
-            LongContainer<? extends Number> totalContainer = rtStats.stream().filter(longContainer -> longContainer.isKeyWrapper(MetricsKey.GENERIC_METRIC_RT_SUM, registryOpType)).findFirst().get();
+            LongContainer<? extends Number> totalContainer = rtStats.stream().filter(longContainer -> longContainer.isKeyWrapper(MetricsKey.METRIC_RT_SUM, registryOpType)).findFirst().get();
             AtomicLong totalRtTimes = avgContainer.get(applicationName);
             AtomicLong totalRtSum = (AtomicLong) totalContainer.get(applicationName);
             return totalRtSum.get() / totalRtTimes.get();
@@ -78,26 +90,56 @@ public class MetadataStatComposite implements MetricsExport {
         return singleRtStats;
     }
 
-    public void increment(MetadataEvent.Type type, String applicationName) {
-        if (!numStats.containsKey(type)) {
+    public void increment(MetadataEvent.ApplicationType type, String applicationName) {
+        incrementSize(type, applicationName, 1);
+    }
+
+    public void incrementServiceKey(MetadataEvent.ServiceType type, String applicationName, String serviceKey, int size) {
+        if (!serviceNumStats.containsKey(type)) {
             return;
         }
-        numStats.get(type).computeIfAbsent(applicationName, k -> new AtomicLong(0L)).incrementAndGet();
+        serviceNumStats.get(type).computeIfAbsent(new ServiceKeyMetric(applicationName, serviceKey), k -> new AtomicLong(0L)).getAndAdd(size);
+    }
+
+    public void incrementSize(MetadataEvent.ApplicationType type, String applicationName, int size) {
+        if (!applicationNumStats.containsKey(type)) {
+            return;
+        }
+        applicationNumStats.get(type).computeIfAbsent(applicationName, k -> new AtomicLong(0L)).getAndAdd(size);
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    public void calcRt(String applicationName, String registryOpType, Long responseTime) {
-        for (LongContainer container : rtStats.stream().filter(longContainer -> longContainer.specifyType(registryOpType)).collect(Collectors.toList())) {
+    public void calcApplicationRt(String applicationName, String registryOpType, Long responseTime) {
+        for (LongContainer container : appRtStats.stream().filter(longContainer -> longContainer.specifyType(registryOpType)).collect(Collectors.toList())) {
             Number current = (Number) ConcurrentHashMapUtils.computeIfAbsent(container, applicationName, container.getInitFunc());
             container.getConsumerFunc().accept(responseTime, current);
         }
     }
 
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public void calcServiceKeyRt(String applicationName, String serviceKey, String registryOpType, Long responseTime) {
+        for (LongContainer container : serviceRtStats.stream().filter(longContainer -> longContainer.specifyType(registryOpType)).collect(Collectors.toList())) {
+            Number current = (Number) ConcurrentHashMapUtils.computeIfAbsent(container, applicationName + "_" + serviceKey, container.getInitFunc());
+            container.getConsumerFunc().accept(responseTime, current);
+        }
+    }
+
+    @SuppressWarnings({"rawtypes"})
+    private void doExportRt(List<GaugeMetricSample> list, List<LongContainer<? extends Number>> rtStats, Function<String, Map<String, String>> tagNameFunc) {
+        for (LongContainer<? extends Number> rtContainer : rtStats) {
+            MetricsKeyWrapper metricsKeyWrapper = rtContainer.getMetricsKeyWrapper();
+            for (Map.Entry<String, ? extends Number> entry : rtContainer.entrySet()) {
+                list.add(new GaugeMetricSample<>(metricsKeyWrapper.targetKey(), metricsKeyWrapper.targetDesc(), tagNameFunc.apply(entry.getKey()), MetricsCategory.RT, entry.getKey().intern(), value -> rtContainer.getValueSupplier().apply(value.intern())));
+            }
+        }
+    }
+
     @Override
+    @SuppressWarnings("rawtypes")
     public List<GaugeMetricSample> exportNumMetrics() {
         List<GaugeMetricSample> list = new ArrayList<>();
-        for (MetadataEvent.Type type : numStats.keySet()) {
-            Map<String, AtomicLong> stringAtomicLongMap = numStats.get(type);
+        for (MetadataEvent.ApplicationType type : applicationNumStats.keySet()) {
+            Map<String, AtomicLong> stringAtomicLongMap = applicationNumStats.get(type);
             for (String applicationName : stringAtomicLongMap.keySet()) {
                 list.add(convertToSample(applicationName, type, MetricsCategory.REGISTRY, stringAtomicLongMap.get(applicationName)));
             }
@@ -106,107 +148,29 @@ public class MetadataStatComposite implements MetricsExport {
     }
 
     @Override
+    @SuppressWarnings("rawtypes")
     public List<GaugeMetricSample> exportRtMetrics() {
         List<GaugeMetricSample> list = new ArrayList<>();
-        for (LongContainer<? extends Number> rtContainer : rtStats) {
-            MetricsKeyWrapper metricsKeyWrapper = rtContainer.getMetricsKeyWrapper();
-            for (Map.Entry<String, ? extends Number> entry : rtContainer.entrySet()) {
-                list.add(new GaugeMetricSample(metricsKeyWrapper.targetKey(), metricsKeyWrapper.targetDesc(), ApplicationMetric.getTagsByName(entry.getKey()), MetricsCategory.RT, () -> rtContainer.getValueSupplier().apply(entry.getKey())));
+        doExportRt(list, appRtStats, ApplicationMetric::getTagsByName);
+        doExportRt(list, serviceRtStats, ApplicationMetric::getServiceTags);
+        return list;
+    }
+
+    @SuppressWarnings({"rawtypes"})
+    public List<GaugeMetricSample> exportServiceNumMetrics() {
+        List<GaugeMetricSample> list = new ArrayList<>();
+        for (MetadataEvent.ServiceType type : serviceNumStats.keySet()) {
+            Map<ServiceKeyMetric, AtomicLong> stringAtomicLongMap = serviceNumStats.get(type);
+            for (ServiceKeyMetric serviceKeyMetric : stringAtomicLongMap.keySet()) {
+                list.add(new GaugeMetricSample<>(type.getMetricsKey(), serviceKeyMetric.getTags(), MetricsCategory.REGISTRY, stringAtomicLongMap, value -> value.get(serviceKeyMetric).get()));
             }
         }
         return list;
     }
 
-    public GaugeMetricSample convertToSample(String applicationName, MetadataEvent.Type type, MetricsCategory category, AtomicLong targetNumber) {
-        return new GaugeMetricSample(type.getMetricsKey(), ApplicationMetric.getTagsByName(applicationName), category, targetNumber::get);
+    @SuppressWarnings("rawtypes")
+    public GaugeMetricSample convertToSample(String applicationName, MetadataEvent.ApplicationType type, MetricsCategory category, AtomicLong targetNumber) {
+        return new GaugeMetricSample<>(type.getMetricsKey(), ApplicationMetric.getTagsByName(applicationName), category, targetNumber, AtomicLong::get);
     }
-
-
-    /**
-     * Collect Number type data
-     *
-     * @param <NUMBER>
-     */
-    public static class LongContainer<NUMBER extends Number> extends ConcurrentHashMap<String, NUMBER> {
-
-        /**
-         * Provide the metric type name
-         */
-        private final MetricsKeyWrapper metricsKeyWrapper;
-        /**
-         * The initial value corresponding to the key is generally 0 of different data types
-         */
-        private final Function<String, NUMBER> initFunc;
-        /**
-         * Statistical data calculation function, which can be self-increment, self-decrement, or more complex avg function
-         */
-        private final BiConsumer<Long, NUMBER> consumerFunc;
-        /**
-         * Data output function required by  {@link GaugeMetricSample GaugeMetricSample}
-         */
-        private Function<String, Long> valueSupplier;
-
-
-        public LongContainer(MetricsKeyWrapper metricsKeyWrapper, Supplier<NUMBER> initFunc, BiConsumer<Long, NUMBER> consumerFunc) {
-            this.metricsKeyWrapper = metricsKeyWrapper;
-            this.initFunc = s -> initFunc.get();
-            this.consumerFunc = consumerFunc;
-            this.valueSupplier = k -> this.get(k).longValue();
-        }
-
-        public boolean specifyType(String type) {
-            return type.equals(getMetricsKeyWrapper().getType());
-        }
-
-        public MetricsKeyWrapper getMetricsKeyWrapper() {
-            return metricsKeyWrapper;
-        }
-
-        public boolean isKeyWrapper(MetricsKey metricsKey, String registryOpType) {
-            return metricsKeyWrapper.isKey(metricsKey,registryOpType);
-        }
-
-        public Function<String, NUMBER> getInitFunc() {
-            return initFunc;
-        }
-
-        public BiConsumer<Long, NUMBER> getConsumerFunc() {
-            return consumerFunc;
-        }
-
-        public Function<String, Long> getValueSupplier() {
-            return valueSupplier;
-        }
-
-        public void setValueSupplier(Function<String, Long> valueSupplier) {
-            this.valueSupplier = valueSupplier;
-        }
-
-        @Override
-        public String toString() {
-            return "LongContainer{" +
-                "metricsKeyWrapper=" + metricsKeyWrapper +
-                '}';
-        }
-    }
-
-    public static class AtomicLongContainer extends LongContainer<AtomicLong> {
-
-        public AtomicLongContainer(MetricsKeyWrapper metricsKeyWrapper) {
-            super(metricsKeyWrapper, AtomicLong::new, (responseTime, longAccumulator) -> longAccumulator.set(responseTime));
-        }
-
-        public AtomicLongContainer(MetricsKeyWrapper metricsKeyWrapper, BiConsumer<Long, AtomicLong> consumerFunc) {
-            super(metricsKeyWrapper, AtomicLong::new, consumerFunc);
-        }
-
-    }
-
-    public static class LongAccumulatorContainer extends LongContainer<LongAccumulator> {
-        public LongAccumulatorContainer(MetricsKeyWrapper metricsKeyWrapper, LongAccumulator accumulator) {
-            super(metricsKeyWrapper, () -> accumulator, (responseTime, longAccumulator) -> longAccumulator.accumulate(responseTime));
-        }
-    }
-
 
 }

@@ -48,9 +48,9 @@ public class ShortestResponseLoadBalance extends AbstractLoadBalance implements 
 
     private int slidePeriod = 30_000;
 
-    private ConcurrentMap<RpcStatus, SlideWindowData> methodMap = new ConcurrentHashMap<>();
+    private final ConcurrentMap<RpcStatus, SlideWindowData> methodMap = new ConcurrentHashMap<>();
 
-    private AtomicBoolean onResetSlideWindow = new AtomicBoolean(false);
+    private final AtomicBoolean onResetSlideWindow = new AtomicBoolean(false);
 
     private volatile long lastUpdateTime = System.currentTimeMillis();
 
@@ -67,7 +67,7 @@ public class ShortestResponseLoadBalance extends AbstractLoadBalance implements 
 
         private long succeededOffset;
         private long succeededElapsedOffset;
-        private RpcStatus rpcStatus;
+        private final RpcStatus rpcStatus;
 
         public SlideWindowData(RpcStatus rpcStatus) {
             this.rpcStatus = rpcStatus;

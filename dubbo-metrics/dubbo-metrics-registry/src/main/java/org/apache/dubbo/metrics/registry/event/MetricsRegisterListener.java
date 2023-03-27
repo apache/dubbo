@@ -22,31 +22,31 @@ import org.apache.dubbo.metrics.listener.MetricsLifeListener;
 
 import static org.apache.dubbo.metrics.registry.collector.stat.RegistryStatComposite.OP_TYPE_REGISTER;
 
-public class MetricsRegisterListener implements MetricsLifeListener<RegistryEvent.MetricsRegisterEvent> {
+public class MetricsRegisterListener implements MetricsLifeListener<RegistryEvent.MetricsApplicationRegisterEvent> {
 
 
     @Override
     public boolean isSupport(MetricsEvent event) {
-        return event instanceof RegistryEvent.MetricsRegisterEvent;
+        return event instanceof RegistryEvent.MetricsApplicationRegisterEvent;
     }
 
     @Override
-    public void onEvent(RegistryEvent.MetricsRegisterEvent event) {
+    public void onEvent(RegistryEvent.MetricsApplicationRegisterEvent event) {
         if (!event.isAvailable()) {
             return;
         }
-        event.getCollector().increment(event.getSource().getApplicationName(), RegistryEvent.Type.R_TOTAL);
+        event.getCollector().increment(event.getSource().getApplicationName(), RegistryEvent.ApplicationType.R_TOTAL);
     }
 
     @Override
-    public void onEventFinish(RegistryEvent.MetricsRegisterEvent event) {
-        event.getCollector().increment(event.getSource().getApplicationName(), RegistryEvent.Type.R_SUCCEED);
-        event.getCollector().addRT(event.getSource().getApplicationName(), OP_TYPE_REGISTER, event.getTimePair().calc());
+    public void onEventFinish(RegistryEvent.MetricsApplicationRegisterEvent event) {
+        event.getCollector().increment(event.getSource().getApplicationName(), RegistryEvent.ApplicationType.R_SUCCEED);
+        event.getCollector().addApplicationRT(event.getSource().getApplicationName(), OP_TYPE_REGISTER, event.getTimePair().calc());
     }
 
     @Override
-    public void onEventError(RegistryEvent.MetricsRegisterEvent event) {
-        event.getCollector().increment(event.getSource().getApplicationName(), RegistryEvent.Type.R_FAILED);
-        event.getCollector().addRT(event.getSource().getApplicationName(), OP_TYPE_REGISTER, event.getTimePair().calc());
+    public void onEventError(RegistryEvent.MetricsApplicationRegisterEvent event) {
+        event.getCollector().increment(event.getSource().getApplicationName(), RegistryEvent.ApplicationType.R_FAILED);
+        event.getCollector().addApplicationRT(event.getSource().getApplicationName(), OP_TYPE_REGISTER, event.getTimePair().calc());
     }
 }

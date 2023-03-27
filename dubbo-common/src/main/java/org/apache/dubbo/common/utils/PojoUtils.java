@@ -275,7 +275,7 @@ public class PojoUtils {
         }
         if (!type.isInterface() && !Modifier.isAbstract(type.getModifiers())) {
             try {
-                return (Collection<Object>) type.newInstance();
+                return (Collection<Object>) type.getDeclaredConstructor().newInstance();
             } catch (Exception e) {
                 // ignore
             }
@@ -306,7 +306,7 @@ public class PojoUtils {
             result = new ConcurrentSkipListMap();
         } else {
             try {
-                result = cl.newInstance();
+                result = cl.getDeclaredConstructor().newInstance();
             } catch (Exception e) { /* ignore */ }
 
             if (result == null) {
@@ -434,7 +434,7 @@ public class PojoUtils {
             // when return type is not the subclass of return type from the signature and not an interface
             if (!type.isInterface() && !type.isAssignableFrom(pojo.getClass())) {
                 try {
-                    map = (Map<Object, Object>) type.newInstance();
+                    map = (Map<Object, Object>) type.getDeclaredConstructor().newInstance();
                     Map<Object, Object> mapPojo = (Map<Object, Object>) pojo;
                     map.putAll(mapPojo);
                     if (GENERIC_WITH_CLZ) {
@@ -596,7 +596,7 @@ public class PojoUtils {
 
     private static Object newInstance(Class<?> cls) {
         try {
-            return cls.newInstance();
+            return cls.getDeclaredConstructor().newInstance();
         } catch (Throwable t) {
             Constructor<?>[] constructors = cls.getDeclaredConstructors();
             /*

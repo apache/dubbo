@@ -27,6 +27,7 @@ import org.apache.dubbo.rpc.InvokerListener;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProtocolServer;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.listener.InjvmExporterListener;
 import org.apache.dubbo.rpc.listener.ListenerExporterWrapper;
 import org.apache.dubbo.rpc.listener.ListenerInvokerWrapper;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
@@ -37,6 +38,7 @@ import java.util.List;
 import static org.apache.dubbo.common.constants.CommonConstants.EXPORTER_LISTENER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INVOKER_LISTENER_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_CLUSTER_TYPE_KEY;
+import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
 
 /**
  * ListenerProtocol
@@ -63,9 +65,13 @@ public class ProtocolListenerWrapper implements Protocol {
         if (UrlUtils.isRegistry(invoker.getUrl())) {
             return protocol.export(invoker);
         }
+        List<ExporterListener> exporterListeners = ScopeModelUtil.getExtensionLoader(ExporterListener.class, invoker.getUrl().getScopeModel())
+            .getActivateExtension(invoker.getUrl(), EXPORTER_LISTENER_KEY);
+        if (LOCAL_PROTOCOL.equals(invoker.getUrl().getProtocol())) {
+            exporterListeners.add(invoker.getUrl().getOrDefaultFrameworkModel().getBeanFactory().getBean(InjvmExporterListener.class));
+        }
         return new ListenerExporterWrapper<T>(protocol.export(invoker),
-                Collections.unmodifiableList(ScopeModelUtil.getExtensionLoader(ExporterListener.class, invoker.getUrl().getScopeModel())
-                        .getActivateExtension(invoker.getUrl(), EXPORTER_LISTENER_KEY)));
+                Collections.unmodifiableList(exporterListeners));
     }
 
     @Override
