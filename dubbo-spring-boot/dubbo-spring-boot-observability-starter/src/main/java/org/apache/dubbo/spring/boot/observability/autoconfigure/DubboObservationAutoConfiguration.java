@@ -43,7 +43,7 @@ import java.util.Arrays;
  */
 @AutoConfiguration(after = DubboMicrometerTracingAutoConfiguration.class, afterName = "org.springframework.boot.actuate.autoconfigure.observation.ObservationAutoConfiguration")
 @ConditionalOnDubboTracingEnable
-@ConditionalOnClass(name = {"io.micrometer.observation.Observation","io.micrometer.tracing.Tracer"})
+@ConditionalOnClass(name = {"io.micrometer.observation.Observation", "io.micrometer.tracing.Tracer"})
 public class DubboObservationAutoConfiguration implements BeanFactoryAware, SmartInitializingSingleton {
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(QosProtocolWrapper.class);
 
@@ -83,7 +83,7 @@ public class DubboObservationAutoConfiguration implements BeanFactoryAware, Smar
             Tracer bean = beanFactory.getBean(Tracer.class);
             applicationModel.getBeanFactory().registerBean(bean);
         } catch (NoSuchBeanDefinitionException e) {
-            logger.warn("Please use a version of micrometer higher than 1.10.0 ：{}",e);
+            logger.warn("Please use a version of micrometer higher than 1.10.0 ：{}" + e.getMessage());
         }
     }
 
@@ -121,7 +121,7 @@ public class DubboObservationAutoConfiguration implements BeanFactoryAware, Smar
     static class MetricsWithTracingConfiguration {
 
         @Bean
-        @ConditionalOnClass(name = {"io.micrometer.tracing.handler.TracingObservationHandler","io.micrometer.core.instrument.observation.MeterObservationHandler"})
+        @ConditionalOnClass(name = {"io.micrometer.tracing.handler.TracingObservationHandler", "io.micrometer.core.instrument.observation.MeterObservationHandler"})
         ObservationHandlerGrouping metricsAndTracingObservationHandlerGrouping() {
             return new ObservationHandlerGrouping(
                 Arrays.asList(io.micrometer.tracing.handler.TracingObservationHandler.class, io.micrometer.core.instrument.observation.MeterObservationHandler.class));
@@ -151,7 +151,7 @@ public class DubboObservationAutoConfiguration implements BeanFactoryAware, Smar
         static class TracingAndMetricsObservationHandlerConfiguration {
 
             @Bean
-            @ConditionalOnClass(name = {"io.micrometer.tracing.handler.TracingAwareMeterObservationHandler","io.micrometer.tracing.Tracer"})
+            @ConditionalOnClass(name = {"io.micrometer.tracing.handler.TracingAwareMeterObservationHandler", "io.micrometer.tracing.Tracer"})
             io.micrometer.tracing.handler.TracingAwareMeterObservationHandler<io.micrometer.observation.Observation.Context> tracingAwareMeterObservationHandler(
                 MeterRegistry meterRegistry, io.micrometer.tracing.Tracer tracer) {
                 io.micrometer.core.instrument.observation.DefaultMeterObservationHandler delegate = new io.micrometer.core.instrument.observation.DefaultMeterObservationHandler(meterRegistry);
