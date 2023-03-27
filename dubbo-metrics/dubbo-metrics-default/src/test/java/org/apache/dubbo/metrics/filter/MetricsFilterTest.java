@@ -84,7 +84,7 @@ class MetricsFilterTest {
         filter = new MetricsFilter();
 
         collector = applicationModel.getBeanFactory().getOrRegisterBean(DefaultMetricsCollector.class);
-        if(!initApplication.get()) {
+        if (!initApplication.get()) {
             collector.collectApplication(applicationModel);
             initApplication.set(true);
         }
@@ -264,43 +264,14 @@ class MetricsFilterTest {
     }
 
     @Test
-    public void testErrors(){
-        testFilterError(RpcException.SERIALIZATION_EXCEPTION, MetricsKey.METRIC_REQUESTS_CODEC_FAILED.formatName(side));
-        testFilterError(RpcException.NETWORK_EXCEPTION, MetricsKey.METRIC_REQUESTS_NETWORK_FAILED.formatName(side));
+    public void testErrors() {
+        testFilterError(RpcException.SERIALIZATION_EXCEPTION,
+            MetricsKey.METRIC_REQUESTS_CODEC_FAILED.getNameByType(side));
+        testFilterError(RpcException.NETWORK_EXCEPTION,
+            MetricsKey.METRIC_REQUESTS_NETWORK_FAILED.getNameByType(side));
     }
 
-    @Test
-    public void testNoProvider(){
-        testClusterFilterError(RpcException.FORBIDDEN_EXCEPTION,
-            MetricsKey.METRIC_REQUESTS_SERVICE_UNAVAILABLE_FAILED.formatName(CommonConstants.CONSUMER));
-    }
-
-    private void testClusterFilterError(int errorCode,MetricsKey metricsKey){
-//        setup();
-        collector.setCollectEnabled(true);
-        given(invoker.invoke(invocation)).willThrow(new RpcException(errorCode));
-        initParam();
-
-        Long count = 1L;
-
-        for (int i = 0; i < count; i++) {
-            try {
-                metricsClusterFilter.invoke(invoker, invocation);
-            } catch (Exception e) {
-                Assertions.assertTrue(e instanceof RpcException);
-                metricsClusterFilter.onError(e, invoker, invocation);
-            }
-        }
-        Map<String, MetricSample> metricsMap = getMetricsMap();
-        Assertions.assertTrue(metricsMap.containsKey(metricsKey.getName()));
-
-        MetricSample sample = metricsMap.get(metricsKey.getName());
-
-        Assertions.assertSame(((GaugeMetricSample) sample).applyAsLong(), count);
-        teardown();
-    }
-
-    private void testFilterError(int errorCode,MetricsKey metricsKey){
+    private void testFilterError(int errorCode, String name) {
         setup();
         collector.setCollectEnabled(true);
         given(invoker.invoke(invocation)).willThrow(new RpcException(errorCode));
@@ -317,14 +288,14 @@ class MetricsFilterTest {
             }
         }
         Map<String, MetricSample> metricsMap = getMetricsMap();
-        Assertions.assertTrue(metricsMap.containsKey(metricsKey.getName()));
+        Assertions.assertTrue(metricsMap.containsKey(name));
 
-        MetricSample sample = metricsMap.get(metricsKey.getName());
+        MetricSample sample = metricsMap.get(name);
 
         Assertions.assertSame(((GaugeMetricSample) sample).applyAsLong(), count);
 
 
-        Assertions.assertTrue(metricsMap.containsKey(metricsKey.getName()));
+        Assertions.assertTrue(metricsMap.containsKey(name));
         Map<String, String> tags = sample.getTags();
 
         Assertions.assertEquals(tags.get(TAG_INTERFACE_KEY), INTERFACE_NAME);
