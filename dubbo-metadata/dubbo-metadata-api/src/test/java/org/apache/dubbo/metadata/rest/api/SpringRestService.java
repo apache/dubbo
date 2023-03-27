@@ -48,5 +48,8 @@ public interface SpringRestService {
     @RequestMapping(value = "/pathVariable/{a}", method = RequestMethod.POST, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE, produces = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     String pathVariable(@PathVariable String a);
 
+    @RequestMapping(value = "/noAnnoParam", method = RequestMethod.POST, consumes = MediaType.TEXT_PLAIN_VALUE, produces = MediaType.TEXT_PLAIN_VALUE)
+    String noAnnoParam(String a);
+
 
 }

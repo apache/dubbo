@@ -50,4 +50,9 @@ public class SpringRestServiceImpl implements SpringRestService {
         return a;
     }
 
+    @Override
+    public String noAnnoParam(String a) {
+        return a;
+    }
+
 }

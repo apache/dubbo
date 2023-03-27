@@ -51,6 +51,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 
 import static org.apache.dubbo.remoting.Constants.SERVER_KEY;
@@ -130,6 +131,10 @@ class JaxrsRestProtocolTest {
         Assertions.assertTrue(Arrays.equals(bytes, client.bytes(bytes)));
 
         Assertions.assertEquals(1l, client.number(1l));
+
+        HashMap<String, String> map = new HashMap<>();
+        map.put("headers", "h1");
+        Assertions.assertEquals("h1", client.headerMap(map));
 
 
         invoker.destroy();
@@ -409,22 +414,22 @@ class JaxrsRestProtocolTest {
     void testDoubleCheckException() {
 
 
-        Assertions.assertThrows(DoublePathCheckException.class,()->{
+        Assertions.assertThrows(DoublePathCheckException.class, () -> {
 
-        DemoService server = new DemoServiceImpl();
-
-
-        Invoker<DemoService> invoker = proxy.getInvoker(server, DemoService.class, exportUrl);
-
-        PathAndInvokerMapper pathAndInvokerMapper = new PathAndInvokerMapper();
-
-        ServiceRestMetadata serviceRestMetadata = MetadataResolver.resolveConsumerServiceMetadata(DemoService.class, exportUrl, "");
-
-        Map<PathMatcher, RestMethodMetadata> pathContainPathVariableToServiceMap = serviceRestMetadata.getPathUnContainPathVariableToServiceMap();
+            DemoService server = new DemoServiceImpl();
 
 
-        pathAndInvokerMapper.addPathAndInvoker(pathContainPathVariableToServiceMap,invoker);
-        pathAndInvokerMapper.addPathAndInvoker(pathContainPathVariableToServiceMap,invoker);
+            Invoker<DemoService> invoker = proxy.getInvoker(server, DemoService.class, exportUrl);
+
+            PathAndInvokerMapper pathAndInvokerMapper = new PathAndInvokerMapper();
+
+            ServiceRestMetadata serviceRestMetadata = MetadataResolver.resolveConsumerServiceMetadata(DemoService.class, exportUrl, "");
+
+            Map<PathMatcher, RestMethodMetadata> pathContainPathVariableToServiceMap = serviceRestMetadata.getPathUnContainPathVariableToServiceMap();
+
+
+            pathAndInvokerMapper.addPathAndInvoker(pathContainPathVariableToServiceMap, invoker);
+            pathAndInvokerMapper.addPathAndInvoker(pathContainPathVariableToServiceMap, invoker);
         });
 
 
