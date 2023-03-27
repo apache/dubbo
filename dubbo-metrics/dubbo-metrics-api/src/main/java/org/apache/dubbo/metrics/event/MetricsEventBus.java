@@ -34,19 +34,20 @@ public class MetricsEventBus {
      *
      * @param event event to post.
      */
-    public static void solo(MetricsEvent event) {
-        if (event.getSource() instanceof ApplicationModel) {
-            ApplicationModel applicationModel = (ApplicationModel) event.getSource();
-            if (applicationModel.isDestroyed()) {
-                return;
-            }
-            ScopeBeanFactory beanFactory = applicationModel.getBeanFactory();
-            if (beanFactory.isDestroyed()) {
-                return;
-            }
-            MetricsDispatcher dispatcher = beanFactory.getBean(MetricsDispatcher.class);
-            Optional.ofNullable(dispatcher).ifPresent(d -> d.publishEvent(event));
+    public static void publish(MetricsEvent event) {
+        if (event.getSource() == null) {
+            return;
         }
+        ApplicationModel applicationModel = event.getSource();
+        if (applicationModel.isDestroyed()) {
+            return;
+        }
+        ScopeBeanFactory beanFactory = applicationModel.getBeanFactory();
+        if (beanFactory.isDestroyed()) {
+            return;
+        }
+        MetricsDispatcher dispatcher = beanFactory.getBean(MetricsDispatcher.class);
+        Optional.ofNullable(dispatcher).ifPresent(d -> d.publishEvent(event));
     }
 
     /**
@@ -54,7 +55,7 @@ public class MetricsEventBus {
      * Full lifecycle post, judging success or failure by whether there is an exception
      * Loop around the event target and return the original processing result
      *
-     * @param event    event to post.
+     * @param event          event to post.
      * @param targetSupplier original processing result targetSupplier
      */
     public static <T> T post(MetricsEvent event, Supplier<T> targetSupplier) {
@@ -65,17 +66,17 @@ public class MetricsEventBus {
     /**
      * Full lifecycle post, success and failure conditions can be customized
      *
-     * @param event      event to post.
-     * @param targetSupplier   original processing result supplier
-     * @param trFunction Custom event success criteria, judged according to the returned boolean type
-     * @param <T>        Biz result type
+     * @param event          event to post.
+     * @param targetSupplier original processing result supplier
+     * @param trFunction     Custom event success criteria, judged according to the returned boolean type
+     * @param <T>            Biz result type
      * @return Biz result
      */
     public static <T> T post(MetricsEvent event, Supplier<T> targetSupplier, Function<T, Boolean> trFunction) {
-        if (!(event.getSource() instanceof ApplicationModel)) {
+        if (event.getSource() == null) {
             return targetSupplier.get();
         }
-        ApplicationModel applicationModel = (ApplicationModel) event.getSource();
+        ApplicationModel applicationModel = event.getSource();
         if (applicationModel.isDestroyed()) {
             return targetSupplier.get();
         }
