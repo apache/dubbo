@@ -16,14 +16,41 @@
  */
 package org.apache.dubbo.common.model.person;
 
-public class PersonGenericInfo<T> extends PersonInfo {
-    private T data;
+import java.io.Serializable;
 
-    public T getData() {
-        return data;
+public class Dgeneric<T,Y,Z> implements Serializable {
+    public static String NAME = "D";
+
+    private String name = NAME;
+    private T t;
+    private Y y;
+    private Z z;
+
+    public T getT() {
+        return t;
     }
 
-    public void setData(T data) {
-        this.data = data;
+    public void setT(T t) {
+        this.t = t;
+    }
+
+    public Y getY() {
+        return y;
+    }
+
+    public void setY(Y y) {
+        this.y = y;
+    }
+
+    public Z getZ() {
+        return z;
+    }
+
+    public void setZ(Z z) {
+        this.z = z;
+    }
+
+    public String getName() {
+        return name;
     }
 }
