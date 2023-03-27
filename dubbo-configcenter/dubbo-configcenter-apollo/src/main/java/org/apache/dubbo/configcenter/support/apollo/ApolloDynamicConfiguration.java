@@ -33,6 +33,8 @@ import com.ctrip.framework.apollo.core.enums.ConfigFileFormat;
 import com.ctrip.framework.apollo.enums.ConfigSourceType;
 import com.ctrip.framework.apollo.enums.PropertyChangeType;
 import com.ctrip.framework.apollo.model.ConfigChange;
+import org.apache.dubbo.metrics.collector.ConfigCenterMetricsCollector;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -76,9 +78,11 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
     private final Config dubboConfig;
     private final ConfigFile dubboConfigFile;
     private final ConcurrentMap<String, ApolloListener> listeners = new ConcurrentHashMap<>();
+    private final ApplicationModel applicationModel;
 
-    ApolloDynamicConfiguration(URL url) {
+    ApolloDynamicConfiguration(URL url, ApplicationModel applicationModel) {
         this.url = url;
+        this.applicationModel = applicationModel;
         // Instead of using Dubbo's configuration, I would suggest use the original configuration method Apollo provides.
         String configEnv = url.getParameter(APOLLO_ENV_KEY);
         String configAddr = getAddressWithProtocolPrefix(url);
@@ -245,6 +249,10 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
 
                 ConfigChangedEvent event = new ConfigChangedEvent(key, change.getNamespace(), change.getNewValue(), getChangeType(change));
                 listeners.forEach(listener -> listener.process(event));
+
+                ConfigCenterMetricsCollector collector =
+                    applicationModel.getBeanFactory().getBean(ConfigCenterMetricsCollector.class);
+                collector.increaseUpdated("apollo", applicationModel.getApplicationName(), event);
             }
         }
 
