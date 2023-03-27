@@ -43,8 +43,8 @@ public class UnaryClientCallListener implements ClientCall.Listener {
         AppResponse result = new AppResponse();
         result.setObjectAttachments(trailers);
         if (status.isOk()) {
-            Object exceptionCode = trailers.get(TripleHeaderEnum.TRI_HEADER_EXCEPTION_CODE.getHeader());
-            if (appResponse instanceof Exception && exceptionCode == null) {
+           Integer exceptionCode = extractExceptionCode(trailers);
+            if (exceptionCode != 0) {
                 result.setException((Exception) appResponse);
             } else {
                 result.setValue(appResponse);
@@ -53,6 +53,18 @@ public class UnaryClientCallListener implements ClientCall.Listener {
             result.setException(status.asException());
         }
         future.received(status, result);
+    }
+
+    private Integer extractExceptionCode(Map<String, Object> trailers) {
+        Integer code = 0;
+        if (!(appResponse instanceof Exception)) {
+            return code;
+        }
+        Object exceptionCode = trailers.get(TripleHeaderEnum.TRI_HEADER_EXCEPTION_CODE.getHeader());
+        if (exceptionCode instanceof String) {
+            code = Integer.parseInt((String) exceptionCode);
+        }
+        return code;
     }
 
     @Override
