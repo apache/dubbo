@@ -30,10 +30,10 @@ public class MigrationRuleHandler<T> {
     public static final String DUBBO_SERVICEDISCOVERY_MIGRATION = "dubbo.application.migration.step";
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(MigrationRuleHandler.class);
 
-    private final MigrationClusterInvoker<T> migrationInvoker;
-    private volatile MigrationStep currentStep;
-    private volatile Float currentThreshold = 0f;
-    private final URL consumerURL;
+    private MigrationClusterInvoker<T> migrationInvoker;
+    private MigrationStep currentStep;
+    private Float currentThreshold = 0f;
+    private URL consumerURL;
 
     public MigrationRuleHandler(MigrationClusterInvoker<T> invoker, URL url) {
         this.migrationInvoker = invoker;
@@ -113,6 +113,12 @@ public class MigrationRuleHandler<T> {
 
     private void setMigrationRule(MigrationRule rule) {
         this.migrationInvoker.setMigrationRule(rule);
+    }
+
+    private Float getMigrationThreshold(MigrationRule rule, Float threshold) {
+        Float configuredThreshold = rule.getThreshold(consumerURL);
+        threshold = configuredThreshold == null ? threshold : configuredThreshold;
+        return threshold;
     }
 
     private void setCurrentStepAndThreshold(MigrationStep currentStep, Float currentThreshold) {

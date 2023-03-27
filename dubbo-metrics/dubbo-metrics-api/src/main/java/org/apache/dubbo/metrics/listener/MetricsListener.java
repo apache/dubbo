@@ -33,7 +33,6 @@ public interface MetricsListener<E extends MetricsEvent> {
      *
      * @param event BaseMetricsEvent
      */
-    default void onEvent(E event) {
-    }
+    void onEvent(E event);
 
 }

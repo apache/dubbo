@@ -16,6 +16,9 @@
  */
 package org.apache.dubbo.config;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.config.nested.AggregationConfig;
@@ -23,9 +26,6 @@ import org.apache.dubbo.config.nested.PrometheusConfig;
 import org.apache.dubbo.config.nested.HistogramConfig;
 import org.apache.dubbo.config.support.Nested;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * MetricsConfig
@@ -40,16 +40,6 @@ public class MetricsConfig extends AbstractConfig {
      * Enable jvm metrics when collecting.
      */
     private Boolean enableJvmMetrics;
-
-    /**
-     * Enable registry metrics.
-     */
-    private Boolean enableRegistryMetrics;
-
-    /**
-     * Enable metadata metrics.
-     */
-    private Boolean enableMetadataMetrics;
 
     /**
      * @deprecated After metrics config is refactored.
@@ -112,14 +102,6 @@ public class MetricsConfig extends AbstractConfig {
         this.enableJvmMetrics = enableJvmMetrics;
     }
 
-    public Boolean getEnableRegistryMetrics() {
-        return enableRegistryMetrics;
-    }
-
-    public void setEnableRegistryMetrics(Boolean enableRegistryMetrics) {
-        this.enableRegistryMetrics = enableRegistryMetrics;
-    }
-
     public String getPort() {
         return port;
     }
@@ -166,14 +148,6 @@ public class MetricsConfig extends AbstractConfig {
 
     public void setExportServicePort(Integer exportServicePort) {
         this.exportServicePort = exportServicePort;
-    }
-
-    public Boolean getEnableMetadataMetrics() {
-        return enableMetadataMetrics;
-    }
-
-    public void setEnableMetadataMetrics(Boolean enableMetadataMetrics) {
-        this.enableMetadataMetrics = enableMetadataMetrics;
     }
 }
 

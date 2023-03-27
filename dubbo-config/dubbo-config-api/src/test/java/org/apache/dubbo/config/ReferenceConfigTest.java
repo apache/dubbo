@@ -422,6 +422,7 @@ class ReferenceConfigTest {
         Invoker<?> withCount = ((MockClusterInvoker<?>) mockInvoker).getDirectory().getAllInvokers().get(0);
 
         Assertions.assertTrue(withCount instanceof ReferenceCountInvokerWrapper);
+        Assertions.assertTrue(((ReferenceCountInvokerWrapper<?>) withCount).getInvoker() instanceof ListenerInvokerWrapper);
         Invoker<?> withFilter = ((ReferenceCountInvokerWrapper<?>) withCount).getInvoker();
         Assertions.assertTrue(withFilter instanceof ListenerInvokerWrapper
             || withFilter instanceof FilterChainBuilder.CallbackRegistrationInvoker);
@@ -435,7 +436,7 @@ class ReferenceConfigTest {
             Invoker invoker = originalInvoker.getInvoker();
             Assertions.assertTrue(invoker instanceof InjvmInvoker);
         }
-        URL url = withFilter.getUrl();
+        URL url = withCount.getUrl();
         Assertions.assertEquals("application1", url.getParameter("application"));
         Assertions.assertEquals("value1", url.getParameter("key1"));
         Assertions.assertEquals("value2", url.getParameter("key2"));

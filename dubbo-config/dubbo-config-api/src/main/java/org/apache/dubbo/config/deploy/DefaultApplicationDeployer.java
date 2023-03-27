@@ -374,7 +374,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 MetricsReporterFactory metricsReporterFactory = getExtensionLoader(MetricsReporterFactory.class).getAdaptiveExtension();
                 MetricsReporter metricsReporter = metricsReporterFactory.createMetricsReporter(metricsConfig.toUrl());
                 metricsReporter.init();
-                applicationModel.getBeanFactory().registerBean(metricsReporter);
             }
         }
     }
@@ -845,13 +844,13 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     private void registerServiceInstance() {
         TimePair timePair = TimePair.start();
         GlobalMetricsEventMulticaster eventMulticaster = applicationModel.getBeanFactory().getBean(GlobalMetricsEventMulticaster.class);
-        eventMulticaster.publishEvent(new RegistryEvent.MetricsApplicationRegisterEvent(applicationModel, timePair));
+        eventMulticaster.publishEvent(new RegistryEvent.MetricsRegisterEvent(applicationModel, timePair));
         try {
             registered = true;
             ServiceInstanceMetadataUtils.registerMetadataAndInstance(applicationModel);
-            eventMulticaster.publishFinishEvent(new RegistryEvent.MetricsApplicationRegisterEvent(applicationModel, timePair));
+            eventMulticaster.publishFinishEvent(new RegistryEvent.MetricsRegisterEvent(applicationModel, timePair));
         } catch (Exception e) {
-            eventMulticaster.publishErrorEvent(new RegistryEvent.MetricsApplicationRegisterEvent(applicationModel, timePair));
+            eventMulticaster.publishErrorEvent(new RegistryEvent.MetricsRegisterEvent(applicationModel, timePair));
             logger.error(CONFIG_REGISTER_INSTANCE_ERROR, "configuration server disconnected", "", "Register instance error.", e);
         }
         if (registered) {
@@ -1103,6 +1102,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 return;
             }
             setStarted();
+            startMetricsCollector();
             if (logger.isInfoEnabled()) {
                 logger.info(getIdentifier() + " is ready.");
             }
@@ -1118,6 +1118,11 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             // complete future
             completeStartFuture(true);
         }
+    }
+
+    private void startMetricsCollector(){
+        DefaultMetricsCollector collector = applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class);
+        collector.registryDefaultSample();
     }
 
     private void completeStartFuture(boolean success) {

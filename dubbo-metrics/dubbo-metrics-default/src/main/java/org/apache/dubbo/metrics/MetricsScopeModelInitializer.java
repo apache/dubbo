@@ -34,7 +34,7 @@ public class MetricsScopeModelInitializer implements ScopeModelInitializer {
 
     @Override
     public void initializeApplicationModel(ApplicationModel applicationModel) {
-        ScopeBeanFactory beanFactory = applicationModel.getBeanFactory();
+        ScopeBeanFactory beanFactory = applicationModel.getFrameworkModel().getBeanFactory();
         beanFactory.registerBean(DefaultMetricsCollector.class);
         beanFactory.registerBean(GlobalMetricsEventMulticaster.class);
     }

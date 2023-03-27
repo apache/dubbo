@@ -31,7 +31,7 @@ import static org.apache.dubbo.common.constants.MetricsConstants.METRIC_FILTER_S
 
 public class MethodMetricsInterceptor {
 
-    private final MethodMetricsSampler sampler;
+    private MethodMetricsSampler sampler;
 
     public MethodMetricsInterceptor(MethodMetricsSampler sampler) {
         this.sampler = sampler;
