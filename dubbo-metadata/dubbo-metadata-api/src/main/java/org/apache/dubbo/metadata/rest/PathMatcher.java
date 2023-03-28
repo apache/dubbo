@@ -96,6 +96,9 @@ public class PathMatcher {
         return hasPathVariable;
     }
 
+    public Integer getPort() {
+        return port;
+    }
 
     @Override
     public boolean equals(Object o) {
