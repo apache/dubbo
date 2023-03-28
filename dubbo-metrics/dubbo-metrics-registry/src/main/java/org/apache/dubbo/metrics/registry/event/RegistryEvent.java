@@ -17,10 +17,9 @@
 
 package org.apache.dubbo.metrics.registry.event;
 
-import org.apache.dubbo.metrics.event.MetricsEvent;
-import org.apache.dubbo.metrics.event.TimeCounter;
+import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
+import org.apache.dubbo.metrics.event.TimeCounterEvent;
 import org.apache.dubbo.metrics.model.MetricsKey;
-import org.apache.dubbo.metrics.model.TimePair;
 import org.apache.dubbo.metrics.registry.collector.RegistryMetricsCollector;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
@@ -29,16 +28,18 @@ import java.util.Map;
 /**
  * Registry related events
  */
-public class RegistryEvent extends MetricsEvent implements TimeCounter {
-    private final TimePair timePair;
+public class RegistryEvent extends TimeCounterEvent {
     private final RegistryMetricsCollector collector;
-    private final boolean available;
 
-    public RegistryEvent(ApplicationModel applicationModel, TimePair timePair) {
+    public RegistryEvent(ApplicationModel applicationModel) {
         super(applicationModel);
-        this.timePair = timePair;
-        this.collector = applicationModel.getBeanFactory().getBean(RegistryMetricsCollector.class);
-        this.available = this.collector != null && collector.isCollectEnabled();
+        ScopeBeanFactory beanFactory = getSource().getBeanFactory();
+        if (beanFactory.isDestroyed()) {
+            this.collector = null;
+        } else {
+            this.collector = beanFactory.getBean(RegistryMetricsCollector.class);
+            super.setAvailable(this.collector != null && collector.isCollectEnabled());
+        }
     }
 
     public ApplicationModel getSource() {
@@ -49,14 +50,6 @@ public class RegistryEvent extends MetricsEvent implements TimeCounter {
         return collector;
     }
 
-    public boolean isAvailable() {
-        return available;
-    }
-
-    @Override
-    public TimePair getTimePair() {
-        return timePair;
-    }
 
     public enum ApplicationType {
         R_TOTAL(MetricsKey.REGISTER_METRIC_REQUESTS),
@@ -135,31 +128,36 @@ public class RegistryEvent extends MetricsEvent implements TimeCounter {
 
     public static class MetricsApplicationRegisterEvent extends RegistryEvent {
 
-        public MetricsApplicationRegisterEvent(ApplicationModel applicationModel, TimePair timePair) {
-            super(applicationModel, timePair);
+        public MetricsApplicationRegisterEvent(ApplicationModel applicationModel) {
+            super(applicationModel);
         }
 
     }
 
     public static class MetricsSubscribeEvent extends RegistryEvent {
 
-        public MetricsSubscribeEvent(ApplicationModel applicationModel, TimePair timePair) {
-            super(applicationModel, timePair);
+        public MetricsSubscribeEvent(ApplicationModel applicationModel) {
+            super(applicationModel);
         }
 
     }
 
     public static class MetricsNotifyEvent extends RegistryEvent {
 
-        private final Map<String, Integer> lastNumMap;
+        private Map<String, Integer> lastNumMap;
 
-        public MetricsNotifyEvent(ApplicationModel applicationModel, TimePair timePair, Map<String, Integer> lastNumMap) {
-            super(applicationModel, timePair);
-            this.lastNumMap = lastNumMap;
+        public MetricsNotifyEvent(ApplicationModel applicationModel) {
+            super(applicationModel);
         }
 
         public Map<String, Integer> getLastNotifyNum() {
             return lastNumMap;
+        }
+
+        @Override
+        @SuppressWarnings("unchecked")
+        public void customAfterPost(Object postResult) {
+            this.lastNumMap = (Map<String, Integer>) postResult;
         }
     }
 
@@ -173,7 +171,7 @@ public class RegistryEvent extends MetricsEvent implements TimeCounter {
         }
 
         public MetricsDirectoryEvent(ApplicationModel applicationModel, ApplicationType type, int size) {
-            super(applicationModel, TimePair.empty());
+            super(applicationModel);
             this.type = type;
             this.size = size;
         }
@@ -192,8 +190,8 @@ public class RegistryEvent extends MetricsEvent implements TimeCounter {
         private final int size;
         private final String serviceKey;
 
-        public MetricsServiceRegisterEvent(ApplicationModel applicationModel, TimePair timePair, String serviceKey, int size) {
-            super(applicationModel, timePair);
+        public MetricsServiceRegisterEvent(ApplicationModel applicationModel, String serviceKey, int size) {
+            super(applicationModel);
             this.size = size;
             this.serviceKey = serviceKey;
         }
@@ -211,8 +209,8 @@ public class RegistryEvent extends MetricsEvent implements TimeCounter {
 
         private final String uniqueServiceName;
 
-        public MetricsServiceSubscribeEvent(ApplicationModel applicationModel, TimePair timePair, String uniqueServiceName) {
-            super(applicationModel, timePair);
+        public MetricsServiceSubscribeEvent(ApplicationModel applicationModel, String uniqueServiceName) {
+            super(applicationModel);
             this.uniqueServiceName = uniqueServiceName;
         }
 

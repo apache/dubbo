@@ -52,8 +52,7 @@ import org.apache.dubbo.metadata.report.MetadataReportFactory;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
 import org.apache.dubbo.metrics.collector.ConfigCenterMetricsCollector;
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
-import org.apache.dubbo.metrics.event.GlobalMetricsEventMulticaster;
-import org.apache.dubbo.metrics.model.TimePair;
+import org.apache.dubbo.metrics.event.MetricsEventBus;
 import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.metrics.report.MetricsReporter;
 import org.apache.dubbo.metrics.report.MetricsReporterFactory;
@@ -841,17 +840,18 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     private final AtomicInteger serviceRefreshState = new AtomicInteger(0);
 
     private void registerServiceInstance() {
-        TimePair timePair = TimePair.start();
-        GlobalMetricsEventMulticaster eventMulticaster = applicationModel.getBeanFactory().getBean(GlobalMetricsEventMulticaster.class);
-        eventMulticaster.publishEvent(new RegistryEvent.MetricsApplicationRegisterEvent(applicationModel, timePair));
         try {
             registered = true;
-            ServiceInstanceMetadataUtils.registerMetadataAndInstance(applicationModel);
-            eventMulticaster.publishFinishEvent(new RegistryEvent.MetricsApplicationRegisterEvent(applicationModel, timePair));
+            MetricsEventBus.post(new RegistryEvent.MetricsApplicationRegisterEvent(applicationModel),
+                () -> {
+                    ServiceInstanceMetadataUtils.registerMetadataAndInstance(applicationModel);
+                    return null;
+                }
+            );
         } catch (Exception e) {
-            eventMulticaster.publishErrorEvent(new RegistryEvent.MetricsApplicationRegisterEvent(applicationModel, timePair));
             logger.error(CONFIG_REGISTER_INSTANCE_ERROR, "configuration server disconnected", "", "Register instance error.", e);
         }
+
         if (registered) {
             // scheduled task for updating Metadata and ServiceInstance
             asyncMetadataFuture = frameworkExecutorRepository.getSharedScheduledExecutor().scheduleWithFixedDelay(() -> {

@@ -460,10 +460,6 @@
             <groupId>com.alibaba.fastjson2</groupId>
             <artifactId>fastjson2</artifactId>
         </dependency>
-        <dependency>
-            <groupId>com.tdunning</groupId>
-            <artifactId>t-digest</artifactId>
-        </dependency>
 
         <!-- Temporarily add this part to exclude transitive dependency -->
         <dependency>
