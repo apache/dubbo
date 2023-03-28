@@ -19,5 +19,5 @@ package org.apache.dubbo.metadata.rest.tag;
 /**
  *  for @RequestParam or @QueryParam class no found
  */
-public class ParamTag {
+public interface ParamTag {
 }

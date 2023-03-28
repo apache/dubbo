@@ -28,20 +28,19 @@ public class JaxrsRestDoubleCheckTest {
 
 
     @Test
-    public void testDoubleCheckException() {
+    void testDoubleCheckException() {
 
-        Assertions.assertThrows(IllegalArgumentException.class,()->{
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
             ServiceRestMetadata resolve = new ServiceRestMetadata();
             resolve.setServiceInterface(JaxrsRestDoubleCheckService.class.getName());
-            instance.resolve(JaxrsRestDoubleCheckService.class,resolve);
+            instance.resolve(JaxrsRestDoubleCheckService.class, resolve);
         });
 
-        Assertions.assertThrows(IllegalArgumentException.class,()->{
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
             ServiceRestMetadata resolve = new ServiceRestMetadata();
             resolve.setServiceInterface(JaxrsRestDoubleCheckContainsPathVariableService.class.getName());
-            instance.resolve(JaxrsRestDoubleCheckContainsPathVariableService.class,resolve);
+            instance.resolve(JaxrsRestDoubleCheckContainsPathVariableService.class, resolve);
         });
-
 
 
     }

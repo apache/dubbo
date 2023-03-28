@@ -26,7 +26,7 @@ import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 
 public class NumberUtilsTest {
-    public void testParseNumber(String numberStr) {
+    void testParseNumber(String numberStr) {
         int integer = NumberUtils.parseNumber(numberStr, Integer.class);
 
         Assertions.assertEquals(1, integer);
@@ -67,7 +67,7 @@ public class NumberUtilsTest {
     }
 
     @Test
-    public void testNumberToBytes() {
+    void testNumberToBytes() {
         byte[] except = {49};
         byte[] bytes = (byte[]) DataParseUtils.objectTextConvertToByteArray(Integer.valueOf("1"));
 
@@ -116,7 +116,7 @@ public class NumberUtilsTest {
     }
 
     @Test
-    public void testNumberStr() {
+    void testNumberStr() {
         testParseNumber("1");
         testParseNumber("0X0001");
         testParseNumber("0x0001");
@@ -126,7 +126,7 @@ public class NumberUtilsTest {
 
 
     @Test
-    public void testUnHexNumber() {
+    void testUnHexNumber() {
         String numberStr = "1";
         double e = NumberUtils.parseNumber(numberStr, Double.class);
 
@@ -146,7 +146,7 @@ public class NumberUtilsTest {
     }
 
     @Test
-    public void testNegative() {
+    void testNegative() {
 
         Integer integer = NumberUtils.parseNumber("-0X1", int.class);
         Assertions.assertEquals(-1, integer);
@@ -156,7 +156,7 @@ public class NumberUtilsTest {
     }
 
     @Test
-    public void testException() {
+    void testException() {
 
         Assertions.assertThrowsExactly(IllegalArgumentException.class, () -> {
             Object abc = NumberUtils.parseNumber("abc", Object.class);
