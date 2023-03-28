@@ -15,23 +15,20 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.metrics.metrics.event;
+package org.apache.dubbo.metrics.sample;
 
-import org.apache.dubbo.metrics.event.MetricsEvent;
-import org.apache.dubbo.metrics.event.RequestEvent;
-import org.apache.dubbo.metrics.model.MethodMetric;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.apache.dubbo.metrics.model.MetricsCategory;
+import org.apache.dubbo.metrics.model.sample.MetricSample;
 
-class RequestEventTest {
+import java.util.Map;
 
-    @Test
-    void testNewEvent() {
-        MethodMetric metric = new MethodMetric();
-        MetricsEvent.Type type = MetricsEvent.Type.TOTAL;
-        RequestEvent event = new RequestEvent(metric, type);
+public class HistogramMetricSample extends MetricSample {
 
-        Assertions.assertEquals(event.getSource(), metric);
-        Assertions.assertEquals(event.getType(), type);
+    public HistogramMetricSample(String name, String description, Map<String, String> tags, MetricsCategory category) {
+        super(name, description, tags, Type.TIMER, category);
+    }
+
+    public HistogramMetricSample(String name, String description, Map<String, String> tags, Type type, MetricsCategory category, String baseUnit) {
+        super(name, description, tags, type, category, baseUnit);
     }
 }

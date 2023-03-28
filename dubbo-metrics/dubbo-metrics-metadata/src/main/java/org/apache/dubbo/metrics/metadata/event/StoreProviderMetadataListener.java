@@ -27,7 +27,7 @@ public class StoreProviderMetadataListener implements MetricsLifeListener<Metada
 
     @Override
     public boolean isSupport(MetricsEvent event) {
-        return event instanceof MetadataEvent.StoreProviderMetadataEvent && ((MetadataEvent) event).isAvailable();
+        return event instanceof MetadataEvent.StoreProviderMetadataEvent && event.isAvailable();
     }
 
     @Override

@@ -14,15 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.rpc.executor;
 
-package org.apache.dubbo.metrics.event;
+import org.apache.dubbo.common.URL;
 
-import org.apache.dubbo.metrics.model.TimePair;
-
-/**
- *  Mark certain types of events, allow automatic recording of start and end times, and provide time pairs
- */
-public interface TimeCounter {
-
-    TimePair getTimePair();
+public class DefaultIsolationExecutorSupportFactory implements IsolationExecutorSupportFactory {
+    @Override
+    public ExecutorSupport createIsolationExecutorSupport(URL url) {
+        return new DefaultExecutorSupport(url);
+    }
 }

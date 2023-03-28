@@ -43,7 +43,7 @@ import java.util.concurrent.locks.Lock;
  * returned from them are of process scope. If you want to support multiple dubbo servers in one
  * single process, you may need to refactor those three classes.
  * <p>
- * Represent a application which is using Dubbo and store basic metadata info for using
+ * Represent an application which is using Dubbo and store basic metadata info for using
  * during the processing of RPC invoking.
  * <p>
  * ApplicationModel includes many ProviderModel which is about published services

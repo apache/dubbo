@@ -14,27 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.rpc.executor;
 
-package org.apache.dubbo.metrics.event;
+import java.util.concurrent.Executor;
 
-/**
- * RequestEvent.
- */
-public class RequestEvent extends MetricsEvent {
-    private Type type;
-
-    public RequestEvent(Object source, Type type) {
-        super(source);
-        this.type = type;
+public class Mock1ExecutorSupport implements ExecutorSupport {
+    @Override
+    public Executor getExecutor(Object data) {
+        return null;
     }
-
-    public Type getType() {
-        return type;
-    }
-
-    public void setType(Type type) {
-        this.type = type;
-    }
-
-
 }

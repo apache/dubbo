@@ -14,23 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.rpc.executor;
 
-package org.apache.dubbo.metrics.event;
+import org.apache.dubbo.common.URL;
 
-public class ApplicationEvent extends MetricsEvent{
-    private ApplicationEvent.Type type;
-
-    public ApplicationEvent(Object source, ApplicationEvent.Type type) {
-        super(source);
-        this.type = type;
+public class Mock1IsolationExecutorSupportFactory implements IsolationExecutorSupportFactory {
+    @Override
+    public ExecutorSupport createIsolationExecutorSupport(URL url) {
+        return new Mock1ExecutorSupport();
     }
-
-    public ApplicationEvent.Type getType() {
-        return type;
-    }
-
-    public void setType(ApplicationEvent.Type type) {
-        this.type = type;
-    }
-
 }
