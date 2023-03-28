@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Test;
 public class PathMatcherTest {
 
     @Test
-    public void testPathMatcher() {
+    void testPathMatcher() {
         PathMatcher pathMatherMeta = new PathMatcher("/a/b/c/{path1}/d/{path2}/e");
 
 
@@ -44,7 +44,7 @@ public class PathMatcherTest {
     }
 
     @Test
-    public void testEqual() {
+    void testEqual() {
         PathMatcher pathMatherMeta = new PathMatcher("/a/b/c");
         pathMatherMeta.setContextPath("/context");
         PathMatcher pathMatherMeta1 = new PathMatcher("/a/b/d");
@@ -55,14 +55,14 @@ public class PathMatcherTest {
         pathMatherMeta1 = new PathMatcher("/a/b/c");
         pathMatherMeta1.setContextPath("/context");
 
-        Assertions.assertEquals(pathMatherMeta,pathMatherMeta1);
+        Assertions.assertEquals(pathMatherMeta, pathMatherMeta1);
 
         pathMatherMeta.setContextPath("context");
 
         pathMatherMeta1.setContextPath("context");
 
 
-        Assertions.assertEquals(pathMatherMeta,pathMatherMeta1);
-        Assertions.assertEquals(pathMatherMeta.toString(),pathMatherMeta1.toString());
+        Assertions.assertEquals(pathMatherMeta, pathMatherMeta1);
+        Assertions.assertEquals(pathMatherMeta.toString(), pathMatherMeta1.toString());
     }
 }

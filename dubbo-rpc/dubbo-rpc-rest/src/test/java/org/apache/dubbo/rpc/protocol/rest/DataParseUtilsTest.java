@@ -24,7 +24,7 @@ import java.io.ByteArrayOutputStream;
 
 public class DataParseUtilsTest {
     @Test
-    public void testJsonConvert() throws Exception {
+    void testJsonConvert() throws Exception {
 
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         DataParseUtils.writeJsonContent(User.getInstance(), byteArrayOutputStream);
@@ -36,7 +36,7 @@ public class DataParseUtilsTest {
     }
 
     @Test
-    public void testStr() {
+    void testStr() {
         Object convert = DataParseUtils.stringTypeConvert(boolean.class, "true");
 
         Assertions.assertEquals(Boolean.TRUE, convert);
@@ -56,7 +56,6 @@ public class DataParseUtilsTest {
         convert = DataParseUtils.stringTypeConvert(Integer.class, "1");
 
         Assertions.assertEquals(1, convert);
-
 
 
     }

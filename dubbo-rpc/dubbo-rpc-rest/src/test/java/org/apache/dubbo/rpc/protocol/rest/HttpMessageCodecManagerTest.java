@@ -29,7 +29,7 @@ import java.io.ByteArrayOutputStream;
 public class HttpMessageCodecManagerTest {
 
     @Test
-    public void testCodec() throws Exception {
+    void testCodec() throws Exception {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 
         RegistrationResult registrationResult = new RegistrationResult();
@@ -46,11 +46,11 @@ public class HttpMessageCodecManagerTest {
 
         MediaType mediaType = messageCodecResultPair.getMediaType();
 
-        Assertions.assertEquals(MediaType.APPLICATION_JSON_VALUE,mediaType);
+        Assertions.assertEquals(MediaType.APPLICATION_JSON_VALUE, mediaType);
 
         XMLCodec xmlCodec = new XMLCodec();
 
-        Assertions.assertEquals(false,xmlCodec.typeSupport(null));
+        Assertions.assertEquals(false, xmlCodec.typeSupport(null));
 
 
     }

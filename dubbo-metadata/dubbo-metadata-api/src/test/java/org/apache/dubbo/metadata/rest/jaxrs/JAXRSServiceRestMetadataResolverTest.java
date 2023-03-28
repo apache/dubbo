@@ -134,7 +134,7 @@ class JAXRSServiceRestMetadataResolverTest {
 
 
     @Test
-    public void testJaxrsPathPattern() {
+    void testJaxrsPathPattern() {
         Class service = AnotherUserRestService.class;
         ServiceRestMetadata jaxrsRestMetadata = new ServiceRestMetadata();
         jaxrsRestMetadata.setServiceInterface(service.getName());
