@@ -16,6 +16,12 @@
  */
 package org.apache.dubbo.common.utils;
 
+import org.apache.dubbo.common.config.ConfigurationUtils;
+import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -53,11 +59,6 @@ import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import org.apache.dubbo.common.config.ConfigurationUtils;
-import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_REFLECTIVE_OPERATION_FAILED;
 import static org.apache.dubbo.common.utils.ClassUtils.isAssignableFrom;
 
@@ -78,13 +79,15 @@ import static org.apache.dubbo.common.utils.ClassUtils.isAssignableFrom;
 public class PojoUtils {
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(PojoUtils.class);
-    private static final ConcurrentMap<String, Method> NAME_METHODS_CACHE = new ConcurrentHashMap<String, Method>();
-    private static final ConcurrentMap<Class<?>, ConcurrentMap<String, Field>> CLASS_FIELD_CACHE = new ConcurrentHashMap<Class<?>, ConcurrentMap<String, Field>>();
+    private static final ConcurrentMap<String, Method> NAME_METHODS_CACHE = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<Class<?>, ConcurrentMap<String, Field>> CLASS_FIELD_CACHE = new ConcurrentHashMap<>();
 
-    private static final ConcurrentMap<String, Object> CLASS_NOT_FOUND_CACHE = new ConcurrentHashMap<String, Object>();
+    private static final ConcurrentMap<String, Object> CLASS_NOT_FOUND_CACHE = new ConcurrentHashMap<>();
 
     private static final Object NOT_FOUND_VALUE = new Object();
-    private static final boolean GENERIC_WITH_CLZ = Boolean.parseBoolean(ConfigurationUtils.getProperty(CommonConstants.GENERIC_WITH_CLZ_KEY, "true"));
+    private static final boolean GENERIC_WITH_CLZ = Boolean.parseBoolean(
+        ConfigurationUtils.getProperty(ApplicationModel.defaultModel(), CommonConstants.GENERIC_WITH_CLZ_KEY, "true"));
+
     private static final List<Class<?>> CLASS_CAN_BE_STRING = Arrays.asList(Byte.class, Short.class, Integer.class,
         Long.class, Float.class, Double.class, Boolean.class, Character.class);
 
@@ -121,7 +124,7 @@ public class PojoUtils {
     }
 
     public static Object generalize(Object pojo) {
-        return generalize(pojo, new IdentityHashMap<Object, Object>());
+        return generalize(pojo, new IdentityHashMap<>());
     }
 
     @SuppressWarnings("unchecked")
@@ -173,7 +176,7 @@ public class PojoUtils {
         if (pojo instanceof Collection<?>) {
             Collection<Object> src = (Collection<Object>) pojo;
             int len = src.size();
-            Collection<Object> dest = (pojo instanceof List<?>) ? new ArrayList<Object>(len) : new HashSet<Object>(len);
+            Collection<Object> dest = (pojo instanceof List<?>) ? new ArrayList<>(len) : new HashSet<>(len);
             history.put(pojo, dest);
             for (Object obj : src) {
                 dest.add(generalize(obj, history));
@@ -189,7 +192,7 @@ public class PojoUtils {
             }
             return dest;
         }
-        Map<String, Object> map = new HashMap<String, Object>();
+        Map<String, Object> map = new HashMap<>();
         history.put(pojo, map);
         if (GENERIC_WITH_CLZ) {
             map.put("class", pojo.getClass().getName());
@@ -228,16 +231,16 @@ public class PojoUtils {
     }
 
     public static Object realize(Object pojo, Class<?> type) {
-        return realize0(pojo, type, null, new IdentityHashMap<Object, Object>());
+        return realize0(pojo, type, null, new IdentityHashMap<>());
     }
 
     public static Object realize(Object pojo, Class<?> type, Type genericType) {
-        return realize0(pojo, type, genericType, new IdentityHashMap<Object, Object>());
+        return realize0(pojo, type, genericType, new IdentityHashMap<>());
     }
 
     private static class PojoInvocationHandler implements InvocationHandler {
 
-        private Map<Object, Object> map;
+        private final Map<Object, Object> map;
 
         public PojoInvocationHandler(Map<Object, Object> map) {
             this.map = map;
@@ -259,7 +262,7 @@ public class PojoUtils {
                 value = map.get(methodName.substring(0, 1).toLowerCase() + methodName.substring(1));
             }
             if (value instanceof Map<?, ?> && !Map.class.isAssignableFrom(method.getReturnType())) {
-                value = realize0((Map<String, Object>) value, method.getReturnType(), null, new IdentityHashMap<Object, Object>());
+                value = realize0(value, method.getReturnType(), null, new IdentityHashMap<>());
             }
             return value;
         }
@@ -268,10 +271,10 @@ public class PojoUtils {
     @SuppressWarnings("unchecked")
     private static Collection<Object> createCollection(Class<?> type, int len) {
         if (type.isAssignableFrom(ArrayList.class)) {
-            return new ArrayList<Object>(len);
+            return new ArrayList<>(len);
         }
         if (type.isAssignableFrom(HashSet.class)) {
-            return new HashSet<Object>(len);
+            return new HashSet<>(len);
         }
         if (!type.isInterface() && !Modifier.isAbstract(type.getModifiers())) {
             try {
@@ -280,7 +283,7 @@ public class PojoUtils {
                 // ignore
             }
         }
-        return new ArrayList<Object>();
+        return new ArrayList<>();
     }
 
     private static Map createMap(Map src) {
@@ -318,7 +321,7 @@ public class PojoUtils {
         }
 
         if (result == null) {
-            result = new HashMap<Object, Object>();
+            result = new HashMap<>();
         }
 
         return result;

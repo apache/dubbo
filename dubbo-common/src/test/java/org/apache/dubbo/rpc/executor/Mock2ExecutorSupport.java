@@ -14,19 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.rpc.executor;
 
-package org.apache.dubbo.common.threadlocal;
+import java.util.concurrent.Executor;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
-class NamedInternalThreadFactoryTest {
-
-    @Test
-    void newThread() throws Exception {
-        NamedInternalThreadFactory namedInternalThreadFactory = new NamedInternalThreadFactory();
-        Thread t = namedInternalThreadFactory.newThread(() -> { });
-
-        Assertions.assertEquals(t.getClass(), InternalThread.class, "thread is not InternalThread");
+public class Mock2ExecutorSupport implements ExecutorSupport {
+    @Override
+    public Executor getExecutor(Object data) {
+        return null;
     }
 }
