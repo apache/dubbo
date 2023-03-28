@@ -104,6 +104,11 @@ public class DemoServiceImpl implements DemoService {
         return header;
     }
 
+    @Override
+    public int headerInt(int header) {
+        return header;
+    }
+
     @GET
     @Path("/hello")
     @Override

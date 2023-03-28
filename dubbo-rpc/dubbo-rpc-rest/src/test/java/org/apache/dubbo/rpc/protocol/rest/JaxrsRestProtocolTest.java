@@ -95,6 +95,8 @@ class JaxrsRestProtocolTest {
 
         String header = client.header("header test");
         Assertions.assertEquals("header test", header);
+
+        Assertions.assertEquals(1, client.headerInt(1));
         invoker.destroy();
         exporter.unexport();
     }

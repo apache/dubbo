@@ -112,6 +112,9 @@ public class SpringMvcRestProtocolTest {
 
         String header = client.testHeader("header");
         Assertions.assertEquals("header", header);
+
+        String headerInt = client.testHeaderInt(1);
+        Assertions.assertEquals("1", headerInt);
         invoker.destroy();
         exporter.unexport();
     }

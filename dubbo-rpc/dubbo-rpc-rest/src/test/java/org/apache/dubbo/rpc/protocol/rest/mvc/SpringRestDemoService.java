@@ -50,4 +50,7 @@ public interface SpringRestDemoService {
 
     @RequestMapping(value = "/testHeader", method = RequestMethod.POST, consumes = MediaType.TEXT_PLAIN_VALUE)
     String testHeader(@RequestHeader String header);
+
+    @RequestMapping(value = "/testHeaderInt", method = RequestMethod.GET, consumes = MediaType.TEXT_PLAIN_VALUE)
+    String testHeaderInt(@RequestHeader int header);
 }

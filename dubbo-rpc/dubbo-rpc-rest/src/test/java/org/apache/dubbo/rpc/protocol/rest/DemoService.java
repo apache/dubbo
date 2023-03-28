@@ -99,4 +99,9 @@ public interface DemoService {
     @Path("/header")
     @Consumes({javax.ws.rs.core.MediaType.TEXT_PLAIN})
     String header(@HeaderParam("header") String header);
+
+    @POST
+    @Path("/headerInt")
+    @Consumes({javax.ws.rs.core.MediaType.TEXT_PLAIN})
+    int headerInt(@HeaderParam("header") int header);
 }
