@@ -61,7 +61,8 @@ public class MultiValueCreator {
                 return jaxrsMultiValueMapImplClass.getDeclaredConstructor().newInstance();
             }
         } catch (Exception e) {
-            logger.error("dubbo rest form content-type param construct error,un support  param type: " + targetType + "and support type is : " + springMultiValueMapClass + "or" + jaxrsMultiValueMapClass);
+            logger.error("", e.getMessage(), "current param type is: " + targetType + "and support type is : " + springMultiValueMapClass + "or" + jaxrsMultiValueMapClass,
+                "dubbo rest form content-type param construct error,un support  param type: ", e);
         }
 
         return null;
@@ -95,7 +96,7 @@ public class MultiValueCreator {
 
             ReflectUtils.invokeAndTryCatch(multiValueMap, multiValueMapAdd, new Object[]{key, value});
         } catch (Exception e) {
-            logger.error("dubbo rest form content-type param construct error: ", e);
+            logger.error("", e.getMessage(), "", "dubbo rest form content-type param add data  error: ", e);
         }
     }
 
