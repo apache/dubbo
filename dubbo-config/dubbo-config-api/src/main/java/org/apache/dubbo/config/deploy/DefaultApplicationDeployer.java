@@ -370,12 +370,10 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             collector.setCollectEnabled(true);
             collector.collectApplication(applicationModel);
             String protocol = metricsConfig.getProtocol();
-            if (StringUtils.isNotEmpty(protocol)) {
-                MetricsReporterFactory metricsReporterFactory = getExtensionLoader(MetricsReporterFactory.class).getAdaptiveExtension();
-                MetricsReporter metricsReporter = metricsReporterFactory.createMetricsReporter(metricsConfig.toUrl());
-                metricsReporter.init();
-                applicationModel.getBeanFactory().registerBean(metricsReporter);
-            }
+            MetricsReporterFactory metricsReporterFactory = getExtensionLoader(MetricsReporterFactory.class).getAdaptiveExtension();
+            MetricsReporter metricsReporter = metricsReporterFactory.createMetricsReporter(metricsConfig.toUrl());
+            metricsReporter.init();
+            applicationModel.getBeanFactory().registerBean(metricsReporter);
         }
     }
 
@@ -1121,7 +1119,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         }
     }
 
-    private void startMetricsCollector(){
+    private void startMetricsCollector() {
         DefaultMetricsCollector collector = applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class);
         collector.registryDefaultSample();
     }
