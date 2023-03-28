@@ -27,10 +27,10 @@ import java.util.List;
 /**
  * Global spi event publisher
  */
-public class GlobalMetricsEventMulticaster extends SimpleMetricsEventMulticaster {
+public class MetricsDispatcher extends SimpleMetricsEventMulticaster {
 
     @SuppressWarnings({"rawtypes"})
-    public GlobalMetricsEventMulticaster(ApplicationModel applicationModel) {
+    public MetricsDispatcher(ApplicationModel applicationModel) {
         ScopeBeanFactory beanFactory = applicationModel.getBeanFactory();
         ExtensionLoader<MetricsCollector> extensionLoader = applicationModel.getExtensionLoader(MetricsCollector.class);
         if (extensionLoader != null) {

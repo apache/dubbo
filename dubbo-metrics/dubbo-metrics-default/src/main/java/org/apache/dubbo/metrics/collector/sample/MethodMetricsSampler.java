@@ -51,7 +51,7 @@ public class MethodMetricsSampler extends SimpleMetricsCountSampler<Invocation, 
     protected void countConfigure(
         MetricsCountSampleConfigurer<Invocation, String, MethodMetric> sampleConfigure) {
         sampleConfigure.configureMetrics(configure -> new MethodMetric(collector.getApplicationName(), configure.getSource()));
-        sampleConfigure.configureEventHandler(configure -> collector.getEventMulticaster().publishEvent(new MethodEvent(configure.getMetric(),
+        sampleConfigure.configureEventHandler(configure -> collector.getEventMulticaster().publishEvent(new MethodEvent(collector.getApplicationModel(), configure.getMetric(),
             configure.getMetricName())));
     }
 
@@ -59,7 +59,7 @@ public class MethodMetricsSampler extends SimpleMetricsCountSampler<Invocation, 
     public void rtConfigure(
         MetricsCountSampleConfigurer<Invocation, String, MethodMetric> sampleConfigure) {
         sampleConfigure.configureMetrics(configure -> new MethodMetric(collector.getApplicationName(), configure.getSource()));
-        sampleConfigure.configureEventHandler(configure -> collector.getEventMulticaster().publishEvent(new RTEvent(configure.getMetric(), configure.getRt())));
+        sampleConfigure.configureEventHandler(configure -> collector.getEventMulticaster().publishEvent( new RTEvent(collector.getApplicationModel(),configure.getMetric(), configure.getRt())));
     }
 
     @Override
@@ -99,10 +99,10 @@ public class MethodMetricsSampler extends SimpleMetricsCountSampler<Invocation, 
 
 
     private <T> GaugeMetricSample<T> getGaugeMetricSample(MetricsKey metricsKey,
-                                                           MethodMetric methodMetric,
-                                                           MetricsCategory metricsCategory,
-                                                           T value,
-                                                           ToDoubleFunction<T> apply) {
+                                                          MethodMetric methodMetric,
+                                                          MetricsCategory metricsCategory,
+                                                          T value,
+                                                          ToDoubleFunction<T> apply) {
         return new GaugeMetricSample<>(
             metricsKey.getNameByType(methodMetric.getSide()),
             metricsKey.getDescription(),

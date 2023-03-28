@@ -20,7 +20,7 @@ package org.apache.dubbo.rpc.cluster.support.wrapper;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 
-import org.apache.dubbo.metrics.event.GlobalMetricsEventMulticaster;
+import org.apache.dubbo.metrics.event.MetricsDispatcher;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -64,7 +64,7 @@ class ScopeClusterInvokerTest {
 
     @BeforeEach
     void beforeMonth() {
-        ApplicationModel.defaultModel().getBeanFactory().registerBean(GlobalMetricsEventMulticaster.class);
+        ApplicationModel.defaultModel().getBeanFactory().registerBean(MetricsDispatcher.class);
     }
 
     @AfterEach

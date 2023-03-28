@@ -18,6 +18,7 @@
 package org.apache.dubbo.metrics.event;
 
 import org.apache.dubbo.metrics.model.MethodMetric;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 /**
  * BaseMetricsEvent.
@@ -27,17 +28,34 @@ public abstract class MetricsEvent {
     /**
      * Metric object. (eg. {@link MethodMetric})
      */
-    protected transient Object source;
+    protected transient ApplicationModel source;
+    private boolean available = true;
 
-    public MetricsEvent(Object source) {
+    @SuppressWarnings({"unchecked"})
+    public MetricsEvent(ApplicationModel source) {
         if (source == null) {
-            throw new IllegalArgumentException("null source");
+            this.source = ApplicationModel.defaultModel();
+            // Appears only in unit tests
+            this.available = false;
+        } else {
+            this.source = source;
         }
-
-        this.source = source;
     }
 
-    public Object getSource() {
+    public void setAvailable(boolean available) {
+        this.available = available;
+    }
+
+    public boolean isAvailable() {
+        return available;
+    }
+
+
+    public void customAfterPost(Object postResult) {
+
+    }
+
+    public ApplicationModel getSource() {
         return source;
     }
 
@@ -57,7 +75,8 @@ public abstract class MetricsEvent {
         APPLICATION_INFO("APPLICATION_INFO_%s"),
         NETWORK_EXCEPTION("NETWORK_EXCEPTION_%s"),
         SERVICE_UNAVAILABLE("SERVICE_UNAVAILABLE_%s"),
-        CODEC_EXCEPTION("CODEC_EXCEPTION_%s"),;
+        CODEC_EXCEPTION("CODEC_EXCEPTION_%s"),
+        ;
 
         private String name;
 

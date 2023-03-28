@@ -86,7 +86,7 @@ public class AggregateMetricsCollector implements MetricsCollector, MetricsListe
     }
 
     private void onRTEvent(RTEvent event) {
-        MethodMetric metric = (MethodMetric) event.getSource();
+        MethodMetric metric = (MethodMetric) event.getMetric();
         Long responseTime = event.getRt();
         TimeWindowQuantile quantile = ConcurrentHashMapUtils.computeIfAbsent(rt, metric, k -> new TimeWindowQuantile(DEFAULT_COMPRESSION, bucketNum, timeWindowSeconds));
         quantile.add(responseTime);
@@ -94,7 +94,7 @@ public class AggregateMetricsCollector implements MetricsCollector, MetricsListe
 
 
     private void onRequestEvent(MethodEvent event) {
-        MethodMetric metric = (MethodMetric) event.getSource();
+        MethodMetric metric =  event.getMethodMetric();
 
         String type = event.getType();
 

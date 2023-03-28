@@ -30,9 +30,8 @@ import org.apache.dubbo.metadata.report.identifier.KeyTypeEnum;
 import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.ServiceMetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
-import org.apache.dubbo.metrics.event.GlobalMetricsEventMulticaster;
+import org.apache.dubbo.metrics.event.MetricsEventBus;
 import org.apache.dubbo.metrics.metadata.event.MetadataEvent;
-import org.apache.dubbo.metrics.model.TimePair;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.io.File;
@@ -279,29 +278,32 @@ public abstract class AbstractMetadataReport implements MetadataReport {
     }
 
     private void storeProviderMetadataTask(MetadataIdentifier providerMetadataIdentifier, ServiceDefinition serviceDefinition) {
-        TimePair timePair = TimePair.start();
-        GlobalMetricsEventMulticaster eventMulticaster = applicationModel.getBeanFactory().getBean(GlobalMetricsEventMulticaster.class);
+
         String interfaceMethodName = serviceDefinition.getCanonicalName();
-        eventMulticaster.publishEvent(new MetadataEvent.StoreProviderMetadataEvent(applicationModel, timePair, interfaceMethodName));
-        try {
-            if (logger.isInfoEnabled()) {
-                logger.info("store provider metadata. Identifier : " + providerMetadataIdentifier + "; definition: " + serviceDefinition);
-            }
-            allMetadataReports.put(providerMetadataIdentifier, serviceDefinition);
-            failedReports.remove(providerMetadataIdentifier);
-            String data = JsonUtils.getJson().toJson(serviceDefinition);
-            doStoreProviderMetadata(providerMetadataIdentifier, data);
-            saveProperties(providerMetadataIdentifier, data, true, !syncReport);
-        } catch (Exception e) {
-            // retry again. If failed again, throw exception.
-            failedReports.put(providerMetadataIdentifier, serviceDefinition);
-            metadataReportRetry.startRetryTask();
-            logger.error(PROXY_FAILED_EXPORT_SERVICE, "", "", "Failed to put provider metadata " + providerMetadataIdentifier + " in  " + serviceDefinition + ", cause: " + e.getMessage(), e);
-            // fail
-            eventMulticaster.publishErrorEvent(new MetadataEvent.StoreProviderMetadataEvent(applicationModel, timePair, interfaceMethodName));
-            return;
-        }
-        eventMulticaster.publishFinishEvent(new MetadataEvent.StoreProviderMetadataEvent(applicationModel, timePair, interfaceMethodName));
+        MetadataEvent metadataEvent = new MetadataEvent.StoreProviderMetadataEvent(applicationModel, interfaceMethodName);
+        MetricsEventBus.post(metadataEvent, () ->
+            {
+                boolean result = true;
+                try {
+                    if (logger.isInfoEnabled()) {
+                        logger.info("store provider metadata. Identifier : " + providerMetadataIdentifier + "; definition: " + serviceDefinition);
+                    }
+                    allMetadataReports.put(providerMetadataIdentifier, serviceDefinition);
+                    failedReports.remove(providerMetadataIdentifier);
+                    String data = JsonUtils.getJson().toJson(serviceDefinition);
+                    doStoreProviderMetadata(providerMetadataIdentifier, data);
+                    saveProperties(providerMetadataIdentifier, data, true, !syncReport);
+                } catch (Exception e) {
+                    // retry again. If failed again, throw exception.
+                    failedReports.put(providerMetadataIdentifier, serviceDefinition);
+                    metadataReportRetry.startRetryTask();
+                    logger.error(PROXY_FAILED_EXPORT_SERVICE, "", "", "Failed to put provider metadata " + providerMetadataIdentifier + " in  " + serviceDefinition + ", cause: " + e.getMessage(), e);
+                    result = false;
+                }
+                return result;
+            }, aBoolean -> aBoolean
+        );
+
     }
 
     @Override

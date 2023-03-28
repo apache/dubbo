@@ -17,20 +17,23 @@
 
 package org.apache.dubbo.metrics.event;
 
-public class ApplicationEvent extends MetricsEvent{
-    private ApplicationEvent.Type type;
+import org.apache.dubbo.metrics.model.TimePair;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
-    public ApplicationEvent(Object source, ApplicationEvent.Type type) {
+/**
+ * Mark certain types of events, allow automatic recording of start and end times, and provide time pairs
+ */
+public abstract class TimeCounterEvent extends MetricsEvent {
+
+    private final TimePair timePair;
+
+    public TimeCounterEvent(ApplicationModel source) {
         super(source);
-        this.type = type;
+        this.timePair = TimePair.start();
     }
 
-    public ApplicationEvent.Type getType() {
-        return type;
-    }
-
-    public void setType(ApplicationEvent.Type type) {
-        this.type = type;
+    public TimePair getTimePair() {
+        return timePair;
     }
 
 }

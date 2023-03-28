@@ -20,7 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.metrics.event.GlobalMetricsEventMulticaster;
+import org.apache.dubbo.metrics.event.MetricsDispatcher;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
@@ -107,7 +107,7 @@ class AbstractClusterInvokerTest {
     @SuppressWarnings({"unchecked"})
     @BeforeEach
     public void setUp() throws Exception {
-        ApplicationModel.defaultModel().getBeanFactory().registerBean(GlobalMetricsEventMulticaster.class);
+        ApplicationModel.defaultModel().getBeanFactory().registerBean(MetricsDispatcher.class);
         Map<String, Object> attributes = new HashMap<>();
         attributes.put("application", "abstractClusterInvokerTest");
         url = url.putAttribute(REFER_KEY, attributes);

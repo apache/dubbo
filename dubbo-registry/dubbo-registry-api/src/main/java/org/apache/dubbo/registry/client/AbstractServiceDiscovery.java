@@ -26,9 +26,8 @@ import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.report.MetadataReport;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
 import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
-import org.apache.dubbo.metrics.event.GlobalMetricsEventMulticaster;
+import org.apache.dubbo.metrics.event.MetricsEventBus;
 import org.apache.dubbo.metrics.metadata.event.MetadataEvent;
-import org.apache.dubbo.metrics.model.TimePair;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 import org.apache.dubbo.registry.client.metadata.MetadataUtils;
@@ -229,18 +228,16 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
             int triedTimes = 0;
             while (triedTimes < 3) {
 
-                TimePair timePair = TimePair.start();
-                GlobalMetricsEventMulticaster eventMulticaster = applicationModel.getBeanFactory().getBean(GlobalMetricsEventMulticaster.class);
-                eventMulticaster.publishEvent(new MetadataEvent.SubscribeEvent(applicationModel, timePair));
+                metadata = MetricsEventBus.post(new MetadataEvent.PushEvent(applicationModel),
+                    () -> MetadataUtils.getRemoteMetadata(revision, instances, metadataReport),
+                    result -> result != MetadataInfo.EMPTY
+                );
 
-                metadata = MetadataUtils.getRemoteMetadata(revision, instances, metadataReport);
 
                 if (metadata != MetadataInfo.EMPTY) {// succeeded
                     metadata.init();
-                    eventMulticaster.publishFinishEvent(new MetadataEvent.SubscribeEvent(applicationModel, timePair));
                     break;
                 } else {// failed
-                    eventMulticaster.publishErrorEvent(new MetadataEvent.SubscribeEvent(applicationModel, timePair));
                     if (triedTimes > 0) {
                         if (logger.isDebugEnabled()) {
                             logger.debug("Retry the " + triedTimes + " times to get metadata for revision=" + revision);
@@ -361,19 +358,15 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
         if (metadataInfo == null) {
             return;
         }
-        TimePair timePair = TimePair.start();
-        GlobalMetricsEventMulticaster eventMulticaster = applicationModel.getBeanFactory().getBean(GlobalMetricsEventMulticaster.class);
         if (metadataReport != null) {
             SubscriberMetadataIdentifier identifier = new SubscriberMetadataIdentifier(serviceName, metadataInfo.getRevision());
             if ((DEFAULT_METADATA_STORAGE_TYPE.equals(metadataType) && metadataReport.shouldReportMetadata()) || REMOTE_METADATA_STORAGE_TYPE.equals(metadataType)) {
-                try {
-                    eventMulticaster.publishEvent(new MetadataEvent.PushEvent(applicationModel, timePair));
-                    metadataReport.publishAppMetadata(identifier, metadataInfo);
-                    eventMulticaster.publishFinishEvent(new MetadataEvent.PushEvent(applicationModel, timePair));
-                } catch (IllegalStateException e) {
-                    eventMulticaster.publishErrorEvent(new MetadataEvent.PushEvent(applicationModel, timePair));
-                    throw e;
-                }
+                MetricsEventBus.post(new MetadataEvent.PushEvent(applicationModel),
+                    () ->
+                    {
+                        metadataReport.publishAppMetadata(identifier, metadataInfo);
+                        return null;
+                    });
             }
         }
         MetadataInfo clonedMetadataInfo = metadataInfo.clone();
