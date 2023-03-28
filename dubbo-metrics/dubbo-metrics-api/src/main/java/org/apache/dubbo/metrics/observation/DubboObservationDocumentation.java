@@ -17,6 +17,7 @@
 package org.apache.dubbo.metrics.observation;
 
 import io.micrometer.common.docs.KeyName;
+import io.micrometer.common.lang.NonNullApi;
 import io.micrometer.observation.Observation;
 import io.micrometer.observation.ObservationConvention;
 import io.micrometer.observation.docs.ObservationDocumentation;
@@ -24,7 +25,7 @@ import io.micrometer.observation.docs.ObservationDocumentation;
 /**
  * Documentation of Dubbo observations.
  */
-public enum DubboObservation implements ObservationDocumentation {
+public enum DubboObservationDocumentation implements ObservationDocumentation {
 
     /**
      * Server side Dubbo RPC Observation.
@@ -58,6 +59,7 @@ public enum DubboObservation implements ObservationDocumentation {
 
     };
 
+    @NonNullApi
     enum LowCardinalityKeyNames implements KeyName {
 
         /**
