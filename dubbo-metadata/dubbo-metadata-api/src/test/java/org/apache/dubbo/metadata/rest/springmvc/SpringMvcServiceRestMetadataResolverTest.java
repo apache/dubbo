@@ -18,7 +18,13 @@ package org.apache.dubbo.metadata.rest.springmvc;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.JsonUtils;
-import org.apache.dubbo.metadata.rest.*;
+import org.apache.dubbo.metadata.rest.ClassPathServiceRestMetadataReader;
+import org.apache.dubbo.metadata.rest.DefaultRestService;
+import org.apache.dubbo.metadata.rest.PathMatcher;
+import org.apache.dubbo.metadata.rest.RestMethodMetadata;
+import org.apache.dubbo.metadata.rest.RestService;
+import org.apache.dubbo.metadata.rest.ServiceRestMetadata;
+import org.apache.dubbo.metadata.rest.StandardRestService;
 import org.apache.dubbo.metadata.rest.api.SpringRestService;
 import org.apache.dubbo.metadata.rest.api.SpringRestServiceImpl;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -27,7 +33,11 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
