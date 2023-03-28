@@ -24,7 +24,9 @@ import java.util.Arrays;
 import java.util.List;
 
 public class MediaTypeUtil {
-    private static final List<MediaType> mediaTypes = Arrays.asList(MediaType.values());
+
+    private static final List<MediaType> mediaTypes = MediaType.getSupportMediaTypes();
+
 
     /**
      * return first match , if any multiple content-type  ,acquire mediaType by targetClass type .if contentTypes is empty
@@ -44,10 +46,10 @@ public class MediaTypeUtil {
                 if (contentType != null && contentType.contains(mediaType.value)) {
                     return mediaType;
                 }
+            }
 
-                if (contentType != null && contentType.contains(MediaType.ALL_VALUE.value)) {
-                    return HttpMessageCodecManager.typeSupport(targetType);
-                }
+            if (contentType != null && contentType.contains(MediaType.ALL_VALUE.value)) {
+                return HttpMessageCodecManager.typeSupport(targetType);
             }
         }
 
