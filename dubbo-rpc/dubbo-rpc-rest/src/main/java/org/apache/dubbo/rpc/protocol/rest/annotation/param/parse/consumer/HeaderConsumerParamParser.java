@@ -38,16 +38,17 @@ public class HeaderConsumerParamParser implements BaseConsumerParamParser {
             return;
         }
 
-        // string
-        if (headerValue instanceof String) {
-            requestTemplate.addHeader(argInfo.getParamName(), headerValue);
 
-            // Map<String,String>
-        } else if (Map.class.isAssignableFrom(argInfo.getParamType())) {
+        // Map<String,String>
+        if (Map.class.isAssignableFrom(argInfo.getParamType())) {
             Map headerValues = (Map) headerValue;
             for (Object name : headerValues.keySet()) {
                 requestTemplate.addHeader(String.valueOf(name), headerValues.get(name));
             }
+        } else {
+            // others
+            requestTemplate.addHeader(argInfo.getParamName(), headerValue);
+
         }
 
     }

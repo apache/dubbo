@@ -44,6 +44,10 @@ public class MediaTypeUtilTest {
 
         mediaType = MediaTypeUtil.convertMediaType(null, new String[]{MediaType.ALL_VALUE.value});
 
-        Assertions.assertEquals(MediaType.ALL_VALUE, mediaType);
+        Assertions.assertEquals(MediaType.APPLICATION_JSON_VALUE, mediaType);
+
+        mediaType = MediaTypeUtil.convertMediaType(String.class, new String[]{MediaType.TEXT_XML.value});
+
+        Assertions.assertEquals(MediaType.TEXT_XML, mediaType);
     }
 }

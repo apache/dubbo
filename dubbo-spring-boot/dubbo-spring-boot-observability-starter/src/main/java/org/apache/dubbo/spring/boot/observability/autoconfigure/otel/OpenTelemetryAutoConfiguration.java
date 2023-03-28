@@ -16,6 +16,11 @@
  */
 package org.apache.dubbo.spring.boot.observability.autoconfigure.otel;
 
+import org.apache.dubbo.common.Version;
+import org.apache.dubbo.spring.boot.observability.annotation.ConditionalOnDubboTracingEnable;
+import org.apache.dubbo.spring.boot.observability.autoconfigure.DubboMicrometerTracingAutoConfiguration;
+import org.apache.dubbo.spring.boot.observability.config.DubboTracingProperties;
+
 import io.micrometer.tracing.SpanCustomizer;
 import io.micrometer.tracing.exporter.SpanExportingPredicate;
 import io.micrometer.tracing.exporter.SpanFilter;
@@ -49,10 +54,6 @@ import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
-import org.apache.dubbo.common.Version;
-import org.apache.dubbo.spring.boot.observability.annotation.ConditionalOnDubboTracingEnable;
-import org.apache.dubbo.spring.boot.observability.autoconfigure.DubboMicrometerTracingAutoConfiguration;
-import org.apache.dubbo.spring.boot.observability.config.DubboTracingProperties;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -91,7 +92,7 @@ public class OpenTelemetryAutoConfiguration {
     @ConditionalOnMissingBean
     OpenTelemetry openTelemetry(SdkTracerProvider sdkTracerProvider, ContextPropagators contextPropagators) {
         return OpenTelemetrySdk.builder().setTracerProvider(sdkTracerProvider).setPropagators(contextPropagators)
-            .build();
+                .build();
     }
 
     @Bean
@@ -100,7 +101,7 @@ public class OpenTelemetryAutoConfiguration {
                                             Sampler sampler) {
         String applicationName = environment.getProperty("spring.application.name", DEFAULT_APPLICATION_NAME);
         SdkTracerProviderBuilder builder = SdkTracerProvider.builder().setSampler(sampler)
-            .setResource(Resource.create(Attributes.of(ResourceAttributes.SERVICE_NAME, applicationName)));
+                .setResource(Resource.create(Attributes.of(ResourceAttributes.SERVICE_NAME, applicationName)));
         spanProcessors.orderedStream().forEach(builder::addSpanProcessor);
         return builder.build();
     }
@@ -124,8 +125,8 @@ public class OpenTelemetryAutoConfiguration {
                                     ObjectProvider<SpanExportingPredicate> spanExportingPredicates, ObjectProvider<SpanReporter> spanReporters,
                                     ObjectProvider<SpanFilter> spanFilters) {
         return BatchSpanProcessor.builder(new CompositeSpanExporter(spanExporters.orderedStream().collect(Collectors.toList()),
-            spanExportingPredicates.orderedStream().collect(Collectors.toList()), spanReporters.orderedStream().collect(Collectors.toList()),
-            spanFilters.orderedStream().collect(Collectors.toList()))).build();
+                spanExportingPredicates.orderedStream().collect(Collectors.toList()), spanReporters.orderedStream().collect(Collectors.toList()),
+                spanFilters.orderedStream().collect(Collectors.toList()))).build();
     }
 
     @Bean
@@ -139,8 +140,8 @@ public class OpenTelemetryAutoConfiguration {
     OtelTracer micrometerOtelTracer(Tracer tracer, OtelTracer.EventPublisher eventPublisher,
                                     OtelCurrentTraceContext otelCurrentTraceContext) {
         return new OtelTracer(tracer, otelCurrentTraceContext, eventPublisher,
-            new OtelBaggageManager(otelCurrentTraceContext, this.dubboTracingProperties.getBaggage().getRemoteFields(),
-                Collections.emptyList()));
+                new OtelBaggageManager(otelCurrentTraceContext, this.dubboTracingProperties.getBaggage().getRemoteFields(),
+                        Collections.emptyList()));
     }
 
     @Bean
@@ -187,12 +188,12 @@ public class OpenTelemetryAutoConfiguration {
         @Bean
         @ConditionalOnMissingBean
         @ConditionalOnProperty(prefix = "dubbo.tracing.propagation", name = "type", havingValue = "W3C",
-            matchIfMissing = true)
+                matchIfMissing = true)
         TextMapPropagator w3cTextMapPropagatorWithBaggage(OtelCurrentTraceContext otelCurrentTraceContext) {
             List<String> remoteFields = this.tracingProperties.getBaggage().getRemoteFields();
             return TextMapPropagator.composite(W3CTraceContextPropagator.getInstance(),
-                W3CBaggagePropagator.getInstance(), new BaggageTextMapPropagator(remoteFields,
-                    new OtelBaggageManager(otelCurrentTraceContext, remoteFields, Collections.emptyList())));
+                    W3CBaggagePropagator.getInstance(), new BaggageTextMapPropagator(remoteFields,
+                            new OtelBaggageManager(otelCurrentTraceContext, remoteFields, Collections.emptyList())));
         }
 
         @Bean
@@ -201,14 +202,14 @@ public class OpenTelemetryAutoConfiguration {
         TextMapPropagator b3BaggageTextMapPropagator(OtelCurrentTraceContext otelCurrentTraceContext) {
             List<String> remoteFields = this.tracingProperties.getBaggage().getRemoteFields();
             return TextMapPropagator.composite(B3Propagator.injectingSingleHeader(),
-                new BaggageTextMapPropagator(remoteFields,
-                    new OtelBaggageManager(otelCurrentTraceContext, remoteFields, Collections.emptyList())));
+                    new BaggageTextMapPropagator(remoteFields,
+                            new OtelBaggageManager(otelCurrentTraceContext, remoteFields, Collections.emptyList())));
         }
 
         @Bean
         @ConditionalOnMissingBean
         @ConditionalOnProperty(prefix = "dubbo.tracing.baggage.correlation", name = "enabled",
-            matchIfMissing = true)
+                matchIfMissing = true)
         Slf4JBaggageEventListener otelSlf4JBaggageEventListener() {
             return new Slf4JBaggageEventListener(this.tracingProperties.getBaggage().getCorrelation().getFields());
         }
@@ -229,7 +230,7 @@ public class OpenTelemetryAutoConfiguration {
         @Bean
         @ConditionalOnMissingBean
         @ConditionalOnProperty(prefix = "dubbo.tracing.propagation", name = "type", havingValue = "W3C",
-            matchIfMissing = true)
+                matchIfMissing = true)
         W3CTraceContextPropagator w3cTextMapPropagatorWithoutBaggage() {
             return W3CTraceContextPropagator.getInstance();
         }

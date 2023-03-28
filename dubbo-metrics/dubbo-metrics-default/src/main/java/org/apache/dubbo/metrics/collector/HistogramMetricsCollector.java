@@ -75,7 +75,7 @@ public class HistogramMetricsCollector implements MetricsListener {
 
     private void onRTEvent(RTEvent event) {
         if (metricRegister != null) {
-            MethodMetric metric = (MethodMetric) event.getSource();
+            MethodMetric metric = (MethodMetric) event.getMetric();
             Long responseTime = event.getRt();
 
             HistogramMetricSample sample = new HistogramMetricSample(MetricsKey.METRIC_RT_HISTOGRAM.getNameByType(metric.getSide()),
