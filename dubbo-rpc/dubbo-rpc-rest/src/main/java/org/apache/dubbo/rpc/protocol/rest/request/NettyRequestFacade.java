@@ -160,17 +160,17 @@ public class NettyRequestFacade extends RequestFacade<FullHttpRequest> {
     @Override
     public Enumeration<String> getParameterNames() {
 
-        Set<String> strings = parameters.keySet();
+        Iterator<String> iterator = parameters.keySet().iterator();
 
         return new Enumeration<String>() {
             @Override
             public boolean hasMoreElements() {
-                return strings.iterator().hasNext();
+                return iterator.hasNext();
             }
 
             @Override
             public String nextElement() {
-                return strings.iterator().next();
+                return iterator.next();
             }
         };
 

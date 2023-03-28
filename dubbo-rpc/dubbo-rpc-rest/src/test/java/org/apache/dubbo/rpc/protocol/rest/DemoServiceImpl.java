@@ -27,6 +27,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
+import java.util.List;
 import java.util.Map;
 
 @Path("/demoService")
@@ -80,6 +82,21 @@ public class DemoServiceImpl implements DemoService {
     @Override
     public void request(DefaultFullHttpRequest defaultFullHttpRequest) {
 
+    }
+
+    @Override
+    public String testMapParam(Map<String, String> params) {
+        return params.get("param");
+    }
+
+    @Override
+    public String testMapHeader(Map<String, String> headers) {
+        return headers.get("header");
+    }
+
+    @Override
+    public List<String> testMapForm(MultivaluedMap<String,String> params) {
+        return params.get("form");
     }
 
     @GET
