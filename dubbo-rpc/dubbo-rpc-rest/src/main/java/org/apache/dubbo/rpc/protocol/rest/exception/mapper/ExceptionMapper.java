@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.rpc.protocol.rest.exception.mapper;
 
+import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.protocol.rest.util.TypesUtil;
 
@@ -27,7 +28,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ExceptionMapper {
 
     // TODO static or instance ? think about influence  between  difference url exception
-    private static final Map<Class, ExceptionHandler> exceptionHandlerMap = new ConcurrentHashMap<>();
+    private static final Map<Class<?>, ExceptionHandler> exceptionHandlerMap = new ConcurrentHashMap<>();
 
     public static Object exceptionToResult(Object throwable) {
         return exceptionHandlerMap.get(throwable.getClass()).result((Throwable) throwable);
@@ -41,7 +42,7 @@ public class ExceptionMapper {
     public static void registerMapper(String exceptionMapper) {
 
         try {
-            Class<?> exceptionHandler = Thread.currentThread().getContextClassLoader().loadClass(exceptionMapper);
+            Class<?> exceptionHandler = ReflectUtils.forName(exceptionMapper);
             Type exceptionType = TypesUtil.getActualTypeArgumentsOfAnInterface(exceptionHandler, ExceptionHandler.class)[0];
             Class<?> exceptionClass = TypesUtil.getRawType(exceptionType);
             Object handler = exceptionHandler.newInstance();
@@ -54,7 +55,7 @@ public class ExceptionMapper {
     }
 
 
-    public static void unRegisterMapper(Class exception) {
+    public static void unRegisterMapper(Class<?> exception) {
         exceptionHandlerMap.remove(exception);
     }
 }
