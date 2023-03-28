@@ -30,11 +30,10 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ConsumerConfig;
 import org.apache.dubbo.config.ModuleConfig;
 import org.apache.dubbo.config.ProviderConfig;
-import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.ModuleModel;
-import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.executor.DefaultExecutorSupport;
 import org.apache.dubbo.rpc.executor.ExecutorSupport;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ModuleModel;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -50,7 +49,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_EXPORT_T
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_REFER_THREAD_NUM;
 import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_SERVICE_COMPONENT_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.INTERNAL_EXECUTOR_SERVICE_COMPONENT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREAD_NAME_KEY;
@@ -148,18 +146,10 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
      * @return
      */
     private String getExecutorKey(URL url) {
-        String executorKey = INTERNAL_EXECUTOR_SERVICE_COMPONENT_KEY;
-        ServiceDescriptor serviceDescriptor = applicationModel.getInternalModule().getServiceRepository().lookupService(url.getServiceInterface());
-        // if not found in internal service repository, then it's biz service defined by user.
-        if (serviceDescriptor == null) {
-            executorKey = EXECUTOR_SERVICE_COMPONENT_KEY;
-
-        }
-
         if (CONSUMER_SIDE.equalsIgnoreCase(url.getParameter(SIDE_KEY))) {
-            executorKey = CONSUMER_SHARED_EXECUTOR_SERVICE_COMPONENT_KEY;
+            return CONSUMER_SHARED_EXECUTOR_SERVICE_COMPONENT_KEY;
         }
-        return executorKey;
+        return EXECUTOR_SERVICE_COMPONENT_KEY;
     }
 
     protected ExecutorService createExecutor(URL url) {

@@ -109,9 +109,6 @@ public class StandardMetadataServiceURLBuilder implements MetadataServiceURLBuil
             .addParameter(TIMEOUT_KEY, ConfigurationUtils.get(applicationModel, METADATA_PROXY_TIMEOUT_KEY, DEFAULT_METADATA_TIMEOUT_VALUE))
             .addParameter(SIDE_KEY, CONSUMER)
             .addParameter(CONNECTIONS_KEY, 1)
-            .addParameter(THREADPOOL_KEY, "cached")
-            .addParameter(THREADS_KEY, "100")
-            .addParameter(CORE_THREADS_KEY, "2")
             .addParameter(RETRIES_KEY, 0);
 
         // add parameters
