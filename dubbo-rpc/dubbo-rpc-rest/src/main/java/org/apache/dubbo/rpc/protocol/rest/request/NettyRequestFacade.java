@@ -35,7 +35,7 @@ import java.util.ListIterator;
 import java.util.Map;
 
 /**
- *  netty request facade
+ * netty request facade
  */
 public class NettyRequestFacade extends RequestFacade<FullHttpRequest> {
 
@@ -177,7 +177,12 @@ public class NettyRequestFacade extends RequestFacade<FullHttpRequest> {
 
     @Override
     public String[] getParameterValues(String name) {
-        return parameters.keySet().toArray(new String[0]);
+
+        if (!parameters.containsKey(name)) {
+
+            return null;
+        }
+        return parameters.get(name).toArray(new String[0]);
     }
 
     @Override
