@@ -22,11 +22,15 @@ import io.netty.handler.codec.http.DefaultFullHttpRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
+import java.util.List;
+import java.util.Map;
 
 @Path("/demoService")
 public interface DemoService {
@@ -67,9 +71,27 @@ public interface DemoService {
 
     @POST
     @Path("/primitiveShort")
-    long primitiveShort(@QueryParam("a") short a, @QueryParam("b") Long b,int c);
+    long primitiveShort(@QueryParam("a") short a, @QueryParam("b") Long b, int c);
 
     @GET
     @Path("/request")
     void request(DefaultFullHttpRequest defaultFullHttpRequest);
+
+    @GET
+    @Path("testMapParam")
+    @Produces({MediaType.TEXT_PLAIN})
+    @Consumes({MediaType.TEXT_PLAIN})
+    String testMapParam(@QueryParam("test") Map<String, String> params);
+
+    @GET
+    @Path("testMapHeader")
+    @Produces({MediaType.TEXT_PLAIN})
+    @Consumes({MediaType.TEXT_PLAIN})
+    String testMapHeader(@HeaderParam("test") Map<String, String> headers);
+
+    @POST
+    @Path("testMapForm")
+    @Produces({MediaType.APPLICATION_JSON})
+    @Consumes({MediaType.APPLICATION_FORM_URLENCODED})
+    List<String> testMapForm(MultivaluedMap<String, String> params);
 }

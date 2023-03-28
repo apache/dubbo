@@ -41,9 +41,9 @@ public class MultiValueCodec implements HttpMessageCodec<byte[], OutputStream> {
     @Override
     public Object decode(byte[] body, Class<?> targetType) throws Exception {
         // TODO java bean  get set convert
-        Object map = DataParseUtils.multipartFormConvert(body);
+        Object map = DataParseUtils.multipartFormConvert(body,targetType);
         Map valuesMap = (Map) map;
-        if (targetType.isAssignableFrom(Map.class)) {
+        if (Map.class.isAssignableFrom(targetType)) {
             return map;
         } else if (DataParseUtils.isTextType(targetType)) {
 

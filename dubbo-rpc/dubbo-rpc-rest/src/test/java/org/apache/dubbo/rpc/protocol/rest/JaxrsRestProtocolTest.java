@@ -45,6 +45,7 @@ import org.apache.dubbo.rpc.protocol.rest.rest.AnotherUserRestServiceImpl;
 
 import org.apache.dubbo.rpc.protocol.rest.rest.RestDemoForTestException;
 import org.hamcrest.CoreMatchers;
+import org.jboss.resteasy.specimpl.MultivaluedMapImpl;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
@@ -434,6 +435,40 @@ class JaxrsRestProtocolTest {
         });
 
 
+    }
+
+    @Test
+    void testMapParam() {
+        DemoService server = new DemoServiceImpl();
+
+        URL url = this.registerProvider(exportUrl, server, DemoService.class);
+
+        URL nettyUrl = url.addParameter(SERVER_KEY, "netty")
+            .addParameter(EXTENSION_KEY, "org.apache.dubbo.rpc.protocol.rest.support.LoggingFilter");
+        Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(server, DemoService.class, nettyUrl));
+
+        DemoService demoService = this.proxy.getProxy(protocol.refer(DemoService.class, nettyUrl));
+
+        Map<String, String> params = new HashMap<>();
+        params.put("param", "P1");
+        ;
+
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put("header", "H1");
+
+
+
+
+
+        Assertions.assertEquals("P1",demoService.testMapParam(params));
+        Assertions.assertEquals("H1",demoService.testMapHeader(headers));
+
+        MultivaluedMapImpl<String, String> forms = new MultivaluedMapImpl<>();
+        forms.put("form", Arrays.asList("F1"));
+
+        Assertions.assertEquals(Arrays.asList("F1"),demoService.testMapForm(forms));
+        exporter.unexport();
     }
 
     public static class TestExceptionMapper implements ExceptionHandler<RuntimeException> {

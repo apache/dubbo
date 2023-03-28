@@ -152,9 +152,9 @@ public class DataParseUtils {
     }
 
 
-    public static Object multipartFormConvert(byte[] body, Charset charset) throws Exception {
+    public static Object multipartFormConvert(byte[] body, Charset charset, Class<?> targetType) throws Exception {
         String[] pairs = tokenizeToStringArray(new String(body, StandardCharsets.UTF_8), "&");
-        Object result = MultiValueCreator.createMultiValueMap();
+        Object result = MultiValueCreator.providerCreateMultiValueMap(targetType);
         for (String pair : pairs) {
             int idx = pair.indexOf('=');
             if (idx == -1) {
@@ -169,8 +169,8 @@ public class DataParseUtils {
         return result;
     }
 
-    public static Object multipartFormConvert(byte[] body) throws Exception {
-        return multipartFormConvert(body, Charset.defaultCharset());
+    public static Object multipartFormConvert(byte[] body, Class<?> targetType) throws Exception {
+        return multipartFormConvert(body, Charset.defaultCharset(), targetType);
     }
 
 

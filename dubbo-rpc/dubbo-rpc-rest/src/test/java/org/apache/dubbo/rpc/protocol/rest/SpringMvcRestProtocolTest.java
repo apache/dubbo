@@ -44,6 +44,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.springframework.util.LinkedMultiValueMap;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -347,6 +348,11 @@ public class SpringMvcRestProtocolTest {
         user.setId(404l);
         String name = demoService.testFormBody(user);
         Assertions.assertEquals("dubbo", name);
+
+        LinkedMultiValueMap<String, String> forms = new LinkedMultiValueMap<>();
+        forms.put("form", Arrays.asList("F1"));
+
+        Assertions.assertEquals(Arrays.asList("F1"),demoService.testFormMapBody(forms));
 
         exporter.unexport();
     }

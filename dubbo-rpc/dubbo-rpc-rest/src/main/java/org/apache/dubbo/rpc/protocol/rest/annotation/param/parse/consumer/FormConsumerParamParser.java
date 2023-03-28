@@ -22,8 +22,9 @@ import org.apache.dubbo.metadata.rest.ArgInfo;
 import org.apache.dubbo.metadata.rest.ParamType;
 import org.apache.dubbo.remoting.http.RequestTemplate;
 import org.apache.dubbo.rpc.protocol.rest.util.DataParseUtils;
-import org.apache.dubbo.rpc.protocol.rest.util.MultiValueCreator;
 
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -44,29 +45,24 @@ public class FormConsumerParamParser implements BaseConsumerParamParser {
         }
 
 
-        Object unSerializedBody = MultiValueCreator.createMultiValueMap();
-
-
+        Map<String, List<String>> tmp = new HashMap<>();
         if (DataParseUtils.isTextType(value.getClass())) {
-            MultiValueCreator.add(unSerializedBody, argInfo.getAnnotationNameAttribute(), String.valueOf(value));
-
+            tmp.put(argInfo.getAnnotationNameAttribute(), Arrays.asList(String.valueOf(value)));
+            requestTemplate.body(tmp, Map.class);
         } else if (value instanceof Map) {
-            unSerializedBody = value;
+            requestTemplate.body(value, Map.class);
         } else {
             Set<String> allFieldNames = ReflectUtils.getAllFieldNames(value.getClass());
-
-            Object finalUnSerializedBody = unSerializedBody;
 
             allFieldNames.stream().forEach(entry -> {
 
                     Object fieldValue = ReflectUtils.getFieldValue(value, entry);
-                    MultiValueCreator.add(finalUnSerializedBody, entry, fieldValue);
+                    tmp.put(String.valueOf(entry), Arrays.asList(String.valueOf(fieldValue)));
                 }
             );
+
+            requestTemplate.body(tmp, Map.class);
         }
-
-
-        requestTemplate.body(unSerializedBody,String.class);
 
 
     }

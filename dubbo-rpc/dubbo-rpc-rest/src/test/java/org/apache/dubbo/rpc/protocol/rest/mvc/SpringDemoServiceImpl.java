@@ -19,7 +19,9 @@ package org.apache.dubbo.rpc.protocol.rest.mvc;
 
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.protocol.rest.User;
+import org.springframework.util.LinkedMultiValueMap;
 
+import java.util.List;
 import java.util.Map;
 
 public class SpringDemoServiceImpl implements SpringRestDemoService {
@@ -42,6 +44,11 @@ public class SpringDemoServiceImpl implements SpringRestDemoService {
     @Override
     public String testFormBody(User user) {
         return user.getName();
+    }
+
+    @Override
+    public List<String> testFormMapBody(LinkedMultiValueMap map) {
+        return map.get("form");
     }
 
     @Override
