@@ -25,7 +25,7 @@ import org.junit.jupiter.api.Test;
 public class MediaTypeUtilTest {
 
     @Test
-    public void testException() {
+    void testException() {
 
         Assertions.assertThrows(UnSupportContentTypeException.class, () -> {
             MediaTypeUtil.convertMediaType(null, "aaaaa");
@@ -33,6 +33,10 @@ public class MediaTypeUtilTest {
         });
 
 
+    }
+
+    @Test
+    void testConvertMediaType() {
         MediaType mediaType = MediaTypeUtil.convertMediaType(null, new String[]{MediaType.APPLICATION_JSON_VALUE.value});
 
         Assertions.assertEquals(MediaType.APPLICATION_JSON_VALUE, mediaType);
@@ -49,5 +53,6 @@ public class MediaTypeUtilTest {
         mediaType = MediaTypeUtil.convertMediaType(String.class, new String[]{MediaType.TEXT_XML.value});
 
         Assertions.assertEquals(MediaType.TEXT_XML, mediaType);
+
     }
 }

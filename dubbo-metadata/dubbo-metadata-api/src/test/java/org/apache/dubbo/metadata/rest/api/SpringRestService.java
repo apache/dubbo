@@ -51,5 +51,11 @@ public interface SpringRestService {
     @RequestMapping(value = "/noAnnoParam", method = RequestMethod.POST, consumes = MediaType.TEXT_PLAIN_VALUE, produces = MediaType.TEXT_PLAIN_VALUE)
     String noAnnoParam(String a);
 
+    @RequestMapping(value = "/noAnnoNumber", method = RequestMethod.POST, consumes = MediaType.ALL_VALUE, produces = MediaType.ALL_VALUE)
+    int noAnnoNumber(Integer b);
+
+
+    @RequestMapping(value = "/noAnnoPrimitive", method = RequestMethod.POST, consumes = MediaType.ALL_VALUE, produces = MediaType.ALL_VALUE)
+    int noAnnoPrimitive(int c);
 
 }

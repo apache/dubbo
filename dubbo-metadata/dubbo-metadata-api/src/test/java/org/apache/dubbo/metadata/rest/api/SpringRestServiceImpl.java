@@ -55,4 +55,14 @@ public class SpringRestServiceImpl implements SpringRestService {
         return a;
     }
 
+    @Override
+    public int noAnnoNumber(Integer b) {
+        return b;
+    }
+
+    @Override
+    public int noAnnoPrimitive(int c) {
+        return c;
+    }
+
 }

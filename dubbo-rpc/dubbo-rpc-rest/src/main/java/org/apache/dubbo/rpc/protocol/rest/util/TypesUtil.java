@@ -27,7 +27,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 
-
+/**
+ *    acquire truth  type of Type
+ */
 public class TypesUtil {
 
 
