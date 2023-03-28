@@ -109,6 +109,9 @@ public class SpringMvcRestProtocolTest {
         String result = client.sayHello("haha");
         Assertions.assertTrue(server.isCalled());
         Assertions.assertEquals("Hello, haha", result);
+
+        String header = client.testHeader("header");
+        Assertions.assertEquals("header", header);
         invoker.destroy();
         exporter.unexport();
     }

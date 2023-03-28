@@ -94,4 +94,9 @@ public interface DemoService {
     @Produces({MediaType.APPLICATION_JSON})
     @Consumes({MediaType.APPLICATION_FORM_URLENCODED})
     List<String> testMapForm(MultivaluedMap<String, String> params);
+
+    @POST
+    @Path("/header")
+    @Consumes({javax.ws.rs.core.MediaType.TEXT_PLAIN})
+    String header(@HeaderParam("header") String header);
 }

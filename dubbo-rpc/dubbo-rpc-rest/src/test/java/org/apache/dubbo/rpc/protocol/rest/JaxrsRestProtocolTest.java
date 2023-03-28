@@ -92,6 +92,9 @@ class JaxrsRestProtocolTest {
         String result = client.sayHello("haha");
         Assertions.assertTrue(server.isCalled());
         Assertions.assertEquals("Hello, haha", result);
+
+        String header = client.header("header test");
+        Assertions.assertEquals("header test", header);
         invoker.destroy();
         exporter.unexport();
     }

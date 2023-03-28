@@ -52,6 +52,11 @@ public class SpringDemoServiceImpl implements SpringRestDemoService {
     }
 
     @Override
+    public String testHeader(String header) {
+        return header;
+    }
+
+    @Override
     public Integer hello(Integer a, Integer b) {
         context = RpcContext.getServerAttachment().getObjectAttachments();
         return a + b;
