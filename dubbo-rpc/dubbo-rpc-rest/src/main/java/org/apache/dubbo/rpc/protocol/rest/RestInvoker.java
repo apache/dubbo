@@ -93,23 +93,21 @@ public class RestInvoker<T> extends AbstractInvoker<T> {
                         MediaType mediaType = MediaType.TEXT_PLAIN;
 
                         if (responseCode == 404) {
-                            throw new PathNoFoundException(r.getMessage());
+                            responseFuture.completeExceptionally(new PathNoFoundException(r.getMessage()));
                         } else if (400 <= responseCode && responseCode < 500) {
-                            throw new ParamParseException(r.getMessage());
+                            responseFuture.completeExceptionally(new ParamParseException(r.getMessage()));
                             // TODO add Exception Mapper
                         } else if (responseCode >= 500) {
-                            throw new RemoteServerInternalException(r.getMessage());
+                            responseFuture.completeExceptionally(new RemoteServerInternalException(r.getMessage()));
                         } else if (responseCode < 400) {
                             mediaType = MediaTypeUtil.convertMediaType(restMethodMetadata.getReflectMethod().getReturnType(), r.getContentType());
+                            Object value = HttpMessageCodecManager.httpMessageDecode(r.getBody(),
+                                restMethodMetadata.getReflectMethod().getReturnType(), mediaType);
+                            appResponse.setValue(value);
+                            // resolve response attribute & attachment
+                            HttpHeaderUtil.parseResponseHeader(appResponse, r);
+                            responseFuture.complete(appResponse);
                         }
-
-
-                        Object value = HttpMessageCodecManager.httpMessageDecode(r.getBody(),
-                            restMethodMetadata.getReflectMethod().getReturnType(), mediaType);
-                        appResponse.setValue(value);
-                        // resolve response attribute & attachment
-                        HttpHeaderUtil.parseResponseHeader(appResponse, r);
-                        responseFuture.complete(appResponse);
                     } catch (Exception e) {
                         responseFuture.completeExceptionally(e);
                     }
