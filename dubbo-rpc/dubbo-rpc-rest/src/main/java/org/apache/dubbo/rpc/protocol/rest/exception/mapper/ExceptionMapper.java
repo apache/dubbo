@@ -21,6 +21,8 @@ import org.apache.dubbo.rpc.protocol.rest.util.ReflectUtils;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -48,13 +50,23 @@ public class ExceptionMapper {
     public void registerMapper(Class<?> exceptionHandler) {
 
         try {
-            Method result = ReflectUtils.getMethodByName(exceptionHandler, "result");
-            Class<?> exceptionClass = result.getParameterTypes()[0];
+            // resolve Java_Zulu_jdk/17.0.6-10/x64 param is not throwable
+            List<Method> methods = ReflectUtils.getMethodByNameList(exceptionHandler, "result");
+
+            List<Class<?>> exceptions = new ArrayList<>();
+
+            for (Method method : methods) {
+                exceptions.add(method.getParameterTypes()[0]);
+            }
 
             Constructor<?> constructor = getConstructor(exceptionHandler);
             // if exceptionHandler is inner class , no arg construct don`t appear , so  newInstance don`t use noArgConstruct
             Object handler = constructor.newInstance(new Object[constructor.getParameterCount()]);
-            exceptionHandlerMap.put(exceptionClass, (ExceptionHandler) handler);
+
+            for (Class<?> exception : exceptions) {
+                exceptionHandlerMap.put(exception, (ExceptionHandler) handler);
+            }
+
         } catch (Exception e) {
             throw new RuntimeException("dubbo rest protocol exception mapper register error ", e);
         }
