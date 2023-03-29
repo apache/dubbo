@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.protocol.rest;
 import org.apache.dubbo.common.BaseServiceMetadata;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.metadata.rest.ArgInfo;
 import org.apache.dubbo.metadata.rest.RestMethodMetadata;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.protocol.rest.annotation.ParamParserManager;
@@ -30,6 +31,7 @@ import org.apache.dubbo.rpc.protocol.rest.util.HttpHeaderUtil;
 
 
 import java.util.Arrays;
+import java.util.List;
 
 
 public class RestRPCInvocationUtil {
@@ -37,7 +39,8 @@ public class RestRPCInvocationUtil {
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(RestRPCInvocationUtil.class);
 
     /**
-     *  service method real args parse
+     * service method real args parse
+     *
      * @param rpcInvocation
      * @param request
      * @param servletRequest
@@ -51,6 +54,18 @@ public class RestRPCInvocationUtil {
         try {
             ProviderParseContext parseContext = createParseContext(request, servletRequest, servletResponse, restMethodMetadata);
             Object[] args = ParamParserManager.providerParamParse(parseContext);
+
+            List<ArgInfo> argInfos = parseContext.getArgInfos();
+
+            for (ArgInfo argInfo : argInfos) {
+                // TODO set default value
+                if (argInfo.getParamType().isPrimitive() && args[argInfo.getIndex()] == null) {
+                    throw new ParamParseException("\n dubbo provider primitive arg not exist in request, method is: "
+                        + restMethodMetadata.getReflectMethod() + "\n type is: " +
+                        argInfo.getParamType() + " \n and arg index is: " + argInfo.getIndex());
+                }
+            }
+
             rpcInvocation.setArguments(args);
         } catch (Exception e) {
             logger.error("", e.getMessage(), "", "dubbo rest provider method args parse error: ", e);
@@ -59,7 +74,8 @@ public class RestRPCInvocationUtil {
     }
 
     /**
-     *  create parseMethodArgs context
+     * create parseMethodArgs context
+     *
      * @param request
      * @param servletRequest
      * @param servletResponse
@@ -80,7 +96,8 @@ public class RestRPCInvocationUtil {
     }
 
     /**
-     *  build RpcInvocation
+     * build RpcInvocation
+     *
      * @param request
      * @param restMethodMetadata
      * @return
@@ -108,6 +125,7 @@ public class RestRPCInvocationUtil {
 
     /**
      * get  path mapping
+     *
      * @param request
      * @param pathAndInvokerMapper
      * @return

@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.rest.util;
 
 import org.apache.dubbo.common.utils.JsonUtils;
+import org.apache.dubbo.common.utils.StringUtils;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -33,8 +34,11 @@ import java.util.StringTokenizer;
 
 public class DataParseUtils {
 
-    public static Object stringTypeConvert(Class targetType, String value) {
+    public static Object stringTypeConvert(Class<?> targetType, String value) {
 
+        if (StringUtils.isEmpty(value)) {
+            return null;
+        }
 
         if (targetType == Boolean.class || targetType == boolean.class) {
             return Boolean.valueOf(value);
@@ -61,7 +65,7 @@ public class DataParseUtils {
             return false;
         }
 
-        return targetType == Boolean.class ||
+        return targetType == Boolean.class || targetType == boolean.class ||
             targetType == String.class ||
             Number.class.isAssignableFrom(targetType) || targetType.isPrimitive();
     }
