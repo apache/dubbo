@@ -474,6 +474,34 @@ class JaxrsRestProtocolTest {
         exporter.unexport();
     }
 
+
+    @Test
+    void testNoArgParam() {
+        DemoService server = new DemoServiceImpl();
+
+        URL url = this.registerProvider(exportUrl, server, DemoService.class);
+
+        URL nettyUrl = url.addParameter(SERVER_KEY, "netty")
+            .addParameter(EXTENSION_KEY, "org.apache.dubbo.rpc.protocol.rest.support.LoggingFilter");
+        Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(server, DemoService.class, nettyUrl));
+
+        DemoService demoService = this.proxy.getProxy(protocol.refer(DemoService.class, nettyUrl));
+
+
+        Assertions.assertEquals(null, demoService.noStringHeader(null));
+        Assertions.assertEquals(null, demoService.noStringParam(null));
+        Assertions.assertThrows(RpcException.class, () -> {
+            demoService.noIntHeader(1);
+        });
+
+        Assertions.assertThrows(RpcException.class, () -> {
+            demoService.noIntParam(1);
+        });
+
+        Assertions.assertEquals(null, demoService.noBodyArg(null));
+        exporter.unexport();
+    }
+
     public static class TestExceptionMapper implements ExceptionHandler<RuntimeException> {
 
         @Override

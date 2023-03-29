@@ -26,6 +26,7 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import java.util.List;
@@ -109,6 +110,38 @@ public class DemoServiceImpl implements DemoService {
         return header;
     }
 
+    @Override
+    public String noStringParam(String param) {
+        return param;
+    }
+
+
+    @Override
+    public String noStringHeader(String header) {
+        return header;
+    }
+
+    @POST
+    @Path("/noIntHeader")
+    @Consumes({javax.ws.rs.core.MediaType.TEXT_PLAIN})
+    @Override
+    public int noIntHeader(@HeaderParam("header")int header) {
+        return header;
+    }
+
+    @POST
+    @Path("/noIntParam")
+    @Consumes({javax.ws.rs.core.MediaType.TEXT_PLAIN})
+    @Override
+    public int noIntParam(@QueryParam("header")int header) {
+        return header;
+    }
+
+    @Override
+    public User noBodyArg(User user) {
+        return user;
+    }
+
     @GET
     @Path("/hello")
     @Override
@@ -122,7 +155,7 @@ public class DemoServiceImpl implements DemoService {
     @Path("/error")
     @Override
     public String error() {
-        throw new RuntimeException();
+        throw new RuntimeException("test error");
     }
 
     public static Map<String, Object> getAttachments() {

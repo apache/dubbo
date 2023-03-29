@@ -122,9 +122,10 @@ public class NettyHttpHandler implements HttpHandler<NettyRequestFacade, NettyHt
                 nettyHttpResponse.setStatus(200);
             } else {
                 nettyHttpResponse.sendError(500,
-                    "dubbo rest business exception, message is: "
-                        + result.getException().getMessage()
-                        + ", stacktrace is: " + stackTraceToString(exception));
+                    "\n dubbo rest business exception, error cause is: "
+                        + result.getException().getCause()
+                        + "\n message is: " + result.getException().getMessage()
+                        + "\n stacktrace is: " + stackTraceToString(exception));
             }
         } else {
             Object value = result.getValue();

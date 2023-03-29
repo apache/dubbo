@@ -104,4 +104,30 @@ public interface DemoService {
     @Path("/headerInt")
     @Consumes({javax.ws.rs.core.MediaType.TEXT_PLAIN})
     int headerInt(@HeaderParam("header") int header);
+
+    @POST
+    @Path("/noStringParam")
+    @Consumes({javax.ws.rs.core.MediaType.TEXT_PLAIN})
+    String noStringParam(@QueryParam("param") String param);
+
+    @POST
+    @Path("/noStringHeader")
+    @Consumes({javax.ws.rs.core.MediaType.TEXT_PLAIN})
+    String noStringHeader(@HeaderParam("header") String header);
+
+    @POST
+    @Path("/noIntHeader")
+    @Consumes({javax.ws.rs.core.MediaType.TEXT_PLAIN})
+    int noIntHeader(int header);
+
+    @POST
+    @Path("/noIntParam")
+    @Consumes({javax.ws.rs.core.MediaType.TEXT_PLAIN})
+    int noIntParam(int header);
+
+    @POST
+    @Path("/noBodyArg")
+    @Consumes({MediaType.APPLICATION_JSON})
+    User noBodyArg(User user);
+
 }

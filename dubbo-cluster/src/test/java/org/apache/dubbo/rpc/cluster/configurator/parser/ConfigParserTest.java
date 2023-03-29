@@ -22,6 +22,7 @@ import org.apache.dubbo.rpc.cluster.configurator.parser.model.ConfiguratorConfig
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
 
@@ -50,7 +51,7 @@ class ConfigParserTest {
     @Test
     void snakeYamlBasicTest() throws IOException {
         try (InputStream yamlStream = this.getClass().getResourceAsStream("/ServiceNoApp.yml")) {
-            Yaml yaml = new Yaml(new SafeConstructor());
+            Yaml yaml = new Yaml(new SafeConstructor(new LoaderOptions()));
             Map<String, Object> map = yaml.load(yamlStream);
             ConfiguratorConfig config = ConfiguratorConfig.parseFromMap(map);
             Assertions.assertNotNull(config);
