@@ -17,10 +17,12 @@
 
 package org.apache.dubbo.common.threadpool;
 
-import net.bytebuddy.agent.ByteBuddyAgent;
 import org.apache.dubbo.common.concurrent.AbortPolicy;
 import org.apache.dubbo.common.concurrent.RejectException;
+
+import net.bytebuddy.agent.ByteBuddyAgent;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.lang.instrument.Instrumentation;
@@ -58,6 +60,7 @@ class MemorySafeLinkedBlockingQueueTest {
     }
 
     @Test
+    @Disabled("This test is not stable, it may fail due to performance (C1, C2)")
     void testEfficiency() throws InterruptedException {
         // if length is vert large(unit test may runs for a long time), so you may need to modify JVM param such as : -Xms=1024m -Xmx=2048m
         // if you want to test efficiency of MemorySafeLinkedBlockingQueue, you may modify following param: length and times
