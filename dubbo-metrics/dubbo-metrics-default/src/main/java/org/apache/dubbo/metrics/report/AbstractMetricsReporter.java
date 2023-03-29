@@ -169,7 +169,7 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
                             FunctionCounter.builder(counterMetricSample.getName(),  counterMetricSample.getValue(),
                                     Number::doubleValue).description(counterMetricSample.getDescription())
                                 .tags(getTags(counterMetricSample))
-                                .register( MetricsGlobalRegistry.getCompositeRegistry());
+                                .register(compositeRegistry);
                         case TIMER:
                         case LONG_TASK_TIMER:
                         case DISTRIBUTION_SUMMARY:
