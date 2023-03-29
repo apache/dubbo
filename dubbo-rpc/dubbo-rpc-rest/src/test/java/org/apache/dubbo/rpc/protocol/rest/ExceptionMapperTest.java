@@ -31,10 +31,10 @@ public class ExceptionMapperTest {
         ExceptionMapper.registerMapper(TestExceptionHandler.class);
 
 
-        Object result = ExceptionMapper.exceptionToResult(new InstantiationException(InstantiationException.class.getName()));
+        Object result = ExceptionMapper.exceptionToResult(new RuntimeException(RuntimeException.class.getName()));
 
 
-        Assertions.assertEquals(InstantiationException.class.getName(), result);
+        Assertions.assertEquals(RuntimeException.class.getName(), result);
 
 
     }
@@ -46,28 +46,26 @@ public class ExceptionMapperTest {
         Assertions.assertThrows(RuntimeException.class, () -> {
             ExceptionMapper.registerMapper(TestExceptionHandlerException.class);
 
-
-            Object result = ExceptionMapper.exceptionToResult(new InstantiationException(InstantiationException.class.getName()));
         });
 
 
     }
 
 
-    public class TestExceptionHandler implements ExceptionHandler<InstantiationException> {
+    public class TestExceptionHandler implements ExceptionHandler<RuntimeException> {
 
 
         @Override
-        public Object result(InstantiationException exception) {
+        public Object result(RuntimeException exception) {
             return exception.getMessage();
         }
     }
 
-    class TestExceptionHandlerException implements ExceptionHandler<InstantiationException> {
+    class TestExceptionHandlerException implements ExceptionHandler<RuntimeException> {
 
 
         @Override
-        public Object result(InstantiationException exception) {
+        public Object result(RuntimeException exception) {
             return exception.getMessage();
         }
     }

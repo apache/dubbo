@@ -17,7 +17,6 @@
 
 package org.apache.dubbo.rpc.protocol.rest.exception.mapper;
 
-import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.protocol.rest.util.ReflectUtils;
 
 import java.lang.reflect.Constructor;
@@ -67,7 +66,7 @@ public class ExceptionMapper {
         Constructor<?>[] constructor = exceptionHandler.getConstructors();
 
         if (constructor.length == 0) {
-            throw new IllegalArgumentException("dubbo rest exception mapper register mapper need exception handler exist no arg construct, please make  class public if class is inner class, current class is: " + exceptionHandler);
+            throw new RuntimeException("dubbo rest exception mapper register mapper need exception handler exist no arg construct, please make  class public if class is inner class, current class is: " + exceptionHandler);
         }
         return constructor[0];
     }
@@ -76,7 +75,7 @@ public class ExceptionMapper {
         try {
             registerMapper(ReflectUtils.findClass(exceptionMapper));
         } catch (ClassNotFoundException e) {
-            throw new RpcException("dubbo rest protocol exception mapper register error ", e);
+            throw new RuntimeException("dubbo rest protocol exception mapper register error ", e);
         }
 
     }
