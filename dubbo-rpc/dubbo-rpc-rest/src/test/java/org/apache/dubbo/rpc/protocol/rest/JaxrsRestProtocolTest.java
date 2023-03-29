@@ -69,6 +69,7 @@ class JaxrsRestProtocolTest {
     private final int availablePort = NetUtils.getAvailablePort();
     private final URL exportUrl = URL.valueOf("rest://127.0.0.1:" + availablePort + "/rest?interface=org.apache.dubbo.rpc.protocol.rest.DemoService");
     private final ModuleServiceRepository repository = ApplicationModel.defaultModel().getDefaultModule().getServiceRepository();
+    private final ExceptionMapper exceptionMapper = new ExceptionMapper();
 
     @AfterEach
     public void tearDown() {
@@ -220,7 +221,7 @@ class JaxrsRestProtocolTest {
     @Test
     void testErrorHandler() {
         Assertions.assertThrows(RpcException.class, () -> {
-            ExceptionMapper.unRegisterMapper(RuntimeException.class);
+            exceptionMapper.unRegisterMapper(RuntimeException.class);
             DemoService server = new DemoServiceImpl();
 
             URL url = this.registerProvider(exportUrl, server, DemoService.class);
@@ -463,16 +464,13 @@ class JaxrsRestProtocolTest {
         headers.put("header", "H1");
 
 
-
-
-
-        Assertions.assertEquals("P1",demoService.testMapParam(params));
-        Assertions.assertEquals("H1",demoService.testMapHeader(headers));
+        Assertions.assertEquals("P1", demoService.testMapParam(params));
+        Assertions.assertEquals("H1", demoService.testMapHeader(headers));
 
         MultivaluedMapImpl<String, String> forms = new MultivaluedMapImpl<>();
         forms.put("form", Arrays.asList("F1"));
 
-        Assertions.assertEquals(Arrays.asList("F1"),demoService.testMapForm(forms));
+        Assertions.assertEquals(Arrays.asList("F1"), demoService.testMapForm(forms));
         exporter.unexport();
     }
 

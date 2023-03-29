@@ -50,10 +50,12 @@ import java.io.IOException;
 public class NettyHttpHandler implements HttpHandler<NettyRequestFacade, NettyHttpResponse> {
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
     private final PathAndInvokerMapper pathAndInvokerMapper;
+    private final ExceptionMapper exceptionMapper;
 
 
-    public NettyHttpHandler(PathAndInvokerMapper pathAndInvokerMapper) {
+    public NettyHttpHandler(PathAndInvokerMapper pathAndInvokerMapper, ExceptionMapper exceptionMapper) {
         this.pathAndInvokerMapper = pathAndInvokerMapper;
+        this.exceptionMapper = exceptionMapper;
     }
 
     @Override
@@ -115,8 +117,8 @@ public class NettyHttpHandler implements HttpHandler<NettyRequestFacade, NettyHt
             Throwable exception = result.getException();
             logger.error("", exception.getMessage(), "", "dubbo rest protocol provider Invoker invoke error", exception);
 
-            if (ExceptionMapper.hasExceptionMapper(exception)) {
-                writeResult(nettyHttpResponse, request, invoker, ExceptionMapper.exceptionToResult(result.getException()), rpcInvocation.getReturnType());
+            if (exceptionMapper.hasExceptionMapper(exception)) {
+                writeResult(nettyHttpResponse, request, invoker, exceptionMapper.exceptionToResult(result.getException()), rpcInvocation.getReturnType());
                 nettyHttpResponse.setStatus(200);
             } else {
                 nettyHttpResponse.sendError(500,

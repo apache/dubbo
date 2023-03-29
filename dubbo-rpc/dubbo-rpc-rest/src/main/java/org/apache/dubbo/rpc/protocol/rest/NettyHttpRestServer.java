@@ -59,6 +59,7 @@ import static org.apache.dubbo.rpc.protocol.rest.Constants.KEEP_ALIVE_KEY;
 public class NettyHttpRestServer implements RestProtocolServer {
 
     private final PathAndInvokerMapper pathAndInvokerMapper = new PathAndInvokerMapper();
+    private final ExceptionMapper exceptionMapper = new ExceptionMapper();
     private NettyServer server = getNettyServer();
 
     /**
@@ -178,7 +179,7 @@ public class NettyHttpRestServer implements RestProtocolServer {
      */
     protected List<ChannelHandler> getHttpChannelHandlers(URL url) {
         return Arrays.asList(
-            new RestHttpRequestDecoder(new NettyHttpHandler(pathAndInvokerMapper)));
+            new RestHttpRequestDecoder(new NettyHttpHandler(pathAndInvokerMapper,exceptionMapper)));
     }
 
     /**
@@ -220,7 +221,7 @@ public class NettyHttpRestServer implements RestProtocolServer {
 
         for (String clazz : COMMA_SPLIT_PATTERN.split(url.getParameter(EXCEPTION_MAPPER_KEY, RpcExceptionMapper.class.getName()))) {
             if (!StringUtils.isEmpty(clazz)) {
-                ExceptionMapper.registerMapper(clazz);
+                exceptionMapper.registerMapper(clazz);
             }
         }
     }
