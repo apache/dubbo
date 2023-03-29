@@ -31,10 +31,17 @@ public class ExceptionMapper {
     private static final Map<Class<?>, ExceptionHandler> exceptionHandlerMap = new ConcurrentHashMap<>();
 
     public static Object exceptionToResult(Object throwable) {
+        if (!hasExceptionMapper(throwable)) {
+            return throwable;
+        }
+
         return exceptionHandlerMap.get(throwable.getClass()).result((Throwable) throwable);
     }
 
     public static boolean hasExceptionMapper(Object throwable) {
+        if (throwable == null) {
+            return false;
+        }
         return exceptionHandlerMap.containsKey(throwable.getClass());
     }
 
