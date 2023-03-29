@@ -365,9 +365,10 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class);
         Optional<MetricsConfig> configOptional = configManager.getMetrics();
 
-        boolean importMetricsPrometheus;
+        // TODO compatible with old usage of metrics, remove protocol check after new metrics is ready for use.
+        boolean importMetricsPrometheus;  // Use package references instead of config checks
         try {
-            Class.forName("org.apache.dubbo.metrics.prometheus.PrometheusMetricsReporterFactory");
+            Class.forName("io.micrometer.prometheus.PrometheusConfig");
             importMetricsPrometheus = true;
         } catch (ClassNotFoundException e) {
             importMetricsPrometheus = false;
@@ -382,7 +383,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         if (StringUtils.isBlank(metricsConfig.getProtocol())) {
             metricsConfig.setProtocol(PROTOCOL_PROMETHEUS);
         }
-        // TODO compatible with old usage of metrics, remove protocol check after new metrics is ready for use.
         collector.setCollectEnabled(true);
         collector.collectApplication(applicationModel);
         collector.setThreadpoolCollectEnabled(Optional.ofNullable(metricsConfig.getEnableThreadpoolMetrics()).orElse(true));
