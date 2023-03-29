@@ -28,6 +28,12 @@ public class ReflectUtils {
 
     }
 
+    public static Class findClass(String name) throws ClassNotFoundException {
+
+        return findClass(Thread.currentThread().getContextClassLoader(),name);
+
+    }
+
     public static Class findClassAndTryCatch(String name, ClassLoader classLoader) {
 
         try {
@@ -68,7 +74,7 @@ public class ReflectUtils {
     }
 
     public static Method getMethodByName(Class clazz, String name) {
-        Method[] declaredMethods = clazz.getMethods();
+        Method[] declaredMethods = clazz.getDeclaredMethods();
 
         for (Method declaredMethod : declaredMethods) {
             if (name.equals(declaredMethod.getName())) {
@@ -76,6 +82,14 @@ public class ReflectUtils {
                 return declaredMethod;
             }
         }
+
+        for (Method declaredMethod : clazz.getMethods()) {
+            if (name.equals(declaredMethod.getName())) {
+                declaredMethod.setAccessible(true);
+                return declaredMethod;
+            }
+        }
+
 
         return null;
 
