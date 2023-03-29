@@ -1,2 +1,3 @@
 http\://dubbo.apache.org/schema/dubbo/dubbo.xsd=META-INF/dubbo.xsd
 http\://code.alibabatech.com/schema/dubbo/dubbo.xsd=META-INF/compat/dubbo.xsd
+http\://repo.alibaba-inc.com/schema/dubbo/dubbo-component.xsd=META-INF/compat/dubbo.xsd
