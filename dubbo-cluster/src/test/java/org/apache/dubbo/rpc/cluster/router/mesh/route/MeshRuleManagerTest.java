@@ -27,6 +27,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
 
@@ -166,7 +167,7 @@ class MeshRuleManagerTest {
             @Override
             public void onRuleChange(String appName, List<Map<String, Object>> rules) {
                 assertEquals("dubbo-demo", appName);
-                Yaml yaml = new Yaml(new SafeConstructor());
+                Yaml yaml = new Yaml(new SafeConstructor(new LoaderOptions()));
                 assertTrue(rules.contains(yaml.load(rule1)));
                 assertTrue(rules.contains(yaml.load(rule2)));
 
