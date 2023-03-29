@@ -201,6 +201,8 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             if (initialized) {
                 return;
             }
+            onInitialize();
+
             // register shutdown hook
             registerShutdownHook();
 
@@ -1065,6 +1067,16 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             newState = DeployState.STOPPED;
         }
         return newState;
+    }
+
+    private void onInitialize() {
+        for (DeployListener<ApplicationModel> listener : listeners) {
+            try {
+                listener.onInitialize(applicationModel);
+            } catch (Throwable e) {
+                logger.error(CONFIG_FAILED_START_MODEL, "", "", getIdentifier() + " an exception occurred when handle initialize event", e);
+            }
+        }
     }
 
     private void exportMetadataService() {
