@@ -17,12 +17,21 @@
 
 package org.apache.dubbo.metrics.event;
 
+import org.apache.dubbo.metrics.model.MethodMetric;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+
 public class MethodEvent extends MetricsEvent {
     private String type;
+    private final MethodMetric methodMetric;
 
-    public MethodEvent(Object source, String type) {
-        super(source);
+    public MethodEvent(ApplicationModel applicationModel, MethodMetric methodMetric, String type) {
+        super(applicationModel);
         this.type = type;
+        this.methodMetric = methodMetric;
+    }
+
+    public MethodMetric getMethodMetric() {
+        return methodMetric;
     }
 
     public String getType() {

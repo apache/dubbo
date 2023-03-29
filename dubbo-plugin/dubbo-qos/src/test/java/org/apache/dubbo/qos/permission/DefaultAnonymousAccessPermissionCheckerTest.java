@@ -16,17 +16,17 @@
  */
 package org.apache.dubbo.qos.permission;
 
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
-
-import org.apache.dubbo.qos.command.CommandContext;
-import org.apache.dubbo.qos.common.QosConfiguration;
+import io.netty.channel.Channel;
+import org.apache.dubbo.qos.api.CommandContext;
+import org.apache.dubbo.qos.api.PermissionLevel;
+import org.apache.dubbo.qos.api.QosConfiguration;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import io.netty.channel.Channel;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 
 class DefaultAnonymousAccessPermissionCheckerTest {
     @Test

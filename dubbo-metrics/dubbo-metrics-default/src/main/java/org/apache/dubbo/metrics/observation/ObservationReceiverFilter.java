@@ -16,9 +16,6 @@
  */
 package org.apache.dubbo.metrics.observation;
 
-import io.micrometer.observation.Observation;
-import io.micrometer.observation.ObservationRegistry;
-
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.rpc.BaseFilter;
 import org.apache.dubbo.rpc.Filter;
@@ -28,6 +25,9 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
+
+import io.micrometer.observation.Observation;
+import io.micrometer.observation.ObservationRegistry;
 
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
 
@@ -51,15 +51,18 @@ public class ObservationReceiverFilter implements Filter, BaseFilter.Listener, S
         if (observationRegistry == null) {
             return invoker.invoke(invocation);
         }
-        DubboServerContext receiverContext = new DubboServerContext(invoker, invocation);
-        Observation observation = DubboObservation.SERVER.observation(this.serverObservationConvention, DefaultDubboServerObservationConvention.INSTANCE, () -> receiverContext, observationRegistry);
+        final DubboServerContext receiverContext = new DubboServerContext(invoker, invocation);
+        final Observation observation = DubboObservationDocumentation.SERVER.observation(
+                this.serverObservationConvention,
+                DefaultDubboServerObservationConvention.getInstance(),
+                () -> receiverContext, observationRegistry);
         invocation.put(Observation.class, observation.start());
         return observation.scoped(() -> invoker.invoke(invocation));
     }
 
     @Override
     public void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
-        Observation observation = (Observation) invocation.get(Observation.class);
+        final Observation observation = getObservation(invocation);
         if (observation == null) {
             return;
         }
@@ -68,11 +71,15 @@ public class ObservationReceiverFilter implements Filter, BaseFilter.Listener, S
 
     @Override
     public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
-        Observation observation = (Observation) invocation.get(Observation.class);
+        final Observation observation = getObservation(invocation);
         if (observation == null) {
             return;
         }
         observation.error(t);
         observation.stop();
+    }
+
+    private Observation getObservation(Invocation invocation) {
+        return (Observation) invocation.get(Observation.class);
     }
 }

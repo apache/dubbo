@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 /**
- *  A simple event publisher that defines lifecycle events and supports rt events
+ * A simple event publisher that defines lifecycle events and supports rt events
  */
 public class SimpleMetricsEventMulticaster implements MetricsEventMulticaster {
     private final List<MetricsListener<?>> listeners = Collections.synchronizedList(new ArrayList<>());
@@ -52,11 +52,20 @@ public class SimpleMetricsEventMulticaster implements MetricsEventMulticaster {
         if (event instanceof EmptyEvent) {
             return;
         }
+        if (validateIfApplicationConfigExist(event)) return;
         for (MetricsListener listener : listeners) {
             if (listener.isSupport(event)) {
                 listener.onEvent(event);
             }
         }
+    }
+
+    private boolean validateIfApplicationConfigExist(MetricsEvent event) {
+        if (event.getSource() != null) {
+            // Check if exist application config
+            return event.getSource().NotExistApplicationConfig();
+        }
+        return false;
     }
 
     @Override
@@ -73,11 +82,12 @@ public class SimpleMetricsEventMulticaster implements MetricsEventMulticaster {
 
     @SuppressWarnings({"rawtypes"})
     private void publishTimeEvent(MetricsEvent event, Consumer<MetricsLifeListener> consumer) {
+        if (validateIfApplicationConfigExist(event)) return;
         if (event instanceof EmptyEvent) {
             return;
         }
-        if (event instanceof TimeCounter) {
-            ((TimeCounter) event).getTimePair().end();
+        if (event instanceof TimeCounterEvent) {
+            ((TimeCounterEvent) event).getTimePair().end();
         }
         for (MetricsListener listener : listeners) {
             if (listener instanceof MetricsLifeListener && listener.isSupport(event)) {

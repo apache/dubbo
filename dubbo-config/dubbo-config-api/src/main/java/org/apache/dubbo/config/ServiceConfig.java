@@ -36,6 +36,8 @@ import org.apache.dubbo.config.invoker.DelegateProviderMetaDataInvoker;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.metadata.ServiceNameMapping;
+import org.apache.dubbo.metrics.event.MetricsEventBus;
+import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.registry.client.metadata.MetadataUtils;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
@@ -69,6 +71,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_IP_TO_BIND;
 import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_MANAGEMENT_MODE_ISOLATION;
+import static org.apache.dubbo.common.constants.CommonConstants.EXPORTER_LISTENER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
@@ -421,17 +424,22 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
         List<URL> registryURLs = ConfigValidationUtils.loadRegistries(this, true);
 
-        for (ProtocolConfig protocolConfig : protocols) {
-            String pathKey = URL.buildKey(getContextPath(protocolConfig)
-                .map(p -> p + "/" + path)
-                .orElse(path), group, version);
-            // stub service will use generated service name
-            if (!serverService) {
-                // In case user specified path, register service one more time to map it to path.
-                repository.registerService(pathKey, interfaceClass);
+        MetricsEventBus.post(new RegistryEvent.MetricsServiceRegisterEvent(module.getApplicationModel(), getUniqueServiceName(), protocols.size() * registryURLs.size()),
+            () -> {
+                for (ProtocolConfig protocolConfig : protocols) {
+                    String pathKey = URL.buildKey(getContextPath(protocolConfig)
+                        .map(p -> p + "/" + path)
+                        .orElse(path), group, version);
+                    // stub service will use generated service name
+                    if (!serverService) {
+                        // In case user specified path, register service one more time to map it to path.
+                        repository.registerService(pathKey, interfaceClass);
+                    }
+                    doExportUrlsFor1Protocol(protocolConfig, registryURLs);
+                }
+                return null;
             }
-            doExportUrlsFor1Protocol(protocolConfig, registryURLs);
-        }
+        );
 
         providerModel.setServiceUrls(urls);
     }
@@ -665,8 +673,8 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                     protocols.addAll(Arrays.asList(extProtocols));
                 }
                 // export extra protocols
-                for(String protocol : protocols) {
-                    if(StringUtils.isNotBlank(protocol)){
+                for (String protocol : protocols) {
+                    if (StringUtils.isNotBlank(protocol)) {
                         URL localUrl = URLBuilder.from(url).
                             setProtocol(protocol).
                             build();
@@ -752,6 +760,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             .build();
         local = local.setScopeModel(getScopeModel())
             .setServiceModel(providerModel);
+        local = local.addParameter(EXPORTER_LISTENER_KEY, LOCAL_PROTOCOL);
         doExportUrl(local, false);
         logger.info("Export dubbo service " + interfaceClass.getName() + " to local registry url : " + local);
     }

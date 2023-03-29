@@ -22,7 +22,7 @@ import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.handler.codec.http.multipart.Attribute;
 import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
 import io.netty.handler.codec.http.multipart.InterfaceHttpData;
-import org.apache.dubbo.qos.command.CommandContext;
+import org.apache.dubbo.qos.api.CommandContext;
 import org.apache.dubbo.qos.command.CommandContextFactory;
 
 import java.io.IOException;
