@@ -16,37 +16,25 @@
  */
 package org.apache.dubbo.config.nested;
 
-import org.apache.dubbo.config.support.Nested;
-
 import java.io.Serializable;
 
 public class PropagationConfig implements Serializable {
 
+    public static final String B3 = "B3";
+
+    public static final String W3C = "W3C";
+
     /**
      * Tracing context propagation type.
      */
-    @Nested
-    private PropagationType type = PropagationType.W3C;
+    private String type = W3C;
 
-    public PropagationType getType() {
+    public String getType() {
         return type;
     }
 
-    public void setType(PropagationType type) {
+    public void setType(String type) {
         this.type = type;
     }
 
-    public enum PropagationType {
-
-        /**
-         * B3 propagation type.
-         */
-        B3,
-
-        /**
-         * W3C propagation type.
-         */
-        W3C
-
-    }
 }

@@ -356,7 +356,8 @@
                 </xsd:attribute>
                 <xsd:attribute name="prefer-serialization" type="xsd:string">
                     <xsd:annotation>
-                        <xsd:documentation><![CDATA[ The prefer serialization protocol of service, multiple serialization protocol are separated by commas, default fastjson2,hessian2. ]]></xsd:documentation>
+                        <xsd:documentation>
+                            <![CDATA[ The prefer serialization protocol of service, multiple serialization protocol are separated by commas, default fastjson2,hessian2. ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
                 <xsd:attribute name="export-async" type="xsd:boolean">
@@ -504,12 +505,14 @@
         </xsd:attribute>
         <xsd:attribute name="trust-serialize-class-level" type="xsd:integer">
             <xsd:annotation>
-                <xsd:documentation><![CDATA[ The trust package level of serialize class scanning. ]]></xsd:documentation>
+                <xsd:documentation>
+                    <![CDATA[ The trust package level of serialize class scanning. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="check-serializable" type="xsd:boolean">
             <xsd:annotation>
-                <xsd:documentation><![CDATA[ Whether restrict the serialized should implement Serializable interface. ]]></xsd:documentation>
+                <xsd:documentation>
+                    <![CDATA[ Whether restrict the serialized should implement Serializable interface. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="qos-enable" type="xsd:boolean">
@@ -534,12 +537,14 @@
         </xsd:attribute>
         <xsd:attribute name="qos-accept-foreign-ip-whitelist" type="xsd:string">
             <xsd:annotation>
-                <xsd:documentation><![CDATA[ Support specifying foreign ip in whitelist when accepting foreign ip is disabled. ]]></xsd:documentation>
+                <xsd:documentation>
+                    <![CDATA[ Support specifying foreign ip in whitelist when accepting foreign ip is disabled. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="qos-anonymous-access-permission-level" type="xsd:string">
             <xsd:annotation>
-                <xsd:documentation><![CDATA[ Anonymous (any foreign ip) access level, the default is NONE, can not access any cmd. ]]></xsd:documentation>
+                <xsd:documentation>
+                    <![CDATA[ Anonymous (any foreign ip) access level, the default is NONE, can not access any cmd. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
     </xsd:complexType>
@@ -1086,6 +1091,8 @@
     <xsd:complexType name="tracingType">
         <xsd:all>
             <xsd:element ref="sampling" minOccurs="0"/>
+            <xsd:element ref="propagation" minOccurs="0"/>
+            <xsd:element ref="baggage" minOccurs="0"/>
         </xsd:all>
         <xsd:attribute name="enabled" type="xsd:boolean" default="false">
             <xsd:annotation>
@@ -1185,9 +1192,50 @@
     <xsd:complexType name="samplingType">
         <xsd:attribute name="probability" type="xsd:float">
             <xsd:annotation>
-                <xsd:documentation><![CDATA[ Probability in the range from 0.0 to 1.0 that a trace will be sampled. ]]></xsd:documentation>
+                <xsd:documentation>
+                    <![CDATA[ Probability in the range from 0.0 to 1.0 that a trace will be sampled. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
+    </xsd:complexType>
+
+    <xsd:complexType name="propagationType">
+        <xsd:attribute name="type" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation>
+                    <![CDATA[ Tracing context propagation type, include W3C and B3. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+    </xsd:complexType>
+
+    <xsd:complexType name="baggageType">
+        <xsd:all>
+            <xsd:element ref="remoteFields" minOccurs="0"/>
+        </xsd:all>
+        <xsd:attribute name="enabled" type="xsd:boolean">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Enable baggage or not. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+    </xsd:complexType>
+
+    <xsd:complexType name="correlationType">
+        <xsd:all>
+            <xsd:element ref="fields" minOccurs="0"/>
+        </xsd:all>
+        <xsd:attribute name="enabled" type="xsd:boolean">
+            <xsd:annotation>
+                <xsd:documentation>
+                    <![CDATA[ Whether to enable correlation of the baggage context with logging contexts. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+    </xsd:complexType>
+
+    <xsd:complexType name="fieldsType">
+        <xsd:simpleContent>
+            <xsd:extension base="xsd:string">
+                <xsd:attribute name="name" type="xsd:string"/>
+            </xsd:extension>
+        </xsd:simpleContent>
     </xsd:complexType>
 
     <xsd:complexType name="methodType">
@@ -1492,7 +1540,8 @@
         </xsd:attribute>
         <xsd:attribute name="prefer-serialization" type="xsd:string">
             <xsd:annotation>
-                <xsd:documentation><![CDATA[ The prefer serialization protocol of service, multiple serialization protocol are separated by commas, default fastjson2,hessian2. ]]></xsd:documentation>
+                <xsd:documentation>
+                    <![CDATA[ The prefer serialization protocol of service, multiple serialization protocol are separated by commas, default fastjson2,hessian2. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="keepalive" type="xsd:boolean">
@@ -2101,6 +2150,41 @@
     <xsd:element name="sampling" type="samplingType">
         <xsd:annotation>
             <xsd:documentation><![CDATA[ The tracing sampling config. ]]></xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
+
+    <xsd:element name="propagation" type="propagationType">
+        <xsd:annotation>
+            <xsd:documentation><![CDATA[ The tracing propagation config. ]]></xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
+
+    <xsd:element name="baggage" type="baggageType">
+        <xsd:annotation>
+            <xsd:documentation><![CDATA[ The tracing baggage config. ]]></xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
+
+    <xsd:element name="remoteFields" type="fieldsType">
+        <xsd:annotation>
+            <xsd:documentation>
+                <![CDATA[ The tracing baggage remoteFields config. List of fields that are referenced
+                the same in-process as it is on the wire. For example, the field "x-vcap-request-id" would
+                 be set as-is including the prefix. ]]></xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
+
+    <xsd:element name="correlation" type="correlationType">
+        <xsd:annotation>
+            <xsd:documentation><![CDATA[ The tracing baggage correlation config. ]]></xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
+
+    <xsd:element name="fields" type="fieldsType">
+        <xsd:annotation>
+            <xsd:documentation>
+                <![CDATA[ List of fields that should be correlated with the logging context. That
+                means that these fields would end up as key-value pairs in e.g. MDC. ]]></xsd:documentation>
         </xsd:annotation>
     </xsd:element>
 </xsd:schema>

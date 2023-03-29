@@ -40,13 +40,13 @@ public class TracingConfig extends AbstractConfig {
     /**
      * Baggage configuration.
      */
-//    @Nested
+    @Nested
     private BaggageConfig baggage = new BaggageConfig();
 
     /**
      * Propagation configuration.
      */
-//    @Nested
+    @Nested
     private PropagationConfig propagation = new PropagationConfig();
 
     public TracingConfig() {

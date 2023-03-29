@@ -20,6 +20,7 @@ import org.apache.dubbo.common.Version;
 import org.apache.dubbo.spring.boot.autoconfigure.DubboConfigurationProperties;
 import org.apache.dubbo.spring.boot.observability.annotation.ConditionalOnDubboTracingEnable;
 import org.apache.dubbo.spring.boot.observability.autoconfigure.DubboMicrometerTracingAutoConfiguration;
+import org.apache.dubbo.spring.boot.observability.autoconfigure.ObservabilityUtils;
 
 import io.micrometer.tracing.SpanCustomizer;
 import io.micrometer.tracing.exporter.SpanExportingPredicate;
@@ -176,7 +177,7 @@ public class OpenTelemetryAutoConfiguration {
     }
 
     @Configuration(proxyBeanMethods = false)
-    @ConditionalOnProperty(prefix = "dubbo.tracing.baggage", name = "enabled", matchIfMissing = true)
+    @ConditionalOnProperty(prefix = ObservabilityUtils.DUBBO_TRACING_BAGGAGE, name = "enabled", matchIfMissing = true)
     static class BaggageConfiguration {
 
         private final DubboConfigurationProperties dubboConfigProperties;
@@ -187,7 +188,7 @@ public class OpenTelemetryAutoConfiguration {
 
         @Bean
         @ConditionalOnMissingBean
-        @ConditionalOnProperty(prefix = "dubbo.tracing.propagation", name = "type", havingValue = "W3C",
+        @ConditionalOnProperty(prefix = ObservabilityUtils.DUBBO_TRACING_PROPAGATION, name = "type", havingValue = "W3C",
                 matchIfMissing = true)
         TextMapPropagator w3cTextMapPropagatorWithBaggage(OtelCurrentTraceContext otelCurrentTraceContext) {
             List<String> remoteFields = this.dubboConfigProperties.getTracing().getBaggage().getRemoteFields();
@@ -198,7 +199,7 @@ public class OpenTelemetryAutoConfiguration {
 
         @Bean
         @ConditionalOnMissingBean
-        @ConditionalOnProperty(prefix = "dubbo.tracing.propagation", name = "type", havingValue = "B3")
+        @ConditionalOnProperty(prefix = ObservabilityUtils.DUBBO_TRACING_PROPAGATION, name = "type", havingValue = "B3")
         TextMapPropagator b3BaggageTextMapPropagator(OtelCurrentTraceContext otelCurrentTraceContext) {
             List<String> remoteFields = this.dubboConfigProperties.getTracing().getBaggage().getRemoteFields();
             return TextMapPropagator.composite(B3Propagator.injectingSingleHeader(),
@@ -208,7 +209,7 @@ public class OpenTelemetryAutoConfiguration {
 
         @Bean
         @ConditionalOnMissingBean
-        @ConditionalOnProperty(prefix = "dubbo.tracing.baggage.correlation", name = "enabled",
+        @ConditionalOnProperty(prefix = ObservabilityUtils.DUBBO_TRACING_BAGGAGE_CORRELATION, name = "enabled",
                 matchIfMissing = true)
         Slf4JBaggageEventListener otelSlf4JBaggageEventListener() {
             return new Slf4JBaggageEventListener(this.dubboConfigProperties.getTracing().getBaggage().getCorrelation().getFields());
@@ -217,19 +218,19 @@ public class OpenTelemetryAutoConfiguration {
     }
 
     @Configuration(proxyBeanMethods = false)
-    @ConditionalOnProperty(prefix = "dubbo.tracing.baggage", name = "enabled", havingValue = "false")
+    @ConditionalOnProperty(prefix = ObservabilityUtils.DUBBO_TRACING_BAGGAGE, name = "enabled", havingValue = "false")
     static class NoBaggageConfiguration {
 
         @Bean
         @ConditionalOnMissingBean
-        @ConditionalOnProperty(prefix = "dubbo.tracing.propagation", name = "type", havingValue = "B3")
+        @ConditionalOnProperty(prefix = ObservabilityUtils.DUBBO_TRACING_PROPAGATION, name = "type", havingValue = "B3")
         B3Propagator b3TextMapPropagator() {
             return B3Propagator.injectingSingleHeader();
         }
 
         @Bean
         @ConditionalOnMissingBean
-        @ConditionalOnProperty(prefix = "dubbo.tracing.propagation", name = "type", havingValue = "W3C",
+        @ConditionalOnProperty(prefix = ObservabilityUtils.DUBBO_TRACING_PROPAGATION, name = "type", havingValue = "W3C",
                 matchIfMissing = true)
         W3CTraceContextPropagator w3cTextMapPropagatorWithoutBaggage() {
             return W3CTraceContextPropagator.getInstance();
