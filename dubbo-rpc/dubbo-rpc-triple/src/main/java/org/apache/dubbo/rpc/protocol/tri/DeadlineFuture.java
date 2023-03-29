@@ -34,7 +34,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 
 public class DeadlineFuture extends CompletableFuture<AppResponse> {
@@ -47,7 +47,7 @@ public class DeadlineFuture extends CompletableFuture<AppResponse> {
     private final long start = System.currentTimeMillis();
     private final List<Runnable> timeoutListeners = new ArrayList<>();
     private final Timeout timeoutTask;
-    private ExecutorService executor;
+    private Executor executor;
 
     private DeadlineFuture(String serviceName, String methodName, String address, int timeout) {
         this.serviceName = serviceName;
@@ -70,7 +70,7 @@ public class DeadlineFuture extends CompletableFuture<AppResponse> {
      * @return a new DeadlineFuture
      */
     public static DeadlineFuture newFuture(String serviceName, String methodName, String address,
-        int timeout, ExecutorService executor) {
+        int timeout, Executor executor) {
         final DeadlineFuture future = new DeadlineFuture(serviceName, methodName, address, timeout);
         future.setExecutor(executor);
         // ThreadlessExecutor needs to hold the waiting future in case of circuit return.
@@ -104,11 +104,11 @@ public class DeadlineFuture extends CompletableFuture<AppResponse> {
         return timeoutListeners;
     }
 
-    public ExecutorService getExecutor() {
+    public Executor getExecutor() {
         return executor;
     }
 
-    public void setExecutor(ExecutorService executor) {
+    public void setExecutor(Executor executor) {
         this.executor = executor;
     }
 

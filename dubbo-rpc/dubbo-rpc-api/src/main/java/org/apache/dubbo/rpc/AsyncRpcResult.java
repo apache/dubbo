@@ -182,7 +182,9 @@ public class AsyncRpcResult implements Result {
     public Result get() throws InterruptedException, ExecutionException {
         if (executor != null && executor instanceof ThreadlessExecutor) {
             ThreadlessExecutor threadlessExecutor = (ThreadlessExecutor) executor;
-            threadlessExecutor.waitAndDrain();
+            while (!responseFuture.isDone()) {
+                threadlessExecutor.waitAndDrain();
+            }
         }
         return responseFuture.get();
     }
@@ -191,7 +193,9 @@ public class AsyncRpcResult implements Result {
     public Result get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
         if (executor != null && executor instanceof ThreadlessExecutor) {
             ThreadlessExecutor threadlessExecutor = (ThreadlessExecutor) executor;
-            threadlessExecutor.waitAndDrain();
+            while (!responseFuture.isDone()) {
+                threadlessExecutor.waitAndDrain();
+            }
         }
         return responseFuture.get(timeout, unit);
     }
