@@ -108,7 +108,7 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
     }
 
     private void addJvmMetrics() {
-        boolean enableJvmMetrics = url.getParameter(ENABLE_JVM_METRICS_KEY, true);
+        boolean enableJvmMetrics = url.getParameter(ENABLE_JVM_METRICS_KEY, false);
         if (enableJvmMetrics) {
             Tags extraTags = Tags.of(MetricsConstants.TAG_APPLICATION_NAME,
                 Optional.ofNullable(applicationModel.getApplicationName()).orElse(""));
