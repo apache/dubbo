@@ -17,10 +17,13 @@
 package org.apache.dubbo.rpc.protocol.rest.util;
 
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class ReflectUtils {
 
@@ -76,31 +79,60 @@ public class ReflectUtils {
     }
 
     public static List<Method> getMethodByNameList(Class clazz, String name) {
-        List<Method> methods = new ArrayList<>();
+        // prevent duplicate method
+        Set<Method> methods = new HashSet<>();
 
         try {
-            Method[] declaredMethods = clazz.getDeclaredMethods();
+            filterMethod(name, methods, clazz.getDeclaredMethods());
 
-            for (Method declaredMethod : declaredMethods) {
-                if (name.equals(declaredMethod.getName())) {
-                    declaredMethod.setAccessible(true);
-                    methods.add(declaredMethod);
-                }
-            }
-
-            for (Method declaredMethod : clazz.getMethods()) {
-                if (name.equals(declaredMethod.getName())) {
-                    declaredMethod.setAccessible(true);
-                    methods.add(declaredMethod);
-                }
-            }
         } catch (Exception e) {
 
         }
 
-        return methods;
+        try {
+            filterMethod(name, methods, clazz.getMethods());
+        } catch (Exception e) {
+
+        }
+        return new ArrayList<>(methods);
 
 
+    }
+
+    public static List<Constructor<?>> getConstructList(Class clazz) {
+        // prevent duplicate method
+        Set<Constructor<?>> methods = new HashSet<>();
+
+        try {
+            filterConstructMethod(methods, clazz.getDeclaredConstructors());
+        } catch (Exception e) {
+        }
+
+        try {
+            filterConstructMethod(methods, clazz.getConstructors());
+        } catch (Exception e) {
+
+        }
+        return new ArrayList<Constructor<?>>(methods);
+
+
+    }
+
+    private static void filterConstructMethod(Set<Constructor<?>> methods, Constructor<?>[] declaredMethods) {
+        for (Constructor<?> constructor : declaredMethods) {
+            methods.add(constructor);
+        }
+
+    }
+
+    private static void filterMethod(String name, Set<Method> methodList, Method[] methods) {
+        for (Method declaredMethod : methods) {
+            if (!name.equals(declaredMethod.getName())) {
+                continue;
+            }
+            declaredMethod.setAccessible(true);
+            methodList.add(declaredMethod);
+        }
     }
 
     public static Method getMethodByName(Class clazz, String name) {
