@@ -363,20 +363,33 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     private void initMetricsReporter() {
         DefaultMetricsCollector collector =
             applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class);
-        MetricsConfig metricsConfig = configManager.getMetrics().orElse(new MetricsConfig(applicationModel));
+        Optional<MetricsConfig> configOptional = configManager.getMetrics();
+
+        boolean importMetricsPrometheus;
+        try {
+            Class.forName("org.apache.dubbo.metrics.prometheus.PrometheusMetricsReporterFactory");
+            importMetricsPrometheus = true;
+        } catch (ClassNotFoundException e) {
+            importMetricsPrometheus = false;
+        }
+
+        if (!importMetricsPrometheus) {
+            //use old metrics
+            return;
+        }
+
+        MetricsConfig metricsConfig = configOptional.orElse(new MetricsConfig(applicationModel));
         if (StringUtils.isBlank(metricsConfig.getProtocol())) {
             metricsConfig.setProtocol(PROTOCOL_PROMETHEUS);
         }
         // TODO compatible with old usage of metrics, remove protocol check after new metrics is ready for use.
-        if (PROTOCOL_PROMETHEUS.equals(metricsConfig.getProtocol())) {
-            collector.setCollectEnabled(true);
-            collector.collectApplication(applicationModel);
-            collector.setThreadpoolCollectEnabled(Optional.ofNullable(metricsConfig.getEnableThreadpoolMetrics()).orElse(true));
-            MetricsReporterFactory metricsReporterFactory = getExtensionLoader(MetricsReporterFactory.class).getAdaptiveExtension();
-            MetricsReporter metricsReporter = metricsReporterFactory.createMetricsReporter(metricsConfig.toUrl());
-            metricsReporter.init();
-            applicationModel.getBeanFactory().registerBean(metricsReporter);
-        }
+        collector.setCollectEnabled(true);
+        collector.collectApplication(applicationModel);
+        collector.setThreadpoolCollectEnabled(Optional.ofNullable(metricsConfig.getEnableThreadpoolMetrics()).orElse(true));
+        MetricsReporterFactory metricsReporterFactory = getExtensionLoader(MetricsReporterFactory.class).getAdaptiveExtension();
+        MetricsReporter metricsReporter = metricsReporterFactory.createMetricsReporter(metricsConfig.toUrl());
+        metricsReporter.init();
+        applicationModel.getBeanFactory().registerBean(metricsReporter);
     }
 
 
@@ -1124,7 +1137,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
     private void startMetricsCollector() {
         DefaultMetricsCollector collector = applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class);
-        if(Objects.nonNull(collector) && collector.isThreadpoolCollectEnabled()) {
+        if (Objects.nonNull(collector) && collector.isThreadpoolCollectEnabled()) {
             collector.registryDefaultSample();
         }
     }
