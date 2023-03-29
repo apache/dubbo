@@ -3028,5 +3028,15 @@
         "parameterTypes": ["org.apache.dubbo.rpc.model.ApplicationModel"]
       }
     ]
+  },
+  {
+    "name": "org.apache.dubbo.metrics.prometheus.PrometheusMetricsReporterFactory",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": ["org.apache.dubbo.rpc.model.ApplicationModel"]
+      }
+    ]
   }
 ]
