@@ -66,6 +66,8 @@ public class SpringMvcRestProtocolTest {
 
     private final ModuleServiceRepository repository = ApplicationModel.defaultModel().getDefaultModule().getServiceRepository();
 
+    private final ExceptionMapper exceptionMapper = new ExceptionMapper();
+
     @AfterEach
     public void tearDown() {
         protocol.destroy();
@@ -223,7 +225,7 @@ public class SpringMvcRestProtocolTest {
     @Test
     void testErrorHandler() {
         Assertions.assertThrows(RpcException.class, () -> {
-            ExceptionMapper.unRegisterMapper(RuntimeException.class);
+            exceptionMapper.unRegisterMapper(RuntimeException.class);
             SpringRestDemoService server = getServerImpl();
 
             URL nettyUrl = this.registerProvider(exportUrl, server, SpringRestDemoService.class);
@@ -358,7 +360,7 @@ public class SpringMvcRestProtocolTest {
         LinkedMultiValueMap<String, String> forms = new LinkedMultiValueMap<>();
         forms.put("form", Arrays.asList("F1"));
 
-        Assertions.assertEquals(Arrays.asList("F1"),demoService.testFormMapBody(forms));
+        Assertions.assertEquals(Arrays.asList("F1"), demoService.testFormMapBody(forms));
 
         exporter.unexport();
     }

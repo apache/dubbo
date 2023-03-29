@@ -21,15 +21,17 @@ import org.apache.dubbo.rpc.protocol.rest.util.ReflectUtils;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ExceptionMapper {
 
     // TODO static or instance ? think about influence  between  difference url exception
-    private static final Map<Class<?>, ExceptionHandler> exceptionHandlerMap = new ConcurrentHashMap<>();
+    private final Map<Class<?>, ExceptionHandler> exceptionHandlerMap = new ConcurrentHashMap<>();
 
-    public static Object exceptionToResult(Object throwable) {
+    public Object exceptionToResult(Object throwable) {
         if (!hasExceptionMapper(throwable)) {
             return throwable;
         }
@@ -37,7 +39,7 @@ public class ExceptionMapper {
         return exceptionHandlerMap.get(throwable.getClass()).result((Throwable) throwable);
     }
 
-    public static boolean hasExceptionMapper(Object throwable) {
+    public boolean hasExceptionMapper(Object throwable) {
         if (throwable == null) {
             return false;
         }
@@ -45,16 +47,26 @@ public class ExceptionMapper {
     }
 
 
-    public static void registerMapper(Class<?> exceptionHandler) {
+    public void registerMapper(Class<?> exceptionHandler) {
 
         try {
-            Method result = ReflectUtils.getMethodByName(exceptionHandler, "result");
-            Class<?> exceptionClass = result.getParameterTypes()[0];
+            // resolve Java_Zulu_jdk/17.0.6-10/x64 param is not throwable
+            List<Method> methods = ReflectUtils.getMethodByNameList(exceptionHandler, "result");
+
+            List<Class<?>> exceptions = new ArrayList<>();
+
+            for (Method method : methods) {
+                exceptions.add(method.getParameterTypes()[0]);
+            }
 
             Constructor<?> constructor = getConstructor(exceptionHandler);
             // if exceptionHandler is inner class , no arg construct don`t appear , so  newInstance don`t use noArgConstruct
             Object handler = constructor.newInstance(new Object[constructor.getParameterCount()]);
-            exceptionHandlerMap.put(exceptionClass, (ExceptionHandler) handler);
+
+            for (Class<?> exception : exceptions) {
+                exceptionHandlerMap.put(exception, (ExceptionHandler) handler);
+            }
+
         } catch (Exception e) {
             throw new RuntimeException("dubbo rest protocol exception mapper register error ", e);
         }
@@ -71,7 +83,7 @@ public class ExceptionMapper {
         return constructor[0];
     }
 
-    public static void registerMapper(String exceptionMapper) {
+    public void registerMapper(String exceptionMapper) {
         try {
             registerMapper(ReflectUtils.findClass(exceptionMapper));
         } catch (ClassNotFoundException e) {
@@ -81,7 +93,7 @@ public class ExceptionMapper {
     }
 
 
-    public static void unRegisterMapper(Class<?> exception) {
+    public void unRegisterMapper(Class<?> exception) {
         exceptionHandlerMap.remove(exception);
     }
 }

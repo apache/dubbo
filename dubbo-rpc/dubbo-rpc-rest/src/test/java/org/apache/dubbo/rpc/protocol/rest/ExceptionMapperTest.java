@@ -23,18 +23,19 @@ import org.junit.jupiter.api.Test;
 
 
 public class ExceptionMapperTest {
+    private final ExceptionMapper exceptionMapper = new ExceptionMapper();
 
     @Test
     void testRegister() {
 
 
-        ExceptionMapper.registerMapper(TestExceptionHandler.class);
+        exceptionMapper.registerMapper(TestExceptionHandler.class);
 
 
-        Object result = ExceptionMapper.exceptionToResult(new RuntimeException(RuntimeException.class.getName()));
+        Object result = exceptionMapper.exceptionToResult(new RuntimeException("test"));
 
 
-        Assertions.assertEquals(RuntimeException.class.getName(), result);
+        Assertions.assertEquals("test", result);
 
 
     }
@@ -44,7 +45,7 @@ public class ExceptionMapperTest {
 
 
         Assertions.assertThrows(RuntimeException.class, () -> {
-            ExceptionMapper.registerMapper(TestExceptionHandlerException.class);
+            exceptionMapper.registerMapper(TestExceptionHandlerException.class);
 
         });
 

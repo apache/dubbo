@@ -19,6 +19,8 @@ package org.apache.dubbo.rpc.protocol.rest.util;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ReflectUtils {
 
@@ -30,7 +32,7 @@ public class ReflectUtils {
 
     public static Class findClass(String name) throws ClassNotFoundException {
 
-        return findClass(Thread.currentThread().getContextClassLoader(),name);
+        return findClass(Thread.currentThread().getContextClassLoader(), name);
 
     }
 
@@ -73,26 +75,42 @@ public class ReflectUtils {
 
     }
 
+    public static List<Method> getMethodByNameList(Class clazz, String name) {
+        List<Method> methods = new ArrayList<>();
+
+        try {
+            Method[] declaredMethods = clazz.getDeclaredMethods();
+
+            for (Method declaredMethod : declaredMethods) {
+                if (name.equals(declaredMethod.getName())) {
+                    declaredMethod.setAccessible(true);
+                    methods.add(declaredMethod);
+                }
+            }
+
+            for (Method declaredMethod : clazz.getMethods()) {
+                if (name.equals(declaredMethod.getName())) {
+                    declaredMethod.setAccessible(true);
+                    methods.add(declaredMethod);
+                }
+            }
+        } catch (Exception e) {
+
+        }
+
+        return methods;
+
+
+    }
+
     public static Method getMethodByName(Class clazz, String name) {
-        Method[] declaredMethods = clazz.getDeclaredMethods();
 
-        for (Method declaredMethod : declaredMethods) {
-            if (name.equals(declaredMethod.getName())) {
-                declaredMethod.setAccessible(true);
-                return declaredMethod;
-            }
+        List<Method> methodByNameList = getMethodByNameList(clazz, name);
+        if (methodByNameList.isEmpty()) {
+            return null;
+        } else {
+            return methodByNameList.get(0);
         }
-
-        for (Method declaredMethod : clazz.getMethods()) {
-            if (name.equals(declaredMethod.getName())) {
-                declaredMethod.setAccessible(true);
-                return declaredMethod;
-            }
-        }
-
-
-        return null;
-
     }
 
     public static Class findClassTryException(String... name) {
