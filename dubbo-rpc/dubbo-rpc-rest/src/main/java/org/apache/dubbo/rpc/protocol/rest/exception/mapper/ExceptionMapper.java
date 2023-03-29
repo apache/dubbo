@@ -97,14 +97,6 @@ public class ExceptionMapper {
 
     }
 
-    private static Constructor<?> getConstructor(Class<?> exceptionHandler) {
-        Constructor<?>[] constructor = exceptionHandler.getConstructors();
-        Constructor<?>[] declaredConstructors = exceptionHandler.getDeclaredConstructors();
-
-
-        return constructor[0];
-    }
-
     public void registerMapper(String exceptionMapper) {
         try {
             registerMapper(ReflectUtils.findClass(exceptionMapper));
