@@ -26,7 +26,6 @@ import org.apache.dubbo.metrics.event.SimpleMetricsEventMulticaster;
 import org.apache.dubbo.metrics.listener.MetricsListener;
 import org.apache.dubbo.metrics.model.ApplicationMetric;
 import org.apache.dubbo.metrics.model.sample.CounterMetricSample;
-import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import java.util.ArrayList;
