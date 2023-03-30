@@ -14,27 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.config.nested;
 
-package org.apache.dubbo.metrics.event;
+import java.io.Serializable;
 
-/**
- * RequestEvent.
- */
-public class RequestEvent extends MetricsEvent {
-    private Type type;
+public class SamplingConfig implements Serializable {
 
-    public RequestEvent(Object source, Type type) {
-        super(source);
-        this.type = type;
+    /**
+     * Probability in the range from 0.0 to 1.0 that a trace will be sampled.
+     */
+    private float probability = 0.10f;
+
+    public float getProbability() {
+        return this.probability;
     }
 
-    public Type getType() {
-        return type;
+    public void setProbability(float probability) {
+        this.probability = probability;
     }
-
-    public void setType(Type type) {
-        this.type = type;
-    }
-
-
 }

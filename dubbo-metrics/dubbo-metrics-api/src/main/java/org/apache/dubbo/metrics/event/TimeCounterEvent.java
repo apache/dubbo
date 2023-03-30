@@ -15,23 +15,25 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.metrics.metrics.event;
+package org.apache.dubbo.metrics.event;
 
-import org.apache.dubbo.metrics.event.MetricsEvent;
-import org.apache.dubbo.metrics.event.RequestEvent;
-import org.apache.dubbo.metrics.model.MethodMetric;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.apache.dubbo.metrics.model.TimePair;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
-class RequestEventTest {
+/**
+ * Mark certain types of events, allow automatic recording of start and end times, and provide time pairs
+ */
+public abstract class TimeCounterEvent extends MetricsEvent {
 
-    @Test
-    void testNewEvent() {
-        MethodMetric metric = new MethodMetric();
-        MetricsEvent.Type type = MetricsEvent.Type.TOTAL;
-        RequestEvent event = new RequestEvent(metric, type);
+    private final TimePair timePair;
 
-        Assertions.assertEquals(event.getSource(), metric);
-        Assertions.assertEquals(event.getType(), type);
+    public TimeCounterEvent(ApplicationModel source) {
+        super(source);
+        this.timePair = TimePair.start();
     }
+
+    public TimePair getTimePair() {
+        return timePair;
+    }
+
 }

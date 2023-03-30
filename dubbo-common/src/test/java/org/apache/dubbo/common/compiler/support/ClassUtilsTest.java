@@ -60,22 +60,22 @@ class ClassUtilsTest {
 
     @Test
     void testForName2() {
-        ClassUtils.forName("boolean");
-        ClassUtils.forName("byte");
-        ClassUtils.forName("char");
-        ClassUtils.forName("short");
-        ClassUtils.forName("int");
-        ClassUtils.forName("long");
-        ClassUtils.forName("float");
-        ClassUtils.forName("double");
-        ClassUtils.forName("boolean[]");
-        ClassUtils.forName("byte[]");
-        ClassUtils.forName("char[]");
-        ClassUtils.forName("short[]");
-        ClassUtils.forName("int[]");
-        ClassUtils.forName("long[]");
-        ClassUtils.forName("float[]");
-        ClassUtils.forName("double[]");
+        Assertions.assertEquals(boolean.class, ClassUtils.forName("boolean"));
+        Assertions.assertEquals(byte.class, ClassUtils.forName("byte"));
+        Assertions.assertEquals(char.class, ClassUtils.forName("char"));
+        Assertions.assertEquals(short.class, ClassUtils.forName("short"));
+        Assertions.assertEquals(int.class, ClassUtils.forName("int"));
+        Assertions.assertEquals(long.class, ClassUtils.forName("long"));
+        Assertions.assertEquals(float.class, ClassUtils.forName("float"));
+        Assertions.assertEquals(double.class, ClassUtils.forName("double"));
+        Assertions.assertEquals(boolean[].class, ClassUtils.forName("boolean[]"));
+        Assertions.assertEquals(byte[].class, ClassUtils.forName("byte[]"));
+        Assertions.assertEquals(char[].class, ClassUtils.forName("char[]"));
+        Assertions.assertEquals(short[].class, ClassUtils.forName("short[]"));
+        Assertions.assertEquals(int[].class, ClassUtils.forName("int[]"));
+        Assertions.assertEquals(long[].class, ClassUtils.forName("long[]"));
+        Assertions.assertEquals(float[].class, ClassUtils.forName("float[]"));
+        Assertions.assertEquals(double[].class, ClassUtils.forName("double[]"));
     }
 
     @Test

@@ -497,12 +497,12 @@ public class ExchangeCodec extends TelnetCodec {
     }
 
     private Object finishRespWhenOverPayload(Channel channel, long size, byte[] header) {
-        int payload = getPayload(channel);
-        boolean overPayload = isOverPayload(payload, size);
-        if (overPayload) {
-            long reqId = Bytes.bytes2long(header, 4);
-            byte flag = header[2];
-            if ((flag & FLAG_REQUEST) == 0) {
+        byte flag = header[2];
+        if ((flag & FLAG_REQUEST) == 0) {
+            int payload = getPayload(channel);
+            boolean overPayload = isOverPayload(payload, size);
+            if (overPayload) {
+                long reqId = Bytes.bytes2long(header, 4);
                 Response res = new Response(reqId);
                 if ((flag & FLAG_EVENT) != 0) {
                     res.setEvent(true);

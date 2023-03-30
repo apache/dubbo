@@ -14,15 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.config.nested;
 
-package org.apache.dubbo.metrics.event;
+import java.io.Serializable;
 
-import org.apache.dubbo.metrics.model.TimePair;
+public class PropagationConfig implements Serializable {
 
-/**
- *  Mark certain types of events, allow automatic recording of start and end times, and provide time pairs
- */
-public interface TimeCounter {
+    public static final String B3 = "B3";
 
-    TimePair getTimePair();
+    public static final String W3C = "W3C";
+
+    /**
+     * Tracing context propagation type.
+     */
+    private String type = W3C;
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
 }

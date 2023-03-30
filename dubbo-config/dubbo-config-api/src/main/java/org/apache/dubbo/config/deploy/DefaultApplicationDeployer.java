@@ -52,8 +52,7 @@ import org.apache.dubbo.metadata.report.MetadataReportFactory;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
 import org.apache.dubbo.metrics.collector.ConfigCenterMetricsCollector;
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
-import org.apache.dubbo.metrics.event.GlobalMetricsEventMulticaster;
-import org.apache.dubbo.metrics.model.TimePair;
+import org.apache.dubbo.metrics.event.MetricsEventBus;
 import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.metrics.report.MetricsReporter;
 import org.apache.dubbo.metrics.report.MetricsReporterFactory;
@@ -364,19 +363,33 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     private void initMetricsReporter() {
         DefaultMetricsCollector collector =
             applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class);
-        MetricsConfig metricsConfig = configManager.getMetrics().orElse(null);
+        Optional<MetricsConfig> configOptional = configManager.getMetrics();
+
         // TODO compatible with old usage of metrics, remove protocol check after new metrics is ready for use.
-        if (metricsConfig != null && PROTOCOL_PROMETHEUS.equals(metricsConfig.getProtocol())) {
-            collector.setCollectEnabled(true);
-            collector.collectApplication(applicationModel);
-            String protocol = metricsConfig.getProtocol();
-            if (StringUtils.isNotEmpty(protocol)) {
-                MetricsReporterFactory metricsReporterFactory = getExtensionLoader(MetricsReporterFactory.class).getAdaptiveExtension();
-                MetricsReporter metricsReporter = metricsReporterFactory.createMetricsReporter(metricsConfig.toUrl());
-                metricsReporter.init();
-                applicationModel.getBeanFactory().registerBean(metricsReporter);
-            }
+        boolean importMetricsPrometheus;  // Use package references instead of config checks
+        try {
+            Class.forName("io.micrometer.prometheus.PrometheusConfig");
+            importMetricsPrometheus = true;
+        } catch (ClassNotFoundException e) {
+            importMetricsPrometheus = false;
         }
+
+        if (!importMetricsPrometheus) {
+            //use old metrics
+            return;
+        }
+
+        MetricsConfig metricsConfig = configOptional.orElse(new MetricsConfig(applicationModel));
+        if (StringUtils.isBlank(metricsConfig.getProtocol())) {
+            metricsConfig.setProtocol(PROTOCOL_PROMETHEUS);
+        }
+        collector.setCollectEnabled(true);
+        collector.collectApplication(applicationModel);
+        collector.setThreadpoolCollectEnabled(Optional.ofNullable(metricsConfig.getEnableThreadpoolMetrics()).orElse(true));
+        MetricsReporterFactory metricsReporterFactory = getExtensionLoader(MetricsReporterFactory.class).getAdaptiveExtension();
+        MetricsReporter metricsReporter = metricsReporterFactory.createMetricsReporter(metricsConfig.toUrl());
+        metricsReporter.init();
+        applicationModel.getBeanFactory().registerBean(metricsReporter);
     }
 
 
@@ -843,17 +856,18 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     private final AtomicInteger serviceRefreshState = new AtomicInteger(0);
 
     private void registerServiceInstance() {
-        TimePair timePair = TimePair.start();
-        GlobalMetricsEventMulticaster eventMulticaster = applicationModel.getBeanFactory().getBean(GlobalMetricsEventMulticaster.class);
-        eventMulticaster.publishEvent(new RegistryEvent.MetricsApplicationRegisterEvent(applicationModel, timePair));
         try {
             registered = true;
-            ServiceInstanceMetadataUtils.registerMetadataAndInstance(applicationModel);
-            eventMulticaster.publishFinishEvent(new RegistryEvent.MetricsApplicationRegisterEvent(applicationModel, timePair));
+            MetricsEventBus.post(new RegistryEvent.MetricsApplicationRegisterEvent(applicationModel),
+                () -> {
+                    ServiceInstanceMetadataUtils.registerMetadataAndInstance(applicationModel);
+                    return null;
+                }
+            );
         } catch (Exception e) {
-            eventMulticaster.publishErrorEvent(new RegistryEvent.MetricsApplicationRegisterEvent(applicationModel, timePair));
             logger.error(CONFIG_REGISTER_INSTANCE_ERROR, "configuration server disconnected", "", "Register instance error.", e);
         }
+
         if (registered) {
             // scheduled task for updating Metadata and ServiceInstance
             asyncMetadataFuture = frameworkExecutorRepository.getSharedScheduledExecutor().scheduleWithFixedDelay(() -> {
@@ -1121,9 +1135,11 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         }
     }
 
-    private void startMetricsCollector(){
+    private void startMetricsCollector() {
         DefaultMetricsCollector collector = applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class);
-        collector.registryDefaultSample();
+        if (Objects.nonNull(collector) && collector.isThreadpoolCollectEnabled()) {
+            collector.registryDefaultSample();
+        }
     }
 
     private void completeStartFuture(boolean success) {

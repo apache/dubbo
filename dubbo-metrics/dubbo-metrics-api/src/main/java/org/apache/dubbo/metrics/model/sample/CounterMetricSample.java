@@ -14,23 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.metrics.model.sample;
 
-package org.apache.dubbo.metrics.event;
+import org.apache.dubbo.metrics.model.MetricsCategory;
 
-public class ApplicationEvent extends MetricsEvent{
-    private ApplicationEvent.Type type;
+import java.util.Map;
 
-    public ApplicationEvent(Object source, ApplicationEvent.Type type) {
-        super(source);
-        this.type = type;
+public class CounterMetricSample<T extends Number>  extends MetricSample {
+
+    private final T value;
+
+    public CounterMetricSample(String name, String description, Map<String, String> tags,
+                               MetricsCategory category, T value ) {
+        super(name, description, tags, Type.COUNTER, category);
+        this.value = value;
     }
 
-    public ApplicationEvent.Type getType() {
-        return type;
+    public CounterMetricSample(String name, String description, Map<String, String> tags,   MetricsCategory category,
+                               String baseUnit, T value) {
+        super(name, description, tags, Type.COUNTER, category, baseUnit);
+        this.value = value;
     }
 
-    public void setType(ApplicationEvent.Type type) {
-        this.type = type;
+    public T getValue() {
+        return value;
     }
-
 }
