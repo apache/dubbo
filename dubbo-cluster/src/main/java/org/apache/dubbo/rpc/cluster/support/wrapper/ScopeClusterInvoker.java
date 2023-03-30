@@ -39,7 +39,6 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
-import static org.apache.dubbo.rpc.Constants.LOCAL_KEY;
 import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
 import static org.apache.dubbo.rpc.Constants.SCOPE_KEY;
 import static org.apache.dubbo.rpc.Constants.SCOPE_REMOTE;
@@ -176,8 +175,8 @@ public class ScopeClusterInvoker<T> implements ClusterInvoker<T>, ExporterChange
             injvmFlag = true;
             return;
         }
-        // Check if the service has been exported through Injvm protocol or the LOCAL_KEY parameter is set
-        if (Boolean.TRUE.toString().equalsIgnoreCase(isInjvm) || LOCAL_KEY.equalsIgnoreCase(getUrl().getParameter(SCOPE_KEY))) {
+        // Check if the service has been exported through Injvm protocol or the SCOPE_LOCAL parameter is set
+        if (Boolean.TRUE.toString().equalsIgnoreCase(isInjvm) || SCOPE_LOCAL.equalsIgnoreCase(getUrl().getParameter(SCOPE_KEY))) {
             injvmFlag = true;
         } else if (isInjvm == null) {
             injvmFlag = isNotRemoteOrGeneric();
@@ -188,6 +187,11 @@ public class ScopeClusterInvoker<T> implements ClusterInvoker<T>, ExporterChange
         injvmExporterListener.addExporterChangeListener(this, getUrl().getServiceKey());
     }
 
+    /**
+     * Check if the service is a generalized call or the SCOPE_REMOTE parameter is set
+     *
+     * @return boolean
+     */
     private boolean isNotRemoteOrGeneric() {
         return !SCOPE_REMOTE.equalsIgnoreCase(getUrl().getParameter(SCOPE_KEY)) &&
             !getUrl().getParameter(GENERIC_KEY, false);
@@ -216,8 +220,8 @@ public class ScopeClusterInvoker<T> implements ClusterInvoker<T>, ExporterChange
         // When calling locally, determine whether it does not meet the requirements
         if (!isExportedValue && (SCOPE_LOCAL.equalsIgnoreCase(getUrl().getParameter(SCOPE_KEY)) ||
             Boolean.TRUE.toString().equalsIgnoreCase(getUrl().getParameter(LOCAL_PROTOCOL)) || local)) {
-            // If it's supposed to be exported to the local JVM but it's not, throw an exception
-            throw new RpcException("Local service has not been exposed yet!");
+            // If it's supposed to be exported to the local JVM ,but it's not, throw an exception
+            throw new RpcException("Local service for " + getUrl().getServiceInterface() + " has not been exposed yet!");
         }
 
         return isExportedValue && injvmFlag;
