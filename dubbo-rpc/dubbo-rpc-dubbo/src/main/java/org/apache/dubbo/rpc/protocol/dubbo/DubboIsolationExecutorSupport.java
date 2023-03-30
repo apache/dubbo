@@ -23,6 +23,8 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.executor.AbstractIsolationExecutorSupport;
+import org.apache.dubbo.rpc.model.ProviderModel;
+import org.apache.dubbo.rpc.model.ServiceModel;
 
 import java.util.Map;
 
@@ -38,7 +40,7 @@ public class DubboIsolationExecutorSupport extends AbstractIsolationExecutorSupp
     }
 
     @Override
-    protected ServiceKey getServiceKey(Object data) {
+    protected ProviderModel getProviderModel(Object data) {
         if (!(data instanceof Request)) {
             return null;
         }
@@ -47,11 +49,12 @@ public class DubboIsolationExecutorSupport extends AbstractIsolationExecutorSupp
         if (!(request.getData() instanceof Invocation)) {
             return null;
         }
-        Invocation inv = (Invocation) request.getData();
-        Map<String, String> attachments = inv.getAttachments();
-        String interfaceName = attachments.get(PATH_KEY);
-        String version = attachments.get(VERSION_KEY);
-        String group = attachments.get(GROUP_KEY);
-        return new ServiceKey(interfaceName, version, group);
+
+        ServiceModel serviceModel = ((Invocation) request.getData()).getServiceModel();
+        if (serviceModel instanceof ProviderModel) {
+            return (ProviderModel) serviceModel;
+        }
+
+        return null;
     }
 }

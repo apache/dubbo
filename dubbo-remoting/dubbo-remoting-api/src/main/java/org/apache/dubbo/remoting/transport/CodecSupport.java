@@ -168,7 +168,13 @@ public class CodecSupport {
         if (CollectionUtils.isEmpty(urls)) {
             throw new IOException("Service " + path + " with version " + version + " not found, invocation rejected.");
         } else {
-            boolean match = urls.stream().anyMatch(url -> isMatch(url, id));
+            boolean match = false;
+            for (URL url: urls) {
+                if (isMatch(url, id)) {
+                    match = true;
+                    break;
+                }
+            }
             if (!match) {
                 throw new IOException("Unexpected serialization id:" + id + " received from network, please check if the peer send the right id.");
             }

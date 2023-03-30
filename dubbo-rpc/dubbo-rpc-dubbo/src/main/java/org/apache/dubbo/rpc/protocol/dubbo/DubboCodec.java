@@ -200,15 +200,19 @@ public class DubboCodec extends ExchangeCodec {
     }
 
     private boolean isDecodeDataInIoThread(Channel channel) {
-        boolean decodeDataInIoThread = channel.getUrl().getParameter(DECODE_IN_IO_THREAD_KEY, DEFAULT_DECODE_IN_IO_THREAD);
         String mode = ExecutorRepository.getMode(channel.getUrl().getOrDefaultApplicationModel());
-        if (EXECUTOR_MANAGEMENT_MODE_ISOLATION.equals(mode)) {
-            if (!decodeDataInIoThread && decodeInUserThreadLogged.compareAndSet(false, true)) {
-                log.info("Because thread pool isolation is enabled on the dubbo protocol, the body can only be decoded " +
-                    "on the io thread, and the parameter[" + DECODE_IN_IO_THREAD_KEY + "] will be ignored");
-                // Why? because obtaining the isolated thread pool requires the serviceKey of the service,
-                // and this part must be decoded before it can be obtained (more see DubboExecutorSupport)
-            }
+        boolean isIsolated = EXECUTOR_MANAGEMENT_MODE_ISOLATION.equals(mode);
+
+        if (isIsolated && !decodeInUserThreadLogged.compareAndSet(false, true)) {
+            return true;
+        }
+
+        boolean decodeDataInIoThread = channel.getUrl().getParameter(DECODE_IN_IO_THREAD_KEY, DEFAULT_DECODE_IN_IO_THREAD);
+        if (isIsolated && !decodeDataInIoThread) {
+            log.info("Because thread pool isolation is enabled on the dubbo protocol, the body can only be decoded " +
+                "on the io thread, and the parameter[" + DECODE_IN_IO_THREAD_KEY + "] will be ignored");
+            // Why? because obtaining the isolated thread pool requires the serviceKey of the service,
+            // and this part must be decoded before it can be obtained (more see DubboExecutorSupport)
             return true;
         }
         return decodeDataInIoThread;

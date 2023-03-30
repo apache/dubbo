@@ -24,6 +24,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.executor.ExecutorSupport;
+import org.apache.dubbo.rpc.model.ServiceModel;
 
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
@@ -53,6 +54,8 @@ public interface ExecutorRepository {
      * @return
      */
     ExecutorService getExecutor(URL url);
+
+    ExecutorService getExecutor(ServiceModel serviceModel, URL url);
 
 
 
