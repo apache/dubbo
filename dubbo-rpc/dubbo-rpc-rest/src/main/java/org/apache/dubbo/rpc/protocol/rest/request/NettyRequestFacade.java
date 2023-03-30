@@ -22,10 +22,9 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpContent;
+import org.apache.dubbo.common.utils.IOUtils;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -42,9 +41,11 @@ public class NettyRequestFacade extends RequestFacade<FullHttpRequest> {
 
     private ChannelHandlerContext context;
 
+
     public NettyRequestFacade(Object request, ChannelHandlerContext context) {
         super((FullHttpRequest) request);
         this.context = context;
+
     }
 
 
@@ -231,13 +232,22 @@ public class NettyRequestFacade extends RequestFacade<FullHttpRequest> {
     }
 
     @Override
-    public InputStream getInputStream() throws IOException {
+    public byte[] getInputStream() throws IOException {
+
+        return body;
+    }
+
+    protected void parseBody() {
         ByteBuf byteBuf = ((HttpContent) request).content();
 
         if (byteBuf.readableBytes() > 0) {
 
-            return new ByteBufInputStream(byteBuf.retain());
+            try {
+                body = IOUtils.toByteArray(new ByteBufInputStream(byteBuf));
+            } catch (IOException e) {
+
+            }
         }
-        return new ByteArrayInputStream(new byte[0]);
+
     }
 }

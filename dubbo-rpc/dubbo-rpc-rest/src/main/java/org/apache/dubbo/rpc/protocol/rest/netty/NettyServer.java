@@ -29,13 +29,16 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.timeout.IdleStateHandler;
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.threadpool.ThreadPool;
+import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
 
 import java.net.InetSocketAddress;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+
+import static org.apache.dubbo.remoting.Constants.EVENT_LOOP_BOSS_POOL_NAME;
+import static org.apache.dubbo.remoting.Constants.EVENT_LOOP_WORKER_POOL_NAME;
 
 
 public class NettyServer {
@@ -46,12 +49,12 @@ public class NettyServer {
     protected int runtimePort = -1;
 
     private EventLoopGroup eventLoopGroup;
+    private EventLoopGroup workerLoopGroup;
     private int ioWorkerCount = Runtime.getRuntime().availableProcessors() * 2;
 
     private List<ChannelHandler> channelHandlers = Collections.emptyList();
     private Map<ChannelOption, Object> channelOptions = Collections.emptyMap();
     private Map<ChannelOption, Object> childChannelOptions = Collections.emptyMap();
-    private List<ChannelHandler> httpChannelHandlers = Collections.emptyList();
     private UnSharedHandlerCreator unSharedHandlerCallBack;
 
     public NettyServer() {
@@ -95,16 +98,6 @@ public class NettyServer {
     }
 
     /**
-     * Add additional {@link io.netty.channel.ChannelHandler}s to the {@link io.netty.bootstrap.ServerBootstrap}.
-     * <p>The additional channel handlers are being added <em>after</em> the HTTP handling.</p>
-     *
-     * @param httpChannelHandlers the additional {@link io.netty.channel.ChannelHandler}s.
-     */
-    public void setHttpChannelHandlers(final List<ChannelHandler> httpChannelHandlers) {
-        this.httpChannelHandlers = httpChannelHandlers == null ? Collections.<ChannelHandler>emptyList() : httpChannelHandlers;
-    }
-
-    /**
      * Add Netty {@link io.netty.channel.ChannelOption}s to the {@link io.netty.bootstrap.ServerBootstrap}.
      *
      * @param channelOptions the additional {@link io.netty.channel.ChannelOption}s.
@@ -129,10 +122,11 @@ public class NettyServer {
     }
 
     public void start(URL url) {
-        eventLoopGroup = new NioEventLoopGroup(ioWorkerCount, url.getOrDefaultFrameworkModel().getExtensionLoader(ThreadPool.class).getAdaptiveExtension().getExecutor(url));
+        eventLoopGroup = new NioEventLoopGroup(1, new NamedThreadFactory(EVENT_LOOP_BOSS_POOL_NAME));
+        workerLoopGroup = new NioEventLoopGroup(ioWorkerCount, new NamedThreadFactory(EVENT_LOOP_WORKER_POOL_NAME));
 
         // Configure the server.
-        bootstrap.group(eventLoopGroup)
+        bootstrap.group(eventLoopGroup, workerLoopGroup)
             .channel(NioServerSocketChannel.class)
             .childHandler(setupHandlers(url));
 
@@ -166,7 +160,7 @@ public class NettyServer {
 
                 int idleTimeout = url.getParameter(RestConstant.IDLE_TIMEOUT_PARAM, RestConstant.IDLE_TIMEOUT);
                 if (idleTimeout > 0) {
-                    channelHandlers.add(new IdleStateHandler(0, 0, idleTimeout));
+                    channelPipeline.addLast(new IdleStateHandler(0, 0, idleTimeout));
                 }
 
                 channelPipeline.addLast(channelHandlers.toArray(new ChannelHandler[channelHandlers.size()]));
@@ -176,8 +170,6 @@ public class NettyServer {
                 for (ChannelHandler unSharedHandler : unSharedHandlers) {
                     channelPipeline.addLast(unSharedHandler);
                 }
-
-                channelPipeline.addLast(httpChannelHandlers.toArray(new ChannelHandler[httpChannelHandlers.size()]));
 
             }
         };

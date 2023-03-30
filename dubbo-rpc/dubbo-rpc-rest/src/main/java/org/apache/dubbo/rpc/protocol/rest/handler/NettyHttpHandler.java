@@ -87,9 +87,6 @@ public class NettyHttpHandler implements HttpHandler<NettyRequestFacade, NettyHt
                 + " , stacktrace is: " + stackTraceToString(throwable));
         }
 
-        // write response
-        nettyHttpResponse.finish();
-
 
     }
 

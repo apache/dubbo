@@ -114,9 +114,6 @@ public class NettyHttpRestServer implements RestProtocolServer {
 
         // set options
         server.setChannelOptions(getChannelOptionMap(url));
-
-        // set http handler and @Shared
-        server.setHttpChannelHandlers(getHttpChannelHandlers(url));
         // set unshared callback
         server.setUnSharedHandlerCallBack(getUnSharedHttpChannelHandlers());
         // set channel handler  and @Shared
@@ -138,7 +135,7 @@ public class NettyHttpRestServer implements RestProtocolServer {
                         url.getParameter(RestConstant.MAX_HEADER_SIZE_PARAM, RestConstant.MAX_HEADER_SIZE),
                         url.getParameter(RestConstant.MAX_CHUNK_SIZE_PARAM, RestConstant.MAX_CHUNK_SIZE)),
                     new HttpObjectAggregator(url.getParameter(RestConstant.MAX_REQUEST_SIZE_PARAM, RestConstant.MAX_REQUEST_SIZE)),
-                    new HttpResponseEncoder());
+                    new HttpResponseEncoder(), new RestHttpRequestDecoder(new NettyHttpHandler(pathAndInvokerMapper, exceptionMapper), url));
             }
         };
     }
@@ -169,17 +166,6 @@ public class NettyHttpRestServer implements RestProtocolServer {
         options.put(ChannelOption.SO_BACKLOG, url.getPositiveParameter(BACKLOG_KEY, org.apache.dubbo.remoting.Constants.DEFAULT_BACKLOG));
         options.put(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
         return options;
-    }
-
-    /**
-     * create http channel handlers
-     *
-     * @param url
-     * @return
-     */
-    protected List<ChannelHandler> getHttpChannelHandlers(URL url) {
-        return Arrays.asList(
-            new RestHttpRequestDecoder(new NettyHttpHandler(pathAndInvokerMapper,exceptionMapper)));
     }
 
     /**
