@@ -66,6 +66,12 @@ public class NettyHttpHandler implements HttpHandler<NettyRequestFacade, NettyHt
 
         // set local address
         RpcContext.getServiceContext().setLocalAddress(requestFacade.getLocalAddr(), requestFacade.getLocalPort());
+
+        // set request
+        RpcContext.getServiceContext().setRequest(requestFacade.getRequest());
+
+        // set response
+        RpcContext.getServiceContext().setResponse(nettyHttpResponse);
         // TODO add request filter chain
 
         FullHttpRequest nettyHttpRequest = requestFacade.getRequest();
@@ -86,9 +92,6 @@ public class NettyHttpHandler implements HttpHandler<NettyRequestFacade, NettyHt
             nettyHttpResponse.sendError(500, "dubbo rest invoke Internal error, message is " + throwable.getMessage()
                 + " , stacktrace is: " + stackTraceToString(throwable));
         }
-
-        // write response
-        nettyHttpResponse.finish();
 
 
     }

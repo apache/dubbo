@@ -20,14 +20,14 @@ package org.apache.dubbo.rpc.protocol.rest.request;
 import org.apache.dubbo.common.utils.StringUtils;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- *  request facade for different request
+ * request facade for different request
+ *
  * @param <T>
  */
 public abstract class RequestFacade<T> {
@@ -36,11 +36,13 @@ public abstract class RequestFacade<T> {
 
     protected String path;
     protected T request;
+    protected byte[] body = new byte[0];
 
     public RequestFacade(T request) {
         this.request = request;
         initHeaders();
         initParameters();
+        parseBody();
     }
 
     protected void initHeaders() {
@@ -125,7 +127,9 @@ public abstract class RequestFacade<T> {
 
     public abstract int getLocalPort();
 
-    public abstract InputStream getInputStream() throws IOException;
+    public abstract byte[] getInputStream() throws IOException;
+
+    protected abstract void parseBody();
 
 
 }

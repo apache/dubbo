@@ -17,26 +17,32 @@
 
 package org.apache.dubbo.rpc.protocol.rest.netty;
 
-import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageDecoder;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.Executor;
 
 import io.netty.handler.codec.http.HttpHeaders;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.threadpool.ThreadPool;
 import org.apache.dubbo.rpc.protocol.rest.handler.NettyHttpHandler;
 import org.apache.dubbo.rpc.protocol.rest.request.NettyRequestFacade;
 
 
-@ChannelHandler.Sharable
 public class RestHttpRequestDecoder extends MessageToMessageDecoder<io.netty.handler.codec.http.FullHttpRequest> {
-
+    private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
 
     private final NettyHttpHandler handler;
+    private final Executor executor;
 
 
-    public RestHttpRequestDecoder(NettyHttpHandler handler) {
+    public RestHttpRequestDecoder(NettyHttpHandler handler, URL url) {
         this.handler = handler;
+        executor = url.getOrDefaultFrameworkModel().getExtensionLoader(ThreadPool.class).getAdaptiveExtension().getExecutor(url);
     }
 
 
@@ -44,12 +50,26 @@ public class RestHttpRequestDecoder extends MessageToMessageDecoder<io.netty.han
     protected void decode(ChannelHandlerContext ctx, io.netty.handler.codec.http.FullHttpRequest request, List<Object> out) throws Exception {
         boolean keepAlive = HttpHeaders.isKeepAlive(request);
 
-
         NettyHttpResponse nettyHttpResponse = new NettyHttpResponse(ctx, keepAlive);
         NettyRequestFacade requestFacade = new NettyRequestFacade(request, ctx);
 
-        // business handler
-        handler.handle(requestFacade, nettyHttpResponse);
+        executor.execute(() -> {
+
+            // business handler
+            try {
+                handler.handle(requestFacade, nettyHttpResponse);
+
+            } catch (IOException e) {
+                logger.error("", e.getCause().getMessage(), "dubbo rest rest http request handler error", e.getMessage(), e);
+            }
+
+            // write response
+            try {
+                nettyHttpResponse.finish();
+            } catch (IOException e) {
+                logger.error("", e.getCause().getMessage(), "dubbo rest rest http response flush error", e.getMessage(), e);
+            }
+        });
 
 
     }

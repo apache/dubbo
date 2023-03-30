@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.provider;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.metadata.rest.ArgInfo;
 import org.apache.dubbo.metadata.rest.ParamType;
@@ -28,7 +27,6 @@ import org.apache.dubbo.rpc.protocol.rest.message.HttpMessageCodecManager;
 import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
 import org.apache.dubbo.rpc.protocol.rest.util.MediaTypeUtil;
 
-import java.io.InputStream;
 
 
 /**
@@ -44,9 +42,8 @@ public class BodyProviderParamParser extends ProviderParamParser {
 
         try {
             String contentType = parseContext.getRequestFacade().getHeader(RestHeaderEnum.CONTENT_TYPE.getHeader());
-            InputStream inputStream = request.getInputStream();
             MediaType mediaType = MediaTypeUtil.convertMediaType(argInfo.getParamType(), contentType);
-            Object param = HttpMessageCodecManager.httpMessageDecode(IOUtils.toByteArray(inputStream), argInfo.getParamType(), mediaType);
+            Object param = HttpMessageCodecManager.httpMessageDecode(request.getInputStream(), argInfo.getParamType(), mediaType);
             parseContext.setValueByIndex(argInfo.getIndex(), param);
         } catch (Throwable e) {
             throw new ParamParseException("dubbo rest protocol provider body param parser  error: " + e.getMessage());
