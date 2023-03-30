@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.metrics.report;
 
+import io.micrometer.core.instrument.FunctionCounter;
 import io.micrometer.core.instrument.binder.MeterBinder;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
@@ -29,6 +30,7 @@ import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.metrics.collector.AggregateMetricsCollector;
 import org.apache.dubbo.metrics.collector.MetricsCollector;
 import org.apache.dubbo.metrics.collector.HistogramMetricsCollector;
+import org.apache.dubbo.metrics.model.sample.CounterMetricSample;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -157,19 +159,17 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
                     switch (sample.getType()) {
                         case GAUGE:
                             GaugeMetricSample gaugeSample = (GaugeMetricSample) sample;
-                            List<Tag> tags = new ArrayList<>();
-                            gaugeSample.getTags().forEach((k, v) -> {
-                                if (v == null) {
-                                    v = "";
-                                }
-
-                                tags.add(Tag.of(k, v));
-                            });
+                            List<Tag> tags = getTags(gaugeSample);
 
                             Gauge.builder(gaugeSample.getName(), gaugeSample.getValue(), gaugeSample.getApply())
                                 .description(gaugeSample.getDescription()).tags(tags).register(compositeRegistry);
                             break;
                         case COUNTER:
+                            CounterMetricSample counterMetricSample = (CounterMetricSample) sample;
+                            FunctionCounter.builder(counterMetricSample.getName(),  counterMetricSample.getValue(),
+                                    Number::doubleValue).description(counterMetricSample.getDescription())
+                                .tags(getTags(counterMetricSample))
+                                .register(compositeRegistry);
                         case TIMER:
                         case LONG_TASK_TIMER:
                         case DISTRIBUTION_SUMMARY:
@@ -183,6 +183,18 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
                 }
             }
         });
+    }
+
+    private static List<Tag> getTags(MetricSample gaugeSample) {
+        List<Tag> tags = new ArrayList<>();
+        gaugeSample.getTags().forEach((k, v) -> {
+            if (v == null) {
+                v = "";
+            }
+
+            tags.add(Tag.of(k, v));
+        });
+        return tags;
     }
 
     private void registerDubboShutdownHook() {
