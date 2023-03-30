@@ -149,6 +149,8 @@ public interface Constants {
 
     int DEFAULT_BACKLOG = 1024;
 
+    String CONNECTION_POOL_KEY = "connection.pool";
+
     String CONNECTION = "Connection";
 
     String KEEP_ALIVE = "keep-alive";

@@ -19,9 +19,13 @@ package org.apache.dubbo.rpc.protocol.tri;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
+import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.api.connection.AbstractConnectionClient;
 import org.apache.dubbo.remoting.api.connection.ConnectionManager;
+import org.apache.dubbo.remoting.api.connection.ConnectionProvider;
+import org.apache.dubbo.remoting.api.connection.pool.ConnectionPool;
+import org.apache.dubbo.remoting.api.connection.pool.factory.ConnectionPoolFactory;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ReflectionMethodDescriptor;
@@ -30,7 +34,6 @@ import org.apache.dubbo.rpc.protocol.tri.call.TripleClientCall;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
 import org.apache.dubbo.rpc.protocol.tri.support.IGreeter;
 
-import io.netty.channel.Channel;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -64,14 +67,33 @@ class TripleInvokerTest {
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("test");
         invocation.setArguments(new Object[]{streamObserver, streamObserver});
+
+        url.addParameterIfAbsent(ConnectionPoolFactory.URL_KEY, ConnectionPoolFactory.DEFAULT);
+        ConnectionPool<AbstractConnectionClient> connectionPool = url.getOrDefaultApplicationModel().getExtensionLoader(ConnectionPoolFactory.class)
+                .getAdaptiveExtension().getConnectionPool(url, new MockTripleConnectionProvider(connectionClient));
+
         TripleInvoker<IGreeter> invoker = new TripleInvoker<>(IGreeter.class, url,
-                Identity.MESSAGE_ENCODING, connectionClient, new HashSet<>(), executorService);
+                Identity.MESSAGE_ENCODING, connectionPool, new HashSet<>(), executorService);
         MethodDescriptor echoMethod = new ReflectionMethodDescriptor(
                 IGreeter.class.getDeclaredMethod("echo", String.class));
         Assertions.assertTrue(invoker.isAvailable());
         invoker.invokeUnary(echoMethod, invocation, call);
         invoker.destroy();
         Assertions.assertFalse(invoker.isAvailable());
+    }
+
+    public class MockTripleConnectionProvider implements ConnectionProvider<AbstractConnectionClient> {
+
+        private final AbstractConnectionClient connectionClient;
+
+        public MockTripleConnectionProvider(AbstractConnectionClient connectionClient){
+            this.connectionClient = connectionClient;
+        }
+
+        @Override
+        public AbstractConnectionClient initConnection(URL url) {
+            return connectionClient;
+        }
     }
 
 }

@@ -21,6 +21,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.Constants;
+import org.apache.dubbo.remoting.api.connection.pool.ConnectionPool;
 import org.apache.dubbo.remoting.exchange.ExchangeClient;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
@@ -122,8 +123,8 @@ class DubboInvokerAvailableTest {
 
         DubboInvoker<?> invoker = (DubboInvoker<?>) protocol.protocolBindingRefer(IDemoService.class, url);
 
-        ExchangeClient[] clients = getClients(invoker);
-        clients[0].close();
+        ConnectionPool connectionPool = invoker.getConnectionPool();
+        connectionPool.close();
         Assertions.assertFalse(invoker.isAvailable());
 
     }
@@ -172,11 +173,11 @@ class DubboInvokerAvailableTest {
     }
 
     private ExchangeClient[] getClients(DubboInvoker<?> invoker) throws Exception {
-        Field field = DubboInvoker.class.getDeclaredField("clients");
+        Field field = DubboInvoker.class.getDeclaredField("connectionPool");
         field.setAccessible(true);
-        ExchangeClient[] clients = (ExchangeClient[]) field.get(invoker);
-        Assertions.assertEquals(1, clients.length);
-        return clients;
+        ConnectionPool connectionPool = (ConnectionPool) field.get(invoker);
+        Assertions.assertNotNull(connectionPool);
+        return new ExchangeClient[]{(ExchangeClient) connectionPool.getClient()};
     }
 
     public class DemoServiceImpl implements IDemoService {

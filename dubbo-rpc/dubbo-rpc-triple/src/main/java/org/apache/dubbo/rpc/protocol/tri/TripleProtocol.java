@@ -24,6 +24,8 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.remoting.api.connection.AbstractConnectionClient;
+import org.apache.dubbo.remoting.api.connection.pool.ConnectionPool;
+import org.apache.dubbo.remoting.api.connection.pool.factory.ConnectionPoolFactory;
 import org.apache.dubbo.remoting.api.pu.DefaultPuHandler;
 import org.apache.dubbo.remoting.exchange.PortUnificationExchanger;
 import org.apache.dubbo.rpc.Exporter;
@@ -44,9 +46,9 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
+import static org.apache.dubbo.config.Constants.SERVER_THREAD_POOL_NAME;
 import static org.apache.dubbo.rpc.Constants.H2_IGNORE_1_0_0_KEY;
 import static org.apache.dubbo.rpc.Constants.H2_RESOLVE_FALLBACK_TO_DEFAULT_KEY;
-import static org.apache.dubbo.config.Constants.SERVER_THREAD_POOL_NAME;
 import static org.apache.dubbo.rpc.Constants.H2_SUPPORT_NO_LOWER_HEADER_KEY;
 
 public class TripleProtocol extends AbstractProtocol {
@@ -138,11 +140,18 @@ public class TripleProtocol extends AbstractProtocol {
         optimizeSerialization(url);
         ExecutorService streamExecutor = getOrCreateStreamExecutor(
             url.getOrDefaultApplicationModel(), url);
-        AbstractConnectionClient connectionClient = PortUnificationExchanger.connect(url, new DefaultPuHandler());
+
         TripleInvoker<T> invoker = new TripleInvoker<>(type, url, acceptEncodings,
-            connectionClient, invokers, streamExecutor);
+            getConnectionPool(url), invokers, streamExecutor);
         invokers.add(invoker);
         return invoker;
+    }
+
+    private ConnectionPool<AbstractConnectionClient> getConnectionPool(URL url) {
+        url.addParameterIfAbsent(ConnectionPoolFactory.URL_KEY, ConnectionPoolFactory.DEFAULT);
+
+        return url.getOrDefaultApplicationModel().getExtensionLoader(ConnectionPoolFactory.class)
+                .getAdaptiveExtension().getConnectionPool(url, new TripleConnectionProvider(new DefaultPuHandler()));
     }
 
     private ExecutorService getOrCreateStreamExecutor(ApplicationModel applicationModel, URL url) {

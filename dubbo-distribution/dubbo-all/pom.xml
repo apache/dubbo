@@ -1295,6 +1295,12 @@
                                     </resource>
                                 </transformer>
                                 <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>
+                                        META-INF/dubbo/internal/org.apache.dubbo.remoting.api.connection.pool.factory.ConnectionPoolFactory
+                                    </resource>
+                                </transformer>
+                                <transformer>
                                     implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                     <resource>
                                         META-INF/dubbo/internal/org.apache.dubbo.metrics.collector.MetricsCollector
@@ -1307,7 +1313,6 @@
                                         META-INF/dubbo/internal/org.apache.dubbo.spring.security.jackson.ObjectMapperCodecCustomer
                                     </resource>
                                 </transformer>
-
                             </transformers>
                             <filters>
                                 <filter>
