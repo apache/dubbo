@@ -80,7 +80,7 @@ public class SpringBootConfigMetricsTest {
         MetricsConfig metricsConfig = configManager.getMetrics().get();
 
         Assertions.assertEquals(PROTOCOL_PROMETHEUS, metricsConfig.getProtocol());
-        Assertions.assertTrue(metricsConfig.getEnableJvmMetrics());
+        Assertions.assertTrue(metricsConfig.getEnableJvm());
         Assertions.assertEquals("tri",metricsConfig.getExportServiceProtocol());
         Assertions.assertEquals(9999, metricsConfig.getExportServicePort());
         Assertions.assertTrue(metricsConfig.getPrometheus().getExporter().getEnabled());
