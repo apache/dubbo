@@ -143,7 +143,9 @@ class DefaultFutureTest {
         // get operate will throw a interrupted exception, because the thread is interrupted.
         try {
             new InterruptThread(Thread.currentThread()).start();
-            executor.waitAndDrain();
+            while (!f. isDone()){
+                executor.waitAndDrain();
+            }
             f.get();
         } catch (Exception e) {
             Assertions.assertTrue(e instanceof InterruptedException, "catch exception is not interrupted exception!");

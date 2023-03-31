@@ -24,6 +24,7 @@ import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.stream.StreamObserver;
+import org.apache.dubbo.common.threadpool.ThreadlessExecutor;
 import org.apache.dubbo.remoting.api.connection.AbstractConnectionClient;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.AsyncRpcResult;
@@ -70,6 +71,7 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAI
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_REQUEST;
 import static org.apache.dubbo.rpc.Constants.COMPRESSOR_KEY;
 import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
+import static org.apache.dubbo.rpc.model.MethodDescriptor.RpcType.UNARY;
 
 /**
  * TripleInvoker
@@ -126,15 +128,14 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         final MethodDescriptor methodDescriptor = serviceDescriptor.getMethod(
             invocation.getMethodName(),
             invocation.getParameterTypes());
-        ClientCall call = new TripleClientCall(connectionClient, streamExecutor,
+        MethodDescriptor.RpcType rpcType = methodDescriptor.getRpcType();
+        Executor callbackExecutor = UNARY.equals(rpcType) ? new ThreadlessExecutor() : streamExecutor;
+        ClientCall call = new TripleClientCall(connectionClient, callbackExecutor,
             getUrl().getOrDefaultFrameworkModel(), writeQueue);
-        Executor callbackExecutor = getCallbackExecutor(getUrl(), invocation);
         AsyncRpcResult result;
         try {
-            switch (methodDescriptor.getRpcType()) {
+            switch (rpcType) {
                 case UNARY:
-                    call = new TripleClientCall(connectionClient, callbackExecutor,
-                        getUrl().getOrDefaultFrameworkModel(), writeQueue);
                     result = invokeUnary(methodDescriptor, invocation, call, callbackExecutor);
                     break;
                 case SERVER_STREAM:
