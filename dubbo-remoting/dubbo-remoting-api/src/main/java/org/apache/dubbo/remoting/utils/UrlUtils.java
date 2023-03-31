@@ -95,7 +95,7 @@ public class UrlUtils {
      */
     @SuppressWarnings("unchecked")
     public static Collection<String> allSerializations(URL url) {
-        Object obj = url.getAttributes().get(ALLOWED_SERIALIZATION_KEY);
+        Object obj = url.getAttribute(ALLOWED_SERIALIZATION_KEY);
         if (obj instanceof Set) {
             return (Set<String>) obj;
         }
@@ -105,7 +105,7 @@ public class UrlUtils {
         Optional.ofNullable(url.getParameter(SERIALIZATION_KEY)).filter(StringUtils::isNotBlank).ifPresent(serializations::add);
         serializations.add(DefaultSerializationSelector.getDefaultRemotingSerialization());
         Set<String> unmodifiableSet = Collections.unmodifiableSet(serializations);
-        url.getAttributes().put(ALLOWED_SERIALIZATION_KEY, unmodifiableSet);
+        url.putAttribute(ALLOWED_SERIALIZATION_KEY, unmodifiableSet);
         return unmodifiableSet;
     }
 
