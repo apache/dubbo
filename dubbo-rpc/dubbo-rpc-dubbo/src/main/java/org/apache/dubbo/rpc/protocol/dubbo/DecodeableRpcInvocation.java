@@ -78,6 +78,8 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
 
     protected final transient Supplier<CallbackServiceCodec> callbackServiceCodecFactory;
 
+    private static final boolean CHECK_SERIALIZATION = Boolean.parseBoolean(System.getProperty(SERIALIZATION_SECURITY_CHECK_KEY, "true"));
+
     public DecodeableRpcInvocation(FrameworkModel frameworkModel, Channel channel, Request request, InputStream is, byte id) {
         this.frameworkModel = frameworkModel;
         Assert.notNull(channel, "channel == null");
@@ -138,7 +140,7 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
 
         ClassLoader originClassLoader = Thread.currentThread().getContextClassLoader();
         try {
-            if (Boolean.parseBoolean(System.getProperty(SERIALIZATION_SECURITY_CHECK_KEY, "true"))) {
+            if (CHECK_SERIALIZATION) {
                 CodecSupport.checkSerialization(frameworkModel.getServiceRepository(), path, version, serializationType);
             }
             Object[] args = DubboCodec.EMPTY_OBJECT_ARRAY;
