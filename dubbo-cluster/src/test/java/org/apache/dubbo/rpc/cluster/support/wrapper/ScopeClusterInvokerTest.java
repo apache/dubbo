@@ -27,6 +27,7 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.Result;
+import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
@@ -41,7 +42,9 @@ import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.common.constants.CommonConstants.EXPORTER_LISTENER_KEY;
@@ -50,6 +53,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
 import static org.apache.dubbo.rpc.Constants.SCOPE_LOCAL;
+import static org.apache.dubbo.rpc.cluster.Constants.PEER_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.SCOPE_KEY;
 
@@ -75,6 +79,9 @@ class ScopeClusterInvokerTest {
         exporters.clear();
         for (Invoker<DemoService> invoker : invokers) {
             invoker.destroy();
+            if (invoker instanceof ScopeClusterInvoker) {
+                Assertions.assertTrue(((ScopeClusterInvoker) invoker).isDestroyed());
+            }
         }
         invokers.clear();
     }
@@ -104,7 +111,7 @@ class ScopeClusterInvokerTest {
         url = url.setScopeModel(ApplicationModel.defaultModel().getDefaultModule());
 
         URL injvmUrl = URL.valueOf("injvm://127.0.0.1/TestService")
-            .addParameter(INTERFACE_KEY, DemoService.class.getName()).setScopeModel(ApplicationModel.defaultModel().getDefaultModule()) ;
+            .addParameter(INTERFACE_KEY, DemoService.class.getName()).setScopeModel(ApplicationModel.defaultModel().getDefaultModule());
         Exporter<?> exporter = protocol.export(proxy.getInvoker(new DemoServiceImpl(), DemoService.class, injvmUrl));
         exporters.add(exporter);
 
@@ -152,12 +159,6 @@ class ScopeClusterInvokerTest {
         url = url.addParameter(SCOPE_KEY, SCOPE_LOCAL);
         url = url.setScopeModel(ApplicationModel.defaultModel().getDefaultModule());
 
-        URL injvmUrl = URL.valueOf("injvm://127.0.0.1/TestService")
-            .addParameter(INTERFACE_KEY, DemoService.class.getName());
-        injvmUrl = injvmUrl.addParameter(EXPORTER_LISTENER_KEY, LOCAL_PROTOCOL).setScopeModel(ApplicationModel.defaultModel().getDefaultModule());
-        Exporter<?> exporter = protocol.export(proxy.getInvoker(new DemoServiceImpl(), DemoService.class, injvmUrl));
-        exporters.add(exporter);
-
         Invoker<DemoService> cluster = getClusterInvoker(url);
         invokers.add(cluster);
 
@@ -165,8 +166,22 @@ class ScopeClusterInvokerTest {
         invocation.setMethodName("doSomething4");
         invocation.setParameterTypes(new Class[]{});
         Assertions.assertTrue(cluster.isAvailable(), "");
-        Result ret = cluster.invoke(invocation);
-        Assertions.assertEquals("doSomething4", ret.getValue());
+        RpcInvocation finalInvocation = invocation;
+        Assertions.assertThrows(RpcException.class, () -> cluster.invoke(finalInvocation));
+
+        URL injvmUrl = URL.valueOf("injvm://127.0.0.1/TestService")
+            .addParameter(INTERFACE_KEY, DemoService.class.getName());
+        injvmUrl = injvmUrl.addParameter(EXPORTER_LISTENER_KEY, LOCAL_PROTOCOL).setScopeModel(ApplicationModel.defaultModel().getDefaultModule());
+        Exporter<?> exporter = protocol.export(proxy.getInvoker(new DemoServiceImpl(), DemoService.class, injvmUrl));
+        exporters.add(exporter);
+
+
+        invocation = new RpcInvocation();
+        invocation.setMethodName("doSomething4");
+        invocation.setParameterTypes(new Class[]{});
+        Assertions.assertTrue(cluster.isAvailable(), "");
+        Result ret2 = cluster.invoke(invocation);
+        Assertions.assertEquals("doSomething4", ret2.getValue());
     }
 
     @Test
@@ -184,13 +199,12 @@ class ScopeClusterInvokerTest {
         Invoker<DemoService> cluster = getClusterInvoker(url);
         invokers.add(cluster);
 
-        //Configured with mock
         RpcInvocation invocation = new RpcInvocation();
-        invocation.setMethodName("doSomething4");
+        invocation.setMethodName("doSomething5");
         invocation.setParameterTypes(new Class[]{});
         Assertions.assertTrue(cluster.isAvailable(), "");
         Result ret = cluster.invoke(invocation);
-        Assertions.assertEquals("doSomething4", ret.getValue());
+        Assertions.assertEquals("doSomething5", ret.getValue());
     }
 
     @Test
@@ -221,6 +235,91 @@ class ScopeClusterInvokerTest {
         Assertions.assertFalse(((AtomicBoolean) isExported.get(cluster)).get());
     }
 
+    @Test
+    void testPeerInvoke() {
+        URL url = URL.valueOf("remote://1.2.3.4/" + DemoService.class.getName());
+        url = url.addParameter(REFER_KEY,
+            URL.encode(PATH_KEY + "=" + DemoService.class.getName()));
+        Map<String, Object> peer = new HashMap<>();
+        peer.put(PEER_KEY, true);
+        url = url.addAttributes(peer);
+        url = url.setScopeModel(ApplicationModel.defaultModel().getDefaultModule());
+
+        Invoker<DemoService> cluster = getClusterInvoker(url);
+        invokers.add(cluster);
+
+        //Configured with mock
+        RpcInvocation invocation = new RpcInvocation();
+        invocation.setMethodName("doSomething6");
+        invocation.setParameterTypes(new Class[]{});
+        Result ret = cluster.invoke(invocation);
+        Assertions.assertEquals("doSomething6", ret.getValue());
+
+    }
+
+    @Test
+    void testInjvmUrlInvoke() {
+        URL url = URL.valueOf("injvm://1.2.3.4/" + DemoService.class.getName());
+        url = url.addParameter(REFER_KEY,
+            URL.encode(PATH_KEY + "=" + DemoService.class.getName()));
+        url = url.setScopeModel(ApplicationModel.defaultModel().getDefaultModule());
+
+        Invoker<DemoService> cluster = getClusterInvoker(url);
+        invokers.add(cluster);
+
+        //Configured with mock
+        RpcInvocation invocation = new RpcInvocation();
+        invocation.setMethodName("doSomething7");
+        invocation.setParameterTypes(new Class[]{});
+        Result ret = cluster.invoke(invocation);
+        Assertions.assertEquals("doSomething7", ret.getValue());
+
+    }
+
+    @Test
+    void testDynamicInvoke() {
+        URL url = URL.valueOf("remote://1.2.3.4/" + DemoService.class.getName());
+        url = url.addParameter(REFER_KEY,
+            URL.encode(PATH_KEY + "=" + DemoService.class.getName()));
+        url = url.setScopeModel(ApplicationModel.defaultModel().getDefaultModule());
+
+        Invoker<DemoService> cluster = getClusterInvoker(url);
+        invokers.add(cluster);
+
+        RpcInvocation invocation = new RpcInvocation();
+        invocation.setMethodName("doSomething8");
+        invocation.setParameterTypes(new Class[]{});
+        Result ret1 = cluster.invoke(invocation);
+        Assertions.assertEquals("doSomething8", ret1.getValue());
+
+        RpcContext.getServiceContext().setLocalInvoke(true);
+
+        invocation = new RpcInvocation();
+        invocation.setMethodName("doSomething8");
+        invocation.setParameterTypes(new Class[]{});
+        RpcInvocation finalInvocation = invocation;
+        Assertions.assertThrows(RpcException.class, () -> cluster.invoke(finalInvocation));
+
+        URL injvmUrl = URL.valueOf("injvm://127.0.0.1/TestService")
+            .addParameter(INTERFACE_KEY, DemoService.class.getName()).setScopeModel(ApplicationModel.defaultModel().getDefaultModule());
+        Exporter<?> exporter = protocol.export(proxy.getInvoker(new DemoServiceImpl(), DemoService.class, injvmUrl));
+        exporters.add(exporter);
+
+        invocation = new RpcInvocation();
+        invocation.setMethodName("doSomething8");
+        invocation.setParameterTypes(new Class[]{});
+        Result ret2 = cluster.invoke(invocation);
+        Assertions.assertEquals("doSomething8", ret2.getValue());
+
+        RpcContext.getServiceContext().setLocalInvoke(false);
+
+        invocation = new RpcInvocation();
+        invocation.setMethodName("doSomething8");
+        invocation.setParameterTypes(new Class[]{});
+        Result ret3 = cluster.invoke(invocation);
+        Assertions.assertEquals("doSomething8", ret3.getValue());
+    }
+
     private Invoker<DemoService> getClusterInvoker(URL url) {
         final URL durl = url.addParameter("proxy", "jdk");
         invokers.clear();
@@ -241,7 +340,10 @@ class ScopeClusterInvokerTest {
                 }
             }
         };
-        return new ScopeClusterInvoker<>(dic, cluster);
+        ScopeClusterInvoker<DemoService> demoServiceScopeClusterInvoker = new ScopeClusterInvoker<>(dic, cluster);
+        Assertions.assertNotNull(demoServiceScopeClusterInvoker.getDirectory());
+        Assertions.assertNotNull(demoServiceScopeClusterInvoker.getInvoker());
+        return demoServiceScopeClusterInvoker;
     }
 
     public static interface DemoService {
@@ -252,6 +354,14 @@ class ScopeClusterInvokerTest {
         String doSomething3();
 
         String doSomething4();
+
+        String doSomething5();
+
+        String doSomething6();
+
+        String doSomething7();
+
+        String doSomething8();
     }
 
     public static class DemoServiceImpl implements DemoService {
@@ -275,6 +385,26 @@ class ScopeClusterInvokerTest {
         @Override
         public String doSomething4() {
             return "doSomething4";
+        }
+
+        @Override
+        public String doSomething5() {
+            return "doSomething5";
+        }
+
+        @Override
+        public String doSomething6() {
+            return "doSomething6";
+        }
+
+        @Override
+        public String doSomething7() {
+            return "doSomething7";
+        }
+
+        @Override
+        public String doSomething8() {
+            return "doSomething8";
         }
     }
 }
