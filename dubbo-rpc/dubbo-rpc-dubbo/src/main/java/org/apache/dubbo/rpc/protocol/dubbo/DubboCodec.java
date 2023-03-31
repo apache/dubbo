@@ -45,8 +45,8 @@ import java.io.InputStream;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.BYTE_ACCESSOR_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_MANAGEMENT_MODE_ISOLATION;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
@@ -166,9 +166,9 @@ public class DubboCodec extends ExchangeCodec {
                     DecodeableRpcInvocation inv;
                     if (isDecodeDataInIoThread(channel)) {
                         if (customByteAccessor != null) {
-                            inv = customByteAccessor.getRpcInvocation(channel, req, is, proto);
+                            inv = customByteAccessor.getRpcInvocation(channel, req, new UnsafeByteArrayInputStream(readMessageData(is)), proto);
                         } else {
-                            inv = new DecodeableRpcInvocation(frameworkModel, channel, req, is, proto);
+                            inv = new DecodeableRpcInvocation(frameworkModel, channel, req, new UnsafeByteArrayInputStream(readMessageData(is)), proto);
                         }
                         inv.decode();
                     } else {
