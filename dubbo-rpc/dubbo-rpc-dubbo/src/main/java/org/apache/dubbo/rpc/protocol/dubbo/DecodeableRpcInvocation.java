@@ -40,6 +40,7 @@ import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
+import org.apache.dubbo.rpc.protocol.PermittedSerializationKeeper;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.io.IOException;
@@ -132,7 +133,8 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
         setAttachment(VERSION_KEY, version);
 
         // Do provider-level payload checks.
-        checkPayload(keyWithoutGroup(path, version));
+        String keyWithoutGroup = keyWithoutGroup(path, version);
+        checkPayload(keyWithoutGroup);
 
         setMethodName(in.readUTF());
 
@@ -142,7 +144,10 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
         ClassLoader originClassLoader = Thread.currentThread().getContextClassLoader();
         try {
             if (CHECK_SERIALIZATION) {
-                CodecSupport.checkSerialization(frameworkModel.getServiceRepository(), path, version, serializationType);
+                PermittedSerializationKeeper keeper = frameworkModel.getBeanFactory().getBean(PermittedSerializationKeeper.class);
+                if (!keeper.checkSerializationPermitted(keyWithoutGroup, serializationType)) {
+                    throw new IOException("Unexpected serialization id:" + serializationType + " received from network, please check if the peer send the right id.");
+                }
             }
             Object[] args = DubboCodec.EMPTY_OBJECT_ARRAY;
             Class<?>[] pts = DubboCodec.EMPTY_CLASS_ARRAY;

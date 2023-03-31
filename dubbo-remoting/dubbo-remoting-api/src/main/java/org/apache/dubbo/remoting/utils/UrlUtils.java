@@ -95,18 +95,11 @@ public class UrlUtils {
      */
     @SuppressWarnings("unchecked")
     public static Collection<String> allSerializations(URL url) {
-        Object obj = url.getAttribute(ALLOWED_SERIALIZATION_KEY);
-        if (obj instanceof Set) {
-            return (Set<String>) obj;
-        }
-
         // preferSerialization -> serialization -> default serialization
         Set<String> serializations = new LinkedHashSet<>(preferSerialization(url));
         Optional.ofNullable(url.getParameter(SERIALIZATION_KEY)).filter(StringUtils::isNotBlank).ifPresent(serializations::add);
         serializations.add(DefaultSerializationSelector.getDefaultRemotingSerialization());
-        Set<String> unmodifiableSet = Collections.unmodifiableSet(serializations);
-        url.putAttribute(ALLOWED_SERIALIZATION_KEY, unmodifiableSet);
-        return unmodifiableSet;
+        return Collections.unmodifiableSet(serializations);
     }
 
     /**

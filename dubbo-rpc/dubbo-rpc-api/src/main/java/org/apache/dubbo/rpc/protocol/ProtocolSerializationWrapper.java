@@ -43,7 +43,7 @@ public class ProtocolSerializationWrapper implements Protocol {
 
     @Override
     public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
-        getFrameworkModel(invoker.getUrl().getScopeModel()).getServiceRepository().registerProviderUrl(invoker.getUrl());
+        getFrameworkModel(invoker.getUrl().getScopeModel()).getBeanFactory().getBean(PermittedSerializationKeeper.class).registerService(invoker.getUrl());
         return protocol.export(invoker);
     }
 
