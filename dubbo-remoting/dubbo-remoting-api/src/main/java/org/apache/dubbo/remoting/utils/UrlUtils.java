@@ -34,6 +34,8 @@ import static org.apache.dubbo.remoting.Constants.PREFER_SERIALIZATION_KEY;
 import static org.apache.dubbo.remoting.Constants.SERIALIZATION_KEY;
 
 public class UrlUtils {
+    private static final String ALLOWED_SERIALIZATION_KEY = "allowedSerialization";
+
     public static int getIdleTimeout(URL url) {
         int heartBeat = getHeartbeat(url);
         // idleTimeout should be at least more than twice heartBeat because possible retries of client.
@@ -91,12 +93,20 @@ public class UrlUtils {
      * @param url url
      * @return {@link List}<{@link String}>
      */
+    @SuppressWarnings("unchecked")
     public static Collection<String> allSerializations(URL url) {
+        Object obj = url.getAttributes().get(ALLOWED_SERIALIZATION_KEY);
+        if (obj instanceof Set) {
+            return (Set<String>) obj;
+        }
+
         // preferSerialization -> serialization -> default serialization
         Set<String> serializations = new LinkedHashSet<>(preferSerialization(url));
         Optional.ofNullable(url.getParameter(SERIALIZATION_KEY)).filter(StringUtils::isNotBlank).ifPresent(serializations::add);
         serializations.add(DefaultSerializationSelector.getDefaultRemotingSerialization());
-        return Collections.unmodifiableSet(serializations);
+        Set<String> unmodifiableSet = Collections.unmodifiableSet(serializations);
+        url.getAttributes().put(ALLOWED_SERIALIZATION_KEY, unmodifiableSet);
+        return unmodifiableSet;
     }
 
     /**
