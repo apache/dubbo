@@ -99,12 +99,12 @@ public class ThreadlessExecutor extends AbstractExecutorService {
      */
     @Override
     public void execute(Runnable runnable) {
-        queue.add(new RunnableWrapper(runnable));
         Object waiter = this.waiter;
         if (waiter == null) {
             runnable.run();
             return;
         }
+        queue.add(new RunnableWrapper(runnable));
         if (waiter != SHUTDOWN) {
             LockSupport.unpark((Thread) waiter);
         } else if (queue.remove(runnable)) {
