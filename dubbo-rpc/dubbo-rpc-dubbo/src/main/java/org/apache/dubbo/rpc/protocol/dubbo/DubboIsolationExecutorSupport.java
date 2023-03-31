@@ -19,17 +19,22 @@ package org.apache.dubbo.rpc.protocol.dubbo;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.executor.AbstractIsolationExecutorSupport;
+import org.apache.dubbo.rpc.model.FrameworkServiceRepository;
 import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ServiceModel;
 
 public class DubboIsolationExecutorSupport extends AbstractIsolationExecutorSupport {
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(DubboIsolationExecutorSupport.class);
 
+    private final FrameworkServiceRepository frameworkServiceRepository;
+
     public DubboIsolationExecutorSupport(URL url) {
         super(url);
+        frameworkServiceRepository = url.getOrDefaultFrameworkModel().getServiceRepository();
     }
 
     @Override
@@ -46,6 +51,11 @@ public class DubboIsolationExecutorSupport extends AbstractIsolationExecutorSupp
         ServiceModel serviceModel = ((Invocation) request.getData()).getServiceModel();
         if (serviceModel instanceof ProviderModel) {
             return (ProviderModel) serviceModel;
+        }
+
+        String targetServiceUniqueName = ((Invocation) request.getData()).getTargetServiceUniqueName();
+        if (StringUtils.isNotEmpty(targetServiceUniqueName)) {
+            return frameworkServiceRepository.lookupExportedService(targetServiceUniqueName);
         }
 
         return null;
