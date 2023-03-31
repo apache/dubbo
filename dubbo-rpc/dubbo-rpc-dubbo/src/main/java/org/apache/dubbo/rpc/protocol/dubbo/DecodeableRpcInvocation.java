@@ -28,6 +28,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.Codec;
 import org.apache.dubbo.remoting.Decodeable;
+import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.transport.CodecSupport;
 import org.apache.dubbo.remoting.transport.ExceedPayloadLimitException;
@@ -275,5 +276,9 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
                 }
             }
         }
+    }
+
+    protected void fillInvoker(DubboProtocol dubboProtocol) throws RemotingException {
+        this.setInvoker(dubboProtocol.getInvoker(channel, this));
     }
 }

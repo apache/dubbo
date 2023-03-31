@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.executor.AbstractIsolationExecutorSupport;
@@ -31,10 +32,12 @@ public class DubboIsolationExecutorSupport extends AbstractIsolationExecutorSupp
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(DubboIsolationExecutorSupport.class);
 
     private final FrameworkServiceRepository frameworkServiceRepository;
+    private final DubboProtocol dubboProtocol;
 
     public DubboIsolationExecutorSupport(URL url) {
         super(url);
         frameworkServiceRepository = url.getOrDefaultFrameworkModel().getServiceRepository();
+        dubboProtocol = DubboProtocol.getDubboProtocol(url.getOrDefaultFrameworkModel());
     }
 
     @Override
@@ -44,8 +47,14 @@ public class DubboIsolationExecutorSupport extends AbstractIsolationExecutorSupp
         }
 
         Request request = (Request) data;
-        if (!(request.getData() instanceof Invocation)) {
+        if (!(request.getData() instanceof DecodeableRpcInvocation)) {
             return null;
+        }
+
+        try {
+            ((DecodeableRpcInvocation) request.getData()).fillInvoker(dubboProtocol);
+        } catch (RemotingException e) {
+            // ignore here, and this exception will being rethrow in DubboProtocol
         }
 
         ServiceModel serviceModel = ((Invocation) request.getData()).getServiceModel();
