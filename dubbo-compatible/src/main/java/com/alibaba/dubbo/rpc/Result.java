@@ -104,6 +104,11 @@ public interface Result extends org.apache.dubbo.rpc.Result {
         }
 
         @Override
+        public org.apache.dubbo.rpc.Result whenCompleteWithContext(BiConsumer<org.apache.dubbo.rpc.Result, Throwable> fn) {
+            return delegate.whenCompleteWithContext(fn);
+        }
+
+        @Override
         public Object getValue() {
             return delegate.getValue();
         }

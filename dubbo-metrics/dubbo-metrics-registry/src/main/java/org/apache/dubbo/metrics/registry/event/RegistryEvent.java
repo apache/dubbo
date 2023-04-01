@@ -17,10 +17,9 @@
 
 package org.apache.dubbo.metrics.registry.event;
 
-import org.apache.dubbo.metrics.event.MetricsEvent;
-import org.apache.dubbo.metrics.event.TimeCounter;
+import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
+import org.apache.dubbo.metrics.event.TimeCounterEvent;
 import org.apache.dubbo.metrics.model.MetricsKey;
-import org.apache.dubbo.metrics.model.TimePair;
 import org.apache.dubbo.metrics.registry.collector.RegistryMetricsCollector;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
@@ -29,16 +28,18 @@ import java.util.Map;
 /**
  * Registry related events
  */
-public class RegistryEvent extends MetricsEvent implements TimeCounter {
-    private final TimePair timePair;
+public class RegistryEvent extends TimeCounterEvent {
     private final RegistryMetricsCollector collector;
-    private final boolean available;
 
-    public RegistryEvent(ApplicationModel applicationModel, TimePair timePair) {
+    public RegistryEvent(ApplicationModel applicationModel) {
         super(applicationModel);
-        this.timePair = timePair;
-        this.collector = applicationModel.getBeanFactory().getBean(RegistryMetricsCollector.class);
-        this.available = this.collector != null && collector.isCollectEnabled();
+        ScopeBeanFactory beanFactory = getSource().getBeanFactory();
+        if (beanFactory.isDestroyed()) {
+            this.collector = null;
+        } else {
+            this.collector = beanFactory.getBean(RegistryMetricsCollector.class);
+            super.setAvailable(this.collector != null && collector.isCollectEnabled());
+        }
     }
 
     public ApplicationModel getSource() {
@@ -49,16 +50,8 @@ public class RegistryEvent extends MetricsEvent implements TimeCounter {
         return collector;
     }
 
-    public boolean isAvailable() {
-        return available;
-    }
 
-    @Override
-    public TimePair getTimePair() {
-        return timePair;
-    }
-
-    public enum Type {
+    public enum ApplicationType {
         R_TOTAL(MetricsKey.REGISTER_METRIC_REQUESTS),
         R_SUCCEED(MetricsKey.REGISTER_METRIC_REQUESTS_SUCCEED),
         R_FAILED(MetricsKey.REGISTER_METRIC_REQUESTS_FAILED),
@@ -74,19 +67,17 @@ public class RegistryEvent extends MetricsEvent implements TimeCounter {
         D_RECOVER_DISABLE(MetricsKey.DIRECTORY_METRIC_NUM_RECOVER_DISABLE),
 
         N_TOTAL(MetricsKey.NOTIFY_METRIC_REQUESTS),
-        N_LAST_NUM(MetricsKey.NOTIFY_METRIC_NUM_LAST),
         ;
-
 
         private final MetricsKey metricsKey;
         private final boolean isIncrement;
 
 
-        Type(MetricsKey metricsKey) {
+        ApplicationType(MetricsKey metricsKey) {
             this(metricsKey, true);
         }
 
-        Type(MetricsKey metricsKey, boolean isIncrement) {
+        ApplicationType(MetricsKey metricsKey, boolean isIncrement) {
             this.metricsKey = metricsKey;
             this.isIncrement = isIncrement;
         }
@@ -100,57 +91,131 @@ public class RegistryEvent extends MetricsEvent implements TimeCounter {
         }
     }
 
-    public static class MetricsRegisterEvent extends RegistryEvent {
+    public enum ServiceType {
 
-        public MetricsRegisterEvent(ApplicationModel applicationModel, TimePair timePair) {
-            super(applicationModel, timePair);
+        N_LAST_NUM(MetricsKey.NOTIFY_METRIC_NUM_LAST),
+
+        R_SERVICE_TOTAL(MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS),
+        R_SERVICE_SUCCEED(MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS_SUCCEED),
+        R_SERVICE_FAILED(MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS_FAILED),
+
+        S_SERVICE_TOTAL(MetricsKey.SERVICE_SUBSCRIBE_METRIC_NUM),
+        S_SERVICE_SUCCEED(MetricsKey.SERVICE_SUBSCRIBE_METRIC_NUM_SUCCEED),
+        S_SERVICE_FAILED(MetricsKey.SERVICE_SUBSCRIBE_METRIC_NUM_FAILED),
+        ;
+
+        private final MetricsKey metricsKey;
+        private final boolean isIncrement;
+
+
+        ServiceType(MetricsKey metricsKey) {
+            this(metricsKey, true);
+        }
+
+        ServiceType(MetricsKey metricsKey, boolean isIncrement) {
+            this.metricsKey = metricsKey;
+            this.isIncrement = isIncrement;
+        }
+
+        public MetricsKey getMetricsKey() {
+            return metricsKey;
+        }
+
+        public boolean isIncrement() {
+            return isIncrement;
+        }
+    }
+
+    public static class MetricsApplicationRegisterEvent extends RegistryEvent {
+
+        public MetricsApplicationRegisterEvent(ApplicationModel applicationModel) {
+            super(applicationModel);
         }
 
     }
 
     public static class MetricsSubscribeEvent extends RegistryEvent {
 
-        public MetricsSubscribeEvent(ApplicationModel applicationModel, TimePair timePair) {
-            super(applicationModel, timePair);
+        public MetricsSubscribeEvent(ApplicationModel applicationModel) {
+            super(applicationModel);
         }
 
     }
 
     public static class MetricsNotifyEvent extends RegistryEvent {
 
-        private final Map<String, Integer> lastNumMap;
+        private Map<String, Integer> lastNumMap;
 
-        public MetricsNotifyEvent(ApplicationModel applicationModel, TimePair timePair, Map<String, Integer> lastNumMap) {
-            super(applicationModel, timePair);
-            this.lastNumMap = lastNumMap;
+        public MetricsNotifyEvent(ApplicationModel applicationModel) {
+            super(applicationModel);
         }
 
         public Map<String, Integer> getLastNotifyNum() {
             return lastNumMap;
         }
+
+        @Override
+        @SuppressWarnings("unchecked")
+        public void customAfterPost(Object postResult) {
+            this.lastNumMap = (Map<String, Integer>) postResult;
+        }
     }
 
     public static class MetricsDirectoryEvent extends RegistryEvent {
 
-        private final RegistryEvent.Type type;
+        private final ApplicationType type;
         private final int size;
 
-        public MetricsDirectoryEvent(ApplicationModel applicationModel, RegistryEvent.Type type) {
+        public MetricsDirectoryEvent(ApplicationModel applicationModel, ApplicationType type) {
             this(applicationModel, type, 1);
         }
 
-        public MetricsDirectoryEvent(ApplicationModel applicationModel, RegistryEvent.Type type, int size) {
-            super(applicationModel, TimePair.empty());
+        public MetricsDirectoryEvent(ApplicationModel applicationModel, ApplicationType type, int size) {
+            super(applicationModel);
             this.type = type;
             this.size = size;
         }
 
-        public RegistryEvent.Type getType() {
+        public ApplicationType getType() {
             return type;
         }
 
         public int getSize() {
             return size;
+        }
+    }
+
+    public static class MetricsServiceRegisterEvent extends RegistryEvent {
+
+        private final int size;
+        private final String serviceKey;
+
+        public MetricsServiceRegisterEvent(ApplicationModel applicationModel, String serviceKey, int size) {
+            super(applicationModel);
+            this.size = size;
+            this.serviceKey = serviceKey;
+        }
+
+        public int getSize() {
+            return size;
+        }
+
+        public String getServiceKey() {
+            return serviceKey;
+        }
+    }
+
+    public static class MetricsServiceSubscribeEvent extends RegistryEvent {
+
+        private final String uniqueServiceName;
+
+        public MetricsServiceSubscribeEvent(ApplicationModel applicationModel, String uniqueServiceName) {
+            super(applicationModel);
+            this.uniqueServiceName = uniqueServiceName;
+        }
+
+        public String getUniqueServiceName() {
+            return uniqueServiceName;
         }
     }
 }
