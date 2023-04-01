@@ -27,6 +27,8 @@ import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.metrics.registry.collector.stat.RegistryStatComposite;
 import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.metrics.registry.event.RegistryMetricsEventMulticaster;
+import org.apache.dubbo.metrics.registry.event.type.ApplicationType;
+import org.apache.dubbo.metrics.registry.event.type.ServiceType;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.ArrayList;
@@ -39,7 +41,7 @@ import java.util.Optional;
  * Registry implementation of {@link MetricsCollector}
  */
 @Activate
-public class RegistryMetricsCollector implements ApplicationMetricsCollector<RegistryEvent.ApplicationType, RegistryEvent> {
+public class RegistryMetricsCollector implements ApplicationMetricsCollector<ApplicationType, RegistryEvent> {
 
     private Boolean collectEnabled = null;
     private final RegistryStatComposite stats;
@@ -67,26 +69,26 @@ public class RegistryMetricsCollector implements ApplicationMetricsCollector<Reg
         return Optional.ofNullable(collectEnabled).orElse(true);
     }
 
-    public void setNum(RegistryEvent.ServiceType registryType, String applicationName, Map<String, Integer> lastNumMap) {
+    public void setNum(ServiceType registryType, String applicationName, Map<String, Integer> lastNumMap) {
         lastNumMap.forEach((serviceKey, num) ->
             this.stats.setServiceKey(registryType, applicationName, serviceKey, num));
     }
 
-    public void setNum(RegistryEvent.ApplicationType registryType, String applicationName, Integer num) {
+    public void setNum(ApplicationType registryType, String applicationName, Integer num) {
         this.stats.setApplicationKey(registryType, applicationName, num);
     }
 
 
     @Override
-    public void increment(String applicationName, RegistryEvent.ApplicationType registryType) {
+    public void increment(String applicationName, ApplicationType registryType) {
         this.stats.increment(registryType, applicationName);
     }
 
-    public void increment(String applicationName, RegistryEvent.ApplicationType registryType, int size) {
+    public void increment(String applicationName, ApplicationType registryType, int size) {
         this.stats.incrementSize(registryType, applicationName, size);
     }
 
-    public void incrementServiceKey(String applicationName, String serviceKey, RegistryEvent.ServiceType registryType, int size) {
+    public void incrementServiceKey(String applicationName, String serviceKey, ServiceType registryType, int size) {
         this.stats.incrementServiceKey(registryType, applicationName, serviceKey, size);
     }
 

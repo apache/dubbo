@@ -40,9 +40,9 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_APPLICATION_NAME;
-import static org.apache.dubbo.metrics.registry.collector.stat.RegistryStatComposite.OP_TYPE_REGISTER;
-import static org.apache.dubbo.metrics.registry.collector.stat.RegistryStatComposite.OP_TYPE_REGISTER_SERVICE;
-import static org.apache.dubbo.metrics.registry.collector.stat.RegistryStatComposite.OP_TYPE_SUBSCRIBE_SERVICE;
+import static org.apache.dubbo.metrics.registry.RegistryConstants.OP_TYPE_REGISTER;
+import static org.apache.dubbo.metrics.registry.RegistryConstants.OP_TYPE_REGISTER_SERVICE;
+import static org.apache.dubbo.metrics.registry.RegistryConstants.OP_TYPE_SUBSCRIBE_SERVICE;
 
 
 class RegistryMetricsCollectorTest {
@@ -72,7 +72,7 @@ class RegistryMetricsCollectorTest {
         RegistryMetricsCollector collector = applicationModel.getBeanFactory().getOrRegisterBean(RegistryMetricsCollector.class);
         collector.setCollectEnabled(true);
 
-        RegistryEvent registryEvent = new RegistryEvent.MetricsApplicationRegisterEvent(applicationModel);
+        RegistryEvent registryEvent = RegistryEvent.toRegisterEvent(applicationModel);
         MetricsEventBus.post(registryEvent,
             () -> {
                 List<MetricSample> metricSamples = collector.collect();
@@ -90,7 +90,7 @@ class RegistryMetricsCollectorTest {
         long c1 = registryEvent.getTimePair().calc();
 
 
-        registryEvent = new RegistryEvent.MetricsApplicationRegisterEvent(applicationModel);
+        registryEvent = RegistryEvent.toRegisterEvent(applicationModel);
         TimePair lastTimePair = registryEvent.getTimePair();
         MetricsEventBus.post(registryEvent,
             () -> {
@@ -135,7 +135,7 @@ class RegistryMetricsCollectorTest {
         collector.setCollectEnabled(true);
         String serviceName = "demo.gameService";
 
-        RegistryEvent registryEvent = new RegistryEvent.MetricsServiceRegisterEvent(applicationModel, serviceName,2);
+        RegistryEvent registryEvent = RegistryEvent.toRsEvent(applicationModel, serviceName, 2);
         MetricsEventBus.post(registryEvent,
             () -> {
                 List<MetricSample> metricSamples = collector.collect();
@@ -155,7 +155,7 @@ class RegistryMetricsCollectorTest {
         Assertions.assertEquals(7, metricSamples.size());
 
         long c1 = registryEvent.getTimePair().calc();
-        registryEvent = new RegistryEvent.MetricsServiceRegisterEvent(applicationModel, serviceName,2);
+        registryEvent = RegistryEvent.toRsEvent(applicationModel, serviceName, 2);
         TimePair lastTimePair = registryEvent.getTimePair();
         MetricsEventBus.post(registryEvent,
             () -> {
@@ -200,7 +200,7 @@ class RegistryMetricsCollectorTest {
         collector.setCollectEnabled(true);
         String serviceName = "demo.gameService";
 
-        RegistryEvent subscribeEvent = new RegistryEvent.MetricsServiceSubscribeEvent(applicationModel, serviceName);
+        RegistryEvent subscribeEvent = RegistryEvent.toSsEvent(applicationModel, serviceName);
         MetricsEventBus.post(subscribeEvent,
             () -> {
                 List<MetricSample> metricSamples = collector.collect();
@@ -220,7 +220,7 @@ class RegistryMetricsCollectorTest {
         Assertions.assertEquals(7, metricSamples.size());
 
         long c1 = subscribeEvent.getTimePair().calc();
-        subscribeEvent = new RegistryEvent.MetricsServiceSubscribeEvent(applicationModel, serviceName);
+        subscribeEvent = RegistryEvent.toSsEvent(applicationModel, serviceName);
         TimePair lastTimePair = subscribeEvent.getTimePair();
         MetricsEventBus.post(subscribeEvent,
             () -> {
