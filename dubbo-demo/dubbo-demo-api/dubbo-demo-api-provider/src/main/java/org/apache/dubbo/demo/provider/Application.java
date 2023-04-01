@@ -17,17 +17,24 @@
 package org.apache.dubbo.demo.provider;
 
 import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.config.ApplicationConfig;
-import org.apache.dubbo.config.MetadataReportConfig;
-import org.apache.dubbo.config.ProtocolConfig;
-import org.apache.dubbo.config.RegistryConfig;
-import org.apache.dubbo.config.ServiceConfig;
+import org.apache.dubbo.config.*;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
+import org.apache.dubbo.config.context.ConfigManager;
+import org.apache.dubbo.config.context.ModuleConfigManager;
 import org.apache.dubbo.demo.DemoService;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.model.ModuleModel;
 
 import java.util.concurrent.CountDownLatch;
 
 public class Application {
+
+    private static final String REGISTRY_URL = "zookeeper://127.0.0.1:2181";
+
+    private static final String METADATA_REPORT_URL = "zookeeper://127.0.0.1:2181";
+
+
     public static void main(String[] args) throws Exception {
         if (isClassic(args)) {
             startWithExport();
@@ -47,7 +54,7 @@ public class Application {
 
         DubboBootstrap bootstrap = DubboBootstrap.getInstance();
         bootstrap.application(new ApplicationConfig("dubbo-demo-api-provider"))
-            .registry(new RegistryConfig("zookeeper://127.0.0.1:2181"))
+            .registry(new RegistryConfig(REGISTRY_URL))
             .protocol(new ProtocolConfig(CommonConstants.DUBBO, -1))
             .service(service)
             .start()
@@ -55,15 +62,39 @@ public class Application {
     }
 
     private static void startWithExport() throws InterruptedException {
-        ServiceConfig<DemoServiceImpl> service = new ServiceConfig<>();
-        service.setInterface(DemoService.class);
-        service.setRef(new DemoServiceImpl());
-        service.setApplication(new ApplicationConfig("dubbo-demo-api-provider"));
-        service.setRegistry(new RegistryConfig("zookeeper://127.0.0.1:2181"));
-        service.setMetadataReportConfig(new MetadataReportConfig("zookeeper://127.0.0.1:2181"));
-        service.export();
+        FrameworkModel frameworkModel = new FrameworkModel();
+        ApplicationModel applicationModel = frameworkModel.newApplication();
+        ModuleModel moduleModel = applicationModel.newModule();
 
-        System.out.println("dubbo service started");
+        RegistryConfig registryConfig = new RegistryConfig(REGISTRY_URL);
+        MetadataReportConfig metadataReportConfig = new MetadataReportConfig(METADATA_REPORT_URL);
+        ProtocolConfig protocolConfig = new ProtocolConfig(CommonConstants.DUBBO, -1);
+
+        final String registryId = "registry-1";
+        final String metadataId = "metadata-1";
+        registryConfig.setId(registryId);
+        metadataReportConfig.setId(metadataId);
+
+        ConfigManager appConfigManager = applicationModel.getApplicationConfigManager();
+        appConfigManager.setApplication(new ApplicationConfig("dubbo-demo-api-provider-app-1"));
+        appConfigManager.addRegistry(registryConfig);
+        appConfigManager.addMetadataReport(metadataReportConfig);
+        appConfigManager.addProtocol(protocolConfig);
+
+        ModuleConfigManager moduleConfigManager = moduleModel.getConfigManager();
+        moduleConfigManager.setModule(new ModuleConfig("dubbo-demo-api-provider-app-1-module-1"));
+
+        ServiceConfig<DemoService> serviceConfig = new ServiceConfig<>();
+        serviceConfig.setScopeModel(moduleModel);
+        serviceConfig.setProtocol(protocolConfig);
+        serviceConfig.setInterface(DemoService.class);
+        serviceConfig.setRef(new DemoServiceImpl());
+
+        moduleConfigManager.addConfig(serviceConfig);
+
+        serviceConfig.export();
+
         new CountDownLatch(1).await();
     }
+
 }

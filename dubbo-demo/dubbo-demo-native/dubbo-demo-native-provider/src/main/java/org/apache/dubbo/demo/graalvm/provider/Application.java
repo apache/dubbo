@@ -16,14 +16,16 @@
  */
 package org.apache.dubbo.demo.graalvm.provider;
 
-import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.config.ApplicationConfig;
-import org.apache.dubbo.config.ProtocolConfig;
-import org.apache.dubbo.config.RegistryConfig;
-import org.apache.dubbo.config.ServiceConfig;
-import org.apache.dubbo.config.bootstrap.DubboBootstrap;
-
 import org.apace.dubbo.graalvm.demo.DemoService;
+import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.config.*;
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
+import org.apache.dubbo.config.context.ConfigManager;
+import org.apache.dubbo.config.context.ModuleConfigManager;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
 import java.util.HashMap;
@@ -31,6 +33,10 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
 public class Application {
+
+    private static final String REGISTRY_URL = "zookeeper://127.0.0.1:2181";
+
+    private static final Logger logger = LoggerFactory.getLogger(Application.class);
 
     public static void main(String[] args) throws Exception {
         System.setProperty("dubbo.application.logger", "log4j");
@@ -65,36 +71,50 @@ public class Application {
         ProtocolConfig protocolConfig = new ProtocolConfig(CommonConstants.DUBBO, -1);
         protocolConfig.setSerialization("fastjson2");
         bootstrap.application(applicationConfig)
-            .registry(new RegistryConfig("zookeeper://127.0.0.1:2181"))
+            .registry(new RegistryConfig(REGISTRY_URL))
             .protocol(protocolConfig)
             .service(service)
             .start()
             .await();
 
-        System.out.println("dubbo service started");
+        logger.info("dubbo service started");
     }
 
     private static void startWithExport() throws InterruptedException {
-        ApplicationConfig applicationConfig = new ApplicationConfig("dubbo-demo-api-provider");
-        applicationConfig.setQosEnable(false);
-        applicationConfig.setCompiler("jdk");
+        FrameworkModel frameworkModel = new FrameworkModel();
+        ApplicationModel applicationModel = frameworkModel.newApplication();
+        ModuleModel moduleModel = applicationModel.newModule();
 
-        Map<String, String> m = new HashMap<>(1);
-        m.put("proxy", "jdk");
-        applicationConfig.setParameters(m);
+        RegistryConfig registryConfig = new RegistryConfig(REGISTRY_URL);
+        ProtocolConfig protocolConfig = new ProtocolConfig(CommonConstants.DUBBO, -1);
 
-        ModuleModel moduleModel = applicationConfig.getApplicationModel().newModule();
+        final String registryId = "registry-1";
+        registryConfig.setId(registryId);
 
+        ConfigManager appConfigManager = applicationModel.getApplicationConfigManager();
+        appConfigManager.setApplication(new ApplicationConfig("dubbo-demo-api-provider-app-1"));
 
-        ServiceConfig<DemoService> service = new ServiceConfig<>(moduleModel);
-        service.setInterface(DemoService.class);
-        service.setRef(new DemoServiceImpl());
+        Map<String, String> params = new HashMap<>(1);
+        params.put("proxy", "jdk");
 
-        service.setApplication(applicationConfig);
-        service.setRegistry(new RegistryConfig("zookeeper://127.0.0.1:2181"));
-        service.export();
+        appConfigManager.getApplication().ifPresent(applicationConfig -> applicationConfig.setParameters(params));
+        appConfigManager.addRegistry(registryConfig);
+        appConfigManager.addProtocol(protocolConfig);
 
-        System.out.println("dubbo service started");
+        ModuleConfigManager moduleConfigManager = moduleModel.getConfigManager();
+        moduleConfigManager.setModule(new ModuleConfig("dubbo-demo-api-provider-app-1-module-1"));
+
+        ServiceConfig<DemoService> serviceConfig = new ServiceConfig<>();
+        serviceConfig.setScopeModel(moduleModel);
+        serviceConfig.setProtocol(protocolConfig);
+        serviceConfig.setInterface(DemoService.class);
+        serviceConfig.setRef(new DemoServiceImpl());
+
+        moduleConfigManager.addConfig(serviceConfig);
+
+        serviceConfig.export();
+
+        logger.info("dubbo service started");
         new CountDownLatch(1).await();
     }
 }

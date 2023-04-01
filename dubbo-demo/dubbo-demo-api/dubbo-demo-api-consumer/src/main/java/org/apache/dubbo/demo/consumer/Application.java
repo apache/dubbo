@@ -17,16 +17,26 @@
 package org.apache.dubbo.demo.consumer;
 
 import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.config.ApplicationConfig;
-import org.apache.dubbo.config.MetadataReportConfig;
-import org.apache.dubbo.config.ProtocolConfig;
-import org.apache.dubbo.config.ReferenceConfig;
-import org.apache.dubbo.config.RegistryConfig;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.config.*;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
+import org.apache.dubbo.config.context.ConfigManager;
+import org.apache.dubbo.config.context.ModuleConfigManager;
 import org.apache.dubbo.demo.DemoService;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.service.GenericService;
 
 public class Application {
+
+    private static final String REGISTRY_URL = "zookeeper://127.0.0.1:2181";
+
+    private static final String METADATA_REPORT_URL = "zookeeper://127.0.0.1:2181";
+
+    private static final Logger logger = LoggerFactory.getLogger(Application.class);
+
     public static void main(String[] args) {
         if (isClassic(args)) {
             runWithRefer();
@@ -46,7 +56,7 @@ public class Application {
 
         DubboBootstrap bootstrap = DubboBootstrap.getInstance();
         bootstrap.application(new ApplicationConfig("dubbo-demo-api-consumer"))
-            .registry(new RegistryConfig("zookeeper://127.0.0.1:2181"))
+            .registry(new RegistryConfig(REGISTRY_URL))
             .protocol(new ProtocolConfig(CommonConstants.DUBBO, -1))
             .reference(reference)
             .start();
@@ -59,17 +69,33 @@ public class Application {
         GenericService genericService = (GenericService) demoService;
         Object genericInvokeResult = genericService.$invoke("sayHello", new String[]{String.class.getName()},
             new Object[]{"dubbo generic invoke"});
-        System.out.println(genericInvokeResult);
+        logger.info(genericInvokeResult.toString());
     }
 
     private static void runWithRefer() {
+        FrameworkModel frameworkModel = new FrameworkModel();
+
+        ApplicationModel appModel = frameworkModel.newApplication();
+
+        ModuleModel moduleModel = appModel.newModule();
+
+        ConfigManager appConfigManager = appModel.getApplicationConfigManager();
+        appConfigManager.setApplication(new ApplicationConfig("dubbo-demo-api-consumer-app-1"));
+        appConfigManager.addRegistry(new RegistryConfig(REGISTRY_URL));
+        appConfigManager.addMetadataReport(new MetadataReportConfig(METADATA_REPORT_URL));
+
+        ModuleConfigManager moduleConfigManager = moduleModel.getConfigManager();
+        moduleConfigManager.setModule(new ModuleConfig("dubbo-demo-api-consumer-app-1-module-1"));
+
         ReferenceConfig<DemoService> reference = new ReferenceConfig<>();
-        reference.setApplication(new ApplicationConfig("dubbo-demo-api-consumer"));
-        reference.setRegistry(new RegistryConfig("zookeeper://127.0.0.1:2181"));
-        reference.setMetadataReportConfig(new MetadataReportConfig("zookeeper://127.0.0.1:2181"));
+        reference.setScopeModel(moduleModel);
+        reference.setProtocol("dubbo");
         reference.setInterface(DemoService.class);
+
+        moduleConfigManager.addConfig(reference);
+
         DemoService service = reference.get();
         String message = service.sayHello("dubbo");
-        System.out.println(message);
+        logger.info(message);
     }
 }
