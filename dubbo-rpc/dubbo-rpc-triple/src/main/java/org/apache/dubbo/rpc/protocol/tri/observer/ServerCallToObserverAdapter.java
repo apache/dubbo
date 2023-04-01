@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.rpc.protocol.tri.observer;
 
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.CancellationContext;
@@ -38,7 +39,7 @@ public class ServerCallToObserverAdapter<T> extends CancelableStreamObserver<T> 
 
     private boolean isNeedReturnException = false;
 
-    private Integer exceptionCode = 0;
+    private Integer exceptionCode = CommonConstants.TRI_EXCEPTION_CODE_NOT_EXISTS;
 
     public Integer getExceptionCode() {
         return exceptionCode;

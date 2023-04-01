@@ -17,14 +17,18 @@
 
 package org.apache.dubbo.rpc.protocol.tri.call;
 
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http2.DefaultHttp2Headers;
+import io.netty.util.concurrent.Future;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.CancellationContext;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcContext;
-import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -40,11 +44,6 @@ import org.apache.dubbo.rpc.protocol.tri.observer.ServerCallToObserverAdapter;
 import org.apache.dubbo.rpc.protocol.tri.stream.ServerStream;
 import org.apache.dubbo.rpc.protocol.tri.stream.StreamUtils;
 
-import io.netty.handler.codec.http.HttpHeaderNames;
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http2.DefaultHttp2Headers;
-import io.netty.util.concurrent.Future;
-
 import java.io.IOException;
 import java.util.Map;
 import java.util.Objects;
@@ -53,8 +52,8 @@ import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_CREATE_STREAM_TRIPLE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_PARSE;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_SERIALIZE_TRIPLE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_REQUEST;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_SERIALIZE_TRIPLE;
 
 public abstract class AbstractServerCall implements ServerCall, ServerStream.Listener {
 
@@ -80,7 +79,7 @@ public abstract class AbstractServerCall implements ServerCall, ServerStream.Lis
     protected PackableMethod packableMethod;
     protected Map<String, Object> requestMetadata;
 
-    private Integer exceptionCode = 0;
+    private Integer exceptionCode = CommonConstants.TRI_EXCEPTION_CODE_NOT_EXISTS;
 
     public Integer getExceptionCode() {
         return exceptionCode;
@@ -382,7 +381,7 @@ public abstract class AbstractServerCall implements ServerCall, ServerStream.Lis
             return;
         }
         closed = true;
-        stream.complete(status, null, false, 0);
+        stream.complete(status, null, false, CommonConstants.TRI_EXCEPTION_CODE_NOT_EXISTS);
         LOGGER.error(PROTOCOL_FAILED_REQUEST, "", "", "Triple request error: service=" + serviceName + " method" + methodName,
             status.asException());
     }

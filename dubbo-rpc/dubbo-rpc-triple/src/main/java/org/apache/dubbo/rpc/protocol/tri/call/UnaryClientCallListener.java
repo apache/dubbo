@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.rpc.protocol.tri.call;
 
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.DeadlineFuture;
@@ -44,7 +45,7 @@ public class UnaryClientCallListener implements ClientCall.Listener {
         result.setObjectAttachments(trailers);
         if (status.isOk()) {
            Integer exceptionCode = extractExceptionCode(trailers);
-            if (exceptionCode != 0) {
+            if (!exceptionCode.equals(CommonConstants.TRI_EXCEPTION_CODE_NOT_EXISTS)) {
                 result.setException((Exception) appResponse);
             } else {
                 result.setValue(appResponse);
@@ -55,16 +56,16 @@ public class UnaryClientCallListener implements ClientCall.Listener {
         future.received(status, result);
     }
 
-    private Integer extractExceptionCode(Map<String, Object> trailers) {
-        Integer code = 0;
+    private int extractExceptionCode(Map<String, Object> trailers) {
+        int triExceptionCode = CommonConstants.TRI_EXCEPTION_CODE_NOT_EXISTS;
         if (!(appResponse instanceof Exception)) {
-            return code;
+            return triExceptionCode;
         }
         Object exceptionCode = trailers.get(TripleHeaderEnum.TRI_EXCEPTION_CODE.getHeader());
         if (exceptionCode instanceof String) {
-            code = Integer.parseInt((String) exceptionCode);
+            triExceptionCode = Integer.parseInt((String) exceptionCode);
         }
-        return code;
+        return triExceptionCode;
     }
 
     @Override

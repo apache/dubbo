@@ -59,20 +59,15 @@ public class UnaryServerCallListener extends AbstractServerCallListener {
     @Override
     protected void doOnResponseHasException(Throwable t) {
         if (needWrapper) {
-            if (t instanceof Exception) {
-                onReturnException((Exception) t);
-            } else {
-                onReturn(t);
-            }
+            onReturnException((Exception) t);
         } else {
             super.doOnResponseHasException(t);
         }
     }
 
     private void onReturnException(Exception value) {
-        Integer exceptionCode;
         TriRpcStatus status = TriRpcStatus.getStatus(value);
-        exceptionCode = status.code.code;
+        int exceptionCode = status.code.code;
         if (exceptionCode == TriRpcStatus.UNKNOWN.code.code) {
             exceptionCode = RpcException.BIZ_EXCEPTION;
         }
