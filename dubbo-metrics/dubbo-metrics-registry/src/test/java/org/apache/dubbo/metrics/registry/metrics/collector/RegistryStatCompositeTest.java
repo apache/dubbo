@@ -37,11 +37,11 @@ public class RegistryStatCompositeTest {
     void testInit() {
         RegistryStatComposite statComposite = new RegistryStatComposite();
         Assertions.assertEquals(statComposite.applicationNumStats.size(), RegistryEvent.ApplicationType.values().length);
-        //(rt)5 * (register,subscribe,notify)3
-        Assertions.assertEquals(5 * 3, statComposite.appRtStats.size());
+        //(rt)5 * (register,subscribe,notify,register.service,subscribe.service)5
+        Assertions.assertEquals(5 * 5, statComposite.rtStats.size());
         statComposite.applicationNumStats.values().forEach((v ->
             Assertions.assertEquals(v, new ConcurrentHashMap<>())));
-        statComposite.appRtStats.forEach(rtContainer ->
+        statComposite.rtStats.forEach(rtContainer ->
         {
             for (Map.Entry<String, ? extends Number> entry : rtContainer.entrySet()) {
                 Assertions.assertEquals(0L, rtContainer.getValueSupplier().apply(entry.getKey()));
@@ -60,8 +60,8 @@ public class RegistryStatCompositeTest {
     void testCalcRt() {
         RegistryStatComposite statComposite = new RegistryStatComposite();
         statComposite.calcApplicationRt(applicationName, OP_TYPE_NOTIFY, 10L);
-        Assertions.assertTrue(statComposite.appRtStats.stream().anyMatch(longContainer -> longContainer.specifyType(OP_TYPE_NOTIFY)));
-        Optional<LongContainer<? extends Number>> subContainer = statComposite.appRtStats.stream().filter(longContainer -> longContainer.specifyType(OP_TYPE_NOTIFY)).findFirst();
+        Assertions.assertTrue(statComposite.rtStats.stream().anyMatch(longContainer -> longContainer.specifyType(OP_TYPE_NOTIFY)));
+        Optional<LongContainer<? extends Number>> subContainer = statComposite.rtStats.stream().filter(longContainer -> longContainer.specifyType(OP_TYPE_NOTIFY)).findFirst();
         subContainer.ifPresent(v -> Assertions.assertEquals(10L, v.get(applicationName).longValue()));
     }
 }

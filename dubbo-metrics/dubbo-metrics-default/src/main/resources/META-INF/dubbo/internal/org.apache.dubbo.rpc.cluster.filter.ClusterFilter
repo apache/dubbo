@@ -1,2 +1,0 @@
-observationsender=org.apache.dubbo.metrics.observation.ObservationSenderFilter
-metricsClusterFilter=org.apache.dubbo.metrics.filter.MetricsClusterFilter

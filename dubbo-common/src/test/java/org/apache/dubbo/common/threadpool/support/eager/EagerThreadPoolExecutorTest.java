@@ -22,6 +22,7 @@ import org.apache.dubbo.common.threadpool.ThreadPool;
 import org.apache.dubbo.common.threadpool.support.AbortPolicyWithReport;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
@@ -110,7 +111,7 @@ class EagerThreadPoolExecutorTest {
         long alive = 1000;
 
         //init queue and executor
-        TaskQueue<Runnable> taskQueue = new TaskQueue<Runnable>(queues);
+        TaskQueue<Runnable> taskQueue = new TaskQueue<>(queues);
         final EagerThreadPoolExecutor executor = new EagerThreadPoolExecutor(cores,
             threads,
             alive,
@@ -163,9 +164,12 @@ class EagerThreadPoolExecutorTest {
 
     @Test
     void testSPI() {
-        ExecutorService executorService = (ExecutorService) ExtensionLoader.getExtensionLoader(ThreadPool.class)
+        ExtensionLoader<ThreadPool> extensionLoader = ApplicationModel.defaultModel().getDefaultModule().getExtensionLoader(ThreadPool.class);
+
+        ExecutorService executorService = (ExecutorService) extensionLoader
             .getExtension("eager")
             .getExecutor(URL);
+
         Assertions.assertEquals("EagerThreadPoolExecutor", executorService.getClass()
             .getSimpleName(), "test spi fail!");
     }

@@ -77,11 +77,11 @@ class EnvironmentTest {
 
         // test getConfigurationMaps(AbstractConfig config, String prefix)
         List<Map<String, String>> configurationMaps = environment.getConfigurationMaps(registryConfig, prefix);
-        Assertions.assertEquals(configurationMaps.size(), 7);
+        Assertions.assertEquals(7, configurationMaps.size());
 
         // test getConfigurationMaps()
         configurationMaps = environment.getConfigurationMaps();
-        Assertions.assertEquals(configurationMaps.size(), 6);
+        Assertions.assertEquals(6, configurationMaps.size());
 
         CompositeConfiguration configuration1 = environment.getConfiguration();
         CompositeConfiguration configuration2 = environment.getConfiguration();

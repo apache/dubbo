@@ -38,7 +38,7 @@ import java.util.Optional;
  * Registry implementation of {@link MetricsCollector}
  */
 @Activate
-public class MetadataMetricsCollector implements ApplicationMetricsCollector<MetadataEvent.Type, MetadataEvent> {
+public class MetadataMetricsCollector implements ApplicationMetricsCollector<MetadataEvent.ApplicationType, MetadataEvent> {
 
     private Boolean collectEnabled = null;
     private final MetadataStatComposite stats;
@@ -63,17 +63,25 @@ public class MetadataMetricsCollector implements ApplicationMetricsCollector<Met
             ConfigManager configManager = applicationModel.getApplicationConfigManager();
             configManager.getMetrics().ifPresent(metricsConfig -> setCollectEnabled(metricsConfig.getEnableMetadataMetrics()));
         }
-        return Optional.ofNullable(collectEnabled).orElse(false);
+        return Optional.ofNullable(collectEnabled).orElse(true);
     }
 
     @Override
-    public void increment(String applicationName, MetadataEvent.Type registryType) {
+    public void increment(String applicationName, MetadataEvent.ApplicationType registryType) {
         this.stats.increment(registryType, applicationName);
+    }
+
+    public void incrementServiceKey(String applicationName, String serviceKey, MetadataEvent.ServiceType registryType, int size) {
+        this.stats.incrementServiceKey(registryType, applicationName, serviceKey, size);
     }
 
     @Override
     public void addApplicationRT(String applicationName, String registryOpType, Long responseTime) {
-        stats.calcRt(applicationName, registryOpType, responseTime);
+        stats.calcApplicationRt(applicationName, registryOpType, responseTime);
+    }
+
+    public void addServiceKeyRT(String applicationName, String serviceKey, String registryOpType, Long responseTime) {
+        stats.calcServiceKeyRt(applicationName, serviceKey, registryOpType, responseTime);
     }
 
     @Override
@@ -84,6 +92,7 @@ public class MetadataMetricsCollector implements ApplicationMetricsCollector<Met
         }
         list.addAll(stats.exportNumMetrics());
         list.addAll(stats.exportRtMetrics());
+        list.addAll(stats.exportServiceNumMetrics());
 
         return list;
     }

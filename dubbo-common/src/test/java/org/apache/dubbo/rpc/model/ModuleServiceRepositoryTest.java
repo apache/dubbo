@@ -62,7 +62,7 @@ class ModuleServiceRepositoryTest {
         Assertions.assertEquals(lookupServiceResult, serviceDescriptor);
 
         List<ServiceDescriptor> allServices = repository.getAllServices();
-        Assertions.assertEquals(allServices.size(), 1);
+        Assertions.assertEquals(1, allServices.size());
         Assertions.assertEquals(allServices.get(0), serviceDescriptor);
 
         ServiceDescriptor serviceDescriptor1 = repository.registerService(DemoService.class.getSimpleName(), DemoService.class);
@@ -76,14 +76,14 @@ class ModuleServiceRepositoryTest {
         repository.registerConsumer(consumerModel);
 
         List<ConsumerModel> allReferredServices = repository.getReferredServices();
-        Assertions.assertEquals(allReferredServices.size(), 1);
+        Assertions.assertEquals(1, allReferredServices.size());
         Assertions.assertEquals(allReferredServices.get(0), consumerModel);
 
         List<ConsumerModel> referredServices = repository.lookupReferredServices(DemoService.class.getName());
-        Assertions.assertEquals(referredServices.size(), 1);
+        Assertions.assertEquals(1, referredServices.size());
         Assertions.assertEquals(referredServices.get(0), consumerModel);
 
-        ConsumerModel referredService = repository.lookupReferredService(DemoService.class.getName());
+        ConsumerModel referredService = repository.lookupReferredServices(DemoService.class.getName()).get(0);
         Assertions.assertEquals(referredService, consumerModel);
 
         // 3.test providerModel
@@ -94,14 +94,14 @@ class ModuleServiceRepositoryTest {
             serviceMetadata, ClassUtils.getClassLoader(DemoService.class));
         repository.registerProvider(providerModel);
         List<ProviderModel> allExportedServices = repository.getExportedServices();
-        Assertions.assertEquals(allExportedServices.size(), 1);
+        Assertions.assertEquals(1, allExportedServices.size());
         Assertions.assertEquals(allExportedServices.get(0), providerModel);
 
         ProviderModel exportedService = repository.lookupExportedService(DemoService.class.getName());
         Assertions.assertEquals(exportedService, providerModel);
 
         List<ProviderModel> providerModels = frameworkModel.getServiceRepository().allProviderModels();
-        Assertions.assertEquals(providerModels.size(), 1);
+        Assertions.assertEquals(1, providerModels.size());
         Assertions.assertEquals(providerModels.get(0), providerModel);
 
         // 4.test destroy

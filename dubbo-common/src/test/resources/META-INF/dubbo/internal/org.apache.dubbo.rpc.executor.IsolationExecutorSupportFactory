@@ -1,0 +1,2 @@
+mock1=org.apache.dubbo.rpc.executor.Mock1IsolationExecutorSupportFactory
+mock2=org.apache.dubbo.rpc.executor.Mock2IsolationExecutorSupportFactory

@@ -14,24 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.common.model.person;
 
-package org.apache.dubbo.metrics.metrics.event;
+import java.io.Serializable;
 
-import org.apache.dubbo.metrics.event.MetricsEvent;
-import org.apache.dubbo.metrics.event.RequestEvent;
-import org.apache.dubbo.metrics.model.MethodMetric;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+public class Bgeneric<T> implements Serializable {
+    public static String NAME = "B";
 
-class RequestEventTest {
+    private String name = NAME;
+    private T data;
 
-    @Test
-    void testNewEvent() {
-        MethodMetric metric = new MethodMetric();
-        MetricsEvent.Type type = MetricsEvent.Type.TOTAL;
-        RequestEvent event = new RequestEvent(metric, type);
+    public T getData() {
+        return data;
+    }
 
-        Assertions.assertEquals(event.getSource(), metric);
-        Assertions.assertEquals(event.getType(), type);
+    public void setData(T data) {
+        this.data = data;
+    }
+
+    public String getName() {
+        return name;
     }
 }
