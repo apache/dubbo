@@ -163,11 +163,7 @@ public abstract class AbstractServerCall implements ServerCall, ServerStream.Lis
         }
         final byte[] data;
         try {
-            if (message instanceof Exception && !isNeedReturnException) {
-                data = packableMethod.packResponse(new RpcException((Exception) message));
-            } else  {
-                data = packableMethod.packResponse(message);
-            }
+            data = packableMethod.packResponse(message);
         } catch (Exception e) {
             close(TriRpcStatus.INTERNAL.withDescription("Serialize response failed")
                 .withCause(e), null);
