@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.apache.dubbo.demo.graalvm.consumer;
+package org.apache.dubbo.demo.graalvm.consumer;
 
 import org.apace.dubbo.graalvm.demo.DemoService;
 import org.apache.dubbo.common.constants.CommonConstants;

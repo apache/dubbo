@@ -124,7 +124,7 @@
                         <artifactId>dubbo-maven-plugin</artifactId>
                         <version>${project.version}</version>
                         <configuration>
-                            <mainClass>com.apache.dubbo.demo.graalvm.consumer.Application</mainClass>
+                            <mainClass>org.apache.dubbo.demo.graalvm.consumer.Application</mainClass>
                         </configuration>
                         <executions>
                             <execution>
@@ -163,7 +163,7 @@
                                 <enabled>true</enabled>
                             </metadataRepository>
                             <requiredVersion>22.3</requiredVersion>
-                            <mainClass>com.apache.dubbo.demo.graalvm.consumer.Application</mainClass>
+                            <mainClass>org.apache.dubbo.demo.graalvm.consumer.Application</mainClass>
                         </configuration>
                     </plugin>
 
