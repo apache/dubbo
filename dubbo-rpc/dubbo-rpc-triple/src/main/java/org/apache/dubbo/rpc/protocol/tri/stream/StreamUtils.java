@@ -67,7 +67,8 @@ public class StreamUtils {
         }
         Map<String, Object> res = new HashMap<>(origin.size());
         origin.forEach((k, v) -> {
-            if (TripleHeaderEnum.containsExcludeAttachments(k)) {
+            if (TripleHeaderEnum.containsExcludeAttachments(k)
+                && !TripleHeaderEnum.containsNeedToDeliveryHeaders(k)) {
                 return;
             }
             res.put(k, v);

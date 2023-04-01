@@ -53,7 +53,7 @@ class AbstractH2TransportListenerTest {
             .path("/foo.bar")
             .method(HttpMethod.POST.asciiName());
         headers.set("foo", "bar");
-        final Map<String, Object> map = listener.headersToMap(headers, () -> null);
+        final Map<String, Object> map = listener.headersToMap(headers, () -> null, () -> null);
         Assertions.assertEquals(4, map.size());
     }
 

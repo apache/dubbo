@@ -46,7 +46,7 @@ public enum TripleHeaderEnum {
 
     TRI_HEADER_CONVERT("tri-header-convert"),
 
-    TRI_HEADER_EXCEPTION_CODE("tri-header-exception-code"),
+    TRI_EXCEPTION_CODE("tri-exception-code"),
 
     ;
 
@@ -55,11 +55,7 @@ public enum TripleHeaderEnum {
     static final Set<String> excludeAttachmentsSet = new HashSet<>();
 
     static {
-        Set<String> needToDeliveryHeaders = needToDeliveryHeaders();
         for (TripleHeaderEnum item : TripleHeaderEnum.values()) {
-            if (needToDeliveryHeaders.contains(item.getHeader())) {
-                continue;
-            }
             enumMap.put(item.getHeader(), item);
         }
         excludeAttachmentsSet.add(CommonConstants.GROUP_KEY);
@@ -76,10 +72,10 @@ public enum TripleHeaderEnum {
 
     }
 
-    public static Set<String> needToDeliveryHeaders() {
-        Set<String> set = new HashSet<>();
-        set.add(TRI_HEADER_EXCEPTION_CODE.getHeader());
-        return set;
+    public static Map<String, TripleHeaderEnum> needToDeliveryHeaders() {
+        Map<String, TripleHeaderEnum> map = new HashMap<>();
+        map.put(TRI_EXCEPTION_CODE.getHeader(), TRI_EXCEPTION_CODE);
+        return map;
     }
 
     private final String header;
@@ -90,6 +86,10 @@ public enum TripleHeaderEnum {
 
     public static boolean containsExcludeAttachments(String key) {
         return excludeAttachmentsSet.contains(key) || enumMap.containsKey(key);
+    }
+
+    public static boolean containsNeedToDeliveryHeaders(String key) {
+        return needToDeliveryHeaders().containsKey(key);
     }
 
     public String getHeader() {

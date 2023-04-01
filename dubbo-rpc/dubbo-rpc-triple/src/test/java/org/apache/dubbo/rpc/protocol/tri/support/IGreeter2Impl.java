@@ -23,7 +23,7 @@ public class IGreeter2Impl implements IGreeter2{
     }
 
     @Override
-    public Exception echoException(String request) throws IGreeterException {
+    public Exception echoException(String request) {
         return new IGreeterException("I am self define exception");
     }
 }

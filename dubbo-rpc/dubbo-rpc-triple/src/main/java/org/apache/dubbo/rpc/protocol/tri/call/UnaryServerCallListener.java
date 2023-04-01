@@ -35,6 +35,9 @@ public class UnaryServerCallListener extends AbstractServerCallListener {
 
     @Override
     public void onReturn(Object value) {
+        if (value instanceof Exception) {
+            responseObserver.setNeedReturnException(true);
+        }
         responseObserver.onNext(value);
         responseObserver.onCompleted();
     }
@@ -57,7 +60,7 @@ public class UnaryServerCallListener extends AbstractServerCallListener {
     protected void doOnResponseHasException(Throwable t) {
         if (needWrapper) {
             if (t instanceof Exception) {
-                onReturnException(t);
+                onReturnException((Exception) t);
             } else {
                 onReturn(t);
             }
@@ -66,19 +69,15 @@ public class UnaryServerCallListener extends AbstractServerCallListener {
         }
     }
 
-    private void onReturnException(Object value) {
-        boolean isNeedReturnException = false;
+    private void onReturnException(Exception value) {
         Integer exceptionCode;
-        if (value instanceof Exception) {
-            isNeedReturnException = true;
-            TriRpcStatus status = TriRpcStatus.getStatus((Exception) value);
-            exceptionCode = status.code.code;
-            if (exceptionCode == TriRpcStatus.UNKNOWN.code.code) {
-                exceptionCode = RpcException.BIZ_EXCEPTION;
-            }
-            responseObserver.setExceptionCode(exceptionCode);
+        TriRpcStatus status = TriRpcStatus.getStatus(value);
+        exceptionCode = status.code.code;
+        if (exceptionCode == TriRpcStatus.UNKNOWN.code.code) {
+            exceptionCode = RpcException.BIZ_EXCEPTION;
         }
-        responseObserver.setNeedReturnException(isNeedReturnException);
+        responseObserver.setExceptionCode(exceptionCode);
+        responseObserver.setNeedReturnException(true);
         onReturn(value);
     }
 

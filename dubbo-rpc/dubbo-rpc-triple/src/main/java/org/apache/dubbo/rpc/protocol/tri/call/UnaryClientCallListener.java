@@ -60,7 +60,7 @@ public class UnaryClientCallListener implements ClientCall.Listener {
         if (!(appResponse instanceof Exception)) {
             return code;
         }
-        Object exceptionCode = trailers.get(TripleHeaderEnum.TRI_HEADER_EXCEPTION_CODE.getHeader());
+        Object exceptionCode = trailers.get(TripleHeaderEnum.TRI_EXCEPTION_CODE.getHeader());
         if (exceptionCode instanceof String) {
             code = Integer.parseInt((String) exceptionCode);
         }

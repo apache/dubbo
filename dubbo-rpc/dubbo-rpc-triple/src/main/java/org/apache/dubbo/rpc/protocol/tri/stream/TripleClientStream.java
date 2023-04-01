@@ -17,6 +17,20 @@
 
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
+import com.google.protobuf.Any;
+import com.google.rpc.DebugInfo;
+import com.google.rpc.ErrorInfo;
+import com.google.rpc.Status;
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.handler.codec.http2.Http2Error;
+import io.netty.handler.codec.http2.Http2Headers;
+import io.netty.handler.codec.http2.Http2StreamChannel;
+import io.netty.handler.codec.http2.Http2StreamChannelBootstrap;
+import io.netty.util.ReferenceCountUtil;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.TriRpcStatus;
@@ -39,21 +53,6 @@ import org.apache.dubbo.rpc.protocol.tri.transport.TripleCommandOutBoundHandler;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleHttp2ClientResponseHandler;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleWriteQueue;
 import org.apache.dubbo.rpc.protocol.tri.transport.WriteQueue;
-
-import com.google.protobuf.Any;
-import com.google.rpc.DebugInfo;
-import com.google.rpc.ErrorInfo;
-import com.google.rpc.Status;
-import io.netty.buffer.ByteBuf;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.handler.codec.http2.Http2Error;
-import io.netty.handler.codec.http2.Http2Headers;
-import io.netty.handler.codec.http2.Http2StreamChannel;
-import io.netty.handler.codec.http2.Http2StreamChannelBootstrap;
-import io.netty.util.ReferenceCountUtil;
 
 import java.io.IOException;
 import java.net.SocketAddress;
@@ -235,14 +234,10 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
 
         void finishProcess(TriRpcStatus status, Http2Headers trailers) {
             final Map<String, String> reserved = filterReservedHeaders(trailers);
-            final Map<String, Object> attachments = headersToMap(trailers, () -> {
-                return reserved.get(TripleHeaderEnum.TRI_HEADER_CONVERT.getHeader());
-            });
+            final Map<String, Object> attachments = headersToMap(trailers,
+                () -> reserved.get(TripleHeaderEnum.TRI_HEADER_CONVERT.getHeader()),
+                () -> reserved.get(TripleHeaderEnum.TRI_EXCEPTION_CODE.getHeader()));
             final TriRpcStatus detailStatus;
-            final Map<String, Object> exceptionAttachments = exceptionHeadersToMap(reserved, () -> {
-                return reserved.get(TripleHeaderEnum.TRI_HEADER_EXCEPTION_CODE.getHeader());
-            });
-            attachments.putAll(exceptionAttachments);
             final TriRpcStatus statusFromTrailers = getStatusFromTrailers(reserved);
             if (statusFromTrailers != null) {
                 detailStatus = statusFromTrailers;

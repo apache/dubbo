@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.rpc.protocol.tri.transport;
 
+import io.netty.handler.codec.http2.Http2Headers;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.JsonUtils;
@@ -24,8 +25,6 @@ import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 import org.apache.dubbo.rpc.protocol.tri.stream.StreamUtils;
-
-import io.netty.handler.codec.http2.Http2Headers;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -45,14 +44,14 @@ public abstract class AbstractH2TransportListener implements H2TransportListener
      * @param trailers the metadata from remote
      * @return KV pairs map
      */
-    protected Map<String, Object> exceptionHeadersToMap(Map<String, String> reserved, Supplier<Object> convertUpperHeaderSupplier) {
+    protected Map<String, Object> exceptionHeadersToMap(Map<String, String> reserved) {
         if (reserved == null) {
             return Collections.emptyMap();
         }
         Map<String, Object> attachments = new HashMap<>(reserved.size());
         for (Map.Entry<String, String> header : reserved.entrySet()) {
             String key = header.getKey();
-            if (key.endsWith(TripleHeaderEnum.TRI_HEADER_EXCEPTION_CODE.getHeader())) {
+            if (key.endsWith(TripleHeaderEnum.TRI_EXCEPTION_CODE.getHeader())) {
                 try {
                     attachments.put(key, header.getValue());
                 } catch (Exception e) {
@@ -65,7 +64,7 @@ public abstract class AbstractH2TransportListener implements H2TransportListener
         return attachments;
     }
 
-    protected Map<String, Object> headersToMap(Http2Headers trailers, Supplier<Object> convertUpperHeaderSupplier) {
+    protected Map<String, Object> headersToMap(Http2Headers trailers, Supplier<Object> convertUpperHeaderSupplier, Supplier<Object> triExceptionCodeSupplier) {
         if (trailers == null) {
             return Collections.emptyMap();
         }
@@ -89,23 +88,34 @@ public abstract class AbstractH2TransportListener implements H2TransportListener
 
         // try converting upper key
         Object obj = convertUpperHeaderSupplier.get();
-        if (obj == null) {
+//        if (obj == null) {
+//            return attachments;
+//        }
+        if (obj != null) {
+            if (obj instanceof String) {
+                String json = TriRpcStatus.decodeMessage((String) obj);
+                Map<String, String> map = JsonUtils.getJson().toJavaObject(json, Map.class);
+                for (Map.Entry<String, String> entry : map.entrySet()) {
+                    Object val = attachments.remove(entry.getKey());
+                    if (val != null) {
+                        attachments.put(entry.getValue(), val);
+                    }
+                }
+            } else {
+                // If convertUpperHeaderSupplier does not return String, just fail...
+                // Internal invocation, use INTERNAL_ERROR instead.
+
+                LOGGER.error(INTERNAL_ERROR, "wrong internal invocation", "", "Triple convertNoLowerCaseHeader error, obj is not String");
+            }
+        }
+
+        // try to extract triple exception code
+        Object triExceptionCodeObj = triExceptionCodeSupplier.get();
+        if (triExceptionCodeObj == null) {
             return attachments;
         }
-        if (obj instanceof String) {
-            String json = TriRpcStatus.decodeMessage((String) obj);
-            Map<String, String> map = JsonUtils.getJson().toJavaObject(json, Map.class);
-            for (Map.Entry<String, String> entry : map.entrySet()) {
-                Object val = attachments.remove(entry.getKey());
-                if (val != null) {
-                    attachments.put(entry.getValue(), val);
-                }
-            }
-        } else {
-            // If convertUpperHeaderSupplier does not return String, just fail...
-            // Internal invocation, use INTERNAL_ERROR instead.
-
-            LOGGER.error(INTERNAL_ERROR, "wrong internal invocation", "", "Triple convertNoLowerCaseHeader error, obj is not String");
+        if (triExceptionCodeObj instanceof String) {
+            attachments.put(TripleHeaderEnum.TRI_EXCEPTION_CODE.getHeader(), (String) triExceptionCodeObj);
         }
         return attachments;
     }

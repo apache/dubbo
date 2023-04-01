@@ -17,6 +17,20 @@
 
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
+import com.google.protobuf.Any;
+import com.google.rpc.DebugInfo;
+import com.google.rpc.Status;
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelFuture;
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpMethod;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.HttpUtil;
+import io.netty.handler.codec.http2.DefaultHttp2Headers;
+import io.netty.handler.codec.http2.Http2Error;
+import io.netty.handler.codec.http2.Http2Headers;
+import io.netty.handler.codec.http2.Http2StreamChannel;
+import io.netty.util.concurrent.Future;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -43,21 +57,6 @@ import org.apache.dubbo.rpc.protocol.tri.frame.TriDecoder;
 import org.apache.dubbo.rpc.protocol.tri.transport.AbstractH2TransportListener;
 import org.apache.dubbo.rpc.protocol.tri.transport.H2TransportListener;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleWriteQueue;
-
-import com.google.protobuf.Any;
-import com.google.rpc.DebugInfo;
-import com.google.rpc.Status;
-import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelFuture;
-import io.netty.handler.codec.http.HttpHeaderNames;
-import io.netty.handler.codec.http.HttpMethod;
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.HttpUtil;
-import io.netty.handler.codec.http2.DefaultHttp2Headers;
-import io.netty.handler.codec.http2.Http2Error;
-import io.netty.handler.codec.http2.Http2Headers;
-import io.netty.handler.codec.http2.Http2StreamChannel;
-import io.netty.util.concurrent.Future;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -192,7 +191,7 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
         StreamUtils.convertAttachment(headers, attachments, TripleProtocol.CONVERT_NO_LOWER_HEADER);
         headers.set(TripleHeaderEnum.STATUS_KEY.getHeader(), String.valueOf(rpcStatus.code.code));
         if (isNeedReturnException) {
-            headers.set(TripleHeaderEnum.TRI_HEADER_EXCEPTION_CODE.getHeader(), String.valueOf(exceptionCode));
+            headers.set(TripleHeaderEnum.TRI_EXCEPTION_CODE.getHeader(), String.valueOf(exceptionCode));
         }
         if (rpcStatus.isOk()) {
             return headers;
@@ -414,7 +413,7 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
                 return Optional.ofNullable(headers.get(TripleHeaderEnum.TRI_HEADER_CONVERT.getHeader()))
                     .map(CharSequence::toString)
                     .orElse(null);
-            });
+            }, () -> null);
             boolean hasStub = pathResolver.hasNativeStub(path);
             if (hasStub) {
                 listener = new StubAbstractServerCall(invoker, TripleServerStream.this,
