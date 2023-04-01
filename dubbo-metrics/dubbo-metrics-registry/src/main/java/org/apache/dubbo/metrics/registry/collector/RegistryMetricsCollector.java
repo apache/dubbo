@@ -84,10 +84,6 @@ public class RegistryMetricsCollector implements ApplicationMetricsCollector<App
         this.stats.increment(registryType, applicationName);
     }
 
-    public void increment(String applicationName, ApplicationType registryType, int size) {
-        this.stats.incrementSize(registryType, applicationName, size);
-    }
-
     public void incrementServiceKey(String applicationName, String serviceKey, ServiceType registryType, int size) {
         this.stats.incrementServiceKey(registryType, applicationName, serviceKey, size);
     }
