@@ -43,6 +43,8 @@ import com.alibaba.nacos.api.PropertyKeyConst;
 import com.alibaba.nacos.api.config.ConfigService;
 import com.alibaba.nacos.api.config.listener.AbstractSharedListener;
 import com.alibaba.nacos.api.exception.NacosException;
+import org.apache.dubbo.metrics.collector.ConfigCenterMetricsCollector;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import static com.alibaba.nacos.api.PropertyKeyConst.PASSWORD;
 import static com.alibaba.nacos.api.PropertyKeyConst.SERVER_ADDR;
@@ -67,7 +69,7 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
      */
     private static final long DEFAULT_TIMEOUT = 5000L;
 
-    private Properties nacosProperties;
+    private final Properties nacosProperties;
 
     private static final String NACOS_RETRY_KEY = "nacos.retry";
 
@@ -80,17 +82,20 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
      */
     private final NacosConfigServiceWrapper configService;
 
+    private ApplicationModel applicationModel;
+
     /**
      * The map store the key to {@link NacosConfigListener} mapping
      */
     private final ConcurrentMap<String, NacosConfigListener> watchListenerMap;
 
-    private MD5Utils md5Utils = new MD5Utils();
+    private final MD5Utils md5Utils = new MD5Utils();
 
-    NacosDynamicConfiguration(URL url) {
+    NacosDynamicConfiguration(URL url, ApplicationModel applicationModel) {
         this.nacosProperties = buildNacosProperties(url);
         this.configService = buildConfigService(url);
-        watchListenerMap = new ConcurrentHashMap<>();
+        this.watchListenerMap = new ConcurrentHashMap<>();
+        this.applicationModel = applicationModel;
     }
 
     private NacosConfigServiceWrapper buildConfigService(URL url) {
@@ -339,6 +344,10 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
                 cacheData.put(dataId, configInfo);
             }
             listeners.forEach(listener -> listener.process(event));
+
+            ConfigCenterMetricsCollector collector =
+                applicationModel.getBeanFactory().getOrRegisterBean(ConfigCenterMetricsCollector.class);
+            collector.increaseUpdated("nacos", applicationModel.getApplicationName(), event);
         }
 
         void addListener(ConfigurationListener configurationListener) {

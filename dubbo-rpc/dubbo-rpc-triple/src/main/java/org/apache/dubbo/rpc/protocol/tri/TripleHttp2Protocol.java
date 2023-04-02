@@ -47,6 +47,7 @@ import io.netty.handler.codec.http2.Http2FrameLogger;
 import io.netty.handler.codec.http2.Http2MultiplexHandler;
 import io.netty.handler.codec.http2.Http2Settings;
 import io.netty.handler.codec.http2.Http2StreamChannel;
+import io.netty.handler.flush.FlushConsolidationHandler;
 import io.netty.handler.logging.LogLevel;
 
 import java.util.ArrayList;
@@ -141,6 +142,7 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
             });
         List<ChannelHandler> handlers = new ArrayList<>();
         handlers.add(new ChannelHandlerPretender(codec));
+        handlers.add(new ChannelHandlerPretender(new FlushConsolidationHandler(64, true)));
         handlers.add(new ChannelHandlerPretender(new TripleServerConnectionHandler()));
         handlers.add(new ChannelHandlerPretender(handler));
         handlers.add(new ChannelHandlerPretender(new TripleTailHandler()));

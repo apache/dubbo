@@ -108,7 +108,6 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
             executor = createExecutor(url);
             executors.put(executorCacheKey, executor);
         }
-
         dataStore.put(executorKey, executorCacheKey, executor);
         return executor;
     }

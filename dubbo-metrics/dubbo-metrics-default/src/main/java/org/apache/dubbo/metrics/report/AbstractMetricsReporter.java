@@ -17,15 +17,20 @@
 
 package org.apache.dubbo.metrics.report;
 
+import io.micrometer.core.instrument.FunctionCounter;
+import io.micrometer.core.instrument.binder.MeterBinder;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.common.constants.MetricsConstants;
 import org.apache.dubbo.common.lang.ShutdownHookCallbacks;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.metrics.MetricsGlobalRegistry;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.metrics.collector.AggregateMetricsCollector;
 import org.apache.dubbo.metrics.collector.MetricsCollector;
+import org.apache.dubbo.metrics.collector.HistogramMetricsCollector;
+import org.apache.dubbo.metrics.model.sample.CounterMetricSample;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -65,7 +70,9 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
     protected final URL url;
     @SuppressWarnings("rawtypes")
     protected final List<MetricsCollector> collectors = new ArrayList<>();
-    public static final CompositeMeterRegistry compositeRegistry = new CompositeMeterRegistry();
+    // Avoid instances being gc due to weak references
+    protected final List<MeterBinder> instanceHolder = new ArrayList<>();
+    protected final CompositeMeterRegistry compositeRegistry;
 
     private final ApplicationModel applicationModel;
 
@@ -77,6 +84,7 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
     protected AbstractMetricsReporter(URL url, ApplicationModel applicationModel) {
         this.url = url;
         this.applicationModel = applicationModel;
+        this.compositeRegistry = MetricsGlobalRegistry.getCompositeRegistry();
     }
 
     @Override
@@ -116,16 +124,22 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
             jvmGcMetrics.bindTo(compositeRegistry);
             Runtime.getRuntime().addShutdownHook(new Thread(jvmGcMetrics::close));
 
-            new ProcessorMetrics(extraTags).bindTo(compositeRegistry);
+            bindTo(new ProcessorMetrics(extraTags));
             new JvmThreadMetrics(extraTags).bindTo(compositeRegistry);
-            new UptimeMetrics(extraTags).bindTo(compositeRegistry);
+            bindTo(new UptimeMetrics(extraTags));
         }
+    }
+
+    private void bindTo(MeterBinder binder) {
+        binder.bindTo(compositeRegistry);
+        instanceHolder.add(binder);
     }
 
     @SuppressWarnings("rawtypes")
     private void initCollectors() {
         ScopeBeanFactory beanFactory = applicationModel.getBeanFactory();
         beanFactory.getOrRegisterBean(AggregateMetricsCollector.class);
+        beanFactory.getOrRegisterBean(HistogramMetricsCollector.class);
         List<MetricsCollector> otherCollectors = beanFactory.getBeansOfType(MetricsCollector.class);
         collectors.addAll(otherCollectors);
     }
@@ -145,19 +159,17 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
                     switch (sample.getType()) {
                         case GAUGE:
                             GaugeMetricSample gaugeSample = (GaugeMetricSample) sample;
-                            List<Tag> tags = new ArrayList<>();
-                            gaugeSample.getTags().forEach((k, v) -> {
-                                if (v == null) {
-                                    v = "";
-                                }
-
-                                tags.add(Tag.of(k, v));
-                            });
+                            List<Tag> tags = getTags(gaugeSample);
 
                             Gauge.builder(gaugeSample.getName(), gaugeSample.getValue(), gaugeSample.getApply())
                                 .description(gaugeSample.getDescription()).tags(tags).register(compositeRegistry);
                             break;
                         case COUNTER:
+                            CounterMetricSample counterMetricSample = (CounterMetricSample) sample;
+                            FunctionCounter.builder(counterMetricSample.getName(),  counterMetricSample.getValue(),
+                                    Number::doubleValue).description(counterMetricSample.getDescription())
+                                .tags(getTags(counterMetricSample))
+                                .register(compositeRegistry);
                         case TIMER:
                         case LONG_TASK_TIMER:
                         case DISTRIBUTION_SUMMARY:
@@ -171,6 +183,18 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
                 }
             }
         });
+    }
+
+    private static List<Tag> getTags(MetricSample gaugeSample) {
+        List<Tag> tags = new ArrayList<>();
+        gaugeSample.getTags().forEach((k, v) -> {
+            if (v == null) {
+                v = "";
+            }
+
+            tags.add(Tag.of(k, v));
+        });
+        return tags;
     }
 
     private void registerDubboShutdownHook() {

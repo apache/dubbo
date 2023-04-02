@@ -22,6 +22,7 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -61,7 +62,7 @@ public class RandomLoadBalance extends AbstractLoadBalance {
 
         // Every invoker has the same weight?
         boolean sameWeight = true;
-        // the maxWeight of every invokers, the minWeight = 0 or the maxWeight of the last invoker
+        // the maxWeight of every invoker, the minWeight = 0 or the maxWeight of the last invoker
         int[] weights = new int[length];
         // The sum of weights
         int totalWeight = 0;
@@ -78,11 +79,24 @@ public class RandomLoadBalance extends AbstractLoadBalance {
         if (totalWeight > 0 && !sameWeight) {
             // If (not every invoker has the same weight & at least one invoker's weight>0), select randomly based on totalWeight.
             int offset = ThreadLocalRandom.current().nextInt(totalWeight);
-            // Return a invoker based on the random value.
-            for (int i = 0; i < length; i++) {
-                if (offset < weights[i]) {
-                    return invokers.get(i);
+            // Return an invoker based on the random value.
+            if (length <= 4) {
+                for (int i = 0; i < length; i++) {
+                    if (offset < weights[i]) {
+                        return invokers.get(i);
+                    }
                 }
+            } else {
+                int i = Arrays.binarySearch(weights, offset);
+                if (i < 0) {
+                    i = -i - 1;
+                } else {
+                    while (weights[i+1] == offset) {
+                        i++;
+                    }
+                    i++;
+                }
+                return invokers.get(i);
             }
         }
         // If all invokers have the same weight value or totalWeight=0, return evenly.

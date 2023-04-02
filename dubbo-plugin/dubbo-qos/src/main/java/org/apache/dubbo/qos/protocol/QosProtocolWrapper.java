@@ -21,7 +21,7 @@ import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.qos.permission.PermissionLevel;
+import org.apache.dubbo.qos.api.PermissionLevel;
 import org.apache.dubbo.qos.common.QosConstants;
 import org.apache.dubbo.qos.pu.QosWireProtocol;
 import org.apache.dubbo.qos.server.Server;
@@ -50,9 +50,9 @@ public class QosProtocolWrapper implements Protocol, ScopeModelAware {
 
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(QosProtocolWrapper.class);
 
-    private AtomicBoolean hasStarted = new AtomicBoolean(false);
+    private final AtomicBoolean hasStarted = new AtomicBoolean(false);
 
-    private Protocol protocol;
+    private final Protocol protocol;
 
     private FrameworkModel frameworkModel;
 

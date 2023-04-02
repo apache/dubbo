@@ -39,7 +39,7 @@ import java.util.Optional;
  * Registry implementation of {@link MetricsCollector}
  */
 @Activate
-public class RegistryMetricsCollector implements ApplicationMetricsCollector<RegistryEvent.Type, RegistryEvent> {
+public class RegistryMetricsCollector implements ApplicationMetricsCollector<RegistryEvent.ApplicationType, RegistryEvent> {
 
     private Boolean collectEnabled = null;
     private final RegistryStatComposite stats;
@@ -64,34 +64,46 @@ public class RegistryMetricsCollector implements ApplicationMetricsCollector<Reg
             ConfigManager configManager = applicationModel.getApplicationConfigManager();
             configManager.getMetrics().ifPresent(metricsConfig -> setCollectEnabled(metricsConfig.getEnableRegistryMetrics()));
         }
-        return Optional.ofNullable(collectEnabled).orElse(false);
+        return Optional.ofNullable(collectEnabled).orElse(true);
     }
 
-    public void setNum(RegistryEvent.Type registryType, String applicationName, Map<String, Integer> lastNumMap) {
+    public void setNum(RegistryEvent.ServiceType registryType, String applicationName, Map<String, Integer> lastNumMap) {
         lastNumMap.forEach((serviceKey, num) ->
             this.stats.setServiceKey(registryType, applicationName, serviceKey, num));
     }
 
-    public void setNum(RegistryEvent.Type registryType, String applicationName, Integer num) {
+    public void setNum(RegistryEvent.ApplicationType registryType, String applicationName, Integer num) {
         this.stats.setApplicationKey(registryType, applicationName, num);
     }
 
 
     @Override
-    public void increment(String applicationName, RegistryEvent.Type registryType) {
+    public void increment(String applicationName, RegistryEvent.ApplicationType registryType) {
         this.stats.increment(registryType, applicationName);
     }
 
+    public void increment(String applicationName, RegistryEvent.ApplicationType registryType, int size) {
+        this.stats.incrementSize(registryType, applicationName, size);
+    }
+
+    public void incrementServiceKey(String applicationName, String serviceKey, RegistryEvent.ServiceType registryType, int size) {
+        this.stats.incrementServiceKey(registryType, applicationName, serviceKey, size);
+    }
+
     @Override
-    public void addRT(String applicationName, String registryOpType, Long responseTime) {
-        stats.calcRt(applicationName, registryOpType, responseTime);
+    public void addApplicationRT(String applicationName, String registryOpType, Long responseTime) {
+        stats.calcApplicationRt(applicationName, registryOpType, responseTime);
+    }
+
+    public void addServiceKeyRT(String applicationName, String serviceKey, String registryOpType, Long responseTime) {
+        stats.calcServiceKeyRt(applicationName, serviceKey, registryOpType, responseTime);
     }
 
     @Override
     public List<MetricSample> collect() {
         List<MetricSample> list = new ArrayList<>();
         if (!isCollectEnabled()) {
-           return list;
+            return list;
         }
         list.addAll(stats.exportNumMetrics());
         list.addAll(stats.exportRtMetrics());

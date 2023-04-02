@@ -24,9 +24,9 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 
 public class ZookeeperDynamicConfigurationFactory extends AbstractDynamicConfigurationFactory {
 
-    private ZookeeperTransporter zookeeperTransporter;
+    private final ZookeeperTransporter zookeeperTransporter;
 
-    private ApplicationModel applicationModel;
+    private final ApplicationModel applicationModel;
 
     public ZookeeperDynamicConfigurationFactory(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
@@ -35,6 +35,6 @@ public class ZookeeperDynamicConfigurationFactory extends AbstractDynamicConfigu
 
     @Override
     protected DynamicConfiguration createDynamicConfiguration(URL url) {
-        return new ZookeeperDynamicConfiguration(url, zookeeperTransporter);
+        return new ZookeeperDynamicConfiguration(url, zookeeperTransporter, applicationModel);
     }
 }
