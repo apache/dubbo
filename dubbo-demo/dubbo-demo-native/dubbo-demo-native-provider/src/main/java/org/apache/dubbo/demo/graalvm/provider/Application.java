@@ -119,7 +119,7 @@ public class Application {
 
         serviceConfig.export();
 
-        logger.info("dubbo service started");
+        System.out.println("dubbo service started");
         new CountDownLatch(1).await();
     }
 }
