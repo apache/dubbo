@@ -98,7 +98,7 @@ public class ReflectionPackableMethod implements PackableMethod {
             this.responseUnpack = new WrapResponseUnpack(serialization, url, serializeName, actualResponseType);
 
             // server
-            this.responsePack = new WrapResponsePack(serialization, url, actualResponseType);
+            this.responsePack = new WrapResponsePack(serialization, url, serializeName, actualResponseType);
             this.requestUnpack = new WrapRequestUnpack(serialization, url, serializeName, actualRequestTypes);
         }
     }
@@ -317,11 +317,12 @@ public class ReflectionPackableMethod implements PackableMethod {
         // wrapper request set serialize type
         String serialize;
 
-        private WrapResponsePack(MultipleSerialization multipleSerialization, URL url,
+        private WrapResponsePack(MultipleSerialization multipleSerialization, URL url, String defaultSerialize,
                                  Class<?> actualResponseType) {
             this.multipleSerialization = multipleSerialization;
             this.url = url;
             this.actualResponseType = actualResponseType;
+            this.serialize = defaultSerialize;
         }
 
         @Override
