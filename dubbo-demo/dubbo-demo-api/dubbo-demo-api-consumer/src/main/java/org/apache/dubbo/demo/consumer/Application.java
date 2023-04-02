@@ -40,7 +40,6 @@ public class Application {
 
     private static final String METADATA_REPORT_URL = "zookeeper://127.0.0.1:2181";
 
-    private static final Logger logger = LoggerFactory.getLogger(Application.class);
 
     public static void main(String[] args) {
         if (isClassic(args)) {
@@ -74,7 +73,7 @@ public class Application {
         GenericService genericService = (GenericService) demoService;
         Object genericInvokeResult = genericService.$invoke("sayHello", new String[]{String.class.getName()},
             new Object[]{"dubbo generic invoke"});
-        logger.info(genericInvokeResult.toString());
+        System.out.println(genericInvokeResult.toString());
     }
 
     private static void runWithRefer() {
@@ -101,6 +100,6 @@ public class Application {
 
         DemoService service = reference.get();
         String message = service.sayHello("dubbo");
-        logger.info(message);
+        System.out.println(message);
     }
 }
