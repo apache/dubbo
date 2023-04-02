@@ -184,4 +184,11 @@ public class CodecSupport {
     }
 
 
+    public static void checkSerialization(String expectSerializeName, String actualSerializeName)throws IOException {
+        if (expectSerializeName.equals(actualSerializeName)
+            && SERIALIZATIONNAME_ID_MAP.containsKey(expectSerializeName)) {
+            return;
+        }
+        throw new IOException("Unexpected serialization type:" + actualSerializeName + " received from network, please check if the peer send the right id.");
+    }
 }
