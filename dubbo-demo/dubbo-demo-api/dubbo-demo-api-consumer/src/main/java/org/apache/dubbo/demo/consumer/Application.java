@@ -17,8 +17,7 @@
 package org.apache.dubbo.demo.consumer;
 
 import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
+
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ModuleConfig;
 import org.apache.dubbo.config.ApplicationConfig;
