@@ -39,8 +39,8 @@ public class ConcurrentHashMapUtils {
                 // v = map.computeIfAbsent(key, func);
 
                 // this bug fix methods maybe cause `func.apply` multiple calls.
-                value = func.apply(key);
-                final V res = map.putIfAbsent(key, value);
+                v = func.apply(key);
+                final V res = map.putIfAbsent(key, v);
                 if(null != res){
                     // if pre value present, means other thread put value already, and putIfAbsent not effect
                     // return exist value
