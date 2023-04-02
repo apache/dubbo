@@ -18,8 +18,6 @@ package org.apache.dubbo.demo.graalvm.provider;
 
 import org.apace.dubbo.graalvm.demo.DemoService;
 import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ApplicationConfig;
@@ -41,7 +39,6 @@ public class Application {
 
     private static final String REGISTRY_URL = "zookeeper://127.0.0.1:2181";
 
-    private static final Logger logger = LoggerFactory.getLogger(Application.class);
 
     public static void main(String[] args) throws Exception {
         System.setProperty("dubbo.application.logger", "log4j");
@@ -82,7 +79,7 @@ public class Application {
             .start()
             .await();
 
-        logger.info("dubbo service started");
+        System.out.println("dubbo service started");
     }
 
     private static void startWithExport() throws InterruptedException {
