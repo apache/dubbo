@@ -35,7 +35,18 @@ public class ConcurrentHashMapUtils {
         if (JRE.JAVA_8.isCurrentVersion()) {
             V v = map.get(key);
             if (null == v) {
-                v = map.computeIfAbsent(key, func);
+                // issue#11986 lock bug
+                // v = map.computeIfAbsent(key, func);
+
+                // this bug fix methods maybe cause `func.apply` multiple calls.
+                value = func.apply(key);
+                final V res = map.putIfAbsent(key, value);
+                if(null != res){
+                    // if pre value present, means other thread put value already, and putIfAbsent not effect
+                    // return exist value
+				    return res;
+			    }
+                // if pre value is null, means putIfAbsent effected, return current value
             }
             return v;
         } else {

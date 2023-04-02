@@ -37,4 +37,16 @@ class ConcurrentHashMapUtilsTest {
         ifAbsent = ConcurrentHashMapUtils.computeIfAbsent(map, "mxsm", k -> "mxsm1");
         assertEquals("mxsm1", ifAbsent);
     }
+
+    @Test
+	public void issue11986Test(){
+        // https://github.com/apache/dubbo/issues/11986
+		final ConcurrentHashMap<String,Integer> map=new ConcurrentHashMap<>();
+        // // map.computeIfAbsent("AaAa", key->map.computeIfAbsent("BBBB",key2->42));
+        ConcurrentHashMapUtils.computeIfAbsent(map, "AaAa", key->map.computeIfAbsent("BBBB",key2->42));
+
+		assertEquals(2, map.size());
+		assertEquals(Integer.valueOf(42), map.get("AaAa"));
+		assertEquals(Integer.valueOf(42), map.get("BBBB"));
+	}
 }
