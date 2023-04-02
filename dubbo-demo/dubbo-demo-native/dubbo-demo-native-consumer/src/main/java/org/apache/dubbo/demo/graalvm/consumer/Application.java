@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.demo.graalvm.consumer;
 
-import org.apace.dubbo.graalvm.demo.DemoService;
+import org.apache.dubbo.graalvm.demo.DemoService;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ReferenceConfig;
