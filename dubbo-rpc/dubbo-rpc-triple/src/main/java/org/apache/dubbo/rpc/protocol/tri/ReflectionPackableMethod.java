@@ -55,8 +55,6 @@ public class ReflectionPackableMethod implements PackableMethod {
     private final UnPack requestUnpack;
     private final UnPack responseUnpack;
 
-    private String serializeType = DEFAULT_SERIALIZER_TYPE;
-
     public ReflectionPackableMethod(MethodDescriptor method, URL url, String serializeName) {
         Class<?>[] actualRequestTypes;
         Class<?> actualResponseType;
@@ -480,15 +478,5 @@ public class ReflectionPackableMethod implements PackableMethod {
             }
             return ret;
         }
-    }
-
-    @Override
-    public void setRequestSerializerType(String serializerType) {
-        this.serializeType = serializerType;
-    }
-
-    @Override
-    public String getRequestSerializerType() {
-        return serializeType;
     }
 }

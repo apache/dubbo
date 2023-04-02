@@ -25,9 +25,6 @@ import java.io.IOException;
  */
 public interface PackableMethod {
 
-
-    public static final String DEFAULT_SERIALIZER_TYPE = "protobuf";
-
     interface Pack {
 
         /**
@@ -72,13 +69,5 @@ public interface PackableMethod {
     UnPack getResponseUnpack();
 
     UnPack getRequestUnpack();
-
-    default void setRequestSerializerType(String serializerType) {
-
-    }
-
-    default String getRequestSerializerType() {
-        return DEFAULT_SERIALIZER_TYPE;
-    }
 
 }
