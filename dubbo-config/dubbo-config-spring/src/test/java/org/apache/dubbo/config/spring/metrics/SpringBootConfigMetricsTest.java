@@ -50,6 +50,7 @@ import org.springframework.context.annotation.Configuration;
         "dubbo.metrics.aggregation.enabled=true",
         "dubbo.metrics.aggregation.bucket-num=5",
         "dubbo.metrics.aggregation.time-window-seconds=120",
+        "dubbo.metrics.histogram.enabled=true",
         "dubbo.metadata-report.address=${zookeeper.connection.address.2}"
     },
     classes = {
@@ -90,6 +91,7 @@ public class SpringBootConfigMetricsTest {
         Assertions.assertEquals(5, metricsConfig.getAggregation().getBucketNum());
         Assertions.assertEquals(120, metricsConfig.getAggregation().getTimeWindowSeconds());
         Assertions.assertTrue(metricsConfig.getAggregation().getEnabled());
+        Assertions.assertTrue(metricsConfig.getHistogram().getEnabled());
     }
 
 }

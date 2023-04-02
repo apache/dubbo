@@ -14,15 +14,43 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.common.model.person;
 
-package org.apache.dubbo.metrics.event;
+import java.io.Serializable;
 
-import org.apache.dubbo.metrics.model.TimePair;
+public class Dgeneric<T,Y,Z> implements Serializable {
+    public static String NAME = "D";
 
-/**
- *  Mark certain types of events, allow automatic recording of start and end times, and provide time pairs
- */
-public interface TimeCounter {
+    private String name = NAME;
+    private T t;
+    private Y y;
+    private Z z;
 
-    TimePair getTimePair();
+    public T getT() {
+        return t;
+    }
+
+    public void setT(T t) {
+        this.t = t;
+    }
+
+    public Y getY() {
+        return y;
+    }
+
+    public void setY(Y y) {
+        this.y = y;
+    }
+
+    public Z getZ() {
+        return z;
+    }
+
+    public void setZ(Z z) {
+        this.z = z;
+    }
+
+    public String getName() {
+        return name;
+    }
 }

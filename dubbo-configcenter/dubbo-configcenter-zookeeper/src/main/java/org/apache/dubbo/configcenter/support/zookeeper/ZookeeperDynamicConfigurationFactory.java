@@ -26,12 +26,15 @@ public class ZookeeperDynamicConfigurationFactory extends AbstractDynamicConfigu
 
     private final ZookeeperTransporter zookeeperTransporter;
 
+    private final ApplicationModel applicationModel;
+
     public ZookeeperDynamicConfigurationFactory(ApplicationModel applicationModel) {
+        this.applicationModel = applicationModel;
         this.zookeeperTransporter = ZookeeperTransporter.getExtension(applicationModel);
     }
 
     @Override
     protected DynamicConfiguration createDynamicConfiguration(URL url) {
-        return new ZookeeperDynamicConfiguration(url, zookeeperTransporter);
+        return new ZookeeperDynamicConfiguration(url, zookeeperTransporter, applicationModel);
     }
 }

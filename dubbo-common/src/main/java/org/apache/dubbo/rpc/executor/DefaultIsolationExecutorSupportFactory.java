@@ -14,27 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.rpc.executor;
 
-package org.apache.dubbo.metrics.event;
+import org.apache.dubbo.common.URL;
 
-/**
- * RequestEvent.
- */
-public class RequestEvent extends MetricsEvent {
-    private Type type;
-
-    public RequestEvent(Object source, Type type) {
-        super(source);
-        this.type = type;
+public class DefaultIsolationExecutorSupportFactory implements IsolationExecutorSupportFactory {
+    @Override
+    public ExecutorSupport createIsolationExecutorSupport(URL url) {
+        return new DefaultExecutorSupport(url);
     }
-
-    public Type getType() {
-        return type;
-    }
-
-    public void setType(Type type) {
-        this.type = type;
-    }
-
-
 }
