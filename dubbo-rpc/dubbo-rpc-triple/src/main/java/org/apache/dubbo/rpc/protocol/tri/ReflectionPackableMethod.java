@@ -465,7 +465,8 @@ public class ReflectionPackableMethod implements PackableMethod {
             TripleCustomerProtocolWapper.TripleRequestWrapper wrapper = TripleCustomerProtocolWapper.TripleRequestWrapper.parseFrom(
                 data);
 
-            CodecSupport.checkSerialization(serializeName, wrapper.getSerializeType());
+            String wrapperSerializeType = convertHessianFromWrapper(wrapper.getSerializeType());
+            CodecSupport.checkSerialization(serializeName, wrapperSerializeType);
 
             Object[] ret = new Object[wrapper.getArgs().size()];
             ((WrapResponsePack) responsePack).serialize = wrapper.getSerializeType();
