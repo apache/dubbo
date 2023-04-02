@@ -19,6 +19,7 @@ package org.apache.dubbo.config.deploy;
 import org.apache.dubbo.common.config.ReferenceCache;
 import org.apache.dubbo.common.deploy.AbstractDeployer;
 import org.apache.dubbo.common.deploy.ApplicationDeployer;
+import org.apache.dubbo.common.deploy.DeployListener;
 import org.apache.dubbo.common.deploy.DeployState;
 import org.apache.dubbo.common.deploy.ModuleDeployListener;
 import org.apache.dubbo.common.deploy.ModuleDeployer;
@@ -46,12 +47,12 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_START_MODEL;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_UNABLE_DESTROY_MODEL;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_REFERENCE_MODEL;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_EXPORT_SERVICE;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_WAIT_EXPORT_REFER;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_REFERENCE_MODEL;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_REFER_SERVICE;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_START_MODEL;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_WAIT_EXPORT_REFER;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_UNABLE_DESTROY_MODEL;
 
 /**
  * Export/refer services of module
@@ -110,6 +111,8 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
             if (initialized) {
                 return;
             }
+            onInitialize();
+
             loadConfigs();
 
             // read ModuleConfig
@@ -247,6 +250,16 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
             serviceRepository.destroy();
         }
         onModuleStopped();
+    }
+
+    private void onInitialize() {
+        for (DeployListener<ModuleModel> listener : listeners) {
+            try {
+                listener.onInitialize(moduleModel);
+            } catch (Throwable e) {
+                logger.error(CONFIG_FAILED_START_MODEL, "", "", getIdentifier() + " an exception occurred when handle initialize event", e);
+            }
+        }
     }
 
     private void onModuleStarting() {
