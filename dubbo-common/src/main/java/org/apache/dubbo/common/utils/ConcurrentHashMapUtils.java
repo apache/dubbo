@@ -44,8 +44,8 @@ public class ConcurrentHashMapUtils {
                 if(null != res){
                     // if pre value present, means other thread put value already, and putIfAbsent not effect
                     // return exist value
-				    return res;
-			    }
+                    return res;
+                }
                 // if pre value is null, means putIfAbsent effected, return current value
             }
             return v;
