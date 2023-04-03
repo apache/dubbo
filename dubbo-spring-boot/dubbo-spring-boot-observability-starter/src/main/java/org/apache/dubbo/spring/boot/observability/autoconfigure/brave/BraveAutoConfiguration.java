@@ -21,6 +21,7 @@ package org.apache.dubbo.spring.boot.observability.autoconfigure.brave;
 import org.apache.dubbo.spring.boot.autoconfigure.DubboConfigurationProperties;
 import org.apache.dubbo.spring.boot.observability.annotation.ConditionalOnDubboTracingEnable;
 import org.apache.dubbo.spring.boot.observability.autoconfigure.DubboMicrometerTracingAutoConfiguration;
+import org.apache.dubbo.spring.boot.observability.autoconfigure.ObservabilityUtils;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -36,6 +37,7 @@ import org.springframework.core.env.Environment;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+
 
 /**
  * provider Brave when you are using Boot <3.0 or you are not using spring-boot-starter-actuator
@@ -136,9 +138,9 @@ public class BraveAutoConfiguration {
         brave.propagation.Propagation.Factory propagationFactory(DubboConfigurationProperties tracing) {
             String type = tracing.getTracing().getPropagation().getType();
             switch (type) {
-                case B3:
+                case org.apache.dubbo.config.nested.PropagationConfig.B3:
                     return brave.propagation.B3Propagation.newFactoryBuilder().injectFormat(brave.propagation.B3Propagation.Format.SINGLE_NO_PARENT).build();
-                case W3C:
+                case org.apache.dubbo.config.nested.PropagationConfig.W3C:
                     return new io.micrometer.tracing.brave.bridge.W3CPropagation();
                 default:
                     throw new IllegalArgumentException("UnSupport propagation type");
@@ -159,10 +161,10 @@ public class BraveAutoConfiguration {
         @Bean
         @ConditionalOnMissingBean
         @ConditionalOnProperty(prefix = ObservabilityUtils.DUBBO_TRACING_PROPAGATION, value = "type", havingValue = "B3")
-        BaggagePropagation.FactoryBuilder b3PropagationFactoryBuilder(
-                ObjectProvider<BaggagePropagationCustomizer> baggagePropagationCustomizers) {
-            Propagation.Factory delegate =
-                    B3Propagation.newFactoryBuilder().injectFormat(B3Propagation.Format.SINGLE_NO_PARENT).build();
+        brave.baggage.BaggagePropagation.FactoryBuilder b3PropagationFactoryBuilder(
+                ObjectProvider<brave.baggage.BaggagePropagationCustomizer> baggagePropagationCustomizers) {
+            brave.propagation.Propagation.Factory delegate =
+                brave.propagation.B3Propagation.newFactoryBuilder().injectFormat(brave.propagation.B3Propagation.Format.SINGLE_NO_PARENT).build();
 
             brave.baggage.BaggagePropagation.FactoryBuilder builder = brave.baggage.BaggagePropagation.newFactoryBuilder(delegate);
             baggagePropagationCustomizers.orderedStream().forEach((customizer) -> customizer.customize(builder));
@@ -172,9 +174,9 @@ public class BraveAutoConfiguration {
         @Bean
         @ConditionalOnMissingBean
         @ConditionalOnProperty(prefix = ObservabilityUtils.DUBBO_TRACING_PROPAGATION, value = "type", havingValue = "W3C", matchIfMissing = true)
-        BaggagePropagation.FactoryBuilder w3cPropagationFactoryBuilder(
-                ObjectProvider<BaggagePropagationCustomizer> baggagePropagationCustomizers) {
-            Propagation.Factory delegate = new W3CPropagation(BRAVE_BAGGAGE_MANAGER, Collections.emptyList());
+        brave.baggage.BaggagePropagation.FactoryBuilder w3cPropagationFactoryBuilder(
+                ObjectProvider<brave.baggage.BaggagePropagationCustomizer> baggagePropagationCustomizers) {
+            brave.propagation.Propagation.Factory delegate = new io.micrometer.tracing.brave.bridge.W3CPropagation(BRAVE_BAGGAGE_MANAGER, Collections.emptyList());
 
             brave.baggage.BaggagePropagation.FactoryBuilder builder = brave.baggage.BaggagePropagation.newFactoryBuilder(delegate);
             baggagePropagationCustomizers.orderedStream().forEach((customizer) -> customizer.customize(builder));
@@ -201,9 +203,9 @@ public class BraveAutoConfiguration {
 
         @Bean
         @ConditionalOnMissingBean
-        CorrelationScopeDecorator.Builder mdcCorrelationScopeDecoratorBuilder(
-                ObjectProvider<CorrelationScopeCustomizer> correlationScopeCustomizers) {
-            CorrelationScopeDecorator.Builder builder = MDCScopeDecorator.newBuilder();
+        brave.baggage.CorrelationScopeDecorator.Builder mdcCorrelationScopeDecoratorBuilder(
+                ObjectProvider<brave.baggage.CorrelationScopeCustomizer> correlationScopeCustomizers) {
+            brave.baggage.CorrelationScopeDecorator.Builder builder =  brave.context.slf4j.MDCScopeDecorator.newBuilder();
             correlationScopeCustomizers.orderedStream().forEach((customizer) -> customizer.customize(builder));
             return builder;
         }
@@ -212,11 +214,11 @@ public class BraveAutoConfiguration {
         @Order(0)
         @ConditionalOnProperty(prefix = ObservabilityUtils.DUBBO_TRACING_BAGGAGE_CORRELATION, name = "enabled",
                 matchIfMissing = true)
-        CorrelationScopeCustomizer correlationFieldsCorrelationScopeCustomizer() {
+        brave.baggage.CorrelationScopeCustomizer correlationFieldsCorrelationScopeCustomizer() {
             return (builder) -> {
                 List<String> correlationFields = this.dubboConfigProperties.getTracing().getBaggage().getCorrelation().getFields();
                 for (String field : correlationFields) {
-                    builder.add(CorrelationScopeConfig.SingleCorrelationField.newBuilder(BaggageField.create(field))
+                    builder.add(brave.baggage.CorrelationScopeConfig.SingleCorrelationField.newBuilder(brave.baggage.BaggageField.create(field))
                             .flushOnUpdate().build());
                 }
             };
