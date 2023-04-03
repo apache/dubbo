@@ -14,26 +14,43 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.listener;
+package org.apache.dubbo.common.model.person;
 
-import org.apache.dubbo.rpc.Exporter;
+import java.io.Serializable;
 
-/**
- * An interface for listening to changes in the export state of an Exporter object.
- */
-public interface ExporterChangeListener {
+public class Cgeneric<T> implements Serializable {
+    public static String NAME = "C";
 
-    /**
-     * This method is called when an Exporter object is exported.
-     *
-     * @param exporter The Exporter object that has been exported.
-     */
-    void onExporterChangeExport(Exporter<?> exporter);
+    private String name = NAME;
+    private T data;
+    private Ageneric<T> a;
+    private Bgeneric<PersonInfo> b;
 
-    /**
-     * This method is called when an Exporter object is unexported.
-     *
-     * @param exporter The Exporter object that has been unexported.
-     */
-    void onExporterChangeUnExport(Exporter<?> exporter);
+    public T getData() {
+        return data;
+    }
+
+    public void setData(T data) {
+        this.data = data;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public Ageneric<T> getA() {
+        return a;
+    }
+
+    public void setA(Ageneric<T> a) {
+        this.a = a;
+    }
+
+    public Bgeneric<PersonInfo> getB() {
+        return b;
+    }
+
+    public void setB(Bgeneric<PersonInfo> b) {
+        this.b = b;
+    }
 }

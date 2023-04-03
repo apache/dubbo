@@ -228,7 +228,7 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
             int triedTimes = 0;
             while (triedTimes < 3) {
 
-                metadata = MetricsEventBus.post(new MetadataEvent.PushEvent(applicationModel),
+                metadata = MetricsEventBus.post(new MetadataEvent.SubscribeEvent(applicationModel),
                     () -> MetadataUtils.getRemoteMetadata(revision, instances, metadataReport),
                     result -> result != MetadataInfo.EMPTY
                 );

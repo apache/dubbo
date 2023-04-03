@@ -994,7 +994,13 @@ public class URLParam {
             Map<String, Map<String, String>> methodParameters = new HashMap<>(capacity);
 
             for (Map.Entry<String, String> entry : params.entrySet()) {
-                addParameter(keyBit, valueMap, extraParam, methodParameters, entry.getKey(), entry.getValue(), false);
+                String key = entry.getKey();
+                String value = entry.getValue();
+                addParameter(keyBit, valueMap, extraParam, methodParameters, key, value, false);
+                // compatible with lower versions registering "default." keys
+                if (key.startsWith(DEFAULT_KEY_PREFIX)) {
+                    addParameter(keyBit, valueMap, extraParam, methodParameters, key.substring(DEFAULT_KEY_PREFIX.length()), value, true);
+                }
             }
             return new URLParam(keyBit, valueMap, extraParam, methodParameters, rawParam);
         } else {
