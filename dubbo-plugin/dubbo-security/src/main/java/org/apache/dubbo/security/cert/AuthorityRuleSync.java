@@ -26,6 +26,7 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.security.cert.rule.authentication.AuthenticationPolicy;
 import org.apache.dubbo.security.cert.rule.authorization.AuthorizationPolicy;
 
+import io.grpc.Channel;
 import io.grpc.stub.StreamObserver;
 
 import java.io.IOException;
@@ -68,12 +69,23 @@ public class AuthorityRuleSync {
 
     protected synchronized void disConnect() {
         shutdown.set(true);
-        requestStreamObserver.onCompleted();
-        requestStreamObserver = null;
+        if (requestStreamObserver != null) {
+            requestStreamObserver.onCompleted();
+            requestStreamObserver = null;
+        }
     }
 
     private void observe0() throws IOException {
-        RuleServiceGrpc.RuleServiceStub stub = RuleServiceGrpc.newStub(connector.generateChannel());
+        if (!connector.isConnected()) {
+            recover();
+            return;
+        }
+        Channel channel = connector.generateChannel();
+        if (channel == null) {
+            recover();
+            return;
+        }
+        RuleServiceGrpc.RuleServiceStub stub = RuleServiceGrpc.newStub(channel);
         stub = connector.setHeaders(stub);
         requestStreamObserver = stub.observe(new Handler(this));
         requestStreamObserver.onNext(ObserveRequest.newBuilder()

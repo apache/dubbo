@@ -81,7 +81,18 @@ public class AuthorityConnector {
         this.certConfig = certConfig;
 
         connect();
+        registerBean(frameworkModel, certConfig);
+    }
+
+    private void registerBean(FrameworkModel frameworkModel, CertConfig certConfig) {
         ScopeBeanFactory beanFactory = frameworkModel.getBeanFactory();
+
+        if (beanFactory.getBean(AuthenticationGovernor.class) != null ||
+            beanFactory.getBean(AuthorityRuleSync.class) != null ||
+            beanFactory.getBean(AuthorityIdentityFactory.class) != null) {
+            throw new IllegalStateException("AuthorityConnector has been registered.");
+        }
+
         beanFactory.registerBean(new AuthorityIdentityFactory(frameworkModel, certConfig, this));
         beanFactory.registerBean(new AuthorityRuleSync(frameworkModel, certConfig, this));
         beanFactory.registerBean(AuthenticationGovernor.class);
@@ -106,7 +117,7 @@ public class AuthorityConnector {
         scheduleRefresh();
     }
 
-    private void connect0(CertConfig certConfig) {
+    protected void connect0(CertConfig certConfig) {
         String caCertPath = certConfig.getCaCertPath();
         String remoteAddress = certConfig.getRemoteAddress();
         logger.info("Try to connect to Dubbo Cert Authority server: " + remoteAddress + ", caCertPath: " + remoteAddress);
@@ -116,6 +127,7 @@ public class AuthorityConnector {
                     .sslContext(
                         GrpcSslContexts.forClient()
                             .trustManager(new File(caCertPath))
+                            .sslProvider(findSslProvider())
                             .build())
                     .build();
             } else {
@@ -124,6 +136,7 @@ public class AuthorityConnector {
                 rootChannel = NettyChannelBuilder.forTarget(remoteAddress)
                     .sslContext(GrpcSslContexts.forClient()
                         .trustManager(InsecureTrustManagerFactory.INSTANCE)
+                        .sslProvider(findSslProvider())
                         .build())
                     .build();
             }
@@ -138,7 +151,7 @@ public class AuthorityConnector {
      */
     protected void scheduleRefresh() {
         FrameworkExecutorRepository repository = frameworkModel.getBeanFactory().getBean(FrameworkExecutorRepository.class);
-        refreshFuture = repository.getSharedScheduledExecutor().scheduleAtFixedRate(this::generateCert,
+        refreshFuture = repository.getSharedScheduledExecutor().scheduleAtFixedRate(this::refreshCert,
             certConfig.getRefreshInterval(), certConfig.getRefreshInterval(), TimeUnit.MILLISECONDS);
     }
 
@@ -155,7 +168,7 @@ public class AuthorityConnector {
     }
 
     public boolean isConnected() {
-        return certConfig != null && rootChannel != null && rootIdentityInfo != null;
+        return rootChannel != null && rootIdentityInfo != null;
     }
 
     protected IdentityInfo generateCert() {
@@ -164,31 +177,74 @@ public class AuthorityConnector {
         }
         synchronized (this) {
             if (rootIdentityInfo == null || rootIdentityInfo.isExpire()) {
+                logger.info("Try to generate cert from Dubbo Certificate Authority.");
+                IdentityInfo certFromRemote = null;
                 try {
-                    logger.info("Try to generate cert from Dubbo Certificate Authority.");
-                    AuthorityServiceGrpc.AuthorityServiceBlockingStub stub = AuthorityServiceGrpc.newBlockingStub(rootChannel);
-                    stub = setHeaderIfNeed(stub, certConfig);
-                    IdentityInfo certFromRemote = CertServiceUtil.refreshCert(stub, "CLIENT");
-                    if (certFromRemote != null) {
-                        rootIdentityInfo = certFromRemote;
-                    } else {
-                        logger.error(CONFIG_SSL_CERT_GENERATE_FAILED, "", "", "Generate Cert from Dubbo Certificate Authority failed.");
-                    }
+                    certFromRemote = generateCert0();
                 } catch (Exception e) {
                     logger.error(REGISTRY_FAILED_GENERATE_CERT_ISTIO, "", "", "Generate Cert from Istio failed.", e);
+                }
+                if (certFromRemote != null && !certFromRemote.isExpire()) {
+                    rootIdentityInfo = certFromRemote;
+                } else {
+                    if (rootIdentityInfo != null && rootIdentityInfo.isExpire()) {
+                        rootIdentityInfo = null;
+                    }
+                    logger.error(CONFIG_SSL_CERT_GENERATE_FAILED, "", "", "Generate Cert from Dubbo Certificate Authority failed.");
                 }
             }
         }
         return rootIdentityInfo;
     }
 
+    protected IdentityInfo refreshCert() {
+        if (rootIdentityInfo != null && !rootIdentityInfo.needRefresh() && !rootIdentityInfo.isExpire()) {
+            return rootIdentityInfo;
+        }
+        synchronized (this) {
+            if (rootIdentityInfo == null || rootIdentityInfo.needRefresh() || rootIdentityInfo.isExpire()) {
+                logger.info("Try to generate cert from Dubbo Certificate Authority.");
+                IdentityInfo certFromRemote = null;
+                try {
+                    certFromRemote = generateCert0();
+                } catch (Exception e) {
+                    logger.error(REGISTRY_FAILED_GENERATE_CERT_ISTIO, "", "", "Generate Cert from Istio failed.", e);
+                }
+                if (certFromRemote != null && !certFromRemote.isExpire()) {
+                    rootIdentityInfo = certFromRemote;
+                } else {
+                    if (rootIdentityInfo != null && rootIdentityInfo.isExpire()) {
+                        rootIdentityInfo = null;
+                    }
+                    logger.error(CONFIG_SSL_CERT_GENERATE_FAILED, "", "", "Generate Cert from Dubbo Certificate Authority failed.");
+                }
+            }
+        }
+        return rootIdentityInfo;
+    }
+
+    private IdentityInfo generateCert0() throws IOException {
+        AuthorityServiceGrpc.AuthorityServiceBlockingStub stub = AuthorityServiceGrpc.newBlockingStub(rootChannel);
+        stub = setHeaderIfNeed(stub, certConfig);
+        return CertServiceUtil.refreshCert(stub, "CLIENT");
+    }
+
     public Channel generateChannel() throws SSLException {
+        if (!isConnected()) {
+            return null;
+        }
+
+        IdentityInfo identityInfo = generateCert();
+        if (identityInfo == null) {
+            return null;
+        }
+
         return NettyChannelBuilder.forTarget(certConfig.getRemoteAddress())
             .sslContext(
                 GrpcSslContexts.forClient()
-                    .trustManager(new ByteArrayInputStream(rootIdentityInfo.getTrustCerts().getBytes(StandardCharsets.UTF_8)))
-                    .keyManager(new ByteArrayInputStream(rootIdentityInfo.getCertificate().getBytes(StandardCharsets.UTF_8)),
-                        new ByteArrayInputStream(rootIdentityInfo.getPrivateKey().getBytes(StandardCharsets.UTF_8)))
+                    .trustManager(new ByteArrayInputStream(identityInfo.getTrustCerts().getBytes(StandardCharsets.UTF_8)))
+                    .keyManager(new ByteArrayInputStream(identityInfo.getCertificate().getBytes(StandardCharsets.UTF_8)),
+                        new ByteArrayInputStream(identityInfo.getPrivateKey().getBytes(StandardCharsets.UTF_8)))
                     .sslProvider(findSslProvider())
                     .build())
             .build();
@@ -241,7 +297,7 @@ public class AuthorityConnector {
         key = Metadata.Key.of("authorization-type", Metadata.ASCII_STRING_MARSHALLER);
         header.put(key, "dubbo-jwt");
 
-        return  (T) t.withInterceptors(newAttachHeadersInterceptor(header));
+        return (T) t.withInterceptors(newAttachHeadersInterceptor(header));
     }
 
 

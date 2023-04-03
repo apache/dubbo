@@ -38,8 +38,9 @@ message IdentityResponse {
   repeated string trust_certs = 3;
   string token = 4;
   repeated string trusted_token_public_keys = 5;
-  int64 expire_time = 6;
-  string message = 7;
+  int64 refresh_time = 6;
+  int64 expire_time = 7;
+  string message = 8;
 }
 
 service AuthorityService {

@@ -22,6 +22,9 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
+import io.grpc.Channel;
+
+import java.io.IOException;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -63,7 +66,7 @@ public class AuthorityIdentityFactory {
      */
     protected void scheduleRefresh() {
         FrameworkExecutorRepository repository = frameworkModel.getBeanFactory().getBean(FrameworkExecutorRepository.class);
-        refreshFuture = repository.getSharedScheduledExecutor().scheduleAtFixedRate(this::generateIdentity,
+        refreshFuture = repository.getSharedScheduledExecutor().scheduleAtFixedRate(this::refreshIdentity,
             certConfig.getRefreshInterval(), certConfig.getRefreshInterval(), TimeUnit.MILLISECONDS);
     }
 
@@ -75,7 +78,7 @@ public class AuthorityIdentityFactory {
     }
 
     public boolean isConnected() {
-        return certConfig != null && identityInfo != null;
+        return identityInfo != null && refreshFuture != null;
     }
 
     protected IdentityInfo generateIdentity() {
@@ -84,21 +87,65 @@ public class AuthorityIdentityFactory {
         }
         synchronized (this) {
             if (identityInfo == null || identityInfo.isExpire()) {
+                logger.info("Try to generate cert from Dubbo Certificate Authority.");
+                IdentityInfo certFromRemote = null;
                 try {
-                    logger.info("Try to generate cert from Dubbo Certificate Authority.");
-                    AuthorityServiceGrpc.AuthorityServiceBlockingStub stub = AuthorityServiceGrpc.newBlockingStub(connector.generateChannel());
-                    stub = connector.setHeaders(stub);
-                    IdentityInfo certFromRemote = CertServiceUtil.refreshCert(stub, "CONNECTION");
-                    if (certFromRemote != null) {
-                        identityInfo = certFromRemote;
-                    } else {
-                        logger.error(CONFIG_SSL_CERT_GENERATE_FAILED, "", "", "Generate Cert from Dubbo Certificate Authority failed.");
-                    }
+                    certFromRemote = generateIdentity0();
                 } catch (Exception e) {
                     logger.error(REGISTRY_FAILED_GENERATE_CERT_ISTIO, "", "", "Generate Cert from Istio failed.", e);
+                }
+                if (certFromRemote != null && !certFromRemote.isExpire()) {
+                    identityInfo = certFromRemote;
+                } else {
+                    if (identityInfo != null && identityInfo.isExpire()) {
+                        identityInfo = null;
+                    }
+                    logger.error(CONFIG_SSL_CERT_GENERATE_FAILED, "", "", "Generate Cert from Dubbo Certificate Authority failed.");
                 }
             }
         }
         return identityInfo;
+    }
+
+    private void refreshIdentity() {
+        if (identityInfo != null && !identityInfo.needRefresh() && !identityInfo.isExpire()) {
+            return;
+        }
+        synchronized (this) {
+            if (identityInfo == null || identityInfo.needRefresh() || identityInfo.isExpire()) {
+                logger.info("Try to refresh cert from Dubbo Certificate Authority.");
+                IdentityInfo certFromRemote = null;
+                try {
+                    certFromRemote = generateIdentity0();
+                } catch (Exception e) {
+                    logger.error(REGISTRY_FAILED_GENERATE_CERT_ISTIO, "", "", "Generate Cert from Istio failed.", e);
+                }
+                if (certFromRemote != null && !certFromRemote.isExpire()) {
+                    identityInfo = certFromRemote;
+                } else {
+                    if (identityInfo != null && identityInfo.isExpire()) {
+                        identityInfo = null;
+                    }
+                    logger.error(CONFIG_SSL_CERT_GENERATE_FAILED, "", "", "Generate Cert from Dubbo Certificate Authority failed.");
+                }
+            }
+        }
+    }
+
+    protected IdentityInfo getIdentityInfo() {
+        return identityInfo;
+    }
+
+    protected IdentityInfo generateIdentity0() throws IOException {
+        if (!connector.isConnected()) {
+            return null;
+        }
+        Channel channel = connector.generateChannel();
+        if (channel == null) {
+            return null;
+        }
+        AuthorityServiceGrpc.AuthorityServiceBlockingStub stub = AuthorityServiceGrpc.newBlockingStub(channel);
+        stub = connector.setHeaders(stub);
+        return CertServiceUtil.refreshCert(stub, "CONNECTION");
     }
 }

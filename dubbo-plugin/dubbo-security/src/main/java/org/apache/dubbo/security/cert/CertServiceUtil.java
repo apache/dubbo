@@ -64,12 +64,14 @@ public class CertServiceUtil {
         }
         logger.info("Successfully generate cert from Dubbo Certificate Authority. Cert expire time: " + certificateResponse.getExpireTime());
 
-        return new IdentityInfo(privateKeyPem,
-            certificateResponse.getCertPem(),
-            String.join("\n", certificateResponse.getTrustCertsList()),
-            certificateResponse.getExpireTime(),
-            certificateResponse.getToken(),
-            certificateResponse.getTrustedTokenPublicKeysList());
+        return IdentityInfo.builder()
+            .setPrivateKey(privateKeyPem)
+            .setTrustCerts(String.join("\n", certificateResponse.getTrustCertsList()))
+            .setRefreshTime(certificateResponse.getRefreshTime())
+            .setExpireTime(certificateResponse.getExpireTime())
+            .setToken(certificateResponse.getToken())
+            .setTrustedTokenPublicKeys(certificateResponse.getTrustedTokenPublicKeysList())
+            .build();
     }
 
     /**

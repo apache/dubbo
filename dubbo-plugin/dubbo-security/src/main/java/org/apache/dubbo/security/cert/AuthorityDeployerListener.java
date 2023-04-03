@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.security.cert;
 
+import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.deploy.ApplicationDeployListener;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
@@ -59,9 +60,7 @@ public class AuthorityDeployerListener implements ApplicationDeployListener {
                     sslConfig.getOidcTokenPath(),
                     sslConfig.getOidcTokenType());
 
-                AuthorityConnector connector = new AuthorityConnector(frameworkModel, certConfig);
-                frameworkModel.getBeanFactory().registerBean(connector);
-                frameworkModel.addDestroyListener(scope -> connector.disConnect());
+                connect(frameworkModel, certConfig);
                 return;
             }
         }
@@ -81,10 +80,19 @@ public class AuthorityDeployerListener implements ApplicationDeployListener {
                 oidcToken,
                 oidcTokenType);
 
-            AuthorityConnector connector = new AuthorityConnector(frameworkModel, certConfig);
-            frameworkModel.getBeanFactory().registerBean(connector);
-            frameworkModel.addDestroyListener(scope -> connector.disConnect());
+            connect(frameworkModel, certConfig);
         }
+    }
+
+    private static void connect(FrameworkModel frameworkModel, CertConfig certConfig) {
+        ScopeBeanFactory beanFactory = frameworkModel.getBeanFactory();
+        if (beanFactory.getBean(AuthorityConnector.class) != null) {
+            return;
+        }
+
+        AuthorityConnector connector = new AuthorityConnector(frameworkModel, certConfig);
+        beanFactory.registerBean(connector);
+        frameworkModel.addDestroyListener(scope -> connector.disConnect());
     }
 
     @Override
@@ -93,7 +101,11 @@ public class AuthorityDeployerListener implements ApplicationDeployListener {
 
     @Override
     public void onStopping(ApplicationModel scopeModel) {
-
+        FrameworkModel frameworkModel = scopeModel.getFrameworkModel();
+        AuthorityConnector connector = frameworkModel.getBeanFactory().getBean(AuthorityConnector.class);
+        if (Objects.nonNull(connector)) {
+            connector.disConnect();
+        }
     }
 
     @Override
