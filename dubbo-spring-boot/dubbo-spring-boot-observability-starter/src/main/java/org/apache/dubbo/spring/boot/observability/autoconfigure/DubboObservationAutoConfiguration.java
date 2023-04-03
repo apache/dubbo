@@ -88,7 +88,7 @@ public class DubboObservationAutoConfiguration implements BeanFactoryAware, Smar
             Tracer bean = beanFactory.getBean(Tracer.class);
             applicationModel.getBeanFactory().registerBean(bean);
         } catch (NoSuchBeanDefinitionException e) {
-            logger.warn("Please use a version of micrometer higher than 1.10.0 ：{}" + e.getMessage());
+            logger.info("Please use a version of micrometer higher than 1.10.0 ：{}" + e.getMessage());
         }
     }
 
