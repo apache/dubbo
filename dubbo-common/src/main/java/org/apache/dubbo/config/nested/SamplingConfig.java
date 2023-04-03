@@ -14,30 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.router.tag.model;
+package org.apache.dubbo.config.nested;
 
-import org.apache.dubbo.common.utils.CollectionUtils;
+import java.io.Serializable;
 
-import org.yaml.snakeyaml.LoaderOptions;
-import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.constructor.SafeConstructor;
+public class SamplingConfig implements Serializable {
 
-import java.util.Map;
+    /**
+     * Probability in the range from 0.0 to 1.0 that a trace will be sampled.
+     */
+    private float probability = 0.10f;
 
-/**
- * Parse raw rule into structured tag rule
- */
-public class TagRuleParser {
+    public float getProbability() {
+        return this.probability;
+    }
 
-    public static TagRouterRule parse(String rawRule) {
-        Yaml yaml = new Yaml(new SafeConstructor(new LoaderOptions()));
-        Map<String, Object> map = yaml.load(rawRule);
-        TagRouterRule rule = TagRouterRule.parseFromMap(map);
-        rule.setRawRule(rawRule);
-        if (CollectionUtils.isEmpty(rule.getTags())) {
-            rule.setValid(false);
-        }
-
-        return rule;
+    public void setProbability(float probability) {
+        this.probability = probability;
     }
 }

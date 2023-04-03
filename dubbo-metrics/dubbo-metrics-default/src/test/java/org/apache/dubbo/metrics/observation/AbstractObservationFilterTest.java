@@ -19,6 +19,7 @@ package org.apache.dubbo.metrics.observation;
 
 import io.micrometer.tracing.test.SampleTestRunner;
 import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.config.TracingConfig;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.BaseFilter;
 import org.apache.dubbo.rpc.Invoker;
@@ -63,6 +64,9 @@ abstract class AbstractObservationFilterTest extends SampleTestRunner {
         invocation.addInvokedInvoker(invoker);
 
         applicationModel.getBeanFactory().registerBean(getObservationRegistry());
+        TracingConfig tracingConfig = new TracingConfig();
+        tracingConfig.setEnabled(true);
+        applicationModel.getApplicationConfigManager().setTracing(tracingConfig);
 
         filter = createFilter(applicationModel);
 

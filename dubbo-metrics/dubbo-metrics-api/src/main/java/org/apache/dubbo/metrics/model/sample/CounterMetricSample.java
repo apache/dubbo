@@ -14,30 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.router.tag.model;
+package org.apache.dubbo.metrics.model.sample;
 
-import org.apache.dubbo.common.utils.CollectionUtils;
-
-import org.yaml.snakeyaml.LoaderOptions;
-import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.constructor.SafeConstructor;
+import org.apache.dubbo.metrics.model.MetricsCategory;
 
 import java.util.Map;
 
-/**
- * Parse raw rule into structured tag rule
- */
-public class TagRuleParser {
+public class CounterMetricSample<T extends Number>  extends MetricSample {
 
-    public static TagRouterRule parse(String rawRule) {
-        Yaml yaml = new Yaml(new SafeConstructor(new LoaderOptions()));
-        Map<String, Object> map = yaml.load(rawRule);
-        TagRouterRule rule = TagRouterRule.parseFromMap(map);
-        rule.setRawRule(rawRule);
-        if (CollectionUtils.isEmpty(rule.getTags())) {
-            rule.setValid(false);
-        }
+    private final T value;
 
-        return rule;
+    public CounterMetricSample(String name, String description, Map<String, String> tags,
+                               MetricsCategory category, T value ) {
+        super(name, description, tags, Type.COUNTER, category);
+        this.value = value;
+    }
+
+    public CounterMetricSample(String name, String description, Map<String, String> tags,   MetricsCategory category,
+                               String baseUnit, T value) {
+        super(name, description, tags, Type.COUNTER, category, baseUnit);
+        this.value = value;
+    }
+
+    public T getValue() {
+        return value;
     }
 }

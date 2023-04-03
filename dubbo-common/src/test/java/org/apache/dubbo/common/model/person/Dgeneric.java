@@ -14,30 +14,43 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.router.tag.model;
+package org.apache.dubbo.common.model.person;
 
-import org.apache.dubbo.common.utils.CollectionUtils;
+import java.io.Serializable;
 
-import org.yaml.snakeyaml.LoaderOptions;
-import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.constructor.SafeConstructor;
+public class Dgeneric<T,Y,Z> implements Serializable {
+    public static String NAME = "D";
 
-import java.util.Map;
+    private String name = NAME;
+    private T t;
+    private Y y;
+    private Z z;
 
-/**
- * Parse raw rule into structured tag rule
- */
-public class TagRuleParser {
+    public T getT() {
+        return t;
+    }
 
-    public static TagRouterRule parse(String rawRule) {
-        Yaml yaml = new Yaml(new SafeConstructor(new LoaderOptions()));
-        Map<String, Object> map = yaml.load(rawRule);
-        TagRouterRule rule = TagRouterRule.parseFromMap(map);
-        rule.setRawRule(rawRule);
-        if (CollectionUtils.isEmpty(rule.getTags())) {
-            rule.setValid(false);
-        }
+    public void setT(T t) {
+        this.t = t;
+    }
 
-        return rule;
+    public Y getY() {
+        return y;
+    }
+
+    public void setY(Y y) {
+        this.y = y;
+    }
+
+    public Z getZ() {
+        return z;
+    }
+
+    public void setZ(Z z) {
+        this.z = z;
+    }
+
+    public String getName() {
+        return name;
     }
 }

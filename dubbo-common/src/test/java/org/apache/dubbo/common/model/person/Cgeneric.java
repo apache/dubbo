@@ -14,30 +14,43 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.router.tag.model;
+package org.apache.dubbo.common.model.person;
 
-import org.apache.dubbo.common.utils.CollectionUtils;
+import java.io.Serializable;
 
-import org.yaml.snakeyaml.LoaderOptions;
-import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.constructor.SafeConstructor;
+public class Cgeneric<T> implements Serializable {
+    public static String NAME = "C";
 
-import java.util.Map;
+    private String name = NAME;
+    private T data;
+    private Ageneric<T> a;
+    private Bgeneric<PersonInfo> b;
 
-/**
- * Parse raw rule into structured tag rule
- */
-public class TagRuleParser {
+    public T getData() {
+        return data;
+    }
 
-    public static TagRouterRule parse(String rawRule) {
-        Yaml yaml = new Yaml(new SafeConstructor(new LoaderOptions()));
-        Map<String, Object> map = yaml.load(rawRule);
-        TagRouterRule rule = TagRouterRule.parseFromMap(map);
-        rule.setRawRule(rawRule);
-        if (CollectionUtils.isEmpty(rule.getTags())) {
-            rule.setValid(false);
-        }
+    public void setData(T data) {
+        this.data = data;
+    }
 
-        return rule;
+    public String getName() {
+        return name;
+    }
+
+    public Ageneric<T> getA() {
+        return a;
+    }
+
+    public void setA(Ageneric<T> a) {
+        this.a = a;
+    }
+
+    public Bgeneric<PersonInfo> getB() {
+        return b;
+    }
+
+    public void setB(Bgeneric<PersonInfo> b) {
+        this.b = b;
     }
 }

@@ -18,9 +18,10 @@ package org.apache.dubbo.spring.boot.observability.autoconfigure.otel;
 
 
 import org.apache.dubbo.common.Version;
+import org.apache.dubbo.spring.boot.autoconfigure.DubboConfigurationProperties;
 import org.apache.dubbo.spring.boot.observability.annotation.ConditionalOnDubboTracingEnable;
 import org.apache.dubbo.spring.boot.observability.autoconfigure.DubboMicrometerTracingAutoConfiguration;
-import org.apache.dubbo.spring.boot.observability.config.DubboTracingProperties;
+import org.apache.dubbo.spring.boot.observability.autoconfigure.ObservabilityUtils;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -43,7 +44,7 @@ import java.util.stream.Collectors;
 @ConditionalOnClass(name = {"io.micrometer.tracing.otel.bridge.OtelTracer",
     "io.opentelemetry.sdk.trace.SdkTracerProvider", "e io.opentelemetry.api.OpenTelemetry"
     , "io.micrometer.tracing.SpanCustomizer"})
-@EnableConfigurationProperties(DubboTracingProperties.class)
+@EnableConfigurationProperties(DubboConfigurationProperties.class)
 public class OpenTelemetryAutoConfiguration {
 
     /**
@@ -51,10 +52,10 @@ public class OpenTelemetryAutoConfiguration {
      */
     private static final String DEFAULT_APPLICATION_NAME = "application";
 
-    private final DubboTracingProperties dubboTracingProperties;
+    private final DubboConfigurationProperties dubboConfigProperties;
 
-    OpenTelemetryAutoConfiguration(DubboTracingProperties dubboTracingProperties) {
-        this.dubboTracingProperties = dubboTracingProperties;
+    OpenTelemetryAutoConfiguration(DubboConfigurationProperties dubboConfigProperties) {
+        this.dubboConfigProperties = dubboConfigProperties;
     }
 
     @Bean
@@ -84,8 +85,8 @@ public class OpenTelemetryAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     io.opentelemetry.sdk.trace.samplers.Sampler otelSampler() {
-        io.opentelemetry.sdk.trace.samplers.Sampler rootSampler =  io.opentelemetry.sdk.trace.samplers.Sampler.traceIdRatioBased(this.dubboTracingProperties.getSampling().getProbability());
-        return  io.opentelemetry.sdk.trace.samplers.Sampler.parentBased(rootSampler);
+        io.opentelemetry.sdk.trace.samplers.Sampler rootSampler = io.opentelemetry.sdk.trace.samplers.Sampler.traceIdRatioBased(this.dubboConfigProperties.getTracing().getSampling().getProbability());
+        return io.opentelemetry.sdk.trace.samplers.Sampler.parentBased(rootSampler);
     }
 
     @Bean
@@ -107,10 +108,10 @@ public class OpenTelemetryAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(io.micrometer.tracing.Tracer.class)
     io.micrometer.tracing.otel.bridge.OtelTracer micrometerOtelTracer(io.opentelemetry.api.trace.Tracer tracer, io.micrometer.tracing.otel.bridge.OtelTracer.EventPublisher eventPublisher,
-                                    io.micrometer.tracing.otel.bridge.OtelCurrentTraceContext otelCurrentTraceContext) {
+                                                                      io.micrometer.tracing.otel.bridge.OtelCurrentTraceContext otelCurrentTraceContext) {
         return new io.micrometer.tracing.otel.bridge.OtelTracer(tracer, otelCurrentTraceContext, eventPublisher,
-            new io.micrometer.tracing.otel.bridge.OtelBaggageManager(otelCurrentTraceContext, this.dubboTracingProperties.getBaggage().getRemoteFields(),
-                Collections.emptyList()));
+                new io.micrometer.tracing.otel.bridge.OtelBaggageManager(otelCurrentTraceContext, this.dubboConfigProperties.getTracing().getBaggage().getRemoteFields(),
+                        Collections.emptyList()));
     }
 
     @Bean
@@ -145,61 +146,61 @@ public class OpenTelemetryAutoConfiguration {
     }
 
     @Configuration(proxyBeanMethods = false)
-    @ConditionalOnProperty(prefix = "dubbo.tracing.baggage", name = "enabled", matchIfMissing = true)
+    @ConditionalOnProperty(prefix = ObservabilityUtils.DUBBO_TRACING_BAGGAGE, name = "enabled", matchIfMissing = true)
     static class BaggageConfiguration {
 
-        private final DubboTracingProperties tracingProperties;
+        private final DubboConfigurationProperties dubboConfigProperties;
 
-        BaggageConfiguration(DubboTracingProperties tracingProperties) {
-            this.tracingProperties = tracingProperties;
+        BaggageConfiguration(DubboConfigurationProperties dubboConfigProperties) {
+            this.dubboConfigProperties = dubboConfigProperties;
         }
 
         @Bean
         @ConditionalOnMissingBean
-        @ConditionalOnProperty(prefix = "dubbo.tracing.propagation", name = "type", havingValue = "W3C",
-            matchIfMissing = true)
+        @ConditionalOnProperty(prefix = ObservabilityUtils.DUBBO_TRACING_PROPAGATION, name = "type", havingValue = "W3C",
+                matchIfMissing = true)
         io.opentelemetry.context.propagation.TextMapPropagator w3cTextMapPropagatorWithBaggage(io.micrometer.tracing.otel.bridge.OtelCurrentTraceContext otelCurrentTraceContext) {
-            List<String> remoteFields = this.tracingProperties.getBaggage().getRemoteFields();
+            List<String> remoteFields = this.dubboConfigProperties.getTracing().getBaggage().getRemoteFields();
             return io.opentelemetry.context.propagation.TextMapPropagator.composite(io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator.getInstance(),
                 io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator.getInstance(), new io.micrometer.tracing.otel.propagation.BaggageTextMapPropagator(remoteFields,
-                    new io.micrometer.tracing.otel.bridge.OtelBaggageManager(otelCurrentTraceContext, remoteFields, Collections.emptyList())));
+                            new io.micrometer.tracing.otel.bridge.OtelBaggageManager(otelCurrentTraceContext, remoteFields, Collections.emptyList())));
         }
 
         @Bean
         @ConditionalOnMissingBean
-        @ConditionalOnProperty(prefix = "dubbo.tracing.propagation", name = "type", havingValue = "B3")
+        @ConditionalOnProperty(prefix = ObservabilityUtils.DUBBO_TRACING_PROPAGATION, name = "type", havingValue = "B3")
         io.opentelemetry.context.propagation.TextMapPropagator b3BaggageTextMapPropagator(io.micrometer.tracing.otel.bridge.OtelCurrentTraceContext otelCurrentTraceContext) {
-            List<String> remoteFields = this.tracingProperties.getBaggage().getRemoteFields();
+            List<String> remoteFields = this.dubboConfigProperties.getTracing().getBaggage().getRemoteFields();
             return io.opentelemetry.context.propagation.TextMapPropagator.composite(io.opentelemetry.extension.trace.propagation.B3Propagator.injectingSingleHeader(),
-                new io.micrometer.tracing.otel.propagation.BaggageTextMapPropagator(remoteFields,
-                    new io.micrometer.tracing.otel.bridge.OtelBaggageManager(otelCurrentTraceContext, remoteFields, Collections.emptyList())));
+                    new io.micrometer.tracing.otel.propagation.BaggageTextMapPropagator(remoteFields,
+                            new io.micrometer.tracing.otel.bridge.OtelBaggageManager(otelCurrentTraceContext, remoteFields, Collections.emptyList())));
         }
 
         @Bean
         @ConditionalOnMissingBean
-        @ConditionalOnProperty(prefix = "dubbo.tracing.baggage.correlation", name = "enabled",
-            matchIfMissing = true)
+        @ConditionalOnProperty(prefix = ObservabilityUtils.DUBBO_TRACING_BAGGAGE_CORRELATION, name = "enabled",
+                matchIfMissing = true)
         io.micrometer.tracing.otel.bridge.Slf4JBaggageEventListener otelSlf4JBaggageEventListener() {
-            return new io.micrometer.tracing.otel.bridge.Slf4JBaggageEventListener(this.tracingProperties.getBaggage().getCorrelation().getFields());
+            return new io.micrometer.tracing.otel.bridge.Slf4JBaggageEventListener(this.dubboConfigProperties.getTracing().getBaggage().getCorrelation().getFields());
         }
 
     }
 
     @Configuration(proxyBeanMethods = false)
-    @ConditionalOnProperty(prefix = "dubbo.tracing.baggage", name = "enabled", havingValue = "false")
+    @ConditionalOnProperty(prefix = ObservabilityUtils.DUBBO_TRACING_BAGGAGE, name = "enabled", havingValue = "false")
     static class NoBaggageConfiguration {
 
         @Bean
         @ConditionalOnMissingBean
-        @ConditionalOnProperty(prefix = "dubbo.tracing.propagation", name = "type", havingValue = "B3")
+        @ConditionalOnProperty(prefix = ObservabilityUtils.DUBBO_TRACING_PROPAGATION, name = "type", havingValue = "B3")
         io.opentelemetry.extension.trace.propagation.B3Propagator b3TextMapPropagator() {
             return io.opentelemetry.extension.trace.propagation.B3Propagator.injectingSingleHeader();
         }
 
         @Bean
         @ConditionalOnMissingBean
-        @ConditionalOnProperty(prefix = "dubbo.tracing.propagation", name = "type", havingValue = "W3C",
-            matchIfMissing = true)
+        @ConditionalOnProperty(prefix = ObservabilityUtils.DUBBO_TRACING_PROPAGATION, name = "type", havingValue = "W3C",
+                matchIfMissing = true)
         io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator w3cTextMapPropagatorWithoutBaggage() {
             return io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator.getInstance();
         }
