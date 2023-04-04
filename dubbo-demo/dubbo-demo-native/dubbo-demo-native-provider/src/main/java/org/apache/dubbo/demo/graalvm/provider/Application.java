@@ -23,17 +23,10 @@ import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.RegistryConfig;
-import org.apache.dubbo.config.ModuleConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
-import org.apache.dubbo.config.context.ConfigManager;
-import org.apache.dubbo.config.context.ModuleConfigManager;
-import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.FrameworkModel;
-import org.apache.dubbo.rpc.model.ModuleModel;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
 
 public class Application {
 
@@ -44,11 +37,7 @@ public class Application {
         System.setProperty("dubbo.application.logger", "log4j");
         System.setProperty("native", "true");
         System.setProperty("dubbo.json-framework.prefer", "fastjson");
-        if (isClassic(args)) {
-            startWithExport();
-        } else {
-            startWithBootstrap();
-        }
+        startWithBootstrap();
         System.in.read();
     }
 
@@ -82,41 +71,4 @@ public class Application {
         System.out.println("dubbo service started");
     }
 
-    private static void startWithExport() throws InterruptedException {
-        FrameworkModel frameworkModel = new FrameworkModel();
-        ApplicationModel applicationModel = frameworkModel.newApplication();
-        ModuleModel moduleModel = applicationModel.newModule();
-
-        RegistryConfig registryConfig = new RegistryConfig(REGISTRY_URL);
-        ProtocolConfig protocolConfig = new ProtocolConfig(CommonConstants.DUBBO, -1);
-
-        final String registryId = "registry-1";
-        registryConfig.setId(registryId);
-
-        ConfigManager appConfigManager = applicationModel.getApplicationConfigManager();
-        appConfigManager.setApplication(new ApplicationConfig("dubbo-demo-api-provider-app-1"));
-
-        Map<String, String> params = new HashMap<>(1);
-        params.put("proxy", "jdk");
-
-        appConfigManager.getApplication().ifPresent(applicationConfig -> applicationConfig.setParameters(params));
-        appConfigManager.addRegistry(registryConfig);
-        appConfigManager.addProtocol(protocolConfig);
-
-        ModuleConfigManager moduleConfigManager = moduleModel.getConfigManager();
-        moduleConfigManager.setModule(new ModuleConfig("dubbo-demo-api-provider-app-1-module-1"));
-
-        ServiceConfig<DemoService> serviceConfig = new ServiceConfig<>();
-        serviceConfig.setScopeModel(moduleModel);
-        serviceConfig.setProtocol(protocolConfig);
-        serviceConfig.setInterface(DemoService.class);
-        serviceConfig.setRef(new DemoServiceImpl());
-
-        moduleConfigManager.addConfig(serviceConfig);
-
-        serviceConfig.export();
-
-        System.out.println("dubbo service started");
-        new CountDownLatch(1).await();
-    }
 }

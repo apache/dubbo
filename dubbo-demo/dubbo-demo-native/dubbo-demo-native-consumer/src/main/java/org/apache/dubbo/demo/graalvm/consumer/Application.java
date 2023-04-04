@@ -20,15 +20,10 @@ import org.apache.dubbo.graalvm.demo.DemoService;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ReferenceConfig;
-import org.apache.dubbo.config.ModuleConfig;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
-import org.apache.dubbo.config.context.ConfigManager;
-import org.apache.dubbo.config.context.ModuleConfigManager;
-import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.FrameworkModel;
-import org.apache.dubbo.rpc.model.ModuleModel;
+
 
 import java.util.HashMap;
 import java.util.Map;
@@ -42,15 +37,7 @@ public class Application {
         System.setProperty("dubbo.application.logger", "log4j");
         System.setProperty("native", "true");
         System.setProperty("dubbo.json-framework.prefer", "fastjson");
-        if (isClassic(args)) {
-            runWithRefer();
-        } else {
-            runWithBootstrap();
-        }
-    }
-
-    private static boolean isClassic(String[] args) {
-        return args.length > 0 && "classic".equalsIgnoreCase(args[0]);
+        runWithBootstrap();
     }
 
     private static void runWithBootstrap() {
@@ -80,34 +67,4 @@ public class Application {
         System.out.println(message);
     }
 
-    private static void runWithRefer() {
-        FrameworkModel frameworkModel = new FrameworkModel();
-
-        ApplicationModel appModel = frameworkModel.newApplication();
-
-        ModuleModel moduleModel = appModel.newModule();
-
-        ConfigManager appConfigManager = appModel.getApplicationConfigManager();
-        appConfigManager.setApplication(new ApplicationConfig("dubbo-demo-api-consumer-app-1"));
-        appConfigManager.addRegistry(new RegistryConfig(REGISTRY_URL));
-
-        Map<String, String> params = new HashMap<>(1);
-        params.put("proxy", "jdk");
-        appConfigManager.getApplication().ifPresent(applicationConfig -> applicationConfig.setParameters(params));
-
-        ModuleConfigManager moduleConfigManager = moduleModel.getConfigManager();
-        moduleConfigManager.setModule(new ModuleConfig("dubbo-demo-api-consumer-app-1-module-1"));
-
-        ReferenceConfig<DemoService> reference = new ReferenceConfig<>();
-        reference.setScopeModel(moduleModel);
-        reference.setProtocol("dubbo");
-        reference.setInterface(DemoService.class);
-        reference.setGeneric("false");
-
-        moduleConfigManager.addConfig(reference);
-
-        DemoService service = reference.get();
-        String message = service.sayHello("dubbo");
-        System.out.println(message);
-    }
 }
