@@ -75,10 +75,6 @@ public class RegistryEvent extends TimeCounterEvent {
     }
 
 
-
-
-
-
     public void setLastNum(ServiceType type) {
         getCollector().setNum(type, getSource().getApplicationName(), getAttachmentValue(ATTACHMENT_KEY_LAST_NUM_MAP));
     }

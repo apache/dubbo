@@ -18,10 +18,10 @@
 package org.apache.dubbo.metrics.registry.event;
 
 import org.apache.dubbo.metrics.event.SimpleMetricsEventMulticaster;
+import org.apache.dubbo.metrics.registry.RegistryConstants;
 import org.apache.dubbo.metrics.registry.event.type.ApplicationType;
 import org.apache.dubbo.metrics.registry.event.type.ServiceType;
 
-import static org.apache.dubbo.metrics.registry.RegistryConstants.ATTACHMENT_KEY_DIR_NUM;
 import static org.apache.dubbo.metrics.registry.RegistryConstants.ATTACHMENT_KEY_SERVICE;
 import static org.apache.dubbo.metrics.registry.RegistryConstants.OP_TYPE_NOTIFY;
 import static org.apache.dubbo.metrics.registry.RegistryConstants.OP_TYPE_REGISTER;
@@ -54,12 +54,13 @@ public final class RegistryMetricsEventMulticaster extends SimpleMetricsEventMul
 
 
         // MetricsDirectoryListener
-        addIncrListener(ApplicationType.D_VALID);
-        addIncrListener(ApplicationType.D_UN_VALID);
-        addIncrListener(ApplicationType.D_DISABLE);
-        addIncrListener(ApplicationType.D_RECOVER_DISABLE);
-        super.addListener(RegistryListener.onEvent(ApplicationType.D_CURRENT,
-            (event, type) -> event.setNum(type, ATTACHMENT_KEY_DIR_NUM))
+        addIncrListener(ServiceType.D_VALID);
+        addIncrListener(ServiceType.D_UN_VALID);
+        addIncrListener(ServiceType.D_DISABLE);
+        addIncrListener(ServiceType.D_RECOVER_DISABLE);
+        super.addListener(RegistryListener.onEvent(ServiceType.D_CURRENT,
+            (event, type) -> event.setLastNum(type))
+
         );
 
         // MetricsServiceRegisterListener
@@ -76,13 +77,19 @@ public final class RegistryMetricsEventMulticaster extends SimpleMetricsEventMul
     }
 
 
-    private void addIncrListener(ApplicationType applicationType) {
-        super.addListener(onPostEventBuild(applicationType));
+    private void addIncrListener(ServiceType serviceType) {
+        super.addListener(onPostEventBuild(serviceType));
     }
 
     private RegistryListener onPostEventBuild(ApplicationType applicationType) {
         return RegistryListener.onEvent(applicationType,
             (event, type) -> event.getCollector().increment(event.getSource().getApplicationName(), type)
+        );
+    }
+
+    private RegistryListener onPostEventBuild(ServiceType serviceType) {
+        return RegistryListener.onEvent(serviceType,
+            this::incrSk
         );
     }
 
@@ -110,7 +117,7 @@ public final class RegistryMetricsEventMulticaster extends SimpleMetricsEventMul
     }
 
     private void incrSkSize(RegistryEvent event, ServiceType type) {
-        event.incrementServiceKey(type, ATTACHMENT_KEY_SERVICE, org.apache.dubbo.metrics.registry.RegistryConstants.ATTACHMENT_KEY_SIZE);
+        event.incrementServiceKey(type, ATTACHMENT_KEY_SERVICE, RegistryConstants.ATTACHMENT_KEY_SIZE);
     }
 
     private void onRtEvent(RegistryEvent event, ServiceType type) {

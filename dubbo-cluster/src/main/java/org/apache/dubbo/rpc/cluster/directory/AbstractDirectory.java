@@ -386,7 +386,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
 
     @Override
     public void addDisabledInvoker(Invoker<T> invoker) {
-        MetricsEventBus.publish(DirectorSupport.disable(applicationModel));
+        MetricsEventBus.publish(DirectorSupport.disable(applicationModel, invoker.getInterface().getName()));
         if (invokers.contains(invoker)) {
             disabledInvokers.add(invoker);
             removeValidInvoker(invoker);
@@ -396,7 +396,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
 
     @Override
     public void recoverDisabledInvoker(Invoker<T> invoker) {
-        MetricsEventBus.publish(DirectorSupport.recover(applicationModel));
+        MetricsEventBus.publish(DirectorSupport.recover(applicationModel, invoker.getInterface().getName()));
         if (disabledInvokers.remove(invoker)) {
             try {
                 addValidInvoker(invoker);
@@ -461,7 +461,10 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         refreshInvokerInternal();
         this.invokersInitialized = true;
 
-        MetricsEventBus.publish(DirectorSupport.current(applicationModel,invokers.size()));
+        if (invokers.size() > 0) {
+            Map<String, Integer> serviceNumMap = invokers.stream().collect(Collectors.groupingBy(invoker -> invoker.getInterface().getName(), Collectors.reducing(0, e -> 1, Integer::sum)));
+            MetricsEventBus.publish(DirectorSupport.current(applicationModel, invokers.get(0).getInterface().getName(), serviceNumMap));
+        }
     }
 
     protected void destroyInvokers() {
@@ -472,14 +475,14 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
     }
 
     private boolean addValidInvoker(Invoker<T> invoker) {
-        MetricsEventBus.publish(DirectorSupport.valid(applicationModel));
+        MetricsEventBus.publish(DirectorSupport.valid(applicationModel, invoker.getInterface().getName()));
         synchronized (this.validInvokers) {
             return this.validInvokers.add(invoker);
         }
     }
 
     private boolean removeValidInvoker(Invoker<T> invoker) {
-        MetricsEventBus.publish(DirectorSupport.unValid(applicationModel));
+        MetricsEventBus.publish(DirectorSupport.unValid(applicationModel, invoker.getInterface().getName()));
         synchronized (this.validInvokers) {
             return this.validInvokers.remove(invoker);
         }
