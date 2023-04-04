@@ -462,8 +462,10 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         this.invokersInitialized = true;
 
         if (invokers.size() > 0) {
-            Map<String, Integer> serviceNumMap = invokers.stream().collect(Collectors.groupingBy(invoker -> invoker.getInterface().getName(), Collectors.reducing(0, e -> 1, Integer::sum)));
-            MetricsEventBus.publish(DirectorSupport.current(applicationModel, invokers.get(0).getInterface().getName(), serviceNumMap));
+            Map<String, Integer> serviceNumMap = invokers.stream().filter(invoker -> invoker.getInterface() != null).collect(Collectors.groupingBy(invoker -> invoker.getInterface().getName(), Collectors.reducing(0, e -> 1, Integer::sum)));
+            if (invokers.stream().noneMatch(invoker -> invoker.getInterface() == null)) {
+                MetricsEventBus.publish(DirectorSupport.current(applicationModel, invokers.get(0).getInterface().getName(), serviceNumMap));
+            }
         }
     }
 
