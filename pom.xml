@@ -90,7 +90,7 @@
         <!-- Test libs -->
         <junit_jupiter_version>5.9.2</junit_jupiter_version>
         <awaitility_version>4.2.0</awaitility_version>
-        <hazelcast_version>3.11.1</hazelcast_version>
+        <hazelcast_version>3.12.13</hazelcast_version>
         <hamcrest_version>2.2</hamcrest_version>
         <hibernate_validator_version>5.2.4.Final</hibernate_validator_version>
         <el_api_version>2.2.5</el_api_version>
