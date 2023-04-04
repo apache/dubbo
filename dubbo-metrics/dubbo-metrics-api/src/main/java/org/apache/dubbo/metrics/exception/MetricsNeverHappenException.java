@@ -17,9 +17,9 @@
 
 package org.apache.dubbo.metrics.exception;
 
-public class MetricsException extends RuntimeException {
+public class MetricsNeverHappenException extends RuntimeException {
 
-    public MetricsException(String message) {
+    public MetricsNeverHappenException(String message) {
         super(message);
     }
 }
