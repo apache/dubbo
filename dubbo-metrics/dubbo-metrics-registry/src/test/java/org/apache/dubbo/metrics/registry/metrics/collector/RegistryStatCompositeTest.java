@@ -19,7 +19,7 @@ package org.apache.dubbo.metrics.registry.metrics.collector;
 
 import org.apache.dubbo.metrics.model.container.LongContainer;
 import org.apache.dubbo.metrics.registry.collector.stat.RegistryStatComposite;
-import org.apache.dubbo.metrics.registry.event.RegistryEvent;
+import org.apache.dubbo.metrics.registry.event.type.ApplicationType;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.apache.dubbo.metrics.registry.collector.stat.RegistryStatComposite.OP_TYPE_NOTIFY;
+import static org.apache.dubbo.metrics.registry.RegistryConstants.OP_TYPE_NOTIFY;
 
 public class RegistryStatCompositeTest {
 
@@ -36,7 +36,7 @@ public class RegistryStatCompositeTest {
     @Test
     void testInit() {
         RegistryStatComposite statComposite = new RegistryStatComposite();
-        Assertions.assertEquals(statComposite.applicationNumStats.size(), RegistryEvent.ApplicationType.values().length);
+        Assertions.assertEquals(statComposite.applicationNumStats.size(), ApplicationType.values().length);
         //(rt)5 * (register,subscribe,notify,register.service,subscribe.service)5
         Assertions.assertEquals(5 * 5, statComposite.rtStats.size());
         statComposite.applicationNumStats.values().forEach((v ->
@@ -52,8 +52,8 @@ public class RegistryStatCompositeTest {
     @Test
     void testIncrement() {
         RegistryStatComposite statComposite = new RegistryStatComposite();
-        statComposite.increment(RegistryEvent.ApplicationType.R_TOTAL, applicationName);
-        Assertions.assertEquals(1L, statComposite.applicationNumStats.get(RegistryEvent.ApplicationType.R_TOTAL).get(applicationName).get());
+        statComposite.increment(ApplicationType.R_TOTAL, applicationName);
+        Assertions.assertEquals(1L, statComposite.applicationNumStats.get(ApplicationType.R_TOTAL).get(applicationName).get());
     }
 
     @Test

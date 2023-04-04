@@ -18,7 +18,7 @@
 package org.apache.dubbo.metrics.model;
 
 import org.apache.dubbo.common.Version;
-import org.apache.dubbo.metrics.exception.MetricsException;
+import org.apache.dubbo.metrics.exception.MetricsNeverHappenException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -49,7 +49,7 @@ public class MetricsSupport {
     public static Map<String, String> serviceTags(String appAndServiceName) {
         String[] keys = appAndServiceName.split("_");
         if (keys.length != 2) {
-            throw new MetricsException("Error service name: " + appAndServiceName);
+            throw new MetricsNeverHappenException("Error service name: " + appAndServiceName);
         }
         Map<String, String> tags = applicationTags(keys[0]);
         tags.put(TAG_INTERFACE_KEY, keys[1]);
