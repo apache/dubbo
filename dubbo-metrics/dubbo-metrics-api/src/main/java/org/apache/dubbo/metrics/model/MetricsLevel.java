@@ -15,33 +15,8 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.metrics.event;
+package org.apache.dubbo.metrics.model;
 
-import org.apache.dubbo.rpc.model.ApplicationModel;
-
-/**
- * RtEvent.
- */
-public class RTEvent extends MetricsEvent {
-    private Long rt;
-    private final Object metric;
-
-    public RTEvent(ApplicationModel applicationModel, Object metric, Long rt) {
-        super(applicationModel);
-        this.rt = rt;
-        this.metric = metric;
-        setAvailable(true);
-    }
-
-    public Long getRt() {
-        return rt;
-    }
-
-    public void setRt(Long rt) {
-        this.rt = rt;
-    }
-
-    public Object getMetric() {
-        return metric;
-    }
+public enum MetricsLevel {
+    APP,SERVICE
 }

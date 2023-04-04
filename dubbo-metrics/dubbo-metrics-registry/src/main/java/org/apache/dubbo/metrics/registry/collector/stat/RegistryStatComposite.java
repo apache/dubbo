@@ -28,7 +28,8 @@ import org.apache.dubbo.metrics.model.container.AtomicLongContainer;
 import org.apache.dubbo.metrics.model.container.LongAccumulatorContainer;
 import org.apache.dubbo.metrics.model.container.LongContainer;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
-import org.apache.dubbo.metrics.registry.event.RegistryEvent;
+import org.apache.dubbo.metrics.registry.event.type.ApplicationType;
+import org.apache.dubbo.metrics.registry.event.type.ServiceType;
 import org.apache.dubbo.metrics.report.MetricsExport;
 
 import java.util.ArrayList;
@@ -39,6 +40,12 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.LongAccumulator;
 import java.util.stream.Collectors;
 
+import static org.apache.dubbo.metrics.registry.RegistryConstants.OP_TYPE_NOTIFY;
+import static org.apache.dubbo.metrics.registry.RegistryConstants.OP_TYPE_REGISTER;
+import static org.apache.dubbo.metrics.registry.RegistryConstants.OP_TYPE_REGISTER_SERVICE;
+import static org.apache.dubbo.metrics.registry.RegistryConstants.OP_TYPE_SUBSCRIBE;
+import static org.apache.dubbo.metrics.registry.RegistryConstants.OP_TYPE_SUBSCRIBE_SERVICE;
+
 /**
  * As a data aggregator, use internal data containers calculates and classifies
  * the registry data collected by {@link MetricsCollector MetricsCollector}, and
@@ -46,23 +53,17 @@ import java.util.stream.Collectors;
  */
 public class RegistryStatComposite implements MetricsExport {
 
-
-    public Map<RegistryEvent.ApplicationType, Map<String, AtomicLong>> applicationNumStats = new ConcurrentHashMap<>();
-    public Map<RegistryEvent.ServiceType, Map<ServiceKeyMetric, AtomicLong>> serviceNumStats = new ConcurrentHashMap<>();
+    public Map<ApplicationType, Map<String, AtomicLong>> applicationNumStats = new ConcurrentHashMap<>();
+    public Map<ServiceType, Map<ServiceKeyMetric, AtomicLong>> serviceNumStats = new ConcurrentHashMap<>();
     public List<LongContainer<? extends Number>> rtStats = new ArrayList<>();
-    public static String OP_TYPE_REGISTER = "register";
-    public static String OP_TYPE_SUBSCRIBE = "subscribe";
-    public static String OP_TYPE_NOTIFY = "notify";
-    public static String OP_TYPE_REGISTER_SERVICE = "register.service";
-    public static String OP_TYPE_SUBSCRIBE_SERVICE = "subscribe.service";
 
     public RegistryStatComposite() {
-        for (RegistryEvent.ApplicationType type : RegistryEvent.ApplicationType.values()) {
+        for (ApplicationType type : ApplicationType.values()) {
             // Application key and increment val
             applicationNumStats.put(type, new ConcurrentHashMap<>());
         }
 
-        for (RegistryEvent.ServiceType type : RegistryEvent.ServiceType.values()) {
+        for (ServiceType type : ServiceType.values()) {
             // Service key
             serviceNumStats.put(type, new ConcurrentHashMap<>());
         }
@@ -95,32 +96,32 @@ public class RegistryStatComposite implements MetricsExport {
         return singleRtStats;
     }
 
-    public void setApplicationKey(RegistryEvent.ApplicationType type, String applicationName, int num) {
+    public void setApplicationKey(ApplicationType type, String applicationName, int num) {
         if (!applicationNumStats.containsKey(type)) {
             return;
         }
         applicationNumStats.get(type).computeIfAbsent(applicationName, k -> new AtomicLong(0L)).set(num);
     }
 
-    public void setServiceKey(RegistryEvent.ServiceType type, String applicationName, String serviceKey, int num) {
+    public void setServiceKey(ServiceType type, String applicationName, String serviceKey, int num) {
         if (!serviceNumStats.containsKey(type)) {
             return;
         }
         serviceNumStats.get(type).computeIfAbsent(new ServiceKeyMetric(applicationName, serviceKey), k -> new AtomicLong(0L)).set(num);
     }
 
-    public void increment(RegistryEvent.ApplicationType type, String applicationName) {
+    public void increment(ApplicationType type, String applicationName) {
         incrementSize(type, applicationName, 1);
     }
 
-    public void incrementServiceKey(RegistryEvent.ServiceType type, String applicationName, String serviceKey, int size) {
+    public void incrementServiceKey(ServiceType type, String applicationName, String serviceKey, int size) {
         if (!serviceNumStats.containsKey(type)) {
             return;
         }
         serviceNumStats.get(type).computeIfAbsent(new ServiceKeyMetric(applicationName, serviceKey), k -> new AtomicLong(0L)).getAndAdd(size);
     }
 
-    public void incrementSize(RegistryEvent.ApplicationType type, String applicationName, int size) {
+    public void incrementSize(ApplicationType type, String applicationName, int size) {
         if (!applicationNumStats.containsKey(type)) {
             return;
         }
@@ -147,7 +148,7 @@ public class RegistryStatComposite implements MetricsExport {
     @SuppressWarnings({"rawtypes"})
     public List<GaugeMetricSample> exportNumMetrics() {
         List<GaugeMetricSample> list = new ArrayList<>();
-        for (RegistryEvent.ApplicationType type : applicationNumStats.keySet()) {
+        for (ApplicationType type : applicationNumStats.keySet()) {
             Map<String, AtomicLong> stringAtomicLongMap = applicationNumStats.get(type);
             for (String applicationName : stringAtomicLongMap.keySet()) {
                 list.add(convertToSample(applicationName, type, MetricsCategory.REGISTRY, stringAtomicLongMap.get(applicationName)));
@@ -177,7 +178,7 @@ public class RegistryStatComposite implements MetricsExport {
     @SuppressWarnings({"rawtypes"})
     public List<GaugeMetricSample> exportSkMetrics() {
         List<GaugeMetricSample> list = new ArrayList<>();
-        for (RegistryEvent.ServiceType type : serviceNumStats.keySet()) {
+        for (ServiceType type : serviceNumStats.keySet()) {
             Map<ServiceKeyMetric, AtomicLong> stringAtomicLongMap = serviceNumStats.get(type);
             for (ServiceKeyMetric serviceKeyMetric : stringAtomicLongMap.keySet()) {
                 list.add(new GaugeMetricSample<>(type.getMetricsKey(), serviceKeyMetric.getTags(), MetricsCategory.REGISTRY, stringAtomicLongMap, value -> value.get(serviceKeyMetric).get()));
@@ -187,7 +188,7 @@ public class RegistryStatComposite implements MetricsExport {
     }
 
     @SuppressWarnings({"rawtypes"})
-    public GaugeMetricSample convertToSample(String applicationName, RegistryEvent.ApplicationType type, MetricsCategory category, AtomicLong targetNumber) {
+    public GaugeMetricSample convertToSample(String applicationName, ApplicationType type, MetricsCategory category, AtomicLong targetNumber) {
         return new GaugeMetricSample<>(type.getMetricsKey(), MetricsSupport.applicationTags(applicationName), category, targetNumber, AtomicLong::get);
     }
 }
