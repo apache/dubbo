@@ -36,10 +36,11 @@ public class ExporterConfig implements Serializable {
     }
 
     public static class ZipkinConfig implements Serializable {
+
         /**
          * URL to the Zipkin API.
          */
-        private String endpoint = "http://localhost:9411/api/v2/spans";
+        private String endpoint;
 
         /**
          * Connection timeout for requests to Zipkin.
