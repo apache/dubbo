@@ -26,11 +26,11 @@ import static org.apache.dubbo.spring.boot.util.DubboUtils.PROPERTY_NAME_SEPARAT
  */
 public class ObservabilityUtils {
 
-    public static final String DUBBO_TRACING_PREFIX = DUBBO_PREFIX + PROPERTY_NAME_SEPARATOR + "tracing" + PROPERTY_NAME_SEPARATOR;
+    public static final String DUBBO_TRACING_PREFIX = DUBBO_PREFIX + PROPERTY_NAME_SEPARATOR + "tracing";
 
-    public static final String DUBBO_TRACING_PROPAGATION = DUBBO_TRACING_PREFIX + "propagation";
+    public static final String DUBBO_TRACING_PROPAGATION = DUBBO_TRACING_PREFIX + PROPERTY_NAME_SEPARATOR + "propagation";
 
-    public static final String DUBBO_TRACING_BAGGAGE = DUBBO_TRACING_PREFIX + "baggage";
+    public static final String DUBBO_TRACING_BAGGAGE = DUBBO_TRACING_PREFIX + PROPERTY_NAME_SEPARATOR + "baggage";
 
     public static final String DUBBO_TRACING_BAGGAGE_CORRELATION = DUBBO_TRACING_BAGGAGE + PROPERTY_NAME_SEPARATOR + "correlation";
 

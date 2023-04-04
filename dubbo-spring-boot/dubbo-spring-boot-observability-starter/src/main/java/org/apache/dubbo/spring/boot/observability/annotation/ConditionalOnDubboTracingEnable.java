@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.spring.boot.observability.annotation;
 
+import org.apache.dubbo.spring.boot.observability.autoconfigure.ObservabilityUtils;
+
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 
 import java.lang.annotation.Documented;
@@ -25,10 +27,17 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Target({ElementType.TYPE,ElementType.METHOD})
+/**
+ * Checks whether tracing is enabled.
+ * It matches if the value of the {@code dubbo.tracing.enabled} property is {@code true} or if it
+ * is not configured.
+ *
+ * @since 3.2.0
+ */
+@Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 @Documented
-@ConditionalOnProperty(prefix = "dubbo.tracing", name = "enabled", matchIfMissing = true)
+@ConditionalOnProperty(prefix = ObservabilityUtils.DUBBO_TRACING_PREFIX, name = "enabled", matchIfMissing = true)
 public @interface ConditionalOnDubboTracingEnable {
 }

@@ -14,9 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.config.nested.BaggageConfig;
+import org.apache.dubbo.config.nested.ExporterConfig;
 import org.apache.dubbo.config.nested.PropagationConfig;
 import org.apache.dubbo.config.nested.SamplingConfig;
 import org.apache.dubbo.config.support.Nested;
@@ -48,6 +50,12 @@ public class TracingConfig extends AbstractConfig {
      */
     @Nested
     private PropagationConfig propagation = new PropagationConfig();
+
+    /**
+     * Exporter configuration.
+     */
+    @Nested
+    private ExporterConfig tracingExporter = new ExporterConfig();
 
     public TracingConfig() {
     }
@@ -86,5 +94,13 @@ public class TracingConfig extends AbstractConfig {
 
     public void setPropagation(PropagationConfig propagation) {
         this.propagation = propagation;
+    }
+
+    public ExporterConfig getTracingExporter() {
+        return tracingExporter;
+    }
+
+    public void setTracingExporter(ExporterConfig tracingExporter) {
+        this.tracingExporter = tracingExporter;
     }
 }
