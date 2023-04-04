@@ -15,33 +15,20 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.metrics.event;
+package org.apache.dubbo.metrics.registry;
 
-import org.apache.dubbo.rpc.model.ApplicationModel;
+public interface RegistryConstants {
 
-/**
- * RtEvent.
- */
-public class RTEvent extends MetricsEvent {
-    private Long rt;
-    private final Object metric;
+    String ATTACHMENT_KEY_SERVICE = "serviceKey";
+    String ATTACHMENT_KEY_SIZE = "size";
+    String ATTACHMENT_KEY_LAST_NUM_MAP = "lastNumMap";
+    String ATTACHMENT_KEY_DIR_NUM = "dirNum";
 
-    public RTEvent(ApplicationModel applicationModel, Object metric, Long rt) {
-        super(applicationModel);
-        this.rt = rt;
-        this.metric = metric;
-        setAvailable(true);
-    }
+    String OP_TYPE_REGISTER = "register";
+    String OP_TYPE_SUBSCRIBE = "subscribe";
+    String OP_TYPE_NOTIFY = "notify";
+    String OP_TYPE_REGISTER_SERVICE = "register.service";
+    String OP_TYPE_SUBSCRIBE_SERVICE = "subscribe.service";
 
-    public Long getRt() {
-        return rt;
-    }
 
-    public void setRt(Long rt) {
-        this.rt = rt;
-    }
-
-    public Object getMetric() {
-        return metric;
-    }
 }

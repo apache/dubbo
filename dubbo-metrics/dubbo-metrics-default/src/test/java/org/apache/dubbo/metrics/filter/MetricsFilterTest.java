@@ -23,7 +23,7 @@ import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.metrics.TestMetricsInvoker;
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
 import org.apache.dubbo.metrics.model.MetricsKey;
-import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
+import org.apache.dubbo.metrics.model.sample.CounterMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.Invoker;
@@ -186,10 +186,10 @@ class MetricsFilterTest {
         Assertions.assertTrue(metricsMap.containsKey(MetricsKey.METRIC_REQUESTS_TOTAL_FAILED.getNameByType(side)));
 
         MetricSample timeoutSample = metricsMap.get(MetricsKey.METRIC_REQUESTS_TIMEOUT.getNameByType(side));
-        Assertions.assertSame(((GaugeMetricSample) timeoutSample).applyAsLong(), count);
+        Assertions.assertSame(((CounterMetricSample) timeoutSample).getValue().longValue(), count);
 
-        GaugeMetricSample failedSample = (GaugeMetricSample) metricsMap.get(MetricsKey.METRIC_REQUESTS_TOTAL_FAILED.getNameByType(side));
-        Assertions.assertSame(failedSample.applyAsLong(), count);
+        CounterMetricSample failedSample = (CounterMetricSample) metricsMap.get(MetricsKey.METRIC_REQUESTS_TOTAL_FAILED.getNameByType(side));
+        Assertions.assertSame(failedSample.getValue().longValue(), count);
     }
 
     @Test
@@ -214,7 +214,7 @@ class MetricsFilterTest {
 
         MetricSample sample = metricsMap.get(MetricsKey.METRIC_REQUESTS_LIMIT.getNameByType(side));
 
-        Assertions.assertSame(((GaugeMetricSample) sample).applyAsLong(), count);
+        Assertions.assertSame(((CounterMetricSample) sample).getValue().longValue(), count);
     }
 
     @Test
@@ -292,7 +292,7 @@ class MetricsFilterTest {
 
         MetricSample sample = metricsMap.get(name);
 
-        Assertions.assertSame(((GaugeMetricSample) sample).applyAsLong(), count);
+        Assertions.assertSame(((CounterMetricSample) sample).getValue().longValue(), count);
 
 
         Assertions.assertTrue(metricsMap.containsKey(name));

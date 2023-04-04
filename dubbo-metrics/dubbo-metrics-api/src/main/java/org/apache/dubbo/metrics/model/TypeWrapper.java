@@ -15,33 +15,33 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.metrics.event;
+package org.apache.dubbo.metrics.model;
 
-import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.common.utils.Assert;
 
-/**
- * RtEvent.
- */
-public class RTEvent extends MetricsEvent {
-    private Long rt;
-    private final Object metric;
+public class TypeWrapper {
+    private final MetricsLevel level;
+    private final Object postType;
+    private final Object finishType;
+    private final Object errorType;
 
-    public RTEvent(ApplicationModel applicationModel, Object metric, Long rt) {
-        super(applicationModel);
-        this.rt = rt;
-        this.metric = metric;
-        setAvailable(true);
+    public TypeWrapper(MetricsLevel level, Object postType, Object finishType, Object errorType) {
+        this.level = level;
+        this.postType = postType;
+        this.finishType = finishType;
+        this.errorType = errorType;
     }
 
-    public Long getRt() {
-        return rt;
+    public MetricsLevel getLevel() {
+        return level;
     }
 
-    public void setRt(Long rt) {
-        this.rt = rt;
+    public Object getErrorType() {
+        return errorType;
     }
 
-    public Object getMetric() {
-        return metric;
+    public boolean isAssignableFrom(Object type) {
+        Assert.notNull(type, "Type can not be null");
+        return type.equals(postType) || type.equals(finishType) || type.equals(errorType);
     }
 }
