@@ -386,7 +386,9 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
 
     @Override
     public void addDisabledInvoker(Invoker<T> invoker) {
-        MetricsEventBus.publish(DirectorSupport.disable(applicationModel, invoker.getInterface().getName()));
+        if (invoker.getInterface() != null) {
+            MetricsEventBus.publish(DirectorSupport.disable(applicationModel, invoker.getInterface().getName()));
+        }
         if (invokers.contains(invoker)) {
             disabledInvokers.add(invoker);
             removeValidInvoker(invoker);
@@ -396,7 +398,9 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
 
     @Override
     public void recoverDisabledInvoker(Invoker<T> invoker) {
-        MetricsEventBus.publish(DirectorSupport.recover(applicationModel, invoker.getInterface().getName()));
+        if (invoker.getInterface() != null) {
+            MetricsEventBus.publish(DirectorSupport.recover(applicationModel, invoker.getInterface().getName()));
+        }
         if (disabledInvokers.remove(invoker)) {
             try {
                 addValidInvoker(invoker);
@@ -477,14 +481,18 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
     }
 
     private boolean addValidInvoker(Invoker<T> invoker) {
-        MetricsEventBus.publish(DirectorSupport.valid(applicationModel, invoker.getInterface().getName()));
+        if (invoker.getInterface() != null) {
+            MetricsEventBus.publish(DirectorSupport.valid(applicationModel, invoker.getInterface().getName()));
+        }
         synchronized (this.validInvokers) {
             return this.validInvokers.add(invoker);
         }
     }
 
     private boolean removeValidInvoker(Invoker<T> invoker) {
-        MetricsEventBus.publish(DirectorSupport.unValid(applicationModel, invoker.getInterface().getName()));
+        if (invoker.getInterface() != null) {
+            MetricsEventBus.publish(DirectorSupport.unValid(applicationModel, invoker.getInterface().getName()));
+        }
         synchronized (this.validInvokers) {
             return this.validInvokers.remove(invoker);
         }
