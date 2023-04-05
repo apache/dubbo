@@ -19,11 +19,9 @@ package org.apache.dubbo.rpc.protocol;
 
 import org.apache.dubbo.common.Parameters;
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
-import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.RemotingServer;
 import org.apache.dubbo.rpc.Exporter;
@@ -43,8 +41,6 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_UNSUPPORTED;
 
 /**
@@ -144,14 +140,6 @@ public abstract class AbstractProxyProtocol extends AbstractProtocol {
             + invocation.getMethodName() + ", cause: " + e.getMessage(), e);
         re.setCode(getErrorCode(e));
         return re;
-    }
-
-    protected String getAddr(URL url) {
-        String bindIp = url.getParameter(Constants.BIND_IP_KEY, url.getHost());
-        if (url.getParameter(ANYHOST_KEY, false)) {
-            bindIp = ANYHOST_VALUE;
-        }
-        return NetUtils.getIpByHost(bindIp) + ":" + url.getParameter(Constants.BIND_PORT_KEY, url.getPort());
     }
 
     protected int getErrorCode(Throwable e) {
