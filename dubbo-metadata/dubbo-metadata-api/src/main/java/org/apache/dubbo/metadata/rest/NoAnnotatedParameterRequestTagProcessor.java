@@ -28,5 +28,5 @@ public interface NoAnnotatedParameterRequestTagProcessor {
 
     String defaultAnnotationClassName(RestMethodMetadata restMethodMetadata);
 
-    void process(Parameter parameter, int parameterIndex, RestMethodMetadata restMethodMetadata);
+    boolean process(Parameter parameter, int parameterIndex, RestMethodMetadata restMethodMetadata);
 }
