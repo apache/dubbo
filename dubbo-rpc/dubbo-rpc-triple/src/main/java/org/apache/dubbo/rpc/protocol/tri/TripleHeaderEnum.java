@@ -72,12 +72,6 @@ public enum TripleHeaderEnum {
 
     }
 
-    public static Map<String, TripleHeaderEnum> needToDeliveryHeaders() {
-        Map<String, TripleHeaderEnum> map = new HashMap<>();
-        map.put(TRI_EXCEPTION_CODE.getHeader(), TRI_EXCEPTION_CODE);
-        return map;
-    }
-
     private final String header;
 
     TripleHeaderEnum(String header) {
@@ -86,10 +80,6 @@ public enum TripleHeaderEnum {
 
     public static boolean containsExcludeAttachments(String key) {
         return excludeAttachmentsSet.contains(key) || enumMap.containsKey(key);
-    }
-
-    public static boolean containsNeedToDeliveryHeaders(String key) {
-        return needToDeliveryHeaders().containsKey(key);
     }
 
     public String getHeader() {
