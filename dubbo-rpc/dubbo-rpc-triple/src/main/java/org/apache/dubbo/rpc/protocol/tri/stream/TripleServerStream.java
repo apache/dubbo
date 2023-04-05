@@ -413,7 +413,7 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
                 return Optional.ofNullable(headers.get(TripleHeaderEnum.TRI_HEADER_CONVERT.getHeader()))
                     .map(CharSequence::toString)
                     .orElse(null);
-            }, () -> null);
+            });
             boolean hasStub = pathResolver.hasNativeStub(path);
             if (hasStub) {
                 listener = new StubAbstractServerCall(invoker, TripleServerStream.this,

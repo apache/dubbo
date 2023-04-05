@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
+import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.JsonUtils;
@@ -24,8 +25,6 @@ import org.apache.dubbo.common.utils.LRU2Cache;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
-
-import io.netty.handler.codec.http2.DefaultHttp2Headers;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -68,7 +67,7 @@ public class StreamUtils {
         Map<String, Object> res = new HashMap<>(origin.size());
         origin.forEach((k, v) -> {
             if (TripleHeaderEnum.containsExcludeAttachments(k)
-                && !TripleHeaderEnum.containsNeedToDeliveryHeaders(k)) {
+            ) {
                 return;
             }
             res.put(k, v);

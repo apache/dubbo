@@ -18,6 +18,7 @@
 package org.apache.dubbo.rpc.protocol.tri.call;
 
 import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.DeadlineFuture;
@@ -40,11 +41,11 @@ public class UnaryClientCallListener implements ClientCall.Listener {
     }
 
     @Override
-    public void onClose(TriRpcStatus status, Map<String, Object> trailers) {
+    public void onClose(TriRpcStatus status, Map<String, Object> trailers, Map<String, String> triExceptionCodeAttachments) {
         AppResponse result = new AppResponse();
         result.setObjectAttachments(trailers);
         if (status.isOk()) {
-           Integer exceptionCode = extractExceptionCode(trailers);
+           Integer exceptionCode = extractExceptionCode(triExceptionCodeAttachments);
             if (!exceptionCode.equals(CommonConstants.TRI_EXCEPTION_CODE_NOT_EXISTS)) {
                 result.setException((Exception) appResponse);
             } else {
@@ -56,16 +57,16 @@ public class UnaryClientCallListener implements ClientCall.Listener {
         future.received(status, result);
     }
 
-    private int extractExceptionCode(Map<String, Object> trailers) {
+    private int extractExceptionCode(Map<String, String> trailers) {
         int triExceptionCode = CommonConstants.TRI_EXCEPTION_CODE_NOT_EXISTS;
         if (!(appResponse instanceof Exception)) {
             return triExceptionCode;
         }
-        Object exceptionCode = trailers.get(TripleHeaderEnum.TRI_EXCEPTION_CODE.getHeader());
-        if (exceptionCode instanceof String) {
-            triExceptionCode = Integer.parseInt((String) exceptionCode);
+        String exceptionCodeStr = trailers.get(TripleHeaderEnum.TRI_EXCEPTION_CODE.getHeader());
+        if (!StringUtils.isEmpty(exceptionCodeStr)) {
+            return Integer.parseInt(exceptionCodeStr);
         }
-        return triExceptionCode;
+        return CommonConstants.TRI_EXCEPTION_CODE_NOT_EXISTS;
     }
 
     @Override

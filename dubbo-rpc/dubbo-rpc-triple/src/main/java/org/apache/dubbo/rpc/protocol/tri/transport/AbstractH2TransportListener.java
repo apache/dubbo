@@ -44,7 +44,7 @@ public abstract class AbstractH2TransportListener implements H2TransportListener
      * @param trailers the metadata from remote
      * @return KV pairs map
      */
-    protected Map<String, Object> headersToMap(Http2Headers trailers, Supplier<Object> convertUpperHeaderSupplier, Supplier<Object> triExceptionCodeSupplier) {
+    protected Map<String, Object> headersToMap(Http2Headers trailers, Supplier<Object> convertUpperHeaderSupplier) {
         if (trailers == null) {
             return Collections.emptyMap();
         }
@@ -68,34 +68,27 @@ public abstract class AbstractH2TransportListener implements H2TransportListener
 
         // try converting upper key
         Object obj = convertUpperHeaderSupplier.get();
-        if (obj != null) {
-            if (obj instanceof String) {
-                String json = TriRpcStatus.decodeMessage((String) obj);
-                Map<String, String> map = JsonUtils.getJson().toJavaObject(json, Map.class);
-                for (Map.Entry<String, String> entry : map.entrySet()) {
-                    Object val = attachments.remove(entry.getKey());
-                    if (val != null) {
-                        attachments.put(entry.getValue(), val);
-                    }
-                }
-            } else {
-                // If convertUpperHeaderSupplier does not return String, just fail...
-                // Internal invocation, use INTERNAL_ERROR instead.
-
-                LOGGER.error(INTERNAL_ERROR, "wrong internal invocation", "", "Triple convertNoLowerCaseHeader error, obj is not String");
-            }
-        }
-
-        // try to extract triple exception code
-        Object triExceptionCodeObj = triExceptionCodeSupplier.get();
-        if (triExceptionCodeObj == null) {
+        if (obj == null) {
             return attachments;
         }
-        if (triExceptionCodeObj instanceof String) {
-            attachments.put(TripleHeaderEnum.TRI_EXCEPTION_CODE.getHeader(), (String) triExceptionCodeObj);
+        if (obj instanceof String) {
+            String json = TriRpcStatus.decodeMessage((String) obj);
+            Map<String, String> map = JsonUtils.getJson().toJavaObject(json, Map.class);
+            for (Map.Entry<String, String> entry : map.entrySet()) {
+                Object val = attachments.remove(entry.getKey());
+                if (val != null) {
+                    attachments.put(entry.getValue(), val);
+                }
+            }
+        } else {
+            // If convertUpperHeaderSupplier does not return String, just fail...
+            // Internal invocation, use INTERNAL_ERROR instead.
+
+            LOGGER.error(INTERNAL_ERROR, "wrong internal invocation", "", "Triple convertNoLowerCaseHeader error, obj is not String");
         }
         return attachments;
     }
+
 
     protected Map<String, String> filterReservedHeaders(Http2Headers trailers) {
         if (trailers == null) {

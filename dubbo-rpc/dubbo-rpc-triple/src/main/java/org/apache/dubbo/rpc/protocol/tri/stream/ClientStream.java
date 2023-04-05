@@ -17,9 +17,8 @@
 
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
-import org.apache.dubbo.rpc.TriRpcStatus;
-
 import io.netty.util.concurrent.Future;
+import org.apache.dubbo.rpc.TriRpcStatus;
 
 import java.util.Map;
 
@@ -41,7 +40,7 @@ public interface ClientStream extends Stream {
          *
          * @param attachments received from remote peer
          */
-        default void onComplete(TriRpcStatus status, Map<String, Object> attachments) {
+        default void onComplete(TriRpcStatus status, Map<String, Object> attachments, Map<String, String> triExceptionCodeAttachments) {
         }
 
         /**
@@ -52,8 +51,8 @@ public interface ClientStream extends Stream {
          * @param reserved    triple protocol reserved data
          */
         default void onComplete(TriRpcStatus status, Map<String, Object> attachments,
-            Map<String, String> reserved) {
-            onComplete(status, attachments);
+            Map<String, String> reserved, Map<String, String> triExceptionCodeAttachments) {
+            onComplete(status, attachments, triExceptionCodeAttachments);
         }
 
     }

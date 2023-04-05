@@ -17,8 +17,9 @@
 
 package org.apache.dubbo.rpc.protocol.tri.call;
 
-import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import io.netty.channel.Channel;
 import io.netty.handler.codec.http2.Http2Exception;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.remoting.api.connection.AbstractConnectionClient;
@@ -33,15 +34,13 @@ import org.apache.dubbo.rpc.protocol.tri.stream.StreamUtils;
 import org.apache.dubbo.rpc.protocol.tri.stream.TripleClientStream;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleWriteQueue;
 
-import io.netty.channel.Channel;
-
 import java.util.Map;
 import java.util.concurrent.Executor;
 
+import static io.netty.handler.codec.http2.Http2Error.FLOW_CONTROL_ERROR;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_RESPONSE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_SERIALIZE_TRIPLE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_STREAM_LISTENER;
-import static io.netty.handler.codec.http2.Http2Error.FLOW_CONTROL_ERROR;
 
 public class TripleClientCall implements ClientCall, ClientStream.Listener {
     private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(TripleClientCall.class);
@@ -83,7 +82,7 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
             TriRpcStatus status = TriRpcStatus.INTERNAL.withDescription("Deserialize response failed")
                 .withCause(t);
             cancelByLocal(status.asException());
-            listener.onClose(status,null);
+            listener.onClose(status,null, null);
             LOGGER.error(PROTOCOL_FAILED_RESPONSE, "", "", String.format("Failed to deserialize triple response, service=%s, method=%s,connection=%s",
                     connectionClient, requestMetadata.service, requestMetadata.method.getMethodName()), t);
         }
@@ -103,13 +102,13 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
 
     @Override
     public void onComplete(TriRpcStatus status, Map<String, Object> attachments,
-                           Map<String, String> excludeHeaders) {
+                           Map<String, String> excludeHeaders, Map<String, String> triExceptionCodeAttachments) {
         if (done) {
             return;
         }
         done = true;
         try {
-            listener.onClose(status, StreamUtils.toAttachments(attachments));
+            listener.onClose(status, StreamUtils.toAttachments(attachments), triExceptionCodeAttachments);
         } catch (Throwable t) {
             cancelByLocal(
                 TriRpcStatus.INTERNAL.withDescription("Close stream error").withCause(t)
@@ -191,7 +190,7 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
                 requestMetadata.method), t);
             cancelByLocal(t);
             listener.onClose(TriRpcStatus.INTERNAL.withDescription("Serialize request failed")
-                .withCause(t), null);
+                .withCause(t), null, null);
         }
     }
     // stream listener end

@@ -145,7 +145,7 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
     private void transportException(Throwable cause) {
         final TriRpcStatus status = TriRpcStatus.INTERNAL.withDescription("Http2 exception")
             .withCause(cause);
-        listener.onComplete(status, null);
+        listener.onComplete(status, null, null);
     }
 
     public ChannelFuture cancelByLocal(TriRpcStatus status) {
@@ -235,8 +235,8 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
         void finishProcess(TriRpcStatus status, Http2Headers trailers) {
             final Map<String, String> reserved = filterReservedHeaders(trailers);
             final Map<String, Object> attachments = headersToMap(trailers,
-                () -> reserved.get(TripleHeaderEnum.TRI_HEADER_CONVERT.getHeader()),
-                () -> reserved.get(TripleHeaderEnum.TRI_EXCEPTION_CODE.getHeader()));
+                () -> reserved.get(TripleHeaderEnum.TRI_HEADER_CONVERT.getHeader()));
+            final Map<String, String> triExceptionCodeAttachments = extractTriExceptionCode(reserved);
             final TriRpcStatus detailStatus;
             final TriRpcStatus statusFromTrailers = getStatusFromTrailers(reserved);
             if (statusFromTrailers != null) {
@@ -244,7 +244,7 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
             } else {
                 detailStatus = status;
             }
-            listener.onComplete(detailStatus, attachments, reserved);
+            listener.onComplete(detailStatus, attachments, reserved, triExceptionCodeAttachments);
         }
 
         private TriRpcStatus validateHeaderStatus(Http2Headers headers) {
@@ -466,5 +466,15 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
                 finishProcess(transportError, null);
             });
         }
+    }
+
+    private Map<String, String> extractTriExceptionCode(Map<String, String> reserved) {
+        Map<String, String> attachments = new HashMap<>();
+        for (Map.Entry<String, String> entry : reserved.entrySet()) {
+            if (entry.getKey().equals(TripleHeaderEnum.TRI_EXCEPTION_CODE.getHeader())) {
+                attachments.put(entry.getKey(), entry.getValue());
+            }
+        }
+        return attachments;
     }
 }
