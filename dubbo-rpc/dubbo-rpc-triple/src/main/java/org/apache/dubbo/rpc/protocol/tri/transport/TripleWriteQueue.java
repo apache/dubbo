@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.protocol.tri.transport;
 
 import org.apache.dubbo.common.BatchExecutorQueue;
 import org.apache.dubbo.common.utils.Assert;
+import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.protocol.tri.command.QueuedCommand;
 import org.apache.dubbo.rpc.protocol.tri.stream.TripleStreamChannelFuture;
 
@@ -85,13 +86,16 @@ public class TripleWriteQueue extends BatchExecutorQueue<QueuedCommand> {
 
     public Http2StreamChannel channel() {
         if (channelFuture.cause() != null) {
-            throw new RuntimeException(channelFuture.cause());
+            throw new RpcException(channelFuture.cause());
         }
 
         try {
             return channelFuture.get();
-        } catch (InterruptedException | ExecutionException e) {
-            throw new RuntimeException(e);
+        } catch (ExecutionException e) {
+            throw new RpcException(e);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return null;
         }
     }
 
