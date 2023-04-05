@@ -16,9 +16,12 @@
  */
 package org.apache.dubbo.rpc.protocol.rest.exception;
 
-public class HttpClientException extends RuntimeException {
+/**
+ *  path mapper contains current path will throw
+ */
+public class DoublePathCheckException extends RuntimeException {
 
-    public HttpClientException(String message) {
-        super("dubbo http rest protocol param error :"+message);
+    public DoublePathCheckException(String message) {
+        super(message);
     }
 }

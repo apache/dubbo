@@ -24,9 +24,11 @@ import org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.consumer.Consum
 
 import java.util.Arrays;
 
+/**
+ *  resolve method args  by args info
+ */
 @Activate(value = "paramparse",order = 5)
 public class ParamParseIntercept implements HttpConnectionPreBuildIntercept {
-    private static final ParamParserManager paramParser = new ParamParserManager();
 
     @Override
     public void intercept(HttpConnectionCreateContext connectionCreateContext) {
@@ -34,6 +36,6 @@ public class ParamParseIntercept implements HttpConnectionPreBuildIntercept {
         ConsumerParseContext consumerParseContext = new ConsumerParseContext(connectionCreateContext.getRequestTemplate());
         consumerParseContext.setArgInfos(connectionCreateContext.getRestMethodMetadata().getArgInfos());
         consumerParseContext.setArgs(Arrays.asList(connectionCreateContext.getInvocation().getArguments()));
-        paramParser.consumerParamParse(consumerParseContext);
+        ParamParserManager.consumerParamParse(consumerParseContext);
     }
 }
