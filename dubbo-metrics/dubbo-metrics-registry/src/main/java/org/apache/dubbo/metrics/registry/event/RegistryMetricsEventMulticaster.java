@@ -18,6 +18,8 @@
 package org.apache.dubbo.metrics.registry.event;
 
 import org.apache.dubbo.metrics.event.SimpleMetricsEventMulticaster;
+import org.apache.dubbo.metrics.model.key.MetricsKey;
+import org.apache.dubbo.metrics.registry.collector.RegistryMetricsCollector;
 import org.apache.dubbo.metrics.registry.event.type.ApplicationType;
 import org.apache.dubbo.metrics.registry.event.type.ServiceType;
 
@@ -31,9 +33,12 @@ import static org.apache.dubbo.metrics.registry.RegistryConstants.OP_TYPE_SUBSCR
 
 public final class RegistryMetricsEventMulticaster extends SimpleMetricsEventMulticaster {
 
-    public RegistryMetricsEventMulticaster() {
+    private final RegistryMetricsCollector collector;
+
+    public RegistryMetricsEventMulticaster(RegistryMetricsCollector collector) {
+        this.collector = collector;
         // MetricsRegisterListener
-        super.addListener(onPostEventBuild(ApplicationType.R_TOTAL));
+        super.addListener(onPostEventBuild(MetricsKey.REGISTER_METRIC_REQUESTS));
         super.addListener(onFinishEventBuild(ApplicationType.R_SUCCEED, OP_TYPE_REGISTER));
         super.addListener(onErrorEventBuild(ApplicationType.R_FAILED, OP_TYPE_REGISTER));
 
@@ -58,7 +63,7 @@ public final class RegistryMetricsEventMulticaster extends SimpleMetricsEventMul
         addIncrListener(ApplicationType.D_UN_VALID);
         addIncrListener(ApplicationType.D_DISABLE);
         addIncrListener(ApplicationType.D_RECOVER_DISABLE);
-        super.addListener(RegistryListener.onEvent(ApplicationType.D_CURRENT,
+        super.addListener(RegistryListener.onEvent(MetricsKey.DIRECTORY_METRIC_NUM_CURRENT,
             (event, type) -> event.setNum(type, ATTACHMENT_KEY_DIR_NUM))
         );
 
@@ -80,9 +85,9 @@ public final class RegistryMetricsEventMulticaster extends SimpleMetricsEventMul
         super.addListener(onPostEventBuild(applicationType));
     }
 
-    private RegistryListener onPostEventBuild(ApplicationType applicationType) {
-        return RegistryListener.onEvent(applicationType,
-            (event, type) -> event.getCollector().increment(event.getSource().getApplicationName(), type)
+    private RegistryListener onPostEventBuild(MetricsKey metricsKey) {
+        return RegistryListener.onEvent(metricsKey,
+            (event, key) -> collector.incrAppNum(event.getSource().getApplicationName(), key)
         );
     }
 

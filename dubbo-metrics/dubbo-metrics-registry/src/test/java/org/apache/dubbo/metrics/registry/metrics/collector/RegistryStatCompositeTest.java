@@ -18,7 +18,7 @@
 package org.apache.dubbo.metrics.registry.metrics.collector;
 
 import org.apache.dubbo.metrics.model.container.LongContainer;
-import org.apache.dubbo.metrics.registry.collector.stat.RegistryStatComposite;
+import org.apache.dubbo.metrics.registry.stat.RegistryStatComposite;
 import org.apache.dubbo.metrics.registry.event.type.ApplicationType;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

@@ -17,7 +17,7 @@
 
 package org.apache.dubbo.metrics.registry.event.type;
 
-import org.apache.dubbo.metrics.model.MetricsKey;
+import org.apache.dubbo.metrics.model.key.MetricsKey;
 
 public enum ServiceType {
 

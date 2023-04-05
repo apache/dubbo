@@ -18,8 +18,8 @@
 package org.apache.dubbo.metrics.registry.metrics.collector;
 
 import org.apache.dubbo.config.ApplicationConfig;
-import org.apache.dubbo.metrics.model.MetricsKey;
-import org.apache.dubbo.metrics.model.MetricsKeyWrapper;
+import org.apache.dubbo.metrics.model.key.MetricsKey;
+import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.metrics.registry.collector.RegistryMetricsCollector;
@@ -65,8 +65,8 @@ class RegistryMetricsSampleTest {
         RegistryMetricsCollector collector = new RegistryMetricsCollector(applicationModel);
         collector.setCollectEnabled(true);
         String applicationName = applicationModel.getApplicationName();
-        collector.addApplicationRT(applicationName, OP_TYPE_REGISTER, 10L);
-        collector.addApplicationRT(applicationName, OP_TYPE_REGISTER, 0L);
+        collector.updateAppRt(applicationName, OP_TYPE_REGISTER, 10L);
+        collector.updateAppRt(applicationName, OP_TYPE_REGISTER, 0L);
 
         List<MetricSample> samples = collector.collect();
         for (MetricSample sample : samples) {
@@ -89,7 +89,7 @@ class RegistryMetricsSampleTest {
         RegistryMetricsCollector collector = new RegistryMetricsCollector(applicationModel);
         collector.setCollectEnabled(true);
         String applicationName = applicationModel.getApplicationName();
-        collector.increment(applicationName, ApplicationType.R_TOTAL);
+        collector.incrAppNum(applicationName, ApplicationType.R_TOTAL);
     }
 
 }

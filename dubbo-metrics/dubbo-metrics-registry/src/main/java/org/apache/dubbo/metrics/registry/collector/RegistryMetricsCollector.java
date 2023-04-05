@@ -23,8 +23,9 @@ import org.apache.dubbo.metrics.collector.ApplicationMetricsCollector;
 import org.apache.dubbo.metrics.collector.MetricsCollector;
 import org.apache.dubbo.metrics.event.MetricsEvent;
 import org.apache.dubbo.metrics.event.MetricsEventMulticaster;
+import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
-import org.apache.dubbo.metrics.registry.collector.stat.RegistryStatComposite;
+import org.apache.dubbo.metrics.registry.stat.RegistryStatComposite;
 import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.metrics.registry.event.RegistryMetricsEventMulticaster;
 import org.apache.dubbo.metrics.registry.event.type.ApplicationType;
@@ -41,7 +42,7 @@ import java.util.Optional;
  * Registry implementation of {@link MetricsCollector}
  */
 @Activate
-public class RegistryMetricsCollector implements ApplicationMetricsCollector<ApplicationType, RegistryEvent> {
+public class RegistryMetricsCollector implements ApplicationMetricsCollector<RegistryEvent> {
 
     private Boolean collectEnabled = null;
     private final RegistryStatComposite stats;
@@ -50,7 +51,7 @@ public class RegistryMetricsCollector implements ApplicationMetricsCollector<App
 
     public RegistryMetricsCollector(ApplicationModel applicationModel) {
         this.stats = new RegistryStatComposite();
-        this.registryMulticaster = new RegistryMetricsEventMulticaster();
+        this.registryMulticaster = new RegistryMetricsEventMulticaster(this);
         this.applicationModel = applicationModel;
     }
 
@@ -80,8 +81,8 @@ public class RegistryMetricsCollector implements ApplicationMetricsCollector<App
 
 
     @Override
-    public void increment(String applicationName, ApplicationType registryType) {
-        this.stats.increment(registryType, applicationName);
+    public void incrAppNum(String applicationName, MetricsKey metricsKey) {
+        this.stats.increment(metricsKey, applicationName);
     }
 
     public void incrementServiceKey(String applicationName, String serviceKey, ServiceType registryType, int size) {
@@ -89,7 +90,7 @@ public class RegistryMetricsCollector implements ApplicationMetricsCollector<App
     }
 
     @Override
-    public void addApplicationRT(String applicationName, String registryOpType, Long responseTime) {
+    public void updateAppRt(String applicationName, String registryOpType, Long responseTime) {
         stats.calcApplicationRt(applicationName, registryOpType, responseTime);
     }
 

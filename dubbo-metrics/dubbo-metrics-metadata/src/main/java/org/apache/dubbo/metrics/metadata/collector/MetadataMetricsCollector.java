@@ -38,7 +38,7 @@ import java.util.Optional;
  * Registry implementation of {@link MetricsCollector}
  */
 @Activate
-public class MetadataMetricsCollector implements ApplicationMetricsCollector<MetadataEvent.ApplicationType, MetadataEvent> {
+public class MetadataMetricsCollector implements ApplicationMetricsCollector<MetadataEvent> {
 
     private Boolean collectEnabled = null;
     private final MetadataStatComposite stats;
@@ -76,7 +76,7 @@ public class MetadataMetricsCollector implements ApplicationMetricsCollector<Met
     }
 
     @Override
-    public void addApplicationRT(String applicationName, String registryOpType, Long responseTime) {
+    public void updateAppRt(String applicationName, String registryOpType, Long responseTime) {
         stats.calcApplicationRt(applicationName, registryOpType, responseTime);
     }
 

@@ -20,8 +20,8 @@ package org.apache.dubbo.metrics.registry.event;
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.metrics.event.TimeCounterEvent;
 import org.apache.dubbo.metrics.exception.MetricsNeverHappenException;
-import org.apache.dubbo.metrics.model.MetricsLevel;
-import org.apache.dubbo.metrics.model.TypeWrapper;
+import org.apache.dubbo.metrics.model.key.MetricsKeyDecorator;
+import org.apache.dubbo.metrics.registry.RegistryConstants;
 import org.apache.dubbo.metrics.registry.collector.RegistryMetricsCollector;
 import org.apache.dubbo.metrics.registry.event.type.ApplicationType;
 import org.apache.dubbo.metrics.registry.event.type.ServiceType;
@@ -41,9 +41,8 @@ public class RegistryEvent extends TimeCounterEvent {
     private final RegistryMetricsCollector collector;
     protected Map<String, Object> attachment = new HashMap<>(8);
 
-    public RegistryEvent(ApplicationModel applicationModel, TypeWrapper typeWrapper) {
-        super(applicationModel);
-        super.typeWrapper = typeWrapper;
+    public RegistryEvent(ApplicationModel applicationModel, MetricsKeyDecorator key) {
+        super(applicationModel, key);
         ScopeBeanFactory beanFactory = getSource().getBeanFactory();
         if (beanFactory.isDestroyed()) {
             this.collector = null;
@@ -75,16 +74,12 @@ public class RegistryEvent extends TimeCounterEvent {
     }
 
 
-
-
-
-
     public void setLastNum(ServiceType type) {
         getCollector().setNum(type, getSource().getApplicationName(), getAttachmentValue(ATTACHMENT_KEY_LAST_NUM_MAP));
     }
 
     public void addApplicationRT(String opType) {
-        getCollector().addApplicationRT(getSource().getApplicationName(), opType, getTimePair().calc());
+        getCollector().updateAppRt(getSource().getApplicationName(), opType, getTimePair().calc());
 
     }
 
@@ -105,22 +100,22 @@ public class RegistryEvent extends TimeCounterEvent {
     }
 
     public void increment(ApplicationType type) {
-        getCollector().increment(getSource().getApplicationName(), type);
+        getCollector().incrAppNum(getSource().getApplicationName(), type);
     }
 
 
     public static RegistryEvent toRegisterEvent(ApplicationModel applicationModel) {
-        return new RegistryEvent(applicationModel, new TypeWrapper(MetricsLevel.APP, ApplicationType.R_TOTAL, ApplicationType.R_SUCCEED, ApplicationType.R_FAILED));
+        return new RegistryEvent(applicationModel, RegistryConstants.REGISTER_KEY);
     }
 
 
     public static RegistryEvent toSubscribeEvent(ApplicationModel applicationModel) {
-        return new RegistryEvent(applicationModel, new TypeWrapper(MetricsLevel.APP, ApplicationType.S_TOTAL, ApplicationType.S_SUCCEED, ApplicationType.S_FAILED));
+        return new RegistryEvent(applicationModel, RegistryConstants.SUBSCRIBE_KEY);
     }
 
 
     public static RegistryEvent toNotifyEvent(ApplicationModel applicationModel) {
-        return new RegistryEvent(applicationModel, new TypeWrapper(MetricsLevel.APP, ApplicationType.N_TOTAL, ServiceType.N_LAST_NUM, null)) {
+        return new RegistryEvent(applicationModel, RegistryConstants.NOTIFY_KEY) {
             @Override
             public void customAfterPost(Object postResult) {
                 super.attachment.put(ATTACHMENT_KEY_LAST_NUM_MAP, postResult);
@@ -129,14 +124,14 @@ public class RegistryEvent extends TimeCounterEvent {
     }
 
     public static RegistryEvent toRsEvent(ApplicationModel applicationModel, String serviceKey, int size) {
-        RegistryEvent ddEvent = new RegistryEvent(applicationModel, new TypeWrapper(MetricsLevel.SERVICE, ServiceType.R_SERVICE_TOTAL, ServiceType.R_SERVICE_SUCCEED, ServiceType.R_SERVICE_FAILED));
+        RegistryEvent ddEvent = new RegistryEvent(applicationModel, RegistryConstants.SERVICE_REGISTER_KEY);
         ddEvent.attachment.put(ATTACHMENT_KEY_SERVICE, serviceKey);
         ddEvent.attachment.put(ATTACHMENT_KEY_SIZE, size);
         return ddEvent;
     }
 
     public static RegistryEvent toSsEvent(ApplicationModel applicationModel, String serviceKey) {
-        RegistryEvent ddEvent = new RegistryEvent(applicationModel, new TypeWrapper(MetricsLevel.SERVICE, ServiceType.S_SERVICE_TOTAL, ServiceType.S_SERVICE_SUCCEED, ServiceType.S_SERVICE_FAILED));
+        RegistryEvent ddEvent = new RegistryEvent(applicationModel, RegistryConstants.SERVICE_SUBSCRIBE_KEY);
         ddEvent.attachment.put(ATTACHMENT_KEY_SERVICE, serviceKey);
         return ddEvent;
     }

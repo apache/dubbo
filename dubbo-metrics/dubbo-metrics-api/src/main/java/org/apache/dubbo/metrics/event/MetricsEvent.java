@@ -18,7 +18,8 @@
 package org.apache.dubbo.metrics.event;
 
 import org.apache.dubbo.metrics.model.MethodMetric;
-import org.apache.dubbo.metrics.model.TypeWrapper;
+import org.apache.dubbo.metrics.model.key.MetricsKey;
+import org.apache.dubbo.metrics.model.key.MetricsKeyDecorator;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 /**
@@ -31,10 +32,10 @@ public abstract class MetricsEvent {
      */
     protected transient ApplicationModel source;
     private boolean available = true;
-    protected TypeWrapper typeWrapper;
+    private MetricsKeyDecorator keyDecorator;
 
     @SuppressWarnings({"unchecked"})
-    public MetricsEvent(ApplicationModel source) {
+    public MetricsEvent(ApplicationModel source, MetricsKeyDecorator keyDecorator) {
         if (source == null) {
             this.source = ApplicationModel.defaultModel();
             // Appears only in unit tests
@@ -42,6 +43,7 @@ public abstract class MetricsEvent {
         } else {
             this.source = source;
         }
+        this.keyDecorator = keyDecorator;
     }
 
     public void setAvailable(boolean available) {
@@ -61,8 +63,8 @@ public abstract class MetricsEvent {
         return source;
     }
 
-    public boolean isAssignableFrom(Object type) {
-        return typeWrapper.isAssignableFrom(type);
+    public boolean isAssignableFrom(MetricsKey type) {
+        return keyDecorator.isAssignableFrom(type);
     }
 
     public String toString() {

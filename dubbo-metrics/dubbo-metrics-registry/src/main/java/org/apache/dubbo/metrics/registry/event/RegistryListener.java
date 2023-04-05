@@ -19,47 +19,48 @@ package org.apache.dubbo.metrics.registry.event;
 
 import org.apache.dubbo.metrics.event.MetricsEvent;
 import org.apache.dubbo.metrics.listener.MetricsLifeListener;
+import org.apache.dubbo.metrics.model.key.MetricsKey;
 
 import java.util.function.BiConsumer;
 
-public abstract class RegistryListener implements MetricsLifeListener<RegistryEvent> {
+public abstract class RegistryListener implements MetricsLifeListener<MetricsEvent> {
 
-    private final Object enumType;
+    private final MetricsKey keyType;
 
-    public RegistryListener(Object enumType) {
-        this.enumType = enumType;
+    public RegistryListener(MetricsKey keyType) {
+        this.keyType = keyType;
     }
 
     @Override
     public boolean isSupport(MetricsEvent event) {
-        return event.isAvailable() && event.isAssignableFrom(enumType);
+        return event.isAvailable() && event.isAssignableFrom(keyType);
     }
 
-    static <T> RegistryListener onEvent(T enumType, BiConsumer<RegistryEvent, T> postFunc) {
+    static RegistryListener onEvent(MetricsKey enumType, BiConsumer<MetricsEvent, MetricsKey> postFunc) {
 
         return new RegistryListener(enumType) {
             @Override
-            public void onEvent(RegistryEvent event) {
+            public void onEvent(MetricsEvent event) {
                 postFunc.accept(event, enumType);
             }
         };
     }
 
-    static <T> RegistryListener onFinish(T enumType, BiConsumer<RegistryEvent, T> finishFunc) {
+    static RegistryListener onFinish(MetricsKey enumType, BiConsumer<MetricsEvent, MetricsKey> finishFunc) {
 
         return new RegistryListener(enumType) {
             @Override
-            public void onEventFinish(RegistryEvent event) {
+            public void onEventFinish(MetricsEvent event) {
                 finishFunc.accept(event, enumType);
             }
         };
     }
 
-    static <T> RegistryListener onError(T enumType, BiConsumer<RegistryEvent, T> errorFunc) {
+    static RegistryListener onError(MetricsKey enumType, BiConsumer<MetricsEvent, MetricsKey> errorFunc) {
 
         return new RegistryListener(enumType) {
             @Override
-            public void onEventError(RegistryEvent event) {
+            public void onEventError(MetricsEvent event) {
                 errorFunc.accept(event, enumType);
             }
         };

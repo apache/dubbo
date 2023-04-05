@@ -15,19 +15,20 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.metrics.registry.collector.stat;
+package org.apache.dubbo.metrics.registry.stat;
 
 import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.metrics.collector.MetricsCollector;
 import org.apache.dubbo.metrics.model.MetricsCategory;
-import org.apache.dubbo.metrics.model.MetricsKey;
-import org.apache.dubbo.metrics.model.MetricsKeyWrapper;
+import org.apache.dubbo.metrics.model.key.MetricsKey;
+import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
 import org.apache.dubbo.metrics.model.MetricsSupport;
 import org.apache.dubbo.metrics.model.ServiceKeyMetric;
 import org.apache.dubbo.metrics.model.container.AtomicLongContainer;
 import org.apache.dubbo.metrics.model.container.LongAccumulatorContainer;
 import org.apache.dubbo.metrics.model.container.LongContainer;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
+import org.apache.dubbo.metrics.registry.RegistryConstants;
 import org.apache.dubbo.metrics.registry.event.type.ApplicationType;
 import org.apache.dubbo.metrics.registry.event.type.ServiceType;
 import org.apache.dubbo.metrics.report.MetricsExport;
@@ -53,19 +54,19 @@ import static org.apache.dubbo.metrics.registry.RegistryConstants.OP_TYPE_SUBSCR
  */
 public class RegistryStatComposite implements MetricsExport {
 
-    public Map<ApplicationType, Map<String, AtomicLong>> applicationNumStats = new ConcurrentHashMap<>();
-    public Map<ServiceType, Map<ServiceKeyMetric, AtomicLong>> serviceNumStats = new ConcurrentHashMap<>();
+    public Map<MetricsKey, Map<String, AtomicLong>> applicationNumStats = new ConcurrentHashMap<>();
+    public Map<MetricsKey, Map<ServiceKeyMetric, AtomicLong>> serviceNumStats = new ConcurrentHashMap<>();
     public List<LongContainer<? extends Number>> rtStats = new ArrayList<>();
 
     public RegistryStatComposite() {
-        for (ApplicationType type : ApplicationType.values()) {
+        for (MetricsKey appKey : RegistryConstants.appKeys) {
             // Application key and increment val
-            applicationNumStats.put(type, new ConcurrentHashMap<>());
+            applicationNumStats.put(appKey, new ConcurrentHashMap<>());
         }
 
-        for (ServiceType type : ServiceType.values()) {
+        for (MetricsKey serviceKey : RegistryConstants.serviceKeys) {
             // Service key
-            serviceNumStats.put(type, new ConcurrentHashMap<>());
+            serviceNumStats.put(serviceKey, new ConcurrentHashMap<>());
         }
 
         // App-level
@@ -110,8 +111,8 @@ public class RegistryStatComposite implements MetricsExport {
         serviceNumStats.get(type).computeIfAbsent(new ServiceKeyMetric(applicationName, serviceKey), k -> new AtomicLong(0L)).set(num);
     }
 
-    public void increment(ApplicationType type, String applicationName) {
-        incrementSize(type, applicationName, 1);
+    public void increment(MetricsKey metricsKey, String applicationName) {
+        incrementSize(metricsKey, applicationName, 1);
     }
 
     public void incrementServiceKey(ServiceType type, String applicationName, String serviceKey, int size) {
@@ -121,11 +122,11 @@ public class RegistryStatComposite implements MetricsExport {
         serviceNumStats.get(type).computeIfAbsent(new ServiceKeyMetric(applicationName, serviceKey), k -> new AtomicLong(0L)).getAndAdd(size);
     }
 
-    public void incrementSize(ApplicationType type, String applicationName, int size) {
-        if (!applicationNumStats.containsKey(type)) {
+    public void incrementSize(MetricsKey metricsKey, String applicationName, int size) {
+        if (!applicationNumStats.containsKey(metricsKey)) {
             return;
         }
-        applicationNumStats.get(type).computeIfAbsent(applicationName, k -> new AtomicLong(0L)).getAndAdd(size);
+        applicationNumStats.get(metricsKey).computeIfAbsent(applicationName, k -> new AtomicLong(0L)).getAndAdd(size);
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})

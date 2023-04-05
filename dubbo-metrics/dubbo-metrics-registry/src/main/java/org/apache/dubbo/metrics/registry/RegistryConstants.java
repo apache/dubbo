@@ -17,6 +17,13 @@
 
 package org.apache.dubbo.metrics.registry;
 
+import org.apache.dubbo.metrics.model.key.MetricsKey;
+import org.apache.dubbo.metrics.model.key.MetricsKeyDecorator;
+import org.apache.dubbo.metrics.model.key.MetricsLevel;
+
+import java.util.Arrays;
+import java.util.List;
+
 public interface RegistryConstants {
 
     String ATTACHMENT_KEY_SERVICE = "serviceKey";
@@ -29,6 +36,19 @@ public interface RegistryConstants {
     String OP_TYPE_NOTIFY = "notify";
     String OP_TYPE_REGISTER_SERVICE = "register.service";
     String OP_TYPE_SUBSCRIBE_SERVICE = "subscribe.service";
+
+    // App-level
+    List<MetricsKey> appKeys = Arrays.asList(MetricsKey.REGISTER_METRIC_REQUESTS, MetricsKey.REGISTER_METRIC_REQUESTS_SUCCEED, MetricsKey.REGISTER_METRIC_REQUESTS_FAILED,
+        MetricsKey.SUBSCRIBE_METRIC_NUM, MetricsKey.SUBSCRIBE_METRIC_NUM_SUCCEED, MetricsKey.SUBSCRIBE_METRIC_NUM_FAILED);
+    MetricsKeyDecorator REGISTER_KEY = new MetricsKeyDecorator(MetricsLevel.APP, MetricsKey.REGISTER_METRIC_REQUESTS, MetricsKey.REGISTER_METRIC_REQUESTS_SUCCEED, MetricsKey.REGISTER_METRIC_REQUESTS_FAILED);
+    MetricsKeyDecorator SUBSCRIBE_KEY = new MetricsKeyDecorator(MetricsLevel.APP, MetricsKey.SUBSCRIBE_METRIC_NUM, MetricsKey.SUBSCRIBE_METRIC_NUM_SUCCEED, MetricsKey.SUBSCRIBE_METRIC_NUM_FAILED);
+    MetricsKeyDecorator NOTIFY_KEY = new MetricsKeyDecorator(MetricsLevel.APP, MetricsKey.NOTIFY_METRIC_REQUESTS, MetricsKey.NOTIFY_METRIC_NUM_LAST, null);
+
+    //Service-level
+    List<MetricsKey> serviceKeys = Arrays.asList(MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS, MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS_SUCCEED, MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS_FAILED,
+        MetricsKey.SERVICE_SUBSCRIBE_METRIC_NUM, MetricsKey.SERVICE_SUBSCRIBE_METRIC_NUM_SUCCEED, MetricsKey.SERVICE_SUBSCRIBE_METRIC_NUM_FAILED);
+    MetricsKeyDecorator SERVICE_REGISTER_KEY = new MetricsKeyDecorator(MetricsLevel.SERVICE, MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS, MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS_SUCCEED, MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS_FAILED);
+    MetricsKeyDecorator SERVICE_SUBSCRIBE_KEY = new MetricsKeyDecorator(MetricsLevel.SERVICE, MetricsKey.SERVICE_SUBSCRIBE_METRIC_NUM, MetricsKey.SERVICE_SUBSCRIBE_METRIC_NUM_SUCCEED, MetricsKey.SERVICE_SUBSCRIBE_METRIC_NUM_FAILED);
 
 
 }
