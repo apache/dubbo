@@ -22,6 +22,9 @@ import org.apache.dubbo.metrics.registry.RegistryConstants;
 import org.apache.dubbo.metrics.registry.event.type.ApplicationType;
 import org.apache.dubbo.metrics.registry.event.type.ServiceType;
 
+import java.util.Map;
+
+import static org.apache.dubbo.metrics.registry.RegistryConstants.ATTACHMENT_DIRECTORY_MAP;
 import static org.apache.dubbo.metrics.registry.RegistryConstants.ATTACHMENT_KEY_SERVICE;
 import static org.apache.dubbo.metrics.registry.RegistryConstants.OP_TYPE_NOTIFY;
 import static org.apache.dubbo.metrics.registry.RegistryConstants.OP_TYPE_REGISTER;
@@ -54,14 +57,14 @@ public final class RegistryMetricsEventMulticaster extends SimpleMetricsEventMul
 
 
         // MetricsDirectoryListener
-        addIncrListener(ServiceType.D_VALID);
-        addIncrListener(ServiceType.D_UN_VALID);
-        addIncrListener(ServiceType.D_DISABLE);
-        addIncrListener(ServiceType.D_RECOVER_DISABLE);
-        super.addListener(RegistryListener.onEvent(ServiceType.D_CURRENT,
-            (event, type) -> event.setLastNum(type))
-
-        );
+        super.addListener(RegistryListener.onEvent(ServiceType.D_VALID,
+            (event, type) ->
+            {
+                Map<ServiceType, Map<String, Integer>> summaryMap = event.getAttachmentValue(ATTACHMENT_DIRECTORY_MAP);
+                summaryMap.forEach((serviceType, map) -> map.forEach((serviceKey, size) ->
+                    event.getCollector().incrementServiceKey(event.getSource().getApplicationName(), serviceKey, serviceType, size)));
+            }
+        ));
 
         // MetricsServiceRegisterListener
         super.addListener(RegistryListener.onEvent(ServiceType.R_SERVICE_TOTAL,
@@ -76,20 +79,9 @@ public final class RegistryMetricsEventMulticaster extends SimpleMetricsEventMul
         super.addListener(RegistryListener.onError(ServiceType.S_SERVICE_FAILED, this::onRtEvent));
     }
 
-
-    private void addIncrListener(ServiceType serviceType) {
-        super.addListener(onPostEventBuild(serviceType));
-    }
-
     private RegistryListener onPostEventBuild(ApplicationType applicationType) {
         return RegistryListener.onEvent(applicationType,
             (event, type) -> event.getCollector().increment(event.getSource().getApplicationName(), type)
-        );
-    }
-
-    private RegistryListener onPostEventBuild(ServiceType serviceType) {
-        return RegistryListener.onEvent(serviceType,
-            this::incrSk
         );
     }
 
