@@ -48,7 +48,6 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
     private final AbstractConnectionClient connectionClient;
     private final Executor executor;
     private final FrameworkModel frameworkModel;
-    private final TripleWriteQueue writeQueue;
     private RequestMetadata requestMetadata;
     private ClientStream stream;
     private ClientCall.Listener listener;
@@ -58,12 +57,10 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
     private boolean done;
     private Http2Exception.StreamException streamException;
 
-    public TripleClientCall(AbstractConnectionClient connectionClient, Executor executor,
-                            FrameworkModel frameworkModel, TripleWriteQueue writeQueue) {
+    public TripleClientCall(AbstractConnectionClient connectionClient, Executor executor, FrameworkModel frameworkModel) {
         this.connectionClient = connectionClient;
         this.executor = executor;
         this.frameworkModel = frameworkModel;
-        this.writeQueue= writeQueue;
     }
 
     // stream listener start
@@ -222,8 +219,7 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
                                         ClientCall.Listener responseListener) {
         this.requestMetadata = metadata;
         this.listener = responseListener;
-        this.stream = new TripleClientStream(frameworkModel, executor, (Channel) connectionClient.getChannel(true),
-            this, writeQueue);
+        this.stream = new TripleClientStream(frameworkModel, executor, (Channel) connectionClient.getChannel(true), this);
         return new ClientCallToObserverAdapter<>(this);
     }
 

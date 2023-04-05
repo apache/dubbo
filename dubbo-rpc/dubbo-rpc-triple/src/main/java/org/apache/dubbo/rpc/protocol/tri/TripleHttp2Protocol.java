@@ -74,9 +74,9 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
     private static final int DEFAULT_MAX_FRAME_SIZE = MIB_8;
     private static final int DEFAULT_WINDOW_INIT_SIZE = MIB_8;
 
-    public static final Http2FrameLogger CLIENT_LOGGER = new Http2FrameLogger(LogLevel.DEBUG, "H2_CLIENT");
+    public static final Http2FrameLogger CLIENT_LOGGER = new Http2FrameLogger(LogLevel.INFO, "H2_CLIENT");
 
-    public static final Http2FrameLogger SERVER_LOGGER = new Http2FrameLogger(LogLevel.DEBUG, "H2_SERVER");
+    public static final Http2FrameLogger SERVER_LOGGER = new Http2FrameLogger(LogLevel.INFO, "H2_SERVER");
 
     private ExtensionLoader<HeaderFilter> filtersLoader;
     private FrameworkModel frameworkModel;
@@ -129,7 +129,6 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
             .build();
         ExecutorSupport executorSupport = ExecutorRepository.getInstance(url.getOrDefaultApplicationModel()).getExecutorSupport(url);
         codec.connection().local().flowController().frameWriter(codec.encoder().frameWriter());
-        TripleWriteQueue writeQueue = new TripleWriteQueue();
         final Http2MultiplexHandler handler = new Http2MultiplexHandler(
             new ChannelInitializer<Http2StreamChannel>() {
                 @Override
@@ -137,7 +136,7 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
                     final ChannelPipeline p = ch.pipeline();
                     p.addLast(new TripleCommandOutBoundHandler());
                     p.addLast(new TripleHttp2FrameServerHandler(frameworkModel, executorSupport,
-                        headFilters, ch, writeQueue));
+                        headFilters, ch, new TripleWriteQueue(ch)));
                 }
             });
         List<ChannelHandler> handlers = new ArrayList<>();
@@ -147,8 +146,6 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
         handlers.add(new ChannelHandlerPretender(handler));
         handlers.add(new ChannelHandlerPretender(new TripleTailHandler()));
         operator.configChannelHandler(handlers);
-
-
     }
 
     @Override

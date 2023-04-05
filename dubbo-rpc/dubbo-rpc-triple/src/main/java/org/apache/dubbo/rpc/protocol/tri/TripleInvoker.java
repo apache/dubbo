@@ -50,7 +50,6 @@ import org.apache.dubbo.rpc.protocol.tri.call.UnaryClientCallListener;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
 import org.apache.dubbo.rpc.protocol.tri.observer.ClientCallToObserverAdapter;
-import org.apache.dubbo.rpc.protocol.tri.transport.TripleWriteQueue;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
 import io.netty.util.AsciiString;
@@ -82,14 +81,13 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
     private final Set<Invoker<?>> invokers;
     private final ExecutorService streamExecutor;
     private final String acceptEncodings;
-    private final TripleWriteQueue writeQueue = new TripleWriteQueue(256);
 
     public TripleInvoker(Class<T> serviceType,
-        URL url,
-        String acceptEncodings,
-        AbstractConnectionClient connectionClient,
-        Set<Invoker<?>> invokers,
-        ExecutorService streamExecutor) {
+                         URL url,
+                         String acceptEncodings,
+                         AbstractConnectionClient connectionClient,
+                         Set<Invoker<?>> invokers,
+                         ExecutorService streamExecutor) {
         super(serviceType, url, new String[]{INTERFACE_KEY, GROUP_KEY, TOKEN_KEY});
         this.invokers = invokers;
         this.connectionClient = connectionClient;
@@ -125,8 +123,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         final MethodDescriptor methodDescriptor = serviceDescriptor.getMethod(
             invocation.getMethodName(),
             invocation.getParameterTypes());
-        ClientCall call = new TripleClientCall(connectionClient, streamExecutor,
-            getUrl().getOrDefaultFrameworkModel(), writeQueue);
+        ClientCall call = new TripleClientCall(connectionClient, streamExecutor, getUrl().getOrDefaultFrameworkModel());
 
         AsyncRpcResult result;
         try {

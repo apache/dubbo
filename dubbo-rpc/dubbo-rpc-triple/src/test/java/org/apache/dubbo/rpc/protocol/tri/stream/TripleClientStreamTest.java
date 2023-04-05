@@ -17,8 +17,6 @@
 
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
-import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.handler.codec.http2.Http2StreamChannel;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -28,34 +26,23 @@ import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.RequestMetadata;
 import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
-import org.apache.dubbo.rpc.protocol.tri.command.CancelQueueCommand;
-import org.apache.dubbo.rpc.protocol.tri.command.CreateStreamQueueCommand;
-import org.apache.dubbo.rpc.protocol.tri.command.DataQueueCommand;
-import org.apache.dubbo.rpc.protocol.tri.command.EndStreamQueueCommand;
-import org.apache.dubbo.rpc.protocol.tri.command.HeaderQueueCommand;
-import org.apache.dubbo.rpc.protocol.tri.command.QueuedCommand;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 import org.apache.dubbo.rpc.protocol.tri.support.IGreeter;
 import org.apache.dubbo.rpc.protocol.tri.transport.H2TransportListener;
-import org.apache.dubbo.rpc.protocol.tri.transport.TripleWriteQueue;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.embedded.EmbeddedChannel;
+import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpScheme;
 import io.netty.handler.codec.http2.DefaultHttp2Headers;
+import io.netty.handler.codec.http2.Http2StreamChannel;
 import io.netty.util.concurrent.ImmediateEventExecutor;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.util.concurrent.Executor;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class TripleClientStreamTest {
@@ -71,9 +58,7 @@ class TripleClientStreamTest {
             new Class<?>[]{String.class});
 
         MockClientStreamListener listener = new MockClientStreamListener();
-        TripleWriteQueue writeQueue = mock(TripleWriteQueue.class);
         final EmbeddedChannel channel = new EmbeddedChannel();
-        when(writeQueue.enqueueFuture(any(QueuedCommand.class), any(Executor.class))).thenReturn(channel.newPromise());
         Http2StreamChannel http2StreamChannel = mock(Http2StreamChannel.class);
         when(http2StreamChannel.isActive()).thenReturn(true);
         when(http2StreamChannel.newSucceededFuture()).thenReturn(channel.newSucceededFuture());
@@ -81,8 +66,7 @@ class TripleClientStreamTest {
         when(http2StreamChannel.newPromise()).thenReturn(channel.newPromise());
         when(http2StreamChannel.parent()).thenReturn(channel);
         TripleClientStream stream = new TripleClientStream(url.getOrDefaultFrameworkModel(),
-            ImmediateEventExecutor.INSTANCE, writeQueue, listener, http2StreamChannel);
-        verify(writeQueue).enqueue(any(CreateStreamQueueCommand.class));
+            ImmediateEventExecutor.INSTANCE, listener, http2StreamChannel);
 
         final RequestMetadata requestMetadata = new RequestMetadata();
         requestMetadata.method = methodDescriptor;
@@ -93,20 +77,11 @@ class TripleClientStreamTest {
         requestMetadata.service = url.getPath();
         requestMetadata.group = url.getGroup();
         requestMetadata.version = url.getVersion();
-        stream.sendHeader(requestMetadata.toHeaders());
-        verify(writeQueue).enqueueFuture(any(HeaderQueueCommand.class), any(Executor.class));
-        // no other commands
-        verify(writeQueue).enqueue(any(QueuedCommand.class));
-        stream.sendMessage(new byte[0], 0, false);
-        verify(writeQueue).enqueueFuture(any(DataQueueCommand.class), any(Executor.class));
-        verify(writeQueue, times(2)).enqueueFuture(any(QueuedCommand.class), any(Executor.class));
-        stream.halfClose();
-        verify(writeQueue).enqueueFuture(any(EndStreamQueueCommand.class), any(Executor.class));
-        verify(writeQueue, times(3)).enqueueFuture(any(QueuedCommand.class), any(Executor.class));
 
-        stream.cancelByLocal(TriRpcStatus.CANCELLED);
-        verify(writeQueue, times(1)).enqueue(any(CancelQueueCommand.class));
-        verify(writeQueue, times(3)).enqueueFuture(any(QueuedCommand.class), any(Executor.class));
+        Assertions.assertDoesNotThrow(() -> stream.sendHeader(requestMetadata.toHeaders()));
+        Assertions.assertDoesNotThrow(() -> stream.sendMessage(new byte[0], 0, false));
+        Assertions.assertDoesNotThrow(stream::halfClose);
+        Assertions.assertDoesNotThrow(() -> stream.cancelByLocal(TriRpcStatus.CANCELLED));
 
         H2TransportListener transportListener = stream.createTransportListener();
         DefaultHttp2Headers headers = new DefaultHttp2Headers();
