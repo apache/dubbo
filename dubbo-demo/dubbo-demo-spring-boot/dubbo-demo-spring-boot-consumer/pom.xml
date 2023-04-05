@@ -144,6 +144,11 @@
             <artifactId>dubbo-spring-boot-observability-starter</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-qos</artifactId>
+        </dependency>
+
     </dependencies>
 
     <build>

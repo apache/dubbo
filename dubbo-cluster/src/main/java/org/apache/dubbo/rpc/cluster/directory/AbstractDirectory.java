@@ -366,6 +366,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         if (invokersInitialized) {
             refreshInvokerInternal();
         }
+        MetricsEventBus.publish(RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary()));
     }
 
     private synchronized void refreshInvokerInternal() {
