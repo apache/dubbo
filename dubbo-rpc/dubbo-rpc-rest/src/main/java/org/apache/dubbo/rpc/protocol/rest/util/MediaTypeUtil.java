@@ -18,14 +18,27 @@ package org.apache.dubbo.rpc.protocol.rest.util;
 
 import org.apache.dubbo.metadata.rest.media.MediaType;
 import org.apache.dubbo.rpc.protocol.rest.exception.UnSupportContentTypeException;
+import org.apache.dubbo.rpc.protocol.rest.message.HttpMessageCodecManager;
 
 import java.util.Arrays;
 import java.util.List;
 
 public class MediaTypeUtil {
-    private static final List<MediaType> mediaTypes = Arrays.asList(MediaType.values());
 
-    public static MediaType convertMediaType(String... contentTypes) {
+    private static final List<MediaType> mediaTypes = MediaType.getSupportMediaTypes();
+
+
+    /**
+     * return first match , if any multiple content-type  ,acquire mediaType by targetClass type .if contentTypes is empty
+     *
+     * @param contentTypes
+     * @return
+     */
+    public static MediaType convertMediaType(Class<?> targetType, String... contentTypes) {
+
+        if (contentTypes == null || contentTypes.length == 0) {
+            return HttpMessageCodecManager.typeSupport(targetType);
+        }
 
         for (String contentType : contentTypes) {
             for (MediaType mediaType : mediaTypes) {
@@ -33,6 +46,10 @@ public class MediaTypeUtil {
                 if (contentType != null && contentType.contains(mediaType.value)) {
                     return mediaType;
                 }
+            }
+
+            if (contentType != null && contentType.contains(MediaType.ALL_VALUE.value)) {
+                return HttpMessageCodecManager.typeSupport(targetType);
             }
         }
 

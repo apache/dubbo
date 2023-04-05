@@ -28,14 +28,13 @@ public interface Constants {
     String EXTENSION_KEY = "extension";
 
     // http server
-    String SERVLET = "servlet";
 
-    String JETTY = "jetty";
-
-    String TOMCAT = "tomcat";
-
-    String NETTY = "netty";
+    String NETTY_HTTP = "netty_http";
 
     // exception mapper
     String EXCEPTION_MAPPER_KEY = "exception.mapper";
+
+
+
+
 }

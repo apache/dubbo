@@ -1,6 +1,6 @@
 [
   {
-    "name": "org.apace.dubbo.graalvm.demo.DemoService",
+    "name": "org.apache.dubbo.graalvm.demo.DemoService",
     "allPublicMethods": true
   },
   {

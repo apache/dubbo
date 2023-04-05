@@ -68,37 +68,7 @@ public class URLConnectionRestClient implements RestClient {
             boolean gzipEncodedRequest = requestTemplate.isGzipEncodedRequest();
             boolean deflateEncodedRequest = requestTemplate.isDeflateEncodedRequest();
             if (requestTemplate.isBodyEmpty()) {
-                future.complete(new RestResult() {
-                    @Override
-                    public String getContentType() {
-                        return connection.getContentType();
-                    }
-
-                    @Override
-                    public byte[] getBody() throws IOException {
-                        return IOUtils.toByteArray(connection.getInputStream());
-                    }
-
-                    @Override
-                    public Map<String, List<String>> headers() {
-                        return connection.getHeaderFields();
-                    }
-
-                    @Override
-                    public byte[] getErrorResponse() throws IOException {
-                        return IOUtils.toByteArray(connection.getErrorStream());
-                    }
-
-                    @Override
-                    public int getResponseCode() throws IOException {
-                        return connection.getResponseCode();
-                    }
-
-                    @Override
-                    public String getMessage() throws IOException {
-                        return connection.getResponseMessage();
-                    }
-                });
+                future.complete(getRestResultFromConnection(connection));
                 return future;
             }
             Integer contentLength = requestTemplate.getContentLength();
@@ -125,37 +95,7 @@ public class URLConnectionRestClient implements RestClient {
                 }
             }
 
-            future.complete(new RestResult() {
-                @Override
-                public String getContentType() {
-                    return connection.getContentType();
-                }
-
-                @Override
-                public byte[] getBody() throws IOException {
-                    return IOUtils.toByteArray(connection.getInputStream());
-                }
-
-                @Override
-                public Map<String, List<String>> headers() {
-                    return connection.getHeaderFields();
-                }
-
-                @Override
-                public byte[] getErrorResponse() throws IOException {
-                    return IOUtils.toByteArray(connection.getErrorStream());
-                }
-
-                @Override
-                public int getResponseCode() throws IOException {
-                    return connection.getResponseCode();
-                }
-
-                @Override
-                public String getMessage() throws IOException {
-                    return connection.getResponseMessage();
-                }
-            });
+            future.complete(getRestResultFromConnection(connection));
         } catch (Exception e) {
             future.completeExceptionally(e);
         }
@@ -176,6 +116,43 @@ public class URLConnectionRestClient implements RestClient {
     @Override
     public boolean isClosed() {
         return true;
+    }
+
+
+    private RestResult getRestResultFromConnection(HttpURLConnection connection) {
+
+        return new RestResult() {
+            @Override
+            public String getContentType() {
+                return connection.getContentType();
+            }
+
+            @Override
+            public byte[] getBody() throws IOException {
+                return IOUtils.toByteArray(connection.getInputStream());
+            }
+
+            @Override
+            public Map<String, List<String>> headers() {
+                return connection.getHeaderFields();
+            }
+
+            @Override
+            public byte[] getErrorResponse() throws IOException {
+                return IOUtils.toByteArray(connection.getErrorStream());
+            }
+
+            @Override
+            public int getResponseCode() throws IOException {
+                return connection.getResponseCode();
+            }
+
+            @Override
+            public String getMessage() throws IOException {
+                return appendErrorMessage(connection.getResponseMessage(), new String(getErrorResponse()));
+
+            }
+        };
     }
 
 }

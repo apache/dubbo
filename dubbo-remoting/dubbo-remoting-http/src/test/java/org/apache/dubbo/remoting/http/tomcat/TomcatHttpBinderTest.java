@@ -40,7 +40,7 @@ class TomcatHttpBinderTest {
         URL url = new ServiceConfigURL("http", "localhost", port,
                 new String[]{Constants.BIND_PORT_KEY, String.valueOf(port)});
 
-        HttpServer httpServer = new TomcatHttpBinder().bind(url, new HttpHandler() {
+        HttpServer httpServer = new TomcatHttpBinder().bind(url, new HttpHandler<HttpServletRequest,HttpServletResponse>() {
             @Override
             public void handle(HttpServletRequest request, HttpServletResponse response) throws IOException {
                 response.getWriter().write("Tomcat");
