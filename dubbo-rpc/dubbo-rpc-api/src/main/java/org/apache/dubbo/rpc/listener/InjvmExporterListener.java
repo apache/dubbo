@@ -122,6 +122,9 @@ public class InjvmExporterListener extends ExporterListenerAdapter {
      */
     public synchronized void removeExporterChangeListener(ExporterChangeListener listener, String listenerKey) {
         Set<ExporterChangeListener> listeners = exporterChangeListeners.get(listenerKey);
+        if (CollectionUtils.isEmpty(listeners)) {
+            return;
+        }
         listeners.remove(listener);
         if (CollectionUtils.isEmpty(listeners)) {
             exporterChangeListeners.remove(listenerKey);
