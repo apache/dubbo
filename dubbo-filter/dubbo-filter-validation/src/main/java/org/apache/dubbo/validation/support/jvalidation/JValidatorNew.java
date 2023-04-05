@@ -28,7 +28,6 @@ import jakarta.validation.Constraint;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validation;
-import jakarta.validation.ValidationException;
 import jakarta.validation.ValidatorFactory;
 import jakarta.validation.groups.Default;
 import javassist.ClassPool;
@@ -126,8 +125,8 @@ public class JValidatorNew implements Validator {
     /**
      * try to generate methodParameterClass.
      *
-     * @param clazz interface class
-     * @param method invoke method
+     * @param clazz              interface class
+     * @param method             invoke method
      * @param parameterClassName generated parameterClassName
      * @return Class<?> generated methodParameterClass
      * @throws Exception
@@ -188,9 +187,9 @@ public class JValidatorNew implements Validator {
 
     private static String generateMethodParameterClassName(Class<?> clazz, Method method) {
         StringBuilder builder = new StringBuilder().append(clazz.getName())
-                .append('_')
-                .append(toUpperMethoName(method.getName()))
-                .append("Parameter");
+            .append('_')
+            .append(toUpperMethoName(method.getName()))
+            .append("Parameter");
 
         Class<?>[] parameterTypes = method.getParameterTypes();
         for (Class<?> parameterType : parameterTypes) {
@@ -259,42 +258,37 @@ public class JValidatorNew implements Validator {
 
     @Override
     public void validate(String methodName, Class<?>[] parameterTypes, Object[] arguments) throws Exception {
-        try {
-            List<Class<?>> groups = new ArrayList<>();
-            Class<?> methodClass = methodClass(methodName);
-            if (methodClass != null) {
-                groups.add(methodClass);
-            }
-            Set<ConstraintViolation<?>> violations = new HashSet<>();
-            Method method = clazz.getMethod(methodName, parameterTypes);
-            Class<?>[] methodClasses;
-            if (method.isAnnotationPresent(MethodValidated.class)){
-                methodClasses = method.getAnnotation(MethodValidated.class).value();
-                groups.addAll(Arrays.asList(methodClasses));
-            }
-            // add into default group
-            groups.add(0, Default.class);
-            groups.add(1, clazz);
+        List<Class<?>> groups = new ArrayList<>();
+        Class<?> methodClass = methodClass(methodName);
+        if (methodClass != null) {
+            groups.add(methodClass);
+        }
+        Set<ConstraintViolation<?>> violations = new HashSet<>();
+        Method method = clazz.getMethod(methodName, parameterTypes);
+        Class<?>[] methodClasses;
+        if (method.isAnnotationPresent(MethodValidated.class)) {
+            methodClasses = method.getAnnotation(MethodValidated.class).value();
+            groups.addAll(Arrays.asList(methodClasses));
+        }
+        // add into default group
+        groups.add(0, Default.class);
+        groups.add(1, clazz);
 
-            // convert list to array
-            Class<?>[] classgroups = groups.toArray(new Class[groups.size()]);
+        // convert list to array
+        Class<?>[] classgroups = groups.toArray(new Class[groups.size()]);
 
-            Object parameterBean = getMethodParameterBean(clazz, method, arguments);
-            if (parameterBean != null) {
-                violations.addAll(validator.validate(parameterBean, classgroups ));
-            }
+        Object parameterBean = getMethodParameterBean(clazz, method, arguments);
+        if (parameterBean != null) {
+            violations.addAll(validator.validate(parameterBean, classgroups));
+        }
 
-            for (Object arg : arguments) {
-                validate(violations, arg, classgroups);
-            }
+        for (Object arg : arguments) {
+            validate(violations, arg, classgroups);
+        }
 
-            if (!violations.isEmpty()) {
-                logger.info("Failed to validate service: " + clazz.getName() + ", method: " + methodName + ", cause: " + violations);
-                throw new ConstraintViolationException("Failed to validate service: " + clazz.getName() + ", method: " + methodName + ", cause: " + violations, violations);
-            }
-        } catch (ValidationException e) {
-            // only use exception's message to avoid potential serialization issue
-            throw new ValidationException(e.getMessage());
+        if (!violations.isEmpty()) {
+            logger.info("Failed to validate service: " + clazz.getName() + ", method: " + methodName + ", cause: " + violations);
+            throw new ConstraintViolationException("Failed to validate service: " + clazz.getName() + ", method: " + methodName + ", cause: " + violations, violations);
         }
     }
 

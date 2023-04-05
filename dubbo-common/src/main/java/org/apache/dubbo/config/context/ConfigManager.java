@@ -32,6 +32,7 @@ import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.SslConfig;
+import org.apache.dubbo.config.TracingConfig;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Arrays;
@@ -59,8 +60,8 @@ public class ConfigManager extends AbstractConfigManager implements ApplicationE
 
     public ConfigManager(ApplicationModel applicationModel) {
         super(applicationModel, Arrays.asList(ApplicationConfig.class, MonitorConfig.class,
-            MetricsConfig.class, SslConfig.class, ProtocolConfig.class, RegistryConfig.class, ConfigCenterConfig.class,
-            MetadataReportConfig.class));
+                MetricsConfig.class, SslConfig.class, ProtocolConfig.class, RegistryConfig.class, ConfigCenterConfig.class,
+                MetadataReportConfig.class, TracingConfig.class));
     }
 
 
@@ -103,6 +104,15 @@ public class ConfigManager extends AbstractConfigManager implements ApplicationE
 
     public Optional<MetricsConfig> getMetrics() {
         return ofNullable(getSingleConfig(getTagName(MetricsConfig.class)));
+    }
+
+    @DisableInject
+    public void setTracing(TracingConfig tracing) {
+        addConfig(tracing);
+    }
+
+    public Optional<TracingConfig> getTracing() {
+        return ofNullable(getSingleConfig(getTagName(TracingConfig.class)));
     }
 
     @DisableInject
@@ -223,6 +233,7 @@ public class ConfigManager extends AbstractConfigManager implements ApplicationE
         getApplication().ifPresent(ApplicationConfig::refresh);
         getMonitor().ifPresent(MonitorConfig::refresh);
         getMetrics().ifPresent(MetricsConfig::refresh);
+        getTracing().ifPresent(TracingConfig::refresh);
         getSsl().ifPresent(SslConfig::refresh);
 
         getProtocols().forEach(ProtocolConfig::refresh);
@@ -242,6 +253,8 @@ public class ConfigManager extends AbstractConfigManager implements ApplicationE
 
         // load dubbo.metrics.xxx
         loadConfigsOfTypeFromProps(MetricsConfig.class);
+
+        loadConfigsOfTypeFromProps(TracingConfig.class);
 
         // load multiple config types:
         // load dubbo.protocols.xxx
@@ -269,12 +282,13 @@ public class ConfigManager extends AbstractConfigManager implements ApplicationE
     private void checkConfigs() {
         // check config types (ignore metadata-center)
         List<Class<? extends AbstractConfig>> multipleConfigTypes = Arrays.asList(
-            ApplicationConfig.class,
-            ProtocolConfig.class,
-            RegistryConfig.class,
-            MonitorConfig.class,
-            MetricsConfig.class,
-            SslConfig.class);
+                ApplicationConfig.class,
+                ProtocolConfig.class,
+                RegistryConfig.class,
+                MonitorConfig.class,
+                MetricsConfig.class,
+                TracingConfig.class,
+                SslConfig.class);
 
         for (Class<? extends AbstractConfig> configType : multipleConfigTypes) {
             checkDefaultAndValidateConfigs(configType);
@@ -290,7 +304,7 @@ public class ConfigManager extends AbstractConfigManager implements ApplicationE
             ProtocolConfig prevProtocol = protocolPortMap.get(port);
             if (prevProtocol != null) {
                 throw new IllegalStateException("Duplicated port used by protocol configs, port: " + port +
-                    ", configs: " + Arrays.asList(prevProtocol, protocol));
+                        ", configs: " + Arrays.asList(prevProtocol, protocol));
             }
             protocolPortMap.put(port, protocol);
         }

@@ -17,43 +17,35 @@
 
 package org.apache.dubbo.metrics.metadata.event;
 
-import org.apache.dubbo.metrics.event.MetricsEvent;
-import org.apache.dubbo.metrics.event.TimeCounter;
+import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
+import org.apache.dubbo.metrics.event.TimeCounterEvent;
 import org.apache.dubbo.metrics.metadata.collector.MetadataMetricsCollector;
 import org.apache.dubbo.metrics.model.MetricsKey;
-import org.apache.dubbo.metrics.model.TimePair;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 /**
  * Registry related events
  */
-public class MetadataEvent extends MetricsEvent implements TimeCounter {
-    private final TimePair timePair;
+public class MetadataEvent extends TimeCounterEvent {
     private final MetadataMetricsCollector collector;
-    private final boolean available;
 
-    public MetadataEvent(ApplicationModel applicationModel, TimePair timePair) {
+    public MetadataEvent(ApplicationModel applicationModel) {
         super(applicationModel);
-        this.timePair = timePair;
-        this.collector = applicationModel.getBeanFactory().getBean(MetadataMetricsCollector.class);
-        this.available = this.collector != null && collector.isCollectEnabled();
+        ScopeBeanFactory beanFactory = applicationModel.getBeanFactory();
+        if (beanFactory.isDestroyed()) {
+            this.collector = null;
+        } else {
+            this.collector = beanFactory.getBean(MetadataMetricsCollector.class);
+            super.setAvailable(this.collector != null && collector.isCollectEnabled());
+        }
     }
 
     public ApplicationModel getSource() {
-        return (ApplicationModel) source;
+        return source;
     }
 
     public MetadataMetricsCollector getCollector() {
         return collector;
-    }
-
-    public boolean isAvailable() {
-        return available;
-    }
-
-    @Override
-    public TimePair getTimePair() {
-        return timePair;
     }
 
     public enum ApplicationType {
@@ -119,16 +111,16 @@ public class MetadataEvent extends MetricsEvent implements TimeCounter {
 
     public static class PushEvent extends MetadataEvent {
 
-        public PushEvent(ApplicationModel applicationModel, TimePair timePair) {
-            super(applicationModel, timePair);
+        public PushEvent(ApplicationModel applicationModel) {
+            super(applicationModel);
         }
 
     }
 
     public static class SubscribeEvent extends MetadataEvent {
 
-        public SubscribeEvent(ApplicationModel applicationModel, TimePair timePair) {
-            super(applicationModel, timePair);
+        public SubscribeEvent(ApplicationModel applicationModel) {
+            super(applicationModel);
         }
 
     }
@@ -136,8 +128,8 @@ public class MetadataEvent extends MetricsEvent implements TimeCounter {
     public static class StoreProviderMetadataEvent extends MetadataEvent {
         private final String serviceKey;
 
-        public StoreProviderMetadataEvent(ApplicationModel applicationModel, TimePair timePair, String serviceKey) {
-            super(applicationModel, timePair);
+        public StoreProviderMetadataEvent(ApplicationModel applicationModel, String serviceKey) {
+            super(applicationModel);
             this.serviceKey = serviceKey;
         }
 
