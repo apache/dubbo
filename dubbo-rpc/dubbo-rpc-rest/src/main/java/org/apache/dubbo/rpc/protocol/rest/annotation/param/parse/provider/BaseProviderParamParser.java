@@ -14,28 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.rest.util;
+package org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.provider;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.Charset;
 
-public class StreamUtils {
-    public static String copyToString(InputStream in, Charset charset) throws IOException {
-        if (in == null) {
-            return "";
-        } else {
-            StringBuilder out = new StringBuilder();
-            InputStreamReader reader = new InputStreamReader(in, charset);
-            char[] buffer = new char[4096];
+import org.apache.dubbo.common.extension.ExtensionScope;
+import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.rpc.protocol.rest.annotation.ParamParser;
 
-            int bytesRead;
-            while ((bytesRead = reader.read(buffer)) != -1) {
-                out.append(buffer, 0, bytesRead);
-            }
+@SPI(scope = ExtensionScope.FRAMEWORK)
+public interface BaseProviderParamParser extends ParamParser<ProviderParseContext> {
 
-            return out.toString();
-        }
-    }
 }

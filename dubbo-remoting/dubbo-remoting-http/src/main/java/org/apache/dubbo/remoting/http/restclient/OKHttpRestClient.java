@@ -37,7 +37,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
-
+// TODO add version 4.0 implements ,and default version is < 4.0,for dependency conflict
 public class OKHttpRestClient implements RestClient {
     private final OkHttpClient okHttpClient;
     private final HttpClientConfig httpClientConfig;
@@ -109,7 +109,7 @@ public class OKHttpRestClient implements RestClient {
 
                     @Override
                     public String getMessage() throws IOException {
-                        return response.message();
+                        return appendErrorMessage(response.message(), new String(getBody()));
                     }
                 });
             }

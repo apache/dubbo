@@ -79,7 +79,8 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
         }
 
         // for provider
-        return isImplementedInterface(serviceType) && isServiceAnnotationPresent(serviceType) && supports0(serviceType);
+        // for xml config bean  && isServiceAnnotationPresent(serviceType)
+        return isImplementedInterface(serviceType) && supports0(serviceType);
     }
 
     protected final boolean isImplementedInterface(Class<?> serviceType) {
@@ -150,10 +151,10 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
             // try the overrider method first
             Method serviceMethod = entry.getKey();
             // If failed, it indicates the overrider method does not contain metadata , then try the declared method
-            if (!processRestMethodMetadata(serviceMethod, serviceType, serviceInterfaceClass, serviceRestMetadata::addRestMethodMetadata)) {
+            if (!processRestMethodMetadata(serviceMethod, serviceType, serviceInterfaceClass, serviceRestMetadata::addRestMethodMetadata, serviceRestMetadata)) {
                 Method declaredServiceMethod = entry.getValue();
                 processRestMethodMetadata(declaredServiceMethod, serviceType, serviceInterfaceClass,
-                    serviceRestMetadata::addRestMethodMetadata);
+                    serviceRestMetadata::addRestMethodMetadata, serviceRestMetadata);
             }
         }
     }
@@ -234,7 +235,8 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
      */
     protected boolean processRestMethodMetadata(Method serviceMethod, Class<?> serviceType,
                                                 Class<?> serviceInterfaceClass,
-                                                Consumer<RestMethodMetadata> metadataToProcess) {
+                                                Consumer<RestMethodMetadata> metadataToProcess,
+                                                ServiceRestMetadata serviceRestMetadata) {
 
         if (!isRestCapableMethod(serviceMethod, serviceType, serviceInterfaceClass)) {
             return false;
@@ -274,6 +276,7 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
         // Initialize RequestMetadata
         RequestMetadata request = metadata.getRequest();
         request.setPath(requestPath);
+        request.appendContextPathFromUrl(serviceRestMetadata.getContextPathFromUrl());
         request.setMethod(requestMethod);
         request.setProduces(produces);
         request.setConsumes(consumes);
@@ -359,9 +362,12 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
         if (annotations == null || annotations.length == 0) {
 
             for (NoAnnotatedParameterRequestTagProcessor processor : noAnnotatedParameterRequestTagProcessors) {
-                processor.process(parameter, parameterIndex, metadata);
+                // no annotation only one default annotationType
+                if (processor.process(parameter, parameterIndex, metadata)) {
+                    return;
+                }
             }
-            return;
+
         }
 
         for (Annotation annotation : annotations) {

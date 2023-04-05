@@ -14,25 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.rest.util;
+package org.apache.dubbo.metadata.rest.tag;
 
-public class TypeUtil {
-
-    public static boolean isNumber(Class clazz) {
-        return Number.class.isAssignableFrom(clazz);
-    }
-
-    public static boolean isPrimitive(Class clazz) {
-        return clazz.isPrimitive();
-    }
-
-    public static boolean isString(Class clazz) {
-        return clazz == String.class;
-    }
-
-    public static boolean isNumberType(Class clazz) {
-        return clazz.isPrimitive() || isNumber(clazz);
-    }
-
-
+/**
+ *  for @RequestParam or @QueryParam class no found
+ */
+public interface ParamTag {
 }

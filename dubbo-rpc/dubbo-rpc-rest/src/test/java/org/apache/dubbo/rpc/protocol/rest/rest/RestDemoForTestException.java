@@ -14,38 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.rest.annotation.consumer;
+package org.apache.dubbo.rpc.protocol.rest.rest;
 
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MediaType;
 
-import org.apache.dubbo.common.serialize.Constants;
+@Path("/demoService")
+public interface RestDemoForTestException {
 
-public class HttpConnectionConfig {
+    @POST
+    @Path("/noFound")
+    @Produces(MediaType.TEXT_PLAIN)
+    String test404();
 
-
-    private int connectTimeout;
-    private int readTimeout;
-    private int chunkLength = 8196;
-    private byte serialization = Constants.FASTJSON2_SERIALIZATION_ID;
-    private int keepAlive = 60;
-
-
-    public int getConnectTimeout() {
-        return connectTimeout;
-    }
-
-    public int getReadTimeout() {
-        return readTimeout;
-    }
-
-    public int getChunkLength() {
-        return chunkLength;
-    }
-
-    public byte getSerialization() {
-        return serialization;
-    }
-
-    public int getKeepAlive() {
-        return keepAlive;
-    }
+    @GET
+    @Consumes({MediaType.TEXT_PLAIN})
+    @Path("/hello")
+    Integer test400(@QueryParam("a")String a,@QueryParam("b") String b);
 }

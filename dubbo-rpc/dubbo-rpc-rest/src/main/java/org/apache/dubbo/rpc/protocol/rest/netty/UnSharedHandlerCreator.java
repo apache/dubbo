@@ -14,23 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.rest.mvc;
+package org.apache.dubbo.rpc.protocol.rest.netty;
 
+import io.netty.channel.ChannelHandler;
+import org.apache.dubbo.common.URL;
 
-import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import java.util.List;
 
-@RestController("/demoService")
-public interface DemoService {
-    @RequestMapping(value = "/hello", method = RequestMethod.GET)
-    Integer hello(@RequestParam Integer a, @RequestParam Integer b);
+/**
+ *  FOR create netty un shared (no @Shared) handler
+ */
+public interface UnSharedHandlerCreator {
 
-    @RequestMapping(value = "/error", method = RequestMethod.GET)
-    String error();
-
-    @RequestMapping(value = "/sayHello", method = RequestMethod.POST, consumes = MediaType.TEXT_PLAIN_VALUE)
-    String sayHello(String name);
+    List<ChannelHandler> getUnSharedHandlers(URL url);
 }

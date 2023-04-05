@@ -1129,7 +1129,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 return;
             }
             setStarted();
-            startMetricsCollector();
             if (logger.isInfoEnabled()) {
                 logger.info(getIdentifier() + " is ready.");
             }
@@ -1147,12 +1146,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         }
     }
 
-    private void startMetricsCollector() {
-        DefaultMetricsCollector collector = applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class);
-        if (Objects.nonNull(collector) && collector.isThreadpoolCollectEnabled()) {
-            collector.registryDefaultSample();
-        }
-    }
 
     private void completeStartFuture(boolean success) {
         if (startFuture != null) {

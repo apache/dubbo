@@ -14,8 +14,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.test.common.api;
+package org.apache.dubbo.rpc.protocol.rest.pair;
+
+import org.apache.dubbo.metadata.rest.media.MediaType;
+
+/**
+ *  for http message codec result
+ */
+public class MessageCodecResultPair {
+    /**
+     *  has coded
+     */
+    boolean coded;
+
+    /**
+     *  codec type
+     */
+    MediaType mediaType;
 
 
-public interface SpringmvcDemoService {
+    public MessageCodecResultPair(boolean coded, MediaType mediaType) {
+        this.coded = coded;
+        this.mediaType = mediaType;
+    }
+
+
+    public boolean isCoded() {
+        return coded;
+    }
+
+    public MediaType getMediaType() {
+        return mediaType;
+    }
+
+    public static MessageCodecResultPair pair(boolean coded, MediaType mediaType) {
+        return new MessageCodecResultPair(coded, mediaType);
+    }
 }

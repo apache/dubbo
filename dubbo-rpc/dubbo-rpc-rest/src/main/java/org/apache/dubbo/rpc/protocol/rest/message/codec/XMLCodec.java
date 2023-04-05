@@ -33,12 +33,15 @@ import javax.xml.transform.sax.SAXSource;
 import java.io.OutputStream;
 import java.io.StringReader;
 
+/**
+ *  body content-type is xml
+ */
 @Activate("xml")
 public class XMLCodec implements HttpMessageCodec<byte[], OutputStream> {
 
 
     @Override
-    public Object decode(byte[] body, Class targetType) throws Exception {
+    public Object decode(byte[] body, Class<?> targetType) throws Exception {
 
 
         SAXParserFactory spf = SAXParserFactory.newInstance();
@@ -56,8 +59,18 @@ public class XMLCodec implements HttpMessageCodec<byte[], OutputStream> {
     }
 
     @Override
-    public boolean contentTypeSupport(MediaType mediaType, Class targetType) {
+    public boolean contentTypeSupport(MediaType mediaType, Class<?> targetType) {
         return MediaTypeMatcher.TEXT_XML.mediaSupport(mediaType);
+    }
+
+    @Override
+    public boolean typeSupport(Class<?> targetType) {
+        return false;
+    }
+
+    @Override
+    public MediaType contentType() {
+        return MediaType.TEXT_XML;
     }
 
 
@@ -65,7 +78,6 @@ public class XMLCodec implements HttpMessageCodec<byte[], OutputStream> {
     public void encode(OutputStream outputStream, Object unSerializedBody, URL url) throws Exception {
         Marshaller marshaller = JAXBContext.newInstance(unSerializedBody.getClass()).createMarshaller();
         marshaller.marshal(unSerializedBody, outputStream);
-        outputStream.write((byte[]) unSerializedBody);
     }
 
 
