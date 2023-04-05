@@ -119,7 +119,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
     @Override
     public void subscribe(URL url) {
         ApplicationModel applicationModel = url.getApplicationModel();
-        MetricsEventBus.post(new RegistryEvent.MetricsSubscribeEvent(applicationModel),() ->
+        MetricsEventBus.post(RegistryEvent.toSubscribeEvent(applicationModel),() ->
             {
                 super.subscribe(url);
                 return null;
