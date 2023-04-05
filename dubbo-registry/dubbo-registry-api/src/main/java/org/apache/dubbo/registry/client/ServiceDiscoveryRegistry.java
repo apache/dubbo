@@ -328,7 +328,8 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
                 listener.addServiceListener(serviceInstancesChangedListener);
                 serviceInstancesChangedListener.addListenerAndNotify(url, listener);
                 ServiceInstancesChangedListener finalServiceInstancesChangedListener = serviceInstancesChangedListener;
-                MetricsEventBus.post(new RegistryEvent.MetricsServiceSubscribeEvent(url.getApplicationModel(), serviceKey),
+
+                MetricsEventBus.post(RegistryEvent.toSsEvent(url.getApplicationModel(), serviceKey),
                     () -> {
                         serviceDiscovery.addServiceInstancesChangedListener(finalServiceInstancesChangedListener);
                         return null;
