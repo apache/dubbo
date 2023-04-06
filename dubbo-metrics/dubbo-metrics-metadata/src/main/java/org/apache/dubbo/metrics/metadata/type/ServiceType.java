@@ -15,15 +15,36 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.metrics.registry;
+package org.apache.dubbo.metrics.metadata.type;
 
-public interface RegistryConstants {
+import org.apache.dubbo.metrics.model.MetricsKey;
 
-    String OP_TYPE_REGISTER = "register";
-    String OP_TYPE_SUBSCRIBE = "subscribe";
-    String OP_TYPE_NOTIFY = "notify";
-    String OP_TYPE_REGISTER_SERVICE = "register.service";
-    String OP_TYPE_SUBSCRIBE_SERVICE = "subscribe.service";
+public enum ServiceType {
+
+    S_P_TOTAL(MetricsKey.STORE_PROVIDER_METADATA),
+    S_P_SUCCEED(MetricsKey.STORE_PROVIDER_METADATA_SUCCEED),
+    S_P_FAILED(MetricsKey.STORE_PROVIDER_METADATA_FAILED),
+
+    ;
+
+    private final MetricsKey metricsKey;
+    private final boolean isIncrement;
 
 
+    ServiceType(MetricsKey metricsKey) {
+        this(metricsKey, true);
+    }
+
+    ServiceType(MetricsKey metricsKey, boolean isIncrement) {
+        this.metricsKey = metricsKey;
+        this.isIncrement = isIncrement;
+    }
+
+    public MetricsKey getMetricsKey() {
+        return metricsKey;
+    }
+
+    public boolean isIncrement() {
+        return isIncrement;
+    }
 }

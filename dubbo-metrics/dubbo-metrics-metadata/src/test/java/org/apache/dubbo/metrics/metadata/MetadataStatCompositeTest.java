@@ -18,7 +18,7 @@
 package org.apache.dubbo.metrics.metadata;
 
 import org.apache.dubbo.metrics.metadata.collector.stat.MetadataStatComposite;
-import org.apache.dubbo.metrics.metadata.event.MetadataEvent;
+import org.apache.dubbo.metrics.metadata.type.ApplicationType;
 import org.apache.dubbo.metrics.model.container.LongContainer;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.apache.dubbo.metrics.metadata.collector.stat.MetadataStatComposite.OP_TYPE_SUBSCRIBE;
+import static org.apache.dubbo.metrics.metadata.MetadataConstants.OP_TYPE_SUBSCRIBE;
 
 public class MetadataStatCompositeTest {
 
@@ -36,7 +36,7 @@ public class MetadataStatCompositeTest {
     @Test
     void testInit() {
         MetadataStatComposite statComposite = new MetadataStatComposite();
-        Assertions.assertEquals(statComposite.applicationNumStats.size(), MetadataEvent.ApplicationType.values().length);
+        Assertions.assertEquals(statComposite.applicationNumStats.size(), ApplicationType.values().length);
         //(rt)5 * (push,subscribe)2
         Assertions.assertEquals(5 * 2, statComposite.appRtStats.size());
         statComposite.applicationNumStats.values().forEach((v ->
@@ -52,8 +52,8 @@ public class MetadataStatCompositeTest {
     @Test
     void testIncrement() {
         MetadataStatComposite statComposite = new MetadataStatComposite();
-        statComposite.increment(MetadataEvent.ApplicationType.P_TOTAL, applicationName);
-        Assertions.assertEquals(1L, statComposite.applicationNumStats.get(MetadataEvent.ApplicationType.P_TOTAL).get(applicationName).get());
+        statComposite.increment(ApplicationType.P_TOTAL, applicationName);
+        Assertions.assertEquals(1L, statComposite.applicationNumStats.get(ApplicationType.P_TOTAL).get(applicationName).get());
     }
 
     @Test

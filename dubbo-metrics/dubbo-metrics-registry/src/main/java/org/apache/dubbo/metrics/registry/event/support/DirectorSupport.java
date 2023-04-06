@@ -23,7 +23,8 @@ import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.metrics.registry.event.type.ApplicationType;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import static org.apache.dubbo.metrics.registry.RegistryConstants.ATTACHMENT_KEY_DIR_NUM;
+import static org.apache.dubbo.metrics.MetricsConstants.ATTACHMENT_KEY_DIR_NUM;
+
 
 public class DirectorSupport {
 
