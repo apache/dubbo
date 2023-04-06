@@ -23,7 +23,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.AbstractExecutorService;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -45,22 +44,6 @@ public class ThreadlessExecutor extends AbstractExecutorService {
     private final Queue<Runnable> queue = new ConcurrentLinkedQueue<>();
 
     private volatile Object waiter;
-
-    private CompletableFuture<?> waitingFuture;
-
-    private volatile boolean waiting = false;
-
-    public CompletableFuture<?> getWaitingFuture() {
-        return waitingFuture;
-    }
-
-    public void setWaitingFuture(CompletableFuture<?> waitingFuture) {
-        this.waitingFuture = waitingFuture;
-    }
-
-    public boolean isWaiting() {
-        return waiting;
-    }
 
     /**
      * Waits until there is a task, executes the task and all queued tasks (if there're any). The task is either a normal
@@ -99,22 +82,13 @@ public class ThreadlessExecutor extends AbstractExecutorService {
      */
     @Override
     public void execute(Runnable runnable) {
-        queue.add(new RunnableWrapper(runnable));
+        RunnableWrapper run = new RunnableWrapper(runnable);
+        queue.add(run);
         if (waiter != SHUTDOWN) {
             LockSupport.unpark((Thread) waiter);
-        } else if (queue.remove(runnable)) {
+        } else if (queue.remove(run)) {
             throw new RejectedExecutionException();
         }
-    }
-
-    /**
-     * tells the thread blocking on {@link #waitAndDrain()} to return, despite of the current status, to avoid endless waiting.
-     */
-    public void notifyReturn(Throwable t) {
-        // an empty runnable task.
-        execute(() -> {
-            waitingFuture.completeExceptionally(t);
-        });
     }
 
     /**
@@ -133,23 +107,21 @@ public class ThreadlessExecutor extends AbstractExecutorService {
         while ((runnable = queue.poll()) != null) {
             runnable.run();
         }
-        notifyReturn(new IllegalStateException("Consumer is shutting down and this call is going to be stopped without " +
-                "receiving any result, usually this is called by a slow provider instance or bad service implementation."));
         return Collections.emptyList();
     }
 
     @Override
     public boolean isShutdown() {
-        return false;
+        return waiter == SHUTDOWN;
     }
 
     @Override
     public boolean isTerminated() {
-        return false;
+        return isShutdown();
     }
 
     @Override
-    public boolean awaitTermination(long timeout, TimeUnit unit) throws InterruptedException {
+    public boolean awaitTermination(long timeout, TimeUnit unit) {
         return false;
     }
 

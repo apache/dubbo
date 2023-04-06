@@ -134,8 +134,6 @@ class DefaultFutureTest {
         Channel channel = new MockedChannel();
         int channelId = 10;
         Request request = new Request(channelId);
-        ExecutorService sharedExecutor = ExtensionLoader.getExtensionLoader(ExecutorRepository.class)
-                .getDefaultExtension().createExecutorIfAbsent(URL.valueOf("dubbo://127.0.0.1:23456"));
         ThreadlessExecutor executor = new ThreadlessExecutor();
         DefaultFuture f = DefaultFuture.newFuture(channel, request, 1000, executor);
         //mark the future is sent
@@ -150,6 +148,8 @@ class DefaultFutureTest {
         } catch (Exception e) {
             Assertions.assertTrue(e instanceof InterruptedException, "catch exception is not interrupted exception!");
             System.out.println(e.getMessage());
+        } finally {
+            executor.shutdown();
         }
         //waiting timeout check task finished
         Thread.sleep(1500);
