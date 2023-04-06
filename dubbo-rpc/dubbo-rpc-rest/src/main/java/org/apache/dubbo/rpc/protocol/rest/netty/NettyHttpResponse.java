@@ -173,7 +173,6 @@ public class NettyHttpResponse implements HttpResponse {
         }
 
         getOutputStream().close();
-        future.channel().close();
     }
 
     @Override
