@@ -517,9 +517,6 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         Map<String, Integer> serviceNumMap = new HashMap<>();
         if (invokers.size() > 0) {
             serviceNumMap = invokers.stream().filter(invoker -> invoker.getInterface() != null).collect(Collectors.groupingBy(invoker -> invoker.getInterface().getName(), Collectors.reducing(0, e -> 1, Integer::sum)));
-            if (invokers.stream().anyMatch(invoker -> invoker.getInterface() == null)) {
-                serviceNumMap.clear();
-            }
         }
 
         return serviceNumMap;
