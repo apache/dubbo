@@ -63,7 +63,7 @@ public class TriBuiltinService {
 
     public TriBuiltinService(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
-        if (!enable()) {
+        if (enable()) {
             init();
         }
     }
