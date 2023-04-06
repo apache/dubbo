@@ -106,7 +106,7 @@ public class ReflectionPackableMethod implements PackableMethod {
 
             // server
             this.responsePack = new WrapResponsePack(serialization, url, serializeName, actualResponseType);
-            this.requestUnpack = new WrapRequestUnpack(serialization, url, serializeName, actualRequestTypes);
+            this.requestUnpack = new WrapRequestUnpack(serialization, url, actualRequestTypes);
         }
     }
 
@@ -321,22 +321,22 @@ public class ReflectionPackableMethod implements PackableMethod {
 
         private final Class<?> actualResponseType;
         // wrapper request set serialize type
-        String serialize;
+        String requestSerialize;
 
         private WrapResponsePack(MultipleSerialization multipleSerialization, URL url, String defaultSerialize,
                                  Class<?> actualResponseType) {
             this.multipleSerialization = multipleSerialization;
             this.url = url;
             this.actualResponseType = actualResponseType;
-            this.serialize = defaultSerialize;
+            this.requestSerialize = defaultSerialize;
         }
 
         @Override
         public byte[] pack(Object obj) throws IOException {
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            multipleSerialization.serialize(url, serialize, actualResponseType, obj, bos);
+            multipleSerialization.serialize(url, requestSerialize, actualResponseType, obj, bos);
             return TripleCustomerProtocolWapper.TripleResponseWrapper.Builder.newBuilder()
-                .setSerializeType(serialize)
+                .setSerializeType(requestSerialize)
                 .setType(actualResponseType.getName())
                 .setData(bos.toByteArray())
                 .build()
@@ -350,7 +350,7 @@ public class ReflectionPackableMethod implements PackableMethod {
         private final URL url;
         private final Class<?> returnClass;
 
-private final String requestSerializeName;
+        private final String requestSerializeName;
 
 
         private WrapResponseUnpack(MultipleSerialization serialization, URL url, String requestSerializeName, Class<?> returnClass) {
@@ -366,7 +366,7 @@ private final String requestSerializeName;
                 .parseFrom(data);
             final String serializeType = convertHessianFromWrapper(wrapper.getSerializeType());
 
-            CodecSupport.checkSerialization(requestSerializeName, serializeType);
+            CodecSupport.checkSerialization(requestSerializeName, url);
 
             ByteArrayInputStream bais = new ByteArrayInputStream(wrapper.getData());
             return serialization.deserialize(url, serializeType, returnClass, bais);
@@ -459,13 +459,10 @@ private final String requestSerializeName;
 
         private final Class<?>[] actualRequestTypes;
 
-        private final String serializeName;
-
-        private WrapRequestUnpack(MultipleSerialization serialization, URL url, String serializeName, Class<?>[] actualRequestTypes) {
+        private WrapRequestUnpack(MultipleSerialization serialization, URL url, Class<?>[] actualRequestTypes) {
             this.serialization = serialization;
             this.url = url;
             this.actualRequestTypes = actualRequestTypes;
-            this.serializeName = serializeName;
         }
 
         @Override
@@ -474,10 +471,10 @@ private final String requestSerializeName;
                 data);
 
             String wrapperSerializeType = convertHessianFromWrapper(wrapper.getSerializeType());
-            CodecSupport.checkSerialization(serializeName, wrapperSerializeType);
+            CodecSupport.checkSerialization(wrapperSerializeType, url);
 
             Object[] ret = new Object[wrapper.getArgs().size()];
-            ((WrapResponsePack) responsePack).serialize = wrapper.getSerializeType();
+            ((WrapResponsePack) responsePack).requestSerialize = wrapper.getSerializeType();
             for (int i = 0; i < wrapper.getArgs().size(); i++) {
                 ByteArrayInputStream bais = new ByteArrayInputStream(
                     wrapper.getArgs().get(i));
