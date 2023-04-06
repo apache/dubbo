@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.serialize.ObjectOutput;
 import org.apache.dubbo.common.serialize.Serialization;
+import org.apache.dubbo.common.utils.SerializeCheckStatus;
 import org.apache.dubbo.common.utils.SerializeSecurityManager;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
@@ -35,7 +36,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
 class Hessian2SerializationTest {
@@ -502,6 +502,7 @@ class Hessian2SerializationTest {
     void testLimit2() throws IOException, ClassNotFoundException {
         FrameworkModel frameworkModel = new FrameworkModel();
         Serialization serialization = frameworkModel.getExtensionLoader(Serialization.class).getExtension("hessian2");
+        frameworkModel.getBeanFactory().getBean(SerializeSecurityManager.class).setCheckStatus(SerializeCheckStatus.STRICT);
         URL url = URL.valueOf("").setScopeModel(frameworkModel);
 
         // write untrusted failed
@@ -556,6 +557,7 @@ class Hessian2SerializationTest {
             URL url = URL.valueOf("").setScopeModel(frameworkModel);
 
             byte[] bytes = outputStream.toByteArray();
+            frameworkModel.getBeanFactory().getBean(SerializeSecurityManager.class).setCheckStatus(SerializeCheckStatus.STRICT);
             ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
             ObjectInput objectInput = serialization.deserialize(url, inputStream);
             Assertions.assertInstanceOf(Map.class, objectInput.readObject());
