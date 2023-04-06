@@ -236,7 +236,7 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
             final Map<String, String> reserved = filterReservedHeaders(trailers);
             final Map<String, Object> attachments = headersToMap(trailers,
                 () -> reserved.get(TripleHeaderEnum.TRI_HEADER_CONVERT.getHeader()));
-            final Map<String, String> triExceptionCodeAttachments = extractTriExceptionCode(reserved);
+            final Map<String, String> assemblyMap = extractTriExceptionCode(reserved);
             final TriRpcStatus detailStatus;
             final TriRpcStatus statusFromTrailers = getStatusFromTrailers(reserved);
             if (statusFromTrailers != null) {
@@ -244,7 +244,7 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
             } else {
                 detailStatus = status;
             }
-            listener.onComplete(detailStatus, attachments, reserved, triExceptionCodeAttachments);
+            listener.onComplete(detailStatus, attachments, reserved, assemblyMap);
         }
 
         private TriRpcStatus validateHeaderStatus(Http2Headers headers) {

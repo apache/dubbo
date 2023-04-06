@@ -41,11 +41,11 @@ public class UnaryClientCallListener implements ClientCall.Listener {
     }
 
     @Override
-    public void onClose(TriRpcStatus status, Map<String, Object> trailers, Map<String, String> triExceptionCodeAttachments) {
+    public void onClose(TriRpcStatus status, Map<String, Object> trailers, Map<String, String> assemblyMap) {
         AppResponse result = new AppResponse();
         result.setObjectAttachments(trailers);
         if (status.isOk()) {
-           Integer exceptionCode = extractExceptionCode(triExceptionCodeAttachments);
+           Integer exceptionCode = extractExceptionCode(assemblyMap);
             if (!exceptionCode.equals(CommonConstants.TRI_EXCEPTION_CODE_NOT_EXISTS)) {
                 result.setException((Exception) appResponse);
             } else {

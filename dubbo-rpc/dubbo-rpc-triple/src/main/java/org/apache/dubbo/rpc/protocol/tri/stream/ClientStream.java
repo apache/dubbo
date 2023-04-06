@@ -51,8 +51,8 @@ public interface ClientStream extends Stream {
          * @param reserved    triple protocol reserved data
          */
         default void onComplete(TriRpcStatus status, Map<String, Object> attachments,
-            Map<String, String> reserved, Map<String, String> triExceptionCodeAttachments) {
-            onComplete(status, attachments, triExceptionCodeAttachments);
+            Map<String, String> reserved, Map<String, String> assemblyMap) {
+            onComplete(status, attachments, assemblyMap);
         }
 
     }

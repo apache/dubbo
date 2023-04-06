@@ -102,13 +102,13 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
 
     @Override
     public void onComplete(TriRpcStatus status, Map<String, Object> attachments,
-                           Map<String, String> excludeHeaders, Map<String, String> triExceptionCodeAttachments) {
+                           Map<String, String> excludeHeaders, Map<String, String> assemblyMap) {
         if (done) {
             return;
         }
         done = true;
         try {
-            listener.onClose(status, StreamUtils.toAttachments(attachments), triExceptionCodeAttachments);
+            listener.onClose(status, StreamUtils.toAttachments(attachments), assemblyMap);
         } catch (Throwable t) {
             cancelByLocal(
                 TriRpcStatus.INTERNAL.withDescription("Close stream error").withCause(t)
