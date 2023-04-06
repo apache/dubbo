@@ -35,9 +35,6 @@ public class UnaryServerCallListener extends AbstractServerCallListener {
 
     @Override
     public void onReturn(Object value) {
-        if (value instanceof Exception) {
-            responseObserver.setNeedReturnException(true);
-        }
         responseObserver.onNext(value);
         responseObserver.onCompleted();
     }
