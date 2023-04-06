@@ -50,9 +50,9 @@ public class URLConnectionRestClient implements RestClient {
             HttpURLConnection connection = (HttpURLConnection) new URL(requestTemplate.getURL()).openConnection();
             connection.setConnectTimeout(clientConfig.getConnectTimeout());
             connection.setReadTimeout(clientConfig.getReadTimeout());
-            connection.setAllowUserInteraction(false);
-            connection.setInstanceFollowRedirects(true);
             connection.setRequestMethod(requestTemplate.getHttpMethod());
+
+            prepareConnection(connection, requestTemplate.getHttpMethod());
 
             // writeHeaders
 
@@ -78,7 +78,6 @@ public class URLConnectionRestClient implements RestClient {
             } else {
                 connection.setChunkedStreamingMode(clientConfig.getChunkLength());
             }
-            connection.setDoOutput(true);
 
             OutputStream out = connection.getOutputStream();
             if (gzipEncodedRequest) {
@@ -153,6 +152,28 @@ public class URLConnectionRestClient implements RestClient {
 
             }
         };
+    }
+
+    private void prepareConnection(HttpURLConnection connection, String httpMethod) throws IOException {
+
+
+        connection.setDoInput(true);
+
+        if ("GET".equals(httpMethod)) {
+            connection.setInstanceFollowRedirects(true);
+        } else {
+            connection.setInstanceFollowRedirects(false);
+        }
+
+
+        if ("POST".equals(httpMethod) || "PUT".equals(httpMethod) ||
+            "PATCH".equals(httpMethod) || "DELETE".equals(httpMethod)) {
+            connection.setDoOutput(true);
+        } else {
+            connection.setDoOutput(false);
+        }
+
+        connection.setRequestMethod(httpMethod);
     }
 
 }
