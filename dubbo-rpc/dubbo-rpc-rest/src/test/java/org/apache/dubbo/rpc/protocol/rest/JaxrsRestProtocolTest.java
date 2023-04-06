@@ -41,9 +41,11 @@ import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
 import org.apache.dubbo.rpc.protocol.rest.exception.DoublePathCheckException;
 import org.apache.dubbo.rpc.protocol.rest.exception.mapper.ExceptionHandler;
 import org.apache.dubbo.rpc.protocol.rest.exception.mapper.ExceptionMapper;
+
 import org.apache.dubbo.rpc.protocol.rest.rest.AnotherUserRestService;
 import org.apache.dubbo.rpc.protocol.rest.rest.AnotherUserRestServiceImpl;
-
+import org.apache.dubbo.rpc.protocol.rest.rest.HttpMethodService;
+import org.apache.dubbo.rpc.protocol.rest.rest.HttpMethodServiceImpl;
 import org.apache.dubbo.rpc.protocol.rest.rest.RestDemoForTestException;
 import org.hamcrest.CoreMatchers;
 import org.jboss.resteasy.specimpl.MultivaluedMapImpl;
@@ -515,8 +517,38 @@ class JaxrsRestProtocolTest {
         DemoService demoService = this.proxy.getProxy(protocol.refer(DemoService.class, nettyUrl));
 
 
-
         Assertions.assertEquals("Hello, hello", demoService.sayHello("hello"));
+        exporter.unexport();
+    }
+
+
+    @Test
+    void testHttpMethods() {
+        testHttpMethod(org.apache.dubbo.remoting.Constants.OK_HTTP);
+        testHttpMethod(org.apache.dubbo.remoting.Constants.APACHE_HTTP_CLIENT);
+//        testHttpMethod(org.apache.dubbo.remoting.Constants.URL_CONNECTION);
+    }
+
+    void testHttpMethod(String restClient) {
+        HttpMethodService server = new HttpMethodServiceImpl();
+
+        URL url = URL.valueOf("rest://127.0.0.1:" + NetUtils.getAvailablePort()
+            + "/?version=1.0.0&interface=org.apache.dubbo.rpc.protocol.rest.rest.HttpMethodService&"
+            + org.apache.dubbo.remoting.Constants.CLIENT_KEY + "=" + restClient);
+        url = this.registerProvider(url, server, HttpMethodService.class);
+        Exporter<HttpMethodService> exporter = protocol.export(proxy.getInvoker(server, HttpMethodService.class, url));
+
+        HttpMethodService demoService = this.proxy.getProxy(protocol.refer(HttpMethodService.class, url));
+
+
+        String expect = "hello";
+        Assertions.assertEquals(null, demoService.sayHelloHead());
+        Assertions.assertEquals(expect, demoService.sayHelloDelete("hello"));
+        Assertions.assertEquals(expect, demoService.sayHelloGet("hello"));
+        Assertions.assertEquals(expect, demoService.sayHelloOptions("hello"));
+        Assertions.assertEquals(expect, demoService.sayHelloPatch("hello"));
+        Assertions.assertEquals(expect, demoService.sayHelloPost("hello"));
+        Assertions.assertEquals(expect, demoService.sayHelloPut("hello"));
         exporter.unexport();
     }
 
