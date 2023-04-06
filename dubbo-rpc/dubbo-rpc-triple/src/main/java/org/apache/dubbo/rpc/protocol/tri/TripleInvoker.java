@@ -31,10 +31,12 @@ import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.CancellationContext;
 import org.apache.dubbo.rpc.FutureContext;
 import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.InvokeMode;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ConsumerModel;
@@ -128,13 +130,12 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         final MethodDescriptor methodDescriptor = serviceDescriptor.getMethod(
             invocation.getMethodName(),
             invocation.getParameterTypes());
-        MethodDescriptor.RpcType rpcType = methodDescriptor.getRpcType();
-        Executor callbackExecutor = UNARY.equals(rpcType) ? new ThreadlessExecutor() : streamExecutor;
+        Executor callbackExecutor = isSync(methodDescriptor, invocation) ? new ThreadlessExecutor() : streamExecutor;
         ClientCall call = new TripleClientCall(connectionClient, callbackExecutor,
             getUrl().getOrDefaultFrameworkModel(), writeQueue);
         AsyncRpcResult result;
         try {
-            switch (rpcType) {
+            switch (methodDescriptor.getRpcType()) {
                 case UNARY:
                     result = invokeUnary(methodDescriptor, invocation, call, callbackExecutor);
                     break;
@@ -162,6 +163,16 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
             future.completeExceptionally(e);
             return new AsyncRpcResult(future, invocation);
         }
+    }
+
+    private static boolean isSync(MethodDescriptor methodDescriptor, Invocation invocation){
+        if (!(invocation instanceof RpcInvocation)) {
+            return false;
+        }
+        RpcInvocation rpcInvocation = (RpcInvocation) invocation;
+        MethodDescriptor.RpcType rpcType = methodDescriptor.getRpcType();
+        return UNARY.equals(rpcType)
+            && InvokeMode.SYNC.equals(rpcInvocation.getInvokeMode());
     }
 
     AsyncRpcResult invokeServerStream(MethodDescriptor methodDescriptor, Invocation invocation,
