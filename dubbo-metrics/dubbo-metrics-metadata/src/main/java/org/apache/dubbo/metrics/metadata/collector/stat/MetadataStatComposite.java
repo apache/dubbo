@@ -19,7 +19,8 @@ package org.apache.dubbo.metrics.metadata.collector.stat;
 
 import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.metrics.collector.MetricsCollector;
-import org.apache.dubbo.metrics.metadata.event.MetadataEvent;
+import org.apache.dubbo.metrics.metadata.type.ApplicationType;
+import org.apache.dubbo.metrics.metadata.type.ServiceType;
 import org.apache.dubbo.metrics.model.ApplicationMetric;
 import org.apache.dubbo.metrics.model.MetricsCategory;
 import org.apache.dubbo.metrics.model.MetricsKey;
@@ -40,6 +41,10 @@ import java.util.concurrent.atomic.LongAccumulator;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static org.apache.dubbo.metrics.metadata.MetadataConstants.OP_TYPE_PUSH;
+import static org.apache.dubbo.metrics.metadata.MetadataConstants.OP_TYPE_STORE_PROVIDER_INTERFACE;
+import static org.apache.dubbo.metrics.metadata.MetadataConstants.OP_TYPE_SUBSCRIBE;
+
 /**
  * As a data aggregator, use internal data containers calculates and classifies
  * the registry data collected by {@link MetricsCollector MetricsCollector}, and
@@ -48,20 +53,18 @@ import java.util.stream.Collectors;
 public class MetadataStatComposite implements MetricsExport {
 
 
-    public Map<MetadataEvent.ApplicationType, Map<String, AtomicLong>> applicationNumStats = new ConcurrentHashMap<>();
-    public Map<MetadataEvent.ServiceType, Map<ServiceKeyMetric, AtomicLong>> serviceNumStats = new ConcurrentHashMap<>();
+    public Map<ApplicationType, Map<String, AtomicLong>> applicationNumStats = new ConcurrentHashMap<>();
+    public Map<ServiceType, Map<ServiceKeyMetric, AtomicLong>> serviceNumStats = new ConcurrentHashMap<>();
     public List<LongContainer<? extends Number>> appRtStats = new ArrayList<>();
 
     public List<LongContainer<? extends Number>> serviceRtStats = new ArrayList<>();
-    public static String OP_TYPE_PUSH = "push";
-    public static String OP_TYPE_SUBSCRIBE = "subscribe";
-    public static String OP_TYPE_STORE_PROVIDER_INTERFACE = "store.provider.interface";
+
 
     public MetadataStatComposite() {
-        for (MetadataEvent.ApplicationType applicationType : MetadataEvent.ApplicationType.values()) {
+        for (ApplicationType applicationType : ApplicationType.values()) {
             applicationNumStats.put(applicationType, new ConcurrentHashMap<>());
         }
-        for (MetadataEvent.ServiceType serviceType : MetadataEvent.ServiceType.values()) {
+        for (ServiceType serviceType : ServiceType.values()) {
             serviceNumStats.put(serviceType, new ConcurrentHashMap<>());
         }
 
@@ -90,18 +93,18 @@ public class MetadataStatComposite implements MetricsExport {
         return singleRtStats;
     }
 
-    public void increment(MetadataEvent.ApplicationType type, String applicationName) {
+    public void increment(ApplicationType type, String applicationName) {
         incrementSize(type, applicationName, 1);
     }
 
-    public void incrementServiceKey(MetadataEvent.ServiceType type, String applicationName, String serviceKey, int size) {
+    public void incrementServiceKey(ServiceType type, String applicationName, String serviceKey, int size) {
         if (!serviceNumStats.containsKey(type)) {
             return;
         }
         serviceNumStats.get(type).computeIfAbsent(new ServiceKeyMetric(applicationName, serviceKey), k -> new AtomicLong(0L)).getAndAdd(size);
     }
 
-    public void incrementSize(MetadataEvent.ApplicationType type, String applicationName, int size) {
+    public void incrementSize(ApplicationType type, String applicationName, int size) {
         if (!applicationNumStats.containsKey(type)) {
             return;
         }
@@ -138,7 +141,7 @@ public class MetadataStatComposite implements MetricsExport {
     @SuppressWarnings("rawtypes")
     public List<GaugeMetricSample> exportNumMetrics() {
         List<GaugeMetricSample> list = new ArrayList<>();
-        for (MetadataEvent.ApplicationType type : applicationNumStats.keySet()) {
+        for (ApplicationType type : applicationNumStats.keySet()) {
             Map<String, AtomicLong> stringAtomicLongMap = applicationNumStats.get(type);
             for (String applicationName : stringAtomicLongMap.keySet()) {
                 list.add(convertToSample(applicationName, type, MetricsCategory.METADATA, stringAtomicLongMap.get(applicationName)));
@@ -159,7 +162,7 @@ public class MetadataStatComposite implements MetricsExport {
     @SuppressWarnings({"rawtypes"})
     public List<GaugeMetricSample> exportServiceNumMetrics() {
         List<GaugeMetricSample> list = new ArrayList<>();
-        for (MetadataEvent.ServiceType type : serviceNumStats.keySet()) {
+        for (ServiceType type : serviceNumStats.keySet()) {
             Map<ServiceKeyMetric, AtomicLong> stringAtomicLongMap = serviceNumStats.get(type);
             for (ServiceKeyMetric serviceKeyMetric : stringAtomicLongMap.keySet()) {
                 list.add(new GaugeMetricSample<>(type.getMetricsKey(), serviceKeyMetric.getTags(), MetricsCategory.METADATA, stringAtomicLongMap, value -> value.get(serviceKeyMetric).get()));
@@ -169,7 +172,7 @@ public class MetadataStatComposite implements MetricsExport {
     }
 
     @SuppressWarnings("rawtypes")
-    public GaugeMetricSample convertToSample(String applicationName, MetadataEvent.ApplicationType type, MetricsCategory category, AtomicLong targetNumber) {
+    public GaugeMetricSample convertToSample(String applicationName, ApplicationType type, MetricsCategory category, AtomicLong targetNumber) {
         return new GaugeMetricSample<>(type.getMetricsKey(), ApplicationMetric.getTagsByName(applicationName), category, targetNumber, AtomicLong::get);
     }
 

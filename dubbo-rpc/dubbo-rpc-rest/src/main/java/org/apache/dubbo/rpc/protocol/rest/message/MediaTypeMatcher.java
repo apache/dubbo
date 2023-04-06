@@ -52,7 +52,6 @@ public enum MediaTypeMatcher {
     private static List<MediaType> getDefaultList() {
 
         List<MediaType> defaultList = new ArrayList<>();
-        defaultList.add(MediaType.ALL_VALUE);
         return defaultList;
     }
 

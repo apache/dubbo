@@ -91,9 +91,9 @@ public class PrometheusMetricsThreadPoolTest {
 
         prometheusConfig.setExporter(exporter);
         metricsConfig.setPrometheus(prometheusConfig);
-        metricsConfig.setEnableJvmMetrics(false);
+        metricsConfig.setEnableJvm(false);
         metricsCollector.setCollectEnabled(true);
-        metricsConfig.setEnableThreadpoolMetrics(true);
+        metricsConfig.setEnableThreadpool(true);
         metricsCollector.collectApplication(applicationModel);
         PrometheusMetricsReporter reporter = new PrometheusMetricsReporter(metricsConfig.toUrl(), applicationModel);
         reporter.init();
@@ -103,7 +103,7 @@ public class PrometheusMetricsThreadPoolTest {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-        if(metricsConfig.getEnableThreadpoolMetrics()) {
+        if(metricsConfig.getEnableThreadpool()) {
             metricsCollector.registryDefaultSample();
         }
         try (CloseableHttpClient client = HttpClients.createDefault()) {
