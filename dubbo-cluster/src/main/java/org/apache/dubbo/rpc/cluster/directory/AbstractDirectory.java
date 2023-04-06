@@ -28,7 +28,7 @@ import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metrics.event.MetricsEventBus;
-import org.apache.dubbo.metrics.registry.event.RegistryEvent;
+import org.apache.dubbo.metrics.registry.event.support.DirectorSupport;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcContext;
@@ -386,7 +386,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
 
     @Override
     public void addDisabledInvoker(Invoker<T> invoker) {
-        MetricsEventBus.publish(new RegistryEvent.MetricsDirectoryEvent(applicationModel, RegistryEvent.ApplicationType.D_DISABLE));
+        MetricsEventBus.publish(DirectorSupport.disable(applicationModel));
         if (invokers.contains(invoker)) {
             disabledInvokers.add(invoker);
             removeValidInvoker(invoker);
@@ -396,7 +396,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
 
     @Override
     public void recoverDisabledInvoker(Invoker<T> invoker) {
-        MetricsEventBus.publish(new RegistryEvent.MetricsDirectoryEvent(applicationModel, RegistryEvent.ApplicationType.D_RECOVER_DISABLE));
+        MetricsEventBus.publish(DirectorSupport.recover(applicationModel));
         if (disabledInvokers.remove(invoker)) {
             try {
                 addValidInvoker(invoker);
@@ -460,7 +460,8 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         this.invokers = invokers;
         refreshInvokerInternal();
         this.invokersInitialized = true;
-        MetricsEventBus.publish(new RegistryEvent.MetricsDirectoryEvent(applicationModel, RegistryEvent.ApplicationType.D_CURRENT, invokers.size()));
+
+        MetricsEventBus.publish(DirectorSupport.current(applicationModel,invokers.size()));
     }
 
     protected void destroyInvokers() {
@@ -471,14 +472,14 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
     }
 
     private boolean addValidInvoker(Invoker<T> invoker) {
-        MetricsEventBus.publish(new RegistryEvent.MetricsDirectoryEvent(applicationModel, RegistryEvent.ApplicationType.D_VALID));
+        MetricsEventBus.publish(DirectorSupport.valid(applicationModel));
         synchronized (this.validInvokers) {
             return this.validInvokers.add(invoker);
         }
     }
 
     private boolean removeValidInvoker(Invoker<T> invoker) {
-        MetricsEventBus.publish(new RegistryEvent.MetricsDirectoryEvent(applicationModel, RegistryEvent.ApplicationType.D_UN_VALID));
+        MetricsEventBus.publish(DirectorSupport.unValid(applicationModel));
         synchronized (this.validInvokers) {
             return this.validInvokers.remove(invoker);
         }

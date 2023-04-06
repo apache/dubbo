@@ -28,7 +28,7 @@ import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
 /**
  * add some must attachment
  */
-@Activate(value = RestConstant.ADD_MUST_ATTTACHMENT, order = 1)
+@Activate(value = RestConstant.ADD_MUST_ATTTACHMENT,order = 1)
 public class AddMustAttachmentIntercept implements HttpConnectionPreBuildIntercept {
 
     @Override

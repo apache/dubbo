@@ -25,12 +25,42 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+
+/**
+ * The InjvmExporterListener class is an implementation of the ExporterListenerAdapter abstract class,
+ * <p>
+ * which is used to listen for changes to the InjvmExporter instances.
+ * <p>
+ * It maintains two ConcurrentHashMaps, one to keep track of the ExporterChangeListeners registered for each service,
+ * <p>
+ * and another to keep track of the currently exported services and their associated Exporter instances.
+ * <p>
+ * It overrides the exported and unexported methods to add or remove the corresponding Exporter instances to/from
+ * <p>
+ * the exporters ConcurrentHashMap, and to notify all registered ExporterChangeListeners of the change.
+ * <p>
+ * It also provides methods to add or remove ExporterChangeListeners for a specific service, and to retrieve the
+ * <p>
+ * currently exported Exporter instance for a given service.
+ */
 public class InjvmExporterListener extends ExporterListenerAdapter {
-
+    /*
+     * A ConcurrentHashMap to keep track of the ExporterChangeListeners registered for each service.
+     */
     private final Map<String, Set<ExporterChangeListener>> exporterChangeListeners = new ConcurrentHashMap<>();
-
+    /*
+     * A ConcurrentHashMap to keep track of the currently exported services and their associated Exporter instances
+     */
     private final Map<String, Exporter<?>> exporters = new ConcurrentHashMap<>();
 
+    /**
+     * Overrides the exported method to add the given exporter to the exporters ConcurrentHashMap,
+     * <p>
+     * and to notify all registered ExporterChangeListeners of the export event.
+     *
+     * @param exporter The Exporter instance that has been exported.
+     * @throws RpcException If there is an error during the export process.
+     */
     @Override
     public void exported(Exporter<?> exporter) throws RpcException {
         String serviceKey = exporter.getInvoker().getUrl().getServiceKey();
@@ -44,6 +74,15 @@ public class InjvmExporterListener extends ExporterListenerAdapter {
         super.exported(exporter);
     }
 
+
+    /**
+     * Overrides the unexported method to remove the given exporter from the exporters ConcurrentHashMap,
+     * <p>
+     * and to notify all registered ExporterChangeListeners of the unexport event.
+     *
+     * @param exporter The Exporter instance that has been unexported.
+     * @throws RpcException If there is an error during the unexport process.
+     */
     @Override
     public void unexported(Exporter<?> exporter) throws RpcException {
         String serviceKey = exporter.getInvoker().getUrl().getServiceKey();
@@ -58,6 +97,14 @@ public class InjvmExporterListener extends ExporterListenerAdapter {
         super.unexported(exporter);
     }
 
+    /**
+     * Adds an ExporterChangeListener for a specific service, and notifies the listener of the current Exporter instance
+     * <p>
+     * if it exists.
+     *
+     * @param listener   The ExporterChangeListener to add.
+     * @param serviceKey The service key for the service to listen for changes on.
+     */
     public synchronized void addExporterChangeListener(ExporterChangeListener listener, String serviceKey) {
         exporterChangeListeners.putIfAbsent(serviceKey, new ConcurrentHashSet<>());
         exporterChangeListeners.get(serviceKey).add(listener);
@@ -67,8 +114,17 @@ public class InjvmExporterListener extends ExporterListenerAdapter {
         }
     }
 
+    /**
+     * Removes an ExporterChangeListener for a specific service.
+     *
+     * @param listener    The ExporterChangeListener to remove.
+     * @param listenerKey The service key for the service to remove the listener from.
+     */
     public synchronized void removeExporterChangeListener(ExporterChangeListener listener, String listenerKey) {
         Set<ExporterChangeListener> listeners = exporterChangeListeners.get(listenerKey);
+        if (CollectionUtils.isEmpty(listeners)) {
+            return;
+        }
         listeners.remove(listener);
         if (CollectionUtils.isEmpty(listeners)) {
             exporterChangeListeners.remove(listenerKey);
