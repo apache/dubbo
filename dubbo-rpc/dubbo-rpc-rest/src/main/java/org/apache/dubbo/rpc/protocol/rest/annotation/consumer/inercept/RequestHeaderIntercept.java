@@ -53,9 +53,10 @@ public class RequestHeaderIntercept implements HttpConnectionPreBuildIntercept {
             requestTemplate.addHeader(RestHeaderEnum.ACCEPT.getHeader(), produces);
         }
 
-        URL url = connectionCreateContext.getUrl();
+//        URL url = connectionCreateContext.getUrl();
 
-        requestTemplate.addKeepAliveHeader(url.getParameter(RestConstant.KEEP_ALIVE_TIMEOUT_PARAM,RestConstant.KEEP_ALIVE_TIMEOUT));
+
+//        requestTemplate.addKeepAliveHeader(url.getParameter(RestConstant.KEEP_ALIVE_TIMEOUT_PARAM,RestConstant.KEEP_ALIVE_TIMEOUT));
 
 
     }
