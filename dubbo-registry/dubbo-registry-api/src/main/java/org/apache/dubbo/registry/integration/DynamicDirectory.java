@@ -287,8 +287,14 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
         if (isDestroyed() || this.forbidden) {
             return false;
         }
-        return CollectionUtils.isNotEmpty(getValidInvokers())
-            && getValidInvokers().stream().anyMatch(Invoker::isAvailable);
+        for (Invoker<T> validInvoker : getValidInvokers()) {
+            if (validInvoker.isAvailable()) {
+                return true;
+            } else {
+                addInvalidateInvoker(validInvoker);
+            }
+        }
+        return false;
     }
 
     @Override
