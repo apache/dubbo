@@ -46,6 +46,7 @@ import org.apache.dubbo.rpc.protocol.rest.rest.AnotherUserRestService;
 import org.apache.dubbo.rpc.protocol.rest.rest.AnotherUserRestServiceImpl;
 import org.apache.dubbo.rpc.protocol.rest.rest.HttpMethodService;
 import org.apache.dubbo.rpc.protocol.rest.rest.HttpMethodServiceImpl;
+
 import org.apache.dubbo.rpc.protocol.rest.rest.RestDemoForTestException;
 import org.hamcrest.CoreMatchers;
 import org.jboss.resteasy.specimpl.MultivaluedMapImpl;
