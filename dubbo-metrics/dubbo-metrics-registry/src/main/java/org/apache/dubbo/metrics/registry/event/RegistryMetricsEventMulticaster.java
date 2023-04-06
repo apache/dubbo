@@ -61,8 +61,8 @@ public final class RegistryMetricsEventMulticaster extends SimpleMetricsEventMul
             (event, type) ->
             {
                 Map<ServiceType, Map<String, Integer>> summaryMap = event.getAttachmentValue(ATTACHMENT_DIRECTORY_MAP);
-                summaryMap.forEach((serviceType, map) -> map.forEach((serviceKey, size) ->
-                    event.getCollector().incrementServiceKey(event.getSource().getApplicationName(), serviceKey, serviceType, size)));
+                summaryMap.forEach((serviceType, map) ->
+                    event.getCollector().setNum(serviceType, event.getSource().getApplicationName(), map));
             }
         ));
 
