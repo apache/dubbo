@@ -15,12 +15,13 @@
 
 syntax = "proto3";
 
-package org.apache.dubbo.triple.meta;
+package org.apache.dubbo.triple.metadata;
 
 option java_multiple_files = true;
-option java_outer_classname = "MetaServiceProto";
+option java_outer_classname = "MetadataProto";
 
 message MetaRequest {
+  string revision = 1;
 }
 
 message MetaResponse {
@@ -39,7 +40,15 @@ message ServiceInfo {
   map<string, string> params = 7;
 }
 
+message AllMetaRequest {}
 
-service MetaService {
+message AllMetaResponse{
+  repeated MetaResponse allMetadata= 1;
+}
+
+
+service Metadata {
   rpc getMetadata(MetaRequest) returns (MetaResponse);
+
+  rpc getAllMetadata(AllMetaRequest) returns (AllMetaResponse);
 }
