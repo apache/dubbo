@@ -25,7 +25,7 @@ import org.apache.dubbo.metrics.event.MetricsEvent;
 public interface MetricsListener<E extends MetricsEvent> {
 
     default boolean isSupport(MetricsEvent event) {
-        return true;
+        return event.isAvailable();
     }
 
     /**

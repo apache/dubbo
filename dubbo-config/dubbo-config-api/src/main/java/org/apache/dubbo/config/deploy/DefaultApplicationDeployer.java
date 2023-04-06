@@ -201,6 +201,8 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             if (initialized) {
                 return;
             }
+            onInitialize();
+
             // register shutdown hook
             registerShutdownHook();
 
@@ -385,7 +387,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         }
         collector.setCollectEnabled(true);
         collector.collectApplication(applicationModel);
-        collector.setThreadpoolCollectEnabled(Optional.ofNullable(metricsConfig.getEnableThreadpoolMetrics()).orElse(true));
+        collector.setThreadpoolCollectEnabled(Optional.ofNullable(metricsConfig.getEnableThreadpool()).orElse(true));
         MetricsReporterFactory metricsReporterFactory = getExtensionLoader(MetricsReporterFactory.class).getAdaptiveExtension();
         MetricsReporter metricsReporter = metricsReporterFactory.createMetricsReporter(metricsConfig.toUrl());
         metricsReporter.init();
@@ -858,7 +860,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     private void registerServiceInstance() {
         try {
             registered = true;
-            MetricsEventBus.post(new RegistryEvent.MetricsApplicationRegisterEvent(applicationModel),
+            MetricsEventBus.post(RegistryEvent.toRegisterEvent(applicationModel),
                 () -> {
                     ServiceInstanceMetadataUtils.registerMetadataAndInstance(applicationModel);
                     return null;
@@ -1080,6 +1082,16 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             newState = DeployState.STOPPED;
         }
         return newState;
+    }
+
+    private void onInitialize() {
+        for (DeployListener<ApplicationModel> listener : listeners) {
+            try {
+                listener.onInitialize(applicationModel);
+            } catch (Throwable e) {
+                logger.error(CONFIG_FAILED_START_MODEL, "", "", getIdentifier() + " an exception occurred when handle initialize event", e);
+            }
+        }
     }
 
     private void exportMetadataService() {

@@ -30,6 +30,7 @@ public class RTEvent extends MetricsEvent {
         super(applicationModel);
         this.rt = rt;
         this.metric = metric;
+        setAvailable(true);
     }
 
     public Long getRt() {

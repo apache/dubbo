@@ -31,16 +31,6 @@ import java.util.function.Consumer;
 public class SimpleMetricsEventMulticaster implements MetricsEventMulticaster {
     private final List<MetricsListener<?>> listeners = Collections.synchronizedList(new ArrayList<>());
 
-    private boolean available = false;
-
-    public void setAvailable() {
-        this.available = true;
-    }
-
-    public boolean isAvailable() {
-        return available;
-    }
-
     @Override
     public void addListener(MetricsListener<?> listener) {
         listeners.add(listener);

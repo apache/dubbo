@@ -18,6 +18,7 @@
 package org.apache.dubbo.metrics.event;
 
 import org.apache.dubbo.metrics.model.MethodMetric;
+import org.apache.dubbo.metrics.model.TypeWrapper;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 /**
@@ -30,6 +31,7 @@ public abstract class MetricsEvent {
      */
     protected transient ApplicationModel source;
     private boolean available = true;
+    protected TypeWrapper typeWrapper;
 
     @SuppressWarnings({"unchecked"})
     public MetricsEvent(ApplicationModel source) {
@@ -57,6 +59,10 @@ public abstract class MetricsEvent {
 
     public ApplicationModel getSource() {
         return source;
+    }
+
+    public boolean isAssignableFrom(Object type) {
+        return typeWrapper.isAssignableFrom(type);
     }
 
     public String toString() {
