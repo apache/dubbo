@@ -37,6 +37,7 @@ import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 
 import org.apache.dubbo.rpc.protocol.rest.annotation.metadata.MetadataResolver;
+import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
 import org.apache.dubbo.rpc.protocol.rest.exception.DoublePathCheckException;
 import org.apache.dubbo.rpc.protocol.rest.exception.mapper.ExceptionHandler;
 import org.apache.dubbo.rpc.protocol.rest.exception.mapper.ExceptionMapper;
@@ -499,6 +500,23 @@ class JaxrsRestProtocolTest {
         });
 
         Assertions.assertEquals(null, demoService.noBodyArg(null));
+        exporter.unexport();
+    }
+
+    @Test
+    void testToken() {
+        DemoService server = new DemoServiceImpl();
+
+        URL url = this.registerProvider(exportUrl, server, DemoService.class);
+
+        URL nettyUrl = url.addParameter(RestConstant.TOKEN_KEY, "TOKEN");
+        Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(server, DemoService.class, nettyUrl));
+
+        DemoService demoService = this.proxy.getProxy(protocol.refer(DemoService.class, nettyUrl));
+
+
+
+        Assertions.assertEquals("Hello, hello", demoService.sayHello("hello"));
         exporter.unexport();
     }
 
