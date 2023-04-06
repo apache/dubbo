@@ -52,7 +52,6 @@ import java.util.stream.Collectors;
 
 
 public class HttpClientRestClient implements RestClient {
-    private static List<String> bodyHttpMethod = Arrays.asList(HttpPut.METHOD_NAME, HttpPatch.METHOD_NAME, HttpPost.METHOD_NAME);
     private final CloseableHttpClient closeableHttpClient;
     private final HttpClientConfig httpClientConfig;
 
