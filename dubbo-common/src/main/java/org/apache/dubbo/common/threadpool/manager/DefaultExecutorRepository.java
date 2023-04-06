@@ -30,13 +30,13 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ConsumerConfig;
 import org.apache.dubbo.config.ModuleConfig;
 import org.apache.dubbo.config.ProviderConfig;
+import org.apache.dubbo.rpc.executor.DefaultExecutorSupport;
+import org.apache.dubbo.rpc.executor.ExecutorSupport;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
-import org.apache.dubbo.rpc.executor.DefaultExecutorSupport;
-import org.apache.dubbo.rpc.executor.ExecutorSupport;
 import org.apache.dubbo.rpc.model.ServiceModel;
 
 import java.util.Map;
@@ -66,6 +66,8 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXP
  */
 public class DefaultExecutorRepository implements ExecutorRepository, ExtensionAccessorAware {
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(DefaultExecutorRepository.class);
+
+    private static final String MAX_KEY = String.valueOf(Integer.MAX_VALUE);
 
     private volatile ScheduledExecutorService serviceExportExecutor;
 
@@ -146,8 +148,6 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
         // Consumer's executor is sharing globally, key=Integer.MAX_VALUE
         return String.valueOf(Integer.MAX_VALUE);
     }
-
-    private static final String MAX_KEY = String.valueOf(Integer.MAX_VALUE);
 
     private String getConsumerKey(ServiceModel serviceModel) {
         // Consumer's executor is sharing globally, key=Integer.MAX_VALUE
