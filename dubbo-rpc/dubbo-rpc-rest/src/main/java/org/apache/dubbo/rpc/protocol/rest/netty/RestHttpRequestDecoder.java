@@ -65,7 +65,6 @@ public class RestHttpRequestDecoder extends MessageToMessageDecoder<io.netty.han
                 // write response
                 try {
                     nettyHttpResponse.finish();
-                    ctx.close();
                 } catch (IOException e) {
                     logger.error("", e.getCause().getMessage(), "dubbo rest rest http response flush error", e.getMessage(), e);
                 }
