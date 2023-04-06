@@ -358,6 +358,7 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
         if (metadataInfo == null) {
             return;
         }
+        applicationModel.setAttribute("metadata",metadataInfo);
         if (metadataReport != null) {
             SubscriberMetadataIdentifier identifier = new SubscriberMetadataIdentifier(serviceName, metadataInfo.getRevision());
             if ((DEFAULT_METADATA_STORAGE_TYPE.equals(metadataType) && metadataReport.shouldReportMetadata()) || REMOTE_METADATA_STORAGE_TYPE.equals(metadataType)) {

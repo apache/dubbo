@@ -30,6 +30,8 @@ import org.apache.dubbo.rpc.model.ModuleModel;
 
 import io.grpc.health.v1.DubboHealthTriple;
 import io.grpc.health.v1.Health;
+import org.apache.dubbo.triple.meta.DubboMetaServiceTriple;
+import org.apache.dubbo.triple.meta.MetaService;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -48,6 +50,8 @@ public class TriBuiltinService {
 
     private Health healthService;
 
+    private MetaService metaService;
+
     private FrameworkModel frameworkModel;
 
     private ReflectionV1AlphaService reflectionServiceV1Alpha;
@@ -59,7 +63,7 @@ public class TriBuiltinService {
 
     public TriBuiltinService(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
-        if (enable()) {
+        if (!enable()) {
             init();
         }
     }
@@ -68,16 +72,18 @@ public class TriBuiltinService {
         if (init.compareAndSet(false, true)) {
             healthStatusManager = new HealthStatusManager(new TriHealthImpl());
             healthService = healthStatusManager.getHealthService();
+            metaService = new TriMetaServiceImpl();
             reflectionServiceV1Alpha = new ReflectionV1AlphaService();
             proxyFactory = frameworkModel.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
             pathResolver = frameworkModel.getExtensionLoader(PathResolver.class).getDefaultExtension();
             addSingleBuiltinService(DubboHealthTriple.SERVICE_NAME, healthService, Health.class);
+            addSingleBuiltinService(DubboMetaServiceTriple.SERVICE_NAME, metaService, MetaService.class);
             addSingleBuiltinService(ReflectionV1AlphaService.SERVICE_NAME, reflectionServiceV1Alpha,
                 ReflectionV1AlphaService.class);
         }
     }
 
-    public boolean enable(){
+    public boolean enable() {
         return config.getBoolean(TRI_BUILTIN_SERVICE_INIT, false);
     }
 
