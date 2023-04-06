@@ -65,6 +65,8 @@ import static org.apache.dubbo.common.constants.RegistryConstants.ENABLE_EMPTY_P
 import static org.apache.dubbo.metadata.RevisionResolver.EMPTY_REVISION;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getExportedServicesRevision;
 
+;
+
 /**
  * TODO, refactor to move revision-metadata mapping to ServiceDiscovery. Instances should have already been mapped with metadata when reached here.
  * <p>
@@ -403,7 +405,7 @@ public class ServiceInstancesChangedListener {
      */
     protected void notifyAddressChanged() {
 
-        MetricsEventBus.post(new RegistryEvent.MetricsNotifyEvent(applicationModel),
+        MetricsEventBus.post(RegistryEvent.toNotifyEvent(applicationModel),
             () -> {
                 Map<String, Integer> lastNumMap = new HashMap<>();
                 // 1 different services

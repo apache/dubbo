@@ -28,6 +28,7 @@ public class MethodEvent extends MetricsEvent {
         super(applicationModel);
         this.type = type;
         this.methodMetric = methodMetric;
+        setAvailable(true);
     }
 
     public MethodMetric getMethodMetric() {
