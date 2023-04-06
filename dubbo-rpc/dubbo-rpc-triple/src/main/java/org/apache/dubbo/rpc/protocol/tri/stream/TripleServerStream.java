@@ -61,6 +61,7 @@ import org.apache.dubbo.rpc.protocol.tri.transport.TripleWriteQueue;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -408,12 +409,9 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
                     deCompressor = compressor;
                 }
             }
-
-            Map<String, Object> requestMetadata = headersToMap(headers, () -> {
-                return Optional.ofNullable(headers.get(TripleHeaderEnum.TRI_HEADER_CONVERT.getHeader()))
-                    .map(CharSequence::toString)
-                    .orElse(null);
-            });
+            Map<String, String> assemblyMap = new HashMap<>();
+            extractTriHeaderConvert(assemblyMap, headers);
+            Map<String, Object> requestMetadata = headersToMap(headers, assemblyMap);
             boolean hasStub = pathResolver.hasNativeStub(path);
             if (hasStub) {
                 listener = new StubAbstractServerCall(invoker, TripleServerStream.this,
@@ -460,6 +458,14 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
                     .withDescription("Canceled by client ,errorCode=" + errorCode));
             });
         }
+    }
+
+    private void extractTriHeaderConvert(Map<String, String> assemblyMap, Http2Headers headers) {
+        CharSequence headerConvertCs =headers.get(TripleHeaderEnum.TRI_HEADER_CONVERT.getHeader());
+        if (headerConvertCs == null || headerConvertCs.length() == 0) {
+            return;
+        }
+        assemblyMap.put(TripleHeaderEnum.TRI_HEADER_CONVERT.getHeader(), headerConvertCs.toString());
     }
 
 

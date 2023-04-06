@@ -21,6 +21,7 @@ import io.netty.handler.codec.http2.Http2Headers;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.JsonUtils;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
@@ -29,9 +30,7 @@ import org.apache.dubbo.rpc.protocol.tri.stream.StreamUtils;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Supplier;
 
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_PARSE;
 
 public abstract class AbstractH2TransportListener implements H2TransportListener {
@@ -44,7 +43,7 @@ public abstract class AbstractH2TransportListener implements H2TransportListener
      * @param trailers the metadata from remote
      * @return KV pairs map
      */
-    protected Map<String, Object> headersToMap(Http2Headers trailers, Supplier<Object> convertUpperHeaderSupplier) {
+    protected Map<String, Object> headersToMap(Http2Headers trailers, Map<String, String> assemblyMap) {
         if (trailers == null) {
             return Collections.emptyMap();
         }
@@ -67,24 +66,20 @@ public abstract class AbstractH2TransportListener implements H2TransportListener
         }
 
         // try converting upper key
-        Object obj = convertUpperHeaderSupplier.get();
-        if (obj == null) {
+        if (assemblyMap == null) {
             return attachments;
         }
-        if (obj instanceof String) {
-            String json = TriRpcStatus.decodeMessage((String) obj);
-            Map<String, String> map = JsonUtils.getJson().toJavaObject(json, Map.class);
-            for (Map.Entry<String, String> entry : map.entrySet()) {
-                Object val = attachments.remove(entry.getKey());
-                if (val != null) {
-                    attachments.put(entry.getValue(), val);
-                }
+        String headerConvertValue = assemblyMap.get(TripleHeaderEnum.TRI_HEADER_CONVERT.getHeader());
+        if (StringUtils.isEmpty(headerConvertValue)) {
+            return attachments;
+        }
+        String json = TriRpcStatus.decodeMessage(headerConvertValue);
+        Map<String, String> map = JsonUtils.getJson().toJavaObject(json, Map.class);
+        for (Map.Entry<String, String> entry : map.entrySet()) {
+            Object val = attachments.remove(entry.getKey());
+            if (val != null) {
+                attachments.put(entry.getValue(), val);
             }
-        } else {
-            // If convertUpperHeaderSupplier does not return String, just fail...
-            // Internal invocation, use INTERNAL_ERROR instead.
-
-            LOGGER.error(INTERNAL_ERROR, "wrong internal invocation", "", "Triple convertNoLowerCaseHeader error, obj is not String");
         }
         return attachments;
     }

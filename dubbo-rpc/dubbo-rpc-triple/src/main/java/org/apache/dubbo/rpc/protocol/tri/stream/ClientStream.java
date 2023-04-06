@@ -40,7 +40,7 @@ public interface ClientStream extends Stream {
          *
          * @param attachments received from remote peer
          */
-        default void onComplete(TriRpcStatus status, Map<String, Object> attachments, Map<String, String> triExceptionCodeAttachments) {
+        default void onComplete(TriRpcStatus status, Map<String, Object> attachments, Map<String, String> assemblyMap) {
         }
 
         /**

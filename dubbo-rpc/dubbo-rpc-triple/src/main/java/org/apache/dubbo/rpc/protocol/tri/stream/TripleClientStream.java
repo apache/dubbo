@@ -33,6 +33,7 @@ import io.netty.handler.codec.http2.Http2StreamChannelBootstrap;
 import io.netty.util.ReferenceCountUtil;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.ClassLoadUtil;
@@ -234,9 +235,11 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
 
         void finishProcess(TriRpcStatus status, Http2Headers trailers) {
             final Map<String, String> reserved = filterReservedHeaders(trailers);
+            Map<String, String> assemblyMap = new HashMap<>();
+            extractTriHeaderConvert(assemblyMap, reserved);
             final Map<String, Object> attachments = headersToMap(trailers,
-                () -> reserved.get(TripleHeaderEnum.TRI_HEADER_CONVERT.getHeader()));
-            final Map<String, String> assemblyMap = extractTriExceptionCode(reserved);
+                assemblyMap);
+            extractTriExceptionCode(assemblyMap, reserved);
             final TriRpcStatus detailStatus;
             final TriRpcStatus statusFromTrailers = getStatusFromTrailers(reserved);
             if (statusFromTrailers != null) {
@@ -468,13 +471,22 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
         }
     }
 
-    private Map<String, String> extractTriExceptionCode(Map<String, String> reserved) {
-        Map<String, String> attachments = new HashMap<>();
+
+    protected Map<String, String> extractTriHeaderConvert(Map<String, String> assemblyMap, Map<String, String> reserved) {
+        String headerConvert = reserved.get(TripleHeaderEnum.TRI_HEADER_CONVERT.getHeader());
+        if (StringUtils.isEmpty(headerConvert)) {
+            return assemblyMap;
+        }
+        assemblyMap.put(TripleHeaderEnum.TRI_HEADER_CONVERT.getHeader(), headerConvert);
+        return assemblyMap;
+    }
+
+    private Map<String, String> extractTriExceptionCode(Map<String, String> assemblyMap, Map<String, String> reserved) {
         for (Map.Entry<String, String> entry : reserved.entrySet()) {
             if (entry.getKey().equals(TripleHeaderEnum.TRI_EXCEPTION_CODE.getHeader())) {
-                attachments.put(entry.getKey(), entry.getValue());
+                assemblyMap.put(entry.getKey(), entry.getValue());
             }
         }
-        return attachments;
+        return assemblyMap;
     }
 }
