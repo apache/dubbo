@@ -16,14 +16,14 @@
  */
 package org.apache.dubbo.common.serialize.fastjson2;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.Type;
-
 import org.apache.dubbo.common.serialize.ObjectInput;
 
 import com.alibaba.fastjson2.JSONB;
 import com.alibaba.fastjson2.JSONReader;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.Type;
 
 /**
  * FastJson object input implementation
@@ -113,13 +113,13 @@ public class FastJson2ObjectInput implements ObjectInput {
         }
         Fastjson2SecurityManager.Handler securityFilter = fastjson2SecurityManager.getSecurityFilter();
         if (securityFilter.isCheckSerializable()) {
-            return (T) JSONB.parseObject(bytes, Object.class, securityFilter,
+            return JSONB.parseObject(bytes, cls, securityFilter,
                 JSONReader.Feature.UseDefaultConstructorAsPossible,
                 JSONReader.Feature.ErrorOnNoneSerializable,
                 JSONReader.Feature.UseNativeObject,
                 JSONReader.Feature.FieldBased);
         } else {
-            return (T) JSONB.parseObject(bytes, Object.class, securityFilter,
+            return JSONB.parseObject(bytes, cls, securityFilter,
                 JSONReader.Feature.UseDefaultConstructorAsPossible,
                 JSONReader.Feature.UseNativeObject,
                 JSONReader.Feature.FieldBased);
@@ -127,7 +127,6 @@ public class FastJson2ObjectInput implements ObjectInput {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public <T> T readObject(Class<T> cls, Type type) throws IOException, ClassNotFoundException {
         updateClassLoaderIfNeed();
         int length = readLength();
@@ -138,13 +137,13 @@ public class FastJson2ObjectInput implements ObjectInput {
         }
         Fastjson2SecurityManager.Handler securityFilter = fastjson2SecurityManager.getSecurityFilter();
         if (securityFilter.isCheckSerializable()) {
-            return (T) JSONB.parseObject(bytes, Object.class, securityFilter,
+            return JSONB.parseObject(bytes, cls, securityFilter,
                 JSONReader.Feature.UseDefaultConstructorAsPossible,
                 JSONReader.Feature.ErrorOnNoneSerializable,
                 JSONReader.Feature.UseNativeObject,
                 JSONReader.Feature.FieldBased);
         } else {
-            return (T) JSONB.parseObject(bytes, Object.class, securityFilter,
+            return JSONB.parseObject(bytes, cls, securityFilter,
                 JSONReader.Feature.UseDefaultConstructorAsPossible,
                 JSONReader.Feature.UseNativeObject,
                 JSONReader.Feature.FieldBased);
