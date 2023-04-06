@@ -91,10 +91,10 @@ public final class RegistryMetricsEventMulticaster extends SimpleMetricsEventMul
         );
     }
 
-    private RegistryListener onFinishEventBuild(ApplicationType applicationType, String registryOpType) {
-        return RegistryListener.onFinish(applicationType,
+    private RegistryListener onFinishEventBuild(MetricsKey metricsKey, String registryOpType) {
+        return RegistryListener.onFinish(metricsKey,
             (event, type) -> {
-                event.increment(type);
+                collector.incrAppNum(event.getSource().getApplicationName(), metricsKey);
                 event.addApplicationRT(registryOpType);
             }
         );

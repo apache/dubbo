@@ -32,9 +32,13 @@ public abstract class MetricsEvent {
      */
     protected transient ApplicationModel source;
     private boolean available = true;
-    private MetricsKeyDecorator keyDecorator;
+    private final MetricsKeyDecorator keyDecorator;
 
     @SuppressWarnings({"unchecked"})
+    public MetricsEvent(ApplicationModel source) {
+        this(source, null);
+    }
+
     public MetricsEvent(ApplicationModel source, MetricsKeyDecorator keyDecorator) {
         if (source == null) {
             this.source = ApplicationModel.defaultModel();

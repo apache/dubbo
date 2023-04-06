@@ -20,6 +20,7 @@ package org.apache.dubbo.metrics.registry.event;
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.metrics.event.TimeCounterEvent;
 import org.apache.dubbo.metrics.exception.MetricsNeverHappenException;
+import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.key.MetricsKeyDecorator;
 import org.apache.dubbo.metrics.registry.RegistryConstants;
 import org.apache.dubbo.metrics.registry.collector.RegistryMetricsCollector;
@@ -99,8 +100,8 @@ public class RegistryEvent extends TimeCounterEvent {
         getCollector().addServiceKeyRT(getSource().getApplicationName(), getAttachmentValue(attServiceKey), attSize, getTimePair().calc());
     }
 
-    public void increment(ApplicationType type) {
-        getCollector().incrAppNum(getSource().getApplicationName(), type);
+    public void increment(MetricsKey metricsKey) {
+        getCollector().incrAppNum(getSource().getApplicationName(), metricsKey);
     }
 
 
