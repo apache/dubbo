@@ -64,7 +64,6 @@ import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataU
 public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(AbstractServiceDiscovery.class);
     private volatile boolean isDestroy;
-    private volatile boolean isRegistry = true;
 
     protected final String serviceName;
     protected volatile ServiceInstance serviceInstance;
@@ -132,19 +131,16 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
         if (isDestroy) {
             return;
         }
-        this.serviceInstance = createServiceInstance(this.metadataInfo);
-        if (!isValidInstance(this.serviceInstance)) {
-            isRegistry = false;
-            logger.warn(REGISTRY_FAILED_FETCH_INSTANCE, "", "", "No valid instance found, stop registering instance address to registry.");
+        ServiceInstance serviceInstance = createServiceInstance(this.metadataInfo);
+        if (!isValidInstance(serviceInstance)) {
             return;
         }
-
+        this.serviceInstance = serviceInstance;
         boolean revisionUpdated = calOrUpdateInstanceRevision(this.serviceInstance);
         if (revisionUpdated) {
             reportMetadata(this.metadataInfo);
             doRegister(this.serviceInstance);
         }
-        isRegistry = true;
     }
 
     /**
@@ -159,20 +155,12 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
         }
 
         if (this.serviceInstance == null) {
-            this.serviceInstance = createServiceInstance(this.metadataInfo);
-        } else if (!isValidInstance(this.serviceInstance)) {
-            ServiceInstanceMetadataUtils.customizeInstance(this.serviceInstance, this.applicationModel);
+            register();
         }
 
         if (!isValidInstance(this.serviceInstance)) {
             return;
         }
-
-        if (!isRegistry) {
-            register();
-            return;
-        }
-
         ServiceInstance oldServiceInstance = this.serviceInstance;
         DefaultServiceInstance newServiceInstance = new DefaultServiceInstance((DefaultServiceInstance) oldServiceInstance);
         boolean revisionUpdated = calOrUpdateInstanceRevision(newServiceInstance);
