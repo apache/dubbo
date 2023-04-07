@@ -40,7 +40,6 @@ import static org.apache.dubbo.metrics.registry.RegistryConstants.ATTACHMENT_KEY
  */
 public class RegistryEvent extends TimeCounterEvent {
     private final RegistryMetricsCollector collector;
-    protected Map<String, Object> attachment = new HashMap<>(8);
 
     public RegistryEvent(ApplicationModel applicationModel, MetricsKeyDecorator key) {
         super(applicationModel, key);
@@ -62,17 +61,7 @@ public class RegistryEvent extends TimeCounterEvent {
         return collector;
     }
 
-    @SuppressWarnings("unchecked")
-    public <T> T getAttachmentValue(String key) {
-        if (!attachment.containsKey(key)) {
-            throw new MetricsNeverHappenException("Attachment key [" + key + "] not found");
-        }
-        return (T) attachment.get(key);
-    }
 
-    public void putAttachment(String key, Object value) {
-        attachment.put(key, value);
-    }
 
 
     public void setLastNum(ServiceType type) {
@@ -84,16 +73,16 @@ public class RegistryEvent extends TimeCounterEvent {
 
     }
 
-    public void setNum(ApplicationType type, String attachmentKey) {
-        getCollector().setNum(type, getSource().getApplicationName(), getAttachmentValue(attachmentKey));
+    public void setNum(MetricsKey metricsKey, String attachmentKey) {
+        getCollector().setNum(metricsKey, getSource().getApplicationName(), getAttachmentValue(attachmentKey));
     }
 
-    public void incrementServiceKey(ServiceType type, String attServiceKey, String attSize) {
-        incrementServiceKey(type, attServiceKey, (int) getAttachmentValue(attSize));
+    public void incrementServiceKey(MetricsKey metricsKey, String attServiceKey, String attSize) {
+        incrementServiceKey(metricsKey, attServiceKey, (int) getAttachmentValue(attSize));
     }
 
-    public void incrementServiceKey(ServiceType type, String attServiceKey, int size) {
-        getCollector().incrementServiceKey(getSource().getApplicationName(), getAttachmentValue(attServiceKey), type, size);
+    public void incrementServiceKey(MetricsKey metricsKey, String attServiceKey, int size) {
+        getCollector().incrementServiceKey(getSource().getApplicationName(), getAttachmentValue(attServiceKey), metricsKey, size);
     }
 
     public void addServiceKeyRT(String attServiceKey, String attSize) {

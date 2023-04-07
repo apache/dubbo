@@ -70,25 +70,20 @@ public class SimpleMetricsEventMulticaster implements MetricsEventMulticaster {
 
     @Override
     @SuppressWarnings({"unchecked"})
-    public void publishFinishEvent(MetricsEvent event) {
+    public void publishFinishEvent(TimeCounterEvent event) {
         publishTimeEvent(event, metricsLifeListener -> metricsLifeListener.onEventFinish(event));
     }
 
     @Override
     @SuppressWarnings({"unchecked"})
-    public void publishErrorEvent(MetricsEvent event) {
+    public void publishErrorEvent(TimeCounterEvent event) {
         publishTimeEvent(event, metricsLifeListener -> metricsLifeListener.onEventError(event));
     }
 
     @SuppressWarnings({"rawtypes"})
-    private void publishTimeEvent(MetricsEvent event, Consumer<MetricsLifeListener> consumer) {
+    private void publishTimeEvent(TimeCounterEvent event, Consumer<MetricsLifeListener> consumer) {
         if (validateIfApplicationConfigExist(event)) return;
-        if (event instanceof EmptyEvent) {
-            return;
-        }
-        if (event instanceof TimeCounterEvent) {
-            ((TimeCounterEvent) event).getTimePair().end();
-        }
+        event.getTimePair().end();
         for (MetricsListener listener : listeners) {
             if (listener instanceof MetricsLifeListener && listener.isSupport(event)) {
                 consumer.accept(((MetricsLifeListener) listener));

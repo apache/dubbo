@@ -17,10 +17,14 @@
 
 package org.apache.dubbo.metrics.event;
 
+import org.apache.dubbo.metrics.exception.MetricsNeverHappenException;
 import org.apache.dubbo.metrics.model.MethodMetric;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.key.MetricsKeyDecorator;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * BaseMetricsEvent.
@@ -33,6 +37,7 @@ public abstract class MetricsEvent {
     protected transient ApplicationModel source;
     private boolean available = true;
     private final MetricsKeyDecorator keyDecorator;
+    protected Map<String, Object> attachment = new HashMap<>(8);
 
     @SuppressWarnings({"unchecked"})
     public MetricsEvent(ApplicationModel source) {
@@ -48,6 +53,18 @@ public abstract class MetricsEvent {
             this.source = source;
         }
         this.keyDecorator = keyDecorator;
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> T getAttachmentValue(String key) {
+        if (!attachment.containsKey(key)) {
+            throw new MetricsNeverHappenException("Attachment key [" + key + "] not found");
+        }
+        return (T) attachment.get(key);
+    }
+
+    public void putAttachment(String key, Object value) {
+        attachment.put(key, value);
     }
 
     public void setAvailable(boolean available) {

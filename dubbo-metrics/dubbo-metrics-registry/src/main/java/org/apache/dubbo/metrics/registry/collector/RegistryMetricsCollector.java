@@ -70,7 +70,7 @@ public class RegistryMetricsCollector implements ApplicationMetricsCollector<Reg
         return Optional.ofNullable(collectEnabled).orElse(true);
     }
 
-    public void setNum(ServiceType registryType, String applicationName, Map<String, Integer> lastNumMap) {
+    public void setNum(MetricsKey registryType, String applicationName, Map<String, Integer> lastNumMap) {
         lastNumMap.forEach((serviceKey, num) ->
             this.stats.setServiceKey(registryType, applicationName, serviceKey, num));
     }
@@ -85,8 +85,8 @@ public class RegistryMetricsCollector implements ApplicationMetricsCollector<Reg
         this.stats.increment(metricsKey, applicationName);
     }
 
-    public void incrementServiceKey(String applicationName, String serviceKey, ServiceType registryType, int size) {
-        this.stats.incrementServiceKey(registryType, applicationName, serviceKey, size);
+    public void incrementServiceKey(String applicationName, String serviceKey, MetricsKey metricsKey, int size) {
+        this.stats.incrementServiceKey(metricsKey, applicationName, serviceKey, size);
     }
 
     @Override

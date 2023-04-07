@@ -89,24 +89,27 @@ public class MetricsEventBus {
             return targetSupplier.get();
         }
         dispatcher.publishEvent(event);
+        if (!(event instanceof TimeCounterEvent)) {
+            return targetSupplier.get();
+        }
         T result;
         if (trFunction == null) {
             try {
                 result = targetSupplier.get();
             } catch (Throwable e) {
-                dispatcher.publishErrorEvent(event);
+                dispatcher.publishErrorEvent((TimeCounterEvent) event);
                 throw e;
             }
             event.customAfterPost(result);
-            dispatcher.publishFinishEvent(event);
+            dispatcher.publishFinishEvent((TimeCounterEvent) event);
         } else {
             // Custom failure status
             result = targetSupplier.get();
             if (trFunction.apply(result)) {
                 event.customAfterPost(result);
-                dispatcher.publishFinishEvent(event);
+                dispatcher.publishFinishEvent((TimeCounterEvent)event);
             } else {
-                dispatcher.publishErrorEvent(event);
+                dispatcher.publishErrorEvent((TimeCounterEvent)event);
             }
         }
         return result;

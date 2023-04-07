@@ -20,6 +20,7 @@ package org.apache.dubbo.metrics.registry;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.key.MetricsKeyDecorator;
 import org.apache.dubbo.metrics.model.key.MetricsLevel;
+import org.apache.dubbo.metrics.model.key.MetricsPlaceType;
 
 import java.util.Arrays;
 import java.util.List;
@@ -31,11 +32,11 @@ public interface RegistryConstants {
     String ATTACHMENT_KEY_LAST_NUM_MAP = "lastNumMap";
     String ATTACHMENT_KEY_DIR_NUM = "dirNum";
 
-    String OP_TYPE_REGISTER = "register";
-    String OP_TYPE_SUBSCRIBE = "subscribe";
-    String OP_TYPE_NOTIFY = "notify";
-    String OP_TYPE_REGISTER_SERVICE = "register.service";
-    String OP_TYPE_SUBSCRIBE_SERVICE = "subscribe.service";
+    MetricsPlaceType OP_TYPE_REGISTER = MetricsPlaceType.of("register", MetricsLevel.APP);
+    MetricsPlaceType OP_TYPE_SUBSCRIBE = MetricsPlaceType.of("subscribe", MetricsLevel.APP);
+    MetricsPlaceType OP_TYPE_NOTIFY = MetricsPlaceType.of("notify", MetricsLevel.APP);
+    MetricsPlaceType OP_TYPE_REGISTER_SERVICE = MetricsPlaceType.of("register.service", MetricsLevel.SERVICE);
+    MetricsPlaceType OP_TYPE_SUBSCRIBE_SERVICE = MetricsPlaceType.of("subscribe.service", MetricsLevel.SERVICE);
 
     // App-level
     List<MetricsKey> appKeys = Arrays.asList(MetricsKey.REGISTER_METRIC_REQUESTS, MetricsKey.REGISTER_METRIC_REQUESTS_SUCCEED, MetricsKey.REGISTER_METRIC_REQUESTS_FAILED,

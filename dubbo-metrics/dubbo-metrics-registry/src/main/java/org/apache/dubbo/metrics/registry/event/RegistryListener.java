@@ -24,7 +24,7 @@ import org.apache.dubbo.metrics.model.key.MetricsKey;
 
 import java.util.function.BiConsumer;
 
-public abstract class RegistryListener implements MetricsLifeListener<TimeCounterEvent> {
+public abstract class RegistryListener implements MetricsLifeListener<RegistryEvent> {
 
     private final MetricsKey keyType;
 
@@ -37,12 +37,12 @@ public abstract class RegistryListener implements MetricsLifeListener<TimeCounte
         return event.isAvailable() && event.isAssignableFrom(keyType);
     }
 
-    static RegistryListener onEvent(MetricsKey enumType, BiConsumer<MetricsEvent, MetricsKey> postFunc) {
+    static RegistryListener onEvent(MetricsKey metricsKey, BiConsumer<RegistryEvent, MetricsKey> postFunc) {
 
-        return new RegistryListener(enumType) {
+        return new RegistryListener(metricsKey) {
             @Override
-            public void onEvent(TimeCounterEvent event) {
-                postFunc.accept(event, enumType);
+            public void onEvent(RegistryEvent event) {
+                postFunc.accept(event, metricsKey);
             }
         };
     }
@@ -51,7 +51,7 @@ public abstract class RegistryListener implements MetricsLifeListener<TimeCounte
 
         return new RegistryListener(enumType) {
             @Override
-            public void onEventFinish(TimeCounterEvent event) {
+            public void onEventFinish(RegistryEvent event) {
                 finishFunc.accept(event, enumType);
             }
         };
@@ -61,7 +61,7 @@ public abstract class RegistryListener implements MetricsLifeListener<TimeCounte
 
         return new RegistryListener(metricsKey) {
             @Override
-            public void onEventError(TimeCounterEvent event) {
+            public void onEventError(RegistryEvent event) {
                 errorFunc.accept(event, metricsKey);
             }
         };
