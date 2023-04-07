@@ -474,18 +474,16 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
 
     protected Map<String, String> extractTriHeaderConvert(Map<String, String> assemblyMap, Map<String, String> reserved) {
         String headerConvert = reserved.get(TripleHeaderEnum.TRI_HEADER_CONVERT.getHeader());
-        if (StringUtils.isEmpty(headerConvert)) {
-            return assemblyMap;
+        if (!StringUtils.isEmpty(headerConvert)) {
+            assemblyMap.put(TripleHeaderEnum.TRI_HEADER_CONVERT.getHeader(), headerConvert);
         }
-        assemblyMap.put(TripleHeaderEnum.TRI_HEADER_CONVERT.getHeader(), headerConvert);
         return assemblyMap;
     }
 
     private Map<String, String> extractTriExceptionCode(Map<String, String> assemblyMap, Map<String, String> reserved) {
-        for (Map.Entry<String, String> entry : reserved.entrySet()) {
-            if (entry.getKey().equals(TripleHeaderEnum.TRI_EXCEPTION_CODE.getHeader())) {
-                assemblyMap.put(entry.getKey(), entry.getValue());
-            }
+        String value = assemblyMap.remove(TripleHeaderEnum.TRI_EXCEPTION_CODE.getHeader());
+        if (!StringUtils.isEmpty(value)) {
+            assemblyMap.put(TripleHeaderEnum.TRI_EXCEPTION_CODE.getHeader(), value);
         }
         return assemblyMap;
     }

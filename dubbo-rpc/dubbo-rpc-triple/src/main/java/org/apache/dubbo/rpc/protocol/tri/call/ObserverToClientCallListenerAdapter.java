@@ -46,7 +46,7 @@ public class ObserverToClientCallListenerAdapter implements ClientCall.Listener 
     }
 
     @Override
-    public void onClose(TriRpcStatus status, Map<String, Object> trailers, Map<String, String> triExceptionCodeAttachments) {
+    public void onClose(TriRpcStatus status, Map<String, Object> trailers, Map<String, String> assemblyMap) {
         if (status.isOk()) {
             delegate.onCompleted();
         } else {

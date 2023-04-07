@@ -69,7 +69,7 @@ public abstract class AbstractH2TransportListener implements H2TransportListener
         if (assemblyMap == null) {
             return attachments;
         }
-        String headerConvertValue = assemblyMap.get(TripleHeaderEnum.TRI_HEADER_CONVERT.getHeader());
+        String headerConvertValue = assemblyMap.remove(TripleHeaderEnum.TRI_HEADER_CONVERT.getHeader());
         if (StringUtils.isEmpty(headerConvertValue)) {
             return attachments;
         }
