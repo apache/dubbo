@@ -23,12 +23,13 @@ import org.apache.dubbo.metrics.collector.ApplicationMetricsCollector;
 import org.apache.dubbo.metrics.collector.MetricsCollector;
 import org.apache.dubbo.metrics.event.MetricsEvent;
 import org.apache.dubbo.metrics.event.MetricsEventMulticaster;
+import org.apache.dubbo.metrics.model.MetricsCategory;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
-import org.apache.dubbo.metrics.registry.collector.stat.RegistryStatComposite;
 import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.metrics.registry.event.RegistryMetricsEventMulticaster;
 import org.apache.dubbo.metrics.registry.event.type.ApplicationType;
 import org.apache.dubbo.metrics.registry.event.type.ServiceType;
+import org.apache.dubbo.metrics.registry.stat.RegistryStatComposite;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.ArrayList;
@@ -71,21 +72,20 @@ public class RegistryMetricsCollector implements ApplicationMetricsCollector<App
 
     public void setNum(ServiceType registryType, String applicationName, Map<String, Integer> lastNumMap) {
         lastNumMap.forEach((serviceKey, num) ->
-            this.stats.setServiceKey(registryType, applicationName, serviceKey, num));
+            this.stats.setServiceKey(registryType.getMetricsKey(), applicationName, serviceKey, num));
     }
 
     public void setNum(ApplicationType registryType, String applicationName, Integer num) {
-        this.stats.setApplicationKey(registryType, applicationName, num);
+        this.stats.setApplicationKey(registryType.getMetricsKey(), applicationName, num);
     }
-
 
     @Override
     public void increment(String applicationName, ApplicationType registryType) {
-        this.stats.increment(registryType, applicationName);
+        this.stats.incrementApp(registryType.getMetricsKey(), applicationName, 1);
     }
 
     public void incrementServiceKey(String applicationName, String serviceKey, ServiceType registryType, int size) {
-        this.stats.incrementServiceKey(registryType, applicationName, serviceKey, size);
+        this.stats.incrementServiceKey(registryType.getMetricsKey(), applicationName, serviceKey, size);
     }
 
     @Override
@@ -103,10 +103,7 @@ public class RegistryMetricsCollector implements ApplicationMetricsCollector<App
         if (!isCollectEnabled()) {
             return list;
         }
-        list.addAll(stats.exportNumMetrics());
-        list.addAll(stats.exportRtMetrics());
-        list.addAll(stats.exportSkMetrics());
-
+        list.addAll(stats.export(MetricsCategory.REGISTRY));
         return list;
     }
 

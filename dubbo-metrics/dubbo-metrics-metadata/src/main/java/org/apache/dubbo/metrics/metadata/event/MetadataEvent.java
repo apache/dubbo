@@ -23,8 +23,8 @@ import org.apache.dubbo.metrics.exception.MetricsNeverHappenException;
 import org.apache.dubbo.metrics.metadata.collector.MetadataMetricsCollector;
 import org.apache.dubbo.metrics.metadata.type.ApplicationType;
 import org.apache.dubbo.metrics.metadata.type.ServiceType;
-import org.apache.dubbo.metrics.model.MetricsLevel;
-import org.apache.dubbo.metrics.model.TypeWrapper;
+import org.apache.dubbo.metrics.model.key.MetricsLevel;
+import org.apache.dubbo.metrics.model.key.TypeWrapper;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.HashMap;

@@ -15,13 +15,8 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.metrics.metadata;
+package org.apache.dubbo.metrics.model.key;
 
-public interface MetadataConstants {
-
-    String OP_TYPE_PUSH = "push";
-    String OP_TYPE_SUBSCRIBE = "subscribe";
-    String OP_TYPE_STORE_PROVIDER_INTERFACE = "store.provider.interface";
-
-
+public enum MetricsLevel {
+    APP,SERVICE
 }

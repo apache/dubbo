@@ -23,11 +23,12 @@ import org.apache.dubbo.metrics.collector.ApplicationMetricsCollector;
 import org.apache.dubbo.metrics.collector.MetricsCollector;
 import org.apache.dubbo.metrics.event.MetricsEvent;
 import org.apache.dubbo.metrics.event.MetricsEventMulticaster;
-import org.apache.dubbo.metrics.metadata.collector.stat.MetadataStatComposite;
+import org.apache.dubbo.metrics.metadata.stat.MetadataStatComposite;
 import org.apache.dubbo.metrics.metadata.type.ApplicationType;
 import org.apache.dubbo.metrics.metadata.event.MetadataEvent;
 import org.apache.dubbo.metrics.metadata.event.MetadataMetricsEventMulticaster;
 import org.apache.dubbo.metrics.metadata.type.ServiceType;
+import org.apache.dubbo.metrics.model.MetricsCategory;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
@@ -70,11 +71,11 @@ public class MetadataMetricsCollector implements ApplicationMetricsCollector<App
 
     @Override
     public void increment(String applicationName, ApplicationType registryType) {
-        this.stats.increment(registryType, applicationName);
+        this.stats.incrementApp(registryType.getMetricsKey(), applicationName,1);
     }
 
     public void incrementServiceKey(String applicationName, String serviceKey, ServiceType registryType, int size) {
-        this.stats.incrementServiceKey(registryType, applicationName, serviceKey, size);
+        this.stats.incrementServiceKey(registryType.getMetricsKey(), applicationName, serviceKey, size);
     }
 
     @Override
@@ -92,10 +93,7 @@ public class MetadataMetricsCollector implements ApplicationMetricsCollector<App
         if (!isCollectEnabled()) {
             return list;
         }
-        list.addAll(stats.exportNumMetrics());
-        list.addAll(stats.exportRtMetrics());
-        list.addAll(stats.exportServiceNumMetrics());
-
+        list.addAll(stats.export(MetricsCategory.METADATA));
         return list;
     }
 

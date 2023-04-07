@@ -17,7 +17,7 @@
 
 package org.apache.dubbo.metrics.registry.event.type;
 
-import org.apache.dubbo.metrics.model.MetricsKey;
+import org.apache.dubbo.metrics.model.key.MetricsKey;
 
 public enum ApplicationType {
     R_TOTAL(MetricsKey.REGISTER_METRIC_REQUESTS),
