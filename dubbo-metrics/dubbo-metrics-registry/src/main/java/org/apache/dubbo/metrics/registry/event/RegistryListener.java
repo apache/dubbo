@@ -18,12 +18,13 @@
 package org.apache.dubbo.metrics.registry.event;
 
 import org.apache.dubbo.metrics.event.MetricsEvent;
+import org.apache.dubbo.metrics.event.TimeCounterEvent;
 import org.apache.dubbo.metrics.listener.MetricsLifeListener;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
 
 import java.util.function.BiConsumer;
 
-public abstract class RegistryListener implements MetricsLifeListener<MetricsEvent> {
+public abstract class RegistryListener implements MetricsLifeListener<TimeCounterEvent> {
 
     private final MetricsKey keyType;
 
@@ -40,28 +41,28 @@ public abstract class RegistryListener implements MetricsLifeListener<MetricsEve
 
         return new RegistryListener(enumType) {
             @Override
-            public void onEvent(MetricsEvent event) {
+            public void onEvent(TimeCounterEvent event) {
                 postFunc.accept(event, enumType);
             }
         };
     }
 
-    static RegistryListener onFinish(MetricsKey enumType, BiConsumer<MetricsEvent, MetricsKey> finishFunc) {
+    static RegistryListener onFinish(MetricsKey enumType, BiConsumer<TimeCounterEvent, MetricsKey> finishFunc) {
 
         return new RegistryListener(enumType) {
             @Override
-            public void onEventFinish(MetricsEvent event) {
+            public void onEventFinish(TimeCounterEvent event) {
                 finishFunc.accept(event, enumType);
             }
         };
     }
 
-    static RegistryListener onError(MetricsKey enumType, BiConsumer<MetricsEvent, MetricsKey> errorFunc) {
+    static RegistryListener onError(MetricsKey metricsKey, BiConsumer<TimeCounterEvent, MetricsKey> errorFunc) {
 
-        return new RegistryListener(enumType) {
+        return new RegistryListener(metricsKey) {
             @Override
-            public void onEventError(MetricsEvent event) {
-                errorFunc.accept(event, enumType);
+            public void onEventError(TimeCounterEvent event) {
+                errorFunc.accept(event, metricsKey);
             }
         };
     }

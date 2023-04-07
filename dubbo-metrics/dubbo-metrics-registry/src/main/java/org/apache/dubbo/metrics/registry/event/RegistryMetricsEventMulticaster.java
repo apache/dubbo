@@ -23,13 +23,7 @@ import org.apache.dubbo.metrics.registry.collector.RegistryMetricsCollector;
 import org.apache.dubbo.metrics.registry.event.type.ApplicationType;
 import org.apache.dubbo.metrics.registry.event.type.ServiceType;
 
-import static org.apache.dubbo.metrics.registry.RegistryConstants.ATTACHMENT_KEY_DIR_NUM;
-import static org.apache.dubbo.metrics.registry.RegistryConstants.ATTACHMENT_KEY_SERVICE;
-import static org.apache.dubbo.metrics.registry.RegistryConstants.OP_TYPE_NOTIFY;
-import static org.apache.dubbo.metrics.registry.RegistryConstants.OP_TYPE_REGISTER;
-import static org.apache.dubbo.metrics.registry.RegistryConstants.OP_TYPE_REGISTER_SERVICE;
-import static org.apache.dubbo.metrics.registry.RegistryConstants.OP_TYPE_SUBSCRIBE;
-import static org.apache.dubbo.metrics.registry.RegistryConstants.OP_TYPE_SUBSCRIBE_SERVICE;
+import static org.apache.dubbo.metrics.registry.RegistryConstants.*;
 
 public final class RegistryMetricsEventMulticaster extends SimpleMetricsEventMulticaster {
 
@@ -39,21 +33,21 @@ public final class RegistryMetricsEventMulticaster extends SimpleMetricsEventMul
         this.collector = collector;
         // MetricsRegisterListener
         super.addListener(onPostEventBuild(MetricsKey.REGISTER_METRIC_REQUESTS));
-        super.addListener(onFinishEventBuild(ApplicationType.R_SUCCEED, OP_TYPE_REGISTER));
-        super.addListener(onErrorEventBuild(ApplicationType.R_FAILED, OP_TYPE_REGISTER));
+        super.addListener(onFinishEventBuild(MetricsKey.REGISTER_METRIC_REQUESTS_SUCCEED, OP_TYPE_REGISTER));
+        super.addListener(onErrorEventBuild(MetricsKey.REGISTER_METRIC_REQUESTS_FAILED, OP_TYPE_REGISTER));
 
         // MetricsSubscribeListener
-        super.addListener(onPostEventBuild(ApplicationType.S_TOTAL));
-        super.addListener(onFinishEventBuild(ApplicationType.S_SUCCEED, OP_TYPE_SUBSCRIBE));
-        super.addListener(onErrorEventBuild(ApplicationType.S_FAILED, OP_TYPE_SUBSCRIBE));
+        super.addListener(onPostEventBuild(MetricsKey.SUBSCRIBE_METRIC_NUM));
+        super.addListener(onFinishEventBuild(MetricsKey.SUBSCRIBE_METRIC_NUM_SUCCEED, OP_TYPE_SUBSCRIBE));
+        super.addListener(onErrorEventBuild(MetricsKey.SUBSCRIBE_METRIC_NUM_FAILED, OP_TYPE_SUBSCRIBE));
 
         // MetricsNotifyListener
-        super.addListener(onPostEventBuild(ApplicationType.N_TOTAL));
+        super.addListener(onPostEventBuild(MetricsKey.NOTIFY_METRIC_REQUESTS));
         super.addListener(
-            RegistryListener.onFinish(ServiceType.N_LAST_NUM,
+            RegistryListener.onFinish(MetricsKey.NOTIFY_METRIC_NUM_LAST,
                 (event, type) -> {
-                    event.setLastNum(type);
-                    event.addApplicationRT(OP_TYPE_NOTIFY);
+                    collector.setNum(type, event.getSource().getApplicationName(), ((RegistryEvent) event).getAttachmentValue(ATTACHMENT_KEY_LAST_NUM_MAP));
+                    collector.updateAppRt(event.getSource().getApplicationName(), OP_TYPE_NOTIFY, event.getTimePair().calc());
                 }
             ));
 
@@ -95,16 +89,16 @@ public final class RegistryMetricsEventMulticaster extends SimpleMetricsEventMul
         return RegistryListener.onFinish(metricsKey,
             (event, type) -> {
                 collector.incrAppNum(event.getSource().getApplicationName(), metricsKey);
-                event.addApplicationRT(registryOpType);
+                collector.updateAppRt(event.getSource().getApplicationName(), registryOpType, event.getTimePair().calc());
             }
         );
     }
 
-    private RegistryListener onErrorEventBuild(ApplicationType applicationType, String registryOpType) {
-        return RegistryListener.onError(applicationType,
+    private RegistryListener onErrorEventBuild(MetricsKey metricsKey, String registryOpType) {
+        return RegistryListener.onError(metricsKey,
             (event, type) -> {
-                event.increment(type);
-                event.addApplicationRT(registryOpType);
+                collector.incrAppNum(event.getSource().getApplicationName(), metricsKey);
+                collector.updateAppRt(event.getSource().getApplicationName(), registryOpType, event.getTimePair().calc());
             }
         );
     }

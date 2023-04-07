@@ -75,8 +75,8 @@ public class RegistryMetricsCollector implements ApplicationMetricsCollector<Reg
             this.stats.setServiceKey(registryType, applicationName, serviceKey, num));
     }
 
-    public void setNum(ApplicationType registryType, String applicationName, Integer num) {
-        this.stats.setApplicationKey(registryType, applicationName, num);
+    public void setNum(MetricsKey metricsKey, String applicationName, Integer num) {
+        this.stats.setApplicationKey(metricsKey, applicationName, num);
     }
 
 

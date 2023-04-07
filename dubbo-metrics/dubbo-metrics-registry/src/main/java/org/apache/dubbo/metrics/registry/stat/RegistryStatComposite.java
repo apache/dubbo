@@ -97,11 +97,11 @@ public class RegistryStatComposite implements MetricsExport {
         return singleRtStats;
     }
 
-    public void setApplicationKey(ApplicationType type, String applicationName, int num) {
-        if (!applicationNumStats.containsKey(type)) {
+    public void setApplicationKey(MetricsKey metricsKey, String applicationName, int num) {
+        if (!applicationNumStats.containsKey(metricsKey)) {
             return;
         }
-        applicationNumStats.get(type).computeIfAbsent(applicationName, k -> new AtomicLong(0L)).set(num);
+        applicationNumStats.get(metricsKey).computeIfAbsent(applicationName, k -> new AtomicLong(0L)).set(num);
     }
 
     public void setServiceKey(ServiceType type, String applicationName, String serviceKey, int num) {
