@@ -33,7 +33,7 @@ public class ChannelHandlers {
         return ChannelHandlers.getInstance().wrapInternal(handler, url);
     }
 
-    public static ChannelHandlers getInstance() {
+    protected static ChannelHandlers getInstance() {
         return INSTANCE;
     }
 

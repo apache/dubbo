@@ -55,6 +55,14 @@ public class User implements Serializable {
         this.age = age;
     }
 
+    public static User getInstance() {
+        User user = new User();
+        user.setAge(18);
+        user.setName("dubbo");
+        user.setId(404l);
+        return user;
+    }
+
     @Override
     public String toString() {
         return "User{" + "id=" + id + ", name='" + name + '\'' + ", age=" + age + '}';

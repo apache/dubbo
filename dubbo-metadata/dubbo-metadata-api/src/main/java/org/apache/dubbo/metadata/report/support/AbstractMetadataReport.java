@@ -279,8 +279,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
 
     private void storeProviderMetadataTask(MetadataIdentifier providerMetadataIdentifier, ServiceDefinition serviceDefinition) {
 
-        String interfaceMethodName = serviceDefinition.getCanonicalName();
-        MetadataEvent metadataEvent = new MetadataEvent.StoreProviderMetadataEvent(applicationModel, interfaceMethodName);
+        MetadataEvent metadataEvent = MetadataEvent.toServiceSubscribeEvent(applicationModel, serviceDefinition.getCanonicalName());
         MetricsEventBus.post(metadataEvent, () ->
             {
                 boolean result = true;

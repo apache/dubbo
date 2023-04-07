@@ -17,6 +17,9 @@
 package org.apache.dubbo.metadata.rest.media;
 
 
+import java.util.Arrays;
+import java.util.List;
+
 public enum MediaType {
     ALL_VALUE("*/*"),
     APPLICATION_JSON_VALUE("application/json"),
@@ -43,4 +46,11 @@ public enum MediaType {
         }
         return stringBuilder.toString();
     }
+
+    public static List<MediaType> getSupportMediaTypes() {
+        return Arrays.asList(APPLICATION_JSON_VALUE,
+            APPLICATION_FORM_URLENCODED_VALUE,
+            TEXT_PLAIN,TEXT_XML,OCTET_STREAM);
+    }
+
 }

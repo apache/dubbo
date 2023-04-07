@@ -42,13 +42,17 @@ import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 @Activate(group = CONSUMER, order = -1, onClass = "io.micrometer.observation.NoopObservationRegistry")
 public class ObservationSenderFilter implements ClusterFilter, BaseFilter.Listener, ScopeModelAware {
 
-    private final ObservationRegistry observationRegistry;
+    private ObservationRegistry observationRegistry;
 
-    private final DubboClientObservationConvention clientObservationConvention;
+    private DubboClientObservationConvention clientObservationConvention;
 
     public ObservationSenderFilter(ApplicationModel applicationModel) {
-        observationRegistry = applicationModel.getBeanFactory().getBean(ObservationRegistry.class);
-        clientObservationConvention = applicationModel.getBeanFactory().getBean(DubboClientObservationConvention.class);
+        applicationModel.getApplicationConfigManager().getTracing().ifPresent(cfg -> {
+            if (Boolean.TRUE.equals(cfg.getEnabled())) {
+                observationRegistry = applicationModel.getBeanFactory().getBean(ObservationRegistry.class);
+                clientObservationConvention = applicationModel.getBeanFactory().getBean(DubboClientObservationConvention.class);
+            }
+        });
     }
 
     @Override

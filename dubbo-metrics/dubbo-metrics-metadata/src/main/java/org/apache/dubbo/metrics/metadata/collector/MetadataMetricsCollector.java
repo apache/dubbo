@@ -24,8 +24,10 @@ import org.apache.dubbo.metrics.collector.MetricsCollector;
 import org.apache.dubbo.metrics.event.MetricsEvent;
 import org.apache.dubbo.metrics.event.MetricsEventMulticaster;
 import org.apache.dubbo.metrics.metadata.collector.stat.MetadataStatComposite;
+import org.apache.dubbo.metrics.metadata.type.ApplicationType;
 import org.apache.dubbo.metrics.metadata.event.MetadataEvent;
 import org.apache.dubbo.metrics.metadata.event.MetadataMetricsEventMulticaster;
+import org.apache.dubbo.metrics.metadata.type.ServiceType;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
@@ -38,7 +40,7 @@ import java.util.Optional;
  * Registry implementation of {@link MetricsCollector}
  */
 @Activate
-public class MetadataMetricsCollector implements ApplicationMetricsCollector<MetadataEvent.ApplicationType, MetadataEvent> {
+public class MetadataMetricsCollector implements ApplicationMetricsCollector<ApplicationType, MetadataEvent> {
 
     private Boolean collectEnabled = null;
     private final MetadataStatComposite stats;
@@ -61,17 +63,17 @@ public class MetadataMetricsCollector implements ApplicationMetricsCollector<Met
     public boolean isCollectEnabled() {
         if (collectEnabled == null) {
             ConfigManager configManager = applicationModel.getApplicationConfigManager();
-            configManager.getMetrics().ifPresent(metricsConfig -> setCollectEnabled(metricsConfig.getEnableMetadataMetrics()));
+            configManager.getMetrics().ifPresent(metricsConfig -> setCollectEnabled(metricsConfig.getEnableMetadata()));
         }
         return Optional.ofNullable(collectEnabled).orElse(true);
     }
 
     @Override
-    public void increment(String applicationName, MetadataEvent.ApplicationType registryType) {
+    public void increment(String applicationName, ApplicationType registryType) {
         this.stats.increment(registryType, applicationName);
     }
 
-    public void incrementServiceKey(String applicationName, String serviceKey, MetadataEvent.ServiceType registryType, int size) {
+    public void incrementServiceKey(String applicationName, String serviceKey, ServiceType registryType, int size) {
         this.stats.incrementServiceKey(registryType, applicationName, serviceKey, size);
     }
 
