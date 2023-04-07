@@ -23,6 +23,7 @@ import org.apache.dubbo.common.serialize.MultipleSerialization;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.config.Constants;
 import org.apache.dubbo.remoting.utils.UrlUtils;
+import org.apache.dubbo.remoting.transport.CodecSupport;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.PackableMethod;
 
@@ -98,11 +99,14 @@ public class ReflectionPackableMethod implements PackableMethod {
                 .getExtension(url.getParameter(Constants.MULTI_SERIALIZATION_KEY,
                     CommonConstants.DEFAULT_KEY));
 
+            // client
             this.requestPack = new WrapRequestPack(serialization, url, serializeName, actualRequestTypes,
                 singleArgument);
-            this.responsePack = new WrapResponsePack(serialization, url, actualResponseType);
-            this.requestUnpack = new WrapRequestUnpack(serialization, url, actualRequestTypes);
-            this.responseUnpack = new WrapResponseUnpack(serialization, url, actualResponseType);
+            this.responseUnpack = new WrapResponseUnpack(serialization, url, serializeName, actualResponseType);
+
+            // server
+            this.responsePack = new WrapResponsePack(serialization, url, serializeName, actualResponseType);
+            this.requestUnpack = new WrapRequestUnpack(serialization, url, serializeName, actualRequestTypes);
         }
     }
 
@@ -316,13 +320,15 @@ public class ReflectionPackableMethod implements PackableMethod {
         private final URL url;
 
         private final Class<?> actualResponseType;
+        // wrapper request set serialize type
         String serialize;
 
-        private WrapResponsePack(MultipleSerialization multipleSerialization, URL url,
+        private WrapResponsePack(MultipleSerialization multipleSerialization, URL url, String defaultSerialize,
                                  Class<?> actualResponseType) {
             this.multipleSerialization = multipleSerialization;
             this.url = url;
             this.actualResponseType = actualResponseType;
+            this.serialize = defaultSerialize;
         }
 
         @Override
@@ -344,10 +350,14 @@ public class ReflectionPackableMethod implements PackableMethod {
         private final URL url;
         private final Class<?> returnClass;
 
-        private WrapResponseUnpack(MultipleSerialization serialization, URL url, Class<?> returnClass) {
+private final String requestSerializeName;
+
+
+        private WrapResponseUnpack(MultipleSerialization serialization, URL url, String requestSerializeName, Class<?> returnClass) {
             this.serialization = serialization;
             this.url = url;
             this.returnClass = returnClass;
+            this.requestSerializeName = requestSerializeName;
         }
 
         @Override
@@ -355,6 +365,9 @@ public class ReflectionPackableMethod implements PackableMethod {
             TripleCustomerProtocolWapper.TripleResponseWrapper wrapper = TripleCustomerProtocolWapper.TripleResponseWrapper
                 .parseFrom(data);
             final String serializeType = convertHessianFromWrapper(wrapper.getSerializeType());
+
+            CodecSupport.checkSerialization(requestSerializeName, serializeType);
+
             ByteArrayInputStream bais = new ByteArrayInputStream(wrapper.getData());
             return serialization.deserialize(url, serializeType, returnClass, bais);
         }
@@ -446,16 +459,23 @@ public class ReflectionPackableMethod implements PackableMethod {
 
         private final Class<?>[] actualRequestTypes;
 
-        private WrapRequestUnpack(MultipleSerialization serialization, URL url, Class<?>[] actualRequestTypes) {
+        private final String serializeName;
+
+        private WrapRequestUnpack(MultipleSerialization serialization, URL url, String serializeName, Class<?>[] actualRequestTypes) {
             this.serialization = serialization;
             this.url = url;
             this.actualRequestTypes = actualRequestTypes;
+            this.serializeName = serializeName;
         }
 
         @Override
         public Object unpack(byte[] data) throws IOException, ClassNotFoundException {
             TripleCustomerProtocolWapper.TripleRequestWrapper wrapper = TripleCustomerProtocolWapper.TripleRequestWrapper.parseFrom(
                 data);
+
+            String wrapperSerializeType = convertHessianFromWrapper(wrapper.getSerializeType());
+            CodecSupport.checkSerialization(serializeName, wrapperSerializeType);
+
             Object[] ret = new Object[wrapper.getArgs().size()];
             ((WrapResponsePack) responsePack).serialize = wrapper.getSerializeType();
             for (int i = 0; i < wrapper.getArgs().size(); i++) {

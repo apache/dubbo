@@ -1057,25 +1057,25 @@
             </xsd:annotation>
         </xsd:attribute>
 
-        <xsd:attribute name="enable-jvm-metrics" type="xsd:boolean" default="false">
+        <xsd:attribute name="enable-jvm" type="xsd:boolean" default="false">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ Enable jvm metrics when collecting. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
 
-        <xsd:attribute name="enable-threadpool-metrics" type="xsd:boolean" default="true">
+        <xsd:attribute name="enable-threadpool" type="xsd:boolean" default="true">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ Enable threadpool metrics when collecting. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
 
-        <xsd:attribute name="enable-registry-metrics" type="xsd:boolean" default="true">
+        <xsd:attribute name="enable-registry" type="xsd:boolean" default="true">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ Enable registry metrics when collecting. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
 
-        <xsd:attribute name="enable-metadata-metrics" type="xsd:boolean" default="true">
+        <xsd:attribute name="enable-metadata" type="xsd:boolean" default="true">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ Enable metadata metrics when collecting. ]]></xsd:documentation>
             </xsd:annotation>

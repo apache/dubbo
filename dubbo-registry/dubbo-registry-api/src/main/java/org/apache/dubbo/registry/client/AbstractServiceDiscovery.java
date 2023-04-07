@@ -228,7 +228,7 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
             int triedTimes = 0;
             while (triedTimes < 3) {
 
-                metadata = MetricsEventBus.post(new MetadataEvent.SubscribeEvent(applicationModel),
+                metadata = MetricsEventBus.post(MetadataEvent.toSubscribeEvent(applicationModel),
                     () -> MetadataUtils.getRemoteMetadata(revision, instances, metadataReport),
                     result -> result != MetadataInfo.EMPTY
                 );
@@ -361,7 +361,7 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
         if (metadataReport != null) {
             SubscriberMetadataIdentifier identifier = new SubscriberMetadataIdentifier(serviceName, metadataInfo.getRevision());
             if ((DEFAULT_METADATA_STORAGE_TYPE.equals(metadataType) && metadataReport.shouldReportMetadata()) || REMOTE_METADATA_STORAGE_TYPE.equals(metadataType)) {
-                MetricsEventBus.post(new MetadataEvent.PushEvent(applicationModel),
+                MetricsEventBus.post(MetadataEvent.toPushEvent(applicationModel),
                     () ->
                     {
                         metadataReport.publishAppMetadata(identifier, metadataInfo);

@@ -256,7 +256,7 @@ class DubboNamespaceHandlerTest {
         MetricsConfig metricsBean = ctx.getBean(MetricsConfig.class);
         MetricsConfig metrics = configManager.getMetrics().get();
 
-        assertTrue(metrics.getEnableJvmMetrics());
+        assertTrue(metrics.getEnableJvm());
 
         assertEquals(metrics.getAggregation().getEnabled(), true);
         assertEquals(metrics.getAggregation().getBucketNum(), 5);

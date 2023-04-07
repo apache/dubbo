@@ -77,6 +77,10 @@ public class NettyConnectionHandler extends ChannelInboundHandlerAdapter impleme
             LOGGER.debug(String.format("Connection %s is reconnecting, attempt=%d", connectionClient, 1));
         }
         final EventLoop eventLoop = nettyChannel.eventLoop();
+        if (connectionClient.isClosed()) {
+            LOGGER.info("The client has been closed and will not reconnect. ");
+            return;
+        }
         eventLoop.schedule(() -> {
             try {
                 connectionClient.doConnect();
