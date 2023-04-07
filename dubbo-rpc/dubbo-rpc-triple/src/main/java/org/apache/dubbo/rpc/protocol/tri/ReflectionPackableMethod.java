@@ -102,7 +102,7 @@ public class ReflectionPackableMethod implements PackableMethod {
             // client
             this.requestPack = new WrapRequestPack(serialization, url, serializeName, actualRequestTypes,
                 singleArgument);
-            this.responseUnpack = new WrapResponseUnpack(serialization, url, serializeName, actualResponseType);
+            this.responseUnpack = new WrapResponseUnpack(serialization, url, actualResponseType);
 
             // server
             this.responsePack = new WrapResponsePack(serialization, url, serializeName, actualResponseType);
@@ -350,14 +350,11 @@ public class ReflectionPackableMethod implements PackableMethod {
         private final URL url;
         private final Class<?> returnClass;
 
-        private final String requestSerializeName;
 
-
-        private WrapResponseUnpack(MultipleSerialization serialization, URL url, String requestSerializeName, Class<?> returnClass) {
+        private WrapResponseUnpack(MultipleSerialization serialization, URL url, Class<?> returnClass) {
             this.serialization = serialization;
             this.url = url;
             this.returnClass = returnClass;
-            this.requestSerializeName = requestSerializeName;
         }
 
         @Override
@@ -366,7 +363,7 @@ public class ReflectionPackableMethod implements PackableMethod {
                 .parseFrom(data);
             final String serializeType = convertHessianFromWrapper(wrapper.getSerializeType());
 
-            CodecSupport.checkSerialization(requestSerializeName, url);
+            CodecSupport.checkSerialization(serializeType, url);
 
             ByteArrayInputStream bais = new ByteArrayInputStream(wrapper.getData());
             return serialization.deserialize(url, serializeType, returnClass, bais);
