@@ -24,6 +24,9 @@ import org.apache.dubbo.common.utils.SerializeCheckStatus;
 import org.apache.dubbo.common.utils.SerializeSecurityManager;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
+import com.alibaba.fastjson2.JSONB;
+import com.alibaba.fastjson2.JSONReader;
+import com.alibaba.fastjson2.JSONWriter;
 import com.example.test.TestPojo;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -39,6 +42,23 @@ import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class FastJson2SerializationTest {
+
+    @Test
+    void test() {
+        System.out.println(JSONB.parseObject(JSONB.toBytes(new RuntimeException(), JSONWriter.Feature.WriteClassName,
+                JSONWriter.Feature.FieldBased,
+                JSONWriter.Feature.ErrorOnNoneSerializable,
+                JSONWriter.Feature.ReferenceDetection,
+                JSONWriter.Feature.WriteNulls,
+                JSONWriter.Feature.NotWriteDefaultValue,
+                JSONWriter.Feature.NotWriteHashMapArrayListClassName,
+                JSONWriter.Feature.WriteNameAsSymbol), String.class, JSONReader.Feature.SupportAutoType,
+            JSONReader.Feature.UseDefaultConstructorAsPossible,
+            JSONReader.Feature.ErrorOnNoneSerializable,
+            JSONReader.Feature.IgnoreAutoTypeNotMatch,
+            JSONReader.Feature.UseNativeObject,
+            JSONReader.Feature.FieldBased));
+    }
 
     @Test
     void testReadString() throws IOException {
@@ -63,7 +83,7 @@ public class FastJson2SerializationTest {
         {
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             ObjectOutput objectOutput = serialization.serialize(url, outputStream);
-            objectOutput.writeObject(new Date());
+            objectOutput.writeObject(new HashMap<>());
             objectOutput.flushBuffer();
 
             byte[] bytes = outputStream.toByteArray();
@@ -137,7 +157,7 @@ public class FastJson2SerializationTest {
         {
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             ObjectOutput objectOutput = serialization.serialize(url, outputStream);
-            objectOutput.writeObject(new Date());
+            objectOutput.writeObject(new HashMap<>());
             objectOutput.flushBuffer();
 
             byte[] bytes = outputStream.toByteArray();

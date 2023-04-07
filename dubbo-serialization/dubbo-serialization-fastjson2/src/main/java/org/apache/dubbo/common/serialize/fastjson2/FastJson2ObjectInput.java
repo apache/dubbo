@@ -140,12 +140,14 @@ public class FastJson2ObjectInput implements ObjectInput {
             return JSONB.parseObject(bytes, cls, securityFilter,
                 JSONReader.Feature.UseDefaultConstructorAsPossible,
                 JSONReader.Feature.ErrorOnNoneSerializable,
+                JSONReader.Feature.IgnoreAutoTypeNotMatch,
                 JSONReader.Feature.UseNativeObject,
                 JSONReader.Feature.FieldBased);
         } else {
             return JSONB.parseObject(bytes, cls, securityFilter,
                 JSONReader.Feature.UseDefaultConstructorAsPossible,
                 JSONReader.Feature.UseNativeObject,
+                JSONReader.Feature.IgnoreAutoTypeNotMatch,
                 JSONReader.Feature.FieldBased);
         }
     }
