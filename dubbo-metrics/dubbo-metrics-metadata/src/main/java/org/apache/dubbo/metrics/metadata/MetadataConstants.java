@@ -15,15 +15,13 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.metrics.registry;
+package org.apache.dubbo.metrics.metadata;
 
-public interface RegistryConstants {
+public interface MetadataConstants {
 
-    String OP_TYPE_REGISTER = "register";
+    String OP_TYPE_PUSH = "push";
     String OP_TYPE_SUBSCRIBE = "subscribe";
-    String OP_TYPE_NOTIFY = "notify";
-    String OP_TYPE_REGISTER_SERVICE = "register.service";
-    String OP_TYPE_SUBSCRIBE_SERVICE = "subscribe.service";
+    String OP_TYPE_STORE_PROVIDER_INTERFACE = "store.provider.interface";
 
 
 }

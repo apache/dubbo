@@ -14,30 +14,43 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.rest;
-
-import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
-
-public enum RestHeaderEnum {
-    CONTENT_TYPE(RestConstant.CONTENT_TYPE),
-    ACCEPT(RestConstant.ACCEPT),
-    GROUP(RestConstant.REST_HEADER_PREFIX + RestConstant.GROUP),
-    VERSION(RestConstant.REST_HEADER_PREFIX + RestConstant.VERSION),
-    PATH(RestConstant.REST_HEADER_PREFIX + RestConstant.PATH),
-    KEEP_ALIVE_HEADER(RestConstant.KEEP_ALIVE_HEADER),
-    CONNECTION(RestConstant.CONNECTION),
-    REST_HEADER_PREFIX(RestConstant.REST_HEADER_PREFIX),
-    TOKEN_KEY(RestConstant.REST_HEADER_PREFIX + RestConstant.TOKEN_KEY),
+package org.apache.dubbo.rpc.protocol.rest.rest;
 
 
-    ;
-    private final String header;
+public class HttpMethodServiceImpl implements HttpMethodService{
 
-    RestHeaderEnum(String header) {
-        this.header = header;
+    @Override
+    public String sayHelloPost(String name) {
+        return name;
     }
 
-    public String getHeader() {
-        return header;
+    @Override
+    public String sayHelloDelete(String name) {
+        return name;
+    }
+
+    @Override
+    public String sayHelloHead() {
+        return "hello";
+    }
+
+    @Override
+    public String sayHelloGet(String name) {
+        return name;
+    }
+
+    @Override
+    public String sayHelloPut(String name) {
+        return name;
+    }
+
+    @Override
+    public String sayHelloPatch(String name) {
+        return name;
+    }
+
+    @Override
+    public String sayHelloOptions(String name) {
+        return name;
     }
 }

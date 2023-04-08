@@ -14,30 +14,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.rest;
 
-import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
+package org.apache.dubbo.metrics.metadata.type;
 
-public enum RestHeaderEnum {
-    CONTENT_TYPE(RestConstant.CONTENT_TYPE),
-    ACCEPT(RestConstant.ACCEPT),
-    GROUP(RestConstant.REST_HEADER_PREFIX + RestConstant.GROUP),
-    VERSION(RestConstant.REST_HEADER_PREFIX + RestConstant.VERSION),
-    PATH(RestConstant.REST_HEADER_PREFIX + RestConstant.PATH),
-    KEEP_ALIVE_HEADER(RestConstant.KEEP_ALIVE_HEADER),
-    CONNECTION(RestConstant.CONNECTION),
-    REST_HEADER_PREFIX(RestConstant.REST_HEADER_PREFIX),
-    TOKEN_KEY(RestConstant.REST_HEADER_PREFIX + RestConstant.TOKEN_KEY),
+import org.apache.dubbo.metrics.model.MetricsKey;
 
+public enum ServiceType {
+
+    S_P_TOTAL(MetricsKey.STORE_PROVIDER_METADATA),
+    S_P_SUCCEED(MetricsKey.STORE_PROVIDER_METADATA_SUCCEED),
+    S_P_FAILED(MetricsKey.STORE_PROVIDER_METADATA_FAILED),
 
     ;
-    private final String header;
 
-    RestHeaderEnum(String header) {
-        this.header = header;
+    private final MetricsKey metricsKey;
+    private final boolean isIncrement;
+
+
+    ServiceType(MetricsKey metricsKey) {
+        this(metricsKey, true);
     }
 
-    public String getHeader() {
-        return header;
+    ServiceType(MetricsKey metricsKey, boolean isIncrement) {
+        this.metricsKey = metricsKey;
+        this.isIncrement = isIncrement;
+    }
+
+    public MetricsKey getMetricsKey() {
+        return metricsKey;
+    }
+
+    public boolean isIncrement() {
+        return isIncrement;
     }
 }
