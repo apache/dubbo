@@ -34,6 +34,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -194,12 +195,18 @@ public class CodecSupport {
         return false;
     }
 
-    public static void checkSerialization(String expectSerializeName, String actualSerializeName)throws IOException {
-        if (expectSerializeName.equals(actualSerializeName)
-            && SERIALIZATIONNAME_ID_MAP.containsKey(expectSerializeName)) {
-            return;
+    public static void checkSerialization(String requestSerializeName, URL url) throws IOException {
+        Collection<String> all = UrlUtils.allSerializations(url);
+        checkSerialization(requestSerializeName, all);
+    }
+
+    public static void checkSerialization(String requestSerializeName, Collection<String> allSerializeName) throws IOException {
+        for (String serialization : allSerializeName) {
+            if (serialization.equals(requestSerializeName)) {
+                return;
+            }
         }
-        throw new IOException("Unexpected serialization type:" + actualSerializeName + " received from network, please check if the peer send the right id.");
+        throw new IOException("Unexpected serialization type:" + requestSerializeName + " received from network, please check if the peer send the right id.");
     }
 
 
