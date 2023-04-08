@@ -292,7 +292,7 @@ public final class Version {
                     if (line.startsWith("#")) {
                         continue;
                     }
-                    String[] artifactInfo = line.split(":");
+                    String[] artifactInfo = line.split("=");
                     if (artifactInfo.length == 2) {
                         String key = artifactInfo[0];
                         String value = artifactInfo[1];
