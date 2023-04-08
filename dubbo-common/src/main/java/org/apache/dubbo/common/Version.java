@@ -18,7 +18,6 @@ package org.apache.dubbo.common;
 
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 
 import java.io.BufferedReader;
@@ -27,13 +26,10 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.CodeSource;
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -68,18 +64,33 @@ public final class Version {
     static {
         // get dubbo version and last commit id
         try {
-            Properties properties =
-                ConfigUtils.loadProperties(Collections.emptySet(), "META-INF/versions/dubbo-common");
-
-            VERSION = Optional.ofNullable(properties.getProperty("revision"))
-                .filter(StringUtils::isNotBlank)
-                .orElseGet(() -> getVersion(Version.class, ""));
-            LATEST_COMMIT_ID = Optional.ofNullable(properties.getProperty("git.commit.id")).orElse("");
+            tryLoadVersionFromResource();
             checkDuplicate();
         } catch (Throwable e) {
             logger.warn(COMMON_UNEXPECTED_EXCEPTION, "", "", "continue the old logic, ignore exception " + e.getMessage(), e);
+        }
+        if (StringUtils.isEmpty(VERSION)) {
             VERSION = getVersion(Version.class, "");
+        }
+        if (StringUtils.isEmpty(LATEST_COMMIT_ID)) {
             LATEST_COMMIT_ID = "";
+        }
+    }
+
+    private static void tryLoadVersionFromResource() throws IOException {
+        Enumeration<URL> configLoader = Version.class.getClassLoader().getResources("META-INF/versions/dubbo-common");
+        if (configLoader.hasMoreElements()) {
+            URL url = configLoader.nextElement();
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream(), StandardCharsets.UTF_8))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    if (line.startsWith("revision=")) {
+                        VERSION = line.substring("revision=".length());
+                    } else if (line.startsWith("git.commit.id=")) {
+                        LATEST_COMMIT_ID = line.substring("git.commit.id=".length());
+                    }
+                }
+            }
         }
     }
 
