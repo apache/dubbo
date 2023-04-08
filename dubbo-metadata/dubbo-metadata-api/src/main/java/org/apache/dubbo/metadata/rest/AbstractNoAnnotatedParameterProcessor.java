@@ -26,19 +26,20 @@ import static org.apache.dubbo.common.utils.ClassUtils.resolveClass;
 
 public abstract class AbstractNoAnnotatedParameterProcessor implements NoAnnotatedParameterRequestTagProcessor {
 
-    public void process(Parameter parameter, int parameterIndex, RestMethodMetadata restMethodMetadata) {
+    public boolean process(Parameter parameter, int parameterIndex, RestMethodMetadata restMethodMetadata) {
         MediaType mediaType = consumerContentType();
         if (!contentTypeSupport(restMethodMetadata, mediaType, parameter.getType())) {
-            return;
+            return false;
         }
         boolean isFormBody = isFormContentType(restMethodMetadata);
         addArgInfo(parameter, parameterIndex, restMethodMetadata, isFormBody);
+        return true;
     }
 
     private boolean contentTypeSupport(RestMethodMetadata restMethodMetadata, MediaType mediaType, Class paramType) {
 
         // @RequestParam String,number param
-        if (mediaType.equals(MediaType.ALL_VALUE) && (String.class == paramType || Number.class.isAssignableFrom(paramType))) {
+        if (mediaType.equals(MediaType.ALL_VALUE) && (String.class == paramType || paramType.isPrimitive() || Number.class.isAssignableFrom(paramType))) {
             return true;
         }
 

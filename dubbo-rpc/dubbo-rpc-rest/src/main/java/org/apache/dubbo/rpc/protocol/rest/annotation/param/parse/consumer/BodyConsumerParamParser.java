@@ -33,7 +33,7 @@ public class BodyConsumerParamParser implements BaseConsumerParamParser {
 
         RequestTemplate requestTemplate = parseContext.getRequestTemplate();
 
-        requestTemplate.body(args.get(argInfo.getIndex()));
+        requestTemplate.body(args.get(argInfo.getIndex()),argInfo.getParamType());
 
 
     }

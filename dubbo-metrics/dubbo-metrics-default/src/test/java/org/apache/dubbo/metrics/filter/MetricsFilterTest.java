@@ -84,7 +84,7 @@ class MetricsFilterTest {
         filter = new MetricsFilter();
 
         collector = applicationModel.getBeanFactory().getOrRegisterBean(DefaultMetricsCollector.class);
-        if (!initApplication.get()) {
+        if(!initApplication.get()) {
             collector.collectApplication(applicationModel);
             initApplication.set(true);
         }
@@ -264,14 +264,14 @@ class MetricsFilterTest {
     }
 
     @Test
-    public void testErrors() {
-        testFilterError(RpcException.SERIALIZATION_EXCEPTION,
-            MetricsKey.METRIC_REQUESTS_CODEC_FAILED.getNameByType(side));
-        testFilterError(RpcException.NETWORK_EXCEPTION,
-            MetricsKey.METRIC_REQUESTS_NETWORK_FAILED.getNameByType(side));
+    public void testErrors(){
+        testFilterError(RpcException.SERIALIZATION_EXCEPTION, MetricsKey.METRIC_REQUESTS_CODEC_FAILED.formatName(side));
+        testFilterError(RpcException.NETWORK_EXCEPTION, MetricsKey.METRIC_REQUESTS_NETWORK_FAILED.formatName(side));
     }
 
-    private void testFilterError(int errorCode, String name) {
+
+
+    private void testFilterError(int errorCode,MetricsKey metricsKey){
         setup();
         collector.setCollectEnabled(true);
         given(invoker.invoke(invocation)).willThrow(new RpcException(errorCode));
@@ -288,14 +288,14 @@ class MetricsFilterTest {
             }
         }
         Map<String, MetricSample> metricsMap = getMetricsMap();
-        Assertions.assertTrue(metricsMap.containsKey(name));
+        Assertions.assertTrue(metricsMap.containsKey(metricsKey.getName()));
 
-        MetricSample sample = metricsMap.get(name);
+        MetricSample sample = metricsMap.get(metricsKey.getName());
 
         Assertions.assertSame(((CounterMetricSample) sample).getValue().longValue(), count);
 
 
-        Assertions.assertTrue(metricsMap.containsKey(name));
+        Assertions.assertTrue(metricsMap.containsKey(metricsKey.getName()));
         Map<String, String> tags = sample.getTags();
 
         Assertions.assertEquals(tags.get(TAG_INTERFACE_KEY), INTERFACE_NAME);
