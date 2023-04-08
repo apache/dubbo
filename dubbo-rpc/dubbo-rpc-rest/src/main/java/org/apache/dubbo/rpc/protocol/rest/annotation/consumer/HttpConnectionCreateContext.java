@@ -25,8 +25,8 @@ import org.apache.dubbo.rpc.Invocation;
 public class HttpConnectionCreateContext {
 
     private RequestTemplate requestTemplate;
-    private HttpConnectionConfig connectionConfig;
     private RestMethodMetadata restMethodMetadata;
+    private ServiceRestMetadata serviceRestMetadata;
     private Invocation invocation;
     private URL url;
 
@@ -38,21 +38,13 @@ public class HttpConnectionCreateContext {
         this.requestTemplate = requestTemplate;
     }
 
-    public void setConnectionConfig(HttpConnectionConfig connectionConfig) {
-        this.connectionConfig = connectionConfig;
-    }
-
 
     public RequestTemplate getRequestTemplate() {
         return requestTemplate;
     }
 
-    public HttpConnectionConfig getConnectionConfig() {
-        return connectionConfig;
-    }
-
     public ServiceRestMetadata getServiceRestMetadata() {
-        return restMethodMetadata.getServiceRestMetadata();
+        return serviceRestMetadata;
     }
 
     public RestMethodMetadata getRestMethodMetadata() {
@@ -77,5 +69,9 @@ public class HttpConnectionCreateContext {
 
     public void setUrl(URL url) {
         this.url = url;
+    }
+
+    public void setServiceRestMetadata(ServiceRestMetadata serviceRestMetadata) {
+        this.serviceRestMetadata = serviceRestMetadata;
     }
 }

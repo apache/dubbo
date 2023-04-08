@@ -38,7 +38,7 @@ public interface SpringRestService {
     @RequestMapping(value = "/header", method = RequestMethod.GET, consumes = MediaType.TEXT_PLAIN_VALUE, produces = MediaType.TEXT_PLAIN_VALUE)
     String header(@RequestHeader("header") String header);
 
-    @RequestMapping(value = "/header", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/body", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     User body(@RequestBody User user);
 
     @RequestMapping(value = "/multiValue", method = RequestMethod.POST, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE, produces = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
@@ -48,5 +48,14 @@ public interface SpringRestService {
     @RequestMapping(value = "/pathVariable/{a}", method = RequestMethod.POST, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE, produces = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     String pathVariable(@PathVariable String a);
 
+    @RequestMapping(value = "/noAnnoParam", method = RequestMethod.POST, consumes = MediaType.TEXT_PLAIN_VALUE, produces = MediaType.TEXT_PLAIN_VALUE)
+    String noAnnoParam(String a);
+
+    @RequestMapping(value = "/noAnnoNumber", method = RequestMethod.POST, consumes = MediaType.ALL_VALUE, produces = MediaType.ALL_VALUE)
+    int noAnnoNumber(Integer b);
+
+
+    @RequestMapping(value = "/noAnnoPrimitive", method = RequestMethod.POST, consumes = MediaType.ALL_VALUE, produces = MediaType.ALL_VALUE)
+    int noAnnoPrimitive(int c);
 
 }

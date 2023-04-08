@@ -31,6 +31,11 @@ public class CertDeployerListener implements ApplicationDeployListener {
     }
 
     @Override
+    public void onInitialize(ApplicationModel scopeModel) {
+
+    }
+
+    @Override
     public void onStarting(ApplicationModel scopeModel) {
         scopeModel.getApplicationConfigManager().getSsl().ifPresent(sslConfig -> {
             if (Objects.nonNull(sslConfig.getCaAddress()) && dubboCertManager != null) {

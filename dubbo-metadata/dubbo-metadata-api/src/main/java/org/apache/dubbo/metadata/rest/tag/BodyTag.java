@@ -16,5 +16,8 @@
  */
 package org.apache.dubbo.metadata.rest.tag;
 
-public class BodyTag {
+/**
+ *  for @RequestBody class no found
+ */
+public interface BodyTag {
 }

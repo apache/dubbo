@@ -19,7 +19,7 @@ package org.apache.dubbo.metrics.registry.metrics.collector;
 
 import org.apache.dubbo.metrics.model.container.LongContainer;
 import org.apache.dubbo.metrics.registry.collector.stat.RegistryStatComposite;
-import org.apache.dubbo.metrics.registry.event.RegistryEvent;
+import org.apache.dubbo.metrics.registry.event.type.ApplicationType;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.apache.dubbo.metrics.registry.collector.stat.RegistryStatComposite.OP_TYPE_NOTIFY;
+import static org.apache.dubbo.metrics.registry.RegistryConstants.OP_TYPE_NOTIFY;
 
 public class RegistryStatCompositeTest {
 
@@ -36,12 +36,12 @@ public class RegistryStatCompositeTest {
     @Test
     void testInit() {
         RegistryStatComposite statComposite = new RegistryStatComposite();
-        Assertions.assertEquals(statComposite.applicationNumStats.size(), RegistryEvent.ApplicationType.values().length);
-        //(rt)5 * (register,subscribe,notify)3
-        Assertions.assertEquals(5 * 3, statComposite.appRtStats.size());
+        Assertions.assertEquals(statComposite.applicationNumStats.size(), ApplicationType.values().length);
+        //(rt)5 * (register,subscribe,notify,register.service,subscribe.service)5
+        Assertions.assertEquals(5 * 5, statComposite.rtStats.size());
         statComposite.applicationNumStats.values().forEach((v ->
             Assertions.assertEquals(v, new ConcurrentHashMap<>())));
-        statComposite.appRtStats.forEach(rtContainer ->
+        statComposite.rtStats.forEach(rtContainer ->
         {
             for (Map.Entry<String, ? extends Number> entry : rtContainer.entrySet()) {
                 Assertions.assertEquals(0L, rtContainer.getValueSupplier().apply(entry.getKey()));
@@ -52,16 +52,16 @@ public class RegistryStatCompositeTest {
     @Test
     void testIncrement() {
         RegistryStatComposite statComposite = new RegistryStatComposite();
-        statComposite.increment(RegistryEvent.ApplicationType.R_TOTAL, applicationName);
-        Assertions.assertEquals(1L, statComposite.applicationNumStats.get(RegistryEvent.ApplicationType.R_TOTAL).get(applicationName).get());
+        statComposite.increment(ApplicationType.R_TOTAL, applicationName);
+        Assertions.assertEquals(1L, statComposite.applicationNumStats.get(ApplicationType.R_TOTAL).get(applicationName).get());
     }
 
     @Test
     void testCalcRt() {
         RegistryStatComposite statComposite = new RegistryStatComposite();
         statComposite.calcApplicationRt(applicationName, OP_TYPE_NOTIFY, 10L);
-        Assertions.assertTrue(statComposite.appRtStats.stream().anyMatch(longContainer -> longContainer.specifyType(OP_TYPE_NOTIFY)));
-        Optional<LongContainer<? extends Number>> subContainer = statComposite.appRtStats.stream().filter(longContainer -> longContainer.specifyType(OP_TYPE_NOTIFY)).findFirst();
+        Assertions.assertTrue(statComposite.rtStats.stream().anyMatch(longContainer -> longContainer.specifyType(OP_TYPE_NOTIFY)));
+        Optional<LongContainer<? extends Number>> subContainer = statComposite.rtStats.stream().filter(longContainer -> longContainer.specifyType(OP_TYPE_NOTIFY)).findFirst();
         subContainer.ifPresent(v -> Assertions.assertEquals(10L, v.get(applicationName).longValue()));
     }
 }

@@ -19,7 +19,6 @@ package org.apache.dubbo.metrics.event;
 
 import org.apache.dubbo.metrics.listener.MetricsLifeListener;
 import org.apache.dubbo.metrics.listener.MetricsListener;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,16 +31,6 @@ import java.util.function.Consumer;
 public class SimpleMetricsEventMulticaster implements MetricsEventMulticaster {
     private final List<MetricsListener<?>> listeners = Collections.synchronizedList(new ArrayList<>());
 
-    private boolean available = false;
-
-    public void setAvailable() {
-        this.available = true;
-    }
-
-    public boolean isAvailable() {
-        return available;
-    }
-
     @Override
     public void addListener(MetricsListener<?> listener) {
         listeners.add(listener);
@@ -53,7 +42,7 @@ public class SimpleMetricsEventMulticaster implements MetricsEventMulticaster {
         if (event instanceof EmptyEvent) {
             return;
         }
-        if (validateIfSourceInstanceOfApplicationModel(event)) return;
+        if (validateIfApplicationConfigExist(event)) return;
         for (MetricsListener listener : listeners) {
             if (listener.isSupport(event)) {
                 listener.onEvent(event);
@@ -61,10 +50,10 @@ public class SimpleMetricsEventMulticaster implements MetricsEventMulticaster {
         }
     }
 
-    private boolean validateIfSourceInstanceOfApplicationModel(MetricsEvent event) {
-        if (event.getSource() instanceof ApplicationModel) {
+    private boolean validateIfApplicationConfigExist(MetricsEvent event) {
+        if (event.getSource() != null) {
             // Check if exist application config
-            return ((ApplicationModel) event.getSource()).NotExistApplicationConfig();
+            return event.getSource().NotExistApplicationConfig();
         }
         return false;
     }
@@ -83,12 +72,12 @@ public class SimpleMetricsEventMulticaster implements MetricsEventMulticaster {
 
     @SuppressWarnings({"rawtypes"})
     private void publishTimeEvent(MetricsEvent event, Consumer<MetricsLifeListener> consumer) {
-        if (validateIfSourceInstanceOfApplicationModel(event)) return;
+        if (validateIfApplicationConfigExist(event)) return;
         if (event instanceof EmptyEvent) {
             return;
         }
-        if (event instanceof TimeCounter) {
-            ((TimeCounter) event).getTimePair().end();
+        if (event instanceof TimeCounterEvent) {
+            ((TimeCounterEvent) event).getTimePair().end();
         }
         for (MetricsListener listener : listeners) {
             if (listener instanceof MetricsLifeListener && listener.isSupport(event)) {

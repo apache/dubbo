@@ -25,9 +25,9 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
-import static org.apache.dubbo.metrics.observation.DubboObservation.LowCardinalityKeyNames.RPC_METHOD;
-import static org.apache.dubbo.metrics.observation.DubboObservation.LowCardinalityKeyNames.RPC_SERVICE;
-import static org.apache.dubbo.metrics.observation.DubboObservation.LowCardinalityKeyNames.RPC_SYSTEM;
+import static org.apache.dubbo.metrics.observation.DubboObservationDocumentation.LowCardinalityKeyNames.RPC_METHOD;
+import static org.apache.dubbo.metrics.observation.DubboObservationDocumentation.LowCardinalityKeyNames.RPC_SERVICE;
+import static org.apache.dubbo.metrics.observation.DubboObservationDocumentation.LowCardinalityKeyNames.RPC_SYSTEM;
 
 class AbstractDefaultDubboObservationConvention {
     KeyValues getLowCardinalityKeyValues(Invocation invocation) {
