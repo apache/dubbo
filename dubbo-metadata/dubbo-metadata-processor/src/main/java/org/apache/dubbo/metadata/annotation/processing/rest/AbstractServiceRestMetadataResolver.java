@@ -94,8 +94,8 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
             sort(serviceMethods, ExecutableElementComparator.INSTANCE);
 
             serviceMethods.forEach(serviceMethod -> {
-                resolveRestMethodMetadata(processingEnv, serviceType, serviceInterfaceType, serviceMethod)
-                        .ifPresent(serviceRestMetadata.getMeta()::add);
+                resolveRestMethodMetadata(processingEnv, serviceType, serviceInterfaceType, serviceMethod, serviceRestMetadata)
+                    .ifPresent(serviceRestMetadata.getMeta()::add);
             });
 
         } finally {
@@ -110,7 +110,8 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
     protected Optional<RestMethodMetadata> resolveRestMethodMetadata(ProcessingEnvironment processingEnv,
                                                                      TypeElement serviceType,
                                                                      TypeElement serviceInterfaceType,
-                                                                     ExecutableElement serviceMethod) {
+                                                                     ExecutableElement serviceMethod,
+                                                                     ServiceRestMetadata serviceRestMetadata) {
 
         ExecutableElement restCapableMethod = findRestCapableMethod(processingEnv, serviceType, serviceInterfaceType, serviceMethod);
 
@@ -150,6 +151,8 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
         // Initialize RequestMetadata
         RequestMetadata request = metadata.getRequest();
         request.setPath(requestPath);
+        request.appendContextPathFromUrl(serviceRestMetadata.getContextPathFromUrl());
+
         request.setMethod(requestMethod);
         request.setProduces(produces);
         request.setConsumes(consumes);
@@ -237,9 +240,9 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
         parameter.getAnnotationMirrors().forEach(annotation -> {
             String annotationType = annotation.getAnnotationType().toString();
             parameterProcessorsMap.getOrDefault(annotationType, emptyList())
-                    .forEach(parameterProcessor -> {
-                        parameterProcessor.process(annotation, parameter, parameterIndex, method, metadata);
-                    });
+                .forEach(parameterProcessor -> {
+                    parameterProcessor.process(annotation, parameter, parameterIndex, method, metadata);
+                });
         });
     }
 
