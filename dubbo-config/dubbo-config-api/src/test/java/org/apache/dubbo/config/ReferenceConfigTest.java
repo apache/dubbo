@@ -435,7 +435,7 @@ class ReferenceConfigTest {
             Invoker invoker = originalInvoker.getInvoker();
             Assertions.assertTrue(invoker instanceof InjvmInvoker);
         }
-        URL url = withCount.getUrl();
+        URL url = withFilter.getUrl();
         Assertions.assertEquals("application1", url.getParameter("application"));
         Assertions.assertEquals("value1", url.getParameter("key1"));
         Assertions.assertEquals("value2", url.getParameter("key2"));

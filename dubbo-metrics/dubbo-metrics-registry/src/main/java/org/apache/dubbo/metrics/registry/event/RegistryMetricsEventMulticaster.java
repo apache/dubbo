@@ -21,8 +21,9 @@ import org.apache.dubbo.metrics.event.SimpleMetricsEventMulticaster;
 import org.apache.dubbo.metrics.registry.event.type.ApplicationType;
 import org.apache.dubbo.metrics.registry.event.type.ServiceType;
 
-import static org.apache.dubbo.metrics.registry.RegistryConstants.ATTACHMENT_KEY_DIR_NUM;
-import static org.apache.dubbo.metrics.registry.RegistryConstants.ATTACHMENT_KEY_SERVICE;
+import static org.apache.dubbo.metrics.MetricsConstants.ATTACHMENT_KEY_DIR_NUM;
+import static org.apache.dubbo.metrics.MetricsConstants.ATTACHMENT_KEY_SERVICE;
+import static org.apache.dubbo.metrics.MetricsConstants.ATTACHMENT_KEY_SIZE;
 import static org.apache.dubbo.metrics.registry.RegistryConstants.OP_TYPE_NOTIFY;
 import static org.apache.dubbo.metrics.registry.RegistryConstants.OP_TYPE_REGISTER;
 import static org.apache.dubbo.metrics.registry.RegistryConstants.OP_TYPE_REGISTER_SERVICE;
@@ -110,7 +111,7 @@ public final class RegistryMetricsEventMulticaster extends SimpleMetricsEventMul
     }
 
     private void incrSkSize(RegistryEvent event, ServiceType type) {
-        event.incrementServiceKey(type, ATTACHMENT_KEY_SERVICE, org.apache.dubbo.metrics.registry.RegistryConstants.ATTACHMENT_KEY_SIZE);
+        event.incrementServiceKey(type, ATTACHMENT_KEY_SERVICE, ATTACHMENT_KEY_SIZE);
     }
 
     private void onRtEvent(RegistryEvent event, ServiceType type) {
