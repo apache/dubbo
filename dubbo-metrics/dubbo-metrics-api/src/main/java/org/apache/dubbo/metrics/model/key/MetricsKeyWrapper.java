@@ -18,9 +18,6 @@
 package org.apache.dubbo.metrics.model.key;
 
 import org.apache.dubbo.metrics.model.MetricsSupport;
-import org.apache.dubbo.metrics.model.key.MetricsKey;
-import org.apache.dubbo.metrics.model.key.MetricsLevel;
-import org.apache.dubbo.metrics.model.key.MetricsPlaceType;
 
 import java.util.Map;
 
