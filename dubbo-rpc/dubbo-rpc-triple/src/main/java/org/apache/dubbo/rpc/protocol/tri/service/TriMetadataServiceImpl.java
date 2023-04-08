@@ -17,64 +17,53 @@
 
 package org.apache.dubbo.rpc.protocol.tri.service;
 
-import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.metadata.MetadataInfo;
-import org.apache.dubbo.registry.client.ServiceDiscovery;
-import org.apache.dubbo.registry.support.RegistryManager;
+import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.triple.metadata.AllMetaRequest;
-import org.apache.dubbo.triple.metadata.AllMetaResponse;
-import org.apache.dubbo.triple.metadata.DubboMetadataTriple;
-import org.apache.dubbo.triple.metadata.MetaRequest;
-import org.apache.dubbo.triple.metadata.MetaResponse;
-import org.apache.dubbo.triple.metadata.ServiceInfo;
+import org.apache.dubbo.triple.metadata.*;
 
+import java.util.List;
 import java.util.Optional;
 
 
 public class TriMetadataServiceImpl extends DubboMetadataTriple.MetadataImplBase {
 
-    private final ApplicationModel applicationModel;
-    private final RegistryManager registryManager;
-
-    public TriMetadataServiceImpl() {
-        this.applicationModel = ApplicationModel.defaultModel();
-        registryManager = RegistryManager.getInstance(applicationModel);
-    }
-
 
     @Override
     public MetaResponse getMetadata(MetaRequest metaRequest) {
-        String revision = metaRequest.getRevision();
-        if (StringUtils.EMPTY_STRING.equals(revision)) {
-            //TODO set status
-            return super.getMetadata(metaRequest);
+        MetadataService metadataService = getMetadataService();
+        if (metadataService == null) {
+            return MetaResponse.newBuilder().setStatus(ResponseStatus.SERVICE_NOT_REGISTER).build();
         }
-
-        MetadataInfo metadata = getMetadataInfo(revision);
-
-        if (metadata == null) {
-            //TODO set status
-            return null;
-        }
-
-        return getMetaResponse(metadata);
+        return getMetaResponse(metadataService.getMetadataInfo(metaRequest.getRevision()));
     }
 
     @Override
     public AllMetaResponse getAllMetadata(AllMetaRequest request) {
-        AllMetaResponse.Builder allMetaResponseBuilder = AllMetaResponse.newBuilder();
-        for (ServiceDiscovery serviceDiscovery : registryManager.getServiceDiscoveries()) {
-            MetadataInfo metadata = serviceDiscovery.getLocalMetadata();
-            allMetaResponseBuilder.addAllMetadata(getMetaResponse(metadata));
+        MetadataService metadataService = getMetadataService();
+        if (metadataService == null) {
+            return AllMetaResponse.newBuilder().setStatus(ResponseStatus.SERVICE_NOT_REGISTER).build();
         }
-        return allMetaResponseBuilder.build();
+        AllMetaResponse.Builder allMetaResponseBuilder = AllMetaResponse.newBuilder();
+        List<MetadataInfo> metadataInfos = metadataService.getMetadataInfos();
+        if (CollectionUtils.isEmpty(metadataInfos)) {
+            return AllMetaResponse.newBuilder().setStatus(ResponseStatus.NO_METADATA).build();
+        }
+        for (MetadataInfo metadataInfo : metadataInfos) {
+            allMetaResponseBuilder.addAllMetadata(getMetaResponse(metadataInfo));
+        }
+        return allMetaResponseBuilder.setStatus(ResponseStatus.SUCCESS).build();
     }
 
     private MetaResponse getMetaResponse(MetadataInfo metadata) {
+        if (metadata == null) {
+            return MetaResponse.newBuilder().setStatus(ResponseStatus.REVISION_UN_FIND).build();
+        }
         MetaResponse.Builder metadataResponseBuilder = MetaResponse.newBuilder()
             .setApp(metadata.getApp())
-            .setRevision(metadata.getRevision());
+            .setRevision(metadata.getRevision())
+            .setStatus(ResponseStatus.SUCCESS);
         metadata.getServices().forEach((serviceName, serviceInfo) -> {
             ServiceInfo triServiceInfo = ServiceInfo.newBuilder()
                 .setGroup(Optional.ofNullable(serviceInfo.getGroup()).orElse(""))
@@ -89,14 +78,8 @@ public class TriMetadataServiceImpl extends DubboMetadataTriple.MetadataImplBase
         return metadataResponseBuilder.build();
     }
 
-    private MetadataInfo getMetadataInfo(String revision) {
-        for (ServiceDiscovery serviceDiscovery : registryManager.getServiceDiscoveries()) {
-            MetadataInfo metadata = serviceDiscovery.getLocalMetadata(revision);
-            if (metadata != null && revision.equals(metadata.getRevision())) {
-                return metadata;
-            }
-        }
-        return null;
+    private MetadataService getMetadataService() {
+        return ApplicationModel.defaultModel().getBeanFactory().getBean(MetadataService.class);
     }
 
 

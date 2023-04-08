@@ -25,9 +25,10 @@ message MetaRequest {
 }
 
 message MetaResponse {
-  string app = 1;
-  string revision = 2;
-  map<string, ServiceInfo> services = 3;
+  ResponseStatus status = 1;
+  string app = 2;
+  string revision = 3;
+  map<string, ServiceInfo> services = 4;
 }
 
 message ServiceInfo {
@@ -43,7 +44,15 @@ message ServiceInfo {
 message AllMetaRequest {}
 
 message AllMetaResponse{
-  repeated MetaResponse allMetadata= 1;
+  ResponseStatus status = 1;
+  repeated MetaResponse allMetadata= 2;
+}
+
+enum ResponseStatus {
+  REVISION_UN_FIND = 0;
+  NO_METADATA = 1;
+  SUCCESS = 2;
+  SERVICE_NOT_REGISTER = 4;
 }
 
 
