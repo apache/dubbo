@@ -29,6 +29,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.ThreadPool;
+import org.apache.dubbo.rpc.protocol.rest.RestHeaderEnum;
 import org.apache.dubbo.rpc.protocol.rest.handler.NettyHttpHandler;
 import org.apache.dubbo.rpc.protocol.rest.request.NettyRequestFacade;
 
@@ -61,14 +62,16 @@ public class RestHttpRequestDecoder extends MessageToMessageDecoder<io.netty.han
 
             } catch (IOException e) {
                 logger.error("", e.getCause().getMessage(), "dubbo rest rest http request handler error", e.getMessage(), e);
+            } finally {
+                // write response
+                try {
+                    nettyHttpResponse.addOutputHeaders(RestHeaderEnum.CONNECTION.getHeader(), "close");
+                    nettyHttpResponse.finish();
+                } catch (IOException e) {
+                    logger.error("", e.getCause().getMessage(), "dubbo rest rest http response flush error", e.getMessage(), e);
+                }
             }
 
-            // write response
-            try {
-                nettyHttpResponse.finish();
-            } catch (IOException e) {
-                logger.error("", e.getCause().getMessage(), "dubbo rest rest http response flush error", e.getMessage(), e);
-            }
         });
 
 
