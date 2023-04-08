@@ -325,14 +325,16 @@ public class NacosRegistry extends FailbackRegistry {
 
         final Set<String> serviceNames;
 
-        if (supportLegacyServiceName && serviceName.isConcrete()) { // is the concrete service name
+        if (serviceName.isConcrete()) { // is the concrete service name
             serviceNames = new LinkedHashSet<>();
             serviceNames.add(serviceName.toString());
-            // Add the legacy service name since 2.7.6
-            String legacySubscribedServiceName = getLegacySubscribedServiceName(url);
-            if (!serviceName.toString().equals(legacySubscribedServiceName)) {
-                //avoid duplicated service names
-                serviceNames.add(legacySubscribedServiceName);
+            if (supportLegacyServiceName) {
+                // Add the legacy service name since 2.7.6
+                String legacySubscribedServiceName = getLegacySubscribedServiceName(url);
+                if (!serviceName.toString().equals(legacySubscribedServiceName)) {
+                    //avoid duplicated service names
+                    serviceNames.add(legacySubscribedServiceName);
+                }
             }
         } else {
             serviceNames = filterServiceNames(serviceName);
