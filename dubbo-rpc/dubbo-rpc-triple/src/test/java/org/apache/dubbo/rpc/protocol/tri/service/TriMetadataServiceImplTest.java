@@ -23,7 +23,12 @@ import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import org.apache.dubbo.triple.metadata.*;
+import org.apache.dubbo.triple.metadata.AllMetaRequest;
+import org.apache.dubbo.triple.metadata.AllMetaResponse;
+import org.apache.dubbo.triple.metadata.Metadata;
+import org.apache.dubbo.triple.metadata.ResponseStatus;
+import org.apache.dubbo.triple.metadata.MetaRequest;
+import org.apache.dubbo.triple.metadata.MetaResponse;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
