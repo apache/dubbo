@@ -197,7 +197,11 @@ public class CodecSupport {
 
     public static void checkSerialization(String requestSerializeName, URL url) throws IOException {
         Collection<String> all = UrlUtils.allSerializations(url);
-        for (String serialization : all) {
+        checkSerialization(requestSerializeName, all);
+    }
+
+    public static void checkSerialization(String requestSerializeName, Collection<String> allSerializeName) throws IOException {
+        for (String serialization : allSerializeName) {
             if (serialization.equals(requestSerializeName)) {
                 return;
             }
