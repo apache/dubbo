@@ -200,7 +200,7 @@ public class InternalServiceConfigBuilder<T> {
         if (specPort == null || specPort < -1) {
             try {
                 if (logger.isInfoEnabled()) {
-                    logger.info(interfaceClass.getName()+"Service Port hasn't been set will use default protocol defined in protocols.");
+                    logger.info(interfaceClass.getName() + " Service Port hasn't been set will use default protocol defined in protocols.");
                 }
 
                 Protocol protocol = applicationModel.getExtensionLoader(Protocol.class).getExtension(this.protocol);
