@@ -17,11 +17,13 @@
 package org.apache.dubbo.rpc.protocol.rest.constans;
 
 import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.rpc.Constants;
 
 public interface RestConstant {
     String VERSION = CommonConstants.VERSION_KEY;
     String GROUP = CommonConstants.GROUP_KEY;
     String PATH = CommonConstants.PATH_KEY;
+    String TOKEN_KEY = Constants.TOKEN_KEY;
     String LOCAL_ADDR = "LOCAL_ADDR";
     String REMOTE_ADDR = "REMOTE_ADDR";
     String LOCAL_PORT = "LOCAL_PORT";

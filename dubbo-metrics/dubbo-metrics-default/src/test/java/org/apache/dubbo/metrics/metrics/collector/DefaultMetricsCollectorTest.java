@@ -28,6 +28,7 @@ import org.apache.dubbo.metrics.event.MetricsEvent;
 import org.apache.dubbo.metrics.event.RTEvent;
 import org.apache.dubbo.metrics.listener.MetricsListener;
 import org.apache.dubbo.metrics.model.MetricsKey;
+import org.apache.dubbo.metrics.model.sample.CounterMetricSample;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.rpc.RpcContext;
@@ -107,21 +108,34 @@ class DefaultMetricsCollectorTest {
 
         List<MetricSample> samples = collector.collect();
         for (MetricSample sample : samples) {
-            Assertions.assertTrue(sample instanceof GaugeMetricSample);
-            GaugeMetricSample gaugeSample = (GaugeMetricSample) sample;
-            Map<String, String> tags = gaugeSample.getTags();
+            if(sample instanceof GaugeMetricSample) {
+                GaugeMetricSample gaugeSample = (GaugeMetricSample) sample;
+                Assertions.assertEquals(gaugeSample.applyAsLong(), 1);
+            }else if(sample instanceof CounterMetricSample){
+                CounterMetricSample counterMetricSample = (CounterMetricSample) sample;
+                Assertions.assertEquals(counterMetricSample.getValue().longValue(), 1);
+            }
 
+            Map<String, String> tags = sample.getTags();
             Assertions.assertEquals(tags.get(TAG_INTERFACE_KEY), interfaceName);
             Assertions.assertEquals(tags.get(TAG_METHOD_KEY), methodName);
             Assertions.assertEquals(tags.get(TAG_GROUP_KEY), group);
             Assertions.assertEquals(tags.get(TAG_VERSION_KEY), version);
-            Assertions.assertEquals(gaugeSample.applyAsLong(), 1);
+
         }
 
         methodMetricsCountSampler.dec(invocation, MetricsEvent.Type.PROCESSING.getNameByType(side));
         samples = collector.collect();
 
-        Map<String, Long> sampleMap = samples.stream().collect(Collectors.toMap(MetricSample::getName, k -> ((GaugeMetricSample) k).applyAsLong()));
+        Map<String, Long> sampleMap = samples.stream().collect(Collectors.toMap(MetricSample::getName, k -> {
+            if(k instanceof GaugeMetricSample){
+                return ((GaugeMetricSample) k).applyAsLong();
+            }else if(k instanceof CounterMetricSample){
+                return ((CounterMetricSample)k).getValue().longValue();
+            }else{
+                throw new RuntimeException("un support sample type");
+            }
+        }));
 
         Assertions.assertEquals(sampleMap.get(MetricsKey.METRIC_REQUESTS_PROCESSING.getNameByType(side)), 0L);
     }
