@@ -25,7 +25,9 @@ import org.apache.dubbo.metrics.data.ServiceStatComposite;
 import org.apache.dubbo.metrics.metadata.MetadataMetricsConstants;
 import org.apache.dubbo.metrics.report.MetricsExport;
 
-import static org.apache.dubbo.metrics.metadata.MetadataMetricsConstants.*;
+import static org.apache.dubbo.metrics.metadata.MetadataMetricsConstants.OP_TYPE_PUSH;
+import static org.apache.dubbo.metrics.metadata.MetadataMetricsConstants.OP_TYPE_STORE_PROVIDER_INTERFACE;
+import static org.apache.dubbo.metrics.metadata.MetadataMetricsConstants.OP_TYPE_SUBSCRIBE;
 
 /**
  * As a data aggregator, use internal data containers calculates and classifies
