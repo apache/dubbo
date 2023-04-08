@@ -315,7 +315,7 @@ public final class Version {
     }
 
     private static void checkVersion(String artifactId, URL url, String key, String value) {
-        if ("version".equals(key) && !value.equals(VERSION)) {
+        if ("revision".equals(key) && !value.equals(VERSION)) {
             String error = "Inconsistent version " + value + " found in " + artifactId + " from " + url.getPath() + ", " +
                 "expected dubbo-common version is " + VERSION;
             logger.error(COMMON_UNEXPECTED_EXCEPTION, "", "", error);
@@ -336,6 +336,9 @@ public final class Version {
                 String line;
                 while ((line = reader.readLine()) != null) {
                     if (line.startsWith("#")) {
+                        continue;
+                    }
+                    if (StringUtils.isEmpty(line)) {
                         continue;
                     }
                     artifactIds.add(line);
