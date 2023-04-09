@@ -21,21 +21,27 @@ import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.metrics.collector.ApplicationMetricsCollector;
 import org.apache.dubbo.metrics.collector.MetricsCollector;
+import org.apache.dubbo.metrics.data.ApplicationStatComposite;
+import org.apache.dubbo.metrics.data.BaseStatComposite;
+import org.apache.dubbo.metrics.data.RtStatComposite;
+import org.apache.dubbo.metrics.data.ServiceStatComposite;
 import org.apache.dubbo.metrics.event.MetricsEvent;
 import org.apache.dubbo.metrics.event.MetricsEventMulticaster;
 import org.apache.dubbo.metrics.model.MetricsCategory;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
+import org.apache.dubbo.metrics.registry.RegistryMetricsConstants;
 import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.metrics.registry.event.RegistryMetricsEventMulticaster;
 import org.apache.dubbo.metrics.registry.event.type.ApplicationType;
 import org.apache.dubbo.metrics.registry.event.type.ServiceType;
-import org.apache.dubbo.metrics.registry.stat.RegistryStatComposite;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+
+import static org.apache.dubbo.metrics.registry.RegistryMetricsConstants.*;
 
 
 /**
@@ -45,12 +51,19 @@ import java.util.Optional;
 public class RegistryMetricsCollector implements ApplicationMetricsCollector<ApplicationType, RegistryEvent> {
 
     private Boolean collectEnabled = null;
-    private final RegistryStatComposite stats;
+    private final BaseStatComposite stats;
     private final MetricsEventMulticaster registryMulticaster;
     private final ApplicationModel applicationModel;
 
     public RegistryMetricsCollector(ApplicationModel applicationModel) {
-        this.stats = new RegistryStatComposite();
+        this.stats = new BaseStatComposite() {
+            @Override
+            protected void init(ApplicationStatComposite applicationStatComposite, ServiceStatComposite serviceStatComposite, RtStatComposite rtStatComposite) {
+                applicationStatComposite.init(RegistryMetricsConstants.appKeys);
+                serviceStatComposite.init(RegistryMetricsConstants.serviceKeys);
+                rtStatComposite.init(OP_TYPE_REGISTER, OP_TYPE_SUBSCRIBE, OP_TYPE_NOTIFY, OP_TYPE_REGISTER_SERVICE, OP_TYPE_SUBSCRIBE_SERVICE);
+            }
+        };
         this.registryMulticaster = new RegistryMetricsEventMulticaster();
         this.applicationModel = applicationModel;
     }
