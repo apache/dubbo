@@ -350,7 +350,7 @@ public class ReflectionPackableMethod implements PackableMethod {
         private final URL url;
         private final Class<?> returnClass;
 
-private final String requestSerializeName;
+        private final String requestSerializeName;
 
 
         private WrapResponseUnpack(MultipleSerialization serialization, URL url, String requestSerializeName, Class<?> returnClass) {
@@ -361,7 +361,7 @@ private final String requestSerializeName;
         }
 
         @Override
-        public Object unpack(byte[] data) throws IOException, ClassNotFoundException {
+        public Object unpack(byte[] data, boolean isReturnTriException) throws IOException, ClassNotFoundException {
             TripleCustomerProtocolWapper.TripleResponseWrapper wrapper = TripleCustomerProtocolWapper.TripleResponseWrapper
                 .parseFrom(data);
             final String serializeType = convertHessianFromWrapper(wrapper.getSerializeType());
@@ -369,7 +369,7 @@ private final String requestSerializeName;
             CodecSupport.checkSerialization(requestSerializeName, serializeType);
 
             ByteArrayInputStream bais = new ByteArrayInputStream(wrapper.getData());
-            return serialization.deserialize(url, serializeType, returnClass, bais);
+            return serialization.deserialize(url, serializeType, returnClass, bais, isReturnTriException);
         }
     }
 
@@ -469,7 +469,7 @@ private final String requestSerializeName;
         }
 
         @Override
-        public Object unpack(byte[] data) throws IOException, ClassNotFoundException {
+        public Object unpack(byte[] data, boolean isReturnTriException) throws IOException, ClassNotFoundException {
             TripleCustomerProtocolWapper.TripleRequestWrapper wrapper = TripleCustomerProtocolWapper.TripleRequestWrapper.parseFrom(
                 data);
 
@@ -483,7 +483,7 @@ private final String requestSerializeName;
                     wrapper.getArgs().get(i));
                 ret[i] = serialization.deserialize(url, wrapper.getSerializeType(),
                     actualRequestTypes[i],
-                    bais);
+                    bais, false);
             }
             return ret;
         }

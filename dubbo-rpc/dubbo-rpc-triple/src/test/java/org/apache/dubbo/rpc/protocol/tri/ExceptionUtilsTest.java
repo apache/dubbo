@@ -18,6 +18,7 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.rpc.Exporter;
@@ -90,7 +91,7 @@ class ExceptionUtilsTest {
         ApplicationModel applicationModel = ApplicationModel.defaultModel();
 
         URL providerUrl = URL.valueOf(
-            "tri://127.0.0.1:" + availablePort + "/" + IGreeter2.class.getName());
+            "tri://127.0.0.1:" + availablePort + "/" + IGreeter2.class.getName()).addParameter(CommonConstants.TIMEOUT_KEY, 10000);;
 
         ModuleServiceRepository serviceRepository = applicationModel.getDefaultModule()
             .getServiceRepository();
@@ -111,7 +112,7 @@ class ExceptionUtilsTest {
         Exporter<IGreeter2> export = protocol.export(invoker);
 
         URL consumerUrl = URL.valueOf(
-            "tri://127.0.0.1:" + availablePort + "/" + IGreeter2.class.getName());
+            "tri://127.0.0.1:" + availablePort + "/" + IGreeter2.class.getName()).addParameter(CommonConstants.TIMEOUT_KEY, 10000);
 
         ConsumerModel consumerModel = new ConsumerModel(consumerUrl.getServiceKey(), null,
             serviceDescriptor, null,
@@ -128,6 +129,10 @@ class ExceptionUtilsTest {
         } catch (IGreeterException e) {
             Assertions.assertEquals(EXPECT_RESPONSE_MSG, e.getMessage());
         }
+
+        Exception e = greeterProxy.echoException(REQUEST_MSG);
+        Assertions.assertEquals(EXPECT_RESPONSE_MSG, e.getMessage());
+
         export.unexport();
         protocol.destroy();
         // resource recycle.
