@@ -79,6 +79,8 @@ jobs:
         with:
           name: "class-file"
           path: ${{ github.workspace }}/class.zip
+      - name: "Tree"
+        run: tree
       - name: "Pack checkstyle file if failure"
         if: failure()
         run: 7z a ${{ github.workspace }}/checkstyle.zip *checkstyle* -r
