@@ -481,7 +481,7 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
     }
 
     private Map<String, String> extractTriExceptionCode(Map<String, String> assemblyMap, Map<String, String> reserved) {
-        String value = assemblyMap.remove(TripleHeaderEnum.TRI_EXCEPTION_CODE.getHeader());
+        String value = reserved.remove(TripleHeaderEnum.TRI_EXCEPTION_CODE.getHeader());
         if (!StringUtils.isEmpty(value)) {
             assemblyMap.put(TripleHeaderEnum.TRI_EXCEPTION_CODE.getHeader(), value);
         }

@@ -58,10 +58,6 @@ public class UnaryClientCallListener implements ClientCall.Listener {
     }
 
     private int extractExceptionCode(Map<String, String> trailers) {
-        int triExceptionCode = CommonConstants.TRI_EXCEPTION_CODE_NOT_EXISTS;
-        if (!(appResponse instanceof Exception)) {
-            return triExceptionCode;
-        }
         String exceptionCodeStr = trailers.get(TripleHeaderEnum.TRI_EXCEPTION_CODE.getHeader());
         if (!StringUtils.isEmpty(exceptionCodeStr)) {
             return Integer.parseInt(exceptionCodeStr);
