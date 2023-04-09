@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.config.spring.metrics;
 
-import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMETHEUS;
-
 import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.context.ConfigManager;
@@ -31,6 +29,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
+import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMETHEUS;
+
 @SpringBootTest(
     properties = {
         "dubbo.application.NAME = dubbo-demo-application",
@@ -41,7 +41,7 @@ import org.springframework.context.annotation.Configuration;
         "dubbo.metrics.protocol=prometheus",
         "dubbo.metrics.export-service-protocol=tri",
         "dubbo.metrics.export-service-port=9999",
-        "dubbo.metrics.enable-jvm-metrics=true",
+        "dubbo.metrics.enable-jvm=true",
         "dubbo.metrics.prometheus.exporter.enabled=true",
         "dubbo.metrics.prometheus.exporter.enable-http-service-discovery=true",
         "dubbo.metrics.prometheus.exporter.http-service-discovery-url=localhost:8080",
@@ -80,7 +80,7 @@ public class SpringBootConfigMetricsTest {
         MetricsConfig metricsConfig = configManager.getMetrics().get();
 
         Assertions.assertEquals(PROTOCOL_PROMETHEUS, metricsConfig.getProtocol());
-        Assertions.assertTrue(metricsConfig.getEnableJvmMetrics());
+        Assertions.assertTrue(metricsConfig.getEnableJvm());
         Assertions.assertEquals("tri",metricsConfig.getExportServiceProtocol());
         Assertions.assertEquals(9999, metricsConfig.getExportServicePort());
         Assertions.assertTrue(metricsConfig.getPrometheus().getExporter().getEnabled());

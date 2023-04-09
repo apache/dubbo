@@ -68,7 +68,7 @@ class PrometheusMetricsReporterTest {
 
     @Test
     void testJvmMetrics() {
-        metricsConfig.setEnableJvmMetrics(true);
+        metricsConfig.setEnableJvm(true);
         String name = "metrics-test";
         ApplicationModel.defaultModel().getApplicationConfigManager().setApplication(new ApplicationConfig(name));
 
@@ -94,7 +94,7 @@ class PrometheusMetricsReporterTest {
         exporter.setEnabled(true);
         prometheusConfig.setExporter(exporter);
         metricsConfig.setPrometheus(prometheusConfig);
-        metricsConfig.setEnableJvmMetrics(true);
+        metricsConfig.setEnableJvm(true);
 
         ApplicationModel.defaultModel().getApplicationConfigManager().setApplication(new ApplicationConfig("metrics-test"));
         PrometheusMetricsReporter reporter = new PrometheusMetricsReporter(metricsConfig.toUrl(), applicationModel);
