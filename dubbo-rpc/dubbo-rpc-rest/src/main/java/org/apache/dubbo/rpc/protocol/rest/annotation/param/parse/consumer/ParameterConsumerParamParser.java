@@ -45,7 +45,7 @@ public class ParameterConsumerParamParser implements BaseConsumerParamParser {
                 requestTemplate.addParam(String.valueOf(name), paramValues.get(name));
             }
         } else {
-            requestTemplate.addParam(argInfo.getParamName(), paramValue);
+            requestTemplate.addParam(argInfo.getAnnotationNameAttribute(), paramValue);
 
 
         }
