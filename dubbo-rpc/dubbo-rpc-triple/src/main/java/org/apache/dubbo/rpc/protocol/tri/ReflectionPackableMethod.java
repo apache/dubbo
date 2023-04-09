@@ -316,7 +316,7 @@ public class ReflectionPackableMethod implements PackableMethod {
 
     @Override
     public Pack getRequestPack(String contentType) {
-        if (isNotOriginalSerializeType(contentType)) {
+        if (isNotOriginalSerializeType(contentType) || !(originalPack instanceof OriginalPack)) {
             return requestPack;
         }
         ((OriginalPack) originalPack).serialize = getSerializeType(contentType);
@@ -325,7 +325,7 @@ public class ReflectionPackableMethod implements PackableMethod {
 
     @Override
     public Pack getResponsePack(String contentType) {
-        if (isNotOriginalSerializeType(contentType)) {
+        if (isNotOriginalSerializeType(contentType) || !(originalPack instanceof OriginalPack)) {
             return responsePack;
         }
         ((OriginalPack) originalPack).serialize = getSerializeType(contentType);
@@ -334,7 +334,7 @@ public class ReflectionPackableMethod implements PackableMethod {
 
     @Override
     public UnPack getResponseUnpack(String contentType) {
-        if (isNotOriginalSerializeType(contentType)) {
+        if (isNotOriginalSerializeType(contentType) || !(originalPack instanceof OriginalPack)) {
             return responseUnpack;
         }
         ((OriginalUnpack) originalUnpack).serialize = getSerializeType(contentType);
@@ -343,7 +343,7 @@ public class ReflectionPackableMethod implements PackableMethod {
 
     @Override
     public UnPack getRequestUnpack(String contentType) {
-        if (isNotOriginalSerializeType(contentType)) {
+        if (isNotOriginalSerializeType(contentType) || !(originalPack instanceof OriginalPack)) {
             return requestUnpack;
         }
         ((OriginalUnpack) originalUnpack).serialize = getSerializeType(contentType);
