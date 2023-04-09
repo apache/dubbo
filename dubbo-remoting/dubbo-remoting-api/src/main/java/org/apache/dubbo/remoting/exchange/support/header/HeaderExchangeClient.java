@@ -49,12 +49,8 @@ public class HeaderExchangeClient implements ExchangeClient {
     private final Client client;
     private final ExchangeChannel channel;
 
-    public static GlobalResourceInitializer<HashedWheelTimer> HEARTBEAT_CHECK_TIMER = new GlobalResourceInitializer<>(() ->
-        new HashedWheelTimer(new NamedThreadFactory("dubbo-client-heartbeat", true), 1,
-            TimeUnit.SECONDS, TICKS_PER_WHEEL),
-        HashedWheelTimer::stop);
-    public static GlobalResourceInitializer<HashedWheelTimer> RECONNECT_CHECK_TIMER = new GlobalResourceInitializer<>(() ->
-        new HashedWheelTimer(new NamedThreadFactory("dubbo-client-reconnect", true), 1,
+    public static GlobalResourceInitializer<HashedWheelTimer> IDLE_CHECK_TIMER = new GlobalResourceInitializer<>(() ->
+        new HashedWheelTimer(new NamedThreadFactory("dubbo-client-heartbeat-reconnect", true), 1,
             TimeUnit.SECONDS, TICKS_PER_WHEEL),
         HashedWheelTimer::stop);
 
@@ -211,14 +207,14 @@ public class HeaderExchangeClient implements ExchangeClient {
         if (!client.canHandleIdle()) {
             int heartbeat = getHeartbeat(url);
             long heartbeatTick = calculateLeastDuration(heartbeat);
-            heartBeatTimerTask = new HeartbeatTimerTask(() -> Collections.singleton(this), HEARTBEAT_CHECK_TIMER.get(), heartbeatTick, heartbeat);
+            heartBeatTimerTask = new HeartbeatTimerTask(() -> Collections.singleton(this), IDLE_CHECK_TIMER.get(), heartbeatTick, heartbeat);
         }
     }
 
     private void startReconnectTask(URL url) {
         if (shouldReconnect(url)) {
             long heartbeatTimeoutTick = calculateLeastDuration(idleTimeout);
-            reconnectTimerTask = new ReconnectTimerTask(() -> Collections.singleton(this), RECONNECT_CHECK_TIMER.get(), heartbeatTimeoutTick, idleTimeout);
+            reconnectTimerTask = new ReconnectTimerTask(() -> Collections.singleton(this), IDLE_CHECK_TIMER.get(), heartbeatTimeoutTick, idleTimeout);
         }
     }
 
