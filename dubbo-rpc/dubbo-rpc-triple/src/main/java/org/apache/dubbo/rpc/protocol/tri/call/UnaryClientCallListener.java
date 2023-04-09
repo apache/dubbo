@@ -41,12 +41,11 @@ public class UnaryClientCallListener implements ClientCall.Listener {
     }
 
     @Override
-    public void onClose(TriRpcStatus status, Map<String, Object> trailers, Map<String, String> assemblyMap) {
+    public void onClose(TriRpcStatus status, Map<String, Object> trailers, boolean isReturnTriException) {
         AppResponse result = new AppResponse();
         result.setObjectAttachments(trailers);
         if (status.isOk()) {
-           Integer exceptionCode = extractExceptionCode(assemblyMap);
-            if (!exceptionCode.equals(CommonConstants.TRI_EXCEPTION_CODE_NOT_EXISTS)) {
+            if (isReturnTriException) {
                 result.setException((Exception) appResponse);
             } else {
                 result.setValue(appResponse);
@@ -57,13 +56,6 @@ public class UnaryClientCallListener implements ClientCall.Listener {
         future.received(status, result);
     }
 
-    private int extractExceptionCode(Map<String, String> trailers) {
-        String exceptionCodeStr = trailers.get(TripleHeaderEnum.TRI_EXCEPTION_CODE.getHeader());
-        if (!StringUtils.isEmpty(exceptionCodeStr)) {
-            return Integer.parseInt(exceptionCodeStr);
-        }
-        return CommonConstants.TRI_EXCEPTION_CODE_NOT_EXISTS;
-    }
 
     @Override
     public void onStart(ClientCall call) {

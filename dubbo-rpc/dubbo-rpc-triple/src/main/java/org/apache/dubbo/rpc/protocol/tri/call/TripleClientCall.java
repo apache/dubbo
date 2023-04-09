@@ -82,7 +82,7 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
             TriRpcStatus status = TriRpcStatus.INTERNAL.withDescription("Deserialize response failed")
                 .withCause(t);
             cancelByLocal(status.asException());
-            listener.onClose(status,null, null);
+            listener.onClose(status,null, false);
             LOGGER.error(PROTOCOL_FAILED_RESPONSE, "", "", String.format("Failed to deserialize triple response, service=%s, method=%s,connection=%s",
                     connectionClient, requestMetadata.service, requestMetadata.method.getMethodName()), t);
         }
@@ -97,18 +97,18 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
         if (requestMetadata.cancellationContext != null) {
             requestMetadata.cancellationContext.cancel(status.asException());
         }
-        onComplete(status, null, null);
+        onComplete(status, null, null, false);
     }
 
     @Override
     public void onComplete(TriRpcStatus status, Map<String, Object> attachments,
-                           Map<String, String> excludeHeaders, Map<String, String> assemblyMap) {
+                           Map<String, String> excludeHeaders, boolean isReturnTriException) {
         if (done) {
             return;
         }
         done = true;
         try {
-            listener.onClose(status, StreamUtils.toAttachments(attachments), assemblyMap);
+            listener.onClose(status, StreamUtils.toAttachments(attachments), isReturnTriException);
         } catch (Throwable t) {
             cancelByLocal(
                 TriRpcStatus.INTERNAL.withDescription("Close stream error").withCause(t)
@@ -190,7 +190,7 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
                 requestMetadata.method), t);
             cancelByLocal(t);
             listener.onClose(TriRpcStatus.INTERNAL.withDescription("Serialize request failed")
-                .withCause(t), null, null);
+                .withCause(t), null, false);
         }
     }
     // stream listener end

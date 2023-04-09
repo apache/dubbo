@@ -148,7 +148,7 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
     private void transportException(Throwable cause) {
         final TriRpcStatus status = TriRpcStatus.INTERNAL.withDescription("Http2 exception")
             .withCause(cause);
-        listener.onComplete(status, null, null);
+        listener.onComplete(status, null, null, false);
     }
 
     public ChannelFuture cancelByLocal(TriRpcStatus status) {
@@ -232,16 +232,14 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
         void handleH2TransportError(TriRpcStatus status) {
             writeQueue.enqueue(CancelQueueCommand.createCommand(streamChannelFuture, Http2Error.NO_ERROR));
             TripleClientStream.this.rst = true;
-            finishProcess(status, null);
+            finishProcess(status, null, false);
         }
 
-        void finishProcess(TriRpcStatus status, Http2Headers trailers) {
+        void finishProcess(TriRpcStatus status, Http2Headers trailers, boolean isReturnTriException) {
             final Map<String, String> reserved = filterReservedHeaders(trailers);
-            Map<String, String> assemblyMap = new HashMap<>();
-            extractTriHeaderConvert(assemblyMap, reserved);
-            final Map<String, Object> attachments = headersToMap(trailers,
-                assemblyMap);
-            extractTriExceptionCode(assemblyMap, reserved);
+            final Map<String, Object> attachments = headersToMap(trailers, () -> {
+                return reserved.get(TripleHeaderEnum.TRI_HEADER_CONVERT.getHeader());
+            });
             final TriRpcStatus detailStatus;
             final TriRpcStatus statusFromTrailers = getStatusFromTrailers(reserved);
             if (statusFromTrailers != null) {
@@ -249,7 +247,7 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
             } else {
                 detailStatus = status;
             }
-            listener.onComplete(detailStatus, attachments, reserved, assemblyMap);
+            listener.onComplete(detailStatus, attachments, reserved, isReturnTriException);
         }
 
         private TriRpcStatus validateHeaderStatus(Http2Headers headers) {
@@ -318,7 +316,7 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
                 }
 
                 public void close() {
-                    finishProcess(statusFromTrailers(trailers), trailers);
+                    finishProcess(statusFromTrailers(trailers), trailers, isReturnTriException);
                 }
             };
             deframer = new TriDecoder(decompressor, listener);
@@ -335,7 +333,7 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
                 this.trailers = trailers;
                 TriRpcStatus status = statusFromTrailers(trailers);
                 if (deframer == null) {
-                    finishProcess(status, trailers);
+                    finishProcess(status, trailers, false);
                 }
                 if (deframer != null) {
                     deframer.close();
@@ -475,25 +473,8 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
             executor.execute(() -> {
                 transportError = TriRpcStatus.CANCELLED
                     .withDescription("Canceled by remote peer, errorCode=" + errorCode);
-                finishProcess(transportError, null);
+                finishProcess(transportError, null, false);
             });
         }
-    }
-
-
-    protected Map<String, String> extractTriHeaderConvert(Map<String, String> assemblyMap, Map<String, String> reserved) {
-        String headerConvert = reserved.get(TripleHeaderEnum.TRI_HEADER_CONVERT.getHeader());
-        if (!StringUtils.isEmpty(headerConvert)) {
-            assemblyMap.put(TripleHeaderEnum.TRI_HEADER_CONVERT.getHeader(), headerConvert);
-        }
-        return assemblyMap;
-    }
-
-    private Map<String, String> extractTriExceptionCode(Map<String, String> assemblyMap, Map<String, String> reserved) {
-        String value = reserved.remove(TripleHeaderEnum.TRI_EXCEPTION_CODE.getHeader());
-        if (!StringUtils.isEmpty(value)) {
-            assemblyMap.put(TripleHeaderEnum.TRI_EXCEPTION_CODE.getHeader(), value);
-        }
-        return assemblyMap;
     }
 }

@@ -191,9 +191,9 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
         }
         StreamUtils.convertAttachment(headers, attachments, TripleProtocol.CONVERT_NO_LOWER_HEADER);
         headers.set(TripleHeaderEnum.STATUS_KEY.getHeader(), String.valueOf(rpcStatus.code.code));
-        if (isNeedReturnException) {
-            headers.set(TripleHeaderEnum.TRI_EXCEPTION_CODE.getHeader(), String.valueOf(exceptionCode));
-        }
+//        if (isNeedReturnException) {
+//            headers.set(TripleHeaderEnum.TRI_EXCEPTION_CODE.getHeader(), String.valueOf(exceptionCode));
+//        }
         if (rpcStatus.isOk()) {
             return headers;
         }
@@ -409,9 +409,12 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
                     deCompressor = compressor;
                 }
             }
-            Map<String, String> assemblyMap = new HashMap<>();
-            extractTriHeaderConvert(assemblyMap, headers);
-            Map<String, Object> requestMetadata = headersToMap(headers, assemblyMap);
+
+            Map<String, Object> requestMetadata = headersToMap(headers, () -> {
+                return Optional.ofNullable(headers.get(TripleHeaderEnum.TRI_HEADER_CONVERT.getHeader()))
+                    .map(CharSequence::toString)
+                    .orElse(null);
+            });
             boolean hasStub = pathResolver.hasNativeStub(path);
             if (hasStub) {
                 listener = new StubAbstractServerCall(invoker, TripleServerStream.this,
@@ -458,14 +461,6 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
                     .withDescription("Canceled by client ,errorCode=" + errorCode));
             });
         }
-    }
-
-    private void extractTriHeaderConvert(Map<String, String> assemblyMap, Http2Headers headers) {
-        CharSequence headerConvertCs =headers.get(TripleHeaderEnum.TRI_HEADER_CONVERT.getHeader());
-        if (headerConvertCs == null || headerConvertCs.length() == 0) {
-            return;
-        }
-        assemblyMap.put(TripleHeaderEnum.TRI_HEADER_CONVERT.getHeader(), headerConvertCs.toString());
     }
 
 

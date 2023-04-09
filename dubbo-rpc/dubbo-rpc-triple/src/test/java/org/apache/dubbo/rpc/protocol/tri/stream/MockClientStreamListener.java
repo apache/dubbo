@@ -34,7 +34,7 @@ public class MockClientStreamListener implements ClientStream.Listener {
 
     @Override
     public void onComplete(TriRpcStatus status,
-        Map<String, Object> attachments, Map<String, String> assemblyMap) {
+        Map<String, Object> attachments) {
         this.status = status;
     }
 

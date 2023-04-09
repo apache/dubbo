@@ -40,7 +40,7 @@ public interface ClientStream extends Stream {
          *
          * @param attachments received from remote peer
          */
-        default void onComplete(TriRpcStatus status, Map<String, Object> attachments, Map<String, String> assemblyMap) {
+        default void onComplete(TriRpcStatus status, Map<String, Object> attachments) {
         }
 
         /**
@@ -51,8 +51,8 @@ public interface ClientStream extends Stream {
          * @param reserved    triple protocol reserved data
          */
         default void onComplete(TriRpcStatus status, Map<String, Object> attachments,
-            Map<String, String> reserved, Map<String, String> assemblyMap) {
-            onComplete(status, attachments, assemblyMap);
+            Map<String, String> reserved, boolean isReturnTriException) {
+            onComplete(status, attachments);
         }
 
     }
