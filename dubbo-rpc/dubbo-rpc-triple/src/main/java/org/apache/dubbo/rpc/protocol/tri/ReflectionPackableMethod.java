@@ -366,7 +366,7 @@ public class ReflectionPackableMethod implements PackableMethod {
         }
 
         @Override
-        public Object unpack(byte[] data) throws IOException, ClassNotFoundException {
+        public Object unpack(byte[] data, boolean isReturnTriException) throws IOException, ClassNotFoundException {
             TripleCustomerProtocolWapper.TripleResponseWrapper wrapper = TripleCustomerProtocolWapper.TripleResponseWrapper
                 .parseFrom(data);
             final String serializeType = convertHessianFromWrapper(wrapper.getSerializeType());
@@ -374,7 +374,7 @@ public class ReflectionPackableMethod implements PackableMethod {
             CodecSupport.checkSerialization(serializeType, allSerialize);
 
             ByteArrayInputStream bais = new ByteArrayInputStream(wrapper.getData());
-            return serialization.deserialize(url, serializeType, returnClass, bais);
+            return serialization.deserialize(url, serializeType, returnClass, bais, isReturnTriException);
         }
     }
 
@@ -475,7 +475,7 @@ public class ReflectionPackableMethod implements PackableMethod {
         }
 
         @Override
-        public Object unpack(byte[] data) throws IOException, ClassNotFoundException {
+        public Object unpack(byte[] data, boolean isReturnTriException) throws IOException, ClassNotFoundException {
             TripleCustomerProtocolWapper.TripleRequestWrapper wrapper = TripleCustomerProtocolWapper.TripleRequestWrapper.parseFrom(
                 data);
 
@@ -489,7 +489,7 @@ public class ReflectionPackableMethod implements PackableMethod {
                     wrapper.getArgs().get(i));
                 ret[i] = serialization.deserialize(url, wrapper.getSerializeType(),
                     actualRequestTypes[i],
-                    bais);
+                    bais, isReturnTriException);
             }
             return ret;
         }

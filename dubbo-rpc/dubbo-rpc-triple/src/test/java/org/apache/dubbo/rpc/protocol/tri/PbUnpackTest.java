@@ -31,7 +31,7 @@ class PbUnpackTest {
             .setService("service")
             .build();
         PbUnpack<HealthCheckRequest> unpack=new PbUnpack<>(HealthCheckRequest.class);
-        HealthCheckRequest obj= (HealthCheckRequest) unpack.unpack(req.toByteArray());
+        HealthCheckRequest obj= (HealthCheckRequest) unpack.unpack(req.toByteArray(), false);
         Assertions.assertEquals("service",obj.getService());
     }
 }

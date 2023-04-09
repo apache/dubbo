@@ -479,7 +479,7 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
 
         @Override
         public void onRawMessage(byte[] data) {
-            listener.onMessage(data, isReturnTriException);
+            listener.onMessage(data, false);
         }
 
         @Override

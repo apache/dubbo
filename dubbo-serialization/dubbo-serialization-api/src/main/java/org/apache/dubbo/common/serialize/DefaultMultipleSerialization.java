@@ -35,10 +35,13 @@ public class DefaultMultipleSerialization implements MultipleSerialization {
     }
 
     @Override
-    public Object deserialize(URL url, String serializeType, Class<?> clz, InputStream os) throws IOException, ClassNotFoundException {
+    public Object deserialize(URL url, String serializeType, Class<?> clz, InputStream os, boolean isReturnTriException) throws IOException, ClassNotFoundException {
         serializeType = convertHessian(serializeType);
         final Serialization serialization = url.getOrDefaultFrameworkModel().getExtensionLoader(Serialization.class).getExtension(serializeType);
         final ObjectInput in = serialization.deserialize(null, os);
+        if (isReturnTriException) {
+            return in.readThrowable();
+        }
         return in.readObject(clz);
     }
 

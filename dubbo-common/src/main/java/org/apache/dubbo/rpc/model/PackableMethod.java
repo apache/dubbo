@@ -38,12 +38,13 @@ public interface PackableMethod {
     interface UnPack {
 
         /**
-         * @param data byte array
+         * @param data                 byte array
+         * @param isReturnTriException
          * @return object instance
          * @throws IOException            IOException
          * @throws ClassNotFoundException when no class found
          */
-        Object unpack(byte[] data) throws IOException, ClassNotFoundException;
+        Object unpack(byte[] data, boolean isReturnTriException) throws IOException, ClassNotFoundException;
     }
 
     default Object parseRequest(byte[] data) throws IOException, ClassNotFoundException {
