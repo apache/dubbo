@@ -33,10 +33,18 @@ import org.apache.dubbo.triple.metadata.ServiceInfo;
 import java.util.List;
 import java.util.Optional;
 
-
+/**
+ * This implemented class provides a point-to-point built-in metadata
+ * retrieval service by encapsulating Dubbo's MetadataService.
+ */
 public class TriMetadataServiceImpl extends DubboMetadataTriple.MetadataImplBase {
 
-
+    /**
+     * Retrieves metadata information for a specified revision.
+     *
+     * @param metaRequest the request for metadata information
+     * @return the response containing the requested metadata information
+     */
     @Override
     public MetaResponse getMetadata(MetaRequest metaRequest) {
         MetadataService metadataService = getMetadataService();
@@ -46,8 +54,14 @@ public class TriMetadataServiceImpl extends DubboMetadataTriple.MetadataImplBase
         return getMetaResponse(metadataService.getMetadataInfo(metaRequest.getRevision()));
     }
 
+    /**
+     * Retrieves all metadata information.
+     *
+     * @param allMetaRequest the allMetaRequest for all metadata information
+     * @return the response containing all metadata information
+     */
     @Override
-    public AllMetaResponse getAllMetadata(AllMetaRequest request) {
+    public AllMetaResponse getAllMetadata(AllMetaRequest allMetaRequest) {
         MetadataService metadataService = getMetadataService();
         if (metadataService == null) {
             return AllMetaResponse.newBuilder().setStatus(ResponseStatus.SERVICE_NOT_REGISTER).build();
@@ -63,6 +77,12 @@ public class TriMetadataServiceImpl extends DubboMetadataTriple.MetadataImplBase
         return allMetaResponseBuilder.setStatus(ResponseStatus.SUCCESS).build();
     }
 
+    /**
+     * Builds the response containing the requested metadata information
+     *
+     * @param metadata the metadata information to be included in the respons
+     * @return the response containing the requested metadata information
+     */
     private MetaResponse getMetaResponse(MetadataInfo metadata) {
         if (metadata == null) {
             return MetaResponse.newBuilder().setStatus(ResponseStatus.REVISION_UN_FIND).build();
@@ -85,6 +105,11 @@ public class TriMetadataServiceImpl extends DubboMetadataTriple.MetadataImplBase
         return metadataResponseBuilder.build();
     }
 
+    /**
+     * Obtaining MetadataService Implementation Class through Bean Factory.
+     *
+     * @return the MetadataService instance
+     */
     private MetadataService getMetadataService() {
         return ApplicationModel.defaultModel().getBeanFactory().getBean(MetadataService.class);
     }
