@@ -68,7 +68,7 @@ public class NettyHttpHandler implements HttpHandler<NettyRequestFacade, NettyHt
         RpcContext.getServiceContext().setLocalAddress(requestFacade.getLocalAddr(), requestFacade.getLocalPort());
 
         // set request
-        RpcContext.getServiceContext().setRequest(requestFacade.getRequest());
+        RpcContext.getServiceContext().setRequest(requestFacade);
 
         // set response
         RpcContext.getServiceContext().setResponse(nettyHttpResponse);
@@ -149,7 +149,7 @@ public class NettyHttpHandler implements HttpHandler<NettyRequestFacade, NettyHt
      * @throws Exception
      */
     private void writeResult(NettyHttpResponse nettyHttpResponse, RequestFacade request, Invoker invoker, Object value, Class returnType) throws Exception {
-        MediaType mediaType = getAcceptMediaType(request);
+        MediaType mediaType = getAcceptMediaType(request,returnType);
 
         MessageCodecResultPair booleanMediaTypePair = HttpMessageCodecManager.httpMessageEncode(nettyHttpResponse.getOutputStream(), value, invoker.getUrl(), mediaType, returnType);
 
@@ -162,9 +162,9 @@ public class NettyHttpHandler implements HttpHandler<NettyRequestFacade, NettyHt
      * @param request
      * @return
      */
-    private MediaType getAcceptMediaType(RequestFacade request) {
+    private MediaType getAcceptMediaType(RequestFacade request,Class<?> returnType) {
         String accept = request.getHeader(RestHeaderEnum.ACCEPT.getHeader());
-        MediaType mediaType = MediaTypeUtil.convertMediaType(null, accept);
+        MediaType mediaType = MediaTypeUtil.convertMediaType(returnType, accept);
         return mediaType;
     }
 
@@ -176,7 +176,7 @@ public class NettyHttpHandler implements HttpHandler<NettyRequestFacade, NettyHt
     private void acceptSupportJudge(RequestFacade requestFacade, Class<?> returnType) {
         try {
             // media type judge
-            getAcceptMediaType(requestFacade);
+            getAcceptMediaType(requestFacade,returnType);
         } catch (UnSupportContentTypeException e) {
             // return type judge
             MediaType mediaType = HttpMessageCodecManager.typeSupport(returnType);
