@@ -31,6 +31,7 @@ import io.netty.handler.codec.http2.Http2Headers;
 import io.netty.handler.codec.http2.Http2StreamChannel;
 import io.netty.handler.codec.http2.Http2StreamChannelBootstrap;
 import io.netty.util.ReferenceCountUtil;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -83,6 +84,7 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
     private boolean halfClosed;
     private boolean rst;
 
+    private boolean isReturnTriException = false;
     // for test
     TripleClientStream(FrameworkModel frameworkModel,
                        Executor executor,
@@ -288,6 +290,13 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
 
             // todo support full payload compressor
             CharSequence messageEncoding = headers.get(TripleHeaderEnum.GRPC_ENCODING.getHeader());
+            CharSequence triExceptionCode = headers.get(TripleHeaderEnum.TRI_EXCEPTION_CODE.getHeader());
+            if (triExceptionCode != null) {
+                Integer triExceptionCodeNum = Integer.parseInt(triExceptionCode.toString());
+                if (!(triExceptionCodeNum == CommonConstants.TRI_EXCEPTION_CODE_NOT_EXISTS)) {
+                    isReturnTriException = true;
+                }
+            }
             if (null != messageEncoding) {
                 String compressorStr = messageEncoding.toString();
                 if (!Identity.IDENTITY.getMessageEncoding().equals(compressorStr)) {
@@ -305,7 +314,7 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
             TriDecoder.Listener listener = new TriDecoder.Listener() {
                 @Override
                 public void onRawMessage(byte[] data) {
-                    TripleClientStream.this.listener.onMessage(data);
+                    TripleClientStream.this.listener.onMessage(data, isReturnTriException);
                 }
 
                 public void close() {

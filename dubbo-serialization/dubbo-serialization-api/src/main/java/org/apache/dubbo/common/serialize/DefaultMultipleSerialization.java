@@ -39,7 +39,7 @@ public class DefaultMultipleSerialization implements MultipleSerialization {
         serializeType = convertHessian(serializeType);
         final Serialization serialization = url.getOrDefaultFrameworkModel().getExtensionLoader(Serialization.class).getExtension(serializeType);
         final ObjectInput in = serialization.deserialize(null, os);
-        return in.readObject();
+        return in.readObject(clz);
     }
 
     private String convertHessian(String ser) {

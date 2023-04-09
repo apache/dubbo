@@ -39,7 +39,7 @@ public class MockClientStreamListener implements ClientStream.Listener {
     }
 
     @Override
-    public void onMessage(byte[] message) {
+    public void onMessage(byte[] message, boolean isReturnTriException) {
         this.message = message;
     }
 

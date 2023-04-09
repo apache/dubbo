@@ -207,7 +207,7 @@ public abstract class AbstractServerCall implements ServerCall, ServerStream.Lis
     }
 
     @Override
-    public final void onMessage(byte[] message) {
+    public final void onMessage(byte[] message, boolean isReturnTriException) {
         ClassLoader tccl = Thread.currentThread()
             .getContextClassLoader();
         try {
@@ -291,6 +291,9 @@ public abstract class AbstractServerCall implements ServerCall, ServerStream.Lis
         if (compressor != null) {
             headers.set(TripleHeaderEnum.GRPC_ENCODING.getHeader(),
                 compressor.getMessageEncoding());
+        }
+        if (exceptionCode != CommonConstants.TRI_EXCEPTION_CODE_NOT_EXISTS) {
+            headers.set(TripleHeaderEnum.TRI_EXCEPTION_CODE.getHeader(), String.valueOf(exceptionCode));
         }
         // send header failed will reset stream and close request observer cause no more data will be sent
         stream.sendHeader(headers)

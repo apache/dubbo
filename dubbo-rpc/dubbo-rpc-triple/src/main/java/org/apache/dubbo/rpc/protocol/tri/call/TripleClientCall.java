@@ -67,7 +67,7 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
 
     // stream listener start
     @Override
-    public void onMessage(byte[] message) {
+    public void onMessage(byte[] message, boolean isReturnTriException) {
         if (done) {
             LOGGER.warn(PROTOCOL_STREAM_LISTENER, "", "",
                 "Received message from closed stream,connection=" + connectionClient + " service="
@@ -76,7 +76,7 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
             return;
         }
         try {
-            final Object unpacked = requestMetadata.packableMethod.parseResponse(message);
+            final Object unpacked = requestMetadata.packableMethod.parseResponse(message, isReturnTriException);
             listener.onMessage(unpacked);
         } catch (Throwable t) {
             TriRpcStatus status = TriRpcStatus.INTERNAL.withDescription("Deserialize response failed")

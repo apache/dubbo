@@ -82,6 +82,7 @@ public class ServerCallToObserverAdapter<T> extends CancelableStreamObserver<T> 
             throw new IllegalStateException(
                 "Stream observer has been terminated, no more data is allowed");
         }
+        call.setExceptionCode(exceptionCode);
         call.setNeedReturnException(isNeedReturnException);
         call.sendMessage(data);
     }
