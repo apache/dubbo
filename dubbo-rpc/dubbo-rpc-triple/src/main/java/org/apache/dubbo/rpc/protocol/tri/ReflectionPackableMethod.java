@@ -38,12 +38,7 @@ import org.apache.dubbo.rpc.model.PackableMethod;
 
 import com.google.protobuf.Message;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.lang.reflect.ParameterizedType;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.stream.Stream;
 
 import static org.apache.dubbo.common.constants.CommonConstants.$ECHO;
@@ -74,9 +69,8 @@ public class ReflectionPackableMethod implements PackableMethod {
         return this.needWrapper;
     }
 
-    public ReflectionPackableMethod(MethodDescriptor method, URL url, String serializeName, boolean isServer) {
+    public ReflectionPackableMethod(MethodDescriptor method, URL url, String serializeName, boolean isServer, Collection<String> allSerialize) {
         Class<?>[] actualTypes;
-    public ReflectionPackableMethod(MethodDescriptor method, URL url, String serializeName, Collection<String> allSerialize) {
         Class<?>[] actualRequestTypes;
         Class<?> actualResponseType;
         switch (method.getRpcType()) {
@@ -105,9 +99,11 @@ public class ReflectionPackableMethod implements PackableMethod {
         this.needWrapper = needWrap(method, actualRequestTypes, actualResponseType);
         if (!needWrapper) {
             requestPack = new PbArrayPacker(singleArgument);
+            originalPack = new PbArrayPacker(singleArgument);
             responsePack = PB_PACK;
             requestUnpack = new PbUnpack<>(actualRequestTypes[0]);
             responseUnpack = new PbUnpack<>(actualResponseType);
+            originalUnpack = new PbUnpack<>(actualResponseType);
         } else {
             final MultipleSerialization serialization = url.getOrDefaultFrameworkModel()
                 .getExtensionLoader(MultipleSerialization.class)
@@ -122,13 +118,9 @@ public class ReflectionPackableMethod implements PackableMethod {
             // server
             this.responsePack = new WrapResponsePack(serialization, url, serializeName, actualResponseType);
             this.requestUnpack = new WrapRequestUnpack(serialization, url, allSerialize, actualRequestTypes);
-            this.responsePack = new WrapResponsePack(serialization, url, actualResponseType);
-            this.requestUnpack = new WrapRequestUnpack(serialization, url, actualRequestTypes);
-            this.responseUnpack = new WrapResponseUnpack(serialization, url, actualResponseType);
 
 
             singleArgument = isServer ? isServer : singleArgument;
-
             actualTypes = isServer ? new Class[]{actualResponseType} : actualRequestTypes;
             this.originalPack = new OriginalPack(serialization, url, actualTypes, singleArgument);
             actualTypes = isServer ? actualRequestTypes : new Class[]{actualResponseType};
@@ -145,8 +137,7 @@ public class ReflectionPackableMethod implements PackableMethod {
         }
         final Collection<String> allSerialize = UrlUtils.allSerializations(url);
         ReflectionPackableMethod reflectionPackableMethod = new ReflectionPackableMethod(
-            methodDescriptor, url, serializeName, isServer);
-            methodDescriptor, url, serializeName, allSerialize);
+            methodDescriptor, url, serializeName, isServer,allSerialize);
         methodDescriptor.addAttribute(METHOD_ATTR_PACK, reflectionPackableMethod);
         return reflectionPackableMethod;
     }
