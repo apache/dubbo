@@ -23,7 +23,6 @@ import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.metrics.registry.collector.RegistryMetricsCollector;
-import org.apache.dubbo.metrics.registry.event.type.ApplicationType;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.junit.jupiter.api.AfterEach;
@@ -89,7 +88,7 @@ class RegistryMetricsSampleTest {
         RegistryMetricsCollector collector = new RegistryMetricsCollector(applicationModel);
         collector.setCollectEnabled(true);
         String applicationName = applicationModel.getApplicationName();
-        collector.increment(applicationName, ApplicationType.R_TOTAL);
+        collector.increment(applicationName, MetricsKey.REGISTER_METRIC_REQUESTS);
     }
 
 }

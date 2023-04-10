@@ -41,7 +41,7 @@ import java.util.Optional;
  * Registry implementation of {@link MetricsCollector}
  */
 @Activate
-public class MetadataMetricsCollector implements ApplicationMetricsCollector<ApplicationType, MetadataEvent> {
+public class MetadataMetricsCollector implements ApplicationMetricsCollector<MetadataEvent> {
 
     private Boolean collectEnabled = null;
     private final MetadataStatComposite stats;

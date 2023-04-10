@@ -20,7 +20,9 @@ package org.apache.dubbo.metrics.registry.event;
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.metrics.event.TimeCounterEvent;
 import org.apache.dubbo.metrics.exception.MetricsNeverHappenException;
+import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.key.MetricsLevel;
+import org.apache.dubbo.metrics.model.key.MetricsPlaceType;
 import org.apache.dubbo.metrics.model.key.TypeWrapper;
 import org.apache.dubbo.metrics.registry.collector.RegistryMetricsCollector;
 import org.apache.dubbo.metrics.registry.event.type.ApplicationType;
@@ -74,33 +76,34 @@ public class RegistryEvent extends TimeCounterEvent {
         attachment.put(key, value);
     }
 
-    public void setLastNum(ServiceType type) {
-        getCollector().setNum(type, getSource().getApplicationName(), getAttachmentValue(ATTACHMENT_KEY_LAST_NUM_MAP));
+    @SuppressWarnings("unchecked")
+    public void setLastNum(MetricsKey metricsKey) {
+        getCollector().setNum(metricsKey, getSource().getApplicationName(), (Map<String, Integer>) getAttachmentValue(ATTACHMENT_KEY_LAST_NUM_MAP));
     }
 
-    public void addApplicationRT(String opType) {
-        getCollector().addApplicationRT(getSource().getApplicationName(), opType, getTimePair().calc());
+    public void addApplicationRT(MetricsPlaceType placeType) {
+        getCollector().addApplicationRT(getSource().getApplicationName(), placeType.getType(), getTimePair().calc());
 
     }
 
-    public void setNum(ApplicationType type, String attachmentKey) {
-        getCollector().setNum(type, getSource().getApplicationName(), getAttachmentValue(attachmentKey));
+    public void setNum(MetricsKey metricsKey, String attachmentKey) {
+        getCollector().setNum(metricsKey, getSource().getApplicationName(), (int) getAttachmentValue(attachmentKey));
     }
 
-    public void incrementServiceKey(ServiceType type, String attServiceKey, String attSize) {
-        incrementServiceKey(type, attServiceKey, (int) getAttachmentValue(attSize));
+    public void incrementServiceKey(MetricsKey metricsKey, String attServiceKey, String attSize) {
+        incrementServiceKey(metricsKey, attServiceKey, (int) getAttachmentValue(attSize));
     }
 
-    public void incrementServiceKey(ServiceType type, String attServiceKey, int size) {
-        getCollector().incrementServiceKey(getSource().getApplicationName(), getAttachmentValue(attServiceKey), type, size);
+    public void incrementServiceKey(MetricsKey metricsKey, String attServiceKey, int size) {
+        getCollector().incrementServiceKey(getSource().getApplicationName(), getAttachmentValue(attServiceKey), metricsKey, size);
     }
 
     public void addServiceKeyRT(String attServiceKey, String attSize) {
         getCollector().addServiceKeyRT(getSource().getApplicationName(), getAttachmentValue(attServiceKey), attSize, getTimePair().calc());
     }
 
-    public void increment(ApplicationType type) {
-        getCollector().increment(getSource().getApplicationName(), type);
+    public void increment(MetricsKey metricsKey) {
+        getCollector().increment(getSource().getApplicationName(), metricsKey);
     }
 
 

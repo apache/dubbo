@@ -24,11 +24,10 @@ import org.apache.dubbo.metrics.collector.MetricsCollector;
 import org.apache.dubbo.metrics.event.MetricsEvent;
 import org.apache.dubbo.metrics.event.MetricsEventMulticaster;
 import org.apache.dubbo.metrics.model.MetricsCategory;
+import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.metrics.registry.event.RegistryMetricsEventMulticaster;
-import org.apache.dubbo.metrics.registry.event.type.ApplicationType;
-import org.apache.dubbo.metrics.registry.event.type.ServiceType;
 import org.apache.dubbo.metrics.registry.stat.RegistryStatComposite;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
@@ -42,7 +41,7 @@ import java.util.Optional;
  * Registry implementation of {@link MetricsCollector}
  */
 @Activate
-public class RegistryMetricsCollector implements ApplicationMetricsCollector<ApplicationType, RegistryEvent> {
+public class RegistryMetricsCollector implements ApplicationMetricsCollector<RegistryEvent> {
 
     private Boolean collectEnabled = null;
     private final RegistryStatComposite stats;
@@ -51,7 +50,7 @@ public class RegistryMetricsCollector implements ApplicationMetricsCollector<App
 
     public RegistryMetricsCollector(ApplicationModel applicationModel) {
         this.stats = new RegistryStatComposite();
-        this.registryMulticaster = new RegistryMetricsEventMulticaster();
+        this.registryMulticaster = new RegistryMetricsEventMulticaster(this);
         this.applicationModel = applicationModel;
     }
 
@@ -70,22 +69,22 @@ public class RegistryMetricsCollector implements ApplicationMetricsCollector<App
         return Optional.ofNullable(collectEnabled).orElse(true);
     }
 
-    public void setNum(ServiceType registryType, String applicationName, Map<String, Integer> lastNumMap) {
+    public void setNum(MetricsKey metricsKey, String applicationName, Map<String, Integer> lastNumMap) {
         lastNumMap.forEach((serviceKey, num) ->
-            this.stats.setServiceKey(registryType.getMetricsKey(), applicationName, serviceKey, num));
+            this.stats.setServiceKey(metricsKey, applicationName, serviceKey, num));
     }
 
-    public void setNum(ApplicationType registryType, String applicationName, Integer num) {
-        this.stats.setApplicationKey(registryType.getMetricsKey(), applicationName, num);
+    public void setNum(MetricsKey metricsKey, String applicationName, Integer num) {
+        this.stats.setApplicationKey(metricsKey, applicationName, num);
     }
 
     @Override
-    public void increment(String applicationName, ApplicationType registryType) {
-        this.stats.incrementApp(registryType.getMetricsKey(), applicationName, 1);
+    public void increment(String applicationName, MetricsKey metricsKey) {
+        this.stats.incrementApp(metricsKey, applicationName, 1);
     }
 
-    public void incrementServiceKey(String applicationName, String serviceKey, ServiceType registryType, int size) {
-        this.stats.incrementServiceKey(registryType.getMetricsKey(), applicationName, serviceKey, size);
+    public void incrementServiceKey(String applicationName, String serviceKey, MetricsKey metricsKey, int size) {
+        this.stats.incrementServiceKey(metricsKey, applicationName, serviceKey, size);
     }
 
     @Override

@@ -18,6 +18,7 @@
 package org.apache.dubbo.metrics.collector;
 
 import org.apache.dubbo.metrics.event.MetricsEvent;
+import org.apache.dubbo.metrics.model.key.MetricsKey;
 
 /**
  * Application-level collector.
@@ -25,9 +26,9 @@ import org.apache.dubbo.metrics.event.MetricsEvent;
  *
  * @Params <T>  metrics type
  */
-public interface ApplicationMetricsCollector<T, E extends MetricsEvent> extends MetricsCollector<E> {
+public interface ApplicationMetricsCollector<E extends MetricsEvent> extends MetricsCollector<E> {
 
-    void increment(String applicationName, T type);
+    void increment(String applicationName, MetricsKey metricsKey);
 
     void addApplicationRT(String applicationName, String registryOpType, Long responseTime);
 }
