@@ -42,7 +42,7 @@ import java.util.stream.Collectors;
 @AutoConfiguration(before = DubboMicrometerTracingAutoConfiguration.class, afterName = "org.springframework.boot.actuate.autoconfigure.tracing.OpenTelemetryAutoConfiguration")
 @ConditionalOnDubboTracingEnable
 @ConditionalOnClass(name = {"io.micrometer.tracing.otel.bridge.OtelTracer",
-    "io.opentelemetry.sdk.trace.SdkTracerProvider", "e io.opentelemetry.api.OpenTelemetry"
+    "io.opentelemetry.sdk.trace.SdkTracerProvider", "io.opentelemetry.api.OpenTelemetry"
     , "io.micrometer.tracing.SpanCustomizer"})
 @EnableConfigurationProperties(DubboConfigurationProperties.class)
 public class OpenTelemetryAutoConfiguration {
