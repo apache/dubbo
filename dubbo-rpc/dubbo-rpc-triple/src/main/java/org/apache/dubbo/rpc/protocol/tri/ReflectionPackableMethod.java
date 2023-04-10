@@ -366,6 +366,11 @@ public class ReflectionPackableMethod implements PackableMethod {
         }
 
         @Override
+        public Object unpack(byte[] data) throws IOException, ClassNotFoundException {
+            return unpack(data, false);
+        }
+
+        @Override
         public Object unpack(byte[] data, boolean isReturnTriException) throws IOException, ClassNotFoundException {
             TripleCustomerProtocolWapper.TripleResponseWrapper wrapper = TripleCustomerProtocolWapper.TripleResponseWrapper
                 .parseFrom(data);
