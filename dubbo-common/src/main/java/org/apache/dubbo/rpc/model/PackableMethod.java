@@ -57,7 +57,7 @@ public interface PackableMethod {
     }
 
     default Object parseResponse(byte[] data) throws IOException, ClassNotFoundException {
-        return getResponseUnpack().unpack(data);
+        return parseResponse(data, false);
     }
 
     default Object parseResponse(byte[] data, boolean isReturnTriException) throws IOException, ClassNotFoundException {
