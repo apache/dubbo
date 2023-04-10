@@ -90,7 +90,7 @@ public class SpringMvcRestProtocolTest {
 
     public Exporter<SpringRestDemoService> getExceptionHandlerExport(URL url, SpringRestDemoService server) {
         url = url.addParameter(SERVER_KEY, Constants.NETTY_HTTP);
-        url = url.addParameter(EXCEPTION_MAPPER_KEY, TestExceptionMapper.class.getName());
+        url = url.addParameter(EXTENSION_KEY, TestExceptionMapper.class.getName());
         return protocol.export(proxy.getInvoker(server, getServerClass(), url));
     }
 
