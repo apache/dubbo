@@ -36,7 +36,7 @@ public class PbUnpack<T> implements PackableMethod.UnPack {
         return SingleProtobufUtils.deserialize(bais, clz);
     }
 
-    @Override
+
     public Object unpack(byte[] data, boolean isReturnTriException) throws IOException {
         final ByteArrayInputStream bais = new ByteArrayInputStream(data);
         return SingleProtobufUtils.deserialize(bais, clz);

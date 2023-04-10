@@ -46,7 +46,7 @@ public interface PackableMethod {
          */
         default Object unpack(byte[] data) throws IOException, ClassNotFoundException {
             return unpack(data, false);
-        };
+        }
 
         Object unpack(byte[] data, boolean isReturnTriException) throws IOException, ClassNotFoundException;
 
