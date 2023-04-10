@@ -365,6 +365,30 @@ public class SpringMvcRestProtocolTest {
         exporter.unexport();
     }
 
+    @Test
+    void testPrimitive() {
+        SpringRestDemoService server = getServerImpl();
+
+        URL nettyUrl = this.registerProvider(exportUrl, server, SpringRestDemoService.class);
+
+
+        Exporter<SpringRestDemoService> exporter = getExport(nettyUrl, server);
+
+        SpringRestDemoService demoService = this.proxy.getProxy(protocol.refer(SpringRestDemoService.class, nettyUrl));
+
+        Integer result = demoService.primitiveInt(1, 2);
+        Long resultLong = demoService.primitiveLong(1, 2l);
+        long resultByte = demoService.primitiveByte((byte) 1, 2l);
+        long resultShort = demoService.primitiveShort((short) 1, 2l, 1);
+
+        assertThat(result, is(3));
+        assertThat(resultShort, is(3l));
+        assertThat(resultLong, is(3l));
+        assertThat(resultByte, is(3l));
+
+        exporter.unexport();
+    }
+
     public static class TestExceptionMapper implements ExceptionHandler<RuntimeException> {
 
         @Override
