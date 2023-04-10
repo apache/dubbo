@@ -17,13 +17,17 @@
 package org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.consumer;
 
 import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.metadata.rest.ArgInfo;
 import org.apache.dubbo.metadata.rest.ParamType;
+import org.apache.dubbo.metadata.rest.media.MediaType;
 import org.apache.dubbo.remoting.http.RequestTemplate;
+import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
 import org.apache.dubbo.rpc.protocol.rest.util.DataParseUtils;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -62,6 +66,11 @@ public class FormConsumerParamParser implements BaseConsumerParamParser {
             );
 
             requestTemplate.body(tmp, Map.class);
+        }
+
+        Collection<String> headers = requestTemplate.getHeaders(RestConstant.CONTENT_TYPE);
+        if (CollectionUtils.isEmpty(headers)) {
+            requestTemplate.addHeader(RestConstant.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE.value);
         }
 
 

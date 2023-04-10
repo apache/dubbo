@@ -51,8 +51,6 @@ public interface DemoService {
 
     @POST
     @Path("number")
-    @Produces({MediaType.TEXT_PLAIN})
-    @Consumes({MediaType.APPLICATION_FORM_URLENCODED})
     Long testFormBody(@FormParam("number") Long number);
 
     boolean isCalled();
