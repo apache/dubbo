@@ -81,9 +81,7 @@ public interface PackableMethod {
 
     Pack getResponsePack();
 
-    default UnPack getResponseUnpack() {
-        return null;
-    }
+    UnPack getResponseUnpack();
 
     UnPack getRequestUnpack();
 
