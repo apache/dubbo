@@ -43,6 +43,9 @@ public class ThreadlessExecutor extends AbstractExecutorService {
 
     private final Queue<Runnable> queue = new ConcurrentLinkedQueue<>();
 
+    /**
+     * Wait thread. It must be visible to other threads and does not need to be thread-safe
+     */
     private volatile Object waiter;
 
     /**
