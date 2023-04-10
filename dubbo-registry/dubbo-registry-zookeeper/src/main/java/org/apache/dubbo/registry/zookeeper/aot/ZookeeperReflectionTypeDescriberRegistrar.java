@@ -20,7 +20,6 @@ import org.apache.dubbo.aot.api.MemberCategory;
 import org.apache.dubbo.aot.api.ReflectionTypeDescriberRegistrar;
 import org.apache.dubbo.aot.api.TypeDescriber;
 import org.apache.dubbo.registry.zookeeper.ZookeeperInstance;
-import org.apache.zookeeper.ClientCnxnSocketNIO;
 
 import java.util.ArrayList;
 import java.util.HashSet;
