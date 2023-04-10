@@ -387,7 +387,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         }
         collector.setCollectEnabled(true);
         collector.collectApplication(applicationModel);
-        collector.setThreadpoolCollectEnabled(Optional.ofNullable(metricsConfig.getEnableThreadpoolMetrics()).orElse(true));
+        collector.setThreadpoolCollectEnabled(Optional.ofNullable(metricsConfig.getEnableThreadpool()).orElse(true));
         MetricsReporterFactory metricsReporterFactory = getExtensionLoader(MetricsReporterFactory.class).getAdaptiveExtension();
         MetricsReporter metricsReporter = metricsReporterFactory.createMetricsReporter(metricsConfig.toUrl());
         metricsReporter.init();

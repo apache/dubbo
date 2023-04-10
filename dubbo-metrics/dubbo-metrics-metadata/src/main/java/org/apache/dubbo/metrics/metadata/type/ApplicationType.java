@@ -15,36 +15,37 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.metrics.registry.event.type;
+package org.apache.dubbo.metrics.metadata.type;
 
 import org.apache.dubbo.metrics.model.MetricsKey;
 
-public enum ServiceType {
+public enum ApplicationType {
+    P_TOTAL(MetricsKey.METADATA_PUSH_METRIC_NUM),
+    P_SUCCEED(MetricsKey.METADATA_PUSH_METRIC_NUM_SUCCEED),
+    P_FAILED(MetricsKey.METADATA_PUSH_METRIC_NUM_FAILED),
 
-    N_LAST_NUM(MetricsKey.NOTIFY_METRIC_NUM_LAST),
+    S_TOTAL(MetricsKey.METADATA_SUBSCRIBE_METRIC_NUM),
+    S_SUCCEED(MetricsKey.METADATA_SUBSCRIBE_METRIC_NUM_SUCCEED),
+    S_FAILED(MetricsKey.METADATA_SUBSCRIBE_METRIC_NUM_FAILED),
 
-    R_SERVICE_TOTAL(MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS),
-    R_SERVICE_SUCCEED(MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS_SUCCEED),
-    R_SERVICE_FAILED(MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS_FAILED),
-
-    S_SERVICE_TOTAL(MetricsKey.SERVICE_SUBSCRIBE_METRIC_NUM),
-    S_SERVICE_SUCCEED(MetricsKey.SERVICE_SUBSCRIBE_METRIC_NUM_SUCCEED),
-    S_SERVICE_FAILED(MetricsKey.SERVICE_SUBSCRIBE_METRIC_NUM_FAILED),
-
-    D_VALID(MetricsKey.DIRECTORY_METRIC_NUM_VALID),
-    D_TO_RECONNECT(MetricsKey.DIRECTORY_METRIC_NUM_TO_RECONNECT),
-    D_DISABLE(MetricsKey.DIRECTORY_METRIC_NUM_DISABLE),
-    D_ALL(MetricsKey.DIRECTORY_METRIC_NUM_ALL),
     ;
-
     private final MetricsKey metricsKey;
+    private final boolean isIncrement;
 
-    ServiceType(MetricsKey metricsKey) {
+    ApplicationType(MetricsKey metricsKey) {
+        this(metricsKey, true);
+    }
+
+    ApplicationType(MetricsKey metricsKey, boolean isIncrement) {
         this.metricsKey = metricsKey;
+        this.isIncrement = isIncrement;
     }
 
     public MetricsKey getMetricsKey() {
         return metricsKey;
     }
 
+    public boolean isIncrement() {
+        return isIncrement;
+    }
 }
