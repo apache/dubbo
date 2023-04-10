@@ -53,7 +53,6 @@ import java.util.stream.Collectors;
  * invocation} hints are only required if the
  * {@link #resolveAndInvoke(RegisteredBean, Object)} method of this class is
  * being used (typically to support private methods).
- *
  */
 public final class ReferencedMethodArgumentsResolver extends AutowiredElementResolver {
 
