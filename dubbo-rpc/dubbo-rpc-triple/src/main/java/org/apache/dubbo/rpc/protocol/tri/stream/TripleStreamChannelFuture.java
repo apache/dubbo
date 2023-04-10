@@ -17,30 +17,15 @@
 
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
-import io.netty.channel.Channel;
 import io.netty.handler.codec.http2.Http2StreamChannel;
-import org.apache.dubbo.common.utils.Assert;
 
 import java.util.concurrent.CompletableFuture;
 
 public class TripleStreamChannelFuture extends CompletableFuture<Http2StreamChannel> {
 
-    private final Channel parentChannel;
-
     private Throwable cause;
 
-    public TripleStreamChannelFuture(Channel parentChannel) {
-        Assert.notNull(parentChannel, "parentChannel cannot be null.");
-        this.parentChannel = parentChannel;
-    }
-
-    public TripleStreamChannelFuture(Http2StreamChannel channel) {
-        this.complete(channel);
-        this.parentChannel = channel.parent();
-    }
-
-    public Channel getParentChannel() {
-        return parentChannel;
+    public TripleStreamChannelFuture() {
     }
 
     @Override
@@ -58,9 +43,5 @@ public class TripleStreamChannelFuture extends CompletableFuture<Http2StreamChan
 
     public boolean isSuccess() {
         return isDone() && cause() == null;
-    }
-
-    public Http2StreamChannel getNow() {
-        return getNow(null);
     }
 }

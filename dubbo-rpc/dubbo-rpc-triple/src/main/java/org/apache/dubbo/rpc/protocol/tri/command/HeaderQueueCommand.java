@@ -21,26 +21,24 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http2.DefaultHttp2HeadersFrame;
 import io.netty.handler.codec.http2.Http2Headers;
-import org.apache.dubbo.rpc.protocol.tri.stream.TripleStreamChannelFuture;
 
-public class HeaderQueueCommand extends StreamQueueCommand {
+public class HeaderQueueCommand extends QueuedCommand {
 
     private final Http2Headers headers;
 
     private final boolean endStream;
 
-    private HeaderQueueCommand(TripleStreamChannelFuture streamChannelFuture, Http2Headers headers, boolean endStream) {
-        super(streamChannelFuture);
+    private HeaderQueueCommand(Http2Headers headers, boolean endStream) {
         this.headers = headers;
         this.endStream = endStream;
     }
 
-    public static HeaderQueueCommand createHeaders(TripleStreamChannelFuture streamChannelFuture, Http2Headers headers) {
-        return new HeaderQueueCommand(streamChannelFuture, headers, false);
+    public static HeaderQueueCommand createHeaders(Http2Headers headers) {
+        return new HeaderQueueCommand(headers, false);
     }
 
-    public static HeaderQueueCommand createHeaders(TripleStreamChannelFuture streamChannelFuture, Http2Headers headers, boolean endStream) {
-        return new HeaderQueueCommand(streamChannelFuture, headers, endStream);
+    public static HeaderQueueCommand createHeaders(Http2Headers headers, boolean endStream) {
+        return new HeaderQueueCommand(headers, endStream);
     }
 
     public Http2Headers getHeaders() {

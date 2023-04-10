@@ -17,36 +17,45 @@
 
 package org.apache.dubbo.rpc.protocol.tri.transport;
 
-import io.netty.channel.Channel;
+import org.apache.dubbo.common.BatchExecutorQueue;
+import org.apache.dubbo.common.utils.Assert;
+import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.protocol.tri.command.QueuedCommand;
+import org.apache.dubbo.rpc.protocol.tri.stream.TripleStreamChannelFuture;
+
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelPromise;
-import org.apache.dubbo.common.BatchExecutorQueue;
-import org.apache.dubbo.rpc.protocol.tri.command.QueuedCommand;
+import io.netty.handler.codec.http2.Http2StreamChannel;
 
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 
 public class TripleWriteQueue extends BatchExecutorQueue<QueuedCommand> {
 
+    private volatile TripleStreamChannelFuture channelFuture = new TripleStreamChannelFuture();
+
     public TripleWriteQueue() {
     }
 
-    public TripleWriteQueue(int chunkSize) {
-        super(chunkSize);
+    public TripleWriteQueue(Http2StreamChannel channel) {
+        Assert.notNull(channel, "Stream channel not null");
+        channelFuture.complete(channel);
     }
 
-    public ChannelFuture enqueue(QueuedCommand command, boolean rst) {
-        return enqueue(command);
+    public TripleWriteQueue(Http2StreamChannel channel, int chunkSize) {
+        super(chunkSize);
+        Assert.notNull(channel, "Stream channel not null");
+        channelFuture.complete(channel);
     }
 
     public ChannelFuture enqueue(QueuedCommand command) {
-        return this.enqueueFuture(command, command.channel().eventLoop());
+        return this.enqueueFuture(command, channel().eventLoop());
     }
 
     public ChannelFuture enqueueFuture(QueuedCommand command, Executor executor) {
         ChannelPromise promise = command.promise();
         if (promise == null) {
-            Channel ch = command.channel();
-            promise = ch.newPromise();
+            promise = channel().newPromise();
             command.promise(promise);
         }
         super.enqueue(command, executor);
@@ -55,13 +64,56 @@ public class TripleWriteQueue extends BatchExecutorQueue<QueuedCommand> {
 
     @Override
     protected void prepare(QueuedCommand item) {
-        item.run(item.channel());
+        Throwable throwable = channelFuture.cause();
+        if (throwable != null) {
+            item.promise().setFailure(throwable);
+        } else {
+            item.run(channel());
+        }
     }
 
     @Override
     protected void flush(QueuedCommand item) {
-        Channel channel = item.channel();
-        item.run(channel);
-        channel.flush();
+        Throwable cause = channelFuture.cause();
+        if (cause != null) {
+            item.promise().setFailure(cause);
+        } else {
+            Http2StreamChannel channel = channel();
+            item.run(channel);
+            channel.parent().flush();
+        }
+    }
+
+    public Http2StreamChannel channel() {
+        if (channelFuture.cause() != null) {
+            throw new RpcException(channelFuture.cause());
+        }
+
+        try {
+            return channelFuture.get();
+        } catch (ExecutionException e) {
+            throw new RpcException(e);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return null;
+        }
+    }
+
+    public void resetChannelFuture(Http2StreamChannel channel) {
+        resetChannelFuture();
+        channelFuture.complete(channel);
+    }
+
+    public void resetChannelFuture(Throwable cause) {
+        resetChannelFuture();
+        channelFuture.completeExceptionally(cause);
+    }
+
+    private void resetChannelFuture() {
+        if (channelFuture.isDone()
+            || channelFuture.isCompletedExceptionally()
+            || channelFuture.isCancelled()) {
+            channelFuture = new TripleStreamChannelFuture();
+        }
     }
 }

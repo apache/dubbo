@@ -20,16 +20,14 @@ package org.apache.dubbo.rpc.protocol.tri.command;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http2.DefaultHttp2DataFrame;
-import org.apache.dubbo.rpc.protocol.tri.stream.TripleStreamChannelFuture;
 
-public class EndStreamQueueCommand extends StreamQueueCommand {
+public class EndStreamQueueCommand extends QueuedCommand {
 
-    public EndStreamQueueCommand(TripleStreamChannelFuture streamChannelFuture) {
-        super(streamChannelFuture);
+    public EndStreamQueueCommand() {
     }
 
-    public static EndStreamQueueCommand create(TripleStreamChannelFuture streamChannelFuture) {
-        return new EndStreamQueueCommand(streamChannelFuture);
+    public static EndStreamQueueCommand create() {
+        return new EndStreamQueueCommand();
     }
 
     @Override
