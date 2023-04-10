@@ -375,9 +375,6 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     private boolean verifyMethodConfig(MethodConfig methodConfig, Class<?> interfaceClass, boolean ignoreInvalidMethodConfig) {
-        if (!isNeedCheckMethod()) {
-            return true;
-        }
         String methodName = methodConfig.getName();
         if (StringUtils.isEmpty(methodName)) {
             String msg = "<dubbo:method> name attribute is required! Please check: " +
@@ -399,7 +396,8 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                 logger.warn(CONFIG_NO_METHOD_FOUND, "", "", msg);
                 return false;
             } else {
-                throw new IllegalStateException(msg);
+                msg = String.format("%s generic call", isNeedCheckMethod() ? "is" : "isn't") + msg;
+                logger.warn(CONFIG_NO_METHOD_FOUND, "", "", msg);
             }
         }
         return true;
