@@ -49,9 +49,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.IO_THREADS_KEY;
 import static org.apache.dubbo.remoting.Constants.BIND_IP_KEY;
 import static org.apache.dubbo.remoting.Constants.BIND_PORT_KEY;
 import static org.apache.dubbo.remoting.Constants.DEFAULT_IO_THREADS;
-import static org.apache.dubbo.rpc.protocol.rest.Constants.DEFAULT_KEEP_ALIVE;
-import static org.apache.dubbo.rpc.protocol.rest.Constants.EXCEPTION_MAPPER_KEY;
-import static org.apache.dubbo.rpc.protocol.rest.Constants.KEEP_ALIVE_KEY;
 
 /**
  * netty http server
@@ -148,7 +145,7 @@ public class NettyHttpRestServer implements RestProtocolServer {
      */
     protected Map<ChannelOption, Object> getChildChannelOptionMap(URL url) {
         Map<ChannelOption, Object> channelOption = new HashMap<>();
-        channelOption.put(ChannelOption.SO_KEEPALIVE, url.getParameter(KEEP_ALIVE_KEY, DEFAULT_KEEP_ALIVE));
+        channelOption.put(ChannelOption.SO_KEEPALIVE, url.getParameter(Constants.KEEP_ALIVE_KEY, Constants.DEFAULT_KEEP_ALIVE));
         return channelOption;
     }
 
@@ -205,7 +202,7 @@ public class NettyHttpRestServer implements RestProtocolServer {
 
     private void registerExceptionMapper(URL url) {
 
-        for (String clazz : COMMA_SPLIT_PATTERN.split(url.getParameter(EXCEPTION_MAPPER_KEY, RpcExceptionMapper.class.getName()))) {
+        for (String clazz : COMMA_SPLIT_PATTERN.split(url.getParameter(Constants.EXTENSION_KEY, RpcExceptionMapper.class.getName()))) {
             if (!StringUtils.isEmpty(clazz)) {
                 exceptionMapper.registerMapper(clazz);
             }
