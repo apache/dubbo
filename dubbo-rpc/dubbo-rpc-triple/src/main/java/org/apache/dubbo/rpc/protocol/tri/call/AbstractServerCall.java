@@ -293,7 +293,7 @@ public abstract class AbstractServerCall implements ServerCall, ServerStream.Lis
             headers.set(TripleHeaderEnum.GRPC_ENCODING.getHeader(),
                 compressor.getMessageEncoding());
         }
-        if (exceptionCode != CommonConstants.TRI_EXCEPTION_CODE_NOT_EXISTS) {
+        if (!exceptionCode.equals(CommonConstants.TRI_EXCEPTION_CODE_NOT_EXISTS)) {
             headers.set(TripleHeaderEnum.TRI_EXCEPTION_CODE.getHeader(), String.valueOf(exceptionCode));
         }
         // send header failed will reset stream and close request observer cause no more data will be sent

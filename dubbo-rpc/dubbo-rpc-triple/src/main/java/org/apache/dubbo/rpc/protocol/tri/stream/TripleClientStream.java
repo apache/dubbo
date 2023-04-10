@@ -292,7 +292,7 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
             CharSequence triExceptionCode = headers.get(TripleHeaderEnum.TRI_EXCEPTION_CODE.getHeader());
             if (triExceptionCode != null) {
                 Integer triExceptionCodeNum = Integer.parseInt(triExceptionCode.toString());
-                if (!(triExceptionCodeNum == CommonConstants.TRI_EXCEPTION_CODE_NOT_EXISTS)) {
+                if (!(triExceptionCodeNum.equals(CommonConstants.TRI_EXCEPTION_CODE_NOT_EXISTS))) {
                     isReturnTriException = true;
                 }
             }
