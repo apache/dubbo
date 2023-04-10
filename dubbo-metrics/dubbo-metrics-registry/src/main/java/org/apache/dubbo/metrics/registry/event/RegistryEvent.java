@@ -30,9 +30,11 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.apache.dubbo.metrics.MetricsConstants.ATTACHMENT_DIRECTORY_MAP;
 import static org.apache.dubbo.metrics.MetricsConstants.ATTACHMENT_KEY_LAST_NUM_MAP;
 import static org.apache.dubbo.metrics.MetricsConstants.ATTACHMENT_KEY_SERVICE;
 import static org.apache.dubbo.metrics.MetricsConstants.ATTACHMENT_KEY_SIZE;
+
 
 /**
  * Registry related events
@@ -134,6 +136,12 @@ public class RegistryEvent extends TimeCounterEvent {
         RegistryEvent ddEvent = new RegistryEvent(applicationModel, new TypeWrapper(MetricsLevel.SERVICE, ServiceType.S_SERVICE_TOTAL, ServiceType.S_SERVICE_SUCCEED, ServiceType.S_SERVICE_FAILED));
         ddEvent.putAttachment(ATTACHMENT_KEY_SERVICE, serviceKey);
         return ddEvent;
+    }
+
+    public static RegistryEvent refreshDirectoryEvent(ApplicationModel applicationModel, Map<ServiceType, Map<String, Integer>> summaryMap) {
+        RegistryEvent registryEvent = new RegistryEvent(applicationModel, new TypeWrapper(MetricsLevel.APP, ServiceType.D_VALID, null, null));
+        registryEvent.putAttachment(ATTACHMENT_DIRECTORY_MAP, summaryMap);
+        return registryEvent;
     }
 
 

@@ -21,7 +21,9 @@ import org.apache.dubbo.metrics.event.SimpleMetricsEventMulticaster;
 import org.apache.dubbo.metrics.registry.event.type.ApplicationType;
 import org.apache.dubbo.metrics.registry.event.type.ServiceType;
 
-import static org.apache.dubbo.metrics.MetricsConstants.ATTACHMENT_KEY_DIR_NUM;
+import java.util.Map;
+
+import static org.apache.dubbo.metrics.MetricsConstants.ATTACHMENT_DIRECTORY_MAP;
 import static org.apache.dubbo.metrics.MetricsConstants.ATTACHMENT_KEY_SERVICE;
 import static org.apache.dubbo.metrics.MetricsConstants.ATTACHMENT_KEY_SIZE;
 import static org.apache.dubbo.metrics.registry.RegistryMetricsConstants.OP_TYPE_NOTIFY;
@@ -55,13 +57,14 @@ public final class RegistryMetricsEventMulticaster extends SimpleMetricsEventMul
 
 
         // MetricsDirectoryListener
-        addIncrListener(ApplicationType.D_VALID);
-        addIncrListener(ApplicationType.D_UN_VALID);
-        addIncrListener(ApplicationType.D_DISABLE);
-        addIncrListener(ApplicationType.D_RECOVER_DISABLE);
-        super.addListener(RegistryListener.onEvent(ApplicationType.D_CURRENT,
-            (event, type) -> event.setNum(type, ATTACHMENT_KEY_DIR_NUM))
-        );
+        super.addListener(RegistryListener.onEvent(ServiceType.D_VALID,
+            (event, type) ->
+            {
+                Map<ServiceType, Map<String, Integer>> summaryMap = event.getAttachmentValue(ATTACHMENT_DIRECTORY_MAP);
+                summaryMap.forEach((serviceType, map) ->
+                    event.getCollector().setNum(serviceType, event.getSource().getApplicationName(), map));
+            }
+        ));
 
         // MetricsServiceRegisterListener
         super.addListener(RegistryListener.onEvent(ServiceType.R_SERVICE_TOTAL,
@@ -74,11 +77,6 @@ public final class RegistryMetricsEventMulticaster extends SimpleMetricsEventMul
         super.addListener(RegistryListener.onEvent(ServiceType.S_SERVICE_TOTAL, this::incrSk));
         super.addListener(RegistryListener.onFinish(ServiceType.S_SERVICE_SUCCEED, this::onRtEvent));
         super.addListener(RegistryListener.onError(ServiceType.S_SERVICE_FAILED, this::onRtEvent));
-    }
-
-
-    private void addIncrListener(ApplicationType applicationType) {
-        super.addListener(onPostEventBuild(applicationType));
     }
 
     private RegistryListener onPostEventBuild(ApplicationType applicationType) {

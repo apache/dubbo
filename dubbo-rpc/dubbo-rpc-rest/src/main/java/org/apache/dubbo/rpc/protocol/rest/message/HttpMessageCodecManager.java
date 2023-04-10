@@ -31,6 +31,10 @@ public class HttpMessageCodecManager {
 
 
     public static Object httpMessageDecode(byte[] body, Class<?> type, MediaType mediaType) throws Exception {
+        if (body == null || body.length == 0) {
+            return null;
+        }
+
         for (HttpMessageCodec httpMessageCodec : httpMessageCodecs) {
             if (httpMessageCodec.contentTypeSupport(mediaType, type) || typeJudge(mediaType, type, httpMessageCodec)) {
                 return httpMessageCodec.decode(body, type);
