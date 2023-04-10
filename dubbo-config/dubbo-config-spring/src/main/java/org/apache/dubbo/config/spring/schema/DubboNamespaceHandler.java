@@ -31,6 +31,7 @@ import org.apache.dubbo.config.TracingConfig;
 import org.apache.dubbo.config.spring.ConfigCenterBean;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.ServiceBean;
+import org.apache.dubbo.config.spring.aot.AotWithSpringDetector;
 import org.apache.dubbo.config.spring.beans.factory.config.ConfigurableSourceBeanMetadataElement;
 import org.apache.dubbo.config.spring.context.DubboSpringInitializer;
 
@@ -100,6 +101,8 @@ public class DubboNamespaceHandler extends NamespaceHandlerSupport implements Co
      * @since 2.7.5
      */
     private void registerAnnotationConfigProcessors(BeanDefinitionRegistry registry) {
-        AnnotationConfigUtils.registerAnnotationConfigProcessors(registry);
+        if (!AotWithSpringDetector.useGeneratedArtifacts()) {
+            AnnotationConfigUtils.registerAnnotationConfigProcessors(registry);
+        }
     }
 }

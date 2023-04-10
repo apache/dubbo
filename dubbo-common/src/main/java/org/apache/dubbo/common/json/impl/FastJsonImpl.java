@@ -21,7 +21,7 @@ import com.alibaba.fastjson.serializer.SerializerFeature;
 import java.lang.reflect.Type;
 import java.util.List;
 
-public class FastJsonImpl extends AbstractJSONImpl {
+public class FastJsonImpl extends AbstractJsonUtilImpl {
 
     @Override
     public <T> T toJavaObject(String json, Type type) {

@@ -16,6 +16,11 @@
  */
 package org.apache.dubbo.aot.generate;
 
+import org.apache.dubbo.aot.api.ExecutableMode;
+import org.apache.dubbo.aot.api.FieldDescriber;
+import org.apache.dubbo.aot.api.MemberCategory;
+import org.apache.dubbo.aot.api.TypeDescriber;
+
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;

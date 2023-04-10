@@ -18,6 +18,7 @@ package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
+import org.apache.dubbo.common.aot.NativeDetector;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.config.InmemoryConfiguration;
@@ -292,8 +293,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
      * @return
      */
     protected String[] methods(Class<?> interfaceClass) {
-        boolean isNative = getEnvironment().getConfiguration().getBoolean(NATIVE, false);
-        if (isNative) {
+        if (NativeDetector.inNativeImage()) {
             return Arrays.stream(interfaceClass.getMethods()).map(Method::getName).toArray(String[]::new);
         } else {
             return ClassUtils.getMethodNames(interfaceClass);

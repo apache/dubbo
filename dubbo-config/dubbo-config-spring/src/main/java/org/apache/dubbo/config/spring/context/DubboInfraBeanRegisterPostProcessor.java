@@ -73,23 +73,6 @@ public class DubboInfraBeanRegisterPostProcessor implements BeanDefinitionRegist
             DubboBeanUtils.registerPlaceholderConfigurerBeanIfNotExists(beanFactory, registry);
         }
 
-        ApplicationModel applicationModel = DubboBeanUtils.getApplicationModel(beanFactory);
-        ModuleModel moduleModel = DubboBeanUtils.getModuleModel(beanFactory);
-
-        // Initialize SpringExtensionInjector
-        SpringExtensionInjector.get(applicationModel).init(applicationContext);
-        SpringExtensionInjector.get(moduleModel).init(applicationContext);
-        DubboBeanUtils.getInitializationContext(beanFactory).setApplicationContext(applicationContext);
-
-        // Initialize dubbo Environment before ConfigManager
-        // Extract dubbo props from Spring env and put them to app config
-        ConfigurableEnvironment environment = (ConfigurableEnvironment) applicationContext.getEnvironment();
-        SortedMap<String, String> dubboProperties = EnvironmentUtils.filterDubboProperties(environment);
-        applicationModel.getModelEnvironment().setAppConfigMap(dubboProperties);
-
-        // register ConfigManager singleton
-        beanFactory.registerSingleton(ConfigManager.BEAN_NAME, applicationModel.getApplicationConfigManager());
-
         // fix https://github.com/apache/dubbo/issues/10278
         if (registry != null){
             registry.removeBeanDefinition(BEAN_NAME);
