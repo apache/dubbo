@@ -47,7 +47,7 @@ public class HeaderConsumerParamParser implements BaseConsumerParamParser {
             }
         } else {
             // others
-            requestTemplate.addHeader(argInfo.getParamName(), headerValue);
+            requestTemplate.addHeader(argInfo.getAnnotationNameAttribute(), headerValue);
 
         }
 
