@@ -23,7 +23,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Check License
-        uses: apache/skywalking-eyes@main
+        uses: apache/skywalking-eyes@e1a02359b239bd28de3f6d35fdc870250fa513d5
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: "Set up JDK 17"
