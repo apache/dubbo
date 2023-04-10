@@ -22,16 +22,34 @@ import org.apache.dubbo.metadata.rest.ParamType;
 import org.apache.dubbo.remoting.http.RequestTemplate;
 
 import java.util.List;
+import java.util.Map;
 
 @Activate("consumer-parameter")
-public class ParameterConsumerParamParser implements BaseConsumerParamParser{
+public class ParameterConsumerParamParser implements BaseConsumerParamParser {
     @Override
     public void parse(ConsumerParseContext parseContext, ArgInfo argInfo) {
         List<Object> args = parseContext.getArgs();
 
         RequestTemplate requestTemplate = parseContext.getRequestTemplate();
 
-        requestTemplate.addParam(argInfo.getParamName(), args.get(argInfo.getIndex()));
+        Object paramValue = args.get(argInfo.getIndex());
+
+        if (paramValue == null) {
+            return;
+        }
+
+
+        if (Map.class.isAssignableFrom(argInfo.getParamType())) {
+            Map paramValues = (Map) paramValue;
+            for (Object name : paramValues.keySet()) {
+                requestTemplate.addParam(String.valueOf(name), paramValues.get(name));
+            }
+        } else {
+            requestTemplate.addParam(argInfo.getAnnotationNameAttribute(), paramValue);
+
+
+        }
+
     }
 
     @Override

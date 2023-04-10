@@ -25,6 +25,7 @@ import org.apache.dubbo.metrics.model.MethodMetric;
 import org.apache.dubbo.metrics.model.Metric;
 import org.apache.dubbo.metrics.model.MetricsCategory;
 import org.apache.dubbo.metrics.model.MetricsKey;
+import org.apache.dubbo.metrics.model.sample.CounterMetricSample;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.rpc.Invocation;
@@ -36,8 +37,6 @@ import java.util.function.ToDoubleFunction;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
-import static org.apache.dubbo.metrics.model.MetricsCategory.REQUESTS;
-import static org.apache.dubbo.metrics.model.MetricsCategory.RT;
 
 public class MethodMetricsSampler extends SimpleMetricsCountSampler<Invocation, String, MethodMetric> {
 
@@ -51,7 +50,7 @@ public class MethodMetricsSampler extends SimpleMetricsCountSampler<Invocation, 
     protected void countConfigure(
         MetricsCountSampleConfigurer<Invocation, String, MethodMetric> sampleConfigure) {
         sampleConfigure.configureMetrics(configure -> new MethodMetric(collector.getApplicationName(), configure.getSource()));
-        sampleConfigure.configureEventHandler(configure -> collector.getEventMulticaster().publishEvent(new MethodEvent(configure.getMetric(),
+        sampleConfigure.configureEventHandler(configure -> collector.getEventMulticaster().publishEvent(new MethodEvent(collector.getApplicationModel(), configure.getMetric(),
             configure.getMetricName())));
     }
 
@@ -59,7 +58,7 @@ public class MethodMetricsSampler extends SimpleMetricsCountSampler<Invocation, 
     public void rtConfigure(
         MetricsCountSampleConfigurer<Invocation, String, MethodMetric> sampleConfigure) {
         sampleConfigure.configureMetrics(configure -> new MethodMetric(collector.getApplicationName(), configure.getSource()));
-        sampleConfigure.configureEventHandler(configure -> collector.getEventMulticaster().publishEvent(new RTEvent(configure.getMetric(), configure.getRt())));
+        sampleConfigure.configureEventHandler(configure -> collector.getEventMulticaster().publishEvent(new RTEvent(collector.getApplicationModel(), configure.getMetric(), configure.getRt())));
     }
 
     @Override
@@ -71,7 +70,7 @@ public class MethodMetricsSampler extends SimpleMetricsCountSampler<Invocation, 
             this.collectRT(new MetricSampleFactory<MethodMetric, GaugeMetricSample<?>>() {
                 @Override
                 public <T> GaugeMetricSample<?> newInstance(MetricsKey key, MethodMetric metric, T value, ToDoubleFunction<T> apply) {
-                    return getGaugeMetricSample(key, metric, RT, value, apply);
+                    return createGaugeMetricSample(key, metric, MetricsCategory.RT, value, apply);
                 }
             }));
 
@@ -84,25 +83,25 @@ public class MethodMetricsSampler extends SimpleMetricsCountSampler<Invocation, 
     }
 
     private void collectBySide(List<MetricSample> list, String side) {
-        count(list, MetricsEvent.Type.TOTAL.getNameByType(side), MetricsKey.METRIC_REQUESTS);
-        count(list, MetricsEvent.Type.SUCCEED.getNameByType(side), MetricsKey.METRIC_REQUESTS_SUCCEED);
-        count(list, MetricsEvent.Type.UNKNOWN_FAILED.getNameByType(side), MetricsKey.METRIC_REQUESTS_FAILED);
-        count(list, MetricsEvent.Type.PROCESSING.getNameByType(side), MetricsKey.METRIC_REQUESTS_PROCESSING);
-        count(list, MetricsEvent.Type.BUSINESS_FAILED.getNameByType(side), MetricsKey.METRIC_REQUEST_BUSINESS_FAILED);
-        count(list, MetricsEvent.Type.REQUEST_TIMEOUT.getNameByType(side), MetricsKey.METRIC_REQUESTS_TIMEOUT);
-        count(list, MetricsEvent.Type.REQUEST_LIMIT.getNameByType(side), MetricsKey.METRIC_REQUESTS_LIMIT);
-        count(list, MetricsEvent.Type.TOTAL_FAILED.getNameByType(side), MetricsKey.METRIC_REQUESTS_TOTAL_FAILED);
-        count(list, MetricsEvent.Type.NETWORK_EXCEPTION.getNameByType(side), MetricsKey.METRIC_REQUESTS_NETWORK_FAILED);
-        count(list, MetricsEvent.Type.SERVICE_UNAVAILABLE.getNameByType(side), MetricsKey.METRIC_REQUESTS_SERVICE_UNAVAILABLE_FAILED);
-        count(list, MetricsEvent.Type.CODEC_EXCEPTION.getNameByType(side), MetricsKey.METRIC_REQUESTS_CODEC_FAILED);
+        count(list, MetricsEvent.Type.TOTAL.getNameByType(side), MetricSample.Type.COUNTER, MetricsKey.METRIC_REQUESTS);
+        count(list, MetricsEvent.Type.SUCCEED.getNameByType(side), MetricSample.Type.COUNTER, MetricsKey.METRIC_REQUESTS_SUCCEED);
+        count(list, MetricsEvent.Type.UNKNOWN_FAILED.getNameByType(side), MetricSample.Type.COUNTER, MetricsKey.METRIC_REQUESTS_FAILED);
+        count(list, MetricsEvent.Type.PROCESSING.getNameByType(side), MetricSample.Type.GAUGE, MetricsKey.METRIC_REQUESTS_PROCESSING);
+        count(list, MetricsEvent.Type.BUSINESS_FAILED.getNameByType(side), MetricSample.Type.COUNTER, MetricsKey.METRIC_REQUEST_BUSINESS_FAILED);
+        count(list, MetricsEvent.Type.REQUEST_TIMEOUT.getNameByType(side), MetricSample.Type.COUNTER, MetricsKey.METRIC_REQUESTS_TIMEOUT);
+        count(list, MetricsEvent.Type.REQUEST_LIMIT.getNameByType(side), MetricSample.Type.COUNTER, MetricsKey.METRIC_REQUESTS_LIMIT);
+        count(list, MetricsEvent.Type.TOTAL_FAILED.getNameByType(side), MetricSample.Type.COUNTER, MetricsKey.METRIC_REQUESTS_TOTAL_FAILED);
+        count(list, MetricsEvent.Type.NETWORK_EXCEPTION.getNameByType(side), MetricSample.Type.COUNTER, MetricsKey.METRIC_REQUESTS_NETWORK_FAILED);
+        count(list, MetricsEvent.Type.SERVICE_UNAVAILABLE.getNameByType(side), MetricSample.Type.COUNTER, MetricsKey.METRIC_REQUESTS_SERVICE_UNAVAILABLE_FAILED);
+        count(list, MetricsEvent.Type.CODEC_EXCEPTION.getNameByType(side), MetricSample.Type.COUNTER, MetricsKey.METRIC_REQUESTS_CODEC_FAILED);
     }
 
 
-    private <T> GaugeMetricSample<T> getGaugeMetricSample(MetricsKey metricsKey,
-                                                           MethodMetric methodMetric,
-                                                           MetricsCategory metricsCategory,
-                                                           T value,
-                                                           ToDoubleFunction<T> apply) {
+    private <T> GaugeMetricSample<T> createGaugeMetricSample(MetricsKey metricsKey,
+                                                             MethodMetric methodMetric,
+                                                             MetricsCategory metricsCategory,
+                                                             T value,
+                                                             ToDoubleFunction<T> apply) {
         return new GaugeMetricSample<>(
             metricsKey.getNameByType(methodMetric.getSide()),
             metricsKey.getDescription(),
@@ -112,9 +111,23 @@ public class MethodMetricsSampler extends SimpleMetricsCountSampler<Invocation, 
             apply);
     }
 
-    private <T extends Metric> void count(List<MetricSample> list, String eventType, MetricsKey metricsKey) {
+    private <T extends Metric> void count(List<MetricSample> list, String eventType, MetricSample.Type type, MetricsKey metricsKey) {
         getCount(eventType).filter(e -> !e.isEmpty())
-            .ifPresent(map -> map.forEach((k, v) ->
-                list.add(getGaugeMetricSample(metricsKey, k, REQUESTS, v, AtomicLong::get))));
+            .ifPresent(map -> map.forEach((k, v) -> {
+                    if(type == MetricSample.Type.COUNTER){
+                        list.add(createCounterMetricSample(metricsKey, k, MetricsCategory.REQUESTS, v));
+                    }else if(type == MetricSample.Type.GAUGE){
+                        list.add(createGaugeMetricSample(metricsKey, k, MetricsCategory.REQUESTS, v, AtomicLong::get));
+                    }
+                }
+            ));
+    }
+
+    private MetricSample createCounterMetricSample(MetricsKey metricsKey, MethodMetric methodMetric, MetricsCategory metricsCategory, AtomicLong value) {
+        return new CounterMetricSample<>(metricsKey.getNameByType(methodMetric.getSide()),
+            metricsKey.getDescription(),
+            methodMetric.getTags(), metricsCategory, value);
+
+
     }
 }

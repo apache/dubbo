@@ -16,12 +16,12 @@
  */
 package org.apache.dubbo.rpc.protocol.dubbo;
 
-import org.apache.dubbo.common.utils.CacheableSupplier;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.serialize.Cleanable;
 import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.utils.Assert;
+import org.apache.dubbo.common.utils.CacheableSupplier;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -30,6 +30,7 @@ import org.apache.dubbo.remoting.Codec;
 import org.apache.dubbo.remoting.Decodeable;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.transport.CodecSupport;
+import org.apache.dubbo.remoting.transport.ExceedPayloadLimitException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -52,8 +53,10 @@ import static org.apache.dubbo.common.URL.buildKey;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PAYLOAD;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_DECODE;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_EXCEED_PAYLOAD_LIMIT;
 import static org.apache.dubbo.rpc.Constants.SERIALIZATION_ID_KEY;
 import static org.apache.dubbo.rpc.Constants.SERIALIZATION_SECURITY_CHECK_KEY;
 
@@ -124,6 +127,9 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
         setAttachment(PATH_KEY, path);
         String version = in.readUTF();
         setAttachment(VERSION_KEY, version);
+
+        // Do provider-level payload checks.
+        checkPayload(keyWithoutGroup(path, version));
 
         setMethodName(in.readUTF());
 
@@ -247,5 +253,25 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
             args[i] = in.readObject(pts[i]);
         }
         return args;
+    }
+
+    private void checkPayload(String serviceKey) throws IOException {
+        ProviderModel providerModel =
+            frameworkModel.getServiceRepository().lookupExportedServiceWithoutGroup(serviceKey);
+        if (providerModel != null) {
+            String payloadStr = (String) providerModel.getServiceMetadata().getAttachments().get(PAYLOAD);
+            if (payloadStr != null) {
+                int payload = Integer.parseInt(payloadStr);
+                if (payload <= 0) {
+                    return;
+                }
+                if (request.getPayload() > payload) {
+                    ExceedPayloadLimitException e = new ExceedPayloadLimitException(
+                        "Data length too large: " + request.getPayload() + ", max payload: " + payload + ", channel: " + channel);
+                    log.error(TRANSPORT_EXCEED_PAYLOAD_LIMIT, "", "", e.getMessage(), e);
+                    throw e;
+                }
+            }
+        }
     }
 }

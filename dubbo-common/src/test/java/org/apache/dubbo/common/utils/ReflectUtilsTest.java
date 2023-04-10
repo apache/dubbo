@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.dubbo.common.utils;
 
 import org.junit.jupiter.api.Assertions;
@@ -77,7 +78,7 @@ class ReflectUtilsTest {
     }
 
     @Test
-    void testIsCompatible() throws Exception {
+    void testIsCompatible() {
         assertTrue(ReflectUtils.isCompatible(short.class, (short) 1));
         assertTrue(ReflectUtils.isCompatible(int.class, 1));
         assertTrue(ReflectUtils.isCompatible(double.class, 1.2));
@@ -86,36 +87,45 @@ class ReflectUtilsTest {
     }
 
     @Test
-    void testIsCompatibleWithArray() throws Exception {
+    void testIsCompatibleWithArray() {
         assertFalse(ReflectUtils.isCompatible(new Class[]{short.class, int.class}, new Object[]{(short) 1}));
         assertFalse(ReflectUtils.isCompatible(new Class[]{double.class}, new Object[]{"hello"}));
         assertTrue(ReflectUtils.isCompatible(new Class[]{double.class}, new Object[]{1.2}));
     }
 
     @Test
-    void testGetCodeBase() throws Exception {
+    void testGetCodeBase() {
         assertNull(ReflectUtils.getCodeBase(null));
         assertNull(ReflectUtils.getCodeBase(String.class));
         assertNotNull(ReflectUtils.getCodeBase(ReflectUtils.class));
     }
 
     @Test
-    void testGetName() throws Exception {
+    void testGetName() {
         // getName
         assertEquals("boolean", ReflectUtils.getName(boolean.class));
         assertEquals("int[][][]", ReflectUtils.getName(int[][][].class));
         assertEquals("java.lang.Object[][]", ReflectUtils.getName(Object[][].class));
+    }
 
+    @Test
+    void testGetDesc() {
         // getDesc
         assertEquals("Z", ReflectUtils.getDesc(boolean.class));
         assertEquals("[[[I", ReflectUtils.getDesc(int[][][].class));
         assertEquals("[[Ljava/lang/Object;", ReflectUtils.getDesc(Object[][].class));
+    }
 
+    @Test
+    void testName2desc() {
         // name2desc
         assertEquals("Z", ReflectUtils.name2desc(ReflectUtils.getName(boolean.class)));
         assertEquals("[[[I", ReflectUtils.name2desc(ReflectUtils.getName(int[][][].class)));
         assertEquals("[[Ljava/lang/Object;", ReflectUtils.name2desc(ReflectUtils.getName(Object[][].class)));
+    }
 
+    @Test
+    void testDesc2name() {
         // desc2name
         assertEquals("short[]", ReflectUtils.desc2name(ReflectUtils.getDesc(short[].class)));
         assertEquals("boolean[]", ReflectUtils.desc2name(ReflectUtils.getDesc(boolean[].class)));
@@ -131,12 +141,12 @@ class ReflectUtilsTest {
     }
 
     @Test
-    void testGetGenericClass() throws Exception {
+    void testGetGenericClass() {
         assertThat(ReflectUtils.getGenericClass(Foo1.class), sameInstance(String.class));
     }
 
     @Test
-    void testGetGenericClassWithIndex() throws Exception {
+    void testGetGenericClassWithIndex() {
         assertThat(ReflectUtils.getGenericClass(Foo1.class, 0), sameInstance(String.class));
         assertThat(ReflectUtils.getGenericClass(Foo1.class, 1), sameInstance(Integer.class));
         assertThat(ReflectUtils.getGenericClass(Foo2.class, 0), sameInstance(List.class));
@@ -148,7 +158,7 @@ class ReflectUtilsTest {
     @Test
     void testGetMethodName() throws Exception {
         assertThat(ReflectUtils.getName(Foo2.class.getDeclaredMethod("hello", int[].class)),
-                equalTo("java.util.List hello(int[])"));
+            equalTo("java.util.List hello(int[])"));
     }
 
     @Test
@@ -158,7 +168,7 @@ class ReflectUtilsTest {
     }
 
     @Test
-    void testGetConstructorName() throws Exception {
+    void testGetConstructorName() {
         Constructor c = Foo2.class.getConstructors()[0];
         assertThat(ReflectUtils.getName(c), equalTo("(java.util.List,int[])"));
     }
@@ -174,18 +184,18 @@ class ReflectUtilsTest {
     @Test
     void testGetDescMethod() throws Exception {
         assertThat(ReflectUtils.getDesc(Foo2.class.getDeclaredMethod("hello", int[].class)),
-                equalTo("hello([I)Ljava/util/List;"));
+            equalTo("hello([I)Ljava/util/List;"));
     }
 
     @Test
-    void testGetDescConstructor() throws Exception {
+    void testGetDescConstructor() {
         assertThat(ReflectUtils.getDesc(Foo2.class.getConstructors()[0]), equalTo("(Ljava/util/List;[I)V"));
     }
 
     @Test
     void testGetDescWithoutMethodName() throws Exception {
         assertThat(ReflectUtils.getDescWithoutMethodName(Foo2.class.getDeclaredMethod("hello", int[].class)),
-                equalTo("([I)Ljava/util/List;"));
+            equalTo("([I)Ljava/util/List;"));
     }
 
     @Test
@@ -208,7 +218,7 @@ class ReflectUtilsTest {
     }
 
     @Test
-    void testIsInstance() throws Exception {
+    void testIsInstance() {
         assertTrue(ReflectUtils.isInstance(new Foo1(), Foo.class.getName()));
     }
 
@@ -227,9 +237,9 @@ class ReflectUtilsTest {
     @Test
     void testGetPropertyNameFromBeanReadMethod() throws Exception {
         Method method = EmptyClass.class.getMethod("getProperty");
-        assertEquals(ReflectUtils.getPropertyNameFromBeanReadMethod(method), "property");
+        assertEquals("property", ReflectUtils.getPropertyNameFromBeanReadMethod(method));
         method = EmptyClass.class.getMethod("isSet");
-        assertEquals(ReflectUtils.getPropertyNameFromBeanReadMethod(method), "set");
+        assertEquals("set", ReflectUtils.getPropertyNameFromBeanReadMethod(method));
     }
 
     @Test
@@ -243,7 +253,7 @@ class ReflectUtilsTest {
     @Test
     void testGetPropertyNameFromBeanWriteMethod() throws Exception {
         Method method = EmptyClass.class.getMethod("setProperty", EmptyProperty.class);
-        assertEquals(ReflectUtils.getPropertyNameFromBeanWriteMethod(method), "property");
+        assertEquals("property", ReflectUtils.getPropertyNameFromBeanWriteMethod(method));
     }
 
     @Test
@@ -255,7 +265,7 @@ class ReflectUtilsTest {
     }
 
     @Test
-    void testGetBeanPropertyFields() throws Exception {
+    void testGetBeanPropertyFields() {
         Map<String, Field> map = ReflectUtils.getBeanPropertyFields(EmptyClass.class);
         assertThat(map.size(), is(2));
         assertThat(map, hasKey("set"));
@@ -268,7 +278,7 @@ class ReflectUtilsTest {
     }
 
     @Test
-    void testGetBeanPropertyReadMethods() throws Exception {
+    void testGetBeanPropertyReadMethods() {
         Map<String, Method> map = ReflectUtils.getBeanPropertyReadMethods(EmptyClass.class);
         assertThat(map.size(), is(2));
         assertThat(map, hasKey("set"));
@@ -332,7 +342,7 @@ class ReflectUtilsTest {
     void testFindMethodByMethodSignature_override() throws Exception {
         {
             Method m = ReflectUtils.findMethodByMethodSignature(TestedClass.class,
-                    "overrideMethod", new String[]{"int"});
+                "overrideMethod", new String[]{"int"});
 
             assertEquals("overrideMethod", m.getName());
             Class<?>[] parameterTypes = m.getParameterTypes();
@@ -341,7 +351,7 @@ class ReflectUtilsTest {
         }
         {
             Method m = ReflectUtils.findMethodByMethodSignature(TestedClass.class,
-                    "overrideMethod", new String[]{"java.lang.Integer"});
+                "overrideMethod", new String[]{"java.lang.Integer"});
 
             assertEquals("overrideMethod", m.getName());
             Class<?>[] parameterTypes = m.getParameterTypes();
@@ -363,7 +373,7 @@ class ReflectUtilsTest {
     @Test
     void testFindMethodByMethodSignatureNotFound() throws Exception {
         try {
-            ReflectUtils.findMethodByMethodSignature(TestedClass.class, "notExsited", null);
+            ReflectUtils.findMethodByMethodSignature(TestedClass.class, "doesNotExist", null);
             fail();
         } catch (NoSuchMethodException expected) {
             assertThat(expected.getMessage(), containsString("No such method "));
@@ -372,28 +382,30 @@ class ReflectUtilsTest {
     }
 
     @Test
-    void testGetEmptyObject() throws Exception {
+    void testGetEmptyObject() {
         assertTrue(ReflectUtils.getEmptyObject(Collection.class) instanceof Collection);
         assertTrue(ReflectUtils.getEmptyObject(List.class) instanceof List);
         assertTrue(ReflectUtils.getEmptyObject(Set.class) instanceof Set);
         assertTrue(ReflectUtils.getEmptyObject(Map.class) instanceof Map);
         assertTrue(ReflectUtils.getEmptyObject(Object[].class) instanceof Object[]);
-        assertEquals(ReflectUtils.getEmptyObject(String.class), "");
-        assertEquals(ReflectUtils.getEmptyObject(short.class), (short) 0);
-        assertEquals(ReflectUtils.getEmptyObject(byte.class), (byte) 0);
-        assertEquals(ReflectUtils.getEmptyObject(int.class), 0);
-        assertEquals(ReflectUtils.getEmptyObject(long.class), 0L);
-        assertEquals(ReflectUtils.getEmptyObject(float.class), (float) 0);
-        assertEquals(ReflectUtils.getEmptyObject(double.class), (double) 0);
-        assertEquals(ReflectUtils.getEmptyObject(char.class), '\0');
-        assertEquals(ReflectUtils.getEmptyObject(boolean.class), Boolean.FALSE);
+
+        assertEquals("", ReflectUtils.getEmptyObject(String.class));
+        assertEquals((short) 0, ReflectUtils.getEmptyObject(short.class));
+        assertEquals((byte) 0, ReflectUtils.getEmptyObject(byte.class));
+        assertEquals(0, ReflectUtils.getEmptyObject(int.class));
+        assertEquals(0L, ReflectUtils.getEmptyObject(long.class));
+        assertEquals((float) 0, ReflectUtils.getEmptyObject(float.class));
+        assertEquals((double) 0, ReflectUtils.getEmptyObject(double.class));
+        assertEquals('\0', ReflectUtils.getEmptyObject(char.class));
+        assertEquals(Boolean.FALSE, ReflectUtils.getEmptyObject(boolean.class));
+
         EmptyClass object = (EmptyClass) ReflectUtils.getEmptyObject(EmptyClass.class);
         assertNotNull(object);
         assertNotNull(object.getProperty());
     }
 
     @Test
-    void testForName1() throws Exception {
+    void testForName1() {
         assertThat(ReflectUtils.forName(ReflectUtils.class.getName()), sameInstance(ReflectUtils.class));
     }
 
@@ -405,8 +417,8 @@ class ReflectUtilsTest {
     }
 
     @Test
-    void testGetReturnTypes () throws Exception{
-        Class clazz = TypeClass.class;
+    void testGetReturnTypes() throws Exception {
+        Class<TypeClass> clazz = TypeClass.class;
 
         Type[] types = ReflectUtils.getReturnTypes(clazz.getMethod("getFuture"));
         Assertions.assertEquals("java.lang.String", types[0].getTypeName());
@@ -542,6 +554,4 @@ class ReflectUtilsTest {
             return null;
         }
     }
-
-
 }

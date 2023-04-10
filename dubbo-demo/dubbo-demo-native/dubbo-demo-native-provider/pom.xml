@@ -74,18 +74,14 @@
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-remoting-http</artifactId>
         </dependency>
-
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>
         </dependency>
-
         <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-native</artifactId>
         </dependency>
-
-
     </dependencies>
 
 

@@ -17,23 +17,19 @@
 package org.apache.dubbo.rpc.executor;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.Adaptive;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
-
-@SPI
+@SPI("default")
 public interface IsolationExecutorSupportFactory {
 
-    @Adaptive(PROTOCOL_KEY)
     ExecutorSupport createIsolationExecutorSupport(URL url);
 
     static ExecutorSupport getIsolationExecutorSupport(URL url) {
         ApplicationModel applicationModel = url.getOrDefaultApplicationModel();
         ExtensionLoader<IsolationExecutorSupportFactory> extensionLoader = applicationModel.getExtensionLoader(IsolationExecutorSupportFactory.class);
-        IsolationExecutorSupportFactory factory = extensionLoader.getAdaptiveExtension();
+        IsolationExecutorSupportFactory factory = extensionLoader.getOrDefaultExtension(url.getProtocol());
         return factory.createIsolationExecutorSupport(url);
     }
 
