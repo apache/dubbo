@@ -35,20 +35,26 @@ public interface PackableMethod {
         byte[] pack(Object obj) throws IOException;
     }
 
-    interface UnPack {
+    interface WrapperUnPack extends UnPack {
 
-        /**
-         * @param data                 byte array
-         * @param isReturnTriException
-         * @return object instance
-         * @throws IOException            IOException
-         * @throws ClassNotFoundException when no class found
-         */
         default Object unpack(byte[] data) throws IOException, ClassNotFoundException {
             return unpack(data, false);
         }
 
         Object unpack(byte[] data, boolean isReturnTriException) throws IOException, ClassNotFoundException;
+
+
+    }
+
+    interface UnPack {
+
+        /**
+         * @param data byte array
+         * @return object instance
+         * @throws IOException            IOException
+         * @throws ClassNotFoundException when no class found
+         */
+        Object unpack(byte[] data) throws IOException, ClassNotFoundException;
 
     }
 
@@ -61,7 +67,11 @@ public interface PackableMethod {
     }
 
     default Object parseResponse(byte[] data, boolean isReturnTriException) throws IOException, ClassNotFoundException {
-        return getResponseUnpack().unpack(data, isReturnTriException);
+        UnPack unPack = getResponseUnpack();
+        if (unPack instanceof WrapperUnPack) {
+            return ((WrapperUnPack) unPack).unpack(data, isReturnTriException);
+        }
+        return unPack.unpack(data);
     }
 
     default byte[] packRequest(Object request) throws IOException {

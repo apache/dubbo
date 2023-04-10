@@ -462,7 +462,7 @@ public class ReflectionPackableMethod implements PackableMethod {
         }
     }
 
-    private class WrapRequestUnpack implements UnPack {
+    private class WrapRequestUnpack implements WrapperUnPack {
 
         private final MultipleSerialization serialization;
         private final URL url;
@@ -477,11 +477,6 @@ public class ReflectionPackableMethod implements PackableMethod {
             this.url = url;
             this.actualRequestTypes = actualRequestTypes;
             this.allSerialize = allSerialize;
-        }
-
-        @Override
-        public Object unpack(byte[] data) throws IOException, ClassNotFoundException {
-            return unpack(data, false);
         }
 
         public Object unpack(byte[] data, boolean isReturnTriException) throws IOException, ClassNotFoundException {
