@@ -18,28 +18,20 @@ package org.apache.dubbo.rpc.protocol.rest;
 
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.protocol.rest.exception.mapper.ExceptionHandler;
+import org.apache.dubbo.rpc.protocol.rest.util.ConstraintViolationExceptionConvert;
 
-import javax.validation.ConstraintViolation;
-import javax.validation.ConstraintViolationException;
 
 public class RpcExceptionMapper implements ExceptionHandler<RpcException> {
 
-    protected Object handleConstraintViolationException(ConstraintViolationException cve) {
-        ViolationReport report = new ViolationReport();
-        for (ConstraintViolation<?> cv : cve.getConstraintViolations()) {
-            report.addConstraintViolation(new RestConstraintViolation(
-                cv.getPropertyPath().toString(),
-                cv.getMessage(),
-                cv.getInvalidValue() == null ? "null" : cv.getInvalidValue().toString()));
-        }
-        return report;
-    }
+
 
     @Override
     public Object result(RpcException e) {
-        if (e.getCause() instanceof ConstraintViolationException) {
-            return handleConstraintViolationException((ConstraintViolationException) e.getCause());
+
+        if (ConstraintViolationExceptionConvert.needConvert(e)){
+            return ConstraintViolationExceptionConvert.handleConstraintViolationException(e);
         }
+
         return "Internal server error: " + e.getMessage();
     }
 }
