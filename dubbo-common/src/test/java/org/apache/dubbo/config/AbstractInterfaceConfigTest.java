@@ -246,7 +246,7 @@ class AbstractInterfaceConfigTest {
         boolean verifyResult = interfaceConfig.verifyMethodConfig(methodConfig, clazz, false);
         Assertions.assertEquals(true, verifyResult);
         boolean verifyResult2 = interfaceConfig.verifyMethodConfig(methodConfig, clazz, true);
-        Assertions.assertEquals(false, verifyResult2);
+        Assertions.assertFalse(verifyResult2);
     }
 
     public static class InterfaceConfig extends AbstractInterfaceConfig {
