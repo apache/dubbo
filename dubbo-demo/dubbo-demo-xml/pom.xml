@@ -38,7 +38,8 @@
     <modules>
         <module>dubbo-demo-xml-provider</module>
         <module>dubbo-demo-xml-consumer</module>
-        <module>dubbo-demo-rest</module>
+        <module>dubbo-demo-xml-rest-consumer</module>
+        <module>dubbo-demo-xml-rest-provider</module>
     </modules>
 
 
