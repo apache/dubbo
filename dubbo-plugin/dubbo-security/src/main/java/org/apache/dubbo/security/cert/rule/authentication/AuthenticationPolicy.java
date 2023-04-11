@@ -49,6 +49,6 @@ public class AuthenticationPolicy {
     }
 
     public static List<AuthenticationPolicy> parse(String raw) {
-        return JsonUtils.getJson().toJavaList(raw, AuthenticationPolicy.class);
+        return JsonUtils.toJavaList(raw, AuthenticationPolicy.class);
     }
 }

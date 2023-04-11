@@ -17,7 +17,6 @@
 
 package org.apache.dubbo.security.cert;
 
-import org.apache.dubbo.common.json.JSON;
 import org.apache.dubbo.common.utils.JsonUtils;
 
 import java.net.InetSocketAddress;
@@ -77,8 +76,7 @@ public class Endpoint {
             return namespace;
         }
         if (extensions != null) {
-            JSON json = JsonUtils.getJson();
-            Map<?, ?> map = json.toJavaObject(extensions, Map.class);
+            Map<?, ?> map = JsonUtils.toJavaObject(extensions, Map.class);
             if (map != null && map.containsKey("namespace")) {
                 Object ns = map.get("namespace");
                 if (ns instanceof String) {
@@ -94,8 +92,7 @@ public class Endpoint {
             return socketAddress.getAddress().getHostAddress();
         }
         if (extensions != null) {
-            JSON json = JsonUtils.getJson();
-            Map<?, ?> map = json.toJavaObject(extensions, Map.class);
+            Map<?, ?> map = JsonUtils.toJavaObject(extensions, Map.class);
             if (map != null && map.containsKey("ips")) {
                 Object ips = map.get("ips");
                 if (ips instanceof List && !((List<?>) ips).isEmpty()) {
@@ -112,8 +109,7 @@ public class Endpoint {
     public String getParameter(String key) {
         // TODO support json path
         if (extensions != null) {
-            JSON json = JsonUtils.getJson();
-            Map<?, ?> map = json.toJavaObject(extensions, Map.class);
+            Map<?, ?> map = JsonUtils.toJavaObject(extensions, Map.class);
             return getParameter(map, key);
         }
         return null;
