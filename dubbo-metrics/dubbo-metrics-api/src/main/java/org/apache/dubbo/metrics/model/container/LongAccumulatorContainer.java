@@ -17,7 +17,8 @@
 
 package org.apache.dubbo.metrics.model.container;
 
-import org.apache.dubbo.metrics.model.MetricsKeyWrapper;
+
+import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
 
 import java.util.concurrent.atomic.LongAccumulator;
 

@@ -15,13 +15,27 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.metrics.metadata;
+package org.apache.dubbo.metrics.model.key;
 
-public interface MetadataConstants {
+public class MetricsPlaceType {
 
-    String OP_TYPE_PUSH = "push";
-    String OP_TYPE_SUBSCRIBE = "subscribe";
-    String OP_TYPE_STORE_PROVIDER_INTERFACE = "store.provider.interface";
+    private final String type;
+    private final MetricsLevel metricsLevel;
 
+    private MetricsPlaceType(String type, MetricsLevel metricsLevel) {
+        this.type = type;
+        this.metricsLevel = metricsLevel;
+    }
 
+    public static MetricsPlaceType of(String type, MetricsLevel metricsLevel) {
+        return new MetricsPlaceType(type, metricsLevel);
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public MetricsLevel getMetricsLevel() {
+        return metricsLevel;
+    }
 }

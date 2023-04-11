@@ -17,7 +17,8 @@
 
 package org.apache.dubbo.metrics.metadata.type;
 
-import org.apache.dubbo.metrics.model.MetricsKey;
+
+import org.apache.dubbo.metrics.model.key.MetricsKey;
 
 public enum ApplicationType {
     P_TOTAL(MetricsKey.METADATA_PUSH_METRIC_NUM),
