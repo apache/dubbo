@@ -144,20 +144,25 @@ public class FastJson2ObjectInput implements ObjectInput {
             throw new IllegalArgumentException("deserialize failed. expected read length: " + length + " but actual read: " + read);
         }
         Fastjson2SecurityManager.Handler securityFilter = fastjson2SecurityManager.getSecurityFilter();
+        T result;
         if (securityFilter.isCheckSerializable()) {
-            return JSONB.parseObject(bytes, cls, securityFilter,
+            result = JSONB.parseObject(bytes, cls, securityFilter,
                 JSONReader.Feature.UseDefaultConstructorAsPossible,
                 JSONReader.Feature.ErrorOnNoneSerializable,
                 JSONReader.Feature.IgnoreAutoTypeNotMatch,
                 JSONReader.Feature.UseNativeObject,
                 JSONReader.Feature.FieldBased);
         } else {
-            return JSONB.parseObject(bytes, cls, securityFilter,
+            result = JSONB.parseObject(bytes, cls, securityFilter,
                 JSONReader.Feature.UseDefaultConstructorAsPossible,
                 JSONReader.Feature.UseNativeObject,
                 JSONReader.Feature.IgnoreAutoTypeNotMatch,
                 JSONReader.Feature.FieldBased);
         }
+        if (result != null && cls != null && !ClassUtils.isMatch(result.getClass(), cls)) {
+            throw new IllegalArgumentException("deserialize failed. expected class: " + cls + " but actual class: " + result.getClass());
+        }
+        return result;
     }
 
     private void updateClassLoaderIfNeed() {

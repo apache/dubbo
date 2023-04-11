@@ -58,6 +58,19 @@ class Hessian2SerializationTest {
             Assertions.assertEquals("hello", objectInput.readUTF());
         }
 
+        // write string, read string
+        {
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            ObjectOutput objectOutput = serialization.serialize(url, outputStream);
+            objectOutput.writeObject(null);
+            objectOutput.flushBuffer();
+
+            byte[] bytes = outputStream.toByteArray();
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
+            ObjectInput objectInput = serialization.deserialize(url, inputStream);
+            Assertions.assertNull(objectInput.readUTF());
+        }
+
         // write date, read failed
         {
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
