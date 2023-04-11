@@ -17,13 +17,17 @@
 package org.apache.dubbo.remoting.transport.netty4;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.api.connection.AbstractConnectionClient;
 import org.apache.dubbo.remoting.api.connection.ConnectionManager;
 import org.apache.dubbo.remoting.api.connection.MultiplexProtocolConnectionManager;
 import org.apache.dubbo.remoting.api.pu.DefaultPuHandler;
-
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ModuleModel;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -33,6 +37,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_MANAGEMENT_MODE_DEFAULT;
 
 
 public class ConnectionTest {
@@ -47,6 +53,17 @@ public class ConnectionTest {
     public static void init() throws RemotingException {
         int port = NetUtils.getAvailablePort();
         url = URL.valueOf("empty://127.0.0.1:" + port + "?foo=bar");
+        ApplicationModel applicationModel = ApplicationModel.defaultModel();
+        ApplicationConfig applicationConfig = new ApplicationConfig("provider-app");
+        applicationConfig.setExecutorManagementMode(EXECUTOR_MANAGEMENT_MODE_DEFAULT);
+        applicationModel.getApplicationConfigManager().setApplication(applicationConfig);
+        ConfigManager configManager = new ConfigManager(applicationModel);
+        configManager.setApplication(applicationConfig);
+        configManager.getApplication();
+        applicationModel.setConfigManager(configManager);
+        url = url.setScopeModel(applicationModel);
+        ModuleModel moduleModel = applicationModel.getDefaultModule();
+        url = url.putAttribute(CommonConstants.SCOPE_MODEL, moduleModel);
         server = new NettyPortUnificationServer(url, new DefaultPuHandler());
         server.bind();
         connectionManager = url.getOrDefaultFrameworkModel().getExtensionLoader(ConnectionManager.class).getExtension(MultiplexProtocolConnectionManager.NAME);

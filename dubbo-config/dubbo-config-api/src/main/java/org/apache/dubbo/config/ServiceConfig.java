@@ -462,6 +462,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
              * Because executor is not a string type, it cannot be attached to the url parameter, so it is added to URL#attributes
              * and obtained it in IsolationExecutorRepository#createExecutor method
              */
+            providerModel.getServiceMetadata().addAttribute(SERVICE_EXECUTOR, getExecutor());
             url.getAttributes().put(SERVICE_EXECUTOR, getExecutor());
         }
     }

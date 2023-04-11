@@ -28,6 +28,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.Codec;
 import org.apache.dubbo.remoting.Decodeable;
+import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.transport.CodecSupport;
 import org.apache.dubbo.remoting.transport.ExceedPayloadLimitException;
@@ -39,6 +40,7 @@ import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
+import org.apache.dubbo.rpc.protocol.PermittedSerializationKeeper;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.io.IOException;
@@ -77,6 +79,8 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
     protected final FrameworkModel frameworkModel;
 
     protected final transient Supplier<CallbackServiceCodec> callbackServiceCodecFactory;
+
+    private static final boolean CHECK_SERIALIZATION = Boolean.parseBoolean(System.getProperty(SERIALIZATION_SECURITY_CHECK_KEY, "true"));
 
     public DecodeableRpcInvocation(FrameworkModel frameworkModel, Channel channel, Request request, InputStream is, byte id) {
         this.frameworkModel = frameworkModel;
@@ -129,7 +133,8 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
         setAttachment(VERSION_KEY, version);
 
         // Do provider-level payload checks.
-        checkPayload(keyWithoutGroup(path, version));
+        String keyWithoutGroup = keyWithoutGroup(path, version);
+        checkPayload(keyWithoutGroup);
 
         setMethodName(in.readUTF());
 
@@ -138,8 +143,11 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
 
         ClassLoader originClassLoader = Thread.currentThread().getContextClassLoader();
         try {
-            if (Boolean.parseBoolean(System.getProperty(SERIALIZATION_SECURITY_CHECK_KEY, "true"))) {
-                CodecSupport.checkSerialization(frameworkModel.getServiceRepository(), path, version, serializationType);
+            if (CHECK_SERIALIZATION) {
+                PermittedSerializationKeeper keeper = frameworkModel.getBeanFactory().getBean(PermittedSerializationKeeper.class);
+                if (!keeper.checkSerializationPermitted(keyWithoutGroup, serializationType)) {
+                    throw new IOException("Unexpected serialization id:" + serializationType + " received from network, please check if the peer send the right id.");
+                }
             }
             Object[] args = DubboCodec.EMPTY_OBJECT_ARRAY;
             Class<?>[] pts = DubboCodec.EMPTY_CLASS_ARRAY;
@@ -273,5 +281,9 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
                 }
             }
         }
+    }
+
+    protected void fillInvoker(DubboProtocol dubboProtocol) throws RemotingException {
+        this.setInvoker(dubboProtocol.getInvoker(channel, this));
     }
 }
