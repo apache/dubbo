@@ -397,7 +397,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                 return false;
             } else {
                 if (!isNeedCheckMethod()) {
-                    msg = String.format("%s generic call ", isNeedCheckMethod() ) + msg;
+                    msg = "Generic call: " + msg;
                     logger.warn(CONFIG_NO_METHOD_FOUND, "", "", msg);
                 } else {
                     throw new IllegalStateException(msg);
