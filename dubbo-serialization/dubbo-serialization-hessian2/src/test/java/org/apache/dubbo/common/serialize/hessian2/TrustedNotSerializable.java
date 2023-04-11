@@ -16,28 +16,26 @@
  */
 package org.apache.dubbo.common.serialize.hessian2;
 
-import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
-import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.FrameworkModel;
-import org.apache.dubbo.rpc.model.ModuleModel;
-import org.apache.dubbo.rpc.model.ScopeModelInitializer;
+import java.util.Objects;
 
-public class Hessian2ScopeModelInitializer implements ScopeModelInitializer {
-    @Override
-    public void initializeFrameworkModel(FrameworkModel frameworkModel) {
-        ScopeBeanFactory beanFactory = frameworkModel.getBeanFactory();
-        beanFactory.registerBean(Hessian2FactoryManager.class);
+public class TrustedNotSerializable {
 
-        frameworkModel.addClassLoaderListener(new Hessian2ClassLoaderListener());
+    private final double data;
+
+    public TrustedNotSerializable(double data) {
+        this.data = data;
     }
 
     @Override
-    public void initializeApplicationModel(ApplicationModel applicationModel) {
-
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        TrustedNotSerializable that = (TrustedNotSerializable) o;
+        return Objects.equals(data, that.data);
     }
 
     @Override
-    public void initializeModuleModel(ModuleModel moduleModel) {
-
+    public int hashCode() {
+        return Objects.hash(data);
     }
 }

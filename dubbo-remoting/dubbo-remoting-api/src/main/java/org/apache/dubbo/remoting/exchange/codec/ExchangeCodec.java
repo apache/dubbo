@@ -418,7 +418,7 @@ public class ExchangeCodec extends TelnetCodec {
     }
 
     private void encodeEventData(ObjectOutput out, Object data) throws IOException {
-        out.writeEvent(data);
+        out.writeEvent((String) data);
     }
 
     @Deprecated
