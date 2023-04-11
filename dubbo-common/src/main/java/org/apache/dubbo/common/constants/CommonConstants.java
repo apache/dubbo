@@ -626,4 +626,6 @@ public interface CommonConstants {
     String PAYLOAD = "payload";
 
     String DUBBO_METRICS_CONFIGCENTER_ENABLE = "dubbo.metrics.configcenter.enable";
+
+    Integer TRI_EXCEPTION_CODE_NOT_EXISTS = 0;
 }
