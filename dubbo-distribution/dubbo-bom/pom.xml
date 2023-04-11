@@ -499,7 +499,7 @@
             </dependency>
             <dependency>
                 <groupId>org.apache.dubbo</groupId>
-                <artifactId>dubbo-spring-boot-observability-starter</artifactId>
+                <artifactId>dubbo-spring-boot-observability-otel-zipkin-starter</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
