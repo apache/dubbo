@@ -16,14 +16,15 @@
  */
 package org.apache.dubbo.common.serialize.fastjson2;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.Type;
-
 import org.apache.dubbo.common.serialize.ObjectInput;
+import org.apache.dubbo.common.utils.ClassUtils;
 
 import com.alibaba.fastjson2.JSONB;
 import com.alibaba.fastjson2.JSONReader;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.Type;
 
 /**
  * FastJson object input implementation
@@ -112,22 +113,28 @@ public class FastJson2ObjectInput implements ObjectInput {
             throw new IllegalArgumentException("deserialize failed. expected read length: " + length + " but actual read: " + read);
         }
         Fastjson2SecurityManager.Handler securityFilter = fastjson2SecurityManager.getSecurityFilter();
+        T result;
         if (securityFilter.isCheckSerializable()) {
-            return (T) JSONB.parseObject(bytes, Object.class, securityFilter,
+            result = JSONB.parseObject(bytes, cls, securityFilter,
                 JSONReader.Feature.UseDefaultConstructorAsPossible,
                 JSONReader.Feature.ErrorOnNoneSerializable,
+                JSONReader.Feature.IgnoreAutoTypeNotMatch,
                 JSONReader.Feature.UseNativeObject,
                 JSONReader.Feature.FieldBased);
         } else {
-            return (T) JSONB.parseObject(bytes, Object.class, securityFilter,
+            result = JSONB.parseObject(bytes, cls, securityFilter,
                 JSONReader.Feature.UseDefaultConstructorAsPossible,
                 JSONReader.Feature.UseNativeObject,
+                JSONReader.Feature.IgnoreAutoTypeNotMatch,
                 JSONReader.Feature.FieldBased);
         }
+        if (result != null && cls != null && !ClassUtils.isMatch(result.getClass(), cls)) {
+            throw new IllegalArgumentException("deserialize failed. expected class: " + cls + " but actual class: " + result.getClass());
+        }
+        return result;
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public <T> T readObject(Class<T> cls, Type type) throws IOException, ClassNotFoundException {
         updateClassLoaderIfNeed();
         int length = readLength();
@@ -137,18 +144,25 @@ public class FastJson2ObjectInput implements ObjectInput {
             throw new IllegalArgumentException("deserialize failed. expected read length: " + length + " but actual read: " + read);
         }
         Fastjson2SecurityManager.Handler securityFilter = fastjson2SecurityManager.getSecurityFilter();
+        T result;
         if (securityFilter.isCheckSerializable()) {
-            return (T) JSONB.parseObject(bytes, Object.class, securityFilter,
+            result = JSONB.parseObject(bytes, cls, securityFilter,
                 JSONReader.Feature.UseDefaultConstructorAsPossible,
                 JSONReader.Feature.ErrorOnNoneSerializable,
+                JSONReader.Feature.IgnoreAutoTypeNotMatch,
                 JSONReader.Feature.UseNativeObject,
                 JSONReader.Feature.FieldBased);
         } else {
-            return (T) JSONB.parseObject(bytes, Object.class, securityFilter,
+            result = JSONB.parseObject(bytes, cls, securityFilter,
                 JSONReader.Feature.UseDefaultConstructorAsPossible,
                 JSONReader.Feature.UseNativeObject,
+                JSONReader.Feature.IgnoreAutoTypeNotMatch,
                 JSONReader.Feature.FieldBased);
         }
+        if (result != null && cls != null && !ClassUtils.isMatch(result.getClass(), cls)) {
+            throw new IllegalArgumentException("deserialize failed. expected class: " + cls + " but actual class: " + result.getClass());
+        }
+        return result;
     }
 
     private void updateClassLoaderIfNeed() {
