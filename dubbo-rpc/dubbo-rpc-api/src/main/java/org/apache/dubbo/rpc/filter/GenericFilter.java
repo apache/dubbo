@@ -24,10 +24,10 @@ import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.io.UnsafeByteArrayInputStream;
 import org.apache.dubbo.common.io.UnsafeByteArrayOutputStream;
-import org.apache.dubbo.common.json.GsonUtils;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.serialize.Serialization;
+import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.PojoUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -199,7 +199,7 @@ public class GenericFilter implements Filter, Filter.Listener, ScopeModelAware {
             }
             String str = args[i].toString();
             try {
-                return GsonUtils.fromJson(str, types[i]);
+                return JsonUtils.toJavaObject(str, types[i]);
             } catch (RuntimeException ex) {
                 throw new RpcException(ex.getMessage());
             }
