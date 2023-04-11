@@ -126,8 +126,7 @@ public class DubboProtocol extends AbstractProtocol {
                 }
 
                 Invocation inv = (Invocation) message;
-                Invoker<?> invoker = getInvoker(channel, inv);
-                inv.setServiceModel(invoker.getUrl().getServiceModel());
+                Invoker<?> invoker = inv.getInvoker() == null ? getInvoker(channel, inv) : inv.getInvoker();
                 // switch TCCL
                 if (invoker.getUrl().getServiceModel() != null) {
                     Thread.currentThread().setContextClassLoader(invoker.getUrl().getServiceModel().getClassLoader());
@@ -293,7 +292,9 @@ public class DubboProtocol extends AbstractProtocol {
                 ", channel: consumer: " + channel.getRemoteAddress() + " --> provider: " + channel.getLocalAddress() + ", message:" + getInvocationWithoutData(inv));
         }
 
-        return exporter.getInvoker();
+        Invoker<?> invoker = exporter.getInvoker();
+        inv.setServiceModel(invoker.getUrl().getServiceModel());
+        return invoker;
     }
 
     public Collection<Invoker<?>> getInvokers() {
