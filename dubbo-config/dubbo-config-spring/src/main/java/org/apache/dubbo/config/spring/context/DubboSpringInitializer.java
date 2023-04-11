@@ -166,9 +166,15 @@ public class DubboSpringInitializer {
 
     private static void registerContextBeans(ConfigurableListableBeanFactory beanFactory, DubboSpringInitContext context) {
         // register singleton
-        registerSingleton(beanFactory, context);
-        registerSingleton(beanFactory, context.getApplicationModel());
-        registerSingleton(beanFactory, context.getModuleModel());
+        if (!beanFactory.containsSingleton(DubboSpringInitContext.class.getName())){
+            registerSingleton(beanFactory, context);
+        }
+        if (!beanFactory.containsSingleton(context.getApplicationModel().getClass().getName())){
+            registerSingleton(beanFactory, context.getApplicationModel());
+        }
+        if (!beanFactory.containsSingleton(context.getModuleModel().getClass().getName())){
+            registerSingleton(beanFactory, context.getModuleModel());
+        }
     }
 
     private static void registerSingleton(ConfigurableListableBeanFactory beanFactory, Object bean) {
