@@ -72,15 +72,16 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
 
     @Override
     public final boolean supports(Class<?> serviceType, boolean consumer) {
-        // for consumer
-        if (consumer) {
-            //  it is possible serviceType is impl
-            return supports0(serviceType);
+
+        if (serviceType == null) {
+            return false;
         }
 
+        // for consumer
+        //  it is possible serviceType is impl
         // for provider
         // for xml config bean  && isServiceAnnotationPresent(serviceType)
-       //  isImplementedInterface(serviceType) && SpringController
+        //  isImplementedInterface(serviceType) SpringController
         return supports0(serviceType);
     }
 
@@ -174,7 +175,7 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
         List<Method> declaredServiceMethods = new ArrayList<>(getAllMethods(serviceInterfaceClass, excludedDeclaredClass(Object.class)));
 
         // controller class
-        if (serviceType.equals(serviceInterfaceClass)){
+        if (serviceType.equals(serviceInterfaceClass)) {
             putServiceMethodToMap(serviceMethodsMap, declaredServiceMethods);
             return unmodifiableMap(serviceMethodsMap);
         }
