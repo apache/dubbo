@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.rpc.cluster.directory;
 
-import java.util.List;
-
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -28,6 +26,8 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.RouterChain;
 import org.apache.dubbo.rpc.cluster.SingleRouterChain;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
+
+import java.util.List;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_FAILED_SITE_SELECTION;
 
@@ -75,6 +75,8 @@ public class StaticDirectory<T> extends AbstractDirectory<T> {
         for (Invoker<T> invoker : getValidInvokers()) {
             if (invoker.isAvailable()) {
                 return true;
+            } else {
+                addInvalidateInvoker(invoker);
             }
         }
         return false;

@@ -14,28 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.listener;
+package org.apache.dubbo.common.serialize.hessian2;
 
-import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
-import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.FrameworkModel;
-import org.apache.dubbo.rpc.model.ModuleModel;
-import org.apache.dubbo.rpc.model.ScopeModelInitializer;
+import java.io.Serializable;
+import java.util.Objects;
 
-public class ExporterScopeModelInitializer implements ScopeModelInitializer {
-    @Override
-    public void initializeFrameworkModel(FrameworkModel frameworkModel) {
-        ScopeBeanFactory beanFactory = frameworkModel.getBeanFactory();
-        beanFactory.registerBean(InjvmExporterListener.class);
+public class TrustedPojo implements Serializable {
+
+    private final double data;
+
+    public TrustedPojo(double data) {
+        this.data = data;
     }
 
     @Override
-    public void initializeApplicationModel(ApplicationModel applicationModel) {
-
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        TrustedPojo that = (TrustedPojo) o;
+        return Objects.equals(data, that.data);
     }
 
     @Override
-    public void initializeModuleModel(ModuleModel moduleModel) {
-
+    public int hashCode() {
+        return Objects.hash(data);
     }
 }
