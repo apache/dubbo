@@ -17,6 +17,11 @@
 
 package org.apache.dubbo.rpc.protocol.tri;
 
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelPipeline;
+import io.netty.handler.codec.http2.*;
+import io.netty.handler.flush.FlushConsolidationHandler;
+import io.netty.handler.logging.LogLevel;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.ConfigurationUtils;
@@ -30,37 +35,16 @@ import org.apache.dubbo.remoting.api.pu.ChannelOperator;
 import org.apache.dubbo.remoting.api.ssl.ContextOperator;
 import org.apache.dubbo.rpc.HeaderFilter;
 import org.apache.dubbo.rpc.executor.ExecutorSupport;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
-import org.apache.dubbo.rpc.protocol.tri.transport.TripleClientHandler;
-import org.apache.dubbo.rpc.protocol.tri.transport.TripleCommandOutBoundHandler;
-import org.apache.dubbo.rpc.protocol.tri.transport.TripleHttp2FrameServerHandler;
-import org.apache.dubbo.rpc.protocol.tri.transport.TripleServerConnectionHandler;
-import org.apache.dubbo.rpc.protocol.tri.transport.TripleTailHandler;
-import org.apache.dubbo.rpc.protocol.tri.transport.TripleWriteQueue;
-
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelPipeline;
-import io.netty.handler.codec.http2.Http2FrameCodec;
-import io.netty.handler.codec.http2.Http2FrameLogger;
-import io.netty.handler.codec.http2.Http2MultiplexHandler;
-import io.netty.handler.codec.http2.Http2Settings;
-import io.netty.handler.codec.http2.Http2StreamChannel;
-import io.netty.handler.flush.FlushConsolidationHandler;
-import io.netty.handler.logging.LogLevel;
+import org.apache.dubbo.rpc.protocol.tri.transport.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import static org.apache.dubbo.common.constants.CommonConstants.HEADER_FILTER_KEY;
-import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_ENABLE_PUSH_KEY;
-import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_HEADER_TABLE_SIZE_KEY;
-import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_INITIAL_WINDOW_SIZE_KEY;
-import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_MAX_CONCURRENT_STREAMS_KEY;
-import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_MAX_FRAME_SIZE_KEY;
-import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_MAX_HEADER_LIST_SIZE_KEY;
+import static org.apache.dubbo.rpc.Constants.*;
 
 @Activate
 public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeModelAware {
@@ -80,8 +64,6 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
 
     private ExtensionLoader<HeaderFilter> filtersLoader;
     private FrameworkModel frameworkModel;
-    private Configuration config = ConfigurationUtils.getGlobalConfiguration(
-        ApplicationModel.defaultModel());
 
     public TripleHttp2Protocol() {
         super(new Http2ProtocolDetector());
@@ -94,18 +76,13 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
     }
 
     @Override
-    public void setApplicationModel(ApplicationModel applicationModel) {
-        this.config = ConfigurationUtils.getGlobalConfiguration(applicationModel);
-    }
-
-    @Override
     public void close() {
         super.close();
     }
 
     @Override
     public void configServerProtocolHandler(URL url, ChannelOperator operator) {
-
+        Configuration config = ConfigurationUtils.getGlobalConfiguration(url.getOrDefaultApplicationModel());
         final List<HeaderFilter> headFilters;
         if (filtersLoader != null) {
             headFilters = filtersLoader.getActivateExtension(url, HEADER_FILTER_KEY);
@@ -152,6 +129,7 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
 
     @Override
     public void configClientPipeline(URL url, ChannelOperator operator, ContextOperator contextOperator) {
+        Configuration config = ConfigurationUtils.getGlobalConfiguration(url.getOrDefaultApplicationModel());
         final Http2FrameCodec codec = TripleHttp2FrameCodecBuilder.forClient()
             .customizeConnection((connection) -> connection.remote().flowController(new TriHttp2RemoteFlowController(connection, url.getOrDefaultApplicationModel())))
             .gracefulShutdownTimeoutMillis(10000)
