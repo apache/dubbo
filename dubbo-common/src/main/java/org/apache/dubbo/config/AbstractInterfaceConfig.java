@@ -374,7 +374,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     }
 
-    private boolean verifyMethodConfig(MethodConfig methodConfig, Class<?> interfaceClass, boolean ignoreInvalidMethodConfig) {
+    protected boolean verifyMethodConfig(MethodConfig methodConfig, Class<?> interfaceClass, boolean ignoreInvalidMethodConfig) {
         String methodName = methodConfig.getName();
         if (StringUtils.isEmpty(methodName)) {
             String msg = "<dubbo:method> name attribute is required! Please check: " +
@@ -396,7 +396,12 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                 logger.warn(CONFIG_NO_METHOD_FOUND, "", "", msg);
                 return false;
             } else {
-                throw new IllegalStateException(msg);
+                if (!isNeedCheckMethod()) {
+                    msg = "Generic call: " + msg;
+                    logger.warn(CONFIG_NO_METHOD_FOUND, "", "", msg);
+                } else {
+                    throw new IllegalStateException(msg);
+                }
             }
         }
         return true;
@@ -411,6 +416,11 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             }
         }
         return null;
+    }
+
+    @Transient
+    protected boolean isNeedCheckMethod() {
+        return true;
     }
 
     private boolean hasArgumentConfigProps(Map<String, String> configProperties, String methodName, int argIndex) {
