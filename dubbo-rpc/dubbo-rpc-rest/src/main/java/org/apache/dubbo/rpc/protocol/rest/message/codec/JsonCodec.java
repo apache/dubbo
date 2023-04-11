@@ -66,6 +66,6 @@ public class JsonCodec implements HttpMessageCodec<byte[], OutputStream> {
 
     @Override
     public void encode(OutputStream outputStream, Object unSerializedBody, URL url) throws Exception {
-        outputStream.write(JsonUtils.getJson().toJson(unSerializedBody).getBytes(StandardCharsets.UTF_8));
+        outputStream.write(JsonUtils.toJson(unSerializedBody).getBytes(StandardCharsets.UTF_8));
     }
 }
