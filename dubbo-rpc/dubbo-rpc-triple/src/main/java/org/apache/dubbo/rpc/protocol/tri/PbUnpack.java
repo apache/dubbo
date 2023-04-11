@@ -35,10 +35,4 @@ public class PbUnpack<T> implements PackableMethod.UnPack {
         final ByteArrayInputStream bais = new ByteArrayInputStream(data);
         return SingleProtobufUtils.deserialize(bais, clz);
     }
-
-
-    public Object unpack(byte[] data, boolean isReturnTriException) throws IOException {
-        final ByteArrayInputStream bais = new ByteArrayInputStream(data);
-        return SingleProtobufUtils.deserialize(bais, clz);
-    }
 }
