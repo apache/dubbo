@@ -69,7 +69,7 @@ public class ConfigParser {
     private static List<URL> parseJsonArray(String rawConfig) {
         List<URL> urls = new ArrayList<>();
         try {
-            List<String> list = JsonUtils.getJson().toJavaList(rawConfig, String.class);
+            List<String> list = JsonUtils.toJavaList(rawConfig, String.class);
             if (!CollectionUtils.isEmpty(list)) {
                 list.forEach(u -> urls.add(URL.valueOf(u)));
             }

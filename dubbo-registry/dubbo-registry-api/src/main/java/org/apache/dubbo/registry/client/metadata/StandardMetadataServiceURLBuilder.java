@@ -179,6 +179,6 @@ public class StandardMetadataServiceURLBuilder implements MetadataServiceURLBuil
     private Map<String, String> getMetadataServiceURLsParams(ServiceInstance serviceInstance) {
         Map<String, String> metadata = serviceInstance.getMetadata();
         String param = metadata.get(METADATA_SERVICE_URL_PARAMS_PROPERTY_NAME);
-        return isBlank(param) ? emptyMap() : (Map) JsonUtils.getJson().toJavaObject(param, Map.class);
+        return isBlank(param) ? emptyMap() : (Map) JsonUtils.toJavaObject(param, Map.class);
     }
 }
