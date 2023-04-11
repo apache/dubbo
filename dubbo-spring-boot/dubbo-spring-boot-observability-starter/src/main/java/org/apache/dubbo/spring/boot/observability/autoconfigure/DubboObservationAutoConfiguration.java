@@ -18,7 +18,6 @@ package org.apache.dubbo.spring.boot.observability.autoconfigure;
 
 import io.micrometer.core.instrument.MeterRegistry;
 
-import io.micrometer.tracing.Tracer;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.qos.protocol.QosProtocolWrapper;
@@ -83,9 +82,9 @@ public class DubboObservationAutoConfiguration implements BeanFactoryAware, Smar
 
     @Override
     public void afterSingletonsInstantiated() {
-
         try {
-            Tracer bean = beanFactory.getBean(Tracer.class);
+            applicationModel.getBeanFactory().registerBean(beanFactory.getBean(io.micrometer.observation.ObservationRegistry.class));
+            io.micrometer.tracing.Tracer bean = beanFactory.getBean(io.micrometer.tracing.Tracer.class);
             applicationModel.getBeanFactory().registerBean(bean);
         } catch (NoSuchBeanDefinitionException e) {
             logger.info("Please use a version of micrometer higher than 1.10.0 ：{}" + e.getMessage());

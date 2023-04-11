@@ -330,7 +330,7 @@ class JaxrsRestProtocolTest {
 
         URL url = this.registerProvider(exportUrl, server, DemoService.class);
 
-        URL exceptionUrl = url.addParameter(EXCEPTION_MAPPER_KEY, TestExceptionMapper.class.getName());
+        URL exceptionUrl = url.addParameter(EXTENSION_KEY, TestExceptionMapper.class.getName());
 
         protocol.export(proxy.getInvoker(server, DemoService.class, exceptionUrl));
 

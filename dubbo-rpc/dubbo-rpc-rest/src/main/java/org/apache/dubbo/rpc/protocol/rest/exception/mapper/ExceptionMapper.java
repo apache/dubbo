@@ -17,6 +17,8 @@
 
 package org.apache.dubbo.rpc.protocol.rest.exception.mapper;
 
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.protocol.rest.util.ReflectUtils;
 
 import java.lang.reflect.Constructor;
@@ -29,6 +31,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ExceptionMapper {
+    private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
+
 
     // TODO static or instance ? think about influence  between  difference url exception
     private final Map<Class<?>, ExceptionHandler> exceptionHandlerMap = new ConcurrentHashMap<>();
@@ -51,7 +55,11 @@ public class ExceptionMapper {
 
     public void registerMapper(Class<?> exceptionHandler) {
 
+
         try {
+            if (!ExceptionHandler.class.isAssignableFrom(exceptionHandler)) {
+                return;
+            }
             // resolve Java_Zulu_jdk/17.0.6-10/x64 param is not throwable
             List<Method> methods = ReflectUtils.getMethodByNameList(exceptionHandler, "result");
 
@@ -100,8 +108,8 @@ public class ExceptionMapper {
     public void registerMapper(String exceptionMapper) {
         try {
             registerMapper(ReflectUtils.findClass(exceptionMapper));
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException("dubbo rest protocol exception mapper register error ", e);
+        } catch (Exception e) {
+            logger.warn("", e.getMessage(), "", "dubbo rest protocol exception mapper register error ,and current exception mapper is  :" + exceptionMapper);
         }
 
     }

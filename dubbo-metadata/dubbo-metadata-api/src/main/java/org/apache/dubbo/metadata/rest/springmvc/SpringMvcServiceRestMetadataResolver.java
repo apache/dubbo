@@ -55,13 +55,14 @@ public class SpringMvcServiceRestMetadataResolver extends AbstractServiceRestMet
 
     @Override
     protected boolean supports0(Class<?> serviceType) {
-        return isAnnotationPresent(serviceType, CONTROLLER_ANNOTATION_CLASS);
+        // class @Controller or @RequestMapping
+        return isAnnotationPresent(serviceType, CONTROLLER_ANNOTATION_CLASS) || isAnnotationPresent(serviceType, REQUEST_MAPPING_ANNOTATION_CLASS);
     }
 
     @Override
     protected boolean isRestCapableMethod(Method serviceMethod, Class<?> serviceType, Class<?> serviceInterfaceClass) {
-        return isAnnotationPresent(serviceType, REQUEST_MAPPING_ANNOTATION_CLASS) ||
-                isAnnotationPresent(serviceMethod, REQUEST_MAPPING_ANNOTATION_CLASS);
+        // method only match @RequestMapping
+        return isAnnotationPresent(serviceMethod, REQUEST_MAPPING_ANNOTATION_CLASS);
     }
 
     @Override

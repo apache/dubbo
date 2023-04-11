@@ -22,14 +22,10 @@ import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.key.MetricsPlaceType;
 import org.apache.dubbo.metrics.registry.collector.RegistryMetricsCollector;
 
-import static org.apache.dubbo.metrics.MetricsConstants.ATTACHMENT_KEY_DIR_NUM;
-import static org.apache.dubbo.metrics.MetricsConstants.ATTACHMENT_KEY_SERVICE;
-import static org.apache.dubbo.metrics.MetricsConstants.ATTACHMENT_KEY_SIZE;
-import static org.apache.dubbo.metrics.registry.RegistryMetricsConstants.OP_TYPE_NOTIFY;
-import static org.apache.dubbo.metrics.registry.RegistryMetricsConstants.OP_TYPE_REGISTER;
-import static org.apache.dubbo.metrics.registry.RegistryMetricsConstants.OP_TYPE_REGISTER_SERVICE;
-import static org.apache.dubbo.metrics.registry.RegistryMetricsConstants.OP_TYPE_SUBSCRIBE;
-import static org.apache.dubbo.metrics.registry.RegistryMetricsConstants.OP_TYPE_SUBSCRIBE_SERVICE;
+import java.util.Map;
+
+import static org.apache.dubbo.metrics.MetricsConstants.*;
+import static org.apache.dubbo.metrics.registry.RegistryMetricsConstants.*;
 
 public final class RegistryMetricsEventMulticaster extends SimpleMetricsEventMulticaster {
 
@@ -56,13 +52,14 @@ public final class RegistryMetricsEventMulticaster extends SimpleMetricsEventMul
 
 
         // MetricsDirectoryListener
-        addIncrListener(MetricsKey.DIRECTORY_METRIC_NUM_VALID);
-        addIncrListener(MetricsKey.DIRECTORY_METRIC_NUM_UN_VALID);
-        addIncrListener(MetricsKey.DIRECTORY_METRIC_NUM_DISABLE);
-        addIncrListener(MetricsKey.DIRECTORY_METRIC_NUM_RECOVER_DISABLE);
-        super.addListener(RegistryListener.onEvent(MetricsKey.DIRECTORY_METRIC_NUM_CURRENT,
-            event -> event.setNum(MetricsKey.DIRECTORY_METRIC_NUM_CURRENT, ATTACHMENT_KEY_DIR_NUM))
-        );
+        super.addListener(RegistryListener.onEvent(MetricsKey.DIRECTORY_METRIC_NUM_VALID,
+            event ->
+            {
+                Map<MetricsKey, Map<String, Integer>> summaryMap = event.getAttachmentValue(ATTACHMENT_DIRECTORY_MAP);
+                summaryMap.forEach((metricsKey, map) ->
+                    event.getCollector().setNum(metricsKey, event.getSource().getApplicationName(), map));
+            }
+        ));
 
         // MetricsServiceRegisterListener
         super.addListener(RegistryListener.onEvent(MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS,
@@ -99,11 +96,6 @@ public final class RegistryMetricsEventMulticaster extends SimpleMetricsEventMul
             }));
     }
 
-
-    private void addIncrListener(MetricsKey metricsKey) {
-        super.addListener(onPostEventBuild(metricsKey));
-    }
-
     private RegistryListener onPostEventBuild(MetricsKey metricsKey) {
         return RegistryListener.onEvent(metricsKey,
             event -> event.getCollector().increment(event.getSource().getApplicationName(), metricsKey)
@@ -128,5 +120,12 @@ public final class RegistryMetricsEventMulticaster extends SimpleMetricsEventMul
         );
     }
 
+    private void incrSk(RegistryEvent event, MetricsKey metricsKey) {
+        event.incrementServiceKey(metricsKey, ATTACHMENT_KEY_SERVICE, 1);
+    }
+
+    private void incrSkSize(RegistryEvent event, MetricsKey metricsKey) {
+        event.incrementServiceKey(metricsKey, ATTACHMENT_KEY_SERVICE, ATTACHMENT_KEY_SIZE);
+    }
 
 }

@@ -67,7 +67,7 @@ class MetadataMetricsCollectorTest {
     }
 
     @Test
-    void testPushMetrics() throws InterruptedException {
+    void testPushMetrics() {
 
         applicationModel.getBeanFactory().getOrRegisterBean(MetricsDispatcher.class);
         MetadataMetricsCollector collector = applicationModel.getBeanFactory().getOrRegisterBean(MetadataMetricsCollector.class);
