@@ -53,7 +53,7 @@ public interface ClientCall {
          * @param status   response status
          * @param trailers response trailers
          */
-        void onClose(TriRpcStatus status, Map<String, Object> trailers);
+        void onClose(TriRpcStatus status, Map<String, Object> trailers, boolean isReturnTriException);
     }
 
     /**

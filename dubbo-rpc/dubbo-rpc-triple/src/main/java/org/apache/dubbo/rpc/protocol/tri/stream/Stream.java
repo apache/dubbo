@@ -43,7 +43,7 @@ public interface Stream {
          *
          * @param message message received from remote peer
          */
-        void onMessage(byte[] message);
+        void onMessage(byte[] message, boolean isReturnTriException);
 
         /**
          * Callback when receive cancel signal.
