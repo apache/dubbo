@@ -19,7 +19,11 @@ package org.apache.dubbo.rpc.protocol.tri;
 
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
-import io.netty.handler.codec.http2.*;
+import io.netty.handler.codec.http2.Http2FrameCodec;
+import io.netty.handler.codec.http2.Http2FrameLogger;
+import io.netty.handler.codec.http2.Http2MultiplexHandler;
+import io.netty.handler.codec.http2.Http2Settings;
+import io.netty.handler.codec.http2.Http2StreamChannel;
 import io.netty.handler.flush.FlushConsolidationHandler;
 import io.netty.handler.logging.LogLevel;
 import org.apache.dubbo.common.URL;
@@ -37,14 +41,24 @@ import org.apache.dubbo.rpc.HeaderFilter;
 import org.apache.dubbo.rpc.executor.ExecutorSupport;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
-import org.apache.dubbo.rpc.protocol.tri.transport.*;
+import org.apache.dubbo.rpc.protocol.tri.transport.TripleClientHandler;
+import org.apache.dubbo.rpc.protocol.tri.transport.TripleCommandOutBoundHandler;
+import org.apache.dubbo.rpc.protocol.tri.transport.TripleHttp2FrameServerHandler;
+import org.apache.dubbo.rpc.protocol.tri.transport.TripleServerConnectionHandler;
+import org.apache.dubbo.rpc.protocol.tri.transport.TripleTailHandler;
+import org.apache.dubbo.rpc.protocol.tri.transport.TripleWriteQueue;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import static org.apache.dubbo.common.constants.CommonConstants.HEADER_FILTER_KEY;
-import static org.apache.dubbo.rpc.Constants.*;
+import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_ENABLE_PUSH_KEY;
+import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_HEADER_TABLE_SIZE_KEY;
+import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_INITIAL_WINDOW_SIZE_KEY;
+import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_MAX_CONCURRENT_STREAMS_KEY;
+import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_MAX_FRAME_SIZE_KEY;
+import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_MAX_HEADER_LIST_SIZE_KEY;
 
 @Activate
 public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeModelAware {
