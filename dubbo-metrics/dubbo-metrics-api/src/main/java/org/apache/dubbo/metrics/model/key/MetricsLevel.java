@@ -15,21 +15,8 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.metrics.registry;
+package org.apache.dubbo.metrics.model.key;
 
-public interface RegistryConstants {
-
-    String ATTACHMENT_KEY_SERVICE = "serviceKey";
-    String ATTACHMENT_KEY_SIZE = "size";
-    String ATTACHMENT_KEY_LAST_NUM_MAP = "lastNumMap";
-
-    String ATTACHMENT_DIRECTORY_MAP = "dirMap";
-
-    String OP_TYPE_REGISTER = "register";
-    String OP_TYPE_SUBSCRIBE = "subscribe";
-    String OP_TYPE_NOTIFY = "notify";
-    String OP_TYPE_REGISTER_SERVICE = "register.service";
-    String OP_TYPE_SUBSCRIBE_SERVICE = "subscribe.service";
-
-
+public enum MetricsLevel {
+    APP,SERVICE
 }

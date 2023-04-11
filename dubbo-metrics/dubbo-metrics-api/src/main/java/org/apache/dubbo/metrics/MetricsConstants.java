@@ -22,6 +22,6 @@ public interface MetricsConstants {
     String ATTACHMENT_KEY_SERVICE = "serviceKey";
     String ATTACHMENT_KEY_SIZE = "size";
     String ATTACHMENT_KEY_LAST_NUM_MAP = "lastNumMap";
-    String ATTACHMENT_KEY_DIR_NUM = "dirNum";
+    String ATTACHMENT_DIRECTORY_MAP = "dirNum";
 
 }

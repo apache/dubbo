@@ -123,7 +123,7 @@
         <maven_checkstyle_version>3.2.1</maven_checkstyle_version>
         <maven_jacoco_version>0.8.8</maven_jacoco_version>
         <maven_flatten_version>1.4.1</maven_flatten_version>
-        <maven_enforce_version>3.2.1</maven_enforce_version>
+        <maven_enforce_version>3.3.0</maven_enforce_version>
         <maven_antrun_version>3.1.0</maven_antrun_version>
         <arguments />
         <checkstyle.skip>true</checkstyle.skip>
@@ -298,7 +298,7 @@
                             <dependency>
                                 <groupId>com.puppycrawl.tools</groupId>
                                 <artifactId>checkstyle</artifactId>
-                                <version>8.41</version>
+                                <version>8.45.1</version>
                             </dependency>
                             <dependency>
                                 <groupId>org.apache.dubbo</groupId>

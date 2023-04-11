@@ -20,8 +20,8 @@ package org.apache.dubbo.metrics.registry.event;
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.metrics.event.TimeCounterEvent;
 import org.apache.dubbo.metrics.exception.MetricsNeverHappenException;
-import org.apache.dubbo.metrics.model.MetricsLevel;
-import org.apache.dubbo.metrics.model.TypeWrapper;
+import org.apache.dubbo.metrics.model.key.MetricsLevel;
+import org.apache.dubbo.metrics.model.key.TypeWrapper;
 import org.apache.dubbo.metrics.registry.collector.RegistryMetricsCollector;
 import org.apache.dubbo.metrics.registry.event.type.ApplicationType;
 import org.apache.dubbo.metrics.registry.event.type.ServiceType;
@@ -30,10 +30,11 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.apache.dubbo.metrics.registry.RegistryConstants.ATTACHMENT_DIRECTORY_MAP;
-import static org.apache.dubbo.metrics.registry.RegistryConstants.ATTACHMENT_KEY_LAST_NUM_MAP;
-import static org.apache.dubbo.metrics.registry.RegistryConstants.ATTACHMENT_KEY_SERVICE;
-import static org.apache.dubbo.metrics.registry.RegistryConstants.ATTACHMENT_KEY_SIZE;
+import static org.apache.dubbo.metrics.MetricsConstants.ATTACHMENT_DIRECTORY_MAP;
+import static org.apache.dubbo.metrics.MetricsConstants.ATTACHMENT_KEY_LAST_NUM_MAP;
+import static org.apache.dubbo.metrics.MetricsConstants.ATTACHMENT_KEY_SERVICE;
+import static org.apache.dubbo.metrics.MetricsConstants.ATTACHMENT_KEY_SIZE;
+
 
 /**
  * Registry related events

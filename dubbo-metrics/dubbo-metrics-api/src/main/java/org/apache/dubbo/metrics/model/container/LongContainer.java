@@ -17,8 +17,8 @@
 
 package org.apache.dubbo.metrics.model.container;
 
-import org.apache.dubbo.metrics.model.MetricsKey;
-import org.apache.dubbo.metrics.model.MetricsKeyWrapper;
+import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
+import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 
 import java.util.concurrent.ConcurrentHashMap;

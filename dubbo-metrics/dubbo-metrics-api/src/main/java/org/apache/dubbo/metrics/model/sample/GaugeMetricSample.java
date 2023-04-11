@@ -18,7 +18,7 @@
 package org.apache.dubbo.metrics.model.sample;
 
 import org.apache.dubbo.metrics.model.MetricsCategory;
-import org.apache.dubbo.metrics.model.MetricsKey;
+import org.apache.dubbo.metrics.model.key.MetricsKey;
 
 import java.util.Map;
 import java.util.Objects;

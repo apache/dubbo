@@ -25,7 +25,7 @@ import org.apache.dubbo.config.nested.AggregationConfig;
 import org.apache.dubbo.metrics.TestMetricsInvoker;
 import org.apache.dubbo.metrics.collector.sample.MethodMetricsSampler;
 import org.apache.dubbo.metrics.event.MetricsEvent;
-import org.apache.dubbo.metrics.model.MetricsKey;
+import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.rpc.RpcContext;

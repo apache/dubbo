@@ -44,7 +44,7 @@ public class SpringCloudMetadataServiceURLBuilder implements MetadataServiceURLB
         if (StringUtils.isBlank(dubboUrlsForJson)) {
             return Collections.emptyList();
         }
-        List<String> urlStrings = JsonUtils.getJson().toJavaList(dubboUrlsForJson, String.class);
+        List<String> urlStrings = JsonUtils.toJavaList(dubboUrlsForJson, String.class);
         return urlStrings.stream().map(URL::valueOf).collect(Collectors.toList());
     }
 }

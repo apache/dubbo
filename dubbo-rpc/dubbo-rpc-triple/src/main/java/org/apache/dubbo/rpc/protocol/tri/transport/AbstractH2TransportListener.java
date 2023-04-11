@@ -74,7 +74,7 @@ public abstract class AbstractH2TransportListener implements H2TransportListener
         }
         if (obj instanceof String) {
             String json = TriRpcStatus.decodeMessage((String) obj);
-            Map<String, String> map = JsonUtils.getJson().toJavaObject(json, Map.class);
+            Map<String, String> map = JsonUtils.toJavaObject(json, Map.class);
             for (Map.Entry<String, String> entry : map.entrySet()) {
                 Object val = attachments.remove(entry.getKey());
                 if (val != null) {
