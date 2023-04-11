@@ -29,7 +29,7 @@
     <artifactId>dubbo-spring-boot-observability-starter</artifactId>
 
     <properties>
-        <micrometer.version>1.10.5</micrometer.version>
+        <micrometer.version>1.10.6</micrometer.version>
         <micrometer-tracing.version>1.0.3</micrometer-tracing.version>
     </properties>
 
