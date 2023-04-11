@@ -379,7 +379,10 @@ public class ReflectionPackableMethod implements PackableMethod {
             CodecSupport.checkSerialization(serializeType, allSerialize);
 
             ByteArrayInputStream bais = new ByteArrayInputStream(wrapper.getData());
-            return serialization.deserialize(url, serializeType, returnClass, bais, isReturnTriException);
+            if (isReturnTriException) {
+                return serialization.deserialize(url, serializeType, Exception.class, bais);
+            }
+            return serialization.deserialize(url, serializeType, returnClass, bais);
         }
     }
 
@@ -493,7 +496,7 @@ public class ReflectionPackableMethod implements PackableMethod {
                     wrapper.getArgs().get(i));
                 ret[i] = serialization.deserialize(url, wrapper.getSerializeType(),
                     actualRequestTypes[i],
-                    bais, false);
+                    bais);
             }
             return ret;
         }
