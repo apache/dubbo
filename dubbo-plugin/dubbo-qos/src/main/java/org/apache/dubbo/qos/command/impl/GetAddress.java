@@ -70,7 +70,7 @@ public class GetAddress implements BaseCommand {
         }
 
         if (commandContext.isHttp()) {
-            return JsonUtils.getJson().toJson(jsonOutput);
+            return JsonUtils.toJson(jsonOutput);
         } else {
             return plainOutput.toString();
         }
