@@ -29,7 +29,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_SERIALIZ
 /**
  * @deprecated Recommend {@link org.apache.dubbo.common.utils.JsonUtils} as the substitute
  */
-@Deprecated
 public class GsonUtils {
     // weak reference of com.google.gson.Gson, prevent throw exception when init
     private static volatile Object gsonCache = null;
@@ -43,7 +42,7 @@ public class GsonUtils {
                     try {
                         Class<?> aClass = ClassUtils.forName("com.google.gson.Gson");
                         supportGson = aClass != null;
-                    } catch (Throwable t) {
+                    } catch (Exception t) {
                         supportGson = false;
                     }
                 }
