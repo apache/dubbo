@@ -89,12 +89,12 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
     @Override
     public void setFrameworkModel(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
+        this.filtersLoader = frameworkModel.getExtensionLoader(HeaderFilter.class);
     }
 
     @Override
     public void setApplicationModel(ApplicationModel applicationModel) {
         this.config = ConfigurationUtils.getGlobalConfiguration(applicationModel);
-        this.filtersLoader = applicationModel.getExtensionLoader(HeaderFilter.class);
     }
 
     @Override
@@ -107,8 +107,7 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
 
         final List<HeaderFilter> headFilters;
         if (filtersLoader != null) {
-            headFilters = filtersLoader.getActivateExtension(url,
-                HEADER_FILTER_KEY);
+            headFilters = filtersLoader.getActivateExtension(url, HEADER_FILTER_KEY);
         } else {
             headFilters = Collections.emptyList();
         }
