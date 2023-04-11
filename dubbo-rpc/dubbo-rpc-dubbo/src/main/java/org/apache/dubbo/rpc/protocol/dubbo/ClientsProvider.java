@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.rpc.protocol.dubbo;
 
-package org.apache.dubbo.metrics.metadata;
+import org.apache.dubbo.remoting.exchange.ExchangeClient;
 
-public interface MetadataConstants {
+import java.util.List;
 
-    String OP_TYPE_PUSH = "push";
-    String OP_TYPE_SUBSCRIBE = "subscribe";
-    String OP_TYPE_STORE_PROVIDER_INTERFACE = "store.provider.interface";
+public interface ClientsProvider {
+    List<? extends ExchangeClient> getClients();
 
-
+    void close(int timeout);
 }

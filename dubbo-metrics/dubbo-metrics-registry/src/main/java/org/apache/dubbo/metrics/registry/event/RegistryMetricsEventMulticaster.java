@@ -21,27 +21,29 @@ import org.apache.dubbo.metrics.event.SimpleMetricsEventMulticaster;
 import org.apache.dubbo.metrics.registry.event.type.ApplicationType;
 import org.apache.dubbo.metrics.registry.event.type.ServiceType;
 
-import static org.apache.dubbo.metrics.MetricsConstants.ATTACHMENT_KEY_DIR_NUM;
+import java.util.Map;
+
+import static org.apache.dubbo.metrics.MetricsConstants.ATTACHMENT_DIRECTORY_MAP;
 import static org.apache.dubbo.metrics.MetricsConstants.ATTACHMENT_KEY_SERVICE;
 import static org.apache.dubbo.metrics.MetricsConstants.ATTACHMENT_KEY_SIZE;
-import static org.apache.dubbo.metrics.registry.RegistryConstants.OP_TYPE_NOTIFY;
-import static org.apache.dubbo.metrics.registry.RegistryConstants.OP_TYPE_REGISTER;
-import static org.apache.dubbo.metrics.registry.RegistryConstants.OP_TYPE_REGISTER_SERVICE;
-import static org.apache.dubbo.metrics.registry.RegistryConstants.OP_TYPE_SUBSCRIBE;
-import static org.apache.dubbo.metrics.registry.RegistryConstants.OP_TYPE_SUBSCRIBE_SERVICE;
+import static org.apache.dubbo.metrics.registry.RegistryMetricsConstants.OP_TYPE_NOTIFY;
+import static org.apache.dubbo.metrics.registry.RegistryMetricsConstants.OP_TYPE_REGISTER;
+import static org.apache.dubbo.metrics.registry.RegistryMetricsConstants.OP_TYPE_REGISTER_SERVICE;
+import static org.apache.dubbo.metrics.registry.RegistryMetricsConstants.OP_TYPE_SUBSCRIBE;
+import static org.apache.dubbo.metrics.registry.RegistryMetricsConstants.OP_TYPE_SUBSCRIBE_SERVICE;
 
 public final class RegistryMetricsEventMulticaster extends SimpleMetricsEventMulticaster {
 
     public RegistryMetricsEventMulticaster() {
         // MetricsRegisterListener
         super.addListener(onPostEventBuild(ApplicationType.R_TOTAL));
-        super.addListener(onFinishEventBuild(ApplicationType.R_SUCCEED, OP_TYPE_REGISTER));
-        super.addListener(onErrorEventBuild(ApplicationType.R_FAILED, OP_TYPE_REGISTER));
+        super.addListener(onFinishEventBuild(ApplicationType.R_SUCCEED, OP_TYPE_REGISTER.getType()));
+        super.addListener(onErrorEventBuild(ApplicationType.R_FAILED, OP_TYPE_REGISTER.getType()));
 
         // MetricsSubscribeListener
         super.addListener(onPostEventBuild(ApplicationType.S_TOTAL));
-        super.addListener(onFinishEventBuild(ApplicationType.S_SUCCEED, OP_TYPE_SUBSCRIBE));
-        super.addListener(onErrorEventBuild(ApplicationType.S_FAILED, OP_TYPE_SUBSCRIBE));
+        super.addListener(onFinishEventBuild(ApplicationType.S_SUCCEED, OP_TYPE_SUBSCRIBE.getType()));
+        super.addListener(onErrorEventBuild(ApplicationType.S_FAILED, OP_TYPE_SUBSCRIBE.getType()));
 
         // MetricsNotifyListener
         super.addListener(onPostEventBuild(ApplicationType.N_TOTAL));
@@ -49,19 +51,20 @@ public final class RegistryMetricsEventMulticaster extends SimpleMetricsEventMul
             RegistryListener.onFinish(ServiceType.N_LAST_NUM,
                 (event, type) -> {
                     event.setLastNum(type);
-                    event.addApplicationRT(OP_TYPE_NOTIFY);
+                    event.addApplicationRT(OP_TYPE_NOTIFY.getType());
                 }
             ));
 
 
         // MetricsDirectoryListener
-        addIncrListener(ApplicationType.D_VALID);
-        addIncrListener(ApplicationType.D_UN_VALID);
-        addIncrListener(ApplicationType.D_DISABLE);
-        addIncrListener(ApplicationType.D_RECOVER_DISABLE);
-        super.addListener(RegistryListener.onEvent(ApplicationType.D_CURRENT,
-            (event, type) -> event.setNum(type, ATTACHMENT_KEY_DIR_NUM))
-        );
+        super.addListener(RegistryListener.onEvent(ServiceType.D_VALID,
+            (event, type) ->
+            {
+                Map<ServiceType, Map<String, Integer>> summaryMap = event.getAttachmentValue(ATTACHMENT_DIRECTORY_MAP);
+                summaryMap.forEach((serviceType, map) ->
+                    event.getCollector().setNum(serviceType, event.getSource().getApplicationName(), map));
+            }
+        ));
 
         // MetricsServiceRegisterListener
         super.addListener(RegistryListener.onEvent(ServiceType.R_SERVICE_TOTAL,
@@ -74,11 +77,6 @@ public final class RegistryMetricsEventMulticaster extends SimpleMetricsEventMul
         super.addListener(RegistryListener.onEvent(ServiceType.S_SERVICE_TOTAL, this::incrSk));
         super.addListener(RegistryListener.onFinish(ServiceType.S_SERVICE_SUCCEED, this::onRtEvent));
         super.addListener(RegistryListener.onError(ServiceType.S_SERVICE_FAILED, this::onRtEvent));
-    }
-
-
-    private void addIncrListener(ApplicationType applicationType) {
-        super.addListener(onPostEventBuild(applicationType));
     }
 
     private RegistryListener onPostEventBuild(ApplicationType applicationType) {
@@ -116,11 +114,11 @@ public final class RegistryMetricsEventMulticaster extends SimpleMetricsEventMul
 
     private void onRtEvent(RegistryEvent event, ServiceType type) {
         incrSk(event, type);
-        event.addServiceKeyRT(ATTACHMENT_KEY_SERVICE, OP_TYPE_SUBSCRIBE_SERVICE);
+        event.addServiceKeyRT(ATTACHMENT_KEY_SERVICE, OP_TYPE_SUBSCRIBE_SERVICE.getType());
     }
 
     private void onRegisterRtEvent(RegistryEvent event, ServiceType type) {
         incrSkSize(event, type);
-        event.addServiceKeyRT(ATTACHMENT_KEY_SERVICE, OP_TYPE_REGISTER_SERVICE);
+        event.addServiceKeyRT(ATTACHMENT_KEY_SERVICE, OP_TYPE_REGISTER_SERVICE.getType());
     }
 }

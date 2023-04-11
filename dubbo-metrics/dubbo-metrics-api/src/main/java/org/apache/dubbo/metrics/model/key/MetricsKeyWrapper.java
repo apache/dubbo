@@ -15,7 +15,9 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.metrics.model;
+package org.apache.dubbo.metrics.model.key;
+
+import org.apache.dubbo.metrics.model.MetricsSupport;
 
 import java.util.Map;
 
@@ -25,28 +27,28 @@ import java.util.Map;
 public class MetricsKeyWrapper {
 
     /**
-     * Register、subscribe、notify etc
-     */
-    private final String type;
-    /**
      * Metrics key when exporting
      */
     private final MetricsKey metricsKey;
 
-    private final boolean serviceLevel;
+
+    private final MetricsPlaceType placeType;
 
     public MetricsKeyWrapper(String type, MetricsKey metricsKey) {
-        this(type, metricsKey, false);
+        this(metricsKey, MetricsPlaceType.of(type, MetricsLevel.APP));
     }
 
-    public MetricsKeyWrapper(String type, MetricsKey metricsKey, boolean serviceLevel) {
-        this.type = type;
+    public MetricsKeyWrapper(MetricsKey metricsKey, MetricsPlaceType placeType) {
         this.metricsKey = metricsKey;
-        this.serviceLevel = serviceLevel;
+        this.placeType = placeType;
+    }
+
+    public MetricsPlaceType getPlaceType() {
+        return placeType;
     }
 
     public String getType() {
-        return type;
+        return getPlaceType().getType();
     }
 
     public MetricsKey getMetricsKey() {
@@ -58,12 +60,12 @@ public class MetricsKeyWrapper {
     }
 
     public boolean isServiceLevel() {
-        return serviceLevel;
+        return getPlaceType().getMetricsLevel().equals(MetricsLevel.SERVICE);
     }
 
     public String targetKey() {
         try {
-            return String.format(metricsKey.getName(), type);
+            return String.format(metricsKey.getName(), getType());
         } catch (Exception ignore) {
             return metricsKey.getName();
         }
@@ -71,7 +73,7 @@ public class MetricsKeyWrapper {
 
     public String targetDesc() {
         try {
-            return String.format(metricsKey.getDescription(), type);
+            return String.format(metricsKey.getDescription(), getType());
         } catch (Exception ignore) {
             return metricsKey.getDescription();
         }

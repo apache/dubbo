@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.metrics.model;
+package org.apache.dubbo.metrics.model.key;
 
 import org.apache.dubbo.common.utils.Assert;
 

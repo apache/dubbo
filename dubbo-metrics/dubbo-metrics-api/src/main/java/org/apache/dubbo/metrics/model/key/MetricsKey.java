@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.metrics.model;
+package org.apache.dubbo.metrics.model.key;
 
 public enum MetricsKey {
     APPLICATION_METRIC_INFO("dubbo.application.info.total", "Total Application Info"),
@@ -74,11 +74,10 @@ public enum MetricsKey {
     SUBSCRIBE_METRIC_NUM_FAILED("dubbo.registry.subscribe.num.failed.total", "Failed Subscribe Num"),
 
     // directory metrics key
-    DIRECTORY_METRIC_NUM_CURRENT("dubbo.registry.directory.num.current", "Current Directory Urls"),
+    DIRECTORY_METRIC_NUM_ALL("dubbo.registry.directory.num.all", "All Directory Urls"),
     DIRECTORY_METRIC_NUM_VALID("dubbo.registry.directory.num.valid.total", "Valid Directory Urls"),
-    DIRECTORY_METRIC_NUM_UN_VALID("dubbo.registry.directory.num.un_valid.total", "UnValid Directory Urls"),
+    DIRECTORY_METRIC_NUM_TO_RECONNECT("dubbo.registry.directory.num.to_reconnect.total", "ToReconnect Directory Urls"),
     DIRECTORY_METRIC_NUM_DISABLE("dubbo.registry.directory.num.disable.total", "Disable Directory Urls"),
-    DIRECTORY_METRIC_NUM_RECOVER_DISABLE("dubbo.registry.directory.num.recover.disable.total", "Recover Disable Directory Urls"),
 
     NOTIFY_METRIC_REQUESTS("dubbo.registry.notify.requests.total", "Total Notify Requests"),
     NOTIFY_METRIC_NUM_LAST("dubbo.registry.notify.num.last", "Last Notify Nums"),

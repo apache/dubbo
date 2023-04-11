@@ -14,16 +14,43 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.apache.dubbo.metrics.registry;
-
-public interface RegistryConstants {
-
-    String OP_TYPE_REGISTER = "register";
-    String OP_TYPE_SUBSCRIBE = "subscribe";
-    String OP_TYPE_NOTIFY = "notify";
-    String OP_TYPE_REGISTER_SERVICE = "register.service";
-    String OP_TYPE_SUBSCRIBE_SERVICE = "subscribe.service";
+package org.apache.dubbo.rpc.protocol.rest.rest;
 
 
+public class HttpMethodServiceImpl implements HttpMethodService{
+
+    @Override
+    public String sayHelloPost(String name) {
+        return name;
+    }
+
+    @Override
+    public String sayHelloDelete(String name) {
+        return name;
+    }
+
+    @Override
+    public String sayHelloHead() {
+        return "hello";
+    }
+
+    @Override
+    public String sayHelloGet(String name) {
+        return name;
+    }
+
+    @Override
+    public String sayHelloPut(String name) {
+        return name;
+    }
+
+    @Override
+    public String sayHelloPatch(String name) {
+        return name;
+    }
+
+    @Override
+    public String sayHelloOptions(String name) {
+        return name;
+    }
 }

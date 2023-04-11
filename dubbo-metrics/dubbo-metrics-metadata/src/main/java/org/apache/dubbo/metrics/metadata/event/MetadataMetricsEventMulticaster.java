@@ -22,22 +22,22 @@ import org.apache.dubbo.metrics.event.SimpleMetricsEventMulticaster;
 import org.apache.dubbo.metrics.metadata.type.ApplicationType;
 import org.apache.dubbo.metrics.metadata.type.ServiceType;
 
-import static org.apache.dubbo.metrics.metadata.MetadataConstants.OP_TYPE_PUSH;
-import static org.apache.dubbo.metrics.metadata.MetadataConstants.OP_TYPE_STORE_PROVIDER_INTERFACE;
-import static org.apache.dubbo.metrics.metadata.MetadataConstants.OP_TYPE_SUBSCRIBE;
+import static org.apache.dubbo.metrics.metadata.MetadataMetricsConstants.OP_TYPE_PUSH;
+import static org.apache.dubbo.metrics.metadata.MetadataMetricsConstants.OP_TYPE_STORE_PROVIDER_INTERFACE;
+import static org.apache.dubbo.metrics.metadata.MetadataMetricsConstants.OP_TYPE_SUBSCRIBE;
 
 public final class MetadataMetricsEventMulticaster extends SimpleMetricsEventMulticaster {
 
     public MetadataMetricsEventMulticaster() {
         // MetricsPushListener
         super.addListener(onPostEventBuild(ApplicationType.P_TOTAL));
-        super.addListener(onFinishEventBuild(ApplicationType.P_SUCCEED, OP_TYPE_PUSH));
-        super.addListener(onErrorEventBuild(ApplicationType.P_FAILED, OP_TYPE_PUSH));
+        super.addListener(onFinishEventBuild(ApplicationType.P_SUCCEED, OP_TYPE_PUSH.getType()));
+        super.addListener(onErrorEventBuild(ApplicationType.P_FAILED, OP_TYPE_PUSH.getType()));
 
         // MetricsSubscribeListener
         super.addListener(onPostEventBuild(ApplicationType.S_TOTAL));
-        super.addListener(onFinishEventBuild(ApplicationType.S_SUCCEED, OP_TYPE_SUBSCRIBE));
-        super.addListener(onErrorEventBuild(ApplicationType.S_FAILED, OP_TYPE_SUBSCRIBE));
+        super.addListener(onFinishEventBuild(ApplicationType.S_SUCCEED, OP_TYPE_SUBSCRIBE.getType()));
+        super.addListener(onErrorEventBuild(ApplicationType.S_FAILED, OP_TYPE_SUBSCRIBE.getType()));
 
         // StoreProviderMetadataListener
         super.addListener(MetadataListener.onEvent(ServiceType.S_P_TOTAL,
@@ -54,7 +54,7 @@ public final class MetadataMetricsEventMulticaster extends SimpleMetricsEventMul
 
     private void incrAndRt(MetadataEvent event, ServiceType type) {
         incrServiceKey(event, type);
-        event.getCollector().addServiceKeyRT(event.getSource().getApplicationName(), event.getAttachmentValue(MetricsConstants.ATTACHMENT_KEY_SERVICE), OP_TYPE_STORE_PROVIDER_INTERFACE, event.getTimePair().calc());
+        event.getCollector().addServiceKeyRT(event.getSource().getApplicationName(), event.getAttachmentValue(MetricsConstants.ATTACHMENT_KEY_SERVICE), OP_TYPE_STORE_PROVIDER_INTERFACE.getType(), event.getTimePair().calc());
     }
 
     private void incrServiceKey(MetadataEvent event, ServiceType type) {

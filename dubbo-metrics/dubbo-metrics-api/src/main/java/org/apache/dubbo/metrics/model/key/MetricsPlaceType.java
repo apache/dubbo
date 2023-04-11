@@ -14,28 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.listener;
 
-import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
-import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.FrameworkModel;
-import org.apache.dubbo.rpc.model.ModuleModel;
-import org.apache.dubbo.rpc.model.ScopeModelInitializer;
+package org.apache.dubbo.metrics.model.key;
 
-public class ExporterScopeModelInitializer implements ScopeModelInitializer {
-    @Override
-    public void initializeFrameworkModel(FrameworkModel frameworkModel) {
-        ScopeBeanFactory beanFactory = frameworkModel.getBeanFactory();
-        beanFactory.registerBean(InjvmExporterListener.class);
+public class MetricsPlaceType {
+
+    private final String type;
+    private final MetricsLevel metricsLevel;
+
+    private MetricsPlaceType(String type, MetricsLevel metricsLevel) {
+        this.type = type;
+        this.metricsLevel = metricsLevel;
     }
 
-    @Override
-    public void initializeApplicationModel(ApplicationModel applicationModel) {
-
+    public static MetricsPlaceType of(String type, MetricsLevel metricsLevel) {
+        return new MetricsPlaceType(type, metricsLevel);
     }
 
-    @Override
-    public void initializeModuleModel(ModuleModel moduleModel) {
+    public String getType() {
+        return type;
+    }
 
+    public MetricsLevel getMetricsLevel() {
+        return metricsLevel;
     }
 }

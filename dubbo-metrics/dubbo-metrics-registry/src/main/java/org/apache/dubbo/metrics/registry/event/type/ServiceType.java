@@ -17,7 +17,7 @@
 
 package org.apache.dubbo.metrics.registry.event.type;
 
-import org.apache.dubbo.metrics.model.MetricsKey;
+import org.apache.dubbo.metrics.model.key.MetricsKey;
 
 public enum ServiceType {
 
@@ -30,6 +30,11 @@ public enum ServiceType {
     S_SERVICE_TOTAL(MetricsKey.SERVICE_SUBSCRIBE_METRIC_NUM),
     S_SERVICE_SUCCEED(MetricsKey.SERVICE_SUBSCRIBE_METRIC_NUM_SUCCEED),
     S_SERVICE_FAILED(MetricsKey.SERVICE_SUBSCRIBE_METRIC_NUM_FAILED),
+
+    D_VALID(MetricsKey.DIRECTORY_METRIC_NUM_VALID),
+    D_TO_RECONNECT(MetricsKey.DIRECTORY_METRIC_NUM_TO_RECONNECT),
+    D_DISABLE(MetricsKey.DIRECTORY_METRIC_NUM_DISABLE),
+    D_ALL(MetricsKey.DIRECTORY_METRIC_NUM_ALL),
     ;
 
     private final MetricsKey metricsKey;

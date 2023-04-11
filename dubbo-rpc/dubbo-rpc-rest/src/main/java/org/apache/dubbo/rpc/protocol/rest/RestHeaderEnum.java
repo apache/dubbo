@@ -27,6 +27,7 @@ public enum RestHeaderEnum {
     KEEP_ALIVE_HEADER(RestConstant.KEEP_ALIVE_HEADER),
     CONNECTION(RestConstant.CONNECTION),
     REST_HEADER_PREFIX(RestConstant.REST_HEADER_PREFIX),
+    TOKEN_KEY(RestConstant.REST_HEADER_PREFIX + RestConstant.TOKEN_KEY),
 
 
     ;

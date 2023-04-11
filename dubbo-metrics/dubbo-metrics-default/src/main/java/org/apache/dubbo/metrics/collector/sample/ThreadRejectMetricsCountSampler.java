@@ -20,7 +20,7 @@ import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
 import org.apache.dubbo.metrics.model.Metric;
 import org.apache.dubbo.metrics.model.MetricsCategory;
-import org.apache.dubbo.metrics.model.MetricsKey;
+import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.ThreadPoolRejectMetric;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
