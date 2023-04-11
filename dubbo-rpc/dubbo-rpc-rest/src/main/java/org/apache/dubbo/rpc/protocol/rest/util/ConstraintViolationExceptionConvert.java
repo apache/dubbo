@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.rest.util;
 
 import org.apache.dubbo.common.utils.ClassUtils;
+import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.protocol.rest.RestConstraintViolation;
 import org.apache.dubbo.rpc.protocol.rest.ViolationReport;
 
@@ -29,8 +30,8 @@ public class ConstraintViolationExceptionConvert {
         return ClassUtils.isPresent("javax.validation.ConstraintViolationException", ConstraintViolationExceptionConvert.class.getClassLoader());
     }
 
-    public static Object handleConstraintViolationException(RuntimeException runtimeException) {
-        ConstraintViolationException cve = (ConstraintViolationException) runtimeException;
+    public static Object handleConstraintViolationException(RpcException rpcException) {
+        ConstraintViolationException cve = (ConstraintViolationException) rpcException.getCause();
         ViolationReport report = new ViolationReport();
         for (ConstraintViolation<?> cv : cve.getConstraintViolations()) {
             report.addConstraintViolation(new RestConstraintViolation(
@@ -41,16 +42,16 @@ public class ConstraintViolationExceptionConvert {
         return report;
     }
 
-    public static boolean needConvert(RuntimeException e) {
+    public static boolean needConvert(RpcException e) {
         if (!violationDependency()) {
             return false;
         }
         return isConstraintViolationException(e);
     }
 
-    private static boolean isConstraintViolationException(RuntimeException e) {
+    private static boolean isConstraintViolationException(RpcException e) {
         try {
-            return e instanceof ConstraintViolationException;
+            return e.getCause() instanceof ConstraintViolationException;
         } catch (Throwable throwable) {
             return false;
         }
