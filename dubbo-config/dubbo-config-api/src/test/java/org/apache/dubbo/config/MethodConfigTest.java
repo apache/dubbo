@@ -431,6 +431,7 @@ class MethodConfigTest {
                 .application("demo-app")
                 .service(serviceConfig)
                 .initialize();
+            Assertions.fail("Method config verification should failed");
         } catch (Exception e) {
             // ignore
             Throwable cause = e.getCause();
