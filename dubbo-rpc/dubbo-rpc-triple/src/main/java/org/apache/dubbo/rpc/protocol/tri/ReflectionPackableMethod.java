@@ -349,7 +349,7 @@ public class ReflectionPackableMethod implements PackableMethod {
         }
     }
 
-    private static class WrapResponseUnpack implements UnPack {
+    private static class WrapResponseUnpack implements WrapperUnPack {
 
         private final MultipleSerialization serialization;
         private final URL url;
