@@ -17,7 +17,4 @@
 #
 #
 
-com.example.DemoInterface
-com.sun.Interface1
-
 org.apache.dubbo
