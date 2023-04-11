@@ -70,6 +70,10 @@
             <artifactId>micrometer-registry-prometheus</artifactId>
         </dependency>
         <dependency>
+            <groupId>io.prometheus</groupId>
+            <artifactId>simpleclient_pushgateway</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.tdunning</groupId>
             <artifactId>t-digest</artifactId>
         </dependency>
