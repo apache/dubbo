@@ -244,9 +244,9 @@ class AbstractInterfaceConfigTest {
         methodConfig.setName("sayHello");
         Class<?> clazz = Greeting.class;
         boolean verifyResult = interfaceConfig.verifyMethodConfig(methodConfig, clazz, false);
-        Assertions.assertEquals(true, verifyResult);
+        Assertions.assertTrue(verifyResult);
         boolean verifyResult2 = interfaceConfig.verifyMethodConfig(methodConfig, clazz, true);
-        Assertions.assertEquals(false, verifyResult2);
+        Assertions.assertFalse(verifyResult2);
     }
 
     public static class InterfaceConfig extends AbstractInterfaceConfig {
