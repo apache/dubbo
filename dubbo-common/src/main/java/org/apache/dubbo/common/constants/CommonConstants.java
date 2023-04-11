@@ -118,8 +118,6 @@ public interface CommonConstants {
 
     String CONSUMER_SHARED_EXECUTOR_SERVICE_COMPONENT_KEY = "CONSUMER_SHARED_SERVICE_EXECUTOR";
 
-    String INTERNAL_EXECUTOR_SERVICE_COMPONENT_KEY = "INTERNAL_SERVICE_EXECUTOR";
-
     String THREADPOOL_KEY = "threadpool";
 
     String THREAD_NAME_KEY = "threadname";
@@ -626,6 +624,6 @@ public interface CommonConstants {
     String BYTE_ACCESSOR_KEY = "byte.accessor";
 
     String PAYLOAD = "payload";
-    
+
     String DUBBO_METRICS_CONFIGCENTER_ENABLE = "dubbo.metrics.configcenter.enable";
 }
