@@ -88,17 +88,17 @@ public class EmbeddedApolloJunit5 implements BeforeAllCallback, AfterAllCallback
 
         Map<String, String> mergedConfigurations = mergeOverriddenProperties(namespace, configurations);
         apolloConfig.setConfigurations(mergedConfigurations);
-        return JsonUtils.getJson().toJson(apolloConfig);
+        return JsonUtils.toJson(apolloConfig);
     }
 
     private String mockLongPollBody(String notificationsStr) {
-        List<ApolloConfigNotification> oldNotifications = JsonUtils.getJson().toJavaList(notificationsStr, ApolloConfigNotification.class);
+        List<ApolloConfigNotification> oldNotifications = JsonUtils.toJavaList(notificationsStr, ApolloConfigNotification.class);
         List<ApolloConfigNotification> newNotifications = new ArrayList<>();
         for (ApolloConfigNotification notification : oldNotifications) {
             newNotifications
                 .add(new ApolloConfigNotification(notification.getNamespaceName(), notification.getNotificationId() + 1));
         }
-        return JsonUtils.getJson().toJson(newNotifications);
+        return JsonUtils.toJson(newNotifications);
     }
 
     /**

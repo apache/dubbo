@@ -44,7 +44,7 @@ public interface MetricsConstants {
     
     String TAG_CHANGE_TYPE = "change.type";
 
-    String ENABLE_JVM_METRICS_KEY = "enable.jvm.metrics";
+    String ENABLE_JVM_METRICS_KEY = "enable.jvm";
 
     String AGGREGATION_COLLECTOR_KEY = "aggregation";
 

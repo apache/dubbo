@@ -16,11 +16,6 @@
  */
 package org.apache.dubbo.spring.boot.observability.autoconfigure;
 
-import io.micrometer.tracing.Tracer;
-import io.micrometer.tracing.handler.DefaultTracingObservationHandler;
-import io.micrometer.tracing.handler.PropagatingReceiverTracingObservationHandler;
-import io.micrometer.tracing.handler.PropagatingSenderTracingObservationHandler;
-import io.micrometer.tracing.propagation.Propagator;
 import org.apache.dubbo.spring.boot.observability.annotation.ConditionalOnDubboTracingEnable;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -33,46 +28,46 @@ import org.springframework.core.annotation.Order;
  * copy from {@link org.springframework.boot.actuate.autoconfigure.tracing.MicrometerTracingAutoConfiguration}
  * this class is available starting from Boot 3.0. It's not available if you're using Boot < 3.0
  */
-@ConditionalOnClass(Tracer.class)
 @ConditionalOnDubboTracingEnable
+@ConditionalOnClass(name = {"io.micrometer.observation.Observation","io.micrometer.tracing.Tracer","io.micrometer.tracing.propagation.Propagator"})
 @AutoConfigureAfter(name = "org.springframework.boot.actuate.autoconfigure.tracing.MicrometerTracingAutoConfiguration")
 public class DubboMicrometerTracingAutoConfiguration {
 
     /**
      * {@code @Order} value of
-     * {@link #propagatingReceiverTracingObservationHandler(Tracer, Propagator)}.
+     * {@link #propagatingReceiverTracingObservationHandler(io.micrometer.tracing.Tracer, io.micrometer.tracing.propagation.Propagator )}.
      */
     public static final int RECEIVER_TRACING_OBSERVATION_HANDLER_ORDER = 1000;
 
     /**
      * {@code @Order} value of
-     * {@link #propagatingSenderTracingObservationHandler(Tracer, Propagator)}.
+     * {@link #propagatingSenderTracingObservationHandler(io.micrometer.tracing.Tracer, io.micrometer.tracing.propagation.Propagator )}.
      */
     public static final int SENDER_TRACING_OBSERVATION_HANDLER_ORDER = 2000;
 
     @Bean
     @ConditionalOnMissingBean
-    @ConditionalOnBean(Tracer.class)
-    public DefaultTracingObservationHandler defaultTracingObservationHandler(Tracer tracer) {
-        return new DefaultTracingObservationHandler(tracer);
+    @ConditionalOnBean(io.micrometer.tracing.Tracer.class)
+    public io.micrometer.tracing.handler.DefaultTracingObservationHandler defaultTracingObservationHandler(io.micrometer.tracing.Tracer tracer) {
+        return new io.micrometer.tracing.handler.DefaultTracingObservationHandler(tracer);
     }
 
     @Bean
     @ConditionalOnMissingBean
-    @ConditionalOnBean({Tracer.class, Propagator.class})
+    @ConditionalOnBean({io.micrometer.tracing.Tracer.class, io.micrometer.tracing.propagation.Propagator.class})
     @Order(SENDER_TRACING_OBSERVATION_HANDLER_ORDER)
-    public PropagatingSenderTracingObservationHandler<?> propagatingSenderTracingObservationHandler(Tracer tracer,
-                                                                                                    Propagator propagator) {
-        return new PropagatingSenderTracingObservationHandler<>(tracer, propagator);
+    public io.micrometer.tracing.handler.PropagatingSenderTracingObservationHandler<?> propagatingSenderTracingObservationHandler(io.micrometer.tracing.Tracer tracer,
+                                                                                                                                  io.micrometer.tracing.propagation.Propagator propagator) {
+        return new io.micrometer.tracing.handler.PropagatingSenderTracingObservationHandler<>(tracer, propagator);
     }
 
     @Bean
     @ConditionalOnMissingBean
-    @ConditionalOnBean({Tracer.class, Propagator.class})
+    @ConditionalOnBean({io.micrometer.tracing.Tracer.class, io.micrometer.tracing.propagation.Propagator.class})
     @Order(RECEIVER_TRACING_OBSERVATION_HANDLER_ORDER)
-    public PropagatingReceiverTracingObservationHandler<?> propagatingReceiverTracingObservationHandler(Tracer tracer,
-                                                                                                        Propagator propagator) {
-        return new PropagatingReceiverTracingObservationHandler<>(tracer, propagator);
+    public io.micrometer.tracing.handler.PropagatingReceiverTracingObservationHandler<?> propagatingReceiverTracingObservationHandler(io.micrometer.tracing.Tracer tracer,
+                                                                                                                                      io.micrometer.tracing.propagation.Propagator propagator) {
+        return new io.micrometer.tracing.handler.PropagatingReceiverTracingObservationHandler<>(tracer, propagator);
     }
 
 }

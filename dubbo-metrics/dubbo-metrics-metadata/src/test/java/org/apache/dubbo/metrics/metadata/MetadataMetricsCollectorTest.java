@@ -22,8 +22,8 @@ import org.apache.dubbo.metrics.event.MetricsDispatcher;
 import org.apache.dubbo.metrics.event.MetricsEventBus;
 import org.apache.dubbo.metrics.metadata.collector.MetadataMetricsCollector;
 import org.apache.dubbo.metrics.metadata.event.MetadataEvent;
-import org.apache.dubbo.metrics.model.MetricsKey;
-import org.apache.dubbo.metrics.model.MetricsKeyWrapper;
+import org.apache.dubbo.metrics.model.key.MetricsKey;
+import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
 import org.apache.dubbo.metrics.model.TimePair;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
@@ -41,9 +41,9 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_APPLICATION_NAME;
-import static org.apache.dubbo.metrics.metadata.collector.stat.MetadataStatComposite.OP_TYPE_PUSH;
-import static org.apache.dubbo.metrics.metadata.collector.stat.MetadataStatComposite.OP_TYPE_SUBSCRIBE;
-import static org.apache.dubbo.metrics.metadata.collector.stat.MetadataStatComposite.OP_TYPE_STORE_PROVIDER_INTERFACE;
+import static org.apache.dubbo.metrics.metadata.MetadataMetricsConstants.OP_TYPE_PUSH;
+import static org.apache.dubbo.metrics.metadata.MetadataMetricsConstants.OP_TYPE_STORE_PROVIDER_INTERFACE;
+import static org.apache.dubbo.metrics.metadata.MetadataMetricsConstants.OP_TYPE_SUBSCRIBE;
 
 
 class MetadataMetricsCollectorTest {
@@ -67,13 +67,13 @@ class MetadataMetricsCollectorTest {
     }
 
     @Test
-    void testPushMetrics() throws InterruptedException {
+    void testPushMetrics() {
 
         applicationModel.getBeanFactory().getOrRegisterBean(MetricsDispatcher.class);
         MetadataMetricsCollector collector = applicationModel.getBeanFactory().getOrRegisterBean(MetadataMetricsCollector.class);
         collector.setCollectEnabled(true);
 
-        MetadataEvent.PushEvent pushEvent = new MetadataEvent.PushEvent(applicationModel);
+        MetadataEvent pushEvent = MetadataEvent.toPushEvent(applicationModel);
         MetricsEventBus.post(pushEvent,
             () -> {
                 List<MetricSample> metricSamples = collector.collect();
@@ -92,7 +92,7 @@ class MetadataMetricsCollectorTest {
         Assertions.assertEquals(7, metricSamples.size());
         long c1 = pushEvent.getTimePair().calc();
 
-        pushEvent = new MetadataEvent.PushEvent(applicationModel);
+        pushEvent = MetadataEvent.toPushEvent(applicationModel);
         TimePair lastTimePair = pushEvent.getTimePair();
         MetricsEventBus.post(pushEvent,
             () -> {
@@ -120,11 +120,11 @@ class MetadataMetricsCollectorTest {
         @SuppressWarnings("rawtypes")
         Map<String, Long> sampleMap = metricSamples.stream().collect(Collectors.toMap(MetricSample::getName, k -> ((GaugeMetricSample) k).applyAsLong()));
 
-        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_PUSH, MetricsKey.METRIC_RT_LAST).targetKey()), lastTimePair.calc());
-        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_PUSH, MetricsKey.METRIC_RT_MIN).targetKey()), Math.min(c1, c2));
-        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_PUSH, MetricsKey.METRIC_RT_MAX).targetKey()), Math.max(c1, c2));
-        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_PUSH, MetricsKey.METRIC_RT_AVG).targetKey()), (c1 + c2) / 2);
-        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_PUSH, MetricsKey.METRIC_RT_SUM).targetKey()), c1 + c2);
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(MetricsKey.METRIC_RT_LAST, OP_TYPE_PUSH).targetKey()), lastTimePair.calc());
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(MetricsKey.METRIC_RT_MIN, OP_TYPE_PUSH).targetKey()), Math.min(c1, c2));
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(MetricsKey.METRIC_RT_MAX, OP_TYPE_PUSH).targetKey()), Math.max(c1, c2));
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(MetricsKey.METRIC_RT_AVG, OP_TYPE_PUSH).targetKey()), (c1 + c2) / 2);
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(MetricsKey.METRIC_RT_SUM, OP_TYPE_PUSH).targetKey()), c1 + c2);
     }
 
     @Test
@@ -134,7 +134,7 @@ class MetadataMetricsCollectorTest {
         MetadataMetricsCollector collector = applicationModel.getBeanFactory().getOrRegisterBean(MetadataMetricsCollector.class);
         collector.setCollectEnabled(true);
 
-        MetadataEvent.SubscribeEvent subscribeEvent = new MetadataEvent.SubscribeEvent(applicationModel);
+        MetadataEvent subscribeEvent = MetadataEvent.toSubscribeEvent(applicationModel);
         MetricsEventBus.post(subscribeEvent,
             () -> {
                 List<MetricSample> metricSamples = collector.collect();
@@ -152,7 +152,7 @@ class MetadataMetricsCollectorTest {
         List<MetricSample> metricSamples = collector.collect();
         //num(total+success) + rt(5) = 7
         Assertions.assertEquals(7, metricSamples.size());
-        subscribeEvent = new MetadataEvent.SubscribeEvent(applicationModel);
+        subscribeEvent = MetadataEvent.toSubscribeEvent(applicationModel);
         TimePair lastTimePair = subscribeEvent.getTimePair();
         MetricsEventBus.post(subscribeEvent,
             () -> {
@@ -181,23 +181,23 @@ class MetadataMetricsCollectorTest {
         @SuppressWarnings("rawtypes")
         Map<String, Long> sampleMap = metricSamples.stream().collect(Collectors.toMap(MetricSample::getName, k -> ((GaugeMetricSample) k).applyAsLong()));
 
-        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_SUBSCRIBE, MetricsKey.METRIC_RT_LAST).targetKey()), lastTimePair.calc());
-        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_SUBSCRIBE, MetricsKey.METRIC_RT_MIN).targetKey()), Math.min(c1, c2));
-        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_SUBSCRIBE, MetricsKey.METRIC_RT_MAX).targetKey()), Math.max(c1, c2));
-        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_SUBSCRIBE, MetricsKey.METRIC_RT_AVG).targetKey()), (c1 + c2) / 2);
-        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_SUBSCRIBE, MetricsKey.METRIC_RT_SUM).targetKey()), c1 + c2);
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(MetricsKey.METRIC_RT_LAST, OP_TYPE_SUBSCRIBE).targetKey()), lastTimePair.calc());
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(MetricsKey.METRIC_RT_MIN, OP_TYPE_SUBSCRIBE).targetKey()), Math.min(c1, c2));
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(MetricsKey.METRIC_RT_MAX, OP_TYPE_SUBSCRIBE).targetKey()), Math.max(c1, c2));
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(MetricsKey.METRIC_RT_AVG, OP_TYPE_SUBSCRIBE).targetKey()), (c1 + c2) / 2);
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(MetricsKey.METRIC_RT_SUM, OP_TYPE_SUBSCRIBE).targetKey()), c1 + c2);
     }
 
 
     @Test
-    void testStoreProviderMetadataMetrics() throws InterruptedException {
+    void testStoreProviderMetadataMetrics() {
 
         applicationModel.getBeanFactory().getOrRegisterBean(MetricsDispatcher.class);
         MetadataMetricsCollector collector = applicationModel.getBeanFactory().getOrRegisterBean(MetadataMetricsCollector.class);
         collector.setCollectEnabled(true);
 
         String serviceKey = "store.provider.test";
-        MetadataEvent metadataEvent = new MetadataEvent.StoreProviderMetadataEvent(applicationModel, serviceKey);
+        MetadataEvent metadataEvent = MetadataEvent.toServiceSubscribeEvent(applicationModel, serviceKey);
         MetricsEventBus.post(metadataEvent,
             () -> {
                 List<MetricSample> metricSamples = collector.collect();
@@ -216,7 +216,7 @@ class MetadataMetricsCollectorTest {
         //num(total+success) + rt(5) = 7
         Assertions.assertEquals(7, metricSamples.size());
         long c1 = metadataEvent.getTimePair().calc();
-        metadataEvent = new MetadataEvent.StoreProviderMetadataEvent(applicationModel, serviceKey);
+        metadataEvent = MetadataEvent.toServiceSubscribeEvent(applicationModel, serviceKey);
         TimePair lastTimePair = metadataEvent.getTimePair();
         MetricsEventBus.post(metadataEvent,
             () -> {
@@ -245,11 +245,11 @@ class MetadataMetricsCollectorTest {
         @SuppressWarnings("rawtypes")
         Map<String, Long> sampleMap = metricSamples.stream().collect(Collectors.toMap(MetricSample::getName, k -> ((GaugeMetricSample) k).applyAsLong()));
 
-        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_STORE_PROVIDER_INTERFACE, MetricsKey.METRIC_RT_LAST).targetKey()), lastTimePair.calc());
-        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_STORE_PROVIDER_INTERFACE, MetricsKey.METRIC_RT_MIN).targetKey()), Math.min(c1, c2));
-        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_STORE_PROVIDER_INTERFACE, MetricsKey.METRIC_RT_MAX).targetKey()), Math.max(c1, c2));
-        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_STORE_PROVIDER_INTERFACE, MetricsKey.METRIC_RT_AVG).targetKey()), (c1 + c2) / 2);
-        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_STORE_PROVIDER_INTERFACE, MetricsKey.METRIC_RT_SUM).targetKey()), c1 + c2);
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(MetricsKey.METRIC_RT_LAST, OP_TYPE_STORE_PROVIDER_INTERFACE).targetKey()), lastTimePair.calc());
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(MetricsKey.METRIC_RT_MIN, OP_TYPE_STORE_PROVIDER_INTERFACE).targetKey()), Math.min(c1, c2));
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(MetricsKey.METRIC_RT_MAX, OP_TYPE_STORE_PROVIDER_INTERFACE).targetKey()), Math.max(c1, c2));
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(MetricsKey.METRIC_RT_AVG, OP_TYPE_STORE_PROVIDER_INTERFACE).targetKey()), (c1 + c2) / 2);
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(MetricsKey.METRIC_RT_SUM, OP_TYPE_STORE_PROVIDER_INTERFACE).targetKey()), c1 + c2);
     }
 
 }
