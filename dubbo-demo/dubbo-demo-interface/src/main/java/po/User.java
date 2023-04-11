@@ -64,7 +64,7 @@ public class User implements Serializable {
     }
 
     public static User getInstance() {
-        return new User(1l, "rest");
+        return new User(1l, "dubbo-rest");
     }
 
     @Override
