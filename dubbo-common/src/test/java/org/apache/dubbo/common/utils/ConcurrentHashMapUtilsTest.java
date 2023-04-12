@@ -18,6 +18,7 @@
 package org.apache.dubbo.common.utils;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledForJreRange;
 
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -40,29 +41,29 @@ class ConcurrentHashMapUtilsTest {
     }
 
     @Test
+    @EnabledForJreRange(max = org.junit.jupiter.api.condition.JRE.JAVA_8)
     public void issue11986ForJava8Test(){
         // https://github.com/apache/dubbo/issues/11986
         final ConcurrentHashMap<String,Integer> map=new ConcurrentHashMap<>();
         // // map.computeIfAbsent("AaAa", key->map.computeIfAbsent("BBBB",key2->42));
-        if (JRE.JAVA_8.isCurrentVersion()) {
-            // JDK8下，由于循环调用bug，会造成执行computeIfAbsent死循环问题
-            // ConcurrentHashMapUtils.computeIfAbsent用于解决此问题，保证正常执行
-            ConcurrentHashMapUtils.computeIfAbsent(map, "AaAa", key->map.computeIfAbsent("BBBB",key2->42));
-            assertEquals(2, map.size());
-            assertEquals(Integer.valueOf(42), map.get("AaAa"));
-            assertEquals(Integer.valueOf(42), map.get("BBBB"));
-        }
+
+        // JDK8下，由于循环调用bug，会造成执行computeIfAbsent死循环问题
+        // ConcurrentHashMapUtils.computeIfAbsent用于解决此问题，保证正常执行
+        ConcurrentHashMapUtils.computeIfAbsent(map, "AaAa", key->map.computeIfAbsent("BBBB",key2->42));
+        assertEquals(2, map.size());
+        assertEquals(Integer.valueOf(42), map.get("AaAa"));
+        assertEquals(Integer.valueOf(42), map.get("BBBB"));
     }
 
     @Test
+    @EnabledForJreRange(min = org.junit.jupiter.api.condition.JRE.JAVA_9)
     public void issue11986ForJava17Test(){
         // https://github.com/apache/dubbo/issues/11986
         final ConcurrentHashMap<String,Integer> map=new ConcurrentHashMap<>();
-        if (JRE.JAVA_11.isCurrentVersion() || JRE.JAVA_17.isCurrentVersion()) {
-            // JDK9+解决了JDK-8161372这个，不过，遇到循环调用直接抛出IllegalStateException异常
-            assertThrows(IllegalStateException.class, ()->{
-                ConcurrentHashMapUtils.computeIfAbsent(map, "AaAa", key->map.computeIfAbsent("BBBB",key2->42));
-            });
-        }
+
+        // JDK9+解决了JDK-8161372这个，不过，遇到循环调用直接抛出IllegalStateException异常
+        assertThrows(IllegalStateException.class, ()->{
+            ConcurrentHashMapUtils.computeIfAbsent(map, "AaAa", key->map.computeIfAbsent("BBBB",key2->42));
+        });
     }
 }
