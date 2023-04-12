@@ -29,7 +29,7 @@
     <artifactId>dubbo-spring-boot-observability-starter</artifactId>
 
     <properties>
-        <micrometer.version>1.10.5</micrometer.version>
+        <micrometer.version>1.10.6</micrometer.version>
         <micrometer-tracing.version>1.0.3</micrometer-tracing.version>
     </properties>
 
@@ -68,6 +68,10 @@
         <dependency>
             <groupId>io.micrometer</groupId>
             <artifactId>micrometer-registry-prometheus</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.prometheus</groupId>
+            <artifactId>simpleclient_pushgateway</artifactId>
         </dependency>
         <dependency>
             <groupId>com.tdunning</groupId>

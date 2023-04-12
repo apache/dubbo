@@ -17,7 +17,6 @@
 package org.apache.dubbo.remoting;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.Version;
 import org.apache.dubbo.remoting.transport.ChannelHandlerAdapter;
 import org.apache.dubbo.remoting.transport.ChannelHandlerDispatcher;
 
@@ -25,12 +24,6 @@ import org.apache.dubbo.remoting.transport.ChannelHandlerDispatcher;
  * Transporter facade. (API, Static, ThreadSafe)
  */
 public class Transporters {
-
-    static {
-        // check duplicate jar package
-        Version.checkDuplicate(Transporters.class);
-        Version.checkDuplicate(RemotingException.class);
-    }
 
     private Transporters() {
     }

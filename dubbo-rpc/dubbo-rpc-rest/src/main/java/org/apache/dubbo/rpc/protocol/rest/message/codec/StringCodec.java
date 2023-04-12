@@ -33,6 +33,9 @@ public class StringCodec implements HttpMessageCodec<byte[], OutputStream> {
 
     @Override
     public Object decode(byte[] body, Class<?> targetType) throws Exception {
+        if (body == null || body.length == 0) {
+            return null;
+        }
         return new String(body);
     }
 

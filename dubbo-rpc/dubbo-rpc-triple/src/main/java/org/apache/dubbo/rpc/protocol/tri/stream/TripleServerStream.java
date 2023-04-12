@@ -18,6 +18,7 @@
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -158,8 +159,8 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
 
 
     @Override
-    public ChannelFuture complete(TriRpcStatus status, Map<String, Object> attachments) {
-        Http2Headers trailers = getTrailers(status, attachments);
+    public ChannelFuture complete(TriRpcStatus status, Map<String, Object> attachments, boolean isNeedReturnException, int exceptionCode) {
+        Http2Headers trailers = getTrailers(status, attachments, isNeedReturnException, CommonConstants.TRI_EXCEPTION_CODE_NOT_EXISTS);
         return sendTrailers(trailers);
     }
 
@@ -184,7 +185,7 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
             });
     }
 
-    private Http2Headers getTrailers(TriRpcStatus rpcStatus, Map<String, Object> attachments) {
+    private Http2Headers getTrailers(TriRpcStatus rpcStatus, Map<String, Object> attachments, boolean isNeedReturnException, int exceptionCode) {
         DefaultHttp2Headers headers = new DefaultHttp2Headers();
         if (!headerSent) {
             headers.status(HttpResponseStatus.OK.codeAsText());
@@ -480,7 +481,7 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
 
         @Override
         public void onRawMessage(byte[] data) {
-            listener.onMessage(data);
+            listener.onMessage(data, false);
         }
 
         @Override

@@ -66,7 +66,7 @@ public class GetConfig implements BaseCommand {
         appendFrameworkConfig(args, plainOutput, frameworkMap);
 
         if (http) {
-            return JsonUtils.getJson().toJson(frameworkMap);
+            return JsonUtils.toJson(frameworkMap);
         } else {
             return plainOutput.toString();
         }

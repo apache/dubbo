@@ -116,18 +116,18 @@ public class GenericException extends RuntimeException {
         if(this.useCause) {
            return getCause().getMessage();
         }
-        return JsonUtils.getJson().toJson(GenericExceptionInfo.createNoStackTrace(genericExceptionInfo));
+        return JsonUtils.toJson(GenericExceptionInfo.createNoStackTrace(genericExceptionInfo));
     }
 
     public String getGenericException() {
         if(this.useCause) {
             return ((GenericException)getCause()).getGenericException();
         }
-        return JsonUtils.getJson().toJson(genericExceptionInfo);
+        return JsonUtils.toJson(genericExceptionInfo);
     }
 
     public void setGenericException(String json) {
-        GenericExceptionInfo info = JsonUtils.getJson().toJavaObject(json, GenericExceptionInfo.class);
+        GenericExceptionInfo info = JsonUtils.toJavaObject(json, GenericExceptionInfo.class);
         if(info == null) {
             return;
         }

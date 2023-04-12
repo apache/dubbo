@@ -27,7 +27,7 @@ import org.apache.dubbo.metrics.event.MetricsEvent;
 import org.apache.dubbo.metrics.event.RTEvent;
 import org.apache.dubbo.metrics.listener.MetricsListener;
 import org.apache.dubbo.metrics.model.MethodMetric;
-import org.apache.dubbo.metrics.model.MetricsKey;
+import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.register.HistogramMetricRegister;
 import org.apache.dubbo.metrics.sample.HistogramMetricSample;
 import org.apache.dubbo.rpc.model.ApplicationModel;

@@ -35,6 +35,17 @@ public interface PackableMethod {
         byte[] pack(Object obj) throws IOException;
     }
 
+    interface WrapperUnPack extends UnPack {
+
+        default Object unpack(byte[] data) throws IOException, ClassNotFoundException {
+            return unpack(data, false);
+        }
+
+        Object unpack(byte[] data, boolean isReturnTriException) throws IOException, ClassNotFoundException;
+
+
+    }
+
     interface UnPack {
 
         /**
@@ -50,9 +61,18 @@ public interface PackableMethod {
         return getRequestUnpack(contentType).unpack(data);
     }
 
-    default Object parseResponse(String contentType, byte[] data) throws IOException, ClassNotFoundException {
-        return getResponseUnpack(contentType).unpack(data);
+    default Object parseResponse(String contentType,byte[] data) throws IOException, ClassNotFoundException {
+        return parseResponse(contentType,data, false);
     }
+
+    default Object parseResponse(String contentType,byte[] data, boolean isReturnTriException) throws IOException, ClassNotFoundException {
+        UnPack unPack = getResponseUnpack(contentType);
+        if (unPack instanceof WrapperUnPack) {
+            return ((WrapperUnPack) unPack).unpack(data, isReturnTriException);
+        }
+        return unPack.unpack(data);
+    }
+
 
     default byte[] packRequest(String contentType, Object request) throws IOException {
         return getRequestPack(contentType).pack(request);

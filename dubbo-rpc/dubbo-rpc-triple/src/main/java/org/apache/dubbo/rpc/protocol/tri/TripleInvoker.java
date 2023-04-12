@@ -25,16 +25,19 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.serialize.support.DefaultSerializationSelector;
 import org.apache.dubbo.common.stream.StreamObserver;
+import org.apache.dubbo.common.threadpool.ThreadlessExecutor;
 import org.apache.dubbo.remoting.api.connection.AbstractConnectionClient;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.CancellationContext;
 import org.apache.dubbo.rpc.FutureContext;
 import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.InvokeMode;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ConsumerModel;
@@ -60,6 +63,7 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -70,6 +74,7 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAI
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_REQUEST;
 import static org.apache.dubbo.rpc.Constants.COMPRESSOR_KEY;
 import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
+import static org.apache.dubbo.rpc.model.MethodDescriptor.RpcType.UNARY;
 import static org.apache.dubbo.rpc.protocol.tri.TripleConstant.SERIALIZATION_KEY;
 
 
@@ -128,14 +133,14 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         final MethodDescriptor methodDescriptor = serviceDescriptor.getMethod(
             invocation.getMethodName(),
             invocation.getParameterTypes());
-        ClientCall call = new TripleClientCall(connectionClient, streamExecutor,
+        Executor callbackExecutor = isSync(methodDescriptor, invocation) ? new ThreadlessExecutor() : streamExecutor;
+        ClientCall call = new TripleClientCall(connectionClient, callbackExecutor,
             getUrl().getOrDefaultFrameworkModel(), writeQueue);
-
         AsyncRpcResult result;
         try {
             switch (methodDescriptor.getRpcType()) {
                 case UNARY:
-                    result = invokeUnary(methodDescriptor, invocation, call);
+                    result = invokeUnary(methodDescriptor, invocation, call, callbackExecutor);
                     break;
                 case SERVER_STREAM:
                     result = invokeServerStream(methodDescriptor, invocation, call);
@@ -161,6 +166,16 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
             future.completeExceptionally(e);
             return new AsyncRpcResult(future, invocation);
         }
+    }
+
+    private static boolean isSync(MethodDescriptor methodDescriptor, Invocation invocation){
+        if (!(invocation instanceof RpcInvocation)) {
+            return false;
+        }
+        RpcInvocation rpcInvocation = (RpcInvocation) invocation;
+        MethodDescriptor.RpcType rpcType = methodDescriptor.getRpcType();
+        return UNARY.equals(rpcType)
+            && InvokeMode.SYNC.equals(rpcInvocation.getInvokeMode());
     }
 
     AsyncRpcResult invokeServerStream(MethodDescriptor methodDescriptor, Invocation invocation,
@@ -202,8 +217,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
     }
 
     AsyncRpcResult invokeUnary(MethodDescriptor methodDescriptor, Invocation invocation,
-                               ClientCall call) {
-        ExecutorService callbackExecutor = getCallbackExecutor(getUrl(), invocation);
+                               ClientCall call, Executor callbackExecutor) {
 
         int timeout = RpcUtils.calculateTimeout(getUrl(), invocation, invocation.getMethodName(), 3000);
         if (timeout <= 0) {

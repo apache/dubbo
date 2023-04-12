@@ -31,7 +31,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import java.util.ArrayList;
 import java.util.List;
 import static org.apache.dubbo.metrics.model.MetricsCategory.APPLICATION;
-import static org.apache.dubbo.metrics.model.MetricsKey.APPLICATION_METRIC_INFO;
+import static org.apache.dubbo.metrics.model.key.MetricsKey.APPLICATION_METRIC_INFO;
 
 /**
  * Default implementation of {@link MetricsCollector}

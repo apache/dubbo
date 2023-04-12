@@ -20,8 +20,8 @@ package org.apache.dubbo.metrics.registry.metrics.collector;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.metrics.event.MetricsDispatcher;
 import org.apache.dubbo.metrics.event.MetricsEventBus;
-import org.apache.dubbo.metrics.model.MetricsKey;
-import org.apache.dubbo.metrics.model.MetricsKeyWrapper;
+import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
+import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.TimePair;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
@@ -40,9 +40,9 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_APPLICATION_NAME;
-import static org.apache.dubbo.metrics.registry.RegistryConstants.OP_TYPE_REGISTER;
-import static org.apache.dubbo.metrics.registry.RegistryConstants.OP_TYPE_REGISTER_SERVICE;
-import static org.apache.dubbo.metrics.registry.RegistryConstants.OP_TYPE_SUBSCRIBE_SERVICE;
+import static org.apache.dubbo.metrics.registry.RegistryMetricsConstants.OP_TYPE_REGISTER;
+import static org.apache.dubbo.metrics.registry.RegistryMetricsConstants.OP_TYPE_REGISTER_SERVICE;
+import static org.apache.dubbo.metrics.registry.RegistryMetricsConstants.OP_TYPE_SUBSCRIBE_SERVICE;
 
 
 class RegistryMetricsCollectorTest {
@@ -119,11 +119,11 @@ class RegistryMetricsCollectorTest {
         @SuppressWarnings("rawtypes")
         Map<String, Long> sampleMap = metricSamples.stream().collect(Collectors.toMap(MetricSample::getName, k -> ((GaugeMetricSample) k).applyAsLong()));
 
-        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_REGISTER, MetricsKey.METRIC_RT_LAST).targetKey()), lastTimePair.calc());
-        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_REGISTER, MetricsKey.METRIC_RT_MIN).targetKey()), Math.min(c1, c2));
-        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_REGISTER, MetricsKey.METRIC_RT_MAX).targetKey()), Math.max(c1, c2));
-        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_REGISTER, MetricsKey.METRIC_RT_AVG).targetKey()), (c1 + c2) / 2);
-        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_REGISTER, MetricsKey.METRIC_RT_SUM).targetKey()), c1 + c2);
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(MetricsKey.METRIC_RT_LAST, OP_TYPE_REGISTER).targetKey()), lastTimePair.calc());
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(MetricsKey.METRIC_RT_MIN, OP_TYPE_REGISTER).targetKey()), Math.min(c1, c2));
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(MetricsKey.METRIC_RT_MAX, OP_TYPE_REGISTER).targetKey()), Math.max(c1, c2));
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(MetricsKey.METRIC_RT_AVG, OP_TYPE_REGISTER).targetKey()), (c1 + c2) / 2);
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(MetricsKey.METRIC_RT_SUM, OP_TYPE_REGISTER).targetKey()), c1 + c2);
     }
 
 
@@ -184,11 +184,11 @@ class RegistryMetricsCollectorTest {
         @SuppressWarnings("rawtypes")
         Map<String, Long> sampleMap = metricSamples.stream().collect(Collectors.toMap(MetricSample::getName, k -> ((GaugeMetricSample) k).applyAsLong()));
 
-        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_REGISTER_SERVICE, MetricsKey.METRIC_RT_LAST).targetKey()), lastTimePair.calc());
-        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_REGISTER_SERVICE, MetricsKey.METRIC_RT_MIN).targetKey()), Math.min(c1, c2));
-        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_REGISTER_SERVICE, MetricsKey.METRIC_RT_MAX).targetKey()), Math.max(c1, c2));
-        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_REGISTER_SERVICE, MetricsKey.METRIC_RT_AVG).targetKey()), (c1 + c2) / 2);
-        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_REGISTER_SERVICE, MetricsKey.METRIC_RT_SUM).targetKey()), c1 + c2);
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(MetricsKey.METRIC_RT_LAST, OP_TYPE_REGISTER_SERVICE).targetKey()), lastTimePair.calc());
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(MetricsKey.METRIC_RT_MIN, OP_TYPE_REGISTER_SERVICE).targetKey()), Math.min(c1, c2));
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(MetricsKey.METRIC_RT_MAX, OP_TYPE_REGISTER_SERVICE).targetKey()), Math.max(c1, c2));
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(MetricsKey.METRIC_RT_AVG, OP_TYPE_REGISTER_SERVICE).targetKey()), (c1 + c2) / 2);
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(MetricsKey.METRIC_RT_SUM, OP_TYPE_REGISTER_SERVICE).targetKey()), c1 + c2);
     }
 
 
@@ -249,10 +249,10 @@ class RegistryMetricsCollectorTest {
         @SuppressWarnings("rawtypes")
         Map<String, Long> sampleMap = metricSamples.stream().collect(Collectors.toMap(MetricSample::getName, k -> ((GaugeMetricSample) k).applyAsLong()));
 
-        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_SUBSCRIBE_SERVICE, MetricsKey.METRIC_RT_LAST).targetKey()), lastTimePair.calc());
-        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_SUBSCRIBE_SERVICE, MetricsKey.METRIC_RT_MIN).targetKey()), Math.min(c1, c2));
-        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_SUBSCRIBE_SERVICE, MetricsKey.METRIC_RT_MAX).targetKey()), Math.max(c1, c2));
-        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_SUBSCRIBE_SERVICE, MetricsKey.METRIC_RT_AVG).targetKey()), (c1 + c2) / 2);
-        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(OP_TYPE_SUBSCRIBE_SERVICE, MetricsKey.METRIC_RT_SUM).targetKey()), c1 + c2);
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(MetricsKey.METRIC_RT_LAST, OP_TYPE_SUBSCRIBE_SERVICE).targetKey()), lastTimePair.calc());
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(MetricsKey.METRIC_RT_MIN, OP_TYPE_SUBSCRIBE_SERVICE).targetKey()), Math.min(c1, c2));
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(MetricsKey.METRIC_RT_MAX, OP_TYPE_SUBSCRIBE_SERVICE).targetKey()), Math.max(c1, c2));
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(MetricsKey.METRIC_RT_AVG, OP_TYPE_SUBSCRIBE_SERVICE).targetKey()), (c1 + c2) / 2);
+        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(MetricsKey.METRIC_RT_SUM, OP_TYPE_SUBSCRIBE_SERVICE).targetKey()), c1 + c2);
     }
 }
