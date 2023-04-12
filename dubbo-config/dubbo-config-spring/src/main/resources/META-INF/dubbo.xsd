@@ -547,6 +547,12 @@
                     <![CDATA[ Anonymous (any foreign ip) access level, the default is NONE, can not access any cmd. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
+        <xsd:attribute name="qos-anonymous-allow-commands" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation>
+                    <![CDATA[ Anonymous(any foreign ip) allow commands, default is empty, can not access any cmd. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
     </xsd:complexType>
 
     <xsd:complexType name="moduleType">

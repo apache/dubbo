@@ -38,6 +38,9 @@ public class QosConfiguration {
     // the default value is Cmd.PermissionLevel.PUBLIC, can only access PUBLIC level cmd
     private PermissionLevel anonymousAccessPermissionLevel = PermissionLevel.PUBLIC;
 
+    // the allow commands for anonymous access, the delimiter is colon(,)
+    private String anonymousAllowCommands;
+
     private QosConfiguration() {
     }
 
@@ -46,6 +49,7 @@ public class QosConfiguration {
         this.acceptForeignIp = builder.isAcceptForeignIp();
         this.acceptForeignIpWhitelist = builder.getAcceptForeignIpWhitelist();
         this.anonymousAccessPermissionLevel = builder.getAnonymousAccessPermissionLevel();
+        this.anonymousAllowCommands = builder.getAnonymousAllowCommands();
         buildPredicate();
     }
 
@@ -93,6 +97,10 @@ public class QosConfiguration {
         return acceptForeignIp;
     }
 
+    public String getAnonymousAllowCommands() {
+        return anonymousAllowCommands;
+    }
+
     public static Builder builder() {
         return new Builder();
     }
@@ -103,6 +111,7 @@ public class QosConfiguration {
         private boolean acceptForeignIp;
         private String acceptForeignIpWhitelist;
         private PermissionLevel anonymousAccessPermissionLevel = PermissionLevel.PUBLIC;
+        private String anonymousAllowCommands;
 
         private Builder() {
         }
@@ -127,6 +136,11 @@ public class QosConfiguration {
             return this;
         }
 
+        public Builder anonymousAllowCommands(String anonymousAllowCommands) {
+            this.anonymousAllowCommands = anonymousAllowCommands;
+            return this;
+        }
+
         public QosConfiguration build() {
             return new QosConfiguration(this);
         }
@@ -145,6 +159,10 @@ public class QosConfiguration {
 
         public PermissionLevel getAnonymousAccessPermissionLevel() {
             return anonymousAccessPermissionLevel;
+        }
+
+        public String getAnonymousAllowCommands() {
+            return anonymousAllowCommands;
         }
     }
 }
