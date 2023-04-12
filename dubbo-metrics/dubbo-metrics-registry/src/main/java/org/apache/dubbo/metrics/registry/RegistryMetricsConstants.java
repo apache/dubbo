@@ -36,6 +36,9 @@ import static org.apache.dubbo.metrics.model.key.MetricsKey.REGISTER_METRIC_REQU
 import static org.apache.dubbo.metrics.model.key.MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS;
 import static org.apache.dubbo.metrics.model.key.MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS_FAILED;
 import static org.apache.dubbo.metrics.model.key.MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS_SUCCEED;
+import static org.apache.dubbo.metrics.model.key.MetricsKey.SERVICE_SUBSCRIBE_METRIC_NUM;
+import static org.apache.dubbo.metrics.model.key.MetricsKey.SERVICE_SUBSCRIBE_METRIC_NUM_FAILED;
+import static org.apache.dubbo.metrics.model.key.MetricsKey.SERVICE_SUBSCRIBE_METRIC_NUM_SUCCEED;
 import static org.apache.dubbo.metrics.model.key.MetricsKey.SUBSCRIBE_METRIC_NUM;
 import static org.apache.dubbo.metrics.model.key.MetricsKey.SUBSCRIBE_METRIC_NUM_FAILED;
 import static org.apache.dubbo.metrics.model.key.MetricsKey.SUBSCRIBE_METRIC_NUM_SUCCEED;
@@ -57,6 +60,7 @@ public interface RegistryMetricsConstants {
     // Service-level
     List<MetricsKey> SERVICE_LEVEL_KEYS = Arrays.asList(NOTIFY_METRIC_NUM_LAST,
         SERVICE_REGISTER_METRIC_REQUESTS, SERVICE_REGISTER_METRIC_REQUESTS_SUCCEED, SERVICE_REGISTER_METRIC_REQUESTS_FAILED,
+        SERVICE_SUBSCRIBE_METRIC_NUM, SERVICE_SUBSCRIBE_METRIC_NUM_SUCCEED, SERVICE_SUBSCRIBE_METRIC_NUM_FAILED,
         DIRECTORY_METRIC_NUM_VALID, DIRECTORY_METRIC_NUM_TO_RECONNECT, DIRECTORY_METRIC_NUM_DISABLE, DIRECTORY_METRIC_NUM_ALL
     );
 
