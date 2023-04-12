@@ -17,6 +17,16 @@
 
 package org.apache.dubbo.rpc.protocol.tri;
 
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelPipeline;
+import io.netty.handler.codec.http2.Http2FrameCodec;
+import io.netty.handler.codec.http2.Http2FrameCodecBuilder;
+import io.netty.handler.codec.http2.Http2FrameLogger;
+import io.netty.handler.codec.http2.Http2MultiplexHandler;
+import io.netty.handler.codec.http2.Http2Settings;
+import io.netty.handler.logging.LogLevel;
+import io.netty.handler.ssl.SslContext;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.ConfigurationUtils;
@@ -28,7 +38,6 @@ import org.apache.dubbo.remoting.api.AbstractWireProtocol;
 import org.apache.dubbo.remoting.api.pu.ChannelHandlerPretender;
 import org.apache.dubbo.remoting.api.pu.ChannelOperator;
 import org.apache.dubbo.rpc.HeaderFilter;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleClientHandler;
@@ -36,17 +45,6 @@ import org.apache.dubbo.rpc.protocol.tri.transport.TripleCommandOutBoundHandler;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleHttp2FrameServerHandler;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleServerConnectionHandler;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleTailHandler;
-
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelPipeline;
-import io.netty.handler.codec.http2.Http2FrameCodec;
-import io.netty.handler.codec.http2.Http2FrameCodecBuilder;
-import io.netty.handler.codec.http2.Http2FrameLogger;
-import io.netty.handler.codec.http2.Http2MultiplexHandler;
-import io.netty.handler.codec.http2.Http2Settings;
-import io.netty.handler.logging.LogLevel;
-import io.netty.handler.ssl.SslContext;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -79,8 +77,6 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
 
     private ExtensionLoader<HeaderFilter> filtersLoader;
     private FrameworkModel frameworkModel;
-    private Configuration config = ConfigurationUtils.getGlobalConfiguration(
-        ApplicationModel.defaultModel());
 
     public TripleHttp2Protocol() {
         super(new Http2ProtocolDetector());
@@ -89,12 +85,7 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
     @Override
     public void setFrameworkModel(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
-    }
-
-    @Override
-    public void setApplicationModel(ApplicationModel applicationModel) {
-        this.config = ConfigurationUtils.getGlobalConfiguration(applicationModel);
-        this.filtersLoader = applicationModel.getExtensionLoader(HeaderFilter.class);
+        this.filtersLoader = frameworkModel.getExtensionLoader(HeaderFilter.class);
     }
 
     @Override
@@ -104,11 +95,10 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
 
     @Override
     public void configServerProtocolHandler(URL url, ChannelOperator operator) {
-
+        Configuration config = ConfigurationUtils.getGlobalConfiguration(url.getOrDefaultApplicationModel());
         final List<HeaderFilter> headFilters;
         if (filtersLoader != null) {
-            headFilters = filtersLoader.getActivateExtension(url,
-                HEADER_FILTER_KEY);
+            headFilters = filtersLoader.getActivateExtension(url, HEADER_FILTER_KEY);
         } else {
             headFilters = Collections.emptyList();
         }
@@ -154,6 +144,7 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
 
     @Override
     public void configClientPipeline(URL url, ChannelPipeline pipeline, SslContext sslContext) {
+        Configuration config = ConfigurationUtils.getGlobalConfiguration(url.getOrDefaultApplicationModel());
         final Http2FrameCodec codec = Http2FrameCodecBuilder.forClient()
             .gracefulShutdownTimeoutMillis(10000)
             .initialSettings(new Http2Settings().headerTableSize(
