@@ -1,0 +1,107 @@
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+# Please add new modules to the end of the list.
+
+dubbo
+dubbo-auth
+dubbo-apache-release
+dubbo-bom
+dubbo-build-tools
+dubbo-cluster
+dubbo-common
+dubbo-compatible
+dubbo-compiler
+dubbo-config
+dubbo-config-api
+dubbo-config-spring
+dubbo-configcenter
+dubbo-configcenter-apollo
+dubbo-configcenter-nacos
+dubbo-configcenter-zookeeper
+dubbo-container
+dubbo-container-api
+dubbo-container-spring
+dubbo-core-spi
+dubbo-dependencies
+dubbo-dependencies-all
+dubbo-dependencies-bom
+dubbo-dependencies-zookeeper
+dubbo-dependencies-zookeeper-curator5
+dubbo-distribution
+dubbo-filter
+dubbo-filter-cache
+dubbo-filter-validation
+dubbo-kubernetes
+dubbo-maven-plugin
+dubbo-metadata
+dubbo-metadata-api
+dubbo-metadata-definition-protobuf
+dubbo-metadata-processor
+dubbo-metadata-report-nacos
+dubbo-metadata-report-redis
+dubbo-metadata-report-zookeeper
+dubbo-metrics
+dubbo-metrics-api
+dubbo-metrics-default
+dubbo-metrics-metadata
+dubbo-metrics-prometheus
+dubbo-metrics-registry
+dubbo-monitor
+dubbo-monitor-api
+dubbo-monitor-default
+dubbo-native
+dubbo-native-plugin
+dubbo-parent
+dubbo-plugin
+dubbo-qos
+dubbo-qos-api
+dubbo-reactive
+dubbo-registry
+dubbo-registry-api
+dubbo-registry-multicast
+dubbo-registry-multiple
+dubbo-registry-nacos
+dubbo-registry-zookeeper
+dubbo-remoting
+dubbo-remoting-api
+dubbo-remoting-http
+dubbo-remoting-netty
+dubbo-remoting-netty4
+dubbo-remoting-zookeeper
+dubbo-remoting-zookeeper-curator5
+dubbo-rpc
+dubbo-rpc-api
+dubbo-rpc-dubbo
+dubbo-rpc-injvm
+dubbo-rpc-rest
+dubbo-rpc-triple
+dubbo-security
+dubbo-serialization
+dubbo-serialization-api
+dubbo-serialization-fastjson2
+dubbo-serialization-hessian2
+dubbo-serialization-jdk
+dubbo-spring-boot
+dubbo-spring-boot-actuator
+dubbo-spring-boot-actuator-compatible
+dubbo-spring-boot-autoconfigure
+dubbo-spring-boot-autoconfigure-compatible
+dubbo-spring-boot-compatible
+dubbo-spring-boot-observability-starter
+dubbo-spring-boot-starter
+dubbo-spring-security
+dubbo-xds

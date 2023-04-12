@@ -18,16 +18,12 @@ package org.apache.dubbo.common.threadpool;
 
 import org.apache.dubbo.common.URL;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.util.concurrent.CompletableFuture;
-
 class ThreadlessExecutorTest {
-    private static ThreadlessExecutor executor;
+    private static final ThreadlessExecutor executor;
 
     static {
-        URL url = URL.valueOf("dubbo://127.0.0.1:12345");
         executor = new ThreadlessExecutor();
     }
 
@@ -36,10 +32,6 @@ class ThreadlessExecutorTest {
         for (int i = 0; i < 10; i++) {
             executor.execute(()->{throw new RuntimeException("test");});
         }
-
-        CompletableFuture<Object> stubFuture = new CompletableFuture<>();
-        executor.setWaitingFuture(stubFuture);
-        Assertions.assertEquals(executor.getWaitingFuture(),stubFuture);
 
         executor.waitAndDrain();
 

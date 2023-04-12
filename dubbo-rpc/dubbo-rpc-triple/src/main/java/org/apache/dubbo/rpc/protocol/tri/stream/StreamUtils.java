@@ -107,7 +107,7 @@ public class StreamUtils {
             convertSingleAttachment(headers, key, v);
         }
         if (!needConvertKey.isEmpty()) {
-            String needConvertJson = JsonUtils.getJson().toJson(needConvertKey);
+            String needConvertJson = JsonUtils.toJson(needConvertKey);
             headers.add(TripleHeaderEnum.TRI_HEADER_CONVERT.getHeader(), TriRpcStatus.encodeMessage(needConvertJson));
         }
     }

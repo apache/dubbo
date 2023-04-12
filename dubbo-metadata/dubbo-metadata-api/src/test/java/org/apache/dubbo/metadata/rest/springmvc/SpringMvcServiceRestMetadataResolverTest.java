@@ -111,7 +111,7 @@ class SpringMvcServiceRestMetadataResolverTest {
         for (RestMethodMetadata restMethodMetadata : springMetadata.getMeta()) {
             restMethodMetadata.setReflectMethod(null);
             restMethodMetadata.setMethod(null);
-            jsonsTmp.add(JsonUtils.getJson().toJson(restMethodMetadata));
+            jsonsTmp.add(JsonUtils.toJson(restMethodMetadata));
         }
 
         Comparator<String> comparator = new Comparator<String>() {

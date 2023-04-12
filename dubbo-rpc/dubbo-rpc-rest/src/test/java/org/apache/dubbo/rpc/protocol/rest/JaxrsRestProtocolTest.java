@@ -37,11 +37,15 @@ import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 
 import org.apache.dubbo.rpc.protocol.rest.annotation.metadata.MetadataResolver;
+import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
 import org.apache.dubbo.rpc.protocol.rest.exception.DoublePathCheckException;
 import org.apache.dubbo.rpc.protocol.rest.exception.mapper.ExceptionHandler;
 import org.apache.dubbo.rpc.protocol.rest.exception.mapper.ExceptionMapper;
+
 import org.apache.dubbo.rpc.protocol.rest.rest.AnotherUserRestService;
 import org.apache.dubbo.rpc.protocol.rest.rest.AnotherUserRestServiceImpl;
+import org.apache.dubbo.rpc.protocol.rest.rest.HttpMethodService;
+import org.apache.dubbo.rpc.protocol.rest.rest.HttpMethodServiceImpl;
 
 import org.apache.dubbo.rpc.protocol.rest.rest.RestDemoForTestException;
 import org.hamcrest.CoreMatchers;
@@ -326,7 +330,7 @@ class JaxrsRestProtocolTest {
 
         URL url = this.registerProvider(exportUrl, server, DemoService.class);
 
-        URL exceptionUrl = url.addParameter(EXCEPTION_MAPPER_KEY, TestExceptionMapper.class.getName());
+        URL exceptionUrl = url.addParameter(EXTENSION_KEY, TestExceptionMapper.class.getName());
 
         protocol.export(proxy.getInvoker(server, DemoService.class, exceptionUrl));
 
@@ -499,6 +503,53 @@ class JaxrsRestProtocolTest {
         });
 
         Assertions.assertEquals(null, demoService.noBodyArg(null));
+        exporter.unexport();
+    }
+
+    @Test
+    void testToken() {
+        DemoService server = new DemoServiceImpl();
+
+        URL url = this.registerProvider(exportUrl, server, DemoService.class);
+
+        URL nettyUrl = url.addParameter(RestConstant.TOKEN_KEY, "TOKEN");
+        Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(server, DemoService.class, nettyUrl));
+
+        DemoService demoService = this.proxy.getProxy(protocol.refer(DemoService.class, nettyUrl));
+
+
+        Assertions.assertEquals("Hello, hello", demoService.sayHello("hello"));
+        exporter.unexport();
+    }
+
+
+    @Test
+    void testHttpMethods() {
+        testHttpMethod(org.apache.dubbo.remoting.Constants.OK_HTTP);
+        testHttpMethod(org.apache.dubbo.remoting.Constants.APACHE_HTTP_CLIENT);
+        testHttpMethod(org.apache.dubbo.remoting.Constants.URL_CONNECTION);
+    }
+
+    void testHttpMethod(String restClient) {
+        HttpMethodService server = new HttpMethodServiceImpl();
+
+        URL url = URL.valueOf("rest://127.0.0.1:" + NetUtils.getAvailablePort()
+            + "/?version=1.0.0&interface=org.apache.dubbo.rpc.protocol.rest.rest.HttpMethodService&"
+            + org.apache.dubbo.remoting.Constants.CLIENT_KEY + "=" + restClient);
+        url = this.registerProvider(url, server, HttpMethodService.class);
+        Exporter<HttpMethodService> exporter = protocol.export(proxy.getInvoker(server, HttpMethodService.class, url));
+
+        HttpMethodService demoService = this.proxy.getProxy(protocol.refer(HttpMethodService.class, url));
+
+
+        String expect = "hello";
+        Assertions.assertEquals(null, demoService.sayHelloHead());
+        Assertions.assertEquals(expect, demoService.sayHelloDelete("hello"));
+        Assertions.assertEquals(expect, demoService.sayHelloGet("hello"));
+        Assertions.assertEquals(expect, demoService.sayHelloOptions("hello"));
+//        Assertions.assertEquals(expect, demoService.sayHelloPatch("hello"));
+        Assertions.assertEquals(expect, demoService.sayHelloPost("hello"));
+        Assertions.assertEquals(expect, demoService.sayHelloPut("hello"));
         exporter.unexport();
     }
 

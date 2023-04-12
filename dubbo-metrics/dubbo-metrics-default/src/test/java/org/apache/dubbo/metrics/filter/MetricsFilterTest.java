@@ -22,8 +22,8 @@ import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.metrics.TestMetricsInvoker;
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
-import org.apache.dubbo.metrics.model.MetricsKey;
-import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
+import org.apache.dubbo.metrics.model.key.MetricsKey;
+import org.apache.dubbo.metrics.model.sample.CounterMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.Invoker;
@@ -32,7 +32,6 @@ import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -47,10 +46,7 @@ import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE;
 import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_PARAMETER_DESC;
-import static org.apache.dubbo.common.constants.MetricsConstants.TAG_GROUP_KEY;
-import static org.apache.dubbo.common.constants.MetricsConstants.TAG_INTERFACE_KEY;
-import static org.apache.dubbo.common.constants.MetricsConstants.TAG_METHOD_KEY;
-import static org.apache.dubbo.common.constants.MetricsConstants.TAG_VERSION_KEY;
+import static org.apache.dubbo.common.constants.MetricsConstants.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
@@ -186,10 +182,10 @@ class MetricsFilterTest {
         Assertions.assertTrue(metricsMap.containsKey(MetricsKey.METRIC_REQUESTS_TOTAL_FAILED.getNameByType(side)));
 
         MetricSample timeoutSample = metricsMap.get(MetricsKey.METRIC_REQUESTS_TIMEOUT.getNameByType(side));
-        Assertions.assertSame(((GaugeMetricSample) timeoutSample).applyAsLong(), count);
+        Assertions.assertSame(((CounterMetricSample) timeoutSample).getValue().longValue(), count);
 
-        GaugeMetricSample failedSample = (GaugeMetricSample) metricsMap.get(MetricsKey.METRIC_REQUESTS_TOTAL_FAILED.getNameByType(side));
-        Assertions.assertSame(failedSample.applyAsLong(), count);
+        CounterMetricSample failedSample = (CounterMetricSample) metricsMap.get(MetricsKey.METRIC_REQUESTS_TOTAL_FAILED.getNameByType(side));
+        Assertions.assertSame(failedSample.getValue().longValue(), count);
     }
 
     @Test
@@ -214,7 +210,7 @@ class MetricsFilterTest {
 
         MetricSample sample = metricsMap.get(MetricsKey.METRIC_REQUESTS_LIMIT.getNameByType(side));
 
-        Assertions.assertSame(((GaugeMetricSample) sample).applyAsLong(), count);
+        Assertions.assertSame(((CounterMetricSample) sample).getValue().longValue(), count);
     }
 
     @Test
@@ -292,7 +288,7 @@ class MetricsFilterTest {
 
         MetricSample sample = metricsMap.get(metricsKey.getName());
 
-        Assertions.assertSame(((GaugeMetricSample) sample).applyAsLong(), count);
+        Assertions.assertSame(((CounterMetricSample) sample).getValue().longValue(), count);
 
 
         Assertions.assertTrue(metricsMap.containsKey(metricsKey.getName()));

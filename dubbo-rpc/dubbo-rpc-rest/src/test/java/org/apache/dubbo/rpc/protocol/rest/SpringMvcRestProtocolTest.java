@@ -50,7 +50,6 @@ import java.util.Arrays;
 import java.util.Map;
 
 import static org.apache.dubbo.remoting.Constants.SERVER_KEY;
-import static org.apache.dubbo.rpc.protocol.rest.Constants.EXCEPTION_MAPPER_KEY;
 import static org.apache.dubbo.rpc.protocol.rest.Constants.EXTENSION_KEY;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -90,7 +89,7 @@ public class SpringMvcRestProtocolTest {
 
     public Exporter<SpringRestDemoService> getExceptionHandlerExport(URL url, SpringRestDemoService server) {
         url = url.addParameter(SERVER_KEY, Constants.NETTY_HTTP);
-        url = url.addParameter(EXCEPTION_MAPPER_KEY, TestExceptionMapper.class.getName());
+        url = url.addParameter(EXTENSION_KEY, TestExceptionMapper.class.getName());
         return protocol.export(proxy.getInvoker(server, getServerClass(), url));
     }
 
@@ -361,6 +360,30 @@ public class SpringMvcRestProtocolTest {
         forms.put("form", Arrays.asList("F1"));
 
         Assertions.assertEquals(Arrays.asList("F1"), demoService.testFormMapBody(forms));
+
+        exporter.unexport();
+    }
+
+    @Test
+    void testPrimitive() {
+        SpringRestDemoService server = getServerImpl();
+
+        URL nettyUrl = this.registerProvider(exportUrl, server, SpringRestDemoService.class);
+
+
+        Exporter<SpringRestDemoService> exporter = getExport(nettyUrl, server);
+
+        SpringRestDemoService demoService = this.proxy.getProxy(protocol.refer(SpringRestDemoService.class, nettyUrl));
+
+        Integer result = demoService.primitiveInt(1, 2);
+        Long resultLong = demoService.primitiveLong(1, 2l);
+        long resultByte = demoService.primitiveByte((byte) 1, 2l);
+        long resultShort = demoService.primitiveShort((short) 1, 2l, 1);
+
+        assertThat(result, is(3));
+        assertThat(resultShort, is(3l));
+        assertThat(resultLong, is(3l));
+        assertThat(resultByte, is(3l));
 
         exporter.unexport();
     }

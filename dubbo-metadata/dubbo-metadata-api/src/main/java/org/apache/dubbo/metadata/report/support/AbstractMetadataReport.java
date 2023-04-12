@@ -279,8 +279,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
 
     private void storeProviderMetadataTask(MetadataIdentifier providerMetadataIdentifier, ServiceDefinition serviceDefinition) {
 
-        String interfaceMethodName = serviceDefinition.getCanonicalName();
-        MetadataEvent metadataEvent = new MetadataEvent.StoreProviderMetadataEvent(applicationModel, interfaceMethodName);
+        MetadataEvent metadataEvent = MetadataEvent.toServiceSubscribeEvent(applicationModel, serviceDefinition.getCanonicalName());
         MetricsEventBus.post(metadataEvent, () ->
             {
                 boolean result = true;
@@ -290,7 +289,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
                     }
                     allMetadataReports.put(providerMetadataIdentifier, serviceDefinition);
                     failedReports.remove(providerMetadataIdentifier);
-                    String data = JsonUtils.getJson().toJson(serviceDefinition);
+                    String data = JsonUtils.toJson(serviceDefinition);
                     doStoreProviderMetadata(providerMetadataIdentifier, data);
                     saveProperties(providerMetadataIdentifier, data, true, !syncReport);
                 } catch (Exception e) {
@@ -323,7 +322,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
             allMetadataReports.put(consumerMetadataIdentifier, serviceParameterMap);
             failedReports.remove(consumerMetadataIdentifier);
 
-            String data = JsonUtils.getJson().toJson(serviceParameterMap);
+            String data = JsonUtils.toJson(serviceParameterMap);
             doStoreConsumerMetadata(consumerMetadataIdentifier, data);
             saveProperties(consumerMetadataIdentifier, data, true, !syncReport);
         } catch (Exception e) {
@@ -375,9 +374,9 @@ public abstract class AbstractMetadataReport implements MetadataReport {
     @Override
     public void saveSubscribedData(SubscriberMetadataIdentifier subscriberMetadataIdentifier, Set<String> urls) {
         if (syncReport) {
-            doSaveSubscriberData(subscriberMetadataIdentifier, JsonUtils.getJson().toJson(urls));
+            doSaveSubscriberData(subscriberMetadataIdentifier, JsonUtils.toJson(urls));
         } else {
-            reportCacheExecutor.execute(() -> doSaveSubscriberData(subscriberMetadataIdentifier, JsonUtils.getJson().toJson(urls)));
+            reportCacheExecutor.execute(() -> doSaveSubscriberData(subscriberMetadataIdentifier, JsonUtils.toJson(urls)));
         }
     }
 
@@ -385,7 +384,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
     @Override
     public List<String> getSubscribedURLs(SubscriberMetadataIdentifier subscriberMetadataIdentifier) {
         String content = doGetSubscribedURLs(subscriberMetadataIdentifier);
-        return JsonUtils.getJson().toJavaList(content, String.class);
+        return JsonUtils.toJavaList(content, String.class);
     }
 
     String getProtocol(URL url) {

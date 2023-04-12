@@ -90,7 +90,7 @@ public class DataParseUtils {
      * @throws Exception
      */
     public static void writeJsonContent(Object object, OutputStream outputStream) throws Exception {
-        outputStream.write(JsonUtils.getJson().toJson(object).getBytes(StandardCharsets.UTF_8));
+        outputStream.write(JsonUtils.toJson(object).getBytes(StandardCharsets.UTF_8));
     }
 
     /**
@@ -152,7 +152,7 @@ public class DataParseUtils {
     }
 
     public static Object jsonConvert(Class targetType, byte[] body) throws Exception {
-        return JsonUtils.getJson().toJavaObject(new String(body, StandardCharsets.UTF_8), targetType);
+        return JsonUtils.toJavaObject(new String(body, StandardCharsets.UTF_8), targetType);
     }
 
 

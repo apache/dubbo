@@ -78,4 +78,26 @@ public class SpringDemoServiceImpl implements SpringRestDemoService {
     }
 
 
+    @Override
+    public int primitiveInt(int a, int b) {
+        return a + b;
+    }
+
+    @Override
+    public long primitiveLong(long a, Long b) {
+        return a + b;
+    }
+
+    @Override
+    public long primitiveByte(byte a, Long b) {
+        return a + b;
+    }
+
+    @Override
+    public long primitiveShort(short a, Long b, int c) {
+        return a + b;
+    }
+
+
+
 }
