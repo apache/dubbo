@@ -24,7 +24,15 @@ import org.apache.dubbo.metrics.model.key.MetricsPlaceType;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.apache.dubbo.metrics.model.key.MetricsKey.*;
+import static org.apache.dubbo.metrics.model.key.MetricsKey.METADATA_PUSH_METRIC_NUM;
+import static org.apache.dubbo.metrics.model.key.MetricsKey.METADATA_PUSH_METRIC_NUM_FAILED;
+import static org.apache.dubbo.metrics.model.key.MetricsKey.METADATA_PUSH_METRIC_NUM_SUCCEED;
+import static org.apache.dubbo.metrics.model.key.MetricsKey.METADATA_SUBSCRIBE_METRIC_NUM;
+import static org.apache.dubbo.metrics.model.key.MetricsKey.METADATA_SUBSCRIBE_METRIC_NUM_FAILED;
+import static org.apache.dubbo.metrics.model.key.MetricsKey.METADATA_SUBSCRIBE_METRIC_NUM_SUCCEED;
+import static org.apache.dubbo.metrics.model.key.MetricsKey.STORE_PROVIDER_METADATA;
+import static org.apache.dubbo.metrics.model.key.MetricsKey.STORE_PROVIDER_METADATA_FAILED;
+import static org.apache.dubbo.metrics.model.key.MetricsKey.STORE_PROVIDER_METADATA_SUCCEED;
 
 public interface MetadataMetricsConstants {
 

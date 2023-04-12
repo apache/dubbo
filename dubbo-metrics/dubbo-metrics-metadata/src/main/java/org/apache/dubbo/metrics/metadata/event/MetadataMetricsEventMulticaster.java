@@ -28,7 +28,9 @@ import org.apache.dubbo.metrics.model.key.MetricsKey;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.apache.dubbo.metrics.metadata.MetadataMetricsConstants.*;
+import static org.apache.dubbo.metrics.metadata.MetadataMetricsConstants.OP_TYPE_PUSH;
+import static org.apache.dubbo.metrics.metadata.MetadataMetricsConstants.OP_TYPE_STORE_PROVIDER_INTERFACE;
+import static org.apache.dubbo.metrics.metadata.MetadataMetricsConstants.OP_TYPE_SUBSCRIBE;
 
 public final class MetadataMetricsEventMulticaster extends SimpleMetricsEventMulticaster {
 

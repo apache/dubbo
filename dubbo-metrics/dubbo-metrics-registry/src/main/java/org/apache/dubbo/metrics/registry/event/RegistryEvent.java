@@ -27,7 +27,10 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Map;
 
-import static org.apache.dubbo.metrics.MetricsConstants.*;
+import static org.apache.dubbo.metrics.MetricsConstants.ATTACHMENT_DIRECTORY_MAP;
+import static org.apache.dubbo.metrics.MetricsConstants.ATTACHMENT_KEY_LAST_NUM_MAP;
+import static org.apache.dubbo.metrics.MetricsConstants.ATTACHMENT_KEY_SERVICE;
+import static org.apache.dubbo.metrics.MetricsConstants.ATTACHMENT_KEY_SIZE;
 
 
 /**
