@@ -88,7 +88,7 @@ public class InvokeTelnet implements BaseCommand {
 
         List<Object> list;
         try {
-            list = JsonUtils.getJson().toJavaList("[" + param + "]", Object.class);
+            list = JsonUtils.toJavaList("[" + param + "]", Object.class);
         } catch (Throwable t) {
             return "Invalid json argument, cause: " + t.getMessage();
         }
@@ -156,7 +156,7 @@ public class InvokeTelnet implements BaseCommand {
             }
             long end = System.currentTimeMillis();
             buf.append("\r\nresult: ");
-            buf.append(JsonUtils.getJson().toJson(result.recreate()));
+            buf.append(JsonUtils.toJson(result.recreate()));
             buf.append("\r\nelapsed: ");
             buf.append(end - start);
             buf.append(" ms.");

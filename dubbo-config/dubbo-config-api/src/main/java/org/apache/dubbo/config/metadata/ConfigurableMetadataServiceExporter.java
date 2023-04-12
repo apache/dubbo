@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ArgumentConfig;
 import org.apache.dubbo.config.MethodConfig;
@@ -32,6 +33,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 
 import static java.util.Collections.emptyList;
 import static org.apache.dubbo.common.constants.CommonConstants.METADATA_SERVICE_PORT_KEY;
@@ -126,10 +128,12 @@ public class ConfigurableMetadataServiceExporter {
                 .interfaceClass(MetadataService.class)
                 .ref(metadataService);
         }
-
+        ExecutorService internalServiceExecutor = applicationModel.getFrameworkModel().getBeanFactory()
+            .getBean(FrameworkExecutorRepository.class).getInternalServiceExecutor();
         builder.protocol(getApplicationConfig().getMetadataServiceProtocol(), METADATA_SERVICE_PROTOCOL_KEY)
             .port(getApplicationConfig().getMetadataServicePort(), METADATA_SERVICE_PORT_KEY)
             .registryId("internal-metadata-registry")
+            .executor(internalServiceExecutor)
             .build(configConsumer -> configConsumer.setMethods(generateMethodConfig()));
         return builder.build();
     }

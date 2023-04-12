@@ -52,6 +52,6 @@ public class BodyProviderParamParser extends ProviderParamParser {
 
     @Override
     protected ParamType getParamType() {
-        return ParamType.BODY;
+        return ParamType.PROVIDER_BODY;
     }
 }

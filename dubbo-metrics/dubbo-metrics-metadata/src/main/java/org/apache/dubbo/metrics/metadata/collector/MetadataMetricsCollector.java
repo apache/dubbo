@@ -21,19 +21,28 @@ import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.metrics.collector.ApplicationMetricsCollector;
 import org.apache.dubbo.metrics.collector.MetricsCollector;
+import org.apache.dubbo.metrics.data.ApplicationStatComposite;
+import org.apache.dubbo.metrics.data.BaseStatComposite;
+import org.apache.dubbo.metrics.data.RtStatComposite;
+import org.apache.dubbo.metrics.data.ServiceStatComposite;
 import org.apache.dubbo.metrics.event.MetricsEvent;
 import org.apache.dubbo.metrics.event.MetricsEventMulticaster;
-import org.apache.dubbo.metrics.metadata.collector.stat.MetadataStatComposite;
-import org.apache.dubbo.metrics.metadata.type.ApplicationType;
+import org.apache.dubbo.metrics.metadata.MetadataMetricsConstants;
 import org.apache.dubbo.metrics.metadata.event.MetadataEvent;
 import org.apache.dubbo.metrics.metadata.event.MetadataMetricsEventMulticaster;
+import org.apache.dubbo.metrics.metadata.type.ApplicationType;
 import org.apache.dubbo.metrics.metadata.type.ServiceType;
+import org.apache.dubbo.metrics.model.MetricsCategory;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import static org.apache.dubbo.metrics.metadata.MetadataMetricsConstants.OP_TYPE_PUSH;
+import static org.apache.dubbo.metrics.metadata.MetadataMetricsConstants.OP_TYPE_STORE_PROVIDER_INTERFACE;
+import static org.apache.dubbo.metrics.metadata.MetadataMetricsConstants.OP_TYPE_SUBSCRIBE;
 
 
 /**
@@ -43,12 +52,19 @@ import java.util.Optional;
 public class MetadataMetricsCollector implements ApplicationMetricsCollector<ApplicationType, MetadataEvent> {
 
     private Boolean collectEnabled = null;
-    private final MetadataStatComposite stats;
+    private final BaseStatComposite stats;
     private final MetricsEventMulticaster metadataEventMulticaster;
     private final ApplicationModel applicationModel;
 
     public MetadataMetricsCollector(ApplicationModel applicationModel) {
-        this.stats = new MetadataStatComposite();
+        this.stats = new BaseStatComposite() {
+            @Override
+            protected void init(ApplicationStatComposite applicationStatComposite, ServiceStatComposite serviceStatComposite, RtStatComposite rtStatComposite) {
+                applicationStatComposite.init(MetadataMetricsConstants.appKeys);
+                serviceStatComposite.init(MetadataMetricsConstants.serviceKeys);
+                rtStatComposite.init(OP_TYPE_PUSH, OP_TYPE_SUBSCRIBE, OP_TYPE_STORE_PROVIDER_INTERFACE);
+            }
+        };
         this.metadataEventMulticaster = new MetadataMetricsEventMulticaster();
         this.applicationModel = applicationModel;
     }
@@ -70,11 +86,11 @@ public class MetadataMetricsCollector implements ApplicationMetricsCollector<App
 
     @Override
     public void increment(String applicationName, ApplicationType registryType) {
-        this.stats.increment(registryType, applicationName);
+        this.stats.incrementApp(registryType.getMetricsKey(), applicationName,1);
     }
 
     public void incrementServiceKey(String applicationName, String serviceKey, ServiceType registryType, int size) {
-        this.stats.incrementServiceKey(registryType, applicationName, serviceKey, size);
+        this.stats.incrementServiceKey(registryType.getMetricsKey(), applicationName, serviceKey, size);
     }
 
     @Override
@@ -92,10 +108,7 @@ public class MetadataMetricsCollector implements ApplicationMetricsCollector<App
         if (!isCollectEnabled()) {
             return list;
         }
-        list.addAll(stats.exportNumMetrics());
-        list.addAll(stats.exportRtMetrics());
-        list.addAll(stats.exportServiceNumMetrics());
-
+        list.addAll(stats.export(MetricsCategory.METADATA));
         return list;
     }
 

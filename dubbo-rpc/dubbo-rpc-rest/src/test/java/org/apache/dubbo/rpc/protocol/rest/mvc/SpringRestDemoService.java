@@ -25,11 +25,10 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-@RestController("/demoService")
+@RequestMapping("/demoService")
 public interface SpringRestDemoService {
     @RequestMapping(value = "/hello", method = RequestMethod.GET)
     Integer hello(@RequestParam Integer a, @RequestParam Integer b);
@@ -53,4 +52,17 @@ public interface SpringRestDemoService {
 
     @RequestMapping(value = "/testHeaderInt", method = RequestMethod.GET, consumes = MediaType.TEXT_PLAIN_VALUE)
     String testHeaderInt(@RequestHeader int header);
+
+    @RequestMapping(method = RequestMethod.GET, value = "/primitive")
+    int primitiveInt(@RequestParam("a") int a, @RequestParam("b") int b);
+
+    @RequestMapping(method = RequestMethod.GET, value = "/primitiveLong")
+    long primitiveLong(@RequestParam("a") long a, @RequestParam("b") Long b);
+
+    @RequestMapping(method = RequestMethod.GET, value = "/primitiveByte")
+    long primitiveByte(@RequestParam("a") byte a, @RequestParam("b") Long b);
+
+
+    @RequestMapping(method = RequestMethod.POST, value = "/primitiveShort")
+    long primitiveShort(@RequestParam("a") short a, @RequestParam("b") Long b, @RequestBody int c);
 }

@@ -18,7 +18,7 @@
 package org.apache.dubbo.metrics.event;
 
 import org.apache.dubbo.metrics.model.MethodMetric;
-import org.apache.dubbo.metrics.model.TypeWrapper;
+import org.apache.dubbo.metrics.model.key.TypeWrapper;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 /**
