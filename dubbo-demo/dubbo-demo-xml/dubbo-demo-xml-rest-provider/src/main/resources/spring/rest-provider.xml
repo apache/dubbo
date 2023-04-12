@@ -24,7 +24,7 @@
        http://dubbo.apache.org/schema/dubbo http://dubbo.apache.org/schema/dubbo/dubbo.xsd http://www.springframework.org/schema/context
        http://www.springframework.org/schema/context/spring-context.xsd">
 
-    <context:component-scan base-package="org.apache.dubbo.samples.rest"/>
+    <context:component-scan base-package="org.apache.dubbo.demo.rest"/>
 
     <dubbo:application name="rest-provider" owner="programmer" organization="dubbo"/>
 
