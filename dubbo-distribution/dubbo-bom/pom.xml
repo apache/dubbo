@@ -502,6 +502,11 @@
                 <artifactId>dubbo-spring-boot-observability-otel-zipkin-starter</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.apache.dubbo</groupId>
+                <artifactId>dubbo-spring-boot-observability-brave-zipkin-starter</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
             <!-- test -->
             <dependency>
