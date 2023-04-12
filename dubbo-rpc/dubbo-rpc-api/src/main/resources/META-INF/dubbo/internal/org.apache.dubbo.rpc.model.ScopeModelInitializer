@@ -1,1 +1,1 @@
-injvm=org.apache.dubbo.rpc.listener.ExporterScopeModelInitializer
+rpc=org.apache.dubbo.rpc.RpcScopeModelInitializer

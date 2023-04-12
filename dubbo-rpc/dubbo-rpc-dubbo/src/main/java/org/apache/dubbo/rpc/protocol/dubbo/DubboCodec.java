@@ -45,14 +45,13 @@ import java.io.InputStream;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.BYTE_ACCESSOR_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_MANAGEMENT_MODE_ISOLATION;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_DECODE;
-import static org.apache.dubbo.rpc.protocol.dubbo.Constants.DECODE_IN_IO_THREAD_KEY;
 import static org.apache.dubbo.rpc.protocol.dubbo.Constants.DEFAULT_DECODE_IN_IO_THREAD;
 
 /**
@@ -76,6 +75,7 @@ public class DubboCodec extends ExchangeCodec {
     private final CallbackServiceCodec callbackServiceCodec;
     private final FrameworkModel frameworkModel;
     private final ByteAccessor customByteAccessor;
+    private static final String DECODE_IN_IO_THREAD_KEY = "decode.in.io.thread";
 
     public DubboCodec(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
@@ -166,9 +166,9 @@ public class DubboCodec extends ExchangeCodec {
                     DecodeableRpcInvocation inv;
                     if (isDecodeDataInIoThread(channel)) {
                         if (customByteAccessor != null) {
-                            inv = customByteAccessor.getRpcInvocation(channel, req, is, proto);
+                            inv = customByteAccessor.getRpcInvocation(channel, req, new UnsafeByteArrayInputStream(readMessageData(is)), proto);
                         } else {
-                            inv = new DecodeableRpcInvocation(frameworkModel, channel, req, is, proto);
+                            inv = new DecodeableRpcInvocation(frameworkModel, channel, req, new UnsafeByteArrayInputStream(readMessageData(is)), proto);
                         }
                         inv.decode();
                     } else {
@@ -200,17 +200,29 @@ public class DubboCodec extends ExchangeCodec {
     }
 
     private boolean isDecodeDataInIoThread(Channel channel) {
-        boolean decodeDataInIoThread = channel.getUrl().getParameter(DECODE_IN_IO_THREAD_KEY, DEFAULT_DECODE_IN_IO_THREAD);
+        Object obj = channel.getAttribute(DECODE_IN_IO_THREAD_KEY);
+        if (obj instanceof Boolean) {
+            return (Boolean) obj;
+        }
+
         String mode = ExecutorRepository.getMode(channel.getUrl().getOrDefaultApplicationModel());
-        if (EXECUTOR_MANAGEMENT_MODE_ISOLATION.equals(mode)) {
-            if (!decodeDataInIoThread && decodeInUserThreadLogged.compareAndSet(false, true)) {
-                log.info("Because thread pool isolation is enabled on the dubbo protocol, the body can only be decoded " +
-                    "on the io thread, and the parameter[" + DECODE_IN_IO_THREAD_KEY + "] will be ignored");
-                // Why? because obtaining the isolated thread pool requires the serviceKey of the service,
-                // and this part must be decoded before it can be obtained (more see DubboExecutorSupport)
-            }
+        boolean isIsolated = EXECUTOR_MANAGEMENT_MODE_ISOLATION.equals(mode);
+
+        if (isIsolated && !decodeInUserThreadLogged.compareAndSet(false, true)) {
+            channel.setAttribute(DECODE_IN_IO_THREAD_KEY, true);
             return true;
         }
+
+        boolean decodeDataInIoThread = channel.getUrl().getParameter(DECODE_IN_IO_THREAD_KEY, DEFAULT_DECODE_IN_IO_THREAD);
+        if (isIsolated && !decodeDataInIoThread) {
+            log.info("Because thread pool isolation is enabled on the dubbo protocol, the body can only be decoded " +
+                "on the io thread, and the parameter[" + DECODE_IN_IO_THREAD_KEY + "] will be ignored");
+            // Why? because obtaining the isolated thread pool requires the serviceKey of the service,
+            // and this part must be decoded before it can be obtained (more see DubboExecutorSupport)
+            channel.setAttribute(DECODE_IN_IO_THREAD_KEY, true);
+            return true;
+        }
+        channel.setAttribute(DECODE_IN_IO_THREAD_KEY, decodeDataInIoThread);
         return decodeDataInIoThread;
     }
 

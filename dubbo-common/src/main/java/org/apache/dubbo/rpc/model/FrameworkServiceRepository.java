@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.model;
 
-import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -45,9 +44,6 @@ public class FrameworkServiceRepository {
     // useful to find a provider model quickly with serviceInterfaceName:version
     private final ConcurrentMap<String, List<ProviderModel>> providersWithoutGroup = new ConcurrentHashMap<>();
 
-    // useful to find a url quickly with serviceInterfaceName:version
-    private final ConcurrentMap<String, List<URL>> providerUrlsWithoutGroup = new ConcurrentHashMap<>();
-
     public FrameworkServiceRepository(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
     }
@@ -67,7 +63,6 @@ public class FrameworkServiceRepository {
         providers.remove(providerModel.getServiceKey());
         String keyWithoutGroup = keyWithoutGroup(providerModel.getServiceKey());
         providersWithoutGroup.remove(keyWithoutGroup);
-        providerUrlsWithoutGroup.remove(keyWithoutGroup);
     }
 
     public ProviderModel lookupExportedServiceWithoutGroup(String key) {
@@ -83,16 +78,8 @@ public class FrameworkServiceRepository {
         return providersWithoutGroup.get(key);
     }
 
-    public void registerProviderUrl(URL url) {
-        ConcurrentHashMapUtils.computeIfAbsent(providerUrlsWithoutGroup, keyWithoutGroup(url.getServiceKey()), (k) -> new CopyOnWriteArrayList<>()).add(url);
-    }
-
     public ProviderModel lookupExportedService(String serviceKey) {
         return providers.get(serviceKey);
-    }
-
-    public List<URL> lookupRegisteredProviderUrlsWithoutGroup(String key) {
-        return providerUrlsWithoutGroup.get(key);
     }
 
     public List<ProviderModel> allProviderModels() {
