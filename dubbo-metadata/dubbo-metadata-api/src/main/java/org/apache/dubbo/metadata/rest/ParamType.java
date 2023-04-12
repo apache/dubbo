@@ -16,8 +16,8 @@
  */
 package org.apache.dubbo.metadata.rest;
 
-import org.apache.dubbo.metadata.MetadataConstants;
 import org.apache.dubbo.metadata.rest.tag.BodyTag;
+import org.apache.dubbo.metadata.rest.tag.ParamTag;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,21 +27,17 @@ public enum ParamType {
         SpringMvcClassConstants.REQUEST_HEADER_ANNOTATION_CLASS)),
 
     PARAM(addSupportTypes(JAXRSClassConstants.QUERY_PARAM_ANNOTATION_CLASS,
-        SpringMvcClassConstants.REQUEST_PARAM_ANNOTATION_CLASS)),
+        SpringMvcClassConstants.REQUEST_PARAM_ANNOTATION_CLASS, ParamTag.class)),
 
     BODY(addSupportTypes(
         JAXRSClassConstants.REST_EASY_BODY_ANNOTATION_CLASS,
         SpringMvcClassConstants.REQUEST_BODY_ANNOTATION_CLASS, BodyTag.class)),
-    // TODO how to match arg type ?
-    REQ_OR_RES(addSupportTypes(MetadataConstants.JAKARTA_SERVLET_REQ_CLASS,
-        MetadataConstants.JAKARTA_SERVLET_RES_CLASS,
-        MetadataConstants.JAVAX_SERVLET_REQ_CLASS,
-        MetadataConstants.JAKARTA_SERVLET_RES_CLASS)),
 
     PATH(addSupportTypes(JAXRSClassConstants.PATH_PARAM_ANNOTATION_CLASS,
         SpringMvcClassConstants.PATH_VARIABLE_ANNOTATION_CLASS)),
 
-    FORM(addSupportTypes(JAXRSClassConstants.FORM_PARAM_ANNOTATION_CLASS)),
+    FORM(addSupportTypes(JAXRSClassConstants.FORM_PARAM_ANNOTATION_CLASS,
+        SpringMvcClassConstants.REQUEST_BODY_ANNOTATION_CLASS)),
 
     EMPTY(addSupportTypes());
     private List<Class> annotationClasses;
@@ -57,16 +53,6 @@ public enum ParamType {
             return false;
         }
         return this.annotationClasses.contains(anno);
-    }
-
-    public boolean isReqOrRes(Class clazz) {
-        for (Class annotationClass : annotationClasses) {
-            if (annotationClass.isAssignableFrom(clazz)) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     /**

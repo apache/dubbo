@@ -21,47 +21,27 @@ import org.apache.dubbo.common.utils.StringUtils;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
 
 public class NumberUtils {
-
-
-    public static final Set<Class<?>> STANDARD_NUMBER_TYPES;
-
-    static {
-        Set<Class<?>> numberTypes = new HashSet<>(8);
-        numberTypes.add(Byte.class);
-        numberTypes.add(Short.class);
-        numberTypes.add(Integer.class);
-        numberTypes.add(Long.class);
-        numberTypes.add(BigInteger.class);
-        numberTypes.add(Float.class);
-        numberTypes.add(Double.class);
-        numberTypes.add(BigDecimal.class);
-        STANDARD_NUMBER_TYPES = Collections.unmodifiableSet(numberTypes);
-    }
-
 
     public static <T> T parseNumber(String text, Class<T> targetClass) {
         Assert.notNull(text, "Text must not be null");
         Assert.notNull(targetClass, "Target class must not be null");
         String trimmed = trimAllWhitespace(text);
 
-        if (Byte.class == targetClass) {
+        if (Byte.class == targetClass || byte.class == targetClass) {
             return (T) (isHexNumber(trimmed) ? Byte.decode(trimmed) : Byte.valueOf(trimmed));
-        } else if (Short.class == targetClass) {
+        } else if (Short.class == targetClass || short.class == targetClass) {
             return (T) (isHexNumber(trimmed) ? Short.decode(trimmed) : Short.valueOf(trimmed));
-        } else if (Integer.class == targetClass) {
+        } else if (Integer.class == targetClass || int.class == targetClass) {
             return (T) (isHexNumber(trimmed) ? Integer.decode(trimmed) : Integer.valueOf(trimmed));
-        } else if (Long.class == targetClass) {
+        } else if (Long.class == targetClass || long.class == targetClass) {
             return (T) (isHexNumber(trimmed) ? Long.decode(trimmed) : Long.valueOf(trimmed));
         } else if (BigInteger.class == targetClass) {
             return (T) (isHexNumber(trimmed) ? decodeBigInteger(trimmed) : new BigInteger(trimmed));
-        } else if (Float.class == targetClass) {
+        } else if (Float.class == targetClass || float.class == targetClass) {
             return (T) Float.valueOf(trimmed);
-        } else if (Double.class == targetClass) {
+        } else if (Double.class == targetClass || double.class == targetClass) {
             return (T) Double.valueOf(trimmed);
         } else if (BigDecimal.class == targetClass || Number.class == targetClass) {
             return (T) new BigDecimal(trimmed);
