@@ -33,6 +33,7 @@ import static org.apache.dubbo.metrics.model.key.MetricsKey.METADATA_PUSH_METRIC
 import static org.apache.dubbo.metrics.model.key.MetricsKey.METADATA_PUSH_METRIC_NUM_FAILED;
 import static org.apache.dubbo.metrics.model.key.MetricsKey.METADATA_PUSH_METRIC_NUM_SUCCEED;
 import static org.apache.dubbo.metrics.model.key.MetricsKey.METADATA_SUBSCRIBE_METRIC_NUM;
+import static org.apache.dubbo.metrics.model.key.MetricsKey.METADATA_SUBSCRIBE_METRIC_NUM_FAILED;
 import static org.apache.dubbo.metrics.model.key.MetricsKey.METADATA_SUBSCRIBE_METRIC_NUM_SUCCEED;
 import static org.apache.dubbo.metrics.model.key.MetricsKey.STORE_PROVIDER_METADATA;
 import static org.apache.dubbo.metrics.model.key.MetricsKey.STORE_PROVIDER_METADATA_FAILED;
@@ -82,7 +83,7 @@ public class MetadataEvent extends TimeCounterEvent {
     }
 
     public static MetadataEvent toSubscribeEvent(ApplicationModel applicationModel) {
-        return new MetadataEvent(applicationModel, new TypeWrapper(MetricsLevel.APP, METADATA_SUBSCRIBE_METRIC_NUM, METADATA_SUBSCRIBE_METRIC_NUM_SUCCEED, METADATA_SUBSCRIBE_METRIC_NUM_SUCCEED));
+        return new MetadataEvent(applicationModel, new TypeWrapper(MetricsLevel.APP, METADATA_SUBSCRIBE_METRIC_NUM, METADATA_SUBSCRIBE_METRIC_NUM_SUCCEED, METADATA_SUBSCRIBE_METRIC_NUM_FAILED));
     }
 
     public static MetadataEvent toServiceSubscribeEvent(ApplicationModel applicationModel, String serviceKey) {
