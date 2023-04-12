@@ -17,6 +17,7 @@
 package org.apache.dubbo.config.metadata;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.ApplicationConfig;
@@ -25,6 +26,7 @@ import org.apache.dubbo.config.MethodConfig;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.bootstrap.builders.InternalServiceConfigBuilder;
 import org.apache.dubbo.metadata.MetadataService;
+import org.apache.dubbo.metadata.ProtoMetadataServiceStubProvider;
 import org.apache.dubbo.registry.client.metadata.MetadataServiceDelegation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
@@ -44,8 +46,7 @@ public class ConfigurableMetadataServiceExporter {
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
 
     private MetadataServiceDelegation metadataService;
-
-    private volatile ServiceConfig<MetadataService> serviceConfig;
+    private volatile ServiceConfig<?> serviceConfig;
     private final ApplicationModel applicationModel;
 
     public ConfigurableMetadataServiceExporter(ApplicationModel applicationModel, MetadataServiceDelegation metadataService) {
@@ -55,18 +56,12 @@ public class ConfigurableMetadataServiceExporter {
 
     public synchronized ConfigurableMetadataServiceExporter export() {
         if (serviceConfig == null || !isExported()) {
-            this.serviceConfig = InternalServiceConfigBuilder.<MetadataService>newBuilder(applicationModel)
-                .interfaceClass(MetadataService.class)
-                .protocol(getApplicationConfig().getMetadataServiceProtocol(), METADATA_SERVICE_PROTOCOL_KEY)
-                .port(getApplicationConfig().getMetadataServicePort(), METADATA_SERVICE_PORT_KEY)
-                .registryId("internal-metadata-registry")
-                .ref(metadataService)
-                .build(configConsumer -> configConsumer.setMethods(generateMethodConfig()));
-
+            this.serviceConfig = getServiceConfig();
             // export
             serviceConfig.export();
 
             metadataService.setMetadataURL(serviceConfig.getExportedUrls().get(0));
+
             if (logger.isInfoEnabled()) {
                 logger.info("The MetadataService exports urls : " + serviceConfig.getExportedUrls());
             }
@@ -116,6 +111,29 @@ public class ConfigurableMetadataServiceExporter {
 
         return Collections.singletonList(methodConfig);
     }
+
+    private ServiceConfig<?> getServiceConfig() {
+        InternalServiceConfigBuilder<?> builder;
+        ProtoMetadataServiceStubProvider stubProvider = applicationModel
+            .getExtensionLoader(ProtoMetadataServiceStubProvider.class).getDefaultExtension();
+        if (CommonConstants.TRIPLE.equals(getApplicationConfig().getMetadataServiceProtocol()) &&
+            stubProvider.getProtoMetadataServiceStub() != null) {
+            builder = InternalServiceConfigBuilder.newBuilder(applicationModel)
+                .interfaceClass((Class<Object>) stubProvider.getProtoInterface())
+                .ref(stubProvider.getProtoMetadataServiceStub());
+        } else {
+            builder = InternalServiceConfigBuilder.<MetadataService>newBuilder(applicationModel)
+                .interfaceClass(MetadataService.class)
+                .ref(metadataService);
+        }
+
+        builder.protocol(getApplicationConfig().getMetadataServiceProtocol(), METADATA_SERVICE_PROTOCOL_KEY)
+            .port(getApplicationConfig().getMetadataServicePort(), METADATA_SERVICE_PORT_KEY)
+            .registryId("internal-metadata-registry")
+            .build(configConsumer -> configConsumer.setMethods(generateMethodConfig()));
+        return builder.build();
+    }
+
 
     // for unit test
     public void setMetadataService(MetadataServiceDelegation metadataService) {
