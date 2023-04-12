@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.spring.boot.observability.autoconfigure;
 
-import org.apache.dubbo.spring.boot.observability.autoconfigure.annotation.ConditionalOnDubboTracingEnable ;
+import org.apache.dubbo.spring.boot.observability.autoconfigure.annotation.ConditionalOnDubboTracingEnable;
 
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -30,19 +30,19 @@ import org.springframework.core.annotation.Order;
  * this class is available starting from Boot 3.0. It's not available if you're using Boot < 3.0
  */
 @ConditionalOnDubboTracingEnable
-@ConditionalOnClass(name = {"io.micrometer.observation.Observation","io.micrometer.tracing.Tracer","io.micrometer.tracing.propagation.Propagator"})
+@ConditionalOnClass(name = {"io.micrometer.observation.Observation", "io.micrometer.tracing.Tracer", "io.micrometer.tracing.propagation.Propagator"})
 @AutoConfigureAfter(name = "org.springframework.boot.actuate.autoconfigure.tracing.MicrometerTracingAutoConfiguration")
 public class DubboMicrometerTracingAutoConfiguration {
 
     /**
      * {@code @Order} value of
-     * {@link #propagatingReceiverTracingObservationHandler(io.micrometer.tracing.Tracer, io.micrometer.tracing.propagation.Propagator )}.
+     * {@link #propagatingReceiverTracingObservationHandler(io.micrometer.tracing.Tracer, io.micrometer.tracing.propagation.Propagator)}.
      */
     public static final int RECEIVER_TRACING_OBSERVATION_HANDLER_ORDER = 1000;
 
     /**
      * {@code @Order} value of
-     * {@link #propagatingSenderTracingObservationHandler(io.micrometer.tracing.Tracer, io.micrometer.tracing.propagation.Propagator )}.
+     * {@link #propagatingSenderTracingObservationHandler(io.micrometer.tracing.Tracer, io.micrometer.tracing.propagation.Propagator)}.
      */
     public static final int SENDER_TRACING_OBSERVATION_HANDLER_ORDER = 2000;
 
