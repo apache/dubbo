@@ -98,7 +98,7 @@ class DefaultAnonymousAccessPermissionCheckerTest {
 
         Mockito.when(commandContext.getCommandName()).thenReturn("test");
         Assertions.assertTrue(checker.access(commandContext, PermissionLevel.NONE));
-        Assertions.assertTrue(checker.access(commandContext, PermissionLevel.PUBLIC));
+        Assertions.assertFalse(checker.access(commandContext, PermissionLevel.PUBLIC));
         Assertions.assertFalse(checker.access(commandContext, PermissionLevel.PROTECTED));
         Assertions.assertFalse(checker.access(commandContext, PermissionLevel.PRIVATE));
     }
