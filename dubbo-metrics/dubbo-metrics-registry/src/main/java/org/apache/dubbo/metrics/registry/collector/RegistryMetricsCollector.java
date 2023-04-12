@@ -19,26 +19,23 @@ package org.apache.dubbo.metrics.registry.collector;
 
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.config.context.ConfigManager;
-import org.apache.dubbo.metrics.collector.ApplicationMetricsCollector;
+import org.apache.dubbo.metrics.collector.CombMetricsCollector;
 import org.apache.dubbo.metrics.collector.MetricsCollector;
 import org.apache.dubbo.metrics.data.ApplicationStatComposite;
 import org.apache.dubbo.metrics.data.BaseStatComposite;
 import org.apache.dubbo.metrics.data.RtStatComposite;
 import org.apache.dubbo.metrics.data.ServiceStatComposite;
 import org.apache.dubbo.metrics.event.MetricsEvent;
-import org.apache.dubbo.metrics.event.MetricsEventMulticaster;
+import org.apache.dubbo.metrics.event.TimeCounterEvent;
 import org.apache.dubbo.metrics.model.MetricsCategory;
-import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.metrics.registry.RegistryMetricsConstants;
 import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.metrics.registry.event.RegistryMetricsEventMulticaster;
-import org.apache.dubbo.metrics.registry.stat.RegistryStatComposite;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import static org.apache.dubbo.metrics.registry.RegistryMetricsConstants.*;
@@ -48,23 +45,21 @@ import static org.apache.dubbo.metrics.registry.RegistryMetricsConstants.*;
  * Registry implementation of {@link MetricsCollector}
  */
 @Activate
-public class RegistryMetricsCollector implements ApplicationMetricsCollector<RegistryEvent> {
+public class RegistryMetricsCollector extends CombMetricsCollector<TimeCounterEvent> {
 
     private Boolean collectEnabled = null;
-    private final BaseStatComposite stats;
-    private final MetricsEventMulticaster registryMulticaster;
     private final ApplicationModel applicationModel;
 
     public RegistryMetricsCollector(ApplicationModel applicationModel) {
-        this.stats = new BaseStatComposite() {
+        super(new BaseStatComposite() {
             @Override
             protected void init(ApplicationStatComposite applicationStatComposite, ServiceStatComposite serviceStatComposite, RtStatComposite rtStatComposite) {
-                applicationStatComposite.init(RegistryMetricsConstants.appKeys);
-                serviceStatComposite.init(RegistryMetricsConstants.serviceKeys);
+                applicationStatComposite.init(RegistryMetricsConstants.APP_LEVEL_KEYS);
+                serviceStatComposite.init(RegistryMetricsConstants.SERVICE_LEVEL_KEYS);
                 rtStatComposite.init(OP_TYPE_REGISTER, OP_TYPE_SUBSCRIBE, OP_TYPE_NOTIFY, OP_TYPE_REGISTER_SERVICE, OP_TYPE_SUBSCRIBE_SERVICE);
             }
-        };
-        this.registryMulticaster = new RegistryMetricsEventMulticaster(this);
+        });
+        super.setEventMulticaster(new RegistryMetricsEventMulticaster(this));
         this.applicationModel = applicationModel;
     }
 
@@ -83,32 +78,6 @@ public class RegistryMetricsCollector implements ApplicationMetricsCollector<Reg
         return Optional.ofNullable(collectEnabled).orElse(true);
     }
 
-    public void setNum(MetricsKey metricsKey, String applicationName, Map<String, Integer> lastNumMap) {
-        lastNumMap.forEach((serviceKey, num) ->
-            this.stats.setServiceKey(metricsKey, applicationName, serviceKey, num));
-    }
-
-    public void setNum(MetricsKey metricsKey, String applicationName, Integer num) {
-        this.stats.setApplicationKey(metricsKey, applicationName, num);
-    }
-
-    @Override
-    public void increment(String applicationName, MetricsKey metricsKey) {
-        this.stats.incrementApp(metricsKey, applicationName, 1);
-    }
-
-    public void incrementServiceKey(String applicationName, String serviceKey, MetricsKey metricsKey, int size) {
-        this.stats.incrementServiceKey(metricsKey, applicationName, serviceKey, size);
-    }
-
-    @Override
-    public void addApplicationRT(String applicationName, String registryOpType, Long responseTime) {
-        stats.calcApplicationRt(applicationName, registryOpType, responseTime);
-    }
-
-    public void addServiceKeyRT(String applicationName, String serviceKey, String registryOpType, Long responseTime) {
-        stats.calcServiceKeyRt(applicationName, serviceKey, registryOpType, responseTime);
-    }
 
     @Override
     public List<MetricSample> collect() {
@@ -116,7 +85,7 @@ public class RegistryMetricsCollector implements ApplicationMetricsCollector<Reg
         if (!isCollectEnabled()) {
             return list;
         }
-        list.addAll(stats.export(MetricsCategory.REGISTRY));
+        list.addAll(super.export(MetricsCategory.REGISTRY));
         return list;
     }
 
@@ -125,19 +94,5 @@ public class RegistryMetricsCollector implements ApplicationMetricsCollector<Reg
         return event instanceof RegistryEvent;
     }
 
-    @Override
-    public void onEvent(RegistryEvent event) {
-        registryMulticaster.publishEvent(event);
-    }
 
-
-    @Override
-    public void onEventFinish(RegistryEvent event) {
-        registryMulticaster.publishFinishEvent(event);
-    }
-
-    @Override
-    public void onEventError(RegistryEvent event) {
-        registryMulticaster.publishErrorEvent(event);
-    }
 }

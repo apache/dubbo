@@ -18,114 +18,101 @@
 package org.apache.dubbo.metrics.registry.event;
 
 import org.apache.dubbo.metrics.event.SimpleMetricsEventMulticaster;
+import org.apache.dubbo.metrics.listener.AbstractMetricsListener;
+import org.apache.dubbo.metrics.listener.MetricsApplicationListener;
+import org.apache.dubbo.metrics.listener.MetricsServiceListener;
+import org.apache.dubbo.metrics.model.key.CategoryOverall;
+import org.apache.dubbo.metrics.model.key.MetricsCat;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
-import org.apache.dubbo.metrics.model.key.MetricsPlaceType;
 import org.apache.dubbo.metrics.registry.collector.RegistryMetricsCollector;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
-import static org.apache.dubbo.metrics.MetricsConstants.*;
+import static org.apache.dubbo.metrics.MetricsConstants.ATTACHMENT_DIRECTORY_MAP;
+import static org.apache.dubbo.metrics.MetricsConstants.ATTACHMENT_KEY_LAST_NUM_MAP;
 import static org.apache.dubbo.metrics.registry.RegistryMetricsConstants.*;
 
 public final class RegistryMetricsEventMulticaster extends SimpleMetricsEventMulticaster {
 
+
     public RegistryMetricsEventMulticaster(RegistryMetricsCollector collector) {
+
+        CategorySet.ALL.forEach(categorySet ->
+        {
+            super.addListener(categorySet.getPost().getEventFunc().apply(collector));
+            if (categorySet.getFinish() != null) {
+                super.addListener(categorySet.getFinish().getEventFunc().apply(collector));
+            }
+            if (categorySet.getError() != null) {
+                super.addListener(categorySet.getError().getEventFunc().apply(collector));
+            }
+        });
+    }
+
+    interface CategorySet {
+        CategoryOverall APPLICATION_REGISTER = new CategoryOverall(OP_TYPE_REGISTER, MCat.APPLICATION_REGISTER_POST, MCat.APPLICATION_REGISTER_FINISH, MCat.APPLICATION_REGISTER_ERROR);
+        CategoryOverall APPLICATION_SUBSCRIBE = new CategoryOverall(OP_TYPE_SUBSCRIBE, MCat.APPLICATION_SUBSCRIBE_POST, MCat.APPLICATION_SUBSCRIBE_FINISH, MCat.APPLICATION_SUBSCRIBE_ERROR);
+        CategoryOverall APPLICATION_NOTIFY = new CategoryOverall(OP_TYPE_NOTIFY, MCat.APPLICATION_NOTIFY_POST, MCat.APPLICATION_NOTIFY_FINISH, null);
+        CategoryOverall SERVICE_DIRECTORY = new CategoryOverall(OP_TYPE_DIRECTORY, MCat.APPLICATION_DIRECTORY_POST, null, null);
+        CategoryOverall SERVICE_REGISTER = new CategoryOverall(OP_TYPE_REGISTER_SERVICE, MCat.SERVICE_REGISTER_POST, MCat.SERVICE_REGISTER_FINISH, MCat.SERVICE_REGISTER_ERROR);
+        CategoryOverall SERVICE_SUBSCRIBE = new CategoryOverall(OP_TYPE_SUBSCRIBE_SERVICE, MCat.SERVICE_SUBSCRIBE_POST, MCat.SERVICE_SUBSCRIBE_FINISH, MCat.SERVICE_SUBSCRIBE_ERROR);
+
+        List<CategoryOverall> ALL = Arrays.asList(APPLICATION_REGISTER, APPLICATION_SUBSCRIBE, APPLICATION_NOTIFY, SERVICE_DIRECTORY, SERVICE_REGISTER, SERVICE_SUBSCRIBE);
+    }
+
+
+    interface MCat {
         // MetricsRegisterListener
-        super.addListener(onPostEventBuild(MetricsKey.REGISTER_METRIC_REQUESTS));
-        super.addListener(onFinishEventBuild(MetricsKey.REGISTER_METRIC_REQUESTS_SUCCEED, OP_TYPE_REGISTER));
-        super.addListener(onErrorEventBuild(MetricsKey.REGISTER_METRIC_REQUESTS_FAILED, OP_TYPE_REGISTER));
+        MetricsCat APPLICATION_REGISTER_POST = new MetricsCat(MetricsKey.REGISTER_METRIC_REQUESTS, MetricsApplicationListener::onPostEventBuild);
+        MetricsCat APPLICATION_REGISTER_FINISH = new MetricsCat(MetricsKey.REGISTER_METRIC_REQUESTS_SUCCEED, MetricsApplicationListener::onFinishEventBuild);
+        MetricsCat APPLICATION_REGISTER_ERROR = new MetricsCat(MetricsKey.REGISTER_METRIC_REQUESTS_FAILED, MetricsApplicationListener::onErrorEventBuild);
 
         // MetricsSubscribeListener
-        super.addListener(onPostEventBuild(MetricsKey.SUBSCRIBE_METRIC_NUM));
-        super.addListener(onFinishEventBuild(MetricsKey.SUBSCRIBE_METRIC_NUM_SUCCEED, OP_TYPE_SUBSCRIBE));
-        super.addListener(onErrorEventBuild(MetricsKey.SUBSCRIBE_METRIC_NUM_FAILED, OP_TYPE_SUBSCRIBE));
+        MetricsCat APPLICATION_SUBSCRIBE_POST = new MetricsCat(MetricsKey.SUBSCRIBE_METRIC_NUM, MetricsApplicationListener::onPostEventBuild);
+        MetricsCat APPLICATION_SUBSCRIBE_FINISH = new MetricsCat(MetricsKey.SUBSCRIBE_METRIC_NUM_SUCCEED, MetricsApplicationListener::onFinishEventBuild);
+        MetricsCat APPLICATION_SUBSCRIBE_ERROR = new MetricsCat(MetricsKey.SUBSCRIBE_METRIC_NUM_FAILED, MetricsApplicationListener::onErrorEventBuild);
 
         // MetricsNotifyListener
-        super.addListener(onPostEventBuild(MetricsKey.NOTIFY_METRIC_REQUESTS));
-        super.addListener(
-            RegistryListener.onFinish(MetricsKey.NOTIFY_METRIC_NUM_LAST,
+        MetricsCat APPLICATION_NOTIFY_POST = new MetricsCat(MetricsKey.NOTIFY_METRIC_REQUESTS, MetricsApplicationListener::onPostEventBuild);
+        MetricsCat APPLICATION_NOTIFY_FINISH = new MetricsCat(MetricsKey.NOTIFY_METRIC_NUM_LAST,
+            (key, placeType, collector) -> AbstractMetricsListener.onFinish(key,
                 event -> {
-                    event.setLastNum(MetricsKey.NOTIFY_METRIC_NUM_LAST);
-                    event.addApplicationRT(OP_TYPE_NOTIFY);
+                    collector.addRt(event.appName(), placeType.getType(), event.getTimePair().calc());
+                    Map<String, Integer> lastNumMap = Collections.unmodifiableMap(event.getAttachmentValue(ATTACHMENT_KEY_LAST_NUM_MAP));
+                    lastNumMap.forEach(
+                        (k, v) -> collector.setNum(key, event.appName(), k, v));
+
                 }
             ));
 
 
-        // MetricsDirectoryListener
-        super.addListener(RegistryListener.onEvent(MetricsKey.DIRECTORY_METRIC_NUM_VALID,
+        MetricsCat APPLICATION_DIRECTORY_POST = new MetricsCat(MetricsKey.DIRECTORY_METRIC_NUM_VALID, (key, placeType, collector) -> AbstractMetricsListener.onFinish(key,
             event ->
             {
                 Map<MetricsKey, Map<String, Integer>> summaryMap = event.getAttachmentValue(ATTACHMENT_DIRECTORY_MAP);
                 summaryMap.forEach((metricsKey, map) ->
-                    event.getCollector().setNum(metricsKey, event.getSource().getApplicationName(), map));
+                    map.forEach(
+                        (k, v) -> collector.setNum(key, event.appName(), k, v)));
             }
         ));
+
 
         // MetricsServiceRegisterListener
-        super.addListener(RegistryListener.onEvent(MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS,
-            event -> event.incrementServiceKey(MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS, ATTACHMENT_KEY_SERVICE, ATTACHMENT_KEY_SIZE)
-        ));
-        super.addListener(RegistryListener.onFinish(MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS_SUCCEED,
-            event ->
-            {
-                event.incrementServiceKey(MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS_SUCCEED, ATTACHMENT_KEY_SERVICE, ATTACHMENT_KEY_SIZE);
-                event.addServiceKeyRT(ATTACHMENT_KEY_SERVICE, OP_TYPE_REGISTER_SERVICE.getType());
-            }));
-        super.addListener(RegistryListener.onError(MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS_FAILED,
-            event ->
-            {
-                event.incrementServiceKey(MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS_FAILED, ATTACHMENT_KEY_SERVICE, ATTACHMENT_KEY_SIZE);
-                event.addServiceKeyRT(ATTACHMENT_KEY_SERVICE, OP_TYPE_REGISTER_SERVICE.getType());
-            }));
+        MetricsCat SERVICE_REGISTER_POST = new MetricsCat(MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS, MetricsServiceListener::onPostEventBuild);
+        MetricsCat SERVICE_REGISTER_FINISH = new MetricsCat(MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS_SUCCEED, MetricsServiceListener::onFinishEventBuild);
+        MetricsCat SERVICE_REGISTER_ERROR = new MetricsCat(MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS_FAILED, MetricsServiceListener::onErrorEventBuild);
+
 
         // MetricsServiceSubscribeListener
-        super.addListener(RegistryListener.onEvent(MetricsKey.SERVICE_SUBSCRIBE_METRIC_NUM,
-            event ->
-                event.incrementServiceKey(MetricsKey.SERVICE_SUBSCRIBE_METRIC_NUM, ATTACHMENT_KEY_SERVICE, 1)));
-        super.addListener(RegistryListener.onFinish(MetricsKey.SERVICE_SUBSCRIBE_METRIC_NUM_SUCCEED,
-            event ->
-            {
-                event.incrementServiceKey(MetricsKey.SERVICE_SUBSCRIBE_METRIC_NUM_SUCCEED, ATTACHMENT_KEY_SERVICE, 1);
-                event.addServiceKeyRT(ATTACHMENT_KEY_SERVICE, OP_TYPE_SUBSCRIBE_SERVICE.getType());
-            }));
-        super.addListener(RegistryListener.onError(MetricsKey.SERVICE_SUBSCRIBE_METRIC_NUM_FAILED,
-            event ->
-            {
-                event.incrementServiceKey(MetricsKey.SERVICE_SUBSCRIBE_METRIC_NUM_FAILED, ATTACHMENT_KEY_SERVICE, 1);
-                event.addServiceKeyRT(ATTACHMENT_KEY_SERVICE, OP_TYPE_SUBSCRIBE_SERVICE.getType());
-            }));
+        MetricsCat SERVICE_SUBSCRIBE_POST = new MetricsCat(MetricsKey.SERVICE_SUBSCRIBE_METRIC_NUM, MetricsServiceListener::onPostEventBuild);
+        MetricsCat SERVICE_SUBSCRIBE_FINISH = new MetricsCat(MetricsKey.SERVICE_SUBSCRIBE_METRIC_NUM_SUCCEED, MetricsServiceListener::onFinishEventBuild);
+        MetricsCat SERVICE_SUBSCRIBE_ERROR = new MetricsCat(MetricsKey.SERVICE_SUBSCRIBE_METRIC_NUM_FAILED, MetricsServiceListener::onErrorEventBuild);
+
+
     }
 
-    private RegistryListener onPostEventBuild(MetricsKey metricsKey) {
-        return RegistryListener.onEvent(metricsKey,
-            event -> event.getCollector().increment(event.getSource().getApplicationName(), metricsKey)
-        );
-    }
-
-    private RegistryListener onFinishEventBuild(MetricsKey metricsKey, MetricsPlaceType placeType) {
-        return RegistryListener.onFinish(metricsKey,
-            event -> {
-                event.increment(metricsKey);
-                event.addApplicationRT(placeType);
-            }
-        );
-    }
-
-    private RegistryListener onErrorEventBuild(MetricsKey metricsKey, MetricsPlaceType placeType) {
-        return RegistryListener.onError(metricsKey,
-            event -> {
-                event.increment(metricsKey);
-                event.addApplicationRT(placeType);
-            }
-        );
-    }
-
-    private void incrSk(RegistryEvent event, MetricsKey metricsKey) {
-        event.incrementServiceKey(metricsKey, ATTACHMENT_KEY_SERVICE, 1);
-    }
-
-    private void incrSkSize(RegistryEvent event, MetricsKey metricsKey) {
-        event.incrementServiceKey(metricsKey, ATTACHMENT_KEY_SERVICE, ATTACHMENT_KEY_SIZE);
-    }
 
 }

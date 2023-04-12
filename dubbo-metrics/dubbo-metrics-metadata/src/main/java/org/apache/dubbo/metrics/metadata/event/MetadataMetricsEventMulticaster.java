@@ -17,71 +17,62 @@
 
 package org.apache.dubbo.metrics.metadata.event;
 
-import org.apache.dubbo.metrics.MetricsConstants;
 import org.apache.dubbo.metrics.event.SimpleMetricsEventMulticaster;
-import org.apache.dubbo.metrics.metadata.type.ApplicationType;
-import org.apache.dubbo.metrics.metadata.type.ServiceType;
+import org.apache.dubbo.metrics.listener.MetricsApplicationListener;
+import org.apache.dubbo.metrics.listener.MetricsServiceListener;
+import org.apache.dubbo.metrics.metadata.collector.MetadataMetricsCollector;
+import org.apache.dubbo.metrics.model.key.CategoryOverall;
+import org.apache.dubbo.metrics.model.key.MetricsCat;
+import org.apache.dubbo.metrics.model.key.MetricsKey;
 
-import static org.apache.dubbo.metrics.metadata.MetadataMetricsConstants.OP_TYPE_PUSH;
-import static org.apache.dubbo.metrics.metadata.MetadataMetricsConstants.OP_TYPE_STORE_PROVIDER_INTERFACE;
-import static org.apache.dubbo.metrics.metadata.MetadataMetricsConstants.OP_TYPE_SUBSCRIBE;
+import java.util.Arrays;
+import java.util.List;
+
+import static org.apache.dubbo.metrics.metadata.MetadataMetricsConstants.*;
 
 public final class MetadataMetricsEventMulticaster extends SimpleMetricsEventMulticaster {
 
-    public MetadataMetricsEventMulticaster() {
+    public MetadataMetricsEventMulticaster(MetadataMetricsCollector collector) {
+
+        CategorySet.ALL.forEach(categorySet ->
+        {
+            super.addListener(categorySet.getPost().getEventFunc().apply(collector));
+            if (categorySet.getFinish() != null) {
+                super.addListener(categorySet.getFinish().getEventFunc().apply(collector));
+            }
+            if (categorySet.getError() != null) {
+                super.addListener(categorySet.getError().getEventFunc().apply(collector));
+            }
+        });
+
+
+    }
+
+    interface CategorySet {
+        CategoryOverall APPLICATION_PUSH = new CategoryOverall(OP_TYPE_PUSH, MCat.APPLICATION_PUSH_POST, MCat.APPLICATION_PUSH_FINISH, MCat.APPLICATION_PUSH_ERROR);
+        CategoryOverall APPLICATION_SUBSCRIBE = new CategoryOverall(OP_TYPE_SUBSCRIBE, MCat.APPLICATION_SUBSCRIBE_POST, MCat.APPLICATION_SUBSCRIBE_FINISH, MCat.APPLICATION_SUBSCRIBE_ERROR);
+        CategoryOverall SERVICE_SUBSCRIBE = new CategoryOverall(OP_TYPE_STORE_PROVIDER_INTERFACE, MCat.SERVICE_SUBSCRIBE_POST, MCat.SERVICE_SUBSCRIBE_FINISH, MCat.SERVICE_SUBSCRIBE_ERROR);
+
+        List<CategoryOverall> ALL = Arrays.asList(APPLICATION_PUSH, APPLICATION_SUBSCRIBE, SERVICE_SUBSCRIBE);
+    }
+
+    interface MCat {
         // MetricsPushListener
-        super.addListener(onPostEventBuild(ApplicationType.P_TOTAL));
-        super.addListener(onFinishEventBuild(ApplicationType.P_SUCCEED, OP_TYPE_PUSH.getType()));
-        super.addListener(onErrorEventBuild(ApplicationType.P_FAILED, OP_TYPE_PUSH.getType()));
+        MetricsCat APPLICATION_PUSH_POST = new MetricsCat(MetricsKey.METADATA_PUSH_METRIC_NUM, MetricsApplicationListener::onPostEventBuild);
+        MetricsCat APPLICATION_PUSH_FINISH = new MetricsCat(MetricsKey.METADATA_PUSH_METRIC_NUM_SUCCEED, MetricsApplicationListener::onFinishEventBuild);
+        MetricsCat APPLICATION_PUSH_ERROR = new MetricsCat(MetricsKey.METADATA_PUSH_METRIC_NUM_FAILED, MetricsApplicationListener::onErrorEventBuild);
 
         // MetricsSubscribeListener
-        super.addListener(onPostEventBuild(ApplicationType.S_TOTAL));
-        super.addListener(onFinishEventBuild(ApplicationType.S_SUCCEED, OP_TYPE_SUBSCRIBE.getType()));
-        super.addListener(onErrorEventBuild(ApplicationType.S_FAILED, OP_TYPE_SUBSCRIBE.getType()));
+        MetricsCat APPLICATION_SUBSCRIBE_POST = new MetricsCat(MetricsKey.METADATA_SUBSCRIBE_METRIC_NUM, MetricsApplicationListener::onPostEventBuild);
+        MetricsCat APPLICATION_SUBSCRIBE_FINISH = new MetricsCat(MetricsKey.METADATA_SUBSCRIBE_METRIC_NUM_SUCCEED, MetricsApplicationListener::onFinishEventBuild);
+        MetricsCat APPLICATION_SUBSCRIBE_ERROR = new MetricsCat(MetricsKey.METADATA_SUBSCRIBE_METRIC_NUM_FAILED, MetricsApplicationListener::onErrorEventBuild);
 
-        // StoreProviderMetadataListener
-        super.addListener(MetadataListener.onEvent(ServiceType.S_P_TOTAL,
-            this::incrServiceKey
-        ));
-        super.addListener(MetadataListener.onFinish(ServiceType.S_P_SUCCEED,
-            this::incrAndRt
-        ));
-        super.addListener(MetadataListener.onError(ServiceType.S_P_FAILED,
-            this::incrAndRt
-        ));
+        // MetricsSubscribeListener
+        MetricsCat SERVICE_SUBSCRIBE_POST = new MetricsCat(MetricsKey.STORE_PROVIDER_METADATA, MetricsServiceListener::onPostEventBuild);
+        MetricsCat SERVICE_SUBSCRIBE_FINISH = new MetricsCat(MetricsKey.STORE_PROVIDER_METADATA_SUCCEED, MetricsServiceListener::onFinishEventBuild);
+        MetricsCat SERVICE_SUBSCRIBE_ERROR = new MetricsCat(MetricsKey.STORE_PROVIDER_METADATA_FAILED, MetricsServiceListener::onErrorEventBuild);
 
     }
 
-    private void incrAndRt(MetadataEvent event, ServiceType type) {
-        incrServiceKey(event, type);
-        event.getCollector().addServiceKeyRT(event.getSource().getApplicationName(), event.getAttachmentValue(MetricsConstants.ATTACHMENT_KEY_SERVICE), OP_TYPE_STORE_PROVIDER_INTERFACE.getType(), event.getTimePair().calc());
-    }
 
-    private void incrServiceKey(MetadataEvent event, ServiceType type) {
-        event.getCollector().incrementServiceKey(event.getSource().getApplicationName(), event.getAttachmentValue(MetricsConstants.ATTACHMENT_KEY_SERVICE), type, 1);
-    }
-
-
-    private MetadataListener onPostEventBuild(ApplicationType applicationType) {
-        return MetadataListener.onEvent(applicationType,
-            (event, type) -> event.getCollector().increment(event.getSource().getApplicationName(), type)
-        );
-    }
-
-    private MetadataListener onFinishEventBuild(ApplicationType applicationType, String registryOpType) {
-        return MetadataListener.onFinish(applicationType,
-            (event, type) -> incrAndRt(event, applicationType, registryOpType)
-        );
-    }
-
-    private MetadataListener onErrorEventBuild(ApplicationType applicationType, String registryOpType) {
-        return MetadataListener.onError(applicationType,
-            (event, type) -> incrAndRt(event, applicationType, registryOpType)
-        );
-    }
-
-    private void incrAndRt(MetadataEvent event, ApplicationType applicationType, String registryOpType) {
-        event.getCollector().increment(event.getSource().getApplicationName(), applicationType);
-        event.getCollector().addApplicationRT(event.getSource().getApplicationName(), registryOpType, event.getTimePair().calc());
-    }
 }

@@ -15,31 +15,23 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.metrics.registry.event.type;
+package org.apache.dubbo.metrics.collector;
 
+import org.apache.dubbo.metrics.event.TimeCounterEvent;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
 
-public enum ApplicationType {
-    R_TOTAL(MetricsKey.REGISTER_METRIC_REQUESTS),
-    R_SUCCEED(MetricsKey.REGISTER_METRIC_REQUESTS_SUCCEED),
-    R_FAILED(MetricsKey.REGISTER_METRIC_REQUESTS_FAILED),
+/**
+ * Application-level collector.
+ * registration center, configuration center and other scenarios
+ *
+ * @Params <T>  metrics type
+ */
+public interface ServiceMetricsCollector<E extends TimeCounterEvent> extends MetricsCollector<E> {
 
-    S_TOTAL(MetricsKey.SUBSCRIBE_METRIC_NUM),
-    S_SUCCEED(MetricsKey.SUBSCRIBE_METRIC_NUM_SUCCEED),
-    S_FAILED(MetricsKey.SUBSCRIBE_METRIC_NUM_FAILED),
+    void increment(String applicationName, String serviceKey, MetricsKey metricsKey, int size);
 
-    N_TOTAL(MetricsKey.NOTIFY_METRIC_REQUESTS),
-    ;
+    void setNum(MetricsKey metricsKey, String applicationName, String serviceKey, int num);
 
-    private final MetricsKey metricsKey;
-
-
-    ApplicationType(MetricsKey metricsKey) {
-        this.metricsKey = metricsKey;
-    }
-
-    public MetricsKey getMetricsKey() {
-        return metricsKey;
-    }
-
+    void addRt(String applicationName, String serviceKey, String registryOpType, Long responseTime);
 }
+

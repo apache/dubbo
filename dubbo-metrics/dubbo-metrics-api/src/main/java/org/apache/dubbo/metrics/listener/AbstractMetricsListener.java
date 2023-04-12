@@ -15,19 +15,19 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.metrics.registry.event;
+package org.apache.dubbo.metrics.listener;
 
 import org.apache.dubbo.metrics.event.MetricsEvent;
-import org.apache.dubbo.metrics.listener.MetricsLifeListener;
+import org.apache.dubbo.metrics.event.TimeCounterEvent;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
 
 import java.util.function.Consumer;
 
-public abstract class RegistryListener implements MetricsLifeListener<RegistryEvent> {
+public abstract class AbstractMetricsListener implements MetricsLifeListener<TimeCounterEvent> {
 
     private final MetricsKey metricsKey;
 
-    public RegistryListener(MetricsKey metricsKey) {
+    public AbstractMetricsListener(MetricsKey metricsKey) {
         this.metricsKey = metricsKey;
     }
 
@@ -36,33 +36,35 @@ public abstract class RegistryListener implements MetricsLifeListener<RegistryEv
         return event.isAvailable() && event.isAssignableFrom(metricsKey);
     }
 
-    static RegistryListener onEvent(MetricsKey metricsKey, Consumer<RegistryEvent> postFunc) {
+    public static AbstractMetricsListener onEvent(MetricsKey metricsKey, Consumer<TimeCounterEvent> postFunc) {
 
-        return new RegistryListener(metricsKey) {
+        return new AbstractMetricsListener(metricsKey) {
             @Override
-            public void onEvent(RegistryEvent event) {
+            public void onEvent(TimeCounterEvent event) {
                 postFunc.accept(event);
             }
         };
     }
 
-    static RegistryListener onFinish(MetricsKey metricsKey, Consumer<RegistryEvent> finishFunc) {
+    public static AbstractMetricsListener onFinish(MetricsKey metricsKey, Consumer<TimeCounterEvent> finishFunc) {
 
-        return new RegistryListener(metricsKey) {
+        return new AbstractMetricsListener(metricsKey) {
             @Override
-            public void onEventFinish(RegistryEvent event) {
+            public void onEventFinish(TimeCounterEvent event) {
                 finishFunc.accept(event);
             }
         };
     }
 
-    static RegistryListener onError(MetricsKey metricsKey, Consumer<RegistryEvent> errorFunc) {
+    public static AbstractMetricsListener onError(MetricsKey metricsKey, Consumer<TimeCounterEvent> errorFunc) {
 
-        return new RegistryListener(metricsKey) {
+        return new AbstractMetricsListener(metricsKey) {
             @Override
-            public void onEventError(RegistryEvent event) {
+            public void onEventError(TimeCounterEvent event) {
                 errorFunc.accept(event);
             }
         };
     }
+
+
 }

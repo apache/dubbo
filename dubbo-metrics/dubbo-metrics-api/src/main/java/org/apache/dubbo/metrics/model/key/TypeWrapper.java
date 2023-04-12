@@ -21,11 +21,11 @@ import org.apache.dubbo.common.utils.Assert;
 
 public class TypeWrapper {
     private final MetricsLevel level;
-    private final Object postType;
-    private final Object finishType;
-    private final Object errorType;
+    private final MetricsKey postType;
+    private final MetricsKey finishType;
+    private final MetricsKey errorType;
 
-    public TypeWrapper(MetricsLevel level, Object postType, Object finishType, Object errorType) {
+    public TypeWrapper(MetricsLevel level, MetricsKey postType, MetricsKey finishType, MetricsKey errorType) {
         this.level = level;
         this.postType = postType;
         this.finishType = finishType;
@@ -36,7 +36,7 @@ public class TypeWrapper {
         return level;
     }
 
-    public Object getErrorType() {
+    public MetricsKey getErrorType() {
         return errorType;
     }
 

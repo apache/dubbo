@@ -17,16 +17,12 @@
 
 package org.apache.dubbo.metrics.metadata;
 
-<<<<<<< HEAD
-import org.apache.dubbo.metrics.metadata.stat.MetadataStatComposite;
-=======
 import org.apache.dubbo.metrics.data.ApplicationStatComposite;
 import org.apache.dubbo.metrics.data.BaseStatComposite;
 import org.apache.dubbo.metrics.data.RtStatComposite;
 import org.apache.dubbo.metrics.data.ServiceStatComposite;
->>>>>>> 3.2
-import org.apache.dubbo.metrics.metadata.type.ApplicationType;
 import org.apache.dubbo.metrics.model.container.LongContainer;
+import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -34,12 +30,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-<<<<<<< HEAD
-=======
-import static org.apache.dubbo.metrics.metadata.MetadataMetricsConstants.OP_TYPE_PUSH;
-import static org.apache.dubbo.metrics.metadata.MetadataMetricsConstants.OP_TYPE_STORE_PROVIDER_INTERFACE;
->>>>>>> 3.2
-import static org.apache.dubbo.metrics.metadata.MetadataMetricsConstants.OP_TYPE_SUBSCRIBE;
+import static org.apache.dubbo.metrics.metadata.MetadataMetricsConstants.*;
 
 public class MetadataStatCompositeTest {
 
@@ -49,19 +40,16 @@ public class MetadataStatCompositeTest {
         @Override
         protected void init(ApplicationStatComposite applicationStatComposite, ServiceStatComposite
             serviceStatComposite, RtStatComposite rtStatComposite) {
-            applicationStatComposite.init(MetadataMetricsConstants.appKeys);
-            serviceStatComposite.init(MetadataMetricsConstants.serviceKeys);
+            applicationStatComposite.init(MetadataMetricsConstants.APP_LEVEL_KEYS);
+            serviceStatComposite.init(MetadataMetricsConstants.SERVICE_LEVEL_KEYS);
             rtStatComposite.init(OP_TYPE_PUSH, OP_TYPE_SUBSCRIBE, OP_TYPE_STORE_PROVIDER_INTERFACE);
         }
     };
 
     @Test
     void testInit() {
-<<<<<<< HEAD
-        MetadataStatComposite statComposite = new MetadataStatComposite();
-=======
->>>>>>> 3.2
-        Assertions.assertEquals(statComposite.getApplicationStatComposite().getApplicationNumStats().size(), ApplicationType.values().length);
+        Assertions.assertEquals(statComposite.getApplicationStatComposite().getApplicationNumStats().size(), MetadataMetricsConstants.APP_LEVEL_KEYS.size());
+
         //(rt)5 * (push,subscribe,service)3
         Assertions.assertEquals(5 * 3, statComposite.getRtStatComposite().getRtStats().size());
         statComposite.getApplicationStatComposite().getApplicationNumStats().values().forEach((v ->
@@ -76,21 +64,13 @@ public class MetadataStatCompositeTest {
 
     @Test
     void testIncrement() {
-<<<<<<< HEAD
-        MetadataStatComposite statComposite = new MetadataStatComposite();
-        statComposite.incrementApp(ApplicationType.P_TOTAL.getMetricsKey(), applicationName,1);
-=======
-        statComposite.incrementApp(ApplicationType.P_TOTAL.getMetricsKey(), applicationName, 1);
->>>>>>> 3.2
-        Assertions.assertEquals(1L, statComposite.getApplicationStatComposite().getApplicationNumStats().get(ApplicationType.P_TOTAL.getMetricsKey()).get(applicationName).get());
+        statComposite.incrementApp(MetricsKey.METADATA_PUSH_METRIC_NUM, applicationName, 1);
+
+        Assertions.assertEquals(1L, statComposite.getApplicationStatComposite().getApplicationNumStats().get(MetricsKey.METADATA_PUSH_METRIC_NUM).get(applicationName).get());
     }
 
     @Test
     void testCalcRt() {
-<<<<<<< HEAD
-        MetadataStatComposite statComposite = new MetadataStatComposite();
-=======
->>>>>>> 3.2
         statComposite.calcApplicationRt(applicationName, OP_TYPE_SUBSCRIBE.getType(), 10L);
         Assertions.assertTrue(statComposite.getRtStatComposite().getRtStats().stream().anyMatch(longContainer -> longContainer.specifyType(OP_TYPE_SUBSCRIBE.getType())));
         Optional<LongContainer<? extends Number>> subContainer = statComposite.getRtStatComposite().getRtStats().stream().filter(longContainer -> longContainer.specifyType(OP_TYPE_SUBSCRIBE.getType())).findFirst();
