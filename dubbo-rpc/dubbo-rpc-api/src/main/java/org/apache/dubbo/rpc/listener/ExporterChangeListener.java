@@ -18,10 +18,22 @@ package org.apache.dubbo.rpc.listener;
 
 import org.apache.dubbo.rpc.Exporter;
 
-
+/**
+ * An interface for listening to changes in the export state of an Exporter object.
+ */
 public interface ExporterChangeListener {
 
+    /**
+     * This method is called when an Exporter object is exported.
+     *
+     * @param exporter The Exporter object that has been exported.
+     */
     void onExporterChangeExport(Exporter<?> exporter);
 
+    /**
+     * This method is called when an Exporter object is unexported.
+     *
+     * @param exporter The Exporter object that has been unexported.
+     */
     void onExporterChangeUnExport(Exporter<?> exporter);
 }

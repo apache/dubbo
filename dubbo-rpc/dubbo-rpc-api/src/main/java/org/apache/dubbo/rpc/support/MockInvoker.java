@@ -79,11 +79,11 @@ final public class MockInvoker<T> implements Invoker<T> {
         } else if (returnTypes != null && returnTypes.length > 0 && returnTypes[0] == String.class) {
             value = mock;
         } else if (StringUtils.isNumeric(mock, false)) {
-            value = JsonUtils.getJson().toJavaObject(mock, Object.class);
+            value = JsonUtils.toJavaObject(mock, Object.class);
         } else if (mock.startsWith("{")) {
-            value = JsonUtils.getJson().toJavaObject(mock, Map.class);
+            value = JsonUtils.toJavaObject(mock, Map.class);
         } else if (mock.startsWith("[")) {
-            value = JsonUtils.getJson().toJavaList(mock, Object.class);
+            value = JsonUtils.toJavaList(mock, Object.class);
         } else {
             value = mock;
         }

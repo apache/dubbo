@@ -58,7 +58,7 @@ public class MappingCacheManager extends AbstractCacheManager<Set<String>> {
 
     @Override
     protected Set<String> toValueType(String value) {
-        return new HashSet<>(JsonUtils.getJson().toJavaList(value, String.class));
+        return new HashSet<>(JsonUtils.toJavaList(value, String.class));
     }
 
     @Override

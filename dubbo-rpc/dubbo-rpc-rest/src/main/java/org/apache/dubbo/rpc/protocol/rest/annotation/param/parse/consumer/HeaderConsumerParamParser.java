@@ -22,6 +22,7 @@ import org.apache.dubbo.metadata.rest.ParamType;
 import org.apache.dubbo.remoting.http.RequestTemplate;
 
 import java.util.List;
+import java.util.Map;
 
 @Activate("consumer-header")
 public class HeaderConsumerParamParser implements BaseConsumerParamParser {
@@ -31,7 +32,25 @@ public class HeaderConsumerParamParser implements BaseConsumerParamParser {
 
         RequestTemplate requestTemplate = parseContext.getRequestTemplate();
 
-        requestTemplate.addHeader(argInfo.getParamName(), args.get(argInfo.getIndex()));
+        Object headerValue = args.get(argInfo.getIndex());
+
+        if (headerValue == null) {
+            return;
+        }
+
+
+        // Map<String,String>
+        if (Map.class.isAssignableFrom(argInfo.getParamType())) {
+            Map headerValues = (Map) headerValue;
+            for (Object name : headerValues.keySet()) {
+                requestTemplate.addHeader(String.valueOf(name), headerValues.get(name));
+            }
+        } else {
+            // others
+            requestTemplate.addHeader(argInfo.getAnnotationNameAttribute(), headerValue);
+
+        }
+
     }
 
     @Override

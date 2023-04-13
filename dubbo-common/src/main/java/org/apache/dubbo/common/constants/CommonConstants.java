@@ -118,8 +118,6 @@ public interface CommonConstants {
 
     String CONSUMER_SHARED_EXECUTOR_SERVICE_COMPONENT_KEY = "CONSUMER_SHARED_SERVICE_EXECUTOR";
 
-    String INTERNAL_EXECUTOR_SERVICE_COMPONENT_KEY = "INTERNAL_SERVICE_EXECUTOR";
-
     String THREADPOOL_KEY = "threadpool";
 
     String THREAD_NAME_KEY = "threadname";
@@ -620,5 +618,14 @@ public interface CommonConstants {
     String ENCODE_IN_IO_THREAD_KEY = "encode.in.io";
     boolean DEFAULT_ENCODE_IN_IO_THREAD = false;
 
+    /**
+     * @since 3.2.0
+     */
+    String BYTE_ACCESSOR_KEY = "byte.accessor";
+
     String PAYLOAD = "payload";
+
+    String DUBBO_METRICS_CONFIGCENTER_ENABLE = "dubbo.metrics.configcenter.enable";
+
+    Integer TRI_EXCEPTION_CODE_NOT_EXISTS = 0;
 }

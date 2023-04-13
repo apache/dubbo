@@ -253,7 +253,7 @@ public class MetricsFilter implements Filter, ExtensionAccessorAware, ScopeModel
 
                 List res = collector.build();
                 res.addAll(getThreadPoolMessage());
-                return AsyncRpcResult.newDefaultAsyncResult(JsonUtils.getJson().toJson(res), invocation);
+                return AsyncRpcResult.newDefaultAsyncResult(JsonUtils.toJson(res), invocation);
             }
 
             @Override

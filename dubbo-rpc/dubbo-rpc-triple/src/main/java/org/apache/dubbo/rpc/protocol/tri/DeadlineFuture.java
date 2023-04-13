@@ -20,7 +20,6 @@ package org.apache.dubbo.rpc.protocol.tri;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.resource.GlobalResourceInitializer;
-import org.apache.dubbo.common.threadpool.ThreadlessExecutor;
 import org.apache.dubbo.common.timer.HashedWheelTimer;
 import org.apache.dubbo.common.timer.Timeout;
 import org.apache.dubbo.common.timer.Timer;
@@ -34,7 +33,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 
 public class DeadlineFuture extends CompletableFuture<AppResponse> {
@@ -47,7 +46,7 @@ public class DeadlineFuture extends CompletableFuture<AppResponse> {
     private final long start = System.currentTimeMillis();
     private final List<Runnable> timeoutListeners = new ArrayList<>();
     private final Timeout timeoutTask;
-    private ExecutorService executor;
+    private Executor executor;
 
     private DeadlineFuture(String serviceName, String methodName, String address, int timeout) {
         this.serviceName = serviceName;
@@ -70,13 +69,9 @@ public class DeadlineFuture extends CompletableFuture<AppResponse> {
      * @return a new DeadlineFuture
      */
     public static DeadlineFuture newFuture(String serviceName, String methodName, String address,
-        int timeout, ExecutorService executor) {
+        int timeout, Executor executor) {
         final DeadlineFuture future = new DeadlineFuture(serviceName, methodName, address, timeout);
         future.setExecutor(executor);
-        // ThreadlessExecutor needs to hold the waiting future in case of circuit return.
-        if (executor instanceof ThreadlessExecutor) {
-            ((ThreadlessExecutor) executor).setWaitingFuture(future);
-        }
         return future;
     }
 
@@ -104,11 +99,11 @@ public class DeadlineFuture extends CompletableFuture<AppResponse> {
         return timeoutListeners;
     }
 
-    public ExecutorService getExecutor() {
+    public Executor getExecutor() {
         return executor;
     }
 
-    public void setExecutor(ExecutorService executor) {
+    public void setExecutor(Executor executor) {
         this.executor = executor;
     }
 
@@ -135,16 +130,6 @@ public class DeadlineFuture extends CompletableFuture<AppResponse> {
         this.complete(appResponse);
 
 
-        // the result is returning, but the caller thread may still waiting
-        // to avoid endless waiting for whatever reason, notify caller thread to return.
-        if (executor != null && executor instanceof ThreadlessExecutor) {
-            ThreadlessExecutor threadlessExecutor = (ThreadlessExecutor) executor;
-            if (threadlessExecutor.isWaiting()) {
-                threadlessExecutor.notifyReturn(new IllegalStateException(
-                    "The result has returned, but the biz thread is still waiting"
-                        + " which is not an expected state, interrupt the thread manually by returning an exception."));
-            }
-        }
     }
 
     private String getTimeoutMessage() {

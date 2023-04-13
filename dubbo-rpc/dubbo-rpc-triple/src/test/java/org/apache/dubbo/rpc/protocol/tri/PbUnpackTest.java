@@ -28,10 +28,10 @@ class PbUnpackTest {
     @Test
     void unpack() throws IOException {
         HealthCheckRequest req = HealthCheckRequest.newBuilder()
-            .setService("service")
-            .build();
-        PbUnpack<HealthCheckRequest> unpack=new PbUnpack<>(HealthCheckRequest.class);
-        HealthCheckRequest obj= (HealthCheckRequest) unpack.unpack(req.toByteArray());
-        Assertions.assertEquals("service",obj.getService());
+                .setService("service")
+                .build();
+        PbUnpack<HealthCheckRequest> unpack = new PbUnpack<>(HealthCheckRequest.class);
+        HealthCheckRequest obj = (HealthCheckRequest) unpack.unpack(req.toByteArray());
+        Assertions.assertEquals("service", obj.getService());
     }
 }

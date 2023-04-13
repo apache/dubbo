@@ -27,9 +27,9 @@ import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.metrics.event.GlobalMetricsEventMulticaster;
-import org.apache.dubbo.metrics.event.MetricsEvent;
+import org.apache.dubbo.metrics.event.MetricsEventBus;
 import org.apache.dubbo.metrics.registry.event.RegistryEvent;
+import org.apache.dubbo.metrics.registry.event.type.ServiceType;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcContext;
@@ -45,6 +45,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -131,8 +132,6 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
      */
     private final int reconnectTaskPeriod;
 
-    private final GlobalMetricsEventMulticaster eventMulticaster;
-
     private ApplicationModel applicationModel;
 
     public AbstractDirectory(URL url) {
@@ -187,7 +186,6 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         this.reconnectTaskPeriod = configuration.getInt(RECONNECT_TASK_PERIOD, DEFAULT_RECONNECT_TASK_PERIOD);
         setRouterChain(routerChain);
 
-        eventMulticaster = applicationModel.getBeanFactory().getBean(GlobalMetricsEventMulticaster.class);
     }
 
     @Override
@@ -354,6 +352,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
                 }
             }, reconnectTaskPeriod, TimeUnit.MILLISECONDS);
         }
+        MetricsEventBus.publish(RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary()));
     }
 
     /**
@@ -367,6 +366,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         if (invokersInitialized) {
             refreshInvokerInternal();
         }
+        MetricsEventBus.publish(RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary()));
     }
 
     private synchronized void refreshInvokerInternal() {
@@ -388,25 +388,18 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         invokersToRemove.removeAll(needToRemove);
     }
 
-    private void publishMetricsEvent(MetricsEvent event) {
-        if (eventMulticaster != null) {
-            eventMulticaster.publishEvent(event);
-        }
-    }
-
     @Override
     public void addDisabledInvoker(Invoker<T> invoker) {
-        publishMetricsEvent(new RegistryEvent.MetricsDirectoryEvent(applicationModel, RegistryEvent.ApplicationType.D_DISABLE));
         if (invokers.contains(invoker)) {
             disabledInvokers.add(invoker);
             removeValidInvoker(invoker);
             logger.info("Disable service address: " + invoker.getUrl() + ".");
         }
+        MetricsEventBus.publish(RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary()));
     }
 
     @Override
     public void recoverDisabledInvoker(Invoker<T> invoker) {
-        publishMetricsEvent(new RegistryEvent.MetricsDirectoryEvent(applicationModel, RegistryEvent.ApplicationType.D_RECOVER_DISABLE));
         if (disabledInvokers.remove(invoker)) {
             try {
                 addValidInvoker(invoker);
@@ -415,6 +408,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
 
             }
         }
+        MetricsEventBus.publish(RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary()));
     }
 
     protected final void refreshRouter(BitList<Invoker<T>> newlyInvokers, Runnable switchAction) {
@@ -470,7 +464,8 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         this.invokers = invokers;
         refreshInvokerInternal();
         this.invokersInitialized = true;
-        publishMetricsEvent(new RegistryEvent.MetricsDirectoryEvent(applicationModel, RegistryEvent.ApplicationType.D_CURRENT, invokers.size()));
+
+        MetricsEventBus.publish(RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary()));
     }
 
     protected void destroyInvokers() {
@@ -481,14 +476,12 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
     }
 
     private boolean addValidInvoker(Invoker<T> invoker) {
-        publishMetricsEvent(new RegistryEvent.MetricsDirectoryEvent(applicationModel, RegistryEvent.ApplicationType.D_VALID));
         synchronized (this.validInvokers) {
             return this.validInvokers.add(invoker);
         }
     }
 
     private boolean removeValidInvoker(Invoker<T> invoker) {
-        publishMetricsEvent(new RegistryEvent.MetricsDirectoryEvent(applicationModel, RegistryEvent.ApplicationType.D_UN_VALID));
         synchronized (this.validInvokers) {
             return this.validInvokers.remove(invoker);
         }
@@ -507,5 +500,30 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
             .map(Invoker::getUrl)
             .map(URL::getAddress)
             .collect(Collectors.joining(","));
+    }
+
+    private Map<ServiceType, Map<String, Integer>> getSummary() {
+        Map<ServiceType, Map<String, Integer>> summaryMap = new HashMap<>();
+
+        summaryMap.put(ServiceType.D_VALID, groupByServiceKey(getValidInvokers()));
+        summaryMap.put(ServiceType.D_DISABLE, groupByServiceKey(getDisabledInvokers()));
+        summaryMap.put(ServiceType.D_TO_RECONNECT, groupByServiceKey(getInvokersToReconnect()));
+        summaryMap.put(ServiceType.D_ALL, groupByServiceKey(getInvokers()));
+        return summaryMap;
+    }
+
+    private Map<String, Integer> groupByServiceKey(Collection<Invoker<T>> invokers) {
+
+        Map<String, Integer> serviceNumMap = new HashMap<>();
+        for (Invoker<T> invoker : invokers) {
+            if (invoker.getClass().getSimpleName().contains("Mockito")) {
+                return serviceNumMap;
+            }
+        }
+        if (invokers.size() > 0) {
+            serviceNumMap = invokers.stream().filter(invoker -> invoker.getInterface() != null).collect(Collectors.groupingBy(invoker -> invoker.getInterface().getName(), Collectors.reducing(0, e -> 1, Integer::sum)));
+        }
+
+        return serviceNumMap;
     }
 }
