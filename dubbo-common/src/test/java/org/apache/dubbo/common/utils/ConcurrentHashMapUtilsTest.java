@@ -47,8 +47,8 @@ class ConcurrentHashMapUtilsTest {
         final ConcurrentHashMap<String,Integer> map=new ConcurrentHashMap<>();
         // // map.computeIfAbsent("AaAa", key->map.computeIfAbsent("BBBB",key2->42));
 
-        // JDK8下，由于循环调用bug，会造成执行computeIfAbsent死循环问题
-        // ConcurrentHashMapUtils.computeIfAbsent用于解决此问题，保证正常执行
+        // In JDK8，for the bug of JDK-8161372，may cause dead cycle when use computeIfAbsent
+        // ConcurrentHashMapUtils.computeIfAbsent method to resolve this bug
         ConcurrentHashMapUtils.computeIfAbsent(map, "AaAa", key->map.computeIfAbsent("BBBB",key2->42));
         assertEquals(2, map.size());
         assertEquals(Integer.valueOf(42), map.get("AaAa"));
@@ -61,7 +61,7 @@ class ConcurrentHashMapUtilsTest {
         // https://github.com/apache/dubbo/issues/11986
         final ConcurrentHashMap<String,Integer> map=new ConcurrentHashMap<>();
 
-        // JDK9+解决了JDK-8161372这个，不过，遇到循环调用直接抛出IllegalStateException异常
+        // JDK9+ has been resolved JDK-8161372 bug, when cause dead then throw IllegalStateException
         assertThrows(IllegalStateException.class, ()->{
             ConcurrentHashMapUtils.computeIfAbsent(map, "AaAa", key->map.computeIfAbsent("BBBB",key2->42));
         });
