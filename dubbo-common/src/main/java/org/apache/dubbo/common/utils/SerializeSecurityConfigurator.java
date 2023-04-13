@@ -56,7 +56,7 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
 
     private volatile boolean autoTrustSerializeClass = true;
 
-    private volatile int trustSerializeClassLevel = 3;
+    private volatile int trustSerializeClassLevel = Integer.MAX_VALUE;
 
     public SerializeSecurityConfigurator(ModuleModel moduleModel) {
         this.moduleModel = moduleModel;

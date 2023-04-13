@@ -102,7 +102,7 @@ public class ServiceInstanceMetadataUtils {
             return null;
         }
 
-        return JsonUtils.getJson().toJson(params);
+        return JsonUtils.toJson(params);
     }
 
     private static Map<String, String> getParams(URL providerURL) {
@@ -174,7 +174,7 @@ public class ServiceInstanceMetadataUtils {
             endpoints.add(endpoint);
         });
 
-        metadata.put(ENDPOINTS, JsonUtils.getJson().toJson(endpoints));
+        metadata.put(ENDPOINTS, JsonUtils.toJson(endpoints));
     }
 
     /**

@@ -39,6 +39,10 @@ public enum ParamType {
     FORM(addSupportTypes(JAXRSClassConstants.FORM_PARAM_ANNOTATION_CLASS,
         SpringMvcClassConstants.REQUEST_BODY_ANNOTATION_CLASS)),
 
+    PROVIDER_BODY(addSupportTypes(
+        JAXRSClassConstants.REST_EASY_BODY_ANNOTATION_CLASS,JAXRSClassConstants.FORM_PARAM_ANNOTATION_CLASS,
+        SpringMvcClassConstants.REQUEST_BODY_ANNOTATION_CLASS, BodyTag.class)),
+
     EMPTY(addSupportTypes());
     private List<Class> annotationClasses;
 

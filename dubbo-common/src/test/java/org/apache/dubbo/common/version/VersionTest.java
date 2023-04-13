@@ -22,6 +22,12 @@ import org.apache.dubbo.common.Version;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.net.URL;
+import java.util.Enumeration;
+
 class VersionTest {
 
     @Test
@@ -93,12 +99,62 @@ class VersionTest {
     }
 
     @Test
-    void testGetVersion() {
-        Assertions.assertEquals("1.0.0", Version.getVersion());
+    void testGetVersion() throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        Class<?> versionClass = reloadVersionClass();
+        Assertions.assertEquals("1.0.0", versionClass.getDeclaredMethod("getVersion").invoke(null));
+    }
+
+    private static Class<?> reloadVersionClass() throws ClassNotFoundException {
+        ClassLoader originClassLoader = Thread.currentThread().getContextClassLoader();
+        ClassLoader classLoader = new ClassLoader(originClassLoader) {
+            @Override
+            public Class<?> loadClass(String name) throws ClassNotFoundException {
+                if (name.equals("org.apache.dubbo.common.Version")) {
+                    return findClass(name);
+                }
+                return super.loadClass(name);
+            }
+
+            @Override
+            protected Class<?> findClass(String name) throws ClassNotFoundException {
+                try {
+                    byte[] bytes = loadClassData(name);
+                    return defineClass(name, bytes, 0, bytes.length);
+                } catch (Exception e) {
+                    return getParent().loadClass(name);
+                }
+            }
+
+
+            public byte[] loadClassData(String className) throws IOException {
+                className = className.replaceAll("\\.", "/");
+                String path = Version.class.getProtectionDomain().getCodeSource().getLocation().getPath() + className + ".class";
+                FileInputStream fileInputStream;
+                byte[] classBytes;
+                fileInputStream = new FileInputStream(path);
+                int length = fileInputStream.available();
+                classBytes = new byte[length];
+                fileInputStream.read(classBytes);
+                fileInputStream.close();
+                return classBytes;
+            }
+
+            @Override
+            public Enumeration<URL> getResources(String name) throws IOException {
+
+                if (name.equals("META-INF/versions/dubbo-common")) {
+                    return super.getResources("META-INF/test-versions/dubbo-common");
+                }
+                return super.getResources(name);
+            }
+        };
+        Class<?> versionClass = classLoader.loadClass("org.apache.dubbo.common.Version");
+        return versionClass;
     }
 
     @Test
-    void testGetLastCommitId() {
-        Assertions.assertEquals("82a29fcd674216fe9bea10b6efef3196929dd7ca", Version.getLastCommitId());
+    void testGetLastCommitId() throws NoSuchMethodException, ClassNotFoundException, InvocationTargetException, IllegalAccessException {
+        Class<?> versionClass = reloadVersionClass();
+        Assertions.assertEquals("82a29fcd674216fe9bea10b6efef3196929dd7ca", versionClass.getDeclaredMethod("getLastCommitId").invoke(null));
     }
 }

@@ -45,7 +45,7 @@ public class SerializeCheckStatus implements BaseCommand {
             result.put("allowedPrefix", serializeCheckUtils.getAllowedList());
             result.put("disAllowedPrefix", serializeCheckUtils.getDisAllowedList());
 
-            return JsonUtils.getJson().toJson(result);
+            return JsonUtils.toJson(result);
         } else {
             return "CheckStatus: " + serializeCheckUtils.getStatus() + "\n\n" +
                 "CheckSerializable: " + serializeCheckUtils.isCheckSerializable() + "\n\n" +

@@ -274,7 +274,7 @@ class ConsumerConfigTest {
         consumerConfig.setConfigCenter(new ConfigCenterConfig());
 
         try {
-            JsonUtils.getJson().toJson(consumerConfig);
+            JsonUtils.toJson(consumerConfig);
         } catch (Throwable t) {
             Assertions.fail(t);
         }

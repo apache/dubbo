@@ -130,7 +130,7 @@ public class KubernetesServiceDiscovery extends AbstractServiceDiscovery {
                     .edit(pod ->
                             new PodBuilder(pod)
                                     .editOrNewMetadata()
-                                    .addToAnnotations(KUBERNETES_PROPERTIES_KEY, JsonUtils.getJson().toJson(serviceInstance.getMetadata()))
+                                    .addToAnnotations(KUBERNETES_PROPERTIES_KEY, JsonUtils.toJson(serviceInstance.getMetadata()))
                                     .endMetadata()
                                     .build());
             if (logger.isInfoEnabled()) {
@@ -416,7 +416,7 @@ public class KubernetesServiceDiscovery extends AbstractServiceDiscovery {
 
                     String properties = pod.getMetadata().getAnnotations().get(KUBERNETES_PROPERTIES_KEY);
                     if (StringUtils.isNotEmpty(properties)) {
-                        serviceInstance.getMetadata().putAll(JsonUtils.getJson().toJavaObject(properties, Map.class));
+                        serviceInstance.getMetadata().putAll(JsonUtils.toJavaObject(properties, Map.class));
                         instances.add(serviceInstance);
                     } else {
                         logger.warn(REGISTRY_UNABLE_FIND_SERVICE_KUBERNETES, "", "", "Unable to find Service Instance metadata in Pod Annotations. " +

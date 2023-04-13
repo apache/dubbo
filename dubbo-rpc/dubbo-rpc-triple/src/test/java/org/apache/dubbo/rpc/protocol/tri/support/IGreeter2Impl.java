@@ -21,4 +21,9 @@ public class IGreeter2Impl implements IGreeter2{
     public String echo(String request)  throws IGreeterException {
         throw new IGreeterException("I am self define exception");
     }
+
+    @Override
+    public Exception echoException(String request) {
+        return new IGreeterException("I am self define exception");
+    }
 }

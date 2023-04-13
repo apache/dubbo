@@ -224,7 +224,7 @@ class LoadBalanceBaseTest {
 
         @Override
         public String toString() {
-            return JsonUtils.getJson().toJson(this);
+            return JsonUtils.toJson(this);
         }
     }
 

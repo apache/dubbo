@@ -264,15 +264,15 @@ class AbstractMetadataReportTest {
         assertEquals(3, abstractMetadataReport.store.size());
 
         String v = abstractMetadataReport.store.get(providerMetadataIdentifier1.getUniqueKey(KeyTypeEnum.UNIQUE_KEY));
-        FullServiceDefinition data = JsonUtils.getJson().toJavaObject(v, FullServiceDefinition.class);
+        FullServiceDefinition data = JsonUtils.toJavaObject(v, FullServiceDefinition.class);
         checkParam(data.getParameters(), application, version);
 
         String v2 = abstractMetadataReport.store.get(providerMetadataIdentifier2.getUniqueKey(KeyTypeEnum.UNIQUE_KEY));
-        data = JsonUtils.getJson().toJavaObject(v2, FullServiceDefinition.class);
+        data = JsonUtils.toJavaObject(v2, FullServiceDefinition.class);
         checkParam(data.getParameters(), application, version + "_2");
 
         String v3 = abstractMetadataReport.store.get(consumerMetadataIdentifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY));
-        Map v3Map = JsonUtils.getJson().toJavaObject(v3, Map.class);
+        Map v3Map = JsonUtils.toJavaObject(v3, Map.class);
         checkParam(v3Map, application, version + "_3");
     }
 
