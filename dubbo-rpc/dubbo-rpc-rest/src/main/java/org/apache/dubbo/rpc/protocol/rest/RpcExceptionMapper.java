@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.rest;
 
+import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.protocol.rest.exception.mapper.ExceptionHandler;
 import org.apache.dubbo.rpc.protocol.rest.util.ConstraintViolationExceptionConvert;
@@ -24,14 +25,21 @@ import org.apache.dubbo.rpc.protocol.rest.util.ConstraintViolationExceptionConve
 public class RpcExceptionMapper implements ExceptionHandler<RpcException> {
 
 
-
     @Override
     public Object result(RpcException e) {
 
-        if (ConstraintViolationExceptionConvert.needConvert(e)){
-            return ConstraintViolationExceptionConvert.handleConstraintViolationException(e);
+        // javax dependency judge
+        if (violationDependency()) {
+            //  ConstraintViolationException judge
+            if (ConstraintViolationExceptionConvert.needConvert(e)) {
+                return ConstraintViolationExceptionConvert.handleConstraintViolationException(e);
+            }
         }
 
         return "Internal server error: " + e.getMessage();
+    }
+
+    private boolean violationDependency() {
+        return ClassUtils.isPresent("javax.validation.ConstraintViolationException", RpcExceptionMapper.class.getClassLoader());
     }
 }

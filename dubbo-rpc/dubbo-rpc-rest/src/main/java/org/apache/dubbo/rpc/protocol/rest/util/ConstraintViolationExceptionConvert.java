@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.rest.util;
 
-import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.protocol.rest.RestConstraintViolation;
 import org.apache.dubbo.rpc.protocol.rest.ViolationReport;
@@ -26,9 +25,7 @@ import javax.validation.ConstraintViolationException;
 
 public class ConstraintViolationExceptionConvert {
 
-    public static boolean violationDependency() {
-        return ClassUtils.isPresent("javax.validation.ConstraintViolationException", ConstraintViolationExceptionConvert.class.getClassLoader());
-    }
+
 
     public static Object handleConstraintViolationException(RpcException rpcException) {
         ConstraintViolationException cve = (ConstraintViolationException) rpcException.getCause();
@@ -43,9 +40,6 @@ public class ConstraintViolationExceptionConvert {
     }
 
     public static boolean needConvert(RpcException e) {
-        if (!violationDependency()) {
-            return false;
-        }
         return isConstraintViolationException(e);
     }
 
