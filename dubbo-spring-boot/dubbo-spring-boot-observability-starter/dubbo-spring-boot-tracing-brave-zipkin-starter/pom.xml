@@ -26,9 +26,9 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>dubbo-spring-boot-observability-brave-zipkin-starter</artifactId>
+    <artifactId>dubbo-spring-boot-tracing-brave-zipkin-starter</artifactId>
     <packaging>jar</packaging>
-    <description>Apache Dubbo Spring Boot Observability Brave Zipkin Starter</description>
+    <description>Apache Dubbo Spring Boot Tracing Brave Zipkin Starter</description>
 
     <dependencies>
         <dependency>

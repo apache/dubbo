@@ -125,7 +125,7 @@
 
         <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-spring-boot-observability-otel-zipkin-starter</artifactId>
+            <artifactId>dubbo-spring-boot-tracing-otel-zipkin-starter</artifactId>
         </dependency>
 
         <dependency>

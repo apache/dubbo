@@ -31,8 +31,8 @@
 
     <modules>
         <module>dubbo-spring-boot-observability-autoconfigure</module>
-        <module>dubbo-spring-boot-observability-otel-zipkin-starter</module>
-        <module>dubbo-spring-boot-observability-brave-zipkin-starter</module>
+        <module>dubbo-spring-boot-tracing-otel-zipkin-starter</module>
+        <module>dubbo-spring-boot-tracing-brave-zipkin-starter</module>
     </modules>
 
     <properties>
