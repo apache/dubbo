@@ -18,6 +18,7 @@
 package org.apache.dubbo.metrics.model;
 
 import org.apache.dubbo.common.Version;
+import org.apache.dubbo.metrics.model.key.MetricsKey;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -47,7 +47,7 @@ public class ServiceRestMetadataStorage {
                 while ((len = reader.read(buf)) != -1) {
                     stringBuilder.append(buf, 0, len);
                 }
-                return JsonUtils.getJson().toJavaList(stringBuilder.toString(), ServiceRestMetadata.class);
+                return JsonUtils.toJavaList(stringBuilder.toString(), ServiceRestMetadata.class);
             } catch (IOException e) {
                 return null;
             }
@@ -59,7 +59,7 @@ public class ServiceRestMetadataStorage {
         if (serviceRestMetadata.isEmpty()) {
             return;
         }
-        storage.write(() -> JsonUtils.getJson().toJson(serviceRestMetadata), SERVICE_REST_METADATA_RESOURCE_PATH);
+        storage.write(() -> JsonUtils.toJson(serviceRestMetadata), SERVICE_REST_METADATA_RESOURCE_PATH);
     }
 
 }

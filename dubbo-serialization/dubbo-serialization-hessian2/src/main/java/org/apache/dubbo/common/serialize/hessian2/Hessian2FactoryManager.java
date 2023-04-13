@@ -20,6 +20,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.dubbo.common.utils.DefaultSerializeClassChecker;
+import org.apache.dubbo.common.utils.SerializeCheckStatus;
+import org.apache.dubbo.common.utils.SerializeSecurityManager;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
@@ -33,9 +35,11 @@ public class Hessian2FactoryManager {
     private volatile SerializerFactory SYSTEM_SERIALIZER_FACTORY;
     private final Map<ClassLoader, SerializerFactory> CL_2_SERIALIZER_FACTORY = new ConcurrentHashMap<>();
 
+    private final SerializeSecurityManager serializeSecurityManager;
     private final DefaultSerializeClassChecker defaultSerializeClassChecker;
 
     public Hessian2FactoryManager(FrameworkModel frameworkModel) {
+        serializeSecurityManager = frameworkModel.getBeanFactory().getOrRegisterBean(SerializeSecurityManager.class);
         defaultSerializeClassChecker = frameworkModel.getBeanFactory().getOrRegisterBean(DefaultSerializeClassChecker.class);
     }
 
@@ -89,14 +93,17 @@ public class Hessian2FactoryManager {
             if (StringUtils.isNotEmpty(allowPattern)) {
                 for (String pattern : allowPattern.split(";")) {
                     serializerFactory.getClassFactory().allow(pattern);
+                    serializeSecurityManager.addToAlwaysAllowed(pattern);
                 }
             }
+            serializeSecurityManager.setCheckStatus(SerializeCheckStatus.STRICT);
         } else {
             serializerFactory.getClassFactory().setWhitelist(false);
             String denyPattern = System.getProperty(DENY);
             if (StringUtils.isNotEmpty(denyPattern)) {
                 for (String pattern : denyPattern.split(";")) {
                     serializerFactory.getClassFactory().deny(pattern);
+                    serializeSecurityManager.addToDisAllowed(pattern);
                 }
             }
         }

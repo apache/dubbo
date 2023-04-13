@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.executor.ExecutorSupport;
 import org.apache.dubbo.rpc.executor.IsolationExecutorSupportFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ProviderModel;
 
 import java.util.concurrent.ExecutorService;
 
@@ -47,6 +48,15 @@ public class IsolationExecutorRepository extends DefaultExecutorRepository {
     protected String getProviderKey(URL url) {
         if (url.getAttributes().containsKey(SERVICE_EXECUTOR)) {
             return url.getServiceKey();
+        } else {
+            return super.getProviderKey(url);
+        }
+    }
+
+    @Override
+    protected String getProviderKey(ProviderModel providerModel, URL url) {
+        if (url.getAttributes().containsKey(SERVICE_EXECUTOR)) {
+            return providerModel.getServiceKey();
         } else {
             return super.getProviderKey(url);
         }

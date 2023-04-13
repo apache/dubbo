@@ -41,7 +41,7 @@ public class SerializeWarnedClasses implements BaseCommand {
         if (commandContext.isHttp()) {
             Map<String, Object> result = new HashMap<>();
             result.put("warnedClasses", serializeCheckUtils.getWarnedClasses());
-            return JsonUtils.getJson().toJson(result);
+            return JsonUtils.toJson(result);
         } else {
             return "WarnedClasses: \n" +
                 serializeCheckUtils.getWarnedClasses().stream().sorted().collect(Collectors.joining("\n")) +

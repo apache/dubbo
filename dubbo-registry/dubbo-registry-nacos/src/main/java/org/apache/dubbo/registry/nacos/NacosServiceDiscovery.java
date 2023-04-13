@@ -49,6 +49,7 @@ import static com.alibaba.nacos.api.common.Constants.DEFAULT_GROUP;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_NACOS_EXCEPTION;
 import static org.apache.dubbo.common.function.ThrowableConsumer.execute;
 import static org.apache.dubbo.metadata.RevisionResolver.EMPTY_REVISION;
+import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.EXPORTED_SERVICES_REVISION_PROPERTY_NAME;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getExportedServicesRevision;
 import static org.apache.dubbo.registry.nacos.util.NacosNamingServiceUtils.createNamingService;
 import static org.apache.dubbo.registry.nacos.util.NacosNamingServiceUtils.getGroup;
@@ -78,7 +79,7 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
         this.namingService = createNamingService(registryURL);
         // backward compatibility for 3.0.x
         this.group = Boolean.parseBoolean(ConfigurationUtils.getProperty(applicationModel, NACOS_SD_USE_DEFAULT_GROUP_KEY, "false")) ?
-            DEFAULT_GROUP : getGroup(registryURL);
+                DEFAULT_GROUP : getGroup(registryURL);
     }
 
     @Override
@@ -105,13 +106,14 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
 
     @Override
     protected void doUpdate(ServiceInstance oldServiceInstance, ServiceInstance newServiceInstance) throws RuntimeException {
-        if (EMPTY_REVISION.equals(getExportedServicesRevision(newServiceInstance))) {
+        if (EMPTY_REVISION.equals(getExportedServicesRevision(newServiceInstance))
+                || EMPTY_REVISION.equals(oldServiceInstance.getMetadata().get(EXPORTED_SERVICES_REVISION_PROPERTY_NAME))) {
             super.doUpdate(oldServiceInstance, newServiceInstance);
             return;
         }
 
         if (!Objects.equals(newServiceInstance.getHost(), oldServiceInstance.getHost()) ||
-            !Objects.equals(newServiceInstance.getPort(), oldServiceInstance.getPort())) {
+                !Objects.equals(newServiceInstance.getPort(), oldServiceInstance.getPort())) {
             // Ignore if id changed. Should unregister first.
             super.doUpdate(oldServiceInstance, newServiceInstance);
             return;
@@ -143,15 +145,15 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
     @Override
     public List<ServiceInstance> getInstances(String serviceName) throws NullPointerException {
         return ThrowableFunction.execute(namingService, service ->
-            service.selectInstances(serviceName, group, true)
-                .stream().map((i) -> NacosNamingServiceUtils.toServiceInstance(registryURL, i))
-                .collect(Collectors.toList())
+                service.selectInstances(serviceName, group, true)
+                        .stream().map((i) -> NacosNamingServiceUtils.toServiceInstance(registryURL, i))
+                        .collect(Collectors.toList())
         );
     }
 
     @Override
     public void addServiceInstancesChangedListener(ServiceInstancesChangedListener listener)
-        throws NullPointerException, IllegalArgumentException {
+            throws NullPointerException, IllegalArgumentException {
         // check if listener has already been added through another interface/service
         if (!instanceListeners.add(listener)) {
             return;
@@ -228,9 +230,9 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
     private void handleEvent(NamingEvent event, ServiceInstancesChangedListener listener) {
         String serviceName = event.getServiceName();
         List<ServiceInstance> serviceInstances = event.getInstances()
-            .stream()
-            .map((i) -> NacosNamingServiceUtils.toServiceInstance(registryURL, i))
-            .collect(Collectors.toList());
+                .stream()
+                .map((i) -> NacosNamingServiceUtils.toServiceInstance(registryURL, i))
+                .collect(Collectors.toList());
         listener.onEvent(new ServiceInstancesChangedEvent(serviceName, serviceInstances));
     }
 }
