@@ -34,7 +34,6 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.MD5Utils;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.metrics.collector.ConfigCenterMetricsCollector;
 import org.apache.dubbo.metrics.config.event.ConfigCenterEvent;
 import org.apache.dubbo.metrics.event.MetricsEventBus;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -347,8 +346,6 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
             }
             listeners.forEach(listener -> listener.process(event));
 
-            ConfigCenterMetricsCollector collector =
-                applicationModel.getBeanFactory().getOrRegisterBean(ConfigCenterMetricsCollector.class);
             MetricsEventBus.publish(ConfigCenterEvent.toChangeEvent(applicationModel, event.getKey(), event.getGroup(),
                 "nacos", ConfigChangeType.ADDED.name(), SELF_INCREMENT_SIZE));
         }
