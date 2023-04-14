@@ -108,8 +108,5 @@ public class RegistryStatCompositeTest {
 //        Assertions.assertEquals((responseTime1 + responseTime2) / 2, avgSample.applyAsLong());
     }
 
-    @Test
-    void testIncrementServiceKey() {
 
-    }
 }
