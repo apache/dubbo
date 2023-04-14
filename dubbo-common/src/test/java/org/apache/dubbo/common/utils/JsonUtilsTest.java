@@ -322,7 +322,7 @@ class JsonUtilsTest {
     private static void setJson(JsonUtil json) {
         try {
             if (jsonFieldCache == null) {
-                jsonFieldCache = JsonUtils.class.getDeclaredField("json");
+                jsonFieldCache = JsonUtils.class.getDeclaredField("jsonUtil");
                 jsonFieldCache.setAccessible(true);
             }
 
