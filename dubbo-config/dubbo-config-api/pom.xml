@@ -226,6 +226,5 @@
             <version>1.18.0</version>
             <scope>test</scope>
         </dependency>
-
     </dependencies>
 </project>

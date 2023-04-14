@@ -52,7 +52,7 @@ public class Hessian2SerializerFactory extends SerializerFactory {
         }
 
         if (!Serializable.class.isAssignableFrom(cl)
-            && (!isAllowNonSerializable() || !defaultSerializeClassChecker.isCheckSerializable())) {
+            && (!isAllowNonSerializable() || defaultSerializeClassChecker.isCheckSerializable())) {
             throw new IllegalStateException("Serialized class " + cl.getName() + " must implement java.io.Serializable");
         }
 

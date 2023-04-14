@@ -125,6 +125,8 @@ java.util.TreeMap
 java.util.TreeSet
 java.util.UUID
 java.util.WeakHashMap
-org.apache.dubbo
-com.alibaba.dubbo
+org.apache.dubbo.metadata.MetadataInfo
 com.alibaba.com.caucho.hessian.io
+com.alibaba.dubbo.rpc.service.GenericException
+org.apache.dubbo.rpc.service.GenericException
+org.apache.dubbo.rpc.RpcException

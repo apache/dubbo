@@ -50,6 +50,7 @@ class FileTest {
         ignoredModules.add(Pattern.compile("dubbo-parent"));
         ignoredModules.add(Pattern.compile("dubbo-core-spi"));
         ignoredModules.add(Pattern.compile("dubbo-demo.*"));
+        ignoredModules.add(Pattern.compile("dubbo-annotation-processor"));
 
         ignoredArtifacts.add(Pattern.compile("dubbo-demo.*"));
         ignoredArtifacts.add(Pattern.compile("dubbo-test.*"));
@@ -64,6 +65,7 @@ class FileTest {
         ignoredModulesInDubboAll.add(Pattern.compile("dubbo-native.*"));
         ignoredModulesInDubboAll.add(Pattern.compile("dubbo-config-spring6.*"));
         ignoredModulesInDubboAll.add(Pattern.compile("dubbo-spring-boot.*"));
+        ignoredModulesInDubboAll.add(Pattern.compile("dubbo-annotation-processor.*"));
         ignoredModulesInDubboAll.add(Pattern.compile("dubbo-maven-plugin"));
     }
 

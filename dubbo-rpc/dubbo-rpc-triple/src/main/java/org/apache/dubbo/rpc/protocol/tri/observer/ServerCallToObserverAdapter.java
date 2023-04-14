@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.rpc.protocol.tri.observer;
 
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.CancellationContext;
@@ -35,6 +36,26 @@ public class ServerCallToObserverAdapter<T> extends CancelableStreamObserver<T> 
     private final AbstractServerCall call;
     private Map<String, Object> attachments;
     private boolean terminated = false;
+
+    private boolean isNeedReturnException = false;
+
+    private Integer exceptionCode = CommonConstants.TRI_EXCEPTION_CODE_NOT_EXISTS;
+
+    public Integer getExceptionCode() {
+        return exceptionCode;
+    }
+
+    public void setExceptionCode(Integer exceptionCode) {
+        this.exceptionCode = exceptionCode;
+    }
+
+    public boolean isNeedReturnException() {
+        return isNeedReturnException;
+    }
+
+    public void setNeedReturnException(boolean needReturnException) {
+        isNeedReturnException = needReturnException;
+    }
 
     public ServerCallToObserverAdapter(AbstractServerCall call,
         CancellationContext cancellationContext) {
@@ -61,6 +82,8 @@ public class ServerCallToObserverAdapter<T> extends CancelableStreamObserver<T> 
             throw new IllegalStateException(
                 "Stream observer has been terminated, no more data is allowed");
         }
+        call.setExceptionCode(exceptionCode);
+        call.setNeedReturnException(isNeedReturnException);
         call.sendMessage(data);
     }
 
@@ -74,6 +97,8 @@ public class ServerCallToObserverAdapter<T> extends CancelableStreamObserver<T> 
         if (isTerminated()) {
             return;
         }
+        call.setExceptionCode(exceptionCode);
+        call.setNeedReturnException(isNeedReturnException);
         call.close(status, attachments);
         setTerminated();
     }
