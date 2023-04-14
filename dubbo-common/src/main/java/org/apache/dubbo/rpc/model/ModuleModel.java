@@ -105,7 +105,10 @@ public class ModuleModel extends ScopeModel {
                 deployer.preDestroy();
             }
 
-            // 3. release services
+            // 3. destroy application if none pub module
+            applicationModel.tryDestroy();
+
+            // 4. release services and clear some repositories
             if (deployer != null) {
                 deployer.postDestroy();
             }
@@ -127,9 +130,6 @@ public class ModuleModel extends ScopeModel {
                 moduleConfigManager.destroy();
                 moduleConfigManager = null;
             }
-
-            // destroy application if none pub module
-            applicationModel.tryDestroy();
         }
     }
 
