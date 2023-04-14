@@ -24,4 +24,6 @@ public interface MetricsConstants {
     String ATTACHMENT_KEY_LAST_NUM_MAP = "lastNumMap";
     String ATTACHMENT_DIRECTORY_MAP = "dirNum";
 
+    int SELF_INCREMENT_SIZE = 1;
+
 }

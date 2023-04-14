@@ -21,8 +21,8 @@ import org.apache.dubbo.metrics.data.ApplicationStatComposite;
 import org.apache.dubbo.metrics.data.BaseStatComposite;
 import org.apache.dubbo.metrics.data.RtStatComposite;
 import org.apache.dubbo.metrics.data.ServiceStatComposite;
-import org.apache.dubbo.metrics.metadata.type.ApplicationType;
 import org.apache.dubbo.metrics.model.container.LongContainer;
+import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -42,15 +42,16 @@ public class MetadataStatCompositeTest {
         @Override
         protected void init(ApplicationStatComposite applicationStatComposite, ServiceStatComposite
             serviceStatComposite, RtStatComposite rtStatComposite) {
-            applicationStatComposite.init(MetadataMetricsConstants.appKeys);
-            serviceStatComposite.init(MetadataMetricsConstants.serviceKeys);
+            applicationStatComposite.init(MetadataMetricsConstants.APP_LEVEL_KEYS);
+            serviceStatComposite.init(MetadataMetricsConstants.SERVICE_LEVEL_KEYS);
             rtStatComposite.init(OP_TYPE_PUSH, OP_TYPE_SUBSCRIBE, OP_TYPE_STORE_PROVIDER_INTERFACE);
         }
     };
 
     @Test
     void testInit() {
-        Assertions.assertEquals(statComposite.getApplicationStatComposite().getApplicationNumStats().size(), ApplicationType.values().length);
+        Assertions.assertEquals(statComposite.getApplicationStatComposite().getApplicationNumStats().size(), MetadataMetricsConstants.APP_LEVEL_KEYS.size());
+
         //(rt)5 * (push,subscribe,service)3
         Assertions.assertEquals(5 * 3, statComposite.getRtStatComposite().getRtStats().size());
         statComposite.getApplicationStatComposite().getApplicationNumStats().values().forEach((v ->
@@ -65,8 +66,9 @@ public class MetadataStatCompositeTest {
 
     @Test
     void testIncrement() {
-        statComposite.incrementApp(ApplicationType.P_TOTAL.getMetricsKey(), applicationName, 1);
-        Assertions.assertEquals(1L, statComposite.getApplicationStatComposite().getApplicationNumStats().get(ApplicationType.P_TOTAL.getMetricsKey()).get(applicationName).get());
+        statComposite.incrementApp(MetricsKey.METADATA_PUSH_METRIC_NUM, applicationName, 1);
+
+        Assertions.assertEquals(1L, statComposite.getApplicationStatComposite().getApplicationNumStats().get(MetricsKey.METADATA_PUSH_METRIC_NUM).get(applicationName).get());
     }
 
     @Test
