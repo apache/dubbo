@@ -41,6 +41,7 @@ public class ServiceKeyMetric implements Metric {
         this.serviceKey = serviceKey;
     }
 
+    @Override
     public Map<String, String> getTags() {
         Map<String, String> tags = new HashMap<>();
         tags.put(TAG_IP, getLocalHost());

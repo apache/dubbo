@@ -69,7 +69,6 @@ public class RegistryStatComposite implements MetricsExport {
             skStats.put(type, new ConcurrentHashMap<>());
         }
 
-
         appRtStats.addAll(initStats(OP_TYPE_REGISTER));
         appRtStats.addAll(initStats(OP_TYPE_SUBSCRIBE));
         appRtStats.addAll(initStats(OP_TYPE_NOTIFY));
@@ -87,6 +86,7 @@ public class RegistryStatComposite implements MetricsExport {
         // AvgContainer is a special counter that stores the number of times but outputs function of sum/times
         AtomicLongContainer avgContainer = new AtomicLongContainer(new MetricsKeyWrapper(registryOpType, MetricsKey.METRIC_RT_AVG), (k, v) -> v.incrementAndGet());
         avgContainer.setValueSupplier(applicationName -> {
+            //TODO: appRtStats OR serviceRtStats ?
             LongContainer<? extends Number> totalContainer = appRtStats.stream().filter(longContainer -> longContainer.isKeyWrapper(MetricsKey.METRIC_RT_SUM, registryOpType)).findFirst().get();
             AtomicLong totalRtTimes = avgContainer.get(applicationName);
             AtomicLong totalRtSum = (AtomicLong) totalContainer.get(applicationName);
@@ -171,7 +171,15 @@ public class RegistryStatComposite implements MetricsExport {
         for (LongContainer<? extends Number> rtContainer : rtStats) {
             MetricsKeyWrapper metricsKeyWrapper = rtContainer.getMetricsKeyWrapper();
             for (Map.Entry<String, ? extends Number> entry : rtContainer.entrySet()) {
-                list.add(new GaugeMetricSample<>(metricsKeyWrapper.targetKey(), metricsKeyWrapper.targetDesc(), tagNameFunc.apply(entry.getKey()), MetricsCategory.RT, entry.getKey().intern(), value -> rtContainer.getValueSupplier().apply(value.intern())));
+                list.add(new GaugeMetricSample<>(
+                    metricsKeyWrapper.targetKey(),
+                    metricsKeyWrapper.targetDesc(),
+                    tagNameFunc.apply(entry.getKey()),
+                    MetricsCategory.RT,
+                    entry.getKey().intern(),
+                    value -> rtContainer.getValueSupplier().apply(value.intern())
+                    )
+                );
             }
         }
     }

@@ -18,15 +18,18 @@
 package org.apache.dubbo.metrics.registry.metrics.collector;
 
 import org.apache.dubbo.metrics.model.container.LongContainer;
+import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.registry.collector.stat.RegistryStatComposite;
 import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static org.apache.dubbo.metrics.model.MetricsKey.*;
 import static org.apache.dubbo.metrics.registry.collector.stat.RegistryStatComposite.OP_TYPE_NOTIFY;
 
 public class RegistryStatCompositeTest {
@@ -63,5 +66,48 @@ public class RegistryStatCompositeTest {
         Assertions.assertTrue(statComposite.appRtStats.stream().anyMatch(longContainer -> longContainer.specifyType(OP_TYPE_NOTIFY)));
         Optional<LongContainer<? extends Number>> subContainer = statComposite.appRtStats.stream().filter(longContainer -> longContainer.specifyType(OP_TYPE_NOTIFY)).findFirst();
         subContainer.ifPresent(v -> Assertions.assertEquals(10L, v.get(applicationName).longValue()));
+    }
+
+    @Test
+    @SuppressWarnings("rawtypes")
+    void testCalcServiceKeyRt() {
+        RegistryStatComposite registryStatComposite = new RegistryStatComposite();
+        String applicationName = "TestApp";
+        String serviceKey = "TestService";
+        String registryOpType = RegistryStatComposite.OP_TYPE_REGISTER_SERVICE;
+        Long responseTime1 = 100L;
+        Long responseTime2 = 200L;
+
+        registryStatComposite.calcServiceKeyRt(applicationName, serviceKey, registryOpType, responseTime1);
+        registryStatComposite.calcServiceKeyRt(applicationName, serviceKey, registryOpType, responseTime2);
+
+        List<GaugeMetricSample> exportedRtMetrics = registryStatComposite.exportRtMetrics();
+
+        GaugeMetricSample minSample = exportedRtMetrics.stream()
+            .filter(sample -> sample.getTags().containsValue(applicationName))
+            .filter(sample -> sample.getName().equals(METRIC_RT_MIN.getNameByType("register.service")))
+            .findFirst().orElse(null);
+        GaugeMetricSample maxSample = exportedRtMetrics.stream()
+            .filter(sample -> sample.getTags().containsValue(applicationName))
+            .filter(sample -> sample.getName().equals(METRIC_RT_MAX.getNameByType("register.service")))
+            .findFirst().orElse(null);
+        GaugeMetricSample avgSample = exportedRtMetrics.stream()
+            .filter(sample -> sample.getTags().containsValue(applicationName))
+            .filter(sample -> sample.getName().equals(METRIC_RT_AVG.getNameByType("register.service")))
+            .findFirst().orElse(null);
+
+        Assertions.assertNotNull(minSample);
+        Assertions.assertNotNull(maxSample);
+        Assertions.assertNotNull(avgSample);
+
+        Assertions.assertEquals(responseTime1, minSample.applyAsLong());
+        Assertions.assertEquals(responseTime2, maxSample.applyAsLong());
+        //TODO:
+//        Assertions.assertEquals((responseTime1 + responseTime2) / 2, avgSample.applyAsLong());
+    }
+
+    @Test
+    void testIncrementServiceKey() {
+
     }
 }
