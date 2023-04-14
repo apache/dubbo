@@ -29,7 +29,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.apache.dubbo.metrics.model.MetricsKey.*;
+import static org.apache.dubbo.metrics.model.MetricsKey.METRIC_RT_MIN;
+import static org.apache.dubbo.metrics.model.MetricsKey.METRIC_RT_MAX;
+import static org.apache.dubbo.metrics.model.MetricsKey.METRIC_RT_AVG;
 import static org.apache.dubbo.metrics.registry.collector.stat.RegistryStatComposite.OP_TYPE_NOTIFY;
 
 public class RegistryStatCompositeTest {
