@@ -39,7 +39,6 @@ public abstract class MetricsEvent {
 
     private final Map<String, Object> attachment = new HashMap<>(8);
 
-    @SuppressWarnings({"unchecked"})
     public MetricsEvent(ApplicationModel source) {
         if (source == null) {
             this.source = ApplicationModel.defaultModel();
@@ -106,7 +105,7 @@ public abstract class MetricsEvent {
         CODEC_EXCEPTION("CODEC_EXCEPTION_%s"),
         ;
 
-        private String name;
+        private final String name;
 
         public final String getName() {
             return this.name;

@@ -19,14 +19,10 @@ package org.apache.dubbo.metrics.metadata.event;
 
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.metrics.event.TimeCounterEvent;
-import org.apache.dubbo.metrics.exception.MetricsNeverHappenException;
 import org.apache.dubbo.metrics.metadata.collector.MetadataMetricsCollector;
 import org.apache.dubbo.metrics.model.key.MetricsLevel;
 import org.apache.dubbo.metrics.model.key.TypeWrapper;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.apache.dubbo.metrics.MetricsConstants.ATTACHMENT_KEY_SERVICE;
 import static org.apache.dubbo.metrics.model.key.MetricsKey.METADATA_PUSH_METRIC_NUM;
@@ -43,39 +39,15 @@ import static org.apache.dubbo.metrics.model.key.MetricsKey.STORE_PROVIDER_METAD
  * Registry related events
  */
 public class MetadataEvent extends TimeCounterEvent {
-    private final MetadataMetricsCollector collector;
-    private final Map<String, Object> attachment = new HashMap<>(8);
-
     public MetadataEvent(ApplicationModel applicationModel, TypeWrapper typeWrapper) {
         super(applicationModel);
         super.typeWrapper = typeWrapper;
         ScopeBeanFactory beanFactory = applicationModel.getBeanFactory();
-        if (beanFactory.isDestroyed()) {
-            this.collector = null;
-        } else {
-            this.collector = beanFactory.getBean(MetadataMetricsCollector.class);
-            super.setAvailable(this.collector != null && collector.isCollectEnabled());
+        MetadataMetricsCollector collector;
+        if (!beanFactory.isDestroyed()) {
+            collector = beanFactory.getBean(MetadataMetricsCollector.class);
+            super.setAvailable(collector != null && collector.isCollectEnabled());
         }
-    }
-
-    @SuppressWarnings("unchecked")
-    public <T> T getAttachmentValue(String key) {
-        if (!attachment.containsKey(key)) {
-            throw new MetricsNeverHappenException("Attachment key [" + key + "] not found");
-        }
-        return (T) attachment.get(key);
-    }
-
-    public void putAttachment(String key, Object value) {
-        attachment.put(key, value);
-    }
-
-    public ApplicationModel getSource() {
-        return source;
-    }
-
-    public MetadataMetricsCollector getCollector() {
-        return collector;
     }
 
     public static MetadataEvent toPushEvent(ApplicationModel applicationModel) {

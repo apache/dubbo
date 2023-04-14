@@ -26,6 +26,8 @@ import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 
 import java.util.List;
 
+import static org.apache.dubbo.metrics.MetricsConstants.SELF_INCREMENT_SIZE;
+
 public abstract class CombMetricsCollector<E extends TimeCounterEvent> implements ApplicationMetricsCollector<E>, ServiceMetricsCollector<E> {
 
     private final BaseStatComposite stats;
@@ -47,7 +49,7 @@ public abstract class CombMetricsCollector<E extends TimeCounterEvent> implement
 
     @Override
     public void increment(String applicationName, MetricsKey metricsKey) {
-        this.stats.incrementApp(metricsKey, applicationName, 1);
+        this.stats.incrementApp(metricsKey, applicationName, SELF_INCREMENT_SIZE);
     }
 
     public void increment(String applicationName, String serviceKey, MetricsKey metricsKey, int size) {

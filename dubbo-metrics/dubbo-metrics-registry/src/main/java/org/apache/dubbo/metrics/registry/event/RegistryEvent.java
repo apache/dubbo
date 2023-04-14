@@ -37,28 +37,16 @@ import static org.apache.dubbo.metrics.MetricsConstants.ATTACHMENT_KEY_SIZE;
  * Registry related events
  */
 public class RegistryEvent extends TimeCounterEvent {
-    private final RegistryMetricsCollector collector;
     public RegistryEvent(ApplicationModel applicationModel, TypeWrapper typeWrapper) {
         super(applicationModel);
         super.typeWrapper = typeWrapper;
         ScopeBeanFactory beanFactory = getSource().getBeanFactory();
-        if (beanFactory.isDestroyed()) {
-            this.collector = null;
-        } else {
-            this.collector = beanFactory.getBean(RegistryMetricsCollector.class);
-            super.setAvailable(this.collector != null && collector.isCollectEnabled());
+        RegistryMetricsCollector collector;
+        if (!beanFactory.isDestroyed()) {
+            collector = beanFactory.getBean(RegistryMetricsCollector.class);
+            super.setAvailable(collector != null && collector.isCollectEnabled());
         }
     }
-
-
-    public ApplicationModel getSource() {
-        return source;
-    }
-
-    public RegistryMetricsCollector getCollector() {
-        return collector;
-    }
-
 
     public static RegistryEvent toRegisterEvent(ApplicationModel applicationModel) {
         return new RegistryEvent(applicationModel, new TypeWrapper(MetricsLevel.APP, MetricsKey.REGISTER_METRIC_REQUESTS, MetricsKey.REGISTER_METRIC_REQUESTS_SUCCEED, MetricsKey.REGISTER_METRIC_REQUESTS_FAILED));

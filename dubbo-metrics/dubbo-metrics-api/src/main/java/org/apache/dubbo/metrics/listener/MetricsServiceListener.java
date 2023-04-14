@@ -23,6 +23,7 @@ import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.key.MetricsPlaceType;
 
 import static org.apache.dubbo.metrics.MetricsConstants.ATTACHMENT_KEY_SERVICE;
+import static org.apache.dubbo.metrics.MetricsConstants.SELF_INCREMENT_SIZE;
 
 public class MetricsServiceListener extends AbstractMetricsListener {
 
@@ -32,7 +33,7 @@ public class MetricsServiceListener extends AbstractMetricsListener {
 
     public static AbstractMetricsListener onPostEventBuild(MetricsKey metricsKey, ServiceMetricsCollector<TimeCounterEvent> collector) {
         return AbstractMetricsListener.onEvent(metricsKey,
-            event -> collector.increment(event.appName(), event.getAttachmentValue(ATTACHMENT_KEY_SERVICE), metricsKey, 1)
+            event -> collector.increment(event.appName(), event.getAttachmentValue(ATTACHMENT_KEY_SERVICE), metricsKey, SELF_INCREMENT_SIZE)
         );
     }
 
@@ -49,7 +50,7 @@ public class MetricsServiceListener extends AbstractMetricsListener {
     }
 
     private static void incrAndAddRt(MetricsKey metricsKey, MetricsPlaceType placeType, ServiceMetricsCollector<TimeCounterEvent> collector, TimeCounterEvent event) {
-        collector.increment(event.appName(), event.getAttachmentValue(ATTACHMENT_KEY_SERVICE), metricsKey,1);
+        collector.increment(event.appName(), event.getAttachmentValue(ATTACHMENT_KEY_SERVICE), metricsKey, SELF_INCREMENT_SIZE);
         collector.addRt(event.appName(), event.getAttachmentValue(ATTACHMENT_KEY_SERVICE), placeType.getType(), event.getTimePair().calc());
     }
 }
