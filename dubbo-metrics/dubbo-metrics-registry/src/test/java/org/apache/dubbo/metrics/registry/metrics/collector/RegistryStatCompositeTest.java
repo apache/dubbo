@@ -23,7 +23,6 @@ import org.apache.dubbo.metrics.data.RtStatComposite;
 import org.apache.dubbo.metrics.data.ServiceStatComposite;
 import org.apache.dubbo.metrics.model.container.LongContainer;
 import org.apache.dubbo.metrics.registry.RegistryMetricsConstants;
-import org.apache.dubbo.metrics.registry.event.type.ApplicationType;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -31,6 +30,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static org.apache.dubbo.metrics.model.key.MetricsKey.REGISTER_METRIC_REQUESTS;
 import static org.apache.dubbo.metrics.registry.RegistryMetricsConstants.OP_TYPE_NOTIFY;
 import static org.apache.dubbo.metrics.registry.RegistryMetricsConstants.OP_TYPE_REGISTER;
 import static org.apache.dubbo.metrics.registry.RegistryMetricsConstants.OP_TYPE_REGISTER_SERVICE;
@@ -43,15 +43,15 @@ public class RegistryStatCompositeTest {
     private final BaseStatComposite statComposite = new BaseStatComposite() {
         @Override
         protected void init(ApplicationStatComposite applicationStatComposite, ServiceStatComposite serviceStatComposite, RtStatComposite rtStatComposite) {
-            applicationStatComposite.init(RegistryMetricsConstants.appKeys);
-            serviceStatComposite.init(RegistryMetricsConstants.serviceKeys);
+            applicationStatComposite.init(RegistryMetricsConstants.APP_LEVEL_KEYS);
+            serviceStatComposite.init(RegistryMetricsConstants.SERVICE_LEVEL_KEYS);
             rtStatComposite.init(OP_TYPE_REGISTER, OP_TYPE_SUBSCRIBE, OP_TYPE_NOTIFY, OP_TYPE_REGISTER_SERVICE, OP_TYPE_SUBSCRIBE_SERVICE);
         }
     };
 
     @Test
     void testInit() {
-        Assertions.assertEquals(statComposite.getApplicationStatComposite().getApplicationNumStats().size(), ApplicationType.values().length);
+        Assertions.assertEquals(statComposite.getApplicationStatComposite().getApplicationNumStats().size(), RegistryMetricsConstants.APP_LEVEL_KEYS.size());
         //(rt)5 * (register,subscribe,notify,register.service,subscribe.service)5
         Assertions.assertEquals(5 * 5, statComposite.getRtStatComposite().getRtStats().size());
         statComposite.getApplicationStatComposite().getApplicationNumStats().values().forEach((v ->
@@ -66,8 +66,8 @@ public class RegistryStatCompositeTest {
 
     @Test
     void testIncrement() {
-        statComposite.incrementApp(ApplicationType.R_TOTAL.getMetricsKey(), applicationName, 1);
-        Assertions.assertEquals(1L, statComposite.getApplicationStatComposite().getApplicationNumStats().get(ApplicationType.R_TOTAL.getMetricsKey()).get(applicationName).get());
+        statComposite.incrementApp(REGISTER_METRIC_REQUESTS, applicationName, 1);
+        Assertions.assertEquals(1L, statComposite.getApplicationStatComposite().getApplicationNumStats().get(REGISTER_METRIC_REQUESTS).get(applicationName).get());
     }
 
     @Test
