@@ -15,36 +15,23 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.metrics.metadata.type;
+package org.apache.dubbo.metrics.collector;
 
+import org.apache.dubbo.metrics.event.TimeCounterEvent;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
 
-public enum ServiceType {
+/**
+ * Application-level collector.
+ * registration center, configuration center and other scenarios
+ *
+ * @Params <T>  metrics type
+ */
+public interface ServiceMetricsCollector<E extends TimeCounterEvent> extends MetricsCollector<E> {
 
-    S_P_TOTAL(MetricsKey.STORE_PROVIDER_METADATA),
-    S_P_SUCCEED(MetricsKey.STORE_PROVIDER_METADATA_SUCCEED),
-    S_P_FAILED(MetricsKey.STORE_PROVIDER_METADATA_FAILED),
+    void increment(String applicationName, String serviceKey, MetricsKey metricsKey, int size);
 
-    ;
+    void setNum(MetricsKey metricsKey, String applicationName, String serviceKey, int num);
 
-    private final MetricsKey metricsKey;
-    private final boolean isIncrement;
-
-
-    ServiceType(MetricsKey metricsKey) {
-        this(metricsKey, true);
-    }
-
-    ServiceType(MetricsKey metricsKey, boolean isIncrement) {
-        this.metricsKey = metricsKey;
-        this.isIncrement = isIncrement;
-    }
-
-    public MetricsKey getMetricsKey() {
-        return metricsKey;
-    }
-
-    public boolean isIncrement() {
-        return isIncrement;
-    }
+    void addRt(String applicationName, String serviceKey, String registryOpType, Long responseTime);
 }
+

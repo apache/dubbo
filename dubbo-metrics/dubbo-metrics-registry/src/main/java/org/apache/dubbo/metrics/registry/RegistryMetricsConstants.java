@@ -20,25 +20,49 @@ package org.apache.dubbo.metrics.registry;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.key.MetricsLevel;
 import org.apache.dubbo.metrics.model.key.MetricsPlaceType;
-import org.apache.dubbo.metrics.registry.event.type.ApplicationType;
-import org.apache.dubbo.metrics.registry.event.type.ServiceType;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
+
+import static org.apache.dubbo.metrics.model.key.MetricsKey.DIRECTORY_METRIC_NUM_ALL;
+import static org.apache.dubbo.metrics.model.key.MetricsKey.DIRECTORY_METRIC_NUM_DISABLE;
+import static org.apache.dubbo.metrics.model.key.MetricsKey.DIRECTORY_METRIC_NUM_TO_RECONNECT;
+import static org.apache.dubbo.metrics.model.key.MetricsKey.DIRECTORY_METRIC_NUM_VALID;
+import static org.apache.dubbo.metrics.model.key.MetricsKey.NOTIFY_METRIC_NUM_LAST;
+import static org.apache.dubbo.metrics.model.key.MetricsKey.NOTIFY_METRIC_REQUESTS;
+import static org.apache.dubbo.metrics.model.key.MetricsKey.REGISTER_METRIC_REQUESTS;
+import static org.apache.dubbo.metrics.model.key.MetricsKey.REGISTER_METRIC_REQUESTS_FAILED;
+import static org.apache.dubbo.metrics.model.key.MetricsKey.REGISTER_METRIC_REQUESTS_SUCCEED;
+import static org.apache.dubbo.metrics.model.key.MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS;
+import static org.apache.dubbo.metrics.model.key.MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS_FAILED;
+import static org.apache.dubbo.metrics.model.key.MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS_SUCCEED;
+import static org.apache.dubbo.metrics.model.key.MetricsKey.SERVICE_SUBSCRIBE_METRIC_NUM;
+import static org.apache.dubbo.metrics.model.key.MetricsKey.SERVICE_SUBSCRIBE_METRIC_NUM_FAILED;
+import static org.apache.dubbo.metrics.model.key.MetricsKey.SERVICE_SUBSCRIBE_METRIC_NUM_SUCCEED;
+import static org.apache.dubbo.metrics.model.key.MetricsKey.SUBSCRIBE_METRIC_NUM;
+import static org.apache.dubbo.metrics.model.key.MetricsKey.SUBSCRIBE_METRIC_NUM_FAILED;
+import static org.apache.dubbo.metrics.model.key.MetricsKey.SUBSCRIBE_METRIC_NUM_SUCCEED;
 
 public interface RegistryMetricsConstants {
 
     MetricsPlaceType OP_TYPE_REGISTER = MetricsPlaceType.of("register", MetricsLevel.APP);
     MetricsPlaceType OP_TYPE_SUBSCRIBE = MetricsPlaceType.of("subscribe", MetricsLevel.APP);
     MetricsPlaceType OP_TYPE_NOTIFY = MetricsPlaceType.of("notify", MetricsLevel.APP);
+    MetricsPlaceType OP_TYPE_DIRECTORY = MetricsPlaceType.of("directory", MetricsLevel.APP);
     MetricsPlaceType OP_TYPE_REGISTER_SERVICE = MetricsPlaceType.of("register.service", MetricsLevel.SERVICE);
     MetricsPlaceType OP_TYPE_SUBSCRIBE_SERVICE = MetricsPlaceType.of("subscribe.service", MetricsLevel.SERVICE);
 
     // App-level
-    List<MetricsKey> appKeys = Arrays.stream(ApplicationType.values()).map(ApplicationType::getMetricsKey).collect(Collectors.toList());
+    List<MetricsKey> APP_LEVEL_KEYS = Arrays.asList(REGISTER_METRIC_REQUESTS, REGISTER_METRIC_REQUESTS_SUCCEED, REGISTER_METRIC_REQUESTS_FAILED,
+        SUBSCRIBE_METRIC_NUM, SUBSCRIBE_METRIC_NUM_SUCCEED, SUBSCRIBE_METRIC_NUM_FAILED,
+        NOTIFY_METRIC_REQUESTS);
 
     // Service-level
-    List<MetricsKey> serviceKeys = Arrays.stream(ServiceType.values()).map(ServiceType::getMetricsKey).collect(Collectors.toList());
+    List<MetricsKey> SERVICE_LEVEL_KEYS = Arrays.asList(NOTIFY_METRIC_NUM_LAST,
+        SERVICE_REGISTER_METRIC_REQUESTS, SERVICE_REGISTER_METRIC_REQUESTS_SUCCEED, SERVICE_REGISTER_METRIC_REQUESTS_FAILED,
+        SERVICE_SUBSCRIBE_METRIC_NUM, SERVICE_SUBSCRIBE_METRIC_NUM_SUCCEED, SERVICE_SUBSCRIBE_METRIC_NUM_FAILED,
+        DIRECTORY_METRIC_NUM_VALID, DIRECTORY_METRIC_NUM_TO_RECONNECT, DIRECTORY_METRIC_NUM_DISABLE, DIRECTORY_METRIC_NUM_ALL
+    );
+
 
 }
