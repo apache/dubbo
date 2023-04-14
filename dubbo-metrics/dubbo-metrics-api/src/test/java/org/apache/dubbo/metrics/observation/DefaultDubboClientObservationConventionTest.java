@@ -24,7 +24,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 
-@SuppressWarnings("deprecation")
 public class DefaultDubboClientObservationConventionTest {
 
     static DubboClientObservationConvention dubboClientObservationConvention = DefaultDubboClientObservationConvention.getInstance();
