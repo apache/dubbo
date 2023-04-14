@@ -78,8 +78,8 @@ public interface ObjectInput extends DataInput {
         return (Throwable) obj;
     }
 
-    default Object readEvent() throws IOException, ClassNotFoundException {
-        return readObject();
+    default String readEvent() throws IOException, ClassNotFoundException {
+        return readUTF();
     }
 
     default Map<String, Object> readAttachments() throws IOException, ClassNotFoundException {

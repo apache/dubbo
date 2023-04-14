@@ -16,42 +16,57 @@
  */
 package org.apache.dubbo.rpc.protocol.dubbo;
 
-import org.apache.dubbo.common.ServiceKey;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.executor.AbstractIsolationExecutorSupport;
-
-import java.util.Map;
-
-import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import org.apache.dubbo.rpc.model.FrameworkServiceRepository;
+import org.apache.dubbo.rpc.model.ProviderModel;
+import org.apache.dubbo.rpc.model.ServiceModel;
 
 public class DubboIsolationExecutorSupport extends AbstractIsolationExecutorSupport {
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(DubboIsolationExecutorSupport.class);
 
+    private final FrameworkServiceRepository frameworkServiceRepository;
+    private final DubboProtocol dubboProtocol;
+
     public DubboIsolationExecutorSupport(URL url) {
         super(url);
+        frameworkServiceRepository = url.getOrDefaultFrameworkModel().getServiceRepository();
+        dubboProtocol = DubboProtocol.getDubboProtocol(url.getOrDefaultFrameworkModel());
     }
 
     @Override
-    protected ServiceKey getServiceKey(Object data) {
+    protected ProviderModel getProviderModel(Object data) {
         if (!(data instanceof Request)) {
             return null;
         }
 
         Request request = (Request) data;
-        if (!(request.getData() instanceof Invocation)) {
+        if (!(request.getData() instanceof DecodeableRpcInvocation)) {
             return null;
         }
-        Invocation inv = (Invocation) request.getData();
-        Map<String, String> attachments = inv.getAttachments();
-        String interfaceName = attachments.get(PATH_KEY);
-        String version = attachments.get(VERSION_KEY);
-        String group = attachments.get(GROUP_KEY);
-        return new ServiceKey(interfaceName, version, group);
+
+        try {
+            ((DecodeableRpcInvocation) request.getData()).fillInvoker(dubboProtocol);
+        } catch (RemotingException e) {
+            // ignore here, and this exception will being rethrow in DubboProtocol
+        }
+
+        ServiceModel serviceModel = ((Invocation) request.getData()).getServiceModel();
+        if (serviceModel instanceof ProviderModel) {
+            return (ProviderModel) serviceModel;
+        }
+
+        String targetServiceUniqueName = ((Invocation) request.getData()).getTargetServiceUniqueName();
+        if (StringUtils.isNotEmpty(targetServiceUniqueName)) {
+            return frameworkServiceRepository.lookupExportedService(targetServiceUniqueName);
+        }
+
+        return null;
     }
 }

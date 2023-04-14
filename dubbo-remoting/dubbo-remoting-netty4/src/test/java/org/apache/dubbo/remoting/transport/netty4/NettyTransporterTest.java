@@ -17,18 +17,24 @@
 package org.apache.dubbo.remoting.transport.netty4;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.RemotingServer;
 import org.apache.dubbo.remoting.transport.ChannelHandlerAdapter;
 
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ModuleModel;
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.CountDownLatch;
 
+import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_MANAGEMENT_MODE_DEFAULT;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
@@ -39,6 +45,17 @@ class NettyTransporterTest {
         URL url = new ServiceConfigURL("telnet", "localhost", port,
                 new String[]{Constants.BIND_PORT_KEY, String.valueOf(port)});
 
+        ApplicationModel applicationModel = ApplicationModel.defaultModel();
+        ApplicationConfig applicationConfig = new ApplicationConfig("provider-app");
+        applicationConfig.setExecutorManagementMode(EXECUTOR_MANAGEMENT_MODE_DEFAULT);
+        applicationModel.getApplicationConfigManager().setApplication(applicationConfig);
+        ConfigManager configManager = new ConfigManager(applicationModel);
+        configManager.setApplication(applicationConfig);
+        configManager.getApplication();
+        applicationModel.setConfigManager(configManager);
+        url = url.setScopeModel(applicationModel);
+        ModuleModel moduleModel = applicationModel.getDefaultModule();
+        url = url.putAttribute(CommonConstants.SCOPE_MODEL, moduleModel);
         RemotingServer server = new NettyTransporter().bind(url, new ChannelHandlerAdapter());
 
         assertThat(server.isBound(), is(true));
@@ -51,7 +68,17 @@ class NettyTransporterTest {
         int port = NetUtils.getAvailablePort();
         URL url = new ServiceConfigURL("telnet", "localhost", port,
                 new String[]{Constants.BIND_PORT_KEY, String.valueOf(port)});
-
+        ApplicationModel applicationModel = ApplicationModel.defaultModel();
+        ApplicationConfig applicationConfig = new ApplicationConfig("provider-app");
+        applicationConfig.setExecutorManagementMode(EXECUTOR_MANAGEMENT_MODE_DEFAULT);
+        applicationModel.getApplicationConfigManager().setApplication(applicationConfig);
+        ConfigManager configManager = new ConfigManager(applicationModel);
+        configManager.setApplication(applicationConfig);
+        configManager.getApplication();
+        applicationModel.setConfigManager(configManager);
+        url = url.setScopeModel(applicationModel);
+        ModuleModel moduleModel = applicationModel.getDefaultModule();
+        url = url.putAttribute(CommonConstants.SCOPE_MODEL, moduleModel);
         new NettyTransporter().bind(url, new ChannelHandlerAdapter() {
 
             @Override

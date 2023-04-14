@@ -61,5 +61,11 @@ public interface JaxrsRestService {
     @POST
     String pathVariable(@PathParam("a") String a);
 
+    @Path("/noAnno")
+    @Consumes(MediaType.TEXT_PLAIN)
+    @Produces(MediaType.TEXT_PLAIN)
+    @POST
+    String noAnno(String a);
+
 
 }

@@ -33,6 +33,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
 
@@ -239,7 +240,7 @@ class MeshRuleRouterTest {
     void testRuleChange() {
         StandardMeshRuleRouter<Object> meshRuleRouter = new StandardMeshRuleRouter<>(url);
 
-        Yaml yaml = new Yaml(new SafeConstructor());
+        Yaml yaml = new Yaml(new SafeConstructor(new LoaderOptions()));
         List<Map<String, Object>> rules = new LinkedList<>();
         rules.add(yaml.load(rule1));
 
@@ -275,7 +276,7 @@ class MeshRuleRouterTest {
     void testRoute2() {
         StandardMeshRuleRouter<Object> meshRuleRouter = new StandardMeshRuleRouter<>(url);
 
-        Yaml yaml = new Yaml(new SafeConstructor());
+        Yaml yaml = new Yaml(new SafeConstructor(new LoaderOptions()));
         List<Map<String, Object>> rules = new LinkedList<>();
         rules.add(yaml.load(rule1));
         rules.add(yaml.load(rule2));

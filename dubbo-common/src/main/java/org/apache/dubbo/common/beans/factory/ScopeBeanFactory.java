@@ -268,6 +268,10 @@ public class ScopeBeanFactory {
         }
     }
 
+    public boolean isDestroyed() {
+        return destroyed.get();
+    }
+
     private void checkDestroyed() {
         if (destroyed.get()) {
             throw new IllegalStateException("ScopeBeanFactory is destroyed");

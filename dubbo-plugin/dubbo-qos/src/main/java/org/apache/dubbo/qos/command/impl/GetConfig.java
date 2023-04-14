@@ -30,6 +30,7 @@ import org.apache.dubbo.config.ReferenceConfigBase;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfigBase;
 import org.apache.dubbo.config.SslConfig;
+import org.apache.dubbo.config.TracingConfig;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.context.ModuleConfigManager;
 import org.apache.dubbo.qos.api.BaseCommand;
@@ -65,7 +66,7 @@ public class GetConfig implements BaseCommand {
         appendFrameworkConfig(args, plainOutput, frameworkMap);
 
         if (http) {
-            return JsonUtils.getJson().toJson(frameworkMap);
+            return JsonUtils.toJson(frameworkMap);
         } else {
             return plainOutput.toString();
         }
@@ -107,6 +108,9 @@ public class GetConfig implements BaseCommand {
 
         Optional<MetricsConfig> metricsConfig = configManager.getMetrics();
         metricsConfig.ifPresent(config -> appendConfig("MetricsConfig", config.getId(), config, plainOutput, applicationMap, args));
+
+        Optional<TracingConfig> tracingConfig = configManager.getTracing();
+        tracingConfig.ifPresent(config -> appendConfig("TracingConfig", config.getId(), config, plainOutput, applicationMap, args));
 
         Optional<MonitorConfig> monitorConfig = configManager.getMonitor();
         monitorConfig.ifPresent(config -> appendConfig("MonitorConfig", config.getId(), config, plainOutput, applicationMap, args));

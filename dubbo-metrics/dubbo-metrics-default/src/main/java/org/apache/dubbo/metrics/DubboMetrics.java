@@ -19,7 +19,6 @@ package org.apache.dubbo.metrics;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.binder.MeterBinder;
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
-import org.apache.dubbo.metrics.report.AbstractMetricsReporter;
 
 
 public class DubboMetrics implements MeterBinder {
@@ -29,7 +28,7 @@ public class DubboMetrics implements MeterBinder {
     @Override
     public void bindTo(MeterRegistry registry) {
         globalRegistry = registry;
-        CompositeMeterRegistry compositeRegistry = AbstractMetricsReporter.compositeRegistry;
+        CompositeMeterRegistry compositeRegistry = MetricsGlobalRegistry.getCompositeRegistry();
         if (compositeRegistry != null) {
             compositeRegistry.add(registry);
         }

@@ -28,7 +28,7 @@ import org.apache.dubbo.metrics.event.MetricsEvent;
 import org.apache.dubbo.metrics.event.RTEvent;
 import org.apache.dubbo.metrics.listener.MetricsListener;
 import org.apache.dubbo.metrics.model.MethodMetric;
-import org.apache.dubbo.metrics.model.MetricsKey;
+import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -66,7 +66,7 @@ public class AggregateMetricsCollector implements MetricsCollector, MetricsListe
         this.applicationModel = applicationModel;
         ConfigManager configManager = applicationModel.getApplicationConfigManager();
         MetricsConfig config = configManager.getMetrics().orElse(null);
-        if (config != null && config.getAggregation() != null && Boolean.TRUE.equals(config.getAggregation().getEnabled())) {
+        if (config != null && config.getAggregation() != null && (config.getAggregation().getEnabled() == null || Boolean.TRUE.equals(config.getAggregation().getEnabled()))) {
             // only registered when aggregation is enabled.
             registerListener();
 
@@ -86,7 +86,7 @@ public class AggregateMetricsCollector implements MetricsCollector, MetricsListe
     }
 
     private void onRTEvent(RTEvent event) {
-        MethodMetric metric = (MethodMetric) event.getSource();
+        MethodMetric metric = (MethodMetric) event.getMetric();
         Long responseTime = event.getRt();
         TimeWindowQuantile quantile = ConcurrentHashMapUtils.computeIfAbsent(rt, metric, k -> new TimeWindowQuantile(DEFAULT_COMPRESSION, bucketNum, timeWindowSeconds));
         quantile.add(responseTime);
@@ -94,7 +94,7 @@ public class AggregateMetricsCollector implements MetricsCollector, MetricsListe
 
 
     private void onRequestEvent(MethodEvent event) {
-        MethodMetric metric = (MethodMetric) event.getSource();
+        MethodMetric metric = event.getMethodMetric();
 
         String type = event.getType();
 

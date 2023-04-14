@@ -27,6 +27,8 @@ public class Hessian2ScopeModelInitializer implements ScopeModelInitializer {
     public void initializeFrameworkModel(FrameworkModel frameworkModel) {
         ScopeBeanFactory beanFactory = frameworkModel.getBeanFactory();
         beanFactory.registerBean(Hessian2FactoryManager.class);
+
+        frameworkModel.addClassLoaderListener(new Hessian2ClassLoaderListener());
     }
 
     @Override

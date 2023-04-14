@@ -98,7 +98,7 @@ public class PrometheusMetricsReporterCmd implements BaseCommand {
         for (ApplicationModel model : models) {
             appResultMap.put(model.getApplicationName(), getResponseByApplication(model));
         }
-        return JsonUtils.getJson().toJson(appResultMap);
+        return JsonUtils.toJson(appResultMap);
     }
 
     @Override
