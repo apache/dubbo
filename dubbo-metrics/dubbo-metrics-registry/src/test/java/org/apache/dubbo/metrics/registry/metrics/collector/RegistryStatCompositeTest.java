@@ -24,7 +24,6 @@ import org.apache.dubbo.metrics.data.ServiceStatComposite;
 import org.apache.dubbo.metrics.model.MetricsCategory;
 import org.apache.dubbo.metrics.model.container.LongContainer;
 import org.apache.dubbo.metrics.registry.RegistryMetricsConstants;
-import org.apache.dubbo.metrics.registry.event.type.ApplicationType;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 
 import org.junit.jupiter.api.Assertions;
@@ -90,7 +89,6 @@ public class RegistryStatCompositeTest {
     @Test
     @SuppressWarnings("rawtypes")
     void testCalcServiceKeyRt() {
-
         String applicationName = "TestApp";
         String serviceKey = "TestService";
         String registryOpType = OP_TYPE_REGISTER_SERVICE.getType();
