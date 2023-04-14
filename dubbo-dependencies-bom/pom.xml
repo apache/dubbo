@@ -150,7 +150,7 @@
         <nacos_version>2.1.2</nacos_version>
         <grpc.version>1.54.0</grpc.version>
         <grpc_contrib_verdion>0.8.1</grpc_contrib_verdion>
-        <jprotoc_version>1.2.1</jprotoc_version>
+        <jprotoc_version>1.2.2</jprotoc_version>
         <!-- Log libs -->
         <slf4j_version>1.7.36</slf4j_version>
         <jcl_version>1.2</jcl_version>
