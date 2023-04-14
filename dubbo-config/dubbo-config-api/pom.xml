@@ -226,6 +226,11 @@
             <version>1.18.0</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-metrics-config-center</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
 
     </dependencies>
 </project>

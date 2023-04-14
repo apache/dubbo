@@ -14,9 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.metrics.config;
 
-package org.apache.dubbo.metrics.model.key;
+public interface ConfigCenterMetricsConstants {
 
-public enum MetricsLevel {
-    APP,SERVICE,CONFIG
+    String ATTACHMENT_KEY_CONFIG_FILE = "configFileKey";
+    String ATTACHMENT_KEY_CONFIG_GROUP = "configGroup";
+    String ATTACHMENT_KEY_CONFIG_PROTOCOL = "configProtocol";
+    String ATTACHMENT_KEY_CHANGE_TYPE = "configChangeType";
+
 }

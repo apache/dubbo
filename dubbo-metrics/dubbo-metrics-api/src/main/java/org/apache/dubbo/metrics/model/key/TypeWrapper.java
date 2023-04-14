@@ -25,6 +25,10 @@ public class TypeWrapper {
     private final MetricsKey finishType;
     private final MetricsKey errorType;
 
+    public TypeWrapper(MetricsLevel level, MetricsKey postType) {
+        this(level, postType, null, null);
+    }
+
     public TypeWrapper(MetricsLevel level, MetricsKey postType, MetricsKey finishType, MetricsKey errorType) {
         this.level = level;
         this.postType = postType;
@@ -34,10 +38,6 @@ public class TypeWrapper {
 
     public MetricsLevel getLevel() {
         return level;
-    }
-
-    public MetricsKey getErrorType() {
-        return errorType;
     }
 
     public boolean isAssignableFrom(Object type) {
