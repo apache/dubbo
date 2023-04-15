@@ -17,9 +17,13 @@
 
 package org.apache.dubbo.metrics.event;
 
+import org.apache.dubbo.metrics.exception.MetricsNeverHappenException;
 import org.apache.dubbo.metrics.model.MethodMetric;
 import org.apache.dubbo.metrics.model.key.TypeWrapper;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * BaseMetricsEvent.
@@ -33,7 +37,8 @@ public abstract class MetricsEvent {
     private boolean available = true;
     protected TypeWrapper typeWrapper;
 
-    @SuppressWarnings({"unchecked"})
+    private final Map<String, Object> attachment = new HashMap<>(8);
+
     public MetricsEvent(ApplicationModel source) {
         if (source == null) {
             this.source = ApplicationModel.defaultModel();
@@ -42,6 +47,18 @@ public abstract class MetricsEvent {
         } else {
             this.source = source;
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> T getAttachmentValue(String key) {
+        if (!attachment.containsKey(key)) {
+            throw new MetricsNeverHappenException("Attachment key [" + key + "] not found");
+        }
+        return (T) attachment.get(key);
+    }
+
+    public void putAttachment(String key, Object value) {
+        attachment.put(key, value);
     }
 
     public void setAvailable(boolean available) {
@@ -59,6 +76,10 @@ public abstract class MetricsEvent {
 
     public ApplicationModel getSource() {
         return source;
+    }
+
+    public String appName() {
+        return getSource().getApplicationName();
     }
 
     public boolean isAssignableFrom(Object type) {
@@ -84,7 +105,7 @@ public abstract class MetricsEvent {
         CODEC_EXCEPTION("CODEC_EXCEPTION_%s"),
         ;
 
-        private String name;
+        private final String name;
 
         public final String getName() {
             return this.name;

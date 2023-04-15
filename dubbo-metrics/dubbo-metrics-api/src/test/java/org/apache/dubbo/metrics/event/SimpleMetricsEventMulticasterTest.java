@@ -33,7 +33,7 @@ public class SimpleMetricsEventMulticasterTest {
     private SimpleMetricsEventMulticaster eventMulticaster;
     private Object[] objects;
     private final Object obj = new Object();
-    private MetricsEvent requestEvent;
+    private TimeCounterEvent requestEvent;
 
     @BeforeEach
     public void setup() {
@@ -52,7 +52,7 @@ public class SimpleMetricsEventMulticasterTest {
         ConfigManager configManager = new ConfigManager(applicationModel);
         configManager.setApplication(applicationConfig);
         applicationModel.setConfigManager(configManager);
-        requestEvent = new MetricsEvent(applicationModel) {
+        requestEvent = new TimeCounterEvent(applicationModel) {
         };
     }
 
@@ -75,20 +75,20 @@ public class SimpleMetricsEventMulticasterTest {
         Assertions.assertSame(obj, objects[0]);
 
         //do onEventFinish with MetricsLifeListener
-        eventMulticaster.addListener((new MetricsLifeListener<MetricsEvent>() {
+        eventMulticaster.addListener((new MetricsLifeListener<TimeCounterEvent>() {
 
             @Override
-            public void onEvent(MetricsEvent event) {
+            public void onEvent(TimeCounterEvent event) {
 
             }
 
             @Override
-            public void onEventFinish(MetricsEvent event) {
+            public void onEventFinish(TimeCounterEvent event) {
                 objects[0] = new Object();
             }
 
             @Override
-            public void onEventError(MetricsEvent event) {
+            public void onEventError(TimeCounterEvent event) {
 
             }
         }));
