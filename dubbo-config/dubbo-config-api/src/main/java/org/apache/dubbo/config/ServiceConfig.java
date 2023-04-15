@@ -424,7 +424,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
         List<URL> registryURLs = ConfigValidationUtils.loadRegistries(this, true);
 
-        MetricsEventBus.post(new RegistryEvent.MetricsServiceRegisterEvent(module.getApplicationModel(), getUniqueServiceName(), protocols.size() * registryURLs.size()),
+        MetricsEventBus.post(RegistryEvent.toRsEvent(module.getApplicationModel(), getUniqueServiceName(), protocols.size() * registryURLs.size()),
             () -> {
                 for (ProtocolConfig protocolConfig : protocols) {
                     String pathKey = URL.buildKey(getContextPath(protocolConfig)
@@ -471,6 +471,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
              * Because executor is not a string type, it cannot be attached to the url parameter, so it is added to URL#attributes
              * and obtained it in IsolationExecutorRepository#createExecutor method
              */
+            providerModel.getServiceMetadata().addAttribute(SERVICE_EXECUTOR, getExecutor());
             url.getAttributes().put(SERVICE_EXECUTOR, getExecutor());
         }
     }

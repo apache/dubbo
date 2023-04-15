@@ -92,6 +92,10 @@ public interface LoggerCodeConstants {
 
     String VULNERABILITY_WARNING = "0-28";
 
+    /**
+     * Used in annotation processor to indicate a deprecated method is invoked.
+     */
+    String COMMON_DEPRECATED_METHOD_INVOKED = "0-99";
 
     // Registry module
 
@@ -191,6 +195,8 @@ public interface LoggerCodeConstants {
     String REGISTRY_ROUTER_WAIT_LONG = "1-40";
 
     String REGISTRY_ISTIO_EXCEPTION = "1-41";
+
+    String REGISTRY_NACOS_SUB_LEGACY = "1-42";
 
     // Cluster module 2-x
     String CLUSTER_FAILED_SITE_SELECTION = "2-1";

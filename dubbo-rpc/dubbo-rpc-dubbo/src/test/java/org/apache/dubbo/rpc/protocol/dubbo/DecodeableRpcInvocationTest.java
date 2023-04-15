@@ -32,6 +32,7 @@ import org.apache.dubbo.remoting.transport.CodecSupport;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.protocol.PermittedSerializationKeeper;
 import org.apache.dubbo.rpc.protocol.dubbo.decode.MockChannel;
 import org.apache.dubbo.rpc.protocol.dubbo.support.DemoService;
 
@@ -68,7 +69,8 @@ class DecodeableRpcInvocationTest {
         FrameworkModel frameworkModel = new FrameworkModel();
         ApplicationModel applicationModel = frameworkModel.newApplication();
         applicationModel.getDefaultModule().getServiceRepository().registerService(DemoService.class.getName(), DemoService.class);
-        frameworkModel.getServiceRepository().registerProviderUrl(url);
+        frameworkModel.getBeanFactory().getBean(PermittedSerializationKeeper.class)
+            .registerService(url);
 
         // Simulate the server to decode
         Channel channel = new MockChannel();

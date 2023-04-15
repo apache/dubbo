@@ -45,6 +45,8 @@ class URLStrParserTest {
         testCases.add("dubbo://fe80:0:0:0:894:aeec:f37d:23e1%en0/path?abc=abc");
         testCases.add("dubbo://[fe80:0:0:0:894:aeec:f37d:23e1]:20880/path?abc=abc");
         testCases.add("nacos://192.168.1.1:8848?username=&password=");
+        testCases.add("dubbo://127.0.0.1?timeout=1234&default.timeout=5678");
+        testCases.add("dubbo://127.0.0.1?default.timeout=5678");
 
         errorDecodedCases.add("dubbo:192.168.1.1");
         errorDecodedCases.add("://192.168.1.1");
@@ -79,6 +81,17 @@ class URLStrParserTest {
             Assertions.assertThrows(RuntimeException.class,
                     () -> URLStrParser.parseDecodedStr(errorCase));
         });
+    }
+
+    @Test
+    void testDefault() {
+        URL url1 = URLStrParser.parseEncodedStr(URL.encode("dubbo://127.0.0.1?timeout=1234&default.timeout=5678"));
+        assertThat(url1.getParameter("timeout"), equalTo("1234"));
+        assertThat(url1.getParameter("default.timeout"), equalTo("5678"));
+
+        URL url2 = URLStrParser.parseEncodedStr(URL.encode("dubbo://127.0.0.1?default.timeout=5678"));
+        assertThat(url2.getParameter("timeout"), equalTo("5678"));
+        assertThat(url2.getParameter("default.timeout"), equalTo("5678"));
     }
 
 }

@@ -29,6 +29,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ *  body is json
+ */
 @Activate("json")
 public class JsonCodec implements HttpMessageCodec<byte[], OutputStream> {
     private static final Set<Class> unSupportClasses = new HashSet<>();
@@ -37,21 +40,32 @@ public class JsonCodec implements HttpMessageCodec<byte[], OutputStream> {
 
         unSupportClasses.add(byte[].class);
         unSupportClasses.add(String.class);
+
     }
 
     @Override
-    public Object decode(byte[] body, Class targetType) throws Exception {
+    public Object decode(byte[] body, Class<?> targetType) throws Exception {
         return DataParseUtils.jsonConvert(targetType, body);
     }
 
     @Override
-    public boolean contentTypeSupport(MediaType mediaType, Class targetType) {
+    public boolean contentTypeSupport(MediaType mediaType, Class<?> targetType) {
         return MediaTypeMatcher.APPLICATION_JSON.mediaSupport(mediaType) && !unSupportClasses.contains(targetType);
+    }
+
+    @Override
+    public boolean typeSupport(Class<?> targetType) {
+        return !unSupportClasses.contains(targetType) && !DataParseUtils.isTextType(targetType);
+    }
+
+    @Override
+    public MediaType contentType() {
+        return MediaType.APPLICATION_JSON_VALUE;
     }
 
 
     @Override
     public void encode(OutputStream outputStream, Object unSerializedBody, URL url) throws Exception {
-        outputStream.write(JsonUtils.getJson().toJson(unSerializedBody).getBytes(StandardCharsets.UTF_8));
+        outputStream.write(JsonUtils.toJson(unSerializedBody).getBytes(StandardCharsets.UTF_8));
     }
 }

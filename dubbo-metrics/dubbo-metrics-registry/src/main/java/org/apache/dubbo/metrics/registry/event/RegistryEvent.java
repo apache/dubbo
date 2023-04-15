@@ -19,203 +19,72 @@ package org.apache.dubbo.metrics.registry.event;
 
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.metrics.event.TimeCounterEvent;
-import org.apache.dubbo.metrics.model.MetricsKey;
+import org.apache.dubbo.metrics.model.key.MetricsKey;
+import org.apache.dubbo.metrics.model.key.MetricsLevel;
+import org.apache.dubbo.metrics.model.key.TypeWrapper;
 import org.apache.dubbo.metrics.registry.collector.RegistryMetricsCollector;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Map;
 
+import static org.apache.dubbo.metrics.MetricsConstants.ATTACHMENT_DIRECTORY_MAP;
+import static org.apache.dubbo.metrics.MetricsConstants.ATTACHMENT_KEY_LAST_NUM_MAP;
+import static org.apache.dubbo.metrics.MetricsConstants.ATTACHMENT_KEY_SERVICE;
+import static org.apache.dubbo.metrics.MetricsConstants.ATTACHMENT_KEY_SIZE;
+
+
 /**
  * Registry related events
  */
 public class RegistryEvent extends TimeCounterEvent {
-    private final RegistryMetricsCollector collector;
-
-    public RegistryEvent(ApplicationModel applicationModel) {
+    public RegistryEvent(ApplicationModel applicationModel, TypeWrapper typeWrapper) {
         super(applicationModel);
+        super.typeWrapper = typeWrapper;
         ScopeBeanFactory beanFactory = getSource().getBeanFactory();
-        if (beanFactory.isDestroyed()) {
-            this.collector = null;
-        } else {
-            this.collector = beanFactory.getBean(RegistryMetricsCollector.class);
-            super.setAvailable(this.collector != null && collector.isCollectEnabled());
+        RegistryMetricsCollector collector;
+        if (!beanFactory.isDestroyed()) {
+            collector = beanFactory.getBean(RegistryMetricsCollector.class);
+            super.setAvailable(collector != null && collector.isCollectEnabled());
         }
     }
 
-    public ApplicationModel getSource() {
-        return (ApplicationModel) source;
-    }
-
-    public RegistryMetricsCollector getCollector() {
-        return collector;
+    public static RegistryEvent toRegisterEvent(ApplicationModel applicationModel) {
+        return new RegistryEvent(applicationModel, new TypeWrapper(MetricsLevel.APP, MetricsKey.REGISTER_METRIC_REQUESTS, MetricsKey.REGISTER_METRIC_REQUESTS_SUCCEED, MetricsKey.REGISTER_METRIC_REQUESTS_FAILED));
     }
 
 
-    public enum ApplicationType {
-        R_TOTAL(MetricsKey.REGISTER_METRIC_REQUESTS),
-        R_SUCCEED(MetricsKey.REGISTER_METRIC_REQUESTS_SUCCEED),
-        R_FAILED(MetricsKey.REGISTER_METRIC_REQUESTS_FAILED),
-
-        S_TOTAL(MetricsKey.SUBSCRIBE_METRIC_NUM),
-        S_SUCCEED(MetricsKey.SUBSCRIBE_METRIC_NUM_SUCCEED),
-        S_FAILED(MetricsKey.SUBSCRIBE_METRIC_NUM_FAILED),
-
-        D_VALID(MetricsKey.DIRECTORY_METRIC_NUM_VALID),
-        D_UN_VALID(MetricsKey.DIRECTORY_METRIC_NUM_UN_VALID),
-        D_DISABLE(MetricsKey.DIRECTORY_METRIC_NUM_DISABLE),
-        D_CURRENT(MetricsKey.DIRECTORY_METRIC_NUM_CURRENT, false),
-        D_RECOVER_DISABLE(MetricsKey.DIRECTORY_METRIC_NUM_RECOVER_DISABLE),
-
-        N_TOTAL(MetricsKey.NOTIFY_METRIC_REQUESTS),
-        ;
-
-        private final MetricsKey metricsKey;
-        private final boolean isIncrement;
-
-
-        ApplicationType(MetricsKey metricsKey) {
-            this(metricsKey, true);
-        }
-
-        ApplicationType(MetricsKey metricsKey, boolean isIncrement) {
-            this.metricsKey = metricsKey;
-            this.isIncrement = isIncrement;
-        }
-
-        public MetricsKey getMetricsKey() {
-            return metricsKey;
-        }
-
-        public boolean isIncrement() {
-            return isIncrement;
-        }
+    public static RegistryEvent toSubscribeEvent(ApplicationModel applicationModel) {
+        return new RegistryEvent(applicationModel, new TypeWrapper(MetricsLevel.APP, MetricsKey.SUBSCRIBE_METRIC_NUM, MetricsKey.SUBSCRIBE_METRIC_NUM_SUCCEED, MetricsKey.SUBSCRIBE_METRIC_NUM_FAILED));
     }
 
-    public enum ServiceType {
 
-        N_LAST_NUM(MetricsKey.NOTIFY_METRIC_NUM_LAST),
-
-        R_SERVICE_TOTAL(MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS),
-        R_SERVICE_SUCCEED(MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS_SUCCEED),
-        R_SERVICE_FAILED(MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS_FAILED),
-
-        S_SERVICE_TOTAL(MetricsKey.SERVICE_SUBSCRIBE_METRIC_NUM),
-        S_SERVICE_SUCCEED(MetricsKey.SERVICE_SUBSCRIBE_METRIC_NUM_SUCCEED),
-        S_SERVICE_FAILED(MetricsKey.SERVICE_SUBSCRIBE_METRIC_NUM_FAILED),
-        ;
-
-        private final MetricsKey metricsKey;
-        private final boolean isIncrement;
-
-
-        ServiceType(MetricsKey metricsKey) {
-            this(metricsKey, true);
-        }
-
-        ServiceType(MetricsKey metricsKey, boolean isIncrement) {
-            this.metricsKey = metricsKey;
-            this.isIncrement = isIncrement;
-        }
-
-        public MetricsKey getMetricsKey() {
-            return metricsKey;
-        }
-
-        public boolean isIncrement() {
-            return isIncrement;
-        }
+    public static RegistryEvent toNotifyEvent(ApplicationModel applicationModel) {
+        return new RegistryEvent(applicationModel, new TypeWrapper(MetricsLevel.APP, MetricsKey.NOTIFY_METRIC_REQUESTS, MetricsKey.NOTIFY_METRIC_NUM_LAST, null)) {
+            @Override
+            public void customAfterPost(Object postResult) {
+                super.putAttachment(ATTACHMENT_KEY_LAST_NUM_MAP, postResult);
+            }
+        };
     }
 
-    public static class MetricsApplicationRegisterEvent extends RegistryEvent {
-
-        public MetricsApplicationRegisterEvent(ApplicationModel applicationModel) {
-            super(applicationModel);
-        }
-
+    public static RegistryEvent toRsEvent(ApplicationModel applicationModel, String serviceKey, int size) {
+        RegistryEvent ddEvent = new RegistryEvent(applicationModel, new TypeWrapper(MetricsLevel.SERVICE, MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS, MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS_SUCCEED, MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS_FAILED));
+        ddEvent.putAttachment(ATTACHMENT_KEY_SERVICE, serviceKey);
+        ddEvent.putAttachment(ATTACHMENT_KEY_SIZE, size);
+        return ddEvent;
     }
 
-    public static class MetricsSubscribeEvent extends RegistryEvent {
-
-        public MetricsSubscribeEvent(ApplicationModel applicationModel) {
-            super(applicationModel);
-        }
-
+    public static RegistryEvent toSsEvent(ApplicationModel applicationModel, String serviceKey) {
+        RegistryEvent ddEvent = new RegistryEvent(applicationModel, new TypeWrapper(MetricsLevel.SERVICE, MetricsKey.SERVICE_SUBSCRIBE_METRIC_NUM, MetricsKey.SERVICE_SUBSCRIBE_METRIC_NUM_SUCCEED, MetricsKey.SERVICE_SUBSCRIBE_METRIC_NUM_FAILED));
+        ddEvent.putAttachment(ATTACHMENT_KEY_SERVICE, serviceKey);
+        return ddEvent;
     }
 
-    public static class MetricsNotifyEvent extends RegistryEvent {
-
-        private Map<String, Integer> lastNumMap;
-
-        public MetricsNotifyEvent(ApplicationModel applicationModel) {
-            super(applicationModel);
-        }
-
-        public Map<String, Integer> getLastNotifyNum() {
-            return lastNumMap;
-        }
-
-        @Override
-        @SuppressWarnings("unchecked")
-        public void customAfterPost(Object postResult) {
-            this.lastNumMap = (Map<String, Integer>) postResult;
-        }
+    public static RegistryEvent refreshDirectoryEvent(ApplicationModel applicationModel, Map<MetricsKey, Map<String, Integer>> summaryMap) {
+        RegistryEvent registryEvent = new RegistryEvent(applicationModel, new TypeWrapper(MetricsLevel.APP, MetricsKey.DIRECTORY_METRIC_NUM_VALID, null, null));
+        registryEvent.putAttachment(ATTACHMENT_DIRECTORY_MAP, summaryMap);
+        return registryEvent;
     }
 
-    public static class MetricsDirectoryEvent extends RegistryEvent {
 
-        private final ApplicationType type;
-        private final int size;
-
-        public MetricsDirectoryEvent(ApplicationModel applicationModel, ApplicationType type) {
-            this(applicationModel, type, 1);
-        }
-
-        public MetricsDirectoryEvent(ApplicationModel applicationModel, ApplicationType type, int size) {
-            super(applicationModel);
-            this.type = type;
-            this.size = size;
-        }
-
-        public ApplicationType getType() {
-            return type;
-        }
-
-        public int getSize() {
-            return size;
-        }
-    }
-
-    public static class MetricsServiceRegisterEvent extends RegistryEvent {
-
-        private final int size;
-        private final String serviceKey;
-
-        public MetricsServiceRegisterEvent(ApplicationModel applicationModel, String serviceKey, int size) {
-            super(applicationModel);
-            this.size = size;
-            this.serviceKey = serviceKey;
-        }
-
-        public int getSize() {
-            return size;
-        }
-
-        public String getServiceKey() {
-            return serviceKey;
-        }
-    }
-
-    public static class MetricsServiceSubscribeEvent extends RegistryEvent {
-
-        private final String uniqueServiceName;
-
-        public MetricsServiceSubscribeEvent(ApplicationModel applicationModel, String uniqueServiceName) {
-            super(applicationModel);
-            this.uniqueServiceName = uniqueServiceName;
-        }
-
-        public String getUniqueServiceName() {
-            return uniqueServiceName;
-        }
-    }
 }

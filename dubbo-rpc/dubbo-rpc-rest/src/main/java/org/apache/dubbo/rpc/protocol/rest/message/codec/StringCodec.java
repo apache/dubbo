@@ -24,18 +24,34 @@ import org.apache.dubbo.rpc.protocol.rest.message.HttpMessageCodec;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 
+/**
+ *  body is string
+ */
 @Activate("string")
 public class StringCodec implements HttpMessageCodec<byte[], OutputStream> {
 
 
     @Override
-    public Object decode(byte[] body, Class targetType) throws Exception {
+    public Object decode(byte[] body, Class<?> targetType) throws Exception {
+        if (body == null || body.length == 0) {
+            return null;
+        }
         return new String(body);
     }
 
     @Override
-    public boolean contentTypeSupport(MediaType mediaType,Class targetType) {
+    public boolean contentTypeSupport(MediaType mediaType,Class<?> targetType) {
         return String.class.equals(targetType);
+    }
+
+    @Override
+    public boolean typeSupport(Class<?> targetType) {
+        return String.class.equals(targetType);
+    }
+
+    @Override
+    public MediaType contentType() {
+        return MediaType.TEXT_PLAIN;
     }
 
 

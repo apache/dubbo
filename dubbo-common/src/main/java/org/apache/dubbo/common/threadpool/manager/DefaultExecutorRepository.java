@@ -30,11 +30,13 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ConsumerConfig;
 import org.apache.dubbo.config.ModuleConfig;
 import org.apache.dubbo.config.ProviderConfig;
-import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.ModuleModel;
-import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.executor.DefaultExecutorSupport;
 import org.apache.dubbo.rpc.executor.ExecutorSupport;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ConsumerModel;
+import org.apache.dubbo.rpc.model.ModuleModel;
+import org.apache.dubbo.rpc.model.ProviderModel;
+import org.apache.dubbo.rpc.model.ServiceModel;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -50,7 +52,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_EXPORT_T
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_REFER_THREAD_NUM;
 import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_SERVICE_COMPONENT_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.INTERNAL_EXECUTOR_SERVICE_COMPONENT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREAD_NAME_KEY;
@@ -63,6 +64,8 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXP
  */
 public class DefaultExecutorRepository implements ExecutorRepository, ExtensionAccessorAware {
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(DefaultExecutorRepository.class);
+
+    private static final String MAX_KEY = String.valueOf(Integer.MAX_VALUE);
 
     private volatile ScheduledExecutorService serviceExportExecutor;
 
@@ -131,12 +134,30 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
         }
     }
 
+    private String getExecutorSecondKey(ServiceModel serviceModel, URL url) {
+        if (serviceModel instanceof ConsumerModel) {
+            return getConsumerKey(serviceModel);
+        } else {
+            return getProviderKey((ProviderModel) serviceModel, url);
+        }
+    }
+
     private String getConsumerKey(URL url) {
         // Consumer's executor is sharing globally, key=Integer.MAX_VALUE
         return String.valueOf(Integer.MAX_VALUE);
     }
 
+    private String getConsumerKey(ServiceModel serviceModel) {
+        // Consumer's executor is sharing globally, key=Integer.MAX_VALUE
+        return MAX_KEY;
+    }
+
     protected String getProviderKey(URL url) {
+        // Provider's executor is sharing by protocol.
+        return String.valueOf(url.getPort());
+    }
+
+    protected String getProviderKey(ProviderModel providerModel, URL url) {
         // Provider's executor is sharing by protocol.
         return String.valueOf(url.getPort());
     }
@@ -148,18 +169,18 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
      * @return
      */
     private String getExecutorKey(URL url) {
-        String executorKey = INTERNAL_EXECUTOR_SERVICE_COMPONENT_KEY;
-        ServiceDescriptor serviceDescriptor = applicationModel.getInternalModule().getServiceRepository().lookupService(url.getServiceInterface());
-        // if not found in internal service repository, then it's biz service defined by user.
-        if (serviceDescriptor == null) {
-            executorKey = EXECUTOR_SERVICE_COMPONENT_KEY;
-
-        }
-
         if (CONSUMER_SIDE.equalsIgnoreCase(url.getParameter(SIDE_KEY))) {
-            executorKey = CONSUMER_SHARED_EXECUTOR_SERVICE_COMPONENT_KEY;
+            return CONSUMER_SHARED_EXECUTOR_SERVICE_COMPONENT_KEY;
         }
-        return executorKey;
+        return EXECUTOR_SERVICE_COMPONENT_KEY;
+    }
+
+    private String getExecutorKey(ServiceModel serviceModel) {
+        if (serviceModel instanceof ProviderModel) {
+            return EXECUTOR_SERVICE_COMPONENT_KEY;
+        } else {
+            return CONSUMER_SHARED_EXECUTOR_SERVICE_COMPONENT_KEY;
+        }
     }
 
     protected ExecutorService createExecutor(URL url) {
@@ -183,6 +204,37 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
 
         // Consumer's executor is sharing globally, key=Integer.MAX_VALUE. Provider's executor is sharing by protocol.
         String executorCacheKey = getExecutorSecondKey(url);
+        ExecutorService executor = executors.get(executorCacheKey);
+        if (executor != null && (executor.isShutdown() || executor.isTerminated())) {
+            executors.remove(executorCacheKey);
+            // Does not re-create a shutdown executor, use SHARED_EXECUTOR for downgrade.
+            executor = null;
+            logger.info("Executor for " + url + " is shutdown.");
+        }
+        if (executor == null) {
+            return frameworkExecutorRepository.getSharedExecutor();
+        } else {
+            return executor;
+        }
+    }
+
+    @Override
+    public ExecutorService getExecutor(ServiceModel serviceModel, URL url) {
+        Map<String, ExecutorService> executors = data.get(getExecutorKey(serviceModel));
+
+        /*
+         * It's guaranteed that this method is called after {@link #createExecutorIfAbsent(URL)}, so data should already
+         * have Executor instances generated and stored.
+         */
+        if (executors == null) {
+            logger.warn(COMMON_EXECUTORS_NO_FOUND, "", "", "No available executors, this is not expected, framework should call createExecutorIfAbsent first" +
+                "before coming to here.");
+
+            return null;
+        }
+
+        // Consumer's executor is sharing globally, key=Integer.MAX_VALUE. Provider's executor is sharing by protocol.
+        String executorCacheKey = getExecutorSecondKey(serviceModel, url);
         ExecutorService executor = executors.get(executorCacheKey);
         if (executor != null && (executor.isShutdown() || executor.isTerminated())) {
             executors.remove(executorCacheKey);

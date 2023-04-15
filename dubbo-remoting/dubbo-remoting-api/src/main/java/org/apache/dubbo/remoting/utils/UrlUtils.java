@@ -34,6 +34,8 @@ import static org.apache.dubbo.remoting.Constants.PREFER_SERIALIZATION_KEY;
 import static org.apache.dubbo.remoting.Constants.SERIALIZATION_KEY;
 
 public class UrlUtils {
+    private static final String ALLOWED_SERIALIZATION_KEY = "allowedSerialization";
+
     public static int getIdleTimeout(URL url) {
         int heartBeat = getHeartbeat(url);
         // idleTimeout should be at least more than twice heartBeat because possible retries of client.
@@ -91,6 +93,7 @@ public class UrlUtils {
      * @param url url
      * @return {@link List}<{@link String}>
      */
+    @SuppressWarnings("unchecked")
     public static Collection<String> allSerializations(URL url) {
         // preferSerialization -> serialization -> default serialization
         Set<String> serializations = new LinkedHashSet<>(preferSerialization(url));

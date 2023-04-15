@@ -20,123 +20,48 @@ package org.apache.dubbo.metrics.metadata.event;
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.metrics.event.TimeCounterEvent;
 import org.apache.dubbo.metrics.metadata.collector.MetadataMetricsCollector;
-import org.apache.dubbo.metrics.model.MetricsKey;
+import org.apache.dubbo.metrics.model.key.MetricsLevel;
+import org.apache.dubbo.metrics.model.key.TypeWrapper;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
+import static org.apache.dubbo.metrics.MetricsConstants.ATTACHMENT_KEY_SERVICE;
+import static org.apache.dubbo.metrics.model.key.MetricsKey.METADATA_PUSH_METRIC_NUM;
+import static org.apache.dubbo.metrics.model.key.MetricsKey.METADATA_PUSH_METRIC_NUM_FAILED;
+import static org.apache.dubbo.metrics.model.key.MetricsKey.METADATA_PUSH_METRIC_NUM_SUCCEED;
+import static org.apache.dubbo.metrics.model.key.MetricsKey.METADATA_SUBSCRIBE_METRIC_NUM;
+import static org.apache.dubbo.metrics.model.key.MetricsKey.METADATA_SUBSCRIBE_METRIC_NUM_FAILED;
+import static org.apache.dubbo.metrics.model.key.MetricsKey.METADATA_SUBSCRIBE_METRIC_NUM_SUCCEED;
+import static org.apache.dubbo.metrics.model.key.MetricsKey.STORE_PROVIDER_METADATA;
+import static org.apache.dubbo.metrics.model.key.MetricsKey.STORE_PROVIDER_METADATA_FAILED;
+import static org.apache.dubbo.metrics.model.key.MetricsKey.STORE_PROVIDER_METADATA_SUCCEED;
 
 /**
  * Registry related events
  */
 public class MetadataEvent extends TimeCounterEvent {
-    private final MetadataMetricsCollector collector;
-
-    public MetadataEvent(ApplicationModel applicationModel) {
+    public MetadataEvent(ApplicationModel applicationModel, TypeWrapper typeWrapper) {
         super(applicationModel);
+        super.typeWrapper = typeWrapper;
         ScopeBeanFactory beanFactory = applicationModel.getBeanFactory();
-        if (beanFactory.isDestroyed()) {
-            this.collector = null;
-        } else {
-            this.collector = beanFactory.getBean(MetadataMetricsCollector.class);
-            super.setAvailable(this.collector != null && collector.isCollectEnabled());
+        MetadataMetricsCollector collector;
+        if (!beanFactory.isDestroyed()) {
+            collector = beanFactory.getBean(MetadataMetricsCollector.class);
+            super.setAvailable(collector != null && collector.isCollectEnabled());
         }
     }
 
-    public ApplicationModel getSource() {
-        return source;
+    public static MetadataEvent toPushEvent(ApplicationModel applicationModel) {
+        return new MetadataEvent(applicationModel, new TypeWrapper(MetricsLevel.APP, METADATA_PUSH_METRIC_NUM, METADATA_PUSH_METRIC_NUM_SUCCEED, METADATA_PUSH_METRIC_NUM_FAILED));
     }
 
-    public MetadataMetricsCollector getCollector() {
-        return collector;
+    public static MetadataEvent toSubscribeEvent(ApplicationModel applicationModel) {
+        return new MetadataEvent(applicationModel, new TypeWrapper(MetricsLevel.APP, METADATA_SUBSCRIBE_METRIC_NUM, METADATA_SUBSCRIBE_METRIC_NUM_SUCCEED, METADATA_SUBSCRIBE_METRIC_NUM_FAILED));
     }
 
-    public enum ApplicationType {
-        P_TOTAL(MetricsKey.METADATA_PUSH_METRIC_NUM),
-        P_SUCCEED(MetricsKey.METADATA_PUSH_METRIC_NUM_SUCCEED),
-        P_FAILED(MetricsKey.METADATA_PUSH_METRIC_NUM_FAILED),
-
-        S_TOTAL(MetricsKey.METADATA_SUBSCRIBE_METRIC_NUM),
-        S_SUCCEED(MetricsKey.METADATA_SUBSCRIBE_METRIC_NUM_SUCCEED),
-        S_FAILED(MetricsKey.METADATA_SUBSCRIBE_METRIC_NUM_FAILED),
-
-        ;
-        private final MetricsKey metricsKey;
-        private final boolean isIncrement;
-
-        ApplicationType(MetricsKey metricsKey) {
-            this(metricsKey, true);
-        }
-
-        ApplicationType(MetricsKey metricsKey, boolean isIncrement) {
-            this.metricsKey = metricsKey;
-            this.isIncrement = isIncrement;
-        }
-
-        public MetricsKey getMetricsKey() {
-            return metricsKey;
-        }
-
-        public boolean isIncrement() {
-            return isIncrement;
-        }
-    }
-
-    public enum ServiceType {
-
-        S_P_TOTAL(MetricsKey.STORE_PROVIDER_METADATA),
-        S_P_SUCCEED(MetricsKey.STORE_PROVIDER_METADATA_SUCCEED),
-        S_P_FAILED(MetricsKey.STORE_PROVIDER_METADATA_FAILED),
-
-        ;
-
-        private final MetricsKey metricsKey;
-        private final boolean isIncrement;
-
-
-        ServiceType(MetricsKey metricsKey) {
-            this(metricsKey, true);
-        }
-
-        ServiceType(MetricsKey metricsKey, boolean isIncrement) {
-            this.metricsKey = metricsKey;
-            this.isIncrement = isIncrement;
-        }
-
-        public MetricsKey getMetricsKey() {
-            return metricsKey;
-        }
-
-        public boolean isIncrement() {
-            return isIncrement;
-        }
-    }
-
-    public static class PushEvent extends MetadataEvent {
-
-        public PushEvent(ApplicationModel applicationModel) {
-            super(applicationModel);
-        }
-
-    }
-
-    public static class SubscribeEvent extends MetadataEvent {
-
-        public SubscribeEvent(ApplicationModel applicationModel) {
-            super(applicationModel);
-        }
-
-    }
-
-    public static class StoreProviderMetadataEvent extends MetadataEvent {
-        private final String serviceKey;
-
-        public StoreProviderMetadataEvent(ApplicationModel applicationModel, String serviceKey) {
-            super(applicationModel);
-            this.serviceKey = serviceKey;
-        }
-
-        public String getServiceKey() {
-            return serviceKey;
-        }
-
+    public static MetadataEvent toServiceSubscribeEvent(ApplicationModel applicationModel, String serviceKey) {
+        MetadataEvent metadataEvent = new MetadataEvent(applicationModel, new TypeWrapper(MetricsLevel.APP, STORE_PROVIDER_METADATA, STORE_PROVIDER_METADATA_SUCCEED, STORE_PROVIDER_METADATA_FAILED));
+        metadataEvent.putAttachment(ATTACHMENT_KEY_SERVICE, serviceKey);
+        return metadataEvent;
     }
 
 }

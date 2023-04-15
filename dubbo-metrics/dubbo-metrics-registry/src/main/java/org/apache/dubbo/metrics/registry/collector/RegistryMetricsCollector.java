@@ -19,36 +19,51 @@ package org.apache.dubbo.metrics.registry.collector;
 
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.config.context.ConfigManager;
-import org.apache.dubbo.metrics.collector.ApplicationMetricsCollector;
+import org.apache.dubbo.metrics.collector.CombMetricsCollector;
 import org.apache.dubbo.metrics.collector.MetricsCollector;
+import org.apache.dubbo.metrics.data.ApplicationStatComposite;
+import org.apache.dubbo.metrics.data.BaseStatComposite;
+import org.apache.dubbo.metrics.data.RtStatComposite;
+import org.apache.dubbo.metrics.data.ServiceStatComposite;
 import org.apache.dubbo.metrics.event.MetricsEvent;
-import org.apache.dubbo.metrics.event.MetricsEventMulticaster;
+import org.apache.dubbo.metrics.event.TimeCounterEvent;
+import org.apache.dubbo.metrics.model.MetricsCategory;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
-import org.apache.dubbo.metrics.registry.collector.stat.RegistryStatComposite;
+import org.apache.dubbo.metrics.registry.RegistryMetricsConstants;
 import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.metrics.registry.event.RegistryMetricsEventMulticaster;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
+
+import static org.apache.dubbo.metrics.registry.RegistryMetricsConstants.OP_TYPE_NOTIFY;
+import static org.apache.dubbo.metrics.registry.RegistryMetricsConstants.OP_TYPE_REGISTER;
+import static org.apache.dubbo.metrics.registry.RegistryMetricsConstants.OP_TYPE_REGISTER_SERVICE;
+import static org.apache.dubbo.metrics.registry.RegistryMetricsConstants.OP_TYPE_SUBSCRIBE;
+import static org.apache.dubbo.metrics.registry.RegistryMetricsConstants.OP_TYPE_SUBSCRIBE_SERVICE;
 
 
 /**
  * Registry implementation of {@link MetricsCollector}
  */
 @Activate
-public class RegistryMetricsCollector implements ApplicationMetricsCollector<RegistryEvent.ApplicationType, RegistryEvent> {
+public class RegistryMetricsCollector extends CombMetricsCollector<TimeCounterEvent> {
 
     private Boolean collectEnabled = null;
-    private final RegistryStatComposite stats;
-    private final MetricsEventMulticaster registryMulticaster;
     private final ApplicationModel applicationModel;
 
     public RegistryMetricsCollector(ApplicationModel applicationModel) {
-        this.stats = new RegistryStatComposite();
-        this.registryMulticaster = new RegistryMetricsEventMulticaster();
+        super(new BaseStatComposite() {
+            @Override
+            protected void init(ApplicationStatComposite applicationStatComposite, ServiceStatComposite serviceStatComposite, RtStatComposite rtStatComposite) {
+                applicationStatComposite.init(RegistryMetricsConstants.APP_LEVEL_KEYS);
+                serviceStatComposite.init(RegistryMetricsConstants.SERVICE_LEVEL_KEYS);
+                rtStatComposite.init(OP_TYPE_REGISTER, OP_TYPE_SUBSCRIBE, OP_TYPE_NOTIFY, OP_TYPE_REGISTER_SERVICE, OP_TYPE_SUBSCRIBE_SERVICE);
+            }
+        });
+        super.setEventMulticaster(new RegistryMetricsEventMulticaster(this));
         this.applicationModel = applicationModel;
     }
 
@@ -62,42 +77,11 @@ public class RegistryMetricsCollector implements ApplicationMetricsCollector<Reg
     public boolean isCollectEnabled() {
         if (collectEnabled == null) {
             ConfigManager configManager = applicationModel.getApplicationConfigManager();
-            configManager.getMetrics().ifPresent(metricsConfig -> setCollectEnabled(metricsConfig.getEnableRegistryMetrics()));
+            configManager.getMetrics().ifPresent(metricsConfig -> setCollectEnabled(metricsConfig.getEnableRegistry()));
         }
         return Optional.ofNullable(collectEnabled).orElse(true);
     }
 
-    public void setNum(RegistryEvent.ServiceType registryType, String applicationName, Map<String, Integer> lastNumMap) {
-        lastNumMap.forEach((serviceKey, num) ->
-            this.stats.setServiceKey(registryType, applicationName, serviceKey, num));
-    }
-
-    public void setNum(RegistryEvent.ApplicationType registryType, String applicationName, Integer num) {
-        this.stats.setApplicationKey(registryType, applicationName, num);
-    }
-
-
-    @Override
-    public void increment(String applicationName, RegistryEvent.ApplicationType registryType) {
-        this.stats.increment(registryType, applicationName);
-    }
-
-    public void increment(String applicationName, RegistryEvent.ApplicationType registryType, int size) {
-        this.stats.incrementSize(registryType, applicationName, size);
-    }
-
-    public void incrementServiceKey(String applicationName, String serviceKey, RegistryEvent.ServiceType registryType, int size) {
-        this.stats.incrementServiceKey(registryType, applicationName, serviceKey, size);
-    }
-
-    @Override
-    public void addApplicationRT(String applicationName, String registryOpType, Long responseTime) {
-        stats.calcApplicationRt(applicationName, registryOpType, responseTime);
-    }
-
-    public void addServiceKeyRT(String applicationName, String serviceKey, String registryOpType, Long responseTime) {
-        stats.calcServiceKeyRt(applicationName, serviceKey, registryOpType, responseTime);
-    }
 
     @Override
     public List<MetricSample> collect() {
@@ -105,10 +89,7 @@ public class RegistryMetricsCollector implements ApplicationMetricsCollector<Reg
         if (!isCollectEnabled()) {
             return list;
         }
-        list.addAll(stats.exportNumMetrics());
-        list.addAll(stats.exportRtMetrics());
-        list.addAll(stats.exportSkMetrics());
-
+        list.addAll(super.export(MetricsCategory.REGISTRY));
         return list;
     }
 
@@ -117,19 +98,5 @@ public class RegistryMetricsCollector implements ApplicationMetricsCollector<Reg
         return event instanceof RegistryEvent;
     }
 
-    @Override
-    public void onEvent(RegistryEvent event) {
-        registryMulticaster.publishEvent(event);
-    }
 
-
-    @Override
-    public void onEventFinish(RegistryEvent event) {
-        registryMulticaster.publishFinishEvent(event);
-    }
-
-    @Override
-    public void onEventError(RegistryEvent event) {
-        registryMulticaster.publishErrorEvent(event);
-    }
 }

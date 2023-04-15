@@ -167,11 +167,11 @@ class ServiceInstancesChangedListenerTest {
         app1InstancesWithNoRevision = buildInstances(urlsWithoutRevision);
         app1InstancesMultipleProtocols = buildInstances(urlsMultipleProtocols);
 
-        metadataInfo_111 = JsonUtils.getJson().toJavaObject(metadata_111, MetadataInfo.class);
-        metadataInfo_222 = JsonUtils.getJson().toJavaObject(metadata_222, MetadataInfo.class);
-        metadataInfo_333 = JsonUtils.getJson().toJavaObject(metadata_333, MetadataInfo.class);
-        metadataInfo_444 = JsonUtils.getJson().toJavaObject(metadata_444, MetadataInfo.class);
-        metadataInfo_555_tri = JsonUtils.getJson().toJavaObject(metadata_555_triple, MetadataInfo.class);
+        metadataInfo_111 = JsonUtils.toJavaObject(metadata_111, MetadataInfo.class);
+        metadataInfo_222 = JsonUtils.toJavaObject(metadata_222, MetadataInfo.class);
+        metadataInfo_333 = JsonUtils.toJavaObject(metadata_333, MetadataInfo.class);
+        metadataInfo_444 = JsonUtils.toJavaObject(metadata_444, MetadataInfo.class);
+        metadataInfo_555_tri = JsonUtils.toJavaObject(metadata_555_triple, MetadataInfo.class);
 
         serviceDiscovery = Mockito.mock(ServiceDiscovery.class);
         when(serviceDiscovery.getUrl()).thenReturn(registryURL);
