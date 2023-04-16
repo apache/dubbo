@@ -309,14 +309,13 @@ class AggregateMetricsCollectorTest {
         appModel.getApplicationConfigManager().setApplication(new ApplicationConfig("TestApp"));
         moduleModel.getConfigManager().setModule(new ModuleConfig("TestModule"));
 
-
         ProtocolConfig protocolConfig = new ProtocolConfig();
         protocolConfig.setName(LOCAL_PROTOCOL);
-        protocolConfig.setSerialization("json");
+        protocolConfig.setSerialization("fastjson2");
 
         ReferenceConfig<TestInterface> referenceConfig = new ReferenceConfig<>();
-        referenceConfig.setInterface(TestInterface.class);
         referenceConfig.setScopeModel(moduleModel);
+        referenceConfig.setInterface(TestInterface.class);
         referenceConfig.setProtocol(LOCAL_PROTOCOL);
 
         ServiceConfig<TestInterface> serviceConfig = new ServiceConfig<>();
