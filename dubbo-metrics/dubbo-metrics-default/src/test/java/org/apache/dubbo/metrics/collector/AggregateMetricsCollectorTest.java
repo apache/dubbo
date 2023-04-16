@@ -21,8 +21,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.utils.WhiteBox;
-import org.apache.dubbo.config.ApplicationConfig;
-import org.apache.dubbo.config.MetricsConfig;
+import org.apache.dubbo.config.*;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.nested.AggregationConfig;
 import org.apache.dubbo.metrics.TestMetricsInvoker;
@@ -37,6 +36,8 @@ import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.model.ModuleModel;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -55,6 +56,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.constants.MetricsConstants.*;
 import static org.apache.dubbo.metrics.model.MetricsCategory.QPS;
+import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
 import static org.mockito.Mockito.*;
 
 class AggregateMetricsCollectorTest {
@@ -296,6 +298,53 @@ class AggregateMetricsCollectorTest {
         //An error of less than 5% is allowed
         Assertions.assertTrue(Math.abs(1 - p95 / manualP95) < 0.05);
         Assertions.assertTrue(Math.abs(1 - p99 / manualP99) < 0.05);
+    }
+
+    @Test
+    void blackBoxTestP95AndP99() throws InterruptedException {
+        FrameworkModel frameworkModel = new FrameworkModel();
+        ApplicationModel appModel = frameworkModel.newApplication();
+        ModuleModel moduleModel = appModel.newModule();
+
+        appModel.getApplicationConfigManager().setApplication(new ApplicationConfig("TestApp"));
+        moduleModel.getConfigManager().setModule(new ModuleConfig("TestModule"));
+
+
+        ProtocolConfig protocolConfig = new ProtocolConfig();
+        protocolConfig.setName(LOCAL_PROTOCOL);
+        protocolConfig.setSerialization("json");
+
+        ReferenceConfig<TestInterface> referenceConfig = new ReferenceConfig<>();
+        referenceConfig.setInterface(TestInterface.class);
+        referenceConfig.setScopeModel(moduleModel);
+        referenceConfig.setProtocol(LOCAL_PROTOCOL);
+
+        ServiceConfig<TestInterface> serviceConfig = new ServiceConfig<>();
+        serviceConfig.setScopeModel(moduleModel);
+        serviceConfig.setProtocol(protocolConfig);
+        serviceConfig.setInterface(TestInterface.class);
+        serviceConfig.setRef(new TestInterfaceImpl());
+
+        moduleModel.getConfigManager().addConfig(referenceConfig);
+        moduleModel.getConfigManager().addConfig(serviceConfig);
+
+        serviceConfig.export();
+        TestInterface testInterfaceImpl = referenceConfig.get();
+        Thread.sleep(2000);
+        System.out.println(testInterfaceImpl.sayHello());
+    }
+
+
+    private interface TestInterface{
+        String sayHello();
+    }
+
+    private static class TestInterfaceImpl implements TestInterface{
+        @Override
+        public String sayHello() {
+            System.out.println("hello!");
+            return "hello too!";
+        }
     }
 
 }
