@@ -29,7 +29,6 @@
     <description>The triple protocol module</description>
     <properties>
         <skip_maven_deploy>false</skip_maven_deploy>
-        <reactor.version>3.5.4</reactor.version>
     </properties>
     <dependencies>
         <dependency>
