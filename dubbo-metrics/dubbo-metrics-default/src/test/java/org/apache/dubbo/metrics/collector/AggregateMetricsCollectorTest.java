@@ -43,17 +43,14 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.*;
 import static org.apache.dubbo.common.constants.MetricsConstants.*;
 import static org.apache.dubbo.metrics.model.MetricsCategory.QPS;
 import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
@@ -254,14 +251,14 @@ class AggregateMetricsCollectorTest {
     }
 
     @Test
-    void testP95AndP99() {
+    void testP95AndP99() throws InterruptedException {
         AggregateMetricsCollector collector = getTestCollector();
         MethodMetric methodMetric = getTestMethodMetric();
 
         List<Double> requestTimes = new ArrayList<>(10000);
 
-        for (int i = 0; i < 10000; i++) {
-            requestTimes.add(10000 * Math.random());
+        for (int i = 0; i < 300; i++) {
+            requestTimes.add(1000 * Math.random());
         }
 
         Collections.sort(requestTimes);
@@ -271,11 +268,14 @@ class AggregateMetricsCollectorTest {
         double manualP95 = requestTimes.get((int) Math.round(p95Index));
         double manualP99 = requestTimes.get((int) Math.round(p99Index));
 
-        for (Double requestTime : requestTimes) {
-            collector.onEvent(new RTEvent(applicationModel, methodMetric, requestTime.longValue()));
-        }
-        List<MetricSample> samples = collector.collect();
+        ThreadPoolExecutor executor = new ThreadPoolExecutor(10, 50, 100, TimeUnit.SECONDS, new ArrayBlockingQueue<>(10000));
 
+        for (Double requestTime : requestTimes) {
+            executor.submit(() -> collector.onEvent(new RTEvent(applicationModel, methodMetric, requestTime.longValue())));
+        }
+        Thread.sleep(4000L);
+
+        List<MetricSample> samples = collector.collect();
 
         GaugeMetricSample<?> p95Sample = samples.stream()
             .filter(sample -> sample.getName().endsWith("p95"))
@@ -307,11 +307,26 @@ class AggregateMetricsCollectorTest {
         ModuleModel moduleModel = appModel.newModule();
 
         appModel.getApplicationConfigManager().setApplication(new ApplicationConfig("TestApp"));
+
+        MetricsConfig metricsConfig = new MetricsConfig();
+        metricsConfig.setEnableJvm(true);
+        metricsConfig.setEnableMetadata(true);
+        metricsConfig.setEnableRegistry(true);
+        metricsConfig.setEnableThreadpool(true);
+
+        AggregationConfig aggregationConfig = new AggregationConfig();
+        aggregationConfig.setEnabled(true);
+        aggregationConfig.setBucketNum(10);
+        aggregationConfig.setTimeWindowSeconds(120);
+
+        metricsConfig.setAggregation(aggregationConfig);
+
+        appModel.getApplicationConfigManager().addConfig(metricsConfig);
+
         moduleModel.getConfigManager().setModule(new ModuleConfig("TestModule"));
 
         ProtocolConfig protocolConfig = new ProtocolConfig();
         protocolConfig.setName(LOCAL_PROTOCOL);
-        protocolConfig.setSerialization("fastjson2");
 
         ReferenceConfig<TestInterface> referenceConfig = new ReferenceConfig<>();
         referenceConfig.setScopeModel(moduleModel);
@@ -330,19 +345,67 @@ class AggregateMetricsCollectorTest {
         serviceConfig.export();
         TestInterface testInterfaceImpl = referenceConfig.get();
         Thread.sleep(2000);
-        System.out.println(testInterfaceImpl.sayHello());
+
+        List<Double> requestTimes = new ArrayList<>(10000);
+
+        for (int i = 0; i < 300; i++) {
+            requestTimes.add(1000 * Math.random());
+        }
+
+        Collections.sort(requestTimes);
+        double p95Index = 0.95 * (requestTimes.size() - 1);
+        double p99Index = 0.99 * (requestTimes.size() - 1);
+
+        double manualP95 = requestTimes.get((int) Math.round(p95Index));
+        double manualP99 = requestTimes.get((int) Math.round(p99Index));
+
+        ThreadPoolExecutor executor = new ThreadPoolExecutor(1000, 1000, 1000, TimeUnit.MINUTES, new ArrayBlockingQueue<>(10000));
+
+        for (Double requestTime:requestTimes) {
+            executor.submit(() -> System.out.println(testInterfaceImpl.sayHelloAfter(requestTime.longValue())));
+        }
+        Thread.sleep(5000);
+
+        AggregateMetricsCollector collector = frameworkModel.getApplicationModels().get(0).getBeanFactory().getBean(AggregateMetricsCollector.class);
+        List<MetricSample> samples = collector.collect();
+
+        GaugeMetricSample<?> p95Sample = samples.stream()
+            .filter(sample -> sample.getName().endsWith("p95"))
+            .map(sample -> (GaugeMetricSample<?>) sample)
+            .findFirst()
+            .orElse(null);
+
+        GaugeMetricSample<?> p99Sample = samples.stream()
+            .filter(sample -> sample.getName().endsWith("p99"))
+            .map(sample -> (GaugeMetricSample<?>) sample)
+            .findFirst()
+            .orElse(null);
+
+        Assertions.assertNotNull(p95Sample);
+        Assertions.assertNotNull(p99Sample);
+
+        double p95 = p95Sample.applyAsDouble();
+        double p99 = p99Sample.applyAsDouble();
+
+        //An error of less than 15% is allowed
+        Assertions.assertTrue(Math.abs(1 - p95 / manualP95) < 0.15);
+        Assertions.assertTrue(Math.abs(1 - p99 / manualP99) < 0.15);
     }
 
-
-    private interface TestInterface{
-        String sayHello();
+    private interface TestInterface {
+        String sayHelloAfter(long waitTime) ;
     }
 
-    private static class TestInterfaceImpl implements TestInterface{
+    private static class TestInterfaceImpl implements TestInterface {
         @Override
-        public String sayHello() {
-            System.out.println("hello!");
-            return "hello too!";
+        public String sayHelloAfter(long waitTime) {
+            System.out.println("foo");
+            try {
+                Thread.sleep(waitTime);
+            }catch (InterruptedException e){
+                e.printStackTrace();
+            }
+            return "bar";
         }
     }
 
