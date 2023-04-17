@@ -25,7 +25,7 @@ import java.time.Duration;
 public class ExporterConfig implements Serializable {
 
     @Nested
-    private ZipkinConfig zipkinConfig;
+    private ZipkinConfig zipkinConfig = new ZipkinConfig();
 
     public ZipkinConfig getZipkinConfig() {
         return zipkinConfig;

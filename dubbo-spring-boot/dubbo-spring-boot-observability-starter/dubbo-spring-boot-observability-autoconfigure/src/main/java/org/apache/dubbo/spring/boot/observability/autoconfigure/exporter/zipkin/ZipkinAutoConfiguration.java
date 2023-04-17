@@ -27,6 +27,7 @@ import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.web.client.RestTemplateAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
@@ -34,6 +35,8 @@ import zipkin2.Span;
 import zipkin2.codec.BytesEncoder;
 import zipkin2.codec.SpanBytesEncoder;
 import zipkin2.reporter.Sender;
+
+import static org.apache.dubbo.spring.boot.observability.autoconfigure.ObservabilityUtils.DUBBO_TRACING_ZIPKIN_CONFIG_PREFIX;
 
 
 /**
@@ -48,6 +51,7 @@ import zipkin2.reporter.Sender;
 @Import({SenderConfiguration.class,
         ReporterConfiguration.class, BraveConfiguration.class,
         OpenTelemetryConfiguration.class})
+@ConditionalOnProperty(prefix = DUBBO_TRACING_ZIPKIN_CONFIG_PREFIX, name = "endpoint")
 @ConditionalOnDubboTracingEnable
 public class ZipkinAutoConfiguration {
 
