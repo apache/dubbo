@@ -17,16 +17,16 @@
 
 package org.apache.dubbo.spring.boot.observability.autoconfigure.exporter.zipkin;
 
+import io.opentelemetry.exporter.zipkin.ZipkinSpanExporter;
 import org.apache.dubbo.config.nested.ExporterConfig;
 import org.apache.dubbo.spring.boot.autoconfigure.DubboConfigurationProperties;
 import org.apache.dubbo.spring.boot.observability.autoconfigure.exporter.zipkin.customizer.ZipkinRestTemplateBuilderCustomizer;
 import org.apache.dubbo.spring.boot.observability.autoconfigure.exporter.zipkin.customizer.ZipkinWebClientBuilderCustomizer;
-
-import io.opentelemetry.exporter.zipkin.ZipkinSpanExporter;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
@@ -75,6 +75,7 @@ class ZipkinConfigurations {
 
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnClass(RestTemplate.class)
+    @ConditionalOnProperty(prefix = "dubbo.tracing", name = "enabled", havingValue = "true")
     @EnableConfigurationProperties(DubboConfigurationProperties.class)
     static class RestTemplateSenderConfiguration {
 
@@ -146,6 +147,7 @@ class ZipkinConfigurations {
     }
 
     @Configuration(proxyBeanMethods = false)
+    @ConditionalOnProperty(prefix = "dubbo.tracing", name = "enabled", havingValue = "true")
     @ConditionalOnClass(ZipkinSpanExporter.class)
     @EnableConfigurationProperties(DubboConfigurationProperties.class)
     static class OpenTelemetryConfiguration {
