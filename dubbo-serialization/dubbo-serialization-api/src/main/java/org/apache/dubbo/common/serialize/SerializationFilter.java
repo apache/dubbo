@@ -14,18 +14,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.common.serialize;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 
+/**
+ * SerializationFilter, do something before serialize request and response
+ */
 @SPI(scope = ExtensionScope.FRAMEWORK)
 public interface SerializationFilter {
 
+    /**
+     * do something before serialize request
+     *
+     * @param url URL address for the remote service
+     * @param methodName remote method name
+     * @param requestTypes method args type
+     */
     void filterRequest(URL url, String methodName, Class<?>[] requestTypes);
 
+    /**
+     * do something before serialize response
+     *
+     * @param url URL address for the remote service
+     * @param methodName remote method name
+     * @param responseType method return type
+     */
     void filterResponse(URL url, String methodName, Class<?> responseType);
 
 }
