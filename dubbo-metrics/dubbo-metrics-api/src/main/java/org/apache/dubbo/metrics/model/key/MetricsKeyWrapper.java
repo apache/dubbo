@@ -34,10 +34,6 @@ public class MetricsKeyWrapper {
 
     private final MetricsPlaceType placeType;
 
-    public MetricsKeyWrapper(String type, MetricsKey metricsKey) {
-        this(metricsKey, MetricsPlaceType.of(type, MetricsLevel.APP));
-    }
-
     public MetricsKeyWrapper(MetricsKey metricsKey, MetricsPlaceType placeType) {
         this.metricsKey = metricsKey;
         this.placeType = placeType;

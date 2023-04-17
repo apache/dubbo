@@ -15,31 +15,35 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.metrics.registry.event.type;
+package org.apache.dubbo.metrics.model.key;
 
-import org.apache.dubbo.metrics.model.key.MetricsKey;
+import io.micrometer.common.lang.Nullable;
 
-public enum ApplicationType {
-    R_TOTAL(MetricsKey.REGISTER_METRIC_REQUESTS),
-    R_SUCCEED(MetricsKey.REGISTER_METRIC_REQUESTS_SUCCEED),
-    R_FAILED(MetricsKey.REGISTER_METRIC_REQUESTS_FAILED),
+public class CategoryOverall {
 
-    S_TOTAL(MetricsKey.SUBSCRIBE_METRIC_NUM),
-    S_SUCCEED(MetricsKey.SUBSCRIBE_METRIC_NUM_SUCCEED),
-    S_FAILED(MetricsKey.SUBSCRIBE_METRIC_NUM_FAILED),
+    private final MetricsCat post;
+    private MetricsCat finish;
+    private MetricsCat error;
 
-    N_TOTAL(MetricsKey.NOTIFY_METRIC_REQUESTS),
-    ;
-
-    private final MetricsKey metricsKey;
-
-
-    ApplicationType(MetricsKey metricsKey) {
-        this.metricsKey = metricsKey;
+    public CategoryOverall(MetricsPlaceType placeType, MetricsCat post, @Nullable MetricsCat finish, @Nullable MetricsCat error) {
+        this.post = post.setPlaceType(placeType);
+        if (finish != null) {
+            this.finish = finish.setPlaceType(placeType);
+        }
+        if (error != null) {
+            this.error = error.setPlaceType(placeType);
+        }
     }
 
-    public MetricsKey getMetricsKey() {
-        return metricsKey;
+    public MetricsCat getPost() {
+        return post;
     }
 
+    public MetricsCat getFinish() {
+        return finish;
+    }
+
+    public MetricsCat getError() {
+        return error;
+    }
 }
