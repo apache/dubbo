@@ -94,7 +94,6 @@ public class SimpleMetricsEventMulticasterTest {
         }));
         eventMulticaster.publishFinishEvent(requestEvent);
         Assertions.assertNotSame(obj, objects[0]);
-
     }
 
 }
