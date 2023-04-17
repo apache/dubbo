@@ -49,8 +49,15 @@
 
         <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-common</artifactId>
-            <version>${project.parent.version}</version>
+            <artifactId>dubbo-serialization-hessian2</artifactId>
+            <version>3.2.1-SNAPSHOT</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-rpc-injvm</artifactId>
+            <version>3.2.1-SNAPSHOT</version>
             <scope>test</scope>
         </dependency>
 
@@ -61,5 +68,10 @@
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-metrics-prometheus</artifactId>
+            <version>3.2.1-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 </project>
