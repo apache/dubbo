@@ -122,7 +122,7 @@
             <plugin>
                 <groupId>kr.motd.maven</groupId>
                 <artifactId>os-maven-plugin</artifactId>
-                <version>1.7.1</version>
+                <version>${maven_os_plugin_version}</version>
                 <executions>
                     <execution>
                         <phase>initialize</phase>
@@ -135,9 +135,9 @@
             <plugin>
                 <groupId>org.xolstice.maven.plugins</groupId>
                 <artifactId>protobuf-maven-plugin</artifactId>
-                <version>0.6.1</version>
+                <version>${maven_protobuf_plugin_version}</version>
                 <configuration>
-                    <protocArtifact>com.google.protobuf:protoc:${protobuf-java.version}:exe:${os.detected.classifier}</protocArtifact>
+                    <protocArtifact>com.google.protobuf:protoc:${protobuf-java_version}:exe:${os.detected.classifier}</protocArtifact>
                     <pluginId>triple-java</pluginId>
                     <outputDirectory>build/generated/source/proto/main/java</outputDirectory>
                 </configuration>
