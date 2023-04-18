@@ -36,6 +36,7 @@ import zipkin2.codec.BytesEncoder;
 import zipkin2.codec.SpanBytesEncoder;
 import zipkin2.reporter.Sender;
 
+import static org.apache.dubbo.spring.boot.observability.autoconfigure.ObservabilityUtils.DUBBO_TRACING_PREFIX;
 import static org.apache.dubbo.spring.boot.observability.autoconfigure.ObservabilityUtils.DUBBO_TRACING_ZIPKIN_CONFIG_PREFIX;
 
 
@@ -44,18 +45,19 @@ import static org.apache.dubbo.spring.boot.observability.autoconfigure.Observabi
  * <p>
  * It uses imports on {@link ZipkinConfigurations} to guarantee the correct configuration ordering.
  *
- * @since 3.2.0
+ * @since 3.2.1
  */
 @AutoConfiguration(after = RestTemplateAutoConfiguration.class)
 @ConditionalOnClass(Sender.class)
 @Import({SenderConfiguration.class,
         ReporterConfiguration.class, BraveConfiguration.class,
         OpenTelemetryConfiguration.class})
-@ConditionalOnProperty(prefix = DUBBO_TRACING_ZIPKIN_CONFIG_PREFIX, name = "endpoint")
+@ConditionalOnProperty(prefix = DUBBO_TRACING_PREFIX, name = "enabled", havingValue = "true")
 @ConditionalOnDubboTracingEnable
 public class ZipkinAutoConfiguration {
 
     @Bean
+    @ConditionalOnProperty(prefix = DUBBO_TRACING_ZIPKIN_CONFIG_PREFIX, name = "endpoint")
     @ConditionalOnMissingBean
     public BytesEncoder<Span> spanBytesEncoder() {
         return SpanBytesEncoder.JSON_V2;
