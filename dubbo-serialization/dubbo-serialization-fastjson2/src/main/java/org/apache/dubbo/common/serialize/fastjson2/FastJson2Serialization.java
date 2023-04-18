@@ -32,8 +32,6 @@ import static org.apache.dubbo.common.serialize.Constants.FASTJSON2_SERIALIZATIO
 /**
  * FastJson serialization implementation
  *
- * TODO:fix name to 'fastjson2'
- *
  * <pre>
  *     e.g. &lt;dubbo:protocol serialization="fastjson" /&gt;
  * </pre>
