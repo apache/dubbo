@@ -81,7 +81,7 @@ public class ZookeeperDataListener implements DataListener {
         }
 
         MetricsEventBus.publish(ConfigCenterEvent.toChangeEvent(applicationModel, configChangeEvent.getKey(), configChangeEvent.getGroup(),
-            "zookeeper", ConfigChangeType.ADDED.name(), SELF_INCREMENT_SIZE));
+            ConfigCenterEvent.ZK_PROTOCOL, ConfigChangeType.ADDED.name(), SELF_INCREMENT_SIZE));
     }
 
 }

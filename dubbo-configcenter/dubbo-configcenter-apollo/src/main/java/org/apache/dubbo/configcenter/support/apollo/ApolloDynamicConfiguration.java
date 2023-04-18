@@ -252,7 +252,7 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
                 listeners.forEach(listener -> listener.process(event));
 
                 MetricsEventBus.publish(ConfigCenterEvent.toChangeEvent(applicationModel, event.getKey(), event.getGroup(),
-                    "apollo", ConfigChangeType.ADDED.name(), SELF_INCREMENT_SIZE));
+                    ConfigCenterEvent.APOLLO_PROTOCOL, ConfigChangeType.ADDED.name(), SELF_INCREMENT_SIZE));
             }
         }
 

@@ -36,6 +36,12 @@ import static org.apache.dubbo.metrics.model.key.MetricsKey.CONFIGCENTER_METRIC_
  */
 public class ConfigCenterEvent extends TimeCounterEvent {
 
+
+    public static final String NACOS_PROTOCOL = "nacos";
+    public static final String APOLLO_PROTOCOL = "apollo";
+    public static final String ZK_PROTOCOL = "zookeeper";
+
+
     public ConfigCenterEvent(ApplicationModel applicationModel, TypeWrapper typeWrapper) {
         super(applicationModel);
         super.typeWrapper = typeWrapper;

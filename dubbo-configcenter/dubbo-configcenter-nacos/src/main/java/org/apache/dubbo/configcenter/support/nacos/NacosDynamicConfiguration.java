@@ -347,7 +347,7 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
             listeners.forEach(listener -> listener.process(event));
 
             MetricsEventBus.publish(ConfigCenterEvent.toChangeEvent(applicationModel, event.getKey(), event.getGroup(),
-                "nacos", ConfigChangeType.ADDED.name(), SELF_INCREMENT_SIZE));
+                ConfigCenterEvent.NACOS_PROTOCOL, ConfigChangeType.ADDED.name(), SELF_INCREMENT_SIZE));
         }
 
         void addListener(ConfigurationListener configurationListener) {
