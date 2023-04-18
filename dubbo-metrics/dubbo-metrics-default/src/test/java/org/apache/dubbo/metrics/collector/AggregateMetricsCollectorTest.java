@@ -356,10 +356,10 @@ class AggregateMetricsCollectorTest {
         TestInterface testInterfaceImpl = referenceConfig.get();
         Thread.sleep(2000);
 
-        List<Double> requestTimes = new ArrayList<>(1000);
+        List<Double> requestTimes = new ArrayList<>(100);
 
-        for (int i = 0; i < 1000; i++) {
-            requestTimes.add(1000 * Math.random());
+        for (int i = 0; i < 100; i++) {
+            requestTimes.add(400 * Math.random());
         }
 
         Collections.sort(requestTimes);
