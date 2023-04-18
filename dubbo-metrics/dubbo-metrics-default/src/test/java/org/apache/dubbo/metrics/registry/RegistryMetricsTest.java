@@ -6,80 +6,106 @@ import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.nested.AggregationConfig;
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
-import org.apache.dubbo.metrics.model.MethodMetric;
+import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.metrics.registry.collector.RegistryMetricsCollector;
 import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.mock;
-
+import static org.mockito.Mockito.*;
 
 
 public class RegistryMetricsTest {
 
+    ApplicationModel applicationModel;
+
+    RegistryMetricsCollector collector;
+
+    String REGISTER = "register";
+
+    String REGISTRY_REGISTER = "registry.register";
+
+
+    @BeforeEach
+    void setUp() {
+        ApplicationModel applicationModel = getApplicationModel();
+        this.collector = getTestCollector(applicationModel);
+        this.collector.setCollectEnabled(true);
+    }
 
     @Test
-    void testRegisterMetricsCount() {
-
-        ApplicationModel applicationModel = getApplicationModel();
-        RegistryMetricsCollector collector = getTestCollector(applicationModel);
-        collector.setCollectEnabled(true);
-
-        RegistryEvent event = RegistryEvent.toRegisterEvent(applicationModel);
-        event.setAvailable(true);
+    void testSucceedRegisterRequests() {
+        RegistryEvent event = creatEvent();
         collector.onEvent(event);
 
-        RegistryEvent errEvent = RegistryEvent.toRegisterEvent(applicationModel);
-        errEvent.setAvailable(true);
-        collector.onEventError(errEvent);
+//        MetricSample sample = getSample(MetricsKey.METRIC_REQUESTS_SUCCEED.getNameByType(REGISTRY_REGISTER), collector.collect());
+//        Assertions.assertTrue(sample);
 
 
-        List<MetricSample> samples = collector.collect();
-        System.out.println(samples);
-    }
+        collector.onEventFinish(event);
 
-    @Test
-    void testRegisterFailedCount() {
+        MetricSample sample = getSample(MetricsKey.METRIC_REQUESTS_SUCCEED.getNameByType(REGISTRY_REGISTER), collector.collect());
 
     }
 
     @Test
-    void testRegisterRequestsCount() {
-
+    void testTotalRegisterRequests() {
+        MetricsKey.METRIC_REQUESTS.getNameByType("registry.regsiter");
     }
 
     @Test
-    void testFailedRegisterCount() {
-
-
+    void testRegistryFailed() {
+        MetricsKey.REGISTER_METRIC_REQUESTS_FAILED.getNameByType("registry.register");
     }
 
-    public static MethodMetric getTestMethodMetric() {
-
-        MethodMetric methodMetric = new MethodMetric();
-        methodMetric.setApplicationName("TestApp");
-        methodMetric.setInterfaceName("TestInterface");
-        methodMetric.setMethodName("TestMethod");
-        methodMetric.setGroup("TestGroup");
-        methodMetric.setVersion("1.0.0");
-        methodMetric.setSide("PROVIDER");
-
-        return methodMetric;
+    @Test
+    void testLastResponseTime() {
+        MetricsKey.METRIC_RT_LAST.getNameByType(REGISTER);
     }
 
-    public static ApplicationModel getApplicationModel(){
+    @Test
+    void testMinResponseTime() {
+        MetricsKey.METRIC_RT_MIN.getNameByType(REGISTER);
+    }
+
+    @Test
+    void testMaxResponseTime() {
+        MetricsKey.METRIC_RT_MAX.getNameByType(REGISTER);
+    }
+
+    @Test
+    void testSumResponseTime() {
+        MetricsKey.METRIC_RT_SUM.getNameByType(REGISTER);
+    }
+
+    @Test
+    void testAvgResponseTime() {
+
+        MetricsKey.METRIC_RT_AVG.getNameByType(REGISTER);
+    }
+
+    MetricSample getSample(String name, List<MetricSample> samples) {
+        return samples.stream().filter(metricSample -> metricSample.getName().equals(name)).findFirst().orElseThrow(NoSuchElementException::new);
+    }
+
+    RegistryEvent creatEvent() {
+        RegistryEvent event = RegistryEvent.toRegisterEvent(applicationModel);
+        event.setAvailable(true);
+        return event;
+    }
+
+    ApplicationModel getApplicationModel() {
         return spy(new FrameworkModel().newApplication());
     }
 
-    public static RegistryMetricsCollector getTestCollector(ApplicationModel applicationModel) {
+    RegistryMetricsCollector getTestCollector(ApplicationModel applicationModel) {
         ApplicationConfig applicationConfig = new ApplicationConfig("TestApp");
         ConfigManager configManager = spy(new ConfigManager(applicationModel));
         MetricsConfig metricsConfig = spy(new MetricsConfig());
