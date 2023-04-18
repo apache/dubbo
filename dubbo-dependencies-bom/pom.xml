@@ -140,6 +140,7 @@
         <prometheus_client.version>0.16.0</prometheus_client.version>
         <reactive.version>1.0.4</reactive.version>
         <reactor.version>3.5.4</reactor.version>
+        <rxjava.version>2.2.21</rxjava.version>
         <okhttp_version>3.14.9</okhttp_version>
 
         <rs_api_version>2.1.1</rs_api_version>
@@ -148,7 +149,7 @@
         <tomcat_embed_version>8.5.87</tomcat_embed_version>
         <jetcd_version>0.7.5</jetcd_version>
         <nacos_version>2.1.2</nacos_version>
-        <grpc.version>1.54.0</grpc.version>
+        <grpc.version>1.54.1</grpc.version>
         <grpc_contrib_verdion>0.8.1</grpc_contrib_verdion>
         <jprotoc_version>1.2.2</jprotoc_version>
         <!-- Log libs -->
@@ -897,6 +898,11 @@
                 <groupId>io.projectreactor</groupId>
                 <artifactId>reactor-core</artifactId>
                 <version>${reactor.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.reactivex.rxjava2</groupId>
+                <artifactId>rxjava</artifactId>
+                <version>${rxjava.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
