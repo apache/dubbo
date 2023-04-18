@@ -27,9 +27,10 @@ import org.apache.dubbo.config.MethodConfig;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.bootstrap.builders.InternalServiceConfigBuilder;
 import org.apache.dubbo.metadata.MetadataService;
-import org.apache.dubbo.metadata.ProtoMetadataServiceStubProvider;
+import org.apache.dubbo.metadata.TriMetadataServiceImpl;
 import org.apache.dubbo.registry.client.metadata.MetadataServiceDelegation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.triple.metadata.Metadata;
 
 import java.util.Collections;
 import java.util.List;
@@ -116,13 +117,10 @@ public class ConfigurableMetadataServiceExporter {
 
     private ServiceConfig<?> getServiceConfig() {
         InternalServiceConfigBuilder<?> builder;
-        ProtoMetadataServiceStubProvider stubProvider = applicationModel
-            .getExtensionLoader(ProtoMetadataServiceStubProvider.class).getDefaultExtension();
-        if (CommonConstants.TRIPLE.equals(getApplicationConfig().getMetadataServiceProtocol()) &&
-            stubProvider.getProtoMetadataServiceStub() != null) {
-            builder = InternalServiceConfigBuilder.newBuilder(applicationModel)
-                .interfaceClass((Class<Object>) stubProvider.getProtoInterface())
-                .ref(stubProvider.getProtoMetadataServiceStub());
+        if (CommonConstants.TRIPLE.equals(getApplicationConfig().getMetadataServiceProtocol())) {
+            builder = InternalServiceConfigBuilder.<Metadata>newBuilder(applicationModel)
+                .interfaceClass(Metadata.class)
+                .ref(applicationModel.getBeanFactory().getOrRegisterBean(TriMetadataServiceImpl.class));
         } else {
             builder = InternalServiceConfigBuilder.<MetadataService>newBuilder(applicationModel)
                 .interfaceClass(MetadataService.class)

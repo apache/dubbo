@@ -15,11 +15,9 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.rpc.protocol.tri.service;
+package org.apache.dubbo.metadata;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.metadata.MetadataInfo;
-import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.triple.metadata.AllMetaRequest;
 import org.apache.dubbo.triple.metadata.AllMetaResponse;
