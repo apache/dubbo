@@ -26,9 +26,9 @@ import java.util.Arrays;
  * <p>
  * Note: Usage of this class should be limited to testing purposes only, as it violates the encapsulation principle.
  */
-public class WhiteBox {
+public class ReflectionUtils {
 
-    private WhiteBox(){}
+    private ReflectionUtils(){}
 
     /**
      * Retrieves the value of the specified field from the given object.
