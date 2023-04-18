@@ -27,12 +27,13 @@
     <modelVersion>4.0.0</modelVersion>
     <packaging>pom</packaging>
 
-    <artifactId>dubbo-spring-boot-observability-starter</artifactId>
+    <artifactId>dubbo-spring-boot-observability-starters</artifactId>
 
     <modules>
         <module>dubbo-spring-boot-observability-autoconfigure</module>
         <module>dubbo-spring-boot-tracing-otel-zipkin-starter</module>
         <module>dubbo-spring-boot-tracing-brave-zipkin-starter</module>
+        <module>dubbo-spring-boot-observability-starter</module>
     </modules>
 
     <properties>
