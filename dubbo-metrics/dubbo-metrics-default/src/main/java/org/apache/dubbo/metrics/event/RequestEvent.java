@@ -81,6 +81,6 @@ public class RequestEvent extends TimeCounterEvent {
     }
 
     public boolean isRequestBeforeEvent(){
-        return getAttachmentValue(MetricsConstants.INVOCATION_REQUEST_BEFORE) != null;
+        return super.getAttachmentValue(MetricsConstants.INVOCATION_REQUEST_BEFORE) != null;
     }
 }
