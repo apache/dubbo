@@ -21,7 +21,14 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.utils.WhiteBox;
-import org.apache.dubbo.config.*;
+import org.apache.dubbo.config.ServiceConfig;
+import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.config.ModuleConfig;
+import org.apache.dubbo.config.ProtocolConfig;
+import org.apache.dubbo.config.ReferenceConfig;
+
+import org.apache.dubbo.config.MetricsConfig;
+
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.nested.AggregationConfig;
 import org.apache.dubbo.metrics.TestMetricsInvoker;
@@ -43,18 +50,23 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.*;
-import java.util.concurrent.ArrayBlockingQueue;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Collections;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+
 import java.util.stream.Collectors;
 
-import static org.apache.dubbo.common.constants.CommonConstants.*;
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.constants.MetricsConstants.*;
 import static org.apache.dubbo.metrics.model.MetricsCategory.QPS;
 import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.spy;
 
 class AggregateMetricsCollectorTest {
 
@@ -268,10 +280,8 @@ class AggregateMetricsCollectorTest {
         double manualP95 = requestTimes.get((int) Math.round(p95Index));
         double manualP99 = requestTimes.get((int) Math.round(p99Index));
 
-        ThreadPoolExecutor executor = new ThreadPoolExecutor(10, 50, 100, TimeUnit.SECONDS, new ArrayBlockingQueue<>(10000));
-
         for (Double requestTime : requestTimes) {
-            executor.submit(() -> collector.onEvent(new RTEvent(applicationModel, methodMetric, requestTime.longValue())));
+            collector.onEvent(new RTEvent(applicationModel, methodMetric, requestTime.longValue()));
         }
         Thread.sleep(4000L);
 
@@ -346,9 +356,9 @@ class AggregateMetricsCollectorTest {
         TestInterface testInterfaceImpl = referenceConfig.get();
         Thread.sleep(2000);
 
-        List<Double> requestTimes = new ArrayList<>(10000);
+        List<Double> requestTimes = new ArrayList<>(1000);
 
-        for (int i = 0; i < 300; i++) {
+        for (int i = 0; i < 1000; i++) {
             requestTimes.add(1000 * Math.random());
         }
 
@@ -359,12 +369,10 @@ class AggregateMetricsCollectorTest {
         double manualP95 = requestTimes.get((int) Math.round(p95Index));
         double manualP99 = requestTimes.get((int) Math.round(p99Index));
 
-        ThreadPoolExecutor executor = new ThreadPoolExecutor(1000, 1000, 1000, TimeUnit.MINUTES, new ArrayBlockingQueue<>(10000));
 
-        for (Double requestTime:requestTimes) {
-            executor.submit(() -> System.out.println(testInterfaceImpl.sayHelloAfter(requestTime.longValue())));
+        for (Double requestTime : requestTimes) {
+            System.out.println(testInterfaceImpl.sayHelloAfter(requestTime.longValue()));
         }
-        Thread.sleep(5000);
 
         AggregateMetricsCollector collector = frameworkModel.getApplicationModels().get(0).getBeanFactory().getBean(AggregateMetricsCollector.class);
         List<MetricSample> samples = collector.collect();
@@ -387,13 +395,13 @@ class AggregateMetricsCollectorTest {
         double p95 = p95Sample.applyAsDouble();
         double p99 = p99Sample.applyAsDouble();
 
-        //An error of less than 15% is allowed
-        Assertions.assertTrue(Math.abs(1 - p95 / manualP95) < 0.15);
+        //An error of less than 10% is allowed
+        Assertions.assertTrue(Math.abs(1 - p95 / manualP95) < 0.10);
         Assertions.assertTrue(Math.abs(1 - p99 / manualP99) < 0.15);
     }
 
     private interface TestInterface {
-        String sayHelloAfter(long waitTime) ;
+        String sayHelloAfter(long waitTime);
     }
 
     private static class TestInterfaceImpl implements TestInterface {
@@ -402,7 +410,7 @@ class AggregateMetricsCollectorTest {
             System.out.println("foo");
             try {
                 Thread.sleep(waitTime);
-            }catch (InterruptedException e){
+            } catch (InterruptedException e) {
                 e.printStackTrace();
             }
             return "bar";
