@@ -33,6 +33,7 @@ import static org.apache.dubbo.metrics.model.key.MetricsKey.CONFIGCENTER_METRIC_
 
 /**
  * Registry related events
+ * Triggered in three types of configuration centers (apollo, zk, nacos)
  */
 public class ConfigCenterEvent extends TimeCounterEvent {
 
