@@ -28,6 +28,8 @@ import java.util.Arrays;
  */
 public class WhiteBox {
 
+    private WhiteBox(){}
+
     /**
      * Retrieves the value of the specified field from the given object.
      *
@@ -42,7 +44,7 @@ public class WhiteBox {
             f.setAccessible(true);
             return f.get(source);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new ReflectionException(e);
         }
     }
 
@@ -68,7 +70,7 @@ public class WhiteBox {
             }
             throw new NoSuchMethodException("No method found with the specified name and parameter types");
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new ReflectionException(e);
         }
     }
 
@@ -88,6 +90,12 @@ public class WhiteBox {
         }
 
         return true;
+    }
+
+    public static class ReflectionException extends RuntimeException{
+        public ReflectionException(Throwable cause) {
+            super(cause);
+        }
     }
 
 }
