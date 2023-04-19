@@ -60,7 +60,7 @@ public class RegistryStatCompositeTest {
     @Test
     void testInit() {
         Assertions.assertEquals(statComposite.getApplicationStatComposite().getApplicationNumStats().size(), RegistryMetricsConstants.APP_LEVEL_KEYS.size());
-        //(rt)5 * (register,subscribe,notify,register.service,subscribe.service)5
+        //(rt)5 * (applicationRegister,subscribe,notify,applicationRegister.service,subscribe.service)5
         Assertions.assertEquals(5 * 5, statComposite.getRtStatComposite().getRtStats().size());
         statComposite.getApplicationStatComposite().getApplicationNumStats().values().forEach((v ->
             Assertions.assertEquals(v, new ConcurrentHashMap<>())));
@@ -102,15 +102,15 @@ public class RegistryStatCompositeTest {
 
         GaugeMetricSample minSample = exportedRtMetrics.stream()
             .filter(sample -> sample.getTags().containsValue(applicationName))
-            .filter(sample -> sample.getName().equals(METRIC_RT_MIN.getNameByType("register.service")))
+            .filter(sample -> sample.getName().equals(METRIC_RT_MIN.getNameByType("applicationRegister.service")))
             .findFirst().orElse(null);
         GaugeMetricSample maxSample = exportedRtMetrics.stream()
             .filter(sample -> sample.getTags().containsValue(applicationName))
-            .filter(sample -> sample.getName().equals(METRIC_RT_MAX.getNameByType("register.service")))
+            .filter(sample -> sample.getName().equals(METRIC_RT_MAX.getNameByType("applicationRegister.service")))
             .findFirst().orElse(null);
         GaugeMetricSample avgSample = exportedRtMetrics.stream()
             .filter(sample -> sample.getTags().containsValue(applicationName))
-            .filter(sample -> sample.getName().equals(METRIC_RT_AVG.getNameByType("register.service")))
+            .filter(sample -> sample.getName().equals(METRIC_RT_AVG.getNameByType("applicationRegister.service")))
             .findFirst().orElse(null);
 
         Assertions.assertNotNull(minSample);
