@@ -50,7 +50,7 @@ public class HistogramMetricsCollector implements MetricsListener {
 
         ConfigManager configManager = applicationModel.getApplicationConfigManager();
         MetricsConfig config = configManager.getMetrics().orElse(null);
-        if (config == null || config.getHistogram() == null || (config.getHistogram().getEnabled() == null || Boolean.TRUE.equals(config.getHistogram().getEnabled()))) {
+        if (config == null || config.getHistogram() == null || config.getHistogram().getEnabled() == null || Boolean.TRUE.equals(config.getHistogram().getEnabled())) {
             registerListener();
 
             HistogramConfig histogram;

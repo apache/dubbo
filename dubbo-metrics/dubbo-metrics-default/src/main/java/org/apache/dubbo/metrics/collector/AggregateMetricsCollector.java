@@ -67,7 +67,7 @@ public class AggregateMetricsCollector implements MetricsCollector, MetricsListe
         ConfigManager configManager = applicationModel.getApplicationConfigManager();
         MetricsConfig config = configManager.getMetrics().orElse(null);
 
-        if (config == null || config.getAggregation() == null || (config.getAggregation().getEnabled() == null || Boolean.TRUE.equals(config.getAggregation().getEnabled()))) {
+        if (config == null || config.getAggregation() == null || config.getAggregation().getEnabled() == null || Boolean.TRUE.equals(config.getAggregation().getEnabled())) {
             // only registered when aggregation is enabled.
             registerListener();
 
