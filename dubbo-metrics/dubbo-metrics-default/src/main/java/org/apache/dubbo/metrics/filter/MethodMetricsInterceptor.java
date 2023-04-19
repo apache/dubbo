@@ -46,8 +46,7 @@ public class MethodMetricsInterceptor {
 
     private String getSide(Invocation invocation) {
         Optional<? extends Invoker<?>> invoker = Optional.ofNullable(invocation.getInvoker());
-        String side = invoker.isPresent() ? invoker.get().getUrl().getSide() : PROVIDER_SIDE;
-        return side;
+        return invoker.isPresent() ? invoker.get().getUrl().getSide() : PROVIDER_SIDE;
     }
 
     public void afterMethod(Invocation invocation, Result result) {
