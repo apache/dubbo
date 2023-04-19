@@ -20,6 +20,8 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 
+import java.lang.reflect.Method;
+
 /**
  * SerializationFilter, do something before serialize request and response
  */
@@ -30,18 +32,18 @@ public interface SerializationFilter {
      * do something before serialize request
      *
      * @param url URL address for the remote service
-     * @param methodName remote method name
+     * @param method remote method
      * @param requestTypes method args type
      */
-    void filterRequest(URL url, String methodName, Class<?>[] requestTypes);
+    void filterRequest(URL url, Method method, Class<?>[] requestTypes);
 
     /**
      * do something before serialize response
      *
      * @param url URL address for the remote service
-     * @param methodName remote method name
+     * @param method remote method
      * @param responseType method return type
      */
-    void filterResponse(URL url, String methodName, Class<?> responseType);
+    void filterResponse(URL url, Method method, Class<?> responseType);
 
 }
