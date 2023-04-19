@@ -129,6 +129,7 @@ public class ModuleModel extends ScopeModel {
             }
 
             // destroy application if none pub module
+            logger.info("ready to call dubbo clean actions");
             applicationModel.tryDestroy();
         }
     }
