@@ -40,6 +40,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.QOS_FAILED_START_SERVER;
 import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP;
 import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP_WHITELIST;
+import static org.apache.dubbo.common.constants.QosConstants.ANONYMOUS_ACCESS_ALLOW_COMMANDS;
 import static org.apache.dubbo.common.constants.QosConstants.ANONYMOUS_ACCESS_PERMISSION_LEVEL;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_HOST;
@@ -119,6 +120,7 @@ public class QosProtocolWrapper implements Protocol, ScopeModelAware {
             boolean acceptForeignIp = Boolean.parseBoolean(url.getParameter(ACCEPT_FOREIGN_IP, "false"));
             String acceptForeignIpWhitelist = url.getParameter(ACCEPT_FOREIGN_IP_WHITELIST, StringUtils.EMPTY_STRING);
             String anonymousAccessPermissionLevel = url.getParameter(ANONYMOUS_ACCESS_PERMISSION_LEVEL, PermissionLevel.PUBLIC.name());
+            String anonymousAllowCommands = url.getParameter(ANONYMOUS_ACCESS_ALLOW_COMMANDS, StringUtils.EMPTY_STRING);
             Server server = frameworkModel.getBeanFactory().getBean(Server.class);
 
             if (server.isStarted()) {
@@ -130,6 +132,7 @@ public class QosProtocolWrapper implements Protocol, ScopeModelAware {
             server.setAcceptForeignIp(acceptForeignIp);
             server.setAcceptForeignIpWhitelist(acceptForeignIpWhitelist);
             server.setAnonymousAccessPermissionLevel(anonymousAccessPermissionLevel);
+            server.setAnonymousAllowCommands(anonymousAllowCommands);
             server.start();
 
         } catch (Throwable throwable) {
