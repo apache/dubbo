@@ -35,6 +35,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.concurrent.*;
 
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
@@ -305,10 +306,15 @@ public class RegistryMetricsTest {
     }
 
     void await(long millis) {
+
+        CountDownLatch latch = new CountDownLatch(1);
+
+        ScheduledFuture<?> future = TimeController.executor.schedule(latch::countDown, millis, TimeUnit.MILLISECONDS);
         try {
-            Thread.sleep(millis);
+            latch.await();
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            future.cancel(true);
+            Thread.currentThread().interrupt();
         }
     }
 
@@ -327,6 +333,26 @@ public class RegistryMetricsTest {
         when(configManager.getApplication()).thenReturn(Optional.of(applicationConfig));
 
         return new RegistryMetricsCollector(applicationModel);
+    }
+
+
+    /**
+     * make the control of thread sleep time more precise
+     */
+    static class TimeController {
+
+        private static final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+
+        public static void sleep(long milliseconds) {
+            CountDownLatch latch = new CountDownLatch(1);
+            ScheduledFuture<?> future = executor.schedule(latch::countDown, milliseconds, TimeUnit.MILLISECONDS);
+            try {
+                latch.await();
+            } catch (InterruptedException e) {
+                future.cancel(true);
+                Thread.currentThread().interrupt();
+            }
+        }
     }
 
 }
