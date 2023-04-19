@@ -16,10 +16,11 @@
  */
 package org.apache.dubbo.qos.permission;
 
-import io.netty.channel.Channel;
 import org.apache.dubbo.qos.api.CommandContext;
 import org.apache.dubbo.qos.api.PermissionLevel;
 import org.apache.dubbo.qos.api.QosConfiguration;
+
+import io.netty.channel.Channel;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -78,6 +79,27 @@ class DefaultAnonymousAccessPermissionCheckerTest {
         Assertions.assertTrue(checker.access(commandContext, PermissionLevel.NONE));
         Assertions.assertTrue(checker.access(commandContext, PermissionLevel.PUBLIC));
         Assertions.assertTrue(checker.access(commandContext, PermissionLevel.PROTECTED));
+        Assertions.assertFalse(checker.access(commandContext, PermissionLevel.PRIVATE));
+
+        Mockito.when(qosConfiguration.getAcceptForeignIpWhitelistPredicate()).thenReturn(ip -> false);
+        Mockito.when(qosConfiguration.getAnonymousAllowCommands()).thenReturn("test1,test2");
+
+        Mockito.when(commandContext.getCommandName()).thenReturn("test1");
+        Assertions.assertTrue(checker.access(commandContext, PermissionLevel.NONE));
+        Assertions.assertTrue(checker.access(commandContext, PermissionLevel.PUBLIC));
+        Assertions.assertTrue(checker.access(commandContext, PermissionLevel.PROTECTED));
+        Assertions.assertTrue(checker.access(commandContext, PermissionLevel.PRIVATE));
+
+        Mockito.when(commandContext.getCommandName()).thenReturn("test2");
+        Assertions.assertTrue(checker.access(commandContext, PermissionLevel.NONE));
+        Assertions.assertTrue(checker.access(commandContext, PermissionLevel.PUBLIC));
+        Assertions.assertTrue(checker.access(commandContext, PermissionLevel.PROTECTED));
+        Assertions.assertTrue(checker.access(commandContext, PermissionLevel.PRIVATE));
+
+        Mockito.when(commandContext.getCommandName()).thenReturn("test");
+        Assertions.assertTrue(checker.access(commandContext, PermissionLevel.NONE));
+        Assertions.assertFalse(checker.access(commandContext, PermissionLevel.PUBLIC));
+        Assertions.assertFalse(checker.access(commandContext, PermissionLevel.PROTECTED));
         Assertions.assertFalse(checker.access(commandContext, PermissionLevel.PRIVATE));
     }
 }
