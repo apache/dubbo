@@ -69,7 +69,7 @@ public class MetricsFilter implements Filter, BaseFilter.Listener, ScopeModelAwa
         if (collector == null || !collector.isCollectEnabled()) {
             return;
         }
-        metricsInterceptor.handleMethodException(invocation, t);
+        metricsInterceptor.handleMethodException(invocation, t, false);
     }
 
 }
