@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.spring.boot.observability.autoconfigure.brave;
 
+import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.spring.boot.autoconfigure.DubboConfigurationProperties;
 import org.apache.dubbo.spring.boot.observability.autoconfigure.DubboMicrometerTracingAutoConfiguration;
 import org.apache.dubbo.spring.boot.observability.autoconfigure.ObservabilityUtils;
@@ -31,7 +33,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
-import org.springframework.core.env.Environment;
 
 import java.util.Collections;
 import java.util.List;
@@ -54,6 +55,12 @@ public class BraveAutoConfiguration {
      */
     private static final String DEFAULT_APPLICATION_NAME = "application";
 
+    private final ModuleModel moduleModel;
+
+    public BraveAutoConfiguration(ModuleModel moduleModel) {
+        this.moduleModel = moduleModel;
+    }
+
     @Bean
     @ConditionalOnMissingBean
     @Order(Ordered.HIGHEST_PRECEDENCE)
@@ -66,10 +73,12 @@ public class BraveAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public brave.Tracing braveTracing(Environment environment, List<brave.handler.SpanHandler> spanHandlers,
+    public brave.Tracing braveTracing(List<brave.handler.SpanHandler> spanHandlers,
                                       List<brave.TracingCustomizer> tracingCustomizers, brave.propagation.CurrentTraceContext currentTraceContext,
                                       brave.propagation.Propagation.Factory propagationFactory, brave.sampler.Sampler sampler) {
-        String applicationName = environment.getProperty("spring.application.name", DEFAULT_APPLICATION_NAME);
+        String applicationName = moduleModel.getApplicationModel().getApplicationConfigManager().getApplication()
+                .map(ApplicationConfig::getName)
+                .orElse(DEFAULT_APPLICATION_NAME);
         brave.Tracing.Builder builder = brave.Tracing.newBuilder().currentTraceContext(currentTraceContext).traceId128Bit(true)
                 .supportsJoin(false).propagationFactory(propagationFactory).sampler(sampler)
                 .localServiceName(applicationName);
