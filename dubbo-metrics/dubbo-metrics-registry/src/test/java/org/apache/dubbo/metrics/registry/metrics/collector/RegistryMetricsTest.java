@@ -43,7 +43,6 @@ public class RegistryMetricsTest {
 
         for (int i = 0; i < 10; i++) {
             RegistryEvent event = serviceRegister();
-            collector.onEvent(event);
             if (i % 2 == 0) {
                 serviceRegisterSuccess(event);
             } else {
@@ -52,28 +51,40 @@ public class RegistryMetricsTest {
         }
         List<MetricSample> samples = collector.collect();
 
-        GaugeMetricSample<?> succeedRequests = (GaugeMetricSample<?>) getSample(MetricsKey.REGISTER_METRIC_REQUESTS_SUCCEED.getName(), samples);
-        GaugeMetricSample<?> failedRequests = (GaugeMetricSample<?>) getSample(MetricsKey.REGISTER_METRIC_REQUESTS_FAILED.getName(), samples);
-        GaugeMetricSample<?> totalRequests = (GaugeMetricSample<?>) getSample(MetricsKey.REGISTER_METRIC_REQUESTS.getName(), samples);
+        GaugeMetricSample<?> succeedRequests = getSample(MetricsKey.REGISTER_METRIC_REQUESTS_SUCCEED.getName(), samples);
+        GaugeMetricSample<?> failedRequests = getSample(MetricsKey.REGISTER_METRIC_REQUESTS_FAILED.getName(), samples);
+        GaugeMetricSample<?> totalRequests = getSample(MetricsKey.REGISTER_METRIC_REQUESTS.getName(), samples);
+
         Assertions.assertEquals(5L, succeedRequests.applyAsLong());
         Assertions.assertEquals(5L, failedRequests.applyAsLong());
         Assertions.assertEquals(10L, totalRequests.applyAsLong());
     }
 
     @Test
-    void testLastResponseTime() throws InterruptedException {
+    void testLastResponseTime(){
         long waitTime = 2000;
 
         RegistryEvent event = serviceRegister();
-
-        Thread.sleep(waitTime);
-
+        await(waitTime);
         serviceRegisterSuccess(event);
 
-        GaugeMetricSample<?> sample = (GaugeMetricSample<?>) getSample(MetricsKey.METRIC_RT_LAST.getNameByType(REGISTER), collector.collect());
-
+        GaugeMetricSample<?> sample = getSample(MetricsKey.METRIC_RT_LAST.getNameByType(REGISTER), collector.collect());
         // 20% error is allowed
-        Assertions.assertTrue(considerEquals(waitTime,sample.applyAsLong(),0.2));
+        Assertions.assertTrue(considerEquals(waitTime, sample.applyAsLong(), 0.2));
+
+        RegistryEvent event1 = serviceRegister();
+        await(waitTime/2);
+        serviceRegisterSuccess(event1);
+
+        sample = getSample(MetricsKey.METRIC_RT_LAST.getNameByType(REGISTER), collector.collect());
+        Assertions.assertTrue(considerEquals((double) waitTime /2, sample.applyAsLong(), 0.2));
+
+        RegistryEvent event2 = serviceRegister();
+        await(waitTime);
+        serviceRegisterFailed(event2);
+
+        sample = getSample(MetricsKey.METRIC_RT_LAST.getNameByType(REGISTER), collector.collect());
+        Assertions.assertTrue(considerEquals((double) waitTime, sample.applyAsLong(), 0.2));
     }
 
     @Test
@@ -81,51 +92,109 @@ public class RegistryMetricsTest {
         long waitTime = 2000L;
 
         RegistryEvent event = serviceRegister();
-        Thread.sleep(waitTime);
+        await(waitTime);
         serviceRegisterSuccess(event);
 
         RegistryEvent event1 = serviceRegister();
-        Thread.sleep(waitTime);
+        await(waitTime);
 
         RegistryEvent event2 = serviceRegister();
-        Thread.sleep(waitTime);
+        await(waitTime);
 
         serviceRegisterSuccess(event1);
         serviceRegisterSuccess(event2);
 
-        GaugeMetricSample<?> sample = (GaugeMetricSample<?>) getSample(MetricsKey.METRIC_RT_MIN.getNameByType(REGISTER), collector.collect());
-        Assertions.assertTrue(considerEquals(waitTime,sample.applyAsLong(),0.2));
-        System.out.println(sample.applyAsLong());
+        GaugeMetricSample<?> sample = getSample(MetricsKey.METRIC_RT_MIN.getNameByType(REGISTER), collector.collect());
+        Assertions.assertTrue(considerEquals(waitTime, sample.applyAsLong(), 0.2));
 
         RegistryEvent event3 = serviceRegister();
-        Thread.sleep(waitTime/2);
+        Thread.sleep(waitTime / 2);
         serviceRegisterSuccess(event3);
 
-        sample = (GaugeMetricSample<?>) getSample(MetricsKey.METRIC_RT_MIN.getNameByType(REGISTER), collector.collect());
-        Assertions.assertTrue(considerEquals((double) waitTime /2,sample.applyAsLong(),0.2));
-        System.out.println(sample.applyAsLong());
+        sample = getSample(MetricsKey.METRIC_RT_MIN.getNameByType(REGISTER), collector.collect());
+        Assertions.assertTrue(considerEquals((double) waitTime / 2, sample.applyAsLong(), 0.2));
     }
 
     @Test
-    void testMaxResponseTime() {
+    void testMaxResponseTime(){
+        long waitTime = 1000L;
 
+        RegistryEvent event = serviceRegister();
+        await(waitTime);
+        serviceRegisterSuccess(event);
 
-        MetricsKey.METRIC_RT_MAX.getNameByType(REGISTER);
+        GaugeMetricSample<?> sample = getSample(MetricsKey.METRIC_RT_MAX.getNameByType(REGISTER), collector.collect());
+        Assertions.assertTrue(considerEquals(waitTime, sample.applyAsLong(), 0.2));
+
+        RegistryEvent event1 = serviceRegister();
+        await(waitTime * 2);
+        serviceRegisterSuccess(event1);
+
+        sample = getSample(MetricsKey.METRIC_RT_MAX.getNameByType(REGISTER), collector.collect());
+        Assertions.assertTrue(considerEquals(waitTime * 2, sample.applyAsLong(), 0.2));
+
+        sample = getSample(MetricsKey.METRIC_RT_MAX.getNameByType(REGISTER), collector.collect());
+        RegistryEvent event2 = serviceRegister();
+        serviceRegisterSuccess(event2);
+        Assertions.assertTrue(considerEquals(waitTime * 2, sample.applyAsLong(), 0.2));
     }
 
     @Test
-    void testSumResponseTime() {
-        MetricsKey.METRIC_RT_SUM.getNameByType(REGISTER);
+    void testSumResponseTime(){
+        long waitTime = 1000;
+
+        RegistryEvent event = serviceRegister();
+        RegistryEvent event1 = serviceRegister();
+        RegistryEvent event2 = serviceRegister();
+
+        await(waitTime);
+
+        serviceRegisterSuccess(event);
+        serviceRegisterFailed(event1);
+
+        GaugeMetricSample<?> sample = getSample(MetricsKey.METRIC_RT_SUM.getNameByType(REGISTER), collector.collect());
+        Assertions.assertTrue(considerEquals(waitTime * 2, sample.applyAsLong(), 0.2));
+
+        await(waitTime);
+        serviceRegisterSuccess(event2);
+
+        sample = getSample(MetricsKey.METRIC_RT_SUM.getNameByType(REGISTER), collector.collect());
+        Assertions.assertTrue(considerEquals(waitTime * 4, sample.applyAsLong(), 0.2));
     }
 
     @Test
     void testAvgResponseTime() {
+         long waitTime = 1000;
 
-        MetricsKey.METRIC_RT_AVG.getNameByType(REGISTER);
+         RegistryEvent event = serviceRegister();
+         RegistryEvent event1 = serviceRegister();
+         RegistryEvent event2 = serviceRegister();
+
+         await(waitTime);
+
+         serviceRegisterSuccess(event);
+         serviceRegisterFailed(event1);
+
+         GaugeMetricSample<?> sample = getSample(MetricsKey.METRIC_RT_AVG.getNameByType(REGISTER),collector.collect());
+         Assertions.assertTrue(considerEquals(waitTime,sample.applyAsLong(),0.2));
+
+         await(waitTime);
+         serviceRegisterSuccess(event2);
+
+         sample = getSample(MetricsKey.METRIC_RT_AVG.getNameByType(REGISTER),collector.collect());
+         Assertions.assertTrue(considerEquals((double)waitTime * 4 / 3 ,sample.applyAsLong(),0.2));
     }
 
-    MetricSample getSample(String name, List<MetricSample> samples) {
-        return samples.stream().filter(metricSample -> metricSample.getName().equals(name)).findFirst().orElseThrow(NoSuchElementException::new);
+
+    @Test
+    void testServiceRegisterCount(){
+
+
+
+    }
+
+    GaugeMetricSample<?> getSample(String name, List<MetricSample> samples) {
+        return (GaugeMetricSample<?>) samples.stream().filter(metricSample -> metricSample.getName().equals(name)).findFirst().orElseThrow(NoSuchElementException::new);
     }
 
 
@@ -156,6 +225,14 @@ public class RegistryMetricsTest {
     ApplicationModel getApplicationModel() {
         ApplicationModel appModel = spy(new FrameworkModel().newApplication());
         return appModel;
+    }
+
+    void await(long millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     RegistryMetricsCollector getTestCollector(ApplicationModel applicationModel) {
