@@ -184,6 +184,7 @@
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-annotation-processor</artifactId>
             <version>${dubbo_annotation_processor_version}</version>
+            <optional>true</optional>
         </dependency>
 
         <!--JUnit Jupiter Engine to depend on the JUnit5 engine and JUnit 5 API -->
