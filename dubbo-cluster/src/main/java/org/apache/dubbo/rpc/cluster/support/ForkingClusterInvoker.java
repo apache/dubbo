@@ -67,7 +67,6 @@ public class ForkingClusterInvoker<T> extends AbstractClusterInvoker<T> {
     @SuppressWarnings({"unchecked", "rawtypes"})
     public Result doInvoke(final Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
         try {
-            checkInvokers(invokers, invocation);
             final List<Invoker<T>> selected;
             final int forks = getUrl().getParameter(FORKS_KEY, DEFAULT_FORKS);
             final int timeout = getUrl().getParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT);
