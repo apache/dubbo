@@ -66,11 +66,17 @@ public class AggregateMetricsCollector implements MetricsCollector, MetricsListe
         this.applicationModel = applicationModel;
         ConfigManager configManager = applicationModel.getApplicationConfigManager();
         MetricsConfig config = configManager.getMetrics().orElse(null);
-        if (config != null && config.getAggregation() != null && (config.getAggregation().getEnabled() == null || Boolean.TRUE.equals(config.getAggregation().getEnabled()))) {
+
+        if (config == null || config.getAggregation() == null || (config.getAggregation().getEnabled() == null || Boolean.TRUE.equals(config.getAggregation().getEnabled()))) {
             // only registered when aggregation is enabled.
             registerListener();
 
-            AggregationConfig aggregation = config.getAggregation();
+            AggregationConfig aggregation;
+            if (config == null || config.getAggregation() == null) {
+                aggregation = new AggregationConfig();
+            } else {
+                aggregation = config.getAggregation();
+            }
             this.bucketNum = aggregation.getBucketNum() == null ? DEFAULT_BUCKET_NUM : aggregation.getBucketNum();
             this.timeWindowSeconds = aggregation.getTimeWindowSeconds() == null ? DEFAULT_TIME_WINDOW_SECONDS : aggregation.getTimeWindowSeconds();
         }
