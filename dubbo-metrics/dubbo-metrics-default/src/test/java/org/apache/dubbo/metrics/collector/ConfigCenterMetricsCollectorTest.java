@@ -20,7 +20,6 @@ package org.apache.dubbo.metrics.collector;
 import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
 import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
 import org.apache.dubbo.config.ApplicationConfig;
-import org.apache.dubbo.metrics.model.ConfigCenterMetric;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -32,14 +31,8 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Map;
-import java.util.function.Supplier;
 
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_APPLICATION_NAME;
-import static org.apache.dubbo.common.constants.MetricsConstants.TAG_GROUP_KEY;
-import static org.apache.dubbo.common.constants.MetricsConstants.TAG_INTERFACE_KEY;
-import static org.apache.dubbo.common.constants.MetricsConstants.TAG_METHOD_KEY;
-import static org.apache.dubbo.common.constants.MetricsConstants.TAG_VERSION_KEY;
-import static org.junit.jupiter.api.Assertions.*;
 
 class ConfigCenterMetricsCollectorTest {
 
