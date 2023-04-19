@@ -330,9 +330,9 @@ public class ReflectionPackableMethod implements PackableMethod {
         private final URL url;
 
         private final Class<?> actualResponseType;
-        
+
         private final Method method;
-        
+
         // wrapper request set serialize type
         String requestSerialize;
 
@@ -413,7 +413,7 @@ public class ReflectionPackableMethod implements PackableMethod {
                                 URL url,
                                 String serialize,
                                 Class<?>[] actualRequestTypes,
-                                boolean singleArgument, 
+                                boolean singleArgument,
                                 Method method) {
             this.url = url;
             this.serialize = convertHessianToWrapper(serialize);
@@ -489,7 +489,7 @@ public class ReflectionPackableMethod implements PackableMethod {
         private final Class<?>[] actualRequestTypes;
 
         private final Collection<String> allSerialize;
-        
+
         private final Method method;
 
         private WrapRequestUnpack(MultipleSerialization serialization, URL url, Collection<String> allSerialize, Class<?>[] actualRequestTypes, Method method) {
