@@ -69,7 +69,7 @@ public class RegistryMetricsTest {
         eventSuccess(event);
 
         GaugeMetricSample<?> sample = getSample(MetricsKey.METRIC_RT_LAST.getNameByType(REGISTER), collector.collect());
-        // 20% error is allowed
+        // 20% deviation is allowed
         Assertions.assertTrue(considerEquals(waitTime, sample.applyAsLong(), 0.2));
 
         RegistryEvent event1 = applicationRegister();
