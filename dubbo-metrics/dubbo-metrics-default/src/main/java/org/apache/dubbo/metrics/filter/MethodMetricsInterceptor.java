@@ -86,6 +86,7 @@ public class MethodMetricsInterceptor {
                 eventType = MetricsEvent.Type.NETWORK_EXCEPTION;
             }
         }
+
         sampler.incOnEvent(invocation, eventType.getNameByType(side));
         onCompleted(invocation);
         sampler.incOnEvent(invocation, MetricsEvent.Type.TOTAL_FAILED.getNameByType(side));
