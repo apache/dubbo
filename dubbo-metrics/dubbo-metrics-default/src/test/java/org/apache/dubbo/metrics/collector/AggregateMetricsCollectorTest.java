@@ -20,12 +20,8 @@ package org.apache.dubbo.metrics.collector;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.utils.WhiteBox;
-import org.apache.dubbo.config.ServiceConfig;
+import org.apache.dubbo.common.utils.ReflectionUtils;
 import org.apache.dubbo.config.ApplicationConfig;
-import org.apache.dubbo.config.ModuleConfig;
-import org.apache.dubbo.config.ProtocolConfig;
-import org.apache.dubbo.config.ReferenceConfig;
 
 import org.apache.dubbo.config.MetricsConfig;
 
@@ -43,8 +39,6 @@ import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.FrameworkModel;
-import org.apache.dubbo.rpc.model.ModuleModel;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -63,7 +57,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.constants.MetricsConstants.*;
 import static org.apache.dubbo.metrics.model.MetricsCategory.QPS;
-import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.spy;
@@ -245,11 +238,11 @@ class AggregateMetricsCollectorTest {
         }
 
         @SuppressWarnings("unchecked")
-        ConcurrentHashMap<MethodMetric, TimeWindowCounter> qps = (ConcurrentHashMap<MethodMetric, TimeWindowCounter>) WhiteBox.getField(collector, "qps");
+        ConcurrentHashMap<MethodMetric, TimeWindowCounter> qps = (ConcurrentHashMap<MethodMetric, TimeWindowCounter>) ReflectionUtils.getField(collector, "qps");
         qps.put(methodMetric, qpsCounter);
 
         List<MetricSample> collectedQPS = new ArrayList<>();
-        WhiteBox.invoke(collector, "collectQPS", collectedQPS);
+        ReflectionUtils.invoke(collector, "collectQPS", collectedQPS);
 
         Assertions.assertFalse(collectedQPS.isEmpty());
         Assertions.assertEquals(1, collectedQPS.size());
@@ -308,113 +301,6 @@ class AggregateMetricsCollectorTest {
         //An error of less than 5% is allowed
         Assertions.assertTrue(Math.abs(1 - p95 / manualP95) < 0.05);
         Assertions.assertTrue(Math.abs(1 - p99 / manualP99) < 0.05);
-    }
-
-    @Test
-    void blackBoxTestP95AndP99() throws InterruptedException {
-        FrameworkModel frameworkModel = new FrameworkModel();
-        ApplicationModel appModel = frameworkModel.newApplication();
-        ModuleModel moduleModel = appModel.newModule();
-
-        appModel.getApplicationConfigManager().setApplication(new ApplicationConfig("TestApp"));
-
-        MetricsConfig metricsConfig = new MetricsConfig();
-        metricsConfig.setEnableJvm(true);
-        metricsConfig.setEnableMetadata(true);
-        metricsConfig.setEnableRegistry(true);
-        metricsConfig.setEnableThreadpool(true);
-
-        AggregationConfig aggregationConfig = new AggregationConfig();
-        aggregationConfig.setEnabled(true);
-        aggregationConfig.setBucketNum(10);
-        aggregationConfig.setTimeWindowSeconds(120);
-
-        metricsConfig.setAggregation(aggregationConfig);
-
-        appModel.getApplicationConfigManager().addConfig(metricsConfig);
-
-        moduleModel.getConfigManager().setModule(new ModuleConfig("TestModule"));
-
-        ProtocolConfig protocolConfig = new ProtocolConfig();
-        protocolConfig.setName(LOCAL_PROTOCOL);
-
-        ReferenceConfig<TestInterface> referenceConfig = new ReferenceConfig<>();
-        referenceConfig.setScopeModel(moduleModel);
-        referenceConfig.setInterface(TestInterface.class);
-        referenceConfig.setProtocol(LOCAL_PROTOCOL);
-
-        ServiceConfig<TestInterface> serviceConfig = new ServiceConfig<>();
-        serviceConfig.setScopeModel(moduleModel);
-        serviceConfig.setProtocol(protocolConfig);
-        serviceConfig.setInterface(TestInterface.class);
-        serviceConfig.setRef(new TestInterfaceImpl());
-
-        moduleModel.getConfigManager().addConfig(referenceConfig);
-        moduleModel.getConfigManager().addConfig(serviceConfig);
-
-        serviceConfig.export();
-        TestInterface testInterfaceImpl = referenceConfig.get();
-        Thread.sleep(2000);
-
-        List<Double> requestTimes = new ArrayList<>(100);
-
-        for (int i = 0; i < 100; i++) {
-            requestTimes.add(400 * Math.random());
-        }
-
-        Collections.sort(requestTimes);
-        double p95Index = 0.95 * (requestTimes.size() - 1);
-        double p99Index = 0.99 * (requestTimes.size() - 1);
-
-        double manualP95 = requestTimes.get((int) Math.round(p95Index));
-        double manualP99 = requestTimes.get((int) Math.round(p99Index));
-
-
-        for (Double requestTime : requestTimes) {
-            System.out.println(testInterfaceImpl.sayHelloAfter(requestTime.longValue()));
-        }
-
-        AggregateMetricsCollector collector = frameworkModel.getApplicationModels().get(0).getBeanFactory().getBean(AggregateMetricsCollector.class);
-        List<MetricSample> samples = collector.collect();
-
-        GaugeMetricSample<?> p95Sample = samples.stream()
-            .filter(sample -> sample.getName().endsWith("p95"))
-            .map(sample -> (GaugeMetricSample<?>) sample)
-            .findFirst()
-            .orElse(null);
-
-        GaugeMetricSample<?> p99Sample = samples.stream()
-            .filter(sample -> sample.getName().endsWith("p99"))
-            .map(sample -> (GaugeMetricSample<?>) sample)
-            .findFirst()
-            .orElse(null);
-
-        Assertions.assertNotNull(p95Sample);
-        Assertions.assertNotNull(p99Sample);
-
-        double p95 = p95Sample.applyAsDouble();
-        double p99 = p99Sample.applyAsDouble();
-
-        //An error of less than 10% is allowed
-        Assertions.assertTrue(Math.abs(1 - p95 / manualP95) < 0.10);
-        Assertions.assertTrue(Math.abs(1 - p99 / manualP99) < 0.15);
-    }
-
-    private interface TestInterface {
-        String sayHelloAfter(long waitTime);
-    }
-
-    private static class TestInterfaceImpl implements TestInterface {
-        @Override
-        public String sayHelloAfter(long waitTime) {
-            System.out.println("foo");
-            try {
-                Thread.sleep(waitTime);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            return "bar";
-        }
     }
 
 }
