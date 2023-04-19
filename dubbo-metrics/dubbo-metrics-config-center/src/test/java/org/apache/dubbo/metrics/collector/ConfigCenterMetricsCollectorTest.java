@@ -20,6 +20,7 @@ package org.apache.dubbo.metrics.collector;
 import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
 import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
 import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.metrics.config.collector.ConfigCenterMetricsCollector;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -33,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_APPLICATION_NAME;
+import static org.apache.dubbo.metrics.MetricsConstants.SELF_INCREMENT_SIZE;
 
 class ConfigCenterMetricsCollectorTest {
 
@@ -59,8 +61,8 @@ class ConfigCenterMetricsCollectorTest {
         ConfigCenterMetricsCollector collector = new ConfigCenterMetricsCollector(applicationModel);
         collector.setCollectEnabled(true);
         String applicationName = applicationModel.getApplicationName();
-        collector.increase4Initialized("key", "group", "nacos", applicationName, 1);
-        collector.increase4Initialized("key", "group", "nacos", applicationName, 1);
+        collector.increase("key", "group", "nacos", ConfigChangeType.ADDED.name(), 1);
+        collector.increase("key", "group", "nacos", ConfigChangeType.ADDED.name(), 1);
 
         List<MetricSample> samples = collector.collect();
         for (MetricSample sample : samples) {
@@ -80,9 +82,12 @@ class ConfigCenterMetricsCollectorTest {
         String applicationName = applicationModel.getApplicationName();
 
         ConfigChangedEvent event = new ConfigChangedEvent("key", "group", null, ConfigChangeType.ADDED);
-        
-        collector.increaseUpdated("nacos", applicationName, event);
-        collector.increaseUpdated("nacos", applicationName, event);
+
+        collector.increase(event.getKey(), event.getGroup(),
+            "apollo", ConfigChangeType.ADDED.name(), SELF_INCREMENT_SIZE);
+
+        collector.increase(event.getKey(), event.getGroup(),
+            "apollo", ConfigChangeType.ADDED.name(), SELF_INCREMENT_SIZE);
 
         List<MetricSample> samples = collector.collect();
         for (MetricSample sample : samples) {
