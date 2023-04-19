@@ -38,7 +38,7 @@ public class DefaultDubboClientObservationConventionTest {
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("testMethod");
         invocation.setAttachment("interface", "com.example.TestService");
-        invocation.setTargetServiceUniqueName("targetServiceName");
+        invocation.setTargetServiceUniqueName("targetServiceName1");
 
         Invoker<?> invoker = ObservationConventionUtils.getMockInvokerWithUrl();
         invocation.setInvoker(invoker);
@@ -48,7 +48,8 @@ public class DefaultDubboClientObservationConventionTest {
         KeyValues keyValues = dubboClientObservationConvention.getLowCardinalityKeyValues(context);
 
         Assertions.assertEquals("testMethod", ObservationConventionUtils.getValueForKey(keyValues, "rpc.method"));
-        Assertions.assertEquals("targetServiceName", ObservationConventionUtils.getValueForKey(keyValues, "rpc.service"));
+
+        Assertions.assertEquals("targetServiceName1", ObservationConventionUtils.getValueForKey(keyValues, "rpc.service"));
         Assertions.assertEquals("apache_dubbo", ObservationConventionUtils.getValueForKey(keyValues, "rpc.system"));
     }
 
