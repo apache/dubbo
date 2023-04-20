@@ -15,10 +15,16 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.metrics.collector;
+package org.apache.dubbo.metrics.config.collector;
 
-import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
-import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
+import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.config.context.ConfigManager;
+import org.apache.dubbo.metrics.collector.CombMetricsCollector;
+import org.apache.dubbo.metrics.collector.MetricsCollector;
+import org.apache.dubbo.metrics.config.event.ConfigCenterEvent;
+import org.apache.dubbo.metrics.config.event.ConfigCenterMetricsDispatcher;
+import org.apache.dubbo.metrics.event.MetricsEvent;
+import org.apache.dubbo.metrics.event.TimeCounterEvent;
 import org.apache.dubbo.metrics.model.ConfigCenterMetric;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
@@ -28,25 +34,28 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_METRICS_CONFIGCENTER_ENABLE;
 import static org.apache.dubbo.metrics.model.MetricsCategory.CONFIGCENTER;
 
-public class ConfigCenterMetricsCollector implements MetricsCollector {
 
-    private boolean collectEnabled = true;
+/**
+ * Config center implementation of {@link MetricsCollector}
+ */
+@Activate
+public class ConfigCenterMetricsCollector extends CombMetricsCollector<TimeCounterEvent> {
+
+    private Boolean collectEnabled = null;
     private final ApplicationModel applicationModel;
 
     private final Map<ConfigCenterMetric, AtomicLong> updatedMetrics = new ConcurrentHashMap<>();
 
     public ConfigCenterMetricsCollector(ApplicationModel applicationModel) {
+        super(null);
         this.applicationModel = applicationModel;
-        // default is true, disable when config false
-        if ("false".equals(System.getProperty(DUBBO_METRICS_CONFIGCENTER_ENABLE))) {
-            collectEnabled = false;
-        }
+        super.setEventMulticaster(new ConfigCenterMetricsDispatcher(this));
     }
 
     public void setCollectEnabled(Boolean collectEnabled) {
@@ -57,29 +66,21 @@ public class ConfigCenterMetricsCollector implements MetricsCollector {
 
     @Override
     public boolean isCollectEnabled() {
-        return collectEnabled;
+        if (collectEnabled == null) {
+            ConfigManager configManager = applicationModel.getApplicationConfigManager();
+            configManager.getMetrics().ifPresent(metricsConfig -> setCollectEnabled(metricsConfig.getEnableMetadata()));
+        }
+        return Optional.ofNullable(collectEnabled).orElse(true);
     }
 
-    public void increase4Initialized(String key, String group, String protocol, String applicationName, int count) {
+    public void increase(String key, String group, String protocol, String changeTypeName, int size) {
         if (!isCollectEnabled()) {
             return;
         }
-        if (count <= 0) {
-            return;
-        }
-        ConfigCenterMetric metric = new ConfigCenterMetric(applicationName, key, group, protocol, ConfigChangeType.ADDED.name());
-        AtomicLong aLong = updatedMetrics.computeIfAbsent(metric, k -> new AtomicLong(0L));
-        aLong.addAndGet(count);
+        ConfigCenterMetric metric = new ConfigCenterMetric(applicationModel.getApplicationName(), key, group, protocol, changeTypeName);
+        updatedMetrics.computeIfAbsent(metric, k -> new AtomicLong(0L)).addAndGet(size);
     }
 
-    public void increaseUpdated(String protocol, String applicationName, ConfigChangedEvent event) {
-        if (!isCollectEnabled()) {
-            return;
-        }
-        ConfigCenterMetric metric = new ConfigCenterMetric(applicationName, event.getKey(), event.getGroup(), protocol, event.getChangeType().name());
-        AtomicLong count = updatedMetrics.computeIfAbsent(metric, k -> new AtomicLong(0L));
-        count.incrementAndGet();
-    }
 
     @Override
     public List<MetricSample> collect() {
@@ -88,12 +89,14 @@ public class ConfigCenterMetricsCollector implements MetricsCollector {
         if (!isCollectEnabled()) {
             return list;
         }
-        collect(list);
+        updatedMetrics.forEach((k, v) -> list.add(new GaugeMetricSample<>(MetricsKey.CONFIGCENTER_METRIC_TOTAL, k.getTags(), CONFIGCENTER, v, AtomicLong::get)));
         return list;
     }
 
-    private void collect(List<MetricSample> list) {
-        updatedMetrics.forEach((k, v) -> list.add(new GaugeMetricSample<>(MetricsKey.CONFIGCENTER_METRIC_TOTAL, k.getTags(), CONFIGCENTER, v, AtomicLong::get)));
+
+    @Override
+    public boolean isSupport(MetricsEvent event) {
+        return event instanceof ConfigCenterEvent;
     }
 
 }
