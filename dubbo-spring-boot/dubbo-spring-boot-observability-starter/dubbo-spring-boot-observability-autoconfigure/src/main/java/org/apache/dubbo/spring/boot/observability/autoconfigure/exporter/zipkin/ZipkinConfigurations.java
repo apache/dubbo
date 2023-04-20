@@ -27,6 +27,7 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
@@ -44,12 +45,15 @@ import zipkin2.reporter.urlconnection.URLConnectionSender;
 
 import java.util.concurrent.atomic.AtomicReference;
 
+import static org.apache.dubbo.spring.boot.observability.autoconfigure.ObservabilityUtils.DUBBO_TRACING_ZIPKIN_CONFIG_PREFIX;
+
 /**
  * Configurations for Zipkin. Those are imported by {@link ZipkinAutoConfiguration}.
  */
 class ZipkinConfigurations {
 
     @Configuration(proxyBeanMethods = false)
+    @ConditionalOnProperty(prefix = DUBBO_TRACING_ZIPKIN_CONFIG_PREFIX, name = "endpoint")
     @Import({UrlConnectionSenderConfiguration.class, WebClientSenderConfiguration.class,
             RestTemplateSenderConfiguration.class})
     static class SenderConfiguration {
@@ -147,6 +151,7 @@ class ZipkinConfigurations {
 
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnClass(ZipkinSpanExporter.class)
+    @ConditionalOnProperty(prefix = DUBBO_TRACING_ZIPKIN_CONFIG_PREFIX, name = "endpoint")
     @EnableConfigurationProperties(DubboConfigurationProperties.class)
     static class OpenTelemetryConfiguration {
 

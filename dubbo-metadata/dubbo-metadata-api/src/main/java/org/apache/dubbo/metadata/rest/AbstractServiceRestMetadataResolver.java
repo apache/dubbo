@@ -72,15 +72,17 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
 
     @Override
     public final boolean supports(Class<?> serviceType, boolean consumer) {
-        // for consumer
-        if (consumer) {
-            //  it is possible serviceType is impl
-            return supports0(serviceType);
+
+        if (serviceType == null) {
+            return false;
         }
 
+        // for consumer
+        //  it is possible serviceType is impl
         // for provider
         // for xml config bean  && isServiceAnnotationPresent(serviceType)
-        return isImplementedInterface(serviceType) && supports0(serviceType);
+        //  isImplementedInterface(serviceType) SpringController
+        return supports0(serviceType);
     }
 
     protected final boolean isImplementedInterface(Class<?> serviceType) {
@@ -172,9 +174,15 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
         // exclude the public methods declared in java.lang.Object.class
         List<Method> declaredServiceMethods = new ArrayList<>(getAllMethods(serviceInterfaceClass, excludedDeclaredClass(Object.class)));
 
+        // controller class
+        if (serviceType.equals(serviceInterfaceClass)) {
+            putServiceMethodToMap(serviceMethodsMap, declaredServiceMethods);
+            return unmodifiableMap(serviceMethodsMap);
+        }
+
         // for interface , such as consumer interface
         if (serviceType.isInterface()) {
-            putInterfaceMethodToMap(serviceMethodsMap, declaredServiceMethods);
+            putServiceMethodToMap(serviceMethodsMap, declaredServiceMethods);
             return unmodifiableMap(serviceMethodsMap);
         }
 
@@ -198,7 +206,7 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
         return unmodifiableMap(serviceMethodsMap);
     }
 
-    private void putInterfaceMethodToMap(Map<Method, Method> serviceMethodsMap, List<Method> declaredServiceMethods) {
+    private void putServiceMethodToMap(Map<Method, Method> serviceMethodsMap, List<Method> declaredServiceMethods) {
         declaredServiceMethods.stream().forEach(method -> {
 
             // filter static private default
