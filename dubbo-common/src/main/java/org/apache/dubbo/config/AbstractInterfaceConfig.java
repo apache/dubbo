@@ -113,6 +113,11 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     protected String cluster;
 
     /**
+     * when use dynamic cluster set the default cluster to use
+     */
+    protected String defaultCluster;
+
+    /**
      * The {@code Filter} when the provider side exposed a service or the customer side references a remote service used,
      * if there are more than one, you can use commas to separate them
      */
@@ -922,5 +927,13 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     public void setInterfaceClassLoader(ClassLoader interfaceClassLoader) {
         this.interfaceClassLoader = interfaceClassLoader;
+    }
+
+    public String getDefaultCluster() {
+        return defaultCluster;
+    }
+
+    public void setDefaultCluster(String defaultCluster) {
+        this.defaultCluster = defaultCluster;
     }
 }
