@@ -21,11 +21,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.utils.DubboAppender;
 import org.apache.dubbo.common.utils.LogUtil;
-import org.apache.dubbo.rpc.AppResponse;
-import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.Result;
-import org.apache.dubbo.rpc.RpcContext;
-import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.*;
 import org.apache.dubbo.rpc.cluster.Directory;
 
 import org.apache.log4j.Level;
@@ -37,6 +33,7 @@ import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
+import org.mockito.Mockito;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -110,6 +107,9 @@ class FailbackClusterInvokerTest {
         given(dic.getUrl()).willReturn(url);
         given(dic.getConsumerUrl()).willReturn(url);
         given(dic.getInterface()).willReturn(FailbackClusterInvokerTest.class);
+        given(dic.list(invocation)).willReturn(invokers);
+        given(invoker.getUrl()).willReturn(url);
+
         FailbackClusterInvoker<FailbackClusterInvokerTest> invoker = new FailbackClusterInvoker<>(dic);
         invoker.invoke(invocation);
         Assertions.assertNull(RpcContext.getServiceContext().getInvoker());
@@ -123,6 +123,9 @@ class FailbackClusterInvokerTest {
         given(dic.getUrl()).willReturn(url);
         given(dic.getConsumerUrl()).willReturn(url);
         given(dic.getInterface()).willReturn(FailbackClusterInvokerTest.class);
+        given(dic.list(invocation)).willReturn(invokers);
+        given(invoker.getUrl()).willReturn(url);
+
         FailbackClusterInvoker<FailbackClusterInvokerTest> invoker = new FailbackClusterInvoker<>(dic);
         invoker.invoke(invocation);
         Assertions.assertNull(RpcContext.getServiceContext().getInvoker());
@@ -157,14 +160,12 @@ class FailbackClusterInvokerTest {
 
         given(dic.getUrl()).willReturn(url);
         given(dic.getConsumerUrl()).willReturn(url);
-        given(dic.list(invocation)).willReturn(null);
+        given(dic.list(invocation)).willReturn(invokers);
         given(dic.getInterface()).willReturn(FailbackClusterInvokerTest.class);
-
+        given(invoker.getUrl()).willReturn(url);
+        given(invoker.invoke(invocation)).willThrow(RpcException.class);
         invocation.setMethodName("method1");
-
         invokers.add(invoker);
-
-        resetInvokerToNoException();
 
         FailbackClusterInvoker<FailbackClusterInvokerTest> invoker = new FailbackClusterInvoker<>(dic);
         LogUtil.start();
