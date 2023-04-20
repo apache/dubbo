@@ -100,10 +100,13 @@ public class StreamUtils {
             if (TripleHeaderEnum.containsExcludeAttachments(key)) {
                 continue;
             }
+            final Object v = entry.getValue();
+            if (v == null) {
+                continue;
+            }
             if (needConvertHeaderKey && !key.equals(entry.getKey())) {
                 needConvertKey.put(key, entry.getKey());
             }
-            final Object v = entry.getValue();
             convertSingleAttachment(headers, key, v);
         }
         if (!needConvertKey.isEmpty()) {
