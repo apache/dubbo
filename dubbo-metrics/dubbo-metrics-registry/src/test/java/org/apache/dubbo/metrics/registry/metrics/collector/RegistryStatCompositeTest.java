@@ -60,7 +60,7 @@ public class RegistryStatCompositeTest {
     @Test
     void testInit() {
         Assertions.assertEquals(statComposite.getApplicationStatComposite().getApplicationNumStats().size(), RegistryMetricsConstants.APP_LEVEL_KEYS.size());
-        //(rt)5 * (applicationRegister,subscribe,notify,applicationRegister.service,subscribe.service)5
+        //(rt)5 * (applicationRegister,subscribe,notify,applicationRegister.service,subscribe.service)
         Assertions.assertEquals(5 * 5, statComposite.getRtStatComposite().getRtStats().size());
         statComposite.getApplicationStatComposite().getApplicationNumStats().values().forEach((v ->
             Assertions.assertEquals(v, new ConcurrentHashMap<>())));
