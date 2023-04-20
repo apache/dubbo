@@ -43,6 +43,11 @@ public class RestDemoServiceImpl implements RestDemoService {
     }
 
     @Override
+    public String deleteUserByUid(String uid) {
+        return uid;
+    }
+
+    @Override
     public Integer hello(Integer a, Integer b) {
         context = RpcContext.getServerAttachment().getObjectAttachments();
         return a + b;

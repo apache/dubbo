@@ -31,6 +31,9 @@ public class PathMatcher {
     private String[] pathSplits;
     private boolean hasPathVariable;
     private String contextPath;
+    private String httpMethod;
+    // for provider http method compare
+    private boolean needCompareMethod = true;
 
 
     public PathMatcher(String path) {
@@ -45,6 +48,10 @@ public class PathMatcher {
         this.port = (port == null || port == -1 || port == 0) ? null : port;
     }
 
+    public PathMatcher(String path, String version, String group, Integer port, String httpMethod) {
+        this(path, version, group, port);
+        setHttpMethod(httpMethod);
+    }
 
     private void dealPathVariable(String path) {
         this.pathSplits = path.split(SEPARATOR);
@@ -88,8 +95,8 @@ public class PathMatcher {
 
     }
 
-    public static PathMatcher getInvokeCreatePathMatcher(String path, String version, String group, Integer port) {
-        return new PathMatcher(path, version, group, port);
+    public static PathMatcher getInvokeCreatePathMatcher(String path, String version, String group, Integer port, String method) {
+        return new PathMatcher(path, version, group, port, method).noNeedHttpMethodCompare();
     }
 
     public boolean hasPathVariable() {
@@ -100,6 +107,20 @@ public class PathMatcher {
         return port;
     }
 
+    public String getHttpMethod() {
+        return httpMethod;
+    }
+
+    public PathMatcher setHttpMethod(String httpMethod) {
+        this.httpMethod = httpMethod;
+        return this;
+    }
+
+    private PathMatcher noNeedHttpMethodCompare() {
+        this.needCompareMethod = false;
+        return this;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -107,6 +128,7 @@ public class PathMatcher {
         PathMatcher that = (PathMatcher) o;
         return pathEqual(that)
             && Objects.equals(version, that.version)
+            && (this.needCompareMethod ? Objects.equals(httpMethod, that.httpMethod) : true)
             && Objects.equals(group, that.group) && Objects.equals(port, that.port);
     }
 
@@ -200,6 +222,7 @@ public class PathMatcher {
             ", port=" + port +
             ", hasPathVariable=" + hasPathVariable +
             ", contextPath='" + contextPath + '\'' +
+            ", httpMethod='" + httpMethod + '\'' +
             '}';
     }
 }
