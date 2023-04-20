@@ -75,7 +75,7 @@ public class PathAndInvokerMapper {
             return pathToServiceMapNoPathVariable.get(pathMather);
         }
 
-        // second search from pathToServiceMapNoPathVariable
+        // second search from pathToServiceMapContainPathVariable
         if (pathToServiceMapContainPathVariable.containsKey(pathMather)) {
             return pathToServiceMapContainPathVariable.get(pathMather);
         }
