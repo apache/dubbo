@@ -102,15 +102,15 @@ public class RegistryStatCompositeTest {
 
         GaugeMetricSample minSample = exportedRtMetrics.stream()
             .filter(sample -> sample.getTags().containsValue(applicationName))
-            .filter(sample -> sample.getName().equals(METRIC_RT_MIN.getNameByType("applicationRegister.service")))
+            .filter(sample -> sample.getName().equals(METRIC_RT_MIN.getNameByType("register.service")))
             .findFirst().orElse(null);
         GaugeMetricSample maxSample = exportedRtMetrics.stream()
             .filter(sample -> sample.getTags().containsValue(applicationName))
-            .filter(sample -> sample.getName().equals(METRIC_RT_MAX.getNameByType("applicationRegister.service")))
+            .filter(sample -> sample.getName().equals(METRIC_RT_MAX.getNameByType("register.service")))
             .findFirst().orElse(null);
         GaugeMetricSample avgSample = exportedRtMetrics.stream()
             .filter(sample -> sample.getTags().containsValue(applicationName))
-            .filter(sample -> sample.getName().equals(METRIC_RT_AVG.getNameByType("applicationRegister.service")))
+            .filter(sample -> sample.getName().equals(METRIC_RT_AVG.getNameByType("register.service")))
             .findFirst().orElse(null);
 
         Assertions.assertNotNull(minSample);
