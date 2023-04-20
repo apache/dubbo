@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.config.ReferenceCache;
+import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.config.configcenter.DynamicConfigurationFactory;
 import org.apache.dubbo.common.config.configcenter.wrapper.CompositeDynamicConfiguration;
@@ -50,8 +51,8 @@ import org.apache.dubbo.config.utils.CompositeReferenceCache;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.metadata.report.MetadataReportFactory;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
-import org.apache.dubbo.metrics.collector.ConfigCenterMetricsCollector;
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
+import org.apache.dubbo.metrics.config.event.ConfigCenterEvent;
 import org.apache.dubbo.metrics.event.MetricsEventBus;
 import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.metrics.report.MetricsReporter;
@@ -799,8 +800,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 }
             }
             ApplicationModel applicationModel = getApplicationModel();
-            ConfigCenterMetricsCollector collector =
-                applicationModel.getBeanFactory().getOrRegisterBean(ConfigCenterMetricsCollector.class);
 
             if (StringUtils.isNotEmpty(configCenter.getConfigFile())) {
                 String configContent = dynamicConfiguration.getProperties(configCenter.getConfigFile(), configCenter.getGroup());
@@ -819,11 +818,11 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                     environment.updateAppExternalConfigMap(appConfigMap);
 
                     // Add metrics
-                    collector.increase4Initialized(configCenter.getConfigFile(), configCenter.getGroup(),
-                        configCenter.getProtocol(), applicationModel.getApplicationName(), configMap.size());
+                    MetricsEventBus.publish(ConfigCenterEvent.toChangeEvent(applicationModel, configCenter.getConfigFile(), configCenter.getGroup(),
+                        configCenter.getProtocol(), ConfigChangeType.ADDED.name(), configMap.size()));
                     if (isNotEmpty(appGroup)) {
-                        collector.increase4Initialized(appConfigFile, appGroup,
-                            configCenter.getProtocol(), applicationModel.getApplicationName(), appConfigMap.size());
+                        MetricsEventBus.publish(ConfigCenterEvent.toChangeEvent(applicationModel, appConfigFile, appGroup,
+                            configCenter.getProtocol(), ConfigChangeType.ADDED.name(), appConfigMap.size()));
                     }
                 } catch (IOException e) {
                     throw new IllegalStateException("Failed to parse configurations from Config Center.", e);
@@ -1153,6 +1152,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             collector.registryDefaultSample();
         }
     }
+
     private void completeStartFuture(boolean success) {
         if (startFuture != null) {
             startFuture.complete(success);

@@ -36,4 +36,6 @@ public class ObservabilityUtils {
 
     public static final String DUBBO_TRACING_BAGGAGE_ENABLED = DUBBO_TRACING_BAGGAGE + PROPERTY_NAME_SEPARATOR + "enabled";
 
+    public static final String DUBBO_TRACING_ZIPKIN_CONFIG_PREFIX = DUBBO_TRACING_PREFIX + PROPERTY_NAME_SEPARATOR + "tracing-exporter.zipkin-config";
+
 }
