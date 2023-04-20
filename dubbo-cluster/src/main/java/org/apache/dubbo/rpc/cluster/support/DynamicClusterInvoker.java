@@ -33,7 +33,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_CLUSTER;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_CLUSTER_KEY;
 
 public class DynamicClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
@@ -57,7 +57,7 @@ public class DynamicClusterInvoker<T> extends AbstractClusterInvoker<T> {
             cluster = RpcContext.getServiceContext().getConsumerUrl().getMethodParameter(invocation.getMethodName(), CLUSTER_KEY);
         }
         if (StringUtils.isEmpty(cluster)) {
-            cluster = RpcContext.getServiceContext().getConsumerUrl().getParameter(DEFAULT_CLUSTER);
+            cluster = RpcContext.getServiceContext().getConsumerUrl().getParameter(DEFAULT_CLUSTER_KEY);
         }
 
         String finalCluster = cluster;

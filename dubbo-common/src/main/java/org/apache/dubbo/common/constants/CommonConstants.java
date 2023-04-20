@@ -276,7 +276,7 @@ public interface CommonConstants {
 
     String MONITOR_KEY = "monitor";
     String CLUSTER_KEY = "cluster";
-    String DEFAULT_CLUSTER = "default.cluster";
+    String DEFAULT_CLUSTER_KEY = "default.cluster";
     String USERNAME_KEY = "username";
     String PASSWORD_KEY = "password";
     String HOST_KEY = "host";
