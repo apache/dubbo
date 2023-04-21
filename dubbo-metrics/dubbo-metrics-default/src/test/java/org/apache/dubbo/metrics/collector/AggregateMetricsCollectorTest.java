@@ -210,6 +210,8 @@ class AggregateMetricsCollectorTest {
 
         Assertions.assertTrue(sampleMap.containsKey(MetricsKey.METRIC_RT_P99.getNameByType(side)));
         Assertions.assertTrue(sampleMap.containsKey(MetricsKey.METRIC_RT_P95.getNameByType(side)));
+        Assertions.assertTrue(sampleMap.containsKey(MetricsKey.METRIC_RT_P90.getNameByType(side)));
+        Assertions.assertTrue(sampleMap.containsKey(MetricsKey.METRIC_RT_P50.getNameByType(side)));
     }
 
     @Test
