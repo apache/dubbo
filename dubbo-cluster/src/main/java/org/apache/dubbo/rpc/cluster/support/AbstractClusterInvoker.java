@@ -331,9 +331,9 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
 
         InvocationProfilerUtils.enterDetailProfiler(invocation, () -> "Router route.");
         List<Invoker<T>> invokers = list(invocation);
+        InvocationProfilerUtils.releaseDetailProfiler(invocation);
 
         checkInvokers(invokers, invocation);
-        InvocationProfilerUtils.releaseDetailProfiler(invocation);
 
         LoadBalance loadbalance = initLoadBalance(invokers, invocation);
         RpcUtils.attachInvocationIdIfAsync(getUrl(), invocation);
