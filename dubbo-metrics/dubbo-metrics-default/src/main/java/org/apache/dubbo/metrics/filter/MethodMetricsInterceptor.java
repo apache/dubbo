@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.metrics.filter;
 
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.metrics.collector.sample.MethodMetricsSampler;
 import org.apache.dubbo.metrics.event.MetricsEvent;
 import org.apache.dubbo.rpc.Invocation;
@@ -84,7 +85,7 @@ public class MethodMetricsInterceptor {
             if (e.isNetwork()) {
                 eventType = MetricsEvent.Type.NETWORK_EXCEPTION;
             }
-            if (e.isNoInvokerAvailableAfterFilter()) {
+            if (e.isNoInvokerAvailableAfterFilter() && CommonConstants.CONSUMER_SIDE.equals(side)) {
                 eventType = MetricsEvent.Type.NO_INVOKER_AVAILABLE;
             }
         }
