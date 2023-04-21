@@ -156,6 +156,7 @@ class AggregateMetricsCollectorTest {
         methodMetricsCountSampler.incOnEvent(invocation, MetricsEvent.Type.NETWORK_EXCEPTION.getNameByType(side));
         methodMetricsCountSampler.incOnEvent(invocation, MetricsEvent.Type.SERVICE_UNAVAILABLE.getNameByType(side));
         methodMetricsCountSampler.incOnEvent(invocation, MetricsEvent.Type.CODEC_EXCEPTION.getNameByType(side));
+        methodMetricsCountSampler.incOnEvent(invocation, MetricsEvent.Type.NO_INVOKER_AVAILABLE.getNameByType(side));
 
 
         List<MetricSample> samples = collector.collect();
@@ -181,6 +182,7 @@ class AggregateMetricsCollectorTest {
         Assertions.assertEquals(sampleMap.get(MetricsKey.METRIC_REQUESTS_TOTAL_NETWORK_FAILED_AGG.getNameByType(side)), 1L);
         Assertions.assertEquals(sampleMap.get(MetricsKey.METRIC_REQUESTS_TOTAL_CODEC_FAILED_AGG.getNameByType(side)), 1L);
         Assertions.assertEquals(sampleMap.get(MetricsKey.METRIC_REQUESTS_TOTAL_SERVICE_UNAVAILABLE_FAILED_AGG.getNameByType(side)), 1L);
+        Assertions.assertEquals(sampleMap.get(MetricsKey.INVOKER_NO_AVAILABLE_COUNT.getNameByType(side)), 1L);
 
         Assertions.assertTrue(sampleMap.containsKey(MetricsKey.METRIC_QPS.getNameByType(side)));
     }

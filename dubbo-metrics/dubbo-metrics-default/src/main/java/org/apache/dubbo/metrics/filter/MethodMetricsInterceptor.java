@@ -84,6 +84,9 @@ public class MethodMetricsInterceptor {
             if (e.isNetwork()) {
                 eventType = MetricsEvent.Type.NETWORK_EXCEPTION;
             }
+            if (e.isNoInvokerAvailableAfterFilter()) {
+                eventType = MetricsEvent.Type.NO_INVOKER_AVAILABLE;
+            }
         }
         sampler.incOnEvent(invocation, eventType.getNameByType(side));
         onCompleted(invocation);
