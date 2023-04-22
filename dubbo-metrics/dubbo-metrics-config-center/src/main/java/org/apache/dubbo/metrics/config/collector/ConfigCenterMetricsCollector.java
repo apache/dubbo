@@ -45,7 +45,7 @@ import static org.apache.dubbo.metrics.model.MetricsCategory.CONFIGCENTER;
  * Config center implementation of {@link MetricsCollector}
  */
 @Activate
-public class ConfigCenterMetricsCollector extends CombMetricsCollector<TimeCounterEvent> {
+public class ConfigCenterMetricsCollector extends CombMetricsCollector {
 
     private Boolean collectEnabled = null;
     private final ApplicationModel applicationModel;

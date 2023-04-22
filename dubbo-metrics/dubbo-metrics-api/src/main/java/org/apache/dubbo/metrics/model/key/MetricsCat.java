@@ -18,7 +18,6 @@
 package org.apache.dubbo.metrics.model.key;
 
 import org.apache.dubbo.metrics.collector.CombMetricsCollector;
-import org.apache.dubbo.metrics.event.TimeCounterEvent;
 import org.apache.dubbo.metrics.listener.AbstractMetricsListener;
 
 import java.util.function.BiFunction;
@@ -27,13 +26,13 @@ import java.util.function.Function;
 public class MetricsCat {
 
     private MetricsPlaceType placeType;
-    private final Function<CombMetricsCollector<TimeCounterEvent>, AbstractMetricsListener> eventFunc;
+    private final Function<CombMetricsCollector, AbstractMetricsListener> eventFunc;
 
-    public MetricsCat(MetricsKey metricsKey, BiFunction<MetricsKey, CombMetricsCollector<TimeCounterEvent>, AbstractMetricsListener> biFunc) {
+    public MetricsCat(MetricsKey metricsKey, BiFunction<MetricsKey, CombMetricsCollector, AbstractMetricsListener> biFunc) {
         this.eventFunc = collector -> biFunc.apply(metricsKey, collector);
     }
 
-    public MetricsCat(MetricsKey metricsKey, TpFunction<MetricsKey, MetricsPlaceType, CombMetricsCollector<TimeCounterEvent>, AbstractMetricsListener> tpFunc) {
+    public MetricsCat(MetricsKey metricsKey, TpFunction<MetricsKey, MetricsPlaceType, CombMetricsCollector, AbstractMetricsListener> tpFunc) {
         this.eventFunc = collector -> tpFunc.apply(metricsKey, placeType, collector);
     }
 
@@ -42,7 +41,7 @@ public class MetricsCat {
         return this;
     }
 
-    public Function<CombMetricsCollector<TimeCounterEvent>, AbstractMetricsListener> getEventFunc() {
+    public Function<CombMetricsCollector, AbstractMetricsListener> getEventFunc() {
         return eventFunc;
     }
 

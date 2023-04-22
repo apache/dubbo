@@ -18,7 +18,6 @@
 package org.apache.dubbo.metrics.listener;
 
 import org.apache.dubbo.metrics.collector.CombMetricsCollector;
-import org.apache.dubbo.metrics.event.TimeCounterEvent;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.key.MetricsPlaceType;
 
@@ -28,13 +27,13 @@ public  class MetricsApplicationListener extends AbstractMetricsListener {
         super(metricsKey);
     }
 
-    public static AbstractMetricsListener onPostEventBuild(MetricsKey metricsKey, CombMetricsCollector<TimeCounterEvent> collector) {
+    public static AbstractMetricsListener onPostEventBuild(MetricsKey metricsKey, CombMetricsCollector collector) {
         return AbstractMetricsListener.onEvent(metricsKey,
             event -> collector.increment(event.appName(), metricsKey)
         );
     }
 
-    public static AbstractMetricsListener onFinishEventBuild(MetricsKey metricsKey, MetricsPlaceType placeType, CombMetricsCollector<TimeCounterEvent> collector) {
+    public static AbstractMetricsListener onFinishEventBuild(MetricsKey metricsKey, MetricsPlaceType placeType, CombMetricsCollector collector) {
         return AbstractMetricsListener.onFinish(metricsKey,
             event -> {
                 collector.increment(event.appName(), metricsKey);
@@ -43,7 +42,7 @@ public  class MetricsApplicationListener extends AbstractMetricsListener {
         );
     }
 
-    public static AbstractMetricsListener onErrorEventBuild(MetricsKey metricsKey, MetricsPlaceType placeType, CombMetricsCollector<TimeCounterEvent> collector) {
+    public static AbstractMetricsListener onErrorEventBuild(MetricsKey metricsKey, MetricsPlaceType placeType, CombMetricsCollector collector) {
         return AbstractMetricsListener.onError(metricsKey,
             event -> {
                 collector.increment(event.appName(), metricsKey);

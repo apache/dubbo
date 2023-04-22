@@ -28,7 +28,7 @@ import java.util.List;
 
 import static org.apache.dubbo.metrics.MetricsConstants.SELF_INCREMENT_SIZE;
 
-public abstract class CombMetricsCollector<E extends TimeCounterEvent> implements ApplicationMetricsCollector<E>, ServiceMetricsCollector<E> {
+public abstract class CombMetricsCollector implements ApplicationMetricsCollector<TimeCounterEvent>, ServiceMetricsCollector<TimeCounterEvent> {
 
     private final BaseStatComposite stats;
     private MetricsEventMulticaster eventMulticaster;

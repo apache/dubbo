@@ -47,7 +47,7 @@ import static org.apache.dubbo.metrics.metadata.MetadataMetricsConstants.OP_TYPE
  * Registry implementation of {@link MetricsCollector}
  */
 @Activate
-public class MetadataMetricsCollector extends CombMetricsCollector<TimeCounterEvent> {
+public class MetadataMetricsCollector extends CombMetricsCollector {
 
     private Boolean collectEnabled = null;
     private final ApplicationModel applicationModel;
