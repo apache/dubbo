@@ -314,7 +314,8 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                 // There may be no interface class when generic call
                 return;
             }
-            if (!interfaceClass.isInterface()) {
+
+            if (!interfaceClass.isInterface() && !containsRestProtocol()) {
                 throw new IllegalStateException(interfaceName + " is not an interface");
             }
 
@@ -372,6 +373,10 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             }
         }
 
+    }
+
+    protected boolean containsRestProtocol() {
+        return false;
     }
 
     protected boolean verifyMethodConfig(MethodConfig methodConfig, Class<?> interfaceClass, boolean ignoreInvalidMethodConfig) {
@@ -923,4 +928,5 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     public void setInterfaceClassLoader(ClassLoader interfaceClassLoader) {
         this.interfaceClassLoader = interfaceClassLoader;
     }
+
 }
