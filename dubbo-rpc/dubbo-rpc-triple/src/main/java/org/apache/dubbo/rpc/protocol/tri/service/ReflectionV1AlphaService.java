@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.protocol.tri.service;
 
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.rpc.TriRpcStatus;
+import org.apache.dubbo.rpc.service.SchemaDescriptorRegistry;
 
 import com.google.protobuf.Descriptors.FileDescriptor;
 import io.grpc.reflection.v1alpha.DubboServerReflectionTriple;
