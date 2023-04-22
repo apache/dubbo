@@ -42,4 +42,8 @@ public interface RestDemoService {
     Long testFormBody(@FormParam("number") Long number);
 
     boolean isCalled();
+
+    @DELETE
+    @Path("{uid}")
+    String deleteUserByUid(@PathParam("uid") String uid);
 }

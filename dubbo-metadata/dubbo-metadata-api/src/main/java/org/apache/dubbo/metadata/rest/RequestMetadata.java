@@ -206,6 +206,10 @@ public class RequestMetadata implements Serializable {
         setPath(contextPathFromUrl + path);
     }
 
+    public boolean methodAllowed(String method) {
+        return method != null && method.equals(this.method);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
