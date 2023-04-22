@@ -16,11 +16,16 @@
  */
 
 package org.apache.dubbo.metrics.collector;
+
 import org.apache.dubbo.metrics.collector.sample.MethodMetricsSampler;
 import org.apache.dubbo.metrics.collector.sample.MetricsCountSampleConfigurer;
 import org.apache.dubbo.metrics.collector.sample.MetricsSampler;
 import org.apache.dubbo.metrics.collector.sample.SimpleMetricsCountSampler;
 import org.apache.dubbo.metrics.collector.sample.ThreadPoolMetricsSampler;
+import org.apache.dubbo.metrics.data.ApplicationStatComposite;
+import org.apache.dubbo.metrics.data.BaseStatComposite;
+import org.apache.dubbo.metrics.data.RtStatComposite;
+import org.apache.dubbo.metrics.data.ServiceStatComposite;
 import org.apache.dubbo.metrics.event.MetricsEvent;
 import org.apache.dubbo.metrics.event.SimpleMetricsEventMulticaster;
 import org.apache.dubbo.metrics.listener.MetricsListener;
@@ -28,19 +33,21 @@ import org.apache.dubbo.metrics.model.ApplicationMetric;
 import org.apache.dubbo.metrics.model.sample.CounterMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
 import java.util.ArrayList;
 import java.util.List;
+
 import static org.apache.dubbo.metrics.model.MetricsCategory.APPLICATION;
 import static org.apache.dubbo.metrics.model.key.MetricsKey.APPLICATION_METRIC_INFO;
 
 /**
  * Default implementation of {@link MetricsCollector}
  */
-public class DefaultMetricsCollector implements MetricsCollector {
+public class DefaultMetricsCollector extends CombMetricsCollector {
 
     private boolean collectEnabled = false;
 
-    private volatile boolean threadpoolCollectEnabled=false;
+    private volatile boolean threadpoolCollectEnabled = false;
     private final SimpleMetricsEventMulticaster eventMulticaster;
     private final MethodMetricsSampler methodSampler = new MethodMetricsSampler(this);
     private final ThreadPoolMetricsSampler threadPoolSampler = new ThreadPoolMetricsSampler(this);
@@ -49,15 +56,22 @@ public class DefaultMetricsCollector implements MetricsCollector {
     private final List<MetricsSampler> samplers = new ArrayList<>();
 
     public DefaultMetricsCollector() {
+        super(new BaseStatComposite() {
+            @Override
+            protected void init(ApplicationStatComposite applicationStatComposite, ServiceStatComposite serviceStatComposite, RtStatComposite rtStatComposite) {
+
+            }
+        });
         this.eventMulticaster = new SimpleMetricsEventMulticaster();
         samplers.add(methodSampler);
         samplers.add(applicationSampler);
         samplers.add(threadPoolSampler);
     }
 
-    public void addSampler(MetricsSampler sampler){
+    public void addSampler(MetricsSampler sampler) {
         samplers.add(sampler);
     }
+
     public void setApplicationName(String applicationName) {
         this.applicationName = applicationName;
     }

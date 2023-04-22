@@ -18,6 +18,8 @@ package org.apache.dubbo.metrics.filter;
 
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
+import org.apache.dubbo.metrics.event.MetricsEventBus;
+import org.apache.dubbo.metrics.event.RequestEvent;
 import org.apache.dubbo.rpc.BaseFilter;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
@@ -35,9 +37,11 @@ public class MetricsFilter implements Filter, BaseFilter.Listener, ScopeModelAwa
 
     private DefaultMetricsCollector collector = null;
     private MethodMetricsInterceptor metricsInterceptor;
+    private ApplicationModel applicationModel;
 
     @Override
     public void setApplicationModel(ApplicationModel applicationModel) {
+        this.applicationModel = applicationModel;
         collector = applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class);
 
         if (collector != null) {
@@ -51,6 +55,7 @@ public class MetricsFilter implements Filter, BaseFilter.Listener, ScopeModelAwa
             return invoker.invoke(invocation);
         }
 
+        MetricsEventBus.post(RequestEvent.toProviderEvent(applicationModel), () -> null);
         metricsInterceptor.beforeMethod(invocation);
 
         return invoker.invoke(invocation);
