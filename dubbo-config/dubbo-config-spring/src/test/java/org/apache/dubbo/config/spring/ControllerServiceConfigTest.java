@@ -35,6 +35,9 @@ public class ControllerServiceConfigTest {
         serviceServiceConfig.setRef(new SpringControllerService());
         serviceServiceConfig.setInterface(SpringControllerService.class.getName());
         serviceServiceConfig.export();
+        serviceServiceConfig.unexport();
+        System.exit(1);
+
 
     }
 }
