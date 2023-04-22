@@ -14,36 +14,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.rest.rest;
+package org.apache.dubbo.metadata.rest.api;
 
-import javax.ws.rs.*;
+
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
+@Path("usingService")
+@Consumes({MediaType.APPLICATION_JSON})
+@Produces({MediaType.APPLICATION_JSON})
+public interface JaxrsUsingService {
 
-@Path("/demoService")
-public interface RestDemoService {
     @GET
-    @Path("/hello")
-    Integer hello(@QueryParam("a")Integer a,@QueryParam("b") Integer b);
-
-    @GET
-    @Path("/error")
-    String error();
+    Response getUsers();
 
     @POST
-    @Path("/say")
-    @Consumes({MediaType.TEXT_PLAIN})
-    String sayHello(String name);
+    Response createUser(Object user);
 
-    @POST
-    @Path("number")
-    @Produces({MediaType.APPLICATION_FORM_URLENCODED})
-    @Consumes({MediaType.APPLICATION_FORM_URLENCODED})
-    Long testFormBody(@FormParam("number") Long number);
-
-    boolean isCalled();
+    @GET
+    @Path("{uid}")
+    Response getUserByUid(@PathParam("uid") String uid);
 
     @DELETE
     @Path("{uid}")
-    String deleteUserByUid(@PathParam("uid") String uid);
+    Response deleteUserByUid(@PathParam("uid") String uid);
 }
