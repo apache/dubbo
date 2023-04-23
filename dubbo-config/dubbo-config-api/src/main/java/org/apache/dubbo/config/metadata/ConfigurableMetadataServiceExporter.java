@@ -17,7 +17,6 @@
 package org.apache.dubbo.config.metadata;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
@@ -29,6 +28,7 @@ import org.apache.dubbo.config.bootstrap.builders.InternalServiceConfigBuilder;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.TriMetadataServiceImpl;
 import org.apache.dubbo.registry.client.metadata.MetadataServiceDelegation;
+import org.apache.dubbo.registry.client.metadata.MetadataUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.triple.metadata.Metadata;
 
@@ -51,6 +51,8 @@ public class ConfigurableMetadataServiceExporter {
     private MetadataServiceDelegation metadataService;
     private volatile ServiceConfig<?> serviceConfig;
     private final ApplicationModel applicationModel;
+
+    private static final String INTERNAL_METADATA_REGISTRY = "internal-metadata-registry";
 
     public ConfigurableMetadataServiceExporter(ApplicationModel applicationModel, MetadataServiceDelegation metadataService) {
         this.applicationModel = applicationModel;
@@ -90,7 +92,7 @@ public class ConfigurableMetadataServiceExporter {
     }
 
     private ApplicationConfig getApplicationConfig() {
-        return applicationModel.getApplicationConfigManager().getApplication().get();
+        return applicationModel.getCurrentConfig();
     }
 
     /**
@@ -116,8 +118,20 @@ public class ConfigurableMetadataServiceExporter {
     }
 
     private ServiceConfig<?> getServiceConfig() {
+        InternalServiceConfigBuilder<?> builder = getInternalServiceConfigBuilder();
+        ExecutorService internalServiceExecutor = applicationModel.getFrameworkModel().getBeanFactory()
+            .getBean(FrameworkExecutorRepository.class).getInternalServiceExecutor();
+        builder.protocol(getApplicationConfig().getMetadataServiceProtocol(), METADATA_SERVICE_PROTOCOL_KEY)
+            .port(getApplicationConfig().getMetadataServicePort(), METADATA_SERVICE_PORT_KEY)
+            .registryId(INTERNAL_METADATA_REGISTRY)
+            .executor(internalServiceExecutor)
+            .build(configConsumer -> configConsumer.setMethods(generateMethodConfig()));
+        return builder.build();
+    }
+
+    private InternalServiceConfigBuilder<?> getInternalServiceConfigBuilder() {
         InternalServiceConfigBuilder<?> builder;
-        if (CommonConstants.TRIPLE.equals(getApplicationConfig().getMetadataServiceProtocol())) {
+        if (MetadataUtils.isTripleMetadataServiceProtocol()) {
             builder = InternalServiceConfigBuilder.<Metadata>newBuilder(applicationModel)
                 .interfaceClass(Metadata.class)
                 .ref(applicationModel.getBeanFactory().getOrRegisterBean(TriMetadataServiceImpl.class));
@@ -126,16 +140,8 @@ public class ConfigurableMetadataServiceExporter {
                 .interfaceClass(MetadataService.class)
                 .ref(metadataService);
         }
-        ExecutorService internalServiceExecutor = applicationModel.getFrameworkModel().getBeanFactory()
-            .getBean(FrameworkExecutorRepository.class).getInternalServiceExecutor();
-        builder.protocol(getApplicationConfig().getMetadataServiceProtocol(), METADATA_SERVICE_PROTOCOL_KEY)
-            .port(getApplicationConfig().getMetadataServicePort(), METADATA_SERVICE_PORT_KEY)
-            .registryId("internal-metadata-registry")
-            .executor(internalServiceExecutor)
-            .build(configConsumer -> configConsumer.setMethods(generateMethodConfig()));
-        return builder.build();
+        return builder;
     }
-
 
     // for unit test
     public void setMetadataService(MetadataServiceDelegation metadataService) {

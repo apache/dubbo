@@ -26,6 +26,7 @@ import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.triple.metadata.Metadata;
 
 import java.util.Collections;
 import java.util.List;
@@ -43,6 +44,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.TRIPLE;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_MISSING_METADATA_CONFIG_PORT;
 import static org.apache.dubbo.common.utils.StringUtils.isBlank;
@@ -105,7 +107,6 @@ public class StandardMetadataServiceURLBuilder implements MetadataServiceURLBuil
             .setHost(host)
             .setPort(port)
             .setProtocol(protocol)
-            .setPath(MetadataService.class.getName())
             .addParameter(TIMEOUT_KEY, ConfigurationUtils.get(applicationModel, METADATA_PROXY_TIMEOUT_KEY, DEFAULT_METADATA_TIMEOUT_VALUE))
             .addParameter(SIDE_KEY, CONSUMER)
             .addParameter(CONNECTIONS_KEY, 1)
@@ -113,6 +114,13 @@ public class StandardMetadataServiceURLBuilder implements MetadataServiceURLBuil
             .addParameter(THREADS_KEY, "100")
             .addParameter(CORE_THREADS_KEY, "2")
             .addParameter(RETRIES_KEY, 0);
+
+        if (TRIPLE.equals(protocol)) {
+            urlBuilder.setPath(Metadata.class.getName());
+        } else {
+            urlBuilder.setPath(MetadataService.class.getName());
+        }
+
 
         // add parameters
         params.forEach(urlBuilder::addParameter);

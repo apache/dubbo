@@ -33,12 +33,12 @@ message MetaResponse {
   ResponseStatus status = 1; // The status of the response
   string app = 2; // The name of the application
   string revision = 3; // The revision for which metadata is being returned
-  map<string, ServiceInfo> services = 4; // A map of service names to service information
+  map<string, Service> services = 4; // A map of service names to service information
 }
 /**
   Represents information about a service.
 */
-message ServiceInfo {
+message Service {
   string name = 1; // The name of the service
   string group = 2; // The group of the service
   string version = 3; // The version of the service
@@ -46,6 +46,7 @@ message ServiceInfo {
   int32 port = 5; // The port on which the service is running
   string path = 6; // The path of the service
   map<string, string> params = 7; // A map of parameter names to parameter values for the service
+
 }
 /**
   Represents a request to retrieve all metadata.

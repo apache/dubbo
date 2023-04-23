@@ -17,11 +17,13 @@
 package org.apache.dubbo.registry.client.metadata;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
@@ -29,6 +31,7 @@ import org.apache.dubbo.metadata.report.MetadataReport;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
 import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
+import org.apache.dubbo.metadata.tri.MetadataConverter;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
@@ -38,6 +41,9 @@ import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.service.Destroyable;
+import org.apache.dubbo.triple.metadata.MetaRequest;
+import org.apache.dubbo.triple.metadata.MetaResponse;
+import org.apache.dubbo.triple.metadata.Metadata;
 
 import java.util.HashMap;
 import java.util.List;
@@ -135,17 +141,24 @@ public class MetadataUtils {
         // Simply rely on the first metadata url, as stated in MetadataServiceURLBuilder.
         ApplicationModel applicationModel = instance.getApplicationModel();
         ModuleModel internalModel = applicationModel.getInternalModule();
-        ConsumerModel consumerModel = applicationModel.getInternalModule().registerInternalConsumer(MetadataService.class, url);
+
 
         Protocol protocol = applicationModel.getExtensionLoader(Protocol.class).getExtension(url.getProtocol(), false);
-
-        url = url.setServiceModel(consumerModel);
-
-        Invoker<MetadataService> invoker = protocol.refer(MetadataService.class, url);
+        ConsumerModel consumerModel;
+        Invoker<?> invoker;
+        if (isTripleMetadataServiceProtocol()) {
+            consumerModel = applicationModel.getInternalModule().registerInternalConsumer(Metadata.class, url);
+            url = url.setServiceModel(consumerModel);
+            invoker = protocol.refer(Metadata.class, url);
+        } else {
+            consumerModel = applicationModel.getInternalModule().registerInternalConsumer(MetadataService.class, url);
+            url = url.setServiceModel(consumerModel);
+            invoker = protocol.refer(MetadataService.class, url);
+        }
 
         ProxyFactory proxyFactory = applicationModel.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
 
-        MetadataService metadataService = proxyFactory.getProxy(invoker);
+        Object metadataService = proxyFactory.getProxy(invoker);
 
         consumerModel.getServiceMetadata().setTarget(metadataService);
         consumerModel.getServiceMetadata().addAttribute(PROXY_CLASS_REF, metadataService);
@@ -170,7 +183,7 @@ public class MetadataUtils {
                 ProxyHolder proxyHolder = null;
                 try {
                     proxyHolder = MetadataUtils.referProxy(instance);
-                    metadataInfo = proxyHolder.getProxy().getMetadataInfo(ServiceInstanceMetadataUtils.getExportedServicesRevision(instance));
+                    metadataInfo = getRemoteMetadata(proxyHolder, ServiceInstanceMetadataUtils.getExportedServicesRevision(instance));
                 } finally {
                     MetadataUtils.destroyProxy(proxyHolder);
                 }
@@ -184,6 +197,22 @@ public class MetadataUtils {
             metadataInfo = MetadataInfo.EMPTY;
         }
         return metadataInfo;
+    }
+
+    private static MetadataInfo getRemoteMetadata(ProxyHolder proxyHolder, String revision) {
+        if (isTripleMetadataServiceProtocol()) {
+            MetaResponse metadata = ((Metadata) proxyHolder.getProxy())
+                .getMetadata(MetaRequest.newBuilder().setRevision(revision).build());
+            return MetadataConverter.triMetadataConvert(metadata);
+        } else {
+            return ((MetadataService) proxyHolder.getProxy()).getMetadataInfo(revision);
+        }
+    }
+
+    public static boolean isTripleMetadataServiceProtocol() {
+        ApplicationModel applicationModel = ApplicationModel.defaultModel();
+        String metadataServiceProtocol = applicationModel.getCurrentConfig().getMetadataServiceProtocol();
+        return CommonConstants.TRIPLE.equals(metadataServiceProtocol);
     }
 
     public static void destroyProxy(ProxyHolder proxyHolder) {
@@ -219,12 +248,13 @@ public class MetadataUtils {
         return instances.get(ThreadLocalRandom.current().nextInt(0, instances.size()));
     }
 
+
     public static class ProxyHolder {
         private final ConsumerModel consumerModel;
-        private final MetadataService proxy;
+        private final Object proxy;
         private final ModuleModel internalModel;
 
-        public ProxyHolder(ConsumerModel consumerModel, MetadataService proxy, ModuleModel internalModel) {
+        public ProxyHolder(ConsumerModel consumerModel, Object proxy, ModuleModel internalModel) {
             this.consumerModel = consumerModel;
             this.proxy = proxy;
             this.internalModel = internalModel;
@@ -241,7 +271,7 @@ public class MetadataUtils {
             return consumerModel;
         }
 
-        public MetadataService getProxy() {
+        public Object getProxy() {
             return proxy;
         }
 

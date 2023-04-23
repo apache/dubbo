@@ -25,7 +25,7 @@ import org.apache.dubbo.triple.metadata.DubboMetadataTriple;
 import org.apache.dubbo.triple.metadata.MetaRequest;
 import org.apache.dubbo.triple.metadata.MetaResponse;
 import org.apache.dubbo.triple.metadata.ResponseStatus;
-import org.apache.dubbo.triple.metadata.ServiceInfo;
+import org.apache.dubbo.triple.metadata.Service;
 
 
 import java.util.List;
@@ -90,7 +90,7 @@ public class TriMetadataServiceImpl extends DubboMetadataTriple.MetadataImplBase
             .setRevision(metadata.getRevision())
             .setStatus(ResponseStatus.SUCCESS);
         metadata.getServices().forEach((serviceName, serviceInfo) -> {
-            ServiceInfo triServiceInfo = ServiceInfo.newBuilder()
+            Service triServiceInfo = Service.newBuilder()
                 .setGroup(Optional.ofNullable(serviceInfo.getGroup()).orElse(""))
                 .setName(serviceInfo.getName())
                 .setPath(serviceInfo.getPath())

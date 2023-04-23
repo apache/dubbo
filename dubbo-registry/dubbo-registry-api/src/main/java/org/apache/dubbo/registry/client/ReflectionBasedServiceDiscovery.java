@@ -90,7 +90,7 @@ public class ReflectionBasedServiceDiscovery extends AbstractServiceDiscovery {
 
     private final MetadataServiceDelegation metadataService;
 
-    public ConcurrentMap<String, MetadataService> metadataServiceProxies = new ConcurrentHashMap<>();
+    public ConcurrentMap<String, Object> metadataServiceProxies = new ConcurrentHashMap<>();
 
     /**
      * Local Cache of Service's {@link ServiceInstance} list revision,
@@ -199,21 +199,21 @@ public class ReflectionBasedServiceDiscovery extends AbstractServiceDiscovery {
             serviceInstance.setMetadata(JsonUtils.toJavaObject(metadataString, Map.class));
         } else {
             // refer from MetadataUtils, this proxy is different from the one used to refer exportedURL
-            MetadataService metadataService = getMetadataServiceProxy(serviceInstance);
+            Object metadataService = getMetadataServiceProxy(serviceInstance);
 
             String consumerId = ScopeModelUtil.getApplicationModel(registryURL.getScopeModel()).getApplicationName() + NetUtils.getLocalHost();
-            String metadata = metadataService.getAndListenInstanceMetadata(
-                consumerId, metadataString -> {
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("Receive callback: " + metadataString + serviceInstance);
-                    }
-                    if (StringUtils.isEmpty(metadataString)) {
-                        // provider is shutdown
-                        metadataMap.remove(hostId);
-                    } else {
-                        metadataMap.put(hostId, metadataString);
-                    }
-                });
+            InstanceMetadataChangedListener instanceMetadataChangedListener = metadataString -> {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Receive callback: " + metadataString + serviceInstance);
+                }
+                if (StringUtils.isEmpty(metadataString)) {
+                    // provider is shutdown
+                    metadataMap.remove(hostId);
+                } else {
+                    metadataMap.put(hostId, metadataString);
+                }
+            };
+            String metadata = ((MetadataService) metadataService).getAndListenInstanceMetadata(consumerId, instanceMetadataChangedListener);
             metadataMap.put(hostId, metadata);
             serviceInstance.setMetadata(JsonUtils.toJavaObject(metadata, Map.class));
         }
@@ -261,7 +261,7 @@ public class ReflectionBasedServiceDiscovery extends AbstractServiceDiscovery {
             ServiceInstanceMetadataUtils.getExportedServicesRevision(serviceInstance);
     }
 
-    private synchronized MetadataService getMetadataServiceProxy(ServiceInstance instance) {
+    private synchronized Object getMetadataServiceProxy(ServiceInstance instance) {
         return ConcurrentHashMapUtils.computeIfAbsent(metadataServiceProxies, computeKey(instance), k -> MetadataUtils.referProxy(instance).getProxy());
     }
 
