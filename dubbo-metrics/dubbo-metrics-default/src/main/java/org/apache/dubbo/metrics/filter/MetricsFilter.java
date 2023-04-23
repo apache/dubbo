@@ -31,50 +31,43 @@ import org.apache.dubbo.rpc.model.ScopeModelAware;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
+import static org.apache.dubbo.metrics.DefaultConstants.METRIC_FILTER_EVENT;
+import static org.apache.dubbo.metrics.DefaultConstants.METRIC_THROWABLE;
 
 @Activate(group = {CONSUMER, PROVIDER}, order = -1)
 public class MetricsFilter implements Filter, BaseFilter.Listener, ScopeModelAware {
 
-    private DefaultMetricsCollector collector = null;
-    private MethodMetricsInterceptor metricsInterceptor;
     private ApplicationModel applicationModel;
 
     @Override
     public void setApplicationModel(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
-        collector = applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class);
-
-        if (collector != null) {
-            metricsInterceptor = new MethodMetricsInterceptor(collector.getMethodSampler());
-        }
     }
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
-        if (collector == null || !collector.isCollectEnabled()) {
-            return invoker.invoke(invocation);
-        }
-
-        MetricsEventBus.post(RequestEvent.toProviderEvent(applicationModel), () -> null);
-        metricsInterceptor.beforeMethod(invocation);
-
+        RequestEvent requestEvent = RequestEvent.toRequestEvent(applicationModel, invocation);
+        MetricsEventBus.before(requestEvent, () -> invocation.put(METRIC_FILTER_EVENT, requestEvent));
         return invoker.invoke(invocation);
     }
 
     @Override
     public void onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
-        if (collector == null || !collector.isCollectEnabled()) {
-            return;
+        Object eventObj = invocation.get(METRIC_FILTER_EVENT);
+        if (eventObj != null) {
+            MetricsEventBus.after((RequestEvent) eventObj, result);
         }
-        metricsInterceptor.afterMethod(invocation, result);
     }
 
     @Override
     public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
-        if (collector == null || !collector.isCollectEnabled()) {
-            return;
+        Object eventObj = invocation.get(METRIC_FILTER_EVENT);
+        if (eventObj != null) {
+            RequestEvent requestEvent = (RequestEvent) eventObj;
+            requestEvent.putAttachment(METRIC_THROWABLE, t);
+            MetricsEventBus.error(requestEvent);
         }
-        metricsInterceptor.handleMethodException(invocation, t);
     }
+
 
 }

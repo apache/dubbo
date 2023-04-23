@@ -18,11 +18,16 @@
 package org.apache.dubbo.metrics.listener;
 
 import org.apache.dubbo.metrics.event.MetricsEvent;
+import org.apache.dubbo.metrics.event.MetricsEventBus;
 import org.apache.dubbo.metrics.event.TimeCounterEvent;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
 
 import java.util.function.Consumer;
 
+/**
+ * According to the event template of {@link MetricsEventBus},
+ * build a consistent static method for general and custom monitoring consume methods
+ */
 public abstract class AbstractMetricsListener implements MetricsLifeListener<TimeCounterEvent> {
 
     private final MetricsKey metricsKey;

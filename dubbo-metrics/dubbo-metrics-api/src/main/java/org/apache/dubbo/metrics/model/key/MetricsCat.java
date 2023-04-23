@@ -25,18 +25,26 @@ import java.util.function.Function;
 
 public class MetricsCat {
 
-    private MetricsPlaceType placeType;
+    private MetricsPlaceValue placeType;
     private final Function<CombMetricsCollector, AbstractMetricsListener> eventFunc;
 
     public MetricsCat(MetricsKey metricsKey, BiFunction<MetricsKey, CombMetricsCollector, AbstractMetricsListener> biFunc) {
         this.eventFunc = collector -> biFunc.apply(metricsKey, collector);
     }
 
-    public MetricsCat(MetricsKey metricsKey, TpFunction<MetricsKey, MetricsPlaceType, CombMetricsCollector, AbstractMetricsListener> tpFunc) {
+    public MetricsCat(MetricsKeyWrapper metricsKey, BiFunction<MetricsKeyWrapper, CombMetricsCollector, AbstractMetricsListener> biFunc) {
+        this.eventFunc = collector -> biFunc.apply(metricsKey, collector);
+    }
+
+    /**
+     * @param metricsKey The key that the current category listens to，not necessarily the export key(export key may be dynamic)
+     * @param tpFunc     Build the func that outputs the MetricsListener by listen metricsKey
+     */
+    public MetricsCat(MetricsKey metricsKey, TpFunction<MetricsKey, MetricsPlaceValue, CombMetricsCollector, AbstractMetricsListener> tpFunc) {
         this.eventFunc = collector -> tpFunc.apply(metricsKey, placeType, collector);
     }
 
-    public MetricsCat setPlaceType(MetricsPlaceType placeType) {
+    public MetricsCat setPlaceType(MetricsPlaceValue placeType) {
         this.placeType = placeType;
         return this;
     }

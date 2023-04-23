@@ -20,6 +20,7 @@ package org.apache.dubbo.metrics.data;
 import org.apache.dubbo.metrics.collector.MetricsCollector;
 import org.apache.dubbo.metrics.model.MetricsCategory;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
+import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 
 import org.apache.dubbo.metrics.report.MetricsExport;
@@ -66,8 +67,8 @@ public abstract class BaseStatComposite implements MetricsExport {
         applicationStatComposite.incrementSize(metricsKey, applicationName, size);
     }
 
-    public void incrementServiceKey(MetricsKey metricsKey, String applicationName, String attServiceKey, int size) {
-        serviceStatComposite.incrementServiceKey(metricsKey, applicationName, attServiceKey, size);
+    public void incrementServiceKey(MetricsKeyWrapper metricsKeyWrapper, String applicationName, String attServiceKey, int size) {
+        serviceStatComposite.incrementServiceKey(metricsKeyWrapper, applicationName, attServiceKey, size);
     }
 
     @Override

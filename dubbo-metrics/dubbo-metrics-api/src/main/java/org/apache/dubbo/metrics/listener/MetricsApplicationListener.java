@@ -19,7 +19,7 @@ package org.apache.dubbo.metrics.listener;
 
 import org.apache.dubbo.metrics.collector.CombMetricsCollector;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
-import org.apache.dubbo.metrics.model.key.MetricsPlaceType;
+import org.apache.dubbo.metrics.model.key.MetricsPlaceValue;
 
 public  class MetricsApplicationListener extends AbstractMetricsListener {
 
@@ -33,7 +33,7 @@ public  class MetricsApplicationListener extends AbstractMetricsListener {
         );
     }
 
-    public static AbstractMetricsListener onFinishEventBuild(MetricsKey metricsKey, MetricsPlaceType placeType, CombMetricsCollector collector) {
+    public static AbstractMetricsListener onFinishEventBuild(MetricsKey metricsKey, MetricsPlaceValue placeType, CombMetricsCollector collector) {
         return AbstractMetricsListener.onFinish(metricsKey,
             event -> {
                 collector.increment(event.appName(), metricsKey);
@@ -42,7 +42,7 @@ public  class MetricsApplicationListener extends AbstractMetricsListener {
         );
     }
 
-    public static AbstractMetricsListener onErrorEventBuild(MetricsKey metricsKey, MetricsPlaceType placeType, CombMetricsCollector collector) {
+    public static AbstractMetricsListener onErrorEventBuild(MetricsKey metricsKey, MetricsPlaceValue placeType, CombMetricsCollector collector) {
         return AbstractMetricsListener.onError(metricsKey,
             event -> {
                 collector.increment(event.appName(), metricsKey);

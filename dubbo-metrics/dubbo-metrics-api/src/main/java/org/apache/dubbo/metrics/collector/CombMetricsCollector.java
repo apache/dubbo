@@ -22,6 +22,7 @@ import org.apache.dubbo.metrics.event.MetricsEventMulticaster;
 import org.apache.dubbo.metrics.event.TimeCounterEvent;
 import org.apache.dubbo.metrics.model.MetricsCategory;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
+import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 
 import java.util.List;
@@ -52,8 +53,8 @@ public abstract class CombMetricsCollector implements ApplicationMetricsCollecto
         this.stats.incrementApp(metricsKey, applicationName, SELF_INCREMENT_SIZE);
     }
 
-    public void increment(String applicationName, String serviceKey, MetricsKey metricsKey, int size) {
-        this.stats.incrementServiceKey(metricsKey, applicationName, serviceKey, size);
+    public void increment(String applicationName, String serviceKey, MetricsKeyWrapper metricsKeyWrapper, int size) {
+        this.stats.incrementServiceKey(metricsKeyWrapper, applicationName, serviceKey, size);
     }
 
     @Override
@@ -68,6 +69,10 @@ public abstract class CombMetricsCollector implements ApplicationMetricsCollecto
     @SuppressWarnings({"rawtypes"})
     protected List<GaugeMetricSample> export(MetricsCategory category) {
         return stats.export(category);
+    }
+
+    public MetricsEventMulticaster getEventMulticaster() {
+        return eventMulticaster;
     }
 
     @Override

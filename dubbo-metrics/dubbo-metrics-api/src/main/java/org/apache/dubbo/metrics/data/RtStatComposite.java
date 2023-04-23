@@ -24,7 +24,7 @@ import org.apache.dubbo.metrics.model.container.AtomicLongContainer;
 import org.apache.dubbo.metrics.model.container.LongAccumulatorContainer;
 import org.apache.dubbo.metrics.model.container.LongContainer;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
-import org.apache.dubbo.metrics.model.key.MetricsPlaceType;
+import org.apache.dubbo.metrics.model.key.MetricsPlaceValue;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.report.MetricsExport;
 
@@ -40,14 +40,14 @@ public class RtStatComposite implements MetricsExport {
 
     private final List<LongContainer<? extends Number>> rtStats = new ArrayList<>();
 
-    public void init(MetricsPlaceType... placeValues) {
+    public void init(MetricsPlaceValue... placeValues) {
         if (placeValues == null) {
             return;
         }
         Arrays.stream(placeValues).forEach(metricsPlaceType -> rtStats.addAll(initStats(metricsPlaceType)));
     }
 
-    private List<LongContainer<? extends Number>> initStats(MetricsPlaceType placeValue) {
+    private List<LongContainer<? extends Number>> initStats(MetricsPlaceValue placeValue) {
         List<LongContainer<? extends Number>> singleRtStats = new ArrayList<>();
         singleRtStats.add(new AtomicLongContainer(new MetricsKeyWrapper(MetricsKey.METRIC_RT_LAST, placeValue)));
         singleRtStats.add(new LongAccumulatorContainer(new MetricsKeyWrapper(MetricsKey.METRIC_RT_MIN, placeValue), new LongAccumulator(Long::min, Long.MAX_VALUE)));

@@ -30,9 +30,9 @@ import static org.apache.dubbo.metrics.config.ConfigCenterMetricsConstants.ATTAC
 import static org.apache.dubbo.metrics.config.ConfigCenterMetricsConstants.ATTACHMENT_KEY_CONFIG_PROTOCOL;
 
 
-public final class ConfigCenterMetricsDispatcher extends SimpleMetricsEventMulticaster {
+public final class ConfigCenterSubDispatcher extends SimpleMetricsEventMulticaster {
 
-    public ConfigCenterMetricsDispatcher(ConfigCenterMetricsCollector collector) {
+    public ConfigCenterSubDispatcher(ConfigCenterMetricsCollector collector) {
 
         super.addListener(new AbstractMetricsListener(MetricsKey.CONFIGCENTER_METRIC_TOTAL) {
             @Override

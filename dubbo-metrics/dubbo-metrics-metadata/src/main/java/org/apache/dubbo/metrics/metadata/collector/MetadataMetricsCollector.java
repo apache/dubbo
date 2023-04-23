@@ -26,10 +26,9 @@ import org.apache.dubbo.metrics.data.BaseStatComposite;
 import org.apache.dubbo.metrics.data.RtStatComposite;
 import org.apache.dubbo.metrics.data.ServiceStatComposite;
 import org.apache.dubbo.metrics.event.MetricsEvent;
-import org.apache.dubbo.metrics.event.TimeCounterEvent;
 import org.apache.dubbo.metrics.metadata.MetadataMetricsConstants;
 import org.apache.dubbo.metrics.metadata.event.MetadataEvent;
-import org.apache.dubbo.metrics.metadata.event.MetadataMetricsEventMulticaster;
+import org.apache.dubbo.metrics.metadata.event.MetadataSubDispatcher;
 import org.apache.dubbo.metrics.model.MetricsCategory;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -61,7 +60,7 @@ public class MetadataMetricsCollector extends CombMetricsCollector {
                 rtStatComposite.init(OP_TYPE_PUSH, OP_TYPE_SUBSCRIBE, OP_TYPE_STORE_PROVIDER_INTERFACE);
             }
         });
-        super.setEventMulticaster(new MetadataMetricsEventMulticaster(this));
+        super.setEventMulticaster(new MetadataSubDispatcher(this));
         this.applicationModel = applicationModel;
     }
 

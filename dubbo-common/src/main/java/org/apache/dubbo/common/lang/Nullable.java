@@ -15,27 +15,17 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.metrics.model.key;
+package org.apache.dubbo.common.lang;
 
-public class MetricsPlaceType {
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-    private final String type;
-    private final MetricsLevel metricsLevel;
 
-    private MetricsPlaceType(String type, MetricsLevel metricsLevel) {
-        this.type = type;
-        this.metricsLevel = metricsLevel;
-    }
-
-    public static MetricsPlaceType of(String type, MetricsLevel metricsLevel) {
-        return new MetricsPlaceType(type, metricsLevel);
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public MetricsLevel getMetricsLevel() {
-        return metricsLevel;
-    }
+@Target({ElementType.METHOD, ElementType.PARAMETER, ElementType.FIELD})
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+public @interface Nullable {
 }

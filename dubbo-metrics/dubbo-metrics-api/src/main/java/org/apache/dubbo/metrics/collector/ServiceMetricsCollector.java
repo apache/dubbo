@@ -19,16 +19,17 @@ package org.apache.dubbo.metrics.collector;
 
 import org.apache.dubbo.metrics.event.TimeCounterEvent;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
+import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
 
 /**
- * Application-level collector.
+ * Service-level collector.
  * registration center, configuration center and other scenarios
  *
  * @Params <T>  metrics type
  */
 public interface ServiceMetricsCollector<E extends TimeCounterEvent> extends MetricsCollector<E> {
 
-    void increment(String applicationName, String serviceKey, MetricsKey metricsKey, int size);
+    void increment(String applicationName, String serviceKey, MetricsKeyWrapper wrapper, int size);
 
     void setNum(MetricsKey metricsKey, String applicationName, String serviceKey, int num);
 

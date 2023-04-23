@@ -30,7 +30,7 @@ import org.apache.dubbo.metrics.model.MetricsCategory;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.metrics.registry.RegistryMetricsConstants;
 import org.apache.dubbo.metrics.registry.event.RegistryEvent;
-import org.apache.dubbo.metrics.registry.event.RegistryMetricsEventMulticaster;
+import org.apache.dubbo.metrics.registry.event.RegistrySubDispatcher;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.ArrayList;
@@ -62,7 +62,7 @@ public class RegistryMetricsCollector extends CombMetricsCollector {
                 rtStatComposite.init(OP_TYPE_REGISTER, OP_TYPE_SUBSCRIBE, OP_TYPE_NOTIFY, OP_TYPE_REGISTER_SERVICE, OP_TYPE_SUBSCRIBE_SERVICE);
             }
         });
-        super.setEventMulticaster(new RegistryMetricsEventMulticaster(this));
+        super.setEventMulticaster(new RegistrySubDispatcher(this));
         this.applicationModel = applicationModel;
     }
 

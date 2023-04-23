@@ -40,10 +40,10 @@ import static org.apache.dubbo.metrics.registry.RegistryMetricsConstants.OP_TYPE
 import static org.apache.dubbo.metrics.registry.RegistryMetricsConstants.OP_TYPE_SUBSCRIBE;
 import static org.apache.dubbo.metrics.registry.RegistryMetricsConstants.OP_TYPE_SUBSCRIBE_SERVICE;
 
-public final class RegistryMetricsEventMulticaster extends SimpleMetricsEventMulticaster {
+public final class RegistrySubDispatcher extends SimpleMetricsEventMulticaster {
 
 
-    public RegistryMetricsEventMulticaster(RegistryMetricsCollector collector) {
+    public RegistrySubDispatcher(RegistryMetricsCollector collector) {
 
         CategorySet.ALL.forEach(categorySet ->
         {

@@ -18,7 +18,6 @@
 package org.apache.dubbo.metrics.collector.sample;
 
 import org.apache.dubbo.common.utils.Assert;
-import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.metrics.model.Metric;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
@@ -79,91 +78,6 @@ public abstract class SimpleMetricsCountSampler<S, K, M extends Metric>
     }
 
     @Override
-    public void decOnEvent(S source, K metricName) {
-        doExecute(source, metricName, counter -> {
-            counter.decrementAndGet();
-            return true;
-        });
-    }
-
-    @Override
-    public void addRT(S source, Long rt) {
-        MetricsCountSampleConfigurer<S, K, M> sampleConfigure = new MetricsCountSampleConfigurer<>();
-        sampleConfigure.setSource(source);
-
-        this.rtConfigure(sampleConfigure);
-
-        M metric = sampleConfigure.getMetric();
-
-        AtomicLongArray rtCalculator = ConcurrentHashMapUtils.computeIfAbsent(this.rtSample, metric, k -> new AtomicLongArray(4));
-
-        // set lastRT
-        rtCalculator.set(0, rt);
-
-        // add to totalRT
-        rtCalculator.addAndGet(1, rt);
-
-        // add to rtCount
-        rtCalculator.incrementAndGet(2);
-
-        // calc avgRT. In order to reduce the amount of calculation, calculated when collect
-        //rtArray.set(3, Math.floorDiv(rtArray.get(1), rtArray.get(2)));
-
-        LongAccumulator min = ConcurrentHashMapUtils.computeIfAbsent(minRT, metric, k -> new LongAccumulator(Long::min, Long.MAX_VALUE));
-        min.accumulate(rt);
-
-        LongAccumulator max = ConcurrentHashMapUtils.computeIfAbsent(maxRT, metric, k -> new LongAccumulator(Long::max, Long.MIN_VALUE));
-        max.accumulate(rt);
-
-        sampleConfigure.setRt(rt);
-
-        sampleConfigure.getFireEventHandler().accept(sampleConfigure);
-    }
-
-    @Override
-    public void addRT(S source, K metricName, Long rt) {
-        MetricsCountSampleConfigurer<S, K, M> sampleConfigure = new MetricsCountSampleConfigurer<>();
-        sampleConfigure.setSource(source);
-        sampleConfigure.setMetricsName(metricName);
-
-        this.rtConfigure(sampleConfigure);
-
-        M metric = sampleConfigure.getMetric();
-
-        ConcurrentMap<M, AtomicLongArray> nameToCalculator = rtGroupSample.get(metricName);
-
-        if (nameToCalculator == null) {
-            ConcurrentHashMap<M, AtomicLongArray> calculator = new ConcurrentHashMap<>();
-            calculator.put(metric, new AtomicLongArray(4));
-
-            rtGroupSample.put(metricName, calculator);
-
-            nameToCalculator = rtGroupSample.get(metricName);
-        }
-        AtomicLongArray calculator = nameToCalculator.get(metric);
-
-        // set lastRT
-        calculator.set(0, rt);
-
-        // add to totalRT
-        calculator.addAndGet(1, rt);
-
-        // add to rtCount
-        calculator.incrementAndGet(2);
-
-        ConcurrentMap<M, LongAccumulator> minRT = ConcurrentHashMapUtils.computeIfAbsent(groupMinRT, metricName, k -> new ConcurrentHashMap<>());
-        LongAccumulator min = ConcurrentHashMapUtils.computeIfAbsent(minRT, metric, k -> new LongAccumulator(Long::min, Long.MAX_VALUE));
-        min.accumulate(rt);
-
-        ConcurrentMap<M, LongAccumulator> maxRT = ConcurrentHashMapUtils.computeIfAbsent(groupMaxRT, metricName, k -> new ConcurrentHashMap<>());
-        LongAccumulator max = ConcurrentHashMapUtils.computeIfAbsent(maxRT, metric, k -> new LongAccumulator(Long::max, Long.MIN_VALUE));
-        max.accumulate(rt);
-        sampleConfigure.setRt(rt);
-
-        sampleConfigure.getFireEventHandler().accept(sampleConfigure);
-    }
-
-    @Override
     public Optional<ConcurrentMap<M, AtomicLong>> getCount(K metricName) {
         return Optional.ofNullable(metricCounter.get(metricName) == null ?
             EMPTY_COUNT :
@@ -173,11 +87,6 @@ public abstract class SimpleMetricsCountSampler<S, K, M extends Metric>
     @Override
     public <R extends MetricSample> List<R> collectRT(MetricSampleFactory<M, R> factory) {
         return collect(factory, rtSample, this.minRT, this.maxRT);
-    }
-
-    @Override
-    public <R extends MetricSample> List<R> collectRT(MetricSampleFactory<M, R> factory, K metricName) {
-        return collect(factory, rtGroupSample.get(metricName), groupMinRT.get(metricName), groupMaxRT.get(metricName));
     }
 
     private <R extends MetricSample> List<R> collect(MetricSampleFactory<M, R> factory,

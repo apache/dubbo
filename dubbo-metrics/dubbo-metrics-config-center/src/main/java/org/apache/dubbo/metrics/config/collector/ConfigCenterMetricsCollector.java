@@ -22,9 +22,8 @@ import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.metrics.collector.CombMetricsCollector;
 import org.apache.dubbo.metrics.collector.MetricsCollector;
 import org.apache.dubbo.metrics.config.event.ConfigCenterEvent;
-import org.apache.dubbo.metrics.config.event.ConfigCenterMetricsDispatcher;
+import org.apache.dubbo.metrics.config.event.ConfigCenterSubDispatcher;
 import org.apache.dubbo.metrics.event.MetricsEvent;
-import org.apache.dubbo.metrics.event.TimeCounterEvent;
 import org.apache.dubbo.metrics.model.ConfigCenterMetric;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
@@ -55,7 +54,7 @@ public class ConfigCenterMetricsCollector extends CombMetricsCollector {
     public ConfigCenterMetricsCollector(ApplicationModel applicationModel) {
         super(null);
         this.applicationModel = applicationModel;
-        super.setEventMulticaster(new ConfigCenterMetricsDispatcher(this));
+        super.setEventMulticaster(new ConfigCenterSubDispatcher(this));
     }
 
     public void setCollectEnabled(Boolean collectEnabled) {

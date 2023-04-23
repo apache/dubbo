@@ -59,7 +59,7 @@ public class RegistryEvent extends TimeCounterEvent {
 
 
     public static RegistryEvent toNotifyEvent(ApplicationModel applicationModel) {
-        return new RegistryEvent(applicationModel, new TypeWrapper(MetricsLevel.APP, MetricsKey.NOTIFY_METRIC_REQUESTS, MetricsKey.NOTIFY_METRIC_NUM_LAST, null)) {
+        return new RegistryEvent(applicationModel, new TypeWrapper(MetricsLevel.APP, MetricsKey.NOTIFY_METRIC_REQUESTS, MetricsKey.NOTIFY_METRIC_NUM_LAST, (MetricsKey) null)) {
             @Override
             public void customAfterPost(Object postResult) {
                 super.putAttachment(ATTACHMENT_KEY_LAST_NUM_MAP, postResult);
