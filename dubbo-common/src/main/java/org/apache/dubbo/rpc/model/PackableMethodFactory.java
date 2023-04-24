@@ -15,24 +15,16 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.rpc.protocol.tri;
+package org.apache.dubbo.rpc.model;
 
-import org.apache.dubbo.rpc.model.UnPack;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.extension.ExtensionScope;
+import org.apache.dubbo.common.extension.SPI;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
+@SPI(value = CommonConstants.DEFAULT_PACKABLE_METHOD_FACTORY, scope = ExtensionScope.FRAMEWORK)
+public interface PackableMethodFactory {
 
-public class PbUnpack<T> implements UnPack {
+    PackableMethod create(MethodDescriptor methodDescriptor, URL url);
 
-    private final Class<T> clz;
-
-    public PbUnpack(Class<T> clz) {
-        this.clz = clz;
-    }
-
-    @Override
-    public Object unpack(byte[] data) throws IOException {
-        final ByteArrayInputStream bais = new ByteArrayInputStream(data);
-        return SingleProtobufUtils.deserialize(bais, clz);
-    }
 }

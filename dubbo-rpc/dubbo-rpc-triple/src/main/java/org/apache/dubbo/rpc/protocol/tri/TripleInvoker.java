@@ -42,6 +42,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.PackableMethod;
+import org.apache.dubbo.rpc.model.PackableMethodFactory;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.model.StubMethodDescriptor;
@@ -260,7 +261,9 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         if (methodDescriptor instanceof PackableMethod) {
             meta.packableMethod = (PackableMethod) methodDescriptor;
         } else {
-            meta.packableMethod = ReflectionPackableMethod.init(methodDescriptor, url);
+            meta.packableMethod = url.getOrDefaultFrameworkModel().getExtensionLoader(PackableMethodFactory.class)
+                .getExtension(url.getParameter(CommonConstants.PACKABLE_METHOD_FACTORY_KEY, CommonConstants.DEFAULT_PACKABLE_METHOD_FACTORY))
+                .create(methodDescriptor, url);
         }
         meta.convertNoLowerHeader = TripleProtocol.CONVERT_NO_LOWER_HEADER;
         meta.ignoreDefaultVersion = TripleProtocol.IGNORE_1_0_0_VERSION;
