@@ -25,9 +25,12 @@ import org.apache.dubbo.config.Constants;
 import org.apache.dubbo.remoting.utils.UrlUtils;
 import org.apache.dubbo.remoting.transport.CodecSupport;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
+import org.apache.dubbo.rpc.model.Pack;
 import org.apache.dubbo.rpc.model.PackableMethod;
 
 import com.google.protobuf.Message;
+import org.apache.dubbo.rpc.model.UnPack;
+import org.apache.dubbo.rpc.model.WrapperUnPack;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -446,23 +449,6 @@ public class ReflectionPackableMethod implements PackableMethod {
             return serializeType;
         }
 
-    }
-
-    private static class PbArrayPacker implements Pack {
-
-        private final boolean singleArgument;
-
-        private PbArrayPacker(boolean singleArgument) {
-            this.singleArgument = singleArgument;
-        }
-
-        @Override
-        public byte[] pack(Object obj) throws IOException {
-            if (!singleArgument) {
-                obj = ((Object[]) obj)[0];
-            }
-            return PB_PACK.pack(obj);
-        }
     }
 
     private class WrapRequestUnpack implements WrapperUnPack {

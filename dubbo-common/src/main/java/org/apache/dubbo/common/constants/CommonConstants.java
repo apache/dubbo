@@ -628,4 +628,8 @@ public interface CommonConstants {
     String DUBBO_METRICS_CONFIGCENTER_ENABLE = "dubbo.metrics.configcenter.enable";
 
     Integer TRI_EXCEPTION_CODE_NOT_EXISTS = 0;
+
+    String PACKABLE_METHOD_FACTORY_KEY = "serialize.packable.factory";
+
+    String DEFAULT_PACKABLE_METHOD_FACTORY = "reflection";
 }

@@ -27,15 +27,14 @@ import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.MethodDescriptor.RpcType;
+import org.apache.dubbo.rpc.model.PackableMethodFactory;
 import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.ClassLoadUtil;
-import org.apache.dubbo.rpc.protocol.tri.ReflectionPackableMethod;
 import org.apache.dubbo.rpc.protocol.tri.TripleCustomerProtocolWapper;
 import org.apache.dubbo.rpc.protocol.tri.stream.ServerStream;
 import org.apache.dubbo.rpc.service.ServiceDescriptorInternalCache;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Executor;
@@ -116,7 +115,10 @@ public class ReflectionAbstractServerCall extends AbstractServerCall {
             }
         }
         if (methodDescriptor != null) {
-            packableMethod = ReflectionPackableMethod.init(methodDescriptor, invoker.getUrl());
+            final URL url = invoker.getUrl();
+            packableMethod = url.getOrDefaultFrameworkModel().getExtensionLoader(PackableMethodFactory.class)
+                .getExtension(url.getParameter(CommonConstants.PACKABLE_METHOD_FACTORY_KEY, CommonConstants.DEFAULT_PACKABLE_METHOD_FACTORY))
+                .create(methodDescriptor, url);
         }
         trySetListener();
         if (listener == null) {
@@ -148,8 +150,7 @@ public class ReflectionAbstractServerCall extends AbstractServerCall {
     }
 
     @Override
-    protected Object parseSingleMessage(byte[] data)
-        throws IOException, ClassNotFoundException {
+    protected Object parseSingleMessage(byte[] data) throws Exception {
         trySetMethodDescriptor(data);
         trySetListener();
         if (isClosed()) {
@@ -161,7 +162,7 @@ public class ReflectionAbstractServerCall extends AbstractServerCall {
     }
 
 
-    private void trySetMethodDescriptor(byte[] data) throws IOException {
+    private void trySetMethodDescriptor(byte[] data) {
         if (methodDescriptor != null) {
             return;
         }
@@ -185,7 +186,10 @@ public class ReflectionAbstractServerCall extends AbstractServerCall {
                     + serviceDescriptor.getInterfaceName()), null);
             return;
         }
-        packableMethod = ReflectionPackableMethod.init(methodDescriptor, invoker.getUrl());
+        final URL url = invoker.getUrl();
+        packableMethod = url.getOrDefaultFrameworkModel().getExtensionLoader(PackableMethodFactory.class)
+            .getExtension(url.getParameter(CommonConstants.PACKABLE_METHOD_FACTORY_KEY, CommonConstants.DEFAULT_PACKABLE_METHOD_FACTORY))
+            .create(methodDescriptor, url);
     }
 
 }
