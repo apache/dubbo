@@ -67,9 +67,12 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.locks.ReentrantLock;
 
+import static org.apache.dubbo.common.constants.CommonConstants.CONTENT_TYPE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_CONTENT_TYPE;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.TRIPLE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_DESTROY_INVOKER;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_REQUEST;
 import static org.apache.dubbo.rpc.Constants.COMPRESSOR_KEY;
@@ -258,11 +261,17 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
                 invocation.getCompatibleParamSignatures()));
         final RequestMetadata meta = new RequestMetadata();
         final URL url = getUrl();
+        String contentType = (String) methodDescriptor.getAttribute(CONTENT_TYPE_KEY);
+        if (contentType == null) {
+            contentType = url.getOrDefaultApplicationModel().getApplicationConfigManager().getProtocol(TRIPLE)
+                .map(protocolConfig -> protocolConfig.getParameters().get(CONTENT_TYPE_KEY))
+                .orElse(url.getParameter(CONTENT_TYPE_KEY, DEFAULT_CONTENT_TYPE));
+        }
         if (methodDescriptor instanceof PackableMethod) {
             meta.packableMethod = (PackableMethod) methodDescriptor;
         } else {
             meta.packableMethod = url.getOrDefaultFrameworkModel().getExtensionLoader(PackableMethodFactory.class)
-                .getExtension(url.getParameter(CommonConstants.PACKABLE_METHOD_FACTORY_KEY, CommonConstants.DEFAULT_PACKABLE_METHOD_FACTORY))
+                .getExtension(contentType)
                 .create(methodDescriptor, url);
         }
         meta.convertNoLowerHeader = TripleProtocol.CONVERT_NO_LOWER_HEADER;
@@ -285,6 +294,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         }
         meta.application = application;
         meta.attachments = invocation.getObjectAttachments();
+        meta.contentType = contentType;
         return meta;
     }
 

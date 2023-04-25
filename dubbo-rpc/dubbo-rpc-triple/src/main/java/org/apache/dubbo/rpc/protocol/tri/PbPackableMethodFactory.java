@@ -15,16 +15,18 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.rpc.model;
+package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.extension.ExtensionScope;
-import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.rpc.model.MethodDescriptor;
+import org.apache.dubbo.rpc.model.PackableMethod;
+import org.apache.dubbo.rpc.model.PackableMethodFactory;
 
-@SPI(value = CommonConstants.DEFAULT_CONTENT_TYPE, scope = ExtensionScope.FRAMEWORK)
-public interface PackableMethodFactory {
+public class PbPackableMethodFactory implements PackableMethodFactory {
 
-    PackableMethod create(MethodDescriptor methodDescriptor, URL url);
+    @Override
+    public PackableMethod create(MethodDescriptor methodDescriptor, URL url) {
+        return PbPackableMethod.init(methodDescriptor, url);
+    }
 
 }

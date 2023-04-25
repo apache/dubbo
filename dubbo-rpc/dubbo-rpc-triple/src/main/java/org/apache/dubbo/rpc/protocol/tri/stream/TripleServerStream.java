@@ -18,7 +18,6 @@
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -27,6 +26,7 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.PathResolver;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.model.PackableMethodFactory;
 import org.apache.dubbo.rpc.protocol.tri.ExceptionUtils;
 import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
@@ -66,6 +66,7 @@ import java.net.SocketAddress;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.Executor;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
@@ -87,6 +88,7 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
     private boolean rst = false;
     private final Http2StreamChannel http2StreamChannel;
     private final TripleStreamChannelFuture tripleStreamChannelFuture;
+    private final Set<String> supportedContentType;
 
     public TripleServerStream(Http2StreamChannel channel,
                               FrameworkModel frameworkModel,
@@ -103,6 +105,7 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
         this.remoteAddress = (InetSocketAddress) channel.remoteAddress();
         this.http2StreamChannel = channel;
         this.tripleStreamChannelFuture = new TripleStreamChannelFuture(channel);
+        this.supportedContentType = frameworkModel.getExtensionLoader(PackableMethodFactory.class).getSupportedExtensions();
     }
 
     @Override
@@ -158,8 +161,8 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
 
 
     @Override
-    public ChannelFuture complete(TriRpcStatus status, Map<String, Object> attachments, boolean isNeedReturnException, int exceptionCode) {
-        Http2Headers trailers = getTrailers(status, attachments, isNeedReturnException, CommonConstants.TRI_EXCEPTION_CODE_NOT_EXISTS);
+    public ChannelFuture complete(TriRpcStatus status, Map<String, Object> attachments, String contentType) {
+        Http2Headers trailers = getTrailers(status, attachments, contentType);
         return sendTrailers(trailers);
     }
 
@@ -184,11 +187,11 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
             });
     }
 
-    private Http2Headers getTrailers(TriRpcStatus rpcStatus, Map<String, Object> attachments, boolean isNeedReturnException, int exceptionCode) {
+    private Http2Headers getTrailers(TriRpcStatus rpcStatus, Map<String, Object> attachments, String contentType) {
         DefaultHttp2Headers headers = new DefaultHttp2Headers();
         if (!headerSent) {
             headers.status(HttpResponseStatus.OK.codeAsText());
-            headers.set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO);
+            headers.set(HttpHeaderNames.CONTENT_TYPE, contentType);
         }
         StreamUtils.convertAttachment(headers, attachments, TripleProtocol.CONVERT_NO_LOWER_HEADER);
         headers.set(TripleHeaderEnum.STATUS_KEY.getHeader(), String.valueOf(rpcStatus.code.code));
@@ -276,9 +279,9 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
      *
      * @param status status of error
      */
-    private void responseErr(TriRpcStatus status) {
+    private void responseErr(TriRpcStatus status, String contentType) {
         Http2Headers trailers = new DefaultHttp2Headers().status(OK.codeAsText())
-            .set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO)
+            .set(HttpHeaderNames.CONTENT_TYPE, contentType)
             .setInt(TripleHeaderEnum.STATUS_KEY.getHeader(), status.code.code)
             .set(TripleHeaderEnum.MESSAGE_KEY.getHeader(), status.toEncodedMessage());
         sendTrailers(trailers);
@@ -323,7 +326,7 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
             if (contentType == null) {
                 return false;
             }
-            return contentType.startsWith(TripleConstant.APPLICATION_GRPC);
+            return supportedContentType.contains(contentType);
         }
 
         @Override
@@ -374,7 +377,7 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
 
             String[] parts = path.split("/");
             if (parts.length != 3) {
-                responseErr(TriRpcStatus.UNIMPLEMENTED.withDescription("Bad path format:" + path));
+                responseErr(TriRpcStatus.UNIMPLEMENTED.withDescription("Bad path format:" + path), contentString);
                 return;
             }
             String serviceName = parts[1];
@@ -383,7 +386,7 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
             Invoker<?> invoker = getInvoker(headers, serviceName);
             if (invoker == null) {
                 responseErr(
-                    TriRpcStatus.UNIMPLEMENTED.withDescription("Service not found:" + serviceName));
+                    TriRpcStatus.UNIMPLEMENTED.withDescription("Service not found:" + serviceName), contentString);
                 return;
             }
 
@@ -401,7 +404,7 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
                     if (null == compressor) {
                         responseErr(TriRpcStatus.fromCode(TriRpcStatus.Code.UNIMPLEMENTED.code)
                             .withDescription(String.format("Grpc-encoding '%s' is not supported",
-                                compressorStr)));
+                                compressorStr)), contentString);
                         return;
                     }
                     deCompressor = compressor;
@@ -417,11 +420,11 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
             if (hasStub) {
                 listener = new StubAbstractServerCall(invoker, TripleServerStream.this,
                     frameworkModel,
-                    acceptEncoding, serviceName, originalMethodName, executor);
+                    acceptEncoding, serviceName, originalMethodName, executor, contentString);
             } else {
                 listener = new ReflectionAbstractServerCall(invoker, TripleServerStream.this,
                     frameworkModel, acceptEncoding, serviceName, originalMethodName, filters,
-                    executor);
+                    executor, contentString);
             }
             // must before onHeader
             deframer = new TriDecoder(deCompressor, new ServerDecoderListener(listener));

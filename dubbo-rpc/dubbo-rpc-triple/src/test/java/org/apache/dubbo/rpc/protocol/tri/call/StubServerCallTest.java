@@ -24,6 +24,7 @@ import org.apache.dubbo.rpc.model.MethodDescriptor.RpcType;
 import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.model.StubMethodDescriptor;
+import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 import org.apache.dubbo.rpc.protocol.tri.stream.TripleServerStream;
 
 import io.netty.util.concurrent.ImmediateEventExecutor;
@@ -63,7 +64,7 @@ class StubServerCallTest {
         StubAbstractServerCall call = new StubAbstractServerCall(invoker, tripleServerStream,
             new FrameworkModel(), "",
             service, method,
-            ImmediateEventExecutor.INSTANCE);
+            ImmediateEventExecutor.INSTANCE, TripleConstant.CONTENT_PROTO);
         call.onHeader(Collections.emptyMap());
         call.onMessage(new byte[0], false);
         call.onComplete();

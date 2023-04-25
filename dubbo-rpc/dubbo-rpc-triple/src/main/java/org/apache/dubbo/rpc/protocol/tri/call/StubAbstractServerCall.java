@@ -35,10 +35,11 @@ public class StubAbstractServerCall extends AbstractServerCall {
         String acceptEncoding,
         String serviceName,
         String methodName,
-        Executor executor) {
+        Executor executor,
+        String contentType) {
         super(invoker, serverStream, frameworkModel,
             getServiceDescriptor(invoker.getUrl(), serviceName),
-            acceptEncoding, serviceName, methodName, executor);
+            acceptEncoding, serviceName, methodName, executor, contentType);
         this.methodDescriptor = serviceDescriptor.getMethods(methodName)
             .get(0);
         this.packableMethod = (StubMethodDescriptor) methodDescriptor;

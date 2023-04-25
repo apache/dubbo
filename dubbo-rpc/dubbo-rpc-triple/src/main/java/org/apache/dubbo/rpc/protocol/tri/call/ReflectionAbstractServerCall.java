@@ -51,11 +51,12 @@ public class ReflectionAbstractServerCall extends AbstractServerCall {
                                         String serviceName,
                                         String methodName,
                                         List<HeaderFilter> headerFilters,
-                                        Executor executor) {
+                                        Executor executor,
+                                        String contentType) {
         super(invoker, serverStream, frameworkModel,
             getServiceDescriptor(invoker.getUrl()),
             acceptEncoding, serviceName, methodName,
-            executor);
+            executor, contentType);
         this.headerFilters = headerFilters;
     }
 
@@ -117,7 +118,7 @@ public class ReflectionAbstractServerCall extends AbstractServerCall {
         if (methodDescriptor != null) {
             final URL url = invoker.getUrl();
             packableMethod = url.getOrDefaultFrameworkModel().getExtensionLoader(PackableMethodFactory.class)
-                .getExtension(url.getParameter(CommonConstants.PACKABLE_METHOD_FACTORY_KEY, CommonConstants.DEFAULT_PACKABLE_METHOD_FACTORY))
+                .getOrDefaultExtension(contentType)
                 .create(methodDescriptor, url);
         }
         trySetListener();
@@ -188,7 +189,7 @@ public class ReflectionAbstractServerCall extends AbstractServerCall {
         }
         final URL url = invoker.getUrl();
         packableMethod = url.getOrDefaultFrameworkModel().getExtensionLoader(PackableMethodFactory.class)
-            .getExtension(url.getParameter(CommonConstants.PACKABLE_METHOD_FACTORY_KEY, CommonConstants.DEFAULT_PACKABLE_METHOD_FACTORY))
+            .getOrDefaultExtension(contentType)
             .create(methodDescriptor, url);
     }
 

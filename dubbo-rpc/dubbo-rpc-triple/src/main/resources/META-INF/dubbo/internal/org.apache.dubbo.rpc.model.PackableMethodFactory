@@ -1,1 +1,2 @@
-reflection=org.apache.dubbo.rpc.protocol.tri.ReflectionPackableMethodFactory
+application/triple=org.apache.dubbo.rpc.protocol.tri.ReflectionPackableMethodFactory
+application/grpc+proto=org.apache.dubbo.rpc.protocol.tri.PbPackableMethodFactory

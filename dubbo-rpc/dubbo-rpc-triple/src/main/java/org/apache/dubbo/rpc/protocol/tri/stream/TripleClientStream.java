@@ -22,6 +22,7 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.model.PackableMethodFactory;
 import org.apache.dubbo.rpc.protocol.tri.ClassLoadUtil;
 import org.apache.dubbo.rpc.protocol.tri.ExceptionUtils;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
@@ -62,6 +63,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Executor;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_RESPONSE;
@@ -86,6 +88,8 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
 
     private boolean isReturnTriException = false;
 
+    private final Set<String> supportedContentType;
+
     // for test
     TripleClientStream(FrameworkModel frameworkModel,
                        Executor executor,
@@ -97,6 +101,7 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
         this.listener = listener;
         this.writeQueue = writeQueue;
         this.streamChannelFuture = initHttp2StreamChannel(http2StreamChannel);
+        this.supportedContentType = frameworkModel.getExtensionLoader(PackableMethodFactory.class).getSupportedExtensions();
     }
 
     public TripleClientStream(FrameworkModel frameworkModel,
@@ -109,6 +114,7 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
         this.listener = listener;
         this.writeQueue = writeQueue;
         this.streamChannelFuture = initHttp2StreamChannel(parent);
+        this.supportedContentType = frameworkModel.getExtensionLoader(PackableMethodFactory.class).getSupportedExtensions();
     }
 
     private TripleStreamChannelFuture initHttp2StreamChannel(Channel parent) {
@@ -252,15 +258,12 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
         }
 
         private TriRpcStatus validateHeaderStatus(Http2Headers headers) {
-            Integer httpStatus =
-                headers.status() == null ? null : Integer.parseInt(headers.status().toString());
+            Integer httpStatus = headers.status() == null ? null : Integer.parseInt(headers.status().toString());
             if (httpStatus == null) {
                 return TriRpcStatus.INTERNAL.withDescription("Missing HTTP status code");
             }
-            final CharSequence contentType = headers.get(
-                TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader());
-            if (contentType == null || !contentType.toString()
-                .startsWith(TripleHeaderEnum.APPLICATION_GRPC.getHeader())) {
+            final CharSequence contentType = headers.get(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader());
+            if (contentType == null || !supportedContentType.contains(contentType.toString())) {
                 return TriRpcStatus.fromCode(TriRpcStatus.httpStatusToGrpcCode(httpStatus))
                     .withDescription("invalid content-type: " + contentType);
             }

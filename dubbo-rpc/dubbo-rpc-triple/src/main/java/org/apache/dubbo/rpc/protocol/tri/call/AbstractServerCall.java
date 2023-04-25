@@ -32,7 +32,6 @@ import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.PackableMethod;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.ClassLoadUtil;
-import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
@@ -68,6 +67,7 @@ public abstract class AbstractServerCall implements ServerCall, ServerStream.Lis
     public final String serviceName;
     public final ServiceDescriptor serviceDescriptor;
     private final String acceptEncoding;
+    public final String contentType;
     public boolean autoRequestN = true;
     public Long timeout;
     ServerCall.Listener listener;
@@ -106,7 +106,8 @@ public abstract class AbstractServerCall implements ServerCall, ServerStream.Lis
                        String acceptEncoding,
                        String serviceName,
                        String methodName,
-                       Executor executor
+                       Executor executor,
+                       String contentType
     ) {
         Objects.requireNonNull(serviceDescriptor,
             "No service descriptor found for " + invoker.getUrl());
@@ -119,6 +120,7 @@ public abstract class AbstractServerCall implements ServerCall, ServerStream.Lis
         this.methodName = methodName;
         this.stream = stream;
         this.acceptEncoding = acceptEncoding;
+        this.contentType = contentType;
     }
 
 
@@ -283,7 +285,7 @@ public abstract class AbstractServerCall implements ServerCall, ServerStream.Lis
         headerSent = true;
         DefaultHttp2Headers headers = new DefaultHttp2Headers();
         headers.status(HttpResponseStatus.OK.codeAsText());
-        headers.set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO);
+        headers.set(HttpHeaderNames.CONTENT_TYPE, contentType);
         if (acceptEncoding != null) {
             headers.set(HttpHeaderNames.ACCEPT_ENCODING, acceptEncoding);
         }
@@ -345,7 +347,7 @@ public abstract class AbstractServerCall implements ServerCall, ServerStream.Lis
             return;
         }
         closed = true;
-        stream.complete(status, attachments, isNeedReturnException, exceptionCode);
+        stream.complete(status, attachments, contentType);
     }
 
     protected Long parseTimeoutToMills(String timeoutVal) {
@@ -383,7 +385,7 @@ public abstract class AbstractServerCall implements ServerCall, ServerStream.Lis
             return;
         }
         closed = true;
-        stream.complete(status, null, false, CommonConstants.TRI_EXCEPTION_CODE_NOT_EXISTS);
+        stream.complete(status, null,  contentType);
         LOGGER.error(PROTOCOL_FAILED_REQUEST, "", "", "Triple request error: service=" + serviceName + " method" + methodName,
             status.asException());
     }

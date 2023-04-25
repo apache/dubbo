@@ -28,7 +28,6 @@ import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.Pack;
 import org.apache.dubbo.rpc.model.PackableMethod;
 
-import com.google.protobuf.Message;
 import org.apache.dubbo.rpc.model.UnPack;
 import org.apache.dubbo.rpc.model.WrapperUnPack;
 
@@ -51,20 +50,17 @@ public class ReflectionPackableMethod implements PackableMethod {
     private static final String REACTOR_RETURN_CLASS = "reactor.core.publisher.Mono";
     private static final String RX_RETURN_CLASS = "io.reactivex.Single";
     private static final String GRPC_STREAM_CLASS = "io.grpc.stub.StreamObserver";
-    private static final Pack PB_PACK = o -> ((Message) o).toByteArray();
 
     private final Pack requestPack;
     private final Pack responsePack;
     private final UnPack requestUnpack;
     private final UnPack responseUnpack;
 
-    private final boolean needWrapper;
-
     private final Collection<String> allSerialize;
 
     @Override
     public boolean needWrapper() {
-        return this.needWrapper;
+        return true;
     }
 
     public ReflectionPackableMethod(MethodDescriptor method, URL url, String serializeName, Collection<String> allSerialize) {
@@ -93,36 +89,28 @@ public class ReflectionPackableMethod implements PackableMethod {
         }
 
         boolean singleArgument = method.getRpcType() != MethodDescriptor.RpcType.UNARY;
-        this.needWrapper = needWrap(method, actualRequestTypes, actualResponseType);
-        if (!needWrapper) {
-            requestPack = new PbArrayPacker(singleArgument);
-            responsePack = PB_PACK;
-            requestUnpack = new PbUnpack<>(actualRequestTypes[0]);
-            responseUnpack = new PbUnpack<>(actualResponseType);
-        } else {
-            final MultipleSerialization serialization = url.getOrDefaultFrameworkModel()
-                .getExtensionLoader(MultipleSerialization.class)
-                .getExtension(url.getParameter(Constants.MULTI_SERIALIZATION_KEY,
-                    CommonConstants.DEFAULT_KEY));
+        final MultipleSerialization serialization = url.getOrDefaultFrameworkModel()
+            .getExtensionLoader(MultipleSerialization.class)
+            .getExtension(url.getParameter(Constants.MULTI_SERIALIZATION_KEY,
+                CommonConstants.DEFAULT_KEY));
 
-            // client
-            this.requestPack = new WrapRequestPack(serialization, url, serializeName, actualRequestTypes,
-                singleArgument);
-            this.responseUnpack = new WrapResponseUnpack(serialization, url, allSerialize, actualResponseType);
+        // client
+        this.requestPack = new WrapRequestPack(serialization, url, serializeName, actualRequestTypes,
+            singleArgument);
+        this.responseUnpack = new WrapResponseUnpack(serialization, url, allSerialize, actualResponseType);
 
-            // server
-            this.responsePack = new WrapResponsePack(serialization, url, serializeName, actualResponseType);
-            this.requestUnpack = new WrapRequestUnpack(serialization, url, allSerialize, actualRequestTypes);
-        }
+        // server
+        this.responsePack = new WrapResponsePack(serialization, url, serializeName, actualResponseType);
+        this.requestUnpack = new WrapRequestUnpack(serialization, url, allSerialize, actualRequestTypes);
         this.allSerialize = allSerialize;
     }
 
     public static ReflectionPackableMethod init(MethodDescriptor methodDescriptor, URL url) {
-        final String serializeName = UrlUtils.serializationOrDefault(url);
         Object stored = methodDescriptor.getAttribute(METHOD_ATTR_PACK);
         if (stored != null) {
             return (ReflectionPackableMethod) stored;
         }
+        final String serializeName = UrlUtils.serializationOrDefault(url);
         final Collection<String> allSerialize = UrlUtils.allSerializations(url);
         ReflectionPackableMethod reflectionPackableMethod = new ReflectionPackableMethod(
             methodDescriptor, url, serializeName, allSerialize);

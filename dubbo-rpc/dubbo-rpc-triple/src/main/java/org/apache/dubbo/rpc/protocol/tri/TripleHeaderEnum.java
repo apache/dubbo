@@ -38,6 +38,7 @@ public enum TripleHeaderEnum {
     CONTENT_TYPE_KEY("content-type"),
     CONTENT_PROTO("application/grpc+proto"),
     APPLICATION_GRPC("application/grpc"),
+    APPLICATION_TRIPLE("application/triple"),
     GRPC_ENCODING("grpc-encoding"),
     GRPC_ACCEPT_ENCODING("grpc-accept-encoding"),
     CONSUMER_APP_NAME_KEY("tri-consumer-appname"),

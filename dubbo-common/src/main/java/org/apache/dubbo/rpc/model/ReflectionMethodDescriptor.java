@@ -32,6 +32,7 @@ import java.util.stream.Stream;
 
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE;
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE_ASYNC;
+import static org.apache.dubbo.common.constants.CommonConstants.CONTENT_TYPE_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_REFLECTIVE_OPERATION_FAILED;
 
 public class ReflectionMethodDescriptor implements MethodDescriptor {
@@ -68,6 +69,13 @@ public class ReflectionMethodDescriptor implements MethodDescriptor {
         this.compatibleParamSignatures = Stream.of(parameterClasses).map(Class::getName).toArray(String[]::new);
         this.generic = (methodName.equals($INVOKE) || methodName.equals($INVOKE_ASYNC)) && parameterClasses.length == 3;
         this.rpcType = determineRpcType();
+        ContentType contentType = method.getAnnotation(ContentType.class);
+        if (contentType == null) {
+            contentType = method.getDeclaringClass().getAnnotation(ContentType.class);
+        }
+        if (contentType != null) {
+            addAttribute(CONTENT_TYPE_KEY, contentType.value());
+        }
     }
 
     private RpcType determineRpcType() {

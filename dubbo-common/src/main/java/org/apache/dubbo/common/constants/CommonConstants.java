@@ -629,7 +629,10 @@ public interface CommonConstants {
 
     Integer TRI_EXCEPTION_CODE_NOT_EXISTS = 0;
 
-    String PACKABLE_METHOD_FACTORY_KEY = "serialize.packable.factory";
+    String CONTENT_TYPE_KEY = "content-type";
 
-    String DEFAULT_PACKABLE_METHOD_FACTORY = "reflection";
+    String DEFAULT_CONTENT_TYPE = "application/triple";
+
+    String CONTENT_PROTO = "application/grpc+proto";
+
 }

@@ -26,6 +26,7 @@ import org.apache.dubbo.rpc.model.ReflectionMethodDescriptor;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.DescriptorService;
 import org.apache.dubbo.rpc.protocol.tri.HelloReply;
+import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 import org.apache.dubbo.rpc.protocol.tri.stream.TripleServerStream;
 
 import io.netty.util.concurrent.ImmediateEventExecutor;
@@ -61,7 +62,7 @@ class ReflectionServerCallTest {
                 new FrameworkModel(), "",
                 service, methodName,
                 Collections.emptyList(),
-                ImmediateEventExecutor.INSTANCE);
+                ImmediateEventExecutor.INSTANCE, TripleConstant.CONTENT_PROTO);
             fail();
         } catch (Exception e) {
             // pass
@@ -78,7 +79,7 @@ class ReflectionServerCallTest {
             new FrameworkModel(), "",
             service, methodName,
             Collections.emptyList(),
-            ImmediateEventExecutor.INSTANCE);
+            ImmediateEventExecutor.INSTANCE, TripleConstant.CONTENT_PROTO);
         call2.onHeader(Collections.emptyMap());
         call2.onMessage(new byte[0], false);
         call2.onComplete();

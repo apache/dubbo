@@ -27,6 +27,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Stream;
 
+import static org.apache.dubbo.common.constants.CommonConstants.CONTENT_PROTO;
+import static org.apache.dubbo.common.constants.CommonConstants.CONTENT_TYPE_KEY;
+
 public class StubMethodDescriptor implements MethodDescriptor, PackableMethod {
     private static final Logger logger = LoggerFactory.getLogger(StubMethodDescriptor.class);
     private final ServiceDescriptor serviceDescriptor;
@@ -65,6 +68,7 @@ public class StubMethodDescriptor implements MethodDescriptor, PackableMethod {
         this.compatibleParamSignatures = Stream.of(parameterClasses).map(Class::getName).toArray(String[]::new);
         this.returnTypes = new Type[]{requestClass, requestClass};
         serviceDescriptor.addMethod(this);
+        addAttribute(CONTENT_TYPE_KEY, CONTENT_PROTO);
     }
 
 

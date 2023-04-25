@@ -17,14 +17,17 @@
 
 package org.apache.dubbo.rpc.model;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.extension.ExtensionScope;
-import org.apache.dubbo.common.extension.SPI;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-@SPI(value = CommonConstants.DEFAULT_CONTENT_TYPE, scope = ExtensionScope.FRAMEWORK)
-public interface PackableMethodFactory {
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE, ElementType.METHOD})
+public @interface ContentType {
 
-    PackableMethod create(MethodDescriptor methodDescriptor, URL url);
+    String value();
 
 }

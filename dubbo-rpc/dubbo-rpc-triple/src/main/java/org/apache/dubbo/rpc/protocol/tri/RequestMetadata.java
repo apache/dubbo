@@ -49,6 +49,7 @@ public class RequestMetadata {
     public Map<String, Object> attachments;
     public boolean convertNoLowerHeader;
     public boolean ignoreDefaultVersion;
+    public String contentType;
 
     public DefaultHttp2Headers toHeaders() {
         DefaultHttp2Headers header = new DefaultHttp2Headers(false);
@@ -56,7 +57,7 @@ public class RequestMetadata {
             .authority(address)
             .method(HttpMethod.POST.asciiName())
             .path("/" + service + "/" + method.getMethodName())
-            .set(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader(), TripleConstant.CONTENT_PROTO)
+            .set(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader(), contentType)
             .set(HttpHeaderNames.TE, HttpHeaderValues.TRAILERS);
         setIfNotNull(header, TripleHeaderEnum.TIMEOUT.getHeader(), timeout);
         if (!ignoreDefaultVersion || !"1.0.0".equals(version)) {
