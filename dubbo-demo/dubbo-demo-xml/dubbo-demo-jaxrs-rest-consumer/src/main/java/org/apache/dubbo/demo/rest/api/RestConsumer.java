@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.demo.rest.api;
 
+import org.apache.dubbo.demo.rest.api.annotation.DubboServiceAnnotationServiceConsumer;
 import org.jboss.resteasy.specimpl.MultivaluedMapImpl;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import po.User;
@@ -36,7 +37,13 @@ public class RestConsumer {
         testHttpMethodService(context);
         httpRPCContextTest(context);
         jaxRsRestDemoServiceTest(context);
+        annotationTest(context);
         System.out.println("rest consumer test success");
+    }
+
+    private static void annotationTest(ClassPathXmlApplicationContext context) {
+        DubboServiceAnnotationServiceConsumer bean = context.getBean(DubboServiceAnnotationServiceConsumer.class);
+        bean.invokeAnnotationService();
     }
 
     private static void jaxRsRestDemoServiceTest(ClassPathXmlApplicationContext context) {

@@ -26,33 +26,12 @@
 
     <context:component-scan base-package="org.apache.dubbo.demo.rest"/>
 
-    <bean name="dubboConfig" class="org.apache.dubbo.demo.rest.api.config.DubboConfig"></bean>
+    <dubbo:application name="rest-consumer" owner="programmer" organization="dubbo"/>
 
-    <dubbo:application name="rest-provider" owner="programmer" organization="dubbo"/>
+    <bean name="dubboConfig" class="org.apache.dubbo.demo.rest.api.config.DubboConfig"></bean>
 
     <dubbo:registry address="zookeeper://${zookeeper.address:127.0.0.1}:2181"/>
 
-
-    <dubbo:protocol name="rest" port="8888" threads="500" contextpath="services"
-                    extension="org.apache.dubbo.demo.rest.api.extension.ExceptionMapperForTest"/>
-
-    <dubbo:protocol name="dubbo" port="20880" threads="200"/>
-
-    <dubbo:service interface="org.apache.dubbo.demo.rest.api.JaxRsRestDemoService"
-                   ref="jaxRsRestDemoService" protocol="rest" timeout="2000" connections="100"
-                   validation="true"/>
-
-    <dubbo:service interface="org.apache.dubbo.demo.rest.api.HttpMethodService"
-                   ref="httpMethodService" protocol="rest" timeout="2000" connections="100"
-                   validation="true"/>
-
-    <dubbo:service interface="org.apache.dubbo.demo.rest.api.HttpRequestAndResponseRPCContextService"
-                   ref="httpRequestAndResponseRPCContextService" protocol="rest" timeout="2000" connections="100"
-                   validation="true"/>
-
-    <dubbo:service interface="org.apache.dubbo.demo.rest.api.ExceptionMapperService"
-                   ref="exceptionMapperService" protocol="rest" timeout="2000" connections="100"
-                   validation="true"/>
 
 
 </beans>

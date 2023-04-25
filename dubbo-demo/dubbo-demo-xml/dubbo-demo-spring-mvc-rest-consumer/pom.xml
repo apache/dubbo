@@ -18,15 +18,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.apache.dubbo</groupId>
         <artifactId>dubbo-demo-xml</artifactId>
-        <version>${revision}</version>
-        <relativePath>../pom.xml</relativePath>
+        <groupId>org.apache.dubbo</groupId>
+        <version>3.2.1-SNAPSHOT</version>
     </parent>
+    <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>dubbo-demo-jaxrs-rest-provider</artifactId>
+    <artifactId>dubbo-demo-spring-mvc-rest-consumer</artifactId>
 
     <packaging>jar</packaging>
     <description>Dubbo Rest Demo</description>
@@ -151,3 +150,4 @@
     </profiles>
 
 </project>
+
