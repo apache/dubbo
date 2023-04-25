@@ -296,6 +296,7 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
         }
     }
 
+    @Override
     public boolean containsRestProtocol() {
         // for multipart protocol so for each contain
         List<ProtocolConfig> protocols = getProtocols();
