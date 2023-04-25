@@ -343,6 +343,10 @@
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-spring-boot-tracing-brave-zipkin-starter</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-spring-boot-observability-starter</artifactId>
+        </dependency>
 
         <!-- test -->
         <dependency>
