@@ -92,11 +92,11 @@ public class DubboShutdownHook extends Thread {
             int timeout = ConfigurationUtils.getServerShutdownTimeout(applicationModel);
             if (timeout > 0) {
                 long start = System.currentTimeMillis();
-                /**
-                 * To avoid shutdown conflicts between Dubbo and Spring,
-                 * wait for the modules bound to Spring to be handled by Spring util timeout.
+                /*
+                  To avoid shutdown conflicts between Dubbo and Spring,
+                  wait for the modules bound to Spring to be handled by Spring until timeout.
                  */
-                logger.info("Waiting for modules managed by Spring to be shut down.");
+                logger.info("Waiting for modules managed by Spring to be shutdown.");
                 while (!applicationModel.isDestroyed() && hasModuleBindSpring
                     && (System.currentTimeMillis() - start) < timeout) {
                     try {
