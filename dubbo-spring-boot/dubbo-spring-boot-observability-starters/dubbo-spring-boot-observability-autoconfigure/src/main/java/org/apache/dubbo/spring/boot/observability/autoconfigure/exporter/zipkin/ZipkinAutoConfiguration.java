@@ -44,10 +44,12 @@ import static org.apache.dubbo.spring.boot.observability.autoconfigure.Observabi
  * {@link EnableAutoConfiguration Auto-configuration} for Zipkin.
  * <p>
  * It uses imports on {@link ZipkinConfigurations} to guarantee the correct configuration ordering.
+ * Create Zipkin sender and exporter when you are using Boot < 3.0 or you are not using spring-boot-starter-actuator.
+ * When you use SpringBoot 3.*, priority should be given to loading S3 related configurations. Dubbo related zipkin configurations are invalid.
  *
  * @since 3.2.1
  */
-@AutoConfiguration(after = RestTemplateAutoConfiguration.class)
+@AutoConfiguration(after = RestTemplateAutoConfiguration.class, afterName = "org.springframework.boot.actuate.autoconfigure.tracing.zipkin")
 @ConditionalOnClass(Sender.class)
 @Import({SenderConfiguration.class,
         ReporterConfiguration.class, BraveConfiguration.class,
