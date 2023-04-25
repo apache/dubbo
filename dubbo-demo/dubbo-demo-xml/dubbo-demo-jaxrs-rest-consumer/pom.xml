@@ -29,7 +29,7 @@
     <artifactId>dubbo-demo-jaxrs-rest-consumer</artifactId>
 
     <packaging>jar</packaging>
-    <description>Dubbo Rest Demo</description>
+    <description>Dubbo JAXRS  Rest Consumer Demo</description>
     <name>${project.artifactId}</name>
 
     <properties>

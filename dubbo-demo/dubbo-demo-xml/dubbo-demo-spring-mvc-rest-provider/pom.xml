@@ -21,14 +21,15 @@
     <parent>
         <artifactId>dubbo-demo-xml</artifactId>
         <groupId>org.apache.dubbo</groupId>
-        <version>3.2.1-SNAPSHOT</version>
+        <version>${revision}</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>dubbo-demo-spring-mvc-rest-provider</artifactId>
 
     <packaging>jar</packaging>
-    <description>Dubbo Rest spring mvc Demo</description>
+    <description>Dubbo Spring MVC  Rest Provider Demo</description>
     <name>${project.artifactId}</name>
 
     <properties>
