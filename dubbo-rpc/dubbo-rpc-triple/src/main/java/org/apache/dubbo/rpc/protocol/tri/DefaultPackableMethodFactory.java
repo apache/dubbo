@@ -22,10 +22,10 @@ import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.PackableMethod;
 import org.apache.dubbo.rpc.model.PackableMethodFactory;
 
-public class ReflectionPackableMethodFactory implements PackableMethodFactory {
+public class DefaultPackableMethodFactory implements PackableMethodFactory {
 
     @Override
-    public PackableMethod create(MethodDescriptor methodDescriptor, URL url) {
+    public PackableMethod create(MethodDescriptor methodDescriptor, URL url, String contentType) {
         return ReflectionPackableMethod.init(methodDescriptor, url);
     }
 

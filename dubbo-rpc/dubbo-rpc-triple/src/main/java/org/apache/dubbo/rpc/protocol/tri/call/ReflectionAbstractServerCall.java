@@ -17,7 +17,9 @@
 
 package org.apache.dubbo.rpc.protocol.tri.call;
 
+import io.netty.handler.codec.http.HttpHeaderNames;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.rpc.HeaderFilter;
@@ -38,6 +40,9 @@ import org.apache.dubbo.rpc.service.ServiceDescriptorInternalCache;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Executor;
+
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PACKABLE_METHOD_FACTORY_KEY;
 
 public class ReflectionAbstractServerCall extends AbstractServerCall {
 
@@ -116,9 +121,9 @@ public class ReflectionAbstractServerCall extends AbstractServerCall {
         }
         if (methodDescriptor != null) {
             final URL url = invoker.getUrl();
-            packableMethod = url.getOrDefaultFrameworkModel().getExtensionLoader(PackableMethodFactory.class)
-                .getExtension(url.getParameter(CommonConstants.PACKABLE_METHOD_FACTORY_KEY, CommonConstants.DEFAULT_PACKABLE_METHOD_FACTORY))
-                .create(methodDescriptor, url);
+            packableMethod = frameworkModel.getExtensionLoader(PackableMethodFactory.class)
+                .getExtension(ConfigurationUtils.getGlobalConfiguration(frameworkModel).getString(PACKABLE_METHOD_FACTORY_KEY, DEFAULT_KEY))
+                .create(methodDescriptor, url, (String) requestMetadata.get(HttpHeaderNames.CONTENT_TYPE.toString()));
         }
         trySetListener();
         if (listener == null) {
@@ -187,9 +192,9 @@ public class ReflectionAbstractServerCall extends AbstractServerCall {
             return;
         }
         final URL url = invoker.getUrl();
-        packableMethod = url.getOrDefaultFrameworkModel().getExtensionLoader(PackableMethodFactory.class)
-            .getExtension(url.getParameter(CommonConstants.PACKABLE_METHOD_FACTORY_KEY, CommonConstants.DEFAULT_PACKABLE_METHOD_FACTORY))
-            .create(methodDescriptor, url);
+        packableMethod = frameworkModel.getExtensionLoader(PackableMethodFactory.class)
+            .getExtension(ConfigurationUtils.getGlobalConfiguration(frameworkModel).getString(PACKABLE_METHOD_FACTORY_KEY, DEFAULT_KEY))
+            .create(methodDescriptor, url, (String) requestMetadata.get(HttpHeaderNames.CONTENT_TYPE.toString()));
     }
 
 }

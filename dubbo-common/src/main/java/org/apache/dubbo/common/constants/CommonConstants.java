@@ -631,5 +631,4 @@ public interface CommonConstants {
 
     String PACKABLE_METHOD_FACTORY_KEY = "serialize.packable.factory";
 
-    String DEFAULT_PACKABLE_METHOD_FACTORY = "reflection";
 }
