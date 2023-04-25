@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.common.utils;
 
-import org.apache.dubbo.common.json.JSON;
+import org.apache.dubbo.common.json.JsonUtil;
 import org.apache.dubbo.common.json.impl.FastJson2Impl;
 import org.apache.dubbo.common.json.impl.FastJsonImpl;
 import org.apache.dubbo.common.json.impl.GsonImpl;
@@ -319,10 +319,10 @@ class JsonUtilsTest {
 
     private static Field jsonFieldCache;
 
-    private static void setJson(JSON json) {
+    private static void setJson(JsonUtil json) {
         try {
             if (jsonFieldCache == null) {
-                jsonFieldCache = JsonUtils.class.getDeclaredField("json");
+                jsonFieldCache = JsonUtils.class.getDeclaredField("jsonUtil");
                 jsonFieldCache.setAccessible(true);
             }
 

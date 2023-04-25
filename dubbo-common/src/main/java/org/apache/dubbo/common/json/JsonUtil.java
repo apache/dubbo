@@ -16,11 +16,14 @@
  */
 package org.apache.dubbo.common.json;
 
+import org.apache.dubbo.common.extension.SPI;
+
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 
-public interface JSON {
+@SPI
+public interface JsonUtil {
     boolean isSupport();
 
     <T> T toJavaObject(String json, Type type);

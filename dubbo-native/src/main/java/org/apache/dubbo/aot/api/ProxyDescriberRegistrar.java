@@ -14,25 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.aot.generate;
+package org.apache.dubbo.aot.api;
 
-import java.lang.reflect.Field;
+import org.apache.dubbo.common.extension.SPI;
 
-/**
- * A describer that describes the need for reflection on a {@link Field}.
- */
-public class FieldDescriber extends MemberDescriber {
-    protected FieldDescriber(String name) {
-        super(name);
-    }
+import java.util.List;
 
-    @Override
-    public int hashCode() {
-        return super.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        return super.equals(obj);
-    }
+@SPI
+public interface ProxyDescriberRegistrar {
+    List<JdkProxyDescriber> getJdkProxyDescribers();
 }

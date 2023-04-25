@@ -16,6 +16,9 @@
  */
 package org.apache.dubbo.aot.generate;
 
+import org.apache.dubbo.aot.api.MemberCategory;
+import org.apache.dubbo.aot.api.TypeDescriber;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -24,7 +27,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.apache.dubbo.aot.generate.ExecutableMode.INVOKE;
+import static org.apache.dubbo.aot.api.ExecutableMode.INVOKE;
 
 public class ReflectConfigMetadataRepository {
 
@@ -34,22 +37,22 @@ public class ReflectConfigMetadataRepository {
         this.types = new ArrayList<>();
     }
 
-    public ReflectConfigMetadataRepository registerSpiExtensionType(List<Class<?>> classes) {
+    protected ReflectConfigMetadataRepository registerSpiExtensionType(List<Class<?>> classes) {
         types.addAll(classes.stream().filter(Objects::nonNull).map(this::buildTypeDescriberWithConstructor).collect(Collectors.toList()));
         return this;
     }
 
-    public ReflectConfigMetadataRepository registerAdaptiveType(List<Class<?>> classes) {
+    protected ReflectConfigMetadataRepository registerAdaptiveType(List<Class<?>> classes) {
         types.addAll(classes.stream().filter(Objects::nonNull).map(this::buildTypeDescriberWithConstructor).collect(Collectors.toList()));
         return this;
     }
 
-    public ReflectConfigMetadataRepository registerBeanType(List<Class<?>> classes) {
+    protected ReflectConfigMetadataRepository registerBeanType(List<Class<?>> classes) {
         types.addAll(classes.stream().filter(Objects::nonNull).map(this::buildTypeDescriberWithConstructor).collect(Collectors.toList()));
         return this;
     }
 
-    public ReflectConfigMetadataRepository registerConfigType(List<Class<?>> classes) {
+    protected ReflectConfigMetadataRepository registerConfigType(List<Class<?>> classes) {
         types.addAll(classes.stream().filter(Objects::nonNull).map(this::buildTypeDescriberWithConstructor).collect(Collectors.toList()));
         return this;
     }
@@ -59,6 +62,10 @@ public class ReflectConfigMetadataRepository {
         Set<MemberCategory> memberCategories = new HashSet<>();
         memberCategories.add(MemberCategory.INVOKE_PUBLIC_METHODS);
         return new TypeDescriber(c.getName(), null, new HashSet<>(), constructors, new HashSet<>(), memberCategories);
+    }
+
+    public void registerTypeDescriber(List<TypeDescriber> typeDescribers) {
+        types.addAll(typeDescribers.stream().filter(Objects::nonNull).collect(Collectors.toList()));
     }
 
     public List<TypeDescriber> getTypes() {

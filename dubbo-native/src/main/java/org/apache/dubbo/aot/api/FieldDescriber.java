@@ -14,27 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.aot.generate;
+package org.apache.dubbo.aot.api;
 
-import java.lang.reflect.Member;
+import java.lang.reflect.Field;
 
 /**
- * Base describer that describes the need for reflection on a {@link Member}.
- *
+ * A describer that describes the need for reflection on a {@link Field}.
  */
-public class MemberDescriber {
-
-    private final String name;
-
-    protected MemberDescriber(String name) {
-        this.name = name;
+public class FieldDescriber extends MemberDescriber {
+    protected FieldDescriber(String name) {
+        super(name);
     }
 
-    /**
-     * Return the name of the member.
-     * @return the name
-     */
-    public String getName() {
-        return this.name;
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return super.equals(obj);
     }
 }

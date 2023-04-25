@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config.spring.context.annotation;
 
+import org.apache.dubbo.config.spring.aot.AotWithSpringDetector;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
@@ -53,7 +54,9 @@ public class DubboClassPathBeanDefinitionScanner extends ClassPathBeanDefinition
 
         setResourceLoader(resourceLoader);
 
-        registerAnnotationConfigProcessors(registry);
+        if (!AotWithSpringDetector.useGeneratedArtifacts()) {
+            registerAnnotationConfigProcessors(registry);
+        }
 
     }
 

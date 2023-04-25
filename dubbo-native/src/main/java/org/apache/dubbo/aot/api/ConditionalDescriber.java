@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.aot.generate;
+package org.apache.dubbo.aot.api;
 
 /**
  * A describer that describes the conditions for the configuration to take effect.

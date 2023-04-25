@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.common.json.impl;
 
-import org.apache.dubbo.common.json.JSON;
+import org.apache.dubbo.common.json.JsonUtil;
 import org.apache.dubbo.common.utils.CollectionUtils;
 
 import java.util.HashMap;
@@ -24,7 +24,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-public abstract class AbstractJSONImpl implements JSON {
+public abstract class AbstractJsonUtilImpl implements JsonUtil {
     @Override
     public boolean isSupport() {
         try {

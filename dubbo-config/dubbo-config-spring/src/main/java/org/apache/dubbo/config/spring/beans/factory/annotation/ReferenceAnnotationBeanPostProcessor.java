@@ -94,7 +94,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
     /**
      * The bean name of {@link ReferenceAnnotationBeanPostProcessor}
      */
-    public static final String BEAN_NAME = "referenceAnnotationBeanPostProcessor";
+    public static final String BEAN_NAME = ReferenceAnnotationBeanPostProcessor.class.getName();
 
     /**
      * Cache size
@@ -314,6 +314,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
      * Alternatives to the {@link #postProcessProperties(PropertyValues, Object, String)}, that removed as of Spring
      * Framework 6.0.0, and in favor of {@link #postProcessProperties(PropertyValues, Object, String)}.
      * <p>In order to be compatible with the lower version of Spring, it is still retained.
+     *
      * @see #postProcessProperties
      */
     public PropertyValues postProcessPropertyValues(
@@ -323,6 +324,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
 
     /**
      * Alternatives to the {@link #postProcessPropertyValues(PropertyValues, PropertyDescriptor[], Object, String)}.
+     *
      * @see #postProcessPropertyValues
      */
     @Override
@@ -417,7 +419,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
         boolean isContains;
         if ((isContains = beanDefinitionRegistry.containsBeanDefinition(referenceBeanName)) || beanDefinitionRegistry.isAlias(referenceBeanName)) {
             String preReferenceBeanName = referenceBeanName;
-            if (!isContains){
+            if (!isContains) {
                 // Look in the alias for the origin bean name
                 String[] aliases = beanDefinitionRegistry.getAliases(referenceBeanName);
                 if (ArrayUtils.isNotEmpty(aliases)) {

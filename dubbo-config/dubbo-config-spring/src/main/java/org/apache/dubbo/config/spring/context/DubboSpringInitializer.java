@@ -18,6 +18,7 @@ package org.apache.dubbo.config.spring.context;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.config.spring.aot.AotWithSpringDetector;
 import org.apache.dubbo.config.spring.util.DubboBeanUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -43,7 +44,7 @@ public class DubboSpringInitializer {
 
     private static final Map<BeanDefinitionRegistry, DubboSpringInitContext> contextMap = new ConcurrentHashMap<>();
 
-    private DubboSpringInitializer() {
+    public DubboSpringInitializer() {
     }
 
     public static void initialize(BeanDefinitionRegistry registry) {
@@ -140,8 +141,10 @@ public class DubboSpringInitializer {
         context.markAsBound();
         moduleModel.setLifeCycleManagedExternally(true);
 
-        // register common beans
-        DubboBeanUtils.registerCommonBeans(registry);
+        if (!AotWithSpringDetector.useGeneratedArtifacts()){
+            // register common beans
+            DubboBeanUtils.registerCommonBeans(registry);
+        }
     }
 
     private static String safeGetModelDesc(ScopeModel scopeModel) {
@@ -163,9 +166,15 @@ public class DubboSpringInitializer {
 
     private static void registerContextBeans(ConfigurableListableBeanFactory beanFactory, DubboSpringInitContext context) {
         // register singleton
-        registerSingleton(beanFactory, context);
-        registerSingleton(beanFactory, context.getApplicationModel());
-        registerSingleton(beanFactory, context.getModuleModel());
+        if (!beanFactory.containsSingleton(DubboSpringInitContext.class.getName())){
+            registerSingleton(beanFactory, context);
+        }
+        if (!beanFactory.containsSingleton(context.getApplicationModel().getClass().getName())){
+            registerSingleton(beanFactory, context.getApplicationModel());
+        }
+        if (!beanFactory.containsSingleton(context.getModuleModel().getClass().getName())){
+            registerSingleton(beanFactory, context.getModuleModel());
+        }
     }
 
     private static void registerSingleton(ConfigurableListableBeanFactory beanFactory, Object bean) {

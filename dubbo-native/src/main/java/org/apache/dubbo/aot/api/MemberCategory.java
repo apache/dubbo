@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.aot.generate;
+package org.apache.dubbo.aot.api;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;

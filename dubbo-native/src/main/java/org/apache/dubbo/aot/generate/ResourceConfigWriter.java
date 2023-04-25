@@ -16,6 +16,10 @@
  */
 package org.apache.dubbo.aot.generate;
 
+import org.apache.dubbo.aot.api.ConditionalDescriber;
+import org.apache.dubbo.aot.api.ResourceBundleDescriber;
+import org.apache.dubbo.aot.api.ResourcePatternDescriber;
+
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;

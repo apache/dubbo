@@ -27,6 +27,7 @@ import java.util.function.Consumer;
  * Write Write configuration metadata information in
  * {@link ResourceConfigMetadataRepository} and {@link ReflectConfigMetadataRepository}
  * as GraalVM native configuration.
+ *
  * @see <a href="https://www.graalvm.org/latest/reference-manual/native-image/overview/BuildConfiguration/">Native Image Build Configuration</a>
  */
 public class NativeConfigurationWriter {
@@ -49,8 +50,7 @@ public class NativeConfigurationWriter {
             try (FileWriter out = new FileWriter(file)) {
                 writer.accept(createJsonWriter(out));
             }
-        }
-        catch (IOException ex) {
+        } catch (IOException ex) {
             throw new IllegalStateException("Failed to write native configuration for " + fileName, ex);
         }
     }
@@ -58,7 +58,7 @@ public class NativeConfigurationWriter {
     private File createIfNecessary(String filename) throws IOException {
         Path outputDirectory = this.basePath.resolve("META-INF").resolve("native-image");
         if (this.groupId != null && this.artifactId != null) {
-            outputDirectory = outputDirectory.resolve(this.groupId).resolve(this.artifactId);
+            outputDirectory = outputDirectory.resolve(this.groupId).resolve(this.artifactId).resolve("dubbo");
         }
         outputDirectory.toFile().mkdirs();
         File file = outputDirectory.resolve(filename).toFile();
@@ -75,6 +75,11 @@ public class NativeConfigurationWriter {
     public void writeResourceConfig(ResourceConfigMetadataRepository repository) {
         writeTo("resource-config.json", writer ->
             ResourceConfigWriter.INSTANCE.write(writer, repository));
+    }
+
+    public void writeProxyConfig(ProxyConfigMetadataRepository repository) {
+        writeTo("proxy-config.json", writer ->
+            ProxyConfigWriter.INSTANCE.write(writer, repository));
     }
 
     private BasicJsonWriter createJsonWriter(Writer out) {
