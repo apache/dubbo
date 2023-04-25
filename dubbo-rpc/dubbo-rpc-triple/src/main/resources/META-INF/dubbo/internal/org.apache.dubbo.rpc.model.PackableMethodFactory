@@ -1,1 +1,1 @@
-reflection=org.apache.dubbo.rpc.protocol.tri.ReflectionPackableMethodFactory
+default=org.apache.dubbo.rpc.protocol.tri.DefaultPackableMethodFactory

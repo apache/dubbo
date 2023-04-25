@@ -26,6 +26,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.common.threadpool.ThreadlessExecutor;
 import org.apache.dubbo.remoting.api.connection.AbstractConnectionClient;
+import org.apache.dubbo.remoting.utils.UrlUtils;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.CancellationContext;
@@ -67,14 +68,17 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.locks.ReentrantLock;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PACKABLE_METHOD_FACTORY_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_DESTROY_INVOKER;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_REQUEST;
 import static org.apache.dubbo.rpc.Constants.COMPRESSOR_KEY;
 import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 import static org.apache.dubbo.rpc.model.MethodDescriptor.RpcType.UNARY;
+import static org.apache.dubbo.rpc.protocol.tri.TripleConstant.APPLICATION_GRPC;
 
 /**
  * TripleInvoker
@@ -261,9 +265,10 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         if (methodDescriptor instanceof PackableMethod) {
             meta.packableMethod = (PackableMethod) methodDescriptor;
         } else {
+            final String contentType = APPLICATION_GRPC + "+" + UrlUtils.serializationOrDefault(url);
             meta.packableMethod = url.getOrDefaultFrameworkModel().getExtensionLoader(PackableMethodFactory.class)
-                .getExtension(url.getParameter(CommonConstants.PACKABLE_METHOD_FACTORY_KEY, CommonConstants.DEFAULT_PACKABLE_METHOD_FACTORY))
-                .create(methodDescriptor, url);
+                .getExtension(ConfigurationUtils.getGlobalConfiguration(url.getScopeModel()).getString(PACKABLE_METHOD_FACTORY_KEY, DEFAULT_KEY))
+                .create(methodDescriptor, url, contentType);
         }
         meta.convertNoLowerHeader = TripleProtocol.CONVERT_NO_LOWER_HEADER;
         meta.ignoreDefaultVersion = TripleProtocol.IGNORE_1_0_0_VERSION;

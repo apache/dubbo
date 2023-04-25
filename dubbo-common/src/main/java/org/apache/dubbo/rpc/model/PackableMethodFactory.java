@@ -18,13 +18,12 @@
 package org.apache.dubbo.rpc.model;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 
-@SPI(value = CommonConstants.DEFAULT_PACKABLE_METHOD_FACTORY, scope = ExtensionScope.FRAMEWORK)
+@SPI(scope = ExtensionScope.FRAMEWORK)
 public interface PackableMethodFactory {
 
-    PackableMethod create(MethodDescriptor methodDescriptor, URL url);
+    PackableMethod create(MethodDescriptor methodDescriptor, URL url, String contentType);
 
 }

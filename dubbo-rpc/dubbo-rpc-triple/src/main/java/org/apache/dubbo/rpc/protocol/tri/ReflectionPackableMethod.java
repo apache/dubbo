@@ -118,11 +118,11 @@ public class ReflectionPackableMethod implements PackableMethod {
     }
 
     public static ReflectionPackableMethod init(MethodDescriptor methodDescriptor, URL url) {
-        final String serializeName = UrlUtils.serializationOrDefault(url);
         Object stored = methodDescriptor.getAttribute(METHOD_ATTR_PACK);
         if (stored != null) {
             return (ReflectionPackableMethod) stored;
         }
+        final String serializeName = UrlUtils.serializationOrDefault(url);
         final Collection<String> allSerialize = UrlUtils.allSerializations(url);
         ReflectionPackableMethod reflectionPackableMethod = new ReflectionPackableMethod(
             methodDescriptor, url, serializeName, allSerialize);
