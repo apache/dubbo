@@ -46,27 +46,28 @@ public class MethodMetricsInterceptor {
 
     private String getSide(Invocation invocation) {
         Optional<? extends Invoker<?>> invoker = Optional.ofNullable(invocation.getInvoker());
-        String side = invoker.isPresent() ? invoker.get().getUrl().getSide() : PROVIDER_SIDE;
-        return side;
+        return invoker.isPresent() ? invoker.get().getUrl().getSide() : PROVIDER_SIDE;
     }
 
     public void afterMethod(Invocation invocation, Result result) {
         if (result.hasException()) {
-            handleMethodException(invocation, result.getException());
+            handleMethodException(invocation, result.getException(), true);
         } else {
             sampler.incOnEvent(invocation, MetricsEvent.Type.SUCCEED.getNameByType(getSide(invocation)));
             onCompleted(invocation);
         }
     }
 
-    public void handleMethodException(Invocation invocation, Throwable throwable) {
+    public void handleMethodException(Invocation invocation, Throwable throwable, boolean isBusiness) {
         if (throwable == null) {
             return;
         }
         String side = getSide(invocation);
 
         MetricsEvent.Type eventType = MetricsEvent.Type.UNKNOWN_FAILED;
-        if (throwable instanceof RpcException) {
+        if (isBusiness) {
+            eventType = MetricsEvent.Type.BUSINESS_FAILED;
+        } else if (throwable instanceof RpcException) {
             RpcException e = (RpcException) throwable;
 
             if (e.isTimeout()) {
@@ -85,6 +86,7 @@ public class MethodMetricsInterceptor {
                 eventType = MetricsEvent.Type.NETWORK_EXCEPTION;
             }
         }
+
         sampler.incOnEvent(invocation, eventType.getNameByType(side));
         onCompleted(invocation);
         sampler.incOnEvent(invocation, MetricsEvent.Type.TOTAL_FAILED.getNameByType(side));
