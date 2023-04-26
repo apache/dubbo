@@ -18,6 +18,7 @@ package org.apache.dubbo.spring.security.filter;
 
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
@@ -52,6 +53,12 @@ public class ContextHolderAuthenticationPrepareFilter implements ClusterFilter{
 
         Authentication authentication = context.getAuthentication();
 
-        invocation.setObjectAttachment(SecurityNames.SECURITY_AUTHENTICATION_CONTEXT_KEY, mapper.serialize(authentication));
+        String content = mapper.serialize(authentication);
+
+        if (StringUtils.isBlank(content)) {
+            return;
+        }
+
+        invocation.setObjectAttachment(SecurityNames.SECURITY_AUTHENTICATION_CONTEXT_KEY, content);
     }
 }

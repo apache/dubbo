@@ -20,6 +20,8 @@ package org.apache.dubbo.spring.security.jackson;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.springframework.security.jackson2.CoreJackson2Module;
@@ -30,6 +32,8 @@ import java.util.function.Consumer;
 
 public class ObjectMapperCodec {
 
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ObjectMapperCodec.class);
+
     private final ObjectMapper mapper = new ObjectMapper();
 
     public ObjectMapperCodec() {
@@ -38,7 +42,6 @@ public class ObjectMapperCodec {
 
     public <T> T deserialize(byte[] bytes, Class<T> clazz) {
         try {
-
             if (bytes == null || bytes.length == 0) {
                 return null;
             }
@@ -46,9 +49,11 @@ public class ObjectMapperCodec {
             return mapper.readValue(bytes, clazz);
 
         } catch (Exception exception) {
-            throw new RuntimeException(
-                String.format("objectMapper! deserialize error %s", exception));
+            logger.error("objectMapper! deserialize error", exception);
+
+            logger.warn("objectMapper! deserialize error, you can try to customize the ObjectMapperCodecCustomer.");
         }
+        return null;
     }
 
     public <T> T deserialize(String content, Class<T> clazz) {
@@ -68,8 +73,9 @@ public class ObjectMapperCodec {
             return mapper.writeValueAsString(object);
 
         } catch (Exception ex) {
-            throw new RuntimeException(String.format("objectMapper! serialize error %s", ex));
+            logger.error("objectMapper! serialize error", ex);
         }
+        return null;
     }
 
     public ObjectMapperCodec addModule(SimpleModule simpleModule) {
