@@ -18,6 +18,8 @@ package org.apache.dubbo.rpc.protocol.rest;
 
 import org.apache.dubbo.rpc.RpcException;
 
+import org.apache.dubbo.rpc.protocol.rest.exception.mapper.ExceptionHandler;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Answers;
@@ -25,7 +27,8 @@ import org.mockito.internal.util.collections.Sets;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
-import javax.ws.rs.core.Response;
+
+import java.util.LinkedList;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.not;
@@ -36,7 +39,7 @@ import static org.mockito.Mockito.mock;
 
 class RpcExceptionMapperTest {
 
-    private RpcExceptionMapper exceptionMapper;
+    private ExceptionHandler exceptionMapper;
 
     @BeforeEach
     public void setUp() {
@@ -46,23 +49,64 @@ class RpcExceptionMapperTest {
     @Test
     void testConstraintViolationException() {
         ConstraintViolationException violationException = mock(ConstraintViolationException.class);
-        ConstraintViolation violation = mock(ConstraintViolation.class, Answers.RETURNS_DEEP_STUBS);
-        given(violationException.getConstraintViolations()).willReturn(Sets.<ConstraintViolation<?>>newSet(violation));
+        ConstraintViolation<?> violation = mock(ConstraintViolation.class, Answers.RETURNS_DEEP_STUBS);
+        given(violationException.getConstraintViolations()).willReturn(Sets.newSet(violation));
         RpcException rpcException = new RpcException("violation", violationException);
 
-        Response response = exceptionMapper.toResponse(rpcException);
+        Object response = exceptionMapper.result(rpcException);
 
         assertThat(response, not(nullValue()));
-        assertThat(response.getEntity(), instanceOf(ViolationReport.class));
+        assertThat(response, instanceOf(ViolationReport.class));
     }
 
     @Test
     void testNormalException() {
         RpcException rpcException = new RpcException();
-        Response response = exceptionMapper.toResponse(rpcException);
+        Object response = exceptionMapper.result(rpcException);
 
 
         assertThat(response, not(nullValue()));
-        assertThat(response.getEntity(), instanceOf(String.class));
+        assertThat(response, instanceOf(String.class));
+    }
+
+    @Test
+    void testBuildException() {
+
+        RestConstraintViolation restConstraintViolation = new RestConstraintViolation();
+        String message = "message";
+        restConstraintViolation.setMessage(message);
+        String path = "path";
+        restConstraintViolation.setPath(path);
+        String value = "value";
+        restConstraintViolation.setValue(value);
+
+
+        Assertions.assertEquals(message, restConstraintViolation.getMessage());
+        Assertions.assertEquals(path, restConstraintViolation.getPath());
+        Assertions.assertEquals(value, restConstraintViolation.getValue());
+
+
+    }
+
+    @Test
+    public void testViolationReport() {
+
+        ViolationReport violationReport = new ViolationReport();
+
+
+        RestConstraintViolation restConstraintViolation = new RestConstraintViolation("path", "message", "value");
+
+        violationReport.addConstraintViolation(restConstraintViolation);
+
+        Assertions.assertEquals(1, violationReport.getConstraintViolations().size());
+
+
+        violationReport = new ViolationReport();
+
+        violationReport.setConstraintViolations(new LinkedList<>());
+
+        Assertions.assertEquals(0, violationReport.getConstraintViolations().size());
+
+
     }
 }

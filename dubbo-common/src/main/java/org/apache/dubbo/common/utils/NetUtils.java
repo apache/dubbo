@@ -23,7 +23,6 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.logger.support.FailsafeLogger;
 import org.apache.dubbo.rpc.model.ScopeModel;
-
 import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.Inet6Address;
@@ -250,6 +249,8 @@ public final class NetUtils {
     }
 
     private static volatile String HOST_ADDRESS;
+
+    private static volatile String HOST_NAME;
 
     private static volatile String HOST_ADDRESS_V6;
 
@@ -585,11 +586,15 @@ public final class NetUtils {
     }
 
     public static String getLocalHostName() {
-        try {
-            return InetAddress.getLocalHost().getHostName();
-        } catch (UnknownHostException e) {
-            return getLocalAddress().getHostName();
+        if (HOST_NAME != null) {
+            return HOST_NAME;
         }
+        try {
+            HOST_NAME= InetAddress.getLocalHost().getHostName();
+        } catch (UnknownHostException e) {
+            HOST_NAME= Optional.ofNullable(getLocalAddress()).map(k->k.getHostName()).orElse(null);
+        }
+        return HOST_NAME;
     }
 
     /**
@@ -679,7 +684,26 @@ public final class NetUtils {
         }
     }
 
-    public static boolean matchIpExpression(String pattern, String host, int port) throws UnknownHostException {
+    /**
+     * Check if address matches with specified pattern, currently only supports ipv4, use {@link this#matchIpExpression(String, String, int)} for ipv6 addresses.
+     *
+     * @param pattern cird pattern
+     * @param address 'ip:port'
+     * @return true if address matches with the pattern
+     */
+    public static boolean matchIpExpression(String pattern, String address) throws UnknownHostException {
+        if (address == null) {
+            return false;
+        }
+
+        String host = address;
+        int port = 0;
+        // only works for ipv4 address with 'ip:port' format
+        if (address.endsWith(":")) {
+            String[] hostPort = address.split(":");
+            host = hostPort[0];
+            port = StringUtils.parseInteger(hostPort[1]);
+        }
 
         // if the pattern is subnet format, it will not be allowed to config port param in pattern.
         if (pattern.contains("/")) {
@@ -687,6 +711,16 @@ public final class NetUtils {
             return utils.isInRange(host);
         }
 
+        return matchIpRange(pattern, host, port);
+    }
+
+    public static boolean matchIpExpression(String pattern, String host, int port) throws UnknownHostException {
+
+        // if the pattern is subnet format, it will not be allowed to config port param in pattern.
+        if (pattern.contains("/")) {
+            CIDRUtils utils = new CIDRUtils(pattern);
+            return utils.isInRange(host);
+        }
 
         return matchIpRange(pattern, host, port);
     }

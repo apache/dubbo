@@ -32,9 +32,19 @@ public class RestDemoServiceImpl implements RestDemoService {
         return "Hello, " + name;
     }
 
+    @Override
+    public Long testFormBody(Long number) {
+        return number;
+    }
+
 
     public boolean isCalled() {
         return called;
+    }
+
+    @Override
+    public String deleteUserByUid(String uid) {
+        return uid;
     }
 
     @Override

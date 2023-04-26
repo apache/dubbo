@@ -72,14 +72,17 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
 
     @Override
     public final boolean supports(Class<?> serviceType, boolean consumer) {
-        // for consumer
-        if (consumer) {
-            //  it is possible serviceType is impl
-            return supports0(serviceType);
+
+        if (serviceType == null) {
+            return false;
         }
 
+        // for consumer
+        //  it is possible serviceType is impl
         // for provider
-        return isImplementedInterface(serviceType) && isServiceAnnotationPresent(serviceType) && supports0(serviceType);
+        // for xml config bean  && isServiceAnnotationPresent(serviceType)
+        //  isImplementedInterface(serviceType) SpringController
+        return supports0(serviceType);
     }
 
     protected final boolean isImplementedInterface(Class<?> serviceType) {
@@ -150,10 +153,10 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
             // try the overrider method first
             Method serviceMethod = entry.getKey();
             // If failed, it indicates the overrider method does not contain metadata , then try the declared method
-            if (!processRestMethodMetadata(serviceMethod, serviceType, serviceInterfaceClass, serviceRestMetadata::addRestMethodMetadata)) {
+            if (!processRestMethodMetadata(serviceMethod, serviceType, serviceInterfaceClass, serviceRestMetadata::addRestMethodMetadata, serviceRestMetadata)) {
                 Method declaredServiceMethod = entry.getValue();
                 processRestMethodMetadata(declaredServiceMethod, serviceType, serviceInterfaceClass,
-                    serviceRestMetadata::addRestMethodMetadata);
+                    serviceRestMetadata::addRestMethodMetadata, serviceRestMetadata);
             }
         }
     }
@@ -171,9 +174,15 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
         // exclude the public methods declared in java.lang.Object.class
         List<Method> declaredServiceMethods = new ArrayList<>(getAllMethods(serviceInterfaceClass, excludedDeclaredClass(Object.class)));
 
+        // controller class
+        if (serviceType.equals(serviceInterfaceClass)) {
+            putServiceMethodToMap(serviceMethodsMap, declaredServiceMethods);
+            return unmodifiableMap(serviceMethodsMap);
+        }
+
         // for interface , such as consumer interface
         if (serviceType.isInterface()) {
-            putInterfaceMethodToMap(serviceMethodsMap, declaredServiceMethods);
+            putServiceMethodToMap(serviceMethodsMap, declaredServiceMethods);
             return unmodifiableMap(serviceMethodsMap);
         }
 
@@ -197,7 +206,7 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
         return unmodifiableMap(serviceMethodsMap);
     }
 
-    private void putInterfaceMethodToMap(Map<Method, Method> serviceMethodsMap, List<Method> declaredServiceMethods) {
+    private void putServiceMethodToMap(Map<Method, Method> serviceMethodsMap, List<Method> declaredServiceMethods) {
         declaredServiceMethods.stream().forEach(method -> {
 
             // filter static private default
@@ -234,7 +243,8 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
      */
     protected boolean processRestMethodMetadata(Method serviceMethod, Class<?> serviceType,
                                                 Class<?> serviceInterfaceClass,
-                                                Consumer<RestMethodMetadata> metadataToProcess) {
+                                                Consumer<RestMethodMetadata> metadataToProcess,
+                                                ServiceRestMetadata serviceRestMetadata) {
 
         if (!isRestCapableMethod(serviceMethod, serviceType, serviceInterfaceClass)) {
             return false;
@@ -274,6 +284,7 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
         // Initialize RequestMetadata
         RequestMetadata request = metadata.getRequest();
         request.setPath(requestPath);
+        request.appendContextPathFromUrl(serviceRestMetadata.getContextPathFromUrl());
         request.setMethod(requestMethod);
         request.setProduces(produces);
         request.setConsumes(consumes);
@@ -359,9 +370,12 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
         if (annotations == null || annotations.length == 0) {
 
             for (NoAnnotatedParameterRequestTagProcessor processor : noAnnotatedParameterRequestTagProcessors) {
-                processor.process(parameter, parameterIndex, metadata);
+                // no annotation only one default annotationType
+                if (processor.process(parameter, parameterIndex, metadata)) {
+                    return;
+                }
             }
-            return;
+
         }
 
         for (Annotation annotation : annotations) {

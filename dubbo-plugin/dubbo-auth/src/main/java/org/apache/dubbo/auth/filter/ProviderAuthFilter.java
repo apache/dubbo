@@ -31,7 +31,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 
 @Activate(group = CommonConstants.PROVIDER, value = Constants.SERVICE_AUTH, order = -10000)
 public class ProviderAuthFilter implements Filter {
-    private ApplicationModel applicationModel;
+    private final ApplicationModel applicationModel;
 
     public ProviderAuthFilter(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;

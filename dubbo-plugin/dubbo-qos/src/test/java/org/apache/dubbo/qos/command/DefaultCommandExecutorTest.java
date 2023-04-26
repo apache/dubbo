@@ -17,9 +17,10 @@
 
 package org.apache.dubbo.qos.command;
 
+import org.apache.dubbo.qos.api.CommandContext;
+import org.apache.dubbo.qos.api.PermissionLevel;
+import org.apache.dubbo.qos.api.QosConfiguration;
 import org.apache.dubbo.qos.command.exception.NoSuchCommandException;
-import org.apache.dubbo.qos.common.QosConfiguration;
-import org.apache.dubbo.qos.permission.PermissionLevel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -29,7 +30,7 @@ import static org.hamcrest.Matchers.equalTo;
 
 class DefaultCommandExecutorTest {
     @Test
-    void testExecute1() throws Exception {
+    void testExecute1() {
         Assertions.assertThrows(NoSuchCommandException.class, () -> {
             DefaultCommandExecutor executor = new DefaultCommandExecutor(FrameworkModel.defaultModel());
             executor.execute(CommandContextFactory.newInstance("not-exit"));
@@ -48,7 +49,7 @@ class DefaultCommandExecutorTest {
     }
 
     @Test
-    void shouldNotThrowPermissionDenyException_GivenPermissionConfigAndMatchDefaultPUBLICCmdPermissionLevel() throws Exception {
+    void shouldNotThrowPermissionDenyException_GivenPermissionConfigAndMatchDefaultPUBLICCmdPermissionLevel() {
         DefaultCommandExecutor executor = new DefaultCommandExecutor(FrameworkModel.defaultModel());
         final CommandContext commandContext = CommandContextFactory.newInstance("live", new String[]{"dubbo"}, false);
         commandContext.setQosConfiguration(QosConfiguration.builder().build());
@@ -56,7 +57,7 @@ class DefaultCommandExecutorTest {
     }
 
     @Test
-    void shouldNotThrowPermissionDenyException_GivenPermissionConfigAndNotMatchCmdPermissionLevel() throws Exception {
+    void shouldNotThrowPermissionDenyException_GivenPermissionConfigAndNotMatchCmdPermissionLevel() {
         DefaultCommandExecutor executor = new DefaultCommandExecutor(FrameworkModel.defaultModel());
         final CommandContext commandContext = CommandContextFactory.newInstance("live", new String[]{"dubbo"}, false);
         // 1 PROTECTED

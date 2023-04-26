@@ -1,0 +1,25 @@
+[
+  {
+    "name": "org.apache.dubbo.graalvm.demo.DemoService",
+    "allPublicMethods": true
+  },
+  {
+    "name": "org.apache.dubbo.demo.graalvm.provider.DemoServiceImpl",
+    "allDeclaredMethods": true
+  },
+  {
+    "name": "org.apache.zookeeper.ClientCnxnSocketNIO",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": [
+          "org.apache.zookeeper.client.ZKClientConfig"
+        ]
+      },
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  }
+]

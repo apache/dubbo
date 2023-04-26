@@ -23,6 +23,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.cluster.configurator.parser.model.ConfigItem;
 import org.apache.dubbo.rpc.cluster.configurator.parser.model.ConfiguratorConfig;
 
+import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
 
@@ -31,9 +32,11 @@ import java.util.List;
 import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
 import static org.apache.dubbo.common.constants.RegistryConstants.APP_DYNAMIC_CONFIGURATORS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_CONFIGURATORS_CATEGORY;
 import static org.apache.dubbo.rpc.cluster.Constants.OVERRIDE_PROVIDERS_KEY;
+import static org.apache.dubbo.rpc.cluster.configurator.parser.model.ConfiguratorConfig.MATCH_CONDITION;
 
 /**
  * Config parser
@@ -59,13 +62,14 @@ public class ConfigParser {
             // service scope by default.
             items.forEach(item -> urls.addAll(serviceItemToUrls(item, configuratorConfig)));
         }
+
         return urls;
     }
 
     private static List<URL> parseJsonArray(String rawConfig) {
         List<URL> urls = new ArrayList<>();
         try {
-            List<String> list = JsonUtils.getJson().toJavaList(rawConfig, String.class);
+            List<String> list = JsonUtils.toJavaList(rawConfig, String.class);
             if (!CollectionUtils.isEmpty(list)) {
                 list.forEach(u -> urls.add(URL.valueOf(u)));
             }
@@ -76,7 +80,7 @@ public class ConfigParser {
     }
 
     private static ConfiguratorConfig parseObject(String rawConfig) {
-        Yaml yaml = new Yaml(new SafeConstructor());
+        Yaml yaml = new Yaml(new SafeConstructor(new LoaderOptions()));
         Map<String, Object> map = yaml.load(rawConfig);
         return ConfiguratorConfig.parseFromMap(map);
     }
@@ -100,10 +104,10 @@ public class ConfigParser {
             if (CollectionUtils.isNotEmpty(apps)) {
                 apps.forEach(app -> {
                     StringBuilder tmpUrlBuilder = new StringBuilder(urlBuilder);
-                    urls.add(URL.valueOf(tmpUrlBuilder.append("&application=").append(app).toString()));
+                    urls.add(appendMatchCondition(URL.valueOf(tmpUrlBuilder.append("&application=").append(app).toString()), item));
                 });
             } else {
-                urls.add(URL.valueOf(urlBuilder.toString()));
+                urls.add(appendMatchCondition(URL.valueOf(urlBuilder.toString()), item));
             }
         });
 
@@ -135,7 +139,7 @@ public class ConfigParser {
                 tmpUrlBuilder.append("&category=").append(APP_DYNAMIC_CONFIGURATORS_CATEGORY);
                 tmpUrlBuilder.append("&configVersion=").append(config.getConfigVersion());
 
-                urls.add(URL.valueOf(tmpUrlBuilder.toString()));
+                urls.add(appendMatchCondition(URL.valueOf(tmpUrlBuilder.toString()), item));
             }
         }
         return urls;
@@ -167,6 +171,11 @@ public class ConfigParser {
             sb.append(OVERRIDE_PROVIDERS_KEY);
             sb.append('=');
             sb.append(CollectionUtils.join(item.getProviderAddresses(), ","));
+        } else if (PROVIDER.equals(item.getSide())) {
+            sb.append('&');
+            sb.append(OVERRIDE_PROVIDERS_KEY);
+            sb.append('=');
+            sb.append(CollectionUtils.join(parseAddresses(item), ","));
         }
 
         return sb.toString();
@@ -217,5 +226,12 @@ public class ConfigParser {
             addresses.add(ANYHOST_VALUE);
         }
         return addresses;
+    }
+
+    private static URL appendMatchCondition(URL url, ConfigItem item) {
+        if (item.getMatch() != null) {
+            url = url.putAttribute(MATCH_CONDITION, item.getMatch());
+        }
+        return url;
     }
 }

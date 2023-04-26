@@ -26,7 +26,6 @@ import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
-import org.apache.dubbo.remoting.transport.netty4.ssl.SslContexts;
 import org.apache.dubbo.remoting.api.WireProtocol;
 import org.apache.dubbo.remoting.api.pu.AbstractPortUnificationServer;
 import org.apache.dubbo.remoting.transport.dispatcher.ChannelHandlers;
@@ -39,7 +38,6 @@ import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
-import io.netty.handler.ssl.SslContext;
 import io.netty.util.concurrent.Future;
 
 import java.net.InetSocketAddress;
@@ -52,7 +50,6 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.IO_THREADS_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.SSL_ENABLED_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_CLOSE;
 import static org.apache.dubbo.remoting.Constants.EVENT_LOOP_BOSS_POOL_NAME;
 import static org.apache.dubbo.remoting.Constants.EVENT_LOOP_WORKER_POOL_NAME;
@@ -115,13 +112,6 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
             getUrl().getPositiveParameter(IO_THREADS_KEY, Constants.DEFAULT_IO_THREADS),
             EVENT_LOOP_WORKER_POOL_NAME);
 
-        final boolean enableSsl = getUrl().getParameter(SSL_ENABLED_KEY, false);
-        final SslContext sslContext;
-        if (enableSsl) {
-            sslContext = SslContexts.buildServerSslContext(getUrl());
-        } else {
-            sslContext = null;
-        }
         bootstrap.group(bossGroup, workerGroup)
             .channel(NettyEventLoopFactory.serverSocketChannelClass())
             .option(ChannelOption.SO_REUSEADDR, Boolean.TRUE)
@@ -133,7 +123,7 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
                     // Do not add idle state handler here, because it should be added in the protocol handler.
                     final ChannelPipeline p = ch.pipeline();
                     final NettyPortUnificationServerHandler puHandler;
-                    puHandler = new NettyPortUnificationServerHandler(getUrl(), sslContext, true, getProtocols(),
+                    puHandler = new NettyPortUnificationServerHandler(getUrl(), true, getProtocols(),
                         NettyPortUnificationServer.this, NettyPortUnificationServer.this.dubboChannels,
                         getSupportedUrls(), getSupportedHandlers());
                     p.addLast("negotiation-protocol", puHandler);

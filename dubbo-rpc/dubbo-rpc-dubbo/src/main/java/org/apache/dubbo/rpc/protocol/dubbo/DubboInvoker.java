@@ -17,23 +17,27 @@
 package org.apache.dubbo.rpc.protocol.dubbo;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.utils.AtomicPositiveInteger;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.TimeoutException;
 import org.apache.dubbo.remoting.exchange.ExchangeClient;
+import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.FutureContext;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
+import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -43,9 +47,9 @@ import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PAYLOAD;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERROR_CLOSE_CLIENT;
 import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 
 /**
@@ -53,7 +57,7 @@ import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
  */
 public class DubboInvoker<T> extends AbstractInvoker<T> {
 
-    private final ExchangeClient[] clients;
+    private final ClientsProvider clientsProvider;
 
     private final AtomicPositiveInteger index = new AtomicPositiveInteger();
 
@@ -64,13 +68,13 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
 
     private final int serverShutdownTimeout;
 
-    public DubboInvoker(Class<T> serviceType, URL url, ExchangeClient[] clients) {
-        this(serviceType, url, clients, null);
+    public DubboInvoker(Class<T> serviceType, URL url, ClientsProvider clientsProvider) {
+        this(serviceType, url, clientsProvider, null);
     }
 
-    public DubboInvoker(Class<T> serviceType, URL url, ExchangeClient[] clients, Set<Invoker<?>> invokers) {
+    public DubboInvoker(Class<T> serviceType, URL url, ClientsProvider clientsProvider, Set<Invoker<?>> invokers) {
         super(serviceType, url, new String[]{INTERFACE_KEY, GROUP_KEY, TOKEN_KEY});
-        this.clients = clients;
+        this.clientsProvider = clientsProvider;
         this.invokers = invokers;
         this.serverShutdownTimeout = ConfigurationUtils.getServerShutdownTimeout(getUrl().getScopeModel());
     }
@@ -83,10 +87,11 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
         inv.setAttachment(VERSION_KEY, version);
 
         ExchangeClient currentClient;
-        if (clients.length == 1) {
-            currentClient = clients[0];
+        List<? extends ExchangeClient> exchangeClients = clientsProvider.getClients();
+        if (exchangeClients.size() == 1) {
+            currentClient = exchangeClients.get(0);
         } else {
-            currentClient = clients[index.getAndIncrement() % clients.length];
+            currentClient = exchangeClients.get(index.getAndIncrement() % exchangeClients.size());
         }
         try {
             boolean isOneway = RpcUtils.isOneway(getUrl(), invocation);
@@ -99,14 +104,28 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
             }
 
             invocation.setAttachment(TIMEOUT_KEY, String.valueOf(timeout));
+
+            RpcContext.getServiceContext().setRemoteAddress(currentClient.getRemoteAddress());
+
+            Integer payload = getUrl().getParameter(PAYLOAD, Integer.class);
+
+            Request request = new Request();
+            if (payload != null) {
+                request.setPayload(payload);
+            }
+            request.setData(inv);
+            request.setVersion(Version.getProtocolVersion());
+
             if (isOneway) {
                 boolean isSent = getUrl().getMethodParameter(methodName, Constants.SENT_KEY, false);
-                currentClient.send(inv, isSent);
+                request.setTwoWay(false);
+                currentClient.send(request, isSent);
                 return AsyncRpcResult.newDefaultAsyncResult(invocation);
             } else {
+                request.setTwoWay(true);
                 ExecutorService executor = getCallbackExecutor(getUrl(), inv);
                 CompletableFuture<AppResponse> appResponseFuture =
-                    currentClient.request(inv, timeout, executor).thenApply(obj -> (AppResponse) obj);
+                    currentClient.request(request, timeout, executor).thenApply(AppResponse.class::cast);
                 // save for 2.6.x compatibility, for example, TraceFilter in Zipkin uses com.alibaba.xxx.FutureAdapter
                 FutureContext.getContext().setCompatibleFuture(appResponseFuture);
                 AsyncRpcResult result = new AsyncRpcResult(appResponseFuture, inv);
@@ -125,7 +144,7 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
         if (!super.isAvailable()) {
             return false;
         }
-        for (ExchangeClient client : clients) {
+        for (ExchangeClient client : clientsProvider.getClients()) {
             if (client.isConnected() && !client.hasAttribute(Constants.CHANNEL_ATTRIBUTE_READONLY_KEY)) {
                 //cannot write == not Available ?
                 return true;
@@ -150,14 +169,7 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
                 if (invokers != null) {
                     invokers.remove(this);
                 }
-                for (ExchangeClient client : clients) {
-                    try {
-                        client.close(serverShutdownTimeout);
-                    } catch (Throwable t) {
-                        logger.warn(PROTOCOL_ERROR_CLOSE_CLIENT, "", "", t.getMessage(), t);
-                    }
-                }
-
+                clientsProvider.close(serverShutdownTimeout);
             } finally {
                 destroyLock.unlock();
             }

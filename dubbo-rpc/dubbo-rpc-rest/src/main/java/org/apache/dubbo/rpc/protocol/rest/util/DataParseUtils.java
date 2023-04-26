@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.rest.util;
 
 import org.apache.dubbo.common.utils.JsonUtils;
+import org.apache.dubbo.common.utils.StringUtils;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -33,10 +34,13 @@ import java.util.StringTokenizer;
 
 public class DataParseUtils {
 
-    public static Object stringTypeConvert(Class targetType, String value) {
+    public static Object stringTypeConvert(Class<?> targetType, String value) {
 
+        if (StringUtils.isEmpty(value)) {
+            return null;
+        }
 
-        if (targetType == Boolean.class) {
+        if (targetType == Boolean.class || targetType == boolean.class) {
             return Boolean.valueOf(value);
         }
 
@@ -48,8 +52,22 @@ public class DataParseUtils {
             return NumberUtils.parseNumber(value, targetType);
         }
 
+        if (targetType != null && targetType.isPrimitive()) {
+            return NumberUtils.parseNumber(value, targetType);
+        }
+
         return value;
 
+    }
+
+    public static boolean isTextType(Class targetType) {
+        if (targetType == null) {
+            return false;
+        }
+
+        return targetType == Boolean.class || targetType == boolean.class ||
+            targetType == String.class ||
+            Number.class.isAssignableFrom(targetType) || targetType.isPrimitive();
     }
 
 
@@ -72,7 +90,7 @@ public class DataParseUtils {
      * @throws Exception
      */
     public static void writeJsonContent(Object object, OutputStream outputStream) throws Exception {
-        outputStream.write(JsonUtils.getJson().toJson(object).getBytes(StandardCharsets.UTF_8));
+        outputStream.write(JsonUtils.toJson(object).getBytes(StandardCharsets.UTF_8));
     }
 
     /**
@@ -117,7 +135,7 @@ public class DataParseUtils {
     public static byte[] objectTextConvertToByteArray(Object object) {
         Class<?> objectClass = object.getClass();
 
-        if (objectClass == Boolean.class) {
+        if (objectClass == Boolean.class || objectClass == boolean.class) {
             return object.toString().getBytes();
         }
 
@@ -125,26 +143,7 @@ public class DataParseUtils {
             return ((String) object).getBytes();
         }
 
-        if (objectClass.isAssignableFrom(Number.class)) {
-            return (byte[]) NumberUtils.numberToBytes((Number) object);
-        }
-
-        return object.toString().getBytes();
-
-    }
-
-    public static byte[] objectJsonConvertToByteArray(Object object) {
-        Class<?> objectClass = object.getClass();
-
-        if (objectClass == Boolean.class) {
-            return object.toString().getBytes();
-        }
-
-        if (objectClass == String.class) {
-            return ((String) object).getBytes();
-        }
-
-        if (objectClass.isAssignableFrom(Number.class)) {
+        if (objectClass.isAssignableFrom(Number.class) || objectClass.isPrimitive()) {
             return (byte[]) NumberUtils.numberToBytes((Number) object);
         }
 
@@ -153,13 +152,13 @@ public class DataParseUtils {
     }
 
     public static Object jsonConvert(Class targetType, byte[] body) throws Exception {
-        return JsonUtils.getJson().toJavaObject(new String(body, StandardCharsets.UTF_8), targetType);
+        return JsonUtils.toJavaObject(new String(body, StandardCharsets.UTF_8), targetType);
     }
 
 
-    public static Object multipartFormConvert(byte[] body, Charset charset) throws Exception {
+    public static Object multipartFormConvert(byte[] body, Charset charset, Class<?> targetType) throws Exception {
         String[] pairs = tokenizeToStringArray(new String(body, StandardCharsets.UTF_8), "&");
-        Object result = MultiValueCreator.createMultiValueMap();
+        Object result = MultiValueCreator.providerCreateMultiValueMap(targetType);
         for (String pair : pairs) {
             int idx = pair.indexOf('=');
             if (idx == -1) {
@@ -174,8 +173,8 @@ public class DataParseUtils {
         return result;
     }
 
-    public static Object multipartFormConvert(byte[] body) throws Exception {
-        return multipartFormConvert(body, Charset.defaultCharset());
+    public static Object multipartFormConvert(byte[] body, Class<?> targetType) throws Exception {
+        return multipartFormConvert(body, Charset.defaultCharset(), targetType);
     }
 
 

@@ -16,6 +16,30 @@
  */
 package org.apache.dubbo.registry.client.event.listener;
 
+import org.apache.dubbo.common.ProtocolServiceKey;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.URLBuilder;
+import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
+import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.ConcurrentHashSet;
+import org.apache.dubbo.metadata.MetadataInfo;
+import org.apache.dubbo.metadata.MetadataInfo.ServiceInfo;
+import org.apache.dubbo.metrics.event.MetricsEventBus;
+import org.apache.dubbo.metrics.registry.event.RegistryEvent;
+import org.apache.dubbo.registry.NotifyListener;
+import org.apache.dubbo.registry.client.DefaultServiceInstance;
+import org.apache.dubbo.registry.client.ServiceDiscovery;
+import org.apache.dubbo.registry.client.ServiceInstance;
+import org.apache.dubbo.registry.client.event.RetryServiceInstancesChangedEvent;
+import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
+import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
+import org.apache.dubbo.registry.client.metadata.ServiceInstanceNotificationCustomizer;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -32,28 +56,6 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.apache.dubbo.common.ProtocolServiceKey;
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.URLBuilder;
-import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
-import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.common.utils.ConcurrentHashSet;
-import org.apache.dubbo.metadata.MetadataInfo;
-import org.apache.dubbo.metadata.MetadataInfo.ServiceInfo;
-import org.apache.dubbo.registry.NotifyListener;
-import org.apache.dubbo.registry.client.DefaultServiceInstance;
-import org.apache.dubbo.registry.client.ServiceDiscovery;
-import org.apache.dubbo.registry.client.ServiceInstance;
-import org.apache.dubbo.registry.client.event.RetryServiceInstancesChangedEvent;
-import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
-import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
-import org.apache.dubbo.registry.client.metadata.ServiceInstanceNotificationCustomizer;
-import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.ScopeModelUtil;
-
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_REFRESH_ADDRESS;
@@ -62,6 +64,8 @@ import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL
 import static org.apache.dubbo.common.constants.RegistryConstants.ENABLE_EMPTY_PROTECTION_KEY;
 import static org.apache.dubbo.metadata.RevisionResolver.EMPTY_REVISION;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getExportedServicesRevision;
+
+;
 
 /**
  * TODO, refactor to move revision-metadata mapping to ServiceDiscovery. Instances should have already been mapped with metadata when reached here.
@@ -87,6 +91,7 @@ public class ServiceInstancesChangedListener {
     private final ScheduledExecutorService scheduler;
     private volatile boolean hasEmptyMetadata;
     private final Set<ServiceInstanceNotificationCustomizer> serviceInstanceNotificationCustomizers;
+    private final ApplicationModel applicationModel;
 
 
     public ServiceInstancesChangedListener(Set<String> serviceNames, ServiceDiscovery serviceDiscovery) {
@@ -99,6 +104,7 @@ public class ServiceInstancesChangedListener {
         ApplicationModel applicationModel = ScopeModelUtil.getApplicationModel(serviceDiscovery == null || serviceDiscovery.getUrl() == null ? null : serviceDiscovery.getUrl().getScopeModel());
         this.scheduler = applicationModel.getBeanFactory().getBean(FrameworkExecutorRepository.class).getMetadataRetryExecutor();
         this.serviceInstanceNotificationCustomizers = applicationModel.getExtensionLoader(ServiceInstanceNotificationCustomizer.class).getSupportedExtensionInstances();
+        this.applicationModel = applicationModel;
     }
 
     /**
@@ -398,17 +404,26 @@ public class ServiceInstancesChangedListener {
      * race condition is protected by onEvent/doOnEvent
      */
     protected void notifyAddressChanged() {
-        // 1 different services
-        listeners.forEach((serviceKey, listenerSet) -> {
-            // 2 multiple subscription listener of the same service
-            for (NotifyListenerWithKey listenerWithKey : listenerSet) {
-                NotifyListener notifyListener = listenerWithKey.getNotifyListener();
 
-                List<URL> urls = toUrlsWithEmpty(getAddresses(listenerWithKey.getProtocolServiceKey(), notifyListener.getConsumerUrl()));
-                logger.info("Notify service " + listenerWithKey.getProtocolServiceKey() + " with urls " + urls.size());
-                notifyListener.notify(urls);
+        MetricsEventBus.post(RegistryEvent.toNotifyEvent(applicationModel),
+            () -> {
+                Map<String, Integer> lastNumMap = new HashMap<>();
+                // 1 different services
+                listeners.forEach((serviceKey, listenerSet) -> {
+                    // 2 multiple subscription listener of the same service
+                    for (NotifyListenerWithKey listenerWithKey : listenerSet) {
+                        NotifyListener notifyListener = listenerWithKey.getNotifyListener();
+
+                        List<URL> urls = toUrlsWithEmpty(getAddresses(listenerWithKey.getProtocolServiceKey(), notifyListener.getConsumerUrl()));
+                        logger.info("Notify service " + listenerWithKey.getProtocolServiceKey() + " with urls " + urls.size());
+                        notifyListener.notify(urls);
+                        lastNumMap.put(serviceKey, urls.size());
+                    }
+                });
+                return lastNumMap;
             }
-        });
+        );
+
     }
 
     protected List<URL> toUrlsWithEmpty(List<URL> urls) {

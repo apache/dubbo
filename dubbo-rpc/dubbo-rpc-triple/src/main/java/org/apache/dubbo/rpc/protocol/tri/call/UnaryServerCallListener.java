@@ -18,15 +18,19 @@
 package org.apache.dubbo.rpc.protocol.tri.call;
 
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.observer.ServerCallToObserverAdapter;
 
 public class UnaryServerCallListener extends AbstractServerCallListener {
 
+    private final boolean needWrapper;
+
     public UnaryServerCallListener(RpcInvocation invocation, Invoker<?> invoker,
-        ServerCallToObserverAdapter<Object> responseObserver) {
+                                   ServerCallToObserverAdapter<Object> responseObserver, boolean needWrapper) {
         super(invocation, invoker, responseObserver);
+        this.needWrapper = needWrapper;
     }
 
     @Override
@@ -49,6 +53,26 @@ public class UnaryServerCallListener extends AbstractServerCallListener {
         // ignored
     }
 
+    @Override
+    protected void doOnResponseHasException(Throwable t) {
+        if (needWrapper) {
+            onReturnException((Exception) t);
+        } else {
+            super.doOnResponseHasException(t);
+        }
+    }
+
+
+    private void onReturnException(Exception value) {
+        TriRpcStatus status = TriRpcStatus.getStatus(value);
+        int exceptionCode = status.code.code;
+        if (exceptionCode == TriRpcStatus.UNKNOWN.code.code) {
+            exceptionCode = RpcException.BIZ_EXCEPTION;
+        }
+        responseObserver.setExceptionCode(exceptionCode);
+        responseObserver.setNeedReturnException(true);
+        onReturn(value);
+    }
 
     @Override
     public void onComplete() {

@@ -22,8 +22,8 @@ import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.metrics.TestMetricsInvoker;
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
-import org.apache.dubbo.metrics.model.MetricsKey;
-import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
+import org.apache.dubbo.metrics.model.key.MetricsKey;
+import org.apache.dubbo.metrics.model.sample.CounterMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.Invoker;
@@ -32,7 +32,6 @@ import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,15 +40,13 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE;
 import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_PARAMETER_DESC;
-import static org.apache.dubbo.common.constants.MetricsConstants.TAG_GROUP_KEY;
-import static org.apache.dubbo.common.constants.MetricsConstants.TAG_INTERFACE_KEY;
-import static org.apache.dubbo.common.constants.MetricsConstants.TAG_METHOD_KEY;
-import static org.apache.dubbo.common.constants.MetricsConstants.TAG_VERSION_KEY;
+import static org.apache.dubbo.common.constants.MetricsConstants.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
@@ -67,6 +64,8 @@ class MetricsFilterTest {
     private static final String VERSION = "1.0.0";
     private String side;
 
+    private AtomicBoolean initApplication = new AtomicBoolean(false);
+
 
     @BeforeEach
     public void setup() {
@@ -81,11 +80,14 @@ class MetricsFilterTest {
         filter = new MetricsFilter();
 
         collector = applicationModel.getBeanFactory().getOrRegisterBean(DefaultMetricsCollector.class);
+        if(!initApplication.get()) {
+            collector.collectApplication(applicationModel);
+            initApplication.set(true);
+        }
         filter.setApplicationModel(applicationModel);
         side = CommonConstants.CONSUMER;
         invocation.setInvoker(new TestMetricsInvoker(side));
         RpcContext.getServiceContext().setUrl(URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&side=" + side));
-
     }
 
     @AfterEach
@@ -99,6 +101,7 @@ class MetricsFilterTest {
 
         filter.invoke(invoker, invocation);
         Map<String, MetricSample> metricsMap = getMetricsMap();
+        metricsMap.remove(MetricsKey.APPLICATION_METRIC_INFO.getName());
         Assertions.assertTrue(metricsMap.isEmpty());
     }
 
@@ -127,7 +130,6 @@ class MetricsFilterTest {
         Assertions.assertEquals(tags.get(TAG_GROUP_KEY), GROUP);
         Assertions.assertEquals(tags.get(TAG_VERSION_KEY), VERSION);
     }
-
 
     @Test
     void testBusinessFailedRequests() {
@@ -180,10 +182,10 @@ class MetricsFilterTest {
         Assertions.assertTrue(metricsMap.containsKey(MetricsKey.METRIC_REQUESTS_TOTAL_FAILED.getNameByType(side)));
 
         MetricSample timeoutSample = metricsMap.get(MetricsKey.METRIC_REQUESTS_TIMEOUT.getNameByType(side));
-        Assertions.assertSame(((GaugeMetricSample) timeoutSample).getSupplier().get().longValue(), count);
+        Assertions.assertSame(((CounterMetricSample) timeoutSample).getValue().longValue(), count);
 
-        GaugeMetricSample failedSample = (GaugeMetricSample) metricsMap.get(MetricsKey.METRIC_REQUESTS_TOTAL_FAILED.getNameByType(side));
-        Assertions.assertSame(failedSample.getSupplier().get().longValue(), count);
+        CounterMetricSample failedSample = (CounterMetricSample) metricsMap.get(MetricsKey.METRIC_REQUESTS_TOTAL_FAILED.getNameByType(side));
+        Assertions.assertSame(failedSample.getValue().longValue(), count);
     }
 
     @Test
@@ -208,7 +210,7 @@ class MetricsFilterTest {
 
         MetricSample sample = metricsMap.get(MetricsKey.METRIC_REQUESTS_LIMIT.getNameByType(side));
 
-        Assertions.assertSame(((GaugeMetricSample) sample).getSupplier().get().longValue(), count);
+        Assertions.assertSame(((CounterMetricSample) sample).getValue().longValue(), count);
     }
 
     @Test
@@ -255,6 +257,49 @@ class MetricsFilterTest {
         Assertions.assertEquals(tags.get(TAG_METHOD_KEY), METHOD_NAME);
         Assertions.assertNull(tags.get(TAG_GROUP_KEY));
         Assertions.assertEquals(tags.get(TAG_VERSION_KEY), VERSION);
+    }
+
+    @Test
+    public void testErrors(){
+        testFilterError(RpcException.SERIALIZATION_EXCEPTION, MetricsKey.METRIC_REQUESTS_CODEC_FAILED.formatName(side));
+        testFilterError(RpcException.NETWORK_EXCEPTION, MetricsKey.METRIC_REQUESTS_NETWORK_FAILED.formatName(side));
+    }
+
+
+
+    private void testFilterError(int errorCode,MetricsKey metricsKey){
+        setup();
+        collector.setCollectEnabled(true);
+        given(invoker.invoke(invocation)).willThrow(new RpcException(errorCode));
+        initParam();
+
+        Long count = 1L;
+
+        for (int i = 0; i < count; i++) {
+            try {
+                filter.invoke(invoker, invocation);
+            } catch (Exception e) {
+                Assertions.assertTrue(e instanceof RpcException);
+                filter.onError(e, invoker, invocation);
+            }
+        }
+        Map<String, MetricSample> metricsMap = getMetricsMap();
+        Assertions.assertTrue(metricsMap.containsKey(metricsKey.getName()));
+
+        MetricSample sample = metricsMap.get(metricsKey.getName());
+
+        Assertions.assertSame(((CounterMetricSample) sample).getValue().longValue(), count);
+
+
+        Assertions.assertTrue(metricsMap.containsKey(metricsKey.getName()));
+        Map<String, String> tags = sample.getTags();
+
+        Assertions.assertEquals(tags.get(TAG_INTERFACE_KEY), INTERFACE_NAME);
+        Assertions.assertEquals(tags.get(TAG_METHOD_KEY), METHOD_NAME);
+        Assertions.assertEquals(tags.get(TAG_GROUP_KEY), GROUP);
+        Assertions.assertEquals(tags.get(TAG_VERSION_KEY), VERSION);
+
+        teardown();
     }
 
     @Test

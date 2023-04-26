@@ -126,11 +126,16 @@ final class HeaderExchangeChannel implements ExchangeChannel {
         if (closed) {
             throw new RemotingException(this.getLocalAddress(), null, "Failed to send request " + request + ", cause: The channel " + this + " is closed!");
         }
-        // create request.
-        Request req = new Request();
-        req.setVersion(Version.getProtocolVersion());
-        req.setTwoWay(true);
-        req.setData(request);
+        Request req;
+        if (request instanceof Request) {
+            req = (Request) request;
+        } else {
+            // create request.
+            req = new Request();
+            req.setVersion(Version.getProtocolVersion());
+            req.setTwoWay(true);
+            req.setData(request);
+        }
         DefaultFuture future = DefaultFuture.newFuture(channel, req, timeout, executor);
         try {
             channel.send(req);
@@ -155,8 +160,13 @@ final class HeaderExchangeChannel implements ExchangeChannel {
         try {
             // graceful close
             DefaultFuture.closeChannel(channel);
+        } catch (Exception e) {
+            logger.warn(TRANSPORT_FAILED_CLOSE, "", "", e.getMessage(), e);
+        }
+
+        try {
             channel.close();
-        } catch (Throwable e) {
+        } catch (Exception e) {
             logger.warn(TRANSPORT_FAILED_CLOSE, "", "", e.getMessage(), e);
         }
     }
@@ -240,7 +250,7 @@ final class HeaderExchangeChannel implements ExchangeChannel {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((channel == null) ? 0 : channel.hashCode());
+        result = prime * result + channel.hashCode();
         return result;
     }
 
@@ -256,14 +266,7 @@ final class HeaderExchangeChannel implements ExchangeChannel {
             return false;
         }
         HeaderExchangeChannel other = (HeaderExchangeChannel) obj;
-        if (channel == null) {
-            if (other.channel != null) {
-                return false;
-            }
-        } else if (!channel.equals(other.channel)) {
-            return false;
-        }
-        return true;
+        return channel.equals(other.channel);
     }
 
     @Override

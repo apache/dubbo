@@ -19,22 +19,41 @@ package org.apache.dubbo.metadata.rest;
 
 import java.util.Objects;
 
+/**
+ * for http request  path match
+ */
 public class PathMatcher {
     private static final String SEPARATOR = "/";
     private String path;
-    private String version;
-    private String group;
-    private Integer port;
+    private String version;// service version
+    private String group;// service group
+    private Integer port;// service port
     private String[] pathSplits;
     private boolean hasPathVariable;
+    private String contextPath;
+    private String httpMethod;
+    // for provider http method compare
+    private boolean needCompareMethod = true;
 
 
     public PathMatcher(String path) {
-        this(path, null, null, 0);
+        this(path, null, null, null);
     }
 
     public PathMatcher(String path, String version, String group, Integer port) {
         this.path = path;
+        dealPathVariable(path);
+        this.version = version;
+        this.group = group;
+        this.port = (port == null || port == -1 || port == 0) ? null : port;
+    }
+
+    public PathMatcher(String path, String version, String group, Integer port, String httpMethod) {
+        this(path, version, group, port);
+        setHttpMethod(httpMethod);
+    }
+
+    private void dealPathVariable(String path) {
         this.pathSplits = path.split(SEPARATOR);
 
         for (String pathSplit : pathSplits) {
@@ -44,12 +63,9 @@ public class PathMatcher {
                 break;
             }
         }
-        this.version = version;
-        this.group = group;
-        this.port = port;
     }
 
-    public void setPath(String path) {
+    private void setPath(String path) {
         this.path = path;
     }
 
@@ -65,13 +81,54 @@ public class PathMatcher {
         this.port = port;
     }
 
+    public void setContextPath(String contextPath) {
+
+
+        contextPath = contextPathFormat(contextPath);
+
+
+        this.contextPath = contextPath;
+
+        setPath(contextPath + path);
+
+        dealPathVariable(path);
+
+    }
+
+    public static PathMatcher getInvokeCreatePathMatcher(String path, String version, String group, Integer port, String method) {
+        return new PathMatcher(path, version, group, port, method).noNeedHttpMethodCompare();
+    }
+
+    public boolean hasPathVariable() {
+        return hasPathVariable;
+    }
+
+    public Integer getPort() {
+        return port;
+    }
+
+    public String getHttpMethod() {
+        return httpMethod;
+    }
+
+    public PathMatcher setHttpMethod(String httpMethod) {
+        this.httpMethod = httpMethod;
+        return this;
+    }
+
+    private PathMatcher noNeedHttpMethodCompare() {
+        this.needCompareMethod = false;
+        return this;
+    }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         PathMatcher that = (PathMatcher) o;
-        return pathEqual(that.path) && Objects.equals(version, that.version)
+        return pathEqual(that)
+            && Objects.equals(version, that.version)
+            && (this.needCompareMethod ? Objects.equals(httpMethod, that.httpMethod) : true)
             && Objects.equals(group, that.group) && Objects.equals(port, that.port);
     }
 
@@ -80,26 +137,28 @@ public class PathMatcher {
         return Objects.hash(version, group, port);
     }
 
-    private boolean pathEqual(String path) {
+    private boolean pathEqual(PathMatcher pathMatcher) {
+
 
         // no place hold
-        if (!hasPathVariable) {
-            return this.path.equals(path);
+        if (!pathMatcher.hasPathVariable) {
+            return this.path.equals(pathMatcher.path);
         }
 
-        String[] split = path.split(SEPARATOR);
+        String[] pathSplits = pathMatcher.pathSplits;
+        String[] thisPathSplits = this.pathSplits;
 
 
-        if (split.length != pathSplits.length) {
+        if (thisPathSplits.length != pathSplits.length) {
             return false;
         }
 
         for (int i = 0; i < pathSplits.length; i++) {
-            boolean equals = split[i].equals(pathSplits[i]);
+            boolean equals = thisPathSplits[i].equals(pathSplits[i]);
             if (equals) {
                 continue;
             } else {
-                if (placeHoldCompare(pathSplits[i])) {
+                if (placeHoldCompare(pathSplits[i], thisPathSplits[i])) {
                     continue;
                 } else {
                     return false;
@@ -111,8 +170,8 @@ public class PathMatcher {
 
     }
 
-    private boolean placeHoldCompare(String pathSplit) {
-        boolean startAndEndEqual = isPlaceHold(pathSplit);
+    private boolean placeHoldCompare(String pathSplit, String pathToCompare) {
+        boolean startAndEndEqual = isPlaceHold(pathSplit) || isPlaceHold(pathToCompare);
 
         // start {  end }
         if (!startAndEndEqual) {
@@ -120,7 +179,7 @@ public class PathMatcher {
         }
 
         // exclude  {}
-        boolean lengthCondition = pathSplit.length() >= 3;
+        boolean lengthCondition = pathSplit.length() >= 3 || pathToCompare.length() >= 3;
 
         if (!lengthCondition) {
             return false;
@@ -134,13 +193,36 @@ public class PathMatcher {
     }
 
 
+    private String contextPathFormat(String contextPath) {
+
+
+        if (contextPath == null || contextPath.equals(SEPARATOR) || contextPath.length() == 0) {
+            return "";
+        }
+
+
+        return pathFormat(contextPath);
+    }
+
+    private String pathFormat(String path) {
+        if (path.startsWith(SEPARATOR)) {
+            return path;
+        } else {
+            return SEPARATOR + path;
+        }
+    }
+
+
     @Override
     public String toString() {
-        return "PathMather{" +
+        return "PathMatcher{" +
             "path='" + path + '\'' +
             ", version='" + version + '\'' +
             ", group='" + group + '\'' +
-            ", port='" + port + '\'' +
+            ", port=" + port +
+            ", hasPathVariable=" + hasPathVariable +
+            ", contextPath='" + contextPath + '\'' +
+            ", httpMethod='" + httpMethod + '\'' +
             '}';
     }
 }

@@ -70,7 +70,7 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
 
     private volatile boolean enableConnectivityValidation = true;
 
-    private AtomicBoolean destroyed = new AtomicBoolean(false);
+    private final AtomicBoolean destroyed = new AtomicBoolean(false);
 
     private volatile Invoker<T> stickyInvoker = null;
 
@@ -332,6 +332,8 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
         InvocationProfilerUtils.enterDetailProfiler(invocation, () -> "Router route.");
         List<Invoker<T>> invokers = list(invocation);
         InvocationProfilerUtils.releaseDetailProfiler(invocation);
+
+        checkInvokers(invokers, invocation);
 
         LoadBalance loadbalance = initLoadBalance(invokers, invocation);
         RpcUtils.attachInvocationIdIfAsync(getUrl(), invocation);

@@ -46,6 +46,8 @@ public enum TripleHeaderEnum {
 
     TRI_HEADER_CONVERT("tri-header-convert"),
 
+    TRI_EXCEPTION_CODE("tri-exception-code"),
+
     ;
 
     static final Map<String, TripleHeaderEnum> enumMap = new HashMap<>();

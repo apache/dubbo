@@ -26,20 +26,10 @@ import java.util.List;
 import java.util.function.Consumer;
 
 /**
- *  A simple event publisher that defines lifecycle events and supports rt events
+ * A simple event publisher that defines lifecycle events and supports rt events
  */
 public class SimpleMetricsEventMulticaster implements MetricsEventMulticaster {
     private final List<MetricsListener<?>> listeners = Collections.synchronizedList(new ArrayList<>());
-
-    private boolean available = false;
-
-    public void setAvailable() {
-        this.available = true;
-    }
-
-    public boolean isAvailable() {
-        return available;
-    }
 
     @Override
     public void addListener(MetricsListener<?> listener) {
@@ -52,6 +42,7 @@ public class SimpleMetricsEventMulticaster implements MetricsEventMulticaster {
         if (event instanceof EmptyEvent) {
             return;
         }
+        if (validateIfApplicationConfigExist(event)) return;
         for (MetricsListener listener : listeners) {
             if (listener.isSupport(event)) {
                 listener.onEvent(event);
@@ -59,25 +50,34 @@ public class SimpleMetricsEventMulticaster implements MetricsEventMulticaster {
         }
     }
 
+    private boolean validateIfApplicationConfigExist(MetricsEvent event) {
+        if (event.getSource() != null) {
+            // Check if exist application config
+            return event.getSource().NotExistApplicationConfig();
+        }
+        return false;
+    }
+
     @Override
     @SuppressWarnings({"unchecked"})
-    public void publishFinishEvent(MetricsEvent event) {
+    public void publishFinishEvent(TimeCounterEvent event) {
         publishTimeEvent(event, metricsLifeListener -> metricsLifeListener.onEventFinish(event));
     }
 
     @Override
     @SuppressWarnings({"unchecked"})
-    public void publishErrorEvent(MetricsEvent event) {
+    public void publishErrorEvent(TimeCounterEvent event) {
         publishTimeEvent(event, metricsLifeListener -> metricsLifeListener.onEventError(event));
     }
 
-    @SuppressWarnings({"rawtypes", "unchecked"})
+    @SuppressWarnings({"rawtypes"})
     private void publishTimeEvent(MetricsEvent event, Consumer<MetricsLifeListener> consumer) {
+        if (validateIfApplicationConfigExist(event)) return;
         if (event instanceof EmptyEvent) {
             return;
         }
-        if (event instanceof TimeCounter) {
-            ((TimeCounter) event).getTimePair().end();
+        if (event instanceof TimeCounterEvent) {
+            ((TimeCounterEvent) event).getTimePair().end();
         }
         for (MetricsListener listener : listeners) {
             if (listener instanceof MetricsLifeListener && listener.isSupport(event)) {

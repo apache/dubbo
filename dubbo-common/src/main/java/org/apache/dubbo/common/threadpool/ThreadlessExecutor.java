@@ -21,11 +21,12 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Queue;
 import java.util.concurrent.AbstractExecutorService;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.LockSupport;
 
 /**
  * The most important difference between this Executor and other normal Executor is that this one doesn't manage
@@ -38,78 +39,42 @@ import java.util.concurrent.TimeUnit;
 public class ThreadlessExecutor extends AbstractExecutorService {
     private static final Logger logger = LoggerFactory.getLogger(ThreadlessExecutor.class.getName());
 
-    private final BlockingQueue<Runnable> queue = new LinkedBlockingQueue<>();
+    private static final Object SHUTDOWN = new Object();
 
-    private CompletableFuture<?> waitingFuture;
+    private final Queue<Runnable> queue = new ConcurrentLinkedQueue<>();
 
-    private boolean finished = false;
-
-    private volatile boolean waiting = true;
-
-    private final Object lock = new Object();
-
-    public CompletableFuture<?> getWaitingFuture() {
-        return waitingFuture;
-    }
-
-    public void setWaitingFuture(CompletableFuture<?> waitingFuture) {
-        this.waitingFuture = waitingFuture;
-    }
-
-    private boolean isFinished() {
-        return finished;
-    }
-
-    private void setFinished(boolean finished) {
-        this.finished = finished;
-    }
-
-    public boolean isWaiting() {
-        return waiting;
-    }
-
-    private void setWaiting(boolean waiting) {
-        this.waiting = waiting;
-    }
+    /**
+     * Wait thread. It must be visible to other threads and does not need to be thread-safe
+     */
+    private volatile Object waiter;
 
     /**
      * Waits until there is a task, executes the task and all queued tasks (if there're any). The task is either a normal
      * response or a timeout response.
      */
     public void waitAndDrain() throws InterruptedException {
-        /**
-         * Usually, {@link #waitAndDrain()} will only get called once. It blocks for the response for the first time,
-         * once the response (the task) reached and being executed waitAndDrain will return, the whole request process
-         * then finishes. Subsequent calls on {@link #waitAndDrain()} (if there're any) should return immediately.
-         *
-         * There's no need to worry that {@link #finished} is not thread-safe. Checking and updating of
-         * 'finished' only appear in waitAndDrain, since waitAndDrain is binding to one RPC call (one thread), the call
-         * of it is totally sequential.
-         */
-        if (isFinished()) {
-            return;
+        throwIfInterrupted();
+        Runnable runnable = queue.poll();
+        if (runnable == null) {
+            waiter = Thread.currentThread();
+            try {
+                while ((runnable = queue.poll()) == null) {
+                    LockSupport.park(this);
+                    throwIfInterrupted();
+                }
+            } finally {
+                waiter = null;
+            }
         }
-
-        Runnable runnable;
-        try {
-            runnable = queue.take();
-        } catch (InterruptedException e) {
-            setWaiting(false);
-            throw e;
-        }
-
-        synchronized (lock) {
-            setWaiting(false);
+        do {
             runnable.run();
-        }
+        } while ((runnable = queue.poll()) != null);
+    }
 
-        runnable = queue.poll();
-        while (runnable != null) {
-            runnable.run();
-            runnable = queue.poll();
+    private static void throwIfInterrupted() throws InterruptedException {
+        if (Thread.interrupted()) {
+            throw new InterruptedException();
         }
-        // mark the status of ThreadlessExecutor as finished.
-        setFinished(true);
     }
 
     /**
@@ -120,24 +85,13 @@ public class ThreadlessExecutor extends AbstractExecutorService {
      */
     @Override
     public void execute(Runnable runnable) {
-        runnable = new RunnableWrapper(runnable);
-        synchronized (lock) {
-            if (!isWaiting()) {
-                runnable.run();
-                return;
-            }
-            queue.add(runnable);
+        RunnableWrapper run = new RunnableWrapper(runnable);
+        queue.add(run);
+        if (waiter != SHUTDOWN) {
+            LockSupport.unpark((Thread) waiter);
+        } else if (queue.remove(run)) {
+            throw new RejectedExecutionException();
         }
-    }
-
-    /**
-     * tells the thread blocking on {@link #waitAndDrain()} to return, despite of the current status, to avoid endless waiting.
-     */
-    public void notifyReturn(Throwable t) {
-        // an empty runnable task.
-        execute(() -> {
-            waitingFuture.completeExceptionally(t);
-        });
     }
 
     /**
@@ -151,28 +105,31 @@ public class ThreadlessExecutor extends AbstractExecutorService {
 
     @Override
     public List<Runnable> shutdownNow() {
-        notifyReturn(new IllegalStateException("Consumer is shutting down and this call is going to be stopped without " +
-                "receiving any result, usually this is called by a slow provider instance or bad service implementation."));
+        waiter = SHUTDOWN;
+        Runnable runnable;
+        while ((runnable = queue.poll()) != null) {
+            runnable.run();
+        }
         return Collections.emptyList();
     }
 
     @Override
     public boolean isShutdown() {
-        return false;
+        return waiter == SHUTDOWN;
     }
 
     @Override
     public boolean isTerminated() {
-        return false;
+        return isShutdown();
     }
 
     @Override
-    public boolean awaitTermination(long timeout, TimeUnit unit) throws InterruptedException {
+    public boolean awaitTermination(long timeout, TimeUnit unit) {
         return false;
     }
 
     private static class RunnableWrapper implements Runnable {
-        private Runnable runnable;
+        private final Runnable runnable;
 
         public RunnableWrapper(Runnable runnable) {
             this.runnable = runnable;

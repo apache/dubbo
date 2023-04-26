@@ -26,6 +26,7 @@ import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
 
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.zookeeper.data.Stat;
 
 import java.util.Collection;
@@ -40,18 +41,20 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ZOO
 
 public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration {
 
-    private Executor executor;
+    private final Executor executor;
     private ZookeeperClient zkClient;
 
-    private CacheListener cacheListener;
+    private final CacheListener cacheListener;
     private static final int DEFAULT_ZK_EXECUTOR_THREADS_NUM = 1;
     private static final int DEFAULT_QUEUE = 10000;
     private static final Long THREAD_KEEP_ALIVE_TIME = 0L;
+    private final ApplicationModel applicationModel;
 
-    ZookeeperDynamicConfiguration(URL url, ZookeeperTransporter zookeeperTransporter) {
+    ZookeeperDynamicConfiguration(URL url, ZookeeperTransporter zookeeperTransporter, ApplicationModel applicationModel) {
         super(url);
 
         this.cacheListener = new CacheListener();
+        this.applicationModel = applicationModel;
 
         final String threadName = this.getClass().getSimpleName();
         this.executor = new ThreadPoolExecutor(DEFAULT_ZK_EXECUTOR_THREADS_NUM, DEFAULT_ZK_EXECUTOR_THREADS_NUM,
@@ -150,7 +153,7 @@ public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration 
         if (cachedListener != null) {
             cachedListener.addListener(listener);
         } else {
-            ZookeeperDataListener addedListener = cacheListener.addListener(pathKey, listener, key, group);
+            ZookeeperDataListener addedListener = cacheListener.addListener(pathKey, listener, key, group, applicationModel);
             zkClient.addDataListener(pathKey, addedListener, executor);
         }
     }

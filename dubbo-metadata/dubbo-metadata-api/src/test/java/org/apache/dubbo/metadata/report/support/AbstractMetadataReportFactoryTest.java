@@ -46,7 +46,7 @@ class AbstractMetadataReportFactoryTest {
 
                 @Override
                 public void storeProviderMetadata(MetadataIdentifier providerMetadataIdentifier, ServiceDefinition serviceDefinition) {
-                    store.put(providerMetadataIdentifier.getIdentifierKey(), JsonUtils.getJson().toJson(serviceDefinition));
+                    store.put(providerMetadataIdentifier.getIdentifierKey(), JsonUtils.toJson(serviceDefinition));
                 }
 
                 @Override
@@ -101,7 +101,7 @@ class AbstractMetadataReportFactoryTest {
 
                 @Override
                 public void storeConsumerMetadata(MetadataIdentifier consumerMetadataIdentifier, Map serviceParameterMap) {
-                    store.put(consumerMetadataIdentifier.getIdentifierKey(), JsonUtils.getJson().toJson(serviceParameterMap));
+                    store.put(consumerMetadataIdentifier.getIdentifierKey(), JsonUtils.toJson(serviceParameterMap));
                 }
 
                 Map<String, String> store = new ConcurrentHashMap<>();

@@ -16,19 +16,6 @@
  */
 package org.apache.dubbo.registry.integration;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
-
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
@@ -43,6 +30,8 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
+import org.apache.dubbo.metrics.event.MetricsEventBus;
+import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.registry.AddressListener;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.Invoker;
@@ -53,7 +42,21 @@ import org.apache.dubbo.rpc.cluster.Router;
 import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
 import org.apache.dubbo.rpc.cluster.support.ClusterUtils;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DISABLED_KEY;
@@ -110,11 +113,18 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
         super(serviceType, url);
         moduleModel = getModuleModel(url.getScopeModel());
         consumerConfigurationListener = getConsumerConfigurationListener(moduleModel);
+
     }
 
     @Override
     public void subscribe(URL url) {
-        super.subscribe(url);
+        ApplicationModel applicationModel = url.getApplicationModel();
+        MetricsEventBus.post(RegistryEvent.toSubscribeEvent(applicationModel),() ->
+            {
+                super.subscribe(url);
+                return null;
+            }
+        );
         if (moduleModel.getModelEnvironment().getConfiguration().convert(Boolean.class, org.apache.dubbo.registry.Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
             consumerConfigurationListener.addNotifyListener(this);
             referenceConfigurationListener = new ReferenceConfigurationListener(moduleModel, this, url);
@@ -197,8 +207,10 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
     }
 
     // RefreshOverrideAndInvoker will be executed by registryCenter and configCenter, so it should be synchronized.
-    private synchronized void refreshOverrideAndInvoker(List<URL> urls) {
+    @Override
+    protected synchronized void refreshOverrideAndInvoker(List<URL> urls) {
         // mock zookeeper://xxx?mock=return null
+        this.directoryUrl = overrideWithConfigurator(getOriginalConsumerUrl());
         refreshInvoker(urls);
     }
 
@@ -233,7 +245,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
             // use local reference to avoid NPE as this.cachedInvokerUrls will be set null by destroyAllInvokers().
             Set<URL> localCachedInvokerUrls = this.cachedInvokerUrls;
             if (invokerUrls.isEmpty()) {
-                if(CollectionUtils.isNotEmpty(localCachedInvokerUrls)){
+                if (CollectionUtils.isNotEmpty(localCachedInvokerUrls)) {
                     // 1-4 Empty address.
                     logger.warn(REGISTRY_EMPTY_ADDRESS, "configuration ", "",
                         "Service" + serviceKey + " received empty address list with no EMPTY protocol set, trigger empty protection.");
@@ -499,7 +511,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
         return providerUrl;
     }
 
-    private URL overrideWithConfigurator(URL providerUrl) {
+    protected URL overrideWithConfigurator(URL providerUrl) {
         // override url with configurator from "override://" URL for dubbo 2.6 and before
         providerUrl = overrideWithConfigurators(this.configurators, providerUrl);
 

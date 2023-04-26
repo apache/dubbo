@@ -57,7 +57,6 @@ public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
     @SuppressWarnings({"unchecked", "rawtypes"})
     public Result doInvoke(Invocation invocation, final List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
         List<Invoker<T>> copyInvokers = invokers;
-        checkInvokers(copyInvokers, invocation);
         String methodName = RpcUtils.getMethodName(invocation);
         int len = calculateInvokeTimes(methodName);
         // retry loop.

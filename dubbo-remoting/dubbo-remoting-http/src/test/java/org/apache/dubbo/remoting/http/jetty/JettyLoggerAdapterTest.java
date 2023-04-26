@@ -49,7 +49,7 @@ class JettyLoggerAdapterTest {
         int port = NetUtils.getAvailablePort();
         URL url = new ServiceConfigURL("http", "localhost", port,
             new String[]{Constants.BIND_PORT_KEY, String.valueOf(port)});
-        HttpServer httpServer = new JettyHttpServer(url, new HttpHandler() {
+        HttpServer httpServer = new JettyHttpServer(url, new HttpHandler<HttpServletRequest,HttpServletResponse>() {
             @Override
             public void handle(HttpServletRequest request, HttpServletResponse response) throws IOException {
                 response.getWriter().write("Jetty is using Dubbo's logger");
@@ -67,7 +67,7 @@ class JettyLoggerAdapterTest {
     void testSuccessLogger() throws Exception{
         Logger successLogger = mock(Logger.class);
         Class<?> clazz = Class.forName("org.apache.dubbo.remoting.http.jetty.JettyLoggerAdapter");
-        JettyLoggerAdapter jettyLoggerAdapter = (JettyLoggerAdapter) clazz.newInstance();
+        JettyLoggerAdapter jettyLoggerAdapter = (JettyLoggerAdapter) clazz.getDeclaredConstructor().newInstance();
 
         Field loggerField = clazz.getDeclaredField("logger");
         loggerField.setAccessible(true);
@@ -116,7 +116,7 @@ class JettyLoggerAdapterTest {
     @Test
     void testLoggerFormat() throws Exception{
         Class<?> clazz = Class.forName("org.apache.dubbo.remoting.http.jetty.JettyLoggerAdapter");
-        Object newInstance = clazz.newInstance();
+        Object newInstance = clazz.getDeclaredConstructor().newInstance();
 
         Method method = clazz.getDeclaredMethod("format", String.class, Object[].class);
         method.setAccessible(true);

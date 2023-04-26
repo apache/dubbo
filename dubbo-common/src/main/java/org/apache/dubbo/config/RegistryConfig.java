@@ -553,4 +553,10 @@ public class RegistryConfig extends AbstractConfig {
         // empty protocol will default to 'dubbo'
         return !StringUtils.isEmpty(address) || !StringUtils.isEmpty(protocol);
     }
+
+    @Override
+    @Parameter(excluded = true)
+    public Boolean isDefault() {
+        return isDefault;
+    }
 }

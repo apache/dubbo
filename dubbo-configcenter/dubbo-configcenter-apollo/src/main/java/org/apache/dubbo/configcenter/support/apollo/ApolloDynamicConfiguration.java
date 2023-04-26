@@ -16,15 +16,6 @@
  */
 package org.apache.dubbo.configcenter.support.apollo;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
-import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
-import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
-import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
-import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.StringUtils;
-
 import com.ctrip.framework.apollo.Config;
 import com.ctrip.framework.apollo.ConfigChangeListener;
 import com.ctrip.framework.apollo.ConfigFile;
@@ -33,6 +24,17 @@ import com.ctrip.framework.apollo.core.enums.ConfigFileFormat;
 import com.ctrip.framework.apollo.enums.ConfigSourceType;
 import com.ctrip.framework.apollo.enums.PropertyChangeType;
 import com.ctrip.framework.apollo.model.ConfigChange;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
+import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
+import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
+import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.metrics.config.event.ConfigCenterEvent;
+import org.apache.dubbo.metrics.event.MetricsEventBus;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -50,6 +52,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.CONFIG_NAMESPACE
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_CLOSE_CONNECT_APOLLO;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_CONNECT_REGISTRY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_NOT_EFFECT_EMPTY_RULE_APOLLO;
+import static org.apache.dubbo.metrics.MetricsConstants.SELF_INCREMENT_SIZE;
 
 /**
  * Apollo implementation, https://github.com/ctripcorp/apollo
@@ -76,9 +79,11 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
     private final Config dubboConfig;
     private final ConfigFile dubboConfigFile;
     private final ConcurrentMap<String, ApolloListener> listeners = new ConcurrentHashMap<>();
+    private final ApplicationModel applicationModel;
 
-    ApolloDynamicConfiguration(URL url) {
+    ApolloDynamicConfiguration(URL url, ApplicationModel applicationModel) {
         this.url = url;
+        this.applicationModel = applicationModel;
         // Instead of using Dubbo's configuration, I would suggest use the original configuration method Apollo provides.
         String configEnv = url.getParameter(APOLLO_ENV_KEY);
         String configAddr = getAddressWithProtocolPrefix(url);
@@ -245,6 +250,9 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
 
                 ConfigChangedEvent event = new ConfigChangedEvent(key, change.getNamespace(), change.getNewValue(), getChangeType(change));
                 listeners.forEach(listener -> listener.process(event));
+
+                MetricsEventBus.publish(ConfigCenterEvent.toChangeEvent(applicationModel, event.getKey(), event.getGroup(),
+                    ConfigCenterEvent.APOLLO_PROTOCOL, ConfigChangeType.ADDED.name(), SELF_INCREMENT_SIZE));
             }
         }
 

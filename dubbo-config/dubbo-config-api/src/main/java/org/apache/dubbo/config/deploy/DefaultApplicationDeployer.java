@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.config.ReferenceCache;
+import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.config.configcenter.DynamicConfigurationFactory;
 import org.apache.dubbo.common.config.configcenter.wrapper.CompositeDynamicConfiguration;
@@ -51,6 +52,9 @@ import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.metadata.report.MetadataReportFactory;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
+import org.apache.dubbo.metrics.config.event.ConfigCenterEvent;
+import org.apache.dubbo.metrics.event.MetricsEventBus;
+import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.metrics.report.MetricsReporter;
 import org.apache.dubbo.metrics.report.MetricsReporterFactory;
 import org.apache.dubbo.metrics.service.MetricsServiceExporter;
@@ -198,6 +202,8 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             if (initialized) {
                 return;
             }
+            onInitialize();
+
             // register shutdown hook
             registerShutdownHook();
 
@@ -360,18 +366,33 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     private void initMetricsReporter() {
         DefaultMetricsCollector collector =
             applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class);
-        MetricsConfig metricsConfig = configManager.getMetrics().orElse(null);
+        Optional<MetricsConfig> configOptional = configManager.getMetrics();
+
         // TODO compatible with old usage of metrics, remove protocol check after new metrics is ready for use.
-        if (metricsConfig != null && PROTOCOL_PROMETHEUS.equals(metricsConfig.getProtocol())) {
-            collector.setCollectEnabled(true);
-            collector.collectApplication(applicationModel);
-            String protocol = metricsConfig.getProtocol();
-            if (StringUtils.isNotEmpty(protocol)) {
-                MetricsReporterFactory metricsReporterFactory = getExtensionLoader(MetricsReporterFactory.class).getAdaptiveExtension();
-                MetricsReporter metricsReporter = metricsReporterFactory.createMetricsReporter(metricsConfig.toUrl());
-                metricsReporter.init();
-            }
+        boolean importMetricsPrometheus;  // Use package references instead of config checks
+        try {
+            Class.forName("io.micrometer.prometheus.PrometheusConfig");
+            importMetricsPrometheus = true;
+        } catch (ClassNotFoundException e) {
+            importMetricsPrometheus = false;
         }
+
+        if (!importMetricsPrometheus) {
+            //use old metrics
+            return;
+        }
+
+        MetricsConfig metricsConfig = configOptional.orElse(new MetricsConfig(applicationModel));
+        if (StringUtils.isBlank(metricsConfig.getProtocol())) {
+            metricsConfig.setProtocol(PROTOCOL_PROMETHEUS);
+        }
+        collector.setCollectEnabled(true);
+        collector.collectApplication(applicationModel);
+        collector.setThreadpoolCollectEnabled(Optional.ofNullable(metricsConfig.getEnableThreadpool()).orElse(true));
+        MetricsReporterFactory metricsReporterFactory = getExtensionLoader(MetricsReporterFactory.class).getAdaptiveExtension();
+        MetricsReporter metricsReporter = metricsReporterFactory.createMetricsReporter(metricsConfig.toUrl());
+        metricsReporter.init();
+        applicationModel.getBeanFactory().registerBean(metricsReporter);
     }
 
 
@@ -778,20 +799,31 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                     throw new IllegalStateException(e);
                 }
             }
+            ApplicationModel applicationModel = getApplicationModel();
 
             if (StringUtils.isNotEmpty(configCenter.getConfigFile())) {
                 String configContent = dynamicConfiguration.getProperties(configCenter.getConfigFile(), configCenter.getGroup());
                 String appGroup = getApplication().getName();
                 String appConfigContent = null;
+                String appConfigFile = null;
                 if (isNotEmpty(appGroup)) {
-                    appConfigContent = dynamicConfiguration.getProperties
-                        (isNotEmpty(configCenter.getAppConfigFile()) ? configCenter.getAppConfigFile() : configCenter.getConfigFile(),
-                            appGroup
-                        );
+                    appConfigFile = isNotEmpty(configCenter.getAppConfigFile()) ? configCenter.getAppConfigFile() : configCenter.getConfigFile();
+                    appConfigContent = dynamicConfiguration.getProperties(appConfigFile, appGroup);
                 }
                 try {
-                    environment.updateExternalConfigMap(parseProperties(configContent));
-                    environment.updateAppExternalConfigMap(parseProperties(appConfigContent));
+                    Map<String, String> configMap = parseProperties(configContent);
+                    Map<String, String> appConfigMap = parseProperties(appConfigContent);
+
+                    environment.updateExternalConfigMap(configMap);
+                    environment.updateAppExternalConfigMap(appConfigMap);
+
+                    // Add metrics
+                    MetricsEventBus.publish(ConfigCenterEvent.toChangeEvent(applicationModel, configCenter.getConfigFile(), configCenter.getGroup(),
+                        configCenter.getProtocol(), ConfigChangeType.ADDED.name(), configMap.size()));
+                    if (isNotEmpty(appGroup)) {
+                        MetricsEventBus.publish(ConfigCenterEvent.toChangeEvent(applicationModel, appConfigFile, appGroup,
+                            configCenter.getProtocol(), ConfigChangeType.ADDED.name(), appConfigMap.size()));
+                    }
                 } catch (IOException e) {
                     throw new IllegalStateException("Failed to parse configurations from Config Center.", e);
                 }
@@ -827,10 +859,16 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     private void registerServiceInstance() {
         try {
             registered = true;
-            ServiceInstanceMetadataUtils.registerMetadataAndInstance(applicationModel);
+            MetricsEventBus.post(RegistryEvent.toRegisterEvent(applicationModel),
+                () -> {
+                    ServiceInstanceMetadataUtils.registerMetadataAndInstance(applicationModel);
+                    return null;
+                }
+            );
         } catch (Exception e) {
             logger.error(CONFIG_REGISTER_INSTANCE_ERROR, "configuration server disconnected", "", "Register instance error.", e);
         }
+
         if (registered) {
             // scheduled task for updating Metadata and ServiceInstance
             asyncMetadataFuture = frameworkExecutorRepository.getSharedScheduledExecutor().scheduleWithFixedDelay(() -> {
@@ -1045,6 +1083,16 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         return newState;
     }
 
+    private void onInitialize() {
+        for (DeployListener<ApplicationModel> listener : listeners) {
+            try {
+                listener.onInitialize(applicationModel);
+            } catch (Throwable e) {
+                logger.error(CONFIG_FAILED_START_MODEL, "", "", getIdentifier() + " an exception occurred when handle initialize event", e);
+            }
+        }
+    }
+
     private void exportMetadataService() {
         if (!isStarting()) {
             return;
@@ -1080,6 +1128,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 return;
             }
             setStarted();
+            startMetricsCollector();
             if (logger.isInfoEnabled()) {
                 logger.info(getIdentifier() + " is ready.");
             }
@@ -1094,6 +1143,13 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         } finally {
             // complete future
             completeStartFuture(true);
+        }
+    }
+
+    private void startMetricsCollector() {
+        DefaultMetricsCollector collector = applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class);
+        if (Objects.nonNull(collector) && collector.isThreadpoolCollectEnabled()) {
+            collector.registryDefaultSample();
         }
     }
 

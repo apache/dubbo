@@ -63,6 +63,19 @@ public abstract class AbstractCodec implements Codec2, ScopeModelAware {
         }
     }
 
+    protected static void checkPayload(Channel channel, int payload, long size) throws IOException {
+        if (payload <= 0) {
+            payload = getPayload(channel);
+        }
+        boolean overPayload = isOverPayload(payload, size);
+        if (overPayload) {
+            ExceedPayloadLimitException e = new ExceedPayloadLimitException(
+                "Data length too large: " + size + ", max payload: " + payload + ", channel: " + channel);
+            logger.error(TRANSPORT_EXCEED_PAYLOAD_LIMIT, "", "", e.getMessage(), e);
+            throw e;
+        }
+    }
+
     protected static int getPayload(Channel channel) {
         if (channel != null && channel.getUrl() != null) {
             return channel.getUrl().getParameter(Constants.PAYLOAD_KEY, Constants.DEFAULT_PAYLOAD);

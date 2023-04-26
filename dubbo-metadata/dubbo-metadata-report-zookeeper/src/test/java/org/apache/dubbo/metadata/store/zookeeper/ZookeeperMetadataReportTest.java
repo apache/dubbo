@@ -100,7 +100,7 @@ class ZookeeperMetadataReportTest {
         fileContent = waitSeconds(fileContent, 3500, zookeeperMetadataReport.getNodePath(providerMetadataIdentifier));
         Assertions.assertNotNull(fileContent);
 
-        FullServiceDefinition fullServiceDefinition = JsonUtils.getJson().toJavaObject(fileContent, FullServiceDefinition.class);
+        FullServiceDefinition fullServiceDefinition = JsonUtils.toJavaObject(fileContent, FullServiceDefinition.class);
         Assertions.assertEquals(fullServiceDefinition.getParameters().get("paramTest"), "zkTest");
     }
 
@@ -203,7 +203,7 @@ class ZookeeperMetadataReportTest {
         String protocol = "xxx";
         URL url = generateURL(interfaceName, version, group, application);
         SubscriberMetadataIdentifier subscriberMetadataIdentifier = new SubscriberMetadataIdentifier(application, revision);
-        String r = JsonUtils.getJson().toJson(Arrays.asList(url.toString()));
+        String r = JsonUtils.toJson(Arrays.asList(url.toString()));
         zookeeperMetadataReport.doSaveSubscriberData(subscriberMetadataIdentifier, r);
 
         String fileContent = zookeeperMetadataReport.zkClient.getContent(zookeeperMetadataReport.getNodePath(subscriberMetadataIdentifier));
@@ -223,7 +223,7 @@ class ZookeeperMetadataReportTest {
         String protocol = "xxx";
         URL url = generateURL(interfaceName, version, group, application);
         SubscriberMetadataIdentifier subscriberMetadataIdentifier = new SubscriberMetadataIdentifier(application, revision);
-        String r = JsonUtils.getJson().toJson(Arrays.asList(url.toString()));
+        String r = JsonUtils.toJson(Arrays.asList(url.toString()));
         zookeeperMetadataReport.doSaveSubscriberData(subscriberMetadataIdentifier, r);
 
         String fileContent = zookeeperMetadataReport.zkClient.getContent(zookeeperMetadataReport.getNodePath(subscriberMetadataIdentifier));

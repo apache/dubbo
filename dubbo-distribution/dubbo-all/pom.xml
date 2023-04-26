@@ -192,6 +192,13 @@
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-metrics-registry</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-metrics-prometheus</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
@@ -200,6 +207,13 @@
         <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-metrics-metadata</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-metrics-config-center</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
             <optional>true</optional>
@@ -231,7 +245,21 @@
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-qos-api</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-qos</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-security</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
             <optional>true</optional>
@@ -439,10 +467,6 @@
             <groupId>com.alibaba.fastjson2</groupId>
             <artifactId>fastjson2</artifactId>
         </dependency>
-        <dependency>
-            <groupId>com.tdunning</groupId>
-            <artifactId>t-digest</artifactId>
-        </dependency>
 
         <!-- Temporarily add this part to exclude transitive dependency -->
         <dependency>
@@ -502,11 +526,15 @@
                                     <include>org.apache.dubbo:dubbo-metadata-report-zookeeper</include>
                                     <include>org.apache.dubbo:dubbo-metrics-api</include>
                                     <include>org.apache.dubbo:dubbo-metrics-default</include>
+                                    <include>org.apache.dubbo:dubbo-metrics-registry</include>
                                     <include>org.apache.dubbo:dubbo-metrics-metadata</include>
+                                    <include>org.apache.dubbo:dubbo-metrics-config-center</include>
                                     <include>org.apache.dubbo:dubbo-metrics-prometheus</include>
                                     <include>org.apache.dubbo:dubbo-monitor-api</include>
                                     <include>org.apache.dubbo:dubbo-monitor-default</include>
                                     <include>org.apache.dubbo:dubbo-qos</include>
+                                    <include>org.apache.dubbo:dubbo-qos-api</include>
+                                    <include>org.apache.dubbo:dubbo-security</include>
                                     <include>org.apache.dubbo:dubbo-reactive</include>
                                     <include>org.apache.dubbo:dubbo-spring-security</include>
                                     <include>org.apache.dubbo:dubbo-registry-api</include>
@@ -807,7 +835,7 @@
                                 <transformer
                                     implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                     <resource>
-                                        META-INF/dubbo/internal/org.apache.dubbo.qos.command.BaseCommand
+                                        META-INF/dubbo/internal/org.apache.dubbo.qos.api.BaseCommand
                                     </resource>
                                 </transformer>
                                 <transformer
@@ -893,6 +921,12 @@
                                 <transformer
                                     implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                     <resource>
+                                        META-INF/dubbo/internal/org.apache.dubbo.common.ssl.CertProvider
+                                    </resource>
+                                </transformer>
+                                <transformer
+                                    implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>
                                         META-INF/dubbo/internal/org.apache.dubbo.registry.client.migration.MigrationAddressComparator
                                     </resource>
                                 </transformer>
@@ -972,6 +1006,12 @@
                                     implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                     <resource>
                                         META-INF/dubbo/internal/org.apache.dubbo.remoting.Transporter
+                                    </resource>
+                                </transformer>
+                                <transformer
+                                    implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>
+                                        META-INF/dubbo/internal/org.apache.dubbo.rpc.protocol.dubbo.ByteAccessor
                                     </resource>
                                 </transformer>
                                 <transformer
@@ -1151,6 +1191,18 @@
                                 <transformer
                                     implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                     <resource>
+                                        META-INF/dubbo/internal/org.apache.dubbo.rpc.cluster.router.condition.matcher.pattern.ValuePattern
+                                    </resource>
+                                </transformer>
+                                <transformer
+                                    implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>
+                                        META-INF/dubbo/internal/org.apache.dubbo.rpc.cluster.router.condition.matcher.ConditionMatcherFactory
+                                    </resource>
+                                </transformer>
+                                <transformer
+                                    implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>
                                         META-INF/dubbo/internal/org.apache.dubbo.rpc.model.ApplicationInitListener
                                     </resource>
                                 </transformer>
@@ -1261,6 +1313,13 @@
                                     implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                     <resource>
                                         META-INF/dubbo/internal/org.apache.dubbo.spring.security.jackson.ObjectMapperCodecCustomer
+                                    </resource>
+                                </transformer>
+
+                                <transformer
+                                    implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>
+                                        META-INF/dubbo/internal/org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.provider.BaseProviderParamParser
                                     </resource>
                                 </transformer>
 
