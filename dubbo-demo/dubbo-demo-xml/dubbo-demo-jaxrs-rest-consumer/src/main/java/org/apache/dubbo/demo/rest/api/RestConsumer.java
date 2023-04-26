@@ -56,7 +56,7 @@ public class RestConsumer {
         try {
             bean.httpServiceHttpClientInvoke();
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("rest consumer httpClientInvoke  failed: " + e.getMessage());
         }
     }
 
