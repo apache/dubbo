@@ -20,6 +20,7 @@ package org.apache.dubbo.spring.security.jackson;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.apache.dubbo.common.constants.LoggerCodeConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ClassUtils;
@@ -49,7 +50,7 @@ public class ObjectMapperCodec {
             return mapper.readValue(bytes, clazz);
 
         } catch (Exception exception) {
-            logger.warn("objectMapper! deserialize error, you can try to customize the ObjectMapperCodecCustomer.");
+            logger.warn(LoggerCodeConstants.COMMON_JSON_CONVERT_EXCEPTION, "objectMapper! deserialize error, you can try to customize the ObjectMapperCodecCustomer.","","", exception);
         }
         return null;
     }
@@ -71,7 +72,8 @@ public class ObjectMapperCodec {
             return mapper.writeValueAsString(object);
 
         } catch (Exception ex) {
-            logger.error("objectMapper! serialize error", ex);
+            logger.warn(LoggerCodeConstants.COMMON_JSON_CONVERT_EXCEPTION, "objectMapper! serialize error, you can try to customize the ObjectMapperCodecCustomer.","","", ex);
+
         }
         return null;
     }
