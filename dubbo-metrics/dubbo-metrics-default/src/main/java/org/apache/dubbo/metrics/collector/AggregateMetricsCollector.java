@@ -85,6 +85,10 @@ public class AggregateMetricsCollector implements MetricsCollector, MetricsListe
         }
     }
 
+    public Map<String, ConcurrentHashMap<MethodMetric, TimeWindowCounter>> getMethodTypeCounter() {
+        return methodTypeCounter;
+    }
+
     private void onRTEvent(RTEvent event) {
         MethodMetric metric = (MethodMetric) event.getMetric();
         Long responseTime = event.getRt();

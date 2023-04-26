@@ -328,6 +328,8 @@ public interface CommonConstants {
 
     String TAG_KEY = "dubbo.tag";
 
+    String CIRCUIT_BREAKER_KEY = "dubbo.circuitBreaker";
+
     /**
      * To decide whether to make connection when the client is created
      */

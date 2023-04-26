@@ -17,9 +17,11 @@
 
 package org.apache.dubbo.metrics.aggregate;
 
+import org.apache.dubbo.common.utils.TimeUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
 import java.util.concurrent.atomic.LongAdder;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -51,6 +53,19 @@ class SlidingWindowTest {
             window.currentPane(1 + timeInMs + window.getPaneIntervalInMs() * paneCount));
     }
 
+    @Test
+    void testCurrentPanev2() throws InterruptedException {
+        long timeMillis = TimeUtils.currentTimeMillis();
+        Pane<LongAdder> currentPane = window.currentPane(timeMillis);
+        currentPane.getValue().add(2);
+        currentPane.getValue().add(1);
+        Pane<LongAdder> pre1StepPane = window.getPaneByStepAccordingCurrentPane(timeMillis, -1);
+        pre1StepPane.getValue().add(4);
+        Pane<LongAdder> pre2StepPane = window.getPaneByStepAccordingCurrentPane(timeMillis, -2);
+        pre2StepPane.getValue().add(5);
+        List<LongAdder> result = window.getLatestPaneValues(100);
+        System.out.println(result.toString());
+    }
     @Test
     void testGetPaneData() {
         assertNull(window.getPaneValue(/* invalid time*/-1L));

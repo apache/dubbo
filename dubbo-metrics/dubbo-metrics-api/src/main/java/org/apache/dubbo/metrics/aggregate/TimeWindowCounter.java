@@ -41,6 +41,15 @@ public class TimeWindowCounter {
         return result;
     }
 
+    public double getLatestPaneValue(long timeThreshold) {
+        double result = 0.0;
+        List<LongAdder> windows = this.slidingWindow.getLatestPaneValues(timeThreshold);
+        for (LongAdder window : windows) {
+            result += window.sum();
+        }
+        return result;
+    }
+
     public long bucketLivedSeconds() {
         return TimeUnit.MILLISECONDS.toSeconds(this.slidingWindow.values().size() * this.slidingWindow.getPaneIntervalInMs());
     }

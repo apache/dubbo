@@ -14,32 +14,42 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.rpc.cluster.router.circuitBreaker.model;
 
-package org.apache.dubbo.metrics.aggregate;
+public class ParamMatch {
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+    private String key;
 
-import java.util.concurrent.atomic.LongAdder;
+    private CircuitBreakerValueMatch value;
 
-class TimeWindowCounterTest {
-
-    @Test
-    void test() {
-        TimeWindowCounter counter = new TimeWindowCounter(10, 1);
-        counter.increment();
-        Assertions.assertEquals(1, counter.get());
-        counter.decrement();
-        Assertions.assertEquals(0, counter.get());
-        counter.increment();
-        counter.increment();
-        Assertions.assertEquals(2, counter.get());
-        Assertions.assertTrue(counter.bucketLivedSeconds() <= 1);
+    public String getKey() {
+        return key;
     }
 
-    @Test
-    void testCurrentPanev2() throws InterruptedException {
-        TimeWindowCounter counter = new TimeWindowCounter(10, 1);
-        System.out.println(counter.getLatestPaneValue(2300));
+    public void setKey(String key) {
+        this.key = key;
+    }
+
+    public CircuitBreakerValueMatch getValue() {
+        return value;
+    }
+
+    public void setValue(CircuitBreakerValueMatch value) {
+        this.value = value;
+    }
+
+    public boolean isMatch(String input) {
+        if (getValue() != null && input != null) {
+            return getValue().isMatch(input);
+        }
+        return false;
+    }
+
+    @Override
+    public String toString() {
+        return "ParamMatch{" +
+            "key='" + key + '\'' +
+            ", value=" + value +
+            '}';
     }
 }

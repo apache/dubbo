@@ -59,7 +59,7 @@ class RouterChainTest {
     void testBuildRouterChain() {
         RouterChain<DemoService> routerChain = createRouterChanin();
         Assertions.assertEquals(0, routerChain.getRouters().size());
-        Assertions.assertEquals(7, routerChain.getStateRouters().size());
+        Assertions.assertEquals(8, routerChain.getStateRouters().size());
     }
 
     private RouterChain<DemoService> createRouterChanin() {
