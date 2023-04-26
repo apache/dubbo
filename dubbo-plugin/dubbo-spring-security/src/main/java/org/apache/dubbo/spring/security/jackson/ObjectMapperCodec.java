@@ -49,8 +49,6 @@ public class ObjectMapperCodec {
             return mapper.readValue(bytes, clazz);
 
         } catch (Exception exception) {
-            logger.error("objectMapper! deserialize error", exception);
-
             logger.warn("objectMapper! deserialize error, you can try to customize the ObjectMapperCodecCustomer.");
         }
         return null;
