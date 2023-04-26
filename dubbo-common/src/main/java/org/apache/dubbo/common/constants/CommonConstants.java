@@ -631,4 +631,6 @@ public interface CommonConstants {
 
     String PACKABLE_METHOD_FACTORY_KEY = "serialize.packable.factory";
 
+    String DUBBO_PACKABLE_METHOD_FACTORY = "dubbo.application.parameters." + PACKABLE_METHOD_FACTORY_KEY;
+
 }

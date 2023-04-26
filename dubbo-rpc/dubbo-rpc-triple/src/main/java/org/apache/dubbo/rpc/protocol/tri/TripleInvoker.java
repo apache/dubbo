@@ -69,9 +69,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PACKABLE_METHOD_FACTORY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.PACKABLE_METHOD_FACTORY_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_DESTROY_INVOKER;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_REQUEST;
@@ -267,7 +267,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         } else {
             final String contentType = APPLICATION_GRPC + "+" + UrlUtils.serializationOrDefault(url);
             meta.packableMethod = url.getOrDefaultFrameworkModel().getExtensionLoader(PackableMethodFactory.class)
-                .getExtension(ConfigurationUtils.getGlobalConfiguration(url.getScopeModel()).getString(PACKABLE_METHOD_FACTORY_KEY, DEFAULT_KEY))
+                .getExtension(ConfigurationUtils.getGlobalConfiguration(url.getOrDefaultApplicationModel()).getString(DUBBO_PACKABLE_METHOD_FACTORY, DEFAULT_KEY))
                 .create(methodDescriptor, url, contentType);
         }
         meta.convertNoLowerHeader = TripleProtocol.CONVERT_NO_LOWER_HEADER;

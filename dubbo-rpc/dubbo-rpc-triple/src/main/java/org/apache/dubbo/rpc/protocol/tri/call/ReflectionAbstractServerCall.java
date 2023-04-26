@@ -42,7 +42,7 @@ import java.util.List;
 import java.util.concurrent.Executor;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.PACKABLE_METHOD_FACTORY_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PACKABLE_METHOD_FACTORY;
 
 public class ReflectionAbstractServerCall extends AbstractServerCall {
 
@@ -122,7 +122,7 @@ public class ReflectionAbstractServerCall extends AbstractServerCall {
         if (methodDescriptor != null) {
             final URL url = invoker.getUrl();
             packableMethod = frameworkModel.getExtensionLoader(PackableMethodFactory.class)
-                .getExtension(ConfigurationUtils.getGlobalConfiguration(frameworkModel).getString(PACKABLE_METHOD_FACTORY_KEY, DEFAULT_KEY))
+                .getExtension(ConfigurationUtils.getGlobalConfiguration(frameworkModel.defaultApplication()).getString(DUBBO_PACKABLE_METHOD_FACTORY, DEFAULT_KEY))
                 .create(methodDescriptor, url, (String) requestMetadata.get(HttpHeaderNames.CONTENT_TYPE.toString()));
         }
         trySetListener();
@@ -193,7 +193,7 @@ public class ReflectionAbstractServerCall extends AbstractServerCall {
         }
         final URL url = invoker.getUrl();
         packableMethod = frameworkModel.getExtensionLoader(PackableMethodFactory.class)
-            .getExtension(ConfigurationUtils.getGlobalConfiguration(frameworkModel).getString(PACKABLE_METHOD_FACTORY_KEY, DEFAULT_KEY))
+            .getExtension(ConfigurationUtils.getGlobalConfiguration(frameworkModel.defaultApplication()).getString(DUBBO_PACKABLE_METHOD_FACTORY, DEFAULT_KEY))
             .create(methodDescriptor, url, (String) requestMetadata.get(HttpHeaderNames.CONTENT_TYPE.toString()));
     }
 
