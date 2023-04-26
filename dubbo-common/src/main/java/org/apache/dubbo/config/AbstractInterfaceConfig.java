@@ -375,6 +375,11 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     }
 
+    /**
+     *  it is used for skipping the check of interface since dubbo 3.2
+     *  rest protocol allow the service is implement class
+     * @return
+     */
     protected boolean containsRestProtocol() {
         return false;
     }
