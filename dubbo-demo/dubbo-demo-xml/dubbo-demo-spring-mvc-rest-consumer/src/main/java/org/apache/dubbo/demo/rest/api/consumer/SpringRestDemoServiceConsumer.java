@@ -14,18 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.demo.rest.api;
+package org.apache.dubbo.demo.rest.api.consumer;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.apache.dubbo.config.annotation.DubboReference;
+import org.apache.dubbo.demo.rest.api.SpringRestDemoService;
+import org.springframework.stereotype.Component;
 
-@RestController
-@RequestMapping("/controller")
-public class SpringControllerService {
+@Component
+public class SpringRestDemoServiceConsumer {
+    @DubboReference(interfaceClass = SpringRestDemoService.class )
+    SpringRestDemoService springRestDemoService;
 
-    @GetMapping("/sayHello")
-    public String sayHello(String hello) {
-        return hello;
-    }
+
 }

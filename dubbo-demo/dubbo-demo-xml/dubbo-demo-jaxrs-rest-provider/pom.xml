@@ -28,8 +28,8 @@
 
     <artifactId>dubbo-demo-jaxrs-rest-provider</artifactId>
 
-    <packaging>war</packaging>
-    <description>Dubbo Rest Demo</description>
+    <packaging>jar</packaging>
+    <description>Dubbo JAXRS  Rest Provider Demo</description>
     <name>${project.artifactId}</name>
 
     <properties>
