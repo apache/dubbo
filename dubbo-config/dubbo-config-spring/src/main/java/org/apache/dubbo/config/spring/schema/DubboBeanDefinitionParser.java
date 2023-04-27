@@ -175,7 +175,7 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                     if ("registry".equals(property) && RegistryConfig.NO_AVAILABLE.equalsIgnoreCase(value)) {
                         RegistryConfig registryConfig = new RegistryConfig();
                         registryConfig.setAddress(RegistryConfig.NO_AVAILABLE);
-                        beanDefinition.getPropertyValues().addPropertyValue(beanProperty, registryConfig);
+                        beanDefinition.getPropertyValues().addPropertyValue("registries", registryConfig);
                     } else if ("provider".equals(property) || "registry".equals(property) || ("protocol".equals(property) && AbstractServiceConfig.class.isAssignableFrom(beanClass))) {
                         /**
                          * For 'provider' 'protocol' 'registry', keep literal value (should be id/name) and set the value to 'registryIds' 'providerIds' protocolIds'
