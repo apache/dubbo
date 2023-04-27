@@ -107,6 +107,7 @@ public abstract class MetricsEvent {
         NETWORK_EXCEPTION("NETWORK_EXCEPTION_%s"),
         SERVICE_UNAVAILABLE("SERVICE_UNAVAILABLE_%s"),
         CODEC_EXCEPTION("CODEC_EXCEPTION_%s"),
+        NO_INVOKER_AVAILABLE("NO_INVOKER_AVAILABLE_%s"),
         ;
 
         private final String name;

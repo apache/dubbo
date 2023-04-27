@@ -160,6 +160,7 @@ class AggregateMetricsCollectorTest {
         metricsFilter.onResponse(result, new TestMetricsInvoker(side), invocation);
 
 
+
         List<MetricSample> samples = collector.collect();
         for (MetricSample sample : samples) {
             Map<String, String> tags = sample.getTags();

@@ -17,7 +17,8 @@
 package org.apache.dubbo.metrics.filter;
 
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.metrics.event.MetricsEventBus;
 import org.apache.dubbo.metrics.event.RequestEvent;
 import org.apache.dubbo.rpc.BaseFilter;
@@ -31,13 +32,15 @@ import org.apache.dubbo.rpc.model.ScopeModelAware;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
 import static org.apache.dubbo.metrics.DefaultConstants.METRIC_FILTER_EVENT;
 import static org.apache.dubbo.metrics.DefaultConstants.METRIC_THROWABLE;
 
-@Activate(group = {CONSUMER, PROVIDER}, order = -1)
+@Activate(group = {CONSUMER, PROVIDER}, order = Integer.MIN_VALUE + 100)
 public class MetricsFilter implements Filter, BaseFilter.Listener, ScopeModelAware {
 
     private ApplicationModel applicationModel;
+    private final static ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(MetricsFilter.class);
 
     @Override
     public void setApplicationModel(ApplicationModel applicationModel) {
@@ -46,8 +49,12 @@ public class MetricsFilter implements Filter, BaseFilter.Listener, ScopeModelAwa
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
-        RequestEvent requestEvent = RequestEvent.toRequestEvent(applicationModel, invocation);
-        MetricsEventBus.before(requestEvent, () -> invocation.put(METRIC_FILTER_EVENT, requestEvent));
+        try {
+            RequestEvent requestEvent = RequestEvent.toRequestEvent(applicationModel, invocation);
+            MetricsEventBus.before(requestEvent, () -> invocation.put(METRIC_FILTER_EVENT, requestEvent));
+        } catch (Throwable t) {
+            LOGGER.warn(INTERNAL_ERROR, "", "", "Error occurred when invoke.", t);
+        }
         return invoker.invoke(invocation);
     }
 
@@ -55,7 +62,11 @@ public class MetricsFilter implements Filter, BaseFilter.Listener, ScopeModelAwa
     public void onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
         Object eventObj = invocation.get(METRIC_FILTER_EVENT);
         if (eventObj != null) {
-            MetricsEventBus.after((RequestEvent) eventObj, result);
+            try {
+                MetricsEventBus.after((RequestEvent) eventObj, result);
+            } catch (Throwable t) {
+                LOGGER.warn(INTERNAL_ERROR, "", "", "Error occurred when onResponse.", t);
+            }
         }
     }
 
@@ -63,9 +74,13 @@ public class MetricsFilter implements Filter, BaseFilter.Listener, ScopeModelAwa
     public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
         Object eventObj = invocation.get(METRIC_FILTER_EVENT);
         if (eventObj != null) {
-            RequestEvent requestEvent = (RequestEvent) eventObj;
-            requestEvent.putAttachment(METRIC_THROWABLE, t);
-            MetricsEventBus.error(requestEvent);
+            try {
+                RequestEvent requestEvent = (RequestEvent) eventObj;
+                requestEvent.putAttachment(METRIC_THROWABLE, t);
+                MetricsEventBus.error(requestEvent);
+            } catch (Throwable throwable) {
+                LOGGER.warn(INTERNAL_ERROR, "", "", "Error occurred when onResponse.", throwable);
+            }
         }
     }
 
