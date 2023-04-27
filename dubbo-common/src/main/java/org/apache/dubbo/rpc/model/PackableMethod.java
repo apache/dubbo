@@ -55,31 +55,31 @@ public interface PackableMethod {
          * @throws ClassNotFoundException when no class found
          */
         Object unpack(byte[] data) throws IOException, ClassNotFoundException;
-
     }
 
-    default Object parseRequest(byte[] data) throws IOException, ClassNotFoundException {
-        return getRequestUnpack().unpack(data);
+    default Object parseRequest(String contentType, byte[] data) throws IOException, ClassNotFoundException {
+        return getRequestUnpack(contentType).unpack(data);
     }
 
-    default Object parseResponse(byte[] data) throws IOException, ClassNotFoundException {
-        return parseResponse(data, false);
+    default Object parseResponse(String contentType,byte[] data) throws IOException, ClassNotFoundException {
+        return parseResponse(contentType,data, false);
     }
 
-    default Object parseResponse(byte[] data, boolean isReturnTriException) throws IOException, ClassNotFoundException {
-        UnPack unPack = getResponseUnpack();
+    default Object parseResponse(String contentType,byte[] data, boolean isReturnTriException) throws IOException, ClassNotFoundException {
+        UnPack unPack = getResponseUnpack(contentType);
         if (unPack instanceof WrapperUnPack) {
             return ((WrapperUnPack) unPack).unpack(data, isReturnTriException);
         }
         return unPack.unpack(data);
     }
 
-    default byte[] packRequest(Object request) throws IOException {
-        return getRequestPack().pack(request);
+
+    default byte[] packRequest(String contentType, Object request) throws IOException {
+        return getRequestPack(contentType).pack(request);
     }
 
-    default byte[] packResponse(Object response) throws IOException {
-        return getResponsePack().pack(response);
+    default byte[] packResponse(String contentType, Object response) throws IOException {
+        return getResponsePack(contentType).pack(response);
     }
 
 
@@ -87,12 +87,12 @@ public interface PackableMethod {
         return false;
     }
 
-    Pack getRequestPack();
+    Pack getRequestPack(String contentType);
 
-    Pack getResponsePack();
+    Pack getResponsePack(String contentType);
 
-    UnPack getResponseUnpack();
+    UnPack getResponseUnpack(String contentType);
 
-    UnPack getRequestUnpack();
+    UnPack getRequestUnpack(String contentType);
 
 }

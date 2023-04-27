@@ -116,7 +116,7 @@ public class ReflectionAbstractServerCall extends AbstractServerCall {
             }
         }
         if (methodDescriptor != null) {
-            packableMethod = ReflectionPackableMethod.init(methodDescriptor, invoker.getUrl());
+            packableMethod = ReflectionPackableMethod.init(methodDescriptor, invoker.getUrl(),true);
         }
         trySetListener();
         if (listener == null) {
@@ -148,7 +148,7 @@ public class ReflectionAbstractServerCall extends AbstractServerCall {
     }
 
     @Override
-    protected Object parseSingleMessage(byte[] data)
+    protected Object parseSingleMessage(String contentType,byte[] data)
         throws IOException, ClassNotFoundException {
         trySetMethodDescriptor(data);
         trySetListener();
@@ -157,7 +157,7 @@ public class ReflectionAbstractServerCall extends AbstractServerCall {
         }
         ClassLoadUtil.switchContextLoader(
             invoker.getUrl().getServiceModel().getClassLoader());
-        return packableMethod.getRequestUnpack().unpack(data);
+        return packableMethod.getRequestUnpack(contentType).unpack(data);
     }
 
 
@@ -185,7 +185,7 @@ public class ReflectionAbstractServerCall extends AbstractServerCall {
                     + serviceDescriptor.getInterfaceName()), null);
             return;
         }
-        packableMethod = ReflectionPackableMethod.init(methodDescriptor, invoker.getUrl());
+        packableMethod = ReflectionPackableMethod.init(methodDescriptor, invoker.getUrl(),true);
     }
 
 }

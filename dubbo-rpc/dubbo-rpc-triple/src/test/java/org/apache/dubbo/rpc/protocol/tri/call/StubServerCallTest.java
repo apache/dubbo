@@ -57,7 +57,7 @@ class StubServerCallTest {
             .thenReturn(Collections.singletonList(methodDescriptor));
         when(methodDescriptor.getRpcType())
             .thenReturn(RpcType.UNARY);
-        when(methodDescriptor.parseRequest(any(byte[].class)))
+        when(methodDescriptor.parseRequest(any(String.class), any(byte[].class)))
             .thenReturn("test");
         String service = "testService";
         String method = "method";

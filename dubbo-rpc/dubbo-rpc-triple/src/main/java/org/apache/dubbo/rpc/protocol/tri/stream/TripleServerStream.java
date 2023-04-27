@@ -63,6 +63,7 @@ import io.netty.util.concurrent.Future;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -316,8 +317,16 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
     public class ServerTransportObserver extends AbstractH2TransportListener implements
         H2TransportListener {
 
+        private List<String> contentTypeList = Arrays.asList(
+            "x-application/java",
+            "x-application/nativejava",
+            "x-application/compactedjava",
+            "text/jsonb",
+            "x-application/hessian2",
+            "application/grpc");
+
         /**
-         * must starts from application/grpc
+         *  must starts from application/grpc
          */
         private boolean supportContentType(String contentType) {
             if (contentType == null) {

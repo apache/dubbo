@@ -77,7 +77,7 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
             return;
         }
         try {
-            final Object unpacked = requestMetadata.packableMethod.parseResponse(message, isReturnTriException);
+            final Object unpacked = requestMetadata.packableMethod.parseResponse(requestMetadata.getRemotingSerialization(), message, isReturnTriException);
             listener.onMessage(unpacked);
         } catch (Throwable t) {
             TriRpcStatus status = TriRpcStatus.INTERNAL.withDescription("Deserialize response failed")
@@ -174,7 +174,7 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
         }
         final byte[] data;
         try {
-            data = requestMetadata.packableMethod.packRequest(message);
+            data = requestMetadata.packableMethod.packRequest(requestMetadata.getRemotingSerialization(), message);
             int compressed =
                 Identity.MESSAGE_ENCODING.equals(requestMetadata.compressor.getMessageEncoding())
                     ? 0 : 1;

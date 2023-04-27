@@ -32,7 +32,6 @@ import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.PackableMethod;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.ClassLoadUtil;
-import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
@@ -163,7 +162,8 @@ public abstract class AbstractServerCall implements ServerCall, ServerStream.Lis
         }
         final byte[] data;
         try {
-            data = packableMethod.packResponse(message);
+            String contentType = requestMetadata.get(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader()).toString();
+            data = packableMethod.packResponse(contentType,message);
         } catch (Exception e) {
             close(TriRpcStatus.INTERNAL.withDescription("Serialize response failed")
                 .withCause(e), null);
@@ -212,7 +212,8 @@ public abstract class AbstractServerCall implements ServerCall, ServerStream.Lis
         ClassLoader tccl = Thread.currentThread()
             .getContextClassLoader();
         try {
-            Object instance = parseSingleMessage(message);
+            String contentType = requestMetadata.get(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader()).toString();
+            Object instance = parseSingleMessage(contentType,message);
             listener.onMessage(instance);
         } catch (Exception e) {
             final TriRpcStatus status = TriRpcStatus.UNKNOWN.withDescription("Server error")
@@ -225,7 +226,7 @@ public abstract class AbstractServerCall implements ServerCall, ServerStream.Lis
         }
     }
 
-    protected abstract Object parseSingleMessage(byte[] data)
+    protected abstract Object parseSingleMessage(String contentType,byte[] data)
         throws IOException, ClassNotFoundException;
 
     @Override
@@ -285,7 +286,8 @@ public abstract class AbstractServerCall implements ServerCall, ServerStream.Lis
         headerSent = true;
         DefaultHttp2Headers headers = new DefaultHttp2Headers();
         headers.status(HttpResponseStatus.OK.codeAsText());
-        headers.set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO);
+        String contentType = requestMetadata.get(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader()).toString();
+        headers.set(HttpHeaderNames.CONTENT_TYPE, contentType);
         if (acceptEncoding != null) {
             headers.set(HttpHeaderNames.ACCEPT_ENCODING, acceptEncoding);
         }
