@@ -265,10 +265,9 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         if (methodDescriptor instanceof PackableMethod) {
             meta.packableMethod = (PackableMethod) methodDescriptor;
         } else {
-            final String contentType = APPLICATION_GRPC + "+" + UrlUtils.serializationOrDefault(url);
             meta.packableMethod = url.getOrDefaultFrameworkModel().getExtensionLoader(PackableMethodFactory.class)
                 .getExtension(ConfigurationUtils.getGlobalConfiguration(url.getOrDefaultApplicationModel()).getString(DUBBO_PACKABLE_METHOD_FACTORY, DEFAULT_KEY))
-                .create(methodDescriptor, url, contentType);
+                .create(methodDescriptor, url, TripleConstant.CONTENT_PROTO);
         }
         meta.convertNoLowerHeader = TripleProtocol.CONVERT_NO_LOWER_HEADER;
         meta.ignoreDefaultVersion = TripleProtocol.IGNORE_1_0_0_VERSION;

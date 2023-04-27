@@ -122,7 +122,7 @@ public class ReflectionAbstractServerCall extends AbstractServerCall {
         if (methodDescriptor != null) {
             final URL url = invoker.getUrl();
             packableMethod = frameworkModel.getExtensionLoader(PackableMethodFactory.class)
-                .getExtension(ConfigurationUtils.getGlobalConfiguration(frameworkModel.defaultApplication()).getString(DUBBO_PACKABLE_METHOD_FACTORY, DEFAULT_KEY))
+                .getExtension(ConfigurationUtils.getGlobalConfiguration(url.getApplicationModel()).getString(DUBBO_PACKABLE_METHOD_FACTORY, DEFAULT_KEY))
                 .create(methodDescriptor, url, (String) requestMetadata.get(HttpHeaderNames.CONTENT_TYPE.toString()));
         }
         trySetListener();
@@ -193,7 +193,7 @@ public class ReflectionAbstractServerCall extends AbstractServerCall {
         }
         final URL url = invoker.getUrl();
         packableMethod = frameworkModel.getExtensionLoader(PackableMethodFactory.class)
-            .getExtension(ConfigurationUtils.getGlobalConfiguration(frameworkModel.defaultApplication()).getString(DUBBO_PACKABLE_METHOD_FACTORY, DEFAULT_KEY))
+            .getExtension(ConfigurationUtils.getGlobalConfiguration(url.getApplicationModel()).getString(DUBBO_PACKABLE_METHOD_FACTORY, DEFAULT_KEY))
             .create(methodDescriptor, url, (String) requestMetadata.get(HttpHeaderNames.CONTENT_TYPE.toString()));
     }
 
