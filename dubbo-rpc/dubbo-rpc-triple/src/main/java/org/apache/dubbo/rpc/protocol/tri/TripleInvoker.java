@@ -26,7 +26,6 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.common.threadpool.ThreadlessExecutor;
 import org.apache.dubbo.remoting.api.connection.AbstractConnectionClient;
-import org.apache.dubbo.remoting.utils.UrlUtils;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.CancellationContext;
@@ -78,7 +77,6 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAI
 import static org.apache.dubbo.rpc.Constants.COMPRESSOR_KEY;
 import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 import static org.apache.dubbo.rpc.model.MethodDescriptor.RpcType.UNARY;
-import static org.apache.dubbo.rpc.protocol.tri.TripleConstant.APPLICATION_GRPC;
 
 /**
  * TripleInvoker
@@ -266,7 +264,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
             meta.packableMethod = (PackableMethod) methodDescriptor;
         } else {
             meta.packableMethod = url.getOrDefaultFrameworkModel().getExtensionLoader(PackableMethodFactory.class)
-                .getExtension(ConfigurationUtils.getGlobalConfiguration(url.getOrDefaultApplicationModel()).getString(DUBBO_PACKABLE_METHOD_FACTORY, DEFAULT_KEY))
+                .getExtension(ConfigurationUtils.getGlobalConfiguration(url.getApplicationModel()).getString(DUBBO_PACKABLE_METHOD_FACTORY, DEFAULT_KEY))
                 .create(methodDescriptor, url, TripleConstant.CONTENT_PROTO);
         }
         meta.convertNoLowerHeader = TripleProtocol.CONVERT_NO_LOWER_HEADER;
