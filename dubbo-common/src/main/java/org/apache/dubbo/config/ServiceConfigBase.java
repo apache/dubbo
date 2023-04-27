@@ -286,7 +286,7 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
 
     public void setInterface(Class<?> interfaceClass) {
         // rest protocol  allow  set impl class
-        if (interfaceClass != null && !interfaceClass.isInterface() && !containsRestProtocol()) {
+        if (interfaceClass != null && !interfaceClass.isInterface() && !canSkipInterfaceCheck()) {
             throw new IllegalStateException("The interface class " + interfaceClass + " is not a interface!");
         }
         this.interfaceClass = interfaceClass;
@@ -297,7 +297,7 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
     }
 
     @Override
-    public boolean containsRestProtocol() {
+    public boolean canSkipInterfaceCheck() {
         // for multipart protocol so for each contain
         List<ProtocolConfig> protocols = getProtocols();
 

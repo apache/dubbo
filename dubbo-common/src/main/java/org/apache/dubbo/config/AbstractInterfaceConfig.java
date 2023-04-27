@@ -315,7 +315,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                 return;
             }
 
-            if (!interfaceClass.isInterface() && !containsRestProtocol()) {
+            if (!interfaceClass.isInterface() && !canSkipInterfaceCheck()) {
                 throw new IllegalStateException(interfaceName + " is not an interface");
             }
 
@@ -380,7 +380,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
      *  rest protocol allow the service is implement class
      * @return
      */
-    protected boolean containsRestProtocol() {
+    protected boolean canSkipInterfaceCheck() {
         return false;
     }
 
