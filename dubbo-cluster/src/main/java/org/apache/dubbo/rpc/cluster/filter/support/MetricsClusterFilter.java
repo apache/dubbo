@@ -19,14 +19,9 @@ package org.apache.dubbo.rpc.cluster.filter.support;
 
 
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.metrics.MetricsConstants;
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
 import org.apache.dubbo.metrics.event.MetricsEventBus;
 import org.apache.dubbo.metrics.event.RequestBeforeEvent;
-import org.apache.dubbo.metrics.model.MetricsSupport;
-import org.apache.dubbo.metrics.model.key.MetricsKey;
-import org.apache.dubbo.metrics.model.key.MetricsLevel;
-import org.apache.dubbo.metrics.model.key.TypeWrapper;
 import org.apache.dubbo.rpc.BaseFilter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -37,7 +32,6 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
-import static org.apache.dubbo.metrics.MetricsConstants.ATTACHMENT_KEY_SERVICE;
 
 @Activate(group = CONSUMER, onClass = "org.apache.dubbo.metrics.collector.DefaultMetricsCollector")
 public class MetricsClusterFilter implements ClusterFilter, BaseFilter.Listener, ScopeModelAware {
@@ -73,11 +67,7 @@ public class MetricsClusterFilter implements ClusterFilter, BaseFilter.Listener,
         if (t instanceof RpcException) {
             RpcException e = (RpcException) t;
             if (e.isForbidden()) {
-                RequestBeforeEvent event = new RequestBeforeEvent(applicationModel, new TypeWrapper(MetricsLevel.METHOD, MetricsKey.METRIC_REQUESTS));
-                event.putAttachment(ATTACHMENT_KEY_SERVICE, MetricsSupport.getInterfaceName(invocation));
-                event.putAttachment(MetricsConstants.INVOCATION_SIDE, MetricsSupport.getSide(invocation));
-                event.putAttachment(MetricsConstants.INVOCATION, invocation);
-                MetricsEventBus.publish(event);
+                MetricsEventBus.publish(RequestBeforeEvent.toEvent(applicationModel, invocation));
             }
         }
     }

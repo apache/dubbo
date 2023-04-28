@@ -17,17 +17,32 @@
 
 package org.apache.dubbo.metrics.event;
 
+import org.apache.dubbo.metrics.MetricsConstants;
+import org.apache.dubbo.metrics.model.MetricsSupport;
+import org.apache.dubbo.metrics.model.key.MetricsKey;
+import org.apache.dubbo.metrics.model.key.MetricsLevel;
 import org.apache.dubbo.metrics.model.key.TypeWrapper;
+import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
+import static org.apache.dubbo.metrics.MetricsConstants.ATTACHMENT_KEY_SERVICE;
 
 /**
  * Acts on MetricsClusterFilter to monitor exceptions that occur before request execution
  */
-public class RequestBeforeEvent extends TimeCounterEvent{
+public class RequestBeforeEvent extends TimeCounterEvent {
 
     public RequestBeforeEvent(ApplicationModel source, TypeWrapper typeWrapper) {
-        super(source,typeWrapper);
+        super(source, typeWrapper);
 
+    }
+
+    public static RequestBeforeEvent toEvent(ApplicationModel applicationModel, Invocation invocation) {
+        RequestBeforeEvent event = new RequestBeforeEvent(applicationModel, new TypeWrapper(MetricsLevel.METHOD, MetricsKey.METRIC_REQUESTS));
+        event.putAttachment(ATTACHMENT_KEY_SERVICE, MetricsSupport.getInterfaceName(invocation));
+        event.putAttachment(MetricsConstants.INVOCATION_SIDE, MetricsSupport.getSide(invocation));
+        event.putAttachment(MetricsConstants.INVOCATION, invocation);
+        return event;
     }
 
 }
