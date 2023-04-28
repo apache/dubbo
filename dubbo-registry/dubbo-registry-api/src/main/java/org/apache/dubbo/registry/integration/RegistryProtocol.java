@@ -49,7 +49,11 @@ import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 import org.apache.dubbo.rpc.cluster.Configurator;
 import org.apache.dubbo.rpc.cluster.Constants;
 import org.apache.dubbo.rpc.cluster.governance.GovernanceRuleRepository;
+import org.apache.dubbo.rpc.cluster.support.DynamicCluster;
 import org.apache.dubbo.rpc.cluster.support.MergeableCluster;
+import org.apache.dubbo.rpc.cluster.support.wrapper.AbstractCluster;
+import org.apache.dubbo.rpc.cluster.support.wrapper.MockClusterWrapper;
+import org.apache.dubbo.rpc.cluster.support.wrapper.ScopeClusterWrapper;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
@@ -495,7 +499,26 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         }
 
         Cluster cluster = Cluster.getCluster(url.getScopeModel(), qs.get(CLUSTER_KEY));
+        processDynamicCluster(url, qs, cluster);
         return doRefer(cluster, registry, type, url, qs);
+    }
+
+    private static void processDynamicCluster(URL url, Map<String, String> qs, Cluster cluster) {
+        while (cluster instanceof ScopeClusterWrapper || cluster instanceof MockClusterWrapper) {
+            if (cluster instanceof ScopeClusterWrapper) {
+                ScopeClusterWrapper scopeClusterWrapper = (ScopeClusterWrapper) cluster;
+                cluster = scopeClusterWrapper.getCluster();
+            }
+            if (cluster instanceof MockClusterWrapper) {
+                MockClusterWrapper mockClusterWrapper = (MockClusterWrapper) cluster;
+                cluster = mockClusterWrapper.getCluster();
+            }
+        }
+        if (cluster instanceof DynamicCluster) {
+            DynamicCluster dynamicCluster = (DynamicCluster) cluster;
+            ScopeModel scopeModel = url.getScopeModel();
+            dynamicCluster.setClusterBuilder((name) -> (AbstractCluster) Cluster.getCluster(scopeModel, name, false));
+        }
     }
 
     protected <T> Invoker<T> doRefer(Cluster cluster, Registry registry, Class<T> type, URL url, Map<String, String> parameters) {

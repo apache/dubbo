@@ -124,6 +124,11 @@ public @interface DubboReference {
     boolean check() default true;
 
     /**
+     * when use dynamic cluster set the default cluster to use
+     */
+    String defaultCluster() default "";
+
+    /**
      * Whether eager initialize the reference bean when all properties are set, default value is true ( null as true)
      *
      * @see ReferenceConfigBase#shouldInit()

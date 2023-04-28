@@ -63,6 +63,8 @@ public @interface Method {
 
     String cache() default "";
 
+    String cluster() default "";
+
     String validation() default "";
 
     String merger() default "";

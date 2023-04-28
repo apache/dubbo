@@ -64,6 +64,11 @@ public class MethodConfig extends AbstractMethodConfig {
     private Boolean retry;
 
     /**
+     * cluster type
+     */
+    private String cluster;
+
+    /**
      * If it's reliable
      */
     private Boolean reliable;
@@ -500,5 +505,13 @@ public class MethodConfig extends AbstractMethodConfig {
             arguments = new ArrayList<>();
         }
         arguments.add(argumentConfig);
+    }
+
+    public String getCluster() {
+        return cluster;
+    }
+
+    public void setCluster(String cluster) {
+        this.cluster = cluster;
     }
 }
