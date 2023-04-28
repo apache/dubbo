@@ -29,9 +29,9 @@ public class MetricsServiceListener extends AbstractMetricsListener {
         super(metricsKey);
     }
 
-    public static AbstractMetricsListener onPostEventBuild(MetricsKey metricsKey, ServiceMetricsCollector<TimeCounterEvent> collector) {
+    public static AbstractMetricsListener onPostEventBuild(MetricsKey metricsKey, MetricsPlaceValue placeType, ServiceMetricsCollector<TimeCounterEvent> collector) {
         return AbstractMetricsListener.onEvent(metricsKey,
-            event -> MetricsSupport.increment(metricsKey, null, collector, event)
+            event -> MetricsSupport.increment(metricsKey, placeType, collector, event)
         );
     }
 

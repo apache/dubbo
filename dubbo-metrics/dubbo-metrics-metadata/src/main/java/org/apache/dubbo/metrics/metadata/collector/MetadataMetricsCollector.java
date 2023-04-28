@@ -56,7 +56,7 @@ public class MetadataMetricsCollector extends CombMetricsCollector {
             @Override
             protected void init(ApplicationStatComposite applicationStatComposite, ServiceStatComposite serviceStatComposite, RtStatComposite rtStatComposite) {
                 applicationStatComposite.init(MetadataMetricsConstants.APP_LEVEL_KEYS);
-                serviceStatComposite.init(MetadataMetricsConstants.SERVICE_LEVEL_KEYS);
+                serviceStatComposite.initWrapper(MetadataMetricsConstants.SERVICE_LEVEL_KEYS);
                 rtStatComposite.init(OP_TYPE_PUSH, OP_TYPE_SUBSCRIBE, OP_TYPE_STORE_PROVIDER_INTERFACE);
             }
         });

@@ -35,13 +35,6 @@ public class ServiceStatComposite implements MetricsExport {
 
     private final Map<MetricsKeyWrapper, Map<ServiceKeyMetric, AtomicLong>> serviceWrapperNumStats = new ConcurrentHashMap<>();
 
-    public void init(List<MetricsKey> serviceKeys) {
-        if (CollectionUtils.isEmpty(serviceKeys)) {
-            return;
-        }
-        serviceKeys.forEach(metricsKey -> serviceWrapperNumStats.put(MetricsKeyWrapper.wrapper(metricsKey), new ConcurrentHashMap<>()));
-    }
-
     public void initWrapper(List<MetricsKeyWrapper> metricsKeyWrappers) {
         if (CollectionUtils.isEmpty(metricsKeyWrappers)) {
             return;

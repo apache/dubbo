@@ -18,6 +18,7 @@
 package org.apache.dubbo.metrics.metadata;
 
 import org.apache.dubbo.metrics.model.key.MetricsKey;
+import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
 import org.apache.dubbo.metrics.model.key.MetricsLevel;
 import org.apache.dubbo.metrics.model.key.MetricsPlaceValue;
 
@@ -45,7 +46,9 @@ public interface MetadataMetricsConstants {
         METADATA_SUBSCRIBE_METRIC_NUM, METADATA_SUBSCRIBE_METRIC_NUM_SUCCEED, METADATA_SUBSCRIBE_METRIC_NUM_FAILED);
 
     // Service-level
-    List<MetricsKey> SERVICE_LEVEL_KEYS = Arrays.asList(STORE_PROVIDER_METADATA,
-        STORE_PROVIDER_METADATA_SUCCEED, STORE_PROVIDER_METADATA_FAILED
+    List<MetricsKeyWrapper> SERVICE_LEVEL_KEYS = Arrays.asList(
+        new MetricsKeyWrapper(STORE_PROVIDER_METADATA, OP_TYPE_STORE_PROVIDER_INTERFACE),
+        new MetricsKeyWrapper(STORE_PROVIDER_METADATA_SUCCEED, OP_TYPE_STORE_PROVIDER_INTERFACE),
+        new MetricsKeyWrapper(STORE_PROVIDER_METADATA_FAILED, OP_TYPE_STORE_PROVIDER_INTERFACE)
     );
 }

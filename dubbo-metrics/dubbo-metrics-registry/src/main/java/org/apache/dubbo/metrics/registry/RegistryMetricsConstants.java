@@ -18,6 +18,7 @@
 package org.apache.dubbo.metrics.registry;
 
 import org.apache.dubbo.metrics.model.key.MetricsKey;
+import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
 import org.apache.dubbo.metrics.model.key.MetricsLevel;
 import org.apache.dubbo.metrics.model.key.MetricsPlaceValue;
 
@@ -58,11 +59,17 @@ public interface RegistryMetricsConstants {
         NOTIFY_METRIC_REQUESTS);
 
     // Service-level
-    List<MetricsKey> SERVICE_LEVEL_KEYS = Arrays.asList(NOTIFY_METRIC_NUM_LAST,
-        SERVICE_REGISTER_METRIC_REQUESTS, SERVICE_REGISTER_METRIC_REQUESTS_SUCCEED, SERVICE_REGISTER_METRIC_REQUESTS_FAILED,
-        SERVICE_SUBSCRIBE_METRIC_NUM, SERVICE_SUBSCRIBE_METRIC_NUM_SUCCEED, SERVICE_SUBSCRIBE_METRIC_NUM_FAILED,
-        DIRECTORY_METRIC_NUM_VALID, DIRECTORY_METRIC_NUM_TO_RECONNECT, DIRECTORY_METRIC_NUM_DISABLE, DIRECTORY_METRIC_NUM_ALL
+    List<MetricsKeyWrapper> SERVICE_LEVEL_KEYS = Arrays.asList(
+        new MetricsKeyWrapper(NOTIFY_METRIC_NUM_LAST, OP_TYPE_NOTIFY),
+        new MetricsKeyWrapper(SERVICE_REGISTER_METRIC_REQUESTS, OP_TYPE_REGISTER_SERVICE),
+        new MetricsKeyWrapper(SERVICE_REGISTER_METRIC_REQUESTS_SUCCEED, OP_TYPE_REGISTER_SERVICE),
+        new MetricsKeyWrapper(SERVICE_REGISTER_METRIC_REQUESTS_FAILED, OP_TYPE_REGISTER_SERVICE),
+        new MetricsKeyWrapper(SERVICE_SUBSCRIBE_METRIC_NUM, OP_TYPE_SUBSCRIBE_SERVICE),
+        new MetricsKeyWrapper(SERVICE_SUBSCRIBE_METRIC_NUM_SUCCEED, OP_TYPE_SUBSCRIBE_SERVICE),
+        new MetricsKeyWrapper(SERVICE_SUBSCRIBE_METRIC_NUM_FAILED, OP_TYPE_SUBSCRIBE_SERVICE),
+        new MetricsKeyWrapper(DIRECTORY_METRIC_NUM_VALID, OP_TYPE_DIRECTORY),
+        new MetricsKeyWrapper(DIRECTORY_METRIC_NUM_TO_RECONNECT, OP_TYPE_DIRECTORY),
+        new MetricsKeyWrapper(DIRECTORY_METRIC_NUM_DISABLE, OP_TYPE_DIRECTORY),
+        new MetricsKeyWrapper(DIRECTORY_METRIC_NUM_ALL, OP_TYPE_DIRECTORY)
     );
-
-
 }

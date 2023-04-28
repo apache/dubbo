@@ -32,10 +32,6 @@ public class MetricsCat {
         this.eventFunc = collector -> biFunc.apply(metricsKey, collector);
     }
 
-    public MetricsCat(MetricsKeyWrapper metricsKey, BiFunction<MetricsKeyWrapper, CombMetricsCollector, AbstractMetricsListener> biFunc) {
-        this.eventFunc = collector -> biFunc.apply(metricsKey, collector);
-    }
-
     /**
      * @param metricsKey The key that the current category listens to，not necessarily the export key(export key may be dynamic)
      * @param tpFunc     Build the func that outputs the MetricsListener by listen metricsKey

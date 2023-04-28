@@ -58,7 +58,7 @@ public class RegistryMetricsCollector extends CombMetricsCollector {
             @Override
             protected void init(ApplicationStatComposite applicationStatComposite, ServiceStatComposite serviceStatComposite, RtStatComposite rtStatComposite) {
                 applicationStatComposite.init(RegistryMetricsConstants.APP_LEVEL_KEYS);
-                serviceStatComposite.init(RegistryMetricsConstants.SERVICE_LEVEL_KEYS);
+                serviceStatComposite.initWrapper(RegistryMetricsConstants.SERVICE_LEVEL_KEYS);
                 rtStatComposite.init(OP_TYPE_REGISTER, OP_TYPE_SUBSCRIBE, OP_TYPE_NOTIFY, OP_TYPE_REGISTER_SERVICE, OP_TYPE_SUBSCRIBE_SERVICE);
             }
         });
