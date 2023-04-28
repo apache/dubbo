@@ -76,9 +76,11 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
     void handlerEvent(Channel channel, Request req) throws RemotingException {
         if (req.getData() != null && req.getData().equals(READONLY_EVENT)) {
             channel.setAttribute(Constants.CHANNEL_ATTRIBUTE_READONLY_KEY, Boolean.TRUE);
+            logger.info("ChannelReadOnly set true for channel: " + channel);
         }
         if (req.getData() != null && req.getData().equals(WRITEABLE_EVENT)) {
             channel.removeAttribute(Constants.CHANNEL_ATTRIBUTE_READONLY_KEY);
+            logger.info("ChannelReadOnly set false for channel: " + channel);
         }
     }
 
