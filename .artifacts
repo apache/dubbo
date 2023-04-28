@@ -105,3 +105,4 @@ dubbo-spring-boot-observability-starter
 dubbo-spring-boot-starter
 dubbo-spring-security
 dubbo-xds
+dubbo-plugin-cluster-mergeable
