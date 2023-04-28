@@ -219,6 +219,11 @@
             <artifactId>dubbo-reactive</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-plugin-cluster-mergeable</artifactId>
+        </dependency>
+
         <!-- registry -->
         <dependency>
             <groupId>org.apache.dubbo</groupId>

@@ -332,6 +332,11 @@
                 <version>${project.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>org.apache.dubbo</groupId>
+                <artifactId>dubbo-plugin-cluster-mergeable</artifactId>
+                <version>${project.version}</version>
+            </dependency>
             <!-- registry -->
             <dependency>
                 <groupId>org.apache.dubbo</groupId>

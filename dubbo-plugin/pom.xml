@@ -35,6 +35,7 @@
         <module>dubbo-security</module>
         <module>dubbo-spring-security</module>
         <module>dubbo-qos-api</module>
+        <module>dubbo-plugin-cluster-mergeable</module>
     </modules>
     <properties>
         <skip_maven_deploy>false</skip_maven_deploy>
