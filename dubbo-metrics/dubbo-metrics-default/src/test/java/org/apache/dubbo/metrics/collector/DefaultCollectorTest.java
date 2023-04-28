@@ -29,6 +29,7 @@ import org.apache.dubbo.metrics.model.ServiceKeyMetric;
 import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
 import org.apache.dubbo.metrics.model.key.MetricsLevel;
 import org.apache.dubbo.metrics.model.key.MetricsPlaceValue;
+import org.apache.dubbo.metrics.model.sample.CounterMetricSample;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.rpc.AppResponse;
@@ -56,6 +57,7 @@ import static org.apache.dubbo.metrics.model.key.MetricsKey.METRIC_REQUESTS;
 import static org.apache.dubbo.metrics.model.key.MetricsKey.METRIC_REQUESTS_PROCESSING;
 import static org.apache.dubbo.metrics.model.key.MetricsKey.METRIC_REQUESTS_SUCCEED;
 import static org.apache.dubbo.metrics.model.key.MetricsKey.METRIC_REQUESTS_TIMEOUT;
+import static org.apache.dubbo.metrics.model.key.MetricsKey.METRIC_REQUESTS_TOTAL_FAILED;
 
 
 class DefaultCollectorTest {
@@ -152,16 +154,20 @@ class DefaultCollectorTest {
         Assertions.assertTrue(metricsNames.contains(SUCCEED));
         Assertions.assertTrue(metricsNames.contains(PROCESSING));
         for (MetricSample metricSample : metricSamples) {
-            Assertions.assertTrue(metricSample instanceof GaugeMetricSample);
-            Map<ServiceKeyMetric, AtomicLong> value = (Map<ServiceKeyMetric, AtomicLong>) ((GaugeMetricSample<?>) metricSample).getValue();
-            if (metricSample.getName().equals(REQUESTS)) {
-                Assertions.assertTrue(value.values().stream().allMatch(atomicLong -> atomicLong.intValue() == 1));
-            }
-            if (metricSample.getName().equals(SUCCEED)) {
-                Assertions.assertTrue(value.values().stream().allMatch(atomicLong -> atomicLong.intValue() == 1));
-            }
-            if (metricSample.getName().equals(PROCESSING)) {
-                Assertions.assertTrue(value.values().stream().allMatch(atomicLong -> atomicLong.intValue() == 0));
+            if (metricSample instanceof GaugeMetricSample) {
+                Map<ServiceKeyMetric, AtomicLong> value = (Map<ServiceKeyMetric, AtomicLong>) ((GaugeMetricSample<?>) metricSample).getValue();
+                if (metricSample.getName().equals(REQUESTS)) {
+                    Assertions.assertTrue(value.values().stream().allMatch(atomicLong -> atomicLong.intValue() == 1));
+                }
+
+                if (metricSample.getName().equals(PROCESSING)) {
+                    Assertions.assertTrue(value.values().stream().allMatch(atomicLong -> atomicLong.intValue() == 0));
+                }
+            } else {
+                AtomicLong value = (AtomicLong) ((CounterMetricSample<?>) metricSample).getValue();
+                if (metricSample.getName().equals(SUCCEED)) {
+                    Assertions.assertEquals(1, value.intValue());
+                }
             }
         }
 
@@ -174,24 +180,34 @@ class DefaultCollectorTest {
         metricsFilter.onError(new RpcException(RpcException.TIMEOUT_EXCEPTION, "timeout"), new TestMetricsInvoker(side), invocation);
         metricSamples = collector.collect();
 
-        // num(total+success+error+processing) + rt(0) = 4
-        Assertions.assertEquals(4, metricSamples.size());
+        // num(total+success+error+total_error+processing) + rt(0) = 5
+        Assertions.assertEquals(5, metricSamples.size());
 
         String TIMEOUT = new MetricsKeyWrapper(METRIC_REQUESTS_TIMEOUT, MetricsPlaceValue.of(side, MetricsLevel.SERVICE)).targetKey();
+        String TOTAL_FAILED = new MetricsKeyWrapper(METRIC_REQUESTS_TOTAL_FAILED, MetricsPlaceValue.of(side, MetricsLevel.SERVICE)).targetKey();
         for (MetricSample metricSample : metricSamples) {
-            Assertions.assertTrue(metricSample instanceof GaugeMetricSample);
-            Map<ServiceKeyMetric, AtomicLong> value = (Map<ServiceKeyMetric, AtomicLong>) ((GaugeMetricSample<?>) metricSample).getValue();
-            if (metricSample.getName().equals(REQUESTS)) {
-                Assertions.assertTrue(value.values().stream().allMatch(atomicLong -> atomicLong.intValue() == 2));
-            }
-            if (metricSample.getName().equals(SUCCEED)) {
-                Assertions.assertTrue(value.values().stream().allMatch(atomicLong -> atomicLong.intValue() == 1));
-            }
-            if (metricSample.getName().equals(PROCESSING)) {
-                Assertions.assertTrue(value.values().stream().allMatch(atomicLong -> atomicLong.intValue() == 0));
-            }
-            if (metricSample.getName().equals(TIMEOUT)) {
-                Assertions.assertTrue(value.values().stream().allMatch(atomicLong -> atomicLong.intValue() == 1));
+            if (metricSample instanceof GaugeMetricSample) {
+                Map<ServiceKeyMetric, AtomicLong> value = (Map<ServiceKeyMetric, AtomicLong>) ((GaugeMetricSample<?>) metricSample).getValue();
+                if (metricSample.getName().equals(REQUESTS)) {
+                    Assertions.assertTrue(value.values().stream().allMatch(atomicLong -> atomicLong.intValue() == 2));
+                }
+                if (metricSample.getName().equals(REQUESTS)) {
+                    Assertions.assertTrue(value.values().stream().allMatch(atomicLong -> atomicLong.intValue() == 2));
+                }
+                if (metricSample.getName().equals(PROCESSING)) {
+                    Assertions.assertTrue(value.values().stream().allMatch(atomicLong -> atomicLong.intValue() == 0));
+                }
+                if (metricSample.getName().equals(TIMEOUT)) {
+                    Assertions.assertTrue(value.values().stream().allMatch(atomicLong -> atomicLong.intValue() == 1));
+                }
+                if (metricSample.getName().equals(TOTAL_FAILED)) {
+                    Assertions.assertTrue(value.values().stream().allMatch(atomicLong -> atomicLong.intValue() == 1));
+                }
+            } else {
+                AtomicLong value = (AtomicLong) ((CounterMetricSample<?>) metricSample).getValue();
+                if (metricSample.getName().equals(SUCCEED)) {
+                    Assertions.assertEquals(1, value.intValue());
+                }
             }
         }
 
@@ -202,9 +218,8 @@ class DefaultCollectorTest {
             Assertions.assertEquals(tags.get(TAG_APPLICATION_NAME), applicationModel.getApplicationName());
         }
 
-//        @SuppressWarnings("rawtypes")
 //        Map<String, Long> sampleMap = metricSamples.stream().collect(Collectors.toMap(MetricSample::getName, k -> ((GaugeMetricSample) k).applyAsLong()));
-//
+
 //        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(MetricsKey.METRIC_RT_LAST, MetricsPlaceValue.of(side, MetricsLevel.SERVICE)).targetKey()), lastTimePair.calc());
 //        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(MetricsKey.METRIC_RT_MIN, MetricsPlaceValue.of(side, MetricsLevel.SERVICE)).targetKey()), Math.min(c1, c2));
 //        Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(MetricsKey.METRIC_RT_MAX, MetricsPlaceValue.of(side, MetricsLevel.SERVICE)).targetKey()), Math.max(c1, c2));
