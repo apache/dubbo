@@ -25,12 +25,13 @@ import org.apache.dubbo.metrics.model.MetricsCategory;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
+import org.apache.dubbo.rpc.Invocation;
 
 import java.util.List;
 
 import static org.apache.dubbo.metrics.MetricsConstants.SELF_INCREMENT_SIZE;
 
-public abstract class CombMetricsCollector<E extends TimeCounterEvent> extends AbstractMetricsListener<E> implements ApplicationMetricsCollector<E>, ServiceMetricsCollector<E> {
+public abstract class CombMetricsCollector<E extends TimeCounterEvent> extends AbstractMetricsListener<E> implements ApplicationMetricsCollector<E>, ServiceMetricsCollector<E>, MethodMetricsCollector<E> {
 
     private final BaseStatComposite stats;
     private MetricsEventMulticaster eventMulticaster;
@@ -65,6 +66,16 @@ public abstract class CombMetricsCollector<E extends TimeCounterEvent> extends A
 
     public void addRt(String applicationName, String serviceKey, String registryOpType, Long responseTime) {
         stats.calcServiceKeyRt(applicationName, serviceKey, registryOpType, responseTime);
+    }
+
+    @Override
+    public void increment(String applicationName, Invocation invocation, MetricsKeyWrapper wrapper, int size) {
+        this.stats.incrementMethodKey(wrapper, applicationName, invocation, size);
+    }
+
+    @Override
+    public void addRt(String applicationName, Invocation invocation, String registryOpType, Long responseTime) {
+        stats.calcMethodKeyRt(applicationName, invocation, registryOpType, responseTime);
     }
 
     @SuppressWarnings({"rawtypes"})

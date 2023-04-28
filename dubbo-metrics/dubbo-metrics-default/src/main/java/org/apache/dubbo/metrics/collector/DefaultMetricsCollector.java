@@ -23,10 +23,8 @@ import org.apache.dubbo.metrics.collector.sample.MetricsCountSampleConfigurer;
 import org.apache.dubbo.metrics.collector.sample.MetricsSampler;
 import org.apache.dubbo.metrics.collector.sample.SimpleMetricsCountSampler;
 import org.apache.dubbo.metrics.collector.sample.ThreadPoolMetricsSampler;
-import org.apache.dubbo.metrics.data.ApplicationStatComposite;
 import org.apache.dubbo.metrics.data.BaseStatComposite;
-import org.apache.dubbo.metrics.data.RtStatComposite;
-import org.apache.dubbo.metrics.data.ServiceStatComposite;
+import org.apache.dubbo.metrics.data.MethodStatComposite;
 import org.apache.dubbo.metrics.event.DefaultSubDispatcher;
 import org.apache.dubbo.metrics.event.MetricsEvent;
 import org.apache.dubbo.metrics.event.RequestEvent;
@@ -46,7 +44,7 @@ import static org.apache.dubbo.metrics.model.key.MetricsKey.APPLICATION_METRIC_I
  * Default implementation of {@link MetricsCollector}
  */
 @Activate
-public class DefaultMetricsCollector extends CombMetricsCollector {
+public class DefaultMetricsCollector extends CombMetricsCollector<RequestEvent> {
 
     private boolean collectEnabled = false;
 
@@ -59,8 +57,8 @@ public class DefaultMetricsCollector extends CombMetricsCollector {
     public DefaultMetricsCollector() {
         super(new BaseStatComposite() {
             @Override
-            protected void init(ApplicationStatComposite applicationStatComposite, ServiceStatComposite serviceStatComposite, RtStatComposite rtStatComposite) {
-                serviceStatComposite.initWrapper(DefaultConstants.SERVICE_LEVEL_KEYS);
+            protected void init(MethodStatComposite methodStatComposite) {
+                methodStatComposite.initWrapper(DefaultConstants.SERVICE_LEVEL_KEYS);
             }
         });
         super.setEventMulticaster(new DefaultSubDispatcher(this));

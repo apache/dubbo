@@ -18,7 +18,7 @@
 package org.apache.dubbo.metrics.event;
 
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
-import org.apache.dubbo.metrics.DefaultConstants;
+import org.apache.dubbo.metrics.MetricsConstants;
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
 import org.apache.dubbo.metrics.exception.MetricsNeverHappenException;
 import org.apache.dubbo.metrics.model.MetricsSupport;
@@ -62,9 +62,9 @@ public class RequestEvent extends TimeCounterEvent {
                 super.putAttachment(METRIC_THROWABLE, ((Result) postResult).getException());
             }
         };
-        requestEvent.putAttachment(DefaultConstants.INVOCATION, invocation);
+        requestEvent.putAttachment(MetricsConstants.INVOCATION, invocation);
         requestEvent.putAttachment(ATTACHMENT_KEY_SERVICE, MetricsSupport.getInterfaceName(invocation));
-        requestEvent.putAttachment(DefaultConstants.INVOCATION_SIDE, MetricsSupport.getSide(invocation));
+        requestEvent.putAttachment(MetricsConstants.INVOCATION_SIDE, MetricsSupport.getSide(invocation));
         return requestEvent;
     }
 

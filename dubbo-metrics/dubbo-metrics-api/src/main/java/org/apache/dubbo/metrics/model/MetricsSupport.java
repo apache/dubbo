@@ -18,6 +18,7 @@
 package org.apache.dubbo.metrics.model;
 
 import org.apache.dubbo.common.Version;
+import org.apache.dubbo.metrics.collector.MethodMetricsCollector;
 import org.apache.dubbo.metrics.collector.ServiceMetricsCollector;
 import org.apache.dubbo.metrics.event.MetricsEvent;
 import org.apache.dubbo.metrics.event.TimeCounterEvent;
@@ -41,9 +42,11 @@ import static org.apache.dubbo.common.constants.MetricsConstants.TAG_APPLICATION
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_HOSTNAME;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_IP;
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_METHOD_KEY;
 import static org.apache.dubbo.common.utils.NetUtils.getLocalHost;
 import static org.apache.dubbo.common.utils.NetUtils.getLocalHostName;
 import static org.apache.dubbo.metrics.MetricsConstants.ATTACHMENT_KEY_SERVICE;
+import static org.apache.dubbo.metrics.MetricsConstants.INVOCATION;
 import static org.apache.dubbo.metrics.MetricsConstants.SELF_INCREMENT_SIZE;
 
 public class MetricsSupport {
@@ -68,6 +71,17 @@ public class MetricsSupport {
         }
         Map<String, String> tags = applicationTags(keys[0]);
         tags.put(TAG_INTERFACE_KEY, keys[1]);
+        return tags;
+    }
+
+    public static Map<String, String> methodTags(String names) {
+        String[] keys = names.split("_");
+        if (keys.length != 3) {
+            throw new MetricsNeverHappenException("Error names: " + names);
+        }
+        Map<String, String> tags = applicationTags(keys[0]);
+        tags.put(TAG_INTERFACE_KEY, keys[1]);
+        tags.put(TAG_METHOD_KEY, keys[2]);
         return tags;
     }
 
@@ -132,16 +146,47 @@ public class MetricsSupport {
         return ivArr[0];
     }
 
+    /**
+     * Incr service num
+     */
     public static void increment(MetricsKey metricsKey, MetricsPlaceValue placeType, ServiceMetricsCollector<TimeCounterEvent> collector, MetricsEvent event) {
         collector.increment(event.appName(), event.getAttachmentValue(ATTACHMENT_KEY_SERVICE), new MetricsKeyWrapper(metricsKey, placeType), SELF_INCREMENT_SIZE);
     }
 
+    /**
+     * Dec service num
+     */
     public static void dec(MetricsKey metricsKey, MetricsPlaceValue placeType, ServiceMetricsCollector<TimeCounterEvent> collector, MetricsEvent event) {
         collector.increment(event.appName(), event.getAttachmentValue(ATTACHMENT_KEY_SERVICE), new MetricsKeyWrapper(metricsKey, placeType), -SELF_INCREMENT_SIZE);
     }
 
+    /**
+     * Incr service num&&rt
+     */
     public static void incrAndAddRt(MetricsKey metricsKey, MetricsPlaceValue placeType, ServiceMetricsCollector<TimeCounterEvent> collector, TimeCounterEvent event) {
         collector.increment(event.appName(), event.getAttachmentValue(ATTACHMENT_KEY_SERVICE), new MetricsKeyWrapper(metricsKey, placeType), SELF_INCREMENT_SIZE);
         collector.addRt(event.appName(), event.getAttachmentValue(ATTACHMENT_KEY_SERVICE), placeType.getType(), event.getTimePair().calc());
+    }
+
+    /**
+     * Incr method num
+     */
+    public static void increment(MetricsKey metricsKey, MetricsPlaceValue placeType, MethodMetricsCollector<TimeCounterEvent> collector, MetricsEvent event) {
+        collector.increment(event.appName(), event.getAttachmentValue(INVOCATION), new MetricsKeyWrapper(metricsKey, placeType), SELF_INCREMENT_SIZE);
+    }
+
+    /**
+     * Dec method num
+     */
+    public static void dec(MetricsKey metricsKey, MetricsPlaceValue placeType, MethodMetricsCollector<TimeCounterEvent> collector, MetricsEvent event) {
+        collector.increment(event.appName(), event.getAttachmentValue(INVOCATION), new MetricsKeyWrapper(metricsKey, placeType), -SELF_INCREMENT_SIZE);
+    }
+
+    /**
+     * Incr method num&&rt
+     */
+    public static void incrAndAddRt(MetricsKey metricsKey, MetricsPlaceValue placeType, MethodMetricsCollector<TimeCounterEvent> collector, TimeCounterEvent event) {
+        collector.increment(event.appName(), event.getAttachmentValue(INVOCATION), new MetricsKeyWrapper(metricsKey, placeType), SELF_INCREMENT_SIZE);
+        collector.addRt(event.appName(), event.getAttachmentValue(INVOCATION), placeType.getType(), event.getTimePair().calc());
     }
 }

@@ -67,6 +67,10 @@ public class MetricsKeyWrapper {
         return getPlaceType().getMetricsLevel().equals(MetricsLevel.SERVICE);
     }
 
+    public MetricsLevel getLevel() {
+        return getPlaceType().getMetricsLevel();
+    }
+
     public String targetKey() {
         if (placeType == null) {
             return metricsKey.getName();
@@ -90,7 +94,16 @@ public class MetricsKeyWrapper {
     }
 
     public Map<String, String> tagName(String key) {
-        return isServiceLevel() ? MetricsSupport.serviceTags(key) : MetricsSupport.applicationTags(key);
+        MetricsLevel level = getLevel();
+        switch (level) {
+            case APP:
+                return MetricsSupport.applicationTags(key);
+            case SERVICE:
+                return MetricsSupport.serviceTags(key);
+            case METHOD:
+                return MetricsSupport.methodTags(key);
+        }
+        return MetricsSupport.applicationTags(key);
     }
 
     public static MetricsKeyWrapper wrapper(MetricsKey metricsKey) {

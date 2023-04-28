@@ -27,6 +27,7 @@ import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.key.MetricsPlaceValue;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.report.MetricsExport;
+import org.apache.dubbo.rpc.Invocation;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -36,6 +37,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.LongAccumulator;
 import java.util.stream.Collectors;
 
+@SuppressWarnings({"rawtypes", "unchecked"})
 public class RtStatComposite implements MetricsExport {
 
     private final List<LongContainer<? extends Number>> rtStats = new ArrayList<>();
@@ -65,7 +67,6 @@ public class RtStatComposite implements MetricsExport {
         return singleRtStats;
     }
 
-    @SuppressWarnings({"rawtypes", "unchecked"})
     public void calcApplicationRt(String applicationName, String registryOpType, Long responseTime) {
         for (LongContainer container : rtStats.stream().filter(longContainer -> longContainer.specifyType(registryOpType)).collect(Collectors.toList())) {
             Number current = (Number) ConcurrentHashMapUtils.computeIfAbsent(container, applicationName, container.getInitFunc());
@@ -73,10 +74,16 @@ public class RtStatComposite implements MetricsExport {
         }
     }
 
-    @SuppressWarnings({"rawtypes", "unchecked"})
     public void calcServiceKeyRt(String applicationName, String serviceKey, String registryOpType, Long responseTime) {
         for (LongContainer container : rtStats.stream().filter(longContainer -> longContainer.specifyType(registryOpType)).collect(Collectors.toList())) {
             Number current = (Number) ConcurrentHashMapUtils.computeIfAbsent(container, applicationName + "_" + serviceKey, container.getInitFunc());
+            container.getConsumerFunc().accept(responseTime, current);
+        }
+    }
+
+    public void calcMethodKeyRt(String applicationName, Invocation invocation, String registryOpType, Long responseTime) {
+        for (LongContainer container : rtStats.stream().filter(longContainer -> longContainer.specifyType(registryOpType)).collect(Collectors.toList())) {
+            Number current = (Number) ConcurrentHashMapUtils.computeIfAbsent(container, applicationName + "_" + invocation.getServiceName() + "_" + invocation.getMethodName(), container.getInitFunc());
             container.getConsumerFunc().accept(responseTime, current);
         }
     }

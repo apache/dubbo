@@ -19,6 +19,10 @@ package org.apache.dubbo.metrics;
 
 public interface MetricsConstants {
 
+    String INVOCATION = "metric_filter_invocation";
+
+    String INVOCATION_SIDE = "metric_filter_side";
+
     String ATTACHMENT_KEY_SERVICE = "serviceKey";
     String ATTACHMENT_KEY_SIZE = "size";
     String ATTACHMENT_KEY_LAST_NUM_MAP = "lastNumMap";

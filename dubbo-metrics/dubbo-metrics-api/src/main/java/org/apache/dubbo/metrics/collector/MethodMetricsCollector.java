@@ -15,8 +15,22 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.metrics.model.key;
+package org.apache.dubbo.metrics.collector;
 
-public enum MetricsLevel {
-    APP, SERVICE, METHOD, CONFIG
+import org.apache.dubbo.metrics.event.TimeCounterEvent;
+import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
+import org.apache.dubbo.rpc.Invocation;
+
+/**
+ * Service-level collector.
+ * registration center, configuration center and other scenarios
+ *
+ * @Params <T>  metrics type
+ */
+public interface MethodMetricsCollector<E extends TimeCounterEvent> extends MetricsCollector<E> {
+
+    void increment(String applicationName, Invocation invocation, MetricsKeyWrapper wrapper, int size);
+
+    void addRt(String applicationName, Invocation invocation, String registryOpType, Long responseTime);
 }
+

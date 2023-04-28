@@ -19,6 +19,7 @@ package org.apache.dubbo.metrics.registry.metrics.collector;
 
 import org.apache.dubbo.metrics.data.ApplicationStatComposite;
 import org.apache.dubbo.metrics.data.BaseStatComposite;
+import org.apache.dubbo.metrics.data.MethodStatComposite;
 import org.apache.dubbo.metrics.data.RtStatComposite;
 import org.apache.dubbo.metrics.data.ServiceStatComposite;
 import org.apache.dubbo.metrics.model.MetricsCategory;
@@ -50,9 +51,17 @@ public class RegistryStatCompositeTest {
     private final String applicationName = "app1";
     private final BaseStatComposite statComposite = new BaseStatComposite() {
         @Override
-        protected void init(ApplicationStatComposite applicationStatComposite, ServiceStatComposite serviceStatComposite, RtStatComposite rtStatComposite) {
+        protected void init(ApplicationStatComposite applicationStatComposite) {
             applicationStatComposite.init(RegistryMetricsConstants.APP_LEVEL_KEYS);
+        }
+
+        @Override
+        protected void init(ServiceStatComposite serviceStatComposite) {
             serviceStatComposite.initWrapper(RegistryMetricsConstants.SERVICE_LEVEL_KEYS);
+        }
+
+        @Override
+        protected void init(RtStatComposite rtStatComposite) {
             rtStatComposite.init(OP_TYPE_REGISTER, OP_TYPE_SUBSCRIBE, OP_TYPE_NOTIFY, OP_TYPE_REGISTER_SERVICE, OP_TYPE_SUBSCRIBE_SERVICE);
         }
     };

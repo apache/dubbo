@@ -18,8 +18,9 @@
 package org.apache.dubbo.metrics.event;
 
 import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.metrics.DefaultConstants;
+import org.apache.dubbo.metrics.MetricsConstants;
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
+import org.apache.dubbo.metrics.collector.MethodMetricsCollector;
 import org.apache.dubbo.metrics.listener.AbstractMetricsKeyListener;
 import org.apache.dubbo.metrics.listener.MetricsListener;
 import org.apache.dubbo.metrics.model.MetricsSupport;
@@ -33,11 +34,12 @@ import org.apache.dubbo.rpc.RpcException;
 import static org.apache.dubbo.metrics.DefaultConstants.METRIC_THROWABLE;
 import static org.apache.dubbo.metrics.model.key.MetricsKey.METRIC_REQUESTS_SERVICE_UNAVAILABLE_FAILED;
 
+@SuppressWarnings({"unchecked", "rawtypes"})
 public final class DefaultSubDispatcher extends SimpleMetricsEventMulticaster {
 
     public DefaultSubDispatcher(DefaultMetricsCollector collector) {
 
-        CategoryOverall categoryOverall = initServiceRequest();
+        CategoryOverall categoryOverall = initMethodRequest();
         super.addListener(categoryOverall.getPost().getEventFunc().apply(collector));
         super.addListener(categoryOverall.getFinish().getEventFunc().apply(collector));
         super.addListener(categoryOverall.getError().getEventFunc().apply(collector));
@@ -52,27 +54,28 @@ public final class DefaultSubDispatcher extends SimpleMetricsEventMulticaster {
             @Override
             public void onEvent(RequestBeforeEvent event) {
                 MetricsPlaceValue dynamicPlaceType = MetricsPlaceValue.of(CommonConstants.CONSUMER, MetricsLevel.SERVICE);
-                MetricsSupport.increment(METRIC_REQUESTS_SERVICE_UNAVAILABLE_FAILED, dynamicPlaceType, collector, event);
+                MetricsSupport.increment(METRIC_REQUESTS_SERVICE_UNAVAILABLE_FAILED, dynamicPlaceType, (MethodMetricsCollector)collector, event);
             }
         });
     }
 
-    private CategoryOverall initServiceRequest() {
+
+    private CategoryOverall initMethodRequest() {
 
         return new CategoryOverall(null,
             new MetricsCat(MetricsKey.METRIC_REQUESTS, (key, placeType, collector) -> AbstractMetricsKeyListener.onEvent(key,
                 event ->
                 {
-                    MetricsPlaceValue dynamicPlaceType = MetricsPlaceValue.of(event.getAttachmentValue(DefaultConstants.INVOCATION_SIDE), MetricsLevel.SERVICE);
-                    MetricsSupport.increment(key, dynamicPlaceType, collector, event);
-                    MetricsSupport.increment(MetricsKey.METRIC_REQUESTS_PROCESSING, dynamicPlaceType, collector, event);
-
+                    MetricsPlaceValue dynamicPlaceType = MetricsPlaceValue.of(event.getAttachmentValue(MetricsConstants.INVOCATION_SIDE), MetricsLevel.SERVICE);
+                    MetricsSupport.increment(key, dynamicPlaceType, (MethodMetricsCollector) collector, event);
+                    MetricsSupport.increment(MetricsKey.METRIC_REQUESTS_PROCESSING, dynamicPlaceType, (MethodMetricsCollector) collector, event);
                 })),
             new MetricsCat(MetricsKey.METRIC_REQUESTS_SUCCEED, (key, placeType, collector) -> AbstractMetricsKeyListener.onFinish(key,
                 event ->
                 {
-                    MetricsPlaceValue dynamicPlaceType = MetricsPlaceValue.of(event.getAttachmentValue(DefaultConstants.INVOCATION_SIDE), MetricsLevel.SERVICE);
-                    MetricsSupport.dec(MetricsKey.METRIC_REQUESTS_PROCESSING, dynamicPlaceType, collector, event);
+                    MetricsPlaceValue dynamicPlaceType = MetricsPlaceValue.of(event.getAttachmentValue(MetricsConstants.INVOCATION_SIDE), MetricsLevel.SERVICE);
+                    MetricsSupport.dec(MetricsKey.METRIC_REQUESTS_PROCESSING, dynamicPlaceType, (MethodMetricsCollector) collector, event);
+
                     Object throwableObj = event.getAttachmentValue(METRIC_THROWABLE);
                     MetricsKey targetKey;
                     if (throwableObj == null) {
@@ -80,7 +83,7 @@ public final class DefaultSubDispatcher extends SimpleMetricsEventMulticaster {
                     } else {
                         targetKey = MetricsSupport.getMetricsKey((RpcException) throwableObj);
                     }
-                    MetricsSupport.incrAndAddRt(targetKey, dynamicPlaceType, collector, event);
+                    MetricsSupport.incrAndAddRt(targetKey, dynamicPlaceType, (MethodMetricsCollector) collector, event);
                 })),
             new MetricsCat(MetricsKey.METRIC_REQUEST_BUSINESS_FAILED, (key, placeType, collector) -> AbstractMetricsKeyListener.onError(key,
                 event ->
@@ -91,9 +94,9 @@ public final class DefaultSubDispatcher extends SimpleMetricsEventMulticaster {
                         targetKey = MetricsSupport.getMetricsKey((RpcException) throwable);
                     }
                     // Dynamic metricsKey
-                    MetricsPlaceValue dynamicPlaceType = MetricsPlaceValue.of(event.getAttachmentValue(DefaultConstants.INVOCATION_SIDE), MetricsLevel.SERVICE);
-                    MetricsSupport.dec(MetricsKey.METRIC_REQUESTS_PROCESSING, dynamicPlaceType, collector, event);
-                    MetricsSupport.incrAndAddRt(targetKey, dynamicPlaceType, collector, event);
+                    MetricsPlaceValue dynamicPlaceType = MetricsPlaceValue.of(event.getAttachmentValue(MetricsConstants.INVOCATION_SIDE), MetricsLevel.SERVICE);
+                    MetricsSupport.dec(MetricsKey.METRIC_REQUESTS_PROCESSING, dynamicPlaceType, (MethodMetricsCollector) collector, event);
+                    MetricsSupport.incrAndAddRt(targetKey, dynamicPlaceType, (MethodMetricsCollector) collector, event);
                 }
             )));
     }

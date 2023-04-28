@@ -25,7 +25,6 @@ import org.apache.dubbo.metrics.data.ApplicationStatComposite;
 import org.apache.dubbo.metrics.data.BaseStatComposite;
 import org.apache.dubbo.metrics.data.RtStatComposite;
 import org.apache.dubbo.metrics.data.ServiceStatComposite;
-import org.apache.dubbo.metrics.event.MetricsEvent;
 import org.apache.dubbo.metrics.model.MetricsCategory;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.metrics.registry.RegistryMetricsConstants;
@@ -48,7 +47,7 @@ import static org.apache.dubbo.metrics.registry.RegistryMetricsConstants.OP_TYPE
  * Registry implementation of {@link MetricsCollector}
  */
 @Activate
-public class RegistryMetricsCollector extends CombMetricsCollector {
+public class RegistryMetricsCollector extends CombMetricsCollector<RegistryEvent> {
 
     private Boolean collectEnabled = null;
     private final ApplicationModel applicationModel;
@@ -56,9 +55,17 @@ public class RegistryMetricsCollector extends CombMetricsCollector {
     public RegistryMetricsCollector(ApplicationModel applicationModel) {
         super(new BaseStatComposite() {
             @Override
-            protected void init(ApplicationStatComposite applicationStatComposite, ServiceStatComposite serviceStatComposite, RtStatComposite rtStatComposite) {
+            protected void init(ApplicationStatComposite applicationStatComposite) {
                 applicationStatComposite.init(RegistryMetricsConstants.APP_LEVEL_KEYS);
+            }
+
+            @Override
+            protected void init(ServiceStatComposite serviceStatComposite) {
                 serviceStatComposite.initWrapper(RegistryMetricsConstants.SERVICE_LEVEL_KEYS);
+            }
+
+            @Override
+            protected void init(RtStatComposite rtStatComposite) {
                 rtStatComposite.init(OP_TYPE_REGISTER, OP_TYPE_SUBSCRIBE, OP_TYPE_NOTIFY, OP_TYPE_REGISTER_SERVICE, OP_TYPE_SUBSCRIBE_SERVICE);
             }
         });
@@ -91,11 +98,5 @@ public class RegistryMetricsCollector extends CombMetricsCollector {
         list.addAll(super.export(MetricsCategory.REGISTRY));
         return list;
     }
-
-    @Override
-    public boolean isSupport(MetricsEvent event) {
-        return event instanceof RegistryEvent;
-    }
-
 
 }

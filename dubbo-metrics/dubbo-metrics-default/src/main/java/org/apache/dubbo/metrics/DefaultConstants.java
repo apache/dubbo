@@ -39,9 +39,7 @@ import static org.apache.dubbo.metrics.model.key.MetricsKey.METRIC_REQUEST_BUSIN
 
 public interface DefaultConstants {
 
-    String INVOCATION = "metric_filter_invocation";
 
-    String INVOCATION_SIDE = "metric_filter_side";
 
     String METRIC_FILTER_EVENT = "metric_filter_event";
 

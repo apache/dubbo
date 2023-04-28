@@ -25,7 +25,7 @@ import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.nested.AggregationConfig;
-import org.apache.dubbo.metrics.DefaultConstants;
+import org.apache.dubbo.metrics.MetricsConstants;
 import org.apache.dubbo.metrics.TestMetricsInvoker;
 import org.apache.dubbo.metrics.aggregate.TimeWindowCounter;
 import org.apache.dubbo.metrics.event.MetricsDispatcher;
@@ -259,9 +259,9 @@ class AggregateMetricsCollectorTest {
         for (Long requestTime : requestTimes) {
             RequestEvent requestEvent = RequestEvent.toRequestEvent(applicationModel, invocation);
             TestRequestEvent testRequestEvent = new TestRequestEvent(requestEvent.getSource(), requestEvent.getTypeWrapper());
-            testRequestEvent.putAttachment(DefaultConstants.INVOCATION, invocation);
+            testRequestEvent.putAttachment(MetricsConstants.INVOCATION, invocation);
             testRequestEvent.putAttachment(ATTACHMENT_KEY_SERVICE, MetricsSupport.getInterfaceName(invocation));
-            testRequestEvent.putAttachment(DefaultConstants.INVOCATION_SIDE, MetricsSupport.getSide(invocation));
+            testRequestEvent.putAttachment(MetricsConstants.INVOCATION_SIDE, MetricsSupport.getSide(invocation));
             testRequestEvent.setRt(requestTime);
             MetricsEventBus.post(testRequestEvent, () -> null);
         }
