@@ -313,6 +313,7 @@ public interface CommonConstants {
     String HEARTBEAT_EVENT = null;
     String MOCK_HEARTBEAT_EVENT = "H";
     String READONLY_EVENT = "R";
+    String WRITEABLE_EVENT = "W";
 
     String REFERENCE_FILTER_KEY = "reference.filter";
 
