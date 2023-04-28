@@ -20,6 +20,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
@@ -36,4 +37,8 @@ public interface RestDemoForTestException {
     @Consumes({MediaType.TEXT_PLAIN})
     @Path("/hello")
     Integer test400(@QueryParam("a")String a,@QueryParam("b") String b);
+
+    @POST
+    @Path("{uid}")
+    String testMethodDisallowed(@PathParam("uid") String uid);
 }

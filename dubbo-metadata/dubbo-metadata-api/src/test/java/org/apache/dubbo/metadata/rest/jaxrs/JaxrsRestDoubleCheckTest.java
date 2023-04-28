@@ -16,12 +16,17 @@
  */
 package org.apache.dubbo.metadata.rest.jaxrs;
 
+import org.apache.dubbo.metadata.rest.PathMatcher;
+import org.apache.dubbo.metadata.rest.RestMethodMetadata;
 import org.apache.dubbo.metadata.rest.ServiceRestMetadata;
 import org.apache.dubbo.metadata.rest.api.JaxrsRestDoubleCheckContainsPathVariableService;
 import org.apache.dubbo.metadata.rest.api.JaxrsRestDoubleCheckService;
+import org.apache.dubbo.metadata.rest.api.JaxrsUsingService;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import java.util.Map;
 
 public class JaxrsRestDoubleCheckTest {
     private JAXRSServiceRestMetadataResolver instance = new JAXRSServiceRestMetadataResolver(ApplicationModel.defaultModel());
@@ -41,6 +46,29 @@ public class JaxrsRestDoubleCheckTest {
             resolve.setServiceInterface(JaxrsRestDoubleCheckContainsPathVariableService.class.getName());
             instance.resolve(JaxrsRestDoubleCheckContainsPathVariableService.class, resolve);
         });
+
+
+    }
+
+    @Test
+    void testSameHttpMethodException() {
+
+        Assertions.assertDoesNotThrow(() -> {
+            ServiceRestMetadata resolve = new ServiceRestMetadata();
+            resolve.setServiceInterface(JaxrsUsingService.class.getName());
+            instance.resolve(JaxrsUsingService.class, resolve);
+        });
+
+        ServiceRestMetadata resolve = new ServiceRestMetadata();
+        resolve.setServiceInterface(JaxrsUsingService.class.getName());
+        instance.resolve(JaxrsUsingService.class, resolve);
+
+        Map<PathMatcher, RestMethodMetadata> pathContainPathVariableToServiceMap = resolve.getPathContainPathVariableToServiceMap();
+
+
+        RestMethodMetadata restMethodMetadata = pathContainPathVariableToServiceMap.get(PathMatcher.getInvokeCreatePathMatcher("/usingService/aaa", null, null, null, "TEST"));
+
+        Assertions.assertNotNull(restMethodMetadata);
 
 
     }

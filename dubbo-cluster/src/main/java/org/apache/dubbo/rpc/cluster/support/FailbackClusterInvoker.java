@@ -104,7 +104,6 @@ public class FailbackClusterInvoker<T> extends AbstractClusterInvoker<T> {
         Invoker<T> invoker = null;
         URL consumerUrl = RpcContext.getServiceContext().getConsumerUrl();
         try {
-            checkInvokers(invokers, invocation);
             invoker = select(loadbalance, invocation, invokers, null);
             // Asynchronous call method must be used here, because failback will retry in the background.
             // Then the serviceContext will be cleared after the call is completed.

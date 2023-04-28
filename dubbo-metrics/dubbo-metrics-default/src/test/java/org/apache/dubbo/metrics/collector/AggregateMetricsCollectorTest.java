@@ -22,9 +22,7 @@ import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.utils.ReflectionUtils;
 import org.apache.dubbo.config.ApplicationConfig;
-
 import org.apache.dubbo.config.MetricsConfig;
-
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.nested.AggregationConfig;
 import org.apache.dubbo.metrics.TestMetricsInvoker;
@@ -39,27 +37,30 @@ import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Collections;
 import java.util.concurrent.ConcurrentHashMap;
-
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
-import static org.apache.dubbo.common.constants.MetricsConstants.*;
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_GROUP_KEY;
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_METHOD_KEY;
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_VERSION_KEY;
 import static org.apache.dubbo.metrics.model.MetricsCategory.QPS;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 class AggregateMetricsCollectorTest {
 
@@ -93,7 +94,9 @@ class AggregateMetricsCollectorTest {
 
         configManager.setMetrics(metricsConfig);
 
-        when(metricsConfig.getAggregation()).thenReturn(new AggregationConfig());
+        AggregationConfig aggregationConfig = spy(new AggregationConfig());
+        when(aggregationConfig.getEnabled()).thenReturn(true);
+        when(metricsConfig.getAggregation()).thenReturn(aggregationConfig);
         when(applicationModel.getApplicationConfigManager()).thenReturn(configManager);
 
         ScopeBeanFactory beanFactory = mock(ScopeBeanFactory.class);
@@ -156,6 +159,7 @@ class AggregateMetricsCollectorTest {
         methodMetricsCountSampler.incOnEvent(invocation, MetricsEvent.Type.NETWORK_EXCEPTION.getNameByType(side));
         methodMetricsCountSampler.incOnEvent(invocation, MetricsEvent.Type.SERVICE_UNAVAILABLE.getNameByType(side));
         methodMetricsCountSampler.incOnEvent(invocation, MetricsEvent.Type.CODEC_EXCEPTION.getNameByType(side));
+        methodMetricsCountSampler.incOnEvent(invocation, MetricsEvent.Type.NO_INVOKER_AVAILABLE.getNameByType(side));
 
 
         List<MetricSample> samples = collector.collect();
@@ -181,6 +185,7 @@ class AggregateMetricsCollectorTest {
         Assertions.assertEquals(sampleMap.get(MetricsKey.METRIC_REQUESTS_TOTAL_NETWORK_FAILED_AGG.getNameByType(side)), 1L);
         Assertions.assertEquals(sampleMap.get(MetricsKey.METRIC_REQUESTS_TOTAL_CODEC_FAILED_AGG.getNameByType(side)), 1L);
         Assertions.assertEquals(sampleMap.get(MetricsKey.METRIC_REQUESTS_TOTAL_SERVICE_UNAVAILABLE_FAILED_AGG.getNameByType(side)), 1L);
+        Assertions.assertEquals(sampleMap.get(MetricsKey.INVOKER_NO_AVAILABLE_COUNT.getNameByType(side)), 1L);
 
         Assertions.assertTrue(sampleMap.containsKey(MetricsKey.METRIC_QPS.getNameByType(side)));
     }

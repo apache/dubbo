@@ -66,7 +66,7 @@ public class AggregateMetricsCollector implements MetricsCollector, MetricsListe
         this.applicationModel = applicationModel;
         ConfigManager configManager = applicationModel.getApplicationConfigManager();
         MetricsConfig config = configManager.getMetrics().orElse(null);
-        if (config != null && config.getAggregation() != null && (config.getAggregation().getEnabled() == null || Boolean.TRUE.equals(config.getAggregation().getEnabled()))) {
+        if (config != null && config.getAggregation() != null && (Boolean.TRUE.equals(config.getAggregation().getEnabled()))) {
             // only registered when aggregation is enabled.
             registerListener();
 
@@ -139,6 +139,7 @@ public class AggregateMetricsCollector implements MetricsCollector, MetricsListe
         collectMethod(list, MetricsEvent.Type.NETWORK_EXCEPTION.getNameByType(side), MetricsKey.METRIC_REQUESTS_TOTAL_NETWORK_FAILED_AGG);
         collectMethod(list, MetricsEvent.Type.CODEC_EXCEPTION.getNameByType(side), MetricsKey.METRIC_REQUESTS_TOTAL_CODEC_FAILED_AGG);
         collectMethod(list, MetricsEvent.Type.SERVICE_UNAVAILABLE.getNameByType(side), MetricsKey.METRIC_REQUESTS_TOTAL_SERVICE_UNAVAILABLE_FAILED_AGG);
+        collectMethod(list, MetricsEvent.Type.NO_INVOKER_AVAILABLE.getNameByType(side), MetricsKey.INVOKER_NO_AVAILABLE_COUNT);
     }
 
     private void collectMethod(List<MetricSample> list, String eventType, MetricsKey metricsKey) {
@@ -179,6 +180,7 @@ public class AggregateMetricsCollector implements MetricsCollector, MetricsListe
         methodTypeCounter.put(MetricsEvent.Type.SERVICE_UNAVAILABLE.getNameByType(side), new ConcurrentHashMap<>());
         methodTypeCounter.put(MetricsEvent.Type.NETWORK_EXCEPTION.getNameByType(side), new ConcurrentHashMap<>());
         methodTypeCounter.put(MetricsEvent.Type.CODEC_EXCEPTION.getNameByType(side), new ConcurrentHashMap<>());
+        methodTypeCounter.put(MetricsEvent.Type.NO_INVOKER_AVAILABLE.getNameByType(side), new ConcurrentHashMap<>());
     }
 
     private void registerListener() {

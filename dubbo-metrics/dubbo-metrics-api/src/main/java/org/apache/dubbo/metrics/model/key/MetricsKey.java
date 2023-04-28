@@ -118,6 +118,7 @@ public enum MetricsKey {
     METADATA_GIT_COMMITID_METRIC("git.commit.id", "Git Commit Id Metrics"),
 
     // consumer metrics key
+    INVOKER_NO_AVAILABLE_COUNT("dubbo.consumer.invoker.no.available.count", "Request Throw No Invoker Available Exception Count"),
     ;
 
     private String name;

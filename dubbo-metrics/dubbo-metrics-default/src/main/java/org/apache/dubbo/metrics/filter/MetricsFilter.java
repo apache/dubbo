@@ -17,6 +17,8 @@
 package org.apache.dubbo.metrics.filter;
 
 import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
 import org.apache.dubbo.rpc.BaseFilter;
 import org.apache.dubbo.rpc.Filter;
@@ -29,9 +31,12 @@ import org.apache.dubbo.rpc.model.ScopeModelAware;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
 
-@Activate(group = {CONSUMER, PROVIDER}, order = -1)
+@Activate(group = {CONSUMER, PROVIDER}, order = Integer.MIN_VALUE + 100)
 public class MetricsFilter implements Filter, BaseFilter.Listener, ScopeModelAware {
+
+    private final static ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(MetricsFilter.class);
 
     private DefaultMetricsCollector collector = null;
     private MethodMetricsInterceptor metricsInterceptor;
@@ -51,7 +56,11 @@ public class MetricsFilter implements Filter, BaseFilter.Listener, ScopeModelAwa
             return invoker.invoke(invocation);
         }
 
-        metricsInterceptor.beforeMethod(invocation);
+        try {
+            metricsInterceptor.beforeMethod(invocation);
+        } catch (Throwable t) {
+            LOGGER.warn(INTERNAL_ERROR, "", "", "Error occurred when beforeMethod.", t);
+        }
 
         return invoker.invoke(invocation);
     }
@@ -61,7 +70,11 @@ public class MetricsFilter implements Filter, BaseFilter.Listener, ScopeModelAwa
         if (collector == null || !collector.isCollectEnabled()) {
             return;
         }
-        metricsInterceptor.afterMethod(invocation, result);
+        try {
+            metricsInterceptor.afterMethod(invocation, result);
+        } catch (Throwable t) {
+            LOGGER.warn(INTERNAL_ERROR, "", "", "Error occurred when afterMethod.", t);
+        }
     }
 
     @Override
@@ -69,7 +82,11 @@ public class MetricsFilter implements Filter, BaseFilter.Listener, ScopeModelAwa
         if (collector == null || !collector.isCollectEnabled()) {
             return;
         }
-        metricsInterceptor.handleMethodException(invocation, t);
+        try {
+            metricsInterceptor.handleMethodException(invocation, t, false);
+        } catch (Throwable t1) {
+            LOGGER.warn(INTERNAL_ERROR, "", "", "Error occurred when handleMethodException.", t1);
+        }
     }
 
 }

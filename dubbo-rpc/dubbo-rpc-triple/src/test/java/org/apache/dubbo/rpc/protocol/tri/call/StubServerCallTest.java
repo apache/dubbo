@@ -30,7 +30,6 @@ import io.netty.util.concurrent.ImmediateEventExecutor;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import java.io.IOException;
 import java.util.Collections;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -40,7 +39,7 @@ import static org.mockito.Mockito.when;
 class StubServerCallTest {
 
     @Test
-    void doStartCall() throws IOException, ClassNotFoundException {
+    void doStartCall() throws Exception {
         Invoker<?> invoker = Mockito.mock(Invoker.class);
         TripleServerStream tripleServerStream = Mockito.mock(TripleServerStream.class);
         ProviderModel providerModel = Mockito.mock(ProviderModel.class);
