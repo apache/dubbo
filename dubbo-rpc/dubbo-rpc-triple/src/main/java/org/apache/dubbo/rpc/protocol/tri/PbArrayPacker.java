@@ -15,37 +15,27 @@
  * limitations under the License.
  */
 
-package com.alibaba.dubbo.rpc;
+package org.apache.dubbo.rpc.protocol.tri;
 
-@Deprecated
-public interface Exporter<T> extends org.apache.dubbo.rpc.Exporter<T> {
+import com.google.protobuf.Message;
+import org.apache.dubbo.rpc.model.Pack;
+
+public class PbArrayPacker implements Pack {
+
+    private static final Pack PB_PACK = o -> ((Message) o).toByteArray();
+
+    private final boolean singleArgument;
+
+    public PbArrayPacker(boolean singleArgument) {
+        this.singleArgument = singleArgument;
+    }
 
     @Override
-    Invoker<T> getInvoker();
-
-    default void unregister() {}
-
-    class CompatibleExporter<T> implements Exporter<T> {
-
-        private org.apache.dubbo.rpc.Exporter<T> delegate;
-
-        public CompatibleExporter(org.apache.dubbo.rpc.Exporter<T> delegate) {
-            this.delegate = delegate;
+    public byte[] pack(Object obj) throws Exception {
+        if (!singleArgument) {
+            obj = ((Object[]) obj)[0];
         }
-
-        @Override
-        public Invoker<T> getInvoker() {
-            return new Invoker.CompatibleInvoker<>(delegate.getInvoker());
-        }
-
-        @Override
-        public void unexport() {
-            delegate.unexport();
-        }
-
-        @Override
-        public void unregister() {
-            delegate.unregister();
-        }
+        return PB_PACK.pack(obj);
     }
+
 }
