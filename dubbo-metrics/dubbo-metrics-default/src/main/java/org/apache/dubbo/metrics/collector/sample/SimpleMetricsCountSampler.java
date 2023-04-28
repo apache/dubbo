@@ -40,14 +40,6 @@ public abstract class SimpleMetricsCountSampler<S, K, M extends Metric>
 
     private final ConcurrentMap<M, AtomicLong> EMPTY_COUNT = new ConcurrentHashMap<>();
     private final Map<K, ConcurrentMap<M, AtomicLong>> metricCounter = new ConcurrentHashMap<>();
-    // lastRT, totalRT, rtCount, avgRT share a container, can utilize the system cache line
-    private final ConcurrentMap<M, AtomicLongArray> rtSample = new ConcurrentHashMap<>();
-    private final ConcurrentMap<M, LongAccumulator> minRT = new ConcurrentHashMap<>();
-    private final ConcurrentMap<M, LongAccumulator> maxRT = new ConcurrentHashMap<>();
-
-    private final ConcurrentMap<K, ConcurrentMap<M, AtomicLongArray>> rtGroupSample = new ConcurrentHashMap<>();
-    private final ConcurrentMap<K, ConcurrentMap<M, LongAccumulator>> groupMinRT = new ConcurrentHashMap<>();
-    private final ConcurrentMap<K, ConcurrentMap<M, LongAccumulator>> groupMaxRT = new ConcurrentHashMap<>();
 
     @Override
     public void inc(S source, K metricName) {

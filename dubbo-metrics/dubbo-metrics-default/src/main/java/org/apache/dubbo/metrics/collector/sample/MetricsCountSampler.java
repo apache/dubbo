@@ -18,13 +18,10 @@
 package org.apache.dubbo.metrics.collector.sample;
 
 import org.apache.dubbo.metrics.model.Metric;
-import org.apache.dubbo.metrics.model.key.MetricsKey;
-import org.apache.dubbo.metrics.model.sample.MetricSample;
 
 import java.util.Optional;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.ToDoubleFunction;
 
 public interface MetricsCountSampler<S, K, M extends Metric> extends MetricsSampler {
 
@@ -34,7 +31,4 @@ public interface MetricsCountSampler<S, K, M extends Metric> extends MetricsSamp
 
     Optional<ConcurrentMap<M, AtomicLong>> getCount(K metricName);
 
-    interface MetricSampleFactory<M, R extends MetricSample> {
-        <T> R newInstance(MetricsKey key, M metric, T value, ToDoubleFunction<T> apply);
-    }
 }
