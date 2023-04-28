@@ -20,7 +20,7 @@ package org.apache.dubbo.metrics.event;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.metrics.DefaultConstants;
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
-import org.apache.dubbo.metrics.listener.AbstractMetricsListener;
+import org.apache.dubbo.metrics.listener.AbstractMetricsKeyListener;
 import org.apache.dubbo.metrics.listener.MetricsListener;
 import org.apache.dubbo.metrics.model.MetricsSupport;
 import org.apache.dubbo.metrics.model.key.CategoryOverall;
@@ -43,6 +43,12 @@ public final class DefaultSubDispatcher extends SimpleMetricsEventMulticaster {
         super.addListener(categoryOverall.getError().getEventFunc().apply(collector));
 
         super.addListener(new MetricsListener<RequestBeforeEvent>() {
+
+            @Override
+            public boolean isSupport(MetricsEvent event) {
+                return event instanceof RequestBeforeEvent;
+            }
+
             @Override
             public void onEvent(RequestBeforeEvent event) {
                 MetricsPlaceValue dynamicPlaceType = MetricsPlaceValue.of(CommonConstants.CONSUMER, MetricsLevel.SERVICE);
@@ -54,7 +60,7 @@ public final class DefaultSubDispatcher extends SimpleMetricsEventMulticaster {
     private CategoryOverall initServiceRequest() {
 
         return new CategoryOverall(null,
-            new MetricsCat(MetricsKey.METRIC_REQUESTS, (key, placeType, collector) -> AbstractMetricsListener.onEvent(key,
+            new MetricsCat(MetricsKey.METRIC_REQUESTS, (key, placeType, collector) -> AbstractMetricsKeyListener.onEvent(key,
                 event ->
                 {
                     MetricsPlaceValue dynamicPlaceType = MetricsPlaceValue.of(event.getAttachmentValue(DefaultConstants.INVOCATION_SIDE), MetricsLevel.SERVICE);
@@ -62,7 +68,7 @@ public final class DefaultSubDispatcher extends SimpleMetricsEventMulticaster {
                     MetricsSupport.increment(MetricsKey.METRIC_REQUESTS_PROCESSING, dynamicPlaceType, collector, event);
 
                 })),
-            new MetricsCat(MetricsKey.METRIC_REQUESTS_SUCCEED, (key, placeType, collector) -> AbstractMetricsListener.onFinish(key,
+            new MetricsCat(MetricsKey.METRIC_REQUESTS_SUCCEED, (key, placeType, collector) -> AbstractMetricsKeyListener.onFinish(key,
                 event ->
                 {
                     MetricsPlaceValue dynamicPlaceType = MetricsPlaceValue.of(event.getAttachmentValue(DefaultConstants.INVOCATION_SIDE), MetricsLevel.SERVICE);
@@ -76,7 +82,7 @@ public final class DefaultSubDispatcher extends SimpleMetricsEventMulticaster {
                     }
                     MetricsSupport.incrAndAddRt(targetKey, dynamicPlaceType, collector, event);
                 })),
-            new MetricsCat(MetricsKey.METRIC_REQUEST_BUSINESS_FAILED, (key, placeType, collector) -> AbstractMetricsListener.onError(key,
+            new MetricsCat(MetricsKey.METRIC_REQUEST_BUSINESS_FAILED, (key, placeType, collector) -> AbstractMetricsKeyListener.onError(key,
                 event ->
                 {
                     Throwable throwable = event.getAttachmentValue(METRIC_THROWABLE);

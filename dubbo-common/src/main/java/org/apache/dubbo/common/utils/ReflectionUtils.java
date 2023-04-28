@@ -18,7 +18,12 @@ package org.apache.dubbo.common.utils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * A utility class that provides methods for accessing and manipulating private fields and methods of an object.
@@ -28,7 +33,8 @@ import java.util.Arrays;
  */
 public class ReflectionUtils {
 
-    private ReflectionUtils(){}
+    private ReflectionUtils() {
+    }
 
     /**
      * Retrieves the value of the specified field from the given object.
@@ -92,7 +98,50 @@ public class ReflectionUtils {
         return true;
     }
 
-    public static class ReflectionException extends RuntimeException{
+    /**
+     * Returns a list of distinct {@link Class} objects representing the generics of the given class that implement the
+     * given interface.
+     *
+     * @param clazz          the class to retrieve the generics for
+     * @param interfaceClass the interface to retrieve the generics for
+     * @return a list of distinct {@link Class} objects representing the generics of the given class that implement the
+     * given interface
+     */
+    public static List<Class<?>> getClassGenerics(Class<?> clazz, Class<?> interfaceClass) {
+        List<Class<?>> generics = new ArrayList<>();
+        Type[] genericInterfaces = clazz.getGenericInterfaces();
+        for (Type genericInterface : genericInterfaces) {
+            if (genericInterface instanceof ParameterizedType) {
+                ParameterizedType parameterizedType = (ParameterizedType) genericInterface;
+                Type rawType = parameterizedType.getRawType();
+                if (rawType instanceof Class && interfaceClass.isAssignableFrom((Class<?>) rawType)) {
+                    Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
+                    for (Type actualTypeArgument : actualTypeArguments) {
+                        if (actualTypeArgument instanceof Class) {
+                            generics.add((Class<?>) actualTypeArgument);
+                        }
+                    }
+                }
+            }
+        }
+        Type genericSuperclass = clazz.getGenericSuperclass();
+        if (genericSuperclass instanceof ParameterizedType) {
+            ParameterizedType parameterizedType = (ParameterizedType) genericSuperclass;
+            Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
+            for (Type actualTypeArgument : actualTypeArguments) {
+                if (actualTypeArgument instanceof Class) {
+                    generics.add((Class<?>) actualTypeArgument);
+                }
+            }
+        }
+        Class<?> superclass = clazz.getSuperclass();
+        if (superclass != null) {
+            generics.addAll(getClassGenerics(superclass, interfaceClass));
+        }
+        return generics.stream().distinct().collect(Collectors.toList());
+    }
+
+    public static class ReflectionException extends RuntimeException {
         public ReflectionException(Throwable cause) {
             super(cause);
         }

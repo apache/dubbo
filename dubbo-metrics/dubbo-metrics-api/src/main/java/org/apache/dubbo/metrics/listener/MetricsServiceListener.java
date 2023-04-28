@@ -23,26 +23,26 @@ import org.apache.dubbo.metrics.model.MetricsSupport;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.key.MetricsPlaceValue;
 
-public class MetricsServiceListener extends AbstractMetricsListener {
+public class MetricsServiceListener extends AbstractMetricsKeyListener {
 
     public MetricsServiceListener(MetricsKey metricsKey) {
         super(metricsKey);
     }
 
-    public static AbstractMetricsListener onPostEventBuild(MetricsKey metricsKey, MetricsPlaceValue placeType, ServiceMetricsCollector<TimeCounterEvent> collector) {
-        return AbstractMetricsListener.onEvent(metricsKey,
+    public static AbstractMetricsKeyListener onPostEventBuild(MetricsKey metricsKey, MetricsPlaceValue placeType, ServiceMetricsCollector<TimeCounterEvent> collector) {
+        return AbstractMetricsKeyListener.onEvent(metricsKey,
             event -> MetricsSupport.increment(metricsKey, placeType, collector, event)
         );
     }
 
-    public static AbstractMetricsListener onFinishEventBuild(MetricsKey metricsKey, MetricsPlaceValue placeType, ServiceMetricsCollector<TimeCounterEvent> collector) {
-        return AbstractMetricsListener.onFinish(metricsKey,
+    public static AbstractMetricsKeyListener onFinishEventBuild(MetricsKey metricsKey, MetricsPlaceValue placeType, ServiceMetricsCollector<TimeCounterEvent> collector) {
+        return AbstractMetricsKeyListener.onFinish(metricsKey,
             event -> MetricsSupport.incrAndAddRt(metricsKey, placeType, collector, event)
         );
     }
 
-    public static AbstractMetricsListener onErrorEventBuild(MetricsKey metricsKey, MetricsPlaceValue placeType, ServiceMetricsCollector<TimeCounterEvent> collector) {
-        return AbstractMetricsListener.onError(metricsKey,
+    public static AbstractMetricsKeyListener onErrorEventBuild(MetricsKey metricsKey, MetricsPlaceValue placeType, ServiceMetricsCollector<TimeCounterEvent> collector) {
+        return AbstractMetricsKeyListener.onError(metricsKey,
             event -> MetricsSupport.incrAndAddRt(metricsKey, placeType, collector, event)
         );
     }

@@ -48,13 +48,6 @@ public class ApplicationStatComposite implements MetricsExport {
         applicationNumStats.get(metricsKey).computeIfAbsent(applicationName, k -> new AtomicLong(0L)).getAndAdd(size);
     }
 
-    public void setApplicationKey(MetricsKey metricsKey, String applicationName, int num) {
-        if (!applicationNumStats.containsKey(metricsKey)) {
-            return;
-        }
-        applicationNumStats.get(metricsKey).computeIfAbsent(applicationName, k -> new AtomicLong(0L)).set(num);
-    }
-
 
     @SuppressWarnings({"rawtypes"})
     public List<GaugeMetricSample> export(MetricsCategory category) {

@@ -18,7 +18,7 @@
 package org.apache.dubbo.metrics.registry.event;
 
 import org.apache.dubbo.metrics.event.SimpleMetricsEventMulticaster;
-import org.apache.dubbo.metrics.listener.AbstractMetricsListener;
+import org.apache.dubbo.metrics.listener.AbstractMetricsKeyListener;
 import org.apache.dubbo.metrics.listener.MetricsApplicationListener;
 import org.apache.dubbo.metrics.listener.MetricsServiceListener;
 import org.apache.dubbo.metrics.model.key.CategoryOverall;
@@ -83,7 +83,7 @@ public final class RegistrySubDispatcher extends SimpleMetricsEventMulticaster {
         // MetricsNotifyListener
         MetricsCat APPLICATION_NOTIFY_POST = new MetricsCat(MetricsKey.NOTIFY_METRIC_REQUESTS, MetricsApplicationListener::onPostEventBuild);
         MetricsCat APPLICATION_NOTIFY_FINISH = new MetricsCat(MetricsKey.NOTIFY_METRIC_NUM_LAST,
-            (key, placeType, collector) -> AbstractMetricsListener.onFinish(key,
+            (key, placeType, collector) -> AbstractMetricsKeyListener.onFinish(key,
                 event -> {
                     collector.addRt(event.appName(), placeType.getType(), event.getTimePair().calc());
                     Map<String, Integer> lastNumMap = Collections.unmodifiableMap(event.getAttachmentValue(ATTACHMENT_KEY_LAST_NUM_MAP));
@@ -94,7 +94,7 @@ public final class RegistrySubDispatcher extends SimpleMetricsEventMulticaster {
             ));
 
 
-        MetricsCat APPLICATION_DIRECTORY_POST = new MetricsCat(MetricsKey.DIRECTORY_METRIC_NUM_VALID, (key, placeType, collector) -> AbstractMetricsListener.onEvent(key,
+        MetricsCat APPLICATION_DIRECTORY_POST = new MetricsCat(MetricsKey.DIRECTORY_METRIC_NUM_VALID, (key, placeType, collector) -> AbstractMetricsKeyListener.onEvent(key,
             event ->
             {
                 Map<MetricsKey, Map<String, Integer>> summaryMap = event.getAttachmentValue(ATTACHMENT_DIRECTORY_MAP);

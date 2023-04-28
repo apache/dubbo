@@ -20,6 +20,7 @@ package org.apache.dubbo.metrics.collector;
 import org.apache.dubbo.metrics.data.BaseStatComposite;
 import org.apache.dubbo.metrics.event.MetricsEventMulticaster;
 import org.apache.dubbo.metrics.event.TimeCounterEvent;
+import org.apache.dubbo.metrics.listener.AbstractMetricsListener;
 import org.apache.dubbo.metrics.model.MetricsCategory;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
@@ -29,7 +30,7 @@ import java.util.List;
 
 import static org.apache.dubbo.metrics.MetricsConstants.SELF_INCREMENT_SIZE;
 
-public abstract class CombMetricsCollector implements ApplicationMetricsCollector<TimeCounterEvent>, ServiceMetricsCollector<TimeCounterEvent> {
+public abstract class CombMetricsCollector<E extends TimeCounterEvent> extends AbstractMetricsListener<E> implements ApplicationMetricsCollector<E>, ServiceMetricsCollector<E> {
 
     private final BaseStatComposite stats;
     private MetricsEventMulticaster eventMulticaster;

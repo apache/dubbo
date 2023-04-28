@@ -87,6 +87,7 @@ public class AggregateMetricsCollector implements MetricsCollector<RequestEvent>
             this.collectEnabled = collectEnabled;
         }
     }
+    
 
     @Override
     public boolean isCollectEnabled() {

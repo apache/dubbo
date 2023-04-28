@@ -24,8 +24,8 @@ import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.nested.HistogramConfig;
 import org.apache.dubbo.metrics.DefaultConstants;
 import org.apache.dubbo.metrics.MetricsGlobalRegistry;
-import org.apache.dubbo.metrics.event.MetricsEvent;
 import org.apache.dubbo.metrics.event.RequestEvent;
+import org.apache.dubbo.metrics.listener.AbstractMetricsListener;
 import org.apache.dubbo.metrics.model.MethodMetric;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
@@ -40,7 +40,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.metrics.model.MetricsCategory.RT;
 
-public class HistogramMetricsCollector implements MetricsCollector<RequestEvent> {
+public class HistogramMetricsCollector extends AbstractMetricsListener<RequestEvent> implements MetricsCollector<RequestEvent> {
 
     private final ConcurrentHashMap<MethodMetric, Timer> rt = new ConcurrentHashMap<>();
     private HistogramMetricRegister metricRegister;
@@ -70,10 +70,9 @@ public class HistogramMetricsCollector implements MetricsCollector<RequestEvent>
     }
 
     @Override
-    public boolean isSupport(MetricsEvent event) {
-        return event instanceof RequestEvent;
-    }
+    public void onEvent(RequestEvent event) {
 
+    }
 
     @Override
     public void onEventFinish(RequestEvent event) {

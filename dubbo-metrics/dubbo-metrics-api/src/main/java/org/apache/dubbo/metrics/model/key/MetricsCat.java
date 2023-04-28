@@ -18,7 +18,7 @@
 package org.apache.dubbo.metrics.model.key;
 
 import org.apache.dubbo.metrics.collector.CombMetricsCollector;
-import org.apache.dubbo.metrics.listener.AbstractMetricsListener;
+import org.apache.dubbo.metrics.listener.AbstractMetricsKeyListener;
 
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -26,9 +26,9 @@ import java.util.function.Function;
 public class MetricsCat {
 
     private MetricsPlaceValue placeType;
-    private final Function<CombMetricsCollector, AbstractMetricsListener> eventFunc;
+    private final Function<CombMetricsCollector, AbstractMetricsKeyListener> eventFunc;
 
-    public MetricsCat(MetricsKey metricsKey, BiFunction<MetricsKey, CombMetricsCollector, AbstractMetricsListener> biFunc) {
+    public MetricsCat(MetricsKey metricsKey, BiFunction<MetricsKey, CombMetricsCollector, AbstractMetricsKeyListener> biFunc) {
         this.eventFunc = collector -> biFunc.apply(metricsKey, collector);
     }
 
@@ -36,7 +36,7 @@ public class MetricsCat {
      * @param metricsKey The key that the current category listens to，not necessarily the export key(export key may be dynamic)
      * @param tpFunc     Build the func that outputs the MetricsListener by listen metricsKey
      */
-    public MetricsCat(MetricsKey metricsKey, TpFunction<MetricsKey, MetricsPlaceValue, CombMetricsCollector, AbstractMetricsListener> tpFunc) {
+    public MetricsCat(MetricsKey metricsKey, TpFunction<MetricsKey, MetricsPlaceValue, CombMetricsCollector, AbstractMetricsKeyListener> tpFunc) {
         this.eventFunc = collector -> tpFunc.apply(metricsKey, placeType, collector);
     }
 
@@ -45,7 +45,7 @@ public class MetricsCat {
         return this;
     }
 
-    public Function<CombMetricsCollector, AbstractMetricsListener> getEventFunc() {
+    public Function<CombMetricsCollector, AbstractMetricsKeyListener> getEventFunc() {
         return eventFunc;
     }
 

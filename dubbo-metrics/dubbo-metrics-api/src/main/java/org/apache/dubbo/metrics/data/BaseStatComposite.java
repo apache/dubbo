@@ -59,10 +59,6 @@ public abstract class BaseStatComposite implements MetricsExport {
         serviceStatComposite.setServiceKey(metricsKey, applicationName, serviceKey, num);
     }
 
-    public void setApplicationKey(MetricsKey metricsKey, String applicationName, int num) {
-        applicationStatComposite.setApplicationKey(metricsKey, applicationName, num);
-    }
-
     public void incrementApp(MetricsKey metricsKey, String applicationName, int size) {
         applicationStatComposite.incrementSize(metricsKey, applicationName, size);
     }

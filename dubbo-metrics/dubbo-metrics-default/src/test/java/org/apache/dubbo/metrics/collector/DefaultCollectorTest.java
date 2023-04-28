@@ -22,6 +22,8 @@ import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.metrics.TestMetricsInvoker;
 import org.apache.dubbo.metrics.event.MetricsDispatcher;
+import org.apache.dubbo.metrics.event.RequestBeforeEvent;
+import org.apache.dubbo.metrics.event.RequestEvent;
 import org.apache.dubbo.metrics.filter.MetricsFilter;
 import org.apache.dubbo.metrics.model.ServiceKeyMetric;
 import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
@@ -100,6 +102,15 @@ class DefaultCollectorTest {
 
         metricsFilter = new MetricsFilter();
         metricsFilter.setApplicationModel(applicationModel);
+    }
+
+    @Test
+    void testListener() {
+        DefaultMetricsCollector metricsCollector = new DefaultMetricsCollector();
+        RequestEvent event = RequestEvent.toRequestEvent(applicationModel, invocation);
+        RequestBeforeEvent beforeEvent = new RequestBeforeEvent(applicationModel);
+        Assertions.assertTrue(metricsCollector.isSupport(event));
+        Assertions.assertFalse(metricsCollector.isSupport(beforeEvent));
     }
 
     @AfterEach

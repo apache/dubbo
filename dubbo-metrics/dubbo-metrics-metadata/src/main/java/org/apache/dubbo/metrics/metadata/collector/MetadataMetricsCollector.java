@@ -25,7 +25,6 @@ import org.apache.dubbo.metrics.data.ApplicationStatComposite;
 import org.apache.dubbo.metrics.data.BaseStatComposite;
 import org.apache.dubbo.metrics.data.RtStatComposite;
 import org.apache.dubbo.metrics.data.ServiceStatComposite;
-import org.apache.dubbo.metrics.event.MetricsEvent;
 import org.apache.dubbo.metrics.metadata.MetadataMetricsConstants;
 import org.apache.dubbo.metrics.metadata.event.MetadataEvent;
 import org.apache.dubbo.metrics.metadata.event.MetadataSubDispatcher;
@@ -46,7 +45,7 @@ import static org.apache.dubbo.metrics.metadata.MetadataMetricsConstants.OP_TYPE
  * Registry implementation of {@link MetricsCollector}
  */
 @Activate
-public class MetadataMetricsCollector extends CombMetricsCollector {
+public class MetadataMetricsCollector extends CombMetricsCollector<MetadataEvent> {
 
     private Boolean collectEnabled = null;
     private final ApplicationModel applicationModel;
@@ -87,11 +86,6 @@ public class MetadataMetricsCollector extends CombMetricsCollector {
         }
         list.addAll(super.export(MetricsCategory.METADATA));
         return list;
-    }
-
-    @Override
-    public boolean isSupport(MetricsEvent event) {
-        return event instanceof MetadataEvent;
     }
 
 }

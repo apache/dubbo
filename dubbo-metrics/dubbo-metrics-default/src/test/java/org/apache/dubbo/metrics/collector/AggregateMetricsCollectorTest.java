@@ -30,6 +30,7 @@ import org.apache.dubbo.metrics.TestMetricsInvoker;
 import org.apache.dubbo.metrics.aggregate.TimeWindowCounter;
 import org.apache.dubbo.metrics.event.MetricsDispatcher;
 import org.apache.dubbo.metrics.event.MetricsEventBus;
+import org.apache.dubbo.metrics.event.RequestBeforeEvent;
 import org.apache.dubbo.metrics.event.RequestEvent;
 import org.apache.dubbo.metrics.filter.MetricsFilter;
 import org.apache.dubbo.metrics.model.MethodMetric;
@@ -135,6 +136,15 @@ class AggregateMetricsCollectorTest {
         invocation.setTargetServiceUniqueName(group + "/" + interfaceName + ":" + version);
         RpcContext.getServiceContext().setUrl(URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&side=" + side));
 
+    }
+
+    @Test
+    void testListener() {
+        AggregateMetricsCollector metricsCollector = new AggregateMetricsCollector(applicationModel);
+        RequestEvent event = RequestEvent.toRequestEvent(applicationModel, invocation);
+        RequestBeforeEvent beforeEvent = new RequestBeforeEvent(applicationModel);
+        Assertions.assertTrue(metricsCollector.isSupport(event));
+        Assertions.assertFalse(metricsCollector.isSupport(beforeEvent));
     }
 
     @AfterEach

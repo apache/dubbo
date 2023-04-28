@@ -23,7 +23,6 @@ import org.apache.dubbo.metrics.collector.CombMetricsCollector;
 import org.apache.dubbo.metrics.collector.MetricsCollector;
 import org.apache.dubbo.metrics.config.event.ConfigCenterEvent;
 import org.apache.dubbo.metrics.config.event.ConfigCenterSubDispatcher;
-import org.apache.dubbo.metrics.event.MetricsEvent;
 import org.apache.dubbo.metrics.model.ConfigCenterMetric;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
@@ -44,7 +43,7 @@ import static org.apache.dubbo.metrics.model.MetricsCategory.CONFIGCENTER;
  * Config center implementation of {@link MetricsCollector}
  */
 @Activate
-public class ConfigCenterMetricsCollector extends CombMetricsCollector {
+public class ConfigCenterMetricsCollector extends CombMetricsCollector<ConfigCenterEvent> {
 
     private Boolean collectEnabled = null;
     private final ApplicationModel applicationModel;
@@ -92,10 +91,5 @@ public class ConfigCenterMetricsCollector extends CombMetricsCollector {
         return list;
     }
 
-
-    @Override
-    public boolean isSupport(MetricsEvent event) {
-        return event instanceof ConfigCenterEvent;
-    }
 
 }
