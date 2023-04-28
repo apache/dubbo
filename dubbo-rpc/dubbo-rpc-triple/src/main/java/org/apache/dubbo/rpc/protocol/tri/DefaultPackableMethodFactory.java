@@ -17,22 +17,16 @@
 
 package org.apache.dubbo.rpc.protocol.tri;
 
-import org.apache.dubbo.rpc.model.UnPack;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.rpc.model.MethodDescriptor;
+import org.apache.dubbo.rpc.model.PackableMethod;
+import org.apache.dubbo.rpc.model.PackableMethodFactory;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-
-public class PbUnpack<T> implements UnPack {
-
-    private final Class<T> clz;
-
-    public PbUnpack(Class<T> clz) {
-        this.clz = clz;
-    }
+public class DefaultPackableMethodFactory implements PackableMethodFactory {
 
     @Override
-    public Object unpack(byte[] data) throws IOException {
-        final ByteArrayInputStream bais = new ByteArrayInputStream(data);
-        return SingleProtobufUtils.deserialize(bais, clz);
+    public PackableMethod create(MethodDescriptor methodDescriptor, URL url, String contentType) {
+        return ReflectionPackableMethod.init(methodDescriptor, url);
     }
+
 }

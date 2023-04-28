@@ -15,24 +15,14 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.rpc.protocol.tri;
+package org.apache.dubbo.rpc.model;
 
-import org.apache.dubbo.rpc.model.UnPack;
+public interface WrapperUnPack extends UnPack {
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-
-public class PbUnpack<T> implements UnPack {
-
-    private final Class<T> clz;
-
-    public PbUnpack(Class<T> clz) {
-        this.clz = clz;
+    default Object unpack(byte[] data) throws Exception {
+        return unpack(data, false);
     }
 
-    @Override
-    public Object unpack(byte[] data) throws IOException {
-        final ByteArrayInputStream bais = new ByteArrayInputStream(data);
-        return SingleProtobufUtils.deserialize(bais, clz);
-    }
+    Object unpack(byte[] data, boolean isReturnTriException) throws Exception;
+
 }

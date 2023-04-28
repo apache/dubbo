@@ -17,22 +17,25 @@
 
 package org.apache.dubbo.rpc.protocol.tri;
 
-import org.apache.dubbo.rpc.model.UnPack;
+import com.google.protobuf.Message;
+import org.apache.dubbo.rpc.model.Pack;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
+public class PbArrayPacker implements Pack {
 
-public class PbUnpack<T> implements UnPack {
+    private static final Pack PB_PACK = o -> ((Message) o).toByteArray();
 
-    private final Class<T> clz;
+    private final boolean singleArgument;
 
-    public PbUnpack(Class<T> clz) {
-        this.clz = clz;
+    public PbArrayPacker(boolean singleArgument) {
+        this.singleArgument = singleArgument;
     }
 
     @Override
-    public Object unpack(byte[] data) throws IOException {
-        final ByteArrayInputStream bais = new ByteArrayInputStream(data);
-        return SingleProtobufUtils.deserialize(bais, clz);
+    public byte[] pack(Object obj) throws Exception {
+        if (!singleArgument) {
+            obj = ((Object[]) obj)[0];
+        }
+        return PB_PACK.pack(obj);
     }
+
 }
