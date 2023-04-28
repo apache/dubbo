@@ -38,8 +38,7 @@ import static org.apache.dubbo.metrics.MetricsConstants.ATTACHMENT_KEY_SIZE;
  */
 public class RegistryEvent extends TimeCounterEvent {
     public RegistryEvent(ApplicationModel applicationModel, TypeWrapper typeWrapper) {
-        super(applicationModel);
-        super.typeWrapper = typeWrapper;
+        super(applicationModel,typeWrapper);
         ScopeBeanFactory beanFactory = getSource().getBeanFactory();
         RegistryMetricsCollector collector;
         if (!beanFactory.isDestroyed()) {

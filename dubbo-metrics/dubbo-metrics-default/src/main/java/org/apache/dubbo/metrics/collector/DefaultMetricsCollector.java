@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.metrics.collector;
 
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.metrics.DefaultConstants;
 import org.apache.dubbo.metrics.collector.sample.MetricsCountSampleConfigurer;
@@ -25,11 +26,15 @@ import org.apache.dubbo.metrics.collector.sample.SimpleMetricsCountSampler;
 import org.apache.dubbo.metrics.collector.sample.ThreadPoolMetricsSampler;
 import org.apache.dubbo.metrics.data.BaseStatComposite;
 import org.apache.dubbo.metrics.data.MethodStatComposite;
+import org.apache.dubbo.metrics.data.RtStatComposite;
 import org.apache.dubbo.metrics.event.DefaultSubDispatcher;
 import org.apache.dubbo.metrics.event.MetricsEvent;
+import org.apache.dubbo.metrics.event.RequestBeforeEvent;
 import org.apache.dubbo.metrics.event.RequestEvent;
 import org.apache.dubbo.metrics.model.ApplicationMetric;
 import org.apache.dubbo.metrics.model.MetricsCategory;
+import org.apache.dubbo.metrics.model.key.MetricsLevel;
+import org.apache.dubbo.metrics.model.key.MetricsPlaceValue;
 import org.apache.dubbo.metrics.model.sample.CounterMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -58,7 +63,13 @@ public class DefaultMetricsCollector extends CombMetricsCollector<RequestEvent> 
         super(new BaseStatComposite() {
             @Override
             protected void init(MethodStatComposite methodStatComposite) {
-                methodStatComposite.initWrapper(DefaultConstants.SERVICE_LEVEL_KEYS);
+                methodStatComposite.initWrapper(DefaultConstants.METHOD_LEVEL_KEYS);
+            }
+
+            @Override
+            protected void init(RtStatComposite rtStatComposite) {
+                rtStatComposite.init(MetricsPlaceValue.of(CommonConstants.PROVIDER, MetricsLevel.METHOD),
+                        MetricsPlaceValue.of(CommonConstants.CONSUMER, MetricsLevel.METHOD));
             }
         });
         super.setEventMulticaster(new DefaultSubDispatcher(this));
@@ -125,7 +136,7 @@ public class DefaultMetricsCollector extends CombMetricsCollector<RequestEvent> 
 
     @Override
     public boolean isSupport(MetricsEvent event) {
-        return event instanceof RequestEvent;
+        return event instanceof RequestEvent || event instanceof RequestBeforeEvent;
     }
 
     public SimpleMetricsCountSampler<String, MetricsEvent.Type, ApplicationMetric> applicationSampler = new SimpleMetricsCountSampler<String, MetricsEvent.Type, ApplicationMetric>() {
@@ -133,17 +144,17 @@ public class DefaultMetricsCollector extends CombMetricsCollector<RequestEvent> 
         public List<MetricSample> sample() {
             List<MetricSample> samples = new ArrayList<>();
             this.getCount(MetricsEvent.Type.APPLICATION_INFO).filter(e -> !e.isEmpty())
-                .ifPresent(map -> map.forEach((k, v) ->
-                    samples.add(new CounterMetricSample<>(APPLICATION_METRIC_INFO.getName(),
-                        APPLICATION_METRIC_INFO.getDescription(),
-                        k.getTags(), APPLICATION, v)))
-                );
+                    .ifPresent(map -> map.forEach((k, v) ->
+                            samples.add(new CounterMetricSample<>(APPLICATION_METRIC_INFO.getName(),
+                                    APPLICATION_METRIC_INFO.getDescription(),
+                                    k.getTags(), APPLICATION, v)))
+                    );
             return samples;
         }
 
         @Override
         protected void countConfigure(
-            MetricsCountSampleConfigurer<String, MetricsEvent.Type, ApplicationMetric> sampleConfigure) {
+                MetricsCountSampleConfigurer<String, MetricsEvent.Type, ApplicationMetric> sampleConfigure) {
             sampleConfigure.configureMetrics(configure -> new ApplicationMetric(sampleConfigure.getSource()));
         }
     };

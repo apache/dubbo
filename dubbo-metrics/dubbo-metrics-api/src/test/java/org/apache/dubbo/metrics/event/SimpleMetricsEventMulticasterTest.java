@@ -52,7 +52,7 @@ public class SimpleMetricsEventMulticasterTest {
         ConfigManager configManager = new ConfigManager(applicationModel);
         configManager.setApplication(applicationConfig);
         applicationModel.setConfigManager(configManager);
-        requestEvent = new TimeCounterEvent(applicationModel) {
+        requestEvent = new TimeCounterEvent(applicationModel,null) {
         };
     }
 

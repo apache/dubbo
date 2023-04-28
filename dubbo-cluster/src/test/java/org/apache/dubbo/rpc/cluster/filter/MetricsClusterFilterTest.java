@@ -99,13 +99,13 @@ class MetricsClusterFilterTest {
 
     @Test
     public void testNoProvider(){
-        testClusterFilterError(RpcException.FORBIDDEN_EXCEPTION,
-            MetricsKey.METRIC_REQUESTS_SERVICE_UNAVAILABLE_FAILED.getNameByType(CommonConstants.CONSUMER));
+        testClusterFilterError(
+                MetricsKey.METRIC_REQUESTS_SERVICE_UNAVAILABLE_FAILED.getNameByType(CommonConstants.CONSUMER));
     }
 
-    private void testClusterFilterError(int errorCode,String name){
+    private void testClusterFilterError(String name){
         collector.setCollectEnabled(true);
-        given(invoker.invoke(invocation)).willThrow(new RpcException(errorCode));
+        given(invoker.invoke(invocation)).willThrow(new RpcException(RpcException.FORBIDDEN_EXCEPTION));
         initParam();
 
         Long count = 1L;

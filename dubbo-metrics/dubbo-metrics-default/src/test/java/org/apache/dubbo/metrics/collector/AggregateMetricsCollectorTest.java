@@ -37,6 +37,7 @@ import org.apache.dubbo.metrics.model.MethodMetric;
 import org.apache.dubbo.metrics.model.MetricsSupport;
 import org.apache.dubbo.metrics.model.TimePair;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
+import org.apache.dubbo.metrics.model.key.MetricsLevel;
 import org.apache.dubbo.metrics.model.key.TypeWrapper;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
@@ -142,7 +143,7 @@ class AggregateMetricsCollectorTest {
     void testListener() {
         AggregateMetricsCollector metricsCollector = new AggregateMetricsCollector(applicationModel);
         RequestEvent event = RequestEvent.toRequestEvent(applicationModel, invocation);
-        RequestBeforeEvent beforeEvent = new RequestBeforeEvent(applicationModel);
+        RequestBeforeEvent beforeEvent = new RequestBeforeEvent(applicationModel, new TypeWrapper(MetricsLevel.METHOD, MetricsKey.METRIC_REQUESTS));
         Assertions.assertTrue(metricsCollector.isSupport(event));
         Assertions.assertFalse(metricsCollector.isSupport(beforeEvent));
     }

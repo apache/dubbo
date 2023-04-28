@@ -35,11 +35,12 @@ public abstract class MetricsEvent {
      */
     protected transient ApplicationModel source;
     private boolean available = true;
-    protected TypeWrapper typeWrapper;
+    private final TypeWrapper typeWrapper;
 
     private final Map<String, Object> attachment = new HashMap<>(8);
 
-    public MetricsEvent(ApplicationModel source) {
+    public MetricsEvent(ApplicationModel source, TypeWrapper typeWrapper) {
+        this.typeWrapper = typeWrapper;
         if (source == null) {
             this.source = ApplicationModel.defaultModel();
             // Appears only in unit tests

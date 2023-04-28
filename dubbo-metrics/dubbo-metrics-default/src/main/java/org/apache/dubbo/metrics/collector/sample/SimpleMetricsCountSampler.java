@@ -19,11 +19,7 @@ package org.apache.dubbo.metrics.collector.sample;
 
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.metrics.model.Metric;
-import org.apache.dubbo.metrics.model.key.MetricsKey;
-import org.apache.dubbo.metrics.model.sample.MetricSample;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -62,14 +58,6 @@ public abstract class SimpleMetricsCountSampler<S, K, M extends Metric>
     }
 
     @Override
-    public void dec(S source, K metricName) {
-        doExecute(source, metricName, counter -> {
-            counter.decrementAndGet();
-            return false;
-        });
-    }
-
-    @Override
     public void incOnEvent(S source, K metricName) {
         doExecute(source, metricName, counter -> {
             counter.incrementAndGet();
@@ -82,37 +70,6 @@ public abstract class SimpleMetricsCountSampler<S, K, M extends Metric>
         return Optional.ofNullable(metricCounter.get(metricName) == null ?
             EMPTY_COUNT :
             metricCounter.get(metricName));
-    }
-
-    @Override
-    public <R extends MetricSample> List<R> collectRT(MetricSampleFactory<M, R> factory) {
-        return collect(factory, rtSample, this.minRT, this.maxRT);
-    }
-
-    private <R extends MetricSample> List<R> collect(MetricSampleFactory<M, R> factory,
-                                                     ConcurrentMap<M, AtomicLongArray> rtSample,
-                                                     ConcurrentMap<M, LongAccumulator> min,
-                                                     ConcurrentMap<M, LongAccumulator> max) {
-        final List<R> result = new ArrayList<>();
-        rtSample.forEach((k, v) -> {
-            // lastRT
-            result.add(factory.newInstance(MetricsKey.METRIC_RT_LAST, k, v, value -> value.get(0)));
-            // totalRT
-            result.add(factory.newInstance(MetricsKey.METRIC_RT_SUM, k, v, value -> value.get(1)));
-            // avgRT
-            result.add(factory.newInstance(MetricsKey.METRIC_RT_AVG, k, v, value -> Math.floorDiv(value.get(1), value.get(2))));
-        });
-
-        min.forEach((k, v) ->
-            result.add(factory.newInstance(MetricsKey.METRIC_RT_MIN, k, v, LongAccumulator::get)));
-
-        max.forEach((k, v) ->
-            result.add(factory.newInstance(MetricsKey.METRIC_RT_MAX, k, v, LongAccumulator::get)));
-
-        return result;
-    }
-
-    protected void rtConfigure(MetricsCountSampleConfigurer<S, K, M> configure) {
     }
 
     protected abstract void countConfigure(MetricsCountSampleConfigurer<S, K, M> sampleConfigure);

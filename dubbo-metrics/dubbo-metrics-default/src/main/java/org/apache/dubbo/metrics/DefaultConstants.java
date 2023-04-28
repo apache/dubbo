@@ -39,34 +39,32 @@ import static org.apache.dubbo.metrics.model.key.MetricsKey.METRIC_REQUEST_BUSIN
 
 public interface DefaultConstants {
 
-
-
     String METRIC_FILTER_EVENT = "metric_filter_event";
 
     String METRIC_THROWABLE = "metric_filter_throwable";
 
-    List<MetricsKeyWrapper> SERVICE_LEVEL_KEYS = Arrays.asList(
-        new MetricsKeyWrapper(METRIC_REQUESTS, MetricsPlaceValue.of(CommonConstants.PROVIDER, MetricsLevel.SERVICE)),
-        new MetricsKeyWrapper(METRIC_REQUESTS, MetricsPlaceValue.of(CommonConstants.CONSUMER, MetricsLevel.SERVICE)),
-        new MetricsKeyWrapper(METRIC_REQUESTS_PROCESSING, MetricsPlaceValue.of(CommonConstants.PROVIDER, MetricsLevel.SERVICE)),
-        new MetricsKeyWrapper(METRIC_REQUESTS_PROCESSING, MetricsPlaceValue.of(CommonConstants.CONSUMER, MetricsLevel.SERVICE)),
-        new MetricsKeyWrapper(METRIC_REQUESTS_SUCCEED, MetricsPlaceValue.of(CommonConstants.PROVIDER, MetricsLevel.SERVICE)),
-        new MetricsKeyWrapper(METRIC_REQUESTS_SUCCEED, MetricsPlaceValue.of(CommonConstants.CONSUMER, MetricsLevel.SERVICE)),
-        new MetricsKeyWrapper(METRIC_REQUEST_BUSINESS_FAILED, MetricsPlaceValue.of(CommonConstants.PROVIDER, MetricsLevel.SERVICE)),
-        new MetricsKeyWrapper(METRIC_REQUEST_BUSINESS_FAILED, MetricsPlaceValue.of(CommonConstants.CONSUMER, MetricsLevel.SERVICE)),
-        new MetricsKeyWrapper(METRIC_REQUESTS_TIMEOUT, MetricsPlaceValue.of(CommonConstants.PROVIDER, MetricsLevel.SERVICE)),
-        new MetricsKeyWrapper(METRIC_REQUESTS_TIMEOUT, MetricsPlaceValue.of(CommonConstants.CONSUMER, MetricsLevel.SERVICE)),
-        new MetricsKeyWrapper(METRIC_REQUESTS_LIMIT, MetricsPlaceValue.of(CommonConstants.PROVIDER, MetricsLevel.SERVICE)),
-        new MetricsKeyWrapper(METRIC_REQUESTS_LIMIT, MetricsPlaceValue.of(CommonConstants.CONSUMER, MetricsLevel.SERVICE)),
-        new MetricsKeyWrapper(METRIC_REQUESTS_FAILED, MetricsPlaceValue.of(CommonConstants.PROVIDER, MetricsLevel.SERVICE)),
-        new MetricsKeyWrapper(METRIC_REQUESTS_FAILED, MetricsPlaceValue.of(CommonConstants.CONSUMER, MetricsLevel.SERVICE)),
-        new MetricsKeyWrapper(METRIC_REQUESTS_TOTAL_FAILED, MetricsPlaceValue.of(CommonConstants.PROVIDER, MetricsLevel.SERVICE)),
-        new MetricsKeyWrapper(METRIC_REQUESTS_TOTAL_FAILED, MetricsPlaceValue.of(CommonConstants.CONSUMER, MetricsLevel.SERVICE)),
-        new MetricsKeyWrapper(METRIC_REQUESTS_NETWORK_FAILED, MetricsPlaceValue.of(CommonConstants.PROVIDER, MetricsLevel.SERVICE)),
-        new MetricsKeyWrapper(METRIC_REQUESTS_NETWORK_FAILED, MetricsPlaceValue.of(CommonConstants.CONSUMER, MetricsLevel.SERVICE)),
-        new MetricsKeyWrapper(METRIC_REQUESTS_SERVICE_UNAVAILABLE_FAILED, MetricsPlaceValue.of(CommonConstants.PROVIDER, MetricsLevel.SERVICE)),
-        new MetricsKeyWrapper(METRIC_REQUESTS_SERVICE_UNAVAILABLE_FAILED, MetricsPlaceValue.of(CommonConstants.CONSUMER, MetricsLevel.SERVICE)),
-        new MetricsKeyWrapper(METRIC_REQUESTS_CODEC_FAILED, MetricsPlaceValue.of(CommonConstants.PROVIDER, MetricsLevel.SERVICE)),
-        new MetricsKeyWrapper(METRIC_REQUESTS_CODEC_FAILED, MetricsPlaceValue.of(CommonConstants.CONSUMER, MetricsLevel.SERVICE))
+    List<MetricsKeyWrapper> METHOD_LEVEL_KEYS = Arrays.asList(
+        new MetricsKeyWrapper(METRIC_REQUESTS, MetricsPlaceValue.of(CommonConstants.PROVIDER, MetricsLevel.METHOD)),
+        new MetricsKeyWrapper(METRIC_REQUESTS, MetricsPlaceValue.of(CommonConstants.CONSUMER, MetricsLevel.METHOD)),
+        new MetricsKeyWrapper(METRIC_REQUESTS_PROCESSING, MetricsPlaceValue.of(CommonConstants.PROVIDER, MetricsLevel.METHOD)),
+        new MetricsKeyWrapper(METRIC_REQUESTS_PROCESSING, MetricsPlaceValue.of(CommonConstants.CONSUMER, MetricsLevel.METHOD)),
+        new MetricsKeyWrapper(METRIC_REQUESTS_SUCCEED, MetricsPlaceValue.of(CommonConstants.PROVIDER, MetricsLevel.METHOD)),
+        new MetricsKeyWrapper(METRIC_REQUESTS_SUCCEED, MetricsPlaceValue.of(CommonConstants.CONSUMER, MetricsLevel.METHOD)),
+        new MetricsKeyWrapper(METRIC_REQUEST_BUSINESS_FAILED, MetricsPlaceValue.of(CommonConstants.PROVIDER, MetricsLevel.METHOD)),
+        new MetricsKeyWrapper(METRIC_REQUEST_BUSINESS_FAILED, MetricsPlaceValue.of(CommonConstants.CONSUMER, MetricsLevel.METHOD)),
+        new MetricsKeyWrapper(METRIC_REQUESTS_TIMEOUT, MetricsPlaceValue.of(CommonConstants.PROVIDER, MetricsLevel.METHOD)),
+        new MetricsKeyWrapper(METRIC_REQUESTS_TIMEOUT, MetricsPlaceValue.of(CommonConstants.CONSUMER, MetricsLevel.METHOD)),
+        new MetricsKeyWrapper(METRIC_REQUESTS_LIMIT, MetricsPlaceValue.of(CommonConstants.PROVIDER, MetricsLevel.METHOD)),
+        new MetricsKeyWrapper(METRIC_REQUESTS_LIMIT, MetricsPlaceValue.of(CommonConstants.CONSUMER, MetricsLevel.METHOD)),
+        new MetricsKeyWrapper(METRIC_REQUESTS_FAILED, MetricsPlaceValue.of(CommonConstants.PROVIDER, MetricsLevel.METHOD)),
+        new MetricsKeyWrapper(METRIC_REQUESTS_FAILED, MetricsPlaceValue.of(CommonConstants.CONSUMER, MetricsLevel.METHOD)),
+        new MetricsKeyWrapper(METRIC_REQUESTS_TOTAL_FAILED, MetricsPlaceValue.of(CommonConstants.PROVIDER, MetricsLevel.METHOD)),
+        new MetricsKeyWrapper(METRIC_REQUESTS_TOTAL_FAILED, MetricsPlaceValue.of(CommonConstants.CONSUMER, MetricsLevel.METHOD)),
+        new MetricsKeyWrapper(METRIC_REQUESTS_NETWORK_FAILED, MetricsPlaceValue.of(CommonConstants.PROVIDER, MetricsLevel.METHOD)),
+        new MetricsKeyWrapper(METRIC_REQUESTS_NETWORK_FAILED, MetricsPlaceValue.of(CommonConstants.CONSUMER, MetricsLevel.METHOD)),
+        new MetricsKeyWrapper(METRIC_REQUESTS_SERVICE_UNAVAILABLE_FAILED, MetricsPlaceValue.of(CommonConstants.PROVIDER, MetricsLevel.METHOD)),
+        new MetricsKeyWrapper(METRIC_REQUESTS_SERVICE_UNAVAILABLE_FAILED, MetricsPlaceValue.of(CommonConstants.CONSUMER, MetricsLevel.METHOD)),
+        new MetricsKeyWrapper(METRIC_REQUESTS_CODEC_FAILED, MetricsPlaceValue.of(CommonConstants.PROVIDER, MetricsLevel.METHOD)),
+        new MetricsKeyWrapper(METRIC_REQUESTS_CODEC_FAILED, MetricsPlaceValue.of(CommonConstants.CONSUMER, MetricsLevel.METHOD))
         );
 }

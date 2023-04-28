@@ -39,8 +39,7 @@ import static org.apache.dubbo.metrics.model.key.MetricsKey.METRIC_REQUEST_BUSIN
  */
 public class RequestEvent extends TimeCounterEvent {
     public RequestEvent(ApplicationModel applicationModel, TypeWrapper typeWrapper) {
-        super(applicationModel);
-        super.typeWrapper = typeWrapper;
+        super(applicationModel,typeWrapper);
         ScopeBeanFactory beanFactory = applicationModel.getBeanFactory();
         DefaultMetricsCollector collector;
         if (!beanFactory.isDestroyed()) {

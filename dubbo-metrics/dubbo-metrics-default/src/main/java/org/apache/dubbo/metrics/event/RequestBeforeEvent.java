@@ -17,15 +17,16 @@
 
 package org.apache.dubbo.metrics.event;
 
+import org.apache.dubbo.metrics.model.key.TypeWrapper;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 /**
  * Acts on MetricsClusterFilter to monitor exceptions that occur before request execution
  */
-public class RequestBeforeEvent extends MetricsEvent{
+public class RequestBeforeEvent extends TimeCounterEvent{
 
-    public RequestBeforeEvent(ApplicationModel source) {
-        super(source);
+    public RequestBeforeEvent(ApplicationModel source, TypeWrapper typeWrapper) {
+        super(source,typeWrapper);
 
     }
 
