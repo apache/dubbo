@@ -19,6 +19,7 @@ package org.apache.dubbo.config;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.Version;
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
@@ -86,6 +87,7 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_NO_ME
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_SERVER_DISCONNECTED;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_UNEXPORT_ERROR;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_USE_RANDOM_PORT;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
 import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGISTRY_PROTOCOL;
 import static org.apache.dubbo.common.utils.NetUtils.getAvailablePort;
@@ -196,6 +198,14 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         if (!exporters.isEmpty()) {
             for (Exporter<?> exporter : exporters) {
                 try {
+                    exporter.unregister();
+                } catch (Throwable t) {
+                    logger.warn(CONFIG_UNEXPORT_ERROR, "", "", "Unexpected error occurred when unexport " + exporter, t);
+                }
+            }
+            waitForIdle();
+            for (Exporter<?> exporter : exporters) {
+                try {
                     exporter.unexport();
                 } catch (Throwable t) {
                     logger.warn(CONFIG_UNEXPORT_ERROR, "", "", "Unexpected error occurred when unexport " + exporter, t);
@@ -207,6 +217,51 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         onUnexpoted();
         ModuleServiceRepository repository = getScopeModel().getServiceRepository();
         repository.unregisterProvider(providerModel);
+    }
+
+    private void waitForIdle() {
+        int timeout = ConfigurationUtils.getServerShutdownTimeout(getScopeModel());
+
+        long idleTime = System.currentTimeMillis() - providerModel.getLastInvokeTime();
+
+        // 1. if service has idle for 10s(shutdown time), un-export directly
+        if (idleTime > timeout) {
+            return;
+        }
+
+        // 2. if service has idle for  more than 6.7s(2/3 of shutdown time), wait for the rest time, then un-export directly
+        int tick = timeout / 3;
+        if (timeout - idleTime < tick) {
+            logger.info("Service " + getUniqueServiceName() + " has idle for " + idleTime + " ms, wait for " + (timeout - idleTime) + " ms to un-export");
+            try {
+                Thread.sleep(timeout - idleTime);
+            } catch (InterruptedException e) {
+                logger.warn(INTERNAL_ERROR, "unknown error in registry module", "", e.getMessage(), e);
+                Thread.currentThread().interrupt();
+            }
+            return;
+        }
+
+        // 3. Wait for 3.33s(1/3 of shutdown time), if service has idle for 3.33s(1/3 of shutdown time), un-export directly,
+        //    otherwise wait for the rest time until idle for 3.33s(1/3 of shutdown time). The max wait time is 10s(shutdown time).
+        idleTime = 0;
+        long startTime = System.currentTimeMillis();
+        while (idleTime < tick) {
+            // service idle time.
+            idleTime = System.currentTimeMillis() - Math.max(providerModel.getLastInvokeTime(), startTime);
+            if (idleTime >= tick || System.currentTimeMillis() - startTime > timeout) {
+                return;
+            }
+            // idle rest time or timeout rest time
+            long waitTime = Math.min(tick - idleTime, timeout + startTime - System.currentTimeMillis());
+            logger.info("Service " + getUniqueServiceName() + " has idle for " + idleTime + " ms, wait for " + waitTime + " ms to un-export");
+            try {
+                Thread.sleep(waitTime);
+            } catch (InterruptedException e) {
+                logger.warn(INTERNAL_ERROR, "unknown error in registry module", "", e.getMessage(), e);
+                Thread.currentThread().interrupt();
+            }
+        }
     }
 
     /**
