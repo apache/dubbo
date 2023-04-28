@@ -21,8 +21,7 @@ import org.apache.dubbo.metrics.collector.MetricsCollector;
 import org.apache.dubbo.metrics.model.MetricsCategory;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
-import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
-
+import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.metrics.report.MetricsExport;
 import org.apache.dubbo.rpc.Invocation;
 
@@ -54,11 +53,14 @@ public abstract class BaseStatComposite implements MetricsExport {
 
     protected void init(ApplicationStatComposite applicationStatComposite) {
     }
+
     protected void init(ServiceStatComposite serviceStatComposite) {
 
     }
+
     protected void init(MethodStatComposite methodStatComposite) {
     }
+
     protected void init(RtStatComposite rtStatComposite) {
     }
 
@@ -91,9 +93,8 @@ public abstract class BaseStatComposite implements MetricsExport {
     }
 
     @Override
-    @SuppressWarnings({"rawtypes"})
-    public List<GaugeMetricSample> export(MetricsCategory category) {
-        List<GaugeMetricSample> list = new ArrayList<>();
+    public List<MetricSample> export(MetricsCategory category) {
+        List<MetricSample> list = new ArrayList<>();
         list.addAll(applicationStatComposite.export(category));
         list.addAll(rtStatComposite.export(category));
         list.addAll(serviceStatComposite.export(category));

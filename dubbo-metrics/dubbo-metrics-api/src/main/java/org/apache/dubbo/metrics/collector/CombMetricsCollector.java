@@ -24,7 +24,7 @@ import org.apache.dubbo.metrics.listener.AbstractMetricsListener;
 import org.apache.dubbo.metrics.model.MetricsCategory;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
-import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
+import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.rpc.Invocation;
 
 import java.util.List;
@@ -78,8 +78,7 @@ public abstract class CombMetricsCollector<E extends TimeCounterEvent> extends A
         stats.calcMethodKeyRt(applicationName, invocation, registryOpType, responseTime);
     }
 
-    @SuppressWarnings({"rawtypes"})
-    protected List<GaugeMetricSample> export(MetricsCategory category) {
+    protected List<MetricSample> export(MetricsCategory category) {
         return stats.export(category);
     }
 

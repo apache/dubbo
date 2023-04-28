@@ -20,9 +20,10 @@ package org.apache.dubbo.metrics.data;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.metrics.model.MethodMetric;
 import org.apache.dubbo.metrics.model.MetricsCategory;
-import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
+import org.apache.dubbo.metrics.model.sample.CounterMetricSample;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
+import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.metrics.report.MetricsExport;
 import org.apache.dubbo.rpc.Invocation;
 
@@ -50,21 +51,18 @@ public class MethodStatComposite implements MetricsExport {
         methodNumStats.get(wrapper).computeIfAbsent(new MethodMetric(applicationName, invocation), k -> new AtomicLong(0L)).getAndAdd(size);
     }
 
-    public void setMethodKey(MetricsKey metricsKey, String applicationName, Invocation invocation, int num) {
-        MetricsKeyWrapper wrapper = MetricsKeyWrapper.wrapper(metricsKey);
-        if (!methodNumStats.containsKey(wrapper)) {
-            return;
-        }
-        methodNumStats.get(wrapper).computeIfAbsent(new MethodMetric(applicationName, invocation), k -> new AtomicLong(0L)).set(num);
-    }
-
-    @SuppressWarnings({"rawtypes"})
-    public List<GaugeMetricSample> export(MetricsCategory category) {
-        List<GaugeMetricSample> list = new ArrayList<>();
+    public List<MetricSample> export(MetricsCategory category) {
+        List<MetricSample> list = new ArrayList<>();
         for (MetricsKeyWrapper wrapper : methodNumStats.keySet()) {
             Map<MethodMetric, AtomicLong> stringAtomicLongMap = methodNumStats.get(wrapper);
-            for (MethodMetric serviceKeyMetric : stringAtomicLongMap.keySet()) {
-                list.add(new GaugeMetricSample<>(wrapper, serviceKeyMetric.getTags(), category, stringAtomicLongMap, value -> value.get(serviceKeyMetric).get()));
+            for (MethodMetric methodMetric : stringAtomicLongMap.keySet()) {
+                if (methodMetric.getSampleType() == MetricSample.Type.GAUGE) {
+                    list.add(new CounterMetricSample<>(wrapper,
+                            methodMetric.getTags(), category, stringAtomicLongMap.get(methodMetric)));
+                } else {
+                    list.add(new GaugeMetricSample<>(wrapper, methodMetric.getTags(), category, stringAtomicLongMap, value -> value.get(methodMetric).get()));
+                }
+
             }
         }
         return list;
