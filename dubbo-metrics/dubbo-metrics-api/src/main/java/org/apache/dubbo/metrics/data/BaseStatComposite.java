@@ -76,7 +76,7 @@ public abstract class BaseStatComposite implements MetricsExport {
         rtStatComposite.calcMethodKeyRt(applicationName, invocation, registryOpType, responseTime);
     }
 
-    public void setServiceKey(MetricsKey metricsKey, String applicationName, String serviceKey, int num) {
+    public void setServiceKey(MetricsKeyWrapper metricsKey, String applicationName, String serviceKey, int num) {
         serviceStatComposite.setServiceKey(metricsKey, applicationName, serviceKey, num);
     }
 

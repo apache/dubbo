@@ -63,10 +63,6 @@ public class MetricsKeyWrapper {
         return metricsKey == getMetricsKey() && registryOpType.equals(getType());
     }
 
-    public boolean isServiceLevel() {
-        return getPlaceType().getMetricsLevel().equals(MetricsLevel.SERVICE);
-    }
-
     public MetricsLevel getLevel() {
         return getPlaceType().getMetricsLevel();
     }

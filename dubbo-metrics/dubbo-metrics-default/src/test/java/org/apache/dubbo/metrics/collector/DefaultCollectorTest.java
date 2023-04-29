@@ -66,7 +66,6 @@ import static org.apache.dubbo.metrics.model.key.MetricsKey.METRIC_REQUESTS_TOTA
 class DefaultCollectorTest {
 
     private ApplicationModel applicationModel;
-    String serviceName = "demo.gameService";
 
     private String interfaceName;
     private String methodName;

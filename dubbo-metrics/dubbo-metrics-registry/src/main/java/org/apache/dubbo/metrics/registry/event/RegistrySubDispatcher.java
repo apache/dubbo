@@ -24,6 +24,7 @@ import org.apache.dubbo.metrics.listener.MetricsServiceListener;
 import org.apache.dubbo.metrics.model.key.CategoryOverall;
 import org.apache.dubbo.metrics.model.key.MetricsCat;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
+import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
 import org.apache.dubbo.metrics.registry.collector.RegistryMetricsCollector;
 
 import java.util.Arrays;
@@ -88,7 +89,7 @@ public final class RegistrySubDispatcher extends SimpleMetricsEventMulticaster {
                     collector.addRt(event.appName(), placeType.getType(), event.getTimePair().calc());
                     Map<String, Integer> lastNumMap = Collections.unmodifiableMap(event.getAttachmentValue(ATTACHMENT_KEY_LAST_NUM_MAP));
                     lastNumMap.forEach(
-                        (k, v) -> collector.setNum(key, event.appName(), k, v));
+                        (k, v) -> collector.setNum(new MetricsKeyWrapper(key, OP_TYPE_NOTIFY), event.appName(), k, v));
 
                 }
             ));
@@ -100,7 +101,7 @@ public final class RegistrySubDispatcher extends SimpleMetricsEventMulticaster {
                 Map<MetricsKey, Map<String, Integer>> summaryMap = event.getAttachmentValue(ATTACHMENT_DIRECTORY_MAP);
                 summaryMap.forEach((metricsKey, map) ->
                     map.forEach(
-                        (k, v) -> collector.setNum(metricsKey, event.appName(), k, v)));
+                        (k, v) -> collector.setNum(new MetricsKeyWrapper(key, OP_TYPE_DIRECTORY), event.appName(), k, v)));
             }
         ));
 

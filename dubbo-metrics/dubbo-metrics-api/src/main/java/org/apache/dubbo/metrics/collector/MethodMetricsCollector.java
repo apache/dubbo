@@ -22,10 +22,7 @@ import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
 import org.apache.dubbo.rpc.Invocation;
 
 /**
- * Service-level collector.
- * registration center, configuration center and other scenarios
- *
- * @Params <T>  metrics type
+ * Method-level metrics collection for rpc invocation scenarios
  */
 public interface MethodMetricsCollector<E extends TimeCounterEvent> extends MetricsCollector<E> {
 

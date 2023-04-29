@@ -46,7 +46,7 @@ public abstract class CombMetricsCollector<E extends TimeCounterEvent> extends A
     }
 
     @Override
-    public void setNum(MetricsKey metricsKey, String applicationName, String serviceKey, int num) {
+    public void setNum(MetricsKeyWrapper metricsKey, String applicationName, String serviceKey, int num) {
         this.stats.setServiceKey(metricsKey, applicationName, serviceKey, num);
     }
 
