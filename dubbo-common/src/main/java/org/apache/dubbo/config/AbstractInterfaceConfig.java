@@ -314,7 +314,8 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                 // There may be no interface class when generic call
                 return;
             }
-            if (!interfaceClass.isInterface()) {
+
+            if (!interfaceClass.isInterface() && !canSkipInterfaceCheck()) {
                 throw new IllegalStateException(interfaceName + " is not an interface");
             }
 
@@ -372,6 +373,15 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             }
         }
 
+    }
+
+    /**
+     *  it is used for skipping the check of interface since dubbo 3.2
+     *  rest protocol allow the service is implement class
+     * @return
+     */
+    protected boolean canSkipInterfaceCheck() {
+        return false;
     }
 
     protected boolean verifyMethodConfig(MethodConfig methodConfig, Class<?> interfaceClass, boolean ignoreInvalidMethodConfig) {
@@ -922,4 +932,5 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     public void setInterfaceClassLoader(ClassLoader interfaceClassLoader) {
         this.interfaceClassLoader = interfaceClassLoader;
     }
+
 }
