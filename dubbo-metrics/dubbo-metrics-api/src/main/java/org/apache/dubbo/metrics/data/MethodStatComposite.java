@@ -18,12 +18,14 @@
 package org.apache.dubbo.metrics.data;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.metrics.model.MethodMetric;
 import org.apache.dubbo.metrics.model.MetricsCategory;
-import org.apache.dubbo.metrics.model.ServiceKeyMetric;
 import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
+import org.apache.dubbo.metrics.model.sample.CounterMetricSample;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.metrics.report.MetricsExport;
+import org.apache.dubbo.rpc.Invocation;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,37 +33,36 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class ServiceStatComposite implements MetricsExport {
+public class MethodStatComposite implements MetricsExport {
 
-    private final Map<MetricsKeyWrapper, Map<ServiceKeyMetric, AtomicLong>> serviceWrapperNumStats = new ConcurrentHashMap<>();
+    private final Map<MetricsKeyWrapper, Map<MethodMetric, AtomicLong>> methodNumStats = new ConcurrentHashMap<>();
 
     public void initWrapper(List<MetricsKeyWrapper> metricsKeyWrappers) {
         if (CollectionUtils.isEmpty(metricsKeyWrappers)) {
             return;
         }
-        metricsKeyWrappers.forEach(appKey -> serviceWrapperNumStats.put(appKey, new ConcurrentHashMap<>()));
+        metricsKeyWrappers.forEach(appKey -> methodNumStats.put(appKey, new ConcurrentHashMap<>()));
     }
 
-    public void incrementServiceKey(MetricsKeyWrapper wrapper, String applicationName, String serviceKey, int size) {
-        if (!serviceWrapperNumStats.containsKey(wrapper)) {
+    public void incrementMethodKey(MetricsKeyWrapper wrapper, String applicationName, Invocation invocation, int size) {
+        if (!methodNumStats.containsKey(wrapper)) {
             return;
         }
-        serviceWrapperNumStats.get(wrapper).computeIfAbsent(new ServiceKeyMetric(applicationName, serviceKey), k -> new AtomicLong(0L)).getAndAdd(size);
-    }
-
-    public void setServiceKey(MetricsKeyWrapper wrapper, String applicationName, String serviceKey, int num) {
-        if (!serviceWrapperNumStats.containsKey(wrapper)) {
-            return;
-        }
-        serviceWrapperNumStats.get(wrapper).computeIfAbsent(new ServiceKeyMetric(applicationName, serviceKey), k -> new AtomicLong(0L)).set(num);
+        methodNumStats.get(wrapper).computeIfAbsent(new MethodMetric(applicationName, invocation), k -> new AtomicLong(0L)).getAndAdd(size);
     }
 
     public List<MetricSample> export(MetricsCategory category) {
         List<MetricSample> list = new ArrayList<>();
-        for (MetricsKeyWrapper wrapper : serviceWrapperNumStats.keySet()) {
-            Map<ServiceKeyMetric, AtomicLong> stringAtomicLongMap = serviceWrapperNumStats.get(wrapper);
-            for (ServiceKeyMetric serviceKeyMetric : stringAtomicLongMap.keySet()) {
-                list.add(new GaugeMetricSample<>(wrapper, serviceKeyMetric.getTags(), category, stringAtomicLongMap, value -> value.get(serviceKeyMetric).get()));
+        for (MetricsKeyWrapper wrapper : methodNumStats.keySet()) {
+            Map<MethodMetric, AtomicLong> stringAtomicLongMap = methodNumStats.get(wrapper);
+            for (MethodMetric methodMetric : stringAtomicLongMap.keySet()) {
+                if (methodMetric.getSampleType() == MetricSample.Type.GAUGE) {
+                    list.add(new CounterMetricSample<>(wrapper,
+                            methodMetric.getTags(), category, stringAtomicLongMap.get(methodMetric)));
+                } else {
+                    list.add(new GaugeMetricSample<>(wrapper, methodMetric.getTags(), category, stringAtomicLongMap, value -> value.get(methodMetric).get()));
+                }
+
             }
         }
         return list;

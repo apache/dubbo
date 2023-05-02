@@ -19,8 +19,8 @@ package org.apache.dubbo.metrics.event;
 
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.context.ConfigManager;
+import org.apache.dubbo.metrics.listener.AbstractMetricsListener;
 import org.apache.dubbo.metrics.listener.MetricsLifeListener;
-import org.apache.dubbo.metrics.listener.MetricsListener;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,7 +39,7 @@ public class SimpleMetricsEventMulticasterTest {
     public void setup() {
         eventMulticaster = new SimpleMetricsEventMulticaster();
         objects = new Object[]{obj};
-        eventMulticaster.addListener(new MetricsListener<MetricsEvent>() {
+        eventMulticaster.addListener(new AbstractMetricsListener<MetricsEvent>() {
             @Override
             public void onEvent(MetricsEvent event) {
                 objects[0] = new Object();
@@ -52,7 +52,7 @@ public class SimpleMetricsEventMulticasterTest {
         ConfigManager configManager = new ConfigManager(applicationModel);
         configManager.setApplication(applicationConfig);
         applicationModel.setConfigManager(configManager);
-        requestEvent = new TimeCounterEvent(applicationModel) {
+        requestEvent = new TimeCounterEvent(applicationModel,null) {
         };
     }
 
@@ -76,6 +76,11 @@ public class SimpleMetricsEventMulticasterTest {
 
         //do onEventFinish with MetricsLifeListener
         eventMulticaster.addListener((new MetricsLifeListener<TimeCounterEvent>() {
+
+            @Override
+            public boolean isSupport(MetricsEvent event) {
+                return event instanceof TimeCounterEvent;
+            }
 
             @Override
             public void onEvent(TimeCounterEvent event) {

@@ -20,7 +20,7 @@ import org.apache.dubbo.metrics.config.collector.ConfigCenterMetricsCollector;
 import org.apache.dubbo.metrics.event.MetricsEvent;
 import org.apache.dubbo.metrics.event.SimpleMetricsEventMulticaster;
 import org.apache.dubbo.metrics.event.TimeCounterEvent;
-import org.apache.dubbo.metrics.listener.AbstractMetricsListener;
+import org.apache.dubbo.metrics.listener.AbstractMetricsKeyListener;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
 
 import static org.apache.dubbo.metrics.MetricsConstants.ATTACHMENT_KEY_SIZE;
@@ -30,11 +30,11 @@ import static org.apache.dubbo.metrics.config.ConfigCenterMetricsConstants.ATTAC
 import static org.apache.dubbo.metrics.config.ConfigCenterMetricsConstants.ATTACHMENT_KEY_CONFIG_PROTOCOL;
 
 
-public final class ConfigCenterMetricsDispatcher extends SimpleMetricsEventMulticaster {
+public final class ConfigCenterSubDispatcher extends SimpleMetricsEventMulticaster {
 
-    public ConfigCenterMetricsDispatcher(ConfigCenterMetricsCollector collector) {
+    public ConfigCenterSubDispatcher(ConfigCenterMetricsCollector collector) {
 
-        super.addListener(new AbstractMetricsListener(MetricsKey.CONFIGCENTER_METRIC_TOTAL) {
+        super.addListener(new AbstractMetricsKeyListener(MetricsKey.CONFIGCENTER_METRIC_TOTAL) {
             @Override
             public boolean isSupport(MetricsEvent event) {
                 return event instanceof ConfigCenterEvent;

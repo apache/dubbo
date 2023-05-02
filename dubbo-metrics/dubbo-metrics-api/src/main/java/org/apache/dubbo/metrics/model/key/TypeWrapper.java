@@ -44,4 +44,5 @@ public class TypeWrapper {
         Assert.notNull(type, "Type can not be null");
         return type.equals(postType) || type.equals(finishType) || type.equals(errorType);
     }
+
 }

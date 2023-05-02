@@ -19,6 +19,7 @@ package org.apache.dubbo.metrics.metadata;
 
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.metrics.event.MetricsDispatcher;
+import org.apache.dubbo.metrics.event.MetricsEvent;
 import org.apache.dubbo.metrics.event.MetricsEventBus;
 import org.apache.dubbo.metrics.metadata.collector.MetadataMetricsCollector;
 import org.apache.dubbo.metrics.metadata.event.MetadataEvent;
@@ -41,7 +42,9 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_APPLICATION_NAME;
-import static org.apache.dubbo.metrics.metadata.MetadataMetricsConstants.*;
+import static org.apache.dubbo.metrics.metadata.MetadataMetricsConstants.OP_TYPE_PUSH;
+import static org.apache.dubbo.metrics.metadata.MetadataMetricsConstants.OP_TYPE_STORE_PROVIDER_INTERFACE;
+import static org.apache.dubbo.metrics.metadata.MetadataMetricsConstants.OP_TYPE_SUBSCRIBE;
 
 
 class MetadataMetricsCollectorTest {
@@ -63,6 +66,16 @@ class MetadataMetricsCollectorTest {
         collector = applicationModel.getBeanFactory().getOrRegisterBean(MetadataMetricsCollector.class);
         collector.setCollectEnabled(true);
     }
+
+    @Test
+    void testListener() {
+        MetadataEvent event = MetadataEvent.toPushEvent(applicationModel);
+        MetricsEvent otherEvent = new MetricsEvent(applicationModel,null){
+        };
+        Assertions.assertTrue(collector.isSupport(event));
+        Assertions.assertFalse(collector.isSupport(otherEvent));
+    }
+
 
     @AfterEach
     public void teardown() {

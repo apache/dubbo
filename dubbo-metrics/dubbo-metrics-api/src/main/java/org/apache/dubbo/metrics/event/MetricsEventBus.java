@@ -73,48 +73,77 @@ public class MetricsEventBus {
      * @return Biz result
      */
     public static <T> T post(MetricsEvent event, Supplier<T> targetSupplier, Function<T, Boolean> trFunction) {
-        if (event.getSource() == null) {
-            return targetSupplier.get();
-        }
-        ApplicationModel applicationModel = event.getSource();
-        if (applicationModel.isDestroyed()) {
-            return targetSupplier.get();
-        }
-        ScopeBeanFactory beanFactory = applicationModel.getBeanFactory();
-        if (beanFactory.isDestroyed()) {
-            return targetSupplier.get();
-        }
-        MetricsDispatcher dispatcher = beanFactory.getBean(MetricsDispatcher.class);
-        if (dispatcher == null) {
-            return targetSupplier.get();
-        }
-        dispatcher.publishEvent(event);
-        if (!(event instanceof TimeCounterEvent)) {
-            return targetSupplier.get();
-        }
-        TimeCounterEvent timeCounterEvent = (TimeCounterEvent) event;
         T result;
+        before(event);
         if (trFunction == null) {
             try {
                 result = targetSupplier.get();
             } catch (Throwable e) {
-                dispatcher.publishErrorEvent(timeCounterEvent);
+                error(event);
                 throw e;
             }
-            event.customAfterPost(result);
-            dispatcher.publishFinishEvent(timeCounterEvent);
+            after(event, result);
         } else {
             // Custom failure status
             result = targetSupplier.get();
             if (trFunction.apply(result)) {
-                event.customAfterPost(result);
-                dispatcher.publishFinishEvent(timeCounterEvent);
+                after(event, result);
             } else {
-                dispatcher.publishErrorEvent(timeCounterEvent);
+                error(event);
             }
         }
         return result;
     }
 
+    public static void before(MetricsEvent event) {
+        before(event, null);
+    }
 
+    /**
+     * Applicable to the scene where execution and return are separated,
+     * eventSaveRunner saves the event, so that the calculation rt is introverted
+     */
+    public static void before(MetricsEvent event, Runnable eventSaveRunner) {
+        MetricsDispatcher dispatcher = validate(event);
+        if (dispatcher == null) return;
+        dispatcher.publishEvent(event);
+        if (eventSaveRunner != null) {
+            eventSaveRunner.run();
+        }
+    }
+
+    public static void after(MetricsEvent event, Object result) {
+        MetricsDispatcher dispatcher = validate(event);
+        if (dispatcher == null) return;
+        event.customAfterPost(result);
+        dispatcher.publishFinishEvent((TimeCounterEvent) event);
+    }
+
+    public static void error(MetricsEvent event) {
+        MetricsDispatcher dispatcher = validate(event);
+        if (dispatcher == null) return;
+        dispatcher.publishErrorEvent((TimeCounterEvent) event);
+    }
+
+    private static MetricsDispatcher validate(MetricsEvent event) {
+        if (event.getSource() == null) {
+            return null;
+        }
+        ApplicationModel applicationModel = event.getSource();
+        if (applicationModel.isDestroyed()) {
+            return null;
+        }
+        ScopeBeanFactory beanFactory = applicationModel.getBeanFactory();
+        if (beanFactory.isDestroyed()) {
+            return null;
+        }
+        MetricsDispatcher dispatcher = beanFactory.getBean(MetricsDispatcher.class);
+        if (dispatcher == null) {
+            return null;
+        }
+        if (!(event instanceof TimeCounterEvent)) {
+            return null;
+        }
+        return dispatcher;
+    }
 }
