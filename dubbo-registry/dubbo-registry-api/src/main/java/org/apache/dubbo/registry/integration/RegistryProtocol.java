@@ -16,18 +16,7 @@
  */
 package org.apache.dubbo.registry.integration;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.deploy.ApplicationDeployer;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
@@ -71,11 +60,21 @@ import org.apache.dubbo.rpc.model.ScopeModelUtil;
 import org.apache.dubbo.rpc.protocol.InvokerWrapper;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
-import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_SERVER_SHUTDOWN_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.EXTRA_KEYS_KEY;
@@ -86,6 +85,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.IPV6_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.LOADBALANCE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PACKABLE_METHOD_FACTORY_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_PROTOCOL_LISTENER_KEY;
@@ -144,7 +144,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
     public static final String[] DEFAULT_REGISTER_PROVIDER_KEYS = {
         APPLICATION_KEY, CODEC_KEY, EXCHANGER_KEY, SERIALIZATION_KEY, PREFER_SERIALIZATION_KEY, CLUSTER_KEY, CONNECTIONS_KEY, DEPRECATED_KEY,
         GROUP_KEY, LOADBALANCE_KEY, MOCK_KEY, PATH_KEY, TIMEOUT_KEY, TOKEN_KEY, VERSION_KEY, WARMUP_KEY,
-        WEIGHT_KEY, DUBBO_VERSION_KEY, RELEASE_KEY, SIDE_KEY, IPV6_KEY
+        WEIGHT_KEY, DUBBO_VERSION_KEY, RELEASE_KEY, SIDE_KEY, IPV6_KEY, PACKABLE_METHOD_FACTORY_KEY
     };
 
     public static final String[] DEFAULT_REGISTER_CONSUMER_KEYS = {
@@ -701,6 +701,11 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         public void unexport() {
             exporter.unexport();
         }
+
+        @Override
+        public void unregister() {
+            exporter.unregister();
+        }
     }
 
     /**
@@ -905,6 +910,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         private URL registerUrl;
 
         private NotifyListener notifyListener;
+        private final AtomicBoolean unregistered = new AtomicBoolean(false);
 
         public ExporterChangeableWrapper(Exporter<T> exporter, Invoker<T> originInvoker) {
             this.exporter = exporter;
@@ -928,57 +934,60 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         }
 
         @Override
-        public void unexport() {
-            String key = getCacheKey(this.originInvoker);
-            bounds.remove(key);
-
-            Registry registry = RegistryProtocol.this.getRegistry(getRegistryUrl(originInvoker));
-            try {
-                registry.unregister(registerUrl);
-            } catch (Throwable t) {
-                logger.warn(INTERNAL_ERROR, "unknown error in registry module", "", t.getMessage(), t);
-            }
-            try {
-                if (subscribeUrl != null) {
-                    Map<URL, Set<NotifyListener>> overrideListeners = getProviderConfigurationListener(subscribeUrl).getOverrideListeners();
-                    Set<NotifyListener> listeners = overrideListeners.get(subscribeUrl);
-                    if(listeners != null){
-                        if (listeners.remove(notifyListener)) {
-                            if (!registry.isServiceDiscovery()) {
-                                registry.unsubscribe(subscribeUrl, notifyListener);
-                            }
-                            ApplicationModel applicationModel = getApplicationModel(registerUrl.getScopeModel());
-                            if (applicationModel.getModelEnvironment().getConfiguration().convert(Boolean.class, ENABLE_CONFIGURATION_LISTEN, true)) {
-                                for (ModuleModel moduleModel : applicationModel.getPubModuleModels()) {
-                                    if (moduleModel.getServiceRepository().getExportedServices().size() > 0) {
-                                        moduleModel.getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension()
-                                            .removeListener(subscribeUrl.getServiceKey() + CONFIGURATORS_SUFFIX,
-                                                serviceConfigurationListeners.remove(subscribeUrl.getServiceKey()));
-                                    }
-                                }
-                            }
-                        }
-                        if (listeners.isEmpty()) {
-                            overrideListeners.remove(subscribeUrl);
-                        }
-                    }
-                }
-            } catch (Throwable t) {
-                logger.warn(INTERNAL_ERROR, "unknown error in registry module", "", t.getMessage(), t);
-            }
-
-            //TODO wait for shutdown timeout is a bit strange
-            int timeout = DEFAULT_SERVER_SHUTDOWN_TIMEOUT;
-            if (subscribeUrl != null) {
-                timeout = ConfigurationUtils.getServerShutdownTimeout(subscribeUrl.getScopeModel());
-            }
-            executor.schedule(() -> {
+        public synchronized void unregister() {
+            if (unregistered.compareAndSet(false, true)) {
+                Registry registry = RegistryProtocol.this.getRegistry(getRegistryUrl(originInvoker));
                 try {
-                    exporter.unexport();
+                    registry.unregister(registerUrl);
                 } catch (Throwable t) {
                     logger.warn(INTERNAL_ERROR, "unknown error in registry module", "", t.getMessage(), t);
                 }
-            }, timeout, TimeUnit.MILLISECONDS);
+                try {
+                    if (subscribeUrl != null) {
+                        Map<URL, Set<NotifyListener>> overrideListeners = getProviderConfigurationListener(subscribeUrl).getOverrideListeners();
+                        Set<NotifyListener> listeners = overrideListeners.get(subscribeUrl);
+                        if (listeners != null) {
+                            if (listeners.remove(notifyListener)) {
+                                if (!registry.isServiceDiscovery()) {
+                                    registry.unsubscribe(subscribeUrl, notifyListener);
+                                }
+                                ApplicationModel applicationModel = getApplicationModel(registerUrl.getScopeModel());
+                                if (applicationModel.getModelEnvironment().getConfiguration().convert(Boolean.class, ENABLE_CONFIGURATION_LISTEN, true)) {
+                                    for (ModuleModel moduleModel : applicationModel.getPubModuleModels()) {
+                                        if (moduleModel.getServiceRepository().getExportedServices().size() > 0) {
+                                            moduleModel.getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension()
+                                                .removeListener(subscribeUrl.getServiceKey() + CONFIGURATORS_SUFFIX,
+                                                    serviceConfigurationListeners.remove(subscribeUrl.getServiceKey()));
+                                        }
+                                    }
+                                }
+                            }
+                            if (listeners.isEmpty()) {
+                                overrideListeners.remove(subscribeUrl);
+                            }
+                        }
+                    }
+                } catch (Throwable t) {
+                    logger.warn(INTERNAL_ERROR, "unknown error in registry module", "", t.getMessage(), t);
+                }
+            }
+        }
+
+        @Override
+        public synchronized void unexport() {
+            String key = getCacheKey(this.originInvoker);
+            bounds.remove(key);
+
+            unregister();
+            doUnExport();
+        }
+
+        private void doUnExport() {
+            try {
+                exporter.unexport();
+            } catch (Throwable t) {
+                logger.warn(INTERNAL_ERROR, "unknown error in registry module", "", t.getMessage(), t);
+            }
         }
 
         public void setSubscribeUrl(URL subscribeUrl) {

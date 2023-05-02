@@ -14,38 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.rpc;
 
-package com.alibaba.dubbo.rpc;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
-@Deprecated
-public interface Exporter<T> extends org.apache.dubbo.rpc.Exporter<T> {
+import java.util.List;
 
-    @Override
-    Invoker<T> getInvoker();
+public interface GracefulShutdown {
+    void readonly();
 
-    default void unregister() {}
+    void writeable();
 
-    class CompatibleExporter<T> implements Exporter<T> {
-
-        private org.apache.dubbo.rpc.Exporter<T> delegate;
-
-        public CompatibleExporter(org.apache.dubbo.rpc.Exporter<T> delegate) {
-            this.delegate = delegate;
-        }
-
-        @Override
-        public Invoker<T> getInvoker() {
-            return new Invoker.CompatibleInvoker<>(delegate.getInvoker());
-        }
-
-        @Override
-        public void unexport() {
-            delegate.unexport();
-        }
-
-        @Override
-        public void unregister() {
-            delegate.unregister();
-        }
+    static List<GracefulShutdown> getGracefulShutdowns(FrameworkModel frameworkModel) {
+        return frameworkModel.getBeanFactory().getBeansOfType(GracefulShutdown.class);
     }
 }

@@ -15,37 +15,15 @@
  * limitations under the License.
  */
 
-package com.alibaba.dubbo.rpc;
+package org.apache.dubbo.rpc.model;
 
-@Deprecated
-public interface Exporter<T> extends org.apache.dubbo.rpc.Exporter<T> {
+public interface UnPack {
 
-    @Override
-    Invoker<T> getInvoker();
+    /**
+     * @param data byte array
+     * @return object instance
+     * @throws Exception            exception
+     */
+    Object unpack(byte[] data) throws Exception;
 
-    default void unregister() {}
-
-    class CompatibleExporter<T> implements Exporter<T> {
-
-        private org.apache.dubbo.rpc.Exporter<T> delegate;
-
-        public CompatibleExporter(org.apache.dubbo.rpc.Exporter<T> delegate) {
-            this.delegate = delegate;
-        }
-
-        @Override
-        public Invoker<T> getInvoker() {
-            return new Invoker.CompatibleInvoker<>(delegate.getInvoker());
-        }
-
-        @Override
-        public void unexport() {
-            delegate.unexport();
-        }
-
-        @Override
-        public void unregister() {
-            delegate.unregister();
-        }
-    }
 }

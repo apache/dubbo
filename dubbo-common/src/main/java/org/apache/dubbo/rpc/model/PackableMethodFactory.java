@@ -15,37 +15,15 @@
  * limitations under the License.
  */
 
-package com.alibaba.dubbo.rpc;
+package org.apache.dubbo.rpc.model;
 
-@Deprecated
-public interface Exporter<T> extends org.apache.dubbo.rpc.Exporter<T> {
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.ExtensionScope;
+import org.apache.dubbo.common.extension.SPI;
 
-    @Override
-    Invoker<T> getInvoker();
+@SPI(scope = ExtensionScope.FRAMEWORK)
+public interface PackableMethodFactory {
 
-    default void unregister() {}
+    PackableMethod create(MethodDescriptor methodDescriptor, URL url, String contentType);
 
-    class CompatibleExporter<T> implements Exporter<T> {
-
-        private org.apache.dubbo.rpc.Exporter<T> delegate;
-
-        public CompatibleExporter(org.apache.dubbo.rpc.Exporter<T> delegate) {
-            this.delegate = delegate;
-        }
-
-        @Override
-        public Invoker<T> getInvoker() {
-            return new Invoker.CompatibleInvoker<>(delegate.getInvoker());
-        }
-
-        @Override
-        public void unexport() {
-            delegate.unexport();
-        }
-
-        @Override
-        public void unregister() {
-            delegate.unregister();
-        }
-    }
 }

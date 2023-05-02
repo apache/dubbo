@@ -313,6 +313,7 @@ public interface CommonConstants {
     String HEARTBEAT_EVENT = null;
     String MOCK_HEARTBEAT_EVENT = "H";
     String READONLY_EVENT = "R";
+    String WRITEABLE_EVENT = "W";
 
     String REFERENCE_FILTER_KEY = "reference.filter";
 
@@ -628,4 +629,9 @@ public interface CommonConstants {
     String DUBBO_METRICS_CONFIGCENTER_ENABLE = "dubbo.metrics.configcenter.enable";
 
     Integer TRI_EXCEPTION_CODE_NOT_EXISTS = 0;
+
+    String PACKABLE_METHOD_FACTORY_KEY = "serialize.packable.factory";
+
+    String DUBBO_PACKABLE_METHOD_FACTORY = "dubbo.application.parameters." + PACKABLE_METHOD_FACTORY_KEY;
+
 }
