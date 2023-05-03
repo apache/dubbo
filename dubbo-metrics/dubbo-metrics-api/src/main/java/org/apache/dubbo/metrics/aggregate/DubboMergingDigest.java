@@ -18,7 +18,10 @@
 package org.apache.dubbo.metrics.aggregate;
 
 
-import com.tdunning.math.stats.*;
+import com.tdunning.math.stats.Centroid;
+import com.tdunning.math.stats.ScaleFunction;
+import com.tdunning.math.stats.Sort;
+import com.tdunning.math.stats.TDigest;
 
 import java.nio.ByteBuffer;
 import java.util.AbstractCollection;
