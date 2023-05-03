@@ -68,6 +68,7 @@ header:
     - 'Jenkinsfile'
     - '**/vendor/**'
     - '**/src/test/resources/certs/**'
+    - '**/src/test/resources/definition/**'
     - 'dubbo-common/src/main/java/org/apache/dubbo/common/threadlocal/InternalThreadLocal.java'
     - 'dubbo-common/src/main/java/org/apache/dubbo/common/threadlocal/InternalThreadLocalMap.java'
     - 'dubbo-common/src/main/java/org/apache/dubbo/common/timer/HashedWheelTimer.java'

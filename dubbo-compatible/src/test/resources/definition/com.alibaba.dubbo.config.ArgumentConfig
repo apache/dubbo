@@ -1,0 +1,29 @@
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
+public void com.alibaba.dubbo.config.ArgumentConfig.setCallback(java.lang.Boolean)
+public java.lang.Boolean com.alibaba.dubbo.config.ArgumentConfig.isCallback()
+public void com.alibaba.dubbo.config.ArgumentConfig.setIndex(java.lang.Integer)
+public java.lang.String com.alibaba.dubbo.config.ArgumentConfig.getType()
+public java.lang.Integer com.alibaba.dubbo.config.ArgumentConfig.getIndex()
+public void com.alibaba.dubbo.config.ArgumentConfig.setType(java.lang.String)
+public final void com.alibaba.dubbo.config.ArgumentConfig.wait(long,int) throws java.lang.InterruptedException
+public final native void com.alibaba.dubbo.config.ArgumentConfig.wait(long) throws java.lang.InterruptedException
+public final void com.alibaba.dubbo.config.ArgumentConfig.wait() throws java.lang.InterruptedException
+public boolean com.alibaba.dubbo.config.ArgumentConfig.equals(java.lang.Object)
+public java.lang.String com.alibaba.dubbo.config.ArgumentConfig.toString()
+public native int com.alibaba.dubbo.config.ArgumentConfig.hashCode()
+public final native java.lang.Class com.alibaba.dubbo.config.ArgumentConfig.getClass()
+public final native void com.alibaba.dubbo.config.ArgumentConfig.notify()
+public final native void com.alibaba.dubbo.config.ArgumentConfig.notifyAll()
