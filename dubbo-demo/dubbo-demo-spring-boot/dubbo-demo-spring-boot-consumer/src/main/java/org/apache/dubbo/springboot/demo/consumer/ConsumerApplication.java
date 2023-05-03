@@ -37,32 +37,11 @@ public class ConsumerApplication {
 
         ConfigurableApplicationContext context = SpringApplication.run(ConsumerApplication.class, args);
         ConsumerApplication application = context.getBean(ConsumerApplication.class);
-        String result = application.doSayHello();
+        String result = application.doSayHello("world");
         System.out.println("result: " + result);
     }
 
-    public String doSayHello() {
-        int index = 0;
-        while (index < 200) {
-            System.out.println("-------------:" + index);
-            for (int i = 0; i < 100; i++) {
-                new Thread(() -> {
-
-                    try {
-                        String result = demoService.sayHello("world");
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }).start();
-
-            }
-            index++;
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-        return "";
+    public String doSayHello(String name) {
+        return demoService.sayHello(name);
     }
 }
