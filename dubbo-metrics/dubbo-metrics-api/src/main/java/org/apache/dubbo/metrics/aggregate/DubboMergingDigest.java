@@ -30,6 +30,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -96,7 +97,7 @@ public class DubboMergingDigest extends DubboAbstractTDigest {
 
     // this is the index of the next temporary centroid
     // this is a more Java-like convention than lastUsedCell uses
-    private volatile AtomicInteger tempUsed = new AtomicInteger(0);
+    private final AtomicInteger tempUsed = new AtomicInteger(0);
     private final double[] tempWeight;
     private final double[] tempMean;
     private List<List<Double>> tempData = null;
@@ -787,6 +788,9 @@ public class DubboMergingDigest extends DubboAbstractTDigest {
 
                     @Override
                     public Centroid next() {
+                        if (!hasNext()) {
+                            throw new NoSuchElementException();
+                        }
                         Centroid rc = new Centroid(mean[i], (int) weight[i]);
                         List<Double> datas = data != null ? data.get(i) : null;
                         if (datas != null) {
