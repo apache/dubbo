@@ -285,7 +285,7 @@ public class DubboMergingDigest extends DubboAbstractTDigest {
         if (tempUsed.get() >= tempWeight.length - lastUsedCell.get() - 1) {
             mergeNewValues();
         }
-        int where = tempUsed.incrementAndGet();
+        int where = tempUsed.getAndIncrement();
         tempWeight[where] = w;
         tempMean[where] = x;
         unmergedWeight += w;
