@@ -21,12 +21,9 @@ import io.netty.handler.ssl.OpenSsl;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.SslProvider;
-import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.ssl.AuthPolicy;
-import org.apache.dubbo.common.ssl.Cert;
-import org.apache.dubbo.common.ssl.CertManager;
 import org.apache.dubbo.common.ssl.ProviderCert;
 
 import javax.net.ssl.SSLException;
@@ -81,46 +78,6 @@ public class SslContexts {
         }
     }
 
-    public static SslContext buildClientSslContext(URL url) {
-        CertManager certManager = url.getOrDefaultFrameworkModel().getBeanFactory().getBean(CertManager.class);
-        Cert consumerConnectionConfig = certManager.getConsumerConnectionConfig(url);
-        if (consumerConnectionConfig == null) {
-            return null;
-        }
-
-        SslContextBuilder builder = SslContextBuilder.forClient();
-        InputStream clientTrustCertCollectionPath = null;
-        InputStream clientCertChainFilePath = null;
-        InputStream clientPrivateKeyFilePath = null;
-        try {
-            clientTrustCertCollectionPath = consumerConnectionConfig.getTrustCertInputStream();
-            if (clientTrustCertCollectionPath != null) {
-                builder.trustManager(clientTrustCertCollectionPath);
-            }
-
-            clientCertChainFilePath = consumerConnectionConfig.getKeyCertChainInputStream();
-            clientPrivateKeyFilePath = consumerConnectionConfig.getPrivateKeyInputStream();
-            if (clientCertChainFilePath != null && clientPrivateKeyFilePath != null) {
-                String password = consumerConnectionConfig.getPassword();
-                if (password != null) {
-                    builder.keyManager(clientCertChainFilePath, clientPrivateKeyFilePath, password);
-                } else {
-                    builder.keyManager(clientCertChainFilePath, clientPrivateKeyFilePath);
-                }
-            }
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Could not find certificate file or find invalid certificate.", e);
-        } finally {
-            safeCloseStream(clientTrustCertCollectionPath);
-            safeCloseStream(clientCertChainFilePath);
-            safeCloseStream(clientPrivateKeyFilePath);
-        }
-        try {
-            return builder.sslProvider(findSslProvider()).build();
-        } catch (SSLException e) {
-            throw new IllegalStateException("Build SslSession failed.", e);
-        }
-    }
 
     /**
      * Returns OpenSSL if available, otherwise returns the JDK provider.
@@ -154,5 +111,6 @@ public class SslContexts {
             logger.warn(TRANSPORT_FAILED_CLOSE_STREAM, "", "", "Failed to close a stream.", e);
         }
     }
+
 
 }

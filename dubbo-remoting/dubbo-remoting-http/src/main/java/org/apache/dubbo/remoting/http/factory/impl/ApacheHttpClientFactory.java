@@ -32,6 +32,6 @@ public class ApacheHttpClientFactory extends AbstractHttpClientFactory {
     protected RestClient doCreateRestClient(URL url) throws RpcException {
 
 
-        return new HttpClientRestClient(httpClientConfig);
+        return new HttpClientRestClient(httpClientConfig,url);
     }
 }

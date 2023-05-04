@@ -17,27 +17,38 @@
 package org.apache.dubbo.remoting.http;
 
 
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.ssl.Cert;
+import org.apache.dubbo.common.ssl.CertManager;
 import org.apache.dubbo.remoting.http.config.HttpClientConfig;
 
-public abstract class BaseRestClient<CLIENT> implements RestClient {
+public abstract class BaseRestClient implements RestClient {
+    protected final HttpClientConfig httpClientConfig;
+    protected final URL url;
 
-    protected CLIENT client;
 
-    protected HttpClientConfig clientConfig;
-
-    public BaseRestClient(HttpClientConfig clientConfig) {
-        this.clientConfig = clientConfig;
-        client = createHttpClient(clientConfig);
+    public BaseRestClient(HttpClientConfig httpClientConfig, URL url) {
+        this.httpClientConfig = httpClientConfig;
+        this.url = url;
     }
 
-    protected abstract CLIENT createHttpClient(HttpClientConfig clientConfig);
 
-
-    public HttpClientConfig getClientConfig() {
-        return clientConfig;
+    public URL getUrl() {
+        return url;
     }
 
-    public CLIENT getClient() {
-        return client;
+    public HttpClientConfig getHttpClientConfig() {
+        return httpClientConfig;
+    }
+
+    public boolean isEnableSSL() {
+        CertManager certManager = url.getOrDefaultFrameworkModel().getBeanFactory().getBean(CertManager.class);
+        Cert consumerConnectionConfig = certManager.getConsumerConnectionConfig(url);
+
+        if (consumerConnectionConfig == null) {
+            return false;
+        }
+        return true;
+
     }
 }
