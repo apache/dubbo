@@ -48,7 +48,6 @@ class TimeWindowQuantileTest {
         TimeWindowQuantile quantile = new TimeWindowQuantile(DEFAULT_COMPRESSION, DEFAULT_BUCKET_NUM, DEFAULT_TIME_WINDOW_SECONDS);
         int index = 0;
         while (index < 100) {
-            System.out.println("-------------:" + index);
             for (int i = 0; i < 100; i++) {
                 int finalI = i;
                 executorService.execute(() -> quantile.add(finalI));
