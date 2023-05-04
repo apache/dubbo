@@ -41,7 +41,7 @@ public final class FailedUnsubscribedTask extends AbstractRetryTask {
 
     @Override
     protected void doRetry(URL url, FailbackRegistry registry, Timeout timeout) {
-        registry.unsubscribe(url, listener);
+        registry.doUnsubscribe(url, listener);
         registry.removeFailedUnsubscribedTask(url, listener);
     }
 }
