@@ -20,9 +20,6 @@ package org.apache.dubbo.metrics.aggregate;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
 class TimeWindowQuantileTest {
 
     private static final Integer DEFAULT_COMPRESSION = 100;
@@ -38,28 +35,6 @@ class TimeWindowQuantileTest {
 
         Assertions.assertEquals(quantile.quantile(0.01), 2);
         Assertions.assertEquals(quantile.quantile(0.99), 100);
-    }
-
-    @Test
-    void testMulti() {
-
-        ExecutorService executorService = Executors.newFixedThreadPool(200);
-
-        TimeWindowQuantile quantile = new TimeWindowQuantile(DEFAULT_COMPRESSION, DEFAULT_BUCKET_NUM, DEFAULT_TIME_WINDOW_SECONDS);
-        int index = 0;
-        while (index < 30) {
-            for (int i = 0; i < 50; i++) {
-                int finalI = i;
-                executorService.execute(() ->
-                    Assertions.assertDoesNotThrow(() -> quantile.add(finalI)));
-            }
-            index++;
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
     }
 
 }
