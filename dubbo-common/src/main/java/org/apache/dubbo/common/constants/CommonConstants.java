@@ -275,6 +275,7 @@ public interface CommonConstants {
     int MAX_PROXY_COUNT = 65535;
 
     String MONITOR_KEY = "monitor";
+    String BACKGROUND_KEY = "background";
     String CLUSTER_KEY = "cluster";
     String USERNAME_KEY = "username";
     String PASSWORD_KEY = "password";
