@@ -22,6 +22,7 @@ import com.tdunning.math.stats.Centroid;
 import com.tdunning.math.stats.ScaleFunction;
 import com.tdunning.math.stats.Sort;
 import com.tdunning.math.stats.TDigest;
+import org.apache.dubbo.metrics.exception.MetricsNeverHappenException;
 
 import java.nio.ByteBuffer;
 import java.util.AbstractCollection;
@@ -32,6 +33,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Maintains a t-digest by collecting new points in a buffer that is then sorted occasionally and merged
@@ -93,7 +95,7 @@ public class DubboMergingDigest extends DubboAbstractTDigest {
     double max = Double.NEGATIVE_INFINITY;
 
     // sum_i tempWeight[i]
-    private double unmergedWeight = 0;
+    private AtomicDouble unmergedWeight = new AtomicDouble(0);
 
     // this is the index of the next temporary centroid
     // this is a more Java-like convention than lastUsedCell uses
@@ -117,6 +119,8 @@ public class DubboMergingDigest extends DubboAbstractTDigest {
     // scale functions are more expensive than the corresponding
     // weight limits.
     public static boolean useWeightLimit = true;
+
+    private volatile boolean merging = false;
 
     /**
      * Allocates a buffer merging t-digest.  This is the normally used constructor that
@@ -283,13 +287,13 @@ public class DubboMergingDigest extends DubboAbstractTDigest {
         if (Double.isNaN(x)) {
             throw new IllegalArgumentException("Cannot add NaN to t-digest");
         }
-        if (tempUsed.get() >= tempWeight.length - lastUsedCell.get() - 1) {
+        if (!merging && tempUsed.get() >= tempWeight.length - lastUsedCell.get() - 1) {
             mergeNewValues();
         }
         int where = tempUsed.getAndIncrement();
         tempWeight[where] = w;
         tempMean[where] = x;
-        unmergedWeight += w;
+        unmergedWeight.addAndGet(w);
         if (x < min) {
             min = x;
         }
@@ -311,88 +315,29 @@ public class DubboMergingDigest extends DubboAbstractTDigest {
         }
     }
 
-    private void add(double[] m, double[] w, int count, List<List<Double>> data) {
-        if (m.length != w.length) {
-            throw new IllegalArgumentException("Arrays not same length");
-        }
-        if (m.length < count + lastUsedCell.get()) {
-            // make room to add existing centroids
-            double[] m1 = new double[count + lastUsedCell.get()];
-            System.arraycopy(m, 0, m1, 0, count);
-            m = m1;
-            double[] w1 = new double[count + lastUsedCell.get()];
-            System.arraycopy(w, 0, w1, 0, count);
-            w = w1;
-        }
-        double total = 0;
-        for (int i = 0; i < count; i++) {
-            total += w[i];
-        }
-        merge(m, w, count, data, null, total, false, compression);
-    }
-
     @Override
     public void add(List<? extends TDigest> others) {
-        if (others.size() == 0) {
-            return;
-        }
-        int size = 0;
-        for (TDigest other : others) {
-            other.compress();
-            size += other.centroidCount();
-        }
-
-        double[] m = new double[size];
-        double[] w = new double[size];
-        List<List<Double>> data;
-        if (recordAllData) {
-            data = new ArrayList<>();
-        } else {
-            data = null;
-        }
-        int offset = 0;
-        for (TDigest other : others) {
-            if (other instanceof DubboMergingDigest) {
-                DubboMergingDigest md = (DubboMergingDigest) other;
-                System.arraycopy(md.mean, 0, m, offset, md.lastUsedCell.get());
-                System.arraycopy(md.weight, 0, w, offset, md.lastUsedCell.get());
-                if (data != null) {
-                    for (Centroid centroid : other.centroids()) {
-                        data.add(centroid.data());
-                    }
-                }
-                offset += md.lastUsedCell.get();
-            } else {
-                for (Centroid centroid : other.centroids()) {
-                    m[offset] = centroid.mean();
-                    w[offset] = centroid.count();
-                    if (recordAllData) {
-                        assert data != null;
-                        data.add(centroid.data());
-                    }
-                    offset++;
-                }
-            }
-        }
-        add(m, w, size, data);
+        throw new MetricsNeverHappenException("Method not used");
     }
 
     private synchronized void mergeNewValues() {
+        merging = true;
         mergeNewValues(false, compression);
+        merging = false;
     }
 
     private void mergeNewValues(boolean force, double compression) {
-        if (totalWeight == 0 && unmergedWeight == 0) {
+        if (totalWeight == 0 && unmergedWeight.get() == 0) {
             // seriously nothing to do
             return;
         }
-        if (force || unmergedWeight > 0) {
+        if (force || unmergedWeight.get() > 0) {
             // note that we run the merge in reverse every other merge to avoid left-to-right bias in merging
-            merge(tempMean, tempWeight, tempUsed.get(), tempData, order, unmergedWeight,
+            merge(tempMean, tempWeight, tempUsed.get(), tempData, order, unmergedWeight.get(),
                 useAlternatingSort & mergeCount % 2 == 1, compression);
             mergeCount++;
             tempUsed.set(0);
-            unmergedWeight = 0;
+            unmergedWeight.set(0);
             if (data != null) {
                 tempData = new ArrayList<>();
             }
@@ -400,8 +345,8 @@ public class DubboMergingDigest extends DubboAbstractTDigest {
     }
 
     private void merge(double[] incomingMean, double[] incomingWeight, int incomingCount,
-                       List<List<Double>> incomingData, int[] incomingOrder,
-                       double unmergedWeight, boolean runBackwards, double compression) {
+                                    List<List<Double>> incomingData, int[] incomingOrder,
+                                    double unmergedWeight, boolean runBackwards, double compression) {
         // when our incoming buffer fills up, we combine our existing centroids with the incoming data,
         // and then reduce the centroids by merging if possible
         assert lastUsedCell.get() <= 0 || weight[0] == 1;
@@ -536,7 +481,7 @@ public class DubboMergingDigest extends DubboAbstractTDigest {
 
     @Override
     public long size() {
-        return (long) (totalWeight + unmergedWeight);
+        return (long) (totalWeight + unmergedWeight.get());
     }
 
     @Override
@@ -892,5 +837,32 @@ public class DubboMergingDigest extends DubboAbstractTDigest {
             + "-" + (useWeightLimit ? "weight" : "kSize")
             + "-" + (useAlternatingSort ? "alternating" : "stable")
             + "-" + (useTwoLevelCompression ? "twoLevel" : "oneLevel");
+    }
+
+
+    public static class AtomicDouble {
+        private final AtomicReference<Double> value = new AtomicReference<>();
+
+        public AtomicDouble(double initialValue) {
+            value.set(initialValue);
+        }
+
+        public double get() {
+            return value.get();
+        }
+
+        public void set(double newValue) {
+            value.set(newValue);
+        }
+
+        public void addAndGet(double delta) {
+            while (true) {
+                double current = value.get();
+                double next = current + delta;
+                if (value.compareAndSet(current, next)) {
+                    return;
+                }
+            }
+        }
     }
 }
