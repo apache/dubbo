@@ -41,4 +41,9 @@ public interface Exporter<T> {
      */
     void unexport();
 
+    /**
+     * unregister from registry
+     */
+    void unregister();
+
 }

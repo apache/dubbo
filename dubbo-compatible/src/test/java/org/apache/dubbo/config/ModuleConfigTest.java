@@ -18,6 +18,7 @@
 package org.apache.dubbo.config;
 
 import com.alibaba.dubbo.config.ModuleConfig;
+import com.alibaba.dubbo.config.MonitorConfig;
 import com.alibaba.dubbo.config.RegistryConfig;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;

@@ -1,0 +1,81 @@
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
+public java.lang.Boolean com.alibaba.dubbo.config.MethodConfig.getSticky()
+public void com.alibaba.dubbo.config.MethodConfig.setSticky(java.lang.Boolean)
+public static java.util.List com.alibaba.dubbo.config.MethodConfig.constructMethodConfig(com.alibaba.dubbo.config.annotation.Method[])
+public java.lang.Boolean com.alibaba.dubbo.config.MethodConfig.isReliable()
+public void com.alibaba.dubbo.config.MethodConfig.setReliable(java.lang.Boolean)
+public java.lang.Integer com.alibaba.dubbo.config.MethodConfig.getExecutes()
+public void com.alibaba.dubbo.config.MethodConfig.setExecutes(java.lang.Integer)
+public java.lang.Boolean com.alibaba.dubbo.config.MethodConfig.getDeprecated()
+public void com.alibaba.dubbo.config.MethodConfig.setDeprecated(java.lang.Boolean)
+public java.util.List com.alibaba.dubbo.config.MethodConfig.getArguments()
+public void com.alibaba.dubbo.config.MethodConfig.setArguments(java.util.List)
+public java.lang.Object com.alibaba.dubbo.config.MethodConfig.getOnreturn()
+public void com.alibaba.dubbo.config.MethodConfig.setOnreturn(java.lang.Object)
+public java.lang.String com.alibaba.dubbo.config.MethodConfig.getOnreturnMethod()
+public void com.alibaba.dubbo.config.MethodConfig.setOnreturnMethod(java.lang.String)
+public java.lang.Object com.alibaba.dubbo.config.MethodConfig.getOnthrow()
+public void com.alibaba.dubbo.config.MethodConfig.setOnthrow(java.lang.Object)
+public java.lang.String com.alibaba.dubbo.config.MethodConfig.getOnthrowMethod()
+public void com.alibaba.dubbo.config.MethodConfig.setOnthrowMethod(java.lang.String)
+public java.lang.Object com.alibaba.dubbo.config.MethodConfig.getOninvoke()
+public void com.alibaba.dubbo.config.MethodConfig.setOninvoke(java.lang.Object)
+public java.lang.String com.alibaba.dubbo.config.MethodConfig.getOninvokeMethod()
+public void com.alibaba.dubbo.config.MethodConfig.setOninvokeMethod(java.lang.String)
+public void com.alibaba.dubbo.config.MethodConfig.setReturn(java.lang.Boolean)
+public java.lang.Boolean com.alibaba.dubbo.config.MethodConfig.isReturn()
+public java.lang.Integer com.alibaba.dubbo.config.MethodConfig.getStat()
+public void com.alibaba.dubbo.config.MethodConfig.setStat(java.lang.Integer)
+public java.lang.Boolean com.alibaba.dubbo.config.MethodConfig.isRetry()
+public void com.alibaba.dubbo.config.MethodConfig.setRetry(java.lang.Boolean)
+public java.lang.String com.alibaba.dubbo.config.MethodConfig.getName()
+public void com.alibaba.dubbo.config.MethodConfig.setName(java.lang.String)
+public void com.alibaba.dubbo.config.MethodConfig.setTimeout(java.lang.Integer)
+public java.lang.Integer com.alibaba.dubbo.config.MethodConfig.getRetries()
+public void com.alibaba.dubbo.config.MethodConfig.setRetries(java.lang.Integer)
+public java.lang.String com.alibaba.dubbo.config.MethodConfig.getLoadbalance()
+public void com.alibaba.dubbo.config.MethodConfig.setLoadbalance(java.lang.String)
+public java.lang.Integer com.alibaba.dubbo.config.MethodConfig.getActives()
+public void com.alibaba.dubbo.config.MethodConfig.setActives(java.lang.Integer)
+public java.lang.String com.alibaba.dubbo.config.MethodConfig.getMerger()
+public void com.alibaba.dubbo.config.MethodConfig.setMerger(java.lang.String)
+public java.lang.String com.alibaba.dubbo.config.MethodConfig.getValidation()
+public void com.alibaba.dubbo.config.MethodConfig.setValidation(java.lang.String)
+public java.lang.Boolean com.alibaba.dubbo.config.MethodConfig.isAsync()
+public void com.alibaba.dubbo.config.MethodConfig.setForks(java.lang.Integer)
+public java.lang.Integer com.alibaba.dubbo.config.MethodConfig.getForks()
+public void com.alibaba.dubbo.config.MethodConfig.setAsync(java.lang.Boolean)
+public java.lang.Boolean com.alibaba.dubbo.config.MethodConfig.getSent()
+public void com.alibaba.dubbo.config.MethodConfig.setSent(java.lang.Boolean)
+public java.lang.String com.alibaba.dubbo.config.MethodConfig.getMock()
+public void com.alibaba.dubbo.config.MethodConfig.setMock(java.lang.String)
+public void com.alibaba.dubbo.config.MethodConfig.setMock(java.lang.Boolean)
+public void com.alibaba.dubbo.config.MethodConfig.setCache(java.lang.String)
+public java.util.Map com.alibaba.dubbo.config.MethodConfig.getParameters()
+public java.lang.String com.alibaba.dubbo.config.MethodConfig.getCache()
+public void com.alibaba.dubbo.config.MethodConfig.setParameters(java.util.Map)
+public java.lang.Integer com.alibaba.dubbo.config.MethodConfig.getTimeout()
+public void com.alibaba.dubbo.config.MethodConfig.setId(java.lang.String)
+public java.lang.String com.alibaba.dubbo.config.MethodConfig.toString()
+public java.lang.String com.alibaba.dubbo.config.MethodConfig.getId()
+public final void com.alibaba.dubbo.config.MethodConfig.wait(long,int) throws java.lang.InterruptedException
+public final native void com.alibaba.dubbo.config.MethodConfig.wait(long) throws java.lang.InterruptedException
+public final void com.alibaba.dubbo.config.MethodConfig.wait() throws java.lang.InterruptedException
+public boolean com.alibaba.dubbo.config.MethodConfig.equals(java.lang.Object)
+public native int com.alibaba.dubbo.config.MethodConfig.hashCode()
+public final native java.lang.Class com.alibaba.dubbo.config.MethodConfig.getClass()
+public final native void com.alibaba.dubbo.config.MethodConfig.notify()
+public final native void com.alibaba.dubbo.config.MethodConfig.notifyAll()

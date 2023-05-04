@@ -22,9 +22,11 @@ import org.apache.dubbo.common.constants.LoggerCodeConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.Assert;
+import org.apache.dubbo.rpc.GracefulShutdown;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -80,6 +82,12 @@ public class DubboShutdownHook extends Thread {
     }
 
     private void doDestroy() {
+        // send readonly for shutdown hook
+        List<GracefulShutdown> gracefulShutdowns = GracefulShutdown.getGracefulShutdowns(applicationModel.getFrameworkModel());
+        for (GracefulShutdown gracefulShutdown : gracefulShutdowns) {
+            gracefulShutdown.readonly();
+        }
+
         boolean hasModuleBindSpring = false;
         // check if any modules are bound to Spring
         for (ModuleModel module: applicationModel.getModuleModels()) {
@@ -92,11 +100,11 @@ public class DubboShutdownHook extends Thread {
             int timeout = ConfigurationUtils.getServerShutdownTimeout(applicationModel);
             if (timeout > 0) {
                 long start = System.currentTimeMillis();
-                /**
-                 * To avoid shutdown conflicts between Dubbo and Spring,
-                 * wait for the modules bound to Spring to be handled by Spring util timeout.
+                /*
+                  To avoid shutdown conflicts between Dubbo and Spring,
+                  wait for the modules bound to Spring to be handled by Spring until timeout.
                  */
-                logger.info("Waiting for modules managed by Spring to be shut down.");
+                logger.info("Waiting for modules managed by Spring to be shutdown.");
                 while (!applicationModel.isDestroyed() && hasModuleBindSpring
                     && (System.currentTimeMillis() - start) < timeout) {
                     try {

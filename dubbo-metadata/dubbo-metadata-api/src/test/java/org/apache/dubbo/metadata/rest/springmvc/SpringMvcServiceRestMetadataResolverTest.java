@@ -25,6 +25,7 @@ import org.apache.dubbo.metadata.rest.RestMethodMetadata;
 import org.apache.dubbo.metadata.rest.RestService;
 import org.apache.dubbo.metadata.rest.ServiceRestMetadata;
 import org.apache.dubbo.metadata.rest.StandardRestService;
+import org.apache.dubbo.metadata.rest.api.SpringControllerService;
 import org.apache.dubbo.metadata.rest.api.SpringRestService;
 import org.apache.dubbo.metadata.rest.api.SpringRestServiceImpl;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -86,6 +87,7 @@ class SpringMvcServiceRestMetadataResolverTest {
     void testResolves() {
         testResolve(SpringRestService.class);
         testResolve(SpringRestServiceImpl.class);
+        testResolve(SpringControllerService.class);
     }
 
     void testResolve(Class service) {

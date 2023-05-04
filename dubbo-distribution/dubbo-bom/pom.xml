@@ -504,7 +504,7 @@
             </dependency>
             <dependency>
                 <groupId>org.apache.dubbo</groupId>
-                <artifactId>dubbo-spring-boot-observability-starter</artifactId>
+                <artifactId>dubbo-spring-boot-observability-starters</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -520,6 +520,11 @@
             <dependency>
                 <groupId>org.apache.dubbo</groupId>
                 <artifactId>dubbo-spring-boot-tracing-brave-zipkin-starter</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.dubbo</groupId>
+                <artifactId>dubbo-spring-boot-observability-starter</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

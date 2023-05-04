@@ -52,18 +52,8 @@ public class MetricsCountSampleConfigurer<S,K,M extends Metric> {
         return this;
     }
 
-    public MetricsCountSampleConfigurer<S,K,M> configureEventHandler(
-        Consumer<MetricsCountSampleConfigurer<S,K,M>> fireEventHandler){
-        this.fireEventHandler = fireEventHandler;
-        return this;
-    }
-
     public S getSource() {
         return source;
-    }
-
-    public K getMetricName() {
-        return metricName;
     }
 
     public M getMetric() {
