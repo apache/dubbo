@@ -22,7 +22,7 @@ package {{packageName}};
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-public interface {{interfaceClassName}} {
+public interface {{interfaceClassName}} extends org.apache.dubbo.rpc.model.DubboStub {
 
     String JAVA_SERVICE_NAME = "{{packageName}}.{{serviceName}}";
 
