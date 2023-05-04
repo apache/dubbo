@@ -37,4 +37,26 @@ class TimeWindowQuantileTest {
         Assertions.assertEquals(quantile.quantile(0.99), 100);
     }
 
+//    @Test
+//    void testMulti() {
+//
+//        ExecutorService executorService = Executors.newFixedThreadPool(200);
+//
+//        TimeWindowQuantile quantile = new TimeWindowQuantile(DEFAULT_COMPRESSION, DEFAULT_BUCKET_NUM, DEFAULT_TIME_WINDOW_SECONDS);
+//        int index = 0;
+//        while (index < 100) {
+//            for (int i = 0; i < 100; i++) {
+//                int finalI = i;
+//                executorService.execute(() ->
+//                    Assertions.assertDoesNotThrow(() -> quantile.add(finalI)));
+//            }
+//            index++;
+//            try {
+//                Thread.sleep(100);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//        }
+//    }
+
 }
