@@ -289,7 +289,8 @@ public class DubboMergingDigest extends DubboAbstractTDigest {
         while (merging) {
             try {
                 Thread.sleep(10);
-            } catch (InterruptedException ignored) {
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
             }
         }
         if (tempUsed.get() >= tempWeight.length - lastUsedCell.get() - 1) {
