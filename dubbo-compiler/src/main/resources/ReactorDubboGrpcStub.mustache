@@ -85,7 +85,7 @@ stub = {{serviceName}}Grpc.newStub(channel).build(channel, callOptions);
 {{/unaryRequestMethods}}
 }
 
-public interface IReactor{{serviceName}} extends org.apache.dubbo.rpc.model.DubboStub {
+public interface IReactor{{serviceName}} {
 {{#methods}}
     {{#javaDoc}}
         {{{javaDoc}}}

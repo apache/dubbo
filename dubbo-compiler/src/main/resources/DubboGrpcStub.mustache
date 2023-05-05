@@ -121,7 +121,7 @@ public static Dubbo{{serviceName}}Stub getDubboStub(io.grpc.Channel channel, io.
 return new Dubbo{{serviceName}}Stub(channel, callOptions, url);
 }
 
-public interface I{{serviceName}} extends org.apache.dubbo.rpc.model.DubboStub {
+public interface I{{serviceName}} {
 {{#unaryMethods}}
     {{#javaDoc}}
         {{{javaDoc}}}
