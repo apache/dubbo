@@ -18,6 +18,7 @@
 package org.apache.dubbo.metrics.event;
 
 import org.apache.dubbo.metrics.model.TimePair;
+import org.apache.dubbo.metrics.model.key.TypeWrapper;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 /**
@@ -27,8 +28,8 @@ public abstract class TimeCounterEvent extends MetricsEvent {
 
     private final TimePair timePair;
 
-    public TimeCounterEvent(ApplicationModel source) {
-        super(source);
+    public TimeCounterEvent(ApplicationModel source, TypeWrapper typeWrapper) {
+        super(source, typeWrapper);
         this.timePair = TimePair.start();
     }
 

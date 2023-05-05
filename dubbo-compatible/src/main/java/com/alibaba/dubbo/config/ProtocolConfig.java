@@ -30,4 +30,10 @@ public class ProtocolConfig extends org.apache.dubbo.config.ProtocolConfig {
     public ProtocolConfig(String name, int port) {
         super(name, port);
     }
+
+    public void mergeProtocol(ProtocolConfig sourceConfig) {
+        super.mergeProtocol(sourceConfig);
+    }
+
+
 }

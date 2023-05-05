@@ -17,9 +17,11 @@
 
 package org.apache.dubbo.metrics.model.key;
 
+import io.micrometer.common.lang.Nullable;
 import org.apache.dubbo.metrics.model.MetricsSupport;
 
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Let {@link MetricsKey MetricsKey}  output dynamic, custom string content
@@ -31,15 +33,21 @@ public class MetricsKeyWrapper {
      */
     private final MetricsKey metricsKey;
 
+    /**
+     * The value corresponding to the MetricsKey placeholder (if exist)
+     */
+    private final MetricsPlaceValue placeType;
 
-    private final MetricsPlaceType placeType;
-
-    public MetricsKeyWrapper(MetricsKey metricsKey, MetricsPlaceType placeType) {
+    /**
+     * When the MetricsPlaceType is null, it is equivalent to a single MetricsKey.
+     * Use the decorator mode to share a container with MetricsKey
+     */
+    public MetricsKeyWrapper(MetricsKey metricsKey, @Nullable MetricsPlaceValue placeType) {
         this.metricsKey = metricsKey;
         this.placeType = placeType;
     }
 
-    public MetricsPlaceType getPlaceType() {
+    public MetricsPlaceValue getPlaceType() {
         return placeType;
     }
 
@@ -55,11 +63,14 @@ public class MetricsKeyWrapper {
         return metricsKey == getMetricsKey() && registryOpType.equals(getType());
     }
 
-    public boolean isServiceLevel() {
-        return getPlaceType().getMetricsLevel().equals(MetricsLevel.SERVICE);
+    public MetricsLevel getLevel() {
+        return getPlaceType().getMetricsLevel();
     }
 
     public String targetKey() {
+        if (placeType == null) {
+            return metricsKey.getName();
+        }
         try {
             return String.format(metricsKey.getName(), getType());
         } catch (Exception ignore) {
@@ -68,6 +79,9 @@ public class MetricsKeyWrapper {
     }
 
     public String targetDesc() {
+        if (placeType == null) {
+            return metricsKey.getDescription();
+        }
         try {
             return String.format(metricsKey.getDescription(), getType());
         } catch (Exception ignore) {
@@ -76,6 +90,37 @@ public class MetricsKeyWrapper {
     }
 
     public Map<String, String> tagName(String key) {
-        return isServiceLevel() ? MetricsSupport.serviceTags(key) : MetricsSupport.applicationTags(key);
+        MetricsLevel level = getLevel();
+        switch (level) {
+            case APP:
+                return MetricsSupport.applicationTags(key);
+            case SERVICE:
+                return MetricsSupport.serviceTags(key);
+            case METHOD:
+                return MetricsSupport.methodTags(key);
+        }
+        return MetricsSupport.applicationTags(key);
+    }
+
+    public static MetricsKeyWrapper wrapper(MetricsKey metricsKey) {
+        return new MetricsKeyWrapper(metricsKey, null);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        MetricsKeyWrapper wrapper = (MetricsKeyWrapper) o;
+
+        if (metricsKey != wrapper.metricsKey) return false;
+        return Objects.equals(placeType, wrapper.placeType);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = metricsKey != null ? metricsKey.hashCode() : 0;
+        result = 31 * result + (placeType != null ? placeType.hashCode() : 0);
+        return result;
     }
 }

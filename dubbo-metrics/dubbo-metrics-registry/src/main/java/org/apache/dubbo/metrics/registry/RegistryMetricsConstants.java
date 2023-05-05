@@ -18,8 +18,9 @@
 package org.apache.dubbo.metrics.registry;
 
 import org.apache.dubbo.metrics.model.key.MetricsKey;
+import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
 import org.apache.dubbo.metrics.model.key.MetricsLevel;
-import org.apache.dubbo.metrics.model.key.MetricsPlaceType;
+import org.apache.dubbo.metrics.model.key.MetricsPlaceValue;
 
 import java.util.Arrays;
 import java.util.List;
@@ -45,12 +46,12 @@ import static org.apache.dubbo.metrics.model.key.MetricsKey.SUBSCRIBE_METRIC_NUM
 
 public interface RegistryMetricsConstants {
 
-    MetricsPlaceType OP_TYPE_REGISTER = MetricsPlaceType.of("register", MetricsLevel.APP);
-    MetricsPlaceType OP_TYPE_SUBSCRIBE = MetricsPlaceType.of("subscribe", MetricsLevel.APP);
-    MetricsPlaceType OP_TYPE_NOTIFY = MetricsPlaceType.of("notify", MetricsLevel.APP);
-    MetricsPlaceType OP_TYPE_DIRECTORY = MetricsPlaceType.of("directory", MetricsLevel.APP);
-    MetricsPlaceType OP_TYPE_REGISTER_SERVICE = MetricsPlaceType.of("register.service", MetricsLevel.SERVICE);
-    MetricsPlaceType OP_TYPE_SUBSCRIBE_SERVICE = MetricsPlaceType.of("subscribe.service", MetricsLevel.SERVICE);
+    MetricsPlaceValue OP_TYPE_REGISTER = MetricsPlaceValue.of("register", MetricsLevel.APP);
+    MetricsPlaceValue OP_TYPE_SUBSCRIBE = MetricsPlaceValue.of("subscribe", MetricsLevel.APP);
+    MetricsPlaceValue OP_TYPE_NOTIFY = MetricsPlaceValue.of("notify", MetricsLevel.APP);
+    MetricsPlaceValue OP_TYPE_DIRECTORY = MetricsPlaceValue.of("directory", MetricsLevel.APP);
+    MetricsPlaceValue OP_TYPE_REGISTER_SERVICE = MetricsPlaceValue.of("register.service", MetricsLevel.SERVICE);
+    MetricsPlaceValue OP_TYPE_SUBSCRIBE_SERVICE = MetricsPlaceValue.of("subscribe.service", MetricsLevel.SERVICE);
 
     // App-level
     List<MetricsKey> APP_LEVEL_KEYS = Arrays.asList(REGISTER_METRIC_REQUESTS, REGISTER_METRIC_REQUESTS_SUCCEED, REGISTER_METRIC_REQUESTS_FAILED,
@@ -58,11 +59,17 @@ public interface RegistryMetricsConstants {
         NOTIFY_METRIC_REQUESTS);
 
     // Service-level
-    List<MetricsKey> SERVICE_LEVEL_KEYS = Arrays.asList(NOTIFY_METRIC_NUM_LAST,
-        SERVICE_REGISTER_METRIC_REQUESTS, SERVICE_REGISTER_METRIC_REQUESTS_SUCCEED, SERVICE_REGISTER_METRIC_REQUESTS_FAILED,
-        SERVICE_SUBSCRIBE_METRIC_NUM, SERVICE_SUBSCRIBE_METRIC_NUM_SUCCEED, SERVICE_SUBSCRIBE_METRIC_NUM_FAILED,
-        DIRECTORY_METRIC_NUM_VALID, DIRECTORY_METRIC_NUM_TO_RECONNECT, DIRECTORY_METRIC_NUM_DISABLE, DIRECTORY_METRIC_NUM_ALL
+    List<MetricsKeyWrapper> SERVICE_LEVEL_KEYS = Arrays.asList(
+        new MetricsKeyWrapper(NOTIFY_METRIC_NUM_LAST, OP_TYPE_NOTIFY),
+        new MetricsKeyWrapper(SERVICE_REGISTER_METRIC_REQUESTS, OP_TYPE_REGISTER_SERVICE),
+        new MetricsKeyWrapper(SERVICE_REGISTER_METRIC_REQUESTS_SUCCEED, OP_TYPE_REGISTER_SERVICE),
+        new MetricsKeyWrapper(SERVICE_REGISTER_METRIC_REQUESTS_FAILED, OP_TYPE_REGISTER_SERVICE),
+        new MetricsKeyWrapper(SERVICE_SUBSCRIBE_METRIC_NUM, OP_TYPE_SUBSCRIBE_SERVICE),
+        new MetricsKeyWrapper(SERVICE_SUBSCRIBE_METRIC_NUM_SUCCEED, OP_TYPE_SUBSCRIBE_SERVICE),
+        new MetricsKeyWrapper(SERVICE_SUBSCRIBE_METRIC_NUM_FAILED, OP_TYPE_SUBSCRIBE_SERVICE),
+        new MetricsKeyWrapper(DIRECTORY_METRIC_NUM_VALID, OP_TYPE_DIRECTORY),
+        new MetricsKeyWrapper(DIRECTORY_METRIC_NUM_TO_RECONNECT, OP_TYPE_DIRECTORY),
+        new MetricsKeyWrapper(DIRECTORY_METRIC_NUM_DISABLE, OP_TYPE_DIRECTORY),
+        new MetricsKeyWrapper(DIRECTORY_METRIC_NUM_ALL, OP_TYPE_DIRECTORY)
     );
-
-
 }

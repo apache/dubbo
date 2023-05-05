@@ -40,10 +40,17 @@ public class MetadataStatCompositeTest {
 
     private final BaseStatComposite statComposite = new BaseStatComposite() {
         @Override
-        protected void init(ApplicationStatComposite applicationStatComposite, ServiceStatComposite
-            serviceStatComposite, RtStatComposite rtStatComposite) {
+        protected void init(ApplicationStatComposite applicationStatComposite) {
             applicationStatComposite.init(MetadataMetricsConstants.APP_LEVEL_KEYS);
-            serviceStatComposite.init(MetadataMetricsConstants.SERVICE_LEVEL_KEYS);
+        }
+
+        @Override
+        protected void init(ServiceStatComposite serviceStatComposite) {
+            serviceStatComposite.initWrapper(MetadataMetricsConstants.SERVICE_LEVEL_KEYS);
+        }
+
+        @Override
+        protected void init(RtStatComposite rtStatComposite) {
             rtStatComposite.init(OP_TYPE_PUSH, OP_TYPE_SUBSCRIBE, OP_TYPE_STORE_PROVIDER_INTERFACE);
         }
     };

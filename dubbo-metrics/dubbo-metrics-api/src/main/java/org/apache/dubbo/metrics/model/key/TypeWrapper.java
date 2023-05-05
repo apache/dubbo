@@ -25,6 +25,10 @@ public class TypeWrapper {
     private final MetricsKey finishType;
     private final MetricsKey errorType;
 
+    public TypeWrapper(MetricsLevel level, MetricsKey postType) {
+        this(level, postType, null, null);
+    }
+
     public TypeWrapper(MetricsLevel level, MetricsKey postType, MetricsKey finishType, MetricsKey errorType) {
         this.level = level;
         this.postType = postType;
@@ -36,12 +40,9 @@ public class TypeWrapper {
         return level;
     }
 
-    public MetricsKey getErrorType() {
-        return errorType;
-    }
-
     public boolean isAssignableFrom(Object type) {
         Assert.notNull(type, "Type can not be null");
         return type.equals(postType) || type.equals(finishType) || type.equals(errorType);
     }
+
 }
