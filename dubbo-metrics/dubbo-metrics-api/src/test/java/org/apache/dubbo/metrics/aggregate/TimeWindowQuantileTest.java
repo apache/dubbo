@@ -22,10 +22,6 @@ import org.junit.jupiter.api.Test;
 
 class TimeWindowQuantileTest {
 
-    private static final Integer DEFAULT_COMPRESSION = 100;
-    private static final Integer DEFAULT_BUCKET_NUM = 10;
-    private static final Integer DEFAULT_TIME_WINDOW_SECONDS = 120;
-
     @Test
     void test() {
         TimeWindowQuantile quantile = new TimeWindowQuantile(100, 10, 1);
