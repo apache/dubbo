@@ -23,11 +23,8 @@ import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 
 public class DubboMetrics implements MeterBinder {
 
-    private MeterRegistry globalRegistry = null;
-
     @Override
     public void bindTo(MeterRegistry registry) {
-        globalRegistry = registry;
         CompositeMeterRegistry compositeRegistry = MetricsGlobalRegistry.getCompositeRegistry();
         if (compositeRegistry != null) {
             compositeRegistry.add(registry);
