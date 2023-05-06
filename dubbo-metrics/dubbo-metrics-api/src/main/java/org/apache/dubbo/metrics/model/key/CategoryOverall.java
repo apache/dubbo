@@ -19,13 +19,20 @@ package org.apache.dubbo.metrics.model.key;
 
 import io.micrometer.common.lang.Nullable;
 
+/**
+ *  The overall event set, including the event processing functions in three stages
+ */
 public class CategoryOverall {
 
     private final MetricsCat post;
     private MetricsCat finish;
     private MetricsCat error;
 
-    public CategoryOverall(MetricsPlaceType placeType, MetricsCat post, @Nullable MetricsCat finish, @Nullable MetricsCat error) {
+    /**
+     * @param placeType When placeType is null, it means that placeType is obtained dynamically
+     * @param post      Statistics of the number of events, as long as it occurs, it will take effect, so it cannot be null
+     */
+    public CategoryOverall(@Nullable MetricsPlaceValue placeType, MetricsCat post, @Nullable MetricsCat finish, @Nullable MetricsCat error) {
         this.post = post.setPlaceType(placeType);
         if (finish != null) {
             this.finish = finish.setPlaceType(placeType);

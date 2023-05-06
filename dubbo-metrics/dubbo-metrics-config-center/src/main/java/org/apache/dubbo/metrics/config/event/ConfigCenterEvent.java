@@ -44,8 +44,7 @@ public class ConfigCenterEvent extends TimeCounterEvent {
 
 
     public ConfigCenterEvent(ApplicationModel applicationModel, TypeWrapper typeWrapper) {
-        super(applicationModel);
-        super.typeWrapper = typeWrapper;
+        super(applicationModel,typeWrapper);
         ScopeBeanFactory beanFactory = applicationModel.getBeanFactory();
         ConfigCenterMetricsCollector collector;
         if (!beanFactory.isDestroyed()) {

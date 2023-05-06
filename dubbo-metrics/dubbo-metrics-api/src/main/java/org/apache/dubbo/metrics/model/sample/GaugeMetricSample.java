@@ -19,6 +19,7 @@ package org.apache.dubbo.metrics.model.sample;
 
 import org.apache.dubbo.metrics.model.MetricsCategory;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
+import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
 
 import java.util.Map;
 import java.util.Objects;
@@ -35,6 +36,10 @@ public class GaugeMetricSample<T> extends MetricSample {
 
     public GaugeMetricSample(MetricsKey metricsKey, Map<String, String> tags, MetricsCategory category, T value, ToDoubleFunction<T> apply) {
         this(metricsKey.getName(), metricsKey.getDescription(), tags, category, null, value, apply);
+    }
+
+    public GaugeMetricSample(MetricsKeyWrapper metricsKeyWrapper, Map<String, String> tags, MetricsCategory category, T value, ToDoubleFunction<T> apply) {
+        this(metricsKeyWrapper.targetKey(), metricsKeyWrapper.targetDesc(), tags, category, null, value, apply);
     }
 
     public GaugeMetricSample(String name, String description, Map<String, String> tags, MetricsCategory category, T value, ToDoubleFunction<T> apply) {

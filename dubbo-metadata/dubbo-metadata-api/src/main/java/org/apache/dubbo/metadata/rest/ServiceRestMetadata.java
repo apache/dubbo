@@ -110,7 +110,7 @@ public class ServiceRestMetadata implements Serializable {
 
     public void addRestMethodMetadata(RestMethodMetadata restMethodMetadata) {
         PathMatcher pathMather = new PathMatcher(restMethodMetadata.getRequest().getPath(),
-            this.getVersion(), this.getGroup(), this.getPort());
+            this.getVersion(), this.getGroup(), this.getPort(),restMethodMetadata.getRequest().getMethod());
         addPathToServiceMap(pathMather, restMethodMetadata);
         addMethodToServiceMap(restMethodMetadata);
         getMeta().add(restMethodMetadata);

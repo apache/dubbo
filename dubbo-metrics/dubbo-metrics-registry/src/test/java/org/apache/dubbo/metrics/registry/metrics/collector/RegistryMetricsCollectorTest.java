@@ -20,9 +20,9 @@ package org.apache.dubbo.metrics.registry.metrics.collector;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.metrics.event.MetricsDispatcher;
 import org.apache.dubbo.metrics.event.MetricsEventBus;
-import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
-import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.TimePair;
+import org.apache.dubbo.metrics.model.key.MetricsKey;
+import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.metrics.registry.collector.RegistryMetricsCollector;
@@ -34,6 +34,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -48,6 +49,7 @@ import static org.apache.dubbo.metrics.registry.RegistryMetricsConstants.OP_TYPE
 class RegistryMetricsCollectorTest {
 
     private ApplicationModel applicationModel;
+    private RegistryMetricsCollector collector;
 
     @BeforeEach
     public void setup() {
@@ -57,7 +59,9 @@ class RegistryMetricsCollectorTest {
         config.setName("MockMetrics");
 
         applicationModel.getApplicationConfigManager().setApplication(config);
-
+        applicationModel.getBeanFactory().getOrRegisterBean(MetricsDispatcher.class);
+        collector = applicationModel.getBeanFactory().getOrRegisterBean(RegistryMetricsCollector.class);
+        collector.setCollectEnabled(true);
     }
 
     @AfterEach
@@ -67,10 +71,6 @@ class RegistryMetricsCollectorTest {
 
     @Test
     void testRegisterMetrics() {
-
-        applicationModel.getBeanFactory().getOrRegisterBean(MetricsDispatcher.class);
-        RegistryMetricsCollector collector = applicationModel.getBeanFactory().getOrRegisterBean(RegistryMetricsCollector.class);
-        collector.setCollectEnabled(true);
 
         RegistryEvent registryEvent = RegistryEvent.toRegisterEvent(applicationModel);
         MetricsEventBus.post(registryEvent,
@@ -130,9 +130,6 @@ class RegistryMetricsCollectorTest {
     @Test
     void testServicePushMetrics() {
 
-        applicationModel.getBeanFactory().getOrRegisterBean(MetricsDispatcher.class);
-        RegistryMetricsCollector collector = applicationModel.getBeanFactory().getOrRegisterBean(RegistryMetricsCollector.class);
-        collector.setCollectEnabled(true);
         String serviceName = "demo.gameService";
 
         RegistryEvent registryEvent = RegistryEvent.toRsEvent(applicationModel, serviceName, 2);
@@ -195,9 +192,6 @@ class RegistryMetricsCollectorTest {
     @Test
     void testServiceSubscribeMetrics() {
 
-        applicationModel.getBeanFactory().getOrRegisterBean(MetricsDispatcher.class);
-        RegistryMetricsCollector collector = applicationModel.getBeanFactory().getOrRegisterBean(RegistryMetricsCollector.class);
-        collector.setCollectEnabled(true);
         String serviceName = "demo.gameService";
 
         RegistryEvent subscribeEvent = RegistryEvent.toSsEvent(applicationModel, serviceName);
@@ -254,5 +248,29 @@ class RegistryMetricsCollectorTest {
         Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(MetricsKey.METRIC_RT_MAX, OP_TYPE_SUBSCRIBE_SERVICE).targetKey()), Math.max(c1, c2));
         Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(MetricsKey.METRIC_RT_AVG, OP_TYPE_SUBSCRIBE_SERVICE).targetKey()), (c1 + c2) / 2);
         Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(MetricsKey.METRIC_RT_SUM, OP_TYPE_SUBSCRIBE_SERVICE).targetKey()), c1 + c2);
+    }
+
+
+    @Test
+    public void testNotify() {
+        MetricsEventBus.post(RegistryEvent.toNotifyEvent(applicationModel),
+            () -> {
+                try {
+                    Thread.sleep(50L);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                Map<String, Integer> lastNumMap = new HashMap<>();
+                // 1 different services
+                lastNumMap.put("demo.service1", 3);
+                lastNumMap.put("demo.service2", 4);
+                lastNumMap.put("demo.service3", 5);
+                return lastNumMap;
+            }
+        );
+        List<MetricSample> metricSamples = collector.collect();
+        // num(total+service*3) + rt(5) = 9
+        Assertions.assertEquals(9, metricSamples.size());
+
     }
 }

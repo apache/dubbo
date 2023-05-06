@@ -37,7 +37,7 @@ public class TimeWindowQuantile {
     }
 
     public double quantile(double q) {
-        TDigest mergeDigest = TDigest.createDigest(compression);
+        TDigest mergeDigest = new DubboMergingDigest(compression);
         List<TDigest> validWindows = this.slidingWindow.values();
         for (TDigest window : validWindows) {
             mergeDigest.add(window);
@@ -65,13 +65,13 @@ public class TimeWindowQuantile {
 
         @Override
         public TDigest newEmptyValue(long timeMillis) {
-            return TDigest.createDigest(compression);
+            return new DubboMergingDigest(compression);
         }
 
         @Override
         protected Pane<TDigest> resetPaneTo(final Pane<TDigest> pane, long startTime) {
             pane.setStartInMs(startTime);
-            pane.setValue(TDigest.createDigest(compression));
+            pane.setValue(new DubboMergingDigest(compression));
             return pane;
         }
     }

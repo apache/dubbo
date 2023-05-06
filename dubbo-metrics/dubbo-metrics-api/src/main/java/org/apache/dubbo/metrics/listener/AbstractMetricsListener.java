@@ -17,54 +17,21 @@
 
 package org.apache.dubbo.metrics.listener;
 
+import org.apache.dubbo.common.utils.ReflectionUtils;
 import org.apache.dubbo.metrics.event.MetricsEvent;
-import org.apache.dubbo.metrics.event.TimeCounterEvent;
-import org.apache.dubbo.metrics.model.key.MetricsKey;
 
-import java.util.function.Consumer;
+import java.util.List;
 
-public abstract class AbstractMetricsListener implements MetricsLifeListener<TimeCounterEvent> {
+public abstract class AbstractMetricsListener<E extends MetricsEvent> implements MetricsListener<E> {
 
-    private final MetricsKey metricsKey;
-
-    public AbstractMetricsListener(MetricsKey metricsKey) {
-        this.metricsKey = metricsKey;
+    /**
+     * Whether to support the general determination of event points depends on the event type
+     */
+    public boolean isSupport(MetricsEvent event) {
+        List<Class<?>> eventTypes = ReflectionUtils.getClassGenerics(getClass(), AbstractMetricsListener.class);
+        return event.isAvailable() && eventTypes.stream().allMatch(clazz -> clazz.isInstance(event));
     }
 
     @Override
-    public boolean isSupport(MetricsEvent event) {
-        return event.isAvailable() && event.isAssignableFrom(metricsKey);
-    }
-
-    public static AbstractMetricsListener onEvent(MetricsKey metricsKey, Consumer<TimeCounterEvent> postFunc) {
-
-        return new AbstractMetricsListener(metricsKey) {
-            @Override
-            public void onEvent(TimeCounterEvent event) {
-                postFunc.accept(event);
-            }
-        };
-    }
-
-    public static AbstractMetricsListener onFinish(MetricsKey metricsKey, Consumer<TimeCounterEvent> finishFunc) {
-
-        return new AbstractMetricsListener(metricsKey) {
-            @Override
-            public void onEventFinish(TimeCounterEvent event) {
-                finishFunc.accept(event);
-            }
-        };
-    }
-
-    public static AbstractMetricsListener onError(MetricsKey metricsKey, Consumer<TimeCounterEvent> errorFunc) {
-
-        return new AbstractMetricsListener(metricsKey) {
-            @Override
-            public void onEventError(TimeCounterEvent event) {
-                errorFunc.accept(event);
-            }
-        };
-    }
-
-
+    public abstract void onEvent(E event);
 }

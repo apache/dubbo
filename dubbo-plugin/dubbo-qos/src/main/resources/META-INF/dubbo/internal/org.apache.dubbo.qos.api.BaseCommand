@@ -36,3 +36,4 @@ serializeCheckStatus=org.apache.dubbo.qos.command.impl.SerializeCheckStatus
 serializeWarnedClasses=org.apache.dubbo.qos.command.impl.SerializeWarnedClasses
 getConfig=org.apache.dubbo.qos.command.impl.GetConfig
 getAddress=org.apache.dubbo.qos.command.impl.GetAddress
+gracefulShutdown=org.apache.dubbo.qos.command.impl.GracefulShutdown
