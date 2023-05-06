@@ -17,6 +17,7 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.MetricsConstants;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.config.nested.AggregationConfig;
 import org.apache.dubbo.config.nested.PrometheusConfig;
@@ -32,9 +33,10 @@ import java.util.Map;
  */
 public class MetricsConfig extends AbstractConfig {
 
+    public static final String DEFAULT_PROTOCOL = MetricsConstants.PROTOCOL_PROMETHEUS;
     private static final long serialVersionUID = -9089919311611546383L;
 
-    private String protocol;
+    private String protocol = DEFAULT_PROTOCOL;
 
     /**
      * Enable jvm metrics when collecting.
