@@ -64,10 +64,10 @@ public class MethodMetricsInterceptor {
             return;
         }
         String side = getSide(invocation);
+
+        MetricsEvent.Type eventType = MetricsEvent.Type.UNKNOWN_FAILED;
         if (throwable instanceof RpcException) {
             RpcException e = (RpcException) throwable;
-
-            MetricsEvent.Type eventType = MetricsEvent.Type.UNKNOWN_FAILED;
 
             if (e.isTimeout()) {
                 eventType = MetricsEvent.Type.REQUEST_TIMEOUT;
@@ -84,8 +84,8 @@ public class MethodMetricsInterceptor {
             if (e.isNetwork()) {
                 eventType = MetricsEvent.Type.NETWORK_EXCEPTION;
             }
-            sampler.incOnEvent(invocation, eventType.getNameByType(side));
         }
+        sampler.incOnEvent(invocation, eventType.getNameByType(side));
         onCompleted(invocation);
         sampler.incOnEvent(invocation, MetricsEvent.Type.TOTAL_FAILED.getNameByType(side));
     }
