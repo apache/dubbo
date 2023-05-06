@@ -277,9 +277,10 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     protected void appendMetricsCompatible(Map<String, String> map) {
         MetricsConfig metricsConfig = getConfigManager().getMetrics().orElse(null);
         if (metricsConfig != null) {
-            if (!StringUtils.isEquals(metricsConfig.getProtocol(), PROTOCOL_PROMETHEUS)) {
+            String protocol = Optional.ofNullable(metricsConfig.getProtocol()).orElse(PROTOCOL_PROMETHEUS);
+            if (!StringUtils.isEquals(protocol, PROTOCOL_PROMETHEUS)) {
                 Assert.notEmptyString(metricsConfig.getPort(), "Metrics port cannot be null");
-                map.put("metrics.protocol", metricsConfig.getProtocol());
+                map.put("metrics.protocol", protocol);
                 map.put("metrics.port", metricsConfig.getPort());
             }
         }

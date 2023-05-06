@@ -17,7 +17,6 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.constants.MetricsConstants;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.config.nested.AggregationConfig;
 import org.apache.dubbo.config.nested.PrometheusConfig;
@@ -27,7 +26,6 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 /**
  * MetricsConfig
@@ -104,7 +102,7 @@ public class MetricsConfig extends AbstractConfig {
     }
 
     public String getProtocol() {
-        return Optional.ofNullable(protocol).orElse(MetricsConstants.PROTOCOL_PROMETHEUS);
+        return protocol;
     }
 
     public void setProtocol(String protocol) {
