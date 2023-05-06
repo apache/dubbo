@@ -387,9 +387,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         }
 
         MetricsConfig metricsConfig = configOptional.orElse(new MetricsConfig(applicationModel));
-        if (StringUtils.isBlank(metricsConfig.getProtocol())) {
-            metricsConfig.setProtocol(PROTOCOL_PROMETHEUS);
-        }
         collector.setCollectEnabled(true);
         collector.collectApplication(applicationModel);
         collector.setThreadpoolCollectEnabled(Optional.ofNullable(metricsConfig.getEnableThreadpool()).orElse(true));

@@ -27,16 +27,16 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * MetricsConfig
  */
 public class MetricsConfig extends AbstractConfig {
 
-    public static final String DEFAULT_PROTOCOL = MetricsConstants.PROTOCOL_PROMETHEUS;
     private static final long serialVersionUID = -9089919311611546383L;
 
-    private String protocol = DEFAULT_PROTOCOL;
+    private String protocol;
 
     /**
      * Enable jvm metrics when collecting.
@@ -104,7 +104,7 @@ public class MetricsConfig extends AbstractConfig {
     }
 
     public String getProtocol() {
-        return protocol;
+        return Optional.of(protocol).orElse(MetricsConstants.PROTOCOL_PROMETHEUS);
     }
 
     public void setProtocol(String protocol) {

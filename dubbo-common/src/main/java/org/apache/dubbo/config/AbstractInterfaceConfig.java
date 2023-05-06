@@ -277,7 +277,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     protected void appendMetricsCompatible(Map<String, String> map) {
         MetricsConfig metricsConfig = getConfigManager().getMetrics().orElse(null);
         if (metricsConfig != null) {
-            if (metricsConfig.getProtocol() != null && !StringUtils.isEquals(metricsConfig.getProtocol(), PROTOCOL_PROMETHEUS)) {
+            if (!StringUtils.isEquals(metricsConfig.getProtocol(), PROTOCOL_PROMETHEUS)) {
                 Assert.notEmptyString(metricsConfig.getPort(), "Metrics port cannot be null");
                 map.put("metrics.protocol", metricsConfig.getProtocol());
                 map.put("metrics.port", metricsConfig.getPort());
@@ -376,8 +376,9 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     /**
-     *  it is used for skipping the check of interface since dubbo 3.2
-     *  rest protocol allow the service is implement class
+     * it is used for skipping the check of interface since dubbo 3.2
+     * rest protocol allow the service is implement class
+     *
      * @return
      */
     protected boolean canSkipInterfaceCheck() {
