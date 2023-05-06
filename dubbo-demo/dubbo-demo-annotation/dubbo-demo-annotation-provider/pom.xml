@@ -43,10 +43,12 @@
         <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-registry-multicast</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-registry-nacos</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.alibaba.nacos</groupId>
@@ -55,42 +57,52 @@
         <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-registry-zookeeper</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-configcenter-zookeeper</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-configcenter-nacos</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-metadata-report-zookeeper</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-metadata-report-nacos</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-rpc-dubbo</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-config-spring</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-remoting-netty4</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-serialization-hessian2</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-serialization-fastjson2</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
