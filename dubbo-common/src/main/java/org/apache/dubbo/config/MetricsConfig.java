@@ -104,7 +104,7 @@ public class MetricsConfig extends AbstractConfig {
     }
 
     public String getProtocol() {
-        return Optional.of(protocol).orElse(MetricsConstants.PROTOCOL_PROMETHEUS);
+        return Optional.ofNullable(protocol).orElse(MetricsConstants.PROTOCOL_PROMETHEUS);
     }
 
     public void setProtocol(String protocol) {
