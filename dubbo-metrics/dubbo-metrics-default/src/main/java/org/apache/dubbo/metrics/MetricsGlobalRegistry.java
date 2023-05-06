@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.metrics;
 
+import io.micrometer.core.instrument.Metrics;
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 
 public class MetricsGlobalRegistry {
@@ -24,6 +25,10 @@ public class MetricsGlobalRegistry {
     private static final CompositeMeterRegistry compositeRegistry = new CompositeMeterRegistry();
 
     public static CompositeMeterRegistry getCompositeRegistry() {
-        return compositeRegistry;
+        if (Boolean.parseBoolean(System.getProperty("dubbo.metrics.useGlobalRegistry", "true"))) {
+            return Metrics.globalRegistry;
+        } else {
+            return compositeRegistry;
+        }
     }
 }
