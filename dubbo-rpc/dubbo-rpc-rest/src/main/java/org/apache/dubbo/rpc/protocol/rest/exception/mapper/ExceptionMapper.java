@@ -38,18 +38,31 @@ public class ExceptionMapper {
     private final Map<Class<?>, ExceptionHandler> exceptionHandlerMap = new ConcurrentHashMap<>();
 
     public Object exceptionToResult(Object throwable) {
-        if (!hasExceptionMapper(throwable)) {
+        ExceptionHandler exceptionHandler = getExceptionHandler(throwable.getClass());
+        if (exceptionHandler == null) {
             return throwable;
         }
+        return exceptionHandler.result((Throwable) throwable);
+    }
 
-        return exceptionHandlerMap.get(throwable.getClass()).result((Throwable) throwable);
+    public ExceptionHandler getExceptionHandler(Class causeClass) {
+        ExceptionHandler exceptionHandler = null;
+        while (causeClass != null) {
+            exceptionHandler = exceptionHandlerMap.get(causeClass);
+            if (exceptionHandler != null) {
+                break;
+            }
+            // When the exception handling class cannot be obtained, it should recursively search the base class
+            causeClass = causeClass.getSuperclass();
+        }
+        return exceptionHandler;
     }
 
     public boolean hasExceptionMapper(Object throwable) {
         if (throwable == null) {
             return false;
         }
-        return exceptionHandlerMap.containsKey(throwable.getClass());
+        return getExceptionHandler(throwable.getClass()) != null;
     }
 
 
