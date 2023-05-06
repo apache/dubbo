@@ -96,7 +96,7 @@
         <javassist_version>3.29.2-GA</javassist_version>
         <bytebuddy.version>1.14.4</bytebuddy.version>
         <netty_version>3.2.10.Final</netty_version>
-        <netty4_version>4.1.91.Final</netty4_version>
+        <netty4_version>4.1.92.Final</netty4_version>
         <mina_version>2.2.1</mina_version>
         <grizzly_version>2.4.4</grizzly_version>
         <httpclient_version>4.5.14</httpclient_version>
@@ -106,7 +106,7 @@
         <zookeeper_version>3.4.14</zookeeper_version>
         <curator_version>4.3.0</curator_version>
         <curator_test_version>2.12.0</curator_test_version>
-        <jedis_version>3.9.0</jedis_version>
+        <jedis_version>3.10.0</jedis_version>
         <consul_version>1.4.5</consul_version>
         <consul_process_version>2.2.1</consul_process_version>
         <consul_client_version>1.5.3</consul_client_version>

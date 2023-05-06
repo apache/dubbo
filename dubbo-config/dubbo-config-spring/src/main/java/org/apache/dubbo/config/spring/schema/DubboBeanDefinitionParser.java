@@ -175,7 +175,10 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                     if ("registry".equals(property) && RegistryConfig.NO_AVAILABLE.equalsIgnoreCase(value)) {
                         RegistryConfig registryConfig = new RegistryConfig();
                         registryConfig.setAddress(RegistryConfig.NO_AVAILABLE);
-                        beanDefinition.getPropertyValues().addPropertyValue(beanProperty, registryConfig);
+                        // see AbstractInterfaceConfig#registries, It will be invoker setRegistries method when BeanDefinition is registered,
+                        beanDefinition.getPropertyValues().addPropertyValue("registries", registryConfig);
+                        // If registry is N/A, don't init it until the reference is invoked
+                        beanDefinition.setLazyInit(true);
                     } else if ("provider".equals(property) || "registry".equals(property) || ("protocol".equals(property) && AbstractServiceConfig.class.isAssignableFrom(beanClass))) {
                         /**
                          * For 'provider' 'protocol' 'registry', keep literal value (should be id/name) and set the value to 'registryIds' 'providerIds' protocolIds'

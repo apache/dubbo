@@ -17,18 +17,21 @@
 
 package org.apache.dubbo.metrics.model.key;
 
-public class MetricsPlaceType {
+/**
+ * The value corresponding to the placeholder in {@link MetricsKey}
+ */
+public class MetricsPlaceValue {
 
     private final String type;
     private final MetricsLevel metricsLevel;
 
-    private MetricsPlaceType(String type, MetricsLevel metricsLevel) {
+    private MetricsPlaceValue(String type, MetricsLevel metricsLevel) {
         this.type = type;
         this.metricsLevel = metricsLevel;
     }
 
-    public static MetricsPlaceType of(String type, MetricsLevel metricsLevel) {
-        return new MetricsPlaceType(type, metricsLevel);
+    public static MetricsPlaceValue of(String type, MetricsLevel metricsLevel) {
+        return new MetricsPlaceValue(type, metricsLevel);
     }
 
     public String getType() {
@@ -37,5 +40,23 @@ public class MetricsPlaceType {
 
     public MetricsLevel getMetricsLevel() {
         return metricsLevel;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        MetricsPlaceValue that = (MetricsPlaceValue) o;
+
+        if (!type.equals(that.type)) return false;
+        return metricsLevel == that.metricsLevel;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = type.hashCode();
+        result = 31 * result + metricsLevel.hashCode();
+        return result;
     }
 }

@@ -24,9 +24,11 @@ import org.apache.dubbo.metrics.model.container.AtomicLongContainer;
 import org.apache.dubbo.metrics.model.container.LongAccumulatorContainer;
 import org.apache.dubbo.metrics.model.container.LongContainer;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
-import org.apache.dubbo.metrics.model.key.MetricsPlaceType;
+import org.apache.dubbo.metrics.model.key.MetricsPlaceValue;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
+import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.metrics.report.MetricsExport;
+import org.apache.dubbo.rpc.Invocation;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -36,18 +38,19 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.LongAccumulator;
 import java.util.stream.Collectors;
 
+@SuppressWarnings({"rawtypes", "unchecked"})
 public class RtStatComposite implements MetricsExport {
 
     private final List<LongContainer<? extends Number>> rtStats = new ArrayList<>();
 
-    public void init(MetricsPlaceType... placeValues) {
+    public void init(MetricsPlaceValue... placeValues) {
         if (placeValues == null) {
             return;
         }
         Arrays.stream(placeValues).forEach(metricsPlaceType -> rtStats.addAll(initStats(metricsPlaceType)));
     }
 
-    private List<LongContainer<? extends Number>> initStats(MetricsPlaceType placeValue) {
+    private List<LongContainer<? extends Number>> initStats(MetricsPlaceValue placeValue) {
         List<LongContainer<? extends Number>> singleRtStats = new ArrayList<>();
         singleRtStats.add(new AtomicLongContainer(new MetricsKeyWrapper(MetricsKey.METRIC_RT_LAST, placeValue)));
         singleRtStats.add(new LongAccumulatorContainer(new MetricsKeyWrapper(MetricsKey.METRIC_RT_MIN, placeValue), new LongAccumulator(Long::min, Long.MAX_VALUE)));
@@ -65,7 +68,6 @@ public class RtStatComposite implements MetricsExport {
         return singleRtStats;
     }
 
-    @SuppressWarnings({"rawtypes", "unchecked"})
     public void calcApplicationRt(String applicationName, String registryOpType, Long responseTime) {
         for (LongContainer container : rtStats.stream().filter(longContainer -> longContainer.specifyType(registryOpType)).collect(Collectors.toList())) {
             Number current = (Number) ConcurrentHashMapUtils.computeIfAbsent(container, applicationName, container.getInitFunc());
@@ -73,7 +75,6 @@ public class RtStatComposite implements MetricsExport {
         }
     }
 
-    @SuppressWarnings({"rawtypes", "unchecked"})
     public void calcServiceKeyRt(String applicationName, String serviceKey, String registryOpType, Long responseTime) {
         for (LongContainer container : rtStats.stream().filter(longContainer -> longContainer.specifyType(registryOpType)).collect(Collectors.toList())) {
             Number current = (Number) ConcurrentHashMapUtils.computeIfAbsent(container, applicationName + "_" + serviceKey, container.getInitFunc());
@@ -81,9 +82,15 @@ public class RtStatComposite implements MetricsExport {
         }
     }
 
-    @SuppressWarnings({"rawtypes"})
-    public List<GaugeMetricSample> export(MetricsCategory category) {
-        List<GaugeMetricSample> list = new ArrayList<>();
+    public void calcMethodKeyRt(String applicationName, Invocation invocation, String registryOpType, Long responseTime) {
+        for (LongContainer container : rtStats.stream().filter(longContainer -> longContainer.specifyType(registryOpType)).collect(Collectors.toList())) {
+            Number current = (Number) ConcurrentHashMapUtils.computeIfAbsent(container, applicationName + "_" + invocation.getServiceName() + "_" + invocation.getMethodName(), container.getInitFunc());
+            container.getConsumerFunc().accept(responseTime, current);
+        }
+    }
+
+    public List<MetricSample> export(MetricsCategory category) {
+        List<MetricSample> list = new ArrayList<>();
         for (LongContainer<? extends Number> rtContainer : rtStats) {
             MetricsKeyWrapper metricsKeyWrapper = rtContainer.getMetricsKeyWrapper();
             for (Map.Entry<String, ? extends Number> entry : rtContainer.entrySet()) {

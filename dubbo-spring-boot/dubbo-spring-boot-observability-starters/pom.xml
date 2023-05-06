@@ -30,7 +30,7 @@
     <artifactId>dubbo-spring-boot-observability-starters</artifactId>
 
     <modules>
-        <module>dubbo-spring-boot-observability-autoconfigure</module>
+        <module>autoconfigure</module>
         <module>dubbo-spring-boot-tracing-otel-zipkin-starter</module>
         <module>dubbo-spring-boot-tracing-brave-zipkin-starter</module>
         <module>dubbo-spring-boot-observability-starter</module>
@@ -40,7 +40,7 @@
         <micrometer.version>1.10.6</micrometer.version>
         <micrometer-tracing.version>1.0.4</micrometer-tracing.version>
         <opentelemetry.version>1.25.0</opentelemetry.version>
-        <zipkin-reporter.version>2.16.3</zipkin-reporter.version>
+        <zipkin-reporter.version>2.16.4</zipkin-reporter.version>
         <prometheus-client.version>0.16.0</prometheus-client.version>
     </properties>
 

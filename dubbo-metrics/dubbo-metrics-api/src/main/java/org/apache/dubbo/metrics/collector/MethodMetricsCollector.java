@@ -15,33 +15,19 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.metrics.event;
+package org.apache.dubbo.metrics.collector;
 
-import org.apache.dubbo.metrics.model.MethodMetric;
-import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.metrics.event.TimeCounterEvent;
+import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
+import org.apache.dubbo.rpc.Invocation;
 
-public class MethodEvent extends MetricsEvent {
-    private String type;
-    private final MethodMetric methodMetric;
+/**
+ * Method-level metrics collection for rpc invocation scenarios
+ */
+public interface MethodMetricsCollector<E extends TimeCounterEvent> extends MetricsCollector<E> {
 
-    public MethodEvent(ApplicationModel applicationModel, MethodMetric methodMetric, String type) {
-        super(applicationModel);
-        this.type = type;
-        this.methodMetric = methodMetric;
-        setAvailable(true);
-    }
+    void increment(String applicationName, Invocation invocation, MetricsKeyWrapper wrapper, int size);
 
-    public MethodMetric getMethodMetric() {
-        return methodMetric;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
-
+    void addRt(String applicationName, Invocation invocation, String registryOpType, Long responseTime);
 }
+

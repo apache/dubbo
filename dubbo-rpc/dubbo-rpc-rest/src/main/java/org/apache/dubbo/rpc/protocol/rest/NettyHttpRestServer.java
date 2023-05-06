@@ -35,6 +35,7 @@ import org.apache.dubbo.rpc.protocol.rest.handler.NettyHttpHandler;
 import org.apache.dubbo.rpc.protocol.rest.netty.NettyServer;
 import org.apache.dubbo.rpc.protocol.rest.netty.RestHttpRequestDecoder;
 import org.apache.dubbo.rpc.protocol.rest.netty.UnSharedHandlerCreator;
+import org.apache.dubbo.rpc.protocol.rest.netty.ssl.SslServerTlsHandler;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -124,15 +125,15 @@ public class NettyHttpRestServer implements RestProtocolServer {
             @Override
             public List<ChannelHandler> getUnSharedHandlers(URL url) {
                 return Arrays.asList(
-                    // TODO add SslServerTlsHandler
-//                channelPipeline.addLast(ch.pipeline().addLast("negotiation", new SslServerTlsHandler(url)));
-
+                    //  add SslServerTlsHandler
+                    new SslServerTlsHandler(url),
                     new HttpRequestDecoder(
                         url.getParameter(RestConstant.MAX_INITIAL_LINE_LENGTH_PARAM, RestConstant.MAX_INITIAL_LINE_LENGTH),
                         url.getParameter(RestConstant.MAX_HEADER_SIZE_PARAM, RestConstant.MAX_HEADER_SIZE),
                         url.getParameter(RestConstant.MAX_CHUNK_SIZE_PARAM, RestConstant.MAX_CHUNK_SIZE)),
                     new HttpObjectAggregator(url.getParameter(RestConstant.MAX_REQUEST_SIZE_PARAM, RestConstant.MAX_REQUEST_SIZE)),
-                    new HttpResponseEncoder(), new RestHttpRequestDecoder(new NettyHttpHandler(pathAndInvokerMapper, exceptionMapper), url));
+                    new HttpResponseEncoder(), new RestHttpRequestDecoder(new NettyHttpHandler(pathAndInvokerMapper, exceptionMapper), url))
+                    ;
             }
         };
     }

@@ -15,23 +15,11 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.metrics.metrics.event;
+package org.apache.dubbo.rpc.model;
 
-import org.apache.dubbo.metrics.event.RTEvent;
-import org.apache.dubbo.metrics.model.MethodMetric;
-import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
-class RTEventTest {
-
-    @Test
-    void testNewEvent() {
-        MethodMetric metric = new MethodMetric();
-        Long rt = 5L;
-        RTEvent event = new RTEvent(ApplicationModel.defaultModel(), metric, rt);
-
-        Assertions.assertEquals(event.getSource(), ApplicationModel.defaultModel());
-        Assertions.assertEquals(event.getRt(), rt);
-    }
+/**
+ * Marker interface implemented by all stub. Used to detect
+ * whether objects are Dubbo-generated stub.
+ */
+public interface DubboStub {
 }

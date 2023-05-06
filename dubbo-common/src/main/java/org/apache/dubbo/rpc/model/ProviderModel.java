@@ -40,6 +40,8 @@ public class ProviderModel extends ServiceModel {
      */
     private List<URL> serviceUrls = new ArrayList<>();
 
+    private volatile long lastInvokeTime = 0;
+
     public ProviderModel(String serviceKey,
                          Object serviceInstance,
                          ServiceDescriptor serviceDescriptor,
@@ -175,6 +177,14 @@ public class ProviderModel extends ServiceModel {
         this.serviceUrls = urls;
     }
 
+
+    public long getLastInvokeTime() {
+        return lastInvokeTime;
+    }
+
+    public void updateLastInvokeTime() {
+        this.lastInvokeTime = System.currentTimeMillis();
+    }
 
     @Override
     public boolean equals(Object o) {

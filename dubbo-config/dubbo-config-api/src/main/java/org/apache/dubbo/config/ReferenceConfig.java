@@ -43,6 +43,7 @@ import org.apache.dubbo.rpc.cluster.support.ClusterUtils;
 import org.apache.dubbo.rpc.cluster.support.registry.ZoneAwareCluster;
 import org.apache.dubbo.rpc.model.AsyncMethodInfo;
 import org.apache.dubbo.rpc.model.ConsumerModel;
+import org.apache.dubbo.rpc.model.DubboStub;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ModuleServiceRepository;
 import org.apache.dubbo.rpc.model.ScopeModel;
@@ -263,6 +264,12 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         try {
             if (!this.isRefreshed()) {
                 this.refresh();
+            }
+            //auto detect proxy type
+            String proxyType = getProxy();
+            if (StringUtils.isBlank(proxyType)
+                && DubboStub.class.isAssignableFrom(interfaceClass)) {
+                setProxy(CommonConstants.NATIVE_STUB);
             }
 
             // init serviceMetadata

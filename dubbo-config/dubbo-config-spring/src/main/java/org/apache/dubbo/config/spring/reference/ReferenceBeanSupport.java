@@ -51,7 +51,7 @@ import static org.apache.dubbo.common.utils.StringUtils.join;
 
 public class ReferenceBeanSupport {
 
-    private static List<String> IGNORED_ATTRS = Arrays.asList(ReferenceAttributes.ID, ReferenceAttributes.GROUP,
+    private static final List<String> IGNORED_ATTRS = Arrays.asList(ReferenceAttributes.ID, ReferenceAttributes.GROUP,
         ReferenceAttributes.VERSION, ReferenceAttributes.INTERFACE, ReferenceAttributes.INTERFACE_NAME,
         ReferenceAttributes.INTERFACE_CLASS);
 
@@ -65,7 +65,7 @@ public class ReferenceBeanSupport {
         if (interfaceName == null) {
             Object interfaceClassValue = attributes.get(ReferenceAttributes.INTERFACE_CLASS);
             if (interfaceClassValue instanceof Class) {
-                interfaceName = ((Class) interfaceClassValue).getName();
+                interfaceName = ((Class<?>) interfaceClassValue).getName();
             } else if (interfaceClassValue instanceof String) {
                 if (interfaceClassValue.equals("void")) {
                     attributes.remove(ReferenceAttributes.INTERFACE_CLASS);
