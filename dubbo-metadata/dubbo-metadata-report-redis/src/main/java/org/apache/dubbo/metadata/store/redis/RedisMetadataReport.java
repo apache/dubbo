@@ -66,6 +66,7 @@ public class RedisMetadataReport extends AbstractMetadataReport {
     public RedisMetadataReport(URL url) {
         super(url);
         timeout = url.getParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT);
+        password = url.getPassword();
         if (url.getParameter(CLUSTER_KEY, false)) {
             jedisClusterNodes = new HashSet<>();
             List<URL> urls = url.getBackupUrls();
@@ -74,7 +75,7 @@ public class RedisMetadataReport extends AbstractMetadataReport {
             }
         } else {
             int database = url.getParameter(REDIS_DATABASE_KEY, 0);
-            pool = new JedisPool(new JedisPoolConfig(), url.getHost(), url.getPort(), timeout, url.getPassword(), database);
+            pool = new JedisPool(new JedisPoolConfig(), url.getHost(), url.getPort(), timeout, password, database);
         }
     }
 
