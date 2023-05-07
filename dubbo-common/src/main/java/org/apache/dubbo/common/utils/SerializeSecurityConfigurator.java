@@ -223,6 +223,10 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
     }
 
     private void checkType(Set<Type> markedClass, Type type) {
+        if (type == null) {
+            return;
+        }
+
         if (type instanceof Class) {
             checkClass(markedClass, (Class<?>) type);
             return;
@@ -258,6 +262,10 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
     }
 
     private void checkClass(Set<Type> markedClass, Class<?> clazz) {
+        if (clazz == null) {
+            return;
+        }
+
         if (!markedClass.add(clazz)) {
             return;
         }
@@ -269,9 +277,18 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
             checkClass(markedClass, interfaceClass);
         }
 
+        for (Type genericInterface : clazz.getGenericInterfaces()) {
+            checkType(markedClass, genericInterface);
+        }
+
         Class<?> superclass = clazz.getSuperclass();
         if (superclass != null) {
             checkClass(markedClass, superclass);
+        }
+
+        Type genericSuperclass = clazz.getGenericSuperclass();
+        if (genericSuperclass != null) {
+            checkType(markedClass, genericSuperclass);
         }
 
         Field[] fields = clazz.getDeclaredFields();
