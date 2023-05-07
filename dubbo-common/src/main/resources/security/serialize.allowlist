@@ -134,3 +134,4 @@ org.apache.dubbo.common.url.component.ServiceConfigURL
 org.apache.dubbo.common.URL
 org.apache.dubbo.common.url.component.URLAddress
 org.apache.dubbo.common.url.component.URLPlainParam
+org.apache.dubbo.common.url.component.PathURLAddress
