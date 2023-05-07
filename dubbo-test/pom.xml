@@ -49,7 +49,7 @@
             <dependency>
                 <groupId>org.apache.dubbo</groupId>
                 <artifactId>dubbo-bom</artifactId>
-                <version>${project.parent.version}</version>
+                <version>${project.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
