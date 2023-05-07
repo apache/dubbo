@@ -46,7 +46,7 @@ public class RequestTemplate implements Serializable {
     private byte[] byteBody = new byte[0];
     private String protocol = "http://";
     private static final String HTTP_PROTOCOL = "http://";
-    private static final String HTTPS_PROTOCOL = "http://";
+    private static final String HTTPS_PROTOCOL = "https://";
     private final Invocation invocation;
     private String contextPath = "";
     private Class<?> bodyType;
