@@ -19,7 +19,9 @@ package org.apache.dubbo.remoting.http.ssl;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.X509TrustManager;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,37 +41,42 @@ public class SSLContextBuilder {
 
     }
 
-    public static SSLContext sslContextBuild(InputStream keyCertChainInputStream, InputStream keyInputStream, InputStream trustCertCollectionInputStream,
+    public static SSLContext sslContextBuild(InputStream clientCertChainStream, InputStream clientPrivateKeyStream, InputStream clientTrustCertCollectionStream,
                                              String keyPassword) throws Exception {
+
+
+        SSLContext sslContext = createSSLContext();
+
+        KeyManagerFactory keyManagerFactory = SSLContextBuilder.keyManager(clientCertChainStream, clientPrivateKeyStream,keyPassword);
+
+
+        TrustManagerFactory trustManagerFactory = SSLContextBuilder.trustManager(clientTrustCertCollectionStream);
+
+        TrustManager[] trustManagers = buildTrustManagers(trustManagerFactory);
+
+        sslContext.init(keyManagerFactory.getKeyManagers(), trustManagers, null);
+
+        return sslContext;
+
+    }
+
+    public static KeyManagerFactory keyManager(InputStream keyCertChainInputStream, InputStream keyInputStream,String keyPassword) throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException, UnrecoverableKeyException {
+
         X509Certificate[] keyCertChain;
-        PrivateKey key;
+
         try {
             keyCertChain = SslContext.toX509Certificates(keyCertChainInputStream);
         } catch (Exception e) {
             throw new IllegalArgumentException("Input stream not contain valid certificates.", e);
         }
+
+        PrivateKey key;
         try {
             key = SslContext.toPrivateKey(keyInputStream, keyPassword);
         } catch (Exception e) {
             throw new IllegalArgumentException("Input stream does not contain valid private key.", e);
         }
-
-        SSLContext context = SSLContext.getInstance("TLS");
-
-        KeyManagerFactory kmf = keyManager(keyPassword, keyCertChain, key);
-
-
-        TrustManagerFactory trustManagerFactory = trustManager(trustCertCollectionInputStream);
-
-
-        context.init(kmf.getKeyManagers(), trustManagerFactory.getTrustManagers(), null);
-
-        return context;
-
-    }
-
-    public static KeyManagerFactory keyManager(String keyPassword, X509Certificate[] keyCertChain, PrivateKey key) throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException, UnrecoverableKeyException {
-        KeyStore keystore = KeyStore.getInstance("JKS");
+        KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
 
         keystore.load(null);
 
@@ -79,7 +86,7 @@ public class SSLContextBuilder {
         keystore.setKeyEntry("keyEntry", key, password, keyCertChain);
 
 
-        KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
+        KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
 
         kmf.init(keystore, password);
         return kmf;
@@ -94,4 +101,33 @@ public class SSLContextBuilder {
 
     }
 
+    public static TrustManager[] buildTrustManagers(TrustManagerFactory trustManagerFactory) {
+        TrustManager[] trustManagers = trustManagerFactory.getTrustManagers();
+        if (trustManagers != null && trustManagers.length > 0) {
+
+            return trustManagers;
+        }
+
+        return new TrustManager[]{
+            new X509TrustManager() {
+                @Override
+                public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType) {
+                }
+
+                @Override
+                public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType) {
+                }
+
+                @Override
+                public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                    return new java.security.cert.X509Certificate[]{};
+                }
+            }
+        };
+    }
+
+    public static SSLContext createSSLContext() throws NoSuchAlgorithmException {
+        SSLContext context = SSLContext.getInstance("TLS");
+        return context;
+    }
 }

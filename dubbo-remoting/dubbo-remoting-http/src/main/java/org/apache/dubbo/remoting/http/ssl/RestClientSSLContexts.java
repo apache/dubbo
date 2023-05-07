@@ -22,16 +22,17 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.ssl.Cert;
 import org.apache.dubbo.common.ssl.CertManager;
 
+import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
+import javax.net.ssl.TrustManagerFactory;
 import java.io.IOException;
 import java.io.InputStream;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_CLOSE_STREAM;
 
 /**
- *  for rest client ssl context build
+ * for rest client ssl context build
  */
 public class RestClientSSLContexts {
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(RestClientSSLContexts.class);
@@ -62,11 +63,19 @@ public class RestClientSSLContexts {
             }
 
             SSLContext sslContext =
-                SSLContextBuilder.sslContextBuild(clientCertChainStream,
-                    clientPrivateKeyStream, clientTrustCertCollectionStream, consumerConnectionConfig.getPassword());
+                SSLContextBuilder.createSSLContext();
 
-            TrustManager[] trustAllCerts = buildTrustManagers();
-            restClientSSLSetter.initSSLContext(sslContext, trustAllCerts);
+            KeyManagerFactory keyManagerFactory = SSLContextBuilder.keyManager(clientCertChainStream, clientPrivateKeyStream, consumerConnectionConfig.getPassword());
+
+
+            TrustManagerFactory trustManagerFactory = SSLContextBuilder.trustManager(clientTrustCertCollectionStream);
+
+            TrustManager[] trustManagers = SSLContextBuilder.buildTrustManagers(trustManagerFactory);
+
+            sslContext.init(keyManagerFactory.getKeyManagers(), trustManagers, null);
+
+            restClientSSLSetter.initSSLContext(sslContext, trustManagers);
+
             restClientSSLSetter.setHostnameVerifier((hostname, session) -> true);
         } catch (Exception e) {
             throw new IllegalArgumentException("Could not build rest client SSLContext: ", e);
@@ -92,23 +101,5 @@ public class RestClientSSLContexts {
         }
     }
 
-    private static TrustManager[] buildTrustManagers() {
-        return new TrustManager[]{
-            new X509TrustManager() {
-                @Override
-                public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType) {
-                }
-
-                @Override
-                public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType) {
-                }
-
-                @Override
-                public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-                    return new java.security.cert.X509Certificate[]{};
-                }
-            }
-        };
-    }
 
 }
