@@ -96,7 +96,6 @@ public class PemReader {
             }
 
             if (der != null) {
-                System.out.println(new String(der));
                 certs.add(der);
             }
 
