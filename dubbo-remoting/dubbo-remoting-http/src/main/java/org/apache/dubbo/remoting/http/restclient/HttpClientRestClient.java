@@ -73,7 +73,7 @@ public class HttpClientRestClient extends BaseRestClient {
     }
 
     @Override
-    public CompletableFuture<RestResult> send(RequestTemplate requestTemplate) {
+    public CompletableFuture<RestResult> doSend(RequestTemplate requestTemplate) {
 
         HttpRequestBase httpRequest = null;
         String httpMethod = requestTemplate.getHttpMethod();

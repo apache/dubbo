@@ -22,6 +22,8 @@ import org.apache.dubbo.common.ssl.Cert;
 import org.apache.dubbo.common.ssl.CertManager;
 import org.apache.dubbo.remoting.http.config.HttpClientConfig;
 
+import java.util.concurrent.CompletableFuture;
+
 public abstract class BaseRestClient implements RestClient {
     protected final HttpClientConfig httpClientConfig;
     protected final URL url;
@@ -41,9 +43,18 @@ public abstract class BaseRestClient implements RestClient {
         return httpClientConfig;
     }
 
+    /**
+     *  ssl config check
+     * @return
+     */
     public boolean isEnableSSL() {
-        CertManager certManager = url.getOrDefaultFrameworkModel().getBeanFactory().getBean(CertManager.class);
-        Cert consumerConnectionConfig = certManager.getConsumerConnectionConfig(url);
+        Cert consumerConnectionConfig = null;
+        try {
+            CertManager certManager = url.getOrDefaultFrameworkModel().getBeanFactory().getBean(CertManager.class);
+            consumerConnectionConfig = certManager.getConsumerConnectionConfig(url);
+        } catch (Exception e) {
+            return false;
+        }
 
         if (consumerConnectionConfig == null) {
             return false;
@@ -51,4 +62,25 @@ public abstract class BaseRestClient implements RestClient {
         return true;
 
     }
+
+    /**
+     * set protocol by sslConfig
+     *
+     * @param requestTemplate
+     */
+    private void preSend(RequestTemplate requestTemplate) {
+        if (isEnableSSL()) {
+            requestTemplate.setHttpsProtocol();
+        } else {
+            requestTemplate.setHttpProtocol();
+        }
+    }
+
+    @Override
+    public CompletableFuture<RestResult> send(RequestTemplate message) {
+        preSend(message);
+        return doSend(message);
+    }
+
+    protected abstract CompletableFuture<RestResult> doSend(RequestTemplate message);
 }

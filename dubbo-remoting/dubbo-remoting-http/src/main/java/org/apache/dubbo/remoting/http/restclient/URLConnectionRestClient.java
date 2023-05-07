@@ -54,7 +54,7 @@ public class URLConnectionRestClient extends BaseRestClient {
     }
 
     @Override
-    public CompletableFuture<RestResult> send(RequestTemplate requestTemplate) {
+    public CompletableFuture<RestResult> doSend(RequestTemplate requestTemplate) {
 
         CompletableFuture<RestResult> future = new CompletableFuture<>();
 

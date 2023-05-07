@@ -59,7 +59,7 @@ public class OKHttpRestClient extends BaseRestClient {
     }
 
     @Override
-    public CompletableFuture<RestResult> send(RequestTemplate requestTemplate) {
+    public CompletableFuture<RestResult> doSend(RequestTemplate requestTemplate) {
 
         Request.Builder builder = new Request.Builder();
         // url
