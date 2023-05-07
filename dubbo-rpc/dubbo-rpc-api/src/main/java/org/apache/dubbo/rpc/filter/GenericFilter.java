@@ -145,16 +145,18 @@ public class GenericFilter implements Filter, Filter.Listener, ScopeModelAware {
                     }
                 } else if (ProtocolUtils.isBeanGenericSerialization(generic)) {
                     for (int i = 0; i < args.length; i++) {
-                        if (args[i] instanceof JavaBeanDescriptor) {
-                            args[i] = JavaBeanSerializeUtil.deserialize((JavaBeanDescriptor) args[i]);
-                        } else {
-                            throw new RpcException(
-                                "Generic serialization [" +
-                                    GENERIC_SERIALIZATION_BEAN +
-                                    "] only support message type " +
-                                    JavaBeanDescriptor.class.getName() +
-                                    " and your message type is " +
-                                    args[i].getClass().getName());
+                        if (args[i] != null) {
+                            if (args[i] instanceof JavaBeanDescriptor) {
+                                args[i] = JavaBeanSerializeUtil.deserialize((JavaBeanDescriptor) args[i]);
+                            } else {
+                                throw new RpcException(
+                                    "Generic serialization [" +
+                                        GENERIC_SERIALIZATION_BEAN +
+                                        "] only support message type " +
+                                        JavaBeanDescriptor.class.getName() +
+                                        " and your message type is " +
+                                        args[i].getClass().getName());
+                            }
                         }
                     }
                 } else if (ProtocolUtils.isProtobufGenericSerialization(generic)) {
