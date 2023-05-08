@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.remoting.http.ssl;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 
@@ -30,6 +29,7 @@ import java.io.OutputStream;
 import java.security.KeyException;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -84,7 +84,7 @@ public class PemReader {
 
             byte[] der = null;
             try {
-                der = new Base64().decode(m.group(0));
+                der = Base64.getDecoder().decode(m.group(0));
             } catch (Exception e) {
 
             }
@@ -143,7 +143,7 @@ public class PemReader {
         }
         byte[] privateKey = null;
         try {
-            privateKey = new Base64().decode(m.group(0));
+            privateKey = Base64.getDecoder().decode(m.group(0));
         } catch (Exception e) {
             return null;
         }
