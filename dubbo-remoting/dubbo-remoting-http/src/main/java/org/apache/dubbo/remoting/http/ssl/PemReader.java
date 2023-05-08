@@ -16,9 +16,9 @@
  */
 package org.apache.dubbo.remoting.http.ssl;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import sun.misc.BASE64Decoder;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -84,8 +84,8 @@ public class PemReader {
 
             byte[] der = null;
             try {
-                der = new BASE64Decoder().decodeBuffer(m.group(0));
-            } catch (IOException e) {
+                der = new Base64().decode(m.group(0));
+            } catch (Exception e) {
 
             }
 
@@ -143,8 +143,8 @@ public class PemReader {
         }
         byte[] privateKey = null;
         try {
-            privateKey = new BASE64Decoder().decodeBuffer(m.group(0));
-        } catch (IOException e) {
+            privateKey = new Base64().decode(m.group(0));
+        } catch (Exception e) {
             return null;
         }
 
@@ -159,8 +159,7 @@ public class PemReader {
     }
 
     private static KeyException keyNotFoundException() {
-        return new KeyException("could not find a PKCS #8 private key in input stream" +
-            " (see https://netty.io/wiki/sslcontextbuilder-and-private-key.html for more information)");
+        return new KeyException("could not find a PKCS #8 private key in input stream");
     }
 
     private static String readContent(InputStream in) throws IOException {
