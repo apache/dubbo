@@ -118,6 +118,7 @@ public class FastJson2ObjectInput implements ObjectInput {
             result = JSONB.parseObject(bytes, cls, securityFilter,
                 JSONReader.Feature.UseDefaultConstructorAsPossible,
                 JSONReader.Feature.ErrorOnNoneSerializable,
+                JSONReader.Feature.SupportAutoType,
                 JSONReader.Feature.IgnoreAutoTypeNotMatch,
                 JSONReader.Feature.UseNativeObject,
                 JSONReader.Feature.FieldBased);
@@ -125,6 +126,7 @@ public class FastJson2ObjectInput implements ObjectInput {
             result = JSONB.parseObject(bytes, cls, securityFilter,
                 JSONReader.Feature.UseDefaultConstructorAsPossible,
                 JSONReader.Feature.UseNativeObject,
+                JSONReader.Feature.SupportAutoType,
                 JSONReader.Feature.IgnoreAutoTypeNotMatch,
                 JSONReader.Feature.FieldBased);
         }
@@ -149,6 +151,7 @@ public class FastJson2ObjectInput implements ObjectInput {
             result = JSONB.parseObject(bytes, cls, securityFilter,
                 JSONReader.Feature.UseDefaultConstructorAsPossible,
                 JSONReader.Feature.ErrorOnNoneSerializable,
+                JSONReader.Feature.SupportAutoType,
                 JSONReader.Feature.IgnoreAutoTypeNotMatch,
                 JSONReader.Feature.UseNativeObject,
                 JSONReader.Feature.FieldBased);
@@ -156,6 +159,7 @@ public class FastJson2ObjectInput implements ObjectInput {
             result = JSONB.parseObject(bytes, cls, securityFilter,
                 JSONReader.Feature.UseDefaultConstructorAsPossible,
                 JSONReader.Feature.UseNativeObject,
+                JSONReader.Feature.SupportAutoType,
                 JSONReader.Feature.IgnoreAutoTypeNotMatch,
                 JSONReader.Feature.FieldBased);
         }
