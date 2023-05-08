@@ -14,47 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.dubbo.rpc.protocol.rest.message.codec;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.metadata.rest.media.MediaType;
 import org.apache.dubbo.rpc.protocol.rest.message.HttpMessageCodec;
-import org.apache.dubbo.rpc.protocol.rest.message.MediaTypeMatcher;
-import org.apache.dubbo.rpc.protocol.rest.util.DataParseUtils;
+import org.jboss.resteasy.specimpl.BuiltResponse;
 import javax.ws.rs.core.Response;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.HashSet;
-import java.util.Set;
 
-/**
- *  body is json
- */
-@Activate("json")
-public class JsonCodec implements HttpMessageCodec<byte[], OutputStream> {
-    private static final Set<Class> unSupportClasses = new HashSet<>();
+public class ResteasyResponseCodec implements HttpMessageCodec<byte[], OutputStream> {
 
-    static {
-        unSupportClasses.add(byte[].class);
-        unSupportClasses.add(String.class);
-        unSupportClasses.add(Response.class);
-    }
-
-    @Override
-    public Object decode(byte[] body, Class<?> targetType) throws Exception {
-        return DataParseUtils.jsonConvert(targetType, body);
-    }
 
     @Override
     public boolean contentTypeSupport(MediaType mediaType, Class<?> targetType) {
-        return MediaTypeMatcher.APPLICATION_JSON.mediaSupport(mediaType) && !unSupportClasses.contains(targetType);
+        return Response.class.equals(targetType);
     }
 
     @Override
     public boolean typeSupport(Class<?> targetType) {
-        return !unSupportClasses.contains(targetType) && !DataParseUtils.isTextType(targetType);
+        return Response.class.isAssignableFrom(targetType);
     }
 
     @Override
@@ -62,9 +46,25 @@ public class JsonCodec implements HttpMessageCodec<byte[], OutputStream> {
         return MediaType.APPLICATION_JSON_VALUE;
     }
 
+    @Override
+    public Object decode(byte[] body, Class<?> targetType) throws Exception {
+        return new BuiltResponse(){
+            protected InputStream getInputStream() {
+                return new ByteArrayInputStream(body);
+            }
+
+            @Override
+            public Object getEntity() {
+                return new String(body, StandardCharsets.UTF_8);
+            }
+        };
+
+    }
 
     @Override
-    public void encode(OutputStream outputStream, Object unSerializedBody, URL url) throws Exception {
-        outputStream.write(JsonUtils.toJson(unSerializedBody).getBytes(StandardCharsets.UTF_8));
+    public void encode(OutputStream os, Object unSerializedBody, URL url) throws Exception {
+        Response response = (Response) unSerializedBody;
+        os.write(JsonUtils.toJson(response.getEntity()).getBytes(StandardCharsets.UTF_8));
     }
+
 }
