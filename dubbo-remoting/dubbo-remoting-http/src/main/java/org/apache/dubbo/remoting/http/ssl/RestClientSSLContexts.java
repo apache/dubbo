@@ -46,6 +46,10 @@ public class RestClientSSLContexts {
 
         try {
 
+            if (url == null) {
+                return t;
+            }
+
 
             CertManager certManager = url.getOrDefaultFrameworkModel().getBeanFactory().getBean(CertManager.class);
             Cert consumerConnectionConfig = certManager.getConsumerConnectionConfig(url);
@@ -62,6 +66,8 @@ public class RestClientSSLContexts {
                 return t;
             }
 
+            // TODO add  SSLContext cache for decreasing cost of SSLContext build
+            // TODO add others format certificate  parsing
             SSLContext sslContext =
                 SSLContextBuilder.createSSLContext();
 

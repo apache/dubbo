@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.remoting.http.ssl;
 
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
@@ -34,9 +34,12 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * for read .pem certificate
+ */
 public class PemReader {
 
-    private static final Logger logger = LoggerFactory.getLogger(PemReader.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(PemReader.class);
 
     private static final Pattern CERT_HEADER = Pattern.compile(
         "-+BEGIN\\s[^-\\r\\n]*CERTIFICATE[^-\\r\\n]*-+(?:\\s|\\r|\\n)+");
@@ -183,7 +186,7 @@ public class PemReader {
         try {
             in.close();
         } catch (IOException e) {
-            logger.warn("Failed to close a stream.", e);
+            logger.warn("", e.getCause().getMessage(), "", "Failed to close a stream ,when PemReader safe close InputStream ");
         }
     }
 
@@ -191,7 +194,7 @@ public class PemReader {
         try {
             out.close();
         } catch (IOException e) {
-            logger.warn("Failed to close a stream.", e);
+            logger.warn("", e.getCause().getMessage(), "", "Failed to close a stream ,when PemReader safe close OutputStream ");
         }
     }
 
