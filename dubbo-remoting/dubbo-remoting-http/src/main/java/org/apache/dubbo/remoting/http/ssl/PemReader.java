@@ -159,7 +159,7 @@ public class PemReader {
     }
 
     private static KeyException keyNotFoundException() {
-        return new KeyException("could not find a PKCS #8 private key in input stream");
+        return new KeyException("could not find a PKCS  private key in input stream");
     }
 
     private static String readContent(InputStream in) throws IOException {
