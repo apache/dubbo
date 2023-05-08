@@ -44,16 +44,4 @@
         <skip_maven_deploy>true</skip_maven_deploy>
     </properties>
 
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.apache.dubbo</groupId>
-                <artifactId>dubbo-bom</artifactId>
-                <version>${project.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-
 </project>
