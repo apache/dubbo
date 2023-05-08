@@ -367,6 +367,8 @@
                                         **/org/apache/dubbo/test/common/utils/TestSocketUtils.java,
                                         **/org/apache/dubbo/triple/TripleWrapper.java,
                                         **/org/apache/dubbo/rpc/protocol/tri/TriHttp2RemoteFlowController.java,
+                                        **/org/apache/dubbo/metrics/aggregate/DubboMergingDigest.java,
+                                        **/org/apache/dubbo/metrics/aggregate/DubboAbstractTDigest.java,
                                         **/istio/v1/auth/**/*,
                                         **/com/google/rpc/*,
                                         **/generated/**/*,
@@ -772,7 +774,7 @@
                 <version>${maven_flatten_version}</version>
                 <configuration>
                     <updatePomFile>true</updatePomFile>
-                    <flattenMode>resolveCiFriendliesOnly</flattenMode>
+                    <flattenMode>oss</flattenMode>
                 </configuration>
                 <executions>
                     <execution>
