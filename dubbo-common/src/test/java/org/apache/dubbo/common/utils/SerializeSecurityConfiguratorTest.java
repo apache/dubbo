@@ -25,6 +25,10 @@ import org.apache.dubbo.rpc.model.ModuleModel;
 import com.service.DemoService1;
 import com.service.DemoService2;
 import com.service.DemoService4;
+import com.service.Params;
+import com.service.Service;
+import com.service.User;
+import com.service.UserService;
 import com.service.deep1.deep2.deep3.DemoService3;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -269,6 +273,28 @@ class SerializeSecurityConfiguratorTest {
 
         frameworkModel.destroy();
     }
+
+    @Test
+    void testGenericClass() {
+        FrameworkModel frameworkModel = new FrameworkModel();
+        ApplicationModel applicationModel = frameworkModel.newApplication();
+        ModuleModel moduleModel = applicationModel.newModule();
+
+        SerializeSecurityManager ssm = frameworkModel.getBeanFactory().getBean(SerializeSecurityManager.class);
+
+        SerializeSecurityConfigurator serializeSecurityConfigurator = new SerializeSecurityConfigurator(moduleModel);
+        serializeSecurityConfigurator.onAddClassLoader(moduleModel, Thread.currentThread().getContextClassLoader());
+
+        serializeSecurityConfigurator.registerInterface(UserService.class);
+        Assertions.assertTrue(ssm.getAllowedPrefix().contains(UserService.class.getName()));
+        Assertions.assertTrue(ssm.getAllowedPrefix().contains(Service.class.getName()));
+        Assertions.assertTrue(ssm.getAllowedPrefix().contains(Params.class.getName()));
+        Assertions.assertTrue(ssm.getAllowedPrefix().contains(User.class.getName()));
+
+        frameworkModel.destroy();
+    }
+
+
     @Test
     void testRegister1() {
         FrameworkModel frameworkModel = new FrameworkModel();
