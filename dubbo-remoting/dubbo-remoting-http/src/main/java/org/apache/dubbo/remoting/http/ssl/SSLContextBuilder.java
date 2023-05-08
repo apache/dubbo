@@ -47,7 +47,7 @@ public class SSLContextBuilder {
 
         SSLContext sslContext = createSSLContext();
 
-        KeyManagerFactory keyManagerFactory = SSLContextBuilder.keyManager(clientCertChainStream, clientPrivateKeyStream,keyPassword);
+        KeyManagerFactory keyManagerFactory = SSLContextBuilder.keyManager(clientCertChainStream, clientPrivateKeyStream, keyPassword);
 
 
         TrustManagerFactory trustManagerFactory = SSLContextBuilder.trustManager(clientTrustCertCollectionStream);
@@ -60,7 +60,7 @@ public class SSLContextBuilder {
 
     }
 
-    public static KeyManagerFactory keyManager(InputStream keyCertChainInputStream, InputStream keyInputStream,String keyPassword) throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException, UnrecoverableKeyException {
+    public static KeyManagerFactory keyManager(InputStream keyCertChainInputStream, InputStream keyInputStream, String keyPassword) throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException, UnrecoverableKeyException {
 
         X509Certificate[] keyCertChain;
 
@@ -93,6 +93,9 @@ public class SSLContextBuilder {
     }
 
     public static TrustManagerFactory trustManager(InputStream trustCertCollectionInputStream) throws Exception {
+        if (trustCertCollectionInputStream == null) {
+            return null;
+        }
 
         X509Certificate[] x509Certificates = SslContext.toX509Certificates(trustCertCollectionInputStream);
 
@@ -102,11 +105,15 @@ public class SSLContextBuilder {
     }
 
     public static TrustManager[] buildTrustManagers(TrustManagerFactory trustManagerFactory) {
-        TrustManager[] trustManagers = trustManagerFactory.getTrustManagers();
-        if (trustManagers != null && trustManagers.length > 0) {
 
-            return trustManagers;
+        if (trustManagerFactory != null) {
+            TrustManager[] trustManagers = trustManagerFactory.getTrustManagers();
+            if (trustManagers != null && trustManagers.length > 0) {
+
+                return trustManagers;
+            }
         }
+
 
         return new TrustManager[]{
             new X509TrustManager() {

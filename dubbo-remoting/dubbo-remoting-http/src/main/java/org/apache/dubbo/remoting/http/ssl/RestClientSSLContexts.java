@@ -62,12 +62,14 @@ public class RestClientSSLContexts {
             clientPrivateKeyStream = consumerConnectionConfig.getPrivateKeyInputStream();
             clientTrustCertCollectionStream = consumerConnectionConfig.getTrustCertInputStream();
 
-            if (clientCertChainStream == null || clientTrustCertCollectionStream == null) {
+
+            if (clientCertChainStream == null || clientPrivateKeyStream == null) {
                 return t;
             }
 
             // TODO add  SSLContext cache for decreasing cost of SSLContext build
             // TODO add others format certificate  parsing
+            // TODO add openssl certificate support
             SSLContext sslContext =
                 SSLContextBuilder.createSSLContext();
 

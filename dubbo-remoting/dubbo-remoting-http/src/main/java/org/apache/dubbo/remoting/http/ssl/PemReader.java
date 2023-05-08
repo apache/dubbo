@@ -29,7 +29,6 @@ import java.io.OutputStream;
 import java.security.KeyException;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -87,7 +86,7 @@ public class PemReader {
 
             byte[] der = null;
             try {
-                der = Base64.getDecoder().decode(m.group(0));
+                der = new BASE64Decoder().decodeBuffer(m.group(0));
             } catch (Exception e) {
 
             }
@@ -146,7 +145,7 @@ public class PemReader {
         }
         byte[] privateKey = null;
         try {
-            privateKey = Base64.getDecoder().decode(m.group(0));
+            privateKey = new BASE64Decoder().decodeBuffer(m.group(0));
         } catch (Exception e) {
             return null;
         }
