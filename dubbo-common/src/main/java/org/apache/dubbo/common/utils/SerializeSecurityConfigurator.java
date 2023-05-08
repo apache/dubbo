@@ -186,7 +186,6 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
         }
 
         Set<Type> markedClass = new HashSet<>();
-        markedClass.add(clazz);
         checkClass(markedClass, clazz);
 
         addToAllow(clazz.getName());
