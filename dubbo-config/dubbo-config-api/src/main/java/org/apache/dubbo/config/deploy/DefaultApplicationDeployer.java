@@ -372,20 +372,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class);
         Optional<MetricsConfig> configOptional = configManager.getMetrics();
 
-        // TODO compatible with old usage of metrics, remove protocol check after new metrics is ready for use.
-        boolean importMetricsPrometheus;  // Use package references instead of config checks
-        try {
-            Class.forName("io.micrometer.prometheus.PrometheusConfig");
-            importMetricsPrometheus = true;
-        } catch (ClassNotFoundException e) {
-            importMetricsPrometheus = false;
-        }
-
-        if (!importMetricsPrometheus) {
-            //use old metrics
-            return;
-        }
-
         MetricsConfig metricsConfig = configOptional.orElse(new MetricsConfig(applicationModel));
         if (StringUtils.isBlank(metricsConfig.getProtocol())) {
             metricsConfig.setProtocol(PROTOCOL_PROMETHEUS);
