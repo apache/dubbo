@@ -408,7 +408,6 @@ class MetricsFilterTest {
         Object eventObj = invocation.get(METRIC_FILTER_EVENT);
         if (eventObj != null) {
             Assertions.assertDoesNotThrow(() -> MetricsEventBus.after((RequestEvent) eventObj, result));
-            MetricsEventBus.after((RequestEvent) eventObj, result);
         }
     }
 }
