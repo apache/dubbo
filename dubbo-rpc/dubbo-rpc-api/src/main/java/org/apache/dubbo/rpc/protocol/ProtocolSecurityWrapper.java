@@ -16,9 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol;
 
-import java.util.List;
-import java.util.Optional;
-
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
@@ -35,12 +32,15 @@ import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.model.ServiceMetadata;
 import org.apache.dubbo.rpc.model.ServiceModel;
 
+import java.util.List;
+import java.util.Optional;
+
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
 
 @Activate(order = 200)
 public class ProtocolSecurityWrapper implements Protocol {
     private final Protocol protocol;
-    
+
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ProtocolSecurityWrapper.class);
 
     public ProtocolSecurityWrapper(Protocol protocol) {
@@ -64,6 +64,9 @@ public class ProtocolSecurityWrapper implements Protocol {
                 .getBeanFactory().getBean(SerializeSecurityConfigurator.class);
             serializeSecurityConfigurator.refreshStatus();
             serializeSecurityConfigurator.refreshCheck();
+
+            Optional.ofNullable(invoker.getInterface())
+                .ifPresent(serializeSecurityConfigurator::registerInterface);
 
             Optional.ofNullable(serviceModel)
                 .map(ServiceModel::getServiceModel)
