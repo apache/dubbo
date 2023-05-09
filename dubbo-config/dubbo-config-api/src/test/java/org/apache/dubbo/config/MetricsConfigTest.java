@@ -82,7 +82,6 @@ class MetricsConfigTest {
         exporter.setEnableHttpServiceDiscovery(true);
         exporter.setHttpServiceDiscoveryUrl("localhost:8080");
         exporter.setMetricsPath("/metrics");
-        exporter.setMetricsPort(20888);
         prometheus.setExporter(exporter);
 
         pushgateway.setEnabled(true);
@@ -98,7 +97,6 @@ class MetricsConfigTest {
         assertThat(metrics.getPrometheus().getExporter().getEnabled(), equalTo(true));
         assertThat(metrics.getPrometheus().getExporter().getEnableHttpServiceDiscovery(), equalTo(true));
         assertThat(metrics.getPrometheus().getExporter().getHttpServiceDiscoveryUrl(), equalTo("localhost:8080"));
-        assertThat(metrics.getPrometheus().getExporter().getMetricsPort(), equalTo(20888));
         assertThat(metrics.getPrometheus().getExporter().getMetricsPath(), equalTo("/metrics"));
         assertThat(metrics.getPrometheus().getPushgateway().getEnabled(), equalTo(true));
         assertThat(metrics.getPrometheus().getPushgateway().getBaseUrl(), equalTo("localhost:9091"));

@@ -67,10 +67,6 @@ public class PrometheusConfig implements Serializable {
          */
         private String httpServiceDiscoveryUrl;
 
-        /**
-         * When using pull method, which port to expose
-         */
-        private Integer metricsPort;
 
         /**
          * When using pull mode, which path to expose metrics
@@ -101,13 +97,6 @@ public class PrometheusConfig implements Serializable {
             this.httpServiceDiscoveryUrl = httpServiceDiscoveryUrl;
         }
 
-        public Integer getMetricsPort() {
-            return metricsPort;
-        }
-
-        public void setMetricsPort(Integer metricsPort) {
-            this.metricsPort = metricsPort;
-        }
 
         public String getMetricsPath() {
             return metricsPath;

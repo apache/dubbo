@@ -281,7 +281,6 @@ class DubboNamespaceHandlerTest {
         assertEquals(metrics.getPrometheus().getExporter().getEnabled(), true);
         assertEquals(metrics.getPrometheus().getExporter().getEnableHttpServiceDiscovery(), true);
         assertEquals(metrics.getPrometheus().getExporter().getHttpServiceDiscoveryUrl(), "localhost:8080");
-        assertEquals(metrics.getPrometheus().getExporter().getMetricsPort(), 20888);
         assertEquals(metrics.getPrometheus().getExporter().getMetricsPath(), "/metrics");
         assertEquals(metrics.getPrometheus().getPushgateway().getEnabled(), true);
         assertEquals(metrics.getPrometheus().getPushgateway().getBaseUrl(), "localhost:9091");
@@ -294,7 +293,6 @@ class DubboNamespaceHandlerTest {
         assertEquals(metricsBean.getPrometheus().getExporter().getEnabled(), true);
         assertEquals(metricsBean.getPrometheus().getExporter().getEnableHttpServiceDiscovery(), true);
         assertEquals(metricsBean.getPrometheus().getExporter().getHttpServiceDiscoveryUrl(), "localhost:8080");
-        assertEquals(metricsBean.getPrometheus().getExporter().getMetricsPort(), 20888);
         assertEquals(metricsBean.getPrometheus().getExporter().getMetricsPath(), "/metrics");
         assertEquals(metricsBean.getPrometheus().getPushgateway().getEnabled(), true);
         assertEquals(metricsBean.getPrometheus().getPushgateway().getBaseUrl(), "localhost:9091");

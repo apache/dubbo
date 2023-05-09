@@ -89,7 +89,6 @@ class PrometheusMetricsReporterTest {
 //            NetUtils.getAvailablePort();
         PrometheusConfig prometheusConfig = new PrometheusConfig();
         PrometheusConfig.Exporter exporter = new PrometheusConfig.Exporter();
-        exporter.setMetricsPort(port);
         exporter.setMetricsPath("/metrics");
         exporter.setEnabled(true);
         prometheusConfig.setExporter(exporter);

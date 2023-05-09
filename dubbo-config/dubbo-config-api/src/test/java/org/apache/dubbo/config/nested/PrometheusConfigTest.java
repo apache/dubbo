@@ -32,13 +32,11 @@ class PrometheusConfigTest {
         exporter.setEnableHttpServiceDiscovery(true);
         exporter.setHttpServiceDiscoveryUrl("localhost:8080");
         exporter.setMetricsPath("/metrics");
-        exporter.setMetricsPort(20888);
         prometheusConfig.setExporter(exporter);
 
         assertThat(prometheusConfig.getExporter().getEnabled(), equalTo(true));
         assertThat(prometheusConfig.getExporter().getEnableHttpServiceDiscovery(), equalTo(true));
         assertThat(prometheusConfig.getExporter().getHttpServiceDiscoveryUrl(), equalTo("localhost:8080"));
-        assertThat(prometheusConfig.getExporter().getMetricsPort(), equalTo(20888));
         assertThat(prometheusConfig.getExporter().getMetricsPath(), equalTo("/metrics"));
     }
 
