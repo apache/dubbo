@@ -1123,11 +1123,6 @@
                 <xsd:documentation><![CDATA[ Http service discovery url. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
-        <xsd:attribute name="metrics-path" type="xsd:string">
-            <xsd:annotation>
-                <xsd:documentation><![CDATA[ When using pull mode, which path to expose metrics. ]]></xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
     </xsd:complexType>
 
     <xsd:complexType name="prometheusPushgatewayType">

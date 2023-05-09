@@ -86,7 +86,6 @@ public class PrometheusMetricsThreadPoolTest {
         PrometheusConfig prometheusConfig = new PrometheusConfig();
         PrometheusConfig.Exporter exporter = new PrometheusConfig.Exporter();
         exporter.setEnabled(true);
-        exporter.setMetricsPath("/metrics");
 
         prometheusConfig.setExporter(exporter);
         metricsConfig.setPrometheus(prometheusConfig);

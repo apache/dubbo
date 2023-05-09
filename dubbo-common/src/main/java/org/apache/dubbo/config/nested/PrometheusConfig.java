@@ -67,12 +67,6 @@ public class PrometheusConfig implements Serializable {
          */
         private String httpServiceDiscoveryUrl;
 
-
-        /**
-         * When using pull mode, which path to expose metrics
-         */
-        private String metricsPath;
-
         public Boolean getEnabled() {
             return enabled;
         }
@@ -95,15 +89,6 @@ public class PrometheusConfig implements Serializable {
 
         public void setHttpServiceDiscoveryUrl(String httpServiceDiscoveryUrl) {
             this.httpServiceDiscoveryUrl = httpServiceDiscoveryUrl;
-        }
-
-
-        public String getMetricsPath() {
-            return metricsPath;
-        }
-
-        public void setMetricsPath(String metricsPath) {
-            this.metricsPath = metricsPath;
         }
     }
 
