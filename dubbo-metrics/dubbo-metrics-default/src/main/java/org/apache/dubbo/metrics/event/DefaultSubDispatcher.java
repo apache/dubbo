@@ -31,7 +31,6 @@ import org.apache.dubbo.metrics.model.key.MetricsLevel;
 import org.apache.dubbo.metrics.model.key.MetricsPlaceValue;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.rpc.Invocation;
-import org.apache.dubbo.rpc.RpcException;
 
 import static org.apache.dubbo.metrics.DefaultConstants.METRIC_THROWABLE;
 import static org.apache.dubbo.metrics.MetricsConstants.INVOCATION;

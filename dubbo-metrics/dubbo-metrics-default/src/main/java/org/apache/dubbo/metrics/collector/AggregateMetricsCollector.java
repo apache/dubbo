@@ -34,7 +34,6 @@ import org.apache.dubbo.metrics.model.key.MetricsLevel;
 import org.apache.dubbo.metrics.model.key.MetricsPlaceValue;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
-import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.ArrayList;
