@@ -42,12 +42,12 @@ public class ResteasyResponseCodec implements HttpMessageCodec<byte[], OutputStr
 
     @Override
     public boolean contentTypeSupport(MediaType mediaType, Class<?> targetType) {
-        return responseClass != null && responseClass.isAssignableFrom(targetType);
+        return isMatch(targetType);
     }
 
     @Override
     public boolean typeSupport(Class<?> targetType) {
-        return responseClass!=null && responseClass.isAssignableFrom(targetType);
+        return isMatch(targetType);
     }
 
     @Override
@@ -77,5 +77,9 @@ public class ResteasyResponseCodec implements HttpMessageCodec<byte[], OutputStr
             Object result = method.invoke(target);
             os.write(JsonUtils.toJson(result).getBytes(StandardCharsets.UTF_8));
         }
+    }
+
+    private boolean isMatch(Class<?> targetType) {
+        return responseClass != null && null != targetType && responseClass.isAssignableFrom(targetType);
     }
 }
