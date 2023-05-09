@@ -18,27 +18,36 @@
 package org.apache.dubbo.rpc.protocol.rest.message.codec;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.metadata.rest.media.MediaType;
 import org.apache.dubbo.rpc.protocol.rest.message.HttpMessageCodec;
-import org.jboss.resteasy.specimpl.BuiltResponse;
-import javax.ws.rs.core.Response;
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
+
 import java.io.OutputStream;
+import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 
+@Activate(onClass="javax.ws.rs.core.Response")
 public class ResteasyResponseCodec implements HttpMessageCodec<byte[], OutputStream> {
 
+    private Class<?> responseClass;
+    public ResteasyResponseCodec(){
+        try {
+            responseClass = ClassUtils.forName("javax.ws.rs.core.Response");
+        } catch (Exception exception) {
+            responseClass = null;
+        }
+    }
 
     @Override
     public boolean contentTypeSupport(MediaType mediaType, Class<?> targetType) {
-        return Response.class.equals(targetType);
+        return responseClass != null && responseClass.isAssignableFrom(targetType);
     }
 
     @Override
     public boolean typeSupport(Class<?> targetType) {
-        return Response.class.isAssignableFrom(targetType);
+        return responseClass!=null && responseClass.isAssignableFrom(targetType);
     }
 
     @Override
@@ -48,23 +57,25 @@ public class ResteasyResponseCodec implements HttpMessageCodec<byte[], OutputStr
 
     @Override
     public Object decode(byte[] body, Class<?> targetType) throws Exception {
-        return new BuiltResponse(){
-            protected InputStream getInputStream() {
-                return new ByteArrayInputStream(body);
-            }
 
-            @Override
-            public Object getEntity() {
-                return new String(body, StandardCharsets.UTF_8);
-            }
-        };
+        Class<?> builtResponse = ClassUtils.forName("org.jboss.resteasy.specimpl.BuiltResponse");
 
+        Object o = builtResponse.newInstance();
+
+        Method method = builtResponse.getMethod("setEntity", Object.class);
+
+        method.invoke(o, new String(body, StandardCharsets.UTF_8));
+
+        return o;
     }
 
     @Override
-    public void encode(OutputStream os, Object unSerializedBody, URL url) throws Exception {
-        Response response = (Response) unSerializedBody;
-        os.write(JsonUtils.toJson(response.getEntity()).getBytes(StandardCharsets.UTF_8));
+    public void encode(OutputStream os, Object target, URL url) throws Exception {
+        if (target != null) {
+            Method method = target.getClass().getMethod("getEntity");
+            method.setAccessible(true);
+            Object result = method.invoke(target);
+            os.write(JsonUtils.toJson(result).getBytes(StandardCharsets.UTF_8));
+        }
     }
-
 }
