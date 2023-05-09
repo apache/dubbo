@@ -19,16 +19,25 @@ package org.apache.dubbo.metrics;
 
 import io.micrometer.core.instrument.Metrics;
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
+import org.apache.dubbo.config.MetricsConfig;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+
+import java.util.Optional;
 
 public class MetricsGlobalRegistry {
 
-    private static final CompositeMeterRegistry compositeRegistry = new CompositeMeterRegistry();
+    private static CompositeMeterRegistry compositeRegistry = new CompositeMeterRegistry();
 
-    public static CompositeMeterRegistry getCompositeRegistry() {
-        if (Boolean.parseBoolean(System.getProperty("dubbo.metrics.useGlobalRegistry", "true"))) {
+    public static CompositeMeterRegistry getCompositeRegistry(ApplicationModel applicationModel) {
+        Optional<MetricsConfig> configOptional = applicationModel.getApplicationConfigManager().getMetrics();
+        if (configOptional.isPresent() && configOptional.get().getUseGlobalRegistry()) {
             return Metrics.globalRegistry;
         } else {
             return compositeRegistry;
         }
+    }
+
+    public static void setCompositeRegistry(CompositeMeterRegistry compositeRegistry) {
+        MetricsGlobalRegistry.compositeRegistry = compositeRegistry;
     }
 }
