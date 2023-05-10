@@ -57,6 +57,9 @@ public class ResteasyResponseCodec implements HttpMessageCodec<byte[], OutputStr
 
     @Override
     public Object decode(byte[] body, Class<?> targetType) throws Exception {
+        if (null == body || body.length == 0) {
+            return null;
+        }
 
         Class<?> builtResponse = ClassUtils.forName("org.jboss.resteasy.specimpl.BuiltResponse");
 
