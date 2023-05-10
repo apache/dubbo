@@ -18,9 +18,11 @@
 package org.apache.dubbo.metrics.metrics.model;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.metrics.model.MethodMetric;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -41,7 +43,7 @@ import static org.apache.dubbo.common.utils.NetUtils.getLocalHostName;
 
 class MethodMetricTest {
 
-    private static final String applicationName = null;
+    private ApplicationModel applicationModel;
     private static String interfaceName;
     private static String methodName;
     private static String group;
@@ -49,7 +51,13 @@ class MethodMetricTest {
     private static RpcInvocation invocation;
 
     @BeforeAll
-    public static void setup() {
+    public void setup() {
+
+        ApplicationConfig config = new ApplicationConfig();
+        config.setName("MockMetrics");
+        applicationModel = ApplicationModel.defaultModel();
+        applicationModel.getApplicationConfigManager().setApplication(config);
+
         interfaceName = "org.apache.dubbo.MockInterface";
         methodName = "mockMethod";
         group = "mockGroup";
@@ -64,7 +72,7 @@ class MethodMetricTest {
 
     @Test
     void test() {
-        MethodMetric metric = new MethodMetric(applicationName, invocation);
+        MethodMetric metric = new MethodMetric(applicationModel, invocation);
         Assertions.assertEquals(metric.getInterfaceName(), interfaceName);
         Assertions.assertEquals(metric.getMethodName(), methodName);
         Assertions.assertEquals(metric.getGroup(), group);
@@ -73,7 +81,7 @@ class MethodMetricTest {
         Map<String, String> tags = metric.getTags();
         Assertions.assertEquals(tags.get(TAG_IP), getLocalHost());
         Assertions.assertEquals(tags.get(TAG_HOSTNAME), getLocalHostName());
-        Assertions.assertEquals(tags.get(TAG_APPLICATION_NAME), applicationName);
+        Assertions.assertEquals(tags.get(TAG_APPLICATION_NAME), applicationModel.getApplicationName());
 
         Assertions.assertEquals(tags.get(TAG_INTERFACE_KEY), interfaceName);
         Assertions.assertEquals(tags.get(TAG_METHOD_KEY), methodName);

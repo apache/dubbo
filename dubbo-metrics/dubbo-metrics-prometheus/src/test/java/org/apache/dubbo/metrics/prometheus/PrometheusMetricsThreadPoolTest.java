@@ -92,7 +92,7 @@ public class PrometheusMetricsThreadPoolTest {
         metricsConfig.setEnableJvm(false);
         metricsCollector.setCollectEnabled(true);
         metricsConfig.setEnableThreadpool(true);
-        metricsCollector.collectApplication(applicationModel);
+        metricsCollector.collectApplication();
         PrometheusMetricsReporter reporter = new PrometheusMetricsReporter(metricsConfig.toUrl(), applicationModel);
         reporter.init();
         exportHttpServer(reporter,port);
@@ -142,7 +142,7 @@ public class PrometheusMetricsThreadPoolTest {
     @Test
     @SuppressWarnings("rawtypes")
     void testThreadPoolRejectMetrics() {
-        DefaultMetricsCollector collector = new DefaultMetricsCollector();
+        DefaultMetricsCollector collector = new DefaultMetricsCollector(applicationModel);
         collector.setCollectEnabled(true);
         collector.setApplicationName(applicationModel.getApplicationName());
         String threadPoolExecutorName="DubboServerHandler-20816";

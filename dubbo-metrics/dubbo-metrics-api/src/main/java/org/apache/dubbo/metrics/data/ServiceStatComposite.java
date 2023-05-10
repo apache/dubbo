@@ -23,7 +23,8 @@ import org.apache.dubbo.metrics.model.ServiceKeyMetric;
 import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
-import org.apache.dubbo.metrics.report.MetricsExport;
+import org.apache.dubbo.metrics.report.AbstractMetricsExport;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +32,11 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class ServiceStatComposite implements MetricsExport {
+public class ServiceStatComposite extends AbstractMetricsExport {
+
+    public ServiceStatComposite(ApplicationModel applicationModel) {
+        super(applicationModel);
+    }
 
     private final Map<MetricsKeyWrapper, Map<ServiceKeyMetric, AtomicLong>> serviceWrapperNumStats = new ConcurrentHashMap<>();
 
@@ -42,18 +47,18 @@ public class ServiceStatComposite implements MetricsExport {
         metricsKeyWrappers.forEach(appKey -> serviceWrapperNumStats.put(appKey, new ConcurrentHashMap<>()));
     }
 
-    public void incrementServiceKey(MetricsKeyWrapper wrapper, String applicationName, String serviceKey, int size) {
+    public void incrementServiceKey(MetricsKeyWrapper wrapper, String serviceKey, int size) {
         if (!serviceWrapperNumStats.containsKey(wrapper)) {
             return;
         }
-        serviceWrapperNumStats.get(wrapper).computeIfAbsent(new ServiceKeyMetric(applicationName, serviceKey), k -> new AtomicLong(0L)).getAndAdd(size);
+        serviceWrapperNumStats.get(wrapper).computeIfAbsent(new ServiceKeyMetric(getApplicationModel(), serviceKey), k -> new AtomicLong(0L)).getAndAdd(size);
     }
 
-    public void setServiceKey(MetricsKeyWrapper wrapper, String applicationName, String serviceKey, int num) {
+    public void setServiceKey(MetricsKeyWrapper wrapper, String serviceKey, int num) {
         if (!serviceWrapperNumStats.containsKey(wrapper)) {
             return;
         }
-        serviceWrapperNumStats.get(wrapper).computeIfAbsent(new ServiceKeyMetric(applicationName, serviceKey), k -> new AtomicLong(0L)).set(num);
+        serviceWrapperNumStats.get(wrapper).computeIfAbsent(new ServiceKeyMetric(getApplicationModel(), serviceKey), k -> new AtomicLong(0L)).set(num);
     }
 
     public List<MetricSample> export(MetricsCategory category) {
