@@ -36,7 +36,7 @@ public class MetricsGlobalRegistry {
      */
     public static CompositeMeterRegistry getCompositeRegistry(ApplicationModel applicationModel) {
         Optional<MetricsConfig> configOptional = applicationModel.getApplicationConfigManager().getMetrics();
-        if (configOptional.isPresent() && configOptional.get().getUseGlobalRegistry()) {
+        if (configOptional.isPresent() && configOptional.get().getUseGlobalRegistry() != null && configOptional.get().getUseGlobalRegistry()) {
             return Metrics.globalRegistry;
         } else {
             return compositeRegistry;
