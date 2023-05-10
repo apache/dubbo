@@ -26,8 +26,11 @@ public interface Filter extends org.apache.dubbo.rpc.Filter {
     default org.apache.dubbo.rpc.Result invoke(org.apache.dubbo.rpc.Invoker<?> invoker,
                                                org.apache.dubbo.rpc.Invocation invocation)
             throws org.apache.dubbo.rpc.RpcException {
-        Result.CompatibleResult result = (Result.CompatibleResult) invoke(new Invoker.CompatibleInvoker<>(invoker),
-                new Invocation.CompatibleInvocation(invocation));
-        return result.getDelegate();
+        Result invokeResult = invoke(new Invoker.CompatibleInvoker<>(invoker),
+            new Invocation.CompatibleInvocation(invocation));
+
+        Result.CompatibleResult compatibleResult = invokeResult instanceof Result.CompatibleResult ?
+            (Result.CompatibleResult) invokeResult : new Result.CompatibleResult(invokeResult);
+        return compatibleResult.getDelegate();
     }
 }
