@@ -84,7 +84,6 @@ public class KubernetesConfigUtils {
 
             .withConnectionTimeout(url.getParameter(CONNECTION_TIMEOUT, base.getConnectionTimeout())) //
             .withRequestTimeout(url.getParameter(REQUEST_TIMEOUT, base.getRequestTimeout())) //
-            .withRollingTimeout(url.getParameter(ROLLING_TIMEOUT, base.getRollingTimeout())) //
 
             .withWatchReconnectInterval(url.getParameter(WATCH_RECONNECT_INTERVAL, base.getWatchReconnectInterval())) //
             .withWatchReconnectLimit(url.getParameter(WATCH_RECONNECT_LIMIT, base.getWatchReconnectLimit())) //
