@@ -89,7 +89,7 @@ public class RegistryStatCompositeTest {
         //(rt)5 * (applicationRegister,subscribe,notify,applicationRegister.service,subscribe.service)
         Assertions.assertEquals(5 * 5, statComposite.getRtStatComposite().getRtStats().size());
         statComposite.getApplicationStatComposite().getApplicationNumStats().values().forEach((v ->
-            Assertions.assertEquals(v, new AtomicLong(0L))));
+            Assertions.assertEquals(v.get(), new AtomicLong(0L).get())));
         statComposite.getRtStatComposite().getRtStats().forEach(rtContainer ->
         {
             for (Map.Entry<String, ? extends Number> entry : rtContainer.entrySet()) {
@@ -115,7 +115,6 @@ public class RegistryStatCompositeTest {
     @Test
     @SuppressWarnings("rawtypes")
     void testCalcServiceKeyRt() {
-        String applicationName = "TestApp";
         String serviceKey = "TestService";
         String registryOpType = OP_TYPE_REGISTER_SERVICE.getType();
         Long responseTime1 = 100L;
