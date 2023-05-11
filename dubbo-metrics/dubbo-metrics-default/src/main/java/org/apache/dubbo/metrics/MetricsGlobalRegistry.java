@@ -43,6 +43,10 @@ public class MetricsGlobalRegistry {
         }
     }
 
+    public static CompositeMeterRegistry getCompositeRegistry() {
+        return getCompositeRegistry(ApplicationModel.defaultModel());
+    }
+
     public static void setCompositeRegistry(CompositeMeterRegistry compositeRegistry) {
         MetricsGlobalRegistry.compositeRegistry = compositeRegistry;
     }
