@@ -77,7 +77,7 @@ public class MetadataStatCompositeTest {
         //(rt)5 * (push,subscribe,service)3
         Assertions.assertEquals(5 * 3, statComposite.getRtStatComposite().getRtStats().size());
         statComposite.getApplicationStatComposite().getApplicationNumStats().values().forEach((v ->
-            Assertions.assertEquals(v, new AtomicLong(0L))));
+            Assertions.assertEquals(v.get(), new AtomicLong(0L).get())));
         statComposite.getRtStatComposite().getRtStats().forEach(rtContainer ->
         {
             for (Map.Entry<String, ? extends Number> entry : rtContainer.entrySet()) {
