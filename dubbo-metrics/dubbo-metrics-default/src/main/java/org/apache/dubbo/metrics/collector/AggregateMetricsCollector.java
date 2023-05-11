@@ -34,7 +34,6 @@ import org.apache.dubbo.metrics.model.key.MetricsLevel;
 import org.apache.dubbo.metrics.model.key.MetricsPlaceValue;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
-import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.ArrayList;
@@ -115,7 +114,7 @@ public class AggregateMetricsCollector implements MetricsCollector<RequestEvent>
         MetricsKey targetKey = MetricsKey.METRIC_REQUESTS_SUCCEED;
         Object throwableObj = event.getAttachmentValue(METRIC_THROWABLE);
         if (throwableObj != null) {
-            targetKey = MetricsSupport.getAggMetricsKey((RpcException) throwableObj);
+            targetKey = MetricsSupport.getAggMetricsKey((Throwable) throwableObj);
         }
         calcWindowCounter(event, targetKey);
         onRTEvent(event);
@@ -126,7 +125,7 @@ public class AggregateMetricsCollector implements MetricsCollector<RequestEvent>
         MetricsKey targetKey = MetricsKey.METRIC_REQUESTS_FAILED;
         Object throwableObj = event.getAttachmentValue(METRIC_THROWABLE);
         if (throwableObj != null) {
-            targetKey = MetricsSupport.getAggMetricsKey((RpcException) throwableObj);
+            targetKey = MetricsSupport.getAggMetricsKey((Throwable) throwableObj);
         }
         calcWindowCounter(event, targetKey);
         onRTEvent(event);
