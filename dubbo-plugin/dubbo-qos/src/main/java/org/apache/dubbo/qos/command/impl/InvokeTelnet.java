@@ -168,7 +168,9 @@ public class InvokeTelnet implements BaseCommand {
                 }
             } catch (Throwable t) {
                 result.setException(t);
-                Thread.currentThread().interrupt();
+                if (t instanceof InterruptedException) {
+                    Thread.currentThread().interrupt();
+                }
             } finally {
                 RpcContext.removeContext();
             }
