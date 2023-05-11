@@ -148,16 +148,23 @@ public class DubboCodec extends ExchangeCodec {
                     if (CodecSupport.isHeartBeat(eventPayload, proto)) {
                         // heart beat response data is always null;
                         req = new HeartBeatRequest(id);
+                        req.setVersion(Version.getProtocolVersion());
+                        req.setTwoWay((flag & FLAG_TWOWAY) != 0);
                         ((HeartBeatRequest) req).setProto(proto);
                         data = null;
                     } else {
                         req = new Request(id);
+                        req.setVersion(Version.getProtocolVersion());
+                        req.setTwoWay((flag & FLAG_TWOWAY) != 0);
+
                         ObjectInput in = CodecSupport.deserialize(channel.getUrl(), new ByteArrayInputStream(eventPayload), proto);
                         data = decodeEventData(channel, in, eventPayload);
                     }
                     req.setEvent(true);
                 } else {
                     req = new Request(id);
+                    req.setVersion(Version.getProtocolVersion());
+                    req.setTwoWay((flag & FLAG_TWOWAY) != 0);
 
                     // get data length.
                     int len = Bytes.bytes2int(header, 12);
@@ -192,8 +199,6 @@ public class DubboCodec extends ExchangeCodec {
                 req.setBroken(true);
                 req.setData(t);
             }
-            req.setVersion(Version.getProtocolVersion());
-            req.setTwoWay((flag & FLAG_TWOWAY) != 0);
 
             return req;
         }
