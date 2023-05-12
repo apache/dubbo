@@ -14,43 +14,28 @@
   See the License for the specific language governing permissions and
   limitations under the License.
   -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <groupId>org.apache.dubbo</groupId>
-        <artifactId>dubbo-parent</artifactId>
+        <artifactId>dubbo-plugin</artifactId>
         <version>${revision}</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>dubbo-plugin</artifactId>
-    <packaging>pom</packaging>
+    <artifactId>dubbo-plugin-router-condition</artifactId>
+    <packaging>jar</packaging>
 
-    <name>dubbo-plugin</name>
-    <description>The registry module of dubbo project</description>
-    <modules>
-        <module>dubbo-qos</module>
-        <module>dubbo-auth</module>
-        <module>dubbo-reactive</module>
-        <module>dubbo-security</module>
-        <module>dubbo-spring-security</module>
-        <module>dubbo-qos-api</module>
-        <module>dubbo-plugin-cluster-mergeable</module>
-        <module>dubbo-plugin-mock</module>
-        <module>dubbo-plugin-router-script</module>
-        <module>dubbo-plugin-router-mesh</module>
-        <module>dubbo-plugin-router-condition</module>
-    </modules>
     <properties>
-        <skip_maven_deploy>false</skip_maven_deploy>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-test-check</artifactId>
-            <version>${project.parent.version}</version>
-            <scope>test</scope>
+            <artifactId>dubbo-cluster</artifactId>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 </project>

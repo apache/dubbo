@@ -1,0 +1,3 @@
+service=org.apache.dubbo.rpc.cluster.router.condition.config.ServiceStateRouterFactory
+app=org.apache.dubbo.rpc.cluster.router.condition.config.AppStateRouterFactory
+provider-app=org.apache.dubbo.rpc.cluster.router.condition.config.ProviderAppStateRouterFactory
