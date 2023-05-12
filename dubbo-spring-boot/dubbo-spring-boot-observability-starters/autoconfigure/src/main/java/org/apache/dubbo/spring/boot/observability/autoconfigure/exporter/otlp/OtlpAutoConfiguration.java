@@ -17,11 +17,11 @@
 
 package org.apache.dubbo.spring.boot.observability.autoconfigure.exporter.otlp;
 
-import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
-import org.apache.dubbo.config.TracingConfig;
 import org.apache.dubbo.config.nested.ExporterConfig.OtlpConfig;
 import org.apache.dubbo.spring.boot.autoconfigure.DubboConfigurationProperties;
 import org.apache.dubbo.spring.boot.observability.autoconfigure.annotation.ConditionalOnDubboTracingEnable;
+
+import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -44,7 +44,6 @@ public class OtlpAutoConfiguration {
     @ConditionalOnProperty(prefix = DUBBO_TRACING_OTLP_CONFIG_PREFIX, name = "endpoint")
     @ConditionalOnClass(OtlpGrpcSpanExporter.class)
     OtlpGrpcSpanExporter otlpGrpcSpanExporter(DubboConfigurationProperties properties) {
-        final TracingConfig tracing = properties.getTracing();
         OtlpConfig cfg = properties.getTracing().getTracingExporter().getOtlpConfig();
         return OtlpGrpcSpanExporter.builder()
                 .setEndpoint(cfg.getEndpoint())
