@@ -25,7 +25,7 @@ import org.apache.dubbo.common.utils.Holder;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.cluster.router.MockInvoker;
-import org.apache.dubbo.rpc.cluster.router.mesh.util.TracingContextProvider;
+//import org.apache.dubbo.rpc.cluster.router.mesh.util.TracingContextProvider;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
 import org.apache.dubbo.rpc.cluster.router.state.StateRouter;
 import org.apache.dubbo.rpc.cluster.router.tag.model.TagRouterRule;
@@ -50,7 +50,7 @@ class TagStateRouterTest {
     private URL url;
     private ModuleModel originModel;
     private ModuleModel moduleModel;
-    private Set<TracingContextProvider> tracingContextProviders;
+//    private Set<TracingContextProvider> tracingContextProviders;
 
     @BeforeEach
     public void setup() {
@@ -62,10 +62,10 @@ class TagStateRouterTest {
         when(moduleModel.getBeanFactory()).thenReturn(beanFactory);
 
 
-        ExtensionLoader<TracingContextProvider> extensionLoader = Mockito.mock(ExtensionLoader.class);
-        tracingContextProviders = new HashSet<>();
-        when(extensionLoader.getSupportedExtensionInstances()).thenReturn(tracingContextProviders);
-        when(moduleModel.getExtensionLoader(TracingContextProvider.class)).thenReturn(extensionLoader);
+//        ExtensionLoader<TracingContextProvider> extensionLoader = Mockito.mock(ExtensionLoader.class);
+//        tracingContextProviders = new HashSet<>();
+//        when(extensionLoader.getSupportedExtensionInstances()).thenReturn(tracingContextProviders);
+//        when(moduleModel.getExtensionLoader(TracingContextProvider.class)).thenReturn(extensionLoader);
 
         url = URL.valueOf("test://localhost/DemoInterface").setScopeModel(moduleModel);
     }
