@@ -17,24 +17,20 @@
 
 package org.apache.dubbo.spring.boot.observability.autoconfigure.exporter.otlp;
 
+import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import org.apache.dubbo.config.nested.ExporterConfig.OtlpConfig;
 import org.apache.dubbo.spring.boot.autoconfigure.DubboConfigurationProperties;
 import org.apache.dubbo.spring.boot.observability.autoconfigure.annotation.ConditionalOnDubboTracingEnable;
-
-import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.autoconfigure.web.client.RestTemplateAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
-import zipkin2.reporter.Sender;
 
 import static org.apache.dubbo.spring.boot.observability.autoconfigure.ObservabilityUtils.DUBBO_TRACING_OTLP_CONFIG_PREFIX;
 import static org.apache.dubbo.spring.boot.observability.autoconfigure.ObservabilityUtils.DUBBO_TRACING_PREFIX;
 
-@AutoConfiguration(after = RestTemplateAutoConfiguration.class, afterName = "org.springframework.boot.actuate.autoconfigure.tracing.zipkin")
-@ConditionalOnClass(Sender.class)
+@AutoConfiguration
 @ConditionalOnProperty(prefix = DUBBO_TRACING_PREFIX, name = "enabled", havingValue = "true")
 @ConditionalOnDubboTracingEnable
 @EnableConfigurationProperties(DubboConfigurationProperties.class)

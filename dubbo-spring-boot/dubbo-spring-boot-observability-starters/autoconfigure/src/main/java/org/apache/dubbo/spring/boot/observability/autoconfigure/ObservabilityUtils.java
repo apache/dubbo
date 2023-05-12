@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.spring.boot.observability.autoconfigure;
 
-import static org.apache.dubbo.spring.boot.util.DubboUtils.DUBBO_CONFIG_PREFIX;
 import static org.apache.dubbo.spring.boot.util.DubboUtils.DUBBO_PREFIX;
 import static org.apache.dubbo.spring.boot.util.DubboUtils.PROPERTY_NAME_SEPARATOR;
 
@@ -39,5 +38,5 @@ public class ObservabilityUtils {
 
     public static final String DUBBO_TRACING_ZIPKIN_CONFIG_PREFIX = DUBBO_TRACING_PREFIX + PROPERTY_NAME_SEPARATOR + "tracing-exporter.zipkin-config";
 
-    public static final String DUBBO_TRACING_OTLP_CONFIG_PREFIX = DUBBO_CONFIG_PREFIX + PROPERTY_NAME_SEPARATOR + "tracing-exporter.otlp-config";
+    public static final String DUBBO_TRACING_OTLP_CONFIG_PREFIX = DUBBO_TRACING_PREFIX + PROPERTY_NAME_SEPARATOR + "tracing-exporter.otlp-config";
 }
