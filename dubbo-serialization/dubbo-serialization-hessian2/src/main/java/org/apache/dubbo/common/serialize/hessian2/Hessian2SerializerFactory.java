@@ -71,6 +71,11 @@ public class Hessian2SerializerFactory extends SerializerFactory {
     }
 
     private void checkSerializable(Class<?> cl) {
+        // If class is Serializable => ok
+        // If class has not implement Serializable
+        //      If hessian check serializable => fail
+        //      If dubbo class checker check serializable => fail
+        //      If both hessian and dubbo class checker allow non-serializable => ok
         if (!Serializable.class.isAssignableFrom(cl)
             && (!isAllowNonSerializable() || defaultSerializeClassChecker.isCheckSerializable())) {
             throw new IllegalStateException("Serialized class " + cl.getName() + " must implement java.io.Serializable");
