@@ -40,6 +40,7 @@
         <module>dubbo-plugin-router-script</module>
         <module>dubbo-plugin-router-mesh</module>
         <module>dubbo-plugin-router-condition</module>
+        <module>dubbo-plugin-router-tag</module>
     </modules>
     <properties>
         <skip_maven_deploy>false</skip_maven_deploy>
