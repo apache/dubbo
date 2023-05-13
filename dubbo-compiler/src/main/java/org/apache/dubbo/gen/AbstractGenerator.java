@@ -18,6 +18,8 @@ package org.apache.dubbo.gen;
 
 import com.google.common.base.Strings;
 import com.google.common.html.HtmlEscapers;
+import com.google.googlejavaformat.java.Formatter;
+import com.google.googlejavaformat.java.FormatterException;
 import com.google.protobuf.DescriptorProtos.FileDescriptorProto;
 import com.google.protobuf.DescriptorProtos.FileOptions;
 import com.google.protobuf.DescriptorProtos.MethodDescriptorProto;
@@ -238,14 +240,14 @@ public abstract class AbstractGenerator extends Generator {
             files.add(PluginProtos.CodeGeneratorResponse.File
                 .newBuilder()
                 .setName(getFileName(dir, context.fileName))
-                .setContent(content)
+                .setContent(formatSourceCode(content))
                 .build());
 
             content = applyTemplate(getInterfaceTemplateFileName(), context);
             files.add(PluginProtos.CodeGeneratorResponse.File
                 .newBuilder()
                 .setName(getFileName(dir, context.interfaceFileName))
-                .setContent(content)
+                .setContent(formatSourceCode(content))
                 .build());
         } else {
             String content = applyTemplate(getSingleTemplateFileName(), context);
@@ -254,7 +256,7 @@ public abstract class AbstractGenerator extends Generator {
             files.add(PluginProtos.CodeGeneratorResponse.File
                 .newBuilder()
                 .setName(getFileName(dir, context.fileName))
-                .setContent(content)
+                .setContent(formatSourceCode(content))
                 .build());
         }
 
@@ -263,6 +265,14 @@ public abstract class AbstractGenerator extends Generator {
 
     private String absoluteDir(ServiceContext ctx) {
         return ctx.packageName.replace('.', '/');
+    }
+
+    private String formatSourceCode(String content) {
+        try {
+            return new Formatter().formatSource(content);
+        } catch (FormatterException e) {
+            throw new GeneratorException(e.getMessage());
+        }
     }
 
     private String getFileName(String dir, String fileName) {
