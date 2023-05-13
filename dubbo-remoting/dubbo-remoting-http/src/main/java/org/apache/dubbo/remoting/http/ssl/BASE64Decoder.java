@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.remoting.http.ssl;
 
-import sun.misc.CEFormatException;
-import sun.misc.CEStreamExhausted;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -176,6 +174,21 @@ public class BASE64Decoder {
     }
 
     protected void decodeLineSuffix(PushbackInputStream var1, OutputStream var2) throws IOException {
+    }
+
+    private static class CEFormatException extends IOException {
+        static final long serialVersionUID = -7139121221067081482L;
+
+        public CEFormatException(String var1) {
+            super(var1);
+        }
+    }
+
+    private class CEStreamExhausted extends IOException {
+        static final long serialVersionUID = -5889118049525891904L;
+
+        public CEStreamExhausted() {
+        }
     }
 
 }
