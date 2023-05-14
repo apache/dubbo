@@ -15,9 +15,10 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.metrics.report;
+package org.apache.dubbo.qos.command.impl;
 
 import org.apache.dubbo.common.utils.JsonUtils;
+import org.apache.dubbo.metrics.report.MetricsReporter;
 import org.apache.dubbo.qos.api.BaseCommand;
 import org.apache.dubbo.qos.api.Cmd;
 import org.apache.dubbo.qos.api.CommandContext;
