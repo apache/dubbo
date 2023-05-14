@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.qos.command.util;
 
+import org.apache.dubbo.metrics.report.DefaultMetricsReporterCmd;
 import org.apache.dubbo.qos.command.GreetingCommand;
 import org.apache.dubbo.qos.command.impl.ChangeTelnet;
 import org.apache.dubbo.qos.command.impl.CountTelnet;
@@ -125,6 +126,7 @@ class CommandHelperTest {
         expectedClasses.add(GetConfig.class);
         expectedClasses.add(GetAddress.class);
         expectedClasses.add(GracefulShutdown.class);
+        expectedClasses.add(DefaultMetricsReporterCmd.class);
         assertThat(classes, containsInAnyOrder(expectedClasses.toArray(new Class<?>[0])));
     }
 
