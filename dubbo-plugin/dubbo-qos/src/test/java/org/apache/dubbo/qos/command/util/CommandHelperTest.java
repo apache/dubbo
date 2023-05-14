@@ -16,10 +16,10 @@
  */
 package org.apache.dubbo.qos.command.util;
 
-import org.apache.dubbo.metrics.report.DefaultMetricsReporterCmd;
 import org.apache.dubbo.qos.command.GreetingCommand;
 import org.apache.dubbo.qos.command.impl.ChangeTelnet;
 import org.apache.dubbo.qos.command.impl.CountTelnet;
+import org.apache.dubbo.qos.command.impl.DefaultMetricsReporterCmd;
 import org.apache.dubbo.qos.command.impl.DisableDetailProfiler;
 import org.apache.dubbo.qos.command.impl.DisableRouterSnapshot;
 import org.apache.dubbo.qos.command.impl.DisableSimpleProfiler;
