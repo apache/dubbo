@@ -15,5 +15,10 @@ public class RpcResult extends AppResponse implements com.alibaba.dubbo.rpc.Resu
     public RpcResult(Throwable exception) {
         super(exception);
     }
+    
+    @Override
+    public org.apache.dubbo.rpc.Result whenCompleteWithContext(BiConsumer<org.apache.dubbo.rpc.Result, Throwable> fn) {
+        return null;
+    }
 }
 
