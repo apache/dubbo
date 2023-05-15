@@ -32,6 +32,11 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
+/**
+ * Application-level data container, for the initialized MetricsKey,
+ * different from the null value of the Map type (the key is not displayed when there is no data),
+ * the key is displayed and the initial data is 0 value of the AtomicLong type
+ */
 public class ApplicationStatComposite extends AbstractMetricsExport {
 
 

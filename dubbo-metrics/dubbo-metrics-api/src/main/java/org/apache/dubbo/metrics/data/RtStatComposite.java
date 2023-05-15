@@ -39,6 +39,11 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.LongAccumulator;
 import java.util.stream.Collectors;
 
+/**
+ * The data container of the rt dimension, including application, service, and method levels,
+ * if there is no actual call to the existing call method,
+ * the key will not be displayed when exporting (to be optimized)
+ */
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class RtStatComposite extends AbstractMetricsExport {
 
@@ -99,7 +104,7 @@ public class RtStatComposite extends AbstractMetricsExport {
         for (LongContainer<? extends Number> rtContainer : rtStats) {
             MetricsKeyWrapper metricsKeyWrapper = rtContainer.getMetricsKeyWrapper();
             for (Map.Entry<String, ? extends Number> entry : rtContainer.entrySet()) {
-                list.add(new GaugeMetricSample<>(metricsKeyWrapper.targetKey(), metricsKeyWrapper.targetDesc(), metricsKeyWrapper.tagName(getApplicationModel() ,entry.getKey()), category, entry.getKey().intern(), value -> rtContainer.getValueSupplier().apply(value.intern())));
+                list.add(new GaugeMetricSample<>(metricsKeyWrapper.targetKey(), metricsKeyWrapper.targetDesc(), metricsKeyWrapper.tagName(getApplicationModel(), entry.getKey()), category, entry.getKey().intern(), value -> rtContainer.getValueSupplier().apply(value.intern())));
             }
         }
         return list;

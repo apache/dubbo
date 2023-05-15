@@ -34,6 +34,11 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
+/**
+ * Method-level data container,
+ * if there is no actual call to the existing call method,
+ * the key will not be displayed when exporting (to be optimized)
+ */
 public class MethodStatComposite extends AbstractMetricsExport {
 
     public MethodStatComposite(ApplicationModel applicationModel) {
