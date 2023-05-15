@@ -102,10 +102,11 @@ dubbo-spring-boot-actuator-compatible
 dubbo-spring-boot-autoconfigure
 dubbo-spring-boot-autoconfigure-compatible
 dubbo-spring-boot-compatible
-dubbo-spring-boot-observability-starter
+dubbo-spring-boot-observability-starters
 dubbo-spring-boot-observability-autoconfigure
 dubbo-spring-boot-tracing-brave-zipkin-starter
 dubbo-spring-boot-tracing-otel-zipkin-starter
+dubbo-spring-boot-observability-starter
 dubbo-spring-boot-starter
 dubbo-spring-security
 dubbo-xds

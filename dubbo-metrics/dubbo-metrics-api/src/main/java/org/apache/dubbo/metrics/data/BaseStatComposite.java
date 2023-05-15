@@ -20,9 +20,10 @@ package org.apache.dubbo.metrics.data;
 import org.apache.dubbo.metrics.collector.MetricsCollector;
 import org.apache.dubbo.metrics.model.MetricsCategory;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
-import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
-
+import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
+import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.metrics.report.MetricsExport;
+import org.apache.dubbo.rpc.Invocation;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,14 +38,31 @@ public abstract class BaseStatComposite implements MetricsExport {
 
     private final ApplicationStatComposite applicationStatComposite = new ApplicationStatComposite();
     private final ServiceStatComposite serviceStatComposite = new ServiceStatComposite();
+
+    private final MethodStatComposite methodStatComposite = new MethodStatComposite();
     private final RtStatComposite rtStatComposite = new RtStatComposite();
 
 
     public BaseStatComposite() {
-        init(applicationStatComposite, serviceStatComposite, rtStatComposite);
+        init(applicationStatComposite);
+        init(serviceStatComposite);
+        init(methodStatComposite);
+        init(rtStatComposite);
     }
 
-    protected abstract void init(ApplicationStatComposite applicationStatComposite, ServiceStatComposite serviceStatComposite, RtStatComposite rtStatComposite);
+
+    protected void init(ApplicationStatComposite applicationStatComposite) {
+    }
+
+    protected void init(ServiceStatComposite serviceStatComposite) {
+
+    }
+
+    protected void init(MethodStatComposite methodStatComposite) {
+    }
+
+    protected void init(RtStatComposite rtStatComposite) {
+    }
 
     public void calcApplicationRt(String applicationName, String registryOpType, Long responseTime) {
         rtStatComposite.calcApplicationRt(applicationName, registryOpType, responseTime);
@@ -54,29 +72,33 @@ public abstract class BaseStatComposite implements MetricsExport {
         rtStatComposite.calcServiceKeyRt(applicationName, serviceKey, registryOpType, responseTime);
     }
 
-    public void setServiceKey(MetricsKey metricsKey, String applicationName, String serviceKey, int num) {
-        serviceStatComposite.setServiceKey(metricsKey, applicationName, serviceKey, num);
+    public void calcMethodKeyRt(String applicationName, Invocation invocation, String registryOpType, Long responseTime) {
+        rtStatComposite.calcMethodKeyRt(applicationName, invocation, registryOpType, responseTime);
     }
 
-    public void setApplicationKey(MetricsKey metricsKey, String applicationName, int num) {
-        applicationStatComposite.setApplicationKey(metricsKey, applicationName, num);
+    public void setServiceKey(MetricsKeyWrapper metricsKey, String applicationName, String serviceKey, int num) {
+        serviceStatComposite.setServiceKey(metricsKey, applicationName, serviceKey, num);
     }
 
     public void incrementApp(MetricsKey metricsKey, String applicationName, int size) {
         applicationStatComposite.incrementSize(metricsKey, applicationName, size);
     }
 
-    public void incrementServiceKey(MetricsKey metricsKey, String applicationName, String attServiceKey, int size) {
-        serviceStatComposite.incrementServiceKey(metricsKey, applicationName, attServiceKey, size);
+    public void incrementServiceKey(MetricsKeyWrapper metricsKeyWrapper, String applicationName, String attServiceKey, int size) {
+        serviceStatComposite.incrementServiceKey(metricsKeyWrapper, applicationName, attServiceKey, size);
+    }
+
+    public void incrementMethodKey(MetricsKeyWrapper metricsKeyWrapper, String applicationName, Invocation invocation, int size) {
+        methodStatComposite.incrementMethodKey(metricsKeyWrapper, applicationName, invocation, size);
     }
 
     @Override
-    @SuppressWarnings({"rawtypes"})
-    public List<GaugeMetricSample> export(MetricsCategory category) {
-        List<GaugeMetricSample> list = new ArrayList<>();
+    public List<MetricSample> export(MetricsCategory category) {
+        List<MetricSample> list = new ArrayList<>();
         list.addAll(applicationStatComposite.export(category));
         list.addAll(rtStatComposite.export(category));
         list.addAll(serviceStatComposite.export(category));
+        list.addAll(methodStatComposite.export(category));
         return list;
     }
 

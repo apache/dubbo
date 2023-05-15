@@ -17,7 +17,9 @@
 
 package org.apache.dubbo.rpc.protocol.tri.call;
 
+import io.netty.handler.codec.http.HttpHeaderNames;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.rpc.HeaderFilter;
@@ -27,18 +29,20 @@ import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.MethodDescriptor.RpcType;
+import org.apache.dubbo.rpc.model.PackableMethodFactory;
 import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.ClassLoadUtil;
-import org.apache.dubbo.rpc.protocol.tri.ReflectionPackableMethod;
 import org.apache.dubbo.rpc.protocol.tri.TripleCustomerProtocolWapper;
 import org.apache.dubbo.rpc.protocol.tri.stream.ServerStream;
 import org.apache.dubbo.rpc.service.ServiceDescriptorInternalCache;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Executor;
+
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PACKABLE_METHOD_FACTORY;
 
 public class ReflectionAbstractServerCall extends AbstractServerCall {
 
@@ -116,7 +120,10 @@ public class ReflectionAbstractServerCall extends AbstractServerCall {
             }
         }
         if (methodDescriptor != null) {
-            packableMethod = ReflectionPackableMethod.init(methodDescriptor, invoker.getUrl());
+            final URL url = invoker.getUrl();
+            packableMethod = frameworkModel.getExtensionLoader(PackableMethodFactory.class)
+                .getExtension(ConfigurationUtils.getGlobalConfiguration(url.getApplicationModel()).getString(DUBBO_PACKABLE_METHOD_FACTORY, DEFAULT_KEY))
+                .create(methodDescriptor, url, (String) requestMetadata.get(HttpHeaderNames.CONTENT_TYPE.toString()));
         }
         trySetListener();
         if (listener == null) {
@@ -148,8 +155,7 @@ public class ReflectionAbstractServerCall extends AbstractServerCall {
     }
 
     @Override
-    protected Object parseSingleMessage(byte[] data)
-        throws IOException, ClassNotFoundException {
+    protected Object parseSingleMessage(byte[] data) throws Exception {
         trySetMethodDescriptor(data);
         trySetListener();
         if (isClosed()) {
@@ -161,7 +167,7 @@ public class ReflectionAbstractServerCall extends AbstractServerCall {
     }
 
 
-    private void trySetMethodDescriptor(byte[] data) throws IOException {
+    private void trySetMethodDescriptor(byte[] data) {
         if (methodDescriptor != null) {
             return;
         }
@@ -185,7 +191,10 @@ public class ReflectionAbstractServerCall extends AbstractServerCall {
                     + serviceDescriptor.getInterfaceName()), null);
             return;
         }
-        packableMethod = ReflectionPackableMethod.init(methodDescriptor, invoker.getUrl());
+        final URL url = invoker.getUrl();
+        packableMethod = frameworkModel.getExtensionLoader(PackableMethodFactory.class)
+            .getExtension(ConfigurationUtils.getGlobalConfiguration(url.getApplicationModel()).getString(DUBBO_PACKABLE_METHOD_FACTORY, DEFAULT_KEY))
+            .create(methodDescriptor, url, (String) requestMetadata.get(HttpHeaderNames.CONTENT_TYPE.toString()));
     }
 
 }

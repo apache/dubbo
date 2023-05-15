@@ -18,24 +18,23 @@
 package org.apache.dubbo.metrics.listener;
 
 import org.apache.dubbo.metrics.collector.CombMetricsCollector;
-import org.apache.dubbo.metrics.event.TimeCounterEvent;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
-import org.apache.dubbo.metrics.model.key.MetricsPlaceType;
+import org.apache.dubbo.metrics.model.key.MetricsPlaceValue;
 
-public  class MetricsApplicationListener extends AbstractMetricsListener {
+public  class MetricsApplicationListener extends AbstractMetricsKeyListener {
 
     public MetricsApplicationListener(MetricsKey metricsKey) {
         super(metricsKey);
     }
 
-    public static AbstractMetricsListener onPostEventBuild(MetricsKey metricsKey, CombMetricsCollector<TimeCounterEvent> collector) {
-        return AbstractMetricsListener.onEvent(metricsKey,
+    public static AbstractMetricsKeyListener onPostEventBuild(MetricsKey metricsKey, CombMetricsCollector collector) {
+        return AbstractMetricsKeyListener.onEvent(metricsKey,
             event -> collector.increment(event.appName(), metricsKey)
         );
     }
 
-    public static AbstractMetricsListener onFinishEventBuild(MetricsKey metricsKey, MetricsPlaceType placeType, CombMetricsCollector<TimeCounterEvent> collector) {
-        return AbstractMetricsListener.onFinish(metricsKey,
+    public static AbstractMetricsKeyListener onFinishEventBuild(MetricsKey metricsKey, MetricsPlaceValue placeType, CombMetricsCollector collector) {
+        return AbstractMetricsKeyListener.onFinish(metricsKey,
             event -> {
                 collector.increment(event.appName(), metricsKey);
                 collector.addRt(event.appName(), placeType.getType(), event.getTimePair().calc());
@@ -43,8 +42,8 @@ public  class MetricsApplicationListener extends AbstractMetricsListener {
         );
     }
 
-    public static AbstractMetricsListener onErrorEventBuild(MetricsKey metricsKey, MetricsPlaceType placeType, CombMetricsCollector<TimeCounterEvent> collector) {
-        return AbstractMetricsListener.onError(metricsKey,
+    public static AbstractMetricsKeyListener onErrorEventBuild(MetricsKey metricsKey, MetricsPlaceValue placeType, CombMetricsCollector collector) {
+        return AbstractMetricsKeyListener.onError(metricsKey,
             event -> {
                 collector.increment(event.appName(), metricsKey);
                 collector.addRt(event.appName(), placeType.getType(), event.getTimePair().calc());

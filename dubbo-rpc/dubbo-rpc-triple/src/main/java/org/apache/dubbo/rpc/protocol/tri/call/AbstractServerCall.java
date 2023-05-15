@@ -45,7 +45,6 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.util.concurrent.Future;
 
-import java.io.IOException;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.Executor;
@@ -225,8 +224,7 @@ public abstract class AbstractServerCall implements ServerCall, ServerStream.Lis
         }
     }
 
-    protected abstract Object parseSingleMessage(byte[] data)
-        throws IOException, ClassNotFoundException;
+    protected abstract Object parseSingleMessage(byte[] data) throws Exception;
 
     @Override
     public final void onCancelByRemote(TriRpcStatus status) {

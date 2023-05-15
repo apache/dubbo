@@ -122,10 +122,11 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
                 protected void initChannel(SocketChannel ch) throws Exception {
                     // Do not add idle state handler here, because it should be added in the protocol handler.
                     final ChannelPipeline p = ch.pipeline();
-                    final NettyPortUnificationServerHandler puHandler;
-                    puHandler = new NettyPortUnificationServerHandler(getUrl(), true, getProtocols(),
-                        NettyPortUnificationServer.this, NettyPortUnificationServer.this.dubboChannels,
+                    NettyChannelHandler nettyChannelHandler = new NettyChannelHandler(dubboChannels, getUrl(), NettyPortUnificationServer.this);
+                    NettyPortUnificationServerHandler puHandler = new NettyPortUnificationServerHandler(getUrl(), true, getProtocols(),
+                        NettyPortUnificationServer.this,
                         getSupportedUrls(), getSupportedHandlers());
+                    p.addLast("channel-handler", nettyChannelHandler);
                     p.addLast("negotiation-protocol", puHandler);
                 }
             });

@@ -1,0 +1,1 @@
+default-collector=org.apache.dubbo.metrics.collector.DefaultMetricsCollector

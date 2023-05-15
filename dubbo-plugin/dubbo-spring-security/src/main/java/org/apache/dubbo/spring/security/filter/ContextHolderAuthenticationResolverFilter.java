@@ -53,7 +53,13 @@ public class ContextHolderAuthenticationResolverFilter implements Filter {
         if (StringUtils.isBlank(authenticationJSON)) {
             return;
         }
+
         Authentication authentication = mapper.deserialize(authenticationJSON, Authentication.class);
+
+        if (authentication == null) {
+            return;
+        }
+
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 

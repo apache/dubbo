@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.metrics.model;
 
+import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
@@ -38,6 +39,7 @@ import static org.apache.dubbo.common.constants.MetricsConstants.TAG_METHOD_KEY;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_VERSION_KEY;
 import static org.apache.dubbo.common.utils.NetUtils.getLocalHost;
 import static org.apache.dubbo.common.utils.NetUtils.getLocalHostName;
+import static org.apache.dubbo.metrics.MetricsConstants.INVOCATION_METRICS_COUNTER;
 import static org.apache.dubbo.rpc.support.RpcUtils.isGenericCall;
 
 /**
@@ -51,11 +53,19 @@ public class MethodMetric implements Metric {
     private String group;
     private String version;
 
-    public MethodMetric() {}
+    private MetricSample.Type sampleType;
+
+    public MethodMetric() {
+    }
 
     public MethodMetric(String applicationName, Invocation invocation) {
         this.applicationName = applicationName;
+        this.sampleType = (MetricSample.Type) invocation.get(INVOCATION_METRICS_COUNTER);
         init(invocation);
+    }
+
+    public MetricSample.Type getSampleType() {
+        return sampleType;
     }
 
     public String getInterfaceName() {
@@ -106,9 +116,9 @@ public class MethodMetric implements Metric {
         String serviceUniqueName = invocation.getTargetServiceUniqueName();
         String methodName = invocation.getMethodName();
         if (invocation instanceof RpcInvocation
-            && isGenericCall(((RpcInvocation) invocation).getParameterTypesDesc(), methodName)
-            && invocation.getArguments() != null
-            && invocation.getArguments().length == 3) {
+                && isGenericCall(((RpcInvocation) invocation).getParameterTypesDesc(), methodName)
+                && invocation.getArguments() != null
+                && invocation.getArguments().length == 3) {
             methodName = ((String) invocation.getArguments()[0]).trim();
         }
         String group = null;
@@ -150,13 +160,13 @@ public class MethodMetric implements Metric {
     @Override
     public String toString() {
         return "MethodMetric{" +
-            "applicationName='" + applicationName + '\'' +
-            ", side='" + side + '\'' +
-            ", interfaceName='" + interfaceName + '\'' +
-            ", methodName='" + methodName + '\'' +
-            ", group='" + group + '\'' +
-            ", version='" + version + '\'' +
-            '}';
+                "applicationName='" + applicationName + '\'' +
+                ", side='" + side + '\'' +
+                ", interfaceName='" + interfaceName + '\'' +
+                ", methodName='" + methodName + '\'' +
+                ", group='" + group + '\'' +
+                ", version='" + version + '\'' +
+                '}';
     }
 
     @Override
