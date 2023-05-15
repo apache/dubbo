@@ -85,44 +85,48 @@ public class MetricsSupport {
         return tags;
     }
 
-    public static MetricsKey getMetricsKey(RpcException e) {
-        MetricsKey targetKey;
-        targetKey = MetricsKey.METRIC_REQUESTS_FAILED;
-        if (e.isTimeout()) {
-            targetKey = MetricsKey.METRIC_REQUESTS_TIMEOUT;
-        }
-        if (e.isLimitExceed()) {
-            targetKey = MetricsKey.METRIC_REQUESTS_LIMIT;
-        }
-        if (e.isBiz()) {
-            targetKey = MetricsKey.METRIC_REQUEST_BUSINESS_FAILED;
-        }
-        if (e.isSerialization()) {
-            targetKey = MetricsKey.METRIC_REQUESTS_CODEC_FAILED;
-        }
-        if (e.isNetwork()) {
-            targetKey = MetricsKey.METRIC_REQUESTS_NETWORK_FAILED;
+    public static MetricsKey getMetricsKey(Throwable throwable) {
+        MetricsKey targetKey = MetricsKey.METRIC_REQUESTS_FAILED;
+        if (throwable instanceof RpcException) {
+            RpcException e = (RpcException) throwable;
+            if (e.isTimeout()) {
+                targetKey = MetricsKey.METRIC_REQUESTS_TIMEOUT;
+            }
+            if (e.isLimitExceed()) {
+                targetKey = MetricsKey.METRIC_REQUESTS_LIMIT;
+            }
+            if (e.isBiz()) {
+                targetKey = MetricsKey.METRIC_REQUEST_BUSINESS_FAILED;
+            }
+            if (e.isSerialization()) {
+                targetKey = MetricsKey.METRIC_REQUESTS_CODEC_FAILED;
+            }
+            if (e.isNetwork()) {
+                targetKey = MetricsKey.METRIC_REQUESTS_NETWORK_FAILED;
+            }
         }
         return targetKey;
     }
 
-    public static MetricsKey getAggMetricsKey(RpcException e) {
-        MetricsKey targetKey;
-        targetKey = MetricsKey.METRIC_REQUESTS_FAILED_AGG;
-        if (e.isTimeout()) {
-            targetKey = MetricsKey.METRIC_REQUESTS_TIMEOUT_AGG;
-        }
-        if (e.isLimitExceed()) {
-            targetKey = MetricsKey.METRIC_REQUESTS_LIMIT_AGG;
-        }
-        if (e.isBiz()) {
-            targetKey = MetricsKey.METRIC_REQUEST_BUSINESS_FAILED_AGG;
-        }
-        if (e.isSerialization()) {
-            targetKey = MetricsKey.METRIC_REQUESTS_CODEC_FAILED_AGG;
-        }
-        if (e.isNetwork()) {
-            targetKey = MetricsKey.METRIC_REQUESTS_NETWORK_FAILED_AGG;
+    public static MetricsKey getAggMetricsKey(Throwable throwable) {
+        MetricsKey targetKey = MetricsKey.METRIC_REQUESTS_FAILED_AGG;
+        if (throwable instanceof RpcException) {
+            RpcException e = (RpcException) throwable;
+            if (e.isTimeout()) {
+                targetKey = MetricsKey.METRIC_REQUESTS_TIMEOUT_AGG;
+            }
+            if (e.isLimitExceed()) {
+                targetKey = MetricsKey.METRIC_REQUESTS_LIMIT_AGG;
+            }
+            if (e.isBiz()) {
+                targetKey = MetricsKey.METRIC_REQUEST_BUSINESS_FAILED_AGG;
+            }
+            if (e.isSerialization()) {
+                targetKey = MetricsKey.METRIC_REQUESTS_CODEC_FAILED_AGG;
+            }
+            if (e.isNetwork()) {
+                targetKey = MetricsKey.METRIC_REQUESTS_NETWORK_FAILED_AGG;
+            }
         }
         return targetKey;
     }
