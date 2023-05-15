@@ -24,6 +24,9 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Optional;
 
+/**
+ * Get the micrometer meter registry, can choose spring, micrometer, dubbo
+ */
 public class MetricsGlobalRegistry {
 
     private static CompositeMeterRegistry compositeRegistry = new CompositeMeterRegistry();
