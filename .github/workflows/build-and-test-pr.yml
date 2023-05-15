@@ -103,7 +103,7 @@ jobs:
     strategy:
       fail-fast: false
     env:
-      ZOOKEEPER_VERSION: 3.6.3
+      ZOOKEEPER_VERSION: 3.8.1
     steps:
       - uses: actions/cache@v3
         name: "Cache zookeeper binary archive"
