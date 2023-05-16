@@ -25,6 +25,9 @@ import org.apache.dubbo.qos.api.BaseCommand;
 import org.apache.dubbo.qos.api.CommandContext;
 import org.apache.dubbo.qos.api.Cmd;
 import org.apache.dubbo.rpc.AppResponse;
+import org.apache.dubbo.rpc.AsyncContext;
+import org.apache.dubbo.rpc.AsyncContextImpl;
+import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ProviderModel;
@@ -38,6 +41,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
 import static org.apache.dubbo.common.utils.PojoUtils.realize;
 
@@ -150,9 +154,25 @@ public class InvokeTelnet implements BaseCommand {
             AppResponse result = new AppResponse();
             try {
                 Object o = invokeMethod.invoke(selectedProvider.getServiceInstance(), array);
-                result.setValue(o);
+                boolean setValueDone = false;
+                if (RpcContext.getServerAttachment().isAsyncStarted()) {
+                    AsyncContext asyncContext = RpcContext.getServerAttachment().getAsyncContext();
+                    if (asyncContext instanceof AsyncContextImpl) {
+                        CompletableFuture<Object> internalFuture = ((AsyncContextImpl) asyncContext).getInternalFuture();
+                        result.setValue(internalFuture.get());
+                        setValueDone = true;
+                    }
+                }
+                if (!setValueDone) {
+                    result.setValue(o);
+                }
             } catch (Throwable t) {
                 result.setException(t);
+                if (t instanceof InterruptedException) {
+                    Thread.currentThread().interrupt();
+                }
+            } finally {
+                RpcContext.removeContext();
             }
             long end = System.currentTimeMillis();
             buf.append("\r\nresult: ");
