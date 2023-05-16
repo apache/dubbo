@@ -38,7 +38,7 @@
     </modules>
 
     <properties>
-        <micrometer.version>1.10.6</micrometer.version>
+        <micrometer.version>1.11.0</micrometer.version>
         <micrometer-tracing.version>1.0.4</micrometer-tracing.version>
         <opentelemetry.version>1.26.0</opentelemetry.version>
         <zipkin-reporter.version>2.16.4</zipkin-reporter.version>
