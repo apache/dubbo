@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 package org.apache.dubbo.metrics.prometheus;
+
 import com.sun.net.httpserver.HttpServer;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.MetricsConfig;
@@ -24,7 +25,6 @@ import org.apache.dubbo.metrics.collector.sample.ThreadRejectMetricsCountSampler
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -33,6 +33,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -43,18 +44,17 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
 import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMETHEUS;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_APPLICATION_NAME;
-import static org.apache.dubbo.common.constants.MetricsConstants.TAG_THREAD_NAME;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_HOSTNAME;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_IP;
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_THREAD_NAME;
 import static org.apache.dubbo.common.utils.NetUtils.getLocalHost;
 import static org.apache.dubbo.common.utils.NetUtils.getLocalHostName;
 
 
 public class PrometheusMetricsThreadPoolTest {
-
-    private FrameworkModel   frameworkModel;
 
     private ApplicationModel applicationModel;
 
@@ -71,8 +71,7 @@ public class PrometheusMetricsThreadPoolTest {
         applicationModel.getApplicationConfigManager().setApplication(config);
         metricsConfig = new MetricsConfig();
         metricsConfig.setProtocol(PROTOCOL_PROMETHEUS);
-        frameworkModel = FrameworkModel.defaultModel();
-        metricsCollector = frameworkModel.getBeanFactory().getOrRegisterBean(DefaultMetricsCollector.class);
+        metricsCollector = applicationModel.getBeanFactory().getOrRegisterBean(DefaultMetricsCollector.class);
     }
 
     @AfterEach
