@@ -29,6 +29,7 @@ import org.apache.dubbo.rpc.model.ServiceMetadata;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
+import java.beans.Transient;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -294,6 +295,7 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
         this.unloadClusterRelated = unloadClusterRelated;
     }
 
+    @Transient
     public ServiceMetadata getServiceMetadata() {
         return serviceMetadata;
     }
@@ -365,6 +367,7 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
         return shouldReferAsync;
     }
 
+    @Transient
     public abstract T get();
 
     public void destroy() {

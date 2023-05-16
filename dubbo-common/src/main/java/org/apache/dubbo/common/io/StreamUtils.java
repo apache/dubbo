@@ -94,13 +94,13 @@ public class StreamUtils {
             }
 
             @Override
-            public void mark(int readlimit) {
+            public synchronized void mark(int readlimit) {
                 is.mark(readlimit);
                 mMark = mPosition;
             }
 
             @Override
-            public void reset() throws IOException {
+            public synchronized void reset() throws IOException {
                 is.reset();
                 mPosition = mMark;
             }

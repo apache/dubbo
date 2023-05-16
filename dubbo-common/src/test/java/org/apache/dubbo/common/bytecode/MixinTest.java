@@ -23,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class MixinTest {
 
     @Test
-    void testMain() throws Exception {
+    void testMain() {
         Mixin mixin = Mixin.mixin(new Class[]{I1.class, I2.class, I3.class}, new Class[]{C1.class, C2.class});
         Object o = mixin.newInstance(new Object[]{new C1(), new C2()});
         assertTrue(o instanceof I1);

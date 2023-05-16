@@ -1,4 +1,5 @@
 mock=org.apache.dubbo.rpc.cluster.support.wrapper.MockClusterWrapper
+scope=org.apache.dubbo.rpc.cluster.support.wrapper.ScopeClusterWrapper
 failover=org.apache.dubbo.rpc.cluster.support.FailoverCluster
 failfast=org.apache.dubbo.rpc.cluster.support.FailfastCluster
 failsafe=org.apache.dubbo.rpc.cluster.support.FailsafeCluster

@@ -23,4 +23,6 @@ public interface QosConstants {
     String BR_STR = "\r\n";
     String CLOSE = "close!";
 
+    String QOS_PERMISSION_CHECKER = "qosPermissionChecker";
+
 }

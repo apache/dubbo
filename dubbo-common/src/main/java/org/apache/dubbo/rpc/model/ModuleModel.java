@@ -47,6 +47,7 @@ public class ModuleModel extends ScopeModel {
     private volatile ModuleEnvironment moduleEnvironment;
     private volatile ModuleConfigManager moduleConfigManager;
     private volatile ModuleDeployer deployer;
+    private boolean lifeCycleManagedExternally = false;
 
     protected ModuleModel(ApplicationModel applicationModel) {
         this(applicationModel, false);
@@ -202,5 +203,13 @@ public class ModuleModel extends ScopeModel {
         logger.info("Dynamically registering consumer model " + serviceKey + " into model " + this.getDesc());
         serviceRepository.registerConsumer(consumerModel);
         return consumerModel;
+    }
+
+    public boolean isLifeCycleManagedExternally() {
+        return lifeCycleManagedExternally;
+    }
+
+    public void setLifeCycleManagedExternally(boolean lifeCycleManagedExternally) {
+        this.lifeCycleManagedExternally = lifeCycleManagedExternally;
     }
 }

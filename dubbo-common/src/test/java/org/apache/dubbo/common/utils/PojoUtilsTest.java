@@ -34,11 +34,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import com.alibaba.fastjson.JSON;
 import org.apache.dubbo.common.model.Person;
 import org.apache.dubbo.common.model.SerializablePerson;
 import org.apache.dubbo.common.model.User;
+import org.apache.dubbo.common.model.person.Bgeneric;
 import org.apache.dubbo.common.model.person.BigPerson;
+import org.apache.dubbo.common.model.person.Cgeneric;
+import org.apache.dubbo.common.model.person.Dgeneric;
 import org.apache.dubbo.common.model.person.FullAddress;
+import org.apache.dubbo.common.model.person.Ageneric;
 import org.apache.dubbo.common.model.person.PersonInfo;
 import org.apache.dubbo.common.model.person.PersonMap;
 import org.apache.dubbo.common.model.person.PersonStatus;
@@ -788,6 +793,209 @@ class PojoUtilsTest {
         jsonObject.put("personName", "hand");
         Object result = PojoUtils.realize(jsonObject, PersonMap.class);
         assertEquals(PersonMap.class, result.getClass());
+    }
+
+
+    protected PersonInfo createPersonInfoByName(String name) {
+        PersonInfo dataPerson = new PersonInfo();
+        dataPerson.setName(name);
+        return dataPerson;
+    }
+
+    protected Ageneric<PersonInfo> createAGenericPersonInfo(String name) {
+        Ageneric<PersonInfo> ret = new Ageneric();
+        ret.setData(createPersonInfoByName(name));
+        return ret;
+    }
+
+    protected Bgeneric<PersonInfo> createBGenericPersonInfo(String name) {
+        Bgeneric<PersonInfo> ret = new Bgeneric();
+        ret.setData(createPersonInfoByName(name));
+        return ret;
+    }
+
+    @Test
+    public void testPojoGeneric1() throws NoSuchMethodException {
+        String personName = "testName";
+
+        {
+            Ageneric<PersonInfo> genericPersonInfo = createAGenericPersonInfo(personName);
+
+            Object o = JSON.toJSON(genericPersonInfo);
+            {
+                Ageneric personInfo = (Ageneric) PojoUtils.realize(o, Ageneric.class);
+
+                assertEquals(Ageneric.NAME, personInfo.getName());
+                assertTrue(personInfo.getData() instanceof Map);
+            }
+            {
+                Type[] createGenericPersonInfos = ReflectUtils.getReturnTypes(PojoUtilsTest.class.getDeclaredMethod("createAGenericPersonInfo", String.class));
+                Ageneric personInfo = (Ageneric) PojoUtils.realize(o, (Class)createGenericPersonInfos[0], createGenericPersonInfos[1]);
+
+                assertEquals(Ageneric.NAME, personInfo.getName());
+                assertEquals(personInfo.getData().getClass(), PersonInfo.class);
+                assertEquals(personName, ((PersonInfo)personInfo.getData()).getName());
+            }
+        }
+        {
+            Bgeneric<PersonInfo> genericPersonInfo = createBGenericPersonInfo(personName);
+
+            Object o = JSON.toJSON(genericPersonInfo);
+            {
+                Bgeneric personInfo = (Bgeneric) PojoUtils.realize(o, Bgeneric.class);
+
+                assertEquals(Bgeneric.NAME, personInfo.getName());
+                assertTrue(personInfo.getData() instanceof Map);
+            }
+            {
+                Type[] createGenericPersonInfos = ReflectUtils.getReturnTypes(PojoUtilsTest.class.getDeclaredMethod("createBGenericPersonInfo", String.class));
+                Bgeneric personInfo = (Bgeneric) PojoUtils.realize(o, (Class)createGenericPersonInfos[0], createGenericPersonInfos[1]);
+
+                assertEquals(Bgeneric.NAME, personInfo.getName());
+                assertEquals(personInfo.getData().getClass(), PersonInfo.class);
+                assertEquals(personName, ((PersonInfo)personInfo.getData()).getName());
+            }
+        }
+    }
+
+    protected Ageneric<Ageneric<PersonInfo>> createAGenericLoop(String name) {
+        Ageneric<Ageneric<PersonInfo>> ret = new Ageneric();
+        ret.setData(createAGenericPersonInfo(name));
+        return ret;
+    }
+
+    protected Bgeneric<Ageneric<PersonInfo>> createBGenericWithAgeneric(String name) {
+        Bgeneric<Ageneric<PersonInfo>> ret = new Bgeneric();
+        ret.setData(createAGenericPersonInfo(name));
+        return ret;
+    }
+
+    @Test
+    public void testPojoGeneric2() throws NoSuchMethodException {
+        String personName = "testName";
+
+        {
+            Ageneric<Ageneric<PersonInfo>> generic2PersonInfo = createAGenericLoop(personName);
+            Object o = JSON.toJSON(generic2PersonInfo);
+            {
+                Ageneric personInfo = (Ageneric) PojoUtils.realize(o, Ageneric.class);
+
+                assertEquals(Ageneric.NAME, personInfo.getName());
+                assertTrue(personInfo.getData() instanceof Map);
+            }
+            {
+                Type[] createGenericPersonInfos = ReflectUtils.getReturnTypes(PojoUtilsTest.class.getDeclaredMethod("createAGenericLoop", String.class));
+                Ageneric personInfo = (Ageneric) PojoUtils.realize(o, (Class)createGenericPersonInfos[0], createGenericPersonInfos[1]);
+
+                assertEquals(Ageneric.NAME, personInfo.getName());
+                assertEquals(personInfo.getData().getClass(), Ageneric.class);
+                assertEquals(Ageneric.NAME, ((Ageneric)personInfo.getData()).getName());
+                assertEquals(((Ageneric)personInfo.getData()).getData().getClass(), PersonInfo.class);
+                assertEquals(personName, ((PersonInfo)((Ageneric)personInfo.getData()).getData()).getName());
+            }
+        }
+        {
+
+            Bgeneric<Ageneric<PersonInfo>> generic = createBGenericWithAgeneric(personName);
+            Object o = JSON.toJSON(generic);
+            {
+                Ageneric personInfo = (Ageneric) PojoUtils.realize(o, Ageneric.class);
+
+                assertEquals(Bgeneric.NAME, personInfo.getName());
+                assertTrue(personInfo.getData() instanceof Map);
+            }
+            {
+                Type[] createGenericPersonInfos = ReflectUtils.getReturnTypes(PojoUtilsTest.class.getDeclaredMethod("createBGenericWithAgeneric", String.class));
+                Bgeneric personInfo = (Bgeneric) PojoUtils.realize(o, (Class)createGenericPersonInfos[0], createGenericPersonInfos[1]);
+
+                assertEquals(Bgeneric.NAME, personInfo.getName());
+                assertEquals(personInfo.getData().getClass(), Ageneric.class);
+                assertEquals(Ageneric.NAME, ((Ageneric)personInfo.getData()).getName());
+                assertEquals(((Ageneric)personInfo.getData()).getData().getClass(), PersonInfo.class);
+                assertEquals(personName, ((PersonInfo)((Ageneric)personInfo.getData()).getData()).getName());
+            }
+        }
+    }
+
+    protected Cgeneric<PersonInfo> createCGenericPersonInfo(String name) {
+        Cgeneric<PersonInfo> ret = new Cgeneric();
+        ret.setData(createPersonInfoByName(name));
+        ret.setA(createAGenericPersonInfo(name));
+        ret.setB(createBGenericPersonInfo(name));
+        return ret;
+    }
+
+    @Test
+    public void testPojoGeneric3() throws NoSuchMethodException {
+        String personName = "testName";
+
+        Cgeneric<PersonInfo> generic = createCGenericPersonInfo(personName);
+        Object o = JSON.toJSON(generic);
+        {
+            Cgeneric personInfo = (Cgeneric) PojoUtils.realize(o, Cgeneric.class);
+
+            assertEquals(Cgeneric.NAME, personInfo.getName());
+            assertTrue(personInfo.getData() instanceof Map);
+            assertTrue(personInfo.getA().getData() instanceof Map);
+            assertTrue(personInfo.getB().getData() instanceof PersonInfo);
+
+        }
+        {
+            Type[] createGenericPersonInfos = ReflectUtils.getReturnTypes(PojoUtilsTest.class.getDeclaredMethod("createCGenericPersonInfo", String.class));
+            Cgeneric personInfo = (Cgeneric) PojoUtils.realize(o, (Class)createGenericPersonInfos[0], createGenericPersonInfos[1]);
+
+            assertEquals(Cgeneric.NAME, personInfo.getName());
+            assertEquals(personInfo.getData().getClass(), PersonInfo.class);
+            assertEquals(personName, ((PersonInfo)personInfo.getData()).getName());
+
+            assertEquals(personInfo.getA().getClass(), Ageneric.class);
+            assertEquals(personInfo.getA().getData().getClass(), PersonInfo.class);
+            assertEquals(personInfo.getB().getClass(), Bgeneric.class);
+            assertEquals(personInfo.getB().getData().getClass(), PersonInfo.class);
+        }
+    }
+
+    protected Dgeneric<Ageneric<PersonInfo>, Bgeneric<PersonInfo>, Cgeneric<PersonInfo>> createDGenericPersonInfo(String name) {
+        Dgeneric<Ageneric<PersonInfo>, Bgeneric<PersonInfo>, Cgeneric<PersonInfo>> ret = new Dgeneric();
+        ret.setT(createAGenericPersonInfo(name));
+        ret.setY(createBGenericPersonInfo(name));
+        ret.setZ(createCGenericPersonInfo(name));
+        return ret;
+    }
+
+    @Test
+    public void testPojoGeneric4() throws NoSuchMethodException {
+        String personName = "testName";
+
+        Dgeneric generic = createDGenericPersonInfo(personName);
+        Object o = JSON.toJSON(generic);
+        {
+            Dgeneric personInfo = (Dgeneric) PojoUtils.realize(o, Dgeneric.class);
+
+            assertEquals(Dgeneric.NAME, personInfo.getName());
+            assertTrue(personInfo.getT() instanceof Map);
+            assertTrue(personInfo.getY() instanceof Map);
+            assertTrue(personInfo.getZ() instanceof Map);
+        }
+        {
+            Type[] createGenericPersonInfos = ReflectUtils.getReturnTypes(PojoUtilsTest.class.getDeclaredMethod("createDGenericPersonInfo", String.class));
+            Dgeneric personInfo = (Dgeneric) PojoUtils.realize(o, (Class)createGenericPersonInfos[0], createGenericPersonInfos[1]);
+
+            assertEquals(Dgeneric.NAME, personInfo.getName());
+
+            assertEquals(personInfo.getT().getClass(), Ageneric.class);
+            assertEquals(((Ageneric)personInfo.getT()).getData().getClass(), PersonInfo.class);
+            assertEquals(personInfo.getY().getClass(), Bgeneric.class);
+            assertEquals(((Bgeneric)personInfo.getY()).getData().getClass(), PersonInfo.class);
+            assertEquals(personInfo.getZ().getClass(), Cgeneric.class);
+            assertEquals(((Cgeneric)personInfo.getZ()).getData().getClass(), PersonInfo.class);
+
+            assertEquals(personInfo.getZ().getClass(), Cgeneric.class);
+            assertEquals(((Cgeneric)personInfo.getZ()).getA().getClass(), Ageneric.class);
+            assertEquals(((Cgeneric)personInfo.getZ()).getA().getData().getClass(), PersonInfo.class);
+            assertEquals(((Cgeneric)personInfo.getZ()).getB().getClass(), Bgeneric.class);
+            assertEquals(((Cgeneric)personInfo.getZ()).getB().getData().getClass(), PersonInfo.class);
+        }
     }
 
     public enum Day {

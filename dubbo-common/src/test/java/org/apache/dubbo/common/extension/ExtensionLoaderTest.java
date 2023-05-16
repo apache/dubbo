@@ -170,7 +170,7 @@ class ExtensionLoaderTest {
         // get origin instance from wrapper
         WrappedExt originImpl1 = impl1;
         while (originImpl1 instanceof WrappedExtWrapper) {
-            originImpl1 = ((WrappedExtWrapper)originImpl1).getOrigin();
+            originImpl1 = ((WrappedExtWrapper) originImpl1).getOrigin();
         }
 
         // test unwrapped instance
@@ -292,7 +292,7 @@ class ExtensionLoaderTest {
     void test_getSupportedExtensions() {
         Set<String> exts = getExtensionLoader(SimpleExt.class).getSupportedExtensions();
 
-        Set<String> expected = new HashSet<String>();
+        Set<String> expected = new HashSet<>();
         expected.add("impl1");
         expected.add("impl2");
         expected.add("impl3");
@@ -304,7 +304,7 @@ class ExtensionLoaderTest {
     void test_getSupportedExtensions_wrapperIsNotExt() {
         Set<String> exts = getExtensionLoader(WrappedExt.class).getSupportedExtensions();
 
-        Set<String> expected = new HashSet<String>();
+        Set<String> expected = new HashSet<>();
         expected.add("impl1");
         expected.add("impl2");
         expected.add("impl3");
@@ -720,7 +720,7 @@ class ExtensionLoaderTest {
     void testDuplicatedImplWithoutOverriddenStrategy() {
         List<LoadingStrategy> loadingStrategies = ExtensionLoader.getLoadingStrategies();
         ExtensionLoader.setLoadingStrategies(new DubboExternalLoadingStrategyTest(false),
-                new DubboInternalLoadingStrategyTest(false));
+            new DubboInternalLoadingStrategyTest(false));
         ExtensionLoader<DuplicatedWithoutOverriddenExt> extensionLoader = getExtensionLoader(DuplicatedWithoutOverriddenExt.class);
         try {
             extensionLoader.getExtension("duplicated");
@@ -728,7 +728,7 @@ class ExtensionLoaderTest {
         } catch (IllegalStateException expected) {
             assertThat(expected.getMessage(), containsString("Failed to load extension class (interface: interface org.apache.dubbo.common.extension.duplicated.DuplicatedWithoutOverriddenExt"));
             assertThat(expected.getMessage(), containsString("cause: Duplicate extension org.apache.dubbo.common.extension.duplicated.DuplicatedWithoutOverriddenExt name duplicated"));
-        }finally {
+        } finally {
             //recover the loading strategies
             ExtensionLoader.setLoadingStrategies(loadingStrategies.toArray(new LoadingStrategy[loadingStrategies.size()]));
         }
@@ -738,7 +738,7 @@ class ExtensionLoaderTest {
     void testDuplicatedImplWithOverriddenStrategy() {
         List<LoadingStrategy> loadingStrategies = ExtensionLoader.getLoadingStrategies();
         ExtensionLoader.setLoadingStrategies(new DubboExternalLoadingStrategyTest(true),
-                new DubboInternalLoadingStrategyTest(true));
+            new DubboInternalLoadingStrategyTest(true));
         ExtensionLoader<DuplicatedOverriddenExt> extensionLoader = getExtensionLoader(DuplicatedOverriddenExt.class);
         DuplicatedOverriddenExt duplicatedOverriddenExt = extensionLoader.getExtension("duplicated");
         assertEquals("DuplicatedOverriddenExt1", duplicatedOverriddenExt.echo());
@@ -749,25 +749,25 @@ class ExtensionLoaderTest {
     @Test
     void testLoadByDubboInternalSPI() {
         ExtensionLoader<SPI1> extensionLoader = getExtensionLoader(SPI1.class);
-        SPI1 spi1 = extensionLoader.getExtension("1",true);
+        SPI1 spi1 = extensionLoader.getExtension("1", true);
         assertNotNull(spi1);
 
         ExtensionLoader<SPI2> extensionLoader2 = getExtensionLoader(SPI2.class);
-        SPI2 spi2 = extensionLoader2.getExtension("2",true);
+        SPI2 spi2 = extensionLoader2.getExtension("2", true);
         assertNotNull(spi2);
 
         try {
             ExtensionLoader<SPI3> extensionLoader3 = getExtensionLoader(SPI3.class);
-            SPI3 spi3 = extensionLoader3.getExtension("3",true);
+            SPI3 spi3 = extensionLoader3.getExtension("3", true);
             assertNotNull(spi3);
-        }catch (IllegalStateException illegalStateException){
+        } catch (IllegalStateException illegalStateException) {
             if (!illegalStateException.getMessage().contains("No such extension")) {
                 fail();
             }
         }
 
         ExtensionLoader<SPI4> extensionLoader4 = getExtensionLoader(SPI4.class);
-        SPI4 spi4 = extensionLoader4.getExtension("4",true);
+        SPI4 spi4 = extensionLoader4.getExtension("4", true);
         assertNotNull(spi4);
 
     }
@@ -780,7 +780,7 @@ class ExtensionLoaderTest {
     }
 
     /**
-     * The external {@link LoadingStrategy}, which can set if it support overridden
+     * The external {@link LoadingStrategy}, which can set if it supports overriding.
      */
     private static class DubboExternalLoadingStrategyTest implements LoadingStrategy {
 

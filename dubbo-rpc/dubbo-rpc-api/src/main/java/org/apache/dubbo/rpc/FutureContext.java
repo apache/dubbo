@@ -31,7 +31,7 @@ import java.util.concurrent.CompletableFuture;
  */
 public class FutureContext {
 
-    private static InternalThreadLocal<FutureContext> futureTL = new InternalThreadLocal<FutureContext>() {
+    private static final InternalThreadLocal<FutureContext> futureTL = new InternalThreadLocal<FutureContext>() {
         @Override
         protected FutureContext initialValue() {
             return new FutureContext();

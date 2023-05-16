@@ -155,7 +155,7 @@
         "pattern": "\\QMETA-INF/dubbo/internal/org.apache.dubbo.common.store.DataStore\\E"
       },
       {
-        "pattern": "\\QMETA-INF/dubbo/internal/org.apache.dubbo.common.metrics.service.MetricsServiceExporter\\E"
+        "pattern": "\\QMETA-INF/dubbo/internal/org.apache.dubbo.metrics.service.MetricsServiceExporter\\E"
       },
       {
         "pattern": "\\Qsecurity/serialize.blockedlist\\E"

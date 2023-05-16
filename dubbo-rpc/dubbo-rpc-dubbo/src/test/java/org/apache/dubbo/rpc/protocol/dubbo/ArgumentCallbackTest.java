@@ -78,7 +78,7 @@ class ArgumentCallbackTest {
     public void setUp() {
     }
 
-    public void initOrResetUrl(int callbacks, int timeout) throws Exception {
+    public void initOrResetUrl(int callbacks, int timeout) {
         int port = NetUtils.getAvailablePort();
         consumerUrl = serviceURL = URL.valueOf("dubbo://127.0.0.1:" + port + "/" + IDemoService.class.getName() + "?group=test"
                 + "&xxx.0.callback=true"
@@ -206,7 +206,7 @@ class ArgumentCallbackTest {
     }
 
     @Test
-    void TestCallbackConsumerLimit() throws Exception {
+    void TestCallbackConsumerLimit() {
         Assertions.assertThrows(RpcException.class, () -> {
             initOrResetUrl(1, 1000);
             // URL cannot be transferred automatically from the server side to the client side by using API, instead,
@@ -233,7 +233,7 @@ class ArgumentCallbackTest {
     }
 
     @Test
-    void TestCallbackProviderLimit() throws Exception {
+    void TestCallbackProviderLimit() {
         Assertions.assertThrows(RpcException.class, () -> {
             initOrResetUrl(1, 1000);
             // URL cannot be transferred automatically from the server side to the client side by using API, instead,

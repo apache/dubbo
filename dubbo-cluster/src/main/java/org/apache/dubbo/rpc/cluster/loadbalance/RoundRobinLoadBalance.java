@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.cluster.loadbalance;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 
@@ -35,9 +36,11 @@ public class RoundRobinLoadBalance extends AbstractLoadBalance {
 
     private static final int RECYCLE_PERIOD = 60000;
 
+    private final ConcurrentMap<String, ConcurrentMap<String, WeightedRoundRobin>> methodWeightMap = new ConcurrentHashMap<>();
+
     protected static class WeightedRoundRobin {
         private int weight;
-        private AtomicLong current = new AtomicLong(0);
+        private final AtomicLong current = new AtomicLong(0);
         private long lastUpdate;
 
         public int getWeight() {
@@ -66,8 +69,6 @@ public class RoundRobinLoadBalance extends AbstractLoadBalance {
         }
     }
 
-    private ConcurrentMap<String, ConcurrentMap<String, WeightedRoundRobin>> methodWeightMap = new ConcurrentHashMap<String, ConcurrentMap<String, WeightedRoundRobin>>();
-
     /**
      * get invoker addr list cached for specified invocation
      * <p>
@@ -89,7 +90,7 @@ public class RoundRobinLoadBalance extends AbstractLoadBalance {
     @Override
     protected <T> Invoker<T> doSelect(List<Invoker<T>> invokers, URL url, Invocation invocation) {
         String key = invokers.get(0).getUrl().getServiceKey() + "." + invocation.getMethodName();
-        ConcurrentMap<String, WeightedRoundRobin> map = methodWeightMap.computeIfAbsent(key, k -> new ConcurrentHashMap<>());
+        ConcurrentMap<String, WeightedRoundRobin> map = ConcurrentHashMapUtils.computeIfAbsent(methodWeightMap, key, k -> new ConcurrentHashMap<>());
         int totalWeight = 0;
         long maxCurrent = Long.MIN_VALUE;
         long now = System.currentTimeMillis();
@@ -98,7 +99,7 @@ public class RoundRobinLoadBalance extends AbstractLoadBalance {
         for (Invoker<T> invoker : invokers) {
             String identifyString = invoker.getUrl().toIdentityString();
             int weight = getWeight(invoker, invocation);
-            WeightedRoundRobin weightedRoundRobin = map.computeIfAbsent(identifyString, k -> {
+            WeightedRoundRobin weightedRoundRobin = ConcurrentHashMapUtils.computeIfAbsent(map, identifyString, k -> {
                 WeightedRoundRobin wrr = new WeightedRoundRobin();
                 wrr.setWeight(weight);
                 return wrr;

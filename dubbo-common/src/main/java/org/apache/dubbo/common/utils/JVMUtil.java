@@ -23,6 +23,8 @@ import java.lang.management.MonitorInfo;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 
+import org.apache.dubbo.common.constants.CommonConstants;
+
 import static java.lang.Thread.State.BLOCKED;
 import static java.lang.Thread.State.TIMED_WAITING;
 import static java.lang.Thread.State.WAITING;
@@ -54,10 +56,17 @@ public class JVMUtil {
         }
         sb.append('\n');
         int i = 0;
-
+        // default is 32, means only print up to 32 lines
+        int jstackMaxLine = 32;
+        String jstackMaxLineStr = System.getProperty(CommonConstants.DUBBO_JSTACK_MAXLINE);
+        if(StringUtils.isNotEmpty(jstackMaxLineStr)) {
+            try {
+                jstackMaxLine = Integer.parseInt(jstackMaxLineStr);
+            }catch (Exception ignore) {}
+        }
         StackTraceElement[] stackTrace = threadInfo.getStackTrace();
         MonitorInfo[] lockedMonitors = threadInfo.getLockedMonitors();
-        for (; i < stackTrace.length && i < 32; i++) {
+        for (; i < stackTrace.length && i < jstackMaxLine; i++) {
             StackTraceElement ste = stackTrace[i];
             sb.append("\tat ").append(ste.toString());
             sb.append('\n');

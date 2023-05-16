@@ -18,6 +18,7 @@ package org.apache.dubbo.metadata.annotation.processing.rest;
 
 import org.apache.dubbo.metadata.annotation.processing.AbstractServiceAnnotationProcessor;
 import org.apache.dubbo.metadata.rest.ServiceRestMetadata;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.Processor;
@@ -28,7 +29,6 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 import static javax.lang.model.util.ElementFilter.typesIn;
-import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
 import static org.apache.dubbo.metadata.annotation.processing.util.ServiceAnnotationUtils.isServiceAnnotationPresent;
 
 /**
@@ -49,7 +49,9 @@ public class ServiceRestMetadataAnnotationProcessor extends AbstractServiceAnnot
     @Override
     public synchronized void init(ProcessingEnvironment processingEnv) {
         super.init(processingEnv);
-        this.metadataProcessors = getExtensionLoader(ServiceRestMetadataResolver.class).getSupportedExtensionInstances();
+        this.metadataProcessors = ApplicationModel.defaultModel()
+            .getExtensionLoader(ServiceRestMetadataResolver.class)
+            .getSupportedExtensionInstances();
         this.serviceRestMetadataWriter = new ServiceRestMetadataStorage(processingEnv);
     }
 

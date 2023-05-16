@@ -1,0 +1,15 @@
+version: 2
+updates:
+
+  - package-ecosystem: "maven"
+    directory: "/"
+    open-pull-requests-limit: 20
+    # Ignore major version updates
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "03:00"
+      timezone: "US/Eastern"

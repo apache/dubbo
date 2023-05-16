@@ -21,6 +21,7 @@ import org.apache.dubbo.metadata.definition.model.MethodDefinition;
 import org.apache.dubbo.metadata.rest.RequestMetadata;
 import org.apache.dubbo.metadata.rest.RestMethodMetadata;
 import org.apache.dubbo.metadata.rest.ServiceRestMetadata;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
@@ -44,7 +45,6 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.sort;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
-import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
 import static org.apache.dubbo.metadata.annotation.processing.builder.MethodDefinitionBuilder.build;
 import static org.apache.dubbo.metadata.annotation.processing.util.LoggerUtils.info;
 import static org.apache.dubbo.metadata.annotation.processing.util.MethodUtils.getOverrideMethod;
@@ -94,8 +94,8 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
             sort(serviceMethods, ExecutableElementComparator.INSTANCE);
 
             serviceMethods.forEach(serviceMethod -> {
-                resolveRestMethodMetadata(processingEnv, serviceType, serviceInterfaceType, serviceMethod)
-                        .ifPresent(serviceRestMetadata.getMeta()::add);
+                resolveRestMethodMetadata(processingEnv, serviceType, serviceInterfaceType, serviceMethod, serviceRestMetadata)
+                    .ifPresent(serviceRestMetadata.getMeta()::add);
             });
 
         } finally {
@@ -110,7 +110,8 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
     protected Optional<RestMethodMetadata> resolveRestMethodMetadata(ProcessingEnvironment processingEnv,
                                                                      TypeElement serviceType,
                                                                      TypeElement serviceInterfaceType,
-                                                                     ExecutableElement serviceMethod) {
+                                                                     ExecutableElement serviceMethod,
+                                                                     ServiceRestMetadata serviceRestMetadata) {
 
         ExecutableElement restCapableMethod = findRestCapableMethod(processingEnv, serviceType, serviceInterfaceType, serviceMethod);
 
@@ -150,6 +151,8 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
         // Initialize RequestMetadata
         RequestMetadata request = metadata.getRequest();
         request.setPath(requestPath);
+        request.appendContextPathFromUrl(serviceRestMetadata.getContextPathFromUrl());
+
         request.setMethod(requestMethod);
         request.setProduces(produces);
         request.setConsumes(consumes);
@@ -237,9 +240,9 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
         parameter.getAnnotationMirrors().forEach(annotation -> {
             String annotationType = annotation.getAnnotationType().toString();
             parameterProcessorsMap.getOrDefault(annotationType, emptyList())
-                    .forEach(parameterProcessor -> {
-                        parameterProcessor.process(annotation, parameter, parameterIndex, method, metadata);
-                    });
+                .forEach(parameterProcessor -> {
+                    parameterProcessor.process(annotation, parameter, parameterIndex, method, metadata);
+                });
         });
     }
 
@@ -268,7 +271,8 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
 
 //        load(AnnotatedMethodParameterProcessor.class, AnnotatedMethodParameterProcessor.class.getClassLoader())
 
-        getExtensionLoader(AnnotatedMethodParameterProcessor.class)
+        ApplicationModel.defaultModel()
+                .getExtensionLoader(AnnotatedMethodParameterProcessor.class)
                 .getSupportedExtensionInstances()
                 .forEach(processor -> {
                     List<AnnotatedMethodParameterProcessor> processors =

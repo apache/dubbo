@@ -19,7 +19,9 @@ package org.apache.dubbo.demo.provider;
 
 import org.apache.dubbo.demo.RestDemoService;
 import org.apache.dubbo.rpc.RpcContext;
+import po.TestPO;
 
+import javax.ws.rs.core.MultivaluedMap;
 import java.util.Map;
 
 public class RestDemoServiceImpl implements RestDemoService {
@@ -54,5 +56,40 @@ public class RestDemoServiceImpl implements RestDemoService {
     @Override
     public String getRemoteApplicationName() {
         return RpcContext.getServiceContext().getRemoteApplicationName();
+    }
+
+    @Override
+    public Integer testBody(Integer b) {
+        return b;
+    }
+
+    @Override
+    public String testBody2(String b) {
+        return b;
+    }
+
+    @Override
+    public Boolean testBody2(Boolean b) {
+        return b;
+    }
+
+    @Override
+    public TestPO testBody2(TestPO b) {
+        return b;
+    }
+
+    @Override
+    public TestPO testBody5(TestPO testPO) {
+        return testPO;
+    }
+
+
+    public String testForm1(String test) {
+        return test;
+    }
+
+
+    public MultivaluedMap testForm2(MultivaluedMap map) {
+        return map;
     }
 }

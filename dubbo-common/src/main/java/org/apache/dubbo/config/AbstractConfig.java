@@ -16,11 +16,36 @@
  */
 package org.apache.dubbo.config;
 
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.ConfigurationUtils;
+import org.apache.dubbo.common.config.Environment;
+import org.apache.dubbo.common.config.InmemoryConfiguration;
+import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ClassUtils;
+import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
+import org.apache.dubbo.common.utils.FieldUtils;
+import org.apache.dubbo.common.utils.MethodUtils;
+import org.apache.dubbo.common.utils.ReflectUtils;
+import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.config.context.ConfigManager;
+import org.apache.dubbo.config.context.ConfigMode;
+import org.apache.dubbo.config.support.Nested;
+import org.apache.dubbo.config.support.Parameter;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ModuleModel;
+import org.apache.dubbo.rpc.model.ScopeModel;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
+
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.MethodDescriptor;
 import java.beans.PropertyDescriptor;
+import java.beans.Transient;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -35,30 +60,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.config.ConfigurationUtils;
-import org.apache.dubbo.common.config.Environment;
-import org.apache.dubbo.common.config.InmemoryConfiguration;
-import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.ClassUtils;
-import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.common.utils.FieldUtils;
-import org.apache.dubbo.common.utils.MethodUtils;
-import org.apache.dubbo.common.utils.ReflectUtils;
-import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.config.context.ConfigManager;
-import org.apache.dubbo.config.context.ConfigMode;
-import org.apache.dubbo.config.support.Nested;
-import org.apache.dubbo.config.support.Parameter;
-import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.ModuleModel;
-import org.apache.dubbo.rpc.model.ScopeModel;
-import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_FAILED_OVERRIDE_FIELD;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_REFLECTIVE_OPERATION_FAILED;
@@ -80,12 +83,12 @@ public abstract class AbstractConfig implements Serializable {
     /**
      * tag name cache, speed up get tag name frequently
      */
-    private static final Map<Class, String> tagNameCache = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<Class, String> tagNameCache = new ConcurrentHashMap<>();
 
     /**
      * attributed getter method cache for equals(), hashCode() and toString()
      */
-    private static final Map<Class, List<Method>> attributedMethodCache = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<Class, List<Method>> attributedMethodCache = new ConcurrentHashMap<>();
 
     /**
      * The suffix container
@@ -110,7 +113,7 @@ public abstract class AbstractConfig implements Serializable {
      * <b>NOTE:</b> the model maybe changed during config processing,
      * the extension spi instance needs to be reinitialized after changing the model!
      */
-    private volatile ScopeModel scopeModel;
+    private transient volatile ScopeModel scopeModel;
 
     public AbstractConfig() {
         this(null);
@@ -121,7 +124,7 @@ public abstract class AbstractConfig implements Serializable {
     }
 
     public static String getTagName(Class<?> cls) {
-        return tagNameCache.computeIfAbsent(cls, (key) -> {
+        return ConcurrentHashMapUtils.computeIfAbsent(tagNameCache, cls, (key) -> {
             String tag = cls.getSimpleName();
             for (String suffix : SUFFIXES) {
                 if (tag.endsWith(suffix)) {
@@ -383,6 +386,7 @@ public abstract class AbstractConfig implements Serializable {
         return result;
     }
 
+    @Transient
     public ApplicationModel getApplicationModel() {
         if (scopeModel == null) {
             setScopeModel(getDefaultModel());
@@ -396,6 +400,7 @@ public abstract class AbstractConfig implements Serializable {
         }
     }
 
+    @Transient
     public ScopeModel getScopeModel() {
         if (scopeModel == null) {
             setScopeModel(getDefaultModel());
@@ -403,6 +408,7 @@ public abstract class AbstractConfig implements Serializable {
         return scopeModel;
     }
 
+    @Transient
     protected ScopeModel getDefaultModel() {
         return ApplicationModel.defaultModel();
     }
@@ -533,10 +539,12 @@ public abstract class AbstractConfig implements Serializable {
      * @see AbstractConfig#checkDefault()
      * @see AbstractConfig#appendParameters(Map, Object, String)
      */
+    @Transient
     public Map<String, String> getMetaData() {
         return getMetaData(null);
     }
 
+    @Transient
     public Map<String, String> getMetaData(String prefix) {
         Map<String, String> metaData = new HashMap<>();
         appendAttributes(metaData, this, prefix);
@@ -563,6 +571,7 @@ public abstract class AbstractConfig implements Serializable {
     }
 
     @Parameter(excluded = true, attribute = false)
+    @Transient
     public List<String> getPrefixes() {
         List<String> prefixes = new ArrayList<>();
         if (StringUtils.hasText(this.getId())) {
@@ -589,6 +598,7 @@ public abstract class AbstractConfig implements Serializable {
         return CommonConstants.DUBBO + "." + getTagName(cls);
     }
 
+    @Transient
     public ConfigMode getConfigMode() {
         return getApplicationModel().getApplicationConfigManager().getConfigMode();
     }
@@ -1024,9 +1034,10 @@ public abstract class AbstractConfig implements Serializable {
         return hashCode;
     }
 
+    @Transient
     private List<Method> getAttributedMethods() {
         Class<? extends AbstractConfig> cls = this.getClass();
-        return attributedMethodCache.computeIfAbsent(cls, (key) -> computeAttributedMethods());
+        return ConcurrentHashMapUtils.computeIfAbsent(attributedMethodCache, cls, (key) -> computeAttributedMethods());
     }
 
     /**
@@ -1057,6 +1068,7 @@ public abstract class AbstractConfig implements Serializable {
         return methods;
     }
 
+    @Transient
     protected ConfigManager getConfigManager() {
         return getApplicationModel().getApplicationConfigManager();
     }

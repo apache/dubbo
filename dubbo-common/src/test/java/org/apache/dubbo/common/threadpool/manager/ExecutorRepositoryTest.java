@@ -38,7 +38,7 @@ class ExecutorRepositoryTest {
     @BeforeEach
     public void setup() {
         applicationModel = FrameworkModel.defaultModel().newApplication();
-        executorRepository = applicationModel.getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
+        executorRepository = ExecutorRepository.getInstance(applicationModel);
     }
 
     @AfterEach

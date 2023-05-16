@@ -897,6 +897,11 @@ class MultiInstanceTest {
         }
 
         @Override
+        public void onInitialize(ModuleModel scopeModel) {
+            Assertions.assertEquals(moduleModel, scopeModel);
+        }
+
+        @Override
         public void onStarting(ModuleModel scopeModel) {
             Assertions.assertEquals(moduleModel, scopeModel);
             deployEventMap.put(DeployState.STARTING, System.currentTimeMillis());

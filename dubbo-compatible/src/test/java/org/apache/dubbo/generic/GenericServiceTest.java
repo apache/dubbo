@@ -272,11 +272,11 @@ class GenericServiceTest {
     }
 
     Map<String, Object> bean2Map(ComplexObject complexObject) {
-        return JsonUtils.getJson().toJavaObject(JsonUtils.getJson().toJson(complexObject), Map.class);
+        return JsonUtils.toJavaObject(JsonUtils.toJson(complexObject), Map.class);
     }
 
     ComplexObject map2bean(Map<String, Object> map) {
-        return JsonUtils.getJson().toJavaObject(JsonUtils.getJson().toJson(map), ComplexObject.class);
+        return JsonUtils.toJavaObject(JsonUtils.toJson(map), ComplexObject.class);
     }
 
     ComplexObject createComplexObject(String var1, int var2, long l, String[] var3, List<Integer> var4, ComplexObject.TestEnum testEnum) {

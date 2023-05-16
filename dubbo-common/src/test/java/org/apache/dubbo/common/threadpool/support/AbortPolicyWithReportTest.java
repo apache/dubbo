@@ -38,13 +38,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class AbortPolicyWithReportTest {
     @Test
-    void jStackDumpTest() throws InterruptedException {
+    void jStackDumpTest() {
         URL url = URL.valueOf("dubbo://admin:hello1234@10.20.130.230:20880/context/path?dump.directory=/tmp&version=1.0.0&application=morgan&noValue=");
         AtomicReference<FileOutputStream> fileOutputStream = new AtomicReference<>();
 
         AbortPolicyWithReport abortPolicyWithReport = new AbortPolicyWithReport("Test", url) {
             @Override
-            protected void jstack(FileOutputStream jStackStream) throws Exception {
+            protected void jstack(FileOutputStream jStackStream) {
                 fileOutputStream.set(jStackStream);
             }
         };
@@ -59,7 +59,7 @@ class AbortPolicyWithReportTest {
     }
 
     @Test
-    void jStackDumpTest_dumpDirectoryNotExists_cannotBeCreatedTakeUserHome() throws InterruptedException {
+    void jStackDumpTest_dumpDirectoryNotExists_cannotBeCreatedTakeUserHome() {
         final String dumpDirectory = dumpDirectoryCannotBeCreated();
 
         URL url = URL.valueOf("dubbo://admin:hello1234@10.20.130.230:20880/context/path?dump.directory="
@@ -81,7 +81,7 @@ class AbortPolicyWithReportTest {
     }
 
     @Test
-    void jStackDumpTest_dumpDirectoryNotExists_canBeCreated() throws InterruptedException {
+    void jStackDumpTest_dumpDirectoryNotExists_canBeCreated() {
         final String dumpDirectory = UUID.randomUUID().toString();
 
         URL url = URL.valueOf("dubbo://admin:hello1234@10.20.130.230:20880/context/path?dump.directory="

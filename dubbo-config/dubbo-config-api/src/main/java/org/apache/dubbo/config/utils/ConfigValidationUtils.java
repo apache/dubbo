@@ -48,6 +48,7 @@ import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.SslConfig;
+import org.apache.dubbo.config.TracingConfig;
 import org.apache.dubbo.monitor.MonitorFactory;
 import org.apache.dubbo.monitor.MonitorService;
 import org.apache.dubbo.registry.RegistryService;
@@ -540,6 +541,12 @@ public class ConfigValidationUtils {
 
     public static void validateMetricsConfig(MetricsConfig metricsConfig) {
         if (metricsConfig == null) {
+            return;
+        }
+    }
+
+    public static void validateTracingConfig(TracingConfig tracingConfig) {
+        if (tracingConfig == null) {
             return;
         }
     }

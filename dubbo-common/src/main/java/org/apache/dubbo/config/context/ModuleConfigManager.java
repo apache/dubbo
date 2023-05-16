@@ -36,6 +36,7 @@ import org.apache.dubbo.config.ReferenceConfigBase;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfigBase;
 import org.apache.dubbo.config.SslConfig;
+import org.apache.dubbo.config.TracingConfig;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
 import java.util.Arrays;
@@ -58,7 +59,7 @@ public class ModuleConfigManager extends AbstractConfigManager implements Module
 
     public static final String NAME = "moduleConfig";
 
-    private Map<String, AbstractInterfaceConfig> serviceConfigCache = new ConcurrentHashMap<>();
+    private final Map<String, AbstractInterfaceConfig> serviceConfigCache = new ConcurrentHashMap<>();
     private final ConfigManager applicationConfigManager;
 
 
@@ -350,6 +351,10 @@ public class ModuleConfigManager extends AbstractConfigManager implements Module
 
     public Optional<MetricsConfig> getMetrics() {
         return applicationConfigManager.getMetrics();
+    }
+
+    public Optional<TracingConfig> getTracing() {
+        return applicationConfigManager.getTracing();
     }
 
     public Optional<SslConfig> getSsl() {

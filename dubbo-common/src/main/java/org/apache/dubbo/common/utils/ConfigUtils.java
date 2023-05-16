@@ -51,7 +51,7 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_IO_EX
 public class ConfigUtils {
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ConfigUtils.class);
-    private static Pattern VARIABLE_PATTERN = Pattern.compile(
+    private static final Pattern VARIABLE_PATTERN = Pattern.compile(
         "\\$\\s*\\{?\\s*([\\._0-9a-zA-Z]+)\\s*\\}?");
     private static int PID = -1;
 

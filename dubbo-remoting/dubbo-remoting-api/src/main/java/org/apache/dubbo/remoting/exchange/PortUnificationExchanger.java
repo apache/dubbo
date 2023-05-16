@@ -19,9 +19,11 @@ package org.apache.dubbo.remoting.exchange;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.RemotingServer;
+import org.apache.dubbo.remoting.api.connection.AbstractConnectionClient;
 import org.apache.dubbo.remoting.api.pu.AbstractPortUnificationServer;
 import org.apache.dubbo.remoting.api.pu.PortUnificationTransporter;
 
@@ -37,7 +39,7 @@ public class PortUnificationExchanger {
     private static final ConcurrentMap<String, RemotingServer> servers = new ConcurrentHashMap<>();
 
     public static RemotingServer bind(URL url, ChannelHandler handler) {
-        servers.computeIfAbsent(url.getAddress(), addr -> {
+        ConcurrentHashMapUtils.computeIfAbsent(servers, url.getAddress(), addr -> {
             final AbstractPortUnificationServer server;
             try {
                 server = getTransporter(url).bind(url, handler);
@@ -53,6 +55,16 @@ public class PortUnificationExchanger {
             return server;
         });
         return servers.get(url.getAddress());
+    }
+
+    public static AbstractConnectionClient connect(URL url, ChannelHandler handler) {
+        final AbstractConnectionClient connectionClient;
+        try {
+            connectionClient = getTransporter(url).connect(url, handler);
+        } catch (RemotingException e) {
+            throw new RuntimeException(e);
+        }
+        return connectionClient;
     }
 
     public static void close() {

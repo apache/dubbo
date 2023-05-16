@@ -24,6 +24,7 @@ import org.apache.dubbo.remoting.exchange.ExchangeServer;
 import org.apache.dubbo.remoting.exchange.Exchangers;
 import org.apache.dubbo.remoting.exchange.support.ExchangeHandlerAdapter;
 import org.apache.dubbo.remoting.transport.dispatcher.execution.ExecutionDispatcher;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import org.junit.jupiter.api.Test;
 
@@ -82,7 +83,7 @@ class PerformanceServerTest {
         ExchangeServer server = Exchangers.bind("exchange://0.0.0.0:" + port + "?transporter="
             + transporter + "&serialization="
             + serialization + "&threadpool=" + threadpool
-            + "&threads=" + threads + "&iothreads=" + iothreads + "&buffer=" + buffer + "&channel.handler=" + channelHandler, new ExchangeHandlerAdapter() {
+            + "&threads=" + threads + "&iothreads=" + iothreads + "&buffer=" + buffer + "&channel.handler=" + channelHandler, new ExchangeHandlerAdapter(FrameworkModel.defaultModel()) {
             public String telnet(Channel channel, String message) throws RemotingException {
                 return "echo: " + message + "\r\ntelnet> ";
             }
@@ -106,7 +107,7 @@ class PerformanceServerTest {
 
     private static ExchangeServer statTelnetServer(int port) throws Exception {
         // Start server
-        ExchangeServer telnetserver = Exchangers.bind("exchange://0.0.0.0:" + port, new ExchangeHandlerAdapter() {
+        ExchangeServer telnetserver = Exchangers.bind("exchange://0.0.0.0:" + port, new ExchangeHandlerAdapter(FrameworkModel.defaultModel()) {
             public String telnet(Channel channel, String message) throws RemotingException {
                 if (message.equals("help")) {
                     return "support cmd: \r\n\tstart \r\n\tstop \r\n\tshutdown \r\n\trestart times [alive] [sleep] \r\ntelnet>";

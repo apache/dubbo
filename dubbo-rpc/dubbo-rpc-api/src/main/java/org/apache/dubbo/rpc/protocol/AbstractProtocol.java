@@ -23,6 +23,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.serialize.support.SerializableClassRegistry;
 import org.apache.dubbo.common.serialize.support.SerializationOptimizer;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
+import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.Exporter;
@@ -41,10 +42,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
+import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_SERVER_SHUTDOWN_TIMEOUT;
-import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.OPTIMIZER_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_DESTROY_INVOKER;
 
 /**
@@ -59,7 +63,7 @@ public abstract class AbstractProtocol implements Protocol, ScopeModelAware {
     /**
      * <host:port, ProtocolServer>
      */
-    protected final Map<String, ProtocolServer> serverMap = new ConcurrentHashMap<>();
+    protected final ConcurrentMap<String, ProtocolServer> serverMap = new ConcurrentHashMap<>();
 
     // TODO SoftReference
     protected final Set<Invoker<?>> invokers = new ConcurrentHashSet<>();
@@ -180,4 +184,13 @@ public abstract class AbstractProtocol implements Protocol, ScopeModelAware {
 
         }
     }
+
+    protected String getAddr(URL url) {
+        String bindIp = url.getParameter(org.apache.dubbo.remoting.Constants.BIND_IP_KEY, url.getHost());
+        if (url.getParameter(ANYHOST_KEY, false)) {
+            bindIp = ANYHOST_VALUE;
+        }
+        return NetUtils.getIpByHost(bindIp) + ":" + url.getParameter(org.apache.dubbo.remoting.Constants.BIND_PORT_KEY, url.getPort());
+    }
+
 }

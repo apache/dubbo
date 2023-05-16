@@ -22,6 +22,7 @@ import org.springframework.core.env.PropertySource;
 import org.springframework.core.io.support.EncodedResource;
 import org.springframework.core.io.support.PropertySourceFactory;
 import org.yaml.snakeyaml.DumperOptions;
+import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 import org.yaml.snakeyaml.nodes.MappingNode;
@@ -53,7 +54,7 @@ public class YamlPropertySourceFactory extends YamlProcessor implements Property
 
     @Override
     protected Yaml createYaml() {
-        return new Yaml(new Constructor() {
+        return new Yaml(new Constructor(new LoaderOptions()) {
             @Override
             protected Map<Object, Object> constructMapping(MappingNode node) {
                 try {
@@ -82,7 +83,7 @@ public class YamlPropertySourceFactory extends YamlProcessor implements Property
                     }
                 };
             }
-        }, new Representer(),
+        }, new Representer(new DumperOptions()),
                 new DumperOptions(), new Resolver() {
             @Override
             public void addImplicitResolver(Tag tag, Pattern regexp,

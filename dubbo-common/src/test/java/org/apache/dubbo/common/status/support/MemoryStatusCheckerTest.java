@@ -33,7 +33,7 @@ class MemoryStatusCheckerTest {
     private static final Logger logger = LoggerFactory.getLogger(MemoryStatusCheckerTest.class);
 
     @Test
-    void test() throws Exception {
+    void test() {
         MemoryStatusChecker statusChecker = new MemoryStatusChecker();
         Status status = statusChecker.check();
         assertThat(status.getLevel(), anyOf(is(OK), is(WARN)));

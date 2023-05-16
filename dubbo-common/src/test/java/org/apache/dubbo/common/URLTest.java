@@ -60,6 +60,17 @@ class URLTest {
     }
 
     @Test
+    void testDefault() {
+        URL url1 = URL.valueOf("dubbo://127.0.0.1:12345?timeout=1234&default.timeout=5678");
+        assertEquals(1234, url1.getParameter("timeout", 0));
+        assertEquals(5678, url1.getParameter("default.timeout", 0));
+
+        URL url2 = URL.valueOf("dubbo://127.0.0.1:12345?default.timeout=5678");
+        assertEquals(5678, url2.getParameter("timeout", 0));
+        assertEquals(5678, url2.getParameter("default.timeout", 0));
+    }
+
+    @Test
     void test_valueOf_noProtocolAndHost() throws Exception {
         URL url = URL.valueOf("/context/path?version=1.0.0&application=morgan");
         assertURLStrDecoder(url);

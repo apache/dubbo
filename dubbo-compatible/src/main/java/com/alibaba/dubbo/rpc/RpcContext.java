@@ -47,11 +47,24 @@ public class RpcContext {
     public static RpcContext getServerContext() {
         return new RpcContext(org.apache.dubbo.rpc.RpcContext.getServerContext());
     }
+    public static RpcContext getClientResponseContext() {
+        return new RpcContext(org.apache.dubbo.rpc.RpcContext.getClientResponseContext());
+    }
+
+    public static RpcContext getServerResponseContext() {
+        return new RpcContext(org.apache.dubbo.rpc.RpcContext.getServerResponseContext());
+    }
+    public static void removeClientResponseContext() {
+        org.apache.dubbo.rpc.RpcContext.removeClientResponseContext();
+    }
+
+    public static void removeServerResponseContext() {
+        org.apache.dubbo.rpc.RpcContext.removeServerResponseContext();
+    }
 
     public static void removeServerContext() {
         org.apache.dubbo.rpc.RpcContext.removeServerContext();
     }
-
     public static void removeContext() {
         org.apache.dubbo.rpc.RpcContext.removeContext();
     }

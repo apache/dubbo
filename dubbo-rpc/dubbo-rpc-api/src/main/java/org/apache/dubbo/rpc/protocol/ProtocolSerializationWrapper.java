@@ -30,7 +30,7 @@ import static org.apache.dubbo.rpc.model.ScopeModelUtil.getFrameworkModel;
 
 @Activate
 public class ProtocolSerializationWrapper implements Protocol {
-    private Protocol protocol;
+    private final Protocol protocol;
 
     public ProtocolSerializationWrapper(Protocol protocol) {
         this.protocol = protocol;
@@ -43,7 +43,7 @@ public class ProtocolSerializationWrapper implements Protocol {
 
     @Override
     public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
-        getFrameworkModel(invoker.getUrl().getScopeModel()).getServiceRepository().registerProviderUrl(invoker.getUrl());
+        getFrameworkModel(invoker.getUrl().getScopeModel()).getBeanFactory().getBean(PermittedSerializationKeeper.class).registerService(invoker.getUrl());
         return protocol.export(invoker);
     }
 

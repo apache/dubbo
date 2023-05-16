@@ -140,6 +140,7 @@ public interface RegistryConstants {
     float DEFAULT_HASHMAP_LOAD_FACTOR = 0.75f;
 
     String ENABLE_EMPTY_PROTECTION_KEY = "enable-empty-protection";
+    boolean DEFAULT_ENABLE_EMPTY_PROTECTION = false;
     String REGISTER_CONSUMER_URL_KEY = "register-consumer-url";
 
 }

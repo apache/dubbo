@@ -432,7 +432,7 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
         MutablePropertyValues propertyValues = beanDefinition.getPropertyValues();
 
         String[] ignoreAttributeNames = of("provider", "monitor", "application", "module", "registry", "protocol",
-                "methods", "interfaceName", "parameters");
+                "methods", "interfaceName", "parameters", "executor");
 
         propertyValues.addPropertyValues(new AnnotationPropertyValuesAdapter(serviceAnnotationAttributes, environment, ignoreAttributeNames));
 
@@ -481,6 +481,11 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
         String moduleConfigId = (String) serviceAnnotationAttributes.get("module");
         if (StringUtils.hasText(moduleConfigId)) {
             addPropertyReference(builder, "module", moduleConfigId);
+        }
+
+        String executorBeanName = (String) serviceAnnotationAttributes.get("executor");
+        if (StringUtils.hasText(executorBeanName)) {
+            addPropertyReference(builder, "executor", executorBeanName);
         }
 
         return builder.getBeanDefinition();

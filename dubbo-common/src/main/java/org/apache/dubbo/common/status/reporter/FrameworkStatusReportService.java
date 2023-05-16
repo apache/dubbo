@@ -75,7 +75,7 @@ public class FrameworkStatusReportService implements ScopeModelAware {
         HashMap<String, String> registration = new HashMap<>();
         registration.put("application", applicationModel.getApplicationName());
         registration.put("status", status);
-        return JsonUtils.getJson().toJson(registration);
+        return JsonUtils.toJson(registration);
     }
 
     public String createConsumptionReport(String interfaceName, String version, String group, String status) {
@@ -86,7 +86,7 @@ public class FrameworkStatusReportService implements ScopeModelAware {
         migrationStatus.put("version", version);
         migrationStatus.put("group", group);
         migrationStatus.put("status", status);
-        return JsonUtils.getJson().toJson(migrationStatus);
+        return JsonUtils.toJson(migrationStatus);
     }
 
     public String createMigrationStepReport(String interfaceName, String version, String group, String originStep, String newStep, String success) {
@@ -99,6 +99,6 @@ public class FrameworkStatusReportService implements ScopeModelAware {
         migrationStatus.put("originStep", originStep);
         migrationStatus.put("newStep", newStep);
         migrationStatus.put("success", success);
-        return JsonUtils.getJson().toJson(migrationStatus);
+        return JsonUtils.toJson(migrationStatus);
     }
 }

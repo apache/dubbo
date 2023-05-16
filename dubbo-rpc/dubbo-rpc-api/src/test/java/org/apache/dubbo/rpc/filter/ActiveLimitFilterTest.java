@@ -98,7 +98,7 @@ class ActiveLimitFilterTest {
     }
 
     @Test
-    void testInvokeTimeOut() throws Exception {
+    void testInvokeTimeOut() {
         int totalThread = 100;
         int maxActives = 10;
         long timeout = 1;
@@ -147,7 +147,7 @@ class ActiveLimitFilterTest {
     }
 
     @Test
-    void testInvokeNotTimeOut() throws Exception {
+    void testInvokeNotTimeOut() {
         int totalThread = 100;
         int maxActives = 10;
         long timeout = 1000;

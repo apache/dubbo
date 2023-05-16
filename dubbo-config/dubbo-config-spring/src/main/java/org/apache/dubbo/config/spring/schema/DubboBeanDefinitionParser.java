@@ -33,6 +33,7 @@ import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.nested.AggregationConfig;
 import org.apache.dubbo.config.nested.PrometheusConfig;
+import org.apache.dubbo.config.nested.HistogramConfig;
 import org.apache.dubbo.config.spring.Constants;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.ServiceBean;
@@ -81,6 +82,7 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
     private static final String ONRETURN = "onreturn";
     private static final String ONTHROW = "onthrow";
     private static final String ONINVOKE = "oninvoke";
+    private static final String EXECUTOR = "executor";
     private static final String METHOD = "Method";
     private static final String BEAN_NAME = "BEAN_NAME";
     private static boolean resolvePlaceholdersEnabled = true;
@@ -173,7 +175,10 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                     if ("registry".equals(property) && RegistryConfig.NO_AVAILABLE.equalsIgnoreCase(value)) {
                         RegistryConfig registryConfig = new RegistryConfig();
                         registryConfig.setAddress(RegistryConfig.NO_AVAILABLE);
-                        beanDefinition.getPropertyValues().addPropertyValue(beanProperty, registryConfig);
+                        // see AbstractInterfaceConfig#registries, It will be invoker setRegistries method when BeanDefinition is registered,
+                        beanDefinition.getPropertyValues().addPropertyValue("registries", registryConfig);
+                        // If registry is N/A, don't init it until the reference is invoked
+                        beanDefinition.setLazyInit(true);
                     } else if ("provider".equals(property) || "registry".equals(property) || ("protocol".equals(property) && AbstractServiceConfig.class.isAssignableFrom(beanClass))) {
                         /**
                          * For 'provider' 'protocol' 'registry', keep literal value (should be id/name) and set the value to 'registryIds' 'providerIds' protocolIds'
@@ -193,6 +198,8 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                             String method = value.substring(index + 1);
                             reference = new RuntimeBeanReference(ref);
                             beanDefinition.getPropertyValues().addPropertyValue(property + METHOD, method);
+                        } else if (EXECUTOR.equals(property)){
+                            reference = new RuntimeBeanReference(value);
                         } else {
                             if ("ref".equals(property) && parserContext.getRegistry().containsBeanDefinition(value)) {
                                 BeanDefinition refBean = parserContext.getRegistry().getBeanDefinition(value);
@@ -262,6 +269,10 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                 AggregationConfig aggregation = new AggregationConfig();
                 assignProperties(aggregation, child, parserContext);
                 beanDefinition.getPropertyValues().addPropertyValue("aggregation", aggregation);
+            }else if("histogram".equals(child.getNodeName()) || "histogram".equals(child.getLocalName())){
+                HistogramConfig histogram = new HistogramConfig();
+                assignProperties(histogram, child, parserContext);
+                beanDefinition.getPropertyValues().addPropertyValue("histogram", histogram);
             } else if ("prometheus-exporter".equals(child.getNodeName()) || "prometheus-exporter".equals(child.getLocalName())) {
                 if (prometheus == null) {
                     prometheus = new PrometheusConfig();

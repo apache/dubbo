@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -88,11 +89,12 @@ public class CollectionUtils {
      * @param <V> The value type of specified {@link Map}
      * @return {@link Map}
      */
+    @SuppressWarnings("unchecked")
     public static <K, V> Map<V, K> flip(Map<K, V> map) {
         if (isEmptyMap(map)) {
             return (Map<V, K>) map;
         }
-        Set<V> set = map.values().stream().collect(Collectors.toSet());
+        Set<V> set = new HashSet<>(map.values());
         if (set.size() != map.size()) {
             throw new IllegalArgumentException("The map value must be unique.");
         }

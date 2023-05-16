@@ -27,6 +27,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
+import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
 
@@ -132,7 +133,7 @@ class MeshAppRuleListenerTest {
 
         List<Map<String, Object>> rulesReceived = ruleCaptor.getValue();
         assertEquals(2, rulesReceived.size());
-        Yaml yaml = new Yaml(new SafeConstructor());
+        Yaml yaml = new Yaml(new SafeConstructor(new LoaderOptions()));
         Assertions.assertTrue(rulesReceived.contains(yaml.load(rule1)));
         Assertions.assertTrue(rulesReceived.contains(yaml.load(rule2)));
 
@@ -163,7 +164,7 @@ class MeshAppRuleListenerTest {
 
         List<Map<String, Object>> rulesReceived = ruleCaptor.getValue();
         assertEquals(2, rulesReceived.size());
-        Yaml yaml = new Yaml(new SafeConstructor());
+        Yaml yaml = new Yaml(new SafeConstructor(new LoaderOptions()));
         Assertions.assertTrue(rulesReceived.contains(yaml.load(rule1)));
         Assertions.assertTrue(rulesReceived.contains(yaml.load(rule2)));
 
@@ -219,7 +220,7 @@ class MeshAppRuleListenerTest {
 
         List<Map<String, Object>> rulesReceived = ruleCaptor.getValue();
         assertEquals(2, rulesReceived.size());
-        Yaml yaml = new Yaml(new SafeConstructor());
+        Yaml yaml = new Yaml(new SafeConstructor(new LoaderOptions()));
         Assertions.assertTrue(rulesReceived.contains(yaml.load(rule1)));
         Assertions.assertTrue(rulesReceived.contains(yaml.load(rule2)));
 
@@ -258,7 +259,7 @@ class MeshAppRuleListenerTest {
 
         List<Map<String, Object>> rulesReceived = ruleCaptor.getValue();
         assertEquals(1, rulesReceived.size());
-        Yaml yaml = new Yaml(new SafeConstructor());
+        Yaml yaml = new Yaml(new SafeConstructor(new LoaderOptions()));
         Assertions.assertTrue(rulesReceived.contains(yaml.load(rule2)));
 
         meshAppRuleListener.receiveConfigInfo(rule1 + "---\n" + rule4);
@@ -282,7 +283,7 @@ class MeshAppRuleListenerTest {
             @Override
             public void onRuleChange(String appName, List<Map<String, Object>> rules) {
                 Assertions.assertEquals("demo-route", appName);
-                Yaml yaml = new Yaml(new SafeConstructor());
+                Yaml yaml = new Yaml(new SafeConstructor(new LoaderOptions()));
                 Assertions.assertTrue(rules.contains(yaml.load(rule5)));
                 Assertions.assertTrue(rules.contains(yaml.load(rule6)));
                 count.incrementAndGet();
@@ -303,7 +304,7 @@ class MeshAppRuleListenerTest {
             @Override
             public void onRuleChange(String appName, List<Map<String, Object>> rules) {
                 Assertions.assertEquals("demo-route", appName);
-                Yaml yaml = new Yaml(new SafeConstructor());
+                Yaml yaml = new Yaml(new SafeConstructor(new LoaderOptions()));
                 Assertions.assertTrue(rules.contains(yaml.load(rule7)));
                 Assertions.assertTrue(rules.contains(yaml.load(rule8)));
                 count.incrementAndGet();
@@ -353,7 +354,7 @@ class MeshAppRuleListenerTest {
 
         List<Map<String, Object>> rulesReceived = ruleCaptor.getValue();
         assertEquals(2, rulesReceived.size());
-        Yaml yaml = new Yaml(new SafeConstructor());
+        Yaml yaml = new Yaml(new SafeConstructor(new LoaderOptions()));
         Assertions.assertTrue(rulesReceived.contains(yaml.load(rule1)));
         Assertions.assertTrue(rulesReceived.contains(yaml.load(rule2)));
 

@@ -59,7 +59,7 @@ class RedisMetadataReportTest {
     URL registryUrl;
 
     @BeforeEach
-    public void constructor(final TestInfo testInfo) throws IOException {
+    public void constructor(final TestInfo testInfo) {
         final boolean usesAuthentication = usesAuthentication(testInfo);
         int redisPort = 0;
         IOException exception = null;
@@ -133,7 +133,7 @@ class RedisMetadataReportTest {
 
             Assertions.assertNotNull(value);
 
-            FullServiceDefinition fullServiceDefinition = JsonUtils.getJson().toJavaObject(value, FullServiceDefinition.class);
+            FullServiceDefinition fullServiceDefinition = JsonUtils.toJavaObject(value, FullServiceDefinition.class);
             Assertions.assertEquals(fullServiceDefinition.getParameters().get("paramTest"), "redisTest");
         } catch (Throwable e) {
             throw new RpcException("Failed to put to redis . cause: " + e.getMessage(), e);

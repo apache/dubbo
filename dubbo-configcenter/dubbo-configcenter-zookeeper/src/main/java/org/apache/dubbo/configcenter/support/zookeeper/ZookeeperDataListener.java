@@ -20,26 +20,34 @@ import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
 import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.metrics.config.event.ConfigCenterEvent;
+import org.apache.dubbo.metrics.event.MetricsEventBus;
 import org.apache.dubbo.remoting.zookeeper.DataListener;
 import org.apache.dubbo.remoting.zookeeper.EventType;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
+
+import static org.apache.dubbo.metrics.MetricsConstants.SELF_INCREMENT_SIZE;
 
 /**
  * one path has multi configurationListeners
  */
 public class ZookeeperDataListener implements DataListener {
+
     private String path;
     private String key;
     private String group;
     private Set<ConfigurationListener> listeners;
+    private ApplicationModel applicationModel;
 
-    public ZookeeperDataListener(String path, String key, String group) {
+    public ZookeeperDataListener(String path, String key, String group, ApplicationModel applicationModel) {
         this.path = path;
         this.key = key;
         this.group = group;
         this.listeners = new CopyOnWriteArraySet<>();
+        this.applicationModel = applicationModel;
     }
 
     public void addListener(ConfigurationListener configurationListener) {
@@ -71,6 +79,9 @@ public class ZookeeperDataListener implements DataListener {
         if (CollectionUtils.isNotEmpty(listeners)) {
             listeners.forEach(listener -> listener.process(configChangeEvent));
         }
+
+        MetricsEventBus.publish(ConfigCenterEvent.toChangeEvent(applicationModel, configChangeEvent.getKey(), configChangeEvent.getGroup(),
+            ConfigCenterEvent.ZK_PROTOCOL, ConfigChangeType.ADDED.name(), SELF_INCREMENT_SIZE));
     }
 
 }

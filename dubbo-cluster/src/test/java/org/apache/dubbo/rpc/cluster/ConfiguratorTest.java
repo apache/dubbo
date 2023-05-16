@@ -34,7 +34,7 @@ import java.util.Optional;
 class ConfiguratorTest {
 
     @Test
-    void test() throws Exception {
+    void test() {
 
         Optional<List<Configurator>> emptyOptional = Configurator.toConfigurators(Collections.emptyList());
         Assertions.assertEquals(Optional.empty(), emptyOptional);

@@ -21,6 +21,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
@@ -30,13 +31,15 @@ import org.apache.dubbo.remoting.exchange.ExchangeHandler;
 import org.apache.dubbo.remoting.exchange.ExchangeServer;
 import org.apache.dubbo.remoting.exchange.Exchangers;
 import org.apache.dubbo.remoting.transport.dispatcher.FakeChannelHandlers;
-
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
+
+import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_MANAGEMENT_MODE_DEFAULT;
 
 class HeartbeatHandlerTest {
 
@@ -72,6 +75,11 @@ class HeartbeatHandlerTest {
             .addParameter(Constants.HEARTBEAT_KEY, 1000);
         CountDownLatch connect = new CountDownLatch(1);
         CountDownLatch disconnect = new CountDownLatch(1);
+        ApplicationModel applicationModel = ApplicationModel.defaultModel();
+        ApplicationConfig applicationConfig = new ApplicationConfig("provider-app");
+        applicationConfig.setExecutorManagementMode(EXECUTOR_MANAGEMENT_MODE_DEFAULT);
+        applicationModel.getApplicationConfigManager().setApplication(applicationConfig);
+        serverURL = serverURL.setScopeModel(applicationModel);
         TestHeartbeatHandler handler = new TestHeartbeatHandler(connect, disconnect);
         server = Exchangers.bind(serverURL, handler);
         System.out.println("Server bind successfully");
@@ -97,6 +105,11 @@ class HeartbeatHandlerTest {
             .addParameter(Constants.TRANSPORTER_KEY, "netty3")
             .addParameter(Constants.HEARTBEAT_KEY, 1000)
             .addParameter(Constants.CODEC_KEY, "telnet");
+        ApplicationModel applicationModel = ApplicationModel.defaultModel();
+        ApplicationConfig applicationConfig = new ApplicationConfig("provider-app");
+        applicationConfig.setExecutorManagementMode(EXECUTOR_MANAGEMENT_MODE_DEFAULT);
+        applicationModel.getApplicationConfigManager().setApplication(applicationConfig);
+        serverURL = serverURL.setScopeModel(applicationModel);
         CountDownLatch connect = new CountDownLatch(1);
         CountDownLatch disconnect = new CountDownLatch(1);
         TestHeartbeatHandler handler = new TestHeartbeatHandler(connect, disconnect);
@@ -118,6 +131,11 @@ class HeartbeatHandlerTest {
             .addParameter(Constants.EXCHANGER_KEY, HeaderExchanger.NAME)
             .addParameter(Constants.TRANSPORTER_KEY, "netty3")
             .addParameter(Constants.CODEC_KEY, "telnet");
+        ApplicationModel applicationModel = ApplicationModel.defaultModel();
+        ApplicationConfig applicationConfig = new ApplicationConfig("provider-app");
+        applicationConfig.setExecutorManagementMode(EXECUTOR_MANAGEMENT_MODE_DEFAULT);
+        applicationModel.getApplicationConfigManager().setApplication(applicationConfig);
+        serverURL = serverURL.setScopeModel(applicationModel);
         CountDownLatch connect = new CountDownLatch(1);
         CountDownLatch disconnect = new CountDownLatch(1);
         TestHeartbeatHandler handler = new TestHeartbeatHandler(connect, disconnect);

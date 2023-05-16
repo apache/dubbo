@@ -19,11 +19,12 @@ package org.apache.dubbo.common.logger.slf4j;
 import org.apache.dubbo.common.logger.Level;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerAdapter;
+import org.apache.dubbo.common.utils.ClassUtils;
 
 import java.io.File;
 
 public class Slf4jLoggerAdapter implements LoggerAdapter {
-
+    public static final String NAME = "slf4j";
     private Level level;
     private File file;
 
@@ -57,4 +58,14 @@ public class Slf4jLoggerAdapter implements LoggerAdapter {
         this.file = file;
     }
 
+    @Override
+    public boolean isConfigured() {
+        try {
+            ClassUtils.forName("org.slf4j.impl.StaticLoggerBinder");
+            return true;
+        } catch (ClassNotFoundException ignore) {
+            // ignore
+        }
+        return false;
+    }
 }

@@ -38,12 +38,16 @@ public class UnaryClientCallListener implements ClientCall.Listener {
     }
 
     @Override
-    public void onClose(TriRpcStatus status, Map<String, Object> trailers) {
+    public void onClose(TriRpcStatus status, Map<String, Object> trailers, boolean isReturnTriException) {
         AppResponse result = new AppResponse();
         result.setObjectAttachments(trailers);
         if (status.isOk()) {
-            result.setValue(appResponse);
-        } else {
+            if (isReturnTriException) {
+                result.setException((Exception) appResponse);
+            } else {
+                result.setValue(appResponse);
+            }
+         } else {
             result.setException(status.asException());
         }
         future.received(status, result);

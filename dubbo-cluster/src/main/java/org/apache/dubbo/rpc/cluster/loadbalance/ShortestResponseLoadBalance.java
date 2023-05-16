@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.cluster.loadbalance;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcStatus;
@@ -47,9 +48,9 @@ public class ShortestResponseLoadBalance extends AbstractLoadBalance implements 
 
     private int slidePeriod = 30_000;
 
-    private ConcurrentMap<RpcStatus, SlideWindowData> methodMap = new ConcurrentHashMap<>();
+    private final ConcurrentMap<RpcStatus, SlideWindowData> methodMap = new ConcurrentHashMap<>();
 
-    private AtomicBoolean onResetSlideWindow = new AtomicBoolean(false);
+    private final AtomicBoolean onResetSlideWindow = new AtomicBoolean(false);
 
     private volatile long lastUpdateTime = System.currentTimeMillis();
 
@@ -66,7 +67,7 @@ public class ShortestResponseLoadBalance extends AbstractLoadBalance implements 
 
         private long succeededOffset;
         private long succeededElapsedOffset;
-        private RpcStatus rpcStatus;
+        private final RpcStatus rpcStatus;
 
         public SlideWindowData(RpcStatus rpcStatus) {
             this.rpcStatus = rpcStatus;
@@ -116,7 +117,7 @@ public class ShortestResponseLoadBalance extends AbstractLoadBalance implements 
         for (int i = 0; i < length; i++) {
             Invoker<T> invoker = invokers.get(i);
             RpcStatus rpcStatus = RpcStatus.getStatus(invoker.getUrl(), invocation.getMethodName());
-            SlideWindowData slideWindowData = methodMap.computeIfAbsent(rpcStatus, SlideWindowData::new);
+            SlideWindowData slideWindowData = ConcurrentHashMapUtils.computeIfAbsent(methodMap, rpcStatus, SlideWindowData::new);
 
             // Calculate the estimated response time from the product of active connections and succeeded average elapsed time.
             long estimateResponse = slideWindowData.getEstimateResponse();

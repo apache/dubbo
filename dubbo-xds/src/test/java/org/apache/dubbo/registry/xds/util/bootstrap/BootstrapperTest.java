@@ -142,7 +142,7 @@ class BootstrapperTest {
     private static BootstrapperImpl.FileReader createFileReader(final String rawData) {
         return new BootstrapperImpl.FileReader() {
             @Override
-            public String readFile(String path) throws IOException {
+            public String readFile(String path) {
                 return rawData;
             }
         };

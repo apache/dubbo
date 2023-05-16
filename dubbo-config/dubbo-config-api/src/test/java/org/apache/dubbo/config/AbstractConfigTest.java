@@ -37,7 +37,6 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -136,7 +135,7 @@ class AbstractConfigTest {
     }
 
     @Test
-    void testAppendParameters1() throws Exception {
+    void testAppendParameters1() {
         Map<String, String> parameters = new HashMap<String, String>();
         parameters.put("num", "ONE");
         AbstractConfig.appendParameters(parameters, new ParameterConfig(1, "hello/world", 30, "password"), "prefix");
@@ -149,7 +148,7 @@ class AbstractConfigTest {
     }
 
     @Test
-    void testAppendParameters2() throws Exception {
+    void testAppendParameters2() {
         Assertions.assertThrows(IllegalStateException.class, () -> {
             Map<String, String> parameters = new HashMap<String, String>();
             AbstractConfig.appendParameters(parameters, new ParameterConfig());
@@ -157,14 +156,14 @@ class AbstractConfigTest {
     }
 
     @Test
-    void testAppendParameters3() throws Exception {
+    void testAppendParameters3() {
         Map<String, String> parameters = new HashMap<String, String>();
         AbstractConfig.appendParameters(parameters, null);
         assertTrue(parameters.isEmpty());
     }
 
     @Test
-    void testAppendParameters4() throws Exception {
+    void testAppendParameters4() {
         Map<String, String> parameters = new HashMap<String, String>();
         AbstractConfig.appendParameters(parameters, new ParameterConfig(1, "hello/world", 30, "password"));
         Assertions.assertEquals("one", parameters.get("key.1"));
@@ -175,7 +174,7 @@ class AbstractConfigTest {
     }
 
     @Test
-    void testAppendAttributes1() throws Exception {
+    void testAppendAttributes1() {
         ParameterConfig config = new ParameterConfig(1, "hello/world", 30, "password","BEIJING");
         Map<String, String> parameters = new HashMap<>();
         AbstractConfig.appendParameters(parameters, config);
@@ -196,24 +195,24 @@ class AbstractConfigTest {
     }
 
     @Test
-    void checkExtension() throws Exception {
+    void checkExtension() {
         Assertions.assertThrows(IllegalStateException.class, () -> ConfigValidationUtils.checkExtension(ApplicationModel.defaultModel(), Greeting.class, "hello", "world"));
     }
 
     @Test
-    void checkMultiExtension1() throws Exception {
+    void checkMultiExtension1() {
         Assertions.assertThrows(IllegalStateException.class,
                 () -> ConfigValidationUtils.checkMultiExtension(ApplicationModel.defaultModel(), Greeting.class, "hello", "default,world"));
     }
 
     @Test
-    void checkMultiExtension2() throws Exception {
+    void checkMultiExtension2() {
         Assertions.assertThrows(IllegalStateException.class,
                 () -> ConfigValidationUtils.checkMultiExtension(ApplicationModel.defaultModel(), Greeting.class, "hello", "default,-world"));
     }
 
     @Test
-    void checkLength() throws Exception {
+    void checkLength() {
         Assertions.assertDoesNotThrow(() -> {
             StringBuilder builder = new StringBuilder();
             for (int i = 0; i <= 200; i++) {
@@ -224,7 +223,7 @@ class AbstractConfigTest {
     }
 
     @Test
-    void checkPathLength() throws Exception {
+    void checkPathLength() {
         Assertions.assertDoesNotThrow(() -> {
             StringBuilder builder = new StringBuilder();
             for (int i = 0; i <= 200; i++) {
@@ -235,12 +234,12 @@ class AbstractConfigTest {
     }
 
     @Test
-    void checkName() throws Exception {
+    void checkName() {
         Assertions.assertDoesNotThrow(() -> ConfigValidationUtils.checkName("hello", "world%"));
     }
 
     @Test
-    void checkNameHasSymbol() throws Exception {
+    void checkNameHasSymbol() {
         try {
             ConfigValidationUtils.checkNameHasSymbol("hello", ":*,/ -0123\tabcdABCD");
             ConfigValidationUtils.checkNameHasSymbol("mock", "force:return world");
@@ -250,7 +249,7 @@ class AbstractConfigTest {
     }
 
     @Test
-    void checkKey() throws Exception {
+    void checkKey() {
         try {
             ConfigValidationUtils.checkKey("hello", "*,-0123abcdABCD");
         } catch (Exception e) {
@@ -259,7 +258,7 @@ class AbstractConfigTest {
     }
 
     @Test
-    void checkMultiName() throws Exception {
+    void checkMultiName() {
         try {
             ConfigValidationUtils.checkMultiName("hello", ",-._0123abcdABCD");
         } catch (Exception e) {
@@ -268,7 +267,7 @@ class AbstractConfigTest {
     }
 
     @Test
-    void checkPathName() throws Exception {
+    void checkPathName() {
         try {
             ConfigValidationUtils.checkPathName("hello", "/-$._0123abcdABCD");
         } catch (Exception e) {
@@ -277,7 +276,7 @@ class AbstractConfigTest {
     }
 
     @Test
-    void checkMethodName() throws Exception {
+    void checkMethodName() {
         try {
             ConfigValidationUtils.checkMethodName("hello", "abcdABCD0123abcd");
         } catch (Exception e) {
@@ -293,7 +292,7 @@ class AbstractConfigTest {
     }
 
     @Test
-    void checkParameterName() throws Exception {
+    void checkParameterName() {
         Map<String, String> parameters = Collections.singletonMap("hello", ":*,/-._0123abcdABCD");
         try {
             ConfigValidationUtils.checkParameterName(parameters);
@@ -586,23 +585,14 @@ class AbstractConfigTest {
 
             Map<String, String> external = new HashMap<>();
             external.put("notConflictKey", "value-from-external");
-
-            try {
-                Map<String, String> map = new HashMap<>();
-                map.put("notConflictKey", "value-from-env");
-                map.put("dubbo.override.notConflictKey2", "value-from-env");
-                setOsEnv(map);
-            } catch (Exception e) {
-                // ignore
-                e.printStackTrace();
-            }
+            external.put("dubbo.override.notConflictKey2", "value-from-external");
 
             ApplicationModel.defaultModel().getModelEnvironment().setExternalConfigMap(external);
 
             overrideConfig.refresh();
 
             Assertions.assertEquals("value-from-config", overrideConfig.getNotConflictKey());
-            Assertions.assertEquals("value-from-env", overrideConfig.getNotConflictKey2());
+            Assertions.assertEquals("value-from-external", overrideConfig.getNotConflictKey2());
         } finally {
             ApplicationModel.defaultModel().getModelEnvironment().destroy();
 
@@ -1003,34 +993,6 @@ class AbstractConfigTest {
         }
     }
 
-    protected static void setOsEnv(Map<String, String> newenv) throws Exception {
-        try {
-            Class<?> processEnvironmentClass = Class.forName("java.lang.ProcessEnvironment");
-            Field theEnvironmentField = processEnvironmentClass.getDeclaredField("theEnvironment");
-            theEnvironmentField.setAccessible(true);
-            Map<String, String> env = (Map<String, String>) theEnvironmentField.get(null);
-            env.putAll(newenv);
-            Field theCaseInsensitiveEnvironmentField = processEnvironmentClass.getDeclaredField("theCaseInsensitiveEnvironment");
-            theCaseInsensitiveEnvironmentField.setAccessible(true);
-            Map<String, String> cienv = (Map<String, String>) theCaseInsensitiveEnvironmentField.get(null);
-            cienv.putAll(newenv);
-        } catch (NoSuchFieldException e) {
-            Class[] classes = Collections.class.getDeclaredClasses();
-            Map<String, String> env = System.getenv();
-            for (Class cl : classes) {
-                if ("java.util.Collections$UnmodifiableMap".equals(cl.getName())) {
-                    Field field = cl.getDeclaredField("m");
-                    field.setAccessible(true);
-                    Object obj = field.get(env);
-                    Map<String, String> map = (Map<String, String>) obj;
-                    map.clear();
-                    map.putAll(newenv);
-                }
-            }
-        }
-    }
-
-
     @Test
     void testMetaData() throws Exception {
 
@@ -1043,7 +1005,7 @@ class AbstractConfigTest {
                 ModuleConfig.class, SslConfig.class, MetricsConfig.class, MonitorConfig.class, MethodConfig.class);
 
         for (Class<? extends AbstractConfig> configClass : configClasses) {
-            AbstractConfig config = configClass.newInstance();
+            AbstractConfig config = configClass.getDeclaredConstructor().newInstance();
             Map<String, String> metaData = config.getMetaData();
             Assertions.assertEquals(0, metaData.size(), "Expect empty metadata for new instance but found: "+metaData +" of "+configClass.getSimpleName());
             System.out.println(configClass.getSimpleName() + " metadata is checked.");

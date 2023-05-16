@@ -29,6 +29,7 @@ public interface PenetrateAttachmentSelector {
      *
      * @return attachment pass to next hop
      */
-    Map<String, Object> select();
+    Map<String, Object> select(Invocation invocation, RpcContextAttachment clientAttachment, RpcContextAttachment serverAttachment);
+    Map<String, Object> selectReverse(Invocation invocation, RpcContextAttachment clientResponseContext, RpcContextAttachment serverResponseContext);
 
 }

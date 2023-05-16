@@ -19,7 +19,6 @@ package org.apache.dubbo.remoting.exchange.support;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.resource.GlobalResourceInitializer;
-import org.apache.dubbo.common.threadpool.ThreadlessExecutor;
 import org.apache.dubbo.common.timer.HashedWheelTimer;
 import org.apache.dubbo.common.timer.Timeout;
 import org.apache.dubbo.common.timer.Timer;
@@ -124,10 +123,6 @@ public class DefaultFuture extends CompletableFuture<Object> {
     public static DefaultFuture newFuture(Channel channel, Request request, int timeout, ExecutorService executor) {
         final DefaultFuture future = new DefaultFuture(channel, request, timeout);
         future.setExecutor(executor);
-        // ThreadlessExecutor needs to hold the waiting future in case of circuit return.
-        if (executor instanceof ThreadlessExecutor) {
-            ((ThreadlessExecutor) executor).setWaitingFuture(future);
-        }
         // timeout check
         timeoutCheck(future);
         return future;
@@ -223,16 +218,6 @@ public class DefaultFuture extends CompletableFuture<Object> {
         } else {
             this.completeExceptionally(new RemotingException(channel, res.getErrorMessage()));
         }
-
-        // the result is returning, but the caller thread may still wait
-        // to avoid endless waiting for whatever reason, notify caller thread to return.
-        if (executor != null && executor instanceof ThreadlessExecutor) {
-            ThreadlessExecutor threadlessExecutor = (ThreadlessExecutor) executor;
-            if (threadlessExecutor.isWaiting()) {
-                threadlessExecutor.notifyReturn(new IllegalStateException("The result has returned, but the biz thread is still waiting" +
-                    " which is not an expected state, interrupt the thread manually by returning an exception."));
-            }
-        }
     }
 
     private long getId() {
@@ -288,8 +273,9 @@ public class DefaultFuture extends CompletableFuture<Object> {
                 return;
             }
 
-            if (future.getExecutor() != null) {
-                future.getExecutor().execute(() -> notifyTimeout(future));
+            ExecutorService executor = future.getExecutor();
+            if (executor != null && !executor.isShutdown()) {
+                executor.execute(() -> notifyTimeout(future));
             } else {
                 notifyTimeout(future);
             }

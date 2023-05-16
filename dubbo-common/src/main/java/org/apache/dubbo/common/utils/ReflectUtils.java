@@ -872,7 +872,7 @@ public final class ReflectUtils {
             return EMPTY_CLASS_ARRAY;
         }
 
-        List<Class<?>> cs = new ArrayList<Class<?>>();
+        List<Class<?>> cs = new ArrayList<>();
         Matcher m = DESC_PATTERN.matcher(desc);
         while (m.find()) {
             cs.add(desc2class(cl, m.group()));
@@ -900,7 +900,7 @@ public final class ReflectUtils {
         }
         Method method;
         if (parameterTypes == null) {
-            List<Method> finded = new ArrayList<Method>();
+            List<Method> finded = new ArrayList<>();
             for (Method m : clazz.getMethods()) {
                 if (m.getName().equals(methodName)) {
                     finded.add(m);
@@ -1140,7 +1140,7 @@ public final class ReflectUtils {
     }
 
     public static Map<String, Field> getBeanPropertyFields(Class cl) {
-        Map<String, Field> properties = new HashMap<String, Field>();
+        Map<String, Field> properties = new HashMap<>();
         for (; cl != null; cl = cl.getSuperclass()) {
             Field[] fields = cl.getDeclaredFields();
             for (Field field : fields) {
@@ -1159,7 +1159,7 @@ public final class ReflectUtils {
     }
 
     public static Map<String, Method> getBeanPropertyReadMethods(Class cl) {
-        Map<String, Method> properties = new HashMap<String, Method>();
+        Map<String, Method> properties = new HashMap<>();
         for (; cl != null; cl = cl.getSuperclass()) {
             Method[] methods = cl.getDeclaredMethods();
             for (Method method : methods) {

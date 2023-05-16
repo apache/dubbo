@@ -19,10 +19,19 @@ package org.apache.dubbo.registry.xds.util.protocol.message;
 import java.util.Objects;
 
 public class Endpoint {
+    private String clusterName;
     private String address;
     private int portValue;
     private boolean healthy;
     private int weight;
+
+    public String getClusterName() {
+        return clusterName;
+    }
+
+    public void setClusterName(String clusterName) {
+        this.clusterName = clusterName;
+    }
 
     public String getAddress() {
         return address;

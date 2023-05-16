@@ -29,7 +29,7 @@ import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.ServiceMetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-
+import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -55,13 +55,18 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class AbstractMetadataReportTest {
 
     private NewMetadataReport abstractMetadataReport;
+    private ApplicationModel applicationModel;
 
     @BeforeEach
     public void before() {
-        URL url = URL.valueOf("zookeeper://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=vic");
-        abstractMetadataReport = new NewMetadataReport(url);
         // set the simple name of current class as the application name
-        ApplicationModel.defaultModel().getConfigManager().setApplication(new ApplicationConfig(getClass().getSimpleName()));
+        FrameworkModel frameworkModel = FrameworkModel.defaultModel();
+        applicationModel = frameworkModel.newApplication();
+        applicationModel.getApplicationConfigManager().setApplication(new ApplicationConfig(getClass().getSimpleName()));
+
+        URL url = URL.valueOf("zookeeper://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=vic");
+        abstractMetadataReport = new NewMetadataReport(url, applicationModel);
+
     }
 
     @AfterEach
@@ -82,7 +87,7 @@ class AbstractMetadataReportTest {
     }
 
     @Test
-    void testStoreProviderUsual() throws ClassNotFoundException, InterruptedException {
+    void testStoreProviderUsual() throws ClassNotFoundException {
         String interfaceName = "org.apache.dubbo.metadata.store.InterfaceNameTestService";
         String version = "1.0.0";
         String group = null;
@@ -96,7 +101,7 @@ class AbstractMetadataReportTest {
     }
 
     @Test
-    void testStoreProviderSync() throws ClassNotFoundException, InterruptedException {
+    void testStoreProviderSync() throws ClassNotFoundException {
         String interfaceName = "org.apache.dubbo.metadata.store.InterfaceNameTestService";
         String version = "1.0.0";
         String group = null;
@@ -107,10 +112,10 @@ class AbstractMetadataReportTest {
     }
 
     @Test
-    void testFileExistAfterPut() throws InterruptedException, ClassNotFoundException {
+    void testFileExistAfterPut() throws ClassNotFoundException {
         //just for one method
         URL singleUrl = URL.valueOf("redis://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.metadata.store.InterfaceNameTestService?version=1.0.0&application=singleTest");
-        NewMetadataReport singleMetadataReport = new NewMetadataReport(singleUrl);
+        NewMetadataReport singleMetadataReport = new NewMetadataReport(singleUrl, applicationModel);
 
         assertFalse(singleMetadataReport.file.exists());
 
@@ -129,13 +134,13 @@ class AbstractMetadataReportTest {
     }
 
     @Test
-    void testRetry() throws InterruptedException, ClassNotFoundException {
+    void testRetry() throws ClassNotFoundException {
         String interfaceName = "org.apache.dubbo.metadata.store.RetryTestService";
         String version = "1.0.0.retry";
         String group = null;
         String application = "vic.retry";
         URL storeUrl = URL.valueOf("retryReport://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestServiceForRetry?version=1.0.0.retry&application=vic.retry");
-        RetryMetadataReport retryReport = new RetryMetadataReport(storeUrl, 2);
+        RetryMetadataReport retryReport = new RetryMetadataReport(storeUrl, 2, applicationModel);
         retryReport.metadataReportRetry.retryPeriod = 400L;
         URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=vic");
         Assertions.assertNull(retryReport.metadataReportRetry.retryScheduledFuture);
@@ -164,13 +169,13 @@ class AbstractMetadataReportTest {
     }
 
     @Test
-    void testRetryCancel() throws InterruptedException, ClassNotFoundException {
+    void testRetryCancel() throws ClassNotFoundException {
         String interfaceName = "org.apache.dubbo.metadata.store.RetryTestService";
         String version = "1.0.0.retrycancel";
         String group = null;
         String application = "vic.retry";
         URL storeUrl = URL.valueOf("retryReport://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestServiceForRetryCancel?version=1.0.0.retrycancel&application=vic.retry");
-        RetryMetadataReport retryReport = new RetryMetadataReport(storeUrl, 2);
+        RetryMetadataReport retryReport = new RetryMetadataReport(storeUrl, 2, applicationModel);
         retryReport.metadataReportRetry.retryPeriod = 150L;
         retryReport.metadataReportRetry.retryTimesIfNonFail = 2;
 
@@ -201,7 +206,7 @@ class AbstractMetadataReportTest {
         return providerMetadataIdentifier;
     }
 
-    private MetadataIdentifier storeConsumer(AbstractMetadataReport abstractMetadataReport, String interfaceName, String version, String group, String application, Map<String, String> tmp) throws ClassNotFoundException {
+    private MetadataIdentifier storeConsumer(AbstractMetadataReport abstractMetadataReport, String interfaceName, String version, String group, String application, Map<String, String> tmp) {
         URL url = URL.valueOf("xxx://" + NetUtils.getLocalAddress().getHostName() + ":4444/" + interfaceName + "?version=" + version + "&application="
             + application + (group == null ? "" : "&group=" + group) + "&testPKey=9090");
 
@@ -214,7 +219,7 @@ class AbstractMetadataReportTest {
     }
 
     @Test
-    void testPublishAll() throws ClassNotFoundException, InterruptedException {
+    void testPublishAll() throws ClassNotFoundException {
         ThreadPoolExecutor reportCacheExecutor = (ThreadPoolExecutor) abstractMetadataReport.getReportCacheExecutor();
 
         assertTrue(abstractMetadataReport.store.isEmpty());
@@ -259,15 +264,15 @@ class AbstractMetadataReportTest {
         assertEquals(3, abstractMetadataReport.store.size());
 
         String v = abstractMetadataReport.store.get(providerMetadataIdentifier1.getUniqueKey(KeyTypeEnum.UNIQUE_KEY));
-        FullServiceDefinition data = JsonUtils.getJson().toJavaObject(v, FullServiceDefinition.class);
+        FullServiceDefinition data = JsonUtils.toJavaObject(v, FullServiceDefinition.class);
         checkParam(data.getParameters(), application, version);
 
         String v2 = abstractMetadataReport.store.get(providerMetadataIdentifier2.getUniqueKey(KeyTypeEnum.UNIQUE_KEY));
-        data = JsonUtils.getJson().toJavaObject(v2, FullServiceDefinition.class);
+        data = JsonUtils.toJavaObject(v2, FullServiceDefinition.class);
         checkParam(data.getParameters(), application, version + "_2");
 
         String v3 = abstractMetadataReport.store.get(consumerMetadataIdentifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY));
-        Map v3Map = JsonUtils.getJson().toJavaObject(v3, Map.class);
+        Map v3Map = JsonUtils.toJavaObject(v3, Map.class);
         checkParam(v3Map, application, version + "_3");
     }
 
@@ -292,8 +297,9 @@ class AbstractMetadataReportTest {
 
         Map<String, String> store = new ConcurrentHashMap<>();
 
-        public NewMetadataReport(URL metadataReportURL) {
+        public NewMetadataReport(URL metadataReportURL, ApplicationModel applicationModel) {
             super(metadataReportURL);
+            this.applicationModel = applicationModel;
         }
 
         @Override
@@ -348,9 +354,10 @@ class AbstractMetadataReportTest {
         int needRetryTimes;
         int executeTimes = 0;
 
-        public RetryMetadataReport(URL metadataReportURL, int needRetryTimes) {
+        public RetryMetadataReport(URL metadataReportURL, int needRetryTimes, ApplicationModel applicationModel) {
             super(metadataReportURL);
             this.needRetryTimes = needRetryTimes;
+            this.applicationModel = applicationModel;
         }
 
         @Override

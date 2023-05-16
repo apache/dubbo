@@ -29,6 +29,11 @@ public class ExporterDeployListener implements ApplicationDeployListener, Priori
     protected volatile ConfigurableMetadataServiceExporter metadataServiceExporter;
 
     @Override
+    public void onInitialize(ApplicationModel scopeModel) {
+
+    }
+
+    @Override
     public void onStarting(ApplicationModel scopeModel) {
 
     }

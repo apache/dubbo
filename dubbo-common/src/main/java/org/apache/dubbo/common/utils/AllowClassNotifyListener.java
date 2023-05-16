@@ -20,7 +20,7 @@ import java.util.Set;
 
 public interface AllowClassNotifyListener {
 
-    SerializeCheckStatus DEFAULT_STATUS = SerializeCheckStatus.WARN;
+    SerializeCheckStatus DEFAULT_STATUS = SerializeCheckStatus.STRICT;
 
     void notifyPrefix(Set<String> allowedList, Set<String> disAllowedList);
 

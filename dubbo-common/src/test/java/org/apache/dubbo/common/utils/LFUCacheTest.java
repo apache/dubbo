@@ -27,7 +27,7 @@ import static org.hamcrest.Matchers.equalTo;
 class LFUCacheTest {
 
     @Test
-    void testCacheEviction() throws Exception {
+    void testCacheEviction() {
         LFUCache<String, Integer> cache = new LFUCache<>(8, 0.8f);
         cache.put("one", 1);
         cache.put("two", 2);
@@ -48,7 +48,7 @@ class LFUCacheTest {
     }
 
     @Test
-    void testCacheRemove() throws Exception {
+    void testCacheRemove() {
         LFUCache<String, Integer> cache = new LFUCache<>(8, 0.8f);
         cache.put("one", 1);
         cache.put("two", 2);
@@ -68,13 +68,13 @@ class LFUCacheTest {
     }
 
     @Test
-    void testDefaultCapacity() throws Exception {
+    void testDefaultCapacity() {
         LFUCache<String, Integer> cache = new LFUCache<>();
         assertThat(cache.getCapacity(), equalTo(1000));
     }
 
     @Test
-    void testErrorConstructArguments() throws IOException {
+    void testErrorConstructArguments() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> new LFUCache<>(0, 0.8f));
         Assertions.assertThrows(IllegalArgumentException.class, () -> new LFUCache<>(-1, 0.8f));
         Assertions.assertThrows(IllegalArgumentException.class, () -> new LFUCache<>(100, 0.0f));

@@ -43,8 +43,10 @@ public abstract class AbstractStateRouter<T> implements StateRouter<T> {
      */
     private final boolean shouldFailFast;
 
+    protected ModuleModel moduleModel;
+
     public AbstractStateRouter(URL url) {
-        ModuleModel moduleModel = url.getOrDefaultModuleModel();
+        moduleModel = url.getOrDefaultModuleModel();
         this.ruleRepository = moduleModel.getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension();
         this.url = url;
         this.shouldFailFast = Boolean.parseBoolean(ConfigurationUtils.getProperty(moduleModel, Constants.SHOULD_FAIL_FAST_KEY, "true"));
@@ -113,15 +115,16 @@ public abstract class AbstractStateRouter<T> implements StateRouter<T> {
         }
         BitList<Invoker<T>> routeResult;
 
+        routeResult = doRoute(invokers, url, invocation, needToPrintMessage, nodeHolder, messageHolder);
+        if (routeResult != invokers) {
+            routeResult = invokers.and(routeResult);
+        }
         // check if router support call continue route by itself
         if (!supportContinueRoute()) {
-            routeResult = doRoute(invokers, url, invocation, needToPrintMessage, nodeHolder, messageHolder);
             // use current node's result as next node's parameter
             if (!shouldFailFast || !routeResult.isEmpty()) {
                 routeResult = continueRoute(routeResult, url, invocation, needToPrintMessage, nodeHolder);
             }
-        } else {
-            routeResult = doRoute(invokers, url, invocation, needToPrintMessage, nodeHolder, messageHolder);
         }
 
         // post-build current node
@@ -190,7 +193,7 @@ public abstract class AbstractStateRouter<T> implements StateRouter<T> {
     @Override
     public final String buildSnapshot() {
         return doBuildSnapshot() +
-            "            ↓ \n" +
+            "            v \n" +
             nextRouter.buildSnapshot();
     }
 

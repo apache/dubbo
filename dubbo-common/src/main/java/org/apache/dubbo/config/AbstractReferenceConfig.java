@@ -183,6 +183,11 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
         }
     }
 
+    @Override
+    protected boolean isNeedCheckMethod() {
+        return StringUtils.isEmpty(getGeneric());
+    }
+
     /**
      * @return
      * @deprecated instead, use the parameter <b>scope</> to judge if it's in jvm, scope=local

@@ -19,6 +19,7 @@ package org.apache.dubbo.common.cache;
 
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,6 +34,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_CACHE_PATH_INACCESSIBLE;
 
@@ -50,11 +52,11 @@ public final class FileCacheStoreFactory {
     }
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(FileCacheStoreFactory.class);
-    private static final Map<String, FileCacheStore> cacheMap = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<String, FileCacheStore> cacheMap = new ConcurrentHashMap<>();
 
     private static final String SUFFIX = ".dubbo.cache";
     private static final char ESCAPE_MARK = '%';
-    private static final Set<Character> LEGAL_CHARACTERS = Collections.unmodifiableSet(new HashSet<Character>(){{
+    private static final Set<Character> LEGAL_CHARACTERS = Collections.unmodifiableSet(new HashSet<Character>() {{
         // - $ . _ 0-9 a-z A-Z
         add('-');
         add('$');
@@ -108,7 +110,7 @@ public final class FileCacheStoreFactory {
 
         String cacheFilePath = basePath + File.separator + cacheName;
 
-        return cacheMap.computeIfAbsent(cacheFilePath, k -> getFile(k, enableFileCache));
+        return ConcurrentHashMapUtils.computeIfAbsent(cacheMap, cacheFilePath, k -> getFile(k, enableFileCache));
     }
 
     /**
@@ -168,7 +170,6 @@ public final class FileCacheStoreFactory {
 
     private static void tryFileLock(FileCacheStore.Builder builder, String fileName) throws PathNotExclusiveException {
         File lockFile = new File(fileName + ".lock");
-        lockFile.deleteOnExit();
 
         FileLock dirLock;
         try {
@@ -188,6 +189,7 @@ public final class FileCacheStoreFactory {
             throw new PathNotExclusiveException(fileName + " is not exclusive. Maybe multiple Dubbo instances are using the same folder.");
         }
 
+        lockFile.deleteOnExit();
         builder.directoryLock(dirLock).lockFile(lockFile);
     }
 

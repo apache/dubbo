@@ -17,6 +17,7 @@
 package org.apache.dubbo.qos.server.handler;
 
 import org.apache.dubbo.common.utils.ExecutorUtil;
+import org.apache.dubbo.qos.api.QosConfiguration;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import io.netty.buffer.ByteBuf;
@@ -41,25 +42,21 @@ public class QosProcessHandler extends ByteToMessageDecoder {
 
     private ScheduledFuture<?> welcomeFuture;
 
-    private String welcome;
-    // true means to accept foreign IP
-    private boolean acceptForeignIp;
-    private String acceptForeignIpWhitelist;
-
-    private FrameworkModel frameworkModel;
+    private final FrameworkModel frameworkModel;
 
     public static final String PROMPT = "dubbo>";
 
-    public QosProcessHandler(FrameworkModel frameworkModel, String welcome, boolean acceptForeignIp, String acceptForeignIpWhitelist) {
+    private final QosConfiguration qosConfiguration;
+
+    public QosProcessHandler(FrameworkModel frameworkModel, QosConfiguration qosConfiguration) {
         this.frameworkModel = frameworkModel;
-        this.welcome = welcome;
-        this.acceptForeignIp = acceptForeignIp;
-        this.acceptForeignIpWhitelist = acceptForeignIpWhitelist;
+        this.qosConfiguration = qosConfiguration;
     }
 
     @Override
     public void channelActive(final ChannelHandlerContext ctx) throws Exception {
         welcomeFuture = ctx.executor().schedule(() -> {
+            final String welcome = qosConfiguration.getWelcome();
             if (welcome != null) {
                 ctx.write(Unpooled.wrappedBuffer(welcome.getBytes()));
                 ctx.writeAndFlush(Unpooled.wrappedBuffer(PROMPT.getBytes()));
@@ -77,7 +74,7 @@ public class QosProcessHandler extends ByteToMessageDecoder {
         final int magic = in.getByte(in.readerIndex());
 
         ChannelPipeline p = ctx.pipeline();
-        p.addLast(new ForeignHostPermitHandler(acceptForeignIp, acceptForeignIpWhitelist));
+        p.addLast(new ForeignHostPermitHandler(qosConfiguration));
         if (isHttp(magic)) {
             // no welcome output for http protocol
             if (welcomeFuture != null && welcomeFuture.isCancellable()) {
@@ -85,7 +82,7 @@ public class QosProcessHandler extends ByteToMessageDecoder {
             }
             p.addLast(new HttpServerCodec());
             p.addLast(new HttpObjectAggregator(1048576));
-            p.addLast(new HttpProcessHandler(frameworkModel));
+            p.addLast(new HttpProcessHandler(frameworkModel, qosConfiguration));
             p.remove(this);
         } else {
             p.addLast(new LineBasedFrameDecoder(2048));
@@ -93,7 +90,7 @@ public class QosProcessHandler extends ByteToMessageDecoder {
             p.addLast(new StringEncoder(CharsetUtil.UTF_8));
             p.addLast(new IdleStateHandler(0, 0, 5 * 60));
             p.addLast(new TelnetIdleEventHandler());
-            p.addLast(new TelnetProcessHandler(frameworkModel));
+            p.addLast(new TelnetProcessHandler(frameworkModel, qosConfiguration));
             p.remove(this);
         }
     }

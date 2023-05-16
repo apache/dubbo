@@ -20,12 +20,18 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.rpc.cluster.configurator.absent.AbsentConfigurator;
 import org.apache.dubbo.rpc.cluster.configurator.consts.UrlConstant;
+import org.apache.dubbo.rpc.cluster.configurator.parser.model.ConditionMatch;
+import org.apache.dubbo.rpc.cluster.configurator.parser.model.ParamMatch;
+import org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.match.StringMatch;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+
+import static org.apache.dubbo.rpc.cluster.configurator.parser.model.ConfiguratorConfig.MATCH_CONDITION;
 
 /**
  * OverrideConfiguratorTest
@@ -80,6 +86,7 @@ class OverrideConfiguratorTest {
             params.put("configVersion", "2.7");
             params.put("application", "foo");
             params.put("timeout", "10000");
+
             consumerConfiguratorUrl = consumerConfiguratorUrl.addParameters(params);
 
             OverrideConfigurator configurator = new OverrideConfigurator(consumerConfiguratorUrl);
@@ -112,6 +119,78 @@ class OverrideConfiguratorTest {
             Assertions.assertEquals(url.getParameter("weight"), "200");
         }
 
+    }
+
+    // Test the version after 2.7
+    @Test
+    void testOverrideForVersion3() {
+        // match
+        {
+            String consumerUrlV3 = "dubbo://172.24.160.179/com.foo.BarService?match_key=value&application=foo&side=consumer&timeout=100";
+
+            URL consumerConfiguratorUrl = URL.valueOf("override://0.0.0.0/com.foo.BarService");
+            Map<String, String> params = new HashMap<>();
+            params.put("side", "consumer");
+            params.put("configVersion", "v3.0");
+            params.put("application", "foo");
+            params.put("timeout", "10000");
+
+            ConditionMatch matcher = new ConditionMatch();
+            ParamMatch paramMatch = new ParamMatch();
+            paramMatch.setKey("match_key");
+            StringMatch stringMatch = new StringMatch();
+            stringMatch.setExact("value");
+            paramMatch.setValue(stringMatch);
+            matcher.setParam(Arrays.asList(paramMatch));
+            consumerConfiguratorUrl = consumerConfiguratorUrl.putAttribute(MATCH_CONDITION, matcher);
+
+            consumerConfiguratorUrl = consumerConfiguratorUrl.addParameters(params);
+
+            OverrideConfigurator configurator = new OverrideConfigurator(consumerConfiguratorUrl);
+            // Meet the configured conditions:
+            // same side
+            // The port of configuratorUrl is 0
+            // The host of configuratorUrl is 0.0.0.0 or the local address is the same as consumerUrlV27
+            // same appName
+            URL originalURL = URL.valueOf(consumerUrlV3);
+            Assertions.assertEquals("100", originalURL.getParameter("timeout"));
+            URL url = configurator.configure(originalURL);
+            Assertions.assertEquals("10000", url.getParameter("timeout"));
+        }
+
+        // mismatch
+        {
+            String consumerUrlV3 = "dubbo://172.24.160.179/com.foo.BarService?match_key=value&application=foo&side=consumer&timeout=100";
+
+            URL consumerConfiguratorUrl = URL.valueOf("override://0.0.0.0/com.foo.BarService");
+            Map<String, String> params = new HashMap<>();
+            params.put("side", "consumer");
+            params.put("configVersion", "v3.0");
+            params.put("application", "foo");
+            params.put("timeout", "10000");
+
+            ConditionMatch matcher = new ConditionMatch();
+            ParamMatch paramMatch = new ParamMatch();
+            paramMatch.setKey("match_key");
+            StringMatch stringMatch = new StringMatch();
+            stringMatch.setExact("not_match_value");
+            paramMatch.setValue(stringMatch);
+            matcher.setParam(Arrays.asList(paramMatch));
+            consumerConfiguratorUrl = consumerConfiguratorUrl.putAttribute(MATCH_CONDITION, matcher);
+
+            consumerConfiguratorUrl = consumerConfiguratorUrl.addParameters(params);
+
+            OverrideConfigurator configurator = new OverrideConfigurator(consumerConfiguratorUrl);
+            // Meet the configured conditions:
+            // same side
+            // The port of configuratorUrl is 0
+            // The host of configuratorUrl is 0.0.0.0 or the local address is the same as consumerUrlV27
+            // same appName
+            URL originalURL = URL.valueOf(consumerUrlV3);
+            Assertions.assertEquals("100", originalURL.getParameter("timeout"));
+            URL url = configurator.configure(originalURL);
+            Assertions.assertEquals("100", url.getParameter("timeout"));
+        }
     }
 
 }

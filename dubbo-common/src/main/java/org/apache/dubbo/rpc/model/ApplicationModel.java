@@ -28,7 +28,6 @@ import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.context.ConfigManager;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -44,7 +43,7 @@ import java.util.concurrent.locks.Lock;
  * returned from them are of process scope. If you want to support multiple dubbo servers in one
  * single process, you may need to refactor those three classes.
  * <p>
- * Represent a application which is using Dubbo and store basic metadata info for using
+ * Represent an application which is using Dubbo and store basic metadata info for using
  * during the processing of RPC invoking.
  * <p>
  * ApplicationModel includes many ProviderModel which is about published services
@@ -85,6 +84,7 @@ public class ApplicationModel extends ScopeModel {
      * During destroying the default FrameworkModel, the FrameworkModel.defaultModel() or ApplicationModel.defaultModel()
      * will return a broken model, maybe cause unpredictable problem.
      * Recommendation: Avoid using the default model as much as possible.
+     *
      * @return the global default ApplicationModel
      */
     public static ApplicationModel defaultModel() {
@@ -156,7 +156,7 @@ public class ApplicationModel extends ScopeModel {
             frameworkModel.tryDestroyProtocols();
 
             // 4. destroy application resources
-            for (ModuleModel moduleModel : new ArrayList<>(moduleModels)) {
+            for (ModuleModel moduleModel : moduleModels) {
                 if (moduleModel != internalModule) {
                     moduleModel.destroy();
                 }
@@ -222,7 +222,11 @@ public class ApplicationModel extends ScopeModel {
     }
 
     public ExecutorRepository getApplicationExecutorRepository() {
-        return this.getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
+        return ExecutorRepository.getInstance(this);
+    }
+
+    public boolean NotExistApplicationConfig() {
+        return !getApplicationConfigManager().getApplication().isPresent();
     }
 
     public ApplicationConfig getCurrentConfig() {

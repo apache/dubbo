@@ -310,10 +310,24 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
         }
     }
 
-    @Override
+    /**
+     * Alternatives to the {@link #postProcessProperties(PropertyValues, Object, String)}, that removed as of Spring
+     * Framework 6.0.0, and in favor of {@link #postProcessProperties(PropertyValues, Object, String)}.
+     * <p>In order to be compatible with the lower version of Spring, it is still retained.
+     * @see #postProcessProperties
+     */
     public PropertyValues postProcessPropertyValues(
         PropertyValues pvs, PropertyDescriptor[] pds, Object bean, String beanName) throws BeansException {
+        return postProcessProperties(pvs, bean, beanName);
+    }
 
+    /**
+     * Alternatives to the {@link #postProcessPropertyValues(PropertyValues, PropertyDescriptor[], Object, String)}.
+     * @see #postProcessPropertyValues
+     */
+    @Override
+    public PropertyValues postProcessProperties(PropertyValues pvs, Object bean, String beanName)
+        throws BeansException {
         try {
             AnnotatedInjectionMetadata metadata = findInjectionMetadata(beanName, bean.getClass(), pvs);
             prepareInjection(metadata);
@@ -526,7 +540,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
     /**
      * Gets all beans of {@link ReferenceBean}
      *
-     * @deprecated use {@link ReferenceBeanManager.getReferences()} instead
+     * @deprecated use {@link ReferenceBeanManager#getReferences()} instead
      */
     @Deprecated
     public Collection<ReferenceBean<?>> getReferenceBeans() {

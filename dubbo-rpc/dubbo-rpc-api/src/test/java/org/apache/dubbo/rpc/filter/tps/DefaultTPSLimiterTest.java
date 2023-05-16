@@ -37,7 +37,7 @@ class DefaultTPSLimiterTest {
     private final DefaultTPSLimiter defaultTPSLimiter = new DefaultTPSLimiter();
 
     @Test
-    void testIsAllowable() throws Exception {
+    void testIsAllowable() {
         Invocation invocation = new MockInvocation();
         URL url = URL.valueOf("test://test");
         url = url.addParameter(INTERFACE_KEY, "org.apache.dubbo.rpc.file.TpsService");
@@ -49,7 +49,7 @@ class DefaultTPSLimiterTest {
     }
 
     @Test
-    void testIsNotAllowable() throws Exception {
+    void testIsNotAllowable() {
         Invocation invocation = new MockInvocation();
         URL url = URL.valueOf("test://test");
         url = url.addParameter(INTERFACE_KEY, "org.apache.dubbo.rpc.file.TpsService");
@@ -65,7 +65,7 @@ class DefaultTPSLimiterTest {
     }
 
     @Test
-    void testTPSLimiterForMethodLevelConfig() throws Exception {
+    void testTPSLimiterForMethodLevelConfig() {
         Invocation invocation = new MockInvocation();
         URL url = URL.valueOf("test://test");
         url = url.addParameter(INTERFACE_KEY, "org.apache.dubbo.rpc.file.TpsService");
@@ -83,7 +83,7 @@ class DefaultTPSLimiterTest {
     }
 
     @Test
-    void testConfigChange() throws Exception {
+    void testConfigChange() {
         Invocation invocation = new MockInvocation();
         URL url = URL.valueOf("test://test");
         url = url.addParameter(INTERFACE_KEY, "org.apache.dubbo.rpc.file.TpsService");

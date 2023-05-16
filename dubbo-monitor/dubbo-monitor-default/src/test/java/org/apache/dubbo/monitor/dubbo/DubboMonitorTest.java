@@ -107,7 +107,7 @@ class DubboMonitorTest {
     };
 
     @Test
-    void testCount() throws Exception {
+    void testCount() {
         DubboMonitor monitor = new DubboMonitor(monitorInvoker, monitorService);
         URL statistics = new URLBuilder(DUBBO_PROTOCOL, "10.20.153.10", 0)
             .addParameter(APPLICATION_KEY, "morgan")
@@ -141,7 +141,7 @@ class DubboMonitorTest {
     }
 
     @Test
-    void testMonitorFactory() throws Exception {
+    void testMonitorFactory() {
         MockMonitorService monitorService = new MockMonitorService();
         URL statistics = new URLBuilder(DUBBO_PROTOCOL, "10.20.153.10", 0)
             .addParameter(APPLICATION_KEY, "morgan")

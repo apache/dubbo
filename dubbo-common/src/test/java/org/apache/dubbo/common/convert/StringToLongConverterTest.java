@@ -16,10 +16,12 @@
  */
 package org.apache.dubbo.common.convert;
 
+import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -51,5 +53,9 @@ class StringToLongConverterTest {
         assertThrows(NumberFormatException.class, () -> {
             converter.convert("ttt");
         });
+    }
+
+    private <T> ExtensionLoader<T> getExtensionLoader(Class<T> extClass) {
+        return ApplicationModel.defaultModel().getDefaultModule().getExtensionLoader(extClass);
     }
 }

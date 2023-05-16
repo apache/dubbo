@@ -31,12 +31,14 @@ import org.apache.dubbo.remoting.exchange.ExchangeHandler;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.exchange.support.DefaultFuture;
+import org.apache.dubbo.remoting.exchange.support.MultiMessage;
 import org.apache.dubbo.remoting.transport.ChannelHandlerDelegate;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.CompletionStage;
 
 import static org.apache.dubbo.common.constants.CommonConstants.READONLY_EVENT;
+import static org.apache.dubbo.common.constants.CommonConstants.WRITEABLE_EVENT;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_RESPONSE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_UNSUPPORTED_MESSAGE;
 
@@ -74,6 +76,11 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
     void handlerEvent(Channel channel, Request req) throws RemotingException {
         if (req.getData() != null && req.getData().equals(READONLY_EVENT)) {
             channel.setAttribute(Constants.CHANNEL_ATTRIBUTE_READONLY_KEY, Boolean.TRUE);
+            logger.info("ChannelReadOnly set true for channel: " + channel);
+        }
+        if (req.getData() != null && req.getData().equals(WRITEABLE_EVENT)) {
+            channel.removeAttribute(Constants.CHANNEL_ATTRIBUTE_READONLY_KEY);
+            logger.info("ChannelReadOnly set false for channel: " + channel);
         }
     }
 
@@ -151,6 +158,14 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
         if (message instanceof Request) {
             Request request = (Request) message;
             DefaultFuture.sent(channel, request);
+        }
+        if (message instanceof MultiMessage) {
+            MultiMessage multiMessage = (MultiMessage) message;
+            for (Object single : multiMessage) {
+                if (single instanceof Request) {
+                    DefaultFuture.sent(channel, ((Request) single));
+                }
+            }
         }
         if (exception != null) {
             if (exception instanceof RuntimeException) {

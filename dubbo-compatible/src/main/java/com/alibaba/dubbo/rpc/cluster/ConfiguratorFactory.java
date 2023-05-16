@@ -17,12 +17,13 @@
 package com.alibaba.dubbo.rpc.cluster;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Adaptive;
 import org.apache.dubbo.rpc.cluster.Configurator;
 
 @Deprecated
 public interface ConfiguratorFactory extends org.apache.dubbo.rpc.cluster.ConfiguratorFactory {
-    @Adaptive("protocol")
+    @Adaptive(CommonConstants.PROTOCOL_KEY)
     com.alibaba.dubbo.rpc.cluster.Configurator getConfigurator(com.alibaba.dubbo.common.URL url);
 
     @Override

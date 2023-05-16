@@ -56,7 +56,7 @@ public final class AccessLogData {
     /**
      * This is used to store log data in key val format.
      */
-    private Map<String, Object> data;
+    private final Map<String, Object> data;
 
     /**
      * Default constructor.
@@ -248,7 +248,7 @@ public final class AccessLogData {
 
         Object[] args = get(ARGUMENTS) != null ? (Object[]) get(ARGUMENTS) : null;
         if (args != null && args.length > 0) {
-            sn.append(JsonUtils.getJson().toJson(args));
+            sn.append(JsonUtils.toJson(args));
         }
 
         return sn.toString();

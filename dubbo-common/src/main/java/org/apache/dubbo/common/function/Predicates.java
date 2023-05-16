@@ -57,7 +57,7 @@ public interface Predicates {
      * @return non-null
      */
     static <T> Predicate<T> and(Predicate<T>... predicates) {
-        return of(predicates).reduce((a, b) -> a.and(b)).orElseGet(Predicates::alwaysTrue);
+        return of(predicates).reduce(Predicate::and).orElseGet(Predicates::alwaysTrue);
     }
 
     /**
@@ -68,7 +68,7 @@ public interface Predicates {
      * @return non-null
      */
     static <T> Predicate<T> or(Predicate<T>... predicates) {
-        return of(predicates).reduce((a, b) -> a.or(b)).orElse(e -> true);
+        return of(predicates).reduce(Predicate::or).orElse(e -> true);
     }
 
 }

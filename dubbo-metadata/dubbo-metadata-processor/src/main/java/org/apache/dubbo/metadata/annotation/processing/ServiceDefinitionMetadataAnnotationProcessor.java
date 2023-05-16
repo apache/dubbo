@@ -47,7 +47,7 @@ public class ServiceDefinitionMetadataAnnotationProcessor extends AbstractServic
 
         if (roundEnv.processingOver()) {
             ClassPathMetadataStorage writer = new ClassPathMetadataStorage(processingEnv);
-            writer.write(() -> JsonUtils.getJson().toJson(serviceDefinitions), "META-INF/dubbo/service-definitions.json");
+            writer.write(() -> JsonUtils.toJson(serviceDefinitions), "META-INF/dubbo/service-definitions.json");
         }
 
         return false;

@@ -180,7 +180,7 @@ public interface FilterChainBuilder {
     }
 
     class CallbackRegistrationInvoker<T, FILTER extends BaseFilter> implements Invoker<T> {
-        static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(CallbackRegistrationInvoker.class);
+        private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(CallbackRegistrationInvoker.class);
         final Invoker<T> filterInvoker;
         final List<FILTER> filters;
 
@@ -235,6 +235,10 @@ public interface FilterChainBuilder {
             });
 
             return asyncResult;
+        }
+
+        public Invoker<T> getFilterInvoker() {
+            return filterInvoker;
         }
 
         @Override

@@ -16,14 +16,22 @@
  */
 package org.apache.dubbo.rpc.cluster.configurator.parser.model;
 
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.PojoUtils;
+
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_FAILED_RECEIVE_RULE;
 
 /**
  *
  */
 public class ConfigItem {
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ConfigItem.class);
+
     public static final String GENERAL_TYPE = "general";
     public static final String WEIGHT_TYPE = "weight";
     public static final String BALANCING_TYPE = "balancing";
@@ -35,6 +43,7 @@ public class ConfigItem {
     public static final String SERVICES_KEY = "services";
     public static final String APPLICATIONS_KEY = "applications";
     public static final String PARAMETERS_KEY = "parameters";
+    public static final String MATCH_KEY = "match";
     public static final String SIDE_KEY = "side";
 
     private String type;
@@ -44,6 +53,7 @@ public class ConfigItem {
     private List<String> services;
     private List<String> applications;
     private Map<String, String> parameters;
+    private ConditionMatch match;
     private String side;
 
     @SuppressWarnings("unchecked")
@@ -77,14 +87,24 @@ public class ConfigItem {
         Object applications = map.get(APPLICATIONS_KEY);
         if (applications != null && List.class.isAssignableFrom(applications.getClass())) {
             configItem.setApplications(((List<Object>) applications).stream()
-                    .map(String::valueOf).collect(Collectors.toList()));
+                .map(String::valueOf).collect(Collectors.toList()));
         }
 
         Object parameters = map.get(PARAMETERS_KEY);
         if (parameters != null && Map.class.isAssignableFrom(parameters.getClass())) {
             configItem.setParameters(((Map<String, Object>) parameters).entrySet()
-                    .stream().collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().toString())));
+                .stream().collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().toString())));
         }
+
+        try {
+            Object match = map.get(MATCH_KEY);
+            if (match != null && Map.class.isAssignableFrom(match.getClass())) {
+                configItem.setMatch(PojoUtils.mapToPojo((Map<String, Object>) match, ConditionMatch.class));
+            }
+        } catch (Throwable t) {
+            logger.error(CLUSTER_FAILED_RECEIVE_RULE, " Failed to parse dynamic configuration rule", String.valueOf(map.get(MATCH_KEY)), "Error occurred when parsing rule component.", t);
+        }
+
         configItem.setSide((String) map.get(SIDE_KEY));
         return configItem;
     }
@@ -151,5 +171,13 @@ public class ConfigItem {
 
     public void setSide(String side) {
         this.side = side;
+    }
+
+    public ConditionMatch getMatch() {
+        return match;
+    }
+
+    public void setMatch(ConditionMatch match) {
+        this.match = match;
     }
 }

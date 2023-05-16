@@ -22,6 +22,7 @@ import org.apache.dubbo.config.ProtocolConfig;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executor;
 
 /**
  * AbstractBuilder
@@ -29,7 +30,7 @@ import java.util.List;
  * @since 2.7
  */
 public abstract class AbstractServiceBuilder<T extends AbstractServiceConfig, B extends AbstractServiceBuilder<T, B>>
-        extends AbstractInterfaceBuilder<T, B> {
+    extends AbstractInterfaceBuilder<T, B> {
 
     /**
      * The service version
@@ -106,6 +107,16 @@ public abstract class AbstractServiceBuilder<T extends AbstractServiceConfig, B 
      * The serialization type
      */
     private String serialization;
+
+    /**
+     * used for thread pool isolation between services
+     */
+    private Executor executor;
+
+    /**
+     * The prefer serialization type
+     */
+    private String preferSerialization;
 
     public B version(String version) {
         this.version = version;
@@ -211,8 +222,24 @@ public abstract class AbstractServiceBuilder<T extends AbstractServiceConfig, B 
         return getThis();
     }
 
-    public  B serialization(String serialization) {
+    public B serialization(String serialization) {
         this.serialization = serialization;
+        return getThis();
+    }
+
+    public B executor(Executor executor) {
+        this.executor = executor;
+        return getThis();
+    }
+
+    /**
+     * The prefer serialization type
+     *
+     * @param preferSerialization prefer serialization type
+     * @return {@link B}
+     */
+    public B preferSerialization(String preferSerialization) {
+        this.preferSerialization = preferSerialization;
         return getThis();
     }
 
@@ -267,6 +294,12 @@ public abstract class AbstractServiceBuilder<T extends AbstractServiceConfig, B 
         }
         if (!StringUtils.isEmpty(serialization)) {
             instance.setSerialization(serialization);
+        }
+        if (executor != null) {
+            instance.setExecutor(executor);
+        }
+        if (StringUtils.isNotBlank(preferSerialization)) {
+            instance.setPreferSerialization(preferSerialization);
         }
     }
 }
