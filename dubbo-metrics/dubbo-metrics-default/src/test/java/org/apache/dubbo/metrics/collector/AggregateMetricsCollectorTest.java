@@ -20,6 +20,7 @@ package org.apache.dubbo.metrics.collector;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ReflectionUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.MetricsConfig;
@@ -33,6 +34,7 @@ import org.apache.dubbo.metrics.event.MetricsEventBus;
 import org.apache.dubbo.metrics.event.RequestBeforeEvent;
 import org.apache.dubbo.metrics.event.RequestEvent;
 import org.apache.dubbo.metrics.filter.MetricsFilter;
+import org.apache.dubbo.metrics.listener.MetricsListener;
 import org.apache.dubbo.metrics.model.MethodMetric;
 import org.apache.dubbo.metrics.model.MetricsSupport;
 import org.apache.dubbo.metrics.model.TimePair;
@@ -292,6 +294,13 @@ class AggregateMetricsCollectorTest {
         System.out.println(Math.abs(1 - p95 / manualP95));
         Assertions.assertTrue(Math.abs(1 - p95 / manualP95) < 0.05);
         Assertions.assertTrue(Math.abs(1 - p99 / manualP99) < 0.05);
+    }
+
+    @Test
+    void testGenericCache() {
+        List<Class<?>> classGenerics = ReflectionUtils.getClassGenerics(AggregateMetricsCollector.class, MetricsListener.class);
+        Assertions.assertTrue(CollectionUtils.isNotEmpty(classGenerics));
+        Assertions.assertEquals(RequestEvent.class, classGenerics.get(0));
     }
 
     public static class TestRequestEvent extends RequestEvent {
