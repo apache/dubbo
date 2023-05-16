@@ -23,6 +23,8 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
@@ -32,6 +34,8 @@ import java.util.stream.Collectors;
  * Note: Usage of this class should be limited to testing purposes only, as it violates the encapsulation principle.
  */
 public class ReflectionUtils {
+
+    private static final Map<Class<?>, Map<Class<?>, List<Class<?>>>> GENERIC_CLASS_CACHE = new ConcurrentHashMap<>();
 
     private ReflectionUtils() {
     }
@@ -108,6 +112,11 @@ public class ReflectionUtils {
      * given interface
      */
     public static List<Class<?>> getClassGenerics(Class<?> clazz, Class<?> interfaceClass) {
+        Map<Class<?>, List<Class<?>>> cache = GENERIC_CLASS_CACHE.computeIfAbsent(clazz, aClass -> new ConcurrentHashMap<>());
+        return cache.computeIfAbsent(interfaceClass, interfaceClazz -> getClassGeneric(clazz, interfaceClazz));
+    }
+
+    private static List<Class<?>> getClassGeneric(Class<?> clazz, Class<?> interfaceClass) {
         List<Class<?>> generics = new ArrayList<>();
         Type[] genericInterfaces = clazz.getGenericInterfaces();
         for (Type genericInterface : genericInterfaces) {
@@ -136,7 +145,7 @@ public class ReflectionUtils {
         }
         Class<?> superclass = clazz.getSuperclass();
         if (superclass != null) {
-            generics.addAll(getClassGenerics(superclass, interfaceClass));
+            generics.addAll(getClassGeneric(superclass, interfaceClass));
         }
         return generics.stream().distinct().collect(Collectors.toList());
     }
