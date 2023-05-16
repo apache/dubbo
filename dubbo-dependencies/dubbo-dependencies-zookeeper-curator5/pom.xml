@@ -33,7 +33,7 @@
 
     <properties>
         <revision>3.2.1-SNAPSHOT</revision>
-        <maven_flatten_version>1.4.1</maven_flatten_version>
+        <maven_flatten_version>1.5.0</maven_flatten_version>
         <curator5_version>5.1.0</curator5_version>
         <zookeeper_version>3.8.1</zookeeper_version>
     </properties>
