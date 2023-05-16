@@ -17,6 +17,7 @@
 package org.apache.dubbo.config.deploy;
 
 import org.apache.dubbo.common.config.ReferenceCache;
+import org.apache.dubbo.common.constants.LoggerCodeConstants;
 import org.apache.dubbo.common.deploy.AbstractDeployer;
 import org.apache.dubbo.common.deploy.ApplicationDeployer;
 import org.apache.dubbo.common.deploy.DeployListener;
@@ -35,6 +36,8 @@ import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.ServiceConfigBase;
 import org.apache.dubbo.config.context.ModuleConfigManager;
 import org.apache.dubbo.config.utils.SimpleReferenceCache;
+import org.apache.dubbo.registry.Registry;
+import org.apache.dubbo.registry.RegistryFactory;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ModuleServiceRepository;
@@ -213,6 +216,33 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
             return;
         }
         onModuleStopping();
+
+        offline();
+    }
+
+    private void offline() {
+        try {
+            ModuleServiceRepository serviceRepository = moduleModel.getServiceRepository();
+            List<ProviderModel> exportedServices = serviceRepository.getExportedServices();
+            for (ProviderModel exportedService : exportedServices) {
+                List<ProviderModel.RegisterStatedURL> statedUrls = exportedService.getStatedUrl();
+                for (ProviderModel.RegisterStatedURL statedURL : statedUrls) {
+                    if (statedURL.isRegistered()) {
+                        doOffline(statedURL);
+                    }
+                }
+            }
+        } catch (Throwable t) {
+            logger.error(LoggerCodeConstants.INTERNAL_ERROR, "", "", "Exceptions occurred when unregister services.", t);
+        }
+    }
+
+    private void doOffline(ProviderModel.RegisterStatedURL statedURL) {
+        RegistryFactory registryFactory =
+            statedURL.getRegistryUrl().getOrDefaultApplicationModel().getExtensionLoader(RegistryFactory.class).getAdaptiveExtension();
+        Registry registry = registryFactory.getRegistry(statedURL.getRegistryUrl());
+        registry.unregister(statedURL.getProviderUrl());
+        statedURL.setRegistered(false);
     }
 
     @Override
@@ -436,7 +466,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
             exportFuture = CompletableFuture.allOf(asyncExportingFutures.toArray(new CompletableFuture[0]));
             exportFuture.get();
         } catch (Throwable e) {
-            logger.warn(CONFIG_FAILED_EXPORT_SERVICE, "","",getIdentifier() + " export services occurred an exception: " + e.toString());
+            logger.warn(CONFIG_FAILED_EXPORT_SERVICE, "", "", getIdentifier() + " export services occurred an exception: " + e.toString());
         } finally {
             logger.info(getIdentifier() + " export services finished.");
             asyncExportingFutures.clear();

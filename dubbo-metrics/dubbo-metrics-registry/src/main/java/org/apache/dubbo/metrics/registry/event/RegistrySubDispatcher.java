@@ -18,12 +18,13 @@
 package org.apache.dubbo.metrics.registry.event;
 
 import org.apache.dubbo.metrics.event.SimpleMetricsEventMulticaster;
-import org.apache.dubbo.metrics.listener.AbstractMetricsListener;
+import org.apache.dubbo.metrics.listener.AbstractMetricsKeyListener;
 import org.apache.dubbo.metrics.listener.MetricsApplicationListener;
 import org.apache.dubbo.metrics.listener.MetricsServiceListener;
 import org.apache.dubbo.metrics.model.key.CategoryOverall;
 import org.apache.dubbo.metrics.model.key.MetricsCat;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
+import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
 import org.apache.dubbo.metrics.registry.collector.RegistryMetricsCollector;
 
 import java.util.Arrays;
@@ -40,10 +41,10 @@ import static org.apache.dubbo.metrics.registry.RegistryMetricsConstants.OP_TYPE
 import static org.apache.dubbo.metrics.registry.RegistryMetricsConstants.OP_TYPE_SUBSCRIBE;
 import static org.apache.dubbo.metrics.registry.RegistryMetricsConstants.OP_TYPE_SUBSCRIBE_SERVICE;
 
-public final class RegistryMetricsEventMulticaster extends SimpleMetricsEventMulticaster {
+public final class RegistrySubDispatcher extends SimpleMetricsEventMulticaster {
 
 
-    public RegistryMetricsEventMulticaster(RegistryMetricsCollector collector) {
+    public RegistrySubDispatcher(RegistryMetricsCollector collector) {
 
         CategorySet.ALL.forEach(categorySet ->
         {
@@ -83,24 +84,24 @@ public final class RegistryMetricsEventMulticaster extends SimpleMetricsEventMul
         // MetricsNotifyListener
         MetricsCat APPLICATION_NOTIFY_POST = new MetricsCat(MetricsKey.NOTIFY_METRIC_REQUESTS, MetricsApplicationListener::onPostEventBuild);
         MetricsCat APPLICATION_NOTIFY_FINISH = new MetricsCat(MetricsKey.NOTIFY_METRIC_NUM_LAST,
-            (key, placeType, collector) -> AbstractMetricsListener.onFinish(key,
+            (key, placeType, collector) -> AbstractMetricsKeyListener.onFinish(key,
                 event -> {
                     collector.addRt(event.appName(), placeType.getType(), event.getTimePair().calc());
                     Map<String, Integer> lastNumMap = Collections.unmodifiableMap(event.getAttachmentValue(ATTACHMENT_KEY_LAST_NUM_MAP));
                     lastNumMap.forEach(
-                        (k, v) -> collector.setNum(key, event.appName(), k, v));
+                        (k, v) -> collector.setNum(new MetricsKeyWrapper(key, OP_TYPE_NOTIFY), event.appName(), k, v));
 
                 }
             ));
 
 
-        MetricsCat APPLICATION_DIRECTORY_POST = new MetricsCat(MetricsKey.DIRECTORY_METRIC_NUM_VALID, (key, placeType, collector) -> AbstractMetricsListener.onEvent(key,
+        MetricsCat APPLICATION_DIRECTORY_POST = new MetricsCat(MetricsKey.DIRECTORY_METRIC_NUM_VALID, (key, placeType, collector) -> AbstractMetricsKeyListener.onEvent(key,
             event ->
             {
                 Map<MetricsKey, Map<String, Integer>> summaryMap = event.getAttachmentValue(ATTACHMENT_DIRECTORY_MAP);
                 summaryMap.forEach((metricsKey, map) ->
                     map.forEach(
-                        (k, v) -> collector.setNum(metricsKey, event.appName(), k, v)));
+                        (k, v) -> collector.setNum(new MetricsKeyWrapper(key, OP_TYPE_DIRECTORY), event.appName(), k, v)));
             }
         ));
 

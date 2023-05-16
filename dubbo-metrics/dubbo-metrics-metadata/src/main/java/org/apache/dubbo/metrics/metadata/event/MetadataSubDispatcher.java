@@ -32,9 +32,9 @@ import static org.apache.dubbo.metrics.metadata.MetadataMetricsConstants.OP_TYPE
 import static org.apache.dubbo.metrics.metadata.MetadataMetricsConstants.OP_TYPE_STORE_PROVIDER_INTERFACE;
 import static org.apache.dubbo.metrics.metadata.MetadataMetricsConstants.OP_TYPE_SUBSCRIBE;
 
-public final class MetadataMetricsEventMulticaster extends SimpleMetricsEventMulticaster {
+public final class MetadataSubDispatcher extends SimpleMetricsEventMulticaster {
 
-    public MetadataMetricsEventMulticaster(MetadataMetricsCollector collector) {
+    public MetadataSubDispatcher(MetadataMetricsCollector collector) {
 
         CategorySet.ALL.forEach(categorySet ->
         {

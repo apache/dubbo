@@ -58,10 +58,14 @@ import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.metrics.report.MetricsReporter;
 import org.apache.dubbo.metrics.report.MetricsReporterFactory;
 import org.apache.dubbo.metrics.service.MetricsServiceExporter;
+import org.apache.dubbo.registry.Registry;
+import org.apache.dubbo.registry.RegistryFactory;
 import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
 import org.apache.dubbo.registry.support.RegistryManager;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
+import org.apache.dubbo.rpc.model.ModuleServiceRepository;
+import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
@@ -931,9 +935,11 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             }
             onStopping();
 
-            unexportMetricsService();
+            offline();
 
             unregisterServiceInstance();
+
+            unexportMetricsService();
 
             unRegisterShutdownHook();
             if (asyncMetadataFuture != null) {
@@ -941,6 +947,33 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             }
 
         }
+    }
+
+    private void offline() {
+        try {
+            for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
+                ModuleServiceRepository serviceRepository = moduleModel.getServiceRepository();
+                List<ProviderModel> exportedServices = serviceRepository.getExportedServices();
+                for (ProviderModel exportedService : exportedServices) {
+                    List<ProviderModel.RegisterStatedURL> statedUrls = exportedService.getStatedUrl();
+                    for (ProviderModel.RegisterStatedURL statedURL : statedUrls) {
+                        if (statedURL.isRegistered()) {
+                            doOffline(statedURL);
+                        }
+                    }
+                }
+            }
+        } catch (Throwable t) {
+            logger.error(LoggerCodeConstants.INTERNAL_ERROR, "", "", "Exceptions occurred when unregister services.", t);
+        }
+    }
+
+    private void doOffline(ProviderModel.RegisterStatedURL statedURL) {
+        RegistryFactory registryFactory =
+            statedURL.getRegistryUrl().getOrDefaultApplicationModel().getExtensionLoader(RegistryFactory.class).getAdaptiveExtension();
+        Registry registry = registryFactory.getRegistry(statedURL.getRegistryUrl());
+        registry.unregister(statedURL.getProviderUrl());
+        statedURL.setRegistered(false);
     }
 
     @Override

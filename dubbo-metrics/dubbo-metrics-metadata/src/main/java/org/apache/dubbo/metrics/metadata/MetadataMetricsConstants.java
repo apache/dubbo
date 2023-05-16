@@ -18,8 +18,9 @@
 package org.apache.dubbo.metrics.metadata;
 
 import org.apache.dubbo.metrics.model.key.MetricsKey;
+import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
 import org.apache.dubbo.metrics.model.key.MetricsLevel;
-import org.apache.dubbo.metrics.model.key.MetricsPlaceType;
+import org.apache.dubbo.metrics.model.key.MetricsPlaceValue;
 
 import java.util.Arrays;
 import java.util.List;
@@ -36,16 +37,18 @@ import static org.apache.dubbo.metrics.model.key.MetricsKey.STORE_PROVIDER_METAD
 
 public interface MetadataMetricsConstants {
 
-    MetricsPlaceType OP_TYPE_PUSH = MetricsPlaceType.of("push", MetricsLevel.APP);
-    MetricsPlaceType OP_TYPE_SUBSCRIBE = MetricsPlaceType.of("subscribe", MetricsLevel.APP);
-    MetricsPlaceType OP_TYPE_STORE_PROVIDER_INTERFACE = MetricsPlaceType.of("store.provider.interface", MetricsLevel.SERVICE);
+    MetricsPlaceValue OP_TYPE_PUSH = MetricsPlaceValue.of("push", MetricsLevel.APP);
+    MetricsPlaceValue OP_TYPE_SUBSCRIBE = MetricsPlaceValue.of("subscribe", MetricsLevel.APP);
+    MetricsPlaceValue OP_TYPE_STORE_PROVIDER_INTERFACE = MetricsPlaceValue.of("store.provider.interface", MetricsLevel.SERVICE);
 
     // App-level
     List<MetricsKey> APP_LEVEL_KEYS = Arrays.asList(METADATA_PUSH_METRIC_NUM, METADATA_PUSH_METRIC_NUM_SUCCEED, METADATA_PUSH_METRIC_NUM_FAILED,
         METADATA_SUBSCRIBE_METRIC_NUM, METADATA_SUBSCRIBE_METRIC_NUM_SUCCEED, METADATA_SUBSCRIBE_METRIC_NUM_FAILED);
 
     // Service-level
-    List<MetricsKey> SERVICE_LEVEL_KEYS = Arrays.asList(STORE_PROVIDER_METADATA,
-        STORE_PROVIDER_METADATA_SUCCEED, STORE_PROVIDER_METADATA_FAILED
+    List<MetricsKeyWrapper> SERVICE_LEVEL_KEYS = Arrays.asList(
+        new MetricsKeyWrapper(STORE_PROVIDER_METADATA, OP_TYPE_STORE_PROVIDER_INTERFACE),
+        new MetricsKeyWrapper(STORE_PROVIDER_METADATA_SUCCEED, OP_TYPE_STORE_PROVIDER_INTERFACE),
+        new MetricsKeyWrapper(STORE_PROVIDER_METADATA_FAILED, OP_TYPE_STORE_PROVIDER_INTERFACE)
     );
 }

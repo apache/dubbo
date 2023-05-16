@@ -17,6 +17,7 @@
 package org.apache.dubbo.remoting.utils;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.remoting.Constants;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -36,5 +37,13 @@ class UrlUtilsTest {
     void testGetHeartbeat() {
         URL url = URL.valueOf("dubbo://127.0.0.1:12345?heartbeat=10000");
         Assertions.assertEquals(UrlUtils.getHeartbeat(url), 10000);
+    }
+
+    @Test
+    void testConfiguredHeartbeat() {
+        System.setProperty(Constants.HEARTBEAT_CONFIG_KEY, "200");
+        URL url = URL.valueOf("dubbo://127.0.0.1:12345");
+        Assertions.assertEquals(200, UrlUtils.getHeartbeat(url));
+        System.clearProperty(Constants.HEARTBEAT_CONFIG_KEY);
     }
 }

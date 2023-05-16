@@ -18,5 +18,5 @@
 package org.apache.dubbo.metrics.model.key;
 
 public enum MetricsLevel {
-    APP,SERVICE,CONFIG
+    APP, SERVICE, METHOD, CONFIG
 }

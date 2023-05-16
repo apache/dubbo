@@ -15,23 +15,18 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.metrics.metrics.event;
+package org.apache.dubbo.rpc.protocol.tri;
 
-import org.apache.dubbo.metrics.event.RTEvent;
-import org.apache.dubbo.metrics.model.MethodMetric;
-import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.rpc.model.MethodDescriptor;
+import org.apache.dubbo.rpc.model.PackableMethod;
+import org.apache.dubbo.rpc.model.PackableMethodFactory;
 
-class RTEventTest {
+public class DefaultPackableMethodFactory implements PackableMethodFactory {
 
-    @Test
-    void testNewEvent() {
-        MethodMetric metric = new MethodMetric();
-        Long rt = 5L;
-        RTEvent event = new RTEvent(ApplicationModel.defaultModel(), metric, rt);
-
-        Assertions.assertEquals(event.getSource(), ApplicationModel.defaultModel());
-        Assertions.assertEquals(event.getRt(), rt);
+    @Override
+    public PackableMethod create(MethodDescriptor methodDescriptor, URL url, String contentType) {
+        return ReflectionPackableMethod.init(methodDescriptor, url);
     }
+
 }

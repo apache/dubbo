@@ -27,7 +27,7 @@ public class EmptyEvent extends MetricsEvent {
     private static final EmptyEvent empty = new EmptyEvent(null);
 
     private EmptyEvent(ApplicationModel source) {
-        super(source);
+        super(source, null);
     }
 
     public static EmptyEvent instance() {

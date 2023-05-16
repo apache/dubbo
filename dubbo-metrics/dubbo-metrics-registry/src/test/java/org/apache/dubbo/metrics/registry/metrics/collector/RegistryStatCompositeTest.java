@@ -23,9 +23,9 @@ import org.apache.dubbo.metrics.data.RtStatComposite;
 import org.apache.dubbo.metrics.data.ServiceStatComposite;
 import org.apache.dubbo.metrics.model.MetricsCategory;
 import org.apache.dubbo.metrics.model.container.LongContainer;
-import org.apache.dubbo.metrics.registry.RegistryMetricsConstants;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
-
+import org.apache.dubbo.metrics.model.sample.MetricSample;
+import org.apache.dubbo.metrics.registry.RegistryMetricsConstants;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -50,9 +50,17 @@ public class RegistryStatCompositeTest {
     private final String applicationName = "app1";
     private final BaseStatComposite statComposite = new BaseStatComposite() {
         @Override
-        protected void init(ApplicationStatComposite applicationStatComposite, ServiceStatComposite serviceStatComposite, RtStatComposite rtStatComposite) {
+        protected void init(ApplicationStatComposite applicationStatComposite) {
             applicationStatComposite.init(RegistryMetricsConstants.APP_LEVEL_KEYS);
-            serviceStatComposite.init(RegistryMetricsConstants.SERVICE_LEVEL_KEYS);
+        }
+
+        @Override
+        protected void init(ServiceStatComposite serviceStatComposite) {
+            serviceStatComposite.initWrapper(RegistryMetricsConstants.SERVICE_LEVEL_KEYS);
+        }
+
+        @Override
+        protected void init(RtStatComposite rtStatComposite) {
             rtStatComposite.init(OP_TYPE_REGISTER, OP_TYPE_SUBSCRIBE, OP_TYPE_NOTIFY, OP_TYPE_REGISTER_SERVICE, OP_TYPE_SUBSCRIBE_SERVICE);
         }
     };
@@ -63,7 +71,7 @@ public class RegistryStatCompositeTest {
         //(rt)5 * (applicationRegister,subscribe,notify,applicationRegister.service,subscribe.service)
         Assertions.assertEquals(5 * 5, statComposite.getRtStatComposite().getRtStats().size());
         statComposite.getApplicationStatComposite().getApplicationNumStats().values().forEach((v ->
-            Assertions.assertEquals(v, new ConcurrentHashMap<>())));
+                Assertions.assertEquals(v, new ConcurrentHashMap<>())));
         statComposite.getRtStatComposite().getRtStats().forEach(rtContainer ->
         {
             for (Map.Entry<String, ? extends Number> entry : rtContainer.entrySet()) {
@@ -98,20 +106,20 @@ public class RegistryStatCompositeTest {
         statComposite.calcServiceKeyRt(applicationName, serviceKey, registryOpType, responseTime1);
         statComposite.calcServiceKeyRt(applicationName, serviceKey, registryOpType, responseTime2);
 
-        List<GaugeMetricSample> exportedRtMetrics = statComposite.export(MetricsCategory.RT);
+        List<MetricSample> exportedRtMetrics = statComposite.export(MetricsCategory.RT);
 
-        GaugeMetricSample minSample = exportedRtMetrics.stream()
-            .filter(sample -> sample.getTags().containsValue(applicationName))
-            .filter(sample -> sample.getName().equals(METRIC_RT_MIN.getNameByType("register.service")))
-            .findFirst().orElse(null);
-        GaugeMetricSample maxSample = exportedRtMetrics.stream()
-            .filter(sample -> sample.getTags().containsValue(applicationName))
-            .filter(sample -> sample.getName().equals(METRIC_RT_MAX.getNameByType("register.service")))
-            .findFirst().orElse(null);
-        GaugeMetricSample avgSample = exportedRtMetrics.stream()
-            .filter(sample -> sample.getTags().containsValue(applicationName))
-            .filter(sample -> sample.getName().equals(METRIC_RT_AVG.getNameByType("register.service")))
-            .findFirst().orElse(null);
+        GaugeMetricSample minSample = (GaugeMetricSample) exportedRtMetrics.stream()
+                .filter(sample -> sample.getTags().containsValue(applicationName))
+                .filter(sample -> sample.getName().equals(METRIC_RT_MIN.getNameByType("register.service")))
+                .findFirst().orElse(null);
+        GaugeMetricSample maxSample = (GaugeMetricSample) exportedRtMetrics.stream()
+                .filter(sample -> sample.getTags().containsValue(applicationName))
+                .filter(sample -> sample.getName().equals(METRIC_RT_MAX.getNameByType("register.service")))
+                .findFirst().orElse(null);
+        GaugeMetricSample avgSample = (GaugeMetricSample) exportedRtMetrics.stream()
+                .filter(sample -> sample.getTags().containsValue(applicationName))
+                .filter(sample -> sample.getName().equals(METRIC_RT_AVG.getNameByType("register.service")))
+                .findFirst().orElse(null);
 
         Assertions.assertNotNull(minSample);
         Assertions.assertNotNull(maxSample);

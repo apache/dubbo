@@ -35,11 +35,12 @@ public abstract class MetricsEvent {
      */
     protected transient ApplicationModel source;
     private boolean available = true;
-    protected TypeWrapper typeWrapper;
+    private final TypeWrapper typeWrapper;
 
     private final Map<String, Object> attachment = new HashMap<>(8);
 
-    public MetricsEvent(ApplicationModel source) {
+    public MetricsEvent(ApplicationModel source, TypeWrapper typeWrapper) {
+        this.typeWrapper = typeWrapper;
         if (source == null) {
             this.source = ApplicationModel.defaultModel();
             // Appears only in unit tests
@@ -51,8 +52,8 @@ public abstract class MetricsEvent {
 
     @SuppressWarnings("unchecked")
     public <T> T getAttachmentValue(String key) {
-        if (!attachment.containsKey(key)) {
-            throw new MetricsNeverHappenException("Attachment key [" + key + "] not found");
+        if (key == null) {
+            throw new MetricsNeverHappenException("Attachment key is null");
         }
         return (T) attachment.get(key);
     }
@@ -80,6 +81,10 @@ public abstract class MetricsEvent {
 
     public String appName() {
         return getSource().getApplicationName();
+    }
+
+    public TypeWrapper getTypeWrapper() {
+        return typeWrapper;
     }
 
     public boolean isAssignableFrom(Object type) {

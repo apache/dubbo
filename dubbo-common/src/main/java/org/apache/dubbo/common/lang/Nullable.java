@@ -15,33 +15,17 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.metrics.event;
+package org.apache.dubbo.common.lang;
 
-import org.apache.dubbo.rpc.model.ApplicationModel;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-/**
- * RtEvent.
- */
-public class RTEvent extends MetricsEvent {
-    private Long rt;
-    private final Object metric;
 
-    public RTEvent(ApplicationModel applicationModel, Object metric, Long rt) {
-        super(applicationModel);
-        this.rt = rt;
-        this.metric = metric;
-        setAvailable(true);
-    }
-
-    public Long getRt() {
-        return rt;
-    }
-
-    public void setRt(Long rt) {
-        this.rt = rt;
-    }
-
-    public Object getMetric() {
-        return metric;
-    }
+@Target({ElementType.METHOD, ElementType.PARAMETER, ElementType.FIELD})
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+public @interface Nullable {
 }
