@@ -44,23 +44,19 @@ public class Hessian2SerializerFactory extends SerializerFactory {
         if (_defaultSerializer != null)
             return _defaultSerializer;
 
-        try {
-            // pre-check if class is allow
-            defaultSerializeClassChecker.loadClass(getClassLoader(), cl.getName());
-        } catch (ClassNotFoundException e) {
-            // ignore
-        }
-
-        if (!Serializable.class.isAssignableFrom(cl)
-            && (!isAllowNonSerializable() || defaultSerializeClassChecker.isCheckSerializable())) {
-            throw new IllegalStateException("Serialized class " + cl.getName() + " must implement java.io.Serializable");
-        }
+        checkSerializable(cl);
 
         return new JavaSerializer(cl, getClassLoader());
     }
 
     @Override
     protected Deserializer getDefaultDeserializer(Class cl) {
+        checkSerializable(cl);
+
+        return new JavaDeserializer(cl);
+    }
+
+    private void checkSerializable(Class<?> cl) {
         try {
             // pre-check if class is allow
             defaultSerializeClassChecker.loadClass(getClassLoader(), cl.getName());
@@ -69,10 +65,9 @@ public class Hessian2SerializerFactory extends SerializerFactory {
         }
 
         if (!Serializable.class.isAssignableFrom(cl)
-            && (!isAllowNonSerializable() || !defaultSerializeClassChecker.isCheckSerializable())) {
+                && (!isAllowNonSerializable() || defaultSerializeClassChecker.isCheckSerializable())) {
             throw new IllegalStateException("Serialized class " + cl.getName() + " must implement java.io.Serializable");
         }
-
-        return new JavaDeserializer(cl);
     }
+
 }
