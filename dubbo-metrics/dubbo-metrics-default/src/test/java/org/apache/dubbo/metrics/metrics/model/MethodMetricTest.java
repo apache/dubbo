@@ -43,7 +43,7 @@ import static org.apache.dubbo.common.utils.NetUtils.getLocalHostName;
 
 class MethodMetricTest {
 
-    private ApplicationModel applicationModel;
+    private static ApplicationModel applicationModel;
     private static String interfaceName;
     private static String methodName;
     private static String group;
@@ -51,7 +51,7 @@ class MethodMetricTest {
     private static RpcInvocation invocation;
 
     @BeforeAll
-    public void setup() {
+    public static void setup() {
 
         ApplicationConfig config = new ApplicationConfig();
         config.setName("MockMetrics");
