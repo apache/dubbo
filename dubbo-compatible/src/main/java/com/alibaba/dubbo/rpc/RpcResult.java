@@ -16,9 +16,7 @@
  */
 package com.alibaba.dubbo.rpc;
 
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
+import org.apache.dubbo.rpc.AppResponse;
 
 public class RpcResult extends AppResponse implements com.alibaba.dubbo.rpc.Result {
     public RpcResult() {
@@ -30,11 +28,6 @@ public class RpcResult extends AppResponse implements com.alibaba.dubbo.rpc.Resu
 
     public RpcResult(Throwable exception) {
         super(exception);
-    }
-    
-    @Override
-    public org.apache.dubbo.rpc.Result whenCompleteWithContext(BiConsumer<org.apache.dubbo.rpc.Result, Throwable> fn) {
-        return null;
     }
 }
 

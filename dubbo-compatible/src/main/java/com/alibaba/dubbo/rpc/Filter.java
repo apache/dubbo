@@ -17,6 +17,8 @@
 
 package com.alibaba.dubbo.rpc;
 
+import org.apache.dubbo.rpc.AsyncRpcResult;
+
 @Deprecated
 public interface Filter extends org.apache.dubbo.rpc.Filter {
 
@@ -29,8 +31,15 @@ public interface Filter extends org.apache.dubbo.rpc.Filter {
         Result invokeResult = invoke(new Invoker.CompatibleInvoker<>(invoker),
             new Invocation.CompatibleInvocation(invocation));
 
-        Result.CompatibleResult compatibleResult = invokeResult instanceof Result.CompatibleResult ?
-            (Result.CompatibleResult) invokeResult : new Result.CompatibleResult(invokeResult);
-        return compatibleResult.getDelegate();
+        if (invokeResult instanceof Result.CompatibleResult) {
+            return invokeResult;
+        }
+
+        AsyncRpcResult asyncRpcResult = AsyncRpcResult.newDefaultAsyncResult(invocation);
+        asyncRpcResult.setValue(invokeResult.getValue());
+        asyncRpcResult.setException(invokeResult.getException());
+        asyncRpcResult.setObjectAttachments(invokeResult.getObjectAttachments());
+
+        return asyncRpcResult;
     }
 }
