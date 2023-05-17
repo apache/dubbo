@@ -20,16 +20,25 @@ package org.apache.dubbo.metrics.listener;
 import org.apache.dubbo.common.utils.ReflectionUtils;
 import org.apache.dubbo.metrics.event.MetricsEvent;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public abstract class AbstractMetricsListener<E extends MetricsEvent> implements MetricsListener<E> {
+
+    private final Map<Class<?>, Boolean> eventMatchCache = new HashMap<>();
 
     /**
      * Whether to support the general determination of event points depends on the event type
      */
     public boolean isSupport(MetricsEvent event) {
+        Boolean eventMatch = eventMatchCache.computeIfAbsent(event.getClass(), clazz -> match(event));
+        return event.isAvailable() && eventMatch;
+    }
+
+    private boolean match(MetricsEvent event) {
         List<Class<?>> eventTypes = ReflectionUtils.getClassGenerics(getClass(), AbstractMetricsListener.class);
-        return event.isAvailable() && eventTypes.stream().allMatch(clazz -> clazz.isInstance(event));
+        return eventTypes.stream().allMatch(eventType -> eventType.isInstance(event));
     }
 
     @Override
