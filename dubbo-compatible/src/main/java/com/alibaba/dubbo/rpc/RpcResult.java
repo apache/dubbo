@@ -14,34 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.alibaba.dubbo.rpc;
 
-package org.apache.dubbo.filter;
+import org.apache.dubbo.rpc.AppResponse;
 
-import com.alibaba.dubbo.rpc.Filter;
-import com.alibaba.dubbo.rpc.Invocation;
-import com.alibaba.dubbo.rpc.Invoker;
-import com.alibaba.dubbo.rpc.Result;
-import com.alibaba.dubbo.rpc.RpcException;
-import com.alibaba.dubbo.rpc.RpcResult;
+@Deprecated
+public class RpcResult extends AppResponse implements com.alibaba.dubbo.rpc.Result {
 
-
-public class MyFilter implements Filter {
-
-    public static int count = 0;
-
-    @Override
-    public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
-        count++;
-
-        if (invocation.getArguments()[0].equals("aa")) {
-            throw new RpcException(new IllegalArgumentException("arg0 illegal"));
-        }
-
-        if (invocation.getArguments()[0].equals("cc")) {
-            return new RpcResult("123test");
-        }
-
-        Result tmp = invoker.invoke(invocation);
-        return tmp;
+    public RpcResult() {
     }
+
+    public RpcResult(Object result) {
+        super(result);
+    }
+
+    public RpcResult(Throwable exception) {
+        super(exception);
+    }
+
 }
