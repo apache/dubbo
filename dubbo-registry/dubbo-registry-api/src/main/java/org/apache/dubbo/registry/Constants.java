@@ -109,6 +109,8 @@ public interface Constants {
 
     String MIGRATION_THRESHOLD_KEY = "migration.threshold";
 
+    String ENABLE_26X_CONFIGURATION_LISTEN = "enable-26x-configuration-listen";
+
     String ENABLE_CONFIGURATION_LISTEN = "enable-configuration-listen";
 
     /**
