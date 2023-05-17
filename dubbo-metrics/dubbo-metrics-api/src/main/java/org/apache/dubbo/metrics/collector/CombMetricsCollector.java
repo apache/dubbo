@@ -46,36 +46,36 @@ public abstract class CombMetricsCollector<E extends TimeCounterEvent> extends A
     }
 
     @Override
-    public void setNum(MetricsKeyWrapper metricsKey, String applicationName, String serviceKey, int num) {
-        this.stats.setServiceKey(metricsKey, applicationName, serviceKey, num);
+    public void setNum(MetricsKeyWrapper metricsKey, String serviceKey, int num) {
+        this.stats.setServiceKey(metricsKey, serviceKey, num);
     }
 
     @Override
-    public void increment(String applicationName, MetricsKey metricsKey) {
-        this.stats.incrementApp(metricsKey, applicationName, SELF_INCREMENT_SIZE);
+    public void increment(MetricsKey metricsKey) {
+        this.stats.incrementApp(metricsKey, SELF_INCREMENT_SIZE);
     }
 
-    public void increment(String applicationName, String serviceKey, MetricsKeyWrapper metricsKeyWrapper, int size) {
-        this.stats.incrementServiceKey(metricsKeyWrapper, applicationName, serviceKey, size);
-    }
-
-    @Override
-    public void addRt(String applicationName, String registryOpType, Long responseTime) {
-        stats.calcApplicationRt(applicationName, registryOpType, responseTime);
-    }
-
-    public void addRt(String applicationName, String serviceKey, String registryOpType, Long responseTime) {
-        stats.calcServiceKeyRt(applicationName, serviceKey, registryOpType, responseTime);
+    public void increment(String serviceKey, MetricsKeyWrapper metricsKeyWrapper, int size) {
+        this.stats.incrementServiceKey(metricsKeyWrapper, serviceKey, size);
     }
 
     @Override
-    public void increment(String applicationName, Invocation invocation, MetricsKeyWrapper wrapper, int size) {
-        this.stats.incrementMethodKey(wrapper, applicationName, invocation, size);
+    public void addRt(String registryOpType, Long responseTime) {
+        stats.calcApplicationRt(registryOpType, responseTime);
+    }
+
+    public void addRt(String serviceKey, String registryOpType, Long responseTime) {
+        stats.calcServiceKeyRt(serviceKey, registryOpType, responseTime);
     }
 
     @Override
-    public void addRt(String applicationName, Invocation invocation, String registryOpType, Long responseTime) {
-        stats.calcMethodKeyRt(applicationName, invocation, registryOpType, responseTime);
+    public void increment(Invocation invocation, MetricsKeyWrapper wrapper, int size) {
+        this.stats.incrementMethodKey(wrapper, invocation, size);
+    }
+
+    @Override
+    public void addRt(Invocation invocation, String registryOpType, Long responseTime) {
+        stats.calcMethodKeyRt(invocation, registryOpType, responseTime);
     }
 
     protected List<MetricSample> export(MetricsCategory category) {

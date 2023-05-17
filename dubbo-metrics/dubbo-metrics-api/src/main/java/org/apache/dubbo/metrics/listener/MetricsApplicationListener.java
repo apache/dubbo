@@ -21,7 +21,7 @@ import org.apache.dubbo.metrics.collector.CombMetricsCollector;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.key.MetricsPlaceValue;
 
-public  class MetricsApplicationListener extends AbstractMetricsKeyListener {
+public class MetricsApplicationListener extends AbstractMetricsKeyListener {
 
     public MetricsApplicationListener(MetricsKey metricsKey) {
         super(metricsKey);
@@ -29,25 +29,25 @@ public  class MetricsApplicationListener extends AbstractMetricsKeyListener {
 
     public static AbstractMetricsKeyListener onPostEventBuild(MetricsKey metricsKey, CombMetricsCollector collector) {
         return AbstractMetricsKeyListener.onEvent(metricsKey,
-            event -> collector.increment(event.appName(), metricsKey)
+                event -> collector.increment(metricsKey)
         );
     }
 
     public static AbstractMetricsKeyListener onFinishEventBuild(MetricsKey metricsKey, MetricsPlaceValue placeType, CombMetricsCollector collector) {
         return AbstractMetricsKeyListener.onFinish(metricsKey,
-            event -> {
-                collector.increment(event.appName(), metricsKey);
-                collector.addRt(event.appName(), placeType.getType(), event.getTimePair().calc());
-            }
+                event -> {
+                    collector.increment(metricsKey);
+                    collector.addRt(placeType.getType(), event.getTimePair().calc());
+                }
         );
     }
 
     public static AbstractMetricsKeyListener onErrorEventBuild(MetricsKey metricsKey, MetricsPlaceValue placeType, CombMetricsCollector collector) {
         return AbstractMetricsKeyListener.onError(metricsKey,
-            event -> {
-                collector.increment(event.appName(), metricsKey);
-                collector.addRt(event.appName(), placeType.getType(), event.getTimePair().calc());
-            }
+                event -> {
+                    collector.increment(metricsKey);
+                    collector.addRt(placeType.getType(), event.getTimePair().calc());
+                }
         );
     }
 }
