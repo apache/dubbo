@@ -347,7 +347,7 @@ public class ExchangeCodec extends TelnetCodec {
             // send error message to Consumer, otherwise, Consumer will wait till timeout.
             if (!res.isEvent() && res.getStatus() != Response.BAD_RESPONSE) {
                 Response r = new Response(res.getId(), res.getVersion());
-                r.setStatus(Response.BAD_RESPONSE);
+                r.setStatus(Response.SERIALIZATION_ERROR);
 
                 if (t instanceof ExceedPayloadLimitException) {
                     logger.warn(t.getMessage(), t);

@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.remoting.transport.netty4;
 
+import io.netty.handler.codec.EncoderException;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.logger.Logger;
@@ -154,7 +155,11 @@ public class NettyClientHandler extends ChannelDuplexHandler {
      */
     private static Response buildErrorResponse(Request request, Throwable t) {
         Response response = new Response(request.getId(), request.getVersion());
-        response.setStatus(Response.BAD_REQUEST);
+        if(t instanceof EncoderException){
+            response.setStatus(Response.SERIALIZATION_ERROR);
+        }else{
+            response.setStatus(Response.BAD_REQUEST);
+        }
         response.setErrorMessage(StringUtils.toString(t));
         return response;
     }

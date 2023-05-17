@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.RemotingException;
+import org.apache.dubbo.remoting.SerializationException;
 import org.apache.dubbo.remoting.TimeoutException;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.InvokeMode;
@@ -69,7 +70,10 @@ public class AsyncToSyncInvoker<T> implements Invoker<T> {
             if (t instanceof TimeoutException) {
                 throw new RpcException(RpcException.TIMEOUT_EXCEPTION, "Invoke remote method timeout. method: " +
                         invocation.getMethodName() + ", provider: " + getUrl() + ", cause: " + e.getMessage(), e);
-            } else if (t instanceof RemotingException) {
+            } else if(t instanceof SerializationException){
+                throw new RpcException(RpcException.SERIALIZATION_EXCEPTION, "Failed to invoke remote method: " +
+                        invocation.getMethodName() + ", provider: " + getUrl() + ", cause: " + e.getMessage(), e);
+            }else if (t instanceof RemotingException) {
                 throw new RpcException(RpcException.NETWORK_EXCEPTION, "Failed to invoke remote method: " +
                         invocation.getMethodName() + ", provider: " + getUrl() + ", cause: " + e.getMessage(), e);
             } else {
