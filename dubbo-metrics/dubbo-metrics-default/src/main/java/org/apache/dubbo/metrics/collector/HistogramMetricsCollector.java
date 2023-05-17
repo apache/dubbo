@@ -61,7 +61,7 @@ public class HistogramMetricsCollector extends AbstractMetricsListener<RequestEv
                 histogram.setBucketsMs(DEFAULT_BUCKETS_MS);
             }
 
-            metricRegister = new HistogramMetricRegister(MetricsGlobalRegistry.getCompositeRegistry(), histogram);
+            metricRegister = new HistogramMetricRegister(MetricsGlobalRegistry.getCompositeRegistry(applicationModel), histogram);
         }
     }
 
