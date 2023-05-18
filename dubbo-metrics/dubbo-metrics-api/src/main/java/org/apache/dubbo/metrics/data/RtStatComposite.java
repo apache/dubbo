@@ -19,16 +19,17 @@ package org.apache.dubbo.metrics.data;
 
 import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.metrics.model.MetricsCategory;
-import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
 import org.apache.dubbo.metrics.model.container.AtomicLongContainer;
 import org.apache.dubbo.metrics.model.container.LongAccumulatorContainer;
 import org.apache.dubbo.metrics.model.container.LongContainer;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
+import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
 import org.apache.dubbo.metrics.model.key.MetricsPlaceValue;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
-import org.apache.dubbo.metrics.report.MetricsExport;
+import org.apache.dubbo.metrics.report.AbstractMetricsExport;
 import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -38,8 +39,17 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.LongAccumulator;
 import java.util.stream.Collectors;
 
+/**
+ * The data container of the rt dimension, including application, service, and method levels,
+ * if there is no actual call to the existing call method,
+ * the key will not be displayed when exporting (to be optimized)
+ */
 @SuppressWarnings({"rawtypes", "unchecked"})
-public class RtStatComposite implements MetricsExport {
+public class RtStatComposite extends AbstractMetricsExport {
+
+    public RtStatComposite(ApplicationModel applicationModel) {
+        super(applicationModel);
+    }
 
     private final List<LongContainer<? extends Number>> rtStats = new ArrayList<>();
 
@@ -68,23 +78,23 @@ public class RtStatComposite implements MetricsExport {
         return singleRtStats;
     }
 
-    public void calcApplicationRt(String applicationName, String registryOpType, Long responseTime) {
+    public void calcApplicationRt(String registryOpType, Long responseTime) {
         for (LongContainer container : rtStats.stream().filter(longContainer -> longContainer.specifyType(registryOpType)).collect(Collectors.toList())) {
-            Number current = (Number) ConcurrentHashMapUtils.computeIfAbsent(container, applicationName, container.getInitFunc());
+            Number current = (Number) ConcurrentHashMapUtils.computeIfAbsent(container, getAppName(), container.getInitFunc());
             container.getConsumerFunc().accept(responseTime, current);
         }
     }
 
-    public void calcServiceKeyRt(String applicationName, String serviceKey, String registryOpType, Long responseTime) {
+    public void calcServiceKeyRt(String serviceKey, String registryOpType, Long responseTime) {
         for (LongContainer container : rtStats.stream().filter(longContainer -> longContainer.specifyType(registryOpType)).collect(Collectors.toList())) {
-            Number current = (Number) ConcurrentHashMapUtils.computeIfAbsent(container, applicationName + "_" + serviceKey, container.getInitFunc());
+            Number current = (Number) ConcurrentHashMapUtils.computeIfAbsent(container, serviceKey, container.getInitFunc());
             container.getConsumerFunc().accept(responseTime, current);
         }
     }
 
-    public void calcMethodKeyRt(String applicationName, Invocation invocation, String registryOpType, Long responseTime) {
+    public void calcMethodKeyRt(Invocation invocation, String registryOpType, Long responseTime) {
         for (LongContainer container : rtStats.stream().filter(longContainer -> longContainer.specifyType(registryOpType)).collect(Collectors.toList())) {
-            Number current = (Number) ConcurrentHashMapUtils.computeIfAbsent(container, applicationName + "_" + invocation.getServiceName() + "_" + invocation.getMethodName(), container.getInitFunc());
+            Number current = (Number) ConcurrentHashMapUtils.computeIfAbsent(container, invocation.getServiceName() + "_" + invocation.getMethodName(), container.getInitFunc());
             container.getConsumerFunc().accept(responseTime, current);
         }
     }
@@ -94,7 +104,7 @@ public class RtStatComposite implements MetricsExport {
         for (LongContainer<? extends Number> rtContainer : rtStats) {
             MetricsKeyWrapper metricsKeyWrapper = rtContainer.getMetricsKeyWrapper();
             for (Map.Entry<String, ? extends Number> entry : rtContainer.entrySet()) {
-                list.add(new GaugeMetricSample<>(metricsKeyWrapper.targetKey(), metricsKeyWrapper.targetDesc(), metricsKeyWrapper.tagName(entry.getKey()), category, entry.getKey().intern(), value -> rtContainer.getValueSupplier().apply(value.intern())));
+                list.add(new GaugeMetricSample<>(metricsKeyWrapper.targetKey(), metricsKeyWrapper.targetDesc(), metricsKeyWrapper.tagName(getApplicationModel(), entry.getKey()), category, entry.getKey().intern(), value -> rtContainer.getValueSupplier().apply(value.intern())));
             }
         }
         return list;

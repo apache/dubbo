@@ -19,6 +19,7 @@ package org.apache.dubbo.metrics.model.key;
 
 import io.micrometer.common.lang.Nullable;
 import org.apache.dubbo.metrics.model.MetricsSupport;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Map;
 import java.util.Objects;
@@ -89,17 +90,17 @@ public class MetricsKeyWrapper {
         }
     }
 
-    public Map<String, String> tagName(String key) {
+    public Map<String, String> tagName(ApplicationModel applicationModel, String key) {
         MetricsLevel level = getLevel();
         switch (level) {
             case APP:
-                return MetricsSupport.applicationTags(key);
+                return MetricsSupport.applicationTags(applicationModel);
             case SERVICE:
-                return MetricsSupport.serviceTags(key);
+                return MetricsSupport.serviceTags(applicationModel, key);
             case METHOD:
-                return MetricsSupport.methodTags(key);
+                return MetricsSupport.methodTags(applicationModel, key);
         }
-        return MetricsSupport.applicationTags(key);
+        return MetricsSupport.applicationTags(applicationModel);
     }
 
     public static MetricsKeyWrapper wrapper(MetricsKey metricsKey) {
