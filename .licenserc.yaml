@@ -210,6 +210,8 @@ dependency:
       license: CDDL-1.0
     - name: com.salesforce.servicelibs:jprotoc
       license: CDDL-1.0
+    - name: com.github.spullara.mustache.java:compiler
+      license: Apache-2.0
     - name: org.checkerframework:checker-compat-qual
       license: MIT
     - name: ch.qos.logback:logback-classic

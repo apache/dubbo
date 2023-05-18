@@ -152,6 +152,7 @@
         <grpc.version>1.55.1</grpc.version>
         <grpc_contrib_verdion>0.8.1</grpc_contrib_verdion>
         <jprotoc_version>1.2.2</jprotoc_version>
+        <mustache_version>0.9.10</mustache_version>
         <!-- Log libs -->
         <slf4j_version>1.7.36</slf4j_version>
         <jcl_version>1.2</jcl_version>
@@ -848,6 +849,11 @@
                 <groupId>com.salesforce.servicelibs</groupId>
                 <artifactId>jprotoc</artifactId>
                 <version>${jprotoc_version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.spullara.mustache.java</groupId>
+                <artifactId>compiler</artifactId>
+                <version>${mustache_version}</version>
             </dependency>
             <dependency>
                 <groupId>io.fabric8</groupId>
