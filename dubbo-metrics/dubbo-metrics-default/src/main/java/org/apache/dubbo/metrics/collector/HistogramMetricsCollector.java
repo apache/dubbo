@@ -61,7 +61,7 @@ public class HistogramMetricsCollector extends AbstractMetricsListener<RequestEv
                 histogram.setBucketsMs(DEFAULT_BUCKETS_MS);
             }
 
-            metricRegister = new HistogramMetricRegister(MetricsGlobalRegistry.getCompositeRegistry(), histogram);
+            metricRegister = new HistogramMetricRegister(MetricsGlobalRegistry.getCompositeRegistry(applicationModel), histogram);
         }
     }
 
@@ -86,7 +86,7 @@ public class HistogramMetricsCollector extends AbstractMetricsListener<RequestEv
 
     private void onRTEvent(RequestEvent event) {
         if (metricRegister != null) {
-            MethodMetric metric = new MethodMetric(applicationModel.getApplicationName(), event.getAttachmentValue(MetricsConstants.INVOCATION));
+            MethodMetric metric = new MethodMetric(applicationModel, event.getAttachmentValue(MetricsConstants.INVOCATION));
             long responseTime = event.getTimePair().calc();
 
             HistogramMetricSample sample = new HistogramMetricSample(MetricsKey.METRIC_RT_HISTOGRAM.getNameByType(metric.getSide()),

@@ -80,7 +80,7 @@ class MetricsClusterFilterTest {
 
         collector = applicationModel.getBeanFactory().getOrRegisterBean(DefaultMetricsCollector.class);
         if(!initApplication.get()) {
-            collector.collectApplication(applicationModel);
+            collector.collectApplication();
             initApplication.set(true);
         }
         filter.setApplicationModel(applicationModel);

@@ -14,22 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.alibaba.dubbo.rpc;
 
-package org.apache.dubbo.metrics.collector;
+import org.apache.dubbo.rpc.AppResponse;
 
-import org.apache.dubbo.metrics.event.TimeCounterEvent;
-import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
+@Deprecated
+public class RpcResult extends AppResponse implements com.alibaba.dubbo.rpc.Result {
 
-/**
- * Service-level collector.
- * registration center, configuration center and other scenarios
- */
-public interface ServiceMetricsCollector<E extends TimeCounterEvent> extends MetricsCollector<E> {
+    public RpcResult() {
+    }
 
-    void increment(String serviceKey, MetricsKeyWrapper wrapper, int size);
+    public RpcResult(Object result) {
+        super(result);
+    }
 
-    void setNum(MetricsKeyWrapper metricsKey, String serviceKey, int num);
+    public RpcResult(Throwable exception) {
+        super(exception);
+    }
 
-    void addRt(String serviceKey, String registryOpType, Long responseTime);
 }
-
