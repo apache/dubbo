@@ -52,6 +52,7 @@ import static org.awaitility.Awaitility.await;
 
 @ExtendWith({MockitoExtension.class})
 class KubernetesServiceDiscoveryTest {
+
     private static final String SERVICE_NAME = "TestService";
 
     private static final String POD_NAME = "TestServer";

@@ -47,7 +47,16 @@ public class UrlUtils {
     }
 
     public static int getHeartbeat(URL url) {
-        return url.getParameter(Constants.HEARTBEAT_KEY, Constants.DEFAULT_HEARTBEAT);
+        String configuredHeartbeat = System.getProperty(Constants.HEARTBEAT_CONFIG_KEY);
+        int defaultHeartbeat = Constants.DEFAULT_HEARTBEAT;
+        if (StringUtils.isNotEmpty(configuredHeartbeat)) {
+            try {
+                defaultHeartbeat = Integer.parseInt(configuredHeartbeat);
+            } catch (NumberFormatException e) {
+                // use default heartbeat
+            }
+        }
+        return url.getParameter(Constants.HEARTBEAT_KEY, defaultHeartbeat);
     }
 
     /**

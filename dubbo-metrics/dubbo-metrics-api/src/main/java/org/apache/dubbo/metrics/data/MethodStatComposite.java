@@ -24,8 +24,9 @@ import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
 import org.apache.dubbo.metrics.model.sample.CounterMetricSample;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
-import org.apache.dubbo.metrics.report.MetricsExport;
+import org.apache.dubbo.metrics.report.AbstractMetricsExport;
 import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,8 +34,16 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class MethodStatComposite implements MetricsExport {
+/**
+ * Method-level data container,
+ * if there is no actual call to the existing call method,
+ * the key will not be displayed when exporting (to be optimized)
+ */
+public class MethodStatComposite extends AbstractMetricsExport {
 
+    public MethodStatComposite(ApplicationModel applicationModel) {
+        super(applicationModel);
+    }
     private final Map<MetricsKeyWrapper, Map<MethodMetric, AtomicLong>> methodNumStats = new ConcurrentHashMap<>();
 
     public void initWrapper(List<MetricsKeyWrapper> metricsKeyWrappers) {
@@ -44,11 +53,11 @@ public class MethodStatComposite implements MetricsExport {
         metricsKeyWrappers.forEach(appKey -> methodNumStats.put(appKey, new ConcurrentHashMap<>()));
     }
 
-    public void incrementMethodKey(MetricsKeyWrapper wrapper, String applicationName, Invocation invocation, int size) {
+    public void incrementMethodKey(MetricsKeyWrapper wrapper, Invocation invocation, int size) {
         if (!methodNumStats.containsKey(wrapper)) {
             return;
         }
-        methodNumStats.get(wrapper).computeIfAbsent(new MethodMetric(applicationName, invocation), k -> new AtomicLong(0L)).getAndAdd(size);
+        methodNumStats.get(wrapper).computeIfAbsent(new MethodMetric(getApplicationModel(), invocation), k -> new AtomicLong(0L)).getAndAdd(size);
     }
 
     public List<MetricSample> export(MetricsCategory category) {

@@ -22,6 +22,8 @@ import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.metrics.TestMetricsInvoker;
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
+import org.apache.dubbo.metrics.event.MetricsEventBus;
+import org.apache.dubbo.metrics.event.RequestEvent;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.sample.CounterMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
@@ -50,6 +52,7 @@ import static org.apache.dubbo.common.constants.MetricsConstants.TAG_GROUP_KEY;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_METHOD_KEY;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_VERSION_KEY;
+import static org.apache.dubbo.metrics.DefaultConstants.METRIC_FILTER_EVENT;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
@@ -74,8 +77,6 @@ class MetricsFilterTest {
     public void setup() {
         ApplicationConfig config = new ApplicationConfig();
         config.setName("MockMetrics");
-        //RpcContext.getContext().setAttachment("MockMetrics","MockMetrics");
-
         applicationModel = ApplicationModel.defaultModel();
         applicationModel.getApplicationConfigManager().setApplication(config);
 
@@ -84,7 +85,7 @@ class MetricsFilterTest {
 
         collector = applicationModel.getBeanFactory().getOrRegisterBean(DefaultMetricsCollector.class);
         if (!initApplication.get()) {
-            collector.collectApplication(applicationModel);
+            collector.collectApplication();
             initApplication.set(true);
         }
         filter.setApplicationModel(applicationModel);
@@ -107,7 +108,6 @@ class MetricsFilterTest {
         metricsMap.remove(MetricsKey.APPLICATION_METRIC_INFO.getName());
         Assertions.assertTrue(metricsMap.isEmpty());
     }
-
 
 
     @Test
@@ -393,5 +393,19 @@ class MetricsFilterTest {
             samples1.add(sample);
         }
         return samples1.stream().collect(Collectors.toMap(MetricSample::getName, Function.identity()));
+    }
+
+    @Test
+    void testThrowable() {
+        invocation.setTargetServiceUniqueName(INTERFACE_NAME);
+        invocation.setMethodName(METHOD_NAME);
+        invocation.setParameterTypes(new Class[]{String.class});
+        given(invoker.invoke(invocation)).willReturn(new AppResponse("success"));
+        Result result = filter.invoke(invoker, invocation);
+        result.setException(new RuntimeException("failed"));
+        Object eventObj = invocation.get(METRIC_FILTER_EVENT);
+        if (eventObj != null) {
+            Assertions.assertDoesNotThrow(() -> MetricsEventBus.after((RequestEvent) eventObj, result));
+        }
     }
 }

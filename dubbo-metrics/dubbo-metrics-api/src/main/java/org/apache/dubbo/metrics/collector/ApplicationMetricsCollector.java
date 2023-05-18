@@ -28,9 +28,9 @@ import org.apache.dubbo.metrics.model.key.MetricsKey;
  */
 public interface ApplicationMetricsCollector<E extends TimeCounterEvent> extends MetricsCollector<E> {
 
-    void increment(String applicationName, MetricsKey metricsKey);
+    void increment(MetricsKey metricsKey);
 
-    void addRt(String applicationName, String registryOpType, Long responseTime);
+    void addRt(String registryOpType, Long responseTime);
 
 }
 
