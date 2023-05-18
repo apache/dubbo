@@ -106,3 +106,8 @@ dubbo-spring-boot-starter
 dubbo-spring-security
 dubbo-xds
 dubbo-plugin-cluster-mergeable
+dubbo-plugin-mock
+dubbo-plugin-router-script
+dubbo-plugin-router-mesh
+dubbo-plugin-router-condition
+dubbo-plugin-router-tag
