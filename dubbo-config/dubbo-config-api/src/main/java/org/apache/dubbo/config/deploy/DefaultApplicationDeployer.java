@@ -748,11 +748,15 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     }
 
     private void exportMetricsService() {
-        try {
-            metricsServiceExporter.export();
-        } catch (Exception e) {
-            logger.error(LoggerCodeConstants.COMMON_METRICS_COLLECTOR_EXCEPTION, "", "",
-                "exportMetricsService an exception occurred when handle starting event", e);
+        boolean exportMetrics = applicationModel.getApplicationConfigManager().getMetrics()
+            .map(MetricsConfig::getExportMetricsService).orElse(true);
+        if (exportMetrics) {
+            try {
+                metricsServiceExporter.export();
+            } catch (Exception e) {
+                logger.error(LoggerCodeConstants.COMMON_METRICS_COLLECTOR_EXCEPTION, "", "",
+                    "exportMetricsService an exception occurred when handle starting event", e);
+            }
         }
     }
 
