@@ -118,12 +118,5 @@
             <version>${project.parent.version}</version>
             <scope>test</scope>
         </dependency>
-
-        <dependency>
-            <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-plugin-cluster-mock</artifactId>
-            <version>${project.parent.version}</version>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 </project>
