@@ -15,21 +15,26 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.metrics.collector;
+package org.apache.dubbo.metrics.report;
 
-import org.apache.dubbo.metrics.event.TimeCounterEvent;
-import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 /**
- * Service-level collector.
- * registration center, configuration center and other scenarios
+ * Store public information such as application
  */
-public interface ServiceMetricsCollector<E extends TimeCounterEvent> extends MetricsCollector<E> {
+public abstract class AbstractMetricsExport implements MetricsExport {
 
-    void increment(String serviceKey, MetricsKeyWrapper wrapper, int size);
+    private final ApplicationModel applicationModel;
 
-    void setNum(MetricsKeyWrapper metricsKey, String serviceKey, int num);
+    public AbstractMetricsExport(ApplicationModel applicationModel) {
+        this.applicationModel = applicationModel;
+    }
 
-    void addRt(String serviceKey, String registryOpType, Long responseTime);
+    public ApplicationModel getApplicationModel() {
+        return applicationModel;
+    }
+
+    public String getAppName() {
+        return getApplicationModel().getApplicationName();
+    }
 }
-

@@ -50,7 +50,7 @@ public class ThreadPoolMetricsSamplerTest {
 
     @BeforeEach
     void setUp() {
-        DefaultMetricsCollector collector = new DefaultMetricsCollector();
+        DefaultMetricsCollector collector = new DefaultMetricsCollector(applicationModel);
         sampler = new ThreadPoolMetricsSampler(collector);
     }
 
@@ -135,12 +135,12 @@ public class ThreadPoolMetricsSamplerTest {
     public void setUp2() {
         MockitoAnnotations.openMocks(this);
 
-        collector = new DefaultMetricsCollector();
+        collector = new DefaultMetricsCollector(applicationModel);
         sampler2 = new ThreadPoolMetricsSampler(collector);
 
         when(scopeBeanFactory.getBean(FrameworkExecutorRepository.class)).thenReturn(new FrameworkExecutorRepository());
 
-        collector.collectApplication(applicationModel);
+        collector.collectApplication();
         when(applicationModel.getBeanFactory()).thenReturn(scopeBeanFactory);
         when(applicationModel.getExtensionLoader(DataStore.class)).thenReturn(extensionLoader);
         when(extensionLoader.getDefaultExtension()).thenReturn(dataStore);
