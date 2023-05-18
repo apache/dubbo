@@ -23,7 +23,6 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.google.protobuf.DescriptorProtos;
 import java.util.Collection;
-import java.util.Iterator;
 import javax.annotation.Nonnull;
 
 public final class ProtoTypeMap {
