@@ -132,7 +132,7 @@ public class AggregateMetricsCollector implements MetricsCollector<RequestEvent>
     }
 
     private void onRTEvent(RequestEvent event) {
-        MethodMetric metric = new MethodMetric(applicationModel.getApplicationName(), event.getAttachmentValue(MetricsConstants.INVOCATION));
+        MethodMetric metric = new MethodMetric(applicationModel, event.getAttachmentValue(MetricsConstants.INVOCATION));
         long responseTime = event.getTimePair().calc();
         TimeWindowQuantile quantile = ConcurrentHashMapUtils.computeIfAbsent(rt, metric, k -> new TimeWindowQuantile(DEFAULT_COMPRESSION, bucketNum, timeWindowSeconds));
         quantile.add(responseTime);
@@ -142,7 +142,7 @@ public class AggregateMetricsCollector implements MetricsCollector<RequestEvent>
     private MethodMetric calcWindowCounter(RequestEvent event, MetricsKey targetKey) {
         MetricsPlaceValue placeType = MetricsPlaceValue.of(event.getAttachmentValue(MetricsConstants.INVOCATION_SIDE), MetricsLevel.SERVICE);
         MetricsKeyWrapper metricsKeyWrapper = new MetricsKeyWrapper(targetKey, placeType);
-        MethodMetric metric = new MethodMetric(applicationModel.getApplicationName(), event.getAttachmentValue(MetricsConstants.INVOCATION));
+        MethodMetric metric = new MethodMetric(applicationModel, event.getAttachmentValue(MetricsConstants.INVOCATION));
 
         ConcurrentMap<MethodMetric, TimeWindowCounter> counter = methodTypeCounter.computeIfAbsent(metricsKeyWrapper, k -> new ConcurrentHashMap<>());
 
@@ -198,7 +198,11 @@ public class AggregateMetricsCollector implements MetricsCollector<RequestEvent>
             list.add(new GaugeMetricSample<>(MetricsKey.METRIC_RT_P99.getNameByType(k.getSide()),
                 MetricsKey.METRIC_RT_P99.getDescription(), k.getTags(), RT, v, value -> value.quantile(0.99)));
             list.add(new GaugeMetricSample<>(MetricsKey.METRIC_RT_P95.getNameByType(k.getSide()),
-                MetricsKey.METRIC_RT_P99.getDescription(), k.getTags(), RT, v, value -> value.quantile(0.95)));
+                MetricsKey.METRIC_RT_P95.getDescription(), k.getTags(), RT, v, value -> value.quantile(0.95)));
+            list.add(new GaugeMetricSample<>(MetricsKey.METRIC_RT_P90.getNameByType(k.getSide()),
+                MetricsKey.METRIC_RT_P90.getDescription(), k.getTags(), RT, v, value -> value.quantile(0.90)));
+            list.add(new GaugeMetricSample<>(MetricsKey.METRIC_RT_P50.getNameByType(k.getSide()),
+                MetricsKey.METRIC_RT_P50.getDescription(), k.getTags(), RT, v, value -> value.quantile(0.50)));
         });
     }
 

@@ -77,8 +77,6 @@ class MetricsFilterTest {
     public void setup() {
         ApplicationConfig config = new ApplicationConfig();
         config.setName("MockMetrics");
-        //RpcContext.getContext().setAttachment("MockMetrics","MockMetrics");
-
         applicationModel = ApplicationModel.defaultModel();
         applicationModel.getApplicationConfigManager().setApplication(config);
 
@@ -87,7 +85,7 @@ class MetricsFilterTest {
 
         collector = applicationModel.getBeanFactory().getOrRegisterBean(DefaultMetricsCollector.class);
         if (!initApplication.get()) {
-            collector.collectApplication(applicationModel);
+            collector.collectApplication();
             initApplication.set(true);
         }
         filter.setApplicationModel(applicationModel);

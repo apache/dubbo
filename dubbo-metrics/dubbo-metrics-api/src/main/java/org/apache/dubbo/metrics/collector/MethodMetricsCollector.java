@@ -26,8 +26,8 @@ import org.apache.dubbo.rpc.Invocation;
  */
 public interface MethodMetricsCollector<E extends TimeCounterEvent> extends MetricsCollector<E> {
 
-    void increment(String applicationName, Invocation invocation, MetricsKeyWrapper wrapper, int size);
+    void increment(Invocation invocation, MetricsKeyWrapper wrapper, int size);
 
-    void addRt(String applicationName, Invocation invocation, String registryOpType, Long responseTime);
+    void addRt(Invocation invocation, String registryOpType, Long responseTime);
 }
 

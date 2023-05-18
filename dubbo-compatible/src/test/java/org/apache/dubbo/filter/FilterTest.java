@@ -18,11 +18,11 @@
 package org.apache.dubbo.filter;
 
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.RpcInvocation;
 
 import com.alibaba.dubbo.rpc.Filter;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
-import com.alibaba.dubbo.rpc.Result;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -46,15 +46,23 @@ class FilterTest {
     }
 
     @Test
-    void testDefault() {
+    void testDefault() throws Throwable {
         Invoker<FilterTest> invoker = new LegacyInvoker<FilterTest>(null);
-        Invocation invocation = new LegacyInvocation("bbb");
-        Result res = myFilter.invoke(invoker, invocation);
-        System.out.println(res);
+        org.apache.dubbo.rpc.Invocation invocation = new RpcInvocation(null, "echo", "DemoService", "DemoService", new Class[]{String.class}, new Object[]{"bbb"});
+        org.apache.dubbo.rpc.Result res = myFilter.invoke(invoker, invocation);
+        Assertions.assertEquals("alibaba", res.recreate());
+    }
+
+    @Test
+    void testRecreate() throws Throwable {
+        Invoker<FilterTest> invoker = new LegacyInvoker<FilterTest>(null);
+        org.apache.dubbo.rpc.Invocation invocation = new RpcInvocation(null, "echo", "DemoService", "DemoService", new Class[]{String.class}, new Object[]{"cc"});
+        org.apache.dubbo.rpc.Result res = myFilter.invoke(invoker, invocation);
+        Assertions.assertEquals("123test", res.recreate());
     }
 
     @AfterAll
     public static void tear() {
-        Assertions.assertEquals(2, MyFilter.count);
+        Assertions.assertEquals(3, MyFilter.count);
     }
 }
