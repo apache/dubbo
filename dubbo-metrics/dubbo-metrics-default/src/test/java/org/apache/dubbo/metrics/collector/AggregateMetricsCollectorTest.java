@@ -88,12 +88,9 @@ class AggregateMetricsCollectorTest {
     private AggregateMetricsCollector collector;
     private MetricsFilter metricsFilter;
 
-    public static MethodMetric getTestMethodMetric() {
+    public MethodMetric getTestMethodMetric() {
 
-        MethodMetric methodMetric = new MethodMetric();
-        methodMetric.setApplicationName("TestApp");
-        methodMetric.setInterfaceName("TestInterface");
-        methodMetric.setMethodName("TestMethod");
+        MethodMetric methodMetric = new MethodMetric(applicationModel, invocation);
         methodMetric.setGroup("TestGroup");
         methodMetric.setVersion("1.0.0");
         methodMetric.setSide("PROVIDER");
@@ -120,7 +117,7 @@ class AggregateMetricsCollectorTest {
         collector = applicationModel.getBeanFactory().getOrRegisterBean(AggregateMetricsCollector.class);
         collector.setCollectEnabled(true);
 
-        defaultCollector = new DefaultMetricsCollector();
+        defaultCollector = new DefaultMetricsCollector(applicationModel);
         defaultCollector.setCollectEnabled(true);
 
         metricsFilter = new MetricsFilter();
@@ -173,7 +170,6 @@ class AggregateMetricsCollectorTest {
         metricsFilter.onResponse(result, new TestMetricsInvoker(side), invocation);
 
 
-
         List<MetricSample> samples = collector.collect();
         for (MetricSample sample : samples) {
             Map<String, String> tags = sample.getTags();
@@ -203,7 +199,7 @@ class AggregateMetricsCollectorTest {
 
         when(applicationModel.getApplicationConfigManager()).thenReturn(configManager);
         when(applicationModel.getBeanFactory()).thenReturn(beanFactory);
-        when(beanFactory.getBean(DefaultMetricsCollector.class)).thenReturn(new DefaultMetricsCollector());
+        when(beanFactory.getBean(DefaultMetricsCollector.class)).thenReturn(new DefaultMetricsCollector(applicationModel));
         when(configManager.getMetrics()).thenReturn(Optional.of(metricsConfig));
         when(metricsConfig.getAggregation()).thenReturn(aggregationConfig);
         when(aggregationConfig.getEnabled()).thenReturn(Boolean.TRUE);
@@ -273,16 +269,16 @@ class AggregateMetricsCollectorTest {
         List<MetricSample> samples = collector.collect();
 
         GaugeMetricSample<?> p95Sample = samples.stream()
-            .filter(sample -> sample.getName().endsWith("p95"))
-            .map(sample -> (GaugeMetricSample<?>) sample)
-            .findFirst()
-            .orElse(null);
+                .filter(sample -> sample.getName().endsWith("p95"))
+                .map(sample -> (GaugeMetricSample<?>) sample)
+                .findFirst()
+                .orElse(null);
 
         GaugeMetricSample<?> p99Sample = samples.stream()
-            .filter(sample -> sample.getName().endsWith("p99"))
-            .map(sample -> (GaugeMetricSample<?>) sample)
-            .findFirst()
-            .orElse(null);
+                .filter(sample -> sample.getName().endsWith("p99"))
+                .map(sample -> (GaugeMetricSample<?>) sample)
+                .findFirst()
+                .orElse(null);
 
         Assertions.assertNotNull(p95Sample);
         Assertions.assertNotNull(p99Sample);

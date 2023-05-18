@@ -87,8 +87,7 @@ class RegistryMetricsSampleTest {
     void testListener() {
         RegistryMetricsCollector collector = new RegistryMetricsCollector(applicationModel);
         collector.setCollectEnabled(true);
-        String applicationName = applicationModel.getApplicationName();
-        collector.increment(applicationName, MetricsKey.REGISTER_METRIC_REQUESTS);
+        collector.increment(MetricsKey.REGISTER_METRIC_REQUESTS);
     }
 
 }
