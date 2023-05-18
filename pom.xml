@@ -122,7 +122,7 @@
         <maven_jetty_version>9.4.51.v20230217</maven_jetty_version>
         <maven_checkstyle_version>3.2.1</maven_checkstyle_version>
         <maven_jacoco_version>0.8.10</maven_jacoco_version>
-        <maven_flatten_version>1.4.1</maven_flatten_version>
+        <maven_flatten_version>1.5.0</maven_flatten_version>
         <maven_enforce_version>3.3.0</maven_enforce_version>
         <maven_antrun_version>3.1.0</maven_antrun_version>
         <maven_os_plugin_version>1.7.1</maven_os_plugin_version>
@@ -136,7 +136,7 @@
         <jprotoc_version>1.2.2</jprotoc_version>
         <protobuf-java_version>3.22.3</protobuf-java_version>
         <grpc_version>1.54.0</grpc_version>
-        <revision>3.2.1-SNAPSHOT</revision>
+        <revision>3.2.2-SNAPSHOT</revision>
     </properties>
 
     <modules>
@@ -824,7 +824,7 @@
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>build-helper-maven-plugin</artifactId>
-                    <version>3.3.0</version>
+                    <version>3.4.0</version>
                 </plugin>
                 <plugin>
                     <groupId>org.fusesource.hawtjni</groupId>

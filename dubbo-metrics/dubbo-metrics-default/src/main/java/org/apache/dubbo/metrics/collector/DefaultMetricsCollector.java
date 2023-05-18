@@ -56,18 +56,20 @@ public class DefaultMetricsCollector extends CombMetricsCollector<RequestEvent> 
     private volatile boolean threadpoolCollectEnabled = false;
     private final ThreadPoolMetricsSampler threadPoolSampler = new ThreadPoolMetricsSampler(this);
     private String applicationName;
-    private ApplicationModel applicationModel;
+    private final ApplicationModel applicationModel;
     private final List<MetricsSampler> samplers = new ArrayList<>();
 
-    public DefaultMetricsCollector() {
-        super(new BaseStatComposite() {
+    public DefaultMetricsCollector(ApplicationModel applicationModel) {
+        super(new BaseStatComposite(applicationModel) {
             @Override
             protected void init(MethodStatComposite methodStatComposite) {
+                super.init(methodStatComposite);
                 methodStatComposite.initWrapper(DefaultConstants.METHOD_LEVEL_KEYS);
             }
 
             @Override
             protected void init(RtStatComposite rtStatComposite) {
+                super.init(rtStatComposite);
                 rtStatComposite.init(MetricsPlaceValue.of(CommonConstants.PROVIDER, MetricsLevel.METHOD),
                         MetricsPlaceValue.of(CommonConstants.CONSUMER, MetricsLevel.METHOD));
             }
@@ -75,6 +77,7 @@ public class DefaultMetricsCollector extends CombMetricsCollector<RequestEvent> 
         super.setEventMulticaster(new DefaultSubDispatcher(this));
         samplers.add(applicationSampler);
         samplers.add(threadPoolSampler);
+        this.applicationModel = applicationModel;
     }
 
     public void addSampler(MetricsSampler sampler) {
@@ -109,9 +112,8 @@ public class DefaultMetricsCollector extends CombMetricsCollector<RequestEvent> 
         this.threadpoolCollectEnabled = threadpoolCollectEnabled;
     }
 
-    public void collectApplication(ApplicationModel applicationModel) {
+    public void collectApplication() {
         this.setApplicationName(applicationModel.getApplicationName());
-        this.applicationModel = applicationModel;
         applicationSampler.inc(applicationName, MetricsEvent.Type.APPLICATION_INFO);
     }
 
@@ -155,7 +157,7 @@ public class DefaultMetricsCollector extends CombMetricsCollector<RequestEvent> 
         @Override
         protected void countConfigure(
                 MetricsCountSampleConfigurer<String, MetricsEvent.Type, ApplicationMetric> sampleConfigure) {
-            sampleConfigure.configureMetrics(configure -> new ApplicationMetric(sampleConfigure.getSource()));
+            sampleConfigure.configureMetrics(configure -> new ApplicationMetric(applicationModel));
         }
     };
 }

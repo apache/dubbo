@@ -38,4 +38,5 @@ public class ObservabilityUtils {
 
     public static final String DUBBO_TRACING_ZIPKIN_CONFIG_PREFIX = DUBBO_TRACING_PREFIX + PROPERTY_NAME_SEPARATOR + "tracing-exporter.zipkin-config";
 
+    public static final String DUBBO_TRACING_OTLP_CONFIG_PREFIX = DUBBO_TRACING_PREFIX + PROPERTY_NAME_SEPARATOR + "tracing-exporter.otlp-config";
 }
