@@ -37,8 +37,9 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.salesforce.servicelibs</groupId>
-            <artifactId>jprotoc</artifactId>
+            <groupId>com.github.spullara.mustache.java</groupId>
+            <artifactId>compiler</artifactId>
+            <version>0.9.10</version>
         </dependency>
         <dependency>
             <groupId>io.grpc</groupId>
