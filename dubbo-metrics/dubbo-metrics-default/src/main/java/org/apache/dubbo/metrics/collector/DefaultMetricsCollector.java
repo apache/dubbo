@@ -71,7 +71,7 @@ public class DefaultMetricsCollector extends CombMetricsCollector<RequestEvent> 
             protected void init(RtStatComposite rtStatComposite) {
                 super.init(rtStatComposite);
                 rtStatComposite.init(MetricsPlaceValue.of(CommonConstants.PROVIDER, MetricsLevel.METHOD),
-                        MetricsPlaceValue.of(CommonConstants.CONSUMER, MetricsLevel.METHOD));
+                    MetricsPlaceValue.of(CommonConstants.CONSUMER, MetricsLevel.METHOD));
             }
         });
         super.setEventMulticaster(new DefaultSubDispatcher(this));
@@ -146,17 +146,17 @@ public class DefaultMetricsCollector extends CombMetricsCollector<RequestEvent> 
         public List<MetricSample> sample() {
             List<MetricSample> samples = new ArrayList<>();
             this.getCount(MetricsEvent.Type.APPLICATION_INFO).filter(e -> !e.isEmpty())
-                    .ifPresent(map -> map.forEach((k, v) ->
-                            samples.add(new CounterMetricSample<>(APPLICATION_METRIC_INFO.getName(),
-                                    APPLICATION_METRIC_INFO.getDescription(),
-                                    k.getTags(), APPLICATION, v)))
-                    );
+                .ifPresent(map -> map.forEach((k, v) ->
+                    samples.add(new CounterMetricSample<>(APPLICATION_METRIC_INFO.getName(),
+                        APPLICATION_METRIC_INFO.getDescription(),
+                        k.getTags(), APPLICATION, v)))
+                );
             return samples;
         }
 
         @Override
         protected void countConfigure(
-                MetricsCountSampleConfigurer<String, MetricsEvent.Type, ApplicationMetric> sampleConfigure) {
+            MetricsCountSampleConfigurer<String, MetricsEvent.Type, ApplicationMetric> sampleConfigure) {
             sampleConfigure.configureMetrics(configure -> new ApplicationMetric(applicationModel));
         }
     };
