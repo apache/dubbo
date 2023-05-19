@@ -31,7 +31,6 @@ import org.apache.dubbo.metrics.model.key.MetricsLevel;
 import org.apache.dubbo.metrics.model.key.MetricsPlaceValue;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.rpc.Invocation;
-import org.apache.dubbo.rpc.RpcException;
 
 import static org.apache.dubbo.metrics.DefaultConstants.METRIC_THROWABLE;
 import static org.apache.dubbo.metrics.MetricsConstants.INVOCATION;
@@ -89,18 +88,14 @@ public final class DefaultSubDispatcher extends SimpleMetricsEventMulticaster {
                             if (throwableObj == null) {
                                 targetKey = key;
                             } else {
-                                targetKey = MetricsSupport.getMetricsKey((RpcException) throwableObj);
+                                targetKey = MetricsSupport.getMetricsKey((Throwable) throwableObj);
                             }
                             MetricsSupport.incrAndAddRt(targetKey, dynamicPlaceType, (MethodMetricsCollector) collector, event);
                         })),
                 new MetricsCat(MetricsKey.METRIC_REQUEST_BUSINESS_FAILED, (key, placeType, collector) -> AbstractMetricsKeyListener.onError(key,
                         event ->
                         {
-                            Throwable throwable = event.getAttachmentValue(METRIC_THROWABLE);
-                            MetricsKey targetKey = MetricsKey.METRIC_REQUESTS_FAILED_AGG;
-                            if (throwable instanceof RpcException) {
-                                targetKey = MetricsSupport.getMetricsKey((RpcException) throwable);
-                            }
+                            MetricsKey targetKey = MetricsSupport.getMetricsKey(event.getAttachmentValue(METRIC_THROWABLE));
                             // Dynamic metricsKey && dynamicPlaceType
                             MetricsPlaceValue dynamicPlaceType = MetricsPlaceValue.of(event.getAttachmentValue(MetricsConstants.INVOCATION_SIDE), MetricsLevel.METHOD);
                             MetricsSupport.increment(MetricsKey.METRIC_REQUESTS_TOTAL_FAILED, dynamicPlaceType, (MethodMetricsCollector) collector, event);

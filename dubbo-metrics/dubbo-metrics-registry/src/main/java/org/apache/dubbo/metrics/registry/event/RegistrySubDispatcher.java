@@ -89,7 +89,7 @@ public final class RegistrySubDispatcher extends SimpleMetricsEventMulticaster {
                     collector.addRt(event.appName(), placeType.getType(), event.getTimePair().calc());
                     Map<String, Integer> lastNumMap = Collections.unmodifiableMap(event.getAttachmentValue(ATTACHMENT_KEY_LAST_NUM_MAP));
                     lastNumMap.forEach(
-                        (k, v) -> collector.setNum(new MetricsKeyWrapper(key, OP_TYPE_NOTIFY), event.appName(), k, v));
+                        (k, v) -> collector.setNum(new MetricsKeyWrapper(key, OP_TYPE_NOTIFY), k, v));
 
                 }
             ));
@@ -101,7 +101,7 @@ public final class RegistrySubDispatcher extends SimpleMetricsEventMulticaster {
                 Map<MetricsKey, Map<String, Integer>> summaryMap = event.getAttachmentValue(ATTACHMENT_DIRECTORY_MAP);
                 summaryMap.forEach((metricsKey, map) ->
                     map.forEach(
-                        (k, v) -> collector.setNum(new MetricsKeyWrapper(key, OP_TYPE_DIRECTORY), event.appName(), k, v)));
+                        (k, v) -> collector.setNum(new MetricsKeyWrapper(key, OP_TYPE_DIRECTORY), k, v)));
             }
         ));
 
