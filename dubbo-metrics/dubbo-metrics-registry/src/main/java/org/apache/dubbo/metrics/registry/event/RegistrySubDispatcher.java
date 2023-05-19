@@ -101,7 +101,7 @@ public final class RegistrySubDispatcher extends SimpleMetricsEventMulticaster {
                 Map<MetricsKey, Map<String, Integer>> summaryMap = event.getAttachmentValue(ATTACHMENT_DIRECTORY_MAP);
                 summaryMap.forEach((metricsKey, map) ->
                     map.forEach(
-                        (k, v) -> collector.setNum(new MetricsKeyWrapper(key, OP_TYPE_DIRECTORY), k, v)));
+                        (k, v) -> collector.setNum(new MetricsKeyWrapper(metricsKey, OP_TYPE_DIRECTORY), k, v)));
             }
         ));
 
