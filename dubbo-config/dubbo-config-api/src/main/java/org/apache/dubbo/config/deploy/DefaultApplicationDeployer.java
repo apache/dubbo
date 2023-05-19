@@ -390,11 +390,13 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         applicationModel.getBeanFactory().registerBean(metricsReporter);
     }
 
-    private static boolean isSupportPrometheus() {
-        return isClassPresent("io.prometheus.client.exporter.BasicAuthHttpConnectionFactory")
+    public static boolean isSupportPrometheus() {
+        return isClassPresent("io.micrometer.prometheus.PrometheusConfig")
             && isClassPresent("io.prometheus.client.exporter.BasicAuthHttpConnectionFactory")
+            && isClassPresent("io.prometheus.client.exporter.HttpConnectionFactory")
             && isClassPresent("io.prometheus.client.exporter.PushGateway");
     }
+
 
     private static boolean isClassPresent(String className) {
         return ClassUtils.isPresent(className, DefaultApplicationDeployer.class.getClassLoader());
