@@ -25,11 +25,9 @@ import org.apache.dubbo.metrics.data.ApplicationStatComposite;
 import org.apache.dubbo.metrics.data.BaseStatComposite;
 import org.apache.dubbo.metrics.data.RtStatComposite;
 import org.apache.dubbo.metrics.data.ServiceStatComposite;
-import org.apache.dubbo.metrics.event.MetricsEvent;
-import org.apache.dubbo.metrics.event.TimeCounterEvent;
 import org.apache.dubbo.metrics.metadata.MetadataMetricsConstants;
 import org.apache.dubbo.metrics.metadata.event.MetadataEvent;
-import org.apache.dubbo.metrics.metadata.event.MetadataMetricsEventMulticaster;
+import org.apache.dubbo.metrics.metadata.event.MetadataSubDispatcher;
 import org.apache.dubbo.metrics.model.MetricsCategory;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -47,21 +45,32 @@ import static org.apache.dubbo.metrics.metadata.MetadataMetricsConstants.OP_TYPE
  * Registry implementation of {@link MetricsCollector}
  */
 @Activate
-public class MetadataMetricsCollector extends CombMetricsCollector<TimeCounterEvent> {
+public class MetadataMetricsCollector extends CombMetricsCollector<MetadataEvent> {
 
     private Boolean collectEnabled = null;
     private final ApplicationModel applicationModel;
 
     public MetadataMetricsCollector(ApplicationModel applicationModel) {
-        super(new BaseStatComposite() {
+        super(new BaseStatComposite(applicationModel) {
             @Override
-            protected void init(ApplicationStatComposite applicationStatComposite, ServiceStatComposite serviceStatComposite, RtStatComposite rtStatComposite) {
+            protected void init(ApplicationStatComposite applicationStatComposite) {
+                super.init(applicationStatComposite);
                 applicationStatComposite.init(MetadataMetricsConstants.APP_LEVEL_KEYS);
-                serviceStatComposite.init(MetadataMetricsConstants.SERVICE_LEVEL_KEYS);
+            }
+
+            @Override
+            protected void init(ServiceStatComposite serviceStatComposite) {
+                super.init(serviceStatComposite);
+                serviceStatComposite.initWrapper(MetadataMetricsConstants.SERVICE_LEVEL_KEYS);
+            }
+
+            @Override
+            protected void init(RtStatComposite rtStatComposite) {
+                super.init(rtStatComposite);
                 rtStatComposite.init(OP_TYPE_PUSH, OP_TYPE_SUBSCRIBE, OP_TYPE_STORE_PROVIDER_INTERFACE);
             }
         });
-        super.setEventMulticaster(new MetadataMetricsEventMulticaster(this));
+        super.setEventMulticaster(new MetadataSubDispatcher(this));
         this.applicationModel = applicationModel;
     }
 
@@ -88,11 +97,6 @@ public class MetadataMetricsCollector extends CombMetricsCollector<TimeCounterEv
         }
         list.addAll(super.export(MetricsCategory.METADATA));
         return list;
-    }
-
-    @Override
-    public boolean isSupport(MetricsEvent event) {
-        return event instanceof MetadataEvent;
     }
 
 }

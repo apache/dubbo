@@ -39,12 +39,12 @@ public enum MetricsKey {
     METRIC_REQUESTS_TOTAL_AGG("dubbo.%s.requests.total.aggregate", "Aggregated Total Requests"),
     METRIC_REQUESTS_SUCCEED_AGG("dubbo.%s.requests.succeed.aggregate", "Aggregated Succeed Requests"),
     METRIC_REQUESTS_FAILED_AGG("dubbo.%s.requests.failed.aggregate", "Aggregated Failed Requests"),
-    METRIC_REQUESTS_BUSINESS_FAILED_AGG("dubbo.%s.requests.business.failed.aggregate", "Aggregated Business Failed Requests"),
+    METRIC_REQUEST_BUSINESS_FAILED_AGG("dubbo.%s.requests.business.failed.aggregate", "Aggregated Business Failed Requests"),
     METRIC_REQUESTS_TIMEOUT_AGG("dubbo.%s.requests.timeout.failed.aggregate", "Aggregated timeout Failed Requests"),
     METRIC_REQUESTS_LIMIT_AGG("dubbo.%s.requests.limit.aggregate", "Aggregated limit Requests"),
     METRIC_REQUESTS_TOTAL_FAILED_AGG("dubbo.%s.requests.failed.total.aggregate", "Aggregated failed total Requests"),
-    METRIC_REQUESTS_TOTAL_NETWORK_FAILED_AGG("dubbo.%s.requests.failed.network.total.aggregate", "Aggregated failed network total Requests"),
-    METRIC_REQUESTS_TOTAL_CODEC_FAILED_AGG("dubbo.%s.requests.failed.codec.total.aggregate", "Aggregated failed codec total Requests"),
+    METRIC_REQUESTS_NETWORK_FAILED_AGG("dubbo.%s.requests.failed.network.total.aggregate", "Aggregated failed network total Requests"),
+    METRIC_REQUESTS_CODEC_FAILED_AGG("dubbo.%s.requests.failed.codec.total.aggregate", "Aggregated failed codec total Requests"),
     METRIC_REQUESTS_TOTAL_SERVICE_UNAVAILABLE_FAILED_AGG("dubbo.%s.requests.failed.service.unavailable.total.aggregate", "Aggregated failed codec total Requests"),
 
     METRIC_QPS("dubbo.%s.qps.total", "Query Per Seconds"),
@@ -55,6 +55,8 @@ public enum MetricsKey {
     METRIC_RT_AVG("dubbo.%s.rt.milliseconds.avg", "Average Response Time"),
     METRIC_RT_P99("dubbo.%s.rt.milliseconds.p99", "Response Time P99"),
     METRIC_RT_P95("dubbo.%s.rt.milliseconds.p95", "Response Time P95"),
+    METRIC_RT_P90("dubbo.%s.rt.milliseconds.p90", "Response Time P90"),
+    METRIC_RT_P50("dubbo.%s.rt.milliseconds.p50", "Response Time P50"),
 
 
     // register metrics key

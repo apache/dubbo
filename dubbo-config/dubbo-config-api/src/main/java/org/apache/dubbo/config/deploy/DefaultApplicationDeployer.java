@@ -38,6 +38,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.utils.ArrayUtils;
+import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ApplicationConfig;
@@ -58,10 +59,14 @@ import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.metrics.report.MetricsReporter;
 import org.apache.dubbo.metrics.report.MetricsReporterFactory;
 import org.apache.dubbo.metrics.service.MetricsServiceExporter;
+import org.apache.dubbo.registry.Registry;
+import org.apache.dubbo.registry.RegistryFactory;
 import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
 import org.apache.dubbo.registry.support.RegistryManager;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
+import org.apache.dubbo.rpc.model.ModuleServiceRepository;
+import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
@@ -369,30 +374,32 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         Optional<MetricsConfig> configOptional = configManager.getMetrics();
 
         // TODO compatible with old usage of metrics, remove protocol check after new metrics is ready for use.
-        boolean importMetricsPrometheus;  // Use package references instead of config checks
-        try {
-            Class.forName("io.micrometer.prometheus.PrometheusConfig");
-            importMetricsPrometheus = true;
-        } catch (ClassNotFoundException e) {
-            importMetricsPrometheus = false;
-        }
-
-        if (!importMetricsPrometheus) {
-            //use old metrics
+        if (!isSupportPrometheus()) {
             return;
         }
-
         MetricsConfig metricsConfig = configOptional.orElse(new MetricsConfig(applicationModel));
         if (StringUtils.isBlank(metricsConfig.getProtocol())) {
             metricsConfig.setProtocol(PROTOCOL_PROMETHEUS);
         }
         collector.setCollectEnabled(true);
-        collector.collectApplication(applicationModel);
+        collector.collectApplication();
         collector.setThreadpoolCollectEnabled(Optional.ofNullable(metricsConfig.getEnableThreadpool()).orElse(true));
         MetricsReporterFactory metricsReporterFactory = getExtensionLoader(MetricsReporterFactory.class).getAdaptiveExtension();
         MetricsReporter metricsReporter = metricsReporterFactory.createMetricsReporter(metricsConfig.toUrl());
         metricsReporter.init();
         applicationModel.getBeanFactory().registerBean(metricsReporter);
+    }
+
+    public static boolean isSupportPrometheus() {
+        return isClassPresent("io.micrometer.prometheus.PrometheusConfig")
+            && isClassPresent("io.prometheus.client.exporter.BasicAuthHttpConnectionFactory")
+            && isClassPresent("io.prometheus.client.exporter.HttpConnectionFactory")
+            && isClassPresent("io.prometheus.client.exporter.PushGateway");
+    }
+
+
+    private static boolean isClassPresent(String className) {
+        return ClassUtils.isPresent(className, DefaultApplicationDeployer.class.getClassLoader());
     }
 
 
@@ -744,11 +751,15 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     }
 
     private void exportMetricsService() {
-        try {
-            metricsServiceExporter.export();
-        } catch (Exception e) {
-            logger.error(LoggerCodeConstants.COMMON_METRICS_COLLECTOR_EXCEPTION, "", "",
-                "exportMetricsService an exception occurred when handle starting event", e);
+        boolean exportMetrics = applicationModel.getApplicationConfigManager().getMetrics()
+            .map(MetricsConfig::getExportMetricsService).orElse(true);
+        if (exportMetrics) {
+            try {
+                metricsServiceExporter.export();
+            } catch (Exception e) {
+                logger.error(LoggerCodeConstants.COMMON_METRICS_COLLECTOR_EXCEPTION, "", "",
+                    "exportMetricsService an exception occurred when handle starting event", e);
+            }
         }
     }
 
@@ -931,9 +942,11 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             }
             onStopping();
 
-            unexportMetricsService();
+            offline();
 
             unregisterServiceInstance();
+
+            unexportMetricsService();
 
             unRegisterShutdownHook();
             if (asyncMetadataFuture != null) {
@@ -941,6 +954,33 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             }
 
         }
+    }
+
+    private void offline() {
+        try {
+            for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
+                ModuleServiceRepository serviceRepository = moduleModel.getServiceRepository();
+                List<ProviderModel> exportedServices = serviceRepository.getExportedServices();
+                for (ProviderModel exportedService : exportedServices) {
+                    List<ProviderModel.RegisterStatedURL> statedUrls = exportedService.getStatedUrl();
+                    for (ProviderModel.RegisterStatedURL statedURL : statedUrls) {
+                        if (statedURL.isRegistered()) {
+                            doOffline(statedURL);
+                        }
+                    }
+                }
+            }
+        } catch (Throwable t) {
+            logger.error(LoggerCodeConstants.INTERNAL_ERROR, "", "", "Exceptions occurred when unregister services.", t);
+        }
+    }
+
+    private void doOffline(ProviderModel.RegisterStatedURL statedURL) {
+        RegistryFactory registryFactory =
+            statedURL.getRegistryUrl().getOrDefaultApplicationModel().getExtensionLoader(RegistryFactory.class).getAdaptiveExtension();
+        Registry registry = registryFactory.getRegistry(statedURL.getRegistryUrl());
+        registry.unregister(statedURL.getProviderUrl());
+        statedURL.setRegistered(false);
     }
 
     @Override

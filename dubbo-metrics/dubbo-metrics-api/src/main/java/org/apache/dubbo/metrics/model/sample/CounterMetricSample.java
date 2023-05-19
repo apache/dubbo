@@ -17,23 +17,22 @@
 package org.apache.dubbo.metrics.model.sample;
 
 import org.apache.dubbo.metrics.model.MetricsCategory;
+import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
 
 import java.util.Map;
 
-public class CounterMetricSample<T extends Number>  extends MetricSample {
+public class CounterMetricSample<T extends Number> extends MetricSample {
 
     private final T value;
 
     public CounterMetricSample(String name, String description, Map<String, String> tags,
-                               MetricsCategory category, T value ) {
+                               MetricsCategory category, T value) {
         super(name, description, tags, Type.COUNTER, category);
         this.value = value;
     }
 
-    public CounterMetricSample(String name, String description, Map<String, String> tags,   MetricsCategory category,
-                               String baseUnit, T value) {
-        super(name, description, tags, Type.COUNTER, category, baseUnit);
-        this.value = value;
+    public CounterMetricSample(MetricsKeyWrapper metricsKeyWrapper, Map<String, String> tags, MetricsCategory category, T value) {
+        this(metricsKeyWrapper.targetKey(), metricsKeyWrapper.targetDesc(), tags, category, value);
     }
 
     public T getValue() {

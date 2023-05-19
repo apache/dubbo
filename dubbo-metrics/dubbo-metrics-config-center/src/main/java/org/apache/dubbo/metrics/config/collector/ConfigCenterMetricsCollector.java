@@ -22,9 +22,7 @@ import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.metrics.collector.CombMetricsCollector;
 import org.apache.dubbo.metrics.collector.MetricsCollector;
 import org.apache.dubbo.metrics.config.event.ConfigCenterEvent;
-import org.apache.dubbo.metrics.config.event.ConfigCenterMetricsDispatcher;
-import org.apache.dubbo.metrics.event.MetricsEvent;
-import org.apache.dubbo.metrics.event.TimeCounterEvent;
+import org.apache.dubbo.metrics.config.event.ConfigCenterSubDispatcher;
 import org.apache.dubbo.metrics.model.ConfigCenterMetric;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
@@ -45,7 +43,7 @@ import static org.apache.dubbo.metrics.model.MetricsCategory.CONFIGCENTER;
  * Config center implementation of {@link MetricsCollector}
  */
 @Activate
-public class ConfigCenterMetricsCollector extends CombMetricsCollector<TimeCounterEvent> {
+public class ConfigCenterMetricsCollector extends CombMetricsCollector<ConfigCenterEvent> {
 
     private Boolean collectEnabled = null;
     private final ApplicationModel applicationModel;
@@ -55,7 +53,7 @@ public class ConfigCenterMetricsCollector extends CombMetricsCollector<TimeCount
     public ConfigCenterMetricsCollector(ApplicationModel applicationModel) {
         super(null);
         this.applicationModel = applicationModel;
-        super.setEventMulticaster(new ConfigCenterMetricsDispatcher(this));
+        super.setEventMulticaster(new ConfigCenterSubDispatcher(this));
     }
 
     public void setCollectEnabled(Boolean collectEnabled) {
@@ -93,10 +91,5 @@ public class ConfigCenterMetricsCollector extends CombMetricsCollector<TimeCount
         return list;
     }
 
-
-    @Override
-    public boolean isSupport(MetricsEvent event) {
-        return event instanceof ConfigCenterEvent;
-    }
 
 }

@@ -20,7 +20,8 @@ package org.apache.dubbo.rpc.cluster.filter.support;
 
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
-import org.apache.dubbo.metrics.event.MetricsEvent;
+import org.apache.dubbo.metrics.event.MetricsEventBus;
+import org.apache.dubbo.metrics.event.RequestBeforeEvent;
 import org.apache.dubbo.rpc.BaseFilter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -30,19 +31,17 @@ import org.apache.dubbo.rpc.cluster.filter.ClusterFilter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
 
-
-import java.util.Optional;
-
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
-import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 
-@Activate(group = CONSUMER,onClass = "org.apache.dubbo.metrics.collector.DefaultMetricsCollector")
+@Activate(group = CONSUMER, onClass = "org.apache.dubbo.metrics.collector.DefaultMetricsCollector")
 public class MetricsClusterFilter implements ClusterFilter, BaseFilter.Listener, ScopeModelAware {
 
+    private ApplicationModel applicationModel;
     private DefaultMetricsCollector collector;
 
     @Override
     public void setApplicationModel(ApplicationModel applicationModel) {
+        this.applicationModel = applicationModel;
         this.collector = applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class);
     }
 
@@ -65,18 +64,12 @@ public class MetricsClusterFilter implements ClusterFilter, BaseFilter.Listener,
         if (collector == null || !collector.isCollectEnabled()) {
             return;
         }
-        if (t != null && t instanceof RpcException) {
+        if (t instanceof RpcException) {
             RpcException e = (RpcException) t;
             if (e.isForbidden()) {
-                collector.getMethodSampler().incOnEvent(invocation,
-                    MetricsEvent.Type.SERVICE_UNAVAILABLE.getNameByType(getSide(invocation)));
+                MetricsEventBus.publish(RequestBeforeEvent.toEvent(applicationModel, invocation));
             }
         }
     }
 
-    private String getSide(Invocation invocation) {
-        Optional<? extends Invoker<?>> invoker = Optional.ofNullable(invocation.getInvoker());
-        String side = invoker.isPresent() ? invoker.get().getUrl().getSide() : PROVIDER_SIDE;
-        return side;
-    }
 }

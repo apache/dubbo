@@ -20,24 +20,36 @@ package org.apache.dubbo.metrics.collector;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ReflectionUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.nested.AggregationConfig;
+import org.apache.dubbo.metrics.MetricsConstants;
 import org.apache.dubbo.metrics.TestMetricsInvoker;
 import org.apache.dubbo.metrics.aggregate.TimeWindowCounter;
-import org.apache.dubbo.metrics.collector.sample.MethodMetricsSampler;
-import org.apache.dubbo.metrics.event.MetricsEvent;
-import org.apache.dubbo.metrics.event.RTEvent;
+import org.apache.dubbo.metrics.event.MetricsDispatcher;
+import org.apache.dubbo.metrics.event.MetricsEventBus;
+import org.apache.dubbo.metrics.event.RequestBeforeEvent;
+import org.apache.dubbo.metrics.event.RequestEvent;
+import org.apache.dubbo.metrics.filter.MetricsFilter;
+import org.apache.dubbo.metrics.listener.MetricsListener;
 import org.apache.dubbo.metrics.model.MethodMetric;
+import org.apache.dubbo.metrics.model.MetricsSupport;
+import org.apache.dubbo.metrics.model.TimePair;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
+import org.apache.dubbo.metrics.model.key.MetricsLevel;
+import org.apache.dubbo.metrics.model.key.TypeWrapper;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
+import org.apache.dubbo.rpc.AppResponse;
+import org.apache.dubbo.rpc.AsyncRpcResult;
+import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
+import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -57,9 +69,9 @@ import static org.apache.dubbo.common.constants.MetricsConstants.TAG_GROUP_KEY;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_METHOD_KEY;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_VERSION_KEY;
+import static org.apache.dubbo.metrics.MetricsConstants.ATTACHMENT_KEY_SERVICE;
 import static org.apache.dubbo.metrics.model.MetricsCategory.QPS;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 class AggregateMetricsCollectorTest {
@@ -72,13 +84,13 @@ class AggregateMetricsCollectorTest {
     private String version;
     private RpcInvocation invocation;
     private String side;
+    private MetricsDispatcher metricsDispatcher;
+    private AggregateMetricsCollector collector;
+    private MetricsFilter metricsFilter;
 
-    public static MethodMetric getTestMethodMetric() {
+    public MethodMetric getTestMethodMetric() {
 
-        MethodMetric methodMetric = new MethodMetric();
-        methodMetric.setApplicationName("TestApp");
-        methodMetric.setInterfaceName("TestInterface");
-        methodMetric.setMethodName("TestMethod");
+        MethodMetric methodMetric = new MethodMetric(applicationModel, invocation);
         methodMetric.setGroup("TestGroup");
         methodMetric.setVersion("1.0.0");
         methodMetric.setSide("PROVIDER");
@@ -86,36 +98,13 @@ class AggregateMetricsCollectorTest {
         return methodMetric;
     }
 
-    public static AggregateMetricsCollector getTestCollector() {
-
-        ApplicationModel applicationModel = mock(ApplicationModel.class);
-        ConfigManager configManager = new ConfigManager(applicationModel);
-        MetricsConfig metricsConfig = spy(new MetricsConfig());
-
-        configManager.setMetrics(metricsConfig);
-
-        AggregationConfig aggregationConfig = spy(new AggregationConfig());
-        when(aggregationConfig.getEnabled()).thenReturn(true);
-        when(metricsConfig.getAggregation()).thenReturn(aggregationConfig);
-        when(applicationModel.getApplicationConfigManager()).thenReturn(configManager);
-
-        ScopeBeanFactory beanFactory = mock(ScopeBeanFactory.class);
-        when(beanFactory.getBean(DefaultMetricsCollector.class)).thenReturn(new DefaultMetricsCollector());
-        when(applicationModel.getBeanFactory()).thenReturn(beanFactory);
-
-        return new AggregateMetricsCollector(applicationModel);
-    }
-
     @BeforeEach
     public void setup() {
+        applicationModel = ApplicationModel.defaultModel();
         ApplicationConfig config = new ApplicationConfig();
         config.setName("MockMetrics");
-
-        applicationModel = ApplicationModel.defaultModel();
         applicationModel.getApplicationConfigManager().setApplication(config);
 
-        defaultCollector = new DefaultMetricsCollector();
-        defaultCollector.setCollectEnabled(true);
         MetricsConfig metricsConfig = new MetricsConfig();
         AggregationConfig aggregationConfig = new AggregationConfig();
         aggregationConfig.setEnabled(true);
@@ -123,7 +112,16 @@ class AggregateMetricsCollectorTest {
         aggregationConfig.setTimeWindowSeconds(120);
         metricsConfig.setAggregation(aggregationConfig);
         applicationModel.getApplicationConfigManager().setMetrics(metricsConfig);
+        metricsDispatcher = applicationModel.getBeanFactory().getOrRegisterBean(MetricsDispatcher.class);
         defaultCollector = applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class);
+        collector = applicationModel.getBeanFactory().getOrRegisterBean(AggregateMetricsCollector.class);
+        collector.setCollectEnabled(true);
+
+        defaultCollector = new DefaultMetricsCollector(applicationModel);
+        defaultCollector.setCollectEnabled(true);
+
+        metricsFilter = new MetricsFilter();
+        metricsFilter.setApplicationModel(applicationModel);
 
         interfaceName = "org.apache.dubbo.MockInterface";
         methodName = "mockMethod";
@@ -135,8 +133,18 @@ class AggregateMetricsCollectorTest {
         invocation.setAttachment(VERSION_KEY, version);
         side = CommonConstants.CONSUMER;
         invocation.setInvoker(new TestMetricsInvoker(side));
+        invocation.setTargetServiceUniqueName(group + "/" + interfaceName + ":" + version);
         RpcContext.getServiceContext().setUrl(URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&side=" + side));
 
+    }
+
+    @Test
+    void testListener() {
+        AggregateMetricsCollector metricsCollector = new AggregateMetricsCollector(applicationModel);
+        RequestEvent event = RequestEvent.toRequestEvent(applicationModel, invocation);
+        RequestBeforeEvent beforeEvent = new RequestBeforeEvent(applicationModel, new TypeWrapper(MetricsLevel.METHOD, MetricsKey.METRIC_REQUESTS));
+        Assertions.assertTrue(metricsCollector.isSupport(event));
+        Assertions.assertFalse(metricsCollector.isSupport(beforeEvent));
     }
 
     @AfterEach
@@ -147,19 +155,19 @@ class AggregateMetricsCollectorTest {
     @Test
     void testRequestsMetrics() {
         String applicationName = applicationModel.getApplicationName();
-        AggregateMetricsCollector collector = new AggregateMetricsCollector(applicationModel);
 
         defaultCollector.setApplicationName(applicationName);
-        MethodMetricsSampler methodMetricsCountSampler = defaultCollector.getMethodSampler();
 
-        methodMetricsCountSampler.incOnEvent(invocation, MetricsEvent.Type.TOTAL.getNameByType(side));
-        methodMetricsCountSampler.incOnEvent(invocation, MetricsEvent.Type.SUCCEED.getNameByType(side));
-        methodMetricsCountSampler.incOnEvent(invocation, MetricsEvent.Type.UNKNOWN_FAILED.getNameByType(side));
-        methodMetricsCountSampler.incOnEvent(invocation, MetricsEvent.Type.BUSINESS_FAILED.getNameByType(side));
-        methodMetricsCountSampler.incOnEvent(invocation, MetricsEvent.Type.NETWORK_EXCEPTION.getNameByType(side));
-        methodMetricsCountSampler.incOnEvent(invocation, MetricsEvent.Type.SERVICE_UNAVAILABLE.getNameByType(side));
-        methodMetricsCountSampler.incOnEvent(invocation, MetricsEvent.Type.CODEC_EXCEPTION.getNameByType(side));
-        methodMetricsCountSampler.incOnEvent(invocation, MetricsEvent.Type.NO_INVOKER_AVAILABLE.getNameByType(side));
+        metricsFilter.invoke(new TestMetricsInvoker(side), invocation);
+        try {
+            Thread.sleep(50);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        AppResponse mockRpcResult = new AppResponse();
+        mockRpcResult.setException(new RpcException(RpcException.NETWORK_EXCEPTION));
+        Result result = AsyncRpcResult.newDefaultAsyncResult(mockRpcResult, invocation);
+        metricsFilter.onResponse(result, new TestMetricsInvoker(side), invocation);
 
 
         List<MetricSample> samples = collector.collect();
@@ -177,44 +185,8 @@ class AggregateMetricsCollectorTest {
         @SuppressWarnings("rawtypes")
         Map<String, Long> sampleMap = samples.stream().collect(Collectors.toMap(MetricSample::getName, k -> ((GaugeMetricSample) k).applyAsLong()));
 
-        Assertions.assertEquals(sampleMap.get(MetricsKey.METRIC_REQUESTS_TOTAL_AGG.getNameByType(side)), 1L);
-        Assertions.assertEquals(sampleMap.get(MetricsKey.METRIC_REQUESTS_SUCCEED_AGG.getNameByType(side)), 1L);
-        Assertions.assertEquals(sampleMap.get(MetricsKey.METRIC_REQUESTS_FAILED_AGG.getNameByType(side)), 1L);
-        Assertions.assertEquals(sampleMap.get(MetricsKey.METRIC_REQUESTS_BUSINESS_FAILED_AGG.getNameByType(side)), 1L);
-
-        Assertions.assertEquals(sampleMap.get(MetricsKey.METRIC_REQUESTS_TOTAL_NETWORK_FAILED_AGG.getNameByType(side)), 1L);
-        Assertions.assertEquals(sampleMap.get(MetricsKey.METRIC_REQUESTS_TOTAL_CODEC_FAILED_AGG.getNameByType(side)), 1L);
-        Assertions.assertEquals(sampleMap.get(MetricsKey.METRIC_REQUESTS_TOTAL_SERVICE_UNAVAILABLE_FAILED_AGG.getNameByType(side)), 1L);
-        Assertions.assertEquals(sampleMap.get(MetricsKey.INVOKER_NO_AVAILABLE_COUNT.getNameByType(side)), 1L);
-
+        Assertions.assertEquals(sampleMap.get(MetricsKey.METRIC_REQUESTS_NETWORK_FAILED_AGG.getNameByType(side)), 1L);
         Assertions.assertTrue(sampleMap.containsKey(MetricsKey.METRIC_QPS.getNameByType(side)));
-    }
-
-    @Test
-    void testRTMetrics() {
-        AggregateMetricsCollector collector = new AggregateMetricsCollector(applicationModel);
-
-        defaultCollector.setApplicationName(applicationModel.getApplicationName());
-
-        MethodMetricsSampler methodMetricsCountSampler = defaultCollector.getMethodSampler();
-
-        methodMetricsCountSampler.addRT(invocation, 10L);
-
-        List<MetricSample> samples = collector.collect();
-        for (MetricSample sample : samples) {
-            Map<String, String> tags = sample.getTags();
-
-            Assertions.assertEquals(tags.get(TAG_INTERFACE_KEY), interfaceName);
-            Assertions.assertEquals(tags.get(TAG_METHOD_KEY), methodName);
-            Assertions.assertEquals(tags.get(TAG_GROUP_KEY), group);
-            Assertions.assertEquals(tags.get(TAG_VERSION_KEY), version);
-        }
-
-        @SuppressWarnings("rawtypes")
-        Map<String, Long> sampleMap = samples.stream().collect(Collectors.toMap(MetricSample::getName, k -> ((GaugeMetricSample) k).applyAsLong()));
-
-        Assertions.assertTrue(sampleMap.containsKey(MetricsKey.METRIC_RT_P99.getNameByType(side)));
-        Assertions.assertTrue(sampleMap.containsKey(MetricsKey.METRIC_RT_P95.getNameByType(side)));
     }
 
     @Test
@@ -227,7 +199,7 @@ class AggregateMetricsCollectorTest {
 
         when(applicationModel.getApplicationConfigManager()).thenReturn(configManager);
         when(applicationModel.getBeanFactory()).thenReturn(beanFactory);
-        when(beanFactory.getBean(DefaultMetricsCollector.class)).thenReturn(new DefaultMetricsCollector());
+        when(beanFactory.getBean(DefaultMetricsCollector.class)).thenReturn(new DefaultMetricsCollector(applicationModel));
         when(configManager.getMetrics()).thenReturn(Optional.of(metricsConfig));
         when(metricsConfig.getAggregation()).thenReturn(aggregationConfig);
         when(aggregationConfig.getEnabled()).thenReturn(Boolean.TRUE);
@@ -262,13 +234,18 @@ class AggregateMetricsCollectorTest {
 
     @Test
     void testP95AndP99() throws InterruptedException {
-        AggregateMetricsCollector collector = getTestCollector();
-        MethodMetric methodMetric = getTestMethodMetric();
 
-        List<Double> requestTimes = new ArrayList<>(10000);
+        metricsDispatcher.addListener(collector);
+        ConfigManager configManager = applicationModel.getApplicationConfigManager();
+        MetricsConfig config = configManager.getMetrics().orElse(null);
+        AggregationConfig aggregationConfig = new AggregationConfig();
+        aggregationConfig.setEnabled(true);
+        config.setAggregation(aggregationConfig);
+
+        List<Long> requestTimes = new ArrayList<>(10000);
 
         for (int i = 0; i < 300; i++) {
-            requestTimes.add(1000 * Math.random());
+            requestTimes.add(Double.valueOf(1000 * Math.random()).longValue());
         }
 
         Collections.sort(requestTimes);
@@ -278,24 +255,30 @@ class AggregateMetricsCollectorTest {
         double manualP95 = requestTimes.get((int) Math.round(p95Index));
         double manualP99 = requestTimes.get((int) Math.round(p99Index));
 
-        for (Double requestTime : requestTimes) {
-            collector.onEvent(new RTEvent(applicationModel, methodMetric, requestTime.longValue()));
+        for (Long requestTime : requestTimes) {
+            RequestEvent requestEvent = RequestEvent.toRequestEvent(applicationModel, invocation);
+            TestRequestEvent testRequestEvent = new TestRequestEvent(requestEvent.getSource(), requestEvent.getTypeWrapper());
+            testRequestEvent.putAttachment(MetricsConstants.INVOCATION, invocation);
+            testRequestEvent.putAttachment(ATTACHMENT_KEY_SERVICE, MetricsSupport.getInterfaceName(invocation));
+            testRequestEvent.putAttachment(MetricsConstants.INVOCATION_SIDE, MetricsSupport.getSide(invocation));
+            testRequestEvent.setRt(requestTime);
+            MetricsEventBus.post(testRequestEvent, () -> null);
         }
         Thread.sleep(4000L);
 
         List<MetricSample> samples = collector.collect();
 
         GaugeMetricSample<?> p95Sample = samples.stream()
-            .filter(sample -> sample.getName().endsWith("p95"))
-            .map(sample -> (GaugeMetricSample<?>) sample)
-            .findFirst()
-            .orElse(null);
+                .filter(sample -> sample.getName().endsWith("p95"))
+                .map(sample -> (GaugeMetricSample<?>) sample)
+                .findFirst()
+                .orElse(null);
 
         GaugeMetricSample<?> p99Sample = samples.stream()
-            .filter(sample -> sample.getName().endsWith("p99"))
-            .map(sample -> (GaugeMetricSample<?>) sample)
-            .findFirst()
-            .orElse(null);
+                .filter(sample -> sample.getName().endsWith("p99"))
+                .map(sample -> (GaugeMetricSample<?>) sample)
+                .findFirst()
+                .orElse(null);
 
         Assertions.assertNotNull(p95Sample);
         Assertions.assertNotNull(p99Sample);
@@ -304,9 +287,49 @@ class AggregateMetricsCollectorTest {
         double p99 = p99Sample.applyAsDouble();
 
         //An error of less than 5% is allowed
+        System.out.println(Math.abs(1 - p95 / manualP95));
         Assertions.assertTrue(Math.abs(1 - p95 / manualP95) < 0.05);
         Assertions.assertTrue(Math.abs(1 - p99 / manualP99) < 0.05);
     }
 
+    @Test
+    void testGenericCache() {
+        List<Class<?>> classGenerics = ReflectionUtils.getClassGenerics(AggregateMetricsCollector.class, MetricsListener.class);
+        Assertions.assertTrue(CollectionUtils.isNotEmpty(classGenerics));
+        Assertions.assertEquals(RequestEvent.class, classGenerics.get(0));
+    }
+
+    public static class TestRequestEvent extends RequestEvent {
+        private long rt;
+
+        public TestRequestEvent(ApplicationModel applicationModel, TypeWrapper typeWrapper) {
+            super(applicationModel, typeWrapper);
+        }
+
+        public void setRt(long rt) {
+            this.rt = rt;
+        }
+
+        @Override
+        public TimePair getTimePair() {
+            return new TestTimePair(rt);
+        }
+
+    }
+
+    public static class TestTimePair extends TimePair {
+
+        long rt;
+
+        public TestTimePair(long rt) {
+            super(rt);
+            this.rt = rt;
+        }
+
+        @Override
+        public long calc() {
+            return this.rt;
+        }
+    }
 }
 

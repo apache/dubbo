@@ -47,7 +47,6 @@ import static org.apache.dubbo.registry.kubernetes.util.KubernetesClientConst.PA
 import static org.apache.dubbo.registry.kubernetes.util.KubernetesClientConst.PROXY_PASSWORD;
 import static org.apache.dubbo.registry.kubernetes.util.KubernetesClientConst.PROXY_USERNAME;
 import static org.apache.dubbo.registry.kubernetes.util.KubernetesClientConst.REQUEST_TIMEOUT;
-import static org.apache.dubbo.registry.kubernetes.util.KubernetesClientConst.ROLLING_TIMEOUT;
 import static org.apache.dubbo.registry.kubernetes.util.KubernetesClientConst.TRUST_CERTS;
 import static org.apache.dubbo.registry.kubernetes.util.KubernetesClientConst.USERNAME;
 import static org.apache.dubbo.registry.kubernetes.util.KubernetesClientConst.USE_HTTPS;
@@ -62,43 +61,42 @@ public class KubernetesConfigUtils {
 
         // replace config with parameters if presents
         return new ConfigBuilder(base) //
-            .withMasterUrl(buildMasterUrl(url)) //
-            .withApiVersion(url.getParameter(API_VERSION, base.getApiVersion())) //
-            .withNamespace(url.getParameter(NAMESPACE, base.getNamespace())) //
-            .withUsername(url.getParameter(USERNAME, base.getUsername())) //
-            .withPassword(url.getParameter(PASSWORD, base.getPassword())) //
+                .withMasterUrl(buildMasterUrl(url)) //
+                .withApiVersion(url.getParameter(API_VERSION, base.getApiVersion())) //
+                .withNamespace(url.getParameter(NAMESPACE, base.getNamespace())) //
+                .withUsername(url.getParameter(USERNAME, base.getUsername())) //
+                .withPassword(url.getParameter(PASSWORD, base.getPassword())) //
 
-            .withOauthToken(url.getParameter(OAUTH_TOKEN, base.getOauthToken())) //
+                .withOauthToken(url.getParameter(OAUTH_TOKEN, base.getOauthToken())) //
 
-            .withCaCertFile(url.getParameter(CA_CERT_FILE, base.getCaCertFile())) //
-            .withCaCertData(url.getParameter(CA_CERT_DATA, decodeBase64(base.getCaCertData()))) //
+                .withCaCertFile(url.getParameter(CA_CERT_FILE, base.getCaCertFile())) //
+                .withCaCertData(url.getParameter(CA_CERT_DATA, decodeBase64(base.getCaCertData()))) //
 
-            .withClientKeyFile(url.getParameter(CLIENT_KEY_FILE, base.getClientKeyFile())) //
-            .withClientKeyData(url.getParameter(CLIENT_KEY_DATA, decodeBase64(base.getClientKeyData()))) //
+                .withClientKeyFile(url.getParameter(CLIENT_KEY_FILE, base.getClientKeyFile())) //
+                .withClientKeyData(url.getParameter(CLIENT_KEY_DATA, decodeBase64(base.getClientKeyData()))) //
 
-            .withClientCertFile(url.getParameter(CLIENT_CERT_FILE, base.getClientCertFile())) //
-            .withClientCertData(url.getParameter(CLIENT_CERT_DATA, decodeBase64(base.getClientCertData()))) //
+                .withClientCertFile(url.getParameter(CLIENT_CERT_FILE, base.getClientCertFile())) //
+                .withClientCertData(url.getParameter(CLIENT_CERT_DATA, decodeBase64(base.getClientCertData()))) //
 
-            .withClientKeyAlgo(url.getParameter(CLIENT_KEY_ALGO, base.getClientKeyAlgo())) //
-            .withClientKeyPassphrase(url.getParameter(CLIENT_KEY_PASSPHRASE, base.getClientKeyPassphrase())) //
+                .withClientKeyAlgo(url.getParameter(CLIENT_KEY_ALGO, base.getClientKeyAlgo())) //
+                .withClientKeyPassphrase(url.getParameter(CLIENT_KEY_PASSPHRASE, base.getClientKeyPassphrase())) //
 
-            .withConnectionTimeout(url.getParameter(CONNECTION_TIMEOUT, base.getConnectionTimeout())) //
-            .withRequestTimeout(url.getParameter(REQUEST_TIMEOUT, base.getRequestTimeout())) //
-            .withRollingTimeout(url.getParameter(ROLLING_TIMEOUT, base.getRollingTimeout())) //
+                .withConnectionTimeout(url.getParameter(CONNECTION_TIMEOUT, base.getConnectionTimeout())) //
+                .withRequestTimeout(url.getParameter(REQUEST_TIMEOUT, base.getRequestTimeout())) //
 
-            .withWatchReconnectInterval(url.getParameter(WATCH_RECONNECT_INTERVAL, base.getWatchReconnectInterval())) //
-            .withWatchReconnectLimit(url.getParameter(WATCH_RECONNECT_LIMIT, base.getWatchReconnectLimit())) //
-            .withLoggingInterval(url.getParameter(LOGGING_INTERVAL, base.getLoggingInterval())) //
+                .withWatchReconnectInterval(url.getParameter(WATCH_RECONNECT_INTERVAL, base.getWatchReconnectInterval())) //
+                .withWatchReconnectLimit(url.getParameter(WATCH_RECONNECT_LIMIT, base.getWatchReconnectLimit())) //
+                .withLoggingInterval(url.getParameter(LOGGING_INTERVAL, base.getLoggingInterval())) //
 
-            .withTrustCerts(url.getParameter(TRUST_CERTS, base.isTrustCerts())) //
-            .withHttp2Disable(url.getParameter(HTTP2_DISABLE, base.isTrustCerts())) //
+                .withTrustCerts(url.getParameter(TRUST_CERTS, base.isTrustCerts())) //
+                .withHttp2Disable(url.getParameter(HTTP2_DISABLE, base.isHttp2Disable())) //
 
-            .withHttpProxy(url.getParameter(HTTP_PROXY, base.getHttpProxy())) //
-            .withHttpsProxy(url.getParameter(HTTPS_PROXY, base.getHttpsProxy())) //
-            .withProxyUsername(url.getParameter(PROXY_USERNAME, base.getProxyUsername())) //
-            .withProxyPassword(url.getParameter(PROXY_PASSWORD, base.getProxyPassword())) //
-            .withNoProxy(url.getParameter(NO_PROXY, base.getNoProxy())) //
-            .build();
+                .withHttpProxy(url.getParameter(HTTP_PROXY, base.getHttpProxy())) //
+                .withHttpsProxy(url.getParameter(HTTPS_PROXY, base.getHttpsProxy())) //
+                .withProxyUsername(url.getParameter(PROXY_USERNAME, base.getProxyUsername())) //
+                .withProxyPassword(url.getParameter(PROXY_PASSWORD, base.getProxyPassword())) //
+                .withNoProxy(url.getParameter(NO_PROXY, base.getNoProxy())) //
+                .build();
     }
 
     private static String buildMasterUrl(URL url) {
@@ -106,13 +104,13 @@ public class KubernetesConfigUtils {
             return DEFAULT_MASTER_URL;
         }
         return (url.getParameter(USE_HTTPS, true) ?
-            "https://" : "http://")
-            + url.getHost() + ":" + url.getPort();
+                "https://" : "http://")
+                + url.getHost() + ":" + url.getPort();
     }
 
     private static String decodeBase64(String str) {
         return StringUtils.isNotEmpty(str) ?
-            new String(Base64.getDecoder().decode(str)) :
-            null;
+                new String(Base64.getDecoder().decode(str)) :
+                null;
     }
 }

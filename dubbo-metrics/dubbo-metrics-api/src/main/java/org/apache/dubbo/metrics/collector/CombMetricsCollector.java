@@ -20,15 +20,18 @@ package org.apache.dubbo.metrics.collector;
 import org.apache.dubbo.metrics.data.BaseStatComposite;
 import org.apache.dubbo.metrics.event.MetricsEventMulticaster;
 import org.apache.dubbo.metrics.event.TimeCounterEvent;
+import org.apache.dubbo.metrics.listener.AbstractMetricsListener;
 import org.apache.dubbo.metrics.model.MetricsCategory;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
-import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
+import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
+import org.apache.dubbo.metrics.model.sample.MetricSample;
+import org.apache.dubbo.rpc.Invocation;
 
 import java.util.List;
 
 import static org.apache.dubbo.metrics.MetricsConstants.SELF_INCREMENT_SIZE;
 
-public abstract class CombMetricsCollector<E extends TimeCounterEvent> implements ApplicationMetricsCollector<E>, ServiceMetricsCollector<E> {
+public abstract class CombMetricsCollector<E extends TimeCounterEvent> extends AbstractMetricsListener<E> implements ApplicationMetricsCollector<E>, ServiceMetricsCollector<E>, MethodMetricsCollector<E> {
 
     private final BaseStatComposite stats;
     private MetricsEventMulticaster eventMulticaster;
@@ -43,31 +46,44 @@ public abstract class CombMetricsCollector<E extends TimeCounterEvent> implement
     }
 
     @Override
-    public void setNum(MetricsKey metricsKey, String applicationName, String serviceKey, int num) {
-        this.stats.setServiceKey(metricsKey, applicationName, serviceKey, num);
+    public void setNum(MetricsKeyWrapper metricsKey, String serviceKey, int num) {
+        this.stats.setServiceKey(metricsKey, serviceKey, num);
     }
 
     @Override
-    public void increment(String applicationName, MetricsKey metricsKey) {
-        this.stats.incrementApp(metricsKey, applicationName, SELF_INCREMENT_SIZE);
+    public void increment(MetricsKey metricsKey) {
+        this.stats.incrementApp(metricsKey, SELF_INCREMENT_SIZE);
     }
 
-    public void increment(String applicationName, String serviceKey, MetricsKey metricsKey, int size) {
-        this.stats.incrementServiceKey(metricsKey, applicationName, serviceKey, size);
+    public void increment(String serviceKey, MetricsKeyWrapper metricsKeyWrapper, int size) {
+        this.stats.incrementServiceKey(metricsKeyWrapper, serviceKey, size);
     }
 
     @Override
-    public void addRt(String applicationName, String registryOpType, Long responseTime) {
-        stats.calcApplicationRt(applicationName, registryOpType, responseTime);
+    public void addRt(String registryOpType, Long responseTime) {
+        stats.calcApplicationRt(registryOpType, responseTime);
     }
 
-    public void addRt(String applicationName, String serviceKey, String registryOpType, Long responseTime) {
-        stats.calcServiceKeyRt(applicationName, serviceKey, registryOpType, responseTime);
+    public void addRt(String serviceKey, String registryOpType, Long responseTime) {
+        stats.calcServiceKeyRt(serviceKey, registryOpType, responseTime);
     }
 
-    @SuppressWarnings({"rawtypes"})
-    protected List<GaugeMetricSample> export(MetricsCategory category) {
+    @Override
+    public void increment(Invocation invocation, MetricsKeyWrapper wrapper, int size) {
+        this.stats.incrementMethodKey(wrapper, invocation, size);
+    }
+
+    @Override
+    public void addRt(Invocation invocation, String registryOpType, Long responseTime) {
+        stats.calcMethodKeyRt(invocation, registryOpType, responseTime);
+    }
+
+    protected List<MetricSample> export(MetricsCategory category) {
         return stats.export(category);
+    }
+
+    public MetricsEventMulticaster getEventMulticaster() {
+        return eventMulticaster;
     }
 
     @Override

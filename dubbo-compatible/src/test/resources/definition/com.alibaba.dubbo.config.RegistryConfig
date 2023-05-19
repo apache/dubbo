@@ -1,0 +1,69 @@
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
+public void com.alibaba.dubbo.config.RegistryConfig.setVersion(java.lang.String)
+public void com.alibaba.dubbo.config.RegistryConfig.setTimeout(java.lang.Integer)
+public java.lang.String com.alibaba.dubbo.config.RegistryConfig.getClient()
+public void com.alibaba.dubbo.config.RegistryConfig.setClient(java.lang.String)
+public java.lang.String com.alibaba.dubbo.config.RegistryConfig.getCluster()
+public void com.alibaba.dubbo.config.RegistryConfig.setCluster(java.lang.String)
+public void com.alibaba.dubbo.config.RegistryConfig.setProtocol(java.lang.String)
+public java.lang.String com.alibaba.dubbo.config.RegistryConfig.getUsername()
+public void com.alibaba.dubbo.config.RegistryConfig.setUsername(java.lang.String)
+public void com.alibaba.dubbo.config.RegistryConfig.setPassword(java.lang.String)
+public java.lang.String com.alibaba.dubbo.config.RegistryConfig.getServer()
+public void com.alibaba.dubbo.config.RegistryConfig.setServer(java.lang.String)
+public java.lang.Boolean com.alibaba.dubbo.config.RegistryConfig.isRegister()
+public void com.alibaba.dubbo.config.RegistryConfig.setRegister(java.lang.Boolean)
+public java.lang.String com.alibaba.dubbo.config.RegistryConfig.getTransporter()
+public void com.alibaba.dubbo.config.RegistryConfig.setTransporter(java.lang.String)
+public void com.alibaba.dubbo.config.RegistryConfig.setDynamic(java.lang.Boolean)
+public java.lang.String com.alibaba.dubbo.config.RegistryConfig.getTransport()
+public void com.alibaba.dubbo.config.RegistryConfig.setTransport(java.lang.String)
+public java.lang.Integer com.alibaba.dubbo.config.RegistryConfig.getSession()
+public void com.alibaba.dubbo.config.RegistryConfig.setSession(java.lang.Integer)
+public java.lang.Boolean com.alibaba.dubbo.config.RegistryConfig.isSubscribe()
+public void com.alibaba.dubbo.config.RegistryConfig.setSubscribe(java.lang.Boolean)
+public void com.alibaba.dubbo.config.RegistryConfig.setCheck(java.lang.Boolean)
+public java.lang.Boolean com.alibaba.dubbo.config.RegistryConfig.isCheck()
+public void com.alibaba.dubbo.config.RegistryConfig.setGroup(java.lang.String)
+public java.lang.String com.alibaba.dubbo.config.RegistryConfig.getGroup()
+public java.lang.Integer com.alibaba.dubbo.config.RegistryConfig.getWait()
+public void com.alibaba.dubbo.config.RegistryConfig.setWait(java.lang.Integer)
+public void com.alibaba.dubbo.config.RegistryConfig.setFile(java.lang.String)
+public java.lang.String com.alibaba.dubbo.config.RegistryConfig.getAddress()
+public java.lang.Boolean com.alibaba.dubbo.config.RegistryConfig.isDefault()
+public java.util.Map com.alibaba.dubbo.config.RegistryConfig.getParameters()
+public java.lang.String com.alibaba.dubbo.config.RegistryConfig.getProtocol()
+public java.lang.String com.alibaba.dubbo.config.RegistryConfig.getFile()
+public java.lang.Integer com.alibaba.dubbo.config.RegistryConfig.getPort()
+public void com.alibaba.dubbo.config.RegistryConfig.setDefault(java.lang.Boolean)
+public java.lang.String com.alibaba.dubbo.config.RegistryConfig.getPassword()
+public void com.alibaba.dubbo.config.RegistryConfig.setAddress(java.lang.String)
+public void com.alibaba.dubbo.config.RegistryConfig.setPort(java.lang.Integer)
+public java.lang.Boolean com.alibaba.dubbo.config.RegistryConfig.isDynamic()
+public java.lang.String com.alibaba.dubbo.config.RegistryConfig.getVersion()
+public void com.alibaba.dubbo.config.RegistryConfig.setParameters(java.util.Map)
+public java.lang.Integer com.alibaba.dubbo.config.RegistryConfig.getTimeout()
+public void com.alibaba.dubbo.config.RegistryConfig.setId(java.lang.String)
+public java.lang.String com.alibaba.dubbo.config.RegistryConfig.toString()
+public java.lang.String com.alibaba.dubbo.config.RegistryConfig.getId()
+public final void com.alibaba.dubbo.config.RegistryConfig.wait(long,int) throws java.lang.InterruptedException
+public final native void com.alibaba.dubbo.config.RegistryConfig.wait(long) throws java.lang.InterruptedException
+public final void com.alibaba.dubbo.config.RegistryConfig.wait() throws java.lang.InterruptedException
+public boolean com.alibaba.dubbo.config.RegistryConfig.equals(java.lang.Object)
+public native int com.alibaba.dubbo.config.RegistryConfig.hashCode()
+public final native java.lang.Class com.alibaba.dubbo.config.RegistryConfig.getClass()
+public final native void com.alibaba.dubbo.config.RegistryConfig.notify()
+public final native void com.alibaba.dubbo.config.RegistryConfig.notifyAll()

@@ -40,8 +40,7 @@ import static org.apache.dubbo.metrics.model.key.MetricsKey.STORE_PROVIDER_METAD
  */
 public class MetadataEvent extends TimeCounterEvent {
     public MetadataEvent(ApplicationModel applicationModel, TypeWrapper typeWrapper) {
-        super(applicationModel);
-        super.typeWrapper = typeWrapper;
+        super(applicationModel,typeWrapper);
         ScopeBeanFactory beanFactory = applicationModel.getBeanFactory();
         MetadataMetricsCollector collector;
         if (!beanFactory.isDestroyed()) {

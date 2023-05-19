@@ -17,15 +17,20 @@
 
 package org.apache.dubbo.config.nested;
 
-import org.apache.dubbo.config.support.Nested;
-
 import java.io.Serializable;
 import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.apache.dubbo.config.support.Nested;
 
 public class ExporterConfig implements Serializable {
 
     @Nested
     private ZipkinConfig zipkinConfig;
+
+    @Nested
+    private OtlpConfig otlpConfig;
 
     public ZipkinConfig getZipkinConfig() {
         return zipkinConfig;
@@ -33,6 +38,14 @@ public class ExporterConfig implements Serializable {
 
     public void setZipkinConfig(ZipkinConfig zipkinConfig) {
         this.zipkinConfig = zipkinConfig;
+    }
+
+    public OtlpConfig getOtlpConfig() {
+        return otlpConfig;
+    }
+
+    public void setOtlpConfig(OtlpConfig otlpConfig) {
+        this.otlpConfig = otlpConfig;
     }
 
     public static class ZipkinConfig implements Serializable {
@@ -74,6 +87,59 @@ public class ExporterConfig implements Serializable {
 
         public void setReadTimeout(Duration readTimeout) {
             this.readTimeout = readTimeout;
+        }
+    }
+
+    public static class OtlpConfig implements Serializable {
+
+        /**
+         * URL to the Otlp API.
+         */
+        private String endpoint;
+
+        /**
+         * The maximum time to wait for the collector to process an exported batch of spans.
+         */
+        private Duration timeout = Duration.ofSeconds(10);
+
+        /**
+         * The method used to compress payloads. If unset, compression is disabled. Currently
+         * supported compression methods include "gzip" and "none".
+         */
+        private String compressionMethod = "none";
+
+        private Map<String, String> headers = new HashMap<>();
+
+        public String getEndpoint() {
+            return endpoint;
+        }
+
+        public void setEndpoint(String endpoint) {
+            this.endpoint = endpoint;
+        }
+
+        public Duration getTimeout() {
+            return timeout;
+        }
+
+        public void setTimeout(Duration timeout) {
+            this.timeout = timeout;
+        }
+
+        public String getCompressionMethod() {
+            return compressionMethod;
+        }
+
+        public void setCompressionMethod(String compressionMethod) {
+            this.compressionMethod = compressionMethod;
+        }
+
+        public Map<String, String> getHeaders() {
+            return headers;
+        }
+
+        public void setHeaders(Map<String, String> headers) {
+            this.headers = headers;
         }
     }
 }

@@ -20,11 +20,12 @@ package org.apache.dubbo.metrics.registry.metrics.collector;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.metrics.event.MetricsDispatcher;
 import org.apache.dubbo.metrics.event.MetricsEventBus;
-import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
-import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.TimePair;
+import org.apache.dubbo.metrics.model.key.MetricsKey;
+import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
+import org.apache.dubbo.metrics.registry.RegistryMetricsConstants;
 import org.apache.dubbo.metrics.registry.collector.RegistryMetricsCollector;
 import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -34,6 +35,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -48,6 +50,7 @@ import static org.apache.dubbo.metrics.registry.RegistryMetricsConstants.OP_TYPE
 class RegistryMetricsCollectorTest {
 
     private ApplicationModel applicationModel;
+    private RegistryMetricsCollector collector;
 
     @BeforeEach
     public void setup() {
@@ -57,7 +60,9 @@ class RegistryMetricsCollectorTest {
         config.setName("MockMetrics");
 
         applicationModel.getApplicationConfigManager().setApplication(config);
-
+        applicationModel.getBeanFactory().getOrRegisterBean(MetricsDispatcher.class);
+        collector = applicationModel.getBeanFactory().getOrRegisterBean(RegistryMetricsCollector.class);
+        collector.setCollectEnabled(true);
     }
 
     @AfterEach
@@ -68,25 +73,22 @@ class RegistryMetricsCollectorTest {
     @Test
     void testRegisterMetrics() {
 
-        applicationModel.getBeanFactory().getOrRegisterBean(MetricsDispatcher.class);
-        RegistryMetricsCollector collector = applicationModel.getBeanFactory().getOrRegisterBean(RegistryMetricsCollector.class);
-        collector.setCollectEnabled(true);
-
         RegistryEvent registryEvent = RegistryEvent.toRegisterEvent(applicationModel);
         MetricsEventBus.post(registryEvent,
             () -> {
                 List<MetricSample> metricSamples = collector.collect();
-                // push success +1
-                Assertions.assertEquals(1, metricSamples.size());
-                Assertions.assertTrue(metricSamples.get(0) instanceof GaugeMetricSample);
+                // push success +1 -> other default 0 = RegistryMetricsConstants.APP_LEVEL_KEYS.size()
+                Assertions.assertEquals(RegistryMetricsConstants.APP_LEVEL_KEYS.size(), metricSamples.size());
+                Assertions.assertTrue(metricSamples.stream().allMatch(metricSample -> metricSample instanceof GaugeMetricSample));
+                Assertions.assertTrue(metricSamples.stream().anyMatch(metricSample -> ((GaugeMetricSample) metricSample).applyAsDouble() == 1));
                 return null;
             }
         );
 
         // push finish rt +1
         List<MetricSample> metricSamples = collector.collect();
-        //num(total+success) + rt(5) = 7
-        Assertions.assertEquals(7, metricSamples.size());
+        // RegistryMetricsConstants.APP_LEVEL_KEYS.size() + rt(5) = 12
+        Assertions.assertEquals(RegistryMetricsConstants.APP_LEVEL_KEYS.size() + 5, metricSamples.size());
         long c1 = registryEvent.getTimePair().calc();
 
 
@@ -108,7 +110,7 @@ class RegistryMetricsCollectorTest {
         metricSamples = collector.collect();
 
         // num(total+success+error) + rt(5)
-        Assertions.assertEquals(8, metricSamples.size());
+        Assertions.assertEquals(RegistryMetricsConstants.APP_LEVEL_KEYS.size() + 5, metricSamples.size());
 
         // calc rt
         for (MetricSample sample : metricSamples) {
@@ -130,9 +132,6 @@ class RegistryMetricsCollectorTest {
     @Test
     void testServicePushMetrics() {
 
-        applicationModel.getBeanFactory().getOrRegisterBean(MetricsDispatcher.class);
-        RegistryMetricsCollector collector = applicationModel.getBeanFactory().getOrRegisterBean(RegistryMetricsCollector.class);
-        collector.setCollectEnabled(true);
         String serviceName = "demo.gameService";
 
         RegistryEvent registryEvent = RegistryEvent.toRsEvent(applicationModel, serviceName, 2);
@@ -141,18 +140,17 @@ class RegistryMetricsCollectorTest {
                 List<MetricSample> metricSamples = collector.collect();
 
                 // push success +1
-                Assertions.assertEquals(1, metricSamples.size());
-                Assertions.assertTrue(metricSamples.get(0) instanceof GaugeMetricSample);
-                Assertions.assertEquals(metricSamples.get(0).getName(), MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS.getName());
-                Assertions.assertEquals(metricSamples.get(0).getTags().get("interface"), serviceName);
+                Assertions.assertEquals(RegistryMetricsConstants.APP_LEVEL_KEYS.size() + 1, metricSamples.size());
+                // Service num only 1 and contains tag of interface
+                Assertions.assertEquals(1, metricSamples.stream().filter(metricSample -> serviceName.equals(metricSample.getTags().get("interface"))).count());
                 return null;
             }
         );
 
         // push finish rt +1
         List<MetricSample> metricSamples = collector.collect();
-        //num(total+success) + rt(5) = 7
-        Assertions.assertEquals(7, metricSamples.size());
+        // App(7) + rt(5) + service(total/success) = 14
+        Assertions.assertEquals(RegistryMetricsConstants.APP_LEVEL_KEYS.size() + 5 + 2, metricSamples.size());
 
         long c1 = registryEvent.getTimePair().calc();
         registryEvent = RegistryEvent.toRsEvent(applicationModel, serviceName, 2);
@@ -172,8 +170,8 @@ class RegistryMetricsCollectorTest {
 
         metricSamples = collector.collect();
 
-        // num(total+success+error) + rt(5)
-        Assertions.assertEquals(8, metricSamples.size());
+        // App(7) + rt(5) + service(total/success/failed) = 15
+        Assertions.assertEquals(RegistryMetricsConstants.APP_LEVEL_KEYS.size() + 5 + 3, metricSamples.size());
 
         // calc rt
         for (MetricSample sample : metricSamples) {
@@ -195,29 +193,26 @@ class RegistryMetricsCollectorTest {
     @Test
     void testServiceSubscribeMetrics() {
 
-        applicationModel.getBeanFactory().getOrRegisterBean(MetricsDispatcher.class);
-        RegistryMetricsCollector collector = applicationModel.getBeanFactory().getOrRegisterBean(RegistryMetricsCollector.class);
-        collector.setCollectEnabled(true);
         String serviceName = "demo.gameService";
 
         RegistryEvent subscribeEvent = RegistryEvent.toSsEvent(applicationModel, serviceName);
         MetricsEventBus.post(subscribeEvent,
             () -> {
                 List<MetricSample> metricSamples = collector.collect();
-
-                // push success +1
-                Assertions.assertEquals(1, metricSamples.size());
-                Assertions.assertTrue(metricSamples.get(0) instanceof GaugeMetricSample);
-                Assertions.assertEquals(metricSamples.get(0).getName(), MetricsKey.SERVICE_SUBSCRIBE_METRIC_NUM.getName());
-                Assertions.assertEquals(metricSamples.get(0).getTags().get("interface"), serviceName);
+                Assertions.assertTrue(metricSamples.stream().allMatch(metricSample -> metricSample instanceof GaugeMetricSample));
+                Assertions.assertTrue(metricSamples.stream().anyMatch(metricSample -> ((GaugeMetricSample) metricSample).applyAsDouble() == 1));
+                // App(7) + (service success +1)
+                Assertions.assertEquals(RegistryMetricsConstants.APP_LEVEL_KEYS.size() + 1, metricSamples.size());
+                // Service num only 1 and contains tag of interface
+                Assertions.assertEquals(1, metricSamples.stream().filter(metricSample -> serviceName.equals(metricSample.getTags().get("interface"))).count());
                 return null;
             }
         );
 
         // push finish rt +1
         List<MetricSample> metricSamples = collector.collect();
-        //num(total+success) + rt(5) = 7
-        Assertions.assertEquals(7, metricSamples.size());
+        // App(7) + rt(5) + service(total/success) = 14
+        Assertions.assertEquals(RegistryMetricsConstants.APP_LEVEL_KEYS.size() + 5 + 2, metricSamples.size());
 
         long c1 = subscribeEvent.getTimePair().calc();
         subscribeEvent = RegistryEvent.toSsEvent(applicationModel, serviceName);
@@ -237,8 +232,8 @@ class RegistryMetricsCollectorTest {
 
         metricSamples = collector.collect();
 
-        // num(total+success+error) + rt(5)
-        Assertions.assertEquals(8, metricSamples.size());
+        // App(7) + rt(5) + service(total/success/failed) = 15
+        Assertions.assertEquals(RegistryMetricsConstants.APP_LEVEL_KEYS.size() + 5 + 3, metricSamples.size());
 
         // calc rt
         for (MetricSample sample : metricSamples) {
@@ -254,5 +249,29 @@ class RegistryMetricsCollectorTest {
         Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(MetricsKey.METRIC_RT_MAX, OP_TYPE_SUBSCRIBE_SERVICE).targetKey()), Math.max(c1, c2));
         Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(MetricsKey.METRIC_RT_AVG, OP_TYPE_SUBSCRIBE_SERVICE).targetKey()), (c1 + c2) / 2);
         Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(MetricsKey.METRIC_RT_SUM, OP_TYPE_SUBSCRIBE_SERVICE).targetKey()), c1 + c2);
+    }
+
+
+    @Test
+    public void testNotify() {
+        MetricsEventBus.post(RegistryEvent.toNotifyEvent(applicationModel),
+            () -> {
+                try {
+                    Thread.sleep(50L);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                Map<String, Integer> lastNumMap = new HashMap<>();
+                // 1 different services
+                lastNumMap.put("demo.service1", 3);
+                lastNumMap.put("demo.service2", 4);
+                lastNumMap.put("demo.service3", 5);
+                return lastNumMap;
+            }
+        );
+        List<MetricSample> metricSamples = collector.collect();
+        // App(7) + num(service*3) + rt(5) = 9
+        Assertions.assertEquals(RegistryMetricsConstants.APP_LEVEL_KEYS.size() + 3 + 5, metricSamples.size());
+
     }
 }

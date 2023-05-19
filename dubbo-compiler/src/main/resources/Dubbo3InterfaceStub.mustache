@@ -25,7 +25,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 {{#deprecated}}
     @java.lang.Deprecated
 {{/deprecated}}
-public interface {{interfaceClassName}} {
+public interface {{interfaceClassName}} extends org.apache.dubbo.rpc.model.DubboStub {
 
     static final String JAVA_SERVICE_NAME = "{{packageName}}.{{serviceName}}";
     static final String SERVICE_NAME = "{{commonPackageName}}.{{serviceName}}";

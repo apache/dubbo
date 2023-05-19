@@ -26,4 +26,17 @@ public class ModuleConfig extends org.apache.dubbo.config.ModuleConfig {
     public ModuleConfig(String name) {
         super(name);
     }
+
+    public void setRegistry(com.alibaba.dubbo.config.RegistryConfig registry) {
+        super.setRegistry(registry);
+    }
+
+    public void setMonitor(com.alibaba.dubbo.config.MonitorConfig monitor) {
+        super.setMonitor(monitor);
+    }
+
+    @Override
+    public void setMonitor(String monitor) {
+        setMonitor(new com.alibaba.dubbo.config.MonitorConfig(monitor));
+    }
 }

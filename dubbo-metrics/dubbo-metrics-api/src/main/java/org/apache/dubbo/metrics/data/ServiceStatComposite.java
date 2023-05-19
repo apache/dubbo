@@ -20,9 +20,11 @@ package org.apache.dubbo.metrics.data;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.metrics.model.MetricsCategory;
 import org.apache.dubbo.metrics.model.ServiceKeyMetric;
-import org.apache.dubbo.metrics.model.key.MetricsKey;
+import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
-import org.apache.dubbo.metrics.report.MetricsExport;
+import org.apache.dubbo.metrics.model.sample.MetricSample;
+import org.apache.dubbo.metrics.report.AbstractMetricsExport;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,38 +32,46 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class ServiceStatComposite implements MetricsExport {
+/**
+ * Service-level data container, for the initialized MetricsKey,
+ * different from the null value of the Map type (the key is not displayed when there is no data),
+ * the key is displayed and the initial data is 0 value of the AtomicLong type
+ */
+public class ServiceStatComposite extends AbstractMetricsExport {
 
-    private final Map<MetricsKey, Map<ServiceKeyMetric, AtomicLong>> serviceNumStats = new ConcurrentHashMap<>();
-
-    public void init(List<MetricsKey> serviceKeys) {
-        if (CollectionUtils.isEmpty(serviceKeys)) {
-            return;
-        }
-        serviceKeys.forEach(appKey -> serviceNumStats.put(appKey, new ConcurrentHashMap<>()));
+    public ServiceStatComposite(ApplicationModel applicationModel) {
+        super(applicationModel);
     }
 
-    public void incrementServiceKey(MetricsKey metricsKey, String applicationName, String serviceKey, int size) {
-        if (!serviceNumStats.containsKey(metricsKey)) {
+    private final Map<MetricsKeyWrapper, Map<ServiceKeyMetric, AtomicLong>> serviceWrapperNumStats = new ConcurrentHashMap<>();
+
+    public void initWrapper(List<MetricsKeyWrapper> metricsKeyWrappers) {
+        if (CollectionUtils.isEmpty(metricsKeyWrappers)) {
             return;
         }
-        serviceNumStats.get(metricsKey).computeIfAbsent(new ServiceKeyMetric(applicationName, serviceKey), k -> new AtomicLong(0L)).getAndAdd(size);
+        metricsKeyWrappers.forEach(appKey -> serviceWrapperNumStats.put(appKey, new ConcurrentHashMap<>()));
     }
 
-    public void setServiceKey(MetricsKey type, String applicationName, String serviceKey, int num) {
-        if (!serviceNumStats.containsKey(type)) {
+    public void incrementServiceKey(MetricsKeyWrapper wrapper, String serviceKey, int size) {
+        if (!serviceWrapperNumStats.containsKey(wrapper)) {
             return;
         }
-        serviceNumStats.get(type).computeIfAbsent(new ServiceKeyMetric(applicationName, serviceKey), k -> new AtomicLong(0L)).set(num);
+        serviceWrapperNumStats.get(wrapper).computeIfAbsent(new ServiceKeyMetric(getApplicationModel(), serviceKey), k -> new AtomicLong(0L)).getAndAdd(size);
     }
 
-    @SuppressWarnings({"rawtypes"})
-    public List<GaugeMetricSample> export(MetricsCategory category) {
-        List<GaugeMetricSample> list = new ArrayList<>();
-        for (MetricsKey type : serviceNumStats.keySet()) {
-            Map<ServiceKeyMetric, AtomicLong> stringAtomicLongMap = serviceNumStats.get(type);
+    public void setServiceKey(MetricsKeyWrapper wrapper, String serviceKey, int num) {
+        if (!serviceWrapperNumStats.containsKey(wrapper)) {
+            return;
+        }
+        serviceWrapperNumStats.get(wrapper).computeIfAbsent(new ServiceKeyMetric(getApplicationModel(), serviceKey), k -> new AtomicLong(0L)).set(num);
+    }
+
+    public List<MetricSample> export(MetricsCategory category) {
+        List<MetricSample> list = new ArrayList<>();
+        for (MetricsKeyWrapper wrapper : serviceWrapperNumStats.keySet()) {
+            Map<ServiceKeyMetric, AtomicLong> stringAtomicLongMap = serviceWrapperNumStats.get(wrapper);
             for (ServiceKeyMetric serviceKeyMetric : stringAtomicLongMap.keySet()) {
-                list.add(new GaugeMetricSample<>(type, serviceKeyMetric.getTags(), category, stringAtomicLongMap, value -> value.get(serviceKeyMetric).get()));
+                list.add(new GaugeMetricSample<>(wrapper, serviceKeyMetric.getTags(), category, stringAtomicLongMap, value -> value.get(serviceKeyMetric).get()));
             }
         }
         return list;
