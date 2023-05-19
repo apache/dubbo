@@ -129,20 +129,28 @@ public class ScopeClusterInvoker<T> implements ClusterInvoker<T>, ExporterChange
     public Result invoke(Invocation invocation) throws RpcException {
         // When broadcasting, it should be called remotely.
         if (BROADCAST_CLUSTER.equalsIgnoreCase(getUrl().getParameter(CLUSTER_KEY))) {
-            logger.debug("Performing broadcast call for method: " + invocation.getMethodName() + " of service: " + getUrl().getServiceKey());
+            if (logger.isDebugEnabled()) {
+                logger.debug("Performing broadcast call for method: " + invocation.getMethodName() + " of service: " + getUrl().getServiceKey());
+            }
             return invoker.invoke(invocation);
         }
         if (peerFlag) {
-            logger.debug("Performing point-to-point call for method: " + invocation.getMethodName() + " of service: " + getUrl().getServiceKey());
+            if (logger.isDebugEnabled()) {
+                logger.debug("Performing point-to-point call for method: " + invocation.getMethodName() + " of service: " + getUrl().getServiceKey());
+            }
             // If it's a point-to-point direct connection, invoke the original Invoker
             return invoker.invoke(invocation);
         }
         if (isInjvmExported()) {
-            logger.debug("Performing local JVM call for method: " + invocation.getMethodName() + " of service: " + getUrl().getServiceKey());
+            if (logger.isDebugEnabled()) {
+                logger.debug("Performing local JVM call for method: " + invocation.getMethodName() + " of service: " + getUrl().getServiceKey());
+            }
             // If it's exported to the local JVM, invoke the corresponding Invoker
             return injvmInvoker.invoke(invocation);
         }
-        logger.debug("Performing remote call for method: " + invocation.getMethodName() + " of service: " + getUrl().getServiceKey());
+        if (logger.isDebugEnabled()) {
+            logger.debug("Performing remote call for method: " + invocation.getMethodName() + " of service: " + getUrl().getServiceKey());
+        }
         // Otherwise, delegate the invocation to the original Invoker
         return invoker.invoke(invocation);
     }
