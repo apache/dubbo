@@ -82,6 +82,11 @@ public class MetricsConfig extends AbstractConfig {
 
     private Integer exportServicePort;
 
+    /**
+     * Decide whether to use the global registry of the micrometer.
+     */
+    private Boolean useGlobalRegistry;
+
 
     public MetricsConfig() {
     }
@@ -187,5 +192,13 @@ public class MetricsConfig extends AbstractConfig {
 
     public void setEnableThreadpool(Boolean enableThreadpool) {
         this.enableThreadpool = enableThreadpool;
+    }
+
+    public Boolean getUseGlobalRegistry() {
+        return useGlobalRegistry;
+    }
+
+    public void setUseGlobalRegistry(Boolean useGlobalRegistry) {
+        this.useGlobalRegistry = useGlobalRegistry;
     }
 }

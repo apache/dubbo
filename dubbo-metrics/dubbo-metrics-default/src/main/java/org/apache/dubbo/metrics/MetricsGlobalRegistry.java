@@ -17,13 +17,40 @@
 
 package org.apache.dubbo.metrics;
 
+import io.micrometer.core.instrument.Metrics;
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
+import org.apache.dubbo.config.MetricsConfig;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import java.util.Optional;
+
+/**
+ * Get the micrometer meter registry, can choose spring, micrometer, dubbo
+ */
 public class MetricsGlobalRegistry {
 
-    private static final CompositeMeterRegistry compositeRegistry = new CompositeMeterRegistry();
+    private static CompositeMeterRegistry compositeRegistry = new CompositeMeterRegistry();
+
+    /**
+     * Use CompositeMeterRegistry according to the following priority
+     * 1. If useGlobalRegistry is configured, use the micrometer global CompositeMeterRegistry
+     * 2. If there is a spring actuator, use spring's CompositeMeterRegistry
+     * 3. Dubbo's own CompositeMeterRegistry is used by default
+     */
+    public static CompositeMeterRegistry getCompositeRegistry(ApplicationModel applicationModel) {
+        Optional<MetricsConfig> configOptional = applicationModel.getApplicationConfigManager().getMetrics();
+        if (configOptional.isPresent() && configOptional.get().getUseGlobalRegistry() != null && configOptional.get().getUseGlobalRegistry()) {
+            return Metrics.globalRegistry;
+        } else {
+            return compositeRegistry;
+        }
+    }
 
     public static CompositeMeterRegistry getCompositeRegistry() {
-        return compositeRegistry;
+        return getCompositeRegistry(ApplicationModel.defaultModel());
+    }
+
+    public static void setCompositeRegistry(CompositeMeterRegistry compositeRegistry) {
+        MetricsGlobalRegistry.compositeRegistry = compositeRegistry;
     }
 }

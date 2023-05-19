@@ -117,6 +117,7 @@ import static org.apache.dubbo.common.utils.StringUtils.isEmpty;
 import static org.apache.dubbo.common.utils.UrlUtils.classifyUrls;
 import static org.apache.dubbo.registry.Constants.CONFIGURATORS_SUFFIX;
 import static org.apache.dubbo.registry.Constants.DEFAULT_REGISTRY_RETRY_PERIOD;
+import static org.apache.dubbo.registry.Constants.ENABLE_26X_CONFIGURATION_LISTEN;
 import static org.apache.dubbo.registry.Constants.ENABLE_CONFIGURATION_LISTEN;
 import static org.apache.dubbo.registry.Constants.PROVIDER_PROTOCOL;
 import static org.apache.dubbo.registry.Constants.REGISTER_IP_KEY;
@@ -272,9 +273,12 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         exporter.setSubscribeUrl(overrideSubscribeUrl);
         exporter.setNotifyListener(overrideSubscribeListener);
 
-        if (!registry.isServiceDiscovery()) {
-            // Deprecated! Subscribe to override rules in 2.6.x or before.
-            registry.subscribe(overrideSubscribeUrl, overrideSubscribeListener);
+        ApplicationModel applicationModel = getApplicationModel(providerUrl.getScopeModel());
+        if (applicationModel.getModelEnvironment().getConfiguration().convert(Boolean.class, ENABLE_26X_CONFIGURATION_LISTEN, true)) {
+            if (!registry.isServiceDiscovery()) {
+                // Deprecated! Subscribe to override rules in 2.6.x or before.
+                registry.subscribe(overrideSubscribeUrl, overrideSubscribeListener);
+            }
         }
 
         notifyExport(exporter);
@@ -954,10 +958,12 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
                         Set<NotifyListener> listeners = overrideListeners.get(subscribeUrl);
                         if (listeners != null) {
                             if (listeners.remove(notifyListener)) {
-                                if (!registry.isServiceDiscovery()) {
-                                    registry.unsubscribe(subscribeUrl, notifyListener);
-                                }
                                 ApplicationModel applicationModel = getApplicationModel(registerUrl.getScopeModel());
+                                if (applicationModel.getModelEnvironment().getConfiguration().convert(Boolean.class, ENABLE_26X_CONFIGURATION_LISTEN, true)) {
+                                    if (!registry.isServiceDiscovery()) {
+                                        registry.unsubscribe(subscribeUrl, notifyListener);
+                                    }
+                                }
                                 if (applicationModel.getModelEnvironment().getConfiguration().convert(Boolean.class, ENABLE_CONFIGURATION_LISTEN, true)) {
                                     for (ModuleModel moduleModel : applicationModel.getPubModuleModels()) {
                                         if (moduleModel.getServiceRepository().getExportedServices().size() > 0) {
