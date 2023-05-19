@@ -14,27 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metrics;
 
-import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.binder.MeterBinder;
-import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
+package org.apache.dubbo.metrics.report;
 
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
-public class DubboMetrics implements MeterBinder {
+/**
+ * Store public information such as application
+ */
+public abstract class AbstractMetricsExport implements MetricsExport {
 
-    private MeterRegistry globalRegistry = null;
+    private final ApplicationModel applicationModel;
 
-    @Override
-    public void bindTo(MeterRegistry registry) {
-        globalRegistry = registry;
-        CompositeMeterRegistry compositeRegistry = MetricsGlobalRegistry.getCompositeRegistry();
-        if (compositeRegistry != null) {
-            compositeRegistry.add(registry);
-        }
+    public AbstractMetricsExport(ApplicationModel applicationModel) {
+        this.applicationModel = applicationModel;
     }
 
-    public void destroy() {
+    public ApplicationModel getApplicationModel() {
+        return applicationModel;
+    }
+
+    public String getAppName() {
+        return getApplicationModel().getApplicationName();
     }
 }
-

@@ -84,7 +84,7 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
     protected AbstractMetricsReporter(URL url, ApplicationModel applicationModel) {
         this.url = url;
         this.applicationModel = applicationModel;
-        this.compositeRegistry = MetricsGlobalRegistry.getCompositeRegistry();
+        this.compositeRegistry = MetricsGlobalRegistry.getCompositeRegistry(applicationModel);
     }
 
     @Override

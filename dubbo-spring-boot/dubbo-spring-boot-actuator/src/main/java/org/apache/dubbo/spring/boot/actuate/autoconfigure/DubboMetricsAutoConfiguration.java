@@ -18,30 +18,27 @@
 package org.apache.dubbo.spring.boot.actuate.autoconfigure;
 
 import io.micrometer.core.instrument.MeterRegistry;
-import org.apache.dubbo.metrics.DubboMetrics;
 import org.apache.dubbo.spring.boot.actuate.mertics.DubboMetricsBinder;
 import org.springframework.boot.actuate.autoconfigure.metrics.CompositeMeterRegistryAutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 
-
 @Configuration(
     proxyBeanMethods = false
 )
 @ConditionalOnWebApplication
-@ConditionalOnClass({DubboMetrics.class})
 @AutoConfigureAfter(CompositeMeterRegistryAutoConfiguration.class)
 public class DubboMetricsAutoConfiguration {
     @Bean
     @ConditionalOnBean({MeterRegistry.class})
-    @ConditionalOnMissingBean({DubboMetrics.class, DubboMetricsBinder.class})
+    @ConditionalOnMissingBean({DubboMetricsBinder.class})
     public DubboMetricsBinder dubboMetricsBinder(MeterRegistry meterRegistry) {
+
         return new DubboMetricsBinder(meterRegistry);
     }
 }
