@@ -147,4 +147,9 @@ public class ReflectionUtils {
         }
     }
 
+    public static boolean match(Class<?> clazz, Class<?> interfaceClass, Object event) {
+        List<Class<?>> eventTypes = ReflectionUtils.getClassGenerics(clazz, interfaceClass);
+        return eventTypes.stream().allMatch(eventType -> eventType.isInstance(event));
+    }
+
 }
