@@ -23,7 +23,9 @@ import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
 
 import java.beans.Transient;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * AbstractMethodConfig
@@ -240,7 +242,8 @@ public abstract class AbstractMethodConfig extends AbstractConfig {
     }
 
     public Map<String, String> getParameters() {
-        return parameters;
+        this.parameters = Optional.ofNullable(parameters).orElseGet(HashMap::new);
+        return this.parameters;
     }
 
     public void setParameters(Map<String, String> parameters) {
