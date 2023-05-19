@@ -242,7 +242,7 @@ public abstract class AbstractMethodConfig extends AbstractConfig {
     }
 
     public Map<String, String> getParameters() {
-        this.parameters = Optional.ofNullable(parameters).orElseGet(HashMap::new);
+        this.parameters = Optional.ofNullable(this.parameters).orElseGet(HashMap::new);
         return this.parameters;
     }
 
