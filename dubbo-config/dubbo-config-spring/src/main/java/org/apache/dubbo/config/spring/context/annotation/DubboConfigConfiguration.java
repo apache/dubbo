@@ -88,7 +88,7 @@ public class DubboConfigConfiguration {
             @EnableConfigurationBeanBinding(prefix = "dubbo.config-centers", type = ConfigCenterBean.class, multiple = true),
             @EnableConfigurationBeanBinding(prefix = "dubbo.metadata-reports", type = MetadataReportConfig.class, multiple = true),
             @EnableConfigurationBeanBinding(prefix = "dubbo.metricses", type = MetricsConfig.class, multiple = true),
-            @EnableConfigurationBeanBinding(prefix = "dubbo.tracing", type = TracingConfig.class)
+            @EnableConfigurationBeanBinding(prefix = "dubbo.tracings", type = TracingConfig.class, multiple = true)
     })
     public static class Multiple {
 

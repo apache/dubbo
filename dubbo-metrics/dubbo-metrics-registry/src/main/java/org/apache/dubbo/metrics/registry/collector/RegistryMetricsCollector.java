@@ -53,19 +53,22 @@ public class RegistryMetricsCollector extends CombMetricsCollector<RegistryEvent
     private final ApplicationModel applicationModel;
 
     public RegistryMetricsCollector(ApplicationModel applicationModel) {
-        super(new BaseStatComposite() {
+        super(new BaseStatComposite(applicationModel) {
             @Override
             protected void init(ApplicationStatComposite applicationStatComposite) {
+                super.init(applicationStatComposite);
                 applicationStatComposite.init(RegistryMetricsConstants.APP_LEVEL_KEYS);
             }
 
             @Override
             protected void init(ServiceStatComposite serviceStatComposite) {
+                super.init(serviceStatComposite);
                 serviceStatComposite.initWrapper(RegistryMetricsConstants.SERVICE_LEVEL_KEYS);
             }
 
             @Override
             protected void init(RtStatComposite rtStatComposite) {
+                super.init(rtStatComposite);
                 rtStatComposite.init(OP_TYPE_REGISTER, OP_TYPE_SUBSCRIBE, OP_TYPE_NOTIFY, OP_TYPE_REGISTER_SERVICE, OP_TYPE_SUBSCRIBE_SERVICE);
             }
         });

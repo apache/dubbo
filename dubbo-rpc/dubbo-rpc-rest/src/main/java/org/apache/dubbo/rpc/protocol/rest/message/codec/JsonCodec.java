@@ -23,7 +23,7 @@ import org.apache.dubbo.metadata.rest.media.MediaType;
 import org.apache.dubbo.rpc.protocol.rest.message.HttpMessageCodec;
 import org.apache.dubbo.rpc.protocol.rest.message.MediaTypeMatcher;
 import org.apache.dubbo.rpc.protocol.rest.util.DataParseUtils;
-
+import javax.ws.rs.core.Response;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
@@ -37,10 +37,9 @@ public class JsonCodec implements HttpMessageCodec<byte[], OutputStream> {
     private static final Set<Class> unSupportClasses = new HashSet<>();
 
     static {
-
         unSupportClasses.add(byte[].class);
         unSupportClasses.add(String.class);
-
+        unSupportClasses.add(Response.class);
     }
 
     @Override
