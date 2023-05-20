@@ -39,12 +39,10 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.methods.HttpTrace;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
@@ -170,15 +168,13 @@ public class HttpClientRestClient extends BaseRestClient {
     }
 
     public CloseableHttpClient createHttpClient() {
-        PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
 
         HttpClientBuilder custom = HttpClients.custom();
         HttpClientBuilder finalCustom = custom;
-
         custom = RestClientSSLContexts.buildClientSslContext(getUrl(), new RestClientSSLSetter() {
             @Override
             public void initSSLContext(SSLContext sslContext, TrustManager[] trustAllCerts) {
-                finalCustom.setSSLSocketFactory(new SSLConnectionSocketFactory(sslContext));
+                finalCustom.setSSLContext(sslContext);
             }
 
             @Override
@@ -188,7 +184,7 @@ public class HttpClientRestClient extends BaseRestClient {
             }
         }, finalCustom);
 
-        return custom.setConnectionManager(connectionManager).build();
+        return custom.build();
     }
 
     protected HttpRequestBase createHttpUriRequest(String httpMethod, RequestTemplate requestTemplate) {
