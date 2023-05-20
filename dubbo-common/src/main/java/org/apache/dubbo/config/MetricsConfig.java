@@ -19,8 +19,8 @@ package org.apache.dubbo.config;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.config.nested.AggregationConfig;
-import org.apache.dubbo.config.nested.PrometheusConfig;
 import org.apache.dubbo.config.nested.HistogramConfig;
+import org.apache.dubbo.config.nested.PrometheusConfig;
 import org.apache.dubbo.config.support.Nested;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
@@ -55,6 +55,11 @@ public class MetricsConfig extends AbstractConfig {
      * Enable metadata metrics.
      */
     private Boolean enableMetadata;
+
+    /**
+     * Export metrics service.
+     */
+    private Boolean exportMetricsService;
 
     /**
      * @deprecated After metrics config is refactored.
@@ -184,6 +189,14 @@ public class MetricsConfig extends AbstractConfig {
 
     public void setEnableMetadata(Boolean enableMetadata) {
         this.enableMetadata = enableMetadata;
+    }
+
+    public Boolean getExportMetricsService() {
+        return exportMetricsService;
+    }
+
+    public void setExportMetricsService(Boolean exportMetricsService) {
+        this.exportMetricsService = exportMetricsService;
     }
 
     public Boolean getEnableThreadpool() {

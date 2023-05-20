@@ -89,7 +89,7 @@ public class KubernetesConfigUtils {
                 .withLoggingInterval(url.getParameter(LOGGING_INTERVAL, base.getLoggingInterval())) //
 
                 .withTrustCerts(url.getParameter(TRUST_CERTS, base.isTrustCerts())) //
-                .withHttp2Disable(url.getParameter(HTTP2_DISABLE, base.isTrustCerts())) //
+                .withHttp2Disable(url.getParameter(HTTP2_DISABLE, base.isHttp2Disable())) //
 
                 .withHttpProxy(url.getParameter(HTTP_PROXY, base.getHttpProxy())) //
                 .withHttpsProxy(url.getParameter(HTTPS_PROXY, base.getHttpsProxy())) //

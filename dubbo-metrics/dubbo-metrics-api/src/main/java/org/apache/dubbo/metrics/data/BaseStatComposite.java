@@ -24,6 +24,7 @@ import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.metrics.report.MetricsExport;
 import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,60 +37,63 @@ import java.util.List;
  */
 public abstract class BaseStatComposite implements MetricsExport {
 
-    private final ApplicationStatComposite applicationStatComposite = new ApplicationStatComposite();
-    private final ServiceStatComposite serviceStatComposite = new ServiceStatComposite();
+    private ApplicationStatComposite applicationStatComposite;
+    private ServiceStatComposite serviceStatComposite;
 
-    private final MethodStatComposite methodStatComposite = new MethodStatComposite();
-    private final RtStatComposite rtStatComposite = new RtStatComposite();
+    private MethodStatComposite methodStatComposite;
+    private RtStatComposite rtStatComposite;
 
 
-    public BaseStatComposite() {
-        init(applicationStatComposite);
-        init(serviceStatComposite);
-        init(methodStatComposite);
-        init(rtStatComposite);
+    public BaseStatComposite(ApplicationModel applicationModel) {
+        init(new ApplicationStatComposite(applicationModel));
+        init(new ServiceStatComposite(applicationModel));
+        init(new MethodStatComposite(applicationModel));
+        init(new RtStatComposite(applicationModel));
     }
 
 
     protected void init(ApplicationStatComposite applicationStatComposite) {
+        this.applicationStatComposite = applicationStatComposite;
     }
 
     protected void init(ServiceStatComposite serviceStatComposite) {
-
+        this.serviceStatComposite = serviceStatComposite;
     }
 
     protected void init(MethodStatComposite methodStatComposite) {
+        this.methodStatComposite = methodStatComposite;
     }
 
     protected void init(RtStatComposite rtStatComposite) {
+        this.rtStatComposite = rtStatComposite;
     }
 
-    public void calcApplicationRt(String applicationName, String registryOpType, Long responseTime) {
-        rtStatComposite.calcApplicationRt(applicationName, registryOpType, responseTime);
+    public void calcApplicationRt(String registryOpType, Long responseTime) {
+        rtStatComposite.calcApplicationRt(registryOpType, responseTime);
     }
 
-    public void calcServiceKeyRt(String applicationName, String serviceKey, String registryOpType, Long responseTime) {
-        rtStatComposite.calcServiceKeyRt(applicationName, serviceKey, registryOpType, responseTime);
+    public void calcServiceKeyRt(String serviceKey, String registryOpType, Long responseTime) {
+        rtStatComposite.calcServiceKeyRt(serviceKey, registryOpType, responseTime);
     }
 
-    public void calcMethodKeyRt(String applicationName, Invocation invocation, String registryOpType, Long responseTime) {
-        rtStatComposite.calcMethodKeyRt(applicationName, invocation, registryOpType, responseTime);
+    public void calcMethodKeyRt(Invocation invocation, String registryOpType, Long responseTime) {
+        rtStatComposite.calcMethodKeyRt(invocation, registryOpType, responseTime);
     }
 
-    public void setServiceKey(MetricsKeyWrapper metricsKey, String applicationName, String serviceKey, int num) {
-        serviceStatComposite.setServiceKey(metricsKey, applicationName, serviceKey, num);
+    public void setServiceKey(MetricsKeyWrapper metricsKey, String serviceKey, int num) {
+        serviceStatComposite.setServiceKey(metricsKey, serviceKey, num);
     }
 
-    public void incrementApp(MetricsKey metricsKey, String applicationName, int size) {
-        applicationStatComposite.incrementSize(metricsKey, applicationName, size);
+    public void incrementApp(MetricsKey metricsKey, int size) {
+        applicationStatComposite.incrementSize(metricsKey, size);
     }
 
-    public void incrementServiceKey(MetricsKeyWrapper metricsKeyWrapper, String applicationName, String attServiceKey, int size) {
-        serviceStatComposite.incrementServiceKey(metricsKeyWrapper, applicationName, attServiceKey, size);
+    public void incrementServiceKey(MetricsKeyWrapper metricsKeyWrapper, String attServiceKey, int size) {
+        serviceStatComposite.incrementServiceKey(metricsKeyWrapper, attServiceKey, size);
     }
 
-    public void incrementMethodKey(MetricsKeyWrapper metricsKeyWrapper, String applicationName, Invocation invocation, int size) {
-        methodStatComposite.incrementMethodKey(metricsKeyWrapper, applicationName, invocation, size);
+    public void incrementMethodKey(MetricsKeyWrapper metricsKeyWrapper, Invocation invocation, int size) {
+        methodStatComposite.incrementMethodKey(metricsKeyWrapper, invocation, size);
     }
 
     @Override

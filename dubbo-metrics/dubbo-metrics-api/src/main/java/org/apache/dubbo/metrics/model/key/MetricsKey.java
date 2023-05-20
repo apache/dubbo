@@ -55,6 +55,8 @@ public enum MetricsKey {
     METRIC_RT_AVG("dubbo.%s.rt.milliseconds.avg", "Average Response Time"),
     METRIC_RT_P99("dubbo.%s.rt.milliseconds.p99", "Response Time P99"),
     METRIC_RT_P95("dubbo.%s.rt.milliseconds.p95", "Response Time P95"),
+    METRIC_RT_P90("dubbo.%s.rt.milliseconds.p90", "Response Time P90"),
+    METRIC_RT_P50("dubbo.%s.rt.milliseconds.p50", "Response Time P50"),
 
 
     // register metrics key
