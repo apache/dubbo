@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.http.ssl;
+package org.apache.dubbo.common.ssl.util.pem;
 
 
 import javax.crypto.Cipher;
@@ -47,21 +47,6 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.List;
 
 public class SslContext {
-    static final String ALIAS = "key";
-
-    static final CertificateFactory X509_CERT_FACTORY;
-
-    static {
-        try {
-            X509_CERT_FACTORY = CertificateFactory.getInstance("X.509");
-        } catch (CertificateException e) {
-            throw new IllegalStateException("unable to instance X.509 CertificateFactory", e);
-        }
-    }
-
-
-
-
 
     /**
      * Generates a key specification for an (encrypted) private key.
@@ -77,7 +62,6 @@ public class SslContext {
      *                                            {@code key}
      * @throws InvalidAlgorithmParameterException if decryption algorithm parameters are somehow faulty
      */
-    @Deprecated
     protected static PKCS8EncodedKeySpec generateKeySpec(char[] password, byte[] key)
         throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeySpecException,
         InvalidKeyException, InvalidAlgorithmParameterException {
@@ -116,7 +100,7 @@ public class SslContext {
         }
         KeyStore ks = KeyStore.getInstance(keyStoreType);
         ks.load(null, null);
-        ks.setKeyEntry(ALIAS, key, keyPasswordChars, certChain);
+        ks.setKeyEntry("keyEntry", key, keyPasswordChars, certChain);
         return ks;
     }
 

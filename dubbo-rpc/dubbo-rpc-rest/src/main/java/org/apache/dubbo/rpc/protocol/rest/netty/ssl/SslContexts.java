@@ -25,14 +25,13 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.ssl.AuthPolicy;
 import org.apache.dubbo.common.ssl.ProviderCert;
+import org.apache.dubbo.common.ssl.util.JDKSSLUtils;
 
 import javax.net.ssl.SSLException;
-import java.io.IOException;
 import java.io.InputStream;
 import java.security.Provider;
 import java.security.Security;
 
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_CLOSE_STREAM;
 
 public class SslContexts {
 
@@ -67,9 +66,10 @@ public class SslContexts {
         } catch (Exception e) {
             throw new IllegalArgumentException("Could not find certificate file or the certificate is invalid.", e);
         } finally {
-            safeCloseStream(serverTrustCertStream);
-            safeCloseStream(serverKeyCertChainPathStream);
-            safeCloseStream(serverPrivateKeyPathStream);
+
+            JDKSSLUtils.safeCloseStream(serverTrustCertStream);
+            JDKSSLUtils.safeCloseStream(serverKeyCertChainPathStream);
+            JDKSSLUtils.safeCloseStream(serverPrivateKeyPathStream);
         }
         try {
             return sslClientContextBuilder.sslProvider(findSslProvider()).build();
@@ -99,17 +99,6 @@ public class SslContexts {
     private static boolean checkJdkProvider() {
         Provider[] jdkProviders = Security.getProviders("SSLContext.TLS");
         return (jdkProviders != null && jdkProviders.length > 0);
-    }
-
-    private static void safeCloseStream(InputStream stream) {
-        if (stream == null) {
-            return;
-        }
-        try {
-            stream.close();
-        } catch (IOException e) {
-            logger.warn(TRANSPORT_FAILED_CLOSE_STREAM, "", "", "Failed to close a stream.", e);
-        }
     }
 
 

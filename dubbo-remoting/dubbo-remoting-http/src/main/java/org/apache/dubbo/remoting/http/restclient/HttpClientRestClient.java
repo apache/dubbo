@@ -171,7 +171,7 @@ public class HttpClientRestClient extends BaseRestClient {
 
         HttpClientBuilder custom = HttpClients.custom();
         HttpClientBuilder finalCustom = custom;
-        custom = RestClientSSLContexts.buildClientSslContext(getUrl(), new RestClientSSLSetter() {
+        custom = RestClientSSLContexts.buildClientSSLContext(getUrl(), new RestClientSSLSetter() {
             @Override
             public void initSSLContext(SSLContext sslContext, TrustManager[] trustAllCerts) {
                 finalCustom.setSSLContext(sslContext);

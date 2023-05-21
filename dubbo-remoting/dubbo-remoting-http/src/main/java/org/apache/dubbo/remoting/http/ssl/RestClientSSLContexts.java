@@ -17,27 +17,99 @@
 package org.apache.dubbo.remoting.http.ssl;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.ssl.Cert;
 import org.apache.dubbo.common.ssl.CertManager;
+import org.apache.dubbo.common.ssl.util.JDKSSLUtils;
+import org.apache.dubbo.common.ssl.util.pem.SSLContextBuilder;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
-import java.io.IOException;
 import java.io.InputStream;
 
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_CLOSE_STREAM;
 
 /**
  * for rest client ssl context build
  */
 public class RestClientSSLContexts {
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(RestClientSSLContexts.class);
 
-    public static <T> T buildClientSslContext(URL url, RestClientSSLSetter restClientSSLSetter, T t) {
+
+    public static <T> T buildClientSSLContext(URL url, RestClientSSLSetter restClientSSLSetter, T t) {
+
+        try {
+            // first pem file
+            return buildClientSSlContextByPem(url, restClientSSLSetter, t);
+        } catch (Throwable e) {
+            return buildClientJDKSSlContext(url, restClientSSLSetter, t);
+        }
+
+    }
+
+
+    public static <T> T buildClientJDKSSlContext(URL url, RestClientSSLSetter restClientSSLSetter, T t) {
+
+
+        InputStream clientTrustCertCollectionStream = null;
+        InputStream clientCertChainStream = null;
+        InputStream clientPrivateKeyStream = null;
+
+        try {
+
+            if (url == null) {
+                return t;
+            }
+
+
+            CertManager certManager = url.getOrDefaultFrameworkModel().getBeanFactory().getBean(CertManager.class);
+            Cert consumerConnectionConfig = certManager.getConsumerConnectionConfig(url);
+
+            if (consumerConnectionConfig == null) {
+                return t;
+            }
+
+            clientCertChainStream = consumerConnectionConfig.getKeyCertChainInputStream();
+            clientPrivateKeyStream = consumerConnectionConfig.getPrivateKeyInputStream();
+            clientTrustCertCollectionStream = consumerConnectionConfig.getTrustCertInputStream();
+            String password = consumerConnectionConfig.getPassword();
+
+
+            if (clientPrivateKeyStream == null) {
+                return t;
+            }
+
+            char[] passwordCharArray = password == null ? new char[0] : password.toCharArray();
+
+
+            // init ssl context
+            SSLContext sslContext = JDKSSLUtils.createSslContext();
+
+            KeyManagerFactory keyManagerFactory = JDKSSLUtils.createKeyManagerFactory(clientPrivateKeyStream, passwordCharArray);
+
+            TrustManagerFactory trustManagerFactory = JDKSSLUtils.createTrustManagerFactory(clientTrustCertCollectionStream, passwordCharArray);
+
+            TrustManager[] trustManagers = JDKSSLUtils.buildTrustManagers(trustManagerFactory);
+
+            sslContext.init(keyManagerFactory.getKeyManagers(), trustManagers, null);
+
+            restClientSSLSetter.initSSLContext(sslContext, trustManagers);
+
+            restClientSSLSetter.setHostnameVerifier((hostname, session) -> true);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Could not build rest client SSLContext: ", e);
+        } finally {
+            JDKSSLUtils.safeCloseStream(clientTrustCertCollectionStream);
+            JDKSSLUtils.safeCloseStream(clientCertChainStream);
+            JDKSSLUtils.safeCloseStream(clientPrivateKeyStream);
+        }
+
+        return t;
+
+
+    }
+
+
+    public static <T> T buildClientSSlContextByPem(URL url, RestClientSSLSetter restClientSSLSetter, T t) {
 
 
         InputStream clientTrustCertCollectionStream = null;
@@ -67,18 +139,15 @@ public class RestClientSSLContexts {
                 return t;
             }
 
-            // TODO add  SSLContext cache for decreasing cost of SSLContext build
-            // TODO add others format certificate  parsing
-            // TODO add openssl certificate support
             SSLContext sslContext =
                 SSLContextBuilder.createSSLContext();
 
-            KeyManagerFactory keyManagerFactory = SSLContextBuilder.keyManager(clientCertChainStream, clientPrivateKeyStream, consumerConnectionConfig.getPassword());
+            KeyManagerFactory keyManagerFactory = SSLContextBuilder.keyManagerByPem(clientCertChainStream, clientPrivateKeyStream, consumerConnectionConfig.getPassword());
 
 
-            TrustManagerFactory trustManagerFactory = SSLContextBuilder.trustManager(clientTrustCertCollectionStream);
+            TrustManagerFactory trustManagerFactory = SSLContextBuilder.trustManagerByPem(clientTrustCertCollectionStream);
 
-            TrustManager[] trustManagers = SSLContextBuilder.buildTrustManagers(trustManagerFactory);
+            TrustManager[] trustManagers = JDKSSLUtils.buildTrustManagers(trustManagerFactory);
 
             sslContext.init(keyManagerFactory.getKeyManagers(), trustManagers, null);
 
@@ -88,25 +157,14 @@ public class RestClientSSLContexts {
         } catch (Exception e) {
             throw new IllegalArgumentException("Could not build rest client SSLContext: ", e);
         } finally {
-            safeCloseStream(clientTrustCertCollectionStream);
-            safeCloseStream(clientCertChainStream);
-            safeCloseStream(clientPrivateKeyStream);
+            JDKSSLUtils.safeCloseStream( clientTrustCertCollectionStream);
+            JDKSSLUtils.safeCloseStream(clientCertChainStream);
+            JDKSSLUtils.safeCloseStream(clientPrivateKeyStream);
         }
 
         return t;
 
 
-    }
-
-    private static void safeCloseStream(InputStream stream) {
-        if (stream == null) {
-            return;
-        }
-        try {
-            stream.close();
-        } catch (IOException e) {
-            logger.warn(TRANSPORT_FAILED_CLOSE_STREAM, "", "", "Failed to close a stream.", e);
-        }
     }
 
 

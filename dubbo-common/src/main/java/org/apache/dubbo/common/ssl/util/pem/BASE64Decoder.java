@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.http.ssl;
+package org.apache.dubbo.common.ssl.util.pem;
 
 
 import java.io.ByteArrayInputStream;
@@ -34,10 +34,6 @@ public class BASE64Decoder {
 
     protected int bytesPerAtom() {
         return 4;
-    }
-
-    protected int bytesPerLine() {
-        return 72;
     }
 
     protected void decodeAtom(PushbackInputStream var1, OutputStream var2, int var3) throws IOException {
@@ -125,11 +121,10 @@ public class BASE64Decoder {
     public void decodeBuffer(InputStream var1, OutputStream var2) throws IOException {
         int var4 = 0;
         PushbackInputStream var5 = new PushbackInputStream(var1);
-        this.decodeBufferPrefix(var5, var2);
 
         while (true) {
             try {
-                int var6 = this.decodeLinePrefix(var5, var2);
+                int var6 = 72;
 
                 int var3;
                 for (var3 = 0; var3 + this.bytesPerAtom() < var6; var3 += this.bytesPerAtom()) {
@@ -145,9 +140,7 @@ public class BASE64Decoder {
                     var4 += var6 - var3;
                 }
 
-                this.decodeLineSuffix(var5, var2);
             } catch (CEStreamExhausted var8) {
-                this.decodeBufferSuffix(var5, var2);
                 return;
             }
         }
@@ -162,23 +155,8 @@ public class BASE64Decoder {
         return var4.toByteArray();
     }
 
-
-    protected void decodeBufferPrefix(PushbackInputStream var1, OutputStream var2) throws IOException {
-    }
-
-    protected void decodeBufferSuffix(PushbackInputStream var1, OutputStream var2) throws IOException {
-    }
-
-    protected int decodeLinePrefix(PushbackInputStream var1, OutputStream var2) throws IOException {
-        return this.bytesPerLine();
-    }
-
-    protected void decodeLineSuffix(PushbackInputStream var1, OutputStream var2) throws IOException {
-    }
-
     private static class CEFormatException extends IOException {
         static final long serialVersionUID = -7139121221067081482L;
-
         public CEFormatException(String var1) {
             super(var1);
         }

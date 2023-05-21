@@ -29,13 +29,17 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.ssl.AuthPolicy;
 import org.apache.dubbo.common.ssl.CertManager;
 import org.apache.dubbo.common.ssl.ProviderCert;
+import org.apache.dubbo.common.ssl.util.pem.SSLContextBuilder;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLSession;
 import java.util.List;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
 
 public class SslServerTlsHandler extends ByteToMessageDecoder {
+
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(SslServerTlsHandler.class);
 
     private final URL url;
@@ -95,8 +99,7 @@ public class SslServerTlsHandler extends ByteToMessageDecoder {
         }
 
         if (isSsl(byteBuf)) {
-            SslContext sslContext = SslContexts.buildServerSslContext(providerConnectionConfig);
-            enableSsl(channelHandlerContext, sslContext);
+            enableSsl(channelHandlerContext, buildSslContext(providerConnectionConfig));
             return;
         }
 
@@ -109,13 +112,43 @@ public class SslServerTlsHandler extends ByteToMessageDecoder {
         channelHandlerContext.close();
     }
 
+    private Object buildSslContext(ProviderCert providerConnectionConfig) {
+
+        try {
+            // first to parse pem file
+            return SslContexts.buildServerSslContext(providerConnectionConfig);
+        } catch (Throwable e) {
+
+        }
+
+        // build context by jdk
+        return SSLContextBuilder.buildJDKSSLContext(providerConnectionConfig.getKeyCertChainInputStream(),
+            providerConnectionConfig.getPrivateKeyInputStream(),
+            providerConnectionConfig.getTrustCertInputStream(),
+            providerConnectionConfig.getPassword());
+    }
+
     private boolean isSsl(ByteBuf buf) {
         return SslHandler.isEncrypted(buf);
     }
 
-    private void enableSsl(ChannelHandlerContext ctx, SslContext sslContext) {
+    private void enableSsl(ChannelHandlerContext ctx, Object sslContext) {
+
+        SslHandler sslHandler = null;
+        if (sslContext instanceof SslContext) {
+            sslHandler = ((SslContext) sslContext).newHandler(ctx.alloc());
+        } else {
+
+            SSLEngine sslEngine = ((SSLContext) sslContext).createSSLEngine();
+            sslEngine.setUseClientMode(false);
+            sslEngine.setNeedClientAuth(true);
+
+            sslHandler = new SslHandler(sslEngine);
+        }
+
         ChannelPipeline p = ctx.pipeline();
-        ctx.pipeline().addAfter(ctx.name(), null, sslContext.newHandler(ctx.alloc()));
+
+        p.addAfter(ctx.name(), null, sslHandler);
         p.addLast("unificationA", new SslServerTlsHandler(url, true));
         p.remove(this);
     }

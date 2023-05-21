@@ -156,7 +156,7 @@ public class OKHttpRestClient extends BaseRestClient {
         OkHttpClient.Builder builder = new OkHttpClient.Builder();
 
         OkHttpClient.Builder finalBuilder = builder;
-        builder = RestClientSSLContexts.buildClientSslContext(getUrl(), new RestClientSSLSetter() {
+        builder = RestClientSSLContexts.buildClientSSLContext(getUrl(), new RestClientSSLSetter() {
             @Override
             public void initSSLContext(SSLContext sslContext, TrustManager[] trustAllCerts) {
                 finalBuilder.sslSocketFactory(sslContext.getSocketFactory(),(X509TrustManager)trustAllCerts[0]);

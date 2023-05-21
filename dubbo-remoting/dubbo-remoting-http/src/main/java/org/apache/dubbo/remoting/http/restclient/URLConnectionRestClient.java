@@ -63,7 +63,7 @@ public class URLConnectionRestClient extends BaseRestClient {
             if (isEnableSSL()) {
                 HttpsURLConnection tmp = (HttpsURLConnection) new URL(requestTemplate.getURL()).openConnection();
 
-                connection = RestClientSSLContexts.buildClientSslContext(getUrl(), new RestClientSSLSetter() {
+                connection = RestClientSSLContexts.buildClientSSLContext(getUrl(), new RestClientSSLSetter() {
                     @Override
                     public void initSSLContext(SSLContext sslContext, TrustManager[] trustAllCerts) {
                         tmp.setSSLSocketFactory(sslContext.getSocketFactory());
