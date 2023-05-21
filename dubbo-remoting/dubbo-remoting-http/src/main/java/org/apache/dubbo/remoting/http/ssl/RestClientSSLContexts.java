@@ -31,8 +31,6 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import java.io.InputStream;
 
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
-
 
 /**
  * for rest client ssl context build
