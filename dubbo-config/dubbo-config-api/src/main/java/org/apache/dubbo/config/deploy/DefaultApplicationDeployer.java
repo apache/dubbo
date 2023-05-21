@@ -370,6 +370,9 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     }
 
     private void initMetricsReporter() {
+        if (!isSupportMetrics()) {
+            return;
+        }
         DefaultMetricsCollector collector =
             applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class);
         Optional<MetricsConfig> configOptional = configManager.getMetrics();
@@ -389,9 +392,23 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         collector.collectApplication();
         collector.setThreadpoolCollectEnabled(Optional.ofNullable(metricsConfig.getEnableThreadpool()).orElse(true));
         MetricsReporterFactory metricsReporterFactory = getExtensionLoader(MetricsReporterFactory.class).getAdaptiveExtension();
-        MetricsReporter metricsReporter = metricsReporterFactory.createMetricsReporter(metricsConfig.toUrl());
+        MetricsReporter metricsReporter = null;
+        try {
+            metricsReporter = metricsReporterFactory.createMetricsReporter(metricsConfig.toUrl());
+        } catch (IllegalStateException e) {
+            if (e.getMessage().startsWith("No such extension org.apache.dubbo.metrics.report.MetricsReporterFactory")) {
+                logger.warn(e.getMessage());
+                return;
+            } else {
+                throw e;
+            }
+        }
         metricsReporter.init();
         applicationModel.getBeanFactory().registerBean(metricsReporter);
+    }
+
+    public boolean isSupportMetrics() {
+        return isClassPresent("io.micrometer.core.instrument.MeterRegistry");
     }
 
     public static boolean isSupportPrometheus() {
