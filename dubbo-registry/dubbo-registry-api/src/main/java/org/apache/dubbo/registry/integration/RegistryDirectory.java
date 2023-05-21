@@ -33,6 +33,7 @@ import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.metrics.event.MetricsEventBus;
 import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.registry.AddressListener;
+import org.apache.dubbo.registry.support.SkipFailbackWrapperException;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
@@ -447,6 +448,12 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
                 if (providerUrl.getProtocol().equals(acceptProtocol)) {
                     accept = true;
                     break;
+                } else {
+                    try {
+                        moduleModel.getApplicationModel().getExtensionLoader(Protocol.class).getExtension(acceptProtocol);
+                    } catch (IllegalStateException e) {
+                        throw new SkipFailbackWrapperException(e);
+                    }
                 }
             }
 
