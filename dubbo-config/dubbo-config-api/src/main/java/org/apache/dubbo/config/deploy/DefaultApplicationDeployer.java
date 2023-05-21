@@ -97,6 +97,7 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILE
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_REFRESH_INSTANCE_ERROR;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_REGISTER_INSTANCE_ERROR;
 import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_DEFAULT;
+import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMETHEUS;
 import static org.apache.dubbo.common.utils.StringUtils.isEmpty;
 import static org.apache.dubbo.common.utils.StringUtils.isNotEmpty;
 import static org.apache.dubbo.metadata.MetadataConstants.DEFAULT_METADATA_PUBLISH_DELAY;
@@ -380,8 +381,8 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         }
         //If no specific metrics type is configured and there is no Prometheus dependency in the dependencies.
         MetricsConfig metricsConfig = configOptional.orElse(new MetricsConfig(applicationModel));
-        if (StringUtils.isBlank(metricsConfig.getProtocol()) && !importMetricsPrometheus) {
-            metricsConfig.setProtocol(PROTOCOL_DEFAULT);
+        if (StringUtils.isBlank(metricsConfig.getProtocol())) {
+            metricsConfig.setProtocol(importMetricsPrometheus ? PROTOCOL_PROMETHEUS : PROTOCOL_DEFAULT);
         }
         collector.setCollectEnabled(true);
         collector.collectApplication(applicationModel);
