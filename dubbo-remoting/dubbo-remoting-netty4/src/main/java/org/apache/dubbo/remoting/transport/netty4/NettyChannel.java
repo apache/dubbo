@@ -30,6 +30,7 @@ import org.apache.dubbo.remoting.Codec;
 import org.apache.dubbo.remoting.Codec2;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
+import org.apache.dubbo.remoting.SerializationException;
 import org.apache.dubbo.remoting.buffer.ChannelBuffer;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.Response;
@@ -38,6 +39,7 @@ import org.apache.dubbo.remoting.transport.codec.CodecAdapter;
 import org.apache.dubbo.remoting.utils.PayloadDropper;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -189,7 +191,14 @@ final class NettyChannel extends AbstractChannel {
             if (!encodeInIOThread) {
                 ByteBuf buf = channel.alloc().buffer();
                 ChannelBuffer buffer = new NettyBackedChannelBuffer(buf);
-                codec.encode(this, buffer, message);
+                try {
+                    codec.encode(this, buffer, message);
+                } catch (Throwable t) {
+                    if (!(t instanceof IOException)) {
+                        t = new IOException(new SerializationException(this, t));
+                    }
+                    throw (IOException) t;
+                }
                 outputMessage = buf;
             }
             ChannelFuture future = writeQueue.enqueue(outputMessage).addListener(new ChannelFutureListener() {
