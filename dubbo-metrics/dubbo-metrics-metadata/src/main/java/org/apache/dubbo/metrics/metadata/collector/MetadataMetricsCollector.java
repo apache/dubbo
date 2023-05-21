@@ -51,19 +51,22 @@ public class MetadataMetricsCollector extends CombMetricsCollector<MetadataEvent
     private final ApplicationModel applicationModel;
 
     public MetadataMetricsCollector(ApplicationModel applicationModel) {
-        super(new BaseStatComposite() {
+        super(new BaseStatComposite(applicationModel) {
             @Override
             protected void init(ApplicationStatComposite applicationStatComposite) {
+                super.init(applicationStatComposite);
                 applicationStatComposite.init(MetadataMetricsConstants.APP_LEVEL_KEYS);
             }
 
             @Override
             protected void init(ServiceStatComposite serviceStatComposite) {
+                super.init(serviceStatComposite);
                 serviceStatComposite.initWrapper(MetadataMetricsConstants.SERVICE_LEVEL_KEYS);
             }
 
             @Override
             protected void init(RtStatComposite rtStatComposite) {
+                super.init(rtStatComposite);
                 rtStatComposite.init(OP_TYPE_PUSH, OP_TYPE_SUBSCRIBE, OP_TYPE_STORE_PROVIDER_INTERFACE);
             }
         });

@@ -38,6 +38,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.utils.ArrayUtils;
+import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ApplicationConfig;
@@ -385,12 +386,24 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             metricsConfig.setProtocol(importMetricsPrometheus ? PROTOCOL_PROMETHEUS : PROTOCOL_DEFAULT);
         }
         collector.setCollectEnabled(true);
-        collector.collectApplication(applicationModel);
+        collector.collectApplication();
         collector.setThreadpoolCollectEnabled(Optional.ofNullable(metricsConfig.getEnableThreadpool()).orElse(true));
         MetricsReporterFactory metricsReporterFactory = getExtensionLoader(MetricsReporterFactory.class).getAdaptiveExtension();
         MetricsReporter metricsReporter = metricsReporterFactory.createMetricsReporter(metricsConfig.toUrl());
         metricsReporter.init();
         applicationModel.getBeanFactory().registerBean(metricsReporter);
+    }
+
+    public static boolean isSupportPrometheus() {
+        return isClassPresent("io.micrometer.prometheus.PrometheusConfig")
+            && isClassPresent("io.prometheus.client.exporter.BasicAuthHttpConnectionFactory")
+            && isClassPresent("io.prometheus.client.exporter.HttpConnectionFactory")
+            && isClassPresent("io.prometheus.client.exporter.PushGateway");
+    }
+
+
+    private static boolean isClassPresent(String className) {
+        return ClassUtils.isPresent(className, DefaultApplicationDeployer.class.getClassLoader());
     }
 
 
@@ -742,11 +755,15 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     }
 
     private void exportMetricsService() {
-        try {
-            metricsServiceExporter.export();
-        } catch (Exception e) {
-            logger.error(LoggerCodeConstants.COMMON_METRICS_COLLECTOR_EXCEPTION, "", "",
-                "exportMetricsService an exception occurred when handle starting event", e);
+        boolean exportMetrics = applicationModel.getApplicationConfigManager().getMetrics()
+            .map(MetricsConfig::getExportMetricsService).orElse(true);
+        if (exportMetrics) {
+            try {
+                metricsServiceExporter.export();
+            } catch (Exception e) {
+                logger.error(LoggerCodeConstants.COMMON_METRICS_COLLECTOR_EXCEPTION, "", "",
+                    "exportMetricsService an exception occurred when handle starting event", e);
+            }
         }
     }
 

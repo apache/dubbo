@@ -20,6 +20,7 @@ package org.apache.dubbo.metrics.collector;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ReflectionUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.MetricsConfig;
@@ -33,6 +34,7 @@ import org.apache.dubbo.metrics.event.MetricsEventBus;
 import org.apache.dubbo.metrics.event.RequestBeforeEvent;
 import org.apache.dubbo.metrics.event.RequestEvent;
 import org.apache.dubbo.metrics.filter.MetricsFilter;
+import org.apache.dubbo.metrics.listener.MetricsListener;
 import org.apache.dubbo.metrics.model.MethodMetric;
 import org.apache.dubbo.metrics.model.MetricsSupport;
 import org.apache.dubbo.metrics.model.TimePair;
@@ -86,12 +88,9 @@ class AggregateMetricsCollectorTest {
     private AggregateMetricsCollector collector;
     private MetricsFilter metricsFilter;
 
-    public static MethodMetric getTestMethodMetric() {
+    public MethodMetric getTestMethodMetric() {
 
-        MethodMetric methodMetric = new MethodMetric();
-        methodMetric.setApplicationName("TestApp");
-        methodMetric.setInterfaceName("TestInterface");
-        methodMetric.setMethodName("TestMethod");
+        MethodMetric methodMetric = new MethodMetric(applicationModel, invocation);
         methodMetric.setGroup("TestGroup");
         methodMetric.setVersion("1.0.0");
         methodMetric.setSide("PROVIDER");
@@ -118,7 +117,7 @@ class AggregateMetricsCollectorTest {
         collector = applicationModel.getBeanFactory().getOrRegisterBean(AggregateMetricsCollector.class);
         collector.setCollectEnabled(true);
 
-        defaultCollector = new DefaultMetricsCollector();
+        defaultCollector = new DefaultMetricsCollector(applicationModel);
         defaultCollector.setCollectEnabled(true);
 
         metricsFilter = new MetricsFilter();
@@ -171,7 +170,6 @@ class AggregateMetricsCollectorTest {
         metricsFilter.onResponse(result, new TestMetricsInvoker(side), invocation);
 
 
-
         List<MetricSample> samples = collector.collect();
         for (MetricSample sample : samples) {
             Map<String, String> tags = sample.getTags();
@@ -201,7 +199,7 @@ class AggregateMetricsCollectorTest {
 
         when(applicationModel.getApplicationConfigManager()).thenReturn(configManager);
         when(applicationModel.getBeanFactory()).thenReturn(beanFactory);
-        when(beanFactory.getBean(DefaultMetricsCollector.class)).thenReturn(new DefaultMetricsCollector());
+        when(beanFactory.getBean(DefaultMetricsCollector.class)).thenReturn(new DefaultMetricsCollector(applicationModel));
         when(configManager.getMetrics()).thenReturn(Optional.of(metricsConfig));
         when(metricsConfig.getAggregation()).thenReturn(aggregationConfig);
         when(aggregationConfig.getEnabled()).thenReturn(Boolean.TRUE);
@@ -271,16 +269,16 @@ class AggregateMetricsCollectorTest {
         List<MetricSample> samples = collector.collect();
 
         GaugeMetricSample<?> p95Sample = samples.stream()
-            .filter(sample -> sample.getName().endsWith("p95"))
-            .map(sample -> (GaugeMetricSample<?>) sample)
-            .findFirst()
-            .orElse(null);
+                .filter(sample -> sample.getName().endsWith("p95"))
+                .map(sample -> (GaugeMetricSample<?>) sample)
+                .findFirst()
+                .orElse(null);
 
         GaugeMetricSample<?> p99Sample = samples.stream()
-            .filter(sample -> sample.getName().endsWith("p99"))
-            .map(sample -> (GaugeMetricSample<?>) sample)
-            .findFirst()
-            .orElse(null);
+                .filter(sample -> sample.getName().endsWith("p99"))
+                .map(sample -> (GaugeMetricSample<?>) sample)
+                .findFirst()
+                .orElse(null);
 
         Assertions.assertNotNull(p95Sample);
         Assertions.assertNotNull(p99Sample);
@@ -292,6 +290,13 @@ class AggregateMetricsCollectorTest {
         System.out.println(Math.abs(1 - p95 / manualP95));
         Assertions.assertTrue(Math.abs(1 - p95 / manualP95) < 0.05);
         Assertions.assertTrue(Math.abs(1 - p99 / manualP99) < 0.05);
+    }
+
+    @Test
+    void testGenericCache() {
+        List<Class<?>> classGenerics = ReflectionUtils.getClassGenerics(AggregateMetricsCollector.class, MetricsListener.class);
+        Assertions.assertTrue(CollectionUtils.isNotEmpty(classGenerics));
+        Assertions.assertEquals(RequestEvent.class, classGenerics.get(0));
     }
 
     public static class TestRequestEvent extends RequestEvent {
