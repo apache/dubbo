@@ -286,13 +286,6 @@
                 <version>${project.version}</version>
             </dependency>
 
-            <!-- native-plugin -->
-            <dependency>
-                <groupId>org.apache.dubbo</groupId>
-                <artifactId>dubbo-native-plugin</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
             <dependency>
                 <groupId>org.apache.dubbo</groupId>
                 <artifactId>dubbo-maven-plugin</artifactId>
