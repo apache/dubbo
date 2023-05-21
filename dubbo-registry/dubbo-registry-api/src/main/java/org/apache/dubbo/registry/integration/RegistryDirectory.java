@@ -449,10 +449,8 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
                     accept = true;
                     break;
                 } else {
-                    try {
-                        moduleModel.getApplicationModel().getExtensionLoader(Protocol.class).getExtension(acceptProtocol);
-                    } catch (IllegalStateException e) {
-                        throw new SkipFailbackWrapperException(e);
+                    if (!moduleModel.getApplicationModel().getExtensionLoader(Protocol.class).hasExtension(acceptProtocol)) {
+                        throw new SkipFailbackWrapperException(new IllegalStateException("No such extension org.apache.dubbo.rpc.Protocol by name " + acceptProtocol + ",  please check whether related SPI module is missing"));
                     }
                 }
             }
