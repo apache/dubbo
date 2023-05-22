@@ -25,7 +25,6 @@ package org.apache.dubbo.common.logger.helpers;
  */
 public final class Util {
 
-	
     private Util() {
     }
 
@@ -120,7 +119,6 @@ public final class Util {
     static final public void report(String msg) {
         System.err.println("SLF4J: " + msg);
     }
-    
-	
+
 
 }
