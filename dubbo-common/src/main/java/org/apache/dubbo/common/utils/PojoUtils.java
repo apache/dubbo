@@ -359,11 +359,11 @@ public class PojoUtils {
         Map<String, Type> mapGeneric = new HashMap<>(8);
         mapGeneric.putAll(mapParent);
         TypeVariable<? extends Class<?>>[] typeParameters = type.getTypeParameters();
-        if(genericType instanceof ParameterizedType && typeParameters.length > 0) {
-            ParameterizedType parameterizedType = (ParameterizedType)genericType;
+        if (genericType instanceof ParameterizedType && typeParameters.length > 0) {
+            ParameterizedType parameterizedType = (ParameterizedType) genericType;
             Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
             for (int i = 0; i < typeParameters.length; i++) {
-                if(!(actualTypeArguments[i] instanceof TypeVariable)) {
+                if (!(actualTypeArguments[i] instanceof TypeVariable)) {
                     mapGeneric.put(typeParameters[i].getTypeName(), actualTypeArguments[i]);
                 }
             }
@@ -540,20 +540,17 @@ public class PojoUtils {
                                     method.setAccessible(true);
                                 }
                                 Type containType = mapGeneric.get(field.getGenericType().getTypeName());
-                                if(containType != null) {
+                                if (containType != null) {
                                     //is generic
-                                    if(containType instanceof ParameterizedType) {
-                                        value = realize1(value, (Class<?>) ((ParameterizedType)containType).getRawType(), containType, mapGeneric, history);
-                                    }
-                                    else if (containType instanceof Class){
+                                    if (containType instanceof ParameterizedType) {
+                                        value = realize1(value, (Class<?>) ((ParameterizedType) containType).getRawType(), containType, mapGeneric, history);
+                                    } else if (containType instanceof Class) {
                                         value = realize1(value, (Class<?>) containType, containType, mapGeneric, history);
-                                    }
-                                    else {
+                                    } else {
                                         Type ptype = method.getGenericParameterTypes()[0];
                                         value = realize1(value, method.getParameterTypes()[0], ptype, mapGeneric, history);
                                     }
-                                }
-                                else {
+                                } else {
                                     Type ptype = method.getGenericParameterTypes()[0];
                                     value = realize1(value, method.getParameterTypes()[0], ptype, mapGeneric, history);
                                 }
@@ -709,7 +706,7 @@ public class PojoUtils {
         if (CLASS_FIELD_CACHE.containsKey(cls) && CLASS_FIELD_CACHE.get(cls).containsKey(fieldName)) {
             return CLASS_FIELD_CACHE.get(cls).get(fieldName);
         }
-        for(Class<?> acls = cls; acls != null; acls = acls.getSuperclass()) {
+        for (Class<?> acls = cls; acls != null; acls = acls.getSuperclass()) {
             try {
                 result = acls.getDeclaredField(fieldName);
                 if (!Modifier.isPublic(result.getModifiers())) {
@@ -718,11 +715,13 @@ public class PojoUtils {
             } catch (NoSuchFieldException e) {
             }
         }
-        if(result == null) {
-            for (Field field : cls.getFields()) {
-                if (fieldName.equals(field.getName()) && ReflectUtils.isPublicInstanceField(field)) {
-                    result = field;
-                    break;
+        if (result == null) {
+            if (cls != null) {
+                for (Field field : cls.getFields()) {
+                    if (fieldName.equals(field.getName()) && ReflectUtils.isPublicInstanceField(field)) {
+                        result = field;
+                        break;
+                    }
                 }
             }
         }
