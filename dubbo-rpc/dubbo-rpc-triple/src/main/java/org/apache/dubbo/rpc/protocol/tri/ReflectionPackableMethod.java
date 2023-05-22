@@ -25,9 +25,12 @@ import org.apache.dubbo.config.Constants;
 import org.apache.dubbo.remoting.utils.UrlUtils;
 import org.apache.dubbo.remoting.transport.CodecSupport;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
+import org.apache.dubbo.rpc.model.Pack;
 import org.apache.dubbo.rpc.model.PackableMethod;
 
 import com.google.protobuf.Message;
+import org.apache.dubbo.rpc.model.UnPack;
+import org.apache.dubbo.rpc.model.WrapperUnPack;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -115,11 +118,11 @@ public class ReflectionPackableMethod implements PackableMethod {
     }
 
     public static ReflectionPackableMethod init(MethodDescriptor methodDescriptor, URL url) {
-        final String serializeName = UrlUtils.serializationOrDefault(url);
         Object stored = methodDescriptor.getAttribute(METHOD_ATTR_PACK);
         if (stored != null) {
             return (ReflectionPackableMethod) stored;
         }
+        final String serializeName = UrlUtils.serializationOrDefault(url);
         final Collection<String> allSerialize = UrlUtils.allSerializations(url);
         ReflectionPackableMethod reflectionPackableMethod = new ReflectionPackableMethod(
             methodDescriptor, url, serializeName, allSerialize);
@@ -349,7 +352,7 @@ public class ReflectionPackableMethod implements PackableMethod {
         }
     }
 
-    private static class WrapResponseUnpack implements UnPack {
+    private static class WrapResponseUnpack implements WrapperUnPack {
 
         private final MultipleSerialization serialization;
         private final URL url;
@@ -367,6 +370,11 @@ public class ReflectionPackableMethod implements PackableMethod {
 
         @Override
         public Object unpack(byte[] data) throws IOException, ClassNotFoundException {
+            return unpack(data, false);
+        }
+
+
+        public Object unpack(byte[] data, boolean isReturnTriException) throws IOException, ClassNotFoundException {
             TripleCustomerProtocolWapper.TripleResponseWrapper wrapper = TripleCustomerProtocolWapper.TripleResponseWrapper
                 .parseFrom(data);
             final String serializeType = convertHessianFromWrapper(wrapper.getSerializeType());
@@ -374,6 +382,9 @@ public class ReflectionPackableMethod implements PackableMethod {
             CodecSupport.checkSerialization(serializeType, allSerialize);
 
             ByteArrayInputStream bais = new ByteArrayInputStream(wrapper.getData());
+            if (isReturnTriException) {
+                return serialization.deserialize(url, serializeType, Exception.class, bais);
+            }
             return serialization.deserialize(url, serializeType, returnClass, bais);
         }
     }
@@ -440,24 +451,7 @@ public class ReflectionPackableMethod implements PackableMethod {
 
     }
 
-    private static class PbArrayPacker implements Pack {
-
-        private final boolean singleArgument;
-
-        private PbArrayPacker(boolean singleArgument) {
-            this.singleArgument = singleArgument;
-        }
-
-        @Override
-        public byte[] pack(Object obj) throws IOException {
-            if (!singleArgument) {
-                obj = ((Object[]) obj)[0];
-            }
-            return PB_PACK.pack(obj);
-        }
-    }
-
-    private class WrapRequestUnpack implements UnPack {
+    private class WrapRequestUnpack implements WrapperUnPack {
 
         private final MultipleSerialization serialization;
         private final URL url;
@@ -474,8 +468,7 @@ public class ReflectionPackableMethod implements PackableMethod {
             this.allSerialize = allSerialize;
         }
 
-        @Override
-        public Object unpack(byte[] data) throws IOException, ClassNotFoundException {
+        public Object unpack(byte[] data, boolean isReturnTriException) throws IOException, ClassNotFoundException {
             TripleCustomerProtocolWapper.TripleRequestWrapper wrapper = TripleCustomerProtocolWapper.TripleRequestWrapper.parseFrom(
                 data);
 

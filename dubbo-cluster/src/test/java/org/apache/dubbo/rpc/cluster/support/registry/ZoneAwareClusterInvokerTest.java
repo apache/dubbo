@@ -24,6 +24,7 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 import org.apache.dubbo.rpc.cluster.Directory;
 
+import org.apache.dubbo.rpc.cluster.support.AbstractClusterInvoker;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -174,6 +175,7 @@ class ZoneAwareClusterInvokerTest {
         given(directory.getUrl()).willReturn(url);
         given(directory.getConsumerUrl()).willReturn(url);
         given(directory.list(invocation)).willReturn(new ArrayList<>(0));
+        given(directory.getInterface()).willReturn(ZoneAwareClusterInvokerTest.class);
 
         zoneAwareClusterInvoker = new ZoneAwareClusterInvoker<>(directory);
 

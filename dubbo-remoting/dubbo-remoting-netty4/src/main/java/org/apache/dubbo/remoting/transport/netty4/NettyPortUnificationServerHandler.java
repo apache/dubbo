@@ -23,8 +23,6 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.ssl.AuthPolicy;
 import org.apache.dubbo.common.ssl.CertManager;
 import org.apache.dubbo.common.ssl.ProviderCert;
-import org.apache.dubbo.common.utils.NetUtils;
-import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.api.ProtocolDetector;
 import org.apache.dubbo.remoting.api.WireProtocol;
@@ -40,7 +38,6 @@ import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.ssl.SslHandshakeCompletionEvent;
 
 import javax.net.ssl.SSLSession;
-import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -55,19 +52,17 @@ public class NettyPortUnificationServerHandler extends ByteToMessageDecoder {
     private final ChannelHandler handler;
     private final boolean detectSsl;
     private final List<WireProtocol> protocols;
-    private final Map<String, Channel> dubboChannels;
     private final Map<String, URL> urlMapper;
     private final Map<String, ChannelHandler> handlerMapper;
 
 
     public NettyPortUnificationServerHandler(URL url, boolean detectSsl,
                                              List<WireProtocol> protocols, ChannelHandler handler,
-                                             Map<String, Channel> dubboChannels, Map<String, URL> urlMapper, Map<String, ChannelHandler> handlerMapper) {
+                                             Map<String, URL> urlMapper, Map<String, ChannelHandler> handlerMapper) {
         this.url = url;
         this.protocols = protocols;
         this.detectSsl = detectSsl;
         this.handler = handler;
-        this.dubboChannels = dubboChannels;
         this.urlMapper = urlMapper;
         this.handlerMapper = handlerMapper;
     }
@@ -75,16 +70,6 @@ public class NettyPortUnificationServerHandler extends ByteToMessageDecoder {
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         LOGGER.error(INTERNAL_ERROR, "unknown error in remoting module", "", "Unexpected exception from downstream before protocol detected.", cause);
-    }
-
-    @Override
-    public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        super.channelActive(ctx);
-        NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), url, handler);
-        if (channel != null) {
-            // this is needed by some test cases
-            dubboChannels.put(NetUtils.toAddressString((InetSocketAddress) ctx.channel().remoteAddress()), channel);
-        }
     }
 
     @Override
@@ -164,7 +149,7 @@ public class NettyPortUnificationServerHandler extends ByteToMessageDecoder {
         p.addLast("ssl", sslContext.newHandler(ctx.alloc()));
         p.addLast("unificationA",
             new NettyPortUnificationServerHandler(url, false, protocols,
-                handler, dubboChannels, urlMapper, handlerMapper));
+                handler, urlMapper, handlerMapper));
         p.remove(this);
     }
 

@@ -26,7 +26,7 @@
 
     <properties>
         <skip_maven_deploy>false</skip_maven_deploy>
-        <protobuf-java.version>3.21.12</protobuf-java.version>
+        <protobuf-java.version>3.22.2</protobuf-java.version>
         <grpc.version>1.41.0</grpc.version>
     </properties>
 

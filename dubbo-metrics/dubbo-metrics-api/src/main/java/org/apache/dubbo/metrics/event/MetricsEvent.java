@@ -17,9 +17,13 @@
 
 package org.apache.dubbo.metrics.event;
 
+import org.apache.dubbo.metrics.exception.MetricsNeverHappenException;
 import org.apache.dubbo.metrics.model.MethodMetric;
 import org.apache.dubbo.metrics.model.key.TypeWrapper;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * BaseMetricsEvent.
@@ -31,10 +35,12 @@ public abstract class MetricsEvent {
      */
     protected transient ApplicationModel source;
     private boolean available = true;
-    protected TypeWrapper typeWrapper;
+    private final TypeWrapper typeWrapper;
 
-    @SuppressWarnings({"unchecked"})
-    public MetricsEvent(ApplicationModel source) {
+    private final Map<String, Object> attachment = new HashMap<>(8);
+
+    public MetricsEvent(ApplicationModel source, TypeWrapper typeWrapper) {
+        this.typeWrapper = typeWrapper;
         if (source == null) {
             this.source = ApplicationModel.defaultModel();
             // Appears only in unit tests
@@ -42,6 +48,18 @@ public abstract class MetricsEvent {
         } else {
             this.source = source;
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> T getAttachmentValue(String key) {
+        if (key == null) {
+            throw new MetricsNeverHappenException("Attachment key is null");
+        }
+        return (T) attachment.get(key);
+    }
+
+    public void putAttachment(String key, Object value) {
+        attachment.put(key, value);
     }
 
     public void setAvailable(boolean available) {
@@ -59,6 +77,14 @@ public abstract class MetricsEvent {
 
     public ApplicationModel getSource() {
         return source;
+    }
+
+    public String appName() {
+        return getSource().getApplicationName();
+    }
+
+    public TypeWrapper getTypeWrapper() {
+        return typeWrapper;
     }
 
     public boolean isAssignableFrom(Object type) {
@@ -82,9 +108,10 @@ public abstract class MetricsEvent {
         NETWORK_EXCEPTION("NETWORK_EXCEPTION_%s"),
         SERVICE_UNAVAILABLE("SERVICE_UNAVAILABLE_%s"),
         CODEC_EXCEPTION("CODEC_EXCEPTION_%s"),
+        NO_INVOKER_AVAILABLE("NO_INVOKER_AVAILABLE_%s"),
         ;
 
-        private String name;
+        private final String name;
 
         public final String getName() {
             return this.name;

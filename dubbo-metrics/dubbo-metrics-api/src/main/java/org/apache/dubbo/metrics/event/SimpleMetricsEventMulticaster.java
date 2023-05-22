@@ -60,13 +60,13 @@ public class SimpleMetricsEventMulticaster implements MetricsEventMulticaster {
 
     @Override
     @SuppressWarnings({"unchecked"})
-    public void publishFinishEvent(MetricsEvent event) {
+    public void publishFinishEvent(TimeCounterEvent event) {
         publishTimeEvent(event, metricsLifeListener -> metricsLifeListener.onEventFinish(event));
     }
 
     @Override
     @SuppressWarnings({"unchecked"})
-    public void publishErrorEvent(MetricsEvent event) {
+    public void publishErrorEvent(TimeCounterEvent event) {
         publishTimeEvent(event, metricsLifeListener -> metricsLifeListener.onEventError(event));
     }
 

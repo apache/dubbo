@@ -19,17 +19,17 @@ package org.apache.dubbo.metrics.metadata;
 
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.metrics.event.MetricsDispatcher;
+import org.apache.dubbo.metrics.event.MetricsEvent;
 import org.apache.dubbo.metrics.event.MetricsEventBus;
 import org.apache.dubbo.metrics.metadata.collector.MetadataMetricsCollector;
 import org.apache.dubbo.metrics.metadata.event.MetadataEvent;
+import org.apache.dubbo.metrics.model.TimePair;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
-import org.apache.dubbo.metrics.model.TimePair;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,6 +37,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -50,6 +51,8 @@ class MetadataMetricsCollectorTest {
 
     private ApplicationModel applicationModel;
 
+    private MetadataMetricsCollector collector;
+
     @BeforeEach
     public void setup() {
         FrameworkModel frameworkModel = FrameworkModel.defaultModel();
@@ -58,8 +61,21 @@ class MetadataMetricsCollectorTest {
         config.setName("MockMetrics");
 
         applicationModel.getApplicationConfigManager().setApplication(config);
+        applicationModel.getBeanFactory().getOrRegisterBean(MetricsDispatcher.class);
 
+        collector = applicationModel.getBeanFactory().getOrRegisterBean(MetadataMetricsCollector.class);
+        collector.setCollectEnabled(true);
     }
+
+    @Test
+    void testListener() {
+        MetadataEvent event = MetadataEvent.toPushEvent(applicationModel);
+        MetricsEvent otherEvent = new MetricsEvent(applicationModel,null){
+        };
+        Assertions.assertTrue(collector.isSupport(event));
+        Assertions.assertFalse(collector.isSupport(otherEvent));
+    }
+
 
     @AfterEach
     public void teardown() {
@@ -68,10 +84,7 @@ class MetadataMetricsCollectorTest {
 
     @Test
     void testPushMetrics() {
-
-        applicationModel.getBeanFactory().getOrRegisterBean(MetricsDispatcher.class);
-        MetadataMetricsCollector collector = applicationModel.getBeanFactory().getOrRegisterBean(MetadataMetricsCollector.class);
-        collector.setCollectEnabled(true);
+//        MetadataMetricsCollector collector = getCollector();
 
         MetadataEvent pushEvent = MetadataEvent.toPushEvent(applicationModel);
         MetricsEventBus.post(pushEvent,
@@ -79,17 +92,17 @@ class MetadataMetricsCollectorTest {
                 List<MetricSample> metricSamples = collector.collect();
 
                 // push success +1
-                Assertions.assertEquals(1, metricSamples.size());
-                Assertions.assertTrue(metricSamples.get(0) instanceof GaugeMetricSample);
-                Assertions.assertEquals(metricSamples.get(0).getName(), MetricsKey.METADATA_PUSH_METRIC_NUM.getName());
+                Assertions.assertEquals(MetadataMetricsConstants.APP_LEVEL_KEYS.size(), metricSamples.size());
+                Assertions.assertTrue(metricSamples.stream().allMatch(metricSample -> metricSample instanceof GaugeMetricSample));
+                Assertions.assertTrue(metricSamples.stream().anyMatch(metricSample -> ((GaugeMetricSample) metricSample).applyAsDouble() == 1));
                 return null;
             }
         );
 
         // push finish rt +1
         List<MetricSample> metricSamples = collector.collect();
-        //num(total+success) + rt(5) = 7
-        Assertions.assertEquals(7, metricSamples.size());
+        // App(6) + rt(5) = 7
+        Assertions.assertEquals(MetadataMetricsConstants.APP_LEVEL_KEYS.size() + 5, metricSamples.size());
         long c1 = pushEvent.getTimePair().calc();
 
         pushEvent = MetadataEvent.toPushEvent(applicationModel);
@@ -108,8 +121,8 @@ class MetadataMetricsCollectorTest {
         long c2 = lastTimePair.calc();
         metricSamples = collector.collect();
 
-        // num(total+success+error) + rt(5)
-        Assertions.assertEquals(8, metricSamples.size());
+        // App(6) + rt(5)
+        Assertions.assertEquals(MetadataMetricsConstants.APP_LEVEL_KEYS.size() + 5, metricSamples.size());
 
         // calc rt
         for (MetricSample sample : metricSamples) {
@@ -129,10 +142,7 @@ class MetadataMetricsCollectorTest {
 
     @Test
     void testSubscribeMetrics() {
-
-        applicationModel.getBeanFactory().getOrRegisterBean(MetricsDispatcher.class);
-        MetadataMetricsCollector collector = applicationModel.getBeanFactory().getOrRegisterBean(MetadataMetricsCollector.class);
-        collector.setCollectEnabled(true);
+//        MetadataMetricsCollector collector = getCollector();
 
         MetadataEvent subscribeEvent = MetadataEvent.toSubscribeEvent(applicationModel);
         MetricsEventBus.post(subscribeEvent,
@@ -140,9 +150,9 @@ class MetadataMetricsCollectorTest {
                 List<MetricSample> metricSamples = collector.collect();
 
                 // push success +1
-                Assertions.assertEquals(1, metricSamples.size());
-                Assertions.assertTrue(metricSamples.get(0) instanceof GaugeMetricSample);
-                Assertions.assertEquals(metricSamples.get(0).getName(), MetricsKey.METADATA_SUBSCRIBE_METRIC_NUM.getName());
+                Assertions.assertEquals(MetadataMetricsConstants.APP_LEVEL_KEYS.size(), metricSamples.size());
+                Assertions.assertTrue(metricSamples.stream().allMatch(metricSample -> metricSample instanceof GaugeMetricSample));
+                Assertions.assertTrue(metricSamples.stream().anyMatch(metricSample -> ((GaugeMetricSample) metricSample).applyAsDouble() == 1));
                 return null;
             }
         );
@@ -150,8 +160,9 @@ class MetadataMetricsCollectorTest {
 
         // push finish rt +1
         List<MetricSample> metricSamples = collector.collect();
-        //num(total+success) + rt(5) = 7
-        Assertions.assertEquals(7, metricSamples.size());
+        // App(6) + rt(5) = 7
+        Assertions.assertEquals(MetadataMetricsConstants.APP_LEVEL_KEYS.size() + 5, metricSamples.size());
+
         subscribeEvent = MetadataEvent.toSubscribeEvent(applicationModel);
         TimePair lastTimePair = subscribeEvent.getTimePair();
         MetricsEventBus.post(subscribeEvent,
@@ -169,8 +180,8 @@ class MetadataMetricsCollectorTest {
         long c2 = lastTimePair.calc();
         metricSamples = collector.collect();
 
-        // num(total+success+error) + rt(5)
-        Assertions.assertEquals(8, metricSamples.size());
+        // App(6) + rt(5)
+        Assertions.assertEquals(MetadataMetricsConstants.APP_LEVEL_KEYS.size() + 5, metricSamples.size());
 
         // calc rt
         for (MetricSample sample : metricSamples) {
@@ -191,10 +202,7 @@ class MetadataMetricsCollectorTest {
 
     @Test
     void testStoreProviderMetadataMetrics() {
-
-        applicationModel.getBeanFactory().getOrRegisterBean(MetricsDispatcher.class);
-        MetadataMetricsCollector collector = applicationModel.getBeanFactory().getOrRegisterBean(MetadataMetricsCollector.class);
-        collector.setCollectEnabled(true);
+//        MetadataMetricsCollector collector = getCollector();
 
         String serviceKey = "store.provider.test";
         MetadataEvent metadataEvent = MetadataEvent.toServiceSubscribeEvent(applicationModel, serviceKey);
@@ -202,19 +210,19 @@ class MetadataMetricsCollectorTest {
             () -> {
                 List<MetricSample> metricSamples = collector.collect();
 
-                // push success +1
-                Assertions.assertEquals(1, metricSamples.size());
-                Assertions.assertTrue(metricSamples.get(0) instanceof GaugeMetricSample);
-                Assertions.assertEquals(metricSamples.get(0).getName(), MetricsKey.STORE_PROVIDER_METADATA.getName());
-                Assertions.assertEquals(metricSamples.get(0).getTags().get("interface"), serviceKey);
+                // App(6) + service success(1)
+                Assertions.assertEquals(MetadataMetricsConstants.APP_LEVEL_KEYS.size() + 1, metricSamples.size());
+                Assertions.assertTrue(metricSamples.stream().allMatch(metricSample -> metricSample instanceof GaugeMetricSample));
+                Assertions.assertTrue(metricSamples.stream().anyMatch(metricSample -> ((GaugeMetricSample) metricSample).applyAsDouble() == 1));
                 return null;
             }
         );
 
         // push finish rt +1
         List<MetricSample> metricSamples = collector.collect();
-        //num(total+success) + rt(5) = 7
-        Assertions.assertEquals(7, metricSamples.size());
+        // App(6) + service total/success(2) + rt(5) = 7
+        Assertions.assertEquals(MetadataMetricsConstants.APP_LEVEL_KEYS.size() + 2 + 5, metricSamples.size());
+
         long c1 = metadataEvent.getTimePair().calc();
         metadataEvent = MetadataEvent.toServiceSubscribeEvent(applicationModel, serviceKey);
         TimePair lastTimePair = metadataEvent.getTimePair();
@@ -233,8 +241,8 @@ class MetadataMetricsCollectorTest {
 
         metricSamples = collector.collect();
 
-        // num(total+success+error) + rt(5)
-        Assertions.assertEquals(8, metricSamples.size());
+        // App(6) + service total/success/failed(3) + rt(5)
+        Assertions.assertEquals(MetadataMetricsConstants.APP_LEVEL_KEYS.size() +3 + 5, metricSamples.size());
 
         // calc rt
         for (MetricSample sample : metricSamples) {
@@ -250,6 +258,56 @@ class MetadataMetricsCollectorTest {
         Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(MetricsKey.METRIC_RT_MAX, OP_TYPE_STORE_PROVIDER_INTERFACE).targetKey()), Math.max(c1, c2));
         Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(MetricsKey.METRIC_RT_AVG, OP_TYPE_STORE_PROVIDER_INTERFACE).targetKey()), (c1 + c2) / 2);
         Assertions.assertEquals(sampleMap.get(new MetricsKeyWrapper(MetricsKey.METRIC_RT_SUM, OP_TYPE_STORE_PROVIDER_INTERFACE).targetKey()), c1 + c2);
+    }
+
+    @Test
+    void testMetadataPushNum() {
+
+        for (int i = 0; i < 10; i++) {
+            MetadataEvent event = MetadataEvent.toPushEvent(applicationModel);
+            if(i %2 ==0 ) {
+                MetricsEventBus.post(event,() -> true, r -> r);
+            }else {
+                MetricsEventBus.post(event,() -> false, r -> r);
+            }
+        }
+
+        List<MetricSample> samples = collector.collect();
+
+        GaugeMetricSample<?> totalNum = getSample(MetricsKey.METADATA_PUSH_METRIC_NUM.getName(), samples);
+        GaugeMetricSample<?> succeedNum = getSample(MetricsKey.METADATA_PUSH_METRIC_NUM_SUCCEED.getName(), samples);
+        GaugeMetricSample<?> failedNum = getSample(MetricsKey.METADATA_PUSH_METRIC_NUM_FAILED.getName(), samples);
+
+        Assertions.assertEquals(10,totalNum.applyAsLong());
+        Assertions.assertEquals(5,succeedNum.applyAsLong());
+        Assertions.assertEquals(5,failedNum.applyAsLong());
+    }
+
+    @Test
+    void testSubscribeSum(){
+
+        for (int i = 0; i < 10; i++) {
+            MetadataEvent event = MetadataEvent.toSubscribeEvent(applicationModel);
+            if(i %2 ==0 ) {
+                MetricsEventBus.post(event,() -> true, r -> r);
+            }else {
+                MetricsEventBus.post(event,() -> false, r -> r);
+            }
+        }
+
+        List<MetricSample> samples = collector.collect();
+
+        GaugeMetricSample<?> totalNum = getSample(MetricsKey.METADATA_SUBSCRIBE_METRIC_NUM.getName(), samples);
+        GaugeMetricSample<?> succeedNum = getSample(MetricsKey.METADATA_SUBSCRIBE_METRIC_NUM_SUCCEED.getName(), samples);
+        GaugeMetricSample<?> failedNum = getSample(MetricsKey.METADATA_SUBSCRIBE_METRIC_NUM_FAILED.getName(), samples);
+
+        Assertions.assertEquals(10,totalNum.applyAsLong());
+        Assertions.assertEquals(5,succeedNum.applyAsLong());
+        Assertions.assertEquals(5,failedNum.applyAsLong());
+    }
+
+    GaugeMetricSample<?> getSample(String name, List<MetricSample> samples) {
+        return (GaugeMetricSample<?>) samples.stream().filter(metricSample -> metricSample.getName().equals(name)).findFirst().orElseThrow(NoSuchElementException::new);
     }
 
 }

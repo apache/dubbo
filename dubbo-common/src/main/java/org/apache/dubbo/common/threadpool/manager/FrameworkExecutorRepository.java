@@ -27,6 +27,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -55,6 +56,8 @@ public class FrameworkExecutorRepository implements Disposable {
     private final ExecutorService poolRouterExecutor;
 
     private final Ring<ExecutorService> executorServiceRing = new Ring<>();
+
+    private final ExecutorService internalServiceExecutor;
 
     public FrameworkExecutorRepository() {
         sharedExecutor = Executors.newCachedThreadPool(new NamedThreadFactory("Dubbo-framework-shared-handler", true));
@@ -89,6 +92,9 @@ public class FrameworkExecutorRepository implements Disposable {
         }
 
         metadataRetryExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-framework-metadata-retry"));
+        internalServiceExecutor = new ThreadPoolExecutor(0, 100, 60L, TimeUnit.SECONDS,
+            new SynchronousQueue<>(), new NamedInternalThreadFactory("Dubbo-internal-service", true),
+            new ThreadPoolExecutor.AbortPolicy());
     }
 
     /**
@@ -120,6 +126,10 @@ public class FrameworkExecutorRepository implements Disposable {
 
     public ScheduledExecutorService getMetadataRetryExecutor() {
         return metadataRetryExecutor;
+    }
+
+    public ExecutorService getInternalServiceExecutor() {
+        return internalServiceExecutor;
     }
 
     /**
@@ -177,6 +187,7 @@ public class FrameworkExecutorRepository implements Disposable {
         logger.info("destroying framework executor repository ..");
         shutdownExecutorService(poolRouterExecutor, "poolRouterExecutor");
         shutdownExecutorService(metadataRetryExecutor, "metadataRetryExecutor");
+        shutdownExecutorService(internalServiceExecutor, "internalServiceExecutor");
 
         // scheduledExecutors
         shutdownExecutorServices(scheduledExecutors.listItems(), "scheduledExecutors");

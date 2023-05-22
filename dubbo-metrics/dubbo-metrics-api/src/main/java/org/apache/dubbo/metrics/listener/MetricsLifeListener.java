@@ -17,12 +17,12 @@
 
 package org.apache.dubbo.metrics.listener;
 
-import org.apache.dubbo.metrics.event.MetricsEvent;
+import org.apache.dubbo.metrics.event.TimeCounterEvent;
 
 /**
  * Metrics Listener.
  */
-public interface MetricsLifeListener<E extends MetricsEvent> extends MetricsListener<E> {
+public interface MetricsLifeListener<E extends TimeCounterEvent> extends MetricsListener<E> {
 
     default void onEventFinish(E event) {
     }

@@ -55,6 +55,7 @@ import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP;
 import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP_COMPATIBLE;
 import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP_WHITELIST;
 import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP_WHITELIST_COMPATIBLE;
+import static org.apache.dubbo.common.constants.QosConstants.ANONYMOUS_ACCESS_ALLOW_COMMANDS;
 import static org.apache.dubbo.common.constants.QosConstants.ANONYMOUS_ACCESS_PERMISSION_LEVEL;
 import static org.apache.dubbo.common.constants.QosConstants.ANONYMOUS_ACCESS_PERMISSION_LEVEL_COMPATIBLE;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE;
@@ -169,6 +170,11 @@ public class ApplicationConfig extends AbstractConfig {
      * the anonymous(any foreign ip) access permission level, default is NONE, can not access any cmd
      */
     private String qosAnonymousAccessPermissionLevel;
+
+    /**
+     * the anonymous(any foreign ip) allow commands, default is empty, can not access any cmd
+     */
+    private String qosAnonymousAllowCommands;
 
     /**
      * Customized parameters
@@ -470,6 +476,15 @@ public class ApplicationConfig extends AbstractConfig {
 
     public void setQosAnonymousAccessPermissionLevel(String qosAnonymousAccessPermissionLevel) {
         this.qosAnonymousAccessPermissionLevel = qosAnonymousAccessPermissionLevel;
+    }
+
+    @Parameter(key = ANONYMOUS_ACCESS_ALLOW_COMMANDS)
+    public String getQosAnonymousAllowCommands() {
+        return qosAnonymousAllowCommands;
+    }
+
+    public void setQosAnonymousAllowCommands(String qosAnonymousAllowCommands) {
+        this.qosAnonymousAllowCommands = qosAnonymousAllowCommands;
     }
 
     /**

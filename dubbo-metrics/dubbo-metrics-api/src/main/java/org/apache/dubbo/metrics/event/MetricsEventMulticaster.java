@@ -25,7 +25,7 @@ public interface MetricsEventMulticaster {
 
     void publishEvent(MetricsEvent event);
 
-    void publishFinishEvent(MetricsEvent event);
+    void publishFinishEvent(TimeCounterEvent event);
 
-    void publishErrorEvent(MetricsEvent event);
+    void publishErrorEvent(TimeCounterEvent event);
 }

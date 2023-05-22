@@ -36,6 +36,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
+import java.util.List;
 
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
 
@@ -172,11 +173,12 @@ class DubboInvokerAvailableTest {
     }
 
     private ExchangeClient[] getClients(DubboInvoker<?> invoker) throws Exception {
-        Field field = DubboInvoker.class.getDeclaredField("clients");
+        Field field = DubboInvoker.class.getDeclaredField("clientsProvider");
         field.setAccessible(true);
-        ExchangeClient[] clients = (ExchangeClient[]) field.get(invoker);
-        Assertions.assertEquals(1, clients.length);
-        return clients;
+        ClientsProvider clientsProvider = (ClientsProvider) field.get(invoker);
+        List<? extends ExchangeClient> clients = clientsProvider.getClients();
+        Assertions.assertEquals(1, clients.size());
+        return clients.toArray(new ExchangeClient[0]);
     }
 
     public class DemoServiceImpl implements IDemoService {

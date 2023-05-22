@@ -60,6 +60,11 @@ public abstract class AbstractExporter<T> implements Exporter<T> {
         afterUnExport();
     }
 
+    @Override
+    public void unregister() {
+
+    }
+
     /**
      * subclasses need to override this method to destroy resources.
      */

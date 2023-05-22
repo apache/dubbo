@@ -73,7 +73,7 @@ final class NettyChannel extends AbstractChannel {
 
     private final Netty4BatchWriteQueue writeQueue;
 
-    private final Codec2 codec;
+    private Codec2 codec;
 
     private final boolean encodeInIOThread;
 
@@ -368,5 +368,9 @@ final class NettyChannel extends AbstractChannel {
         }else {
             return frameworkModel.getExtensionLoader(Codec2.class).getExtension("default");
         }
+    }
+
+    public void setCodec(Codec2 codec) {
+        this.codec = codec;
     }
 }

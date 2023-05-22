@@ -18,6 +18,7 @@
 package org.apache.dubbo.rpc.protocol.tri.call;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -44,7 +45,6 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.util.concurrent.Future;
 
-import java.io.IOException;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.Executor;
@@ -78,6 +78,26 @@ public abstract class AbstractServerCall implements ServerCall, ServerStream.Lis
     protected MethodDescriptor methodDescriptor;
     protected PackableMethod packableMethod;
     protected Map<String, Object> requestMetadata;
+
+    private Integer exceptionCode = CommonConstants.TRI_EXCEPTION_CODE_NOT_EXISTS;
+
+    public Integer getExceptionCode() {
+        return exceptionCode;
+    }
+
+    public void setExceptionCode(Integer exceptionCode) {
+        this.exceptionCode = exceptionCode;
+    }
+
+    private boolean isNeedReturnException = false;
+
+    public boolean isNeedReturnException() {
+        return isNeedReturnException;
+    }
+
+    public void setNeedReturnException(boolean needReturnException) {
+        isNeedReturnException = needReturnException;
+    }
 
     AbstractServerCall(Invoker<?> invoker,
                        ServerStream stream,
@@ -187,7 +207,7 @@ public abstract class AbstractServerCall implements ServerCall, ServerStream.Lis
     }
 
     @Override
-    public final void onMessage(byte[] message) {
+    public final void onMessage(byte[] message, boolean isReturnTriException) {
         ClassLoader tccl = Thread.currentThread()
             .getContextClassLoader();
         try {
@@ -204,8 +224,7 @@ public abstract class AbstractServerCall implements ServerCall, ServerStream.Lis
         }
     }
 
-    protected abstract Object parseSingleMessage(byte[] data)
-        throws IOException, ClassNotFoundException;
+    protected abstract Object parseSingleMessage(byte[] data) throws Exception;
 
     @Override
     public final void onCancelByRemote(TriRpcStatus status) {
@@ -272,6 +291,9 @@ public abstract class AbstractServerCall implements ServerCall, ServerStream.Lis
             headers.set(TripleHeaderEnum.GRPC_ENCODING.getHeader(),
                 compressor.getMessageEncoding());
         }
+        if (!exceptionCode.equals(CommonConstants.TRI_EXCEPTION_CODE_NOT_EXISTS)) {
+            headers.set(TripleHeaderEnum.TRI_EXCEPTION_CODE.getHeader(), String.valueOf(exceptionCode));
+        }
         // send header failed will reset stream and close request observer cause no more data will be sent
         stream.sendHeader(headers)
             .addListener(f -> {
@@ -323,7 +345,7 @@ public abstract class AbstractServerCall implements ServerCall, ServerStream.Lis
             return;
         }
         closed = true;
-        stream.complete(status, attachments);
+        stream.complete(status, attachments, isNeedReturnException, exceptionCode);
     }
 
     protected Long parseTimeoutToMills(String timeoutVal) {
@@ -361,7 +383,7 @@ public abstract class AbstractServerCall implements ServerCall, ServerStream.Lis
             return;
         }
         closed = true;
-        stream.complete(status, null);
+        stream.complete(status, null, false, CommonConstants.TRI_EXCEPTION_CODE_NOT_EXISTS);
         LOGGER.error(PROTOCOL_FAILED_REQUEST, "", "", "Triple request error: service=" + serviceName + " method" + methodName,
             status.asException());
     }

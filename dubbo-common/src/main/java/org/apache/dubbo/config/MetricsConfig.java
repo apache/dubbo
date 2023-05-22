@@ -19,8 +19,8 @@ package org.apache.dubbo.config;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.config.nested.AggregationConfig;
-import org.apache.dubbo.config.nested.PrometheusConfig;
 import org.apache.dubbo.config.nested.HistogramConfig;
+import org.apache.dubbo.config.nested.PrometheusConfig;
 import org.apache.dubbo.config.support.Nested;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
@@ -57,6 +57,11 @@ public class MetricsConfig extends AbstractConfig {
     private Boolean enableMetadata;
 
     /**
+     * Export metrics service.
+     */
+    private Boolean exportMetricsService;
+
+    /**
      * @deprecated After metrics config is refactored.
      * This parameter should no longer use and will be deleted in the future.
      */
@@ -81,6 +86,11 @@ public class MetricsConfig extends AbstractConfig {
     private String exportServiceProtocol;
 
     private Integer exportServicePort;
+
+    /**
+     * Decide whether to use the global registry of the micrometer.
+     */
+    private Boolean useGlobalRegistry;
 
 
     public MetricsConfig() {
@@ -181,11 +191,27 @@ public class MetricsConfig extends AbstractConfig {
         this.enableMetadata = enableMetadata;
     }
 
+    public Boolean getExportMetricsService() {
+        return exportMetricsService;
+    }
+
+    public void setExportMetricsService(Boolean exportMetricsService) {
+        this.exportMetricsService = exportMetricsService;
+    }
+
     public Boolean getEnableThreadpool() {
         return enableThreadpool;
     }
 
     public void setEnableThreadpool(Boolean enableThreadpool) {
         this.enableThreadpool = enableThreadpool;
+    }
+
+    public Boolean getUseGlobalRegistry() {
+        return useGlobalRegistry;
+    }
+
+    public void setUseGlobalRegistry(Boolean useGlobalRegistry) {
+        this.useGlobalRegistry = useGlobalRegistry;
     }
 }

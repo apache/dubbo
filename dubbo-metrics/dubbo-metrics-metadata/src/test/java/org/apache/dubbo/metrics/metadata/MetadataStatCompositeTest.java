@@ -17,44 +17,67 @@
 
 package org.apache.dubbo.metrics.metadata;
 
+import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.metrics.data.ApplicationStatComposite;
 import org.apache.dubbo.metrics.data.BaseStatComposite;
 import org.apache.dubbo.metrics.data.RtStatComposite;
 import org.apache.dubbo.metrics.data.ServiceStatComposite;
-import org.apache.dubbo.metrics.metadata.type.ApplicationType;
 import org.apache.dubbo.metrics.model.container.LongContainer;
+import org.apache.dubbo.metrics.model.key.MetricsKey;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static org.apache.dubbo.metrics.metadata.MetadataMetricsConstants.OP_TYPE_PUSH;
 import static org.apache.dubbo.metrics.metadata.MetadataMetricsConstants.OP_TYPE_STORE_PROVIDER_INTERFACE;
 import static org.apache.dubbo.metrics.metadata.MetadataMetricsConstants.OP_TYPE_SUBSCRIBE;
 
 public class MetadataStatCompositeTest {
+    private ApplicationModel applicationModel;
+    private BaseStatComposite statComposite;
 
-    private final String applicationName = "app1";
+    @BeforeEach
+    public void setup() {
+        FrameworkModel frameworkModel = FrameworkModel.defaultModel();
+        applicationModel = frameworkModel.newApplication();
+        ApplicationConfig application = new ApplicationConfig();
+        application.setName("App1");
+        applicationModel.getApplicationConfigManager().setApplication(application);
+        statComposite = new BaseStatComposite(applicationModel) {
+            @Override
+            protected void init(ApplicationStatComposite applicationStatComposite) {
+                super.init(applicationStatComposite);
+                applicationStatComposite.init(MetadataMetricsConstants.APP_LEVEL_KEYS);
+            }
 
-    private final BaseStatComposite statComposite = new BaseStatComposite() {
-        @Override
-        protected void init(ApplicationStatComposite applicationStatComposite, ServiceStatComposite
-            serviceStatComposite, RtStatComposite rtStatComposite) {
-            applicationStatComposite.init(MetadataMetricsConstants.appKeys);
-            serviceStatComposite.init(MetadataMetricsConstants.serviceKeys);
-            rtStatComposite.init(OP_TYPE_PUSH, OP_TYPE_SUBSCRIBE, OP_TYPE_STORE_PROVIDER_INTERFACE);
-        }
-    };
+            @Override
+            protected void init(ServiceStatComposite serviceStatComposite) {
+                super.init(serviceStatComposite);
+                serviceStatComposite.initWrapper(MetadataMetricsConstants.SERVICE_LEVEL_KEYS);
+            }
+
+            @Override
+            protected void init(RtStatComposite rtStatComposite) {
+                super.init(rtStatComposite);
+                rtStatComposite.init(OP_TYPE_PUSH, OP_TYPE_SUBSCRIBE, OP_TYPE_STORE_PROVIDER_INTERFACE);
+            }
+        };
+    }
 
     @Test
     void testInit() {
-        Assertions.assertEquals(statComposite.getApplicationStatComposite().getApplicationNumStats().size(), ApplicationType.values().length);
+        Assertions.assertEquals(statComposite.getApplicationStatComposite().getApplicationNumStats().size(), MetadataMetricsConstants.APP_LEVEL_KEYS.size());
+
         //(rt)5 * (push,subscribe,service)3
         Assertions.assertEquals(5 * 3, statComposite.getRtStatComposite().getRtStats().size());
         statComposite.getApplicationStatComposite().getApplicationNumStats().values().forEach((v ->
-            Assertions.assertEquals(v, new ConcurrentHashMap<>())));
+            Assertions.assertEquals(v.get(), new AtomicLong(0L).get())));
         statComposite.getRtStatComposite().getRtStats().forEach(rtContainer ->
         {
             for (Map.Entry<String, ? extends Number> entry : rtContainer.entrySet()) {
@@ -65,15 +88,16 @@ public class MetadataStatCompositeTest {
 
     @Test
     void testIncrement() {
-        statComposite.incrementApp(ApplicationType.P_TOTAL.getMetricsKey(), applicationName, 1);
-        Assertions.assertEquals(1L, statComposite.getApplicationStatComposite().getApplicationNumStats().get(ApplicationType.P_TOTAL.getMetricsKey()).get(applicationName).get());
+        statComposite.incrementApp(MetricsKey.METADATA_PUSH_METRIC_NUM, 1);
+
+        Assertions.assertEquals(1L, statComposite.getApplicationStatComposite().getApplicationNumStats().get(MetricsKey.METADATA_PUSH_METRIC_NUM).get());
     }
 
     @Test
     void testCalcRt() {
-        statComposite.calcApplicationRt(applicationName, OP_TYPE_SUBSCRIBE.getType(), 10L);
+        statComposite.calcApplicationRt( OP_TYPE_SUBSCRIBE.getType(), 10L);
         Assertions.assertTrue(statComposite.getRtStatComposite().getRtStats().stream().anyMatch(longContainer -> longContainer.specifyType(OP_TYPE_SUBSCRIBE.getType())));
         Optional<LongContainer<? extends Number>> subContainer = statComposite.getRtStatComposite().getRtStats().stream().filter(longContainer -> longContainer.specifyType(OP_TYPE_SUBSCRIBE.getType())).findFirst();
-        subContainer.ifPresent(v -> Assertions.assertEquals(10L, v.get(applicationName).longValue()));
+        subContainer.ifPresent(v -> Assertions.assertEquals(10L, v.get(applicationModel.getApplicationName()).longValue()));
     }
 }

@@ -18,6 +18,8 @@
 package org.apache.dubbo.rpc.cluster.support.wrapper;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.rpc.Exporter;
@@ -38,12 +40,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
 import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
 import static org.apache.dubbo.rpc.Constants.SCOPE_KEY;
 import static org.apache.dubbo.rpc.Constants.SCOPE_REMOTE;
 import static org.apache.dubbo.rpc.Constants.SCOPE_LOCAL;
 import static org.apache.dubbo.rpc.cluster.Constants.PEER_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.BROADCAST_CLUSTER;
 
 /**
  * ScopeClusterInvoker is a cluster invoker which handles the invocation logic of a single service in a specific scope.
@@ -53,6 +57,10 @@ import static org.apache.dubbo.rpc.cluster.Constants.PEER_KEY;
  * @param <T> the type of service interface
  */
 public class ScopeClusterInvoker<T> implements ClusterInvoker<T>, ExporterChangeListener {
+
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ScopeClusterInvoker.class);
+
+
     private final Object createLock = new Object();
     private Protocol protocolSPI;
     private final Directory<T> directory;
@@ -119,13 +127,29 @@ public class ScopeClusterInvoker<T> implements ClusterInvoker<T>, ExporterChange
      */
     @Override
     public Result invoke(Invocation invocation) throws RpcException {
+        // When broadcasting, it should be called remotely.
+        if (BROADCAST_CLUSTER.equalsIgnoreCase(getUrl().getParameter(CLUSTER_KEY))) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("Performing broadcast call for method: " + invocation.getMethodName() + " of service: " + getUrl().getServiceKey());
+            }
+            return invoker.invoke(invocation);
+        }
         if (peerFlag) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("Performing point-to-point call for method: " + invocation.getMethodName() + " of service: " + getUrl().getServiceKey());
+            }
             // If it's a point-to-point direct connection, invoke the original Invoker
             return invoker.invoke(invocation);
         }
         if (isInjvmExported()) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("Performing local JVM call for method: " + invocation.getMethodName() + " of service: " + getUrl().getServiceKey());
+            }
             // If it's exported to the local JVM, invoke the corresponding Invoker
             return injvmInvoker.invoke(invocation);
+        }
+        if (logger.isDebugEnabled()) {
+            logger.debug("Performing remote call for method: " + invocation.getMethodName() + " of service: " + getUrl().getServiceKey());
         }
         // Otherwise, delegate the invocation to the original Invoker
         return invoker.invoke(invocation);

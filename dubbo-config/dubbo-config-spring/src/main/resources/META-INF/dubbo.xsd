@@ -547,6 +547,12 @@
                     <![CDATA[ Anonymous (any foreign ip) access level, the default is NONE, can not access any cmd. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
+        <xsd:attribute name="qos-anonymous-allow-commands" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation>
+                    <![CDATA[ Anonymous(any foreign ip) allow commands, default is empty, can not access any cmd. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
     </xsd:complexType>
 
     <xsd:complexType name="moduleType">
@@ -1081,6 +1087,12 @@
             </xsd:annotation>
         </xsd:attribute>
 
+        <xsd:attribute name="export-metrics-service" type="xsd:boolean" default="true">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Enable export metrics service. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+
         <xsd:attribute name="port" type="xsd:string">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ Deprecated. No longer use. ]]></xsd:documentation>
@@ -1115,16 +1127,6 @@
         <xsd:attribute name="http-service-discovery-url" type="xsd:string">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ Http service discovery url. ]]></xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-        <xsd:attribute name="metrics-port" type="xsd:integer">
-            <xsd:annotation>
-                <xsd:documentation><![CDATA[ When using pull method, which port to expose. ]]></xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-        <xsd:attribute name="metrics-path" type="xsd:string">
-            <xsd:annotation>
-                <xsd:documentation><![CDATA[ When using pull mode, which path to expose metrics. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
     </xsd:complexType>
@@ -1210,6 +1212,7 @@
     <xsd:complexType name="baggageType">
         <xsd:all>
             <xsd:element ref="remoteFields" minOccurs="0"/>
+            <xsd:element ref="correlation" minOccurs="0"/>
         </xsd:all>
         <xsd:attribute name="enabled" type="xsd:boolean">
             <xsd:annotation>
@@ -1236,6 +1239,33 @@
                 <xsd:attribute name="name" type="xsd:string"/>
             </xsd:extension>
         </xsd:simpleContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="tracingExporterType">
+        <xsd:all>
+            <xsd:element ref="zipkin-config" minOccurs="0"/>
+        </xsd:all>
+    </xsd:complexType>
+
+    <xsd:complexType name="zipkinConfigType">
+        <xsd:attribute name="endpoint" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation>
+                    <![CDATA[ The url of zipkin server. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="connectTimeout" type="xsd:duration">
+            <xsd:annotation>
+                <xsd:documentation>
+                    <![CDATA[ Connection timeout for requests to Zipkin. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="readTimeout" type="xsd:duration">
+            <xsd:annotation>
+                <xsd:documentation>
+                    <![CDATA[ Read timeout for requests to Zipkin. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
     </xsd:complexType>
 
     <xsd:complexType name="methodType">
@@ -2185,6 +2215,20 @@
             <xsd:documentation>
                 <![CDATA[ List of fields that should be correlated with the logging context. That
                 means that these fields would end up as key-value pairs in e.g. MDC. ]]></xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
+
+    <xsd:element name="tracing-exporter" type="tracingExporterType">
+        <xsd:annotation>
+            <xsd:documentation>
+                <![CDATA[ Exporter of tracing. ]]></xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
+
+    <xsd:element name="zipkin-config" type="zipkinConfigType">
+        <xsd:annotation>
+            <xsd:documentation>
+                <![CDATA[ Config of zipkin exporter. ]]></xsd:documentation>
         </xsd:annotation>
     </xsd:element>
 </xsd:schema>

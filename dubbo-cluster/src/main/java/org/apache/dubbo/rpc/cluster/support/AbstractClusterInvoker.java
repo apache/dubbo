@@ -333,6 +333,8 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
         List<Invoker<T>> invokers = list(invocation);
         InvocationProfilerUtils.releaseDetailProfiler(invocation);
 
+        checkInvokers(invokers, invocation);
+
         LoadBalance loadbalance = initLoadBalance(invokers, invocation);
         RpcUtils.attachInvocationIdIfAsync(getUrl(), invocation);
 
