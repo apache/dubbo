@@ -22,6 +22,7 @@ import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.nested.AggregationConfig;
 import org.apache.dubbo.metrics.MetricsConstants;
+import org.apache.dubbo.metrics.aggregate.TimeWindowAggregator;
 import org.apache.dubbo.metrics.aggregate.TimeWindowCounter;
 import org.apache.dubbo.metrics.aggregate.TimeWindowQuantile;
 import org.apache.dubbo.metrics.event.MetricsEvent;
@@ -65,6 +66,8 @@ public class AggregateMetricsCollector implements MetricsCollector<RequestEvent>
     private static final Integer DEFAULT_BUCKET_NUM = 10;
     private static final Integer DEFAULT_TIME_WINDOW_SECONDS = 120;
     private Boolean collectEnabled = null;
+    private final ConcurrentMap<MethodMetric, TimeWindowAggregator> rtAgr = new ConcurrentHashMap<>();
+
 
     public AggregateMetricsCollector(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
@@ -136,6 +139,9 @@ public class AggregateMetricsCollector implements MetricsCollector<RequestEvent>
         long responseTime = event.getTimePair().calc();
         TimeWindowQuantile quantile = ConcurrentHashMapUtils.computeIfAbsent(rt, metric, k -> new TimeWindowQuantile(DEFAULT_COMPRESSION, bucketNum, timeWindowSeconds));
         quantile.add(responseTime);
+
+        TimeWindowAggregator timeWindowAggregator = ConcurrentHashMapUtils.computeIfAbsent(rtAgr, metric, methodMetric -> new TimeWindowAggregator(bucketNum, timeWindowSeconds));
+        timeWindowAggregator.add(responseTime);
     }
 
 
@@ -203,6 +209,17 @@ public class AggregateMetricsCollector implements MetricsCollector<RequestEvent>
                 MetricsKey.METRIC_RT_P90.getDescription(), k.getTags(), RT, v, value -> value.quantile(0.90)));
             list.add(new GaugeMetricSample<>(MetricsKey.METRIC_RT_P50.getNameByType(k.getSide()),
                 MetricsKey.METRIC_RT_P50.getDescription(), k.getTags(), RT, v, value -> value.quantile(0.50)));
+        });
+
+        rtAgr.forEach((k,v)->{
+            list.add(new GaugeMetricSample<>(MetricsKey.METRIC_RT_INTERNAL_MIN.getNameByType(k.getSide()),
+                MetricsKey.METRIC_RT_INTERNAL_MIN.getDescription(), k.getTags(), RT, v, value -> v.get().getMin()));
+
+            list.add(new GaugeMetricSample<>(MetricsKey.METRIC_RT_INTERNAL_MAX.getNameByType(k.getSide()),
+                MetricsKey.METRIC_RT_INTERNAL_MAX.getDescription(), k.getTags(), RT, v, value -> v.get().getMax()));
+
+            list.add(new GaugeMetricSample<>(MetricsKey.METRIC_RT_INTERNAL_AVG.getNameByType(k.getSide()),
+                MetricsKey.METRIC_RT_INTERNAL_AVG.getDescription(), k.getTags(), RT, v, value -> v.get().getAvg()));
         });
     }
 

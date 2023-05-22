@@ -232,6 +232,48 @@ class AggregateMetricsCollectorTest {
         Assertions.assertEquals(10000, ((TimeWindowCounter) ((GaugeMetricSample<?>) sample).getValue()).get());
     }
 
+
+    @Test
+    public void testRtAggregation() {
+        metricsDispatcher.addListener(collector);
+        ConfigManager configManager = applicationModel.getApplicationConfigManager();
+        MetricsConfig config = configManager.getMetrics().orElse(null);
+        AggregationConfig aggregationConfig = new AggregationConfig();
+        aggregationConfig.setEnabled(true);
+        config.setAggregation(aggregationConfig);
+
+        List<Long> rtList = new ArrayList<>();
+        rtList.add(10L);
+        rtList.add(20L);
+        rtList.add(30L);
+
+        for (Long requestTime: rtList) {
+            RequestEvent requestEvent = RequestEvent.toRequestEvent(applicationModel, invocation);
+            TestRequestEvent testRequestEvent = new TestRequestEvent(requestEvent.getSource(), requestEvent.getTypeWrapper());
+            testRequestEvent.putAttachment(MetricsConstants.INVOCATION, invocation);
+            testRequestEvent.putAttachment(ATTACHMENT_KEY_SERVICE, MetricsSupport.getInterfaceName(invocation));
+            testRequestEvent.putAttachment(MetricsConstants.INVOCATION_SIDE, MetricsSupport.getSide(invocation));
+            testRequestEvent.setRt(requestTime);
+            MetricsEventBus.post(testRequestEvent, () -> null);
+        }
+
+        List<MetricSample> samples = collector.collect();
+        for (MetricSample sample : samples) {
+            GaugeMetricSample gaugeMetricSample = (GaugeMetricSample<?>) sample;
+
+            if(gaugeMetricSample.getName().endsWith("max")) {
+                Assertions.assertEquals(30,  gaugeMetricSample.applyAsDouble());
+            }
+            if (gaugeMetricSample.getName().endsWith("min")) {
+                Assertions.assertEquals(10L,  gaugeMetricSample.applyAsDouble());
+            }
+
+            if (gaugeMetricSample.getName().endsWith("avg")) {
+                Assertions.assertEquals(20L, gaugeMetricSample.applyAsDouble());
+            }
+        }
+    }
+
     @Test
     void testP95AndP99() throws InterruptedException {
 

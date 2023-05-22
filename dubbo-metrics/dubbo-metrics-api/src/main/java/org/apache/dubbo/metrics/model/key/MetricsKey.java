@@ -57,7 +57,9 @@ public enum MetricsKey {
     METRIC_RT_P95("dubbo.%s.rt.milliseconds.p95", "Response Time P95"),
     METRIC_RT_P90("dubbo.%s.rt.milliseconds.p90", "Response Time P90"),
     METRIC_RT_P50("dubbo.%s.rt.milliseconds.p50", "Response Time P50"),
-
+    METRIC_RT_INTERNAL_MIN("dubbo.%s.rt.interval.ms.min", "Response min Time Window"),
+    METRIC_RT_INTERNAL_MAX("dubbo.%s.rt.interval.ms.max", "Response max Time Window"),
+    METRIC_RT_INTERNAL_AVG("dubbo.%s.rt.interval.ms.avg", "Response avg Time Window"),
 
     // register metrics key
     REGISTER_METRIC_REQUESTS("dubbo.registry.register.requests.total", "Total Register Requests"),
