@@ -217,7 +217,7 @@ public class DefaultFuture extends CompletableFuture<Object> {
         } else if (res.getStatus() == Response.CLIENT_TIMEOUT || res.getStatus() == Response.SERVER_TIMEOUT) {
             this.completeExceptionally(new TimeoutException(res.getStatus() == Response.SERVER_TIMEOUT, channel, res.getErrorMessage()));
         } else if(res.getStatus() == Response.SERIALIZATION_ERROR){
-            this.completeExceptionally(new SerializationException(channel, res.getErrorMessage()));
+            this.completeExceptionally(new SerializationException(res.getErrorMessage()));
         }else {
             this.completeExceptionally(new RemotingException(channel, res.getErrorMessage()));
         }

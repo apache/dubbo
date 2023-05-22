@@ -196,7 +196,7 @@ final class NettyChannel extends AbstractChannel {
                 } catch (Exception e) {
                     Exception exception = e;
                     if (!(exception instanceof IOException)) {
-                        exception = new IOException(new SerializationException(this, e));
+                        exception = new IOException(new SerializationException(e));
                     }
                     throw (IOException) exception;
                 }

@@ -18,6 +18,7 @@ package org.apache.dubbo.remoting.transport.netty4;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.Codec2;
+import org.apache.dubbo.remoting.SerializationException;
 import org.apache.dubbo.remoting.buffer.ChannelBuffer;
 
 import io.netty.buffer.ByteBuf;
@@ -100,7 +101,16 @@ final public class NettyCodecAdapter {
             // decode object.
             do {
                 int saveReaderIndex = message.readerIndex();
-                Object msg = codec.decode(channel, message);
+                Object msg;
+                try {
+                    msg = codec.decode(channel, message);
+                } catch (Exception e) {
+                    Exception exception = e;
+                    if (!(exception instanceof IOException)) {
+                        exception = new IOException(new SerializationException(e));
+                    }
+                    throw exception;
+                }
                 if (msg == Codec2.DecodeResult.NEED_MORE_INPUT) {
                     message.readerIndex(saveReaderIndex);
                     break;

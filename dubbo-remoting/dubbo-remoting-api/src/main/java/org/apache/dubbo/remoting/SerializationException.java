@@ -16,65 +16,20 @@
  */
 package org.apache.dubbo.remoting;
 
-import java.net.InetSocketAddress;
-
 /**
- * SerializationException. (API, Prototype, ThreadSafe)
- *
- * @export
- * @see org.apache.dubbo.remoting.exchange.support.DefaultFuture#get()
+ * Serialized runtime exceptions, internal flow,
+ * will be converted into general exceptions and added to serialization tags when returning to rpc
  */
 public class SerializationException extends Exception {
 
     private static final long serialVersionUID = -3160452149606778709L;
 
-    private InetSocketAddress localAddress;
-
-    private InetSocketAddress remoteAddress;
-
-    public SerializationException(Channel channel, String msg) {
-        this(channel == null ? null : channel.getLocalAddress(), channel == null ? null : channel.getRemoteAddress(),
-                msg);
+    public SerializationException(String msg) {
+        super(msg);
     }
 
-    public SerializationException(InetSocketAddress localAddress, InetSocketAddress remoteAddress, String message) {
-        super(message);
-
-        this.localAddress = localAddress;
-        this.remoteAddress = remoteAddress;
-    }
-
-    public SerializationException(Channel channel, Throwable cause) {
-        this(channel == null ? null : channel.getLocalAddress(), channel == null ? null : channel.getRemoteAddress(),
-                cause);
-    }
-
-    public SerializationException(InetSocketAddress localAddress, InetSocketAddress remoteAddress, Throwable cause) {
+    public SerializationException(Throwable cause) {
         super(cause);
-
-        this.localAddress = localAddress;
-        this.remoteAddress = remoteAddress;
-    }
-
-    public SerializationException(Channel channel, String message, Throwable cause) {
-        this(channel == null ? null : channel.getLocalAddress(), channel == null ? null : channel.getRemoteAddress(),
-                message, cause);
-    }
-
-    public SerializationException(InetSocketAddress localAddress, InetSocketAddress remoteAddress, String message,
-                                  Throwable cause) {
-        super(message, cause);
-
-        this.localAddress = localAddress;
-        this.remoteAddress = remoteAddress;
-    }
-
-    public InetSocketAddress getLocalAddress() {
-        return localAddress;
-    }
-
-    public InetSocketAddress getRemoteAddress() {
-        return remoteAddress;
     }
 
 }
