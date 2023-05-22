@@ -20,6 +20,7 @@ package org.apache.dubbo.metrics.data;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.metrics.model.MethodMetric;
 import org.apache.dubbo.metrics.model.MetricsCategory;
+import org.apache.dubbo.metrics.model.MetricsSupport;
 import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
 import org.apache.dubbo.metrics.model.sample.CounterMetricSample;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
@@ -58,6 +59,7 @@ public class MethodStatComposite extends AbstractMetricsExport {
             return;
         }
         methodNumStats.get(wrapper).computeIfAbsent(new MethodMetric(getApplicationModel(), invocation), k -> new AtomicLong(0L)).getAndAdd(size);
+        MetricsSupport.fillZero(methodNumStats);
     }
 
     public List<MetricSample> export(MetricsCategory category) {
