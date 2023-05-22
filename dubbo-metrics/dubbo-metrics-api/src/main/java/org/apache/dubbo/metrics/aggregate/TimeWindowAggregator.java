@@ -19,7 +19,9 @@ package org.apache.dubbo.metrics.aggregate;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.*;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.DoubleAccumulator;
+import java.util.concurrent.atomic.LongAdder;
 
 public class TimeWindowAggregator {
 

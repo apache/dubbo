@@ -22,13 +22,9 @@ public class SampleAggregatedEntry {
 
     private Long count;
     private double max;
-
     private double min;
-
     private double avg;
-
     private double total;
-
 
     public Long getCount() {
         return count;
