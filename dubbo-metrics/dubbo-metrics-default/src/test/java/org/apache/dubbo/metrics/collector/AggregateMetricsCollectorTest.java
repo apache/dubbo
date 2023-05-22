@@ -261,14 +261,14 @@ class AggregateMetricsCollectorTest {
         for (MetricSample sample : samples) {
             GaugeMetricSample gaugeMetricSample = (GaugeMetricSample<?>) sample;
 
-            if(gaugeMetricSample.getName().endsWith("max")) {
+            if(gaugeMetricSample.getName().endsWith("max.milliseconds.aggregate")) {
                 Assertions.assertEquals(30,  gaugeMetricSample.applyAsDouble());
             }
-            if (gaugeMetricSample.getName().endsWith("min")) {
+            if (gaugeMetricSample.getName().endsWith("min.milliseconds.aggregate")) {
                 Assertions.assertEquals(10L,  gaugeMetricSample.applyAsDouble());
             }
 
-            if (gaugeMetricSample.getName().endsWith("avg")) {
+            if (gaugeMetricSample.getName().endsWith("avg.milliseconds.aggregate")) {
                 Assertions.assertEquals(20L, gaugeMetricSample.applyAsDouble());
             }
         }
