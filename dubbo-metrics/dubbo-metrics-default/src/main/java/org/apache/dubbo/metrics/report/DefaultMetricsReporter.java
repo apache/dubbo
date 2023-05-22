@@ -49,6 +49,9 @@ public class DefaultMetricsReporter extends AbstractMetricsReporter {
         Map<String, Map<String, Object>> result = new HashMap<>();
         StringBuilder sb = new StringBuilder();
         meterRegistry.getMeters().stream().filter(meter -> {
+            if (meter == null || meter.getId() == null || meter.getId().getName() == null) {
+                return false;
+            }
             if (metricsName != null) {
                 return meter.getId().getName().contains(metricsName);
             }
