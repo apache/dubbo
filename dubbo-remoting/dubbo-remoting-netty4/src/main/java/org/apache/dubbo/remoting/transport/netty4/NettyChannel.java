@@ -193,11 +193,12 @@ final class NettyChannel extends AbstractChannel {
                 ChannelBuffer buffer = new NettyBackedChannelBuffer(buf);
                 try {
                     codec.encode(this, buffer, message);
-                } catch (Throwable t) {
-                    if (!(t instanceof IOException)) {
-                        t = new IOException(new SerializationException(this, t));
+                } catch (Exception e) {
+                    Exception exception = e;
+                    if (!(exception instanceof IOException)) {
+                        exception = new IOException(new SerializationException(this, e));
                     }
-                    throw (IOException) t;
+                    throw (IOException) exception;
                 }
                 outputMessage = buf;
             }
