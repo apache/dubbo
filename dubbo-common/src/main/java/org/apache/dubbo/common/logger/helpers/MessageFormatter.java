@@ -265,7 +265,14 @@ final public class MessageFormatter {
             String oAsString = o.toString();
             sbuf.append(oAsString);
         } catch (Throwable t) {
-            Util.report("SLF4J: Failed toString() invocation on an object of type [" + o.getClass().getName() + "]", t);
+            System.err.println("SLF4J: Failed toString() invocation on an object of type [" + o.getClass().getName() + "]");
+            System.err.println("Reported exception:");
+            StackTraceElement[] stackTrace = t.getStackTrace();
+            StringBuilder stackBuilder = new StringBuilder();
+            for (StackTraceElement traceElement : stackTrace) {
+                stackBuilder.append("\tat ").append(traceElement).append("\n");
+            }
+            System.err.println(stackBuilder);
             sbuf.append("[FAILED toString()]");
         }
 
