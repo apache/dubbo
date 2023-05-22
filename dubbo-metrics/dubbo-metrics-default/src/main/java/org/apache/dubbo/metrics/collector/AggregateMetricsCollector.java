@@ -212,14 +212,14 @@ public class AggregateMetricsCollector implements MetricsCollector<RequestEvent>
         });
 
         rtAgr.forEach((k,v)->{
-            list.add(new GaugeMetricSample<>(MetricsKey.METRIC_RT_AGG_MIN.getNameByType(k.getSide()),
-                MetricsKey.METRIC_RT_AGG_MIN.getDescription(), k.getTags(), RT, v, value -> v.get().getMin()));
+            list.add(new GaugeMetricSample<>(MetricsKey.METRIC_RT_MIN_AGG.getNameByType(k.getSide()),
+                MetricsKey.METRIC_RT_MIN_AGG.getDescription(), k.getTags(), RT, v, value -> v.get().getMin()));
 
-            list.add(new GaugeMetricSample<>(MetricsKey.METRIC_RT_AGG_MAX.getNameByType(k.getSide()),
-                MetricsKey.METRIC_RT_AGG_MAX.getDescription(), k.getTags(), RT, v, value -> v.get().getMax()));
+            list.add(new GaugeMetricSample<>(MetricsKey.METRIC_RT_MAX_AGG.getNameByType(k.getSide()),
+                MetricsKey.METRIC_RT_MAX_AGG.getDescription(), k.getTags(), RT, v, value -> v.get().getMax()));
 
-            list.add(new GaugeMetricSample<>(MetricsKey.METRIC_RT_AGG_AVG.getNameByType(k.getSide()),
-                MetricsKey.METRIC_RT_AGG_AVG.getDescription(), k.getTags(), RT, v, value -> v.get().getAvg()));
+            list.add(new GaugeMetricSample<>(MetricsKey.METRIC_RT_AVG_AGG.getNameByType(k.getSide()),
+                MetricsKey.METRIC_RT_AVG_AGG.getDescription(), k.getTags(), RT, v, value -> v.get().getAvg()));
         });
     }
 
