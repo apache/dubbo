@@ -36,6 +36,27 @@ import static org.apache.dubbo.remoting.Constants.SERIALIZATION_KEY;
 public class UrlUtils {
     private static final String ALLOWED_SERIALIZATION_KEY = "allowedSerialization";
 
+    public static int getCloseTimeout(URL url) {
+        String configuredHeartbeat = System.getProperty(Constants.CLOSE_TIMEOUT_CONFIG_KEY);
+        int defaultCloseTimeout = -1;
+        if (StringUtils.isNotEmpty(configuredHeartbeat)) {
+            try {
+                defaultCloseTimeout = Integer.parseInt(configuredHeartbeat);
+            } catch (NumberFormatException e) {
+                // use default heartbeat
+            }
+        }
+        if (defaultCloseTimeout < 0) {
+            defaultCloseTimeout = getIdleTimeout(url);
+        }
+        int closeTimeout = url.getParameter(Constants.CLOSE_TIMEOUT_KEY, defaultCloseTimeout);
+        int heartbeat = getHeartbeat(url);
+        if (closeTimeout < heartbeat * 2) {
+            throw new IllegalStateException("closeTimeout < heartbeatInterval * 2");
+        }
+        return closeTimeout;
+    }
+
     public static int getIdleTimeout(URL url) {
         int heartBeat = getHeartbeat(url);
         // idleTimeout should be at least more than twice heartBeat because possible retries of client.
