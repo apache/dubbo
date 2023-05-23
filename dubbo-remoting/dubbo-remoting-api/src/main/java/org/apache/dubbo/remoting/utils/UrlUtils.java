@@ -37,11 +37,11 @@ public class UrlUtils {
     private static final String ALLOWED_SERIALIZATION_KEY = "allowedSerialization";
 
     public static int getCloseTimeout(URL url) {
-        String configuredHeartbeat = System.getProperty(Constants.CLOSE_TIMEOUT_CONFIG_KEY);
+        String configuredCloseTimeout = System.getProperty(Constants.CLOSE_TIMEOUT_CONFIG_KEY);
         int defaultCloseTimeout = -1;
-        if (StringUtils.isNotEmpty(configuredHeartbeat)) {
+        if (StringUtils.isNotEmpty(configuredCloseTimeout)) {
             try {
-                defaultCloseTimeout = Integer.parseInt(configuredHeartbeat);
+                defaultCloseTimeout = Integer.parseInt(configuredCloseTimeout);
             } catch (NumberFormatException e) {
                 // use default heartbeat
             }
