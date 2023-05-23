@@ -524,6 +524,10 @@
                                             License|BSD|3-Clause BSD License|The New BSD License
                                         </licenseMerge>
                                     </licenseMerges>
+                                    <excludes>
+                                        **/org/apache/dubbo/common/logger/helpers/FormattingTuple.java,
+                                        **/org/apache/dubbo/common/logger/helpers/MessageFormatter.java
+                                    </excludes>
                                 </configuration>
                             </execution>
                         </executions>
