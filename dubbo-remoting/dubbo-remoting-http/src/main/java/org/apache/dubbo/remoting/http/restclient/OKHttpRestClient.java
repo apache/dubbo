@@ -36,7 +36,6 @@ import org.apache.dubbo.remoting.http.ssl.RestClientSSLContextSetter;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
@@ -159,7 +158,7 @@ public class OKHttpRestClient extends BaseRestClient {
         builder = RestClientSSLContexts.buildClientSSLContext(getUrl(), new RestClientSSLContextSetter() {
             @Override
             public void initSSLContext(SSLContext sslContext, TrustManager[] trustAllCerts) {
-                finalBuilder.sslSocketFactory(sslContext.getSocketFactory(),(X509TrustManager)trustAllCerts[0]);
+                    finalBuilder.sslSocketFactory(sslContext.getSocketFactory());
             }
 
             @Override
