@@ -125,7 +125,7 @@ class MetricsFilterTest {
 
         Map<String, MetricSample> metricsMap = getMetricsMap();
         Assertions.assertTrue(metricsMap.containsKey(MetricsKey.METRIC_REQUESTS_FAILED.getNameByType(side)));
-        Assertions.assertFalse(metricsMap.containsKey(MetricsKey.METRIC_REQUESTS_SUCCEED.getNameByType(side)));
+        Assertions.assertTrue(metricsMap.containsKey(MetricsKey.METRIC_REQUESTS_SUCCEED.getNameByType(side)));
 
         MetricSample sample = metricsMap.get(MetricsKey.METRIC_REQUESTS_FAILED.getNameByType(side));
         Map<String, String> tags = sample.getTags();
@@ -229,7 +229,7 @@ class MetricsFilterTest {
         filter.onResponse(result, invoker, invocation);
 
         Map<String, MetricSample> metricsMap = getMetricsMap();
-        Assertions.assertFalse(metricsMap.containsKey(MetricsKey.METRIC_REQUEST_BUSINESS_FAILED.getNameByType(side)));
+        Assertions.assertTrue(metricsMap.containsKey(MetricsKey.METRIC_REQUEST_BUSINESS_FAILED.getNameByType(side)));
         Assertions.assertTrue(metricsMap.containsKey(MetricsKey.METRIC_REQUESTS_SUCCEED.getNameByType(side)));
 
         MetricSample sample = metricsMap.get(MetricsKey.METRIC_REQUESTS_SUCCEED.getNameByType(side));
