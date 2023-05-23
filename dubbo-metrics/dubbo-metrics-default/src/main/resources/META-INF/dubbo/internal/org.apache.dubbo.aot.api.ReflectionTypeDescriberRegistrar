@@ -1,0 +1,1 @@
+defaultMetrics=org.apache.dubbo.metrics.aot.DefaultMetricsReflectionTypeDescriberRegistrar

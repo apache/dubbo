@@ -22,6 +22,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.annotation.ProvidedBy;
 import org.apache.dubbo.config.spring.Constants;
 import org.apache.dubbo.config.spring.ReferenceBean;
+import org.apache.dubbo.config.spring.aot.AotWithSpringDetector;
 import org.apache.dubbo.config.spring.util.DubboAnnotationUtils;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.springframework.beans.MutablePropertyValues;
@@ -124,7 +125,12 @@ public class ReferenceBeanSupport {
 
     public static String generateReferenceKey(Map<String, Object> attributes, ApplicationContext applicationContext) {
 
-        String interfaceClass = (String) attributes.get(ReferenceAttributes.INTERFACE);
+        String interfaceClass;
+        if (AotWithSpringDetector.useGeneratedArtifacts()) {
+            interfaceClass = (String) attributes.get(ReferenceAttributes.INTERFACE_NAME);
+        } else {
+            interfaceClass = (String) attributes.get(ReferenceAttributes.INTERFACE);
+        }
         Assert.notEmptyString(interfaceClass, "No interface class or name found from attributes");
         String group = (String) attributes.get(ReferenceAttributes.GROUP);
         String version = (String) attributes.get(ReferenceAttributes.VERSION);

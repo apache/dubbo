@@ -316,7 +316,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
         try {
             setFailed(ex);
             logger.error(CONFIG_FAILED_START_MODEL, "", "", "Model start failed: " + msg, ex);
-            applicationDeployer.notifyModuleChanged(moduleModel, DeployState.STARTED);
+            applicationDeployer.notifyModuleChanged(moduleModel, DeployState.FAILED);
         } finally {
             completeStartFuture(false);
         }
