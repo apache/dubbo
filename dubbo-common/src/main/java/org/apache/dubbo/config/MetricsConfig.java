@@ -92,6 +92,7 @@ public class MetricsConfig extends AbstractConfig {
      */
     private Boolean useGlobalRegistry;
 
+    private Boolean enabled = true;
 
     public MetricsConfig() {
     }
@@ -213,5 +214,13 @@ public class MetricsConfig extends AbstractConfig {
 
     public void setUseGlobalRegistry(Boolean useGlobalRegistry) {
         this.useGlobalRegistry = useGlobalRegistry;
+    }
+
+    public Boolean getEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(Boolean enabled) {
+        this.enabled = enabled;
     }
 }
