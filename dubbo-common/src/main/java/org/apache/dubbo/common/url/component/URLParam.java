@@ -22,6 +22,7 @@ import org.apache.dubbo.common.url.component.param.DynamicParamTable;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 
+import java.util.AbstractMap;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collection;
@@ -247,7 +248,7 @@ public class URLParam {
      * copy-on-write mode, urlParam reference will be changed after modify actions.
      * If wishes to get the result after modify, please use {@link URLParamMap#getUrlParam()}
      */
-    public static class URLParamMap implements Map<String, String> {
+    public static class URLParamMap extends AbstractMap<String, String> {
         private URLParam urlParam;
 
         public URLParamMap(URLParam urlParam) {
