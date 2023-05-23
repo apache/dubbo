@@ -534,7 +534,7 @@ public class PojoUtils {
                         Object value = entry.getValue();
                         if (value != null) {
                             Method method = getSetterMethod(dest.getClass(), name, value.getClass());
-                            Field field = getField(dest.getClass(), name);
+                            Field field = getAndCacheField(dest.getClass(), name);
                             if (method != null) {
                                 if (!method.isAccessible()) {
                                     method.setAccessible(true);
@@ -623,7 +623,7 @@ public class PojoUtils {
         try {
             Constructor<?> messagedConstructor = cls.getDeclaredConstructor(String.class);
             return messagedConstructor.newInstance(message);
-        } catch (Throwable t) {
+        } catch (Exception t) {
             return newInstance(cls);
         }
     }
@@ -631,7 +631,7 @@ public class PojoUtils {
     private static Object newInstance(Class<?> cls) {
         try {
             return cls.getDeclaredConstructor().newInstance();
-        } catch (Throwable t) {
+        } catch (Exception t) {
             Constructor<?>[] constructors = cls.getDeclaredConstructors();
             /*
               From Javadoc java.lang.Class#getDeclaredConstructors
@@ -650,7 +650,7 @@ public class PojoUtils {
                     constructor.setAccessible(true);
                     Object[] parameters = Arrays.stream(constructor.getParameterTypes()).map(PojoUtils::getDefaultValue).toArray();
                     return constructor.newInstance(parameters);
-                } catch (Throwable e) {
+                } catch (Exception e) {
                     lastError = e;
                 }
             }
@@ -701,11 +701,23 @@ public class PojoUtils {
         return method;
     }
 
-    private static Field getField(Class<?> cls, String fieldName) {
-        Field result = null;
+    private static Field getAndCacheField(Class<?> cls, String fieldName) {
+        Field result;
         if (CLASS_FIELD_CACHE.containsKey(cls) && CLASS_FIELD_CACHE.get(cls).containsKey(fieldName)) {
             return CLASS_FIELD_CACHE.get(cls).get(fieldName);
         }
+
+        result = getField(cls, fieldName);
+
+        if (result != null) {
+            ConcurrentMap<String, Field> fields = CLASS_FIELD_CACHE.computeIfAbsent(cls, k -> new ConcurrentHashMap<>());
+            fields.putIfAbsent(fieldName, result);
+        }
+        return result;
+    }
+
+    private static Field getField(Class<?> cls, String fieldName) {
+        Field result = null;
         for (Class<?> acls = cls; acls != null; acls = acls.getSuperclass()) {
             try {
                 result = acls.getDeclaredField(fieldName);
@@ -715,20 +727,13 @@ public class PojoUtils {
             } catch (NoSuchFieldException e) {
             }
         }
-        if (result == null) {
-            if (cls != null) {
-                for (Field field : cls.getFields()) {
-                    if (fieldName.equals(field.getName()) && ReflectUtils.isPublicInstanceField(field)) {
-                        result = field;
-                        break;
-                    }
+        if (result == null && cls != null) {
+            for (Field field : cls.getFields()) {
+                if (fieldName.equals(field.getName()) && ReflectUtils.isPublicInstanceField(field)) {
+                    result = field;
+                    break;
                 }
             }
-        }
-
-        if (result != null) {
-            ConcurrentMap<String, Field> fields = CLASS_FIELD_CACHE.computeIfAbsent(cls, k -> new ConcurrentHashMap<>());
-            fields.putIfAbsent(fieldName, result);
         }
         return result;
     }
