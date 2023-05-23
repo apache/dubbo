@@ -47,7 +47,7 @@ public class MetricsFilter implements Filter, BaseFilter.Listener, ScopeModelAwa
     @Override
     public void setApplicationModel(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
-        this.metricsEnable = applicationModel.getApplicationConfigManager().getMetrics().map(MetricsConfig::getEnabled).orElse(false);
+        this.metricsEnable = applicationModel.getApplicationConfigManager().getMetrics().map(MetricsConfig::getEnabled).orElse(true);
     }
 
     @Override

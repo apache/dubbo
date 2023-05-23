@@ -106,6 +106,7 @@ class AggregateMetricsCollectorTest {
         applicationModel.getApplicationConfigManager().setApplication(config);
 
         MetricsConfig metricsConfig = new MetricsConfig();
+        metricsConfig.setEnabled(true);
         AggregationConfig aggregationConfig = new AggregationConfig();
         aggregationConfig.setEnabled(true);
         aggregationConfig.setBucketNum(12);
