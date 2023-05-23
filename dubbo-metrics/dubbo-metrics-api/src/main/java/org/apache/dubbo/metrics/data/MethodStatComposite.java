@@ -20,6 +20,7 @@ package org.apache.dubbo.metrics.data;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.metrics.exception.MetricsNeverHappenException;
 import org.apache.dubbo.metrics.model.MethodMetric;
 import org.apache.dubbo.metrics.model.MetricsCategory;
 import org.apache.dubbo.metrics.model.MetricsSupport;
@@ -78,7 +79,7 @@ public class MethodStatComposite extends AbstractMetricsExport {
                 } else if (wrapper.getSampleType() == MetricSample.Type.GAUGE) {
                     list.add(new GaugeMetricSample<>(wrapper, methodMetric.getTags(), category, stringAtomicLongMap, value -> value.get(methodMetric).get()));
                 } else {
-                    logger.error("Unsupported metricSample type: "+wrapper.getSampleType());
+                    throw new MetricsNeverHappenException("Unsupported metricSample type: " + wrapper.getSampleType());
                 }
 
             }
