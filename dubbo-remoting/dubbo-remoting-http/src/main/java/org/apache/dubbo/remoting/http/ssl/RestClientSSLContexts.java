@@ -21,6 +21,7 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.ssl.Cert;
 import org.apache.dubbo.common.ssl.CertManager;
+import org.apache.dubbo.common.ssl.DefaultHostnameVerifier;
 import org.apache.dubbo.common.ssl.util.JdkSslUtils;
 import org.apache.dubbo.common.ssl.util.pem.PemReader;
 import org.apache.dubbo.common.ssl.util.pem.SSLContextBuilder;
@@ -100,7 +101,7 @@ public class RestClientSSLContexts {
 
             restClientSSLSetter.initSSLContext(sslContext, trustManagers);
 
-            restClientSSLSetter.setHostnameVerifier((hostname, session) -> true);
+            restClientSSLSetter.setHostnameVerifier(new DefaultHostnameVerifier());
         } catch (Exception e) {
             throw new IllegalArgumentException("Could not build rest client SSLContext: ", e);
         } finally {
