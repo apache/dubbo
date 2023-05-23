@@ -17,7 +17,6 @@
 
 package org.apache.dubbo.common.serialize;
 
-import com.sun.xml.internal.ws.encoding.soap.SerializationException;
 import org.apache.dubbo.common.URL;
 
 import java.io.IOException;
