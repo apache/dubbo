@@ -25,7 +25,7 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.ssl.AuthPolicy;
 import org.apache.dubbo.common.ssl.ProviderCert;
-import org.apache.dubbo.common.ssl.util.JDKSSLUtils;
+import org.apache.dubbo.common.ssl.util.JdkSslUtils;
 
 import javax.net.ssl.SSLException;
 import java.io.InputStream;
@@ -67,9 +67,9 @@ public class SslContexts {
             throw new IllegalArgumentException("Could not find certificate file or the certificate is invalid.", e);
         } finally {
 
-            JDKSSLUtils.safeCloseStream(serverTrustCertStream);
-            JDKSSLUtils.safeCloseStream(serverKeyCertChainPathStream);
-            JDKSSLUtils.safeCloseStream(serverPrivateKeyPathStream);
+            JdkSslUtils.safeCloseStream(serverTrustCertStream);
+            JdkSslUtils.safeCloseStream(serverKeyCertChainPathStream);
+            JdkSslUtils.safeCloseStream(serverPrivateKeyPathStream);
         }
         try {
             return sslClientContextBuilder.sslProvider(findSslProvider()).build();

@@ -23,7 +23,7 @@ import org.apache.dubbo.remoting.http.config.HttpClientConfig;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.dubbo.remoting.http.ssl.RestClientSSLContexts;
-import org.apache.dubbo.remoting.http.ssl.RestClientSSLSetter;
+import org.apache.dubbo.remoting.http.ssl.RestClientSSLContextSetter;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
@@ -63,7 +63,7 @@ public class URLConnectionRestClient extends BaseRestClient {
             if (isEnableSSL()) {
                 HttpsURLConnection tmp = (HttpsURLConnection) new URL(requestTemplate.getURL()).openConnection();
 
-                connection = RestClientSSLContexts.buildClientSSLContext(getUrl(), new RestClientSSLSetter() {
+                connection = RestClientSSLContexts.buildClientSSLContext(getUrl(), new RestClientSSLContextSetter() {
                     @Override
                     public void initSSLContext(SSLContext sslContext, TrustManager[] trustAllCerts) {
                         tmp.setSSLSocketFactory(sslContext.getSocketFactory());

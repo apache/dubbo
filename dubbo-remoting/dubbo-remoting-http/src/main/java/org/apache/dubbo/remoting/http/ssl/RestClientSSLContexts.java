@@ -21,7 +21,7 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.ssl.Cert;
 import org.apache.dubbo.common.ssl.CertManager;
-import org.apache.dubbo.common.ssl.util.JDKSSLUtils;
+import org.apache.dubbo.common.ssl.util.JdkSslUtils;
 import org.apache.dubbo.common.ssl.util.pem.PemReader;
 import org.apache.dubbo.common.ssl.util.pem.SSLContextBuilder;
 
@@ -39,7 +39,7 @@ public class RestClientSSLContexts {
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(RestClientSSLContexts.class);
 
 
-    public static <T> T buildClientSSLContext(URL url, RestClientSSLSetter restClientSSLSetter, T t) {
+    public static <T> T buildClientSSLContext(URL url, RestClientSSLContextSetter restClientSSLSetter, T t) {
 
         try {
             // first pem file
@@ -47,13 +47,13 @@ public class RestClientSSLContexts {
         } catch (Throwable e) {
             logger.warn("",e.getMessage() , "", "rest client build ssl context by pem  failed", e);
 
-            return buildClientJDKSSlContext(url, restClientSSLSetter, t);
+            return buildClientJdkSSlContext(url, restClientSSLSetter, t);
         }
 
     }
 
 
-    public static <T> T buildClientJDKSSlContext(URL url, RestClientSSLSetter restClientSSLSetter, T t) {
+    public static <T> T buildClientJdkSSlContext(URL url, RestClientSSLContextSetter restClientSSLSetter, T t) {
 
 
         InputStream clientTrustCertCollectionStream = null;
@@ -88,13 +88,13 @@ public class RestClientSSLContexts {
 
 
             // init ssl context
-            SSLContext sslContext = JDKSSLUtils.createSslContext();
+            SSLContext sslContext = JdkSslUtils.createSSLContext();
 
-            KeyManagerFactory keyManagerFactory = JDKSSLUtils.createKeyManagerFactory(clientPrivateKeyStream, passwordCharArray);
+            KeyManagerFactory keyManagerFactory = JdkSslUtils.createKeyManagerFactory(clientPrivateKeyStream, passwordCharArray);
 
-            TrustManagerFactory trustManagerFactory = JDKSSLUtils.createTrustManagerFactory(clientTrustCertCollectionStream, passwordCharArray);
+            TrustManagerFactory trustManagerFactory = JdkSslUtils.createTrustManagerFactory(clientTrustCertCollectionStream, passwordCharArray);
 
-            TrustManager[] trustManagers = JDKSSLUtils.buildTrustManagers(trustManagerFactory);
+            TrustManager[] trustManagers = JdkSslUtils.buildTrustManagers(trustManagerFactory);
 
             sslContext.init(keyManagerFactory.getKeyManagers(), trustManagers, null);
 
@@ -104,9 +104,9 @@ public class RestClientSSLContexts {
         } catch (Exception e) {
             throw new IllegalArgumentException("Could not build rest client SSLContext: ", e);
         } finally {
-            JDKSSLUtils.safeCloseStream(clientTrustCertCollectionStream);
-            JDKSSLUtils.safeCloseStream(clientCertChainStream);
-            JDKSSLUtils.safeCloseStream(clientPrivateKeyStream);
+            JdkSslUtils.safeCloseStream(clientTrustCertCollectionStream);
+            JdkSslUtils.safeCloseStream(clientCertChainStream);
+            JdkSslUtils.safeCloseStream(clientPrivateKeyStream);
         }
 
         return t;
@@ -115,7 +115,7 @@ public class RestClientSSLContexts {
     }
 
 
-    public static <T> T buildClientSSlContextByPem(URL url, RestClientSSLSetter restClientSSLSetter, T t) {
+    public static <T> T buildClientSSlContextByPem(URL url, RestClientSSLContextSetter restClientSSLSetter, T t) {
 
 
         InputStream clientTrustCertCollectionStream = null;
@@ -144,12 +144,12 @@ public class RestClientSSLContexts {
             SSLContext sslContext =
                 SSLContextBuilder.createSSLContext();
 
-            KeyManagerFactory keyManagerFactory = JDKSSLUtils.createKeyManagerFactory(PemReader.readCertificates(clientCertChainStream), PemReader.readPrivateKey(clientPrivateKeyStream), consumerConnectionConfig.getPassword());
+            KeyManagerFactory keyManagerFactory = JdkSslUtils.createKeyManagerFactory(PemReader.readCertificates(clientCertChainStream), PemReader.readPrivateKey(clientPrivateKeyStream), consumerConnectionConfig.getPassword());
 
 
             TrustManagerFactory trustManagerFactory = SSLContextBuilder.trustManagerByPem(clientTrustCertCollectionStream);
 
-            TrustManager[] trustManagers = JDKSSLUtils.buildTrustManagers(trustManagerFactory);
+            TrustManager[] trustManagers = JdkSslUtils.buildTrustManagers(trustManagerFactory);
 
             sslContext.init(keyManagerFactory.getKeyManagers(), trustManagers, null);
 
@@ -159,9 +159,9 @@ public class RestClientSSLContexts {
         } catch (Exception e) {
             throw new IllegalArgumentException("Could not build rest client SSLContext by pem cert: ", e);
         } finally {
-            JDKSSLUtils.safeCloseStream( clientTrustCertCollectionStream);
-            JDKSSLUtils.safeCloseStream(clientCertChainStream);
-            JDKSSLUtils.safeCloseStream(clientPrivateKeyStream);
+            JdkSslUtils.safeCloseStream( clientTrustCertCollectionStream);
+            JdkSslUtils.safeCloseStream(clientCertChainStream);
+            JdkSslUtils.safeCloseStream(clientPrivateKeyStream);
         }
 
         return t;

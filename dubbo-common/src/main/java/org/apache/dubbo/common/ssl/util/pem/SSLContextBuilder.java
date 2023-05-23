@@ -17,7 +17,7 @@
 package org.apache.dubbo.common.ssl.util.pem;
 
 
-import org.apache.dubbo.common.ssl.util.JDKSSLUtils;
+import org.apache.dubbo.common.ssl.util.JdkSslUtils;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
@@ -53,12 +53,12 @@ public class SSLContextBuilder {
 
         SSLContext sslContext = createSSLContext();
 
-        KeyManagerFactory keyManagerFactory = JDKSSLUtils.createKeyManagerFactory(PemReader.readCertificates(clientCertChainStream), PemReader.readPrivateKey(clientPrivateKeyStream), keyPassword);
+        KeyManagerFactory keyManagerFactory = JdkSslUtils.createKeyManagerFactory(PemReader.readCertificates(clientCertChainStream), PemReader.readPrivateKey(clientPrivateKeyStream), keyPassword);
 
 
-        TrustManagerFactory trustManagerFactory = trustManagerByPem(clientTrustCertCollectionStream);
+        TrustManagerFactory trustManagerFactory = SSLContextBuilder.trustManagerByPem(clientTrustCertCollectionStream);
 
-        TrustManager[] trustManagers = JDKSSLUtils.buildTrustManagers(trustManagerFactory);
+        TrustManager[] trustManagers = JdkSslUtils.buildTrustManagers(trustManagerFactory);
 
         sslContext.init(keyManagerFactory.getKeyManagers(), trustManagers, null);
 
@@ -71,9 +71,9 @@ public class SSLContextBuilder {
             return null;
         }
 
-        X509Certificate[] x509Certificates = SslContext.toX509Certificates(trustCertCollectionInputStream);
+        X509Certificate[] x509Certificates = SSlContext.toX509Certificates(trustCertCollectionInputStream);
 
-        return SslContext.buildTrustManagerFactory(x509Certificates, TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm()), null);
+        return SSlContext.buildTrustManagerFactory(x509Certificates, TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm()), null);
 
 
     }
@@ -81,7 +81,7 @@ public class SSLContextBuilder {
 
     public static SSLContext createSSLContext() throws NoSuchAlgorithmException {
 
-        return JDKSSLUtils.createSslContext();
+        return JdkSslUtils.createSSLContext();
     }
 
     /**
@@ -93,12 +93,12 @@ public class SSLContextBuilder {
      * @param password
      * @return
      */
-    public static SSLContext buildJDKSSLContext(InputStream keyCertChainPathStream,
+    public static SSLContext buildJdkSSLContext(InputStream keyCertChainPathStream,
                                                 InputStream privateKeyPathStream,
                                                 InputStream trustCertStream, String password) {
 
 
-        return JDKSSLUtils.buildJDKSSLContext(keyCertChainPathStream, privateKeyPathStream, trustCertStream, password);
+        return JdkSslUtils.buildJdkSSLContext(keyCertChainPathStream, privateKeyPathStream, trustCertStream, password);
 
     }
 

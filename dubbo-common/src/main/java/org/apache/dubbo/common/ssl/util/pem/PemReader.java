@@ -16,8 +16,7 @@
  */
 package org.apache.dubbo.common.ssl.util.pem;
 
-import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
-import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.ssl.util.JdkSslUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -25,10 +24,10 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.security.KeyException;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -37,8 +36,6 @@ import java.util.regex.Pattern;
  * for read .pem certificate
  */
 public class PemReader {
-
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(PemReader.class);
 
     private static final Pattern CERT_HEADER = Pattern.compile(
         "-+BEGIN\\s[^-\\r\\n]*CERTIFICATE[^-\\r\\n]*-+(?:\\s|\\r|\\n)+");
@@ -57,7 +54,7 @@ public class PemReader {
             try {
                 return readCertificates(in);
             } finally {
-                safeClose(in);
+                JdkSslUtils.safeCloseStream(in);
             }
         } catch (FileNotFoundException e) {
             throw new CertificateException("could not find certificate file: " + file);
@@ -86,7 +83,7 @@ public class PemReader {
 
             byte[] der = null;
             try {
-                der = new BASE64Decoder().decodeBuffer(m.group(0));
+                der = decode(m.group(0));
             } catch (Exception e) {
 
             }
@@ -120,7 +117,7 @@ public class PemReader {
             try {
                 return readPrivateKey(in);
             } finally {
-                safeClose(in);
+                JdkSslUtils.safeCloseStream(in);
             }
         } catch (FileNotFoundException e) {
             throw new KeyException("could not find key file: " + file);
@@ -145,7 +142,7 @@ public class PemReader {
         }
         byte[] privateKey = null;
         try {
-            privateKey = new BASE64Decoder().decodeBuffer(m.group(0));
+            privateKey = decode(m.group(0));
         } catch (Exception e) {
             return null;
         }
@@ -177,26 +174,12 @@ public class PemReader {
             }
             return out.toString("US-ASCII");
         } finally {
-            safeClose(out);
+            JdkSslUtils.safeCloseStream(in);
         }
     }
 
-    private static void safeClose(InputStream in) {
-        try {
-            in.close();
-        } catch (IOException e) {
-            logger.warn("", e.getCause().getMessage(), "", "Failed to close a stream ,when PemReader safe close InputStream ");
-        }
-    }
+    private static byte[] decode(String str) {
 
-    private static void safeClose(OutputStream out) {
-        try {
-            out.close();
-        } catch (IOException e) {
-            logger.warn("", e.getCause().getMessage(), "", "Failed to close a stream ,when PemReader safe close OutputStream ");
-        }
-    }
-
-    private PemReader() {
+        return Base64.getMimeDecoder().decode(str);
     }
 }

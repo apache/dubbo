@@ -18,7 +18,7 @@ package org.apache.dubbo.common.ssl;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.ssl.impl.SSLConfigCertProvider;
-import org.apache.dubbo.common.ssl.util.JDKSSLUtils;
+import org.apache.dubbo.common.ssl.util.JdkSslUtils;
 import org.apache.dubbo.common.ssl.util.pem.SSLContextBuilder;
 import org.apache.dubbo.config.SslConfig;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -52,7 +52,7 @@ public class CertFileParseTest {
         ProviderCert providerCert = sslConfigCertProvider.getProviderConnectionConfig(url);
         Assertions.assertNotNull(providerCert);
 
-        JDKSSLUtils.buildJDKSSLContext(null, providerCert.getPrivateKeyInputStream(), providerCert.getTrustCertInputStream(), providerCert.getPassword());
+        JdkSslUtils.buildJdkSSLContext(null, providerCert.getPrivateKeyInputStream(), providerCert.getTrustCertInputStream(), providerCert.getPassword());
         frameworkModel.destroy();
     }
 
@@ -74,7 +74,7 @@ public class CertFileParseTest {
         Cert cert = sslConfigCertProvider.getConsumerConnectionConfig(url);
 
 
-        JDKSSLUtils.buildJDKSSLContext(null, cert.getPrivateKeyInputStream(), cert.getTrustCertInputStream(), cert.getPassword());
+        JdkSslUtils.buildJdkSSLContext(null, cert.getPrivateKeyInputStream(), cert.getTrustCertInputStream(), cert.getPassword());
 
         frameworkModel.destroy();
     }
@@ -93,6 +93,7 @@ public class CertFileParseTest {
 
         sslConfig.setClientKeyCertChainPath(this.getClass().getClassLoader().getResource("certs/cert.pem").getFile());
         sslConfig.setClientPrivateKeyPath(this.getClass().getClassLoader().getResource("certs/key.pem").getFile());
+        sslConfig.setClientTrustCertCollectionPath(this.getClass().getClassLoader().getResource("certs/ca.pem").getFile());
         Cert cert = sslConfigCertProvider.getConsumerConnectionConfig(url);
 
         SSLContextBuilder.buildSSLContextByPem(cert.getKeyCertChainInputStream(), cert.getPrivateKeyInputStream(), cert.getTrustCertInputStream(), cert.getPassword());

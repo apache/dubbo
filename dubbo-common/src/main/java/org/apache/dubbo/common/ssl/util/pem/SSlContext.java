@@ -17,7 +17,7 @@
 package org.apache.dubbo.common.ssl.util.pem;
 
 
-import org.apache.dubbo.common.ssl.util.JDKSSLUtils;
+import org.apache.dubbo.common.ssl.util.JdkSslUtils;
 
 import javax.net.ssl.TrustManagerFactory;
 import java.io.ByteArrayInputStream;
@@ -31,7 +31,7 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.List;
 
-public class SslContext {
+public class SSlContext {
 
     protected static X509Certificate[] toX509Certificates(InputStream in) throws CertificateException {
         if (in == null) {
@@ -48,7 +48,7 @@ public class SslContext {
             try {
                 x509Certs[i] = (X509Certificate) cf.generateCertificate(is);
             } finally {
-                JDKSSLUtils.safeCloseStream(is);
+                JdkSslUtils.safeCloseStream(is);
             }
         }
 

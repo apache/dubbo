@@ -32,6 +32,7 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 import java.io.ByteArrayInputStream;
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.InvalidAlgorithmParameterException;
@@ -53,11 +54,11 @@ import java.util.List;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_CLOSE_STREAM;
 
-public class JDKSSLUtils {
+public class JdkSslUtils {
 
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(JDKSSLUtils.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(JdkSslUtils.class);
 
-    public static SSLContext buildJDKSSLContext(InputStream keyCertChainPathStream,
+    public static SSLContext buildJdkSSLContext(InputStream keyCertChainPathStream,
                                                 InputStream privateKeyPathStream,
                                                 InputStream trustCertStream, String password) {
 
@@ -67,7 +68,7 @@ public class JDKSSLUtils {
             char[] passwordCharArray = password == null ? new char[0] : password.toCharArray();
 
 
-            SSLContext sslContext = createSslContext();
+            SSLContext sslContext = createSSLContext();
 
             // key manage factory
             KeyManagerFactory keyManagerFactory = null;
@@ -89,9 +90,9 @@ public class JDKSSLUtils {
         } catch (Exception e) {
             throw new IllegalArgumentException("Could not find certificate file or the certificate is invalid.", e);
         } finally {
-            JDKSSLUtils.safeCloseStream(trustCertStream);
-            JDKSSLUtils.safeCloseStream(keyCertChainPathStream);
-            JDKSSLUtils.safeCloseStream(privateKeyPathStream);
+            JdkSslUtils.safeCloseStream(trustCertStream);
+            JdkSslUtils.safeCloseStream(keyCertChainPathStream);
+            JdkSslUtils.safeCloseStream(privateKeyPathStream);
         }
 
     }
@@ -133,12 +134,12 @@ public class JDKSSLUtils {
         return kmf;
     }
 
-    public static SSLContext createSslContext() throws NoSuchAlgorithmException {
+    public static SSLContext createSSLContext() throws NoSuchAlgorithmException {
         SSLContext sslContext = SSLContext.getInstance("TLS");
         return sslContext;
     }
 
-    public static KeyStore createJDKKeyStore(InputStream privateKeyPathStream, char[] passwordCharArray) throws Exception {
+    public static KeyStore createJdkKeyStore(InputStream privateKeyPathStream, char[] passwordCharArray) throws Exception {
         KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
         keyStore.load(privateKeyPathStream, passwordCharArray);
         return keyStore;
@@ -150,20 +151,20 @@ public class JDKSSLUtils {
         }
         TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
         // init trust manage
-        KeyStore trustStore = createJDKKeyStore(trustCertStream, passwordCharArray);
+        KeyStore trustStore = createJdkKeyStore(trustCertStream, passwordCharArray);
         trustManagerFactory.init(trustStore);
         return trustManagerFactory;
     }
 
     public static KeyManagerFactory createKeyManagerFactory(InputStream privateKeyPathStream, char[] passwordCharArray) throws Exception {
         KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-        KeyStore keyStore = createJDKKeyStore(privateKeyPathStream, passwordCharArray);
+        KeyStore keyStore = createJdkKeyStore(privateKeyPathStream, passwordCharArray);
 //            keyStore.setKeyEntry(ALIAS, key, passwordCharArray, certChain);
         keyManagerFactory.init(keyStore, passwordCharArray);
         return keyManagerFactory;
     }
 
-    public static void safeCloseStream(InputStream stream) {
+    public static void safeCloseStream(Closeable stream) {
         if (stream == null) {
             return;
         }
@@ -212,7 +213,7 @@ public class JDKSSLUtils {
             try {
                 x509Certs[i] = (X509Certificate) cf.generateCertificate(is);
             } finally {
-                JDKSSLUtils.safeCloseStream(is);
+                JdkSslUtils.safeCloseStream(is);
             }
         }
 

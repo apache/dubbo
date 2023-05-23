@@ -20,7 +20,10 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 
-public interface RestClientSSLSetter {
+/**
+ *  for config rest client ssl context
+ */
+public interface RestClientSSLContextSetter {
     void initSSLContext(SSLContext sslContext, TrustManager[] trustAllCerts);
 
     void setHostnameVerifier(HostnameVerifier hostnameVerifier);

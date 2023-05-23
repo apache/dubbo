@@ -122,7 +122,7 @@ public class SslServerTlsHandler extends ByteToMessageDecoder {
         }
 
         // build context by jdk
-        return SSLContextBuilder.buildJDKSSLContext(providerConnectionConfig.getKeyCertChainInputStream(),
+        return SSLContextBuilder.buildJdkSSLContext(providerConnectionConfig.getKeyCertChainInputStream(),
             providerConnectionConfig.getPrivateKeyInputStream(),
             providerConnectionConfig.getTrustCertInputStream(),
             providerConnectionConfig.getPassword());

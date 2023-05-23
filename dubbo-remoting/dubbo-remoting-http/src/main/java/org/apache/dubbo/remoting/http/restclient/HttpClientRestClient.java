@@ -24,7 +24,7 @@ import org.apache.dubbo.remoting.http.config.HttpClientConfig;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.dubbo.remoting.http.ssl.RestClientSSLContexts;
-import org.apache.dubbo.remoting.http.ssl.RestClientSSLSetter;
+import org.apache.dubbo.remoting.http.ssl.RestClientSSLContextSetter;
 import org.apache.http.Header;
 import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.client.config.RequestConfig;
@@ -171,7 +171,7 @@ public class HttpClientRestClient extends BaseRestClient {
 
         HttpClientBuilder custom = HttpClients.custom();
         HttpClientBuilder finalCustom = custom;
-        custom = RestClientSSLContexts.buildClientSSLContext(getUrl(), new RestClientSSLSetter() {
+        custom = RestClientSSLContexts.buildClientSSLContext(getUrl(), new RestClientSSLContextSetter() {
             @Override
             public void initSSLContext(SSLContext sslContext, TrustManager[] trustAllCerts) {
                 finalCustom.setSSLContext(sslContext);

@@ -31,7 +31,7 @@ import okhttp3.Response;
 import okhttp3.ResponseBody;
 import okhttp3.internal.http.HttpMethod;
 import org.apache.dubbo.remoting.http.ssl.RestClientSSLContexts;
-import org.apache.dubbo.remoting.http.ssl.RestClientSSLSetter;
+import org.apache.dubbo.remoting.http.ssl.RestClientSSLContextSetter;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
@@ -156,7 +156,7 @@ public class OKHttpRestClient extends BaseRestClient {
         OkHttpClient.Builder builder = new OkHttpClient.Builder();
 
         OkHttpClient.Builder finalBuilder = builder;
-        builder = RestClientSSLContexts.buildClientSSLContext(getUrl(), new RestClientSSLSetter() {
+        builder = RestClientSSLContexts.buildClientSSLContext(getUrl(), new RestClientSSLContextSetter() {
             @Override
             public void initSSLContext(SSLContext sslContext, TrustManager[] trustAllCerts) {
                 finalBuilder.sslSocketFactory(sslContext.getSocketFactory(),(X509TrustManager)trustAllCerts[0]);
