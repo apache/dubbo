@@ -49,8 +49,7 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FA
 import static org.apache.dubbo.remoting.Constants.HEARTBEAT_CHECK_TICK;
 import static org.apache.dubbo.remoting.Constants.LEAST_HEARTBEAT_DURATION;
 import static org.apache.dubbo.remoting.Constants.TICKS_PER_WHEEL;
-import static org.apache.dubbo.remoting.utils.UrlUtils.getHeartbeat;
-import static org.apache.dubbo.remoting.utils.UrlUtils.getIdleTimeout;
+import static org.apache.dubbo.remoting.utils.UrlUtils.getCloseTimeout;
 
 /**
  * ExchangeServerImpl
@@ -211,11 +210,9 @@ public class HeaderExchangeServer implements ExchangeServer {
     public void reset(URL url) {
         server.reset(url);
         try {
-            int currHeartbeat = getHeartbeat(getUrl());
-            int currIdleTimeout = getIdleTimeout(getUrl());
-            int heartbeat = getHeartbeat(url);
-            int idleTimeout = getIdleTimeout(url);
-            if (currHeartbeat != heartbeat || currIdleTimeout != idleTimeout) {
+            int currCloseTimeout = getCloseTimeout(getUrl());
+            int closeTimeout = getCloseTimeout(url);
+            if (closeTimeout != currCloseTimeout) {
                 cancelCloseTask();
                 startIdleCheckTask(url);
             }
@@ -262,9 +259,9 @@ public class HeaderExchangeServer implements ExchangeServer {
     private void startIdleCheckTask(URL url) {
         if (!server.canHandleIdle()) {
             AbstractTimerTask.ChannelProvider cp = () -> unmodifiableCollection(HeaderExchangeServer.this.getChannels());
-            int idleTimeout = getIdleTimeout(url);
-            long idleTimeoutTick = calculateLeastDuration(idleTimeout);
-            this.closeTimer = new CloseTimerTask(cp, IDLE_CHECK_TIMER.get(), idleTimeoutTick, idleTimeout);
+            int closeTimeout = getCloseTimeout(url);
+            long closeTimeoutTick = calculateLeastDuration(closeTimeout);
+            this.closeTimer = new CloseTimerTask(cp, IDLE_CHECK_TIMER.get(), closeTimeoutTick, closeTimeout);
         }
     }
 }

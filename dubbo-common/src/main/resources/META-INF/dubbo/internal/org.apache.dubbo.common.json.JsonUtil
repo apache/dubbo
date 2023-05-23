@@ -1,0 +1,4 @@
+fastjson2=org.apache.dubbo.common.json.impl.FastJson2Impl
+fastjson=org.apache.dubbo.common.json.impl.FastJsonImpl
+gson=org.apache.dubbo.common.json.impl.GsonImpl
+jackson=org.apache.dubbo.common.json.impl.JacksonImpl
