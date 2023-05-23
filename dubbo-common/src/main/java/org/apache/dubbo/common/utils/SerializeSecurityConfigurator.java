@@ -264,6 +264,10 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
 
         addToAllow(clazz.getName());
 
+        if (ClassUtils.isSimpleType(clazz) || clazz.isPrimitive()) {
+            return;
+        }
+
         Class<?>[] interfaces = clazz.getInterfaces();
         for (Class<?> interfaceClass : interfaces) {
             checkClass(markedClass, interfaceClass);
