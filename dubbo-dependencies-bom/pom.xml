@@ -124,7 +124,7 @@
         <hibernate_validator_new_version>7.0.5.Final</hibernate_validator_new_version>
         <jel_version>3.0.1-b12</jel_version>
         <jcache_version>1.1.1</jcache_version>
-        <kryo_version>4.0.2</kryo_version>
+        <kryo_version>4.0.3</kryo_version>
         <kryo_serializers_version>0.45</kryo_serializers_version>
         <fst_version>2.57</fst_version>
         <avro_version>1.11.1</avro_version>
