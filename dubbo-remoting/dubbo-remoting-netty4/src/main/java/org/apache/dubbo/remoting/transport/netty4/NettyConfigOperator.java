@@ -60,6 +60,7 @@ public class NettyConfigOperator implements ChannelOperator {
         }
 
         if (!(codec2 instanceof DefaultCodec)){
+            ((NettyChannel) channel).setCodec(codec2);
             NettyCodecAdapter codec = new NettyCodecAdapter(codec2, channel.getUrl(), handler);
             ((NettyChannel) channel).getNioChannel().pipeline().addLast(
                 codec.getDecoder()

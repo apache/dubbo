@@ -320,6 +320,24 @@ class ScopeClusterInvokerTest {
         Assertions.assertEquals("doSomething8", ret3.getValue());
     }
 
+    @Test
+    void testBroadcast() {
+        URL url = URL.valueOf("remote://1.2.3.4/" + DemoService.class.getName());
+        url = url.addParameter(REFER_KEY,
+            URL.encode(PATH_KEY + "=" + DemoService.class.getName()));
+        url = url.addParameter("cluster","broadcast");
+        url = url.setScopeModel(ApplicationModel.defaultModel().getDefaultModule());
+        Invoker<DemoService> cluster = getClusterInvoker(url);
+
+        invokers.add(cluster);
+
+        RpcInvocation invocation = new RpcInvocation();
+        invocation.setMethodName("doSomething8");
+        invocation.setParameterTypes(new Class[]{});
+        Result ret = cluster.invoke(invocation);
+        Assertions.assertEquals("doSomething8", ret.getValue());
+    }
+
     private Invoker<DemoService> getClusterInvoker(URL url) {
         final URL durl = url.addParameter("proxy", "jdk");
         invokers.clear();
