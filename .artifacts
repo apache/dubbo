@@ -111,3 +111,4 @@ dubbo-plugin-router-script
 dubbo-plugin-router-mesh
 dubbo-plugin-router-condition
 dubbo-plugin-router-tag
+dubbo-plugin-loadbalance-adaptive
