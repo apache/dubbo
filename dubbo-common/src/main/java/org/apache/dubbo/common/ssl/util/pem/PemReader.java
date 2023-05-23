@@ -24,6 +24,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyException;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
@@ -180,6 +181,6 @@ public class PemReader {
 
     private static byte[] decode(String str) {
 
-        return Base64.getMimeDecoder().decode(str);
+        return Base64.getMimeDecoder().decode(str.getBytes(StandardCharsets.US_ASCII));
     }
 }
