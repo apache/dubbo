@@ -31,7 +31,7 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.List;
 
-public class SSlContext {
+public class SSLContext {
 
     protected static X509Certificate[] toX509Certificates(InputStream in) throws CertificateException {
         if (in == null) {

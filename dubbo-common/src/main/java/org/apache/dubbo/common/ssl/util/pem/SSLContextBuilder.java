@@ -20,7 +20,6 @@ package org.apache.dubbo.common.ssl.util.pem;
 import org.apache.dubbo.common.ssl.util.JdkSslUtils;
 
 import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import java.io.FileInputStream;
@@ -41,17 +40,17 @@ public class SSLContextBuilder {
      * @return
      * @throws Exception
      */
-    public static SSLContext buildSSLContextByPem(String keyCertChainInputStream, String keyInputStream, String trustCertCollectionInputStream,
-                                                  String keyPassword) throws Exception {
+    public static javax.net.ssl.SSLContext buildSSLContextByPem(String keyCertChainInputStream, String keyInputStream, String trustCertCollectionInputStream,
+                                                                String keyPassword) throws Exception {
         return buildSSLContextByPem(new FileInputStream(keyCertChainInputStream), new FileInputStream(keyInputStream), new FileInputStream(trustCertCollectionInputStream), keyPassword);
 
     }
 
-    public static SSLContext buildSSLContextByPem(InputStream clientCertChainStream, InputStream clientPrivateKeyStream, InputStream clientTrustCertCollectionStream,
-                                                  String keyPassword) throws Exception {
+    public static javax.net.ssl.SSLContext buildSSLContextByPem(InputStream clientCertChainStream, InputStream clientPrivateKeyStream, InputStream clientTrustCertCollectionStream,
+                                                                String keyPassword) throws Exception {
 
 
-        SSLContext sslContext = createSSLContext();
+        javax.net.ssl.SSLContext sslContext = createSSLContext();
 
         KeyManagerFactory keyManagerFactory = JdkSslUtils.createKeyManagerFactory(PemReader.readCertificates(clientCertChainStream), PemReader.readPrivateKey(clientPrivateKeyStream), keyPassword);
 
@@ -71,15 +70,15 @@ public class SSLContextBuilder {
             return null;
         }
 
-        X509Certificate[] x509Certificates = SSlContext.toX509Certificates(trustCertCollectionInputStream);
+        X509Certificate[] x509Certificates = SSLContext.toX509Certificates(trustCertCollectionInputStream);
 
-        return SSlContext.buildTrustManagerFactory(x509Certificates, TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm()), null);
+        return SSLContext.buildTrustManagerFactory(x509Certificates, TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm()), null);
 
 
     }
 
 
-    public static SSLContext createSSLContext() throws NoSuchAlgorithmException {
+    public static javax.net.ssl.SSLContext createSSLContext() throws NoSuchAlgorithmException {
 
         return JdkSslUtils.createSSLContext();
     }
@@ -93,9 +92,9 @@ public class SSLContextBuilder {
      * @param password
      * @return
      */
-    public static SSLContext buildJdkSSLContext(InputStream keyCertChainPathStream,
-                                                InputStream privateKeyPathStream,
-                                                InputStream trustCertStream, String password) {
+    public static javax.net.ssl.SSLContext buildJdkSSLContext(InputStream keyCertChainPathStream,
+                                                              InputStream privateKeyPathStream,
+                                                              InputStream trustCertStream, String password) {
 
 
         return JdkSslUtils.buildJdkSSLContext(keyCertChainPathStream, privateKeyPathStream, trustCertStream, password);
