@@ -18,7 +18,6 @@ package org.apache.dubbo.remoting.transport.netty;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.Codec2;
-import org.apache.dubbo.remoting.SerializationException;
 import org.apache.dubbo.remoting.buffer.DynamicChannelBuffer;
 
 import org.jboss.netty.buffer.ChannelBuffer;
@@ -79,7 +78,7 @@ final class NettyCodecAdapter {
         @Override
         protected Object encode(ChannelHandlerContext ctx, Channel ch, Object msg) throws Exception {
             org.apache.dubbo.remoting.buffer.ChannelBuffer buffer =
-                org.apache.dubbo.remoting.buffer.ChannelBuffers.dynamicBuffer(1024);
+                    org.apache.dubbo.remoting.buffer.ChannelBuffers.dynamicBuffer(1024);
             NettyChannel channel = NettyChannel.getOrAddChannel(ch, url, handler);
             try {
                 codec.encode(channel, buffer, msg);
@@ -93,7 +92,7 @@ final class NettyCodecAdapter {
     private class InternalDecoder extends SimpleChannelUpstreamHandler {
 
         private org.apache.dubbo.remoting.buffer.ChannelBuffer buffer =
-            org.apache.dubbo.remoting.buffer.ChannelBuffers.EMPTY_BUFFER;
+                org.apache.dubbo.remoting.buffer.ChannelBuffers.EMPTY_BUFFER;
 
         @Override
         public void messageReceived(ChannelHandlerContext ctx, MessageEvent event) throws Exception {
@@ -117,13 +116,13 @@ final class NettyCodecAdapter {
                 } else {
                     int size = buffer.readableBytes() + input.readableBytes();
                     message = org.apache.dubbo.remoting.buffer.ChannelBuffers.dynamicBuffer(
-                        size > bufferSize ? size : bufferSize);
+                            size > bufferSize ? size : bufferSize);
                     message.writeBytes(buffer, buffer.readableBytes());
                     message.writeBytes(input.toByteBuffer());
                 }
             } else {
                 message = org.apache.dubbo.remoting.buffer.ChannelBuffers.wrappedBuffer(
-                    input.toByteBuffer());
+                        input.toByteBuffer());
             }
 
             NettyChannel channel = NettyChannel.getOrAddChannel(ctx.getChannel(), url, handler);
@@ -139,8 +138,6 @@ final class NettyCodecAdapter {
                     } catch (IOException e) {
                         buffer = org.apache.dubbo.remoting.buffer.ChannelBuffers.EMPTY_BUFFER;
                         throw e;
-                    } catch (Exception e) {
-                        throw new IOException(new SerializationException(e));
                     }
                     if (msg == Codec2.DecodeResult.NEED_MORE_INPUT) {
                         message.readerIndex(saveReaderIndex);

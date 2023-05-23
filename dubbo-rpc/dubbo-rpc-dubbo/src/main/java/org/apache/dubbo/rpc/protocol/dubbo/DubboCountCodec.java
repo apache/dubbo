@@ -19,7 +19,6 @@ package org.apache.dubbo.rpc.protocol.dubbo;
 
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.Codec2;
-import org.apache.dubbo.remoting.SerializationException;
 import org.apache.dubbo.remoting.buffer.ChannelBuffer;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.Response;
@@ -58,22 +57,14 @@ public final class DubboCountCodec implements Codec2 {
         int save = buffer.readerIndex();
         MultiMessage result = MultiMessage.create();
         do {
-            try {
-                Object obj = codec.decode(channel, buffer);
-                if (Codec2.DecodeResult.NEED_MORE_INPUT == obj) {
-                    buffer.readerIndex(save);
-                    break;
-                } else {
-                    result.addMessage(obj);
-                    logMessageLength(obj, buffer.readerIndex() - save);
-                    save = buffer.readerIndex();
-                }
-            } catch (Exception e) {
-                Exception exception = e;
-                if (!(exception instanceof IOException)) {
-                    exception = new IOException(new SerializationException(e));
-                }
-                throw (IOException) exception;
+            Object obj = codec.decode(channel, buffer);
+            if (Codec2.DecodeResult.NEED_MORE_INPUT == obj) {
+                buffer.readerIndex(save);
+                break;
+            } else {
+                result.addMessage(obj);
+                logMessageLength(obj, buffer.readerIndex() - save);
+                save = buffer.readerIndex();
             }
         } while (true);
         if (result.isEmpty()) {
