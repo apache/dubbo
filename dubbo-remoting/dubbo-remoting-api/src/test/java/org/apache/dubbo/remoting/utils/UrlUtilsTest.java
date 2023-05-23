@@ -58,7 +58,7 @@ class UrlUtilsTest {
         Assertions.assertEquals(30000, UrlUtils.getCloseTimeout(url1));
         Assertions.assertEquals(50000, UrlUtils.getCloseTimeout(url2));
         Assertions.assertThrows(RuntimeException.class, () -> UrlUtils.getCloseTimeout(url3));
-        Assertions.assertEquals(30000, UrlUtils.getCloseTimeout(url4));
+        Assertions.assertThrows(RuntimeException.class, () -> UrlUtils.getCloseTimeout(url4));
         Assertions.assertEquals(40000, UrlUtils.getCloseTimeout(url5));
         Assertions.assertThrows(RuntimeException.class, () -> UrlUtils.getCloseTimeout(url6));
     }
