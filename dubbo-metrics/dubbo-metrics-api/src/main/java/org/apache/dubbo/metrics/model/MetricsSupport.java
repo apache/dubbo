@@ -229,6 +229,9 @@ public class MetricsSupport {
         collector.addRt(event.getAttachmentValue(INVOCATION), placeType.getType(), event.getTimePair().calc());
     }
 
+    /**
+     *  Generate a complete indicator item for an interface/method
+     */
     public static <T> void fillZero(Map<MetricsKeyWrapper, Map<T, AtomicLong>> data) {
         if (CollectionUtils.isEmptyMap(data)) {
             return;
