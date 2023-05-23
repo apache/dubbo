@@ -92,7 +92,7 @@ public class MetricsConfig extends AbstractConfig {
      */
     private Boolean useGlobalRegistry;
 
-    private Boolean enabled = true;
+    private Boolean enabled;
 
     public MetricsConfig() {
     }
