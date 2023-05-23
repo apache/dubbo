@@ -83,6 +83,7 @@ import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDERS_CATE
 import static org.apache.dubbo.common.constants.RegistryConstants.ROUTERS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.ROUTE_PROTOCOL;
 import static org.apache.dubbo.registry.Constants.CONFIGURATORS_SUFFIX;
+import static org.apache.dubbo.registry.Constants.ENABLE_26X_CONFIGURATION_LISTEN;
 import static org.apache.dubbo.rpc.Constants.MOCK_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.ROUTER_KEY;
 import static org.apache.dubbo.rpc.model.ScopeModelUtil.getModuleModel;
@@ -170,11 +171,13 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
             .filter(this::isNotCompatibleFor26x)
             .collect(Collectors.groupingBy(this::judgeCategory));
 
-        List<URL> configuratorURLs = categoryUrls.getOrDefault(CONFIGURATORS_CATEGORY, Collections.emptyList());
-        this.configurators = Configurator.toConfigurators(configuratorURLs).orElse(this.configurators);
+        if (moduleModel.getModelEnvironment().getConfiguration().convert(Boolean.class, ENABLE_26X_CONFIGURATION_LISTEN, true)) {
+            List<URL> configuratorURLs = categoryUrls.getOrDefault(CONFIGURATORS_CATEGORY, Collections.emptyList());
+            this.configurators = Configurator.toConfigurators(configuratorURLs).orElse(this.configurators);
 
-        List<URL> routerURLs = categoryUrls.getOrDefault(ROUTERS_CATEGORY, Collections.emptyList());
-        toRouters(routerURLs).ifPresent(this::addRouters);
+            List<URL> routerURLs = categoryUrls.getOrDefault(ROUTERS_CATEGORY, Collections.emptyList());
+            toRouters(routerURLs).ifPresent(this::addRouters);
+        }
 
         // providers
         List<URL> providerURLs = categoryUrls.getOrDefault(PROVIDERS_CATEGORY, Collections.emptyList());

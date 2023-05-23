@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.config.ReferenceCache;
+import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.config.configcenter.DynamicConfigurationFactory;
 import org.apache.dubbo.common.config.configcenter.wrapper.CompositeDynamicConfiguration;
@@ -50,17 +51,21 @@ import org.apache.dubbo.config.utils.CompositeReferenceCache;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.metadata.report.MetadataReportFactory;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
-import org.apache.dubbo.metrics.collector.ConfigCenterMetricsCollector;
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
+import org.apache.dubbo.metrics.config.event.ConfigCenterEvent;
 import org.apache.dubbo.metrics.event.MetricsEventBus;
 import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.metrics.report.MetricsReporter;
 import org.apache.dubbo.metrics.report.MetricsReporterFactory;
 import org.apache.dubbo.metrics.service.MetricsServiceExporter;
+import org.apache.dubbo.registry.Registry;
+import org.apache.dubbo.registry.RegistryFactory;
 import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
 import org.apache.dubbo.registry.support.RegistryManager;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
+import org.apache.dubbo.rpc.model.ModuleServiceRepository;
+import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
@@ -799,8 +804,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 }
             }
             ApplicationModel applicationModel = getApplicationModel();
-            ConfigCenterMetricsCollector collector =
-                applicationModel.getBeanFactory().getOrRegisterBean(ConfigCenterMetricsCollector.class);
 
             if (StringUtils.isNotEmpty(configCenter.getConfigFile())) {
                 String configContent = dynamicConfiguration.getProperties(configCenter.getConfigFile(), configCenter.getGroup());
@@ -819,11 +822,11 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                     environment.updateAppExternalConfigMap(appConfigMap);
 
                     // Add metrics
-                    collector.increase4Initialized(configCenter.getConfigFile(), configCenter.getGroup(),
-                        configCenter.getProtocol(), applicationModel.getApplicationName(), configMap.size());
+                    MetricsEventBus.publish(ConfigCenterEvent.toChangeEvent(applicationModel, configCenter.getConfigFile(), configCenter.getGroup(),
+                        configCenter.getProtocol(), ConfigChangeType.ADDED.name(), configMap.size()));
                     if (isNotEmpty(appGroup)) {
-                        collector.increase4Initialized(appConfigFile, appGroup,
-                            configCenter.getProtocol(), applicationModel.getApplicationName(), appConfigMap.size());
+                        MetricsEventBus.publish(ConfigCenterEvent.toChangeEvent(applicationModel, appConfigFile, appGroup,
+                            configCenter.getProtocol(), ConfigChangeType.ADDED.name(), appConfigMap.size()));
                     }
                 } catch (IOException e) {
                     throw new IllegalStateException("Failed to parse configurations from Config Center.", e);
@@ -932,9 +935,11 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             }
             onStopping();
 
-            unexportMetricsService();
+            offline();
 
             unregisterServiceInstance();
+
+            unexportMetricsService();
 
             unRegisterShutdownHook();
             if (asyncMetadataFuture != null) {
@@ -942,6 +947,33 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             }
 
         }
+    }
+
+    private void offline() {
+        try {
+            for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
+                ModuleServiceRepository serviceRepository = moduleModel.getServiceRepository();
+                List<ProviderModel> exportedServices = serviceRepository.getExportedServices();
+                for (ProviderModel exportedService : exportedServices) {
+                    List<ProviderModel.RegisterStatedURL> statedUrls = exportedService.getStatedUrl();
+                    for (ProviderModel.RegisterStatedURL statedURL : statedUrls) {
+                        if (statedURL.isRegistered()) {
+                            doOffline(statedURL);
+                        }
+                    }
+                }
+            }
+        } catch (Throwable t) {
+            logger.error(LoggerCodeConstants.INTERNAL_ERROR, "", "", "Exceptions occurred when unregister services.", t);
+        }
+    }
+
+    private void doOffline(ProviderModel.RegisterStatedURL statedURL) {
+        RegistryFactory registryFactory =
+            statedURL.getRegistryUrl().getOrDefaultApplicationModel().getExtensionLoader(RegistryFactory.class).getAdaptiveExtension();
+        Registry registry = registryFactory.getRegistry(statedURL.getRegistryUrl());
+        registry.unregister(statedURL.getProviderUrl());
+        statedURL.setRegistered(false);
     }
 
     @Override
@@ -1153,6 +1185,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             collector.registryDefaultSample();
         }
     }
+
     private void completeStartFuture(boolean success) {
         if (startFuture != null) {
             startFuture.complete(success);

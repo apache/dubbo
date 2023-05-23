@@ -28,6 +28,7 @@ dubbo-compiler
 dubbo-config
 dubbo-config-api
 dubbo-config-spring
+dubbo-config-spring6
 dubbo-configcenter
 dubbo-configcenter-apollo
 dubbo-configcenter-nacos
@@ -60,11 +61,11 @@ dubbo-metrics-default
 dubbo-metrics-metadata
 dubbo-metrics-prometheus
 dubbo-metrics-registry
+dubbo-metrics-config-center
 dubbo-monitor
 dubbo-monitor-api
 dubbo-monitor-default
 dubbo-native
-dubbo-native-plugin
 dubbo-parent
 dubbo-plugin
 dubbo-qos
@@ -101,6 +102,11 @@ dubbo-spring-boot-actuator-compatible
 dubbo-spring-boot-autoconfigure
 dubbo-spring-boot-autoconfigure-compatible
 dubbo-spring-boot-compatible
+dubbo-spring-boot-observability-starters
+dubbo-spring-boot-observability-autoconfigure
+dubbo-spring-boot-tracing-brave-zipkin-starter
+dubbo-spring-boot-tracing-otel-zipkin-starter
+dubbo-spring-boot-tracing-otel-otlp-starter
 dubbo-spring-boot-observability-starter
 dubbo-spring-boot-starter
 dubbo-spring-security

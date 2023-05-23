@@ -46,8 +46,9 @@ import org.apache.dubbo.rpc.protocol.rest.rest.AnotherUserRestService;
 import org.apache.dubbo.rpc.protocol.rest.rest.AnotherUserRestServiceImpl;
 import org.apache.dubbo.rpc.protocol.rest.rest.HttpMethodService;
 import org.apache.dubbo.rpc.protocol.rest.rest.HttpMethodServiceImpl;
-
 import org.apache.dubbo.rpc.protocol.rest.rest.RestDemoForTestException;
+import org.apache.dubbo.rpc.protocol.rest.rest.RestDemoService;
+import org.apache.dubbo.rpc.protocol.rest.rest.RestDemoServiceImpl;
 import org.hamcrest.CoreMatchers;
 import org.jboss.resteasy.specimpl.MultivaluedMapImpl;
 import org.junit.jupiter.api.AfterEach;
@@ -60,7 +61,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.apache.dubbo.remoting.Constants.SERVER_KEY;
-import static org.apache.dubbo.rpc.protocol.rest.Constants.EXCEPTION_MAPPER_KEY;
 import static org.apache.dubbo.rpc.protocol.rest.Constants.EXTENSION_KEY;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -559,6 +559,40 @@ class JaxrsRestProtocolTest {
         public String result(RuntimeException e) {
             return "test-exception";
         }
+    }
+
+    @Test
+    void test405() {
+        int availablePort = NetUtils.getAvailablePort();
+        URL url = URL.valueOf("rest://127.0.0.1:" + availablePort
+            + "/?version=1.0.0&interface=org.apache.dubbo.rpc.protocol.rest.rest.RestDemoService&"
+        );
+
+        RestDemoServiceImpl server = new RestDemoServiceImpl();
+
+        url = this.registerProvider(url, server, RestDemoService.class);
+
+        Exporter<RestDemoService> exporter = protocol.export(proxy.getInvoker(server, RestDemoService.class, url));
+
+        URL consumer = URL.valueOf("rest://127.0.0.1:" + availablePort
+            + "/?version=1.0.0&interface=org.apache.dubbo.rpc.protocol.rest.rest.RestDemoForTestException&"
+        );
+
+        consumer = this.registerProvider(consumer, server, RestDemoForTestException.class);
+
+        Invoker<RestDemoForTestException> invoker = protocol.refer(RestDemoForTestException.class, consumer);
+
+
+        RestDemoForTestException client = proxy.getProxy(invoker);
+
+        Assertions.assertThrows(RpcException.class, () -> {
+            client.testMethodDisallowed("aaa");
+
+        });
+
+
+        invoker.destroy();
+        exporter.unexport();
     }
 
     private URL registerProvider(URL url, Object impl, Class<?> interfaceClass) {

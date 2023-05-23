@@ -34,6 +34,8 @@ public interface QosConstants {
 
     String ANONYMOUS_ACCESS_PERMISSION_LEVEL = "qos.anonymous.access.permission.level";
 
+    String ANONYMOUS_ACCESS_ALLOW_COMMANDS = "qos.anonymous.access.allow.commands";
+
     String QOS_ENABLE_COMPATIBLE = "qos-enable";
 
     String QOS_HOST_COMPATIBLE = "qos-host";

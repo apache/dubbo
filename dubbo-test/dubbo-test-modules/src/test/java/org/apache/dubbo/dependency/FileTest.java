@@ -54,7 +54,6 @@ class FileTest {
 
         ignoredArtifacts.add(Pattern.compile("dubbo-demo.*"));
         ignoredArtifacts.add(Pattern.compile("dubbo-test.*"));
-        ignoredArtifacts.add(Pattern.compile("dubbo-config-spring6.*"));
         ignoredArtifacts.add(Pattern.compile("dubbo-annotation-processor"));
 
         ignoredModulesInDubboAll.add(Pattern.compile("dubbo"));

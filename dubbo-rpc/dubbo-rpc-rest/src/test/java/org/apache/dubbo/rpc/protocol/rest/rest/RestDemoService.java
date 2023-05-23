@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol.rest.rest;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 
 @Path("/demoService")
@@ -25,6 +26,10 @@ public interface RestDemoService {
     @GET
     @Path("/hello")
     Integer hello(@QueryParam("a")Integer a,@QueryParam("b") Integer b);
+
+    @GET
+    @Path("/findUserById")
+    Response findUserById(@QueryParam("id")Integer id);
 
     @GET
     @Path("/error")
@@ -42,4 +47,8 @@ public interface RestDemoService {
     Long testFormBody(@FormParam("number") Long number);
 
     boolean isCalled();
+
+    @DELETE
+    @Path("{uid}")
+    String deleteUserByUid(@PathParam("uid") String uid);
 }

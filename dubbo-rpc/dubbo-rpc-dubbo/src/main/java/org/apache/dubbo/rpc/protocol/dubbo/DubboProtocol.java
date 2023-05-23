@@ -235,6 +235,7 @@ public class DubboProtocol extends AbstractProtocol {
             }
         };
         this.frameworkModel = frameworkModel;
+        this.frameworkModel.getBeanFactory().registerBean(new DubboGracefulShutdown(this));
     }
 
     /**

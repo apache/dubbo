@@ -58,6 +58,8 @@ public class Server {
 
     private String anonymousAccessPermissionLevel = PermissionLevel.NONE.name();
 
+    private String anonymousAllowCommands = StringUtils.EMPTY_STRING;
+
     private EventLoopGroup boss;
 
     private EventLoopGroup worker;
@@ -108,6 +110,7 @@ public class Server {
                         .acceptForeignIp(acceptForeignIp)
                         .acceptForeignIpWhitelist(acceptForeignIpWhitelist)
                         .anonymousAccessPermissionLevel(anonymousAccessPermissionLevel)
+                        .anonymousAllowCommands(anonymousAllowCommands)
                         .build()
                 ));
             }
@@ -165,6 +168,10 @@ public class Server {
 
     public void setAnonymousAccessPermissionLevel(String anonymousAccessPermissionLevel) {
         this.anonymousAccessPermissionLevel = anonymousAccessPermissionLevel;
+    }
+
+    public void setAnonymousAllowCommands(String anonymousAllowCommands) {
+        this.anonymousAllowCommands = anonymousAllowCommands;
     }
 
     public String getWelcome() {

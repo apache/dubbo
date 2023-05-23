@@ -19,5 +19,15 @@ package com.alibaba.dubbo.config;
 
 @Deprecated
 public class MethodConfig extends org.apache.dubbo.config.MethodConfig {
+    public void addArgument(com.alibaba.dubbo.config.ArgumentConfig argumentConfig) {
+        super.addArgument(argumentConfig);
+    }
 
+    public void setMock(Boolean mock) {
+        if (mock == null) {
+            setMock((String) null);
+        } else {
+            setMock(String.valueOf(mock));
+        }
+    }
 }

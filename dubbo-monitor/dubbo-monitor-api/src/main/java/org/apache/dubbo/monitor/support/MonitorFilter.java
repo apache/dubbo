@@ -31,6 +31,8 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.model.ProviderModel;
+import org.apache.dubbo.rpc.model.ServiceModel;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -97,6 +99,11 @@ public class MonitorFilter implements Filter, Filter.Listener {
             // count up
             getConcurrent(invoker, invocation).incrementAndGet();
         }
+        ServiceModel serviceModel = invoker.getUrl().getServiceModel();
+        if (serviceModel instanceof ProviderModel) {
+            ((ProviderModel) serviceModel).updateLastInvokeTime();
+        }
+
         // proceed invocation chain
         return invoker.invoke(invocation);
     }

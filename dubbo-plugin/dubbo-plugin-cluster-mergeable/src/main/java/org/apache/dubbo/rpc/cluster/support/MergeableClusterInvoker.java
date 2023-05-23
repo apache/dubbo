@@ -43,6 +43,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import static org.apache.dubbo.rpc.Constants.MERGER_KEY;
+
 /**
  * @param <T>
  */
@@ -57,8 +59,7 @@ public class MergeableClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
     @Override
     protected Result doInvoke(Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
-        checkInvokers(invokers, invocation);
-        String merger = getUrl().getMethodParameter(invocation.getMethodName(), Constants.MERGER_KEY);
+        String merger = getUrl().getMethodParameter(invocation.getMethodName(), MERGER_KEY);
         if (ConfigUtils.isEmpty(merger)) { // If a method doesn't have a merger, only invoke one Group
             for (final Invoker<T> invoker : invokers) {
                 if (invoker.isAvailable()) {

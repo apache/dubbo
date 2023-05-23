@@ -23,6 +23,8 @@ public interface Exporter<T> extends org.apache.dubbo.rpc.Exporter<T> {
     @Override
     Invoker<T> getInvoker();
 
+    default void unregister() {}
+
     class CompatibleExporter<T> implements Exporter<T> {
 
         private org.apache.dubbo.rpc.Exporter<T> delegate;
@@ -39,6 +41,11 @@ public interface Exporter<T> extends org.apache.dubbo.rpc.Exporter<T> {
         @Override
         public void unexport() {
             delegate.unexport();
+        }
+
+        @Override
+        public void unregister() {
+            delegate.unregister();
         }
     }
 }

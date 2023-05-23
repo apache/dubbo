@@ -104,6 +104,16 @@ public class NettyHttpHandler implements HttpHandler<NettyRequestFacade, NettyHt
 
         RestMethodMetadata restMethodMetadata = restMethodMetadataPair.getRestMethodMetadata();
 
+        // method disallowed
+        if (!restMethodMetadata.getRequest().methodAllowed(request.getMethod())) {
+            nettyHttpResponse.sendError(405, "service require request method is : "
+                + restMethodMetadata.getRequest().getMethod()
+                + ", but current request method is: " + request.getMethod()
+            );
+            return;
+        }
+
+
         // content-type  support judge,throw unSupportException
         acceptSupportJudge(request, restMethodMetadata.getReflectMethod().getReturnType());
 
@@ -149,7 +159,7 @@ public class NettyHttpHandler implements HttpHandler<NettyRequestFacade, NettyHt
      * @throws Exception
      */
     private void writeResult(NettyHttpResponse nettyHttpResponse, RequestFacade request, Invoker invoker, Object value, Class returnType) throws Exception {
-        MediaType mediaType = getAcceptMediaType(request,returnType);
+        MediaType mediaType = getAcceptMediaType(request, returnType);
 
         MessageCodecResultPair booleanMediaTypePair = HttpMessageCodecManager.httpMessageEncode(nettyHttpResponse.getOutputStream(), value, invoker.getUrl(), mediaType, returnType);
 
@@ -162,7 +172,7 @@ public class NettyHttpHandler implements HttpHandler<NettyRequestFacade, NettyHt
      * @param request
      * @return
      */
-    private MediaType getAcceptMediaType(RequestFacade request,Class<?> returnType) {
+    private MediaType getAcceptMediaType(RequestFacade request, Class<?> returnType) {
         String accept = request.getHeader(RestHeaderEnum.ACCEPT.getHeader());
         MediaType mediaType = MediaTypeUtil.convertMediaType(returnType, accept);
         return mediaType;
@@ -176,7 +186,7 @@ public class NettyHttpHandler implements HttpHandler<NettyRequestFacade, NettyHt
     private void acceptSupportJudge(RequestFacade requestFacade, Class<?> returnType) {
         try {
             // media type judge
-            getAcceptMediaType(requestFacade,returnType);
+            getAcceptMediaType(requestFacade, returnType);
         } catch (UnSupportContentTypeException e) {
             // return type judge
             MediaType mediaType = HttpMessageCodecManager.typeSupport(returnType);

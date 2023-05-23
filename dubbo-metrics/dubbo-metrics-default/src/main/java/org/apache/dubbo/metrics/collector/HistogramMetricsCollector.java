@@ -22,22 +22,25 @@ import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.nested.HistogramConfig;
+import org.apache.dubbo.metrics.MetricsConstants;
 import org.apache.dubbo.metrics.MetricsGlobalRegistry;
-import org.apache.dubbo.metrics.event.MetricsEvent;
-import org.apache.dubbo.metrics.event.RTEvent;
-import org.apache.dubbo.metrics.listener.MetricsListener;
+import org.apache.dubbo.metrics.event.RequestEvent;
+import org.apache.dubbo.metrics.listener.AbstractMetricsListener;
 import org.apache.dubbo.metrics.model.MethodMetric;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
+import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.metrics.register.HistogramMetricRegister;
 import org.apache.dubbo.metrics.sample.HistogramMetricSample;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.metrics.model.MetricsCategory.RT;
 
-public class HistogramMetricsCollector implements MetricsListener {
+public class HistogramMetricsCollector extends AbstractMetricsListener<RequestEvent> implements MetricsCollector<RequestEvent> {
 
     private final ConcurrentHashMap<MethodMetric, Timer> rt = new ConcurrentHashMap<>();
     private HistogramMetricRegister metricRegister;
@@ -58,25 +61,33 @@ public class HistogramMetricsCollector implements MetricsListener {
                 histogram.setBucketsMs(DEFAULT_BUCKETS_MS);
             }
 
-            metricRegister = new HistogramMetricRegister(MetricsGlobalRegistry.getCompositeRegistry(), histogram);
+            metricRegister = new HistogramMetricRegister(MetricsGlobalRegistry.getCompositeRegistry(applicationModel), histogram);
         }
     }
 
     private void registerListener() {
-        applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class).addListener(this);
+        applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class).getEventMulticaster().addListener(this);
     }
 
     @Override
-    public void onEvent(MetricsEvent event) {
-        if (event instanceof RTEvent) {
-            onRTEvent((RTEvent) event);
-        }
+    public void onEvent(RequestEvent event) {
+
     }
 
-    private void onRTEvent(RTEvent event) {
+    @Override
+    public void onEventFinish(RequestEvent event) {
+        onRTEvent(event);
+    }
+
+    @Override
+    public void onEventError(RequestEvent event) {
+        onRTEvent(event);
+    }
+
+    private void onRTEvent(RequestEvent event) {
         if (metricRegister != null) {
-            MethodMetric metric = (MethodMetric) event.getMetric();
-            Long responseTime = event.getRt();
+            MethodMetric metric = new MethodMetric(applicationModel.getApplicationName(), event.getAttachmentValue(MetricsConstants.INVOCATION));
+            long responseTime = event.getTimePair().calc();
 
             HistogramMetricSample sample = new HistogramMetricSample(MetricsKey.METRIC_RT_HISTOGRAM.getNameByType(metric.getSide()),
                 MetricsKey.METRIC_RT_HISTOGRAM.getDescription(), metric.getTags(), RT);
@@ -84,5 +95,10 @@ public class HistogramMetricsCollector implements MetricsListener {
             Timer timer = ConcurrentHashMapUtils.computeIfAbsent(rt, metric, k -> metricRegister.register(sample));
             timer.record(responseTime, TimeUnit.MILLISECONDS);
         }
+    }
+
+    @Override
+    public List<MetricSample> collect() {
+        return new ArrayList<>();
     }
 }

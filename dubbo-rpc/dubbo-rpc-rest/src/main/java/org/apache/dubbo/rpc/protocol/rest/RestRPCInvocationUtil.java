@@ -134,8 +134,9 @@ public class RestRPCInvocationUtil {
         String path = request.getPath();
         String version = request.getHeader(RestHeaderEnum.VERSION.getHeader());
         String group = request.getHeader(RestHeaderEnum.GROUP.getHeader());
+        String method = request.getMethod();
 
-        return pathAndInvokerMapper.getRestMethodMetadata(path, version, group, null);
+        return pathAndInvokerMapper.getRestMethodMetadata(path, version, group, null, method);
     }
 
 

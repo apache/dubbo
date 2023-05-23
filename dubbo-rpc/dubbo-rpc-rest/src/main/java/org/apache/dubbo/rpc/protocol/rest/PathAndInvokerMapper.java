@@ -65,17 +65,17 @@ public class PathAndInvokerMapper {
      * @param port
      * @return
      */
-    public InvokerAndRestMethodMetadataPair getRestMethodMetadata(String path, String version, String group, Integer port) {
+    public InvokerAndRestMethodMetadataPair getRestMethodMetadata(String path, String version, String group, Integer port,String method) {
 
 
-        PathMatcher pathMather = PathMatcher.getInvokeCreatePathMatcher(path, version, group, port);
+        PathMatcher pathMather = PathMatcher.getInvokeCreatePathMatcher(path, version, group, port,method);
 
         // first search from pathToServiceMapNoPathVariable
         if (pathToServiceMapNoPathVariable.containsKey(pathMather)) {
             return pathToServiceMapNoPathVariable.get(pathMather);
         }
 
-        // second search from pathToServiceMapNoPathVariable
+        // second search from pathToServiceMapContainPathVariable
         if (pathToServiceMapContainPathVariable.containsKey(pathMather)) {
             return pathToServiceMapContainPathVariable.get(pathMather);
         }
