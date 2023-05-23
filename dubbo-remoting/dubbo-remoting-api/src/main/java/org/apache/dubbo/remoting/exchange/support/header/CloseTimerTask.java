@@ -32,11 +32,11 @@ public class CloseTimerTask extends AbstractTimerTask {
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(CloseTimerTask.class);
 
-    private final int idleTimeout;
+    private final int closeTimeout;
 
-    public CloseTimerTask(ChannelProvider channelProvider, HashedWheelTimer hashedWheelTimer, Long heartbeatTimeoutTick, int idleTimeout) {
-        super(channelProvider, hashedWheelTimer, heartbeatTimeoutTick);
-        this.idleTimeout = idleTimeout;
+    public CloseTimerTask(ChannelProvider channelProvider, HashedWheelTimer hashedWheelTimer, Long tick, int closeTimeout) {
+        super(channelProvider, hashedWheelTimer, tick);
+        this.closeTimeout = closeTimeout;
     }
 
     @Override
@@ -46,9 +46,9 @@ public class CloseTimerTask extends AbstractTimerTask {
             Long lastWrite = lastWrite(channel);
             Long now = now();
             // check ping & pong at server
-            if ((lastRead != null && now - lastRead > idleTimeout)
-                || (lastWrite != null && now - lastWrite > idleTimeout)) {
-                logger.warn(PROTOCOL_FAILED_RESPONSE, "", "", "Close channel " + channel + ", because idleCheck timeout: " + idleTimeout + "ms");
+            if ((lastRead != null && now - lastRead > closeTimeout)
+                || (lastWrite != null && now - lastWrite > closeTimeout)) {
+                logger.warn(PROTOCOL_FAILED_RESPONSE, "", "", "Close channel " + channel + ", because idleCheck timeout: " + closeTimeout + "ms");
                 channel.close();
             }
         } catch (Throwable t) {
