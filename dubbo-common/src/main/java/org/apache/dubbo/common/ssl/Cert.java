@@ -25,6 +25,11 @@ public class Cert {
     private final byte[] trustCert;
 
     private final String password;
+    /**
+     *  make difference between pem and others cert config
+     */
+    private boolean isPem = true;
+
 
     public Cert(byte[] keyCertChain, byte[] privateKey, byte[] trustCert) {
         this(keyCertChain, privateKey, trustCert, null);
@@ -63,5 +68,13 @@ public class Cert {
 
     public String getPassword() {
         return password;
+    }
+
+    public boolean isPem() {
+        return isPem;
+    }
+
+    public void setPem(boolean pem) {
+        isPem = pem;
     }
 }

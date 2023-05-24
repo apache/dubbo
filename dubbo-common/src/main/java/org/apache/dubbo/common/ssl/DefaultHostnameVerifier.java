@@ -55,14 +55,6 @@ public class DefaultHostnameVerifier implements HostnameVerifier {
         private final String value;
         private final int type;
 
-        static SubjectName IP(final String value) {
-            return new SubjectName(value, IP);
-        }
-
-        static SubjectName DNS(final String value) {
-            return new SubjectName(value, DNS);
-        }
-
         SubjectName(final String value, final int type) {
             if (type != DNS && type != IP) {
                 throw new IllegalArgumentException("Invalid type: " + type);

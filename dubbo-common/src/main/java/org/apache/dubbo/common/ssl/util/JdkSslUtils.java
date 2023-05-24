@@ -60,11 +60,15 @@ public class JdkSslUtils {
     public static SSLContext buildJdkSSLContext(InputStream keyCertChainPathStream,
                                                 InputStream privateKeyPathStream,
                                                 InputStream trustCertStream, String password) {
+        return buildJdkSSLContext(keyCertChainPathStream, privateKeyPathStream, trustCertStream, strPasswordToCharArray(password));
+    }
+
+    public static SSLContext buildJdkSSLContext(InputStream keyCertChainPathStream,
+                                                InputStream privateKeyPathStream,
+                                                InputStream trustCertStream, char[] password) {
 
 
         try {
-
-            char[] passwordCharArray = password == null ? new char[0] : password.toCharArray();
 
 
             SSLContext sslContext = createSSLContext();
@@ -72,13 +76,13 @@ public class JdkSslUtils {
             // key manage factory
             KeyManagerFactory keyManagerFactory = null;
             if (keyCertChainPathStream == null) {
-                keyManagerFactory = createKeyManagerFactory(privateKeyPathStream, passwordCharArray);
+                keyManagerFactory = createKeyManagerFactory(privateKeyPathStream, password);
             } else {
                 createKeyManagerFactory(keyCertChainPathStream, privateKeyPathStream, password);
             }
 
             //trust manage factory
-            TrustManagerFactory trustManagerFactory = createTrustManagerFactory(trustCertStream, passwordCharArray);
+            TrustManagerFactory trustManagerFactory = createTrustManagerFactory(trustCertStream, password);
 
             TrustManager[] trustManagers = buildTrustManagers(trustManagerFactory);
 
@@ -96,12 +100,12 @@ public class JdkSslUtils {
 
     }
 
-    public static KeyManagerFactory createKeyManagerFactory(InputStream keyCertChainPathStream, InputStream privateKeyPathStream, String keyPassword) throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException, UnrecoverableKeyException {
+    public static KeyManagerFactory createKeyManagerFactory(InputStream keyCertChainPathStream, InputStream privateKeyPathStream, char[] keyPassword) throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException, UnrecoverableKeyException {
 
         return createKeyManagerFactory(Arrays.asList(IOUtils.toByteArray(keyCertChainPathStream)), IOUtils.toByteArray(privateKeyPathStream), keyPassword);
     }
 
-    public static KeyManagerFactory createKeyManagerFactory(List<byte[]> keyCertChainInputStream, byte[] keyInputStream, String keyPassword) throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException, UnrecoverableKeyException {
+    public static KeyManagerFactory createKeyManagerFactory(List<byte[]> keyCertChainInputStream, byte[] keyInputStream, char[] keyPassword) throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException, UnrecoverableKeyException {
 
         X509Certificate[] keyCertChain;
 
@@ -121,15 +125,13 @@ public class JdkSslUtils {
 
         keystore.load(null);
 
-        char[] password = keyPassword == null ? new char[0] : keyPassword.toCharArray();
 
-
-        keystore.setKeyEntry("keyEntry", key, password, keyCertChain);
+        keystore.setKeyEntry("keyEntry", key, keyPassword, keyCertChain);
 
 
         KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
 
-        kmf.init(keystore, password);
+        kmf.init(keystore, keyPassword);
         return kmf;
     }
 
@@ -204,13 +206,13 @@ public class JdkSslUtils {
         return x509Certs;
     }
 
-    public static PrivateKey getPrivateKeyFromByteBuffer(byte[] encodedKey, String keyPassword)
+    public static PrivateKey getPrivateKeyFromByteBuffer(byte[] encodedKey, char[] keyPassword)
         throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeySpecException,
         InvalidAlgorithmParameterException, KeyException, IOException {
 
 
         PKCS8EncodedKeySpec encodedKeySpec = generateKeySpec(
-            keyPassword == null ? null : keyPassword.toCharArray(), encodedKey);
+            keyPassword, encodedKey);
         try {
             return KeyFactory.getInstance("RSA").generatePrivate(encodedKeySpec);
         } catch (InvalidKeySpecException ignore) {
@@ -230,7 +232,7 @@ public class JdkSslUtils {
         throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeySpecException,
         InvalidKeyException, InvalidAlgorithmParameterException {
 
-        if (password == null) {
+        if (password == null || password.length == 0) {
             return new PKCS8EncodedKeySpec(key);
         }
 
@@ -243,6 +245,10 @@ public class JdkSslUtils {
         cipher.init(Cipher.DECRYPT_MODE, pbeKey, encryptedPrivateKeyInfo.getAlgParameters());
 
         return encryptedPrivateKeyInfo.getKeySpec(cipher);
+    }
+
+    public static char[] strPasswordToCharArray(String password) {
+        return password == null ? new char[0] : password.toCharArray();
     }
 
 

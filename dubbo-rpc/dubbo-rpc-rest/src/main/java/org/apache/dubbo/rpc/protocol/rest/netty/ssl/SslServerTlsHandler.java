@@ -29,7 +29,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.ssl.AuthPolicy;
 import org.apache.dubbo.common.ssl.CertManager;
 import org.apache.dubbo.common.ssl.ProviderCert;
-import org.apache.dubbo.common.ssl.util.pem.SSLContextBuilder;
+import org.apache.dubbo.remoting.http.ssl.JdkSSLContextFactory;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
@@ -116,16 +116,18 @@ public class SslServerTlsHandler extends ByteToMessageDecoder {
 
         try {
             // first to parse pem file
-            return SslContexts.buildServerSslContext(providerConnectionConfig);
+
+            if (providerConnectionConfig.isPem()) {
+                return SslContexts.buildServerSslContext(providerConnectionConfig);
+
+            } else {
+                // build context by jdk
+                return new JdkSSLContextFactory().buildSSLContext(providerConnectionConfig);
+            }
         } catch (Throwable e) {
-
+            logger.error("", e.getMessage(), "", "Rest SslServerTlsHandler build ssl context failed cause: ", e);
+            throw e;
         }
-
-        // build context by jdk
-        return SSLContextBuilder.buildJdkSSLContext(providerConnectionConfig.getKeyCertChainInputStream(),
-            providerConnectionConfig.getPrivateKeyInputStream(),
-            providerConnectionConfig.getTrustCertInputStream(),
-            providerConnectionConfig.getPassword());
     }
 
     private boolean isSsl(ByteBuf buf) {
