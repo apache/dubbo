@@ -19,6 +19,7 @@ package org.apache.dubbo.metrics.data;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.metrics.model.MetricsCategory;
+import org.apache.dubbo.metrics.model.MetricsSupport;
 import org.apache.dubbo.metrics.model.ServiceKeyMetric;
 import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
@@ -57,6 +58,7 @@ public class ServiceStatComposite extends AbstractMetricsExport {
             return;
         }
         serviceWrapperNumStats.get(wrapper).computeIfAbsent(new ServiceKeyMetric(getApplicationModel(), serviceKey), k -> new AtomicLong(0L)).getAndAdd(size);
+        MetricsSupport.fillZero(serviceWrapperNumStats);
     }
 
     public void setServiceKey(MetricsKeyWrapper wrapper, String serviceKey, int num) {
@@ -64,6 +66,7 @@ public class ServiceStatComposite extends AbstractMetricsExport {
             return;
         }
         serviceWrapperNumStats.get(wrapper).computeIfAbsent(new ServiceKeyMetric(getApplicationModel(), serviceKey), k -> new AtomicLong(0L)).set(num);
+        MetricsSupport.fillZero(serviceWrapperNumStats);
     }
 
     public List<MetricSample> export(MetricsCategory category) {
