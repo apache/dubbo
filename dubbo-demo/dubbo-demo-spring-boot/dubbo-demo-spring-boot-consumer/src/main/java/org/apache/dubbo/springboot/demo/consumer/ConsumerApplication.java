@@ -20,7 +20,6 @@ package org.apache.dubbo.springboot.demo.consumer;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.apache.dubbo.springboot.demo.DemoService;
-import org.apache.dubbo.springboot.demo.Person;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -43,6 +42,6 @@ public class ConsumerApplication {
     }
 
     public String doSayHello(String name) {
-        return demoService.sayHello(new Person(10, name));
+        return demoService.sayHello(name);
     }
 }
