@@ -50,6 +50,9 @@ public final class MetadataSubDispatcher extends SimpleMetricsEventMulticaster {
 
     }
 
+    /**
+     * A closer aggregation of MetricsCat, a summary collection of certain types of events
+     */
     interface CategorySet {
         CategoryOverall APPLICATION_PUSH = new CategoryOverall(OP_TYPE_PUSH, MCat.APPLICATION_PUSH_POST, MCat.APPLICATION_PUSH_FINISH, MCat.APPLICATION_PUSH_ERROR);
         CategoryOverall APPLICATION_SUBSCRIBE = new CategoryOverall(OP_TYPE_SUBSCRIBE, MCat.APPLICATION_SUBSCRIBE_POST, MCat.APPLICATION_SUBSCRIBE_FINISH, MCat.APPLICATION_SUBSCRIBE_ERROR);
@@ -58,6 +61,10 @@ public final class MetadataSubDispatcher extends SimpleMetricsEventMulticaster {
         List<CategoryOverall> ALL = Arrays.asList(APPLICATION_PUSH, APPLICATION_SUBSCRIBE, SERVICE_SUBSCRIBE);
     }
 
+    /**
+     *  {@link MetricsCat} MetricsCat collection, for better classification processing
+     *  Except for a few custom functions, most of them can build standard event listening functions through the static methods of MetricsApplicationListener
+     */
     interface MCat {
         // MetricsPushListener
         MetricsCat APPLICATION_PUSH_POST = new MetricsCat(MetricsKey.METADATA_PUSH_METRIC_NUM, MetricsApplicationListener::onPostEventBuild);

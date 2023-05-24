@@ -21,6 +21,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.MetricsConfig;
+import org.apache.dubbo.metrics.DefaultConstants;
 import org.apache.dubbo.metrics.TestMetricsInvoker;
 import org.apache.dubbo.metrics.event.MetricsDispatcher;
 import org.apache.dubbo.metrics.event.RequestBeforeEvent;
@@ -152,8 +153,8 @@ class DefaultCollectorTest {
 
         // push finish rt +1
         List<MetricSample> metricSamples = collector.collect();
-        //num(total+success+processing) + rt(5) = 8
-        Assertions.assertEquals(8, metricSamples.size());
+        //all METHOD_LEVEL_KEYS + rt(5) = 27
+        Assertions.assertEquals(DefaultConstants.METHOD_LEVEL_KEYS.size() + 5, metricSamples.size());
         List<String> metricsNames = metricSamples.stream().map(MetricSample::getName).collect(Collectors.toList());
         // No error will contain total+success+processing
         String REQUESTS = new MetricsKeyWrapper(METRIC_REQUESTS, MetricsPlaceValue.of(side, MetricsLevel.SERVICE)).targetKey();
@@ -195,7 +196,7 @@ class DefaultCollectorTest {
         metricSamples = collector.collect();
 
         // num(total+success+error+total_error+processing) + rt(5) = 5
-        Assertions.assertEquals(10, metricSamples.size());
+        Assertions.assertEquals(DefaultConstants.METHOD_LEVEL_KEYS.size() + 5, metricSamples.size());
 
         String TIMEOUT = new MetricsKeyWrapper(METRIC_REQUESTS_TIMEOUT, MetricsPlaceValue.of(side, MetricsLevel.SERVICE)).targetKey();
         String TOTAL_FAILED = new MetricsKeyWrapper(METRIC_REQUESTS_TOTAL_FAILED, MetricsPlaceValue.of(side, MetricsLevel.SERVICE)).targetKey();
