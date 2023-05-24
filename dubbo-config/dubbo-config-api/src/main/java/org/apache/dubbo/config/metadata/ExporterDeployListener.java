@@ -23,6 +23,8 @@ import org.apache.dubbo.registry.client.metadata.MetadataServiceDelegation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA_STORAGE_TYPE;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_REGISTER_MODE;
+import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_REGISTER_MODE;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
 
 public class ExporterDeployListener implements ApplicationDeployListener, Prioritized {
@@ -56,6 +58,13 @@ public class ExporterDeployListener implements ApplicationDeployListener, Priori
         return type;
     }
 
+    private String getRegisterMode(ApplicationModel applicationModel) {
+        String type = applicationModel.getApplicationConfigManager().getApplicationOrElseThrow().getRegisterMode();
+        if (StringUtils.isEmpty(type)) {
+            type = DEFAULT_REGISTER_MODE;
+        }
+        return type;
+    }
 
     public ConfigurableMetadataServiceExporter getMetadataServiceExporter() {
         return metadataServiceExporter;
@@ -72,7 +81,7 @@ public class ExporterDeployListener implements ApplicationDeployListener, Priori
         if (metadataServiceExporter == null) {
             metadataServiceExporter = new ConfigurableMetadataServiceExporter(applicationModel, metadataService);
             // fixme, let's disable local metadata service export at this moment
-            if (!REMOTE_METADATA_STORAGE_TYPE.equals(getMetadataType(applicationModel))) {
+            if (!REMOTE_METADATA_STORAGE_TYPE.equals(getMetadataType(applicationModel)) && !INTERFACE_REGISTER_MODE.equals(getRegisterMode(applicationModel))) {
                 metadataServiceExporter.export();
             }
         }
