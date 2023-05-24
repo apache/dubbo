@@ -143,7 +143,7 @@ public class RpcServiceContext extends RpcContext {
      */
     @Override
     public boolean isConsumerSide() {
-        return getUrl().getSide(PROVIDER_SIDE).equals(CONSUMER_SIDE);
+        return consumerUrl != null || getUrl().getSide(PROVIDER_SIDE).equals(CONSUMER_SIDE);
     }
 
     /**
