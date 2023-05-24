@@ -22,9 +22,8 @@ import org.apache.dubbo.common.URL;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
+import java.lang.reflect.Type;
+import java.util.Map;
 
 public class DefaultSerializationExceptionWrapper implements Serialization {
 
@@ -50,39 +49,317 @@ public class DefaultSerializationExceptionWrapper implements Serialization {
     @Override
     public ObjectOutput serialize(URL url, OutputStream output) throws IOException {
         ObjectOutput objectOutput = serialization.serialize(url, output);
-        ObjectInputInvocationHandler handler = new ObjectInputInvocationHandler(objectOutput);
-        return (ObjectOutput) Proxy.newProxyInstance(objectOutput.getClass().getClassLoader(), objectOutput.getClass().getInterfaces(), handler);
+        return new ProxyObjectOutput(objectOutput);
     }
 
     @Override
     public ObjectInput deserialize(URL url, InputStream input) throws IOException {
-        ObjectInput objectOutput = serialization.deserialize(url, input);
-        ObjectInputInvocationHandler handler = new ObjectInputInvocationHandler(objectOutput);
-        return (ObjectInput) Proxy.newProxyInstance(objectOutput.getClass().getClassLoader(), objectOutput.getClass().getInterfaces(), handler);
+        ObjectInput objectInput = serialization.deserialize(url, input);
+        return new ProxyObjectInput(objectInput);
     }
 
-    static class ObjectInputInvocationHandler implements InvocationHandler {
+    static class ProxyObjectInput implements ObjectInput {
 
-        private final Object target;
+        private final ObjectInput target;
 
-        public ObjectInputInvocationHandler(Object target) {
+        public ProxyObjectInput(ObjectInput target) {
             this.target = target;
         }
 
-        public Object invoke(Object proxy, Method method, Object[] args)
-            throws Throwable {
-            Object result;
+        @Override
+        public boolean readBool() throws IOException {
             try {
-                result = method.invoke(target, args);
+                return target.readBool();
             } catch (Exception e) {
-                Throwable t = e.getCause();
-                if (!(t instanceof IOException)) {
-                    t = new IOException(new SerializationException(e));
-                }
-                throw t;
+                throw (IOException) handleToIOException(e);
             }
-            return result;
         }
 
+        @Override
+        public byte readByte() throws IOException {
+            try {
+                return target.readByte();
+            } catch (Exception e) {
+                throw (IOException) handleToIOException(e);
+
+            }
+        }
+
+        @Override
+        public short readShort() throws IOException {
+            try {
+                return target.readShort();
+            } catch (Exception e) {
+                throw (IOException) handleToIOException(e);
+
+            }
+        }
+
+        @Override
+        public int readInt() throws IOException {
+            try {
+                return target.readInt();
+            } catch (Exception e) {
+                throw (IOException) handleToIOException(e);
+
+            }
+        }
+
+        @Override
+        public long readLong() throws IOException {
+            try {
+                return target.readLong();
+            } catch (Exception e) {
+                throw (IOException) handleToIOException(e);
+
+            }
+        }
+
+        @Override
+        public float readFloat() throws IOException {
+            try {
+                return target.readFloat();
+            } catch (Exception e) {
+                throw (IOException) handleToIOException(e);
+            }
+        }
+
+        @Override
+        public double readDouble() throws IOException {
+            try {
+                return target.readDouble();
+            } catch (Exception e) {
+                throw (IOException) handleToIOException(e);
+            }
+        }
+
+        @Override
+        public String readUTF() throws IOException {
+            try {
+                return target.readUTF();
+            } catch (Exception e) {
+                throw (IOException) handleToIOException(e);
+            }
+        }
+
+        @Override
+        public byte[] readBytes() throws IOException {
+            try {
+                return target.readBytes();
+            } catch (Exception e) {
+                throw (IOException) handleToIOException(e);
+            }
+        }
+
+        @Override
+        public Object readObject() throws IOException, ClassNotFoundException {
+            try {
+                return target.readObject();
+            } catch (Exception e) {
+                throw (IOException) handleToIOException(e);
+            }
+        }
+
+        @Override
+        public <T> T readObject(Class<T> cls) throws IOException, ClassNotFoundException {
+            try {
+                return target.readObject(cls);
+            } catch (Exception e) {
+                throw (IOException) handleToIOException(e);
+            }
+        }
+
+        @Override
+        public <T> T readObject(Class<T> cls, Type type) throws IOException, ClassNotFoundException {
+            try {
+                return target.readObject(cls, type);
+            } catch (Exception e) {
+                throw (IOException) handleToIOException(e);
+            }
+        }
+
+        @Override
+        public Throwable readThrowable() throws IOException {
+            try {
+                return target.readThrowable();
+            } catch (Exception e) {
+                throw (IOException) handleToIOException(e);
+            }
+        }
+
+        @Override
+        public String readEvent() throws IOException {
+            try {
+                return target.readEvent();
+            } catch (Exception e) {
+                throw (IOException) handleToIOException(e);
+            }
+        }
+
+        @Override
+        public Map<String, Object> readAttachments() throws IOException, ClassNotFoundException {
+            try {
+                return target.readAttachments();
+            } catch (Exception e) {
+                Throwable t = handleToIOException(e);
+                if (e instanceof ClassNotFoundException) {
+                    throw e;
+                }
+                throw (IOException) t;
+            }
+        }
     }
+
+    static class ProxyObjectOutput implements ObjectOutput {
+
+        private final ObjectOutput target;
+
+        public ProxyObjectOutput(ObjectOutput target) {
+            this.target = target;
+        }
+
+        @Override
+        public void writeBool(boolean v) throws IOException {
+            try {
+                target.writeBool(v);
+            } catch (Exception e) {
+                throw (IOException) handleToIOException(e);
+            }
+        }
+
+        @Override
+        public void writeByte(byte v) throws IOException {
+            try {
+                target.writeByte(v);
+            } catch (Exception e) {
+                throw (IOException) handleToIOException(e);
+            }
+        }
+
+        @Override
+        public void writeShort(short v) throws IOException {
+            try {
+                target.writeShort(v);
+            } catch (Exception e) {
+                throw (IOException) handleToIOException(e);
+            }
+        }
+
+        @Override
+        public void writeInt(int v) throws IOException {
+            try {
+                target.writeInt(v);
+            } catch (Exception e) {
+                throw (IOException) handleToIOException(e);
+            }
+        }
+
+        @Override
+        public void writeLong(long v) throws IOException {
+            try {
+                target.writeLong(v);
+            } catch (Exception e) {
+                throw (IOException) handleToIOException(e);
+            }
+        }
+
+        @Override
+        public void writeFloat(float v) throws IOException {
+            try {
+                target.writeFloat(v);
+            } catch (Exception e) {
+                throw (IOException) handleToIOException(e);
+            }
+        }
+
+        @Override
+        public void writeDouble(double v) throws IOException {
+            try {
+                target.writeDouble(v);
+            } catch (Exception e) {
+                throw (IOException) handleToIOException(e);
+            }
+        }
+
+        @Override
+        public void writeUTF(String v) throws IOException {
+            try {
+                target.writeUTF(v);
+            } catch (Exception e) {
+                throw (IOException) handleToIOException(e);
+            }
+        }
+
+        @Override
+        public void writeBytes(byte[] v) throws IOException {
+            try {
+                target.writeBytes(v);
+            } catch (Exception e) {
+                throw (IOException) handleToIOException(e);
+            }
+        }
+
+        @Override
+        public void writeBytes(byte[] v, int off, int len) throws IOException {
+            try {
+                target.writeBytes(v);
+            } catch (Exception e) {
+                throw (IOException) handleToIOException(e);
+            }
+        }
+
+        @Override
+        public void flushBuffer() throws IOException {
+            try {
+                target.flushBuffer();
+            } catch (Exception e) {
+                throw (IOException) handleToIOException(e);
+            }
+        }
+
+        @Override
+        public void writeObject(Object obj) throws IOException {
+            try {
+                target.writeObject(obj);
+            } catch (Exception e) {
+                throw (IOException) handleToIOException(e);
+            }
+        }
+
+        @Override
+        public void writeThrowable(Throwable obj) throws IOException {
+            try {
+                target.writeThrowable(obj);
+            } catch (Exception e) {
+                throw (IOException) handleToIOException(e);
+            }
+        }
+
+        @Override
+        public void writeEvent(String data) throws IOException {
+            try {
+                target.writeEvent(data);
+            } catch (Exception e) {
+                throw (IOException) handleToIOException(e);
+            }
+        }
+
+        @Override
+        public void writeAttachments(Map<String, Object> attachments) throws IOException {
+            try {
+                target.writeAttachments(attachments);
+            } catch (Exception e) {
+                throw (IOException) handleToIOException(e);
+            }
+        }
+    }
+
+    private static Throwable handleToIOException(Exception e) {
+        Throwable t = e.getCause();
+        if (!(t instanceof IOException)) {
+            t = new IOException(new SerializationException(e));
+        }
+        return t;
+    }
+
 }
