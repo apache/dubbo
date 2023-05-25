@@ -33,50 +33,61 @@ public class URL extends org.apache.dubbo.common.URL {
     private org.apache.dubbo.common.URL url;
 
     protected URL() {
+        super();
         url = new org.apache.dubbo.common.URL(null, null);
     }
 
     public URL(org.apache.dubbo.common.URL url) {
+        super(url.getProtocol(), url.getUsername(), url.getPassword(), url.getHost(), url.getPort(), url.getPath(), url.getParameters());
         this.url = url;
     }
 
     public URL(String protocol, String host, int port) {
+        super(protocol, null, null, host, port, null, (Map<String, String>) null);
         url = new org.apache.dubbo.common.URL(protocol, null, null, host, port, null, (Map<String, String>) null);
     }
 
     public URL(String protocol, String host, int port, String[] pairs) {
+        super(protocol, null, null, host, port, null, CollectionUtils.toStringMap(pairs));
         url = new org.apache.dubbo.common.URL(protocol, null, null, host, port, null,
             CollectionUtils.toStringMap(pairs));
     }
 
     public URL(String protocol, String host, int port, Map<String, String> parameters) {
+        super(protocol, null, null, host, port, null, parameters);
         url = new org.apache.dubbo.common.URL(protocol, null, null, host, port, null, parameters);
     }
 
     public URL(String protocol, String host, int port, String path) {
+        super(protocol, null, null, host, port, path, (Map<String, String>) null);
         url = new org.apache.dubbo.common.URL(protocol, null, null, host, port, path, (Map<String, String>) null);
     }
 
     public URL(String protocol, String host, int port, String path, String... pairs) {
+        super(protocol, null, null, host, port, path, CollectionUtils.toStringMap(pairs));
         url = new org.apache.dubbo.common.URL(protocol, null, null, host, port, path,
             CollectionUtils.toStringMap(pairs));
     }
 
     public URL(String protocol, String host, int port, String path, Map<String, String> parameters) {
+        super(protocol, null, null, host, port, path, parameters);
         url = new org.apache.dubbo.common.URL(protocol, null, null, host, port, path, parameters);
     }
 
     public URL(String protocol, String username, String password, String host, int port, String path) {
+        super(protocol, username, password, host, port, path, (Map<String, String>) null);
         url = new org.apache.dubbo.common.URL(protocol, username, password, host, port, path,
             (Map<String, String>) null);
     }
 
     public URL(String protocol, String username, String password, String host, int port, String path, String... pairs) {
+        super(protocol, username, password, host, port, path, CollectionUtils.toStringMap(pairs));
         url = new org.apache.dubbo.common.URL(protocol, username, password, host, port, path,
             CollectionUtils.toStringMap(pairs));
     }
 
     public URL(String protocol, String username, String password, String host, int port, String path, Map<String, String> parameters) {
+        super(protocol, username, password, host, port, path, parameters);
         url = new org.apache.dubbo.common.URL(protocol, username, password, host, port, path, parameters);
     }
 
