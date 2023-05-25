@@ -18,6 +18,7 @@
 package org.apache.dubbo.qos.command.impl;
 
 import org.apache.dubbo.common.utils.JsonUtils;
+import org.apache.dubbo.metrics.report.DefaultMetricsReporter;
 import org.apache.dubbo.metrics.report.MetricsReporter;
 import org.apache.dubbo.qos.api.BaseCommand;
 import org.apache.dubbo.qos.api.Cmd;
@@ -33,7 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-@Cmd(name = "metrics_default", summary = "reuse qos report")
+@Cmd(name = "metrics_default", summary = "display metrics information")
 public class DefaultMetricsReporterCmd implements BaseCommand {
 
     public FrameworkModel frameworkModel;
@@ -63,7 +64,7 @@ public class DefaultMetricsReporterCmd implements BaseCommand {
     private String useFirst(List<ApplicationModel> models, String result, String metricsName) {
         for (ApplicationModel model : models) {
             String current = getResponseByApplication(model, metricsName);
-            if (getLineNumber(current) > 0) {
+            if (current != null && getLineNumber(current) > 0) {
                 result = current;
                 break;
             }
@@ -98,8 +99,8 @@ public class DefaultMetricsReporterCmd implements BaseCommand {
     }
 
     private String getResponseByApplication(ApplicationModel applicationModel, String metricsName) {
-        String response = "MetricsReporter not init";
-        MetricsReporter metricsReporter = applicationModel.getBeanFactory().getBean(MetricsReporter.class);
+        String response = "DefaultMetricsReporter not init";
+        MetricsReporter metricsReporter = applicationModel.getBeanFactory().getBean(DefaultMetricsReporter.class);
         if (metricsReporter != null) {
             metricsReporter.refreshData();
             response = metricsReporter.getResponseWithName(metricsName);

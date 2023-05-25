@@ -56,6 +56,7 @@ import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
 import org.apache.dubbo.metrics.config.event.ConfigCenterEvent;
 import org.apache.dubbo.metrics.event.MetricsEventBus;
 import org.apache.dubbo.metrics.registry.event.RegistryEvent;
+import org.apache.dubbo.metrics.report.DefaultMetricsReporterFactory;
 import org.apache.dubbo.metrics.report.MetricsReporter;
 import org.apache.dubbo.metrics.report.MetricsReporterFactory;
 import org.apache.dubbo.metrics.service.MetricsServiceExporter;
@@ -399,6 +400,13 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         }
         metricsReporter.init();
         applicationModel.getBeanFactory().registerBean(metricsReporter);
+        //If the protocol is not the default protocol, the default protocol is also initialized.
+        if (!PROTOCOL_DEFAULT.equals(metricsConfig.getProtocol())) {
+            DefaultMetricsReporterFactory defaultMetricsReporterFactory = new DefaultMetricsReporterFactory(applicationModel);
+            MetricsReporter defaultMetricsReporter = defaultMetricsReporterFactory.createMetricsReporter(metricsConfig.toUrl());
+            defaultMetricsReporter.init();
+            applicationModel.getBeanFactory().registerBean(defaultMetricsReporter);
+        }
     }
 
     public boolean isSupportMetrics() {
