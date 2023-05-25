@@ -19,6 +19,7 @@ package org.apache.dubbo.metrics.report;
 
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Gauge;
+import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.Timer;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 
@@ -26,6 +27,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import java.util.concurrent.TimeUnit;
@@ -45,8 +47,8 @@ public class DefaultMetricsReporter extends AbstractMetricsReporter {
 
     @Override
     public String getResponseWithName(String metricsName) {
-        //name->tags->value
-        Map<String, Map<String, Object>> result = new HashMap<>();
+        Map<String, List<Tag>> metricsTags = new HashMap<>();
+        Map<String, Object> metricsValue = new HashMap<>();
         StringBuilder sb = new StringBuilder();
         meterRegistry.getMeters().stream().filter(meter -> {
             if (meter == null || meter.getId() == null || meter.getId().getName() == null) {
@@ -57,7 +59,6 @@ public class DefaultMetricsReporter extends AbstractMetricsReporter {
             }
             return true;
         }).forEach(meter -> {
-            result.putIfAbsent(meter.getId().getName(), new HashMap<>());
             Object value = null;
             if (meter instanceof Counter) {
                 Counter counter = (Counter) meter;
@@ -71,14 +72,18 @@ public class DefaultMetricsReporter extends AbstractMetricsReporter {
                 Timer timer = (Timer) meter;
                 value = timer.totalTime(TimeUnit.MILLISECONDS);
             }
-            result.get(meter.getId().getName()).put(meter.getId().getTags().toString(), value);
+            metricsTags.put(meter.getId().getName(), meter.getId().getTags());
+            metricsValue.put(meter.getId().getName(), value);
         });
-        result.forEach((name, tags) -> {
-            sb.append("##metrics name=").append(name).append(System.lineSeparator());
-            tags.forEach((tag, value) -> {
-                sb.append(" #tags:").append(tag).append(System.lineSeparator()).append(" #value：").append(value)
-                    .append(System.lineSeparator());
-            });
+        metricsValue.forEach((key, value) -> {
+            sb.append(key).append("{");
+            List<Tag> tags = metricsTags.get(key);
+            if (tags != null && tags.size() > 0) {
+                tags.forEach(tag -> {
+                    sb.append(tag.getKey()).append("=").append(tag.getValue()).append(",");
+                });
+            }
+            sb.append("} ").append(value).append(System.lineSeparator());
         });
         return sb.toString();
     }
