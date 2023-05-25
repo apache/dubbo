@@ -26,7 +26,7 @@ import com.alibaba.dubbo.rpc.cluster.LoadBalance;
 import java.util.List;
 
 @Deprecated
-public abstract class AbstractLoadBalance extends org.apache.dubbo.rpc.cluster.loadbalance.AbstractLoadBalance implements LoadBalance {
+public abstract class AbstractLoadBalance implements LoadBalance {
 
     @Override
     public <T> Invoker<T> select(List<Invoker<T>> invokers, URL url, Invocation invocation) {
