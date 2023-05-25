@@ -46,4 +46,28 @@ class UrlUtilsTest {
         Assertions.assertEquals(200, UrlUtils.getHeartbeat(url));
         System.clearProperty(Constants.HEARTBEAT_CONFIG_KEY);
     }
+
+    @Test
+    void testGetCloseTimeout() {
+        URL url1 = URL.valueOf("dubbo://127.0.0.1:12345?heartbeat=10000");
+        URL url2 = URL.valueOf("dubbo://127.0.0.1:12345?heartbeat=10000&heartbeat.timeout=50000");
+        URL url3 = URL.valueOf("dubbo://127.0.0.1:12345?heartbeat=10000&heartbeat.timeout=10000");
+        URL url4 = URL.valueOf("dubbo://127.0.0.1:12345?close.timeout=30000&heartbeat=10000&heartbeat.timeout=10000");
+        URL url5 = URL.valueOf("dubbo://127.0.0.1:12345?close.timeout=40000&heartbeat=10000&heartbeat.timeout=50000");
+        URL url6 = URL.valueOf("dubbo://127.0.0.1:12345?close.timeout=10000&heartbeat=10000&heartbeat.timeout=10000");
+        Assertions.assertEquals(30000, UrlUtils.getCloseTimeout(url1));
+        Assertions.assertEquals(50000, UrlUtils.getCloseTimeout(url2));
+        Assertions.assertThrows(RuntimeException.class, () -> UrlUtils.getCloseTimeout(url3));
+        Assertions.assertThrows(RuntimeException.class, () -> UrlUtils.getCloseTimeout(url4));
+        Assertions.assertEquals(40000, UrlUtils.getCloseTimeout(url5));
+        Assertions.assertThrows(RuntimeException.class, () -> UrlUtils.getCloseTimeout(url6));
+    }
+
+    @Test
+    void testConfiguredClose() {
+        System.setProperty(Constants.CLOSE_TIMEOUT_CONFIG_KEY, "180000");
+        URL url = URL.valueOf("dubbo://127.0.0.1:12345");
+        Assertions.assertEquals(180000, UrlUtils.getCloseTimeout(url));
+        System.clearProperty(Constants.HEARTBEAT_CONFIG_KEY);
+    }
 }
