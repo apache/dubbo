@@ -21,6 +21,7 @@ import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.constants.LoggerCodeConstants;
+import org.apache.dubbo.common.constants.RegistryConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
@@ -173,6 +174,8 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
                 .setProtocol(consumedProtocol)
                 .setPath(path);
             if (isUrlFromRegistry) {
+                //remove parameters related to register
+                consumerUrlFrom.removeParameter(RegistryConstants.REGISTRY_CLUSTER_KEY);
                 // reserve parameters if url is already a consumer url
                 consumerUrlFrom = consumerUrlFrom.clearParameters();
             }
