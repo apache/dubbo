@@ -17,22 +17,19 @@
 
 package org.apache.dubbo.metrics.report;
 
-/**
- * Metrics Reporter.
- * Report metrics to specific metrics server(e.g. Prometheus).
- */
-public interface MetricsReporter {
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
-    /**
-     * Initialize metrics reporter.
-     */
-    void init();
+public class DefaultMetricsReporterFactory extends AbstractMetricsReporterFactory {
+    private final ApplicationModel applicationModel;
 
-    void refreshData();
+    public DefaultMetricsReporterFactory(ApplicationModel applicationModel) {
+        super(applicationModel);
+        this.applicationModel = applicationModel;
+    }
 
-    String getResponse();
-    
-    default String getResponseWithName(String metricsName) {
-        return null;
+    @Override
+    public MetricsReporter createMetricsReporter(URL url) {
+        return new DefaultMetricsReporter(url, applicationModel);
     }
 }
