@@ -15,11 +15,10 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.metrics.prometheus;
+package org.apache.dubbo.qos.command.impl;
 
-import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.JsonUtils;
+import org.apache.dubbo.metrics.report.DefaultMetricsReporter;
 import org.apache.dubbo.metrics.report.MetricsReporter;
 import org.apache.dubbo.qos.api.BaseCommand;
 import org.apache.dubbo.qos.api.Cmd;
@@ -35,27 +34,25 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-@Cmd(name = "metrics", summary = "reuse qos report")
-public class PrometheusMetricsReporterCmd implements BaseCommand {
-
-    private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(PrometheusMetricsReporterCmd.class);
+@Cmd(name = "metrics_default", summary = "display metrics information")
+public class DefaultMetricsReporterCmd implements BaseCommand {
 
     public FrameworkModel frameworkModel;
 
-    public PrometheusMetricsReporterCmd(FrameworkModel frameworkModel) {
+    public DefaultMetricsReporterCmd(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
     }
 
     @Override
     public String execute(CommandContext commandContext, String[] args) {
-
         List<ApplicationModel> models = frameworkModel.getApplicationModels();
         String result = "There is no application with data";
-
         if (notSpecifyApplication(args)) {
-            result = useFirst(models, result);
-        } else {
-            result = specifyApplication(args[0], models);
+            result = useFirst(models, result, null);
+        } else if (args.length == 1) {
+            result = specifyApplication(args[0], models, null);
+        } else if (args.length == 2) {
+            result = specifyApplication(args[0], models, args[1]);
         }
         return result;
     }
@@ -64,11 +61,10 @@ public class PrometheusMetricsReporterCmd implements BaseCommand {
         return args == null || args.length == 0;
     }
 
-    private String useFirst(List<ApplicationModel> models, String result) {
+    private String useFirst(List<ApplicationModel> models, String result, String metricsName) {
         for (ApplicationModel model : models) {
-            String current = getResponseByApplication(model);
-            // Contains at least one line "text/plain; version=0.0.4; charset=utf-8"
-            if (getLineNumber(current) > 1) {
+            String current = getResponseByApplication(model, metricsName);
+            if (current != null && getLineNumber(current) > 0) {
                 result = current;
                 break;
             }
@@ -76,18 +72,19 @@ public class PrometheusMetricsReporterCmd implements BaseCommand {
         return result;
     }
 
-    private String specifyApplication(String appName, List<ApplicationModel> models) {
+    private String specifyApplication(String appName, List<ApplicationModel> models, String metricsName) {
         if ("application_all".equals(appName)) {
             return allApplication(models);
         } else {
-            return specifySingleApplication(appName, models);
+            return specifySingleApplication(appName, models, metricsName);
         }
     }
 
-    private String specifySingleApplication(String appName, List<ApplicationModel> models) {
-        Optional<ApplicationModel> modelOptional = models.stream().filter(applicationModel -> appName.equals(applicationModel.getApplicationName())).findFirst();
+    private String specifySingleApplication(String appName, List<ApplicationModel> models, String metricsName) {
+        Optional<ApplicationModel> modelOptional = models.stream()
+            .filter(applicationModel -> appName.equals(applicationModel.getApplicationName())).findFirst();
         if (modelOptional.isPresent()) {
-            return getResponseByApplication(modelOptional.get());
+            return getResponseByApplication(modelOptional.get(), metricsName);
         } else {
             return "Not exist application: " + appName;
         }
@@ -96,40 +93,23 @@ public class PrometheusMetricsReporterCmd implements BaseCommand {
     private String allApplication(List<ApplicationModel> models) {
         Map<String, String> appResultMap = new HashMap<>();
         for (ApplicationModel model : models) {
-            appResultMap.put(model.getApplicationName(), getResponseByApplication(model));
+            appResultMap.put(model.getApplicationName(), getResponseByApplication(model, null));
         }
         return JsonUtils.toJson(appResultMap);
     }
 
-    @Override
-    public boolean logResult() {
-        return false;
-    }
-
-    private String getResponseByApplication(ApplicationModel applicationModel) {
-
-        String response = "MetricsReporter not init";
-        MetricsReporter metricsReporter = applicationModel.getBeanFactory().getBean(PrometheusMetricsReporter.class);
+    private String getResponseByApplication(ApplicationModel applicationModel, String metricsName) {
+        String response = "DefaultMetricsReporter not init";
+        MetricsReporter metricsReporter = applicationModel.getBeanFactory().getBean(DefaultMetricsReporter.class);
         if (metricsReporter != null) {
-            long begin = System.currentTimeMillis();
-            if (logger.isDebugEnabled()) {
-                logger.debug("scrape begin");
-            }
-
             metricsReporter.refreshData();
-
-            if (logger.isDebugEnabled()) {
-                logger.debug(String.format("scrape end,Elapsed Time：%s", System.currentTimeMillis() - begin));
-            }
-            response = metricsReporter.getResponse();
-
+            response = metricsReporter.getResponseWithName(metricsName);
         }
         return response;
     }
 
 
     private static long getLineNumber(String content) {
-
         LineNumberReader lnr = new LineNumberReader(new CharArrayReader(content.toCharArray()));
         try {
             lnr.skip(Long.MAX_VALUE);
@@ -138,5 +118,4 @@ public class PrometheusMetricsReporterCmd implements BaseCommand {
         }
         return lnr.getLineNumber();
     }
-
 }
