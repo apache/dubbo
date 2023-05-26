@@ -90,7 +90,7 @@ class DefaultCollectorTest {
 
         applicationModel.getApplicationConfigManager().setApplication(config);
         MetricsConfig metricsConfig = new MetricsConfig();
-        metricsConfig.setEnabled(true);
+        metricsConfig.setEnableRpc(true);
         applicationModel.getApplicationConfigManager().setMetrics(metricsConfig);
         metricsDispatcher = applicationModel.getBeanFactory().getOrRegisterBean(MetricsDispatcher.class);
         defaultCollector = applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class);

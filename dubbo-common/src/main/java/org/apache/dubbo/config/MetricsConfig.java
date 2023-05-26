@@ -92,7 +92,7 @@ public class MetricsConfig extends AbstractConfig {
      */
     private Boolean useGlobalRegistry;
 
-    private Boolean enabled;
+    private Boolean enableRpc;
 
     public MetricsConfig() {
     }
@@ -216,11 +216,11 @@ public class MetricsConfig extends AbstractConfig {
         this.useGlobalRegistry = useGlobalRegistry;
     }
 
-    public Boolean getEnabled() {
-        return enabled;
+    public Boolean getEnableRpc() {
+        return enableRpc;
     }
 
-    public void setEnabled(Boolean enabled) {
-        this.enabled = enabled;
+    public void setEnableRpc(Boolean enableRpc) {
+        this.enableRpc = enableRpc;
     }
 }

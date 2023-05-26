@@ -42,17 +42,17 @@ public class MetricsFilter implements Filter, BaseFilter.Listener, ScopeModelAwa
 
     private ApplicationModel applicationModel;
     private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(MetricsFilter.class);
-    private boolean metricsEnable;
+    private boolean rpcMetricsEnable;
 
     @Override
     public void setApplicationModel(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
-        this.metricsEnable = applicationModel.getApplicationConfigManager().getMetrics().map(MetricsConfig::getEnabled).orElse(true);
+        this.rpcMetricsEnable = applicationModel.getApplicationConfigManager().getMetrics().map(MetricsConfig::getEnableRpc).orElse(true);
     }
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
-        if (metricsEnable) {
+        if (rpcMetricsEnable) {
             try {
                 RequestEvent requestEvent = RequestEvent.toRequestEvent(applicationModel, invocation);
                 MetricsEventBus.before(requestEvent, () -> invocation.put(METRIC_FILTER_EVENT, requestEvent));

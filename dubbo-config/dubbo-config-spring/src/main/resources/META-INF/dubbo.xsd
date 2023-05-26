@@ -1099,9 +1099,9 @@
             </xsd:annotation>
         </xsd:attribute>
 
-        <xsd:attribute name="enabled" type="xsd:boolean" default="true">
+        <xsd:attribute name="enableRpc" type="xsd:boolean" default="true">
             <xsd:annotation>
-                <xsd:documentation><![CDATA[ Enable metrics. ]]></xsd:documentation>
+                <xsd:documentation><![CDATA[ Enable record rpc metrics. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
     </xsd:complexType>

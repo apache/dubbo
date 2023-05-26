@@ -84,7 +84,7 @@ class MetricsFilterTest {
         applicationModel = ApplicationModel.defaultModel();
         applicationModel.getApplicationConfigManager().setApplication(config);
         MetricsConfig metricsConfig = new MetricsConfig();
-        metricsConfig.setEnabled(true);
+        metricsConfig.setEnableRpc(true);
         applicationModel.getApplicationConfigManager().setMetrics(metricsConfig);
         invocation = new RpcInvocation();
         filter = new MetricsFilter();
