@@ -436,6 +436,7 @@
             <build>
                 <plugins>
                     <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-source-plugin</artifactId>
                         <version>${maven_source_version}</version>
                         <executions>
@@ -448,6 +449,7 @@
                         </executions>
                     </plugin>
                     <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
                         <version>${maven_javadoc_version}</version>
                         <executions>
@@ -470,6 +472,7 @@
                                             <version>${log4j2_version}</version>
                                         </additionalDependency>
                                     </additionalDependencies>
+                                    <doclint>all,-missing</doclint>
                                 </configuration>
                             </execution>
                         </executions>
