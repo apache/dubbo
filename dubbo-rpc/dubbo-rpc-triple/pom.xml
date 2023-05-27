@@ -134,24 +134,8 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <configuration>
-                    <sourceFileExcludes>
-                        <sourceFileExclude>**/module-info.java</sourceFileExclude>
-                        <sourceFileExclude>target/**/*.java</sourceFileExclude>
-                    </sourceFileExcludes>
-                    <docfilessubdirs>true</docfilessubdirs>
-                    <doclint>none</doclint>
-                    <links>
-                        <link>http://docs.oracle.com/javase/8/docs/api/</link>
-                    </links>
+                    <skip>true</skip>
                 </configuration>
-                <executions>
-                    <execution>
-                        <id>attach-javadocs</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>
