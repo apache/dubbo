@@ -78,7 +78,7 @@ public class JdkSslUtils {
             if (keyCertChainPathStream == null) {
                 keyManagerFactory = createKeyManagerFactory(privateKeyPathStream, password);
             } else {
-                createKeyManagerFactory(keyCertChainPathStream, privateKeyPathStream, password);
+                keyManagerFactory = createKeyManagerFactory(keyCertChainPathStream, privateKeyPathStream, password);
             }
 
             //trust manage factory

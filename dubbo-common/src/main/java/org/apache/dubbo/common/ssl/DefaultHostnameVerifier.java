@@ -17,6 +17,7 @@
 package org.apache.dubbo.common.ssl;
 
 
+import org.apache.dubbo.config.Constants;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.cert.Certificate;
@@ -43,7 +44,9 @@ import javax.net.ssl.SSLSession;
 import javax.security.auth.x500.X500Principal;
 
 /**
- *  default HostnameVerifier
+ * default HostnameVerifier , refer to ZKHostnameVerifier
+ *
+ *  verify only if  Constants.REST_CLIENT_HOST_NAME_VERIFIER_SWITCH_PROPERTY set true
  */
 public class DefaultHostnameVerifier implements HostnameVerifier {
 
@@ -125,6 +128,11 @@ public class DefaultHostnameVerifier implements HostnameVerifier {
     @Override
     public boolean verify(final String host, final SSLSession session) {
         try {
+
+            if (!hostNameVerifierIsOpen()) {
+                return true;
+            }
+
             final Certificate[] certs = session.getPeerCertificates();
             final X509Certificate x509 = (X509Certificate) certs[0];
             verify(host, x509);
@@ -175,6 +183,9 @@ public class DefaultHostnameVerifier implements HostnameVerifier {
     }
 
     private static void matchIPv6Address(final String host, final List<SubjectName> subjectAlts) throws SSLException {
+        if (host == null) {
+            return;
+        }
         final String normalisedHost = normaliseAddress(host);
         for (int i = 0; i < subjectAlts.size(); i++) {
             final SubjectName subjectAlt = subjectAlts.get(i);
@@ -327,6 +338,19 @@ public class DefaultHostnameVerifier implements HostnameVerifier {
             return inetAddress.getHostAddress();
         } catch (final UnknownHostException unexpected) { // Should not happen, because we check for IPv6 address above
             return hostname;
+        }
+    }
+
+    public boolean hostNameVerifierIsOpen() {
+        String property = System.getProperty(Constants.REST_CLIENT_HOST_NAME_VERIFIER_SWITCH_PROPERTY);
+        if (property == null) {
+            return false;
+        }
+
+        try {
+            return Boolean.valueOf(property);
+        } catch (Exception e) {
+            return false;
         }
     }
 

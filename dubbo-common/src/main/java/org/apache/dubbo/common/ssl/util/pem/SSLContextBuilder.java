@@ -31,19 +31,36 @@ import java.security.cert.X509Certificate;
 
 public class SSLContextBuilder {
 
+
     /**
      * build ssl context by pem
      *
-     * @param keyCertChainInputStream
-     * @param keyInputStream
-     * @param trustCertCollectionInputStream
+     * @param keyCertChainInputPath
+     * @param keyInputPath
+     * @param trustCertCollectionPath
      * @param keyPassword
      * @return
      * @throws Exception
      */
-    public static SSLContext buildSSLContextByPem(String keyCertChainInputStream, String keyInputStream, String trustCertCollectionInputStream,
+    public static SSLContext buildSSLContextByPem(String keyCertChainInputPath,
+                                                  String keyInputPath,
+                                                  String trustCertCollectionPath,
                                                   String keyPassword) throws Exception {
-        return buildSSLContextByPem(new FileInputStream(keyCertChainInputStream), new FileInputStream(keyInputStream), new FileInputStream(trustCertCollectionInputStream), keyPassword);
+
+        FileInputStream keyCertChainInputStream = null;
+        FileInputStream keyInputPathStream = null;
+        FileInputStream trustCertCollectionInputStream = null;
+        try {
+            keyCertChainInputStream = new FileInputStream(keyCertChainInputPath);
+            keyInputPathStream = new FileInputStream(keyInputPath);
+            trustCertCollectionInputStream = new FileInputStream(trustCertCollectionPath);
+            return buildSSLContextByPem(keyCertChainInputStream, keyInputPathStream, trustCertCollectionInputStream, keyPassword);
+        } finally {
+            JdkSslUtils.safeCloseStream(keyCertChainInputStream);
+            JdkSslUtils.safeCloseStream(keyInputPathStream);
+            JdkSslUtils.safeCloseStream(trustCertCollectionInputStream);
+
+        }
 
     }
 

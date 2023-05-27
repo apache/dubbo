@@ -151,5 +151,10 @@ public interface Constants {
 
     String CLIENT_THREAD_POOL_NAME = "DubboClientHandler";
 
-    String REST_PROTOCOL="rest";
+    String REST_PROTOCOL = "rest";
+
+    /**
+     * rest client host name verify switch property
+     */
+    String REST_CLIENT_HOST_NAME_VERIFIER_SWITCH_PROPERTY = "rest_client_host_name_verifier_switch_property";
 }
