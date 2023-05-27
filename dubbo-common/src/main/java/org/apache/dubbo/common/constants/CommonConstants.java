@@ -239,6 +239,10 @@ public interface CommonConstants {
 
     String REMOTE_METADATA_STORAGE_TYPE = "remote";
 
+    String INTERFACE_REGISTER_MODE = "interface";
+
+    String DEFAULT_REGISTER_MODE = "all";
+
     String GENERIC_KEY = "generic";
 
     /**
