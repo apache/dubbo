@@ -28,8 +28,10 @@ import java.io.InputStream;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
 
-
-public class SSLContextBuilder {
+/**
+ *  build ssl context by .pem file
+ */
+public class SSLContextBuilderByPem {
 
 
     /**
@@ -64,21 +66,21 @@ public class SSLContextBuilder {
 
     }
 
-    public static SSLContext buildSSLContextByPem(InputStream clientCertChainStream, InputStream clientPrivateKeyStream, InputStream clientTrustCertCollectionStream,
+    public static SSLContext buildSSLContextByPem(InputStream certChainStream, InputStream privateKeyStream, InputStream trustCertCollectionStream,
                                                   String keyPassword) throws Exception {
-        return buildSSLContextByPem(clientCertChainStream, clientPrivateKeyStream, clientTrustCertCollectionStream, JdkSslUtils.strPasswordToCharArray(keyPassword));
+        return buildSSLContextByPem(certChainStream, privateKeyStream, trustCertCollectionStream, JdkSslUtils.strPasswordToCharArray(keyPassword));
     }
 
-    public static SSLContext buildSSLContextByPem(InputStream clientCertChainStream, InputStream clientPrivateKeyStream, InputStream clientTrustCertCollectionStream,
+    public static SSLContext buildSSLContextByPem(InputStream certChainStream, InputStream privateKeyStream, InputStream trustCertCollectionStream,
                                                   char[] keyPassword) throws Exception {
 
 
         SSLContext sslContext = createSSLContext();
 
-        KeyManagerFactory keyManagerFactory = JdkSslUtils.createKeyManagerFactory(PemReader.readCertificates(clientCertChainStream), PemReader.readPrivateKey(clientPrivateKeyStream), keyPassword);
+        KeyManagerFactory keyManagerFactory = JdkSslUtils.createKeyManagerFactory(PemReader.readCertificates(certChainStream), PemReader.readPrivateKey(privateKeyStream), keyPassword);
 
 
-        TrustManagerFactory trustManagerFactory = SSLContextBuilder.trustManagerByPem(clientTrustCertCollectionStream);
+        TrustManagerFactory trustManagerFactory = SSLContextBuilderByPem.trustManagerByPem(trustCertCollectionStream);
 
         TrustManager[] trustManagers = JdkSslUtils.buildTrustManagers(trustManagerFactory);
 

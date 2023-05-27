@@ -19,7 +19,7 @@ package org.apache.dubbo.remoting.http.ssl;
 
 import org.apache.dubbo.common.ssl.util.JdkSslUtils;
 import org.apache.dubbo.common.ssl.util.pem.PemReader;
-import org.apache.dubbo.common.ssl.util.pem.SSLContextBuilder;
+import org.apache.dubbo.common.ssl.util.pem.SSLContextBuilderByPem;
 
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
@@ -36,12 +36,12 @@ public class PemSSLContextFactory extends SSLContextFactory {
 
     @Override
     protected SSLContext createSSLContext(InputStream clientCertChainStream, InputStream clientPrivateKeyStream, InputStream clientTrustCertCollectionStream, char[] passwordCharArray) throws Exception {
-        SSLContext sslContext = SSLContextBuilder.createSSLContext();
+        SSLContext sslContext = SSLContextBuilderByPem.createSSLContext();
 
         KeyManagerFactory keyManagerFactory = JdkSslUtils.createKeyManagerFactory(PemReader.readCertificates(clientCertChainStream), PemReader.readPrivateKey(clientPrivateKeyStream), passwordCharArray);
 
 
-        TrustManagerFactory trustManagerFactory = SSLContextBuilder.trustManagerByPem(clientTrustCertCollectionStream);
+        TrustManagerFactory trustManagerFactory = SSLContextBuilderByPem.trustManagerByPem(clientTrustCertCollectionStream);
 
         TrustManager[] trustManagers = JdkSslUtils.buildTrustManagers(trustManagerFactory);
 
