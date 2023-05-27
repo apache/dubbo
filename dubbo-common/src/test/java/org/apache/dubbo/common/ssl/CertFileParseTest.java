@@ -19,7 +19,7 @@ package org.apache.dubbo.common.ssl;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.ssl.impl.SSLConfigCertProvider;
 import org.apache.dubbo.common.ssl.util.JdkSslUtils;
-import org.apache.dubbo.common.ssl.util.pem.SSLContextBuilder;
+import org.apache.dubbo.common.ssl.util.pem.SSLContextBuilderByPem;
 import org.apache.dubbo.config.SslConfig;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -96,7 +96,7 @@ public class CertFileParseTest {
         sslConfig.setClientTrustCertCollectionPath(this.getClass().getClassLoader().getResource("certs/ca.pem").getFile());
         Cert cert = sslConfigCertProvider.getConsumerConnectionConfig(url);
 
-        SSLContextBuilder.buildSSLContextByPem(cert.getKeyCertChainInputStream(), cert.getPrivateKeyInputStream(), cert.getTrustCertInputStream(), cert.getPassword());
+        SSLContextBuilderByPem.buildSSLContextByPem(cert.getKeyCertChainInputStream(), cert.getPrivateKeyInputStream(), cert.getTrustCertInputStream(), cert.getPassword());
 
         frameworkModel.destroy();
     }
