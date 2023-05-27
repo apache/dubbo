@@ -15,40 +15,54 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.metrics.collector.sample;
+package org.apache.dubbo.metrics.aggregate;
 
-import org.apache.dubbo.metrics.model.Metric;
 
-import java.util.function.Function;
+public class SampleAggregatedEntry {
 
-public class MetricsCountSampleConfigurer<S,K,M extends Metric> {
+    private Long count;
+    private double max;
+    private double min;
+    private double avg;
+    private double total;
 
-    public S source;
-
-    public K metricName;
-
-    public M metric;
-
-    public void setSource(S source){
-        this.source = source;
+    public Long getCount() {
+        return count;
     }
 
-    public MetricsCountSampleConfigurer<S,K,M> setMetricsName(K metricName){
-        this.metricName = metricName;
-        return this;
+    public void setCount(Long count) {
+        this.count = count;
     }
 
-    public MetricsCountSampleConfigurer<S,K,M> configureMetrics(Function<MetricsCountSampleConfigurer<S,K,M>,M> builder){
-        this.metric = builder.apply(this);
-        return this;
+    public double getMax() {
+        return max;
     }
 
-    public S getSource() {
-        return source;
+    public void setMax(double max) {
+        this.max = max;
     }
 
-    public M getMetric() {
-        return metric;
+    public double getMin() {
+        return min;
     }
 
+    public void setMin(double min) {
+        this.min = min;
+    }
+
+    public double getAvg() {
+        return avg;
+    }
+
+    public void setAvg(double avg) {
+        this.avg = avg;
+    }
+
+    public double getTotal() {
+        return total;
+    }
+
+    public void setTotal(double total) {
+        this.total = total;
+    }
 }

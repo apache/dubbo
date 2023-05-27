@@ -50,6 +50,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.TreeMap;
 import java.util.WeakHashMap;
@@ -539,7 +540,11 @@ public class PojoUtils {
                                 if (!method.isAccessible()) {
                                     method.setAccessible(true);
                                 }
-                                Type containType = mapGeneric.get(field.getGenericType().getTypeName());
+                                Type containType = Optional.ofNullable(field)
+                                    .map(Field::getGenericType)
+                                    .map(Type::getTypeName)
+                                    .map(mapGeneric::get)
+                                    .orElse(null);
                                 if (containType != null) {
                                     //is generic
                                     if (containType instanceof ParameterizedType) {

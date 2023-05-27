@@ -16,6 +16,25 @@
  */
 package org.apache.dubbo.common.utils;
 
+import org.apache.dubbo.common.model.Person;
+import org.apache.dubbo.common.model.SerializablePerson;
+import org.apache.dubbo.common.model.User;
+import org.apache.dubbo.common.model.person.Ageneric;
+import org.apache.dubbo.common.model.person.Bgeneric;
+import org.apache.dubbo.common.model.person.BigPerson;
+import org.apache.dubbo.common.model.person.Cgeneric;
+import org.apache.dubbo.common.model.person.Dgeneric;
+import org.apache.dubbo.common.model.person.FullAddress;
+import org.apache.dubbo.common.model.person.PersonInfo;
+import org.apache.dubbo.common.model.person.PersonMap;
+import org.apache.dubbo.common.model.person.PersonStatus;
+import org.apache.dubbo.common.model.person.Phone;
+
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
@@ -32,26 +51,8 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
-
-import com.alibaba.fastjson.JSON;
-import org.apache.dubbo.common.model.Person;
-import org.apache.dubbo.common.model.SerializablePerson;
-import org.apache.dubbo.common.model.User;
-import org.apache.dubbo.common.model.person.Bgeneric;
-import org.apache.dubbo.common.model.person.BigPerson;
-import org.apache.dubbo.common.model.person.Cgeneric;
-import org.apache.dubbo.common.model.person.Dgeneric;
-import org.apache.dubbo.common.model.person.FullAddress;
-import org.apache.dubbo.common.model.person.Ageneric;
-import org.apache.dubbo.common.model.person.PersonInfo;
-import org.apache.dubbo.common.model.person.PersonMap;
-import org.apache.dubbo.common.model.person.PersonStatus;
-import org.apache.dubbo.common.model.person.Phone;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
-import com.alibaba.fastjson.JSONObject;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -995,6 +996,63 @@ class PojoUtilsTest {
             assertEquals(((Cgeneric)personInfo.getZ()).getA().getData().getClass(), PersonInfo.class);
             assertEquals(((Cgeneric)personInfo.getZ()).getB().getClass(), Bgeneric.class);
             assertEquals(((Cgeneric)personInfo.getZ()).getB().getData().getClass(), PersonInfo.class);
+        }
+    }
+
+    @Test
+    void testNameNotMatch() {
+        NameNotMatch origin = new NameNotMatch();
+        origin.setNameA("test123");
+        origin.setNameB("test234");
+
+        Object generalized = PojoUtils.generalize(origin);
+
+        Assertions.assertInstanceOf(Map.class, generalized);
+        Assertions.assertEquals("test123", ((Map)generalized).get("nameA"));
+        Assertions.assertEquals("test234", ((Map)generalized).get("nameB"));
+
+        NameNotMatch target1 = (NameNotMatch) PojoUtils.realize(PojoUtils.generalize(origin), NameNotMatch.class, NameNotMatch.class);
+        Assertions.assertEquals(origin, target1);
+
+        Map<String, String> map = new HashMap<>();
+        map.put("nameA", "test123");
+        map.put("nameB", "test234");
+
+        NameNotMatch target2 = (NameNotMatch) PojoUtils.realize(map, NameNotMatch.class, NameNotMatch.class);
+        Assertions.assertEquals(origin, target2);
+    }
+
+    class NameNotMatch implements Serializable {
+        private String NameA;
+        private String NameAbsent;
+
+        public void setNameA(String nameA) {
+            this.NameA = nameA;
+        }
+
+        public String getNameA() {
+            return NameA;
+        }
+
+        public void setNameB(String nameB) {
+            this.NameAbsent = nameB;
+        }
+
+        public String getNameB() {
+            return NameAbsent;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            NameNotMatch that = (NameNotMatch) o;
+            return Objects.equals(NameA, that.NameA) && Objects.equals(NameAbsent, that.NameAbsent);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(NameA, NameAbsent);
         }
     }
 
