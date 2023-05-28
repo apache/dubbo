@@ -176,6 +176,7 @@ public class PemReader {
             return out.toString("US-ASCII");
         } finally {
             JdkSslUtils.safeCloseStream(in);
+            JdkSslUtils.safeCloseStream(out);
         }
     }
 
