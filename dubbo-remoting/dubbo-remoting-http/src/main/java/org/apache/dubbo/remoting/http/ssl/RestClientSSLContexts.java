@@ -19,8 +19,7 @@ package org.apache.dubbo.remoting.http.ssl;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.ssl.Cert;
-import org.apache.dubbo.common.ssl.CertManager;
+import org.apache.dubbo.config.SslConfig;
 
 
 /**
@@ -34,21 +33,21 @@ public class RestClientSSLContexts {
 
         try {
 
-            CertManager certManager = url.getOrDefaultFrameworkModel().getBeanFactory().getBean(CertManager.class);
-            Cert consumerConnectionConfig = certManager.getConsumerConnectionConfig(url);
 
-            if (consumerConnectionConfig == null) {
+           SslConfig  sslConfig = url.getOrDefaultApplicationModel().getApplicationConfigManager().getSsl().orElse(null);
+
+            if (sslConfig == null) {
                 return restClient;
             }
 
-            if (consumerConnectionConfig.isPem()) {
-                return new PemSSLContextFactory().buildClientSSLContext(consumerConnectionConfig, restClientSSLSetter, restClient);
+
+            if (sslConfig.isPem()) {
+                return new PemSSLContextFactory().buildClientSSLContext(url, restClientSSLSetter, restClient);
 
             } else {
                 return new JdkSSLContextFactory().buildClientSSLContext(url, restClientSSLSetter, restClient);
             }
 
-            // first pem file
         } catch (Throwable e) {
             logger.warn("", e.getMessage(), "", "Rest client build ssl context failed", e);
 

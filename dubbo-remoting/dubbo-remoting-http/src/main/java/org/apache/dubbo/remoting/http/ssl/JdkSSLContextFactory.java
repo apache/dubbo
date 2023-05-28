@@ -17,6 +17,8 @@
 package org.apache.dubbo.remoting.http.ssl;
 
 
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.ssl.AuthPolicy;
 import org.apache.dubbo.common.ssl.util.JdkSslUtils;
 
 import javax.net.ssl.KeyManager;
@@ -29,7 +31,7 @@ import java.io.InputStream;
 public class JdkSSLContextFactory extends SSLContextFactory {
 
     @Override
-    protected SSLContext createSSLContext(InputStream clientCertChainStream, InputStream clientPrivateKeyStream, InputStream clientTrustCertCollectionStream, char[] passwordCharArray) throws Exception {
+    protected SSLContext createSSLContext(URL url, InputStream clientCertChainStream, InputStream clientPrivateKeyStream, InputStream clientTrustCertCollectionStream, char[] passwordCharArray, AuthPolicy authPolicy) throws Exception {
         // init ssl context
         SSLContext sslContext = JdkSslUtils.createSSLContext();
 

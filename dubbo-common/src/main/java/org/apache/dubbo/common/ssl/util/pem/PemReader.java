@@ -17,6 +17,7 @@
 package org.apache.dubbo.common.ssl.util.pem;
 
 import org.apache.dubbo.common.ssl.util.JdkSslUtils;
+import org.apache.dubbo.config.Constants;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -31,22 +32,12 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * for read .pem certificate
  */
 public class PemReader {
 
-    private static final Pattern CERT_HEADER = Pattern.compile(
-        "-+BEGIN\\s[^-\\r\\n]*CERTIFICATE[^-\\r\\n]*-+(?:\\s|\\r|\\n)+");
-    private static final Pattern CERT_FOOTER = Pattern.compile(
-        "-+END\\s[^-\\r\\n]*CERTIFICATE[^-\\r\\n]*-+(?:\\s|\\r|\\n)*");
-    private static final Pattern KEY_HEADER = Pattern.compile(
-        "-+BEGIN\\s[^-\\r\\n]*PRIVATE\\s+KEY[^-\\r\\n]*-+(?:\\s|\\r|\\n)+");
-    private static final Pattern KEY_FOOTER = Pattern.compile(
-        "-+END\\s[^-\\r\\n]*PRIVATE\\s+KEY[^-\\r\\n]*-+(?:\\s|\\r|\\n)*");
-    private static final Pattern BODY = Pattern.compile("[a-z0-9+/=][a-z0-9+/=\\r\\n]*", Pattern.CASE_INSENSITIVE);
 
     public static List<byte[]> readCertificates(File file) throws CertificateException {
         try {
@@ -71,13 +62,13 @@ public class PemReader {
         }
 
         List<byte[]> certs = new ArrayList<byte[]>();
-        Matcher m = CERT_HEADER.matcher(content);
+        Matcher m = Constants.CERT_HEADER.matcher(content);
         int start = 0;
         for (; ; ) {
             if (!m.find(start)) {
                 break;
             }
-            m.usePattern(BODY);
+            m.usePattern(Constants.BODY);
             if (!m.find()) {
                 break;
             }
@@ -89,7 +80,7 @@ public class PemReader {
 
             }
 
-            m.usePattern(CERT_FOOTER);
+            m.usePattern(Constants.CERT_FOOTER);
             if (!m.find()) {
                 // Certificate is incomplete.
                 break;
@@ -101,7 +92,7 @@ public class PemReader {
 
 
             start = m.end();
-            m.usePattern(CERT_HEADER);
+            m.usePattern(Constants.CERT_HEADER);
         }
 
         if (certs.isEmpty()) {
@@ -133,11 +124,11 @@ public class PemReader {
             throw new KeyException("failed to read key input stream", e);
         }
 
-        Matcher m = KEY_HEADER.matcher(content);
+        Matcher m = Constants.KEY_HEADER.matcher(content);
         if (!m.find()) {
             throw keyNotFoundException();
         }
-        m.usePattern(BODY);
+        m.usePattern(Constants.BODY);
         if (!m.find()) {
             throw keyNotFoundException();
         }
@@ -148,7 +139,7 @@ public class PemReader {
             return null;
         }
 
-        m.usePattern(KEY_FOOTER);
+        m.usePattern(Constants.KEY_FOOTER);
         if (!m.find()) {
             // Key is incomplete.
             throw keyNotFoundException();

@@ -29,6 +29,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.ssl.AuthPolicy;
 import org.apache.dubbo.common.ssl.CertManager;
 import org.apache.dubbo.common.ssl.ProviderCert;
+import org.apache.dubbo.config.SslConfig;
 import org.apache.dubbo.remoting.http.ssl.JdkSSLContextFactory;
 
 import javax.net.ssl.SSLContext;
@@ -99,7 +100,7 @@ public class SslServerTlsHandler extends ByteToMessageDecoder {
         }
 
         if (isSsl(byteBuf)) {
-            enableSsl(channelHandlerContext, buildSslContext(providerConnectionConfig));
+            enableSsl(channelHandlerContext, buildSslContext(url, providerConnectionConfig, channelHandlerContext));
             return;
         }
 
@@ -112,17 +113,16 @@ public class SslServerTlsHandler extends ByteToMessageDecoder {
         channelHandlerContext.close();
     }
 
-    private Object buildSslContext(ProviderCert providerConnectionConfig) {
+    private Object buildSslContext(URL url, ProviderCert providerConnectionConfig, ChannelHandlerContext channelHandlerContext) {
+
+        SslConfig sslConfig = url.getOrDefaultApplicationModel().getApplicationConfigManager().getSsl().get();
 
         try {
-            // first to parse pem file
-
-            if (providerConnectionConfig.isPem()) {
-                return SslContexts.buildServerSslContext(providerConnectionConfig);
-
+            if (sslConfig.isPem()) {
+                return new NettyServerSSLContextFactory().buildServerSSLContext(url, providerConnectionConfig);
             } else {
                 // build context by jdk
-                return new JdkSSLContextFactory().buildSSLContext(providerConnectionConfig);
+                return new JdkSSLContextFactory().buildServerSSLContext(url, providerConnectionConfig);
             }
         } catch (Throwable e) {
             logger.error("", e.getMessage(), "", "Rest SslServerTlsHandler build ssl context failed cause: ", e);

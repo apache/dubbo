@@ -19,6 +19,7 @@ package org.apache.dubbo.remoting.http.ssl;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.ssl.AuthPolicy;
 import org.apache.dubbo.common.ssl.Cert;
 import org.apache.dubbo.common.ssl.CertManager;
 import org.apache.dubbo.common.ssl.DefaultHostnameVerifier;
@@ -33,45 +34,35 @@ import java.io.InputStream;
 import java.net.SocketAddress;
 
 /**
- *  ssl context factory
+ * ssl context factory
  */
 public abstract class SSLContextFactory {
 
     private TrustManager[] trustManagers;
     private KeyManager[] keyManagers;
 
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(SSLContextFactory.class);
+    protected static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(SSLContextFactory.class);
 
     public <T> T buildClientSSLContext(URL url, RestClientSSLContextSetter restClientSSLSetter, T restClient) {
 
-
-        return buildClientSSLContext(getConsumerCert(url), restClientSSLSetter, restClient);
-
-    }
-
-    public <T> T buildClientSSLContext(Cert cert, RestClientSSLContextSetter restClientSSLSetter, T restClient) {
-
-        SSLContext sslContext = buildSSLContext(cert);
-
+        Object sslContext = buildClientSSLContext(url);
 
         afterClientSSLContextCreate(restClientSSLSetter, sslContext);
-
         return restClient;
 
     }
 
-
     public SSLContext buildClientSSLContext(URL url) {
 
-        return buildSSLContext(getConsumerCert(url));
+        return SSLContextCache.getClientSSLContextFromCache(url, cert -> buildSSLContext(url, getConsumerCert(url)));
     }
 
-    public SSLContext buildServerSSLContext(URL url, SocketAddress remoteAddress) {
+    public Object buildServerSSLContext(URL url, ProviderCert providerConnectionConfig) {
 
-        return buildSSLContext(getProviderCert(url, remoteAddress));
+        return SSLContextCache.getServerSSLContextFromCache(url, cert -> buildSSLContext(url, providerConnectionConfig));
     }
 
-    public SSLContext buildSSLContext(Cert certConfig) {
+    public Object buildSSLContext(URL url, Cert certConfig) {
 
 
         if (certConfig == null) {
@@ -95,10 +86,15 @@ public abstract class SSLContextFactory {
 
         char[] passwordCharArray = JdkSslUtils.strPasswordToCharArray(password);
 
+        AuthPolicy authPolicy = null;
+        if (certConfig instanceof ProviderCert) {
+            authPolicy = ((ProviderCert) certConfig).getAuthPolicy();
 
+        }
         try {
-            return createSSLContext(certChainStream, privateKeyStream,
-                trustCertCollectionStream, passwordCharArray);
+
+            return createSSLContext(url, certChainStream, privateKeyStream,
+                trustCertCollectionStream, passwordCharArray, authPolicy);
         } catch (Exception e) {
             logger.warn("", e.getMessage(), "", "rest client build ssl context failed", e);
             throw new IllegalArgumentException("Could not build rest client SSLContext: ", e);
@@ -114,7 +110,9 @@ public abstract class SSLContextFactory {
         return new DefaultHostnameVerifier();
     }
 
-    protected abstract SSLContext createSSLContext(InputStream clientCertChainStream, InputStream clientPrivateKeyStream, InputStream clientTrustCertCollectionStream, char[] passwordCharArray) throws Exception;
+
+    protected abstract Object createSSLContext(URL url, InputStream clientCertChainStream, InputStream clientPrivateKeyStream, InputStream clientTrustCertCollectionStream, char[] passwordCharArray, AuthPolicy authPolicy) throws Exception;
+
 
     private Cert getConsumerCert(URL url) {
         CertManager certManager = url.getOrDefaultFrameworkModel().getBeanFactory().getBean(CertManager.class);
@@ -134,9 +132,9 @@ public abstract class SSLContextFactory {
         this.keyManagers = keyManagers;
     }
 
-    public void afterClientSSLContextCreate(RestClientSSLContextSetter restClientSSLSetter, SSLContext sslContext) {
+    public void afterClientSSLContextCreate(RestClientSSLContextSetter restClientSSLSetter, Object sslContext) {
 
-        restClientSSLSetter.initSSLContext(sslContext, trustManagers);
+        restClientSSLSetter.initSSLContext((SSLContext) sslContext, trustManagers);
 
         restClientSSLSetter.setHostnameVerifier(getHostnameVerifier());
 
