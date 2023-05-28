@@ -70,7 +70,7 @@ public class SslConfig extends AbstractConfig {
     private String caCertPath;
     private String oidcTokenPath;
     /**
-     *  cert is .pem file,default is pem
+     * cert is .pem file,default is pem
      */
     private boolean isPem = true;
 
@@ -253,6 +253,7 @@ public class SslConfig extends AbstractConfig {
         return clientTrustCertCollectionPathStream;
     }
 
+    @Parameter(excluded = true, attribute = false)
     public boolean isPem() {
         return isPem;
     }
@@ -262,17 +263,21 @@ public class SslConfig extends AbstractConfig {
     }
 
     /**
-     *  for provider ssl context cache key
+     * for provider ssl context cache key
+     *
      * @return
      */
+    @Parameter(excluded = true, attribute = false)
     public String getSslConfigUniqueProviderKey() {
         return Arrays.toString(new String[]{getServerKeyCertChainPath(), getServerPrivateKeyPath(), getServerTrustCertCollectionPath(), getServerKeyPassword()});
     }
 
     /**
-     *  for consumer ssl context cache key
+     * for consumer ssl context cache key
+     *
      * @return
      */
+    @Parameter(excluded = true, attribute = false)
     public String getSslConfigUniqueConsumerKey() {
         return Arrays.toString(new String[]{getClientKeyCertChainPath(), getClientPrivateKeyPath(), getClientTrustCertCollectionPath(), getClientKeyPassword()});
     }
