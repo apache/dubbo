@@ -21,6 +21,7 @@ import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
 import org.apache.dubbo.metrics.model.key.MetricsLevel;
 import org.apache.dubbo.metrics.model.key.MetricsPlaceValue;
+import org.apache.dubbo.metrics.model.sample.MetricSample;
 
 import java.util.Arrays;
 import java.util.List;
@@ -46,8 +47,9 @@ public interface DefaultConstants {
     List<MetricsKeyWrapper> METHOD_LEVEL_KEYS = Arrays.asList(
         new MetricsKeyWrapper(METRIC_REQUESTS, MetricsPlaceValue.of(CommonConstants.PROVIDER, MetricsLevel.METHOD)),
         new MetricsKeyWrapper(METRIC_REQUESTS, MetricsPlaceValue.of(CommonConstants.CONSUMER, MetricsLevel.METHOD)),
-        new MetricsKeyWrapper(METRIC_REQUESTS_PROCESSING, MetricsPlaceValue.of(CommonConstants.PROVIDER, MetricsLevel.METHOD)),
-        new MetricsKeyWrapper(METRIC_REQUESTS_PROCESSING, MetricsPlaceValue.of(CommonConstants.CONSUMER, MetricsLevel.METHOD)),
+        // METRIC_REQUESTS_PROCESSING use GAUGE
+        new MetricsKeyWrapper(METRIC_REQUESTS_PROCESSING, MetricsPlaceValue.of(CommonConstants.PROVIDER, MetricsLevel.METHOD)).setSampleType(MetricSample.Type.GAUGE),
+        new MetricsKeyWrapper(METRIC_REQUESTS_PROCESSING, MetricsPlaceValue.of(CommonConstants.CONSUMER, MetricsLevel.METHOD)).setSampleType(MetricSample.Type.GAUGE),
         new MetricsKeyWrapper(METRIC_REQUESTS_SUCCEED, MetricsPlaceValue.of(CommonConstants.PROVIDER, MetricsLevel.METHOD)),
         new MetricsKeyWrapper(METRIC_REQUESTS_SUCCEED, MetricsPlaceValue.of(CommonConstants.CONSUMER, MetricsLevel.METHOD)),
         new MetricsKeyWrapper(METRIC_REQUEST_BUSINESS_FAILED, MetricsPlaceValue.of(CommonConstants.PROVIDER, MetricsLevel.METHOD)),

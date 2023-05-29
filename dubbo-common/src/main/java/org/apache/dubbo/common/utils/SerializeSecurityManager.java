@@ -16,12 +16,12 @@
  */
 package org.apache.dubbo.common.utils;
 
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
-
-import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 
 public class SerializeSecurityManager {
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(SerializeSecurityManager.class);
@@ -37,6 +37,8 @@ public class SerializeSecurityManager {
     private final Set<String> warnedClasses = new ConcurrentHashSet<>(1);
 
     private volatile SerializeCheckStatus checkStatus = null;
+
+    private volatile SerializeCheckStatus defaultCheckStatus = AllowClassNotifyListener.DEFAULT_STATUS;
 
     private volatile Boolean checkSerializable = null;
 
@@ -92,6 +94,12 @@ public class SerializeSecurityManager {
         notifyCheckStatus();
     }
 
+    public void setDefaultCheckStatus(SerializeCheckStatus checkStatus) {
+        this.defaultCheckStatus = checkStatus;
+        logger.info("Serialize check default level: " + checkStatus.name());
+        notifyCheckStatus();
+    }
+
     public void setCheckSerializable(boolean checkSerializable) {
         if (this.checkSerializable == null || (Boolean.TRUE.equals(this.checkSerializable) && !checkSerializable)) {
             this.checkSerializable = checkSerializable;
@@ -126,7 +134,7 @@ public class SerializeSecurityManager {
     }
 
     protected SerializeCheckStatus getCheckStatus() {
-        return checkStatus == null ? AllowClassNotifyListener.DEFAULT_STATUS : checkStatus;
+        return checkStatus == null ? defaultCheckStatus : checkStatus;
     }
 
     protected Set<String> getAllowedPrefix() {

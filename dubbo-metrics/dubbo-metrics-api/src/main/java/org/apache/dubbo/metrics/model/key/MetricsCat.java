@@ -23,18 +23,27 @@ import org.apache.dubbo.metrics.listener.AbstractMetricsKeyListener;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+/**
+ * The behavior wrapper class of MetricsKey,
+ * which saves the complete content of the key {@link MetricsPlaceValue},
+ * the corresponding collector {@link CombMetricsCollector},
+ * and the event listener (generate function) at the key level {@link AbstractMetricsKeyListener}
+ */
 public class MetricsCat {
 
     private MetricsPlaceValue placeType;
     private final Function<CombMetricsCollector, AbstractMetricsKeyListener> eventFunc;
 
+    /**
+     * @param metricsKey The key corresponding to the listening event, not necessarily the export key(export key may be dynamic)
+     * @param biFunc Binary function, corresponding to MetricsKey with less content, corresponding to post event
+     */
     public MetricsCat(MetricsKey metricsKey, BiFunction<MetricsKey, CombMetricsCollector, AbstractMetricsKeyListener> biFunc) {
         this.eventFunc = collector -> biFunc.apply(metricsKey, collector);
     }
 
     /**
-     * @param metricsKey The key that the current category listens to，not necessarily the export key(export key may be dynamic)
-     * @param tpFunc     Build the func that outputs the MetricsListener by listen metricsKey
+     * @param tpFunc   Ternary function, corresponding to finish and error events, because an additional record rt is required, and the type type of metricsKey is required
      */
     public MetricsCat(MetricsKey metricsKey, TpFunction<MetricsKey, MetricsPlaceValue, CombMetricsCollector, AbstractMetricsKeyListener> tpFunc) {
         this.eventFunc = collector -> tpFunc.apply(metricsKey, placeType, collector);

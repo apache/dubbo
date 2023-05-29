@@ -31,4 +31,8 @@ public interface MetricsReporter {
     void refreshData();
 
     String getResponse();
+    
+    default String getResponseWithName(String metricsName) {
+        return null;
+    }
 }

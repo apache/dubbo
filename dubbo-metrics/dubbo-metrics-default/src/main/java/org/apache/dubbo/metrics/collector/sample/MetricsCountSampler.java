@@ -27,8 +27,6 @@ public interface MetricsCountSampler<S, K, M extends Metric> extends MetricsSamp
 
     void inc(S source, K metricName);
 
-    void incOnEvent(S source, K metricName);
-
     Optional<ConcurrentMap<M, AtomicLong>> getCount(K metricName);
 
 }
