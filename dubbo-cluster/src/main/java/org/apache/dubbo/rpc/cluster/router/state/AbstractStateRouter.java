@@ -116,9 +116,6 @@ public abstract class AbstractStateRouter<T> implements StateRouter<T> {
         BitList<Invoker<T>> routeResult;
 
         routeResult = doRoute(invokers, url, invocation, needToPrintMessage, nodeHolder, messageHolder);
-        if (routeResult != invokers) {
-            routeResult = invokers.and(routeResult);
-        }
         // check if router support call continue route by itself
         if (!supportContinueRoute()) {
             // use current node's result as next node's parameter
