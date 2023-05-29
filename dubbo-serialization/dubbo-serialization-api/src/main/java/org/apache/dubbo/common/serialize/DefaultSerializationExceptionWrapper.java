@@ -354,12 +354,11 @@ public class DefaultSerializationExceptionWrapper implements Serialization {
         }
     }
 
-    private static Throwable handleToIOException(Exception e) {
-        Throwable t = e.getCause();
-        if (!(t instanceof IOException)) {
-            t = new IOException(new SerializationException(e));
+    private static IOException handleToIOException(Exception e) {
+        if (!(e instanceof IOException)) {
+            return new IOException(new SerializationException(e));
         }
-        return t;
+        return (IOException) e;
     }
 
 }
