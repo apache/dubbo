@@ -71,7 +71,7 @@ public class DefaultSerializationExceptionWrapper implements Serialization {
             try {
                 return target.readBool();
             } catch (Exception e) {
-                throw (IOException) handleToIOException(e);
+                throw handleToIOException(e);
             }
         }
 
@@ -80,7 +80,7 @@ public class DefaultSerializationExceptionWrapper implements Serialization {
             try {
                 return target.readByte();
             } catch (Exception e) {
-                throw (IOException) handleToIOException(e);
+                throw handleToIOException(e);
 
             }
         }
@@ -90,7 +90,7 @@ public class DefaultSerializationExceptionWrapper implements Serialization {
             try {
                 return target.readShort();
             } catch (Exception e) {
-                throw (IOException) handleToIOException(e);
+                throw handleToIOException(e);
 
             }
         }
@@ -100,7 +100,7 @@ public class DefaultSerializationExceptionWrapper implements Serialization {
             try {
                 return target.readInt();
             } catch (Exception e) {
-                throw (IOException) handleToIOException(e);
+                throw handleToIOException(e);
 
             }
         }
@@ -110,7 +110,7 @@ public class DefaultSerializationExceptionWrapper implements Serialization {
             try {
                 return target.readLong();
             } catch (Exception e) {
-                throw (IOException) handleToIOException(e);
+                throw handleToIOException(e);
 
             }
         }
@@ -120,7 +120,7 @@ public class DefaultSerializationExceptionWrapper implements Serialization {
             try {
                 return target.readFloat();
             } catch (Exception e) {
-                throw (IOException) handleToIOException(e);
+                throw handleToIOException(e);
             }
         }
 
@@ -129,7 +129,7 @@ public class DefaultSerializationExceptionWrapper implements Serialization {
             try {
                 return target.readDouble();
             } catch (Exception e) {
-                throw (IOException) handleToIOException(e);
+                throw handleToIOException(e);
             }
         }
 
@@ -138,7 +138,7 @@ public class DefaultSerializationExceptionWrapper implements Serialization {
             try {
                 return target.readUTF();
             } catch (Exception e) {
-                throw (IOException) handleToIOException(e);
+                throw handleToIOException(e);
             }
         }
 
@@ -147,7 +147,7 @@ public class DefaultSerializationExceptionWrapper implements Serialization {
             try {
                 return target.readBytes();
             } catch (Exception e) {
-                throw (IOException) handleToIOException(e);
+                throw handleToIOException(e);
             }
         }
 
@@ -156,7 +156,7 @@ public class DefaultSerializationExceptionWrapper implements Serialization {
             try {
                 return target.readObject();
             } catch (Exception e) {
-                throw (IOException) handleToIOException(e);
+                throw handleToIOException(e);
             }
         }
 
@@ -165,7 +165,7 @@ public class DefaultSerializationExceptionWrapper implements Serialization {
             try {
                 return target.readObject(cls);
             } catch (Exception e) {
-                throw (IOException) handleToIOException(e);
+                throw handleToIOException(e);
             }
         }
 
@@ -174,7 +174,7 @@ public class DefaultSerializationExceptionWrapper implements Serialization {
             try {
                 return target.readObject(cls, type);
             } catch (Exception e) {
-                throw (IOException) handleToIOException(e);
+                throw handleToIOException(e);
             }
         }
 
@@ -183,7 +183,7 @@ public class DefaultSerializationExceptionWrapper implements Serialization {
             try {
                 return target.readThrowable();
             } catch (Exception e) {
-                throw (IOException) handleToIOException(e);
+                throw handleToIOException(e);
             }
         }
 
@@ -192,7 +192,7 @@ public class DefaultSerializationExceptionWrapper implements Serialization {
             try {
                 return target.readEvent();
             } catch (Exception e) {
-                throw (IOException) handleToIOException(e);
+                throw handleToIOException(e);
             }
         }
 
@@ -201,11 +201,10 @@ public class DefaultSerializationExceptionWrapper implements Serialization {
             try {
                 return target.readAttachments();
             } catch (Exception e) {
-                Throwable t = handleToIOException(e);
                 if (e instanceof ClassNotFoundException) {
                     throw e;
                 }
-                throw (IOException) t;
+                throw handleToIOException(e);
             }
         }
     }
@@ -223,7 +222,7 @@ public class DefaultSerializationExceptionWrapper implements Serialization {
             try {
                 target.writeBool(v);
             } catch (Exception e) {
-                throw (IOException) handleToIOException(e);
+                throw handleToIOException(e);
             }
         }
 
@@ -232,7 +231,7 @@ public class DefaultSerializationExceptionWrapper implements Serialization {
             try {
                 target.writeByte(v);
             } catch (Exception e) {
-                throw (IOException) handleToIOException(e);
+                throw handleToIOException(e);
             }
         }
 
@@ -241,7 +240,7 @@ public class DefaultSerializationExceptionWrapper implements Serialization {
             try {
                 target.writeShort(v);
             } catch (Exception e) {
-                throw (IOException) handleToIOException(e);
+                throw handleToIOException(e);
             }
         }
 
@@ -250,7 +249,7 @@ public class DefaultSerializationExceptionWrapper implements Serialization {
             try {
                 target.writeInt(v);
             } catch (Exception e) {
-                throw (IOException) handleToIOException(e);
+                throw handleToIOException(e);
             }
         }
 
@@ -259,7 +258,7 @@ public class DefaultSerializationExceptionWrapper implements Serialization {
             try {
                 target.writeLong(v);
             } catch (Exception e) {
-                throw (IOException) handleToIOException(e);
+                throw handleToIOException(e);
             }
         }
 
@@ -268,7 +267,7 @@ public class DefaultSerializationExceptionWrapper implements Serialization {
             try {
                 target.writeFloat(v);
             } catch (Exception e) {
-                throw (IOException) handleToIOException(e);
+                throw handleToIOException(e);
             }
         }
 
@@ -277,7 +276,7 @@ public class DefaultSerializationExceptionWrapper implements Serialization {
             try {
                 target.writeDouble(v);
             } catch (Exception e) {
-                throw (IOException) handleToIOException(e);
+                throw handleToIOException(e);
             }
         }
 
@@ -286,7 +285,7 @@ public class DefaultSerializationExceptionWrapper implements Serialization {
             try {
                 target.writeUTF(v);
             } catch (Exception e) {
-                throw (IOException) handleToIOException(e);
+                throw handleToIOException(e);
             }
         }
 
@@ -295,7 +294,7 @@ public class DefaultSerializationExceptionWrapper implements Serialization {
             try {
                 target.writeBytes(v);
             } catch (Exception e) {
-                throw (IOException) handleToIOException(e);
+                throw handleToIOException(e);
             }
         }
 
@@ -304,7 +303,7 @@ public class DefaultSerializationExceptionWrapper implements Serialization {
             try {
                 target.writeBytes(v);
             } catch (Exception e) {
-                throw (IOException) handleToIOException(e);
+                throw handleToIOException(e);
             }
         }
 
@@ -313,7 +312,7 @@ public class DefaultSerializationExceptionWrapper implements Serialization {
             try {
                 target.flushBuffer();
             } catch (Exception e) {
-                throw (IOException) handleToIOException(e);
+                throw handleToIOException(e);
             }
         }
 
@@ -322,7 +321,7 @@ public class DefaultSerializationExceptionWrapper implements Serialization {
             try {
                 target.writeObject(obj);
             } catch (Exception e) {
-                throw (IOException) handleToIOException(e);
+                throw handleToIOException(e);
             }
         }
 
@@ -331,7 +330,7 @@ public class DefaultSerializationExceptionWrapper implements Serialization {
             try {
                 target.writeThrowable(obj);
             } catch (Exception e) {
-                throw (IOException) handleToIOException(e);
+                throw handleToIOException(e);
             }
         }
 
@@ -340,7 +339,7 @@ public class DefaultSerializationExceptionWrapper implements Serialization {
             try {
                 target.writeEvent(data);
             } catch (Exception e) {
-                throw (IOException) handleToIOException(e);
+                throw handleToIOException(e);
             }
         }
 
@@ -349,7 +348,7 @@ public class DefaultSerializationExceptionWrapper implements Serialization {
             try {
                 target.writeAttachments(attachments);
             } catch (Exception e) {
-                throw (IOException) handleToIOException(e);
+                throw handleToIOException(e);
             }
         }
     }
