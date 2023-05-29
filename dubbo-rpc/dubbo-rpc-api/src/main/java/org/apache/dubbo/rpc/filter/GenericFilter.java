@@ -106,7 +106,8 @@ public class GenericFilter implements Filter, Filter.Listener, ScopeModelAware {
                     || ProtocolUtils.isGenericReturnRawResult(generic)) {
                     try {
                         args = PojoUtils.realize(args, params, method.getGenericParameterTypes());
-                    } catch (IllegalArgumentException e) {
+                    } catch (Exception e) {
+                        logger.error("Deserialize generic invocation failed. ServiceKey: " + inv.getTargetServiceUniqueName(), e);
                         throw new RpcException(e);
                     }
                 } else if (ProtocolUtils.isGsonGenericSerialization(generic)) {
