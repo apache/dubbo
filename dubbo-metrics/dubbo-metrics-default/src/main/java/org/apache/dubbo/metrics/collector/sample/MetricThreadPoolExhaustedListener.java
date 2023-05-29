@@ -38,6 +38,6 @@ public class MetricThreadPoolExhaustedListener implements ThreadPoolExhaustedLis
     @Override
     public void onEvent(ThreadPoolExhaustedEvent event) {
         threadRejectMetricsCountSampler.addMetricName(threadPoolExecutorName);
-        threadRejectMetricsCountSampler.incOnEvent(threadPoolExecutorName,threadPoolExecutorName);
+        threadRejectMetricsCountSampler.inc(threadPoolExecutorName,threadPoolExecutorName);
     }
 }

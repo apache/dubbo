@@ -305,6 +305,10 @@ public class RpcContext {
         return newRpcContext.get(key);
     }
 
+    public Invocation getInvocation() {
+        return new Invocation.CompatibleInvocation(newRpcContext.getInvocation());
+    }
+
     @Deprecated
     public boolean isServerSide() {
         return isProviderSide();
