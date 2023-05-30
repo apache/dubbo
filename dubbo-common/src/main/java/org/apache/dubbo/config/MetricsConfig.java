@@ -92,7 +92,7 @@ public class MetricsConfig extends AbstractConfig {
      */
     private Boolean useGlobalRegistry;
 
-    private Boolean enableRpc;
+    private Boolean enableRpc = true;
 
     public MetricsConfig() {
     }

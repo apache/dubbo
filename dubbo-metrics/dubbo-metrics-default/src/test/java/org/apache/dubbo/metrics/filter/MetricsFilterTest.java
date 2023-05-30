@@ -20,7 +20,6 @@ package org.apache.dubbo.metrics.filter;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.config.ApplicationConfig;
-import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.metrics.TestMetricsInvoker;
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
 import org.apache.dubbo.metrics.event.MetricsEventBus;
@@ -83,9 +82,6 @@ class MetricsFilterTest {
         config.setName("MockMetrics");
         applicationModel = ApplicationModel.defaultModel();
         applicationModel.getApplicationConfigManager().setApplication(config);
-        MetricsConfig metricsConfig = new MetricsConfig();
-        metricsConfig.setEnableRpc(true);
-        applicationModel.getApplicationConfigManager().setMetrics(metricsConfig);
         invocation = new RpcInvocation();
         filter = new MetricsFilter();
 
