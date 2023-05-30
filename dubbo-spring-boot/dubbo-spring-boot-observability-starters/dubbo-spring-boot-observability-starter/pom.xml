@@ -36,5 +36,10 @@
             <artifactId>dubbo-spring-boot-observability-autoconfigure</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-spring-boot-actuator</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 </project>
