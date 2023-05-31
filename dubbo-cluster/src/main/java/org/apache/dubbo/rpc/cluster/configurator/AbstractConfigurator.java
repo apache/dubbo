@@ -17,6 +17,8 @@
 package org.apache.dubbo.rpc.cluster.configurator;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Constants;
@@ -36,6 +38,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.INTERFACES;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_METHOD_DEPRECATED;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_DECODE;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.COMPATIBLE_CONFIG_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_KEY;
@@ -46,6 +50,8 @@ import static org.apache.dubbo.rpc.cluster.Constants.OVERRIDE_PROVIDERS_KEY;
  * AbstractConfigurator
  */
 public abstract class AbstractConfigurator implements Configurator {
+
+    private static final ErrorTypeAwareLogger log = LoggerFactory.getErrorTypeAwareLogger(AbstractConfigurator.class);
 
     private static final String TILDE = "~";
 
@@ -94,6 +100,9 @@ public abstract class AbstractConfigurator implements Configurator {
 
     @Deprecated
     private URL configureDeprecated(URL url) {
+        if (log.isWarnEnabled()) {
+            log.warn(CLUSTER_METHOD_DEPRECATED, "This method has been deprecated", "", "This configureDeprecated method is deprecated and is left only to keep compatibility with versions before 2.7.0.");
+        }
         // If override url has port, means it is a provider address. We want to control a specific provider with this override url, it may take effect on the specific provider instance or on consumers holding this provider instance.
         if (configuratorUrl.getPort() != 0) {
             if (url.getPort() == configuratorUrl.getPort()) {
