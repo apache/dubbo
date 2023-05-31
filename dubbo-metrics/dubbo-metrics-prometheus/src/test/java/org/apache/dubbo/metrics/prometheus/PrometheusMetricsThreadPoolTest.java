@@ -146,7 +146,7 @@ public class PrometheusMetricsThreadPoolTest {
         collector.setApplicationName(applicationModel.getApplicationName());
         String threadPoolExecutorName="DubboServerHandler-20816";
         ThreadRejectMetricsCountSampler threadRejectMetricsCountSampler=new ThreadRejectMetricsCountSampler(collector);
-        threadRejectMetricsCountSampler.incOnEvent(threadPoolExecutorName,threadPoolExecutorName);
+        threadRejectMetricsCountSampler.inc(threadPoolExecutorName,threadPoolExecutorName);
         threadRejectMetricsCountSampler.addMetricName(threadPoolExecutorName);
         List<MetricSample> samples = collector.collect();
         for (MetricSample sample : samples) {
