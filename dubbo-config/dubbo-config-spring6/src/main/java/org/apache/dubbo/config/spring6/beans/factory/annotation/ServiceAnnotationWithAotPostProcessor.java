@@ -22,6 +22,7 @@ import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.spring.ServiceBean;
 import org.apache.dubbo.config.spring.beans.factory.annotation.ServiceAnnotationPostProcessor;
 import org.apache.dubbo.config.spring.schema.AnnotationBeanDefinitionParser;
+import org.apache.dubbo.config.spring6.utils.AotUtils;
 import org.springframework.aot.generate.GenerationContext;
 import org.springframework.aot.hint.MemberCategory;
 import org.springframework.aot.hint.TypeReference;
@@ -86,7 +87,8 @@ public class ServiceAnnotationWithAotPostProcessor extends ServiceAnnotationPost
         @Override
         public void applyTo(GenerationContext generationContext, BeanRegistrationCode beanRegistrationCode) {
             generationContext.getRuntimeHints().reflection().registerType(TypeReference.of(cl),
-                MemberCategory.INVOKE_PUBLIC_METHODS);
+                    MemberCategory.INVOKE_PUBLIC_METHODS);
+            AotUtils.registerSerializationHint(cl, generationContext.getRuntimeHints());
 
         }
     }
