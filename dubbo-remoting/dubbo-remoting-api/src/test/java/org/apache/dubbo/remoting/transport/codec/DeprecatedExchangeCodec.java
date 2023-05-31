@@ -279,7 +279,7 @@ final class DeprecatedExchangeCodec extends DeprecatedTelnetCodec implements Cod
                     logger.warn("Fail to encode response: " + res + ", send bad_response info instead, cause: " + t.getMessage(), t);
 
                     Response r = new Response(res.getId(), res.getVersion());
-                    r.setStatus(Response.BAD_RESPONSE);
+                    r.setStatus(Response.SERIALIZATION_ERROR);
                     r.setErrorMessage("Failed to send response: " + res + ", cause: " + StringUtils.toString(t));
                     channel.send(r);
 
