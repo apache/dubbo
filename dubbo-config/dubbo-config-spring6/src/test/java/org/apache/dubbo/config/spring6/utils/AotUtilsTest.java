@@ -28,7 +28,7 @@ public class AotUtilsTest {
 
         RuntimeHints runtimeHints = new RuntimeHints();
         AotUtils.registerSerializationForService(DemoService.class, runtimeHints);
-        Assertions.assertEquals(7, runtimeHints.serialization().javaSerializationHints().count());
+        Assertions.assertEquals(5, runtimeHints.serialization().javaSerializationHints().count());
     }
 
 }

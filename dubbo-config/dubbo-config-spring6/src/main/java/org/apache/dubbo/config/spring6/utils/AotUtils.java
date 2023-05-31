@@ -17,11 +17,13 @@
 
 package org.apache.dubbo.config.spring6.utils;
 
+import org.apache.dubbo.common.compiler.support.ClassUtils;
 import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.aot.hint.TypeReference;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Date;
 
 
 public class AotUtils {
@@ -42,13 +44,24 @@ public class AotUtils {
     }
 
     private static void registerSerializationType(Class<?> registerType, RuntimeHints hints) {
-        if (!registerType.isPrimitive() && Serializable.class.isAssignableFrom(registerType)) {
-            hints.serialization().registerType(TypeReference.of(registerType));
+        if (isPrimitive(registerType)) {
+            hints.serialization().registerType(TypeReference.of(ClassUtils.getBoxedClass(registerType)));
+        } else {
+            if (Serializable.class.isAssignableFrom(registerType)) {
+                hints.serialization().registerType(TypeReference.of(registerType));
 
-            Arrays.stream(registerType.getDeclaredFields()).forEach((field -> registerSerializationType(field.getType(), hints)));
+                Arrays.stream(registerType.getDeclaredFields()).forEach((field -> registerSerializationType(field.getType(), hints)));
 
-            registerSerializationType(registerType.getSuperclass(), hints);
+                registerSerializationType(registerType.getSuperclass(), hints);
+            }
         }
 
+    }
+
+    private static boolean isPrimitive(Class<?> cls) {
+        return cls.isPrimitive() || cls == Boolean.class || cls == Byte.class
+                || cls == Character.class || cls == Short.class || cls == Integer.class
+                || cls == Long.class || cls == Float.class || cls == Double.class
+                || cls == String.class || cls == Date.class || cls == Class.class;
     }
 }
