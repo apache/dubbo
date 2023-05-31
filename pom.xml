@@ -368,6 +368,8 @@
                                         **/org/apache/dubbo/rpc/protocol/tri/TriHttp2RemoteFlowController.java,
                                         **/org/apache/dubbo/metrics/aggregate/DubboMergingDigest.java,
                                         **/org/apache/dubbo/metrics/aggregate/DubboAbstractTDigest.java,
+                                        **/org/apache/dubbo/common/logger/helpers/FormattingTuple.java,
+                                        **/org/apache/dubbo/common/logger/helpers/MessageFormatter.java,
                                         **/istio/v1/auth/**/*,
                                         **/com/google/rpc/*,
                                         **/generated/**/*,
