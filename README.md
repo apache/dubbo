@@ -180,6 +180,12 @@ If you want to try out the cutting-edge features, you can build with the followi
   mvn clean install
 ```
 
+## Recommended Test Environment
+To avoid intermittent test failures (i.e., flaky tests), it is recommended to have a machine or virtual machine with the following specifications:
+
+* Minumum of 2CPUs.
+* Minimum of 2Gb of RAM.
+
 ## Contact
 
 * Mailing list:

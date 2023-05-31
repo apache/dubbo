@@ -44,7 +44,8 @@ import static org.mockito.Mockito.mock;
 class DubboMicrometerTracingAutoConfigurationTests {
 
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-            .withConfiguration(AutoConfigurations.of(DubboMicrometerTracingAutoConfiguration.class));
+            .withConfiguration(AutoConfigurations.of(DubboMicrometerTracingAutoConfiguration.class))
+            .withPropertyValues("dubbo.tracing.enabled=true");
 
     @Test
     void shouldSupplyBeans() {

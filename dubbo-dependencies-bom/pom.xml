@@ -129,7 +129,7 @@
         <fst_version>2.57</fst_version>
         <avro_version>1.11.1</avro_version>
         <apollo_client_version>2.1.0</apollo_client_version>
-        <snakeyaml_version>1.33</snakeyaml_version>
+        <snakeyaml_version>2.0</snakeyaml_version>
         <commons_lang3_version>3.12.0</commons_lang3_version>
         <protostuff_version>1.8.0</protostuff_version>
         <envoy_api_version>0.1.35</envoy_api_version>
@@ -190,7 +190,7 @@
         <portlet_version>2.0</portlet_version>
         <maven_flatten_version>1.5.0</maven_flatten_version>
         <commons_compress_version>1.23.0</commons_compress_version>
-        <revision>3.2.2-SNAPSHOT</revision>
+        <revision>3.2.3-SNAPSHOT</revision>
     </properties>
 
     <dependencyManagement>

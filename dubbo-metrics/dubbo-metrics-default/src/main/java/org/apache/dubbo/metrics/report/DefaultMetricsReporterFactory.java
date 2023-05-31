@@ -15,40 +15,21 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.metrics.collector.sample;
+package org.apache.dubbo.metrics.report;
 
-import org.apache.dubbo.metrics.model.Metric;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import java.util.function.Function;
+public class DefaultMetricsReporterFactory extends AbstractMetricsReporterFactory {
+    private final ApplicationModel applicationModel;
 
-public class MetricsCountSampleConfigurer<S,K,M extends Metric> {
-
-    public S source;
-
-    public K metricName;
-
-    public M metric;
-
-    public void setSource(S source){
-        this.source = source;
+    public DefaultMetricsReporterFactory(ApplicationModel applicationModel) {
+        super(applicationModel);
+        this.applicationModel = applicationModel;
     }
 
-    public MetricsCountSampleConfigurer<S,K,M> setMetricsName(K metricName){
-        this.metricName = metricName;
-        return this;
+    @Override
+    public MetricsReporter createMetricsReporter(URL url) {
+        return new DefaultMetricsReporter(url, applicationModel);
     }
-
-    public MetricsCountSampleConfigurer<S,K,M> configureMetrics(Function<MetricsCountSampleConfigurer<S,K,M>,M> builder){
-        this.metric = builder.apply(this);
-        return this;
-    }
-
-    public S getSource() {
-        return source;
-    }
-
-    public M getMetric() {
-        return metric;
-    }
-
 }

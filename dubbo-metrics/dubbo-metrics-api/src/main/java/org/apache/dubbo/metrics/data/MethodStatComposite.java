@@ -17,9 +17,13 @@
 
 package org.apache.dubbo.metrics.data;
 
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.metrics.exception.MetricsNeverHappenException;
 import org.apache.dubbo.metrics.model.MethodMetric;
 import org.apache.dubbo.metrics.model.MetricsCategory;
+import org.apache.dubbo.metrics.model.MetricsSupport;
 import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
 import org.apache.dubbo.metrics.model.sample.CounterMetricSample;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
@@ -41,9 +45,12 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class MethodStatComposite extends AbstractMetricsExport {
 
+    private static final Logger logger = LoggerFactory.getLogger(MethodStatComposite.class);
+
     public MethodStatComposite(ApplicationModel applicationModel) {
         super(applicationModel);
     }
+
     private final Map<MetricsKeyWrapper, Map<MethodMetric, AtomicLong>> methodNumStats = new ConcurrentHashMap<>();
 
     public void initWrapper(List<MetricsKeyWrapper> metricsKeyWrappers) {
@@ -58,6 +65,7 @@ public class MethodStatComposite extends AbstractMetricsExport {
             return;
         }
         methodNumStats.get(wrapper).computeIfAbsent(new MethodMetric(getApplicationModel(), invocation), k -> new AtomicLong(0L)).getAndAdd(size);
+        MetricsSupport.fillZero(methodNumStats);
     }
 
     public List<MetricSample> export(MetricsCategory category) {
@@ -65,11 +73,13 @@ public class MethodStatComposite extends AbstractMetricsExport {
         for (MetricsKeyWrapper wrapper : methodNumStats.keySet()) {
             Map<MethodMetric, AtomicLong> stringAtomicLongMap = methodNumStats.get(wrapper);
             for (MethodMetric methodMetric : stringAtomicLongMap.keySet()) {
-                if (methodMetric.getSampleType() == MetricSample.Type.GAUGE) {
+                if (wrapper.getSampleType() == MetricSample.Type.COUNTER) {
                     list.add(new CounterMetricSample<>(wrapper,
-                            methodMetric.getTags(), category, stringAtomicLongMap.get(methodMetric)));
-                } else {
+                        methodMetric.getTags(), category, stringAtomicLongMap.get(methodMetric)));
+                } else if (wrapper.getSampleType() == MetricSample.Type.GAUGE) {
                     list.add(new GaugeMetricSample<>(wrapper, methodMetric.getTags(), category, stringAtomicLongMap, value -> value.get(methodMetric).get()));
+                } else {
+                    throw new MetricsNeverHappenException("Unsupported metricSample type: " + wrapper.getSampleType());
                 }
 
             }
