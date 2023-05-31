@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config.spring.beans.factory.annotation;
 
+import com.alibaba.spring.util.AnnotationUtils;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ClassUtils;
@@ -27,12 +28,11 @@ import org.apache.dubbo.config.annotation.DubboService;
 import org.apache.dubbo.config.annotation.Method;
 import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.spring.ServiceBean;
+import org.apache.dubbo.config.spring.aot.AotWithSpringDetector;
 import org.apache.dubbo.config.spring.context.annotation.DubboClassPathBeanDefinitionScanner;
 import org.apache.dubbo.config.spring.schema.AnnotationBeanDefinitionParser;
 import org.apache.dubbo.config.spring.util.DubboAnnotationUtils;
 import org.apache.dubbo.config.spring.util.SpringCompatUtils;
-
-import com.alibaba.spring.util.AnnotationUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.BeanClassLoaderAware;
@@ -78,12 +78,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static com.alibaba.spring.util.ObjectUtils.of;
 import static java.util.Arrays.asList;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_DUPLICATED_BEAN_DEFINITION;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_NO_ANNOTATIONS_FOUND;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_NO_BEANS_SCANNED;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_DUPLICATED_BEAN_DEFINITION;
 import static org.apache.dubbo.common.utils.AnnotationUtils.filterDefaultValues;
 import static org.apache.dubbo.config.spring.beans.factory.annotation.ServiceBeanNameBuilder.create;
 import static org.apache.dubbo.config.spring.util.DubboAnnotationUtils.resolveInterfaceName;
@@ -128,7 +129,7 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
 
     private BeanDefinitionRegistry registry;
 
-    private ServicePackagesHolder servicePackagesHolder;
+    protected ServicePackagesHolder servicePackagesHolder;
 
     private volatile boolean scanned = false;
 
@@ -136,12 +137,8 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
         this(asList(packagesToScan));
     }
 
-    public ServiceAnnotationPostProcessor(Collection<String> packagesToScan) {
-        this(new LinkedHashSet<>(packagesToScan));
-    }
-
-    public ServiceAnnotationPostProcessor(Set<String> packagesToScan) {
-        this.packagesToScan = packagesToScan;
+    public ServiceAnnotationPostProcessor(Collection<?> packagesToScan) {
+        this.packagesToScan = (Set<String>) packagesToScan.stream().collect(Collectors.toSet());
     }
 
     @Override
@@ -217,6 +214,9 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
                 continue;
             }
 
+            if(AotWithSpringDetector.useGeneratedArtifacts()){
+                scanner.setIncludeAnnotationConfig(false);
+            }
             // Registers @Service Bean first
             scanner.scan(packageToScan);
 

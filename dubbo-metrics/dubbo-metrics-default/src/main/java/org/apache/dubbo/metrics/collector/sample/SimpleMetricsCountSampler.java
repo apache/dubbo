@@ -25,7 +25,6 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Function;
 
 /**
  * @param <S> request source
@@ -41,18 +40,7 @@ public abstract class SimpleMetricsCountSampler<S, K, M extends Metric>
 
     @Override
     public void inc(S source, K metricName) {
-        doExecute(source, metricName, counter -> {
-            counter.incrementAndGet();
-            return false;
-        });
-    }
-
-    @Override
-    public void incOnEvent(S source, K metricName) {
-        doExecute(source, metricName, counter -> {
-            counter.incrementAndGet();
-            return true;
-        });
+        getAtomicCounter(source, metricName).incrementAndGet();
     }
 
     @Override
@@ -64,7 +52,7 @@ public abstract class SimpleMetricsCountSampler<S, K, M extends Metric>
 
     protected abstract void countConfigure(MetricsCountSampleConfigurer<S, K, M> sampleConfigure);
 
-    private void doExecute(S source, K metricsName, Function<AtomicLong, Boolean> counter) {
+    private AtomicLong getAtomicCounter(S source, K metricsName) {
         MetricsCountSampleConfigurer<S, K, M> sampleConfigure = new MetricsCountSampleConfigurer<>();
         sampleConfigure.setSource(source);
         sampleConfigure.setMetricsName(metricsName);
@@ -84,11 +72,8 @@ public abstract class SimpleMetricsCountSampler<S, K, M extends Metric>
         if (atomicCounter == null) {
             atomicCounter = metricAtomic.computeIfAbsent(sampleConfigure.getMetric(), k -> new AtomicLong());
         }
-        Boolean isEvent = counter.apply(atomicCounter);
+        return atomicCounter;
 
-        if (isEvent) {
-            sampleConfigure.getFireEventHandler().accept(sampleConfigure);
-        }
     }
 
 }

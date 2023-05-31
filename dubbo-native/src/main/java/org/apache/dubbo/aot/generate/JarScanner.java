@@ -93,7 +93,6 @@ public class JarScanner {
         File[] listFiles = directory.listFiles();
         if (listFiles != null) {
             for (File file : listFiles) {
-                System.out.println("scanFile: " + file.getPath());
                 if (file.isDirectory()) {
                     scanFile(file.getPath());
                 } else {

@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.common.utils;
 
+import org.apache.dubbo.common.aot.NativeDetector;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.resource.GlobalResourcesRepository;
@@ -78,7 +79,7 @@ public class ClassLoaderResourceLoader {
             Enumeration<URL> urls;
             try {
                 urls = currentClassLoader.getResources(fileName);
-                boolean isNative = NativeUtils.isNative();
+                boolean isNative = NativeDetector.inNativeImage();
                 if (urls != null) {
                     while (urls.hasMoreElements()) {
                         URL url = urls.nextElement();

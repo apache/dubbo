@@ -50,6 +50,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.TreeMap;
 import java.util.WeakHashMap;
@@ -359,11 +360,11 @@ public class PojoUtils {
         Map<String, Type> mapGeneric = new HashMap<>(8);
         mapGeneric.putAll(mapParent);
         TypeVariable<? extends Class<?>>[] typeParameters = type.getTypeParameters();
-        if(genericType instanceof ParameterizedType && typeParameters.length > 0) {
-            ParameterizedType parameterizedType = (ParameterizedType)genericType;
+        if (genericType instanceof ParameterizedType && typeParameters.length > 0) {
+            ParameterizedType parameterizedType = (ParameterizedType) genericType;
             Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
             for (int i = 0; i < typeParameters.length; i++) {
-                if(!(actualTypeArguments[i] instanceof TypeVariable)) {
+                if (!(actualTypeArguments[i] instanceof TypeVariable)) {
                     mapGeneric.put(typeParameters[i].getTypeName(), actualTypeArguments[i]);
                 }
             }
@@ -534,26 +535,27 @@ public class PojoUtils {
                         Object value = entry.getValue();
                         if (value != null) {
                             Method method = getSetterMethod(dest.getClass(), name, value.getClass());
-                            Field field = getField(dest.getClass(), name);
+                            Field field = getAndCacheField(dest.getClass(), name);
                             if (method != null) {
                                 if (!method.isAccessible()) {
                                     method.setAccessible(true);
                                 }
-                                Type containType = mapGeneric.get(field.getGenericType().getTypeName());
-                                if(containType != null) {
+                                Type containType = Optional.ofNullable(field)
+                                    .map(Field::getGenericType)
+                                    .map(Type::getTypeName)
+                                    .map(mapGeneric::get)
+                                    .orElse(null);
+                                if (containType != null) {
                                     //is generic
-                                    if(containType instanceof ParameterizedType) {
-                                        value = realize1(value, (Class<?>) ((ParameterizedType)containType).getRawType(), containType, mapGeneric, history);
-                                    }
-                                    else if (containType instanceof Class){
+                                    if (containType instanceof ParameterizedType) {
+                                        value = realize1(value, (Class<?>) ((ParameterizedType) containType).getRawType(), containType, mapGeneric, history);
+                                    } else if (containType instanceof Class) {
                                         value = realize1(value, (Class<?>) containType, containType, mapGeneric, history);
-                                    }
-                                    else {
+                                    } else {
                                         Type ptype = method.getGenericParameterTypes()[0];
                                         value = realize1(value, method.getParameterTypes()[0], ptype, mapGeneric, history);
                                     }
-                                }
-                                else {
+                                } else {
                                     Type ptype = method.getGenericParameterTypes()[0];
                                     value = realize1(value, method.getParameterTypes()[0], ptype, mapGeneric, history);
                                 }
@@ -626,7 +628,7 @@ public class PojoUtils {
         try {
             Constructor<?> messagedConstructor = cls.getDeclaredConstructor(String.class);
             return messagedConstructor.newInstance(message);
-        } catch (Throwable t) {
+        } catch (Exception t) {
             return newInstance(cls);
         }
     }
@@ -634,7 +636,7 @@ public class PojoUtils {
     private static Object newInstance(Class<?> cls) {
         try {
             return cls.getDeclaredConstructor().newInstance();
-        } catch (Throwable t) {
+        } catch (Exception t) {
             Constructor<?>[] constructors = cls.getDeclaredConstructors();
             /*
               From Javadoc java.lang.Class#getDeclaredConstructors
@@ -653,7 +655,7 @@ public class PojoUtils {
                     constructor.setAccessible(true);
                     Object[] parameters = Arrays.stream(constructor.getParameterTypes()).map(PojoUtils::getDefaultValue).toArray();
                     return constructor.newInstance(parameters);
-                } catch (Throwable e) {
+                } catch (Exception e) {
                     lastError = e;
                 }
             }
@@ -704,12 +706,24 @@ public class PojoUtils {
         return method;
     }
 
-    private static Field getField(Class<?> cls, String fieldName) {
-        Field result = null;
+    private static Field getAndCacheField(Class<?> cls, String fieldName) {
+        Field result;
         if (CLASS_FIELD_CACHE.containsKey(cls) && CLASS_FIELD_CACHE.get(cls).containsKey(fieldName)) {
             return CLASS_FIELD_CACHE.get(cls).get(fieldName);
         }
-        for(Class<?> acls = cls; acls != null; acls = acls.getSuperclass()) {
+
+        result = getField(cls, fieldName);
+
+        if (result != null) {
+            ConcurrentMap<String, Field> fields = CLASS_FIELD_CACHE.computeIfAbsent(cls, k -> new ConcurrentHashMap<>());
+            fields.putIfAbsent(fieldName, result);
+        }
+        return result;
+    }
+
+    private static Field getField(Class<?> cls, String fieldName) {
+        Field result = null;
+        for (Class<?> acls = cls; acls != null; acls = acls.getSuperclass()) {
             try {
                 result = acls.getDeclaredField(fieldName);
                 if (!Modifier.isPublic(result.getModifiers())) {
@@ -718,18 +732,13 @@ public class PojoUtils {
             } catch (NoSuchFieldException e) {
             }
         }
-        if(result == null) {
+        if (result == null && cls != null) {
             for (Field field : cls.getFields()) {
                 if (fieldName.equals(field.getName()) && ReflectUtils.isPublicInstanceField(field)) {
                     result = field;
                     break;
                 }
             }
-        }
-
-        if (result != null) {
-            ConcurrentMap<String, Field> fields = CLASS_FIELD_CACHE.computeIfAbsent(cls, k -> new ConcurrentHashMap<>());
-            fields.putIfAbsent(fieldName, result);
         }
         return result;
     }

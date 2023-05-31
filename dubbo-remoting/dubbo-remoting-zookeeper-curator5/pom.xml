@@ -59,5 +59,11 @@
             <artifactId>zookeeper</artifactId>
             <version>${zookeeper_version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-native</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
     </dependencies>
 </project>
