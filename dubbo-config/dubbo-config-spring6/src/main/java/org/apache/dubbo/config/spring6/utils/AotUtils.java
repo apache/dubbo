@@ -20,22 +20,35 @@ package org.apache.dubbo.config.spring6.utils;
 import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.aot.hint.TypeReference;
 
+import java.io.Serializable;
 import java.util.Arrays;
 
 
 public class AotUtils {
 
-    private AotUtils(){
+    private AotUtils() {
 
     }
 
-    public static void registerSerializationHint(Class<?> injectType, RuntimeHints hints) {
-        Arrays.stream(injectType.getMethods()).forEach((method) -> {
-            Arrays.stream(method.getParameterTypes()).forEach((cl) -> {
-                hints.serialization().registerType(TypeReference.of(cl));
+    public static void registerSerializationForService(Class<?> serviceType, RuntimeHints hints) {
+        Arrays.stream(serviceType.getMethods()).forEach((method) -> {
+            Arrays.stream(method.getParameterTypes()).forEach((parameterType) -> {
+                registerSerializationType(parameterType, hints);
+
             });
 
-            hints.serialization().registerType(TypeReference.of(method.getReturnType()));
+            registerSerializationType(method.getReturnType(), hints);
         });
+    }
+
+    private static void registerSerializationType(Class<?> registerType, RuntimeHints hints) {
+        if (!registerType.isPrimitive() && Serializable.class.isAssignableFrom(registerType)) {
+            hints.serialization().registerType(TypeReference.of(registerType));
+
+            Arrays.stream(registerType.getDeclaredFields()).forEach((field -> registerSerializationType(field.getType(), hints)));
+
+            registerSerializationType(registerType.getSuperclass(), hints);
+        }
+
     }
 }

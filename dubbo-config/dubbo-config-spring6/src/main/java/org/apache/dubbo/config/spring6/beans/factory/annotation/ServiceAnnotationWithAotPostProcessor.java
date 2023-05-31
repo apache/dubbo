@@ -88,7 +88,7 @@ public class ServiceAnnotationWithAotPostProcessor extends ServiceAnnotationPost
         public void applyTo(GenerationContext generationContext, BeanRegistrationCode beanRegistrationCode) {
             generationContext.getRuntimeHints().reflection().registerType(TypeReference.of(cl),
                     MemberCategory.INVOKE_PUBLIC_METHODS);
-            AotUtils.registerSerializationHint(cl, generationContext.getRuntimeHints());
+            AotUtils.registerSerializationForService(cl, generationContext.getRuntimeHints());
 
         }
     }
