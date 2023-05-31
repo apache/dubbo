@@ -27,7 +27,7 @@ import org.springframework.util.Assert;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -154,7 +154,7 @@ public class DubboAnnotationUtils {
      */
     public static Map<String, String> convertParameters(String[] parameters) {
         if (ArrayUtils.isEmpty(parameters)) {
-            return Collections.emptyMap();
+            return new HashMap<>();
         }
 
         List<String> compatibleParameterArray = Arrays.stream(parameters)

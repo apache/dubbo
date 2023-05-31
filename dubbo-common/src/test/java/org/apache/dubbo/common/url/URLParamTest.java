@@ -220,6 +220,7 @@ class URLParamTest {
         Assertions.assertFalse(urlParam1.getParameters().containsKey("aaa"));
         Assertions.assertFalse(urlParam1.getParameters().containsKey("version"));
         Assertions.assertFalse(urlParam1.getParameters().containsKey(new Object()));
+        Assertions.assertEquals(new HashMap<>(urlParam1.getParameters()).toString(), urlParam1.getParameters().toString());
 
         URLParam urlParam2 = URLParam.parse("aaa=aaa&version=1.0");
         URLParam.URLParamMap urlParam2Map = (URLParam.URLParamMap) urlParam2.getParameters();
@@ -284,6 +285,10 @@ class URLParamTest {
 
         set.add(urlParam4.getParameters());
         Assertions.assertEquals(2,set.size());
+
+        URLParam urlParam5 = URLParam.parse("version=1.0");
+        Assertions.assertEquals(new HashMap<>(urlParam5.getParameters()).toString(), urlParam5.getParameters().toString());
+
     }
 
     @Test
