@@ -713,7 +713,7 @@ public class ReferenceAnnotationWithAotBeanPostProcessor extends AbstractAnnotat
 
             try {
                 Class<?> c = referenceElement.getInjectedType();
-                AotUtils.registerSerializationHint(c, hints);
+                AotUtils.registerSerializationForService(c, hints);
                 hints.reflection().registerType(TypeReference.of(c), MemberCategory.INVOKE_PUBLIC_METHODS);
                 hints.proxies().registerJdkProxy(c, EchoService.class, Destroyable.class);
                 hints.proxies().registerJdkProxy(c, EchoService.class, Destroyable.class, SpringProxy.class, Advised.class, DecoratingProxy.class);
