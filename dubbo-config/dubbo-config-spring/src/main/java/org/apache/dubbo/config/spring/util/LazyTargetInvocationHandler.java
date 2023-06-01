@@ -17,6 +17,7 @@
 package org.apache.dubbo.config.spring.util;
 
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 public class LazyTargetInvocationHandler implements InvocationHandler {
@@ -53,7 +54,14 @@ public class LazyTargetInvocationHandler implements InvocationHandler {
             }
         }
         if (method.getDeclaringClass().isInstance(target)) {
-            return method.invoke(target, args);
+            try {
+                return method.invoke(target, args);
+            } catch (InvocationTargetException exception) {
+                Throwable targetException = exception.getTargetException();
+                if (targetException != null) {
+                    throw targetException;
+                }
+            }
         }
         throw new IllegalStateException("The proxied interface [" + method.getDeclaringClass() +
             "] contains a method [" + method + "] that is not implemented by the proxy class [" + target.getClass() + "]");
