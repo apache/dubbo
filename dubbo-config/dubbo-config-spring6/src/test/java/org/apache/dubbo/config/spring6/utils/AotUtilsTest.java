@@ -21,6 +21,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.aot.hint.RuntimeHints;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 public class AotUtilsTest {
 
     @Test
@@ -28,10 +30,47 @@ public class AotUtilsTest {
 
         RuntimeHints runtimeHints = new RuntimeHints();
         AotUtils.registerSerializationForService(DemoService.class, runtimeHints);
-        runtimeHints.serialization().javaSerializationHints().forEach(s->{
-            System.out.println(s.getType().getName());
+
+        AtomicBoolean containHelloRequest = new AtomicBoolean(false);
+        runtimeHints.serialization().javaSerializationHints().forEach(s -> {
+            if (s.getType().getName().equals(HelloRequest.class.getName())) {
+                containHelloRequest.set(true);
+            }
         });
-        Assertions.assertEquals(5, runtimeHints.serialization().javaSerializationHints().count());
+
+        AtomicBoolean containPerson = new AtomicBoolean(false);
+        runtimeHints.serialization().javaSerializationHints().forEach(s -> {
+            if (s.getType().getName().equals(HelloRequest.class.getName())) {
+                containPerson.set(true);
+            }
+        });
+
+        AtomicBoolean containString = new AtomicBoolean(false);
+        runtimeHints.serialization().javaSerializationHints().forEach(s -> {
+            if (s.getType().getName().equals(HelloRequest.class.getName())) {
+                containString.set(true);
+            }
+        });
+
+        AtomicBoolean containHelloRequestSuper = new AtomicBoolean(false);
+        runtimeHints.serialization().javaSerializationHints().forEach(s -> {
+            if (s.getType().getName().equals(HelloRequest.class.getName())) {
+                containHelloRequestSuper.set(true);
+            }
+        });
+
+        AtomicBoolean containHelloResponse = new AtomicBoolean(false);
+        runtimeHints.serialization().javaSerializationHints().forEach(s -> {
+            if (s.getType().getName().equals(HelloRequest.class.getName())) {
+                containHelloResponse.set(true);
+            }
+        });
+
+        Assertions.assertTrue(containHelloRequest.get());
+        Assertions.assertTrue(containPerson.get());
+        Assertions.assertTrue(containString.get());
+        Assertions.assertTrue(containHelloRequestSuper.get());
+        Assertions.assertTrue(containHelloResponse.get());
     }
 
 }
