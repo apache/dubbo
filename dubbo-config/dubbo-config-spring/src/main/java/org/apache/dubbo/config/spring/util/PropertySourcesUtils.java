@@ -87,7 +87,6 @@ public abstract class PropertySourcesUtils {
      * @param prefix          the prefix of property name
      * @return Map
      * @see Properties
-     * @since 1.0.3
      */
     public static Map<String, Object> getSubProperties(PropertySources propertySources, String prefix) {
         return getSubProperties(propertySources, new PropertySourcesPropertyResolver(propertySources), prefix);
@@ -101,7 +100,6 @@ public abstract class PropertySourcesUtils {
      * @param prefix           the prefix of property name
      * @return Map
      * @see Properties
-     * @since 1.0.3
      */
     public static Map<String, Object> getSubProperties(PropertySources propertySources, PropertyResolver propertyResolver, String prefix) {
 
@@ -136,7 +134,6 @@ public abstract class PropertySourcesUtils {
      *
      * @param propertySource {@link PropertySource} instance
      * @return non-null
-     * @since 1.0.10
      */
     public static String[] getPropertyNames(PropertySource propertySource) {
         String[] propertyNames = propertySource instanceof EnumerablePropertySource ?
