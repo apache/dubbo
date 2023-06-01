@@ -141,7 +141,7 @@
     </properties>
 
     <modules>
-<!--        <module>dubbo-annotation-processor</module>-->
+        <module>dubbo-annotation-processor</module>
         <module>dubbo-common</module>
         <module>dubbo-container</module>
         <module>dubbo-compiler</module>
