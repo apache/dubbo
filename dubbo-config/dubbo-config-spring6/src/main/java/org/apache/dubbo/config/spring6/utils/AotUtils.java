@@ -34,10 +34,7 @@ public class AotUtils {
 
     public static void registerSerializationForService(Class<?> serviceType, RuntimeHints hints) {
         Arrays.stream(serviceType.getMethods()).forEach((method) -> {
-            Arrays.stream(method.getParameterTypes()).forEach((parameterType) -> {
-                registerSerializationType(parameterType, hints);
-
-            });
+            Arrays.stream(method.getParameterTypes()).forEach((parameterType) -> registerSerializationType(parameterType, hints));
 
             registerSerializationType(method.getReturnType(), hints);
         });
