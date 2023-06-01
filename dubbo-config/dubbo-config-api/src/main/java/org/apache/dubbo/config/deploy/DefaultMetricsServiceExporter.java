@@ -54,10 +54,11 @@ public class DefaultMetricsServiceExporter implements MetricsServiceExporter, Sc
         MetricsConfig metricsConfig = applicationModel.getApplicationConfigManager().getMetrics().orElse(null);
         // TODO compatible with old usage of metrics, remove protocol check after new metrics is ready for use.
         if (metricsConfig != null &&  metricsService == null) {
-            if (PROTOCOL_PROMETHEUS.equals(metricsConfig.getProtocol()) ) {
+            String protocol = Optional.ofNullable(metricsConfig.getProtocol()).orElse(PROTOCOL_PROMETHEUS);
+            if (PROTOCOL_PROMETHEUS.equals(protocol) ) {
                 this.metricsService  = applicationModel.getExtensionLoader(MetricsService.class).getDefaultExtension();
             } else {
-                logger.warn(COMMON_METRICS_COLLECTOR_EXCEPTION, "", "", "Protocol " + metricsConfig.getProtocol() + " not support for new metrics mechanism. " +
+                logger.warn(COMMON_METRICS_COLLECTOR_EXCEPTION, "", "", "Protocol " + protocol + " not support for new metrics mechanism. " +
                     "Using old metrics mechanism instead.");
             }
         }
