@@ -31,8 +31,10 @@ import org.apache.dubbo.config.spring.context.event.DubboConfigInitEvent;
 import org.apache.dubbo.config.spring.reference.ReferenceAttributes;
 import org.apache.dubbo.config.spring.reference.ReferenceBeanManager;
 import org.apache.dubbo.config.spring.reference.ReferenceBeanSupport;
+import org.apache.dubbo.config.spring.util.AnnotationUtils;
 import org.apache.dubbo.config.spring.util.SpringCompatUtils;
 import org.apache.dubbo.rpc.service.GenericService;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.PropertyValue;
 import org.springframework.beans.PropertyValues;
@@ -65,7 +67,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import static com.alibaba.spring.util.AnnotationUtils.getAttribute;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_DUBBO_BEAN_INITIALIZER;
 import static org.apache.dubbo.common.utils.AnnotationUtils.filterDefaultValues;
 import static org.springframework.util.StringUtils.hasText;
@@ -383,7 +384,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
 
         boolean renameable = true;
         // referenceBeanName
-        String referenceBeanName = getAttribute(attributes, ReferenceAttributes.ID);
+        String referenceBeanName = AnnotationUtils.getAttribute(attributes, ReferenceAttributes.ID);
         if (hasText(referenceBeanName)) {
             renameable = false;
         } else {
