@@ -28,7 +28,7 @@ public class ToStringUtils {
             return "null";
         }
         try {
-            return JsonUtils.getJson().toJson(obj);
+            return JsonUtils.toJson(obj);
         } catch (Throwable throwable) {
             if (obj instanceof Object[]) {
                 return Arrays.toString((Object[]) obj);
