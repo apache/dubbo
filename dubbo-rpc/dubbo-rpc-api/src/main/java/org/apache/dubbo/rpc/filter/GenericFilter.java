@@ -21,6 +21,7 @@ import org.apache.dubbo.common.beanutil.JavaBeanDescriptor;
 import org.apache.dubbo.common.beanutil.JavaBeanSerializeUtil;
 import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.constants.LoggerCodeConstants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.io.UnsafeByteArrayInputStream;
 import org.apache.dubbo.common.io.UnsafeByteArrayOutputStream;
@@ -106,7 +107,9 @@ public class GenericFilter implements Filter, Filter.Listener, ScopeModelAware {
                     || ProtocolUtils.isGenericReturnRawResult(generic)) {
                     try {
                         args = PojoUtils.realize(args, params, method.getGenericParameterTypes());
-                    } catch (IllegalArgumentException e) {
+                    } catch (Exception e) {
+                        logger.error(LoggerCodeConstants.PROTOCOL_ERROR_DESERIALIZE, "", "",
+                            "Deserialize generic invocation failed. ServiceKey: " + inv.getTargetServiceUniqueName(), e);
                         throw new RpcException(e);
                     }
                 } else if (ProtocolUtils.isGsonGenericSerialization(generic)) {

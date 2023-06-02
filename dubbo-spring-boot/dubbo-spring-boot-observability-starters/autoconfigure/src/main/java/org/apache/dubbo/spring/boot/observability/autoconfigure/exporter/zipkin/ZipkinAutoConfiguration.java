@@ -36,7 +36,6 @@ import zipkin2.codec.BytesEncoder;
 import zipkin2.codec.SpanBytesEncoder;
 import zipkin2.reporter.Sender;
 
-import static org.apache.dubbo.spring.boot.observability.autoconfigure.ObservabilityUtils.DUBBO_TRACING_PREFIX;
 import static org.apache.dubbo.spring.boot.observability.autoconfigure.ObservabilityUtils.DUBBO_TRACING_ZIPKIN_CONFIG_PREFIX;
 
 
@@ -54,7 +53,6 @@ import static org.apache.dubbo.spring.boot.observability.autoconfigure.Observabi
 @Import({SenderConfiguration.class,
         ReporterConfiguration.class, BraveConfiguration.class,
         OpenTelemetryConfiguration.class})
-@ConditionalOnProperty(prefix = DUBBO_TRACING_PREFIX, name = "enabled", havingValue = "true")
 @ConditionalOnDubboTracingEnable
 public class ZipkinAutoConfiguration {
 
