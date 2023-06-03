@@ -380,7 +380,9 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
 
     private void registerServices() {
         for (ServiceConfigBase sc : configManager.getServices()) {
-            registerServiceInternal(sc);
+            if (!Boolean.FALSE.equals(sc.isRegister())) {
+                registerServiceInternal(sc);
+            }
         }
         applicationDeployer.refreshServiceInstance();
     }
