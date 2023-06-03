@@ -70,6 +70,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
@@ -162,8 +163,8 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
 
     private final Map<String, ServiceConfigurationListener> serviceConfigurationListeners = new ConcurrentHashMap<>();
     //To solve the problem of RMI repeated exposure port conflicts, the services that have been exposed are no longer exposed.
-    //provider url <--> exporter
-    private final ConcurrentMap<String, ExporterChangeableWrapper<?>> bounds = new ConcurrentHashMap<>();
+    //provider url <--> registry url <--> exporter
+    private final Map<String, Map<String, ExporterChangeableWrapper<?>>> bounds = new ConcurrentHashMap<>();
     protected Protocol protocol;
     protected ProxyFactory proxyFactory;
 
@@ -309,12 +310,14 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
 
     @SuppressWarnings("unchecked")
     private <T> ExporterChangeableWrapper<T> doLocalExport(final Invoker<T> originInvoker, URL providerUrl) {
-        String key = getCacheKey(originInvoker);
+        String providerUrlKey = getProviderUrlKey(originInvoker);
+        String registryUrlKey = getRegistryUrlKey(originInvoker);
 
-        return (ExporterChangeableWrapper<T>) bounds.computeIfAbsent(key, s -> {
-            Invoker<?> invokerDelegate = new InvokerDelegate<>(originInvoker, providerUrl);
-            return new ExporterChangeableWrapper<>((Exporter<T>) protocol.export(invokerDelegate), originInvoker);
-        });
+        return (ExporterChangeableWrapper<T>) bounds.computeIfAbsent(providerUrlKey, _k -> new ConcurrentHashMap<>())
+            .computeIfAbsent(registryUrlKey, s ->{
+                Invoker<?> invokerDelegate = new InvokerDelegate<>(originInvoker, providerUrl);
+                return new ExporterChangeableWrapper<>((Exporter<T>) protocol.export(invokerDelegate), originInvoker);
+            });
     }
 
     public <T> void reExport(Exporter<T> exporter, URL newInvokerUrl) {
@@ -334,8 +337,14 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
      */
     @SuppressWarnings("unchecked")
     public <T> void reExport(final Invoker<T> originInvoker, URL newInvokerUrl) {
-        String key = getCacheKey(originInvoker);
-        ExporterChangeableWrapper<T> exporter = (ExporterChangeableWrapper<T>) bounds.get(key);
+        String providerUrlKey = getProviderUrlKey(originInvoker);
+        String registryUrlKey = getRegistryUrlKey(originInvoker);
+        Map<String, ExporterChangeableWrapper<?>> registryMap = bounds.get(providerUrlKey);
+        if (registryMap == null) {
+            logger.warn(new IllegalStateException("error state, registryMap is null"));
+            return;
+        }
+        ExporterChangeableWrapper<T> exporter = (ExporterChangeableWrapper<T>) registryMap.get(registryUrlKey);
         URL registeredUrl = exporter.getRegisterUrl();
 
         URL registryUrl = getRegistryUrl(originInvoker);
@@ -481,9 +490,15 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
      * @param originInvoker
      * @return
      */
-    private String getCacheKey(final Invoker<?> originInvoker) {
+    private String getProviderUrlKey(final Invoker<?> originInvoker) {
         URL providerUrl = getProviderUrl(originInvoker);
         String key = providerUrl.removeParameters(DYNAMIC_KEY, ENABLED_KEY).toFullString();
+        return key;
+    }
+
+    private String getRegistryUrlKey(final Invoker<?> originInvoker) {
+        URL registryUrl = getRegistryUrl(originInvoker);
+        String key = registryUrl.removeParameters(DYNAMIC_KEY, ENABLED_KEY).toFullString();
         return key;
     }
 
@@ -654,7 +669,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
             }
         }
 
-        List<Exporter<?>> exporters = new ArrayList<>(bounds.values());
+        List<Exporter<?>> exporters = bounds.values().stream().flatMap(e -> e.values().stream()).collect(Collectors.toList());
         for (Exporter<?> exporter : exporters) {
             exporter.unexport();
         }
@@ -783,8 +798,14 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
             }
             //The origin invoker
             URL originUrl = RegistryProtocol.this.getProviderUrl(invoker);
-            String key = getCacheKey(originInvoker);
-            ExporterChangeableWrapper<?> exporter = bounds.get(key);
+            String providerUrlKey = getProviderUrlKey(originInvoker);
+            String registryUrlKey = getRegistryUrlKey(originInvoker);
+            Map<String, ExporterChangeableWrapper<?>> exporterMap = bounds.get(providerUrlKey);
+            if (exporterMap == null) {
+                logger.warn(INTERNAL_ERROR, "error state, exporterMap can not be null", "", "error state, exporterMap can not be null", new IllegalStateException("error state, exporterMap can not be null"));
+                return;
+            }
+            ExporterChangeableWrapper<?> exporter = exporterMap.get(registryUrlKey);
             if (exporter == null) {
                 logger.warn(INTERNAL_ERROR, "unknown error in registry module", "", "error state, exporter should not be null", new IllegalStateException("error state, exporter should not be null"));
                 return;
@@ -1012,8 +1033,12 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
 
         @Override
         public synchronized void unexport() {
-            String key = getCacheKey(this.originInvoker);
-            bounds.remove(key);
+            String providerUrlKey = getProviderUrlKey(this.originInvoker);
+            String registryUrlKey = getRegistryUrlKey(this.originInvoker);
+            Map<String, ExporterChangeableWrapper<?>> exporterMap = bounds.remove(providerUrlKey);
+            if (exporterMap != null) {
+                exporterMap.remove(registryUrlKey);
+            }
 
             unregister();
             doUnExport();
