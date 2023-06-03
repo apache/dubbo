@@ -348,7 +348,11 @@ final class NettyChannel extends AbstractChannel {
      */
     private static Response buildErrorResponse(Request request, Throwable t) {
         Response response = new Response(request.getId(), request.getVersion());
-        response.setStatus(Response.BAD_REQUEST);
+        if(t instanceof EncoderException){
+            response.setStatus(Response.SERIALIZATION_ERROR);
+        }else{
+            response.setStatus(Response.BAD_REQUEST);
+        }
         response.setErrorMessage(StringUtils.toString(t));
         return response;
     }
