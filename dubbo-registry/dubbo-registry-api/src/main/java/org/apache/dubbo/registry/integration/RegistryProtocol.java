@@ -951,19 +951,21 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
 
         @Override
         public void register() {
-            URL registryUrl = getRegistryUrl(originInvoker);
-            Registry registry = getRegistry(registryUrl);
-            RegistryProtocol.register(registry, getRegisterUrl());
+            if (registered.compareAndSet(false, true)) {
+                URL registryUrl = getRegistryUrl(originInvoker);
+                Registry registry = getRegistry(registryUrl);
+                RegistryProtocol.register(registry, getRegisterUrl());
 
-            ProviderModel providerModel = frameworkModel.getServiceRepository()
-                .lookupExportedService(getRegisterUrl().getServiceKey());
+                ProviderModel providerModel = frameworkModel.getServiceRepository()
+                    .lookupExportedService(getRegisterUrl().getServiceKey());
 
-            List<ProviderModel.RegisterStatedURL> statedUrls = providerModel.getStatedUrl();
-            statedUrls.stream()
-                .filter(u -> u.getRegistryUrl().equals(registryUrl)
-                    && u.getProviderUrl().getProtocol().equals(getRegisterUrl().getProtocol()))
-                .forEach(u -> u.setRegistered(true));
-            logger.info("Registered dubbo service " + getRegisterUrl().getServiceKey() + " url " + getRegisterUrl() + " to registry " + registryUrl);
+                List<ProviderModel.RegisterStatedURL> statedUrls = providerModel.getStatedUrl();
+                statedUrls.stream()
+                    .filter(u -> u.getRegistryUrl().equals(registryUrl)
+                        && u.getProviderUrl().getProtocol().equals(getRegisterUrl().getProtocol()))
+                    .forEach(u -> u.setRegistered(true));
+                logger.info("Registered dubbo service " + getRegisterUrl().getServiceKey() + " url " + getRegisterUrl() + " to registry " + registryUrl);
+            }
         }
 
         @Override

@@ -382,6 +382,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
         for (ServiceConfigBase sc : configManager.getServices()) {
             registerServiceInternal(sc);
         }
+        applicationDeployer.refreshServiceInstance();
     }
 
     private void exportServiceInternal(ServiceConfigBase sc) {
@@ -419,7 +420,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
         if (!serviceConfig.isRefreshed()) {
             serviceConfig.refresh();
         }
-        if (sc.isExported()) {
+        if (!sc.isExported()) {
             return;
         }
         sc.register();
