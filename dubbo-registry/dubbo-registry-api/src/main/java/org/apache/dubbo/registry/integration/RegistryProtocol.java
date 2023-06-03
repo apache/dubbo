@@ -341,10 +341,14 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         String registryUrlKey = getRegistryUrlKey(originInvoker);
         Map<String, ExporterChangeableWrapper<?>> registryMap = bounds.get(providerUrlKey);
         if (registryMap == null) {
-            logger.warn(new IllegalStateException("error state, registryMap is null"));
+            logger.warn(INTERNAL_ERROR, "error state, exporterMap can not be null", "", "error state, exporterMap can not be null", new IllegalStateException("error state, exporterMap can not be null"));
             return;
         }
         ExporterChangeableWrapper<T> exporter = (ExporterChangeableWrapper<T>) registryMap.get(registryUrlKey);
+        if (exporter == null) {
+            logger.warn(INTERNAL_ERROR, "error state, exporterMap can not be null", "", "error state, exporterMap can not be null", new IllegalStateException("error state, exporterMap can not be null"));
+            return;
+        }
         URL registeredUrl = exporter.getRegisterUrl();
 
         URL registryUrl = getRegistryUrl(originInvoker);
