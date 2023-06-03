@@ -19,6 +19,8 @@ package org.apache.dubbo.rpc.protocol.rest;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.metadata.rest.ServiceRestMetadata;
+import org.apache.dubbo.remoting.api.pu.DefaultPuHandler;
+import org.apache.dubbo.remoting.exchange.PortUnificationExchanger;
 import org.apache.dubbo.remoting.http.RestClient;
 import org.apache.dubbo.remoting.http.factory.RestClientFactory;
 import org.apache.dubbo.rpc.Exporter;
@@ -30,6 +32,7 @@ import org.apache.dubbo.rpc.protocol.AbstractExporter;
 import org.apache.dubbo.rpc.protocol.AbstractProtocol;
 import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.HttpConnectionPreBuildIntercept;
 import org.apache.dubbo.rpc.protocol.rest.annotation.metadata.MetadataResolver;
+import org.apache.dubbo.rpc.protocol.rest.deploy.ServiceDeployer;
 
 
 import java.util.Map;
@@ -39,17 +42,14 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.REST_URL_ATTRIBUTE_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERROR_CLOSE_CLIENT;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERROR_CLOSE_SERVER;
-import static org.apache.dubbo.remoting.Constants.SERVER_KEY;
 import static org.apache.dubbo.rpc.protocol.rest.constans.RestConstant.PATH_SEPARATOR;
 
 public class RestProtocol extends AbstractProtocol {
 
     private static final int DEFAULT_PORT = 80;
-    private static final String DEFAULT_SERVER = Constants.NETTY_HTTP;
-
-    private final RestServerFactory serverFactory = new RestServerFactory();
 
     private final ConcurrentMap<String, ReferenceCountedClient<? extends RestClient>> clients = new ConcurrentHashMap<>();
 
@@ -89,24 +89,29 @@ public class RestProtocol extends AbstractProtocol {
                 url, getContextPath(url));
 
 
-        // TODO add Extension filter
-        // create rest server
-        RestProtocolServer server = (RestProtocolServer) ConcurrentHashMapUtils.computeIfAbsent(serverMap, getAddr(url), restServer -> {
-            RestProtocolServer s = serverFactory.createServer(url.getParameter(SERVER_KEY, DEFAULT_SERVER));
-            s.setAddress(url.getAddress());
-            s.start(url);
-            return s;
-        });
+        ServiceDeployer serviceDeployer = new ServiceDeployer();
+
+        // register service
+        serviceDeployer.deploy(serviceRestMetadata, invoker);
+
+        // register exception mapper
+        serviceDeployer.registerExceptionMapper(url);
 
 
-        server.deploy(serviceRestMetadata, invoker);
+        // add attribute for server build
+        url = url.putAttribute(REST_URL_ATTRIBUTE_KEY, serviceDeployer);
 
+
+        PortUnificationExchanger.bind(url, new DefaultPuHandler());
+
+
+        URL finalUrl = url;
         exporter = new AbstractExporter<T>(invoker) {
             @Override
             public void afterUnExport() {
-                destroyInternal(url);
+                destroyInternal(finalUrl);
                 exporterMap.remove(uri);
-                server.undeploy(serviceRestMetadata);
+                serviceDeployer.undeploy(serviceRestMetadata);
             }
         };
         exporterMap.put(uri, exporter);

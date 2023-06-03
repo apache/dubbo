@@ -22,7 +22,6 @@ import org.apache.dubbo.remoting.buffer.ChannelBuffer;
 
 /**
  * Determine incoming bytes belong to the specific protocol.
- *
  */
 public interface ProtocolDetector {
 
@@ -30,5 +29,9 @@ public interface ProtocolDetector {
 
     enum Result {
         RECOGNIZED, UNRECOGNIZED, NEED_MORE_DATA
+    }
+
+    default int getByteByIndex(ChannelBuffer buffer, int index) {
+        return buffer.getByte(buffer.readerIndex() + index);
     }
 }

@@ -614,9 +614,7 @@ public interface CommonConstants {
 
 
     /**
-     *
      * used in JVMUtil.java ,Control stack print lines, default is 32 lines
-     *
      */
     String DUBBO_JSTACK_MAXLINE = "dubbo.jstack-dump.max-line";
 
@@ -638,5 +636,7 @@ public interface CommonConstants {
     String PACKABLE_METHOD_FACTORY_KEY = "serialize.packable.factory";
 
     String DUBBO_PACKABLE_METHOD_FACTORY = "dubbo.application.parameters." + PACKABLE_METHOD_FACTORY_KEY;
+
+    String REST_URL_ATTRIBUTE_KEY = "rest.url.attribute.key";
 
 }
