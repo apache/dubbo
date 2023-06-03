@@ -66,6 +66,7 @@ public class CertServiceUtil {
 
         return IdentityInfo.builder()
             .setPrivateKey(privateKeyPem)
+            .setCertificate(certificateResponse.getCertPem())
             .setTrustCerts(String.join("\n", certificateResponse.getTrustCertsList()))
             .setRefreshTime(certificateResponse.getRefreshTime())
             .setExpireTime(certificateResponse.getExpireTime())
