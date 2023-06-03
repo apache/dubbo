@@ -18,6 +18,8 @@ package org.apache.dubbo.config.spring.beans.factory.annotation;
 
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.config.spring.util.AnnotationUtils;
+
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.PropertyValues;
@@ -53,7 +55,6 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import static com.alibaba.spring.util.AnnotationUtils.getAnnotationAttributes;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_DUBBO_BEAN_INITIALIZER;
 import static org.springframework.core.BridgeMethodResolver.findBridgedMethod;
 import static org.springframework.core.BridgeMethodResolver.isVisibilityBridgeMethodPair;
@@ -135,7 +136,7 @@ public abstract class AbstractAnnotationBeanPostProcessor implements
 
             for (Class<? extends Annotation> annotationType : getAnnotationTypes()) {
 
-                AnnotationAttributes attributes = getAnnotationAttributes(field, annotationType, getEnvironment(), true, true);
+                AnnotationAttributes attributes = AnnotationUtils.getAnnotationAttributes(field, annotationType, getEnvironment(), true, true);
 
                 if (attributes != null) {
 
@@ -180,7 +181,7 @@ public abstract class AbstractAnnotationBeanPostProcessor implements
 
             for (Class<? extends Annotation> annotationType : getAnnotationTypes()) {
 
-                AnnotationAttributes attributes = getAnnotationAttributes(bridgedMethod, annotationType, getEnvironment(), true, true);
+                AnnotationAttributes attributes = AnnotationUtils.getAnnotationAttributes(bridgedMethod, annotationType, getEnvironment(), true, true);
 
                 if (attributes != null && method.equals(ClassUtils.getMostSpecificMethod(method, beanClass))) {
                     if (Modifier.isStatic(method.getModifiers())) {

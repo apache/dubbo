@@ -27,7 +27,7 @@
     <properties>
         <skip_maven_deploy>false</skip_maven_deploy>
         <protobuf-java.version>3.22.2</protobuf-java.version>
-        <grpc.version>1.41.0</grpc.version>
+        <grpc.version>1.55.1</grpc.version>
     </properties>
 
     <artifactId>dubbo-security</artifactId>
