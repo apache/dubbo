@@ -217,7 +217,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         return map;
     }
 
-    private void register(Registry registry, URL registeredProviderUrl) {
+    private static void register(Registry registry, URL registeredProviderUrl) {
         ApplicationDeployer deployer = registeredProviderUrl.getOrDefaultApplicationModel().getDeployer();
         try {
             deployer.increaseServiceRefreshCount();
@@ -272,6 +272,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         exporter.setRegisterUrl(registeredProviderUrl);
         exporter.setSubscribeUrl(overrideSubscribeUrl);
         exporter.setNotifyListener(overrideSubscribeListener);
+        exporter.setRegistered(register);
 
         ApplicationModel applicationModel = getApplicationModel(providerUrl.getScopeModel());
         if (applicationModel.getModelEnvironment().getConfiguration().convert(Boolean.class, ENABLE_26X_CONFIGURATION_LISTEN, true)) {
@@ -369,7 +370,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
 
     private <T> void doReExport(final Invoker<T> originInvoker, ExporterChangeableWrapper<T> exporter,
                                 URL registryUrl, URL oldProviderUrl, URL newProviderUrl) {
-        if (getProviderUrl(originInvoker).getParameter(REGISTER_KEY, true)) {
+        if (exporter.isRegistered()) {
             Registry registry;
             try {
                 registry = getRegistry(getRegistryUrl(originInvoker));
@@ -713,6 +714,11 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         }
 
         @Override
+        public void register() {
+            exporter.register();
+        }
+
+        @Override
         public void unregister() {
             exporter.unregister();
         }
@@ -920,7 +926,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         private URL registerUrl;
 
         private NotifyListener notifyListener;
-        private final AtomicBoolean unregistered = new AtomicBoolean(false);
+        private final AtomicBoolean registered = new AtomicBoolean(false);
 
         public ExporterChangeableWrapper(Exporter<T> exporter, Invoker<T> originInvoker) {
             this.exporter = exporter;
@@ -944,8 +950,25 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         }
 
         @Override
+        public void register() {
+            URL registryUrl = getRegistryUrl(originInvoker);
+            Registry registry = getRegistry(registryUrl);
+            RegistryProtocol.register(registry, getRegisterUrl());
+
+            ProviderModel providerModel = frameworkModel.getServiceRepository()
+                .lookupExportedService(getRegisterUrl().getServiceKey());
+
+            List<ProviderModel.RegisterStatedURL> statedUrls = providerModel.getStatedUrl();
+            statedUrls.stream()
+                .filter(u -> u.getRegistryUrl().equals(registryUrl)
+                    && u.getProviderUrl().getProtocol().equals(getRegisterUrl().getProtocol()))
+                .forEach(u -> u.setRegistered(true));
+            logger.info("Registered dubbo service " + getRegisterUrl().getServiceKey() + " url " + getRegisterUrl() + " to registry " + registryUrl);
+        }
+
+        @Override
         public synchronized void unregister() {
-            if (unregistered.compareAndSet(false, true)) {
+            if (registered.compareAndSet(true, false)) {
                 Registry registry = RegistryProtocol.this.getRegistry(getRegistryUrl(originInvoker));
                 try {
                     registry.unregister(registerUrl);
@@ -992,6 +1015,14 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
 
             unregister();
             doUnExport();
+        }
+
+        public void setRegistered(boolean registered) {
+            this.registered.set(registered);
+        }
+
+        public boolean isRegistered() {
+            return registered.get();
         }
 
         private void doUnExport() {
