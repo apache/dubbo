@@ -38,6 +38,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
+import io.netty.handler.codec.EncoderException;
 
 import java.net.InetSocketAddress;
 import java.util.Map;
