@@ -48,6 +48,11 @@ public class AuthorityDeployerListener implements ApplicationDeployListener {
     }
 
     @Override
+    public void onInitialize(ApplicationModel scopeModel) {
+
+    }
+
+    @Override
     public void onStarting(ApplicationModel scopeModel) {
         FrameworkModel frameworkModel = scopeModel.getFrameworkModel();
         Optional<SslConfig> config = scopeModel.getApplicationConfigManager().getSsl();
