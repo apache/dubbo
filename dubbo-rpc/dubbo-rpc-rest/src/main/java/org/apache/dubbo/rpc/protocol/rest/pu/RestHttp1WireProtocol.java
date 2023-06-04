@@ -36,7 +36,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.apache.dubbo.common.constants.CommonConstants.REST_URL_ATTRIBUTE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.REST_SERVICE_DEPLOYER_URL_ATTRIBUTE_KEY;
 
 @Activate(order = Integer.MAX_VALUE)
 public class RestHttp1WireProtocol extends AbstractWireProtocol implements ScopeModelAware {
@@ -54,7 +54,7 @@ public class RestHttp1WireProtocol extends AbstractWireProtocol implements Scope
         // TODO add h1 stream handler
 
         // pathAndInvokerMapper, exceptionMapper getFrom url
-        ServiceDeployer serviceDeployer = (ServiceDeployer) url.getAttribute(REST_URL_ATTRIBUTE_KEY);
+        ServiceDeployer serviceDeployer = (ServiceDeployer) url.getAttribute(REST_SERVICE_DEPLOYER_URL_ATTRIBUTE_KEY);
         List<Object> channelHandlers = Arrays.asList(new HttpRequestDecoder(
                 url.getParameter(RestConstant.MAX_INITIAL_LINE_LENGTH_PARAM, RestConstant.MAX_INITIAL_LINE_LENGTH),
                 url.getParameter(RestConstant.MAX_HEADER_SIZE_PARAM, RestConstant.MAX_HEADER_SIZE),

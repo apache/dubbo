@@ -637,6 +637,6 @@ public interface CommonConstants {
 
     String DUBBO_PACKABLE_METHOD_FACTORY = "dubbo.application.parameters." + PACKABLE_METHOD_FACTORY_KEY;
 
-    String REST_URL_ATTRIBUTE_KEY = "rest.url.attribute.key";
+    String REST_SERVICE_DEPLOYER_URL_ATTRIBUTE_KEY = "restServiceDeployerAttributeKey";
 
 }

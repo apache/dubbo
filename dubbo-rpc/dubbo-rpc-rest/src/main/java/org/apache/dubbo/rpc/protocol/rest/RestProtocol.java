@@ -33,6 +33,7 @@ import org.apache.dubbo.rpc.protocol.AbstractProtocol;
 import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.HttpConnectionPreBuildIntercept;
 import org.apache.dubbo.rpc.protocol.rest.annotation.metadata.MetadataResolver;
 import org.apache.dubbo.rpc.protocol.rest.deploy.ServiceDeployer;
+import org.apache.dubbo.rpc.protocol.rest.deploy.ServiceDeployerManager;
 
 
 import java.util.Map;
@@ -42,13 +43,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.REST_URL_ATTRIBUTE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.REST_SERVICE_DEPLOYER_URL_ATTRIBUTE_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERROR_CLOSE_CLIENT;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERROR_CLOSE_SERVER;
-import static org.apache.dubbo.remoting.Constants.NEED_DISTINGUISH_QOS_AND_REST;
-import static org.apache.dubbo.remoting.Constants.PORT_UNIFICATION_NETTY4_SERVER;
-import static org.apache.dubbo.remoting.Constants.REST_SERVER;
-import static org.apache.dubbo.remoting.Constants.SERVER_KEY;
 import static org.apache.dubbo.rpc.protocol.rest.constans.RestConstant.PATH_SEPARATOR;
 
 public class RestProtocol extends AbstractProtocol {
@@ -93,30 +90,16 @@ public class RestProtocol extends AbstractProtocol {
                 url, getContextPath(url));
 
 
-        ServiceDeployer serviceDeployer = new ServiceDeployer();
+        // deploy service
+        URL newURL = ServiceDeployerManager.deploy(url, serviceRestMetadata, invoker);
 
-        // register service
-        serviceDeployer.deploy(serviceRestMetadata, invoker);
+        // create server
+        PortUnificationExchanger.bind(newURL, new DefaultPuHandler());
 
-        // register exception mapper
-        serviceDeployer.registerExceptionMapper(url);
-
-        // adapt to older rest versions
-        if (REST_SERVER.contains(url.getParameter(SERVER_KEY))) {
-            url = url.addParameter(SERVER_KEY, PORT_UNIFICATION_NETTY4_SERVER);
-        }
-
-        // open NEED_DISTINGUISH_QOS_AND_REST
-        url = url.addParameter(NEED_DISTINGUISH_QOS_AND_REST, true);
-
-        // add attribute for server build
-        url = url.putAttribute(REST_URL_ATTRIBUTE_KEY, serviceDeployer);
+        ServiceDeployer serviceDeployer = (ServiceDeployer) newURL.getAttribute(REST_SERVICE_DEPLOYER_URL_ATTRIBUTE_KEY);
 
 
-        PortUnificationExchanger.bind(url, new DefaultPuHandler());
-
-
-        URL finalUrl = url;
+        URL finalUrl = newURL;
         exporter = new AbstractExporter<T>(invoker) {
             @Override
             public void afterUnExport() {
@@ -180,6 +163,10 @@ public class RestProtocol extends AbstractProtocol {
         if (logger.isInfoEnabled()) {
             logger.info("Destroying protocol [" + this.getClass().getSimpleName() + "] ...");
         }
+
+        PortUnificationExchanger.close();
+        ServiceDeployerManager.close();
+
         super.destroy();
 
         for (Map.Entry<String, ProtocolServer> entry : serverMap.entrySet()) {
