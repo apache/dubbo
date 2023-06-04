@@ -38,7 +38,7 @@ import java.util.List;
 
 import static org.apache.dubbo.common.constants.CommonConstants.REST_URL_ATTRIBUTE_KEY;
 
-@Activate
+@Activate(order = Integer.MAX_VALUE)
 public class RestHttp1WireProtocol extends AbstractWireProtocol implements ScopeModelAware {
 
     public RestHttp1WireProtocol(FrameworkModel frameworkModel) {
