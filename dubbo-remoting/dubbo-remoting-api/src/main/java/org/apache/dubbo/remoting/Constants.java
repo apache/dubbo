@@ -18,6 +18,9 @@
 package org.apache.dubbo.remoting;
 
 
+import java.util.Arrays;
+import java.util.List;
+
 public interface Constants {
 
     String BUFFER_KEY = "buffer";
@@ -161,4 +164,7 @@ public interface Constants {
     String OK_HTTP = "ok-http";
     String URL_CONNECTION = "url-connection";
     String APACHE_HTTP_CLIENT = "apache-http-client";
+    String PORT_UNIFICATION_NETTY4_SERVER = "netty4";
+
+    List<String> REST_SERVER = Arrays.asList("jetty", "tomcat", "netty");
 }

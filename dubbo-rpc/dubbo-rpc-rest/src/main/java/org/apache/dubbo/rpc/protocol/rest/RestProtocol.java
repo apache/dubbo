@@ -19,7 +19,7 @@ package org.apache.dubbo.rpc.protocol.rest;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.metadata.rest.ServiceRestMetadata;
-import org.apache.dubbo.remoting.api.pu.DefaultPuHandler;
+ import org.apache.dubbo.remoting.api.pu.DefaultPuHandler;
 import org.apache.dubbo.remoting.exchange.PortUnificationExchanger;
 import org.apache.dubbo.remoting.http.RestClient;
 import org.apache.dubbo.remoting.http.factory.RestClientFactory;
@@ -45,6 +45,9 @@ import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REST_URL_ATTRIBUTE_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERROR_CLOSE_CLIENT;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERROR_CLOSE_SERVER;
+import static org.apache.dubbo.remoting.Constants.PORT_UNIFICATION_NETTY4_SERVER;
+import static org.apache.dubbo.remoting.Constants.REST_SERVER;
+import static org.apache.dubbo.remoting.Constants.SERVER_KEY;
 import static org.apache.dubbo.rpc.protocol.rest.constans.RestConstant.PATH_SEPARATOR;
 
 public class RestProtocol extends AbstractProtocol {
@@ -97,6 +100,10 @@ public class RestProtocol extends AbstractProtocol {
         // register exception mapper
         serviceDeployer.registerExceptionMapper(url);
 
+        // adapt to older rest versions
+        if (REST_SERVER.contains(url.getParameter(SERVER_KEY))) {
+            url = url.addParameter(SERVER_KEY, PORT_UNIFICATION_NETTY4_SERVER);
+        }
 
         // add attribute for server build
         url = url.putAttribute(REST_URL_ATTRIBUTE_KEY, serviceDeployer);

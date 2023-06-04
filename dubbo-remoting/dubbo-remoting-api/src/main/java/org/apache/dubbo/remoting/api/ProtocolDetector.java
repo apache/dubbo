@@ -24,6 +24,7 @@ import org.apache.dubbo.remoting.buffer.ChannelBuffer;
  * Determine incoming bytes belong to the specific protocol.
  */
 public interface ProtocolDetector {
+    int empty = ' ';
 
     Result detect(ChannelBuffer in);
 
@@ -33,5 +34,53 @@ public interface ProtocolDetector {
 
     default int getByteByIndex(ChannelBuffer buffer, int index) {
         return buffer.getByte(buffer.readerIndex() + index);
+    }
+
+    default boolean prefixMatch(char[][] prefixes, ChannelBuffer buffer, int length) {
+        // prefix match
+        for (char[] prefix : prefixes) {
+
+            for (int j = 0; j < length; j++) {
+                if (prefix[j] != getByteByIndex(buffer, j)) {
+                    break;
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     *  between first and second empty char
+     * @param buffer
+     * @return
+     */
+    default String readRequestLine(ChannelBuffer buffer) {
+
+        // GET /test/demo HTTP/1.1
+        int firstEmptyIndex = 0;
+        // read first empty
+        for (int i = 0; i < Integer.MAX_VALUE; i++) {
+
+            int read = getByteByIndex(buffer, i);
+            if (read == empty) {
+                firstEmptyIndex = i;
+                break;
+            }
+        }
+
+        StringBuilder stringBuilder = new StringBuilder();
+
+        for (int i = firstEmptyIndex + 1; i < Integer.MAX_VALUE; i++) {
+            int read = getByteByIndex(buffer, i);
+            // second empty break
+            if (read == empty) {
+                break;
+            }
+            stringBuilder.append((char) read);
+        }
+
+        return stringBuilder.toString();
+
     }
 }

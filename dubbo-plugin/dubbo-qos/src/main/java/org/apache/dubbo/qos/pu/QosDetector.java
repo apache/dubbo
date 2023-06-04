@@ -22,7 +22,7 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 
 public class QosDetector implements ProtocolDetector {
 
-    private final QosHTTP1Detector qosHTTP1Detector = new QosHTTP1Detector();
+    private final QosHTTP1Detector qosHTTP1Detector;
     private final TelnetDetector telnetDetector;
     private boolean QosEnableFlag = true;
 
@@ -32,22 +32,23 @@ public class QosDetector implements ProtocolDetector {
 
     public QosDetector(FrameworkModel frameworkModel) {
         this.telnetDetector = new TelnetDetector(frameworkModel);
+        qosHTTP1Detector = new QosHTTP1Detector(frameworkModel);
     }
 
     @Override
     public Result detect(ChannelBuffer in) {
-        if(!QosEnableFlag) {
+        if (!QosEnableFlag) {
             return Result.UNRECOGNIZED;
         }
         Result h1Res = qosHTTP1Detector.detect(in);
-        if(h1Res.equals(Result.RECOGNIZED)) {
+        if (h1Res.equals(Result.RECOGNIZED)) {
             return h1Res;
         }
         Result telRes = telnetDetector.detect(in);
-        if(telRes.equals(Result.RECOGNIZED)) {
+        if (telRes.equals(Result.RECOGNIZED)) {
             return telRes;
         }
-        if(h1Res.equals(Result.NEED_MORE_DATA) || telRes.equals(Result.NEED_MORE_DATA)) {
+        if (h1Res.equals(Result.NEED_MORE_DATA) || telRes.equals(Result.NEED_MORE_DATA)) {
             return Result.NEED_MORE_DATA;
         }
         return Result.UNRECOGNIZED;

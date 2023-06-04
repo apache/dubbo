@@ -42,17 +42,8 @@ public class RestHttp1Detector implements ProtocolDetector {
             return Result.UNRECOGNIZED;
         }
 
-        // prefix match
-        for (char[] httpMethodsPrefix : HTTP_METHODS_PREFIX) {
-
-            for (int j = 0; j < 3; j++) {
-                if (httpMethodsPrefix[j] != getByteByIndex(in, j)) {
-                    break ;
-                }
-                return Result.RECOGNIZED;
-            }
-
-
+        if (prefixMatch(HTTP_METHODS_PREFIX, in, 3)) {
+            return Result.RECOGNIZED;
         }
 
         return Result.UNRECOGNIZED;

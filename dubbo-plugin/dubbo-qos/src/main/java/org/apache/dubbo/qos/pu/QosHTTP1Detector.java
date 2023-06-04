@@ -16,12 +16,19 @@
  */
 package org.apache.dubbo.qos.pu;
 
+import org.apache.dubbo.common.utils.HttpUtils;
+import org.apache.dubbo.qos.api.BaseCommand;
 import org.apache.dubbo.remoting.api.ProtocolDetector;
 import org.apache.dubbo.remoting.buffer.ChannelBuffer;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 public class QosHTTP1Detector implements ProtocolDetector {
-    private static boolean isHttp(int magic) {
-        return magic == 'G' || magic == 'P';
+    private static final char[][] QOS_METHODS_PREFIX = HttpUtils.getQOSHttpMethodsPrefix();
+
+    FrameworkModel frameworkModel;
+
+    public QosHTTP1Detector(FrameworkModel frameworkModel) {
+        this.frameworkModel = frameworkModel;
     }
 
     @Override
@@ -29,11 +36,40 @@ public class QosHTTP1Detector implements ProtocolDetector {
         if (in.readableBytes() < 2) {
             return Result.NEED_MORE_DATA;
         }
-        final int magic = in.getByte(in.readerIndex());
-        // h2 starts with "PR"
-        if (isHttp(magic) && in.getByte(in.readerIndex()+1) != 'R' ){
+
+        if (prefixMatch(QOS_METHODS_PREFIX, in, 3)) {
+            // make distinguish from rest ,read request url
+
+            String requestURL = readRequestLine(in);
+
+            // url split by / length judge
+            if (!HttpUtils.isQosRequestURL(requestURL)) {
+                return Result.UNRECOGNIZED;
+            }
+
+            // command exist judge, when /cmd  or /cmd/appName we prefer response by rest http
+            // decrease the affect to user
+            BaseCommand command = commandExist(requestURL);
+
+            if (command == null) {
+                return Result.UNRECOGNIZED;
+            }
+
+
             return Result.RECOGNIZED;
         }
+
         return Result.UNRECOGNIZED;
+    }
+
+    private BaseCommand commandExist(String requestURL) {
+        BaseCommand command = null;
+        try {
+            String cmd = HttpUtils.splitAndGetFirst(requestURL);
+            command = frameworkModel.getExtensionLoader(BaseCommand.class).getExtension(cmd);
+        } catch (Throwable throwable) {
+            //can't find command
+        }
+        return command;
     }
 }

@@ -20,17 +20,27 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.apache.dubbo.common.utils.HttpUtils.HttpMethod.GET;
+import static org.apache.dubbo.common.utils.HttpUtils.HttpMethod.POST;
+import static org.apache.dubbo.common.utils.HttpUtils.HttpMethod.DELETE;
+import static org.apache.dubbo.common.utils.HttpUtils.HttpMethod.PUT;
+import static org.apache.dubbo.common.utils.HttpUtils.HttpMethod.HEAD;
+import static org.apache.dubbo.common.utils.HttpUtils.HttpMethod.PATCH;
+import static org.apache.dubbo.common.utils.HttpUtils.HttpMethod.OPTIONS;
+import static org.apache.dubbo.common.utils.HttpUtils.HttpMethod.TRACE;
+
 /**
  * for http methods
  */
 public class HttpUtils {
     public static String SIMPLE_HTTP = "XXX HTTP/1";
 
-    public enum HttpMethod {
+    public static enum HttpMethod {
         GET("GET"),
         HEAD("HEAD"),
         POST("POST"),
         PUT("PUT"),
+
         PATCH("PATCH"),
         DELETE("DELETE"),
         OPTIONS("OPTIONS"),
@@ -48,15 +58,22 @@ public class HttpUtils {
         }
     }
 
-    public static final List<HttpMethod> HTTP_METHODS = Arrays.asList(HttpMethod.values());
+    /**
+     * rank by frequency
+     * first GET ,POST,DELETE,PUT
+     * second HEAD,PATCH,OPTIONS,TRACE
+     */
+    public static final List<HttpMethod> QOS_HTTP_METHOD = Arrays.asList(GET, POST);
 
-    public static char[][] getHttpMethodsPrefix(int length) {
+    public static final List<HttpMethod> HTTP_METHODS = Arrays.asList(GET, POST, DELETE, PUT, HEAD, PATCH, OPTIONS, TRACE);
+
+    public static char[][] getHttpMethodsPrefix(int length, List<HttpMethod> httpMethods) {
         if (0 >= length || length > 3) {
             throw new IllegalArgumentException("Current substring length is beyond Http methods length");
         }
 
         List<char[]> prefix = new ArrayList<>();
-        for (HttpMethod httpMethod : HTTP_METHODS) {
+        for (HttpMethod httpMethod : httpMethods) {
             prefix.add(httpMethod.getValue().substring(0, length).toCharArray());
         }
 
@@ -66,7 +83,51 @@ public class HttpUtils {
 
 
     public static char[][] getHttpMethodsPrefix() {
-        return getHttpMethodsPrefix(3);
+        return getHttpMethodsPrefix(3, HTTP_METHODS);
+    }
+
+    public static char[][] getQOSHttpMethodsPrefix() {
+        return getHttpMethodsPrefix(3, QOS_HTTP_METHOD);
+    }
+
+    /**
+     * qos /name/appName
+     *
+     * @param requestUrl
+     * @return
+     */
+    public static boolean isQosRequestURL(String requestUrl) {
+
+        if (requestUrl == null) {
+            return false;
+        }
+
+        String[] split = requestUrl.split("/");
+
+        if (split.length <= 3) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public static String splitAndGetFirst(String str) {
+
+        return splitAndGet(str, 1);
+    }
+
+    public static String splitAndGet(String str, int index) {
+        if (str == null) {
+            return null;
+        }
+
+        String[] split = str.split("/");
+
+        if (split.length - 1 < index) {
+            return null;
+        }
+
+        return split[index];
     }
 
 }
