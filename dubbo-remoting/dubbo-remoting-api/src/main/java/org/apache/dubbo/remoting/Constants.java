@@ -167,4 +167,6 @@ public interface Constants {
     String PORT_UNIFICATION_NETTY4_SERVER = "netty4";
 
     List<String> REST_SERVER = Arrays.asList("jetty", "tomcat", "netty");
+
+    String NEED_DISTINGUISH_QOS_AND_REST = "need_distinguish_qos_and_rest";
 }

@@ -1,1 +1,1 @@
-rest-http1=org.apache.dubbo.rpc.protocol.rest.pu.RestHttp1WireProtocol
+rest=org.apache.dubbo.rpc.protocol.rest.pu.RestHttp1WireProtocol
