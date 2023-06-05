@@ -64,15 +64,20 @@ public class TripleServerConnectionHandler extends Http2ChannelDuplexHandler {
             }
         } else if (msg instanceof Http2GoAwayFrame) {
             ReferenceCountUtil.release(msg);
-            //reset all active stream on connection close
-            forEachActiveStream(stream -> {
-                DefaultHttp2ResetFrame resetFrame = new DefaultHttp2ResetFrame(Http2Error.CANCEL).stream(stream);
-                ctx.fireUserEventTriggered(resetFrame);
-                return true;
-            });
         } else {
             super.channelRead(ctx, msg);
         }
+    }
+
+    @Override
+    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        super.channelInactive(ctx);
+        //reset all active stream on connection close
+        forEachActiveStream(stream -> {
+            DefaultHttp2ResetFrame resetFrame = new DefaultHttp2ResetFrame(Http2Error.NO_ERROR).stream(stream);
+            ctx.fireChannelRead(resetFrame);
+            return true;
+        });
     }
 
     private boolean isQuiteException(Throwable t) {
