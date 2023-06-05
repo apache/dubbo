@@ -28,6 +28,6 @@ public interface ThreadPool extends org.apache.dubbo.common.threadpool.ThreadPoo
 
     @Override
     default Executor getExecutor(URL url) {
-        return getExecutor(new com.alibaba.dubbo.common.URL(url));
+        return getExecutor(new com.alibaba.dubbo.common.DelegateURL(url));
     }
 }

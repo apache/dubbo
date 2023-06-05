@@ -21,6 +21,7 @@ import org.apache.dubbo.common.extension.Adaptive;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingServer;
 
+import com.alibaba.dubbo.common.DelegateURL;
 import com.alibaba.dubbo.common.URL;
 
 @Deprecated
@@ -32,7 +33,7 @@ public interface Transporter extends org.apache.dubbo.remoting.Transporter {
     @Override
     default RemotingServer bind(org.apache.dubbo.common.URL url, org.apache.dubbo.remoting.ChannelHandler handler)
             throws org.apache.dubbo.remoting.RemotingException {
-        return bind(new URL(url), new ChannelHandler() {
+        return bind(new DelegateURL(url), new ChannelHandler() {
             @Override
             public void connected(Channel channel) throws RemotingException {
                 try {

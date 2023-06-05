@@ -17,6 +17,7 @@
 
 package com.alibaba.dubbo.common.serialize;
 
+import com.alibaba.dubbo.common.DelegateURL;
 import com.alibaba.dubbo.common.URL;
 
 import java.io.IOException;
@@ -32,11 +33,11 @@ public interface Serialization extends org.apache.dubbo.common.serialize.Seriali
 
     @Override
     default org.apache.dubbo.common.serialize.ObjectOutput serialize(org.apache.dubbo.common.URL url, OutputStream output) throws IOException {
-        return this.serialize(new URL(url), output);
+        return this.serialize(new DelegateURL(url), output);
     }
 
     @Override
     default org.apache.dubbo.common.serialize.ObjectInput deserialize(org.apache.dubbo.common.URL url, InputStream input) throws IOException {
-        return this.deserialize(new URL(url), input);
+        return this.deserialize(new DelegateURL(url), input);
     }
 }
