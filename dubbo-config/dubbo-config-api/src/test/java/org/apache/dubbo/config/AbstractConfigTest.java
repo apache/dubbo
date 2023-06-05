@@ -1002,7 +1002,7 @@ class AbstractConfigTest {
         List<Class<? extends AbstractConfig>> configClasses = Arrays.asList(ApplicationConfig.class,
                 ConsumerConfig.class, ProviderConfig.class, ReferenceConfig.class, ServiceConfig.class,
                 ProtocolConfig.class, RegistryConfig.class, ConfigCenterConfig.class, MetadataReportConfig.class,
-                ModuleConfig.class, SslConfig.class, MonitorConfig.class, MethodConfig.class);
+                ModuleConfig.class, SslConfig.class, MetricsConfig.class, MonitorConfig.class, MethodConfig.class);
 
         for (Class<? extends AbstractConfig> configClass : configClasses) {
             AbstractConfig config = configClass.getDeclaredConstructor().newInstance();
