@@ -17,16 +17,15 @@
 package org.apache.dubbo.qos.pu;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.utils.HttpUtils;
 import org.apache.dubbo.qos.api.BaseCommand;
-import org.apache.dubbo.remoting.api.ProtocolDetector;
+import org.apache.dubbo.remoting.api.AbstractHttpProtocolDetector;
 import org.apache.dubbo.remoting.buffer.ChannelBuffer;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import static org.apache.dubbo.remoting.Constants.NEED_DISTINGUISH_QOS_AND_REST;
 
-public class QosHTTP1Detector implements ProtocolDetector {
-    private static final char[][] QOS_METHODS_PREFIX = HttpUtils.getQOSHttpMethodsPrefix();
+public class QosHTTP1Detector extends AbstractHttpProtocolDetector {
+    private static final char[][] QOS_METHODS_PREFIX = getQOSHttpMethodsPrefix();
 
     FrameworkModel frameworkModel;
 
@@ -34,6 +33,11 @@ public class QosHTTP1Detector implements ProtocolDetector {
         this.frameworkModel = frameworkModel;
     }
 
+
+    @Override
+    public Result detect(ChannelBuffer in) {
+        return Result.UNRECOGNIZED;
+    }
 
     @Override
     public Result detect(ChannelBuffer in,URL url) {
@@ -54,7 +58,7 @@ public class QosHTTP1Detector implements ProtocolDetector {
             String requestURL = readRequestLine(in);
 
             // url split by / length judge
-            if (!HttpUtils.isQosRequestURL(requestURL)) {
+            if (!isQosRequestURL(requestURL)) {
                 return Result.UNRECOGNIZED;
             }
 
@@ -76,7 +80,7 @@ public class QosHTTP1Detector implements ProtocolDetector {
     private BaseCommand commandExist(String requestURL) {
         BaseCommand command = null;
         try {
-            String cmd = HttpUtils.splitAndGetFirst(requestURL);
+            String cmd = splitAndGetFirst(requestURL);
             command = frameworkModel.getExtensionLoader(BaseCommand.class).getExtension(cmd);
         } catch (Throwable throwable) {
             //can't find command

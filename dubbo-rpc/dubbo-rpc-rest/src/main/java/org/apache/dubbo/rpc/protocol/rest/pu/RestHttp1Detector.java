@@ -16,14 +16,16 @@
  */
 package org.apache.dubbo.rpc.protocol.rest.pu;
 
-import org.apache.dubbo.common.utils.HttpUtils;
-import org.apache.dubbo.remoting.api.ProtocolDetector;
+import org.apache.dubbo.remoting.api.AbstractHttpProtocolDetector;
 import org.apache.dubbo.remoting.buffer.ChannelBuffer;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
+/**
+ * rest http protocol detector
+ */
 
-public class RestHttp1Detector implements ProtocolDetector {
-    private static final char[][] HTTP_METHODS_PREFIX = HttpUtils.getHttpMethodsPrefix();
+public class RestHttp1Detector extends AbstractHttpProtocolDetector {
+    private static final char[][] HTTP_METHODS_PREFIX = getHttpMethodsPrefix();
 
     private FrameworkModel frameworkModel;
 
@@ -31,14 +33,13 @@ public class RestHttp1Detector implements ProtocolDetector {
         this.frameworkModel = frameworkModel;
     }
 
-    // TODO make difference between qos and http
     @Override
     public Result detect(ChannelBuffer in) {
 
         int i = in.readableBytes();
 
         // length judge
-        if (i < HttpUtils.SIMPLE_HTTP.length()) {
+        if (i < SIMPLE_HTTP.length()) {
             return Result.UNRECOGNIZED;
         }
 

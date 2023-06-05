@@ -37,6 +37,11 @@ public class QosDetector implements ProtocolDetector {
     }
 
     @Override
+    public Result detect(ChannelBuffer in) {
+        return Result.UNRECOGNIZED;
+    }
+
+    @Override
     public Result detect(ChannelBuffer in, URL url) {
         if (!QosEnableFlag) {
             return Result.UNRECOGNIZED;
