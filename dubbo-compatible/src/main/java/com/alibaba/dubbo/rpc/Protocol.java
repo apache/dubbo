@@ -19,6 +19,7 @@ package com.alibaba.dubbo.rpc;
 
 import org.apache.dubbo.rpc.ProtocolServer;
 
+import com.alibaba.dubbo.common.DelegateURL;
 import com.alibaba.dubbo.common.URL;
 
 import java.util.Collections;
@@ -38,7 +39,7 @@ public interface Protocol extends org.apache.dubbo.rpc.Protocol {
 
     @Override
     default <T> org.apache.dubbo.rpc.Invoker<T> refer(Class<T> aClass, org.apache.dubbo.common.URL url) throws RpcException {
-        return this.refer(aClass, new URL(url));
+        return this.refer(aClass, new DelegateURL(url));
     }
 
     @Override

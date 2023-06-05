@@ -41,29 +41,29 @@ public interface Registry extends org.apache.dubbo.registry.Registry {
 
     @Override
     default void register(URL url) {
-        this.register(new com.alibaba.dubbo.common.URL(url));
+        this.register(new com.alibaba.dubbo.common.DelegateURL(url));
     }
 
     @Override
     default void unregister(URL url) {
-        this.unregister(new com.alibaba.dubbo.common.URL(url));
+        this.unregister(new com.alibaba.dubbo.common.DelegateURL(url));
     }
 
     @Override
     default void subscribe(URL url, NotifyListener listener) {
-        this.subscribe(new com.alibaba.dubbo.common.URL(url),
+        this.subscribe(new com.alibaba.dubbo.common.DelegateURL(url),
                 new com.alibaba.dubbo.registry.NotifyListener.CompatibleNotifyListener(listener));
     }
 
     @Override
     default void unsubscribe(URL url, NotifyListener listener) {
-        this.unsubscribe(new com.alibaba.dubbo.common.URL(url),
+        this.unsubscribe(new com.alibaba.dubbo.common.DelegateURL(url),
                 new com.alibaba.dubbo.registry.NotifyListener.CompatibleNotifyListener(listener));
     }
 
     @Override
     default List<URL> lookup(URL url) {
-        return this.lookup(new com.alibaba.dubbo.common.URL(url)).stream().map(u -> u.getOriginalURL()).
+        return this.lookup(new com.alibaba.dubbo.common.DelegateURL(url)).stream().map(u -> u.getOriginalURL()).
                 collect(Collectors.toList());
     }
 }

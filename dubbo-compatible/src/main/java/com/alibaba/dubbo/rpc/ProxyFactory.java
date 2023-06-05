@@ -42,6 +42,6 @@ public interface ProxyFactory extends org.apache.dubbo.rpc.ProxyFactory {
 
     @Override
     default <T> Invoker<T> getInvoker(T proxy, Class<T> type, URL url) throws RpcException {
-        return getInvoker(proxy, type, new com.alibaba.dubbo.common.URL(url));
+        return getInvoker(proxy, type, new com.alibaba.dubbo.common.DelegateURL(url));
     }
 }
