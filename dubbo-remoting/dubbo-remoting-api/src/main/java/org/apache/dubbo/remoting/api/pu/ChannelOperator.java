@@ -17,9 +17,12 @@
 package org.apache.dubbo.remoting.api.pu;
 
 import org.apache.dubbo.remoting.ChannelHandler;
+import org.apache.dubbo.remoting.api.ProtocolDetector;
 
 import java.util.List;
 
 public interface ChannelOperator {
     void configChannelHandler(List<ChannelHandler> handlerList);
+
+    ProtocolDetector.Result detectResult();
 }
