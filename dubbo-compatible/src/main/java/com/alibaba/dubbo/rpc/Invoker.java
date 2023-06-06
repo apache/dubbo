@@ -95,5 +95,10 @@ public interface Invoker<T> extends org.apache.dubbo.rpc.Invoker<T> {
         public org.apache.dubbo.rpc.Invoker<T> getOriginal() {
             return invoker;
         }
+        
+        @Override
+        public int hashCode() {
+            return invoker.hashCode();
+        }
     }
 }
