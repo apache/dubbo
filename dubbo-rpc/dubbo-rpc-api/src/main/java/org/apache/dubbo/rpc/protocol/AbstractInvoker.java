@@ -28,6 +28,7 @@ import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.RemotingException;
+import org.apache.dubbo.common.serialize.SerializationException;
 import org.apache.dubbo.remoting.TimeoutException;
 import org.apache.dubbo.remoting.utils.UrlUtils;
 import org.apache.dubbo.rpc.AsyncRpcResult;
@@ -112,7 +113,7 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
         }
         this.type = type;
         this.url = url;
-        
+
         this.attachment = attachment == null
             ? null
             : Collections.unmodifiableMap(attachment);
@@ -293,6 +294,9 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
                 throw new RpcException(RpcException.TIMEOUT_EXCEPTION, "Invoke remote method timeout. method: " + invocation.getMethodName() + ", provider: " + getUrl() + ", cause: " + e.getMessage(), e);
             } else if (rootCause instanceof RemotingException) {
                 throw new RpcException(RpcException.NETWORK_EXCEPTION, "Failed to invoke remote method: " + invocation.getMethodName() + ", provider: " + getUrl() + ", cause: " + e.getMessage(), e);
+            } else if (rootCause instanceof SerializationException) {
+                throw new RpcException(RpcException.SERIALIZATION_EXCEPTION, "Invoke remote method failed cause by serialization error.  remote method: " +
+                    invocation.getMethodName() + ", provider: " + getUrl() + ", cause: " + e.getMessage(), e);
             } else {
                 throw new RpcException(RpcException.UNKNOWN_EXCEPTION, "Fail to invoke remote method: " + invocation.getMethodName() + ", provider: " + getUrl() + ", cause: " + e.getMessage(), e);
             }

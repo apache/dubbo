@@ -19,6 +19,7 @@ package com.alibaba.dubbo.rpc;
 
 import org.apache.dubbo.rpc.AsyncRpcResult;
 
+import com.alibaba.dubbo.common.DelegateURL;
 import com.alibaba.dubbo.common.URL;
 
 @Deprecated
@@ -77,7 +78,7 @@ public interface Invoker<T> extends org.apache.dubbo.rpc.Invoker<T> {
 
         @Override
         public URL getUrl() {
-            return new URL(invoker.getUrl());
+            return new DelegateURL(invoker.getUrl());
         }
 
         @Override
