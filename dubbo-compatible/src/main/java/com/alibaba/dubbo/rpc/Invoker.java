@@ -100,5 +100,10 @@ public interface Invoker<T> extends org.apache.dubbo.rpc.Invoker<T> {
         public int hashCode() {
             return invoker.hashCode();
         }
+        
+        @Override
+        public boolean equals(Object o) {
+            return invoker.equals(o);
+        }
     }
 }
