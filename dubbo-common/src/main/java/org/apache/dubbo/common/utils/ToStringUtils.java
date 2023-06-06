@@ -14,29 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.rpc.cluster;
+package org.apache.dubbo.common.utils;
 
-import org.apache.dubbo.common.URL;
+import java.util.Arrays;
 
-@Deprecated
-public interface Configurator extends org.apache.dubbo.rpc.cluster.Configurator {
-    /**
-     * Get the configurator url.
-     *
-     * @return configurator url.
-     */
-    com.alibaba.dubbo.common.URL getUrl();
+public class ToStringUtils {
 
-    /**
-     * Configure the provider url.
-     *
-     * @param url - old provider url.
-     * @return new provider url.
-     */
-    com.alibaba.dubbo.common.URL configure(com.alibaba.dubbo.common.URL url);
+    private ToStringUtils() {
+    }
 
-    @Override
-    default URL configure(URL url) {
-        return this.configure(new com.alibaba.dubbo.common.DelegateURL(url));
+    public static String printToString(Object obj) {
+        if (obj == null) {
+            return "null";
+        }
+        try {
+            return JsonUtils.toJson(obj);
+        } catch (Throwable throwable) {
+            if (obj instanceof Object[]) {
+                return Arrays.toString((Object[]) obj);
+            }
+            return obj.toString();
+        }
     }
 }

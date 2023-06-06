@@ -27,6 +27,6 @@ public interface RouterFactory extends org.apache.dubbo.rpc.cluster.RouterFactor
 
     @Override
     default Router getRouter(URL url) {
-        return this.getRouter(new com.alibaba.dubbo.common.URL(url));
+        return this.getRouter(new com.alibaba.dubbo.common.DelegateURL(url));
     }
 }

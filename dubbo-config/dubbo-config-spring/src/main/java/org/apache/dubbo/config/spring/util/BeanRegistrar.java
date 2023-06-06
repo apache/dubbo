@@ -14,29 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.rpc.cluster;
+package org.apache.dubbo.config.spring.util;
 
-import org.apache.dubbo.common.URL;
+import org.springframework.core.AliasRegistry;
 
-@Deprecated
-public interface Configurator extends org.apache.dubbo.rpc.cluster.Configurator {
+import static org.springframework.util.ObjectUtils.containsElement;
+import static org.springframework.util.StringUtils.hasText;
+
+/**
+ * Bean Registrar
+ */
+public abstract class BeanRegistrar {
+
     /**
-     * Get the configurator url.
+     * Detect the alias is present or not in the given bean name from {@link AliasRegistry}
      *
-     * @return configurator url.
+     * @param registry {@link AliasRegistry}
+     * @param beanName the bean name
+     * @param alias    alias to test
+     * @return if present, return <code>true</code>, or <code>false</code>
      */
-    com.alibaba.dubbo.common.URL getUrl();
-
-    /**
-     * Configure the provider url.
-     *
-     * @param url - old provider url.
-     * @return new provider url.
-     */
-    com.alibaba.dubbo.common.URL configure(com.alibaba.dubbo.common.URL url);
-
-    @Override
-    default URL configure(URL url) {
-        return this.configure(new com.alibaba.dubbo.common.DelegateURL(url));
+    public static boolean hasAlias(AliasRegistry registry, String beanName, String alias) {
+        return hasText(beanName) && hasText(alias) && containsElement(registry.getAliases(beanName), alias);
     }
 }

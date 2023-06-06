@@ -360,6 +360,7 @@ public class ExchangeCodec extends TelnetCodec {
                     logger.warn(TRANSPORT_EXCEED_PAYLOAD_LIMIT, "", "", t.getMessage(), t);
                     try {
                         r.setErrorMessage(t.getMessage());
+                        r.setStatus(Response.SERIALIZATION_ERROR);
                         channel.send(r);
                         return;
                     } catch (RemotingException e) {
