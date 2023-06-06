@@ -56,7 +56,7 @@ public class RestHttp1WireProtocol extends AbstractWireProtocol implements Scope
         // TODO add h1 stream handler
 
         // pathAndInvokerMapper, exceptionMapper getFrom url
-        ServiceDeployer serviceDeployer = (ServiceDeployer) url.getServiceModel().getServiceMetadata().getAttribute(REST_SERVICE_DEPLOYER_URL_ATTRIBUTE_KEY);
+        ServiceDeployer serviceDeployer = (ServiceDeployer) url.getAttribute(REST_SERVICE_DEPLOYER_URL_ATTRIBUTE_KEY);
 
         // maybe current request is qos http or no rest service export
         if (serviceDeployer == null) {

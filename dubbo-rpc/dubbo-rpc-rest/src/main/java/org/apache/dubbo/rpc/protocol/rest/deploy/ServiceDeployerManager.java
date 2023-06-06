@@ -45,11 +45,6 @@ public class ServiceDeployerManager {
 
         });
 
-        // passing ServiceDeployer to  PortUnificationServer through URL
-        // add attribute for server build
-
-        currentURL.getServiceModel().getServiceMetadata().addAttribute(REST_SERVICE_DEPLOYER_URL_ATTRIBUTE_KEY,newServiceDeployer);
-
 
         // register service
         newServiceDeployer.deploy(serviceRestMetadata, invoker);
@@ -63,12 +58,17 @@ public class ServiceDeployerManager {
         }
 
 
-
         URL tmp = currentURL;
         // adapt to older rest versions
         if (REST_SERVER.contains(tmp.getParameter(SERVER_KEY))) {
             tmp = tmp.addParameter(SERVER_KEY, PORT_UNIFICATION_NETTY4_SERVER);
         }
+
+        // passing ServiceDeployer to  PortUnificationServer through URL
+        // add attribute for server build
+
+        tmp = tmp.putAttribute(REST_SERVICE_DEPLOYER_URL_ATTRIBUTE_KEY, newServiceDeployer);
+
 
         return tmp;
     }

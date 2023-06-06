@@ -104,10 +104,6 @@ public class NettyPortUnificationServerHandler extends ByteToMessageDecoder {
         } else {
             for (final WireProtocol protocol : protocols) {
 
-                // TODO add protocol detector switch
-//                if (!protocol.enable()) {
-//                    continue;
-//                }
                 in.markReaderIndex();
                 ChannelBuffer buf = new NettyBackedChannelBuffer(in);
                 final ProtocolDetector.Result result = protocol.detector().detect(buf);
