@@ -26,7 +26,6 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.common.constants.CommonConstants.REST_SERVICE_DEPLOYER_URL_ATTRIBUTE_KEY;
-import static org.apache.dubbo.remoting.Constants.NEED_DISTINGUISH_QOS_AND_REST;
 import static org.apache.dubbo.remoting.Constants.PORT_UNIFICATION_NETTY4_SERVER;
 import static org.apache.dubbo.remoting.Constants.REST_SERVER;
 import static org.apache.dubbo.remoting.Constants.SERVER_KEY;
@@ -46,6 +45,12 @@ public class ServiceDeployerManager {
 
         });
 
+        // passing ServiceDeployer to  PortUnificationServer through URL
+        // add attribute for server build
+
+        currentURL.getServiceModel().getServiceMetadata().addAttribute(REST_SERVICE_DEPLOYER_URL_ATTRIBUTE_KEY,newServiceDeployer);
+
+
         // register service
         newServiceDeployer.deploy(serviceRestMetadata, invoker);
 
@@ -57,7 +62,6 @@ public class ServiceDeployerManager {
             return currentURL;
         }
 
-        // passing ServiceDeployer to  PortUnificationServer through URL
 
 
         URL tmp = currentURL;
@@ -65,12 +69,6 @@ public class ServiceDeployerManager {
         if (REST_SERVER.contains(tmp.getParameter(SERVER_KEY))) {
             tmp = tmp.addParameter(SERVER_KEY, PORT_UNIFICATION_NETTY4_SERVER);
         }
-
-        // open NEED_DISTINGUISH_QOS_AND_REST
-        tmp = tmp.addParameter(NEED_DISTINGUISH_QOS_AND_REST, true);
-
-        // add attribute for server build
-        tmp = tmp.putAttribute(REST_SERVICE_DEPLOYER_URL_ATTRIBUTE_KEY, newServiceDeployer);
 
         return tmp;
     }

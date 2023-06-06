@@ -110,7 +110,7 @@ public class NettyPortUnificationServerHandler extends ByteToMessageDecoder {
 //                }
                 in.markReaderIndex();
                 ChannelBuffer buf = new NettyBackedChannelBuffer(in);
-                final ProtocolDetector.Result result = protocol.detector().detect(buf,url);
+                final ProtocolDetector.Result result = protocol.detector().detect(buf);
                 in.resetReaderIndex();
                 switch (result) {
                     case UNRECOGNIZED:

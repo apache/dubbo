@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.qos.pu;
 
-import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.api.ProtocolDetector;
 import org.apache.dubbo.remoting.buffer.ChannelBuffer;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -38,15 +37,10 @@ public class QosDetector implements ProtocolDetector {
 
     @Override
     public Result detect(ChannelBuffer in) {
-        return Result.UNRECOGNIZED;
-    }
-
-    @Override
-    public Result detect(ChannelBuffer in, URL url) {
         if (!QosEnableFlag) {
             return Result.UNRECOGNIZED;
         }
-        Result h1Res = qosHTTP1Detector.detect(in, url);
+        Result h1Res = qosHTTP1Detector.detect(in);
         if (h1Res.equals(Result.RECOGNIZED)) {
             return h1Res;
         }

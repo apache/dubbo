@@ -41,6 +41,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.REST_SERVICE_DEP
 @Activate(order = Integer.MAX_VALUE)
 public class RestHttp1WireProtocol extends AbstractWireProtocol implements ScopeModelAware {
 
+    private static final ServiceDeployer emptyServiceDeployer = new ServiceDeployer();
+
     public RestHttp1WireProtocol(FrameworkModel frameworkModel) {
         super(new RestHttp1Detector(frameworkModel));
     }
@@ -54,7 +56,13 @@ public class RestHttp1WireProtocol extends AbstractWireProtocol implements Scope
         // TODO add h1 stream handler
 
         // pathAndInvokerMapper, exceptionMapper getFrom url
-        ServiceDeployer serviceDeployer = (ServiceDeployer) url.getAttribute(REST_SERVICE_DEPLOYER_URL_ATTRIBUTE_KEY);
+        ServiceDeployer serviceDeployer = (ServiceDeployer) url.getServiceModel().getServiceMetadata().getAttribute(REST_SERVICE_DEPLOYER_URL_ATTRIBUTE_KEY);
+
+        // maybe current request is qos http or no rest service export
+        if (serviceDeployer == null) {
+            serviceDeployer = emptyServiceDeployer;
+        }
+
         List<Object> channelHandlers = Arrays.asList(new HttpRequestDecoder(
                 url.getParameter(RestConstant.MAX_INITIAL_LINE_LENGTH_PARAM, RestConstant.MAX_INITIAL_LINE_LENGTH),
                 url.getParameter(RestConstant.MAX_HEADER_SIZE_PARAM, RestConstant.MAX_HEADER_SIZE),

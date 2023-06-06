@@ -96,7 +96,7 @@ public class RestProtocol extends AbstractProtocol {
         // create server
         PortUnificationExchanger.bind(newURL, new DefaultPuHandler());
 
-        ServiceDeployer serviceDeployer = (ServiceDeployer) newURL.getAttribute(REST_SERVICE_DEPLOYER_URL_ATTRIBUTE_KEY);
+        ServiceDeployer serviceDeployer = (ServiceDeployer) newURL.getServiceModel().getServiceMetadata().getAttribute(REST_SERVICE_DEPLOYER_URL_ATTRIBUTE_KEY);
 
 
         URL finalUrl = newURL;
