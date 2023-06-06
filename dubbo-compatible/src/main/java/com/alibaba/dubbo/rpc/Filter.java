@@ -35,7 +35,7 @@ public interface Filter extends org.apache.dubbo.rpc.Filter {
             new Invocation.CompatibleInvocation(invocation));
 
         if (invokeResult instanceof Result.CompatibleResult) {
-            return invokeResult;
+            return ((Result.CompatibleResult) invokeResult).getDelegate();
         }
 
         AsyncRpcResult asyncRpcResult = AsyncRpcResult.newDefaultAsyncResult(invocation);
