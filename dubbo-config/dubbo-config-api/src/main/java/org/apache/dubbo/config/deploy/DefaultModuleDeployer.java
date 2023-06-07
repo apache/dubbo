@@ -501,6 +501,9 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
             });
             asyncReferringFutures.clear();
             referenceCache.destroyAll();
+            for (ReferenceConfigBase<?> rc : configManager.getReferences()) {
+                rc.destroy();
+            }
         } catch (Exception ignored) {
         }
     }
