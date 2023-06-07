@@ -26,15 +26,6 @@ public class DubboRoute {
     private String name;
     private List<StringMatch> services;
     private List<DubboRouteDetail> routedetail;
-    private FallbackPolicy fallbackPolicy = FallbackPolicy.RANDOM;
-
-    public FallbackPolicy getFallbackPolicy() {
-        return fallbackPolicy;
-    }
-
-    public void setFallbackPolicy(FallbackPolicy fallbackPolicy) {
-        this.fallbackPolicy = fallbackPolicy;
-    }
 
     public String getName() {
         return name;
@@ -66,7 +57,6 @@ public class DubboRoute {
             "name='" + name + '\'' +
             ", services=" + services +
             ", routedetail=" + routedetail +
-            ", fallbackPolicy="+ fallbackPolicy +
             '}';
     }
 }
