@@ -299,6 +299,10 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         }
     }
 
+    protected synchronized void init() {
+        init(true);
+    }
+
     protected synchronized void init(boolean check) {
         if (initialized && ref != null) {
             return;
