@@ -99,11 +99,12 @@ class DubboNamespaceHandlerTest {
     private void testProviderXml(ApplicationContext context) {
 
         String appName = "demo-provider";
+        String configId = ApplicationConfig.class.getName() + "#" + appName + "#0";
         Map<String, ApplicationConfig> applicationConfigMap = context.getBeansOfType(ApplicationConfig.class);
-        ApplicationConfig providerAppConfig = context.getBean(appName, ApplicationConfig.class);
+        ApplicationConfig providerAppConfig = context.getBean(configId, ApplicationConfig.class);
         assertNotNull(providerAppConfig);
         assertEquals(appName, providerAppConfig.getName());
-        assertEquals(appName, providerAppConfig.getId());
+        assertEquals(configId, providerAppConfig.getId());
 
         ProtocolConfig protocolConfig = context.getBean(ProtocolConfig.class);
         assertThat(protocolConfig, not(nullValue()));

@@ -100,9 +100,6 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
         beanDefinition.setLazyInit(false);
         // config id
         String configId = resolveAttribute(element, "id", parserContext);
-        if (StringUtils.isNotEmpty(configId)) {
-            beanDefinition.getPropertyValues().addPropertyValue("id", configId);
-        }
 
         String configName = "";
         // get configName from name
@@ -121,6 +118,10 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
             }
         }
         beanDefinition.setAttribute(BEAN_NAME, beanName);
+
+        if (StringUtils.isEmpty(configId)) {
+            beanDefinition.getPropertyValues().addPropertyValue("id", beanName);
+        }
 
         if (ProtocolConfig.class.equals(beanClass)) {
 //            for (String name : parserContext.getRegistry().getBeanDefinitionNames()) {
