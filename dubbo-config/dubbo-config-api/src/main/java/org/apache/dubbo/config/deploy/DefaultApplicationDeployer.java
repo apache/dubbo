@@ -937,6 +937,17 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     }
 
     @Override
+    public void refreshServiceInstance() {
+        if (registered) {
+            try {
+                ServiceInstanceMetadataUtils.refreshMetadataAndInstance(applicationModel);
+            } catch (Exception e) {
+                logger.error(CONFIG_REFRESH_INSTANCE_ERROR, "", "", "Refresh instance and metadata error.", e);
+            }
+        }
+    }
+
+    @Override
     public void increaseServiceRefreshCount() {
         serviceRefreshState.incrementAndGet();
     }

@@ -447,7 +447,7 @@ class JavaConfigReferenceBeanTest {
         }
 
         @Bean
-        @Reference(group = "${myapp.group}", interfaceName = "org.apache.dubbo.config.spring.api.LocalMissClass")
+        @DubboReference(group = "${myapp.group}", interfaceName = "org.apache.dubbo.config.spring.api.LocalMissClass", scope = "local")
         public ReferenceBean<GenericService> genericServiceWithoutInterface() {
             return new ReferenceBean();
         }
