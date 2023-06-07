@@ -19,6 +19,7 @@ package org.apache.dubbo.config;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.constants.LoggerCodeConstants;
 import org.apache.dubbo.common.constants.RegistryConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
@@ -655,7 +656,12 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
             return;
         }
         boolean available = invoker.isAvailable();
-        long checkDeadline = System.currentTimeMillis() + timeout;
+        if (available) {
+            return;
+        }
+
+        long startTime = System.currentTimeMillis();
+        long checkDeadline = startTime + timeout;
         do {
             try {
                 Thread.sleep(100);
@@ -664,7 +670,10 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
             }
             available = invoker.isAvailable();
         } while (!available && checkDeadline > System.currentTimeMillis());
-
+        logger.warn(LoggerCodeConstants.REGISTRY_EMPTY_ADDRESS, "", "",
+            "Check reference of [" + getUniqueServiceName() + "] failed very beginning. " +
+                "After " + (System.currentTimeMillis() - startTime) + "ms reties, finally " +
+                (available ? "succeed" : "failed") + ".");
         if (!available) {
             // 2-2 - No provider available.
 
