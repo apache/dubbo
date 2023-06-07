@@ -32,6 +32,7 @@ import org.apache.dubbo.config.ConsumerConfig;
 import org.apache.dubbo.config.ModuleConfig;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.ReferenceConfig;
+import org.apache.dubbo.config.ReferenceConfigBase;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.ServiceConfigBase;
 import org.apache.dubbo.config.context.ModuleConfigManager;
@@ -180,6 +181,9 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
                 // register services to registry
                 registerServices();
 
+                // check reference config
+                checkReferences();
+
                 // complete module start future after application state changed
                 completeStartFuture(true);
             } else {
@@ -195,6 +199,9 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
 
                         // register services to registry
                         registerServices();
+
+                        // check reference config
+                        checkReferences();
                     } catch (Throwable e) {
                         logger.warn(CONFIG_FAILED_WAIT_EXPORT_REFER, "", "", "wait for export/refer services occurred an exception", e);
                         onModuleFailed(getIdentifier() + " start failed: " + e, e);
@@ -387,6 +394,12 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
         applicationDeployer.refreshServiceInstance();
     }
 
+    private void checkReferences() {
+        for (ReferenceConfigBase<?> rc : configManager.getReferences()) {
+            referenceCache.check(rc, 3000);
+        }
+    }
+
     private void exportServiceInternal(ServiceConfigBase sc) {
         ServiceConfig<?> serviceConfig = (ServiceConfig<?>) sc;
         if (!serviceConfig.isRefreshed()) {
@@ -460,7 +473,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
                         ExecutorService executor = executorRepository.getServiceReferExecutor();
                         CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
                             try {
-                                referenceCache.get(rc);
+                                referenceCache.get(rc, false);
                             } catch (Throwable t) {
                                 logger.error(CONFIG_FAILED_EXPORT_SERVICE, "", "", "Failed to async export service config: " + getIdentifier() + " , catch error : " + t.getMessage(), t);
                             }
@@ -468,7 +481,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
 
                         asyncReferringFutures.add(future);
                     } else {
-                        referenceCache.get(rc);
+                        referenceCache.get(rc, false);
                     }
                 }
             } catch (Throwable t) {
