@@ -174,7 +174,14 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
 
             // if no async export/refer services, just set started
             if (asyncExportingFutures.isEmpty() && asyncReferringFutures.isEmpty()) {
+                // publish module started event
                 onModuleStarted();
+
+                // register services to registry
+                registerServices();
+
+                // complete module start future after application state changed
+                completeStartFuture(true);
             } else {
                 frameworkExecutorRepository.getSharedExecutor().submit(() -> {
                     try {
@@ -182,17 +189,27 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
                         waitExportFinish();
                         // wait for refer finish
                         waitReferFinish();
+
+                        // publish module started event
+                        onModuleStarted();
+
+                        // register services to registry
+                        registerServices();
                     } catch (Throwable e) {
                         logger.warn(CONFIG_FAILED_WAIT_EXPORT_REFER, "", "", "wait for export/refer services occurred an exception", e);
+                        onModuleFailed(getIdentifier() + " start failed: " + e, e);
                     } finally {
-                        onModuleStarted();
+                        // complete module start future after application state changed
+                        completeStartFuture(true);
                     }
                 });
             }
+
         } catch (Throwable e) {
             onModuleFailed(getIdentifier() + " start failed: " + e, e);
             throw e;
         }
+
         return startFuture;
     }
 
@@ -300,16 +317,11 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
     }
 
     private void onModuleStarted() {
-        try {
             if (isStarting()) {
                 setStarted();
                 logger.info(getIdentifier() + " has started.");
                 applicationDeployer.notifyModuleChanged(moduleModel, DeployState.STARTED);
             }
-        } finally {
-            // complete module start future after application state changed
-            completeStartFuture(true);
-        }
     }
 
     private void onModuleFailed(String msg, Throwable ex) {
@@ -366,6 +378,15 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
         }
     }
 
+    private void registerServices() {
+        for (ServiceConfigBase sc : configManager.getServices()) {
+            if (!Boolean.FALSE.equals(sc.isRegister())) {
+                registerServiceInternal(sc);
+            }
+        }
+        applicationDeployer.refreshServiceInstance();
+    }
+
     private void exportServiceInternal(ServiceConfigBase sc) {
         ServiceConfig<?> serviceConfig = (ServiceConfig<?>) sc;
         if (!serviceConfig.isRefreshed()) {
@@ -390,10 +411,21 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
             asyncExportingFutures.add(future);
         } else {
             if (!sc.isExported()) {
-                sc.export();
+                sc.export(false);
                 exportedServices.add(sc);
             }
         }
+    }
+
+    private void registerServiceInternal(ServiceConfigBase sc) {
+        ServiceConfig<?> serviceConfig = (ServiceConfig<?>) sc;
+        if (!serviceConfig.isRefreshed()) {
+            serviceConfig.refresh();
+        }
+        if (!sc.isExported()) {
+            return;
+        }
+        sc.register();
     }
 
     private void unexportServices() {

@@ -415,7 +415,9 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
     /**
      * export service and auto start application instance
      */
-    public abstract void export();
+    public final void export() {
+        export(true);
+    }
 
     public abstract void unexport();
 
@@ -423,4 +425,7 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
 
     public abstract boolean isUnexported();
 
+    public abstract void export(boolean register);
+
+    public abstract void register();
 }
