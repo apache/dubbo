@@ -32,6 +32,7 @@ import org.apache.dubbo.rpc.cluster.router.mesh.rule.destination.DestinationRule
 import org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.DubboMatchRequest;
 import org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.DubboRoute;
 import org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.DubboRouteDetail;
+import org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.FallbackPolicy;
 import org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.VirtualServiceRule;
 import org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.VirtualServiceSpec;
 import org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.destination.DubboDestination;
@@ -96,15 +97,19 @@ public abstract class MeshRuleRouter<T> extends AbstractStateRouter<T> implement
         // loop each application
         for (String appName : ruleCache.getAppList()) {
             // find destination by invocation
-            List<DubboRouteDestination> routeDestination = getDubboRouteDestination(ruleCache.getVsDestinationGroup(appName), invocation);
-            if (routeDestination != null) {
-                // aggregate target invokers
-                String subset = randomSelectDestination(ruleCache, appName, routeDestination, invokers);
-                if (subset != null) {
-                    BitList<Invoker<T>> destination = meshRuleCache.getSubsetInvokers(appName, subset);
-                    result = result.or(destination);
-                    if (stringBuilder != null) {
-                        stringBuilder.append("Match App: ").append(appName).append(" Subset: ").append(subset).append(' ');
+            DubboRoute dubboRoute = getDubboRoute(ruleCache.getVsDestinationGroup(appName), invocation);
+            if (dubboRoute != null) {
+                // match route detail (by params)
+                List<DubboRouteDestination> routeDestination = getDubboRouteDestination(dubboRoute, invocation);
+                if (routeDestination != null) {
+                    // aggregate target invokers
+                    String subset = randomSelectDestination(ruleCache, appName, dubboRoute, routeDestination, invokers);
+                    if (subset != null) {
+                        BitList<Invoker<T>> destination = meshRuleCache.getSubsetInvokers(appName, subset);
+                        result = result.or(destination);
+                        if (stringBuilder != null) {
+                            stringBuilder.append("Match App: ").append(appName).append(" Subset: ").append(subset).append(' ');
+                        }
                     }
                 }
             }
@@ -127,19 +132,15 @@ public abstract class MeshRuleRouter<T> extends AbstractStateRouter<T> implement
     }
 
     /**
-     * Select RouteDestination by Invocation
+     * Select Route by Invocation
      */
-    protected List<DubboRouteDestination> getDubboRouteDestination(VsDestinationGroup vsDestinationGroup, Invocation invocation) {
+    protected DubboRoute getDubboRoute(VsDestinationGroup vsDestinationGroup, Invocation invocation) {
         if (vsDestinationGroup != null) {
             List<VirtualServiceRule> virtualServiceRuleList = vsDestinationGroup.getVirtualServiceRuleList();
             if (CollectionUtils.isNotEmpty(virtualServiceRuleList)) {
                 for (VirtualServiceRule virtualServiceRule : virtualServiceRuleList) {
                     // match virtual service (by serviceName)
-                    DubboRoute dubboRoute = getDubboRoute(virtualServiceRule, invocation);
-                    if (dubboRoute != null) {
-                        // match route detail (by params)
-                        return getDubboRouteDestination(dubboRoute, invocation);
-                    }
+                    return getDubboRoute(virtualServiceRule, invocation);
                 }
             }
         }
@@ -195,7 +196,7 @@ public abstract class MeshRuleRouter<T> extends AbstractStateRouter<T> implement
     /**
      * Find out target invokers from RouteDestination
      */
-    protected String randomSelectDestination(MeshRuleCache<T> meshRuleCache, String appName, List<DubboRouteDestination> routeDestination, BitList<Invoker<T>> availableInvokers) throws RpcException {
+    protected String randomSelectDestination(MeshRuleCache<T> meshRuleCache, String appName, DubboRoute dubboRoute, List<DubboRouteDestination> routeDestination, BitList<Invoker<T>> availableInvokers) throws RpcException {
         // randomly select one DubboRouteDestination from list by weight
         int totalWeight = 0;
         for (DubboRouteDestination dubboRouteDestination : routeDestination) {
@@ -214,10 +215,14 @@ public abstract class MeshRuleRouter<T> extends AbstractStateRouter<T> implement
         }
 
         // fall back
-        for (DubboRouteDestination destination : routeDestination) {
-            String result = computeDestination(meshRuleCache, appName, destination.getDestination(), availableInvokers);
-            if (result != null) {
-                return result;
+        if (FallbackPolicy.EXCEPTION.equals(dubboRoute.getFallbackPolicy())) {
+            throw new RpcException("No available destination for route: " + dubboRoute);
+        } else {
+            for (DubboRouteDestination destination : routeDestination) {
+                String result = computeDestination(meshRuleCache, appName, destination.getDestination(), availableInvokers);
+                if (result != null) {
+                    return result;
+                }
             }
         }
         return null;
