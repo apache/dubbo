@@ -24,6 +24,7 @@ import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Codec;
 import org.apache.dubbo.remoting.Codec2;
 import org.apache.dubbo.remoting.Constants;
+import org.apache.dubbo.remoting.api.ProtocolDetector;
 import org.apache.dubbo.remoting.api.pu.ChannelHandlerPretender;
 import org.apache.dubbo.remoting.api.pu.ChannelOperator;
 import org.apache.dubbo.remoting.api.pu.DefaultCodec;
@@ -35,6 +36,8 @@ public class NettyConfigOperator implements ChannelOperator {
 
     private final Channel channel;
     private ChannelHandler handler;
+
+    private ProtocolDetector.Result detectResult;
 
     public NettyConfigOperator(NettyChannel channel, ChannelHandler handler) {
         this.channel = channel;
@@ -89,6 +92,15 @@ public class NettyConfigOperator implements ChannelOperator {
                 sh
             );
         }
+    }
+
+    public void setDetectResult(ProtocolDetector.Result detectResult) {
+        this.detectResult = detectResult;
+    }
+
+    @Override
+    public ProtocolDetector.Result detectResult() {
+        return detectResult;
     }
 
     private boolean isClientSide(Channel channel) {
