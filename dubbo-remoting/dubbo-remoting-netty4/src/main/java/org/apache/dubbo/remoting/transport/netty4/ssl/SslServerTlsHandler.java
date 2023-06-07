@@ -30,6 +30,7 @@ import io.netty.handler.codec.ByteToMessageDecoder;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.ssl.SslHandshakeCompletionEvent;
+import io.netty.util.AttributeKey;
 
 import javax.net.ssl.SSLSession;
 import java.util.List;
@@ -42,6 +43,7 @@ public class SslServerTlsHandler extends ByteToMessageDecoder {
     private final URL url;
 
     private final boolean sslDetected;
+    public static final AttributeKey<SSLSession> SSL_SESSION_KEY = AttributeKey.valueOf("dubbo.ssl.session");
 
     public SslServerTlsHandler(URL url) {
         this.url = url;
@@ -67,6 +69,7 @@ public class SslServerTlsHandler extends ByteToMessageDecoder {
                 logger.info("TLS negotiation succeed with: " + session.getPeerHost());
                 // Remove after handshake success.
                 ctx.pipeline().remove(this);
+                ctx.channel().attr(SSL_SESSION_KEY).set(session);
             } else {
                 logger.error(INTERNAL_ERROR, "", "", "TLS negotiation failed when trying to accept new connection.", handshakeEvent.cause());
                 ctx.close();
@@ -101,9 +104,10 @@ public class SslServerTlsHandler extends ByteToMessageDecoder {
             return;
         }
 
-        if (providerConnectionConfig.getAuthPolicy() == AuthPolicy.NONE) {
+        if (providerConnectionConfig.getAuthPolicy() != AuthPolicy.STRICT) {
             ChannelPipeline p = channelHandlerContext.pipeline();
             p.remove(this);
+            return;
         }
 
         logger.error(INTERNAL_ERROR, "", "", "TLS negotiation failed when trying to accept new connection.");

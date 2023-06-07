@@ -25,23 +25,44 @@ option go_package = "github.com/apache/dubbo-admin/ca/v1alpha1";
 option java_multiple_files = true;
 
 
-message DubboCertificateRequest {
+message IdentityRequest {
   string csr = 1;
   string type = 2;
 
   google.protobuf.Struct metadata = 3;
 }
 
-message DubboCertificateResponse {
+message IdentityResponse {
   bool success = 1;
   string cert_pem = 2;
   repeated string trust_certs = 3;
-  int64 expire_time = 4;
-  string message = 5;
+  string token = 4;
+  repeated string trusted_token_public_keys = 5;
+  int64 refresh_time = 6;
+  int64 expire_time = 7;
+  string message = 8;
 }
 
-service DubboCertificateService {
-  rpc CreateCertificate(DubboCertificateRequest)
-      returns (DubboCertificateResponse) {
+service AuthorityService {
+  rpc CreateIdentity(IdentityRequest)
+      returns (IdentityResponse) {
+  }
+}
+
+message ObserveRequest {
+  string nonce = 1;
+  string type = 2;
+}
+
+message ObserveResponse {
+  string nonce = 1;
+  string type = 2;
+  int64 revision = 3;
+  string data = 4;
+}
+
+service RuleService {
+  rpc Observe(stream ObserveRequest)
+      returns (stream ObserveResponse) {
   }
 }

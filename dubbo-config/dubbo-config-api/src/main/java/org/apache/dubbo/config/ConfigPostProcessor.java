@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 
@@ -32,5 +33,9 @@ public interface ConfigPostProcessor {
 
     default void postProcessServiceConfig(ServiceConfig serviceConfig) {
 
+    }
+
+    default URL portProcessServiceConfig(ServiceConfig serviceConfig, URL url) {
+        return url;
     }
 }

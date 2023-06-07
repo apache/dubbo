@@ -18,6 +18,7 @@ package org.apache.dubbo.common.ssl;
 
 public enum AuthPolicy {
     NONE,
-    SERVER_AUTH,
-    CLIENT_AUTH
+    DISABLED,
+    PERMISSIVE,
+    STRICT,
 }

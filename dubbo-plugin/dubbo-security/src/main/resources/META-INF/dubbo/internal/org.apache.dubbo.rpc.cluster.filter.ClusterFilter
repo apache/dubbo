@@ -1,0 +1,1 @@
+authentication=org.apache.dubbo.security.cert.AuthenticationConsumerFilter

@@ -152,6 +152,8 @@ public class DubboProtocol extends AbstractProtocol {
                     }
                 }
                 RpcContext.getServiceContext().setRemoteAddress(channel.getRemoteAddress());
+                inv.getAttributes().put("dubbo.ssl.session", channel.getAttribute("dubbo.ssl.session"));
+                inv.getAttributes().put("channel", channel);
                 Result result = invoker.invoke(inv);
                 return result.thenApply(Function.identity());
             }

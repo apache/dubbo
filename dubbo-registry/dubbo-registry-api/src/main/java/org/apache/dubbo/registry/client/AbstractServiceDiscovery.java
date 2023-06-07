@@ -137,7 +137,7 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
             return;
         }
         this.serviceInstance = serviceInstance;
-        boolean revisionUpdated = calOrUpdateInstanceRevision(this.serviceInstance);
+        boolean revisionUpdated = calOrUpdateInstanceRevision(this.serviceInstance, this.serviceInstance);
         if (revisionUpdated) {
             reportMetadata(this.metadataInfo);
             doRegister(this.serviceInstance);
@@ -155,16 +155,18 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
             return;
         }
 
-        if (this.serviceInstance == null) {
+        ServiceInstance oldServiceInstance = this.serviceInstance;
+        if (oldServiceInstance == null) {
             register();
-        }
-
-        if (!isValidInstance(this.serviceInstance)) {
             return;
         }
-        ServiceInstance oldServiceInstance = this.serviceInstance;
-        DefaultServiceInstance newServiceInstance = new DefaultServiceInstance((DefaultServiceInstance) oldServiceInstance);
-        boolean revisionUpdated = calOrUpdateInstanceRevision(newServiceInstance);
+
+        ServiceInstance newServiceInstance = createServiceInstance(this.metadataInfo);
+        if (!isValidInstance(newServiceInstance)) {
+            return;
+        }
+
+        boolean revisionUpdated = calOrUpdateInstanceRevision(oldServiceInstance, newServiceInstance);
         if (revisionUpdated) {
             logger.info(String.format("Metadata of instance changed, updating instance with revision %s.", newServiceInstance.getServiceMetadata().getRevision()));
             doUpdate(oldServiceInstance, newServiceInstance);
@@ -338,12 +340,12 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
         return instance;
     }
 
-    protected boolean calOrUpdateInstanceRevision(ServiceInstance instance) {
-        String existingInstanceRevision = getExportedServicesRevision(instance);
-        MetadataInfo metadataInfo = instance.getServiceMetadata();
+    protected boolean calOrUpdateInstanceRevision(ServiceInstance oldInstance, ServiceInstance newInstance) {
+        String existingInstanceRevision = getExportedServicesRevision(oldInstance);
+        MetadataInfo metadataInfo = newInstance.getServiceMetadata();
         String newRevision = metadataInfo.calAndGetRevision();
         if (!newRevision.equals(existingInstanceRevision)) {
-            instance.getMetadata().put(EXPORTED_SERVICES_REVISION_PROPERTY_NAME, metadataInfo.getRevision());
+            newInstance.getMetadata().put(EXPORTED_SERVICES_REVISION_PROPERTY_NAME, metadataInfo.getRevision());
             return true;
         }
         return false;

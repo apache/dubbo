@@ -16,11 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.rest.netty.ssl;
 
-import io.netty.handler.ssl.ClientAuth;
-import io.netty.handler.ssl.OpenSsl;
-import io.netty.handler.ssl.SslContext;
-import io.netty.handler.ssl.SslContextBuilder;
-import io.netty.handler.ssl.SslProvider;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -28,6 +23,12 @@ import org.apache.dubbo.common.ssl.AuthPolicy;
 import org.apache.dubbo.common.ssl.Cert;
 import org.apache.dubbo.common.ssl.CertManager;
 import org.apache.dubbo.common.ssl.ProviderCert;
+
+import io.netty.handler.ssl.ClientAuth;
+import io.netty.handler.ssl.OpenSsl;
+import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslContextBuilder;
+import io.netty.handler.ssl.SslProvider;
 
 import javax.net.ssl.SSLException;
 import java.io.IOException;
@@ -61,7 +62,7 @@ public class SslContexts {
 
             if (serverTrustCertStream != null) {
                 sslClientContextBuilder.trustManager(serverTrustCertStream);
-                if (providerConnectionConfig.getAuthPolicy() == AuthPolicy.CLIENT_AUTH) {
+                if (providerConnectionConfig.getAuthPolicy() == AuthPolicy.STRICT) {
                     sslClientContextBuilder.clientAuth(ClientAuth.REQUIRE);
                 } else {
                     sslClientContextBuilder.clientAuth(ClientAuth.OPTIONAL);

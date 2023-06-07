@@ -1,1 +1,1 @@
-dubbo=org.apache.dubbo.security.cert.DubboCertProvider
+authority=org.apache.dubbo.security.cert.AuthorityCertProvider

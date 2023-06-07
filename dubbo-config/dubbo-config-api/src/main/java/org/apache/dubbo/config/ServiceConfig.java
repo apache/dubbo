@@ -138,10 +138,6 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
      */
     private transient volatile boolean exported;
 
-    /**
-     * The flag whether a service has unexported ,if the method unexported is invoked, the value is true
-     */
-    private transient volatile boolean unexported;
 
     private transient volatile AtomicBoolean initialized = new AtomicBoolean(false);
 
@@ -184,15 +180,12 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     @Override
     @Parameter(excluded = true, attribute = false)
     public boolean isUnexported() {
-        return unexported;
+        return !exported;
     }
 
     @Override
     public void unexport() {
         if (!exported) {
-            return;
-        }
-        if (unexported) {
             return;
         }
         if (!exporters.isEmpty()) {
@@ -213,10 +206,11 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             }
             exporters.clear();
         }
-        unexported = true;
+        exported = false;
         onUnexpoted();
         ModuleServiceRepository repository = getScopeModel().getServiceRepository();
         repository.unregisterProvider(providerModel);
+        this.urls.clear();
     }
 
     private void waitForIdle() {
@@ -440,9 +434,6 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     }
 
     protected synchronized void doExport() {
-        if (unexported) {
-            throw new IllegalStateException("The service " + interfaceClass.getName() + " has already unexported!");
-        }
         if (exported) {
             return;
         }
@@ -692,6 +683,13 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         }
         url = url.setScopeModel(getScopeModel());
         url = url.setServiceModel(providerModel);
+
+        // Customize parameters to registry
+        List<ConfigPostProcessor> configPostProcessors = this.getExtensionLoader(ConfigPostProcessor.class)
+            .getActivateExtension(URL.valueOf("configPostProcessor://", getScopeModel()), (String[]) null);
+        for (ConfigPostProcessor configPostProcessor : configPostProcessors) {
+            url = configPostProcessor.portProcessServiceConfig(this, url);
+        }
         return url;
     }
 

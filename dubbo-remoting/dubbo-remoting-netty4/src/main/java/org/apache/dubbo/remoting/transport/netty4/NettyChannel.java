@@ -16,11 +16,6 @@
  */
 package org.apache.dubbo.remoting.transport.netty4;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
-import io.netty.handler.codec.EncoderException;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -35,8 +30,15 @@ import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.transport.AbstractChannel;
 import org.apache.dubbo.remoting.transport.codec.CodecAdapter;
+import org.apache.dubbo.remoting.transport.netty4.ssl.SslServerTlsHandler;
 import org.apache.dubbo.remoting.utils.PayloadDropper;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.handler.codec.EncoderException;
 
 import java.net.InetSocketAddress;
 import java.util.Map;
@@ -265,6 +267,9 @@ final class NettyChannel extends AbstractChannel {
 
     @Override
     public Object getAttribute(String key) {
+        if (key.equals("dubbo.ssl.session")) {
+            return channel.attr(SslServerTlsHandler.SSL_SESSION_KEY).get();
+        }
         return attributes.get(key);
     }
 

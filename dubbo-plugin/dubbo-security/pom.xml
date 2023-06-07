@@ -51,8 +51,19 @@
             <artifactId>dubbo-common</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-config-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
         <!-- dubbo -->
 
+        <dependency>
+            <groupId>com.auth0</groupId>
+            <artifactId>java-jwt</artifactId>
+            <version>4.3.0</version>
+        </dependency>
 
         <dependency>
             <groupId>io.grpc</groupId>
@@ -89,13 +100,6 @@
             <artifactId>bcprov-ext-jdk15on</artifactId>
         </dependency>
 
-        <!-- test -->
-        <dependency>
-            <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-config-api</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 
     <build>

@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.io.Bytes;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.ssl.AuthPolicy;
 import org.apache.dubbo.common.ssl.CertManager;
 import org.apache.dubbo.common.ssl.ProviderCert;
 import org.apache.dubbo.remoting.ChannelHandler;
@@ -92,14 +93,15 @@ public class NettyPortUnificationServerHandler extends ByteToMessageDecoder {
         NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), url, handler);
         // Will use the first five bytes to detect a protocol.
         // size of telnet command ls is 2 bytes
-        if (in.readableBytes() < 2) {
+        if (in.readableBytes() < 5) {
             return;
         }
 
         CertManager certManager = url.getOrDefaultFrameworkModel().getBeanFactory().getBean(CertManager.class);
         ProviderCert providerConnectionConfig = certManager.getProviderConnectionConfig(url, ctx.channel().remoteAddress());
 
-        if (providerConnectionConfig != null && isSsl(in)) {
+        if (providerConnectionConfig != null && detectSsl) {
+            checkSsl(in, ctx, providerConnectionConfig);
             enableSsl(ctx, providerConnectionConfig);
         } else {
             for (final WireProtocol protocol : protocols) {
@@ -151,13 +153,12 @@ public class NettyPortUnificationServerHandler extends ByteToMessageDecoder {
         p.remove(this);
     }
 
-    private boolean isSsl(ByteBuf buf) {
-        // at least 5 bytes to determine if data is encrypted
-        if (detectSsl && buf.readableBytes() >= 5) {
-            return SslHandler.isEncrypted(buf);
+    private void checkSsl(ByteBuf buf, ChannelHandlerContext ctx, ProviderCert providerConnectionConfig) {
+        if (!SslHandler.isEncrypted(buf) &&
+            providerConnectionConfig.getAuthPolicy() == AuthPolicy.STRICT) {
+            LOGGER.error(INTERNAL_ERROR, "", "", "TLS negotiation failed when trying to accept new connection.");
+            ctx.close();
         }
-        return false;
     }
-
 
 }
