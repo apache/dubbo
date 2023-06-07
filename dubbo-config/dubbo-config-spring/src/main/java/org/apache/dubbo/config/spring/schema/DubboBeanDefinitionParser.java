@@ -31,9 +31,10 @@ import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
+import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.nested.AggregationConfig;
-import org.apache.dubbo.config.nested.PrometheusConfig;
 import org.apache.dubbo.config.nested.HistogramConfig;
+import org.apache.dubbo.config.nested.PrometheusConfig;
 import org.apache.dubbo.config.spring.Constants;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.ServiceBean;
@@ -103,9 +104,11 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
         if (StringUtils.isNotEmpty(configId)) {
             beanDefinition.getPropertyValues().addPropertyValue("id", configId);
         }
-        // get id from name
+
+        String configName = "";
+        // get configName from name
         if (StringUtils.isEmpty(configId)) {
-            configId = resolveAttribute(element, "name", parserContext);
+            configName = resolveAttribute(element, "name", parserContext);
         }
 
         String beanName = configId;
@@ -113,9 +116,9 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
             // generate bean name
             String prefix = beanClass.getName();
             int counter = 0;
-            beanName = prefix + "#" + counter;
+            beanName = prefix + (StringUtils.isEmpty(configName) ? "#" : ("#" + configName + "#")) + counter;
             while (parserContext.getRegistry().containsBeanDefinition(beanName)) {
-                beanName = prefix + "#" + (counter++);
+                beanName = prefix + (StringUtils.isEmpty(configName) ? "#" : ("#" + configName + "#")) + (counter++);
             }
         }
         beanDefinition.setAttribute(BEAN_NAME, beanName);
