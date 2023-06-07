@@ -670,6 +670,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
                 break;
             }
             available = invoker.isAvailable();
