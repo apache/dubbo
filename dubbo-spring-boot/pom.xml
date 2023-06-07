@@ -36,7 +36,7 @@
         <module>dubbo-spring-boot-autoconfigure</module>
         <module>dubbo-spring-boot-compatible</module>
         <module>dubbo-spring-boot-starter</module>
-        <module>dubbo-spring-boot-observability-starters</module>
+        <module>dubbo-spring-boot-starters</module>
     </modules>
 
     <properties>
