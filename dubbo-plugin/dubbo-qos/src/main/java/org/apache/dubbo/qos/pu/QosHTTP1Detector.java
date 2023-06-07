@@ -35,7 +35,7 @@ public class QosHTTP1Detector extends AbstractHttpProtocolDetector {
     @Override
     public Result detect(ChannelBuffer in) {
         if (in.readableBytes() < 2) {
-            return Result.NEED_MORE_DATA;
+            return Result.needMoreData();
         }
 
         if (prefixMatch(QOS_METHODS_PREFIX, in, 3)) {
@@ -45,7 +45,7 @@ public class QosHTTP1Detector extends AbstractHttpProtocolDetector {
 
             // url split by / length judge
             if (!isQosRequestURL(requestURL)) {
-                return Result.UNRECOGNIZED;
+                return Result.unrecognized();
             }
 
             // command exist judge, when /cmd  or /cmd/appName we prefer response by rest http
@@ -53,14 +53,14 @@ public class QosHTTP1Detector extends AbstractHttpProtocolDetector {
             BaseCommand command = commandExist(requestURL);
 
             if (command == null) {
-                return Result.UNRECOGNIZED;
+                return Result.unrecognized();
             }
 
 
-            return Result.RECOGNIZED;
+            return Result.recognized();
         }
 
-        return Result.UNRECOGNIZED;
+        return Result.unrecognized();
     }
 
     private BaseCommand commandExist(String requestURL) {

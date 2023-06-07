@@ -36,11 +36,11 @@ public class Http2ProtocolDetector implements ProtocolDetector {
 
         // If the input so far doesn't match the preface, break the connection.
         if (bytesRead == 0 || !ChannelBuffers.prefixEquals(in, clientPrefaceString, bytesRead)) {
-            return Result.UNRECOGNIZED;
+            return Result.unrecognized();
         }
         if (bytesRead == prefaceLen) {
-            return Result.RECOGNIZED;
+            return Result.recognized();
         }
-        return Result.NEED_MORE_DATA;
+        return Result.needMoreData();
     }
 }

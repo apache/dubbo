@@ -14,15 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.api.pu;
+package org.apache.dubbo.config.spring6.utils;
 
-import org.apache.dubbo.remoting.ChannelHandler;
-import org.apache.dubbo.remoting.api.ProtocolDetector;
+import java.io.Serializable;
 
-import java.util.List;
+public class HelloRequest extends HelloRequestSuper implements Serializable {
+    private Person person;
 
-public interface ChannelOperator {
-    void configChannelHandler(List<ChannelHandler> handlerList);
 
-    ProtocolDetector.Result detectResult();
+    public HelloRequest(Person person) {
+        this.person = person;
+    }
+
+    public Person getPerson() {
+        return person;
+    }
+
+    public void setPerson(Person person) {
+        this.person = person;
+    }
 }

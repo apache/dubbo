@@ -14,15 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.config.spring6.utils;
 
-package org.apache.dubbo.common.utils;
 
-import static org.apache.dubbo.common.constants.CommonConstants.NATIVE;
+public interface DemoService {
 
-public abstract class NativeUtils {
-
-    public static boolean isNative() {
-        return Boolean.parseBoolean(System.getProperty(NATIVE, "false"));
-    }
+    HelloResponse sayHello(HelloRequest request);
 
 }
