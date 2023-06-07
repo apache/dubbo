@@ -43,6 +43,8 @@ public abstract class RegistryNotifier {
     // for the first 10 notification will be notified immediately
     private final AtomicInteger executeTime = new AtomicInteger(0);
 
+    private final AtomicInteger rawAddressesVersion = new AtomicInteger(0);
+
     private ScheduledExecutorService scheduler;
 
     public RegistryNotifier(URL registryUrl, long delayTime) {
@@ -61,6 +63,7 @@ public abstract class RegistryNotifier {
 
     public synchronized void notify(Object rawAddresses) {
         this.rawAddresses = rawAddresses;
+        int expectVersion = this.rawAddressesVersion.incrementAndGet();
         long notifyTime = System.currentTimeMillis();
         this.lastEventTime = notifyTime;
 
@@ -69,13 +72,13 @@ public abstract class RegistryNotifier {
         // more than 10 calls && next execute time is in the future
         boolean delay = shouldDelay.get() && delta < 0;
         if (delay) {
-            scheduler.schedule(new NotificationTask(this, notifyTime), -delta, TimeUnit.MILLISECONDS);
+            scheduler.schedule(new NotificationTask(this, notifyTime, expectVersion), -delta, TimeUnit.MILLISECONDS);
         } else {
             // check if more than 10 calls
             if (!shouldDelay.get() && executeTime.incrementAndGet() > DEFAULT_DELAY_EXECUTE_TIMES) {
                 shouldDelay.set(true);
             }
-            scheduler.submit(new NotificationTask(this, notifyTime));
+            scheduler.submit(new NotificationTask(this, notifyTime, expectVersion));
         }
     }
 
@@ -93,20 +96,22 @@ public abstract class RegistryNotifier {
     public static class NotificationTask implements Runnable {
         private final RegistryNotifier listener;
         private final long time;
+        private final int expectVersion;
 
-        public NotificationTask(RegistryNotifier listener, long time) {
+        public NotificationTask(RegistryNotifier listener, long time, int expectVersion) {
             this.listener = listener;
             this.time = time;
+            this.expectVersion = expectVersion;
         }
 
         @Override
         public void run() {
             try {
-                if (this.time == listener.lastEventTime) {
+                if (this.time == listener.lastEventTime && this.expectVersion == listener.rawAddressesVersion.get()) {
                     listener.doNotify(listener.rawAddresses);
                     listener.lastExecuteTime = System.currentTimeMillis();
                     synchronized (listener) {
-                        if (this.time == listener.lastEventTime) {
+                        if (this.time == listener.lastEventTime && this.expectVersion == listener.rawAddressesVersion.get()) {
                             listener.rawAddresses = null;
                         }
                     }
