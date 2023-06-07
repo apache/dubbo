@@ -18,9 +18,12 @@
 package org.apache.dubbo.qos.pu;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.remoting.api.ProtocolDetector;
 import org.apache.dubbo.remoting.api.pu.ChannelOperator;
+import org.apache.dubbo.remoting.buffer.HeapChannelBuffer;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static org.mockito.ArgumentMatchers.anyList;
@@ -38,4 +41,25 @@ class QosWireProtocolTest {
         verify(channelOperator).configChannelHandler(anyList());
 
     }
+
+    @Test
+    void testQosHttp1Detector() {
+        QosHTTP1Detector qosHTTP1Detector = new QosHTTP1Detector(FrameworkModel.defaultModel());
+        HeapChannelBuffer heapChannelBuffer = new HeapChannelBuffer(30);
+        heapChannelBuffer.writeBytes("GET /ls  HTTP/1.1".getBytes());
+        ProtocolDetector.Result detect = qosHTTP1Detector.detect(heapChannelBuffer);
+        Assertions.assertEquals(ProtocolDetector.Result.recognized().flag(), detect.flag());
+
+        heapChannelBuffer = new HeapChannelBuffer(30);
+        heapChannelBuffer.writeBytes("GET /ls/appName  HTTP/1.1".getBytes());
+        detect = qosHTTP1Detector.detect(heapChannelBuffer);
+        Assertions.assertEquals(ProtocolDetector.Result.recognized().flag(), detect.flag());
+
+        heapChannelBuffer = new HeapChannelBuffer(30);
+        heapChannelBuffer.writeBytes("GET /rest/demo  HTTP/1.1".getBytes());
+        detect = qosHTTP1Detector.detect(heapChannelBuffer);
+        Assertions.assertEquals(ProtocolDetector.Result.unrecognized().flag(), detect.flag());
+    }
+
+
 }

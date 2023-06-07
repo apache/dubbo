@@ -40,13 +40,13 @@ public class RestHttp1Detector extends AbstractHttpProtocolDetector {
 
         // length judge
         if (i < SIMPLE_HTTP.length()) {
-            return Result.UNRECOGNIZED;
+            return Result.unrecognized();
         }
 
         if (prefixMatch(HTTP_METHODS_PREFIX, in, 3)) {
-            return Result.RECOGNIZED;
+            return Result.recognized();
         }
 
-        return Result.UNRECOGNIZED;
+        return Result.unrecognized();
     }
 }
