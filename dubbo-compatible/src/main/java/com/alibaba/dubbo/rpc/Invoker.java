@@ -103,6 +103,12 @@ public interface Invoker<T> extends org.apache.dubbo.rpc.Invoker<T> {
         
         @Override
         public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (!(o instanceof CompatibleInvoker)) {
+                return false;
+            }
             return invoker.equals(o);
         }
     }
