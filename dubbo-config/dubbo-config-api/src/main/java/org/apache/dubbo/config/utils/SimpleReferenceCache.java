@@ -205,7 +205,7 @@ public class SimpleReferenceCache implements ReferenceCache {
 
     @Override
     public void check(String key, Class<?> type, long timeout) {
-        List<ReferenceConfigBase<?>> referencesOfKey = referenceKeyMap.remove(key);
+        List<ReferenceConfigBase<?>> referencesOfKey = referenceKeyMap.get(key);
         if (CollectionUtils.isEmpty(referencesOfKey)) {
             return;
         }
