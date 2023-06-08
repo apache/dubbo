@@ -25,51 +25,39 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>dubbo-metadata-api</artifactId>
+    <artifactId>dubbo-metadata-rest</artifactId>
     <packaging>jar</packaging>
 
-    <name>dubbo-metadata-api</name>
-    <description>The metadata module of Dubbo project</description>
+    <name>dubbo-metadata-rest</name>
+    <description>The rest metadata module of Dubbo project</description>
 
     <dependencies>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-rpc-api</artifactId>
-            <version>${project.parent.version}</version>
-            <optional>true</optional>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-cluster</artifactId>
+            <artifactId>dubbo-metadata-api</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
 
+        <!-- JAX-RS API -->
         <dependency>
-            <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-metrics-api</artifactId>
-            <version>${project.parent.version}</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-metrics-default</artifactId>
-            <version>${project.parent.version}</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-metrics-metadata</artifactId>
-            <version>${project.parent.version}</version>
-            <scope>compile</scope>
+            <groupId>javax.ws.rs</groupId>
+            <artifactId>javax.ws.rs-api</artifactId>
+            <scope>test</scope>
         </dependency>
 
+        <!-- Spring Web MVC -->
         <dependency>
-            <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-native</artifactId>
-            <version>${project.parent.version}</version>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+            <scope>test</scope>
         </dependency>
 
+        <!-- Spring Web MVC -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
 </project>
