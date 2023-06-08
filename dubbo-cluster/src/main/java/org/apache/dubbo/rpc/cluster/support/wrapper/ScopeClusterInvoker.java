@@ -108,7 +108,11 @@ public class ScopeClusterInvoker<T> implements ClusterInvoker<T>, ExporterChange
             // If it's a local call, it should be called locally.
             return isExported.get();
         }
-        return isExported.get() || invoker.isAvailable();
+        if (injvmFlag && isExported.get()) {
+            // If allow local call, check if local exported first
+            return true;
+        }
+        return invoker.isAvailable();
     }
 
     @Override
