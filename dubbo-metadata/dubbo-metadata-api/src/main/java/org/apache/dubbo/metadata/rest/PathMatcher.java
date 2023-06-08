@@ -34,9 +34,9 @@ public class PathMatcher {
     private boolean hasPathVariable;
     private String contextPath;
     private String httpMethod;
-    // for provider http method compare
+    // for provider http method compare,http 405
     private boolean needCompareHttpMethod = true;
-    //  compare method directly
+    //  compare method directly (for get Invoker by method)
     private boolean needCompareServiceMethod = false;
 
     // service method
@@ -65,6 +65,9 @@ public class PathMatcher {
     }
 
     private void dealPathVariable(String path) {
+        if (path == null) {
+            return;
+        }
         this.pathSplits = path.split(SEPARATOR);
 
         for (String pathSplit : pathSplits) {
@@ -155,10 +158,25 @@ public class PathMatcher {
         if (o == null || getClass() != o.getClass()) return false;
         PathMatcher that = (PathMatcher) o;
         return serviceMethodEqual(that, this)
-            || (pathEqual(that)
-            && Objects.equals(version, that.version)
-            && (this.needCompareHttpMethod ? Objects.equals(httpMethod, that.httpMethod) : true)
-            && Objects.equals(group, that.group) && Objects.equals(port, that.port));
+            || pathMatch(that);
+    }
+
+    private boolean pathMatch(PathMatcher that) {
+        return (!that.needCompareServiceMethod && !needCompareServiceMethod) // no need service method compare
+            && pathEqual(that) // path compare
+            && Objects.equals(version, that.version) // service  version compare
+            && httpMethodMatch(that) // http method compare
+            && Objects.equals(group, that.group) && Objects.equals(port, that.port);
+    }
+
+    /**
+     * it is needed to compare http method when provider judge http method and set status 405
+     *
+     * @param that
+     * @return
+     */
+    private boolean httpMethodMatch(PathMatcher that) {
+        return !(that.needCompareHttpMethod && this.needCompareHttpMethod) ? Objects.equals(httpMethod, that.httpMethod) : true;
     }
 
     private boolean serviceMethodEqual(PathMatcher thatPathMatcher, PathMatcher thisPathMatcher) {
@@ -177,6 +195,10 @@ public class PathMatcher {
     }
 
     private boolean pathEqual(PathMatcher pathMatcher) {
+        // path is null return false directly
+        if (this.path == null || pathMatcher.path == null) {
+            return false;
+        }
 
 
         // no place hold

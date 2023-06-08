@@ -35,8 +35,10 @@ public class TestGetInvokerServiceImpl implements TestGetInvokerService {
 
 
         Method hello = null;
+        Method hashcode = null;
         try {
-            hello = TestGetInvokerServiceImpl.class.getDeclaredMethod("getInvoker", new Class[0]);
+            hello = TestGetInvokerServiceImpl.class.getDeclaredMethod("getInvoker");
+            hashcode = TestGetInvokerServiceImpl.class.getDeclaredMethod("hashcode");
 
         } catch (NoSuchMethodException e) {
 
@@ -44,8 +46,11 @@ public class TestGetInvokerServiceImpl implements TestGetInvokerService {
 
         Invoker invokerByServiceInvokeMethod = RestRPCInvocationUtil.getInvokerByServiceInvokeMethod(hello);
 
+        Invoker invoker = RestRPCInvocationUtil.getInvokerByServiceInvokeMethod(hashcode);
+
 
         Assertions.assertEquals(invokerByRequest, invokerByServiceInvokeMethod);
+        Assertions.assertNull(invoker);
 
         return "success";
     }

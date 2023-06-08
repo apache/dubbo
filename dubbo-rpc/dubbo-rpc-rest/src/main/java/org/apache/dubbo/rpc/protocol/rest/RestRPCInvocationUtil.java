@@ -129,7 +129,8 @@ public class RestRPCInvocationUtil {
 
 
     /**
-     *  get InvokerAndRestMethodMetadataPair by path matcher
+     * get InvokerAndRestMethodMetadataPair by path matcher
+     *
      * @param pathMatcher
      * @return
      */
@@ -184,6 +185,11 @@ public class RestRPCInvocationUtil {
      */
 
     public static Invoker getInvokerByServiceInvokeMethod(Method serviceMethod) {
+
+        if (serviceMethod == null) {
+            return null;
+        }
+
         InvokerAndRestMethodMetadataPair pair = getRestMethodMetadataAndInvokerPair(PathMatcher.getInvokeCreatePathMatcher(serviceMethod));
 
         if (pair == null) {
@@ -194,7 +200,8 @@ public class RestRPCInvocationUtil {
     }
 
     /**
-     *  get invoker by path matcher
+     * get invoker by path matcher
+     *
      * @param pathMatcher
      * @return
      */
