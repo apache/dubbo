@@ -104,7 +104,7 @@ public abstract class MeshRuleRouter<T> extends AbstractStateRouter<T> implement
             // will enable the throwExceptionIfNotMatched if any DubboRoute has this flag enabled
             throwExceptionIfNotMatched |= dubboRoute.isThrowExceptionIfNotMatched();
             // match route detail (by params)
-            List<DubboRouteDestination> routeDestination = getDubboRoute(dubboRoute, invocation);
+            List<DubboRouteDestination> routeDestination = getDubboRouteDestination(dubboRoute, invocation);
             if (routeDestination != null) {
                 // aggregate target invokers
                 String subset = randomSelectDestination(ruleCache, appName, routeDestination, invokers);
@@ -180,7 +180,7 @@ public abstract class MeshRuleRouter<T> extends AbstractStateRouter<T> implement
     /**
      * Match route detail (by params)
      */
-    protected List<DubboRouteDestination> getDubboRoute(DubboRoute dubboRoute, Invocation invocation) {
+    protected List<DubboRouteDestination> getDubboRouteDestination(DubboRoute dubboRoute, Invocation invocation) {
         List<DubboRouteDetail> dubboRouteDetailList = dubboRoute.getRoutedetail();
         if (CollectionUtils.isNotEmpty(dubboRouteDetailList)) {
             for (DubboRouteDetail dubboRouteDetail : dubboRouteDetailList) {
