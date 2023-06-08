@@ -45,6 +45,8 @@ import org.apache.dubbo.rpc.protocol.rest.util.MediaTypeUtil;
 
 import java.io.IOException;
 
+import static org.apache.dubbo.rpc.protocol.rest.constans.RestConstant.PATH_AND_INVOKER_MAPPER;
+
 /**
  * netty http request handler
  */
@@ -73,6 +75,8 @@ public class NettyHttpHandler implements HttpHandler<NettyRequestFacade, NettyHt
 
         // set response
         RpcContext.getServiceContext().setResponse(nettyHttpResponse);
+
+        RpcContext.getServerAttachment().setObjectAttachment(PATH_AND_INVOKER_MAPPER, pathAndInvokerMapper);
         // TODO add request filter chain
 
         FullHttpRequest nettyHttpRequest = requestFacade.getRequest();
@@ -99,7 +103,7 @@ public class NettyHttpHandler implements HttpHandler<NettyRequestFacade, NettyHt
 
     protected void doHandler(HttpRequest nettyHttpRequest, NettyHttpResponse nettyHttpResponse, RequestFacade request) throws Exception {
         //  acquire metadata by request
-        InvokerAndRestMethodMetadataPair restMethodMetadataPair = RestRPCInvocationUtil.getRestMethodMetadata(request, pathAndInvokerMapper);
+        InvokerAndRestMethodMetadataPair restMethodMetadataPair = RestRPCInvocationUtil.getRestMethodMetadataAndInvokerPair(request);
 
         // path NoFound 404
         if (restMethodMetadataPair == null) {

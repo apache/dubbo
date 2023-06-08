@@ -22,15 +22,19 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.metadata.rest.ArgInfo;
 import org.apache.dubbo.metadata.rest.PathMatcher;
 import org.apache.dubbo.metadata.rest.RestMethodMetadata;
+import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.protocol.rest.annotation.ParamParserManager;
 import org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.provider.ProviderParseContext;
+import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
 import org.apache.dubbo.rpc.protocol.rest.exception.ParamParseException;
 import org.apache.dubbo.rpc.protocol.rest.pair.InvokerAndRestMethodMetadataPair;
 import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
 import org.apache.dubbo.rpc.protocol.rest.util.HttpHeaderUtil;
 
 
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 
@@ -125,16 +129,83 @@ public class RestRPCInvocationUtil {
 
 
     /**
-     * get  path mapping
-     *
-     * @param request
-     * @param pathAndInvokerMapper
+     *  get InvokerAndRestMethodMetadataPair by path matcher
+     * @param pathMatcher
      * @return
      */
-    public static InvokerAndRestMethodMetadataPair getRestMethodMetadata(RequestFacade request, PathAndInvokerMapper pathAndInvokerMapper) {
+    public static InvokerAndRestMethodMetadataPair getRestMethodMetadataAndInvokerPair(PathMatcher pathMatcher) {
+
+        PathAndInvokerMapper pathAndInvokerMapper = (PathAndInvokerMapper) RpcContext.getServerAttachment().getObjectAttachment(RestConstant.PATH_AND_INVOKER_MAPPER);
+
+        if (pathAndInvokerMapper == null) {
+            return null;
+        }
+        return pathAndInvokerMapper.getRestMethodMetadata(pathMatcher);
+    }
+
+    /**
+     * get  InvokerAndRestMethodMetadataPair from rpc context
+     *
+     * @param request
+     * @return
+     */
+
+    public static InvokerAndRestMethodMetadataPair getRestMethodMetadataAndInvokerPair(RequestFacade request) {
+
+
         PathMatcher pathMather = createPathMatcher(request);
 
-        return pathAndInvokerMapper.getRestMethodMetadata(pathMather);
+        return getRestMethodMetadataAndInvokerPair(pathMather);
+    }
+
+
+    /**
+     * get  invoker by request
+     *
+     * @param request
+     * @return
+     */
+
+    public static Invoker getInvokerByRequest(RequestFacade request) {
+
+        PathMatcher pathMatcher = createPathMatcher(request);
+
+        return getInvoker(pathMatcher);
+    }
+
+
+    /**
+     * get invoker by service method
+     *
+     * compare method`s name,param types
+     *
+     * @param serviceMethod
+     * @return
+     */
+
+    public static Invoker getInvokerByServiceInvokeMethod(Method serviceMethod) {
+        InvokerAndRestMethodMetadataPair pair = getRestMethodMetadataAndInvokerPair(PathMatcher.getInvokeCreatePathMatcher(serviceMethod));
+
+        if (pair == null) {
+            return null;
+        }
+
+        return pair.getInvoker();
+    }
+
+    /**
+     *  get invoker by path matcher
+     * @param pathMatcher
+     * @return
+     */
+    public static Invoker getInvoker(PathMatcher pathMatcher) {
+        InvokerAndRestMethodMetadataPair pair = getRestMethodMetadataAndInvokerPair(pathMatcher);
+
+        if (pair == null) {
+            return null;
+        }
+
+        return pair.getInvoker();
     }
 
     /**
