@@ -16,9 +16,9 @@
  */
 package org.apache.dubbo.config.spring.beans.factory.annotation;
 
-import com.alibaba.spring.util.AnnotationUtils;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.AnnotationUtils;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -32,7 +32,9 @@ import org.apache.dubbo.config.spring.aot.AotWithSpringDetector;
 import org.apache.dubbo.config.spring.context.annotation.DubboClassPathBeanDefinitionScanner;
 import org.apache.dubbo.config.spring.schema.AnnotationBeanDefinitionParser;
 import org.apache.dubbo.config.spring.util.DubboAnnotationUtils;
+import org.apache.dubbo.config.spring.util.ObjectUtils;
 import org.apache.dubbo.config.spring.util.SpringCompatUtils;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.BeanClassLoaderAware;
@@ -80,7 +82,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.alibaba.spring.util.ObjectUtils.of;
 import static java.util.Arrays.asList;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_DUPLICATED_BEAN_DEFINITION;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_NO_ANNOTATIONS_FOUND;
@@ -431,7 +432,7 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
 
         MutablePropertyValues propertyValues = beanDefinition.getPropertyValues();
 
-        String[] ignoreAttributeNames = of("provider", "monitor", "application", "module", "registry", "protocol",
+        String[] ignoreAttributeNames = ObjectUtils.of("provider", "monitor", "application", "module", "registry", "protocol",
                 "methods", "interfaceName", "parameters", "executor");
 
         propertyValues.addPropertyValues(new AnnotationPropertyValuesAdapter(serviceAnnotationAttributes, environment, ignoreAttributeNames));

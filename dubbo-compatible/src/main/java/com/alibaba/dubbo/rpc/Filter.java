@@ -18,6 +18,9 @@
 package com.alibaba.dubbo.rpc;
 
 import org.apache.dubbo.rpc.AsyncRpcResult;
+import org.apache.dubbo.rpc.AttachmentsAdapter;
+
+import java.util.Map;
 
 @Deprecated
 public interface Filter extends org.apache.dubbo.rpc.Filter {
@@ -27,17 +30,21 @@ public interface Filter extends org.apache.dubbo.rpc.Filter {
     @Override
     default org.apache.dubbo.rpc.Result invoke(org.apache.dubbo.rpc.Invoker<?> invoker,
                                                org.apache.dubbo.rpc.Invocation invocation)
-            throws org.apache.dubbo.rpc.RpcException {
+        throws org.apache.dubbo.rpc.RpcException {
         Result invokeResult = invoke(new Invoker.CompatibleInvoker<>(invoker),
             new Invocation.CompatibleInvocation(invocation));
 
         if (invokeResult instanceof Result.CompatibleResult) {
-            return invokeResult;
+            return ((Result.CompatibleResult) invokeResult).getDelegate();
         }
 
         AsyncRpcResult asyncRpcResult = AsyncRpcResult.newDefaultAsyncResult(invocation);
         asyncRpcResult.setValue(invokeResult.getValue());
         asyncRpcResult.setException(invokeResult.getException());
+        Map<String, String> attachments = invokeResult.getAttachments();
+        if (!(attachments instanceof AttachmentsAdapter.ObjectToStringMap)) {
+            asyncRpcResult.setAttachments(attachments);
+        }
         asyncRpcResult.setObjectAttachments(invokeResult.getObjectAttachments());
 
         return asyncRpcResult;

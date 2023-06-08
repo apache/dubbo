@@ -16,6 +16,7 @@
  */
 package com.alibaba.dubbo.common.utils;
 
+import com.alibaba.dubbo.common.DelegateURL;
 import com.alibaba.dubbo.common.URL;
 
 import java.util.List;
@@ -30,11 +31,11 @@ import java.util.stream.Collectors;
 public class UrlUtils {
 
     public static URL parseURL(String address, Map<String, String> defaults) {
-        return new URL(org.apache.dubbo.common.utils.UrlUtils.parseURL(address, defaults));
+        return new DelegateURL(org.apache.dubbo.common.utils.UrlUtils.parseURL(address, defaults));
     }
 
     public static List<URL> parseURLs(String address, Map<String, String> defaults) {
-        return org.apache.dubbo.common.utils.UrlUtils.parseURLs(address, defaults).stream().map(e -> new URL(e)).collect(Collectors.toList());
+        return org.apache.dubbo.common.utils.UrlUtils.parseURLs(address, defaults).stream().map(e -> new DelegateURL(e)).collect(Collectors.toList());
     }
 
     public static Map<String, Map<String, String>> convertRegister(Map<String, Map<String, String>> register) {
@@ -64,7 +65,7 @@ public class UrlUtils {
     }
 
     public static URL getEmptyUrl(String service, String category) {
-        return new URL(org.apache.dubbo.common.utils.UrlUtils.getEmptyUrl(service, category));
+        return new DelegateURL(org.apache.dubbo.common.utils.UrlUtils.getEmptyUrl(service, category));
     }
 
     public static boolean isMatchCategory(String category, String categories) {

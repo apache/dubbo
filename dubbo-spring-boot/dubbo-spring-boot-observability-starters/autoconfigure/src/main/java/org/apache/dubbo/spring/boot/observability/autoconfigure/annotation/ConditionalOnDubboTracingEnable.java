@@ -38,6 +38,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 @Documented
-@ConditionalOnProperty(prefix = ObservabilityUtils.DUBBO_TRACING_PREFIX, name = "enabled", matchIfMissing = true)
+@ConditionalOnProperty(prefix = ObservabilityUtils.DUBBO_TRACING_PREFIX, name = "enabled")
 public @interface ConditionalOnDubboTracingEnable {
 }

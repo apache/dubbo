@@ -26,6 +26,7 @@ import org.apache.dubbo.common.timer.TimerTask;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.RemotingException;
+import org.apache.dubbo.common.serialize.SerializationException;
 import org.apache.dubbo.remoting.TimeoutException;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.Response;
@@ -215,7 +216,9 @@ public class DefaultFuture extends CompletableFuture<Object> {
             this.complete(res.getResult());
         } else if (res.getStatus() == Response.CLIENT_TIMEOUT || res.getStatus() == Response.SERVER_TIMEOUT) {
             this.completeExceptionally(new TimeoutException(res.getStatus() == Response.SERVER_TIMEOUT, channel, res.getErrorMessage()));
-        } else {
+        } else if(res.getStatus() == Response.SERIALIZATION_ERROR){
+            this.completeExceptionally(new SerializationException(res.getErrorMessage()));
+        }else {
             this.completeExceptionally(new RemotingException(channel, res.getErrorMessage()));
         }
     }
