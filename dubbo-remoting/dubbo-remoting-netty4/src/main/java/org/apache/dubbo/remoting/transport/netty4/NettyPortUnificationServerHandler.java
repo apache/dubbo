@@ -103,6 +103,7 @@ public class NettyPortUnificationServerHandler extends ByteToMessageDecoder {
             enableSsl(ctx, providerConnectionConfig);
         } else {
             for (final WireProtocol protocol : protocols) {
+
                 in.markReaderIndex();
                 ChannelBuffer buf = new NettyBackedChannelBuffer(in);
                 final ProtocolDetector.Result result = protocol.detector().detect(buf);

@@ -14,44 +14,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.qos.pu;
+package org.apache.dubbo.rpc.protocol.rest.pu;
 
-import org.apache.dubbo.remoting.api.ProtocolDetector;
+import org.apache.dubbo.remoting.api.AbstractHttpProtocolDetector;
 import org.apache.dubbo.remoting.buffer.ChannelBuffer;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
-public class QosDetector implements ProtocolDetector {
+/**
+ * rest http protocol detector
+ */
 
-    private final QosHTTP1Detector qosHTTP1Detector;
-    private final TelnetDetector telnetDetector;
-    private boolean QosEnableFlag = true;
+public class RestHttp1Detector extends AbstractHttpProtocolDetector {
+    private static final char[][] HTTP_METHODS_PREFIX = getHttpMethodsPrefix();
 
-    public void setQosEnableFlag(boolean qosEnableFlag) {
-        QosEnableFlag = qosEnableFlag;
-    }
+    private FrameworkModel frameworkModel;
 
-    public QosDetector(FrameworkModel frameworkModel) {
-        this.telnetDetector = new TelnetDetector(frameworkModel);
-        qosHTTP1Detector = new QosHTTP1Detector(frameworkModel);
+    public RestHttp1Detector(FrameworkModel frameworkModel) {
+        this.frameworkModel = frameworkModel;
     }
 
     @Override
     public Result detect(ChannelBuffer in) {
-        if(!QosEnableFlag) {
+
+        int i = in.readableBytes();
+
+        // length judge
+        if (i < SIMPLE_HTTP.length()) {
             return Result.unrecognized();
         }
-        Result h1Res = qosHTTP1Detector.detect(in);
-        if(h1Res.equals(Result.recognized())) {
-            return h1Res;
+
+        if (prefixMatch(HTTP_METHODS_PREFIX, in, 3)) {
+            return Result.recognized();
         }
-        Result telRes = telnetDetector.detect(in);
-        if(telRes.equals(Result.recognized())) {
-            return telRes;
-        }
-        if(h1Res.equals(Result.needMoreData()) || telRes.equals(Result.needMoreData())) {
-            return Result.needMoreData();
-        }
+
         return Result.unrecognized();
     }
-
 }

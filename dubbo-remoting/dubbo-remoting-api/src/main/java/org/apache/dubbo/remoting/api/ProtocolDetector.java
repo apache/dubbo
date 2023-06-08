@@ -74,4 +74,33 @@ public interface ProtocolDetector {
     enum Flag {
         RECOGNIZED, UNRECOGNIZED, NEED_MORE_DATA
     }
+
+    default int getByteByIndex(ChannelBuffer buffer, int index) {
+        return buffer.getByte(buffer.readerIndex() + index);
+    }
+
+    default boolean prefixMatch(char[][] prefixes, ChannelBuffer buffer, int length) {
+
+        int[] ints = new int[length];
+        for (int i = 0; i < length; i++) {
+            ints[i] = getByteByIndex(buffer, i);
+        }
+
+        // prefix match
+        for (char[] prefix : prefixes) {
+
+            boolean matched = true;
+            for (int j = 0; j < length; j++) {
+                if (prefix[j] != ints[j]) {
+                    matched = false;
+                    break;
+                }
+            }
+
+            if (matched) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
