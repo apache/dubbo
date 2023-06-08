@@ -17,6 +17,9 @@
 
 package com.alibaba.dubbo.rpc;
 
+import org.apache.dubbo.rpc.AsyncRpcResult;
+
+import com.alibaba.dubbo.common.DelegateURL;
 import com.alibaba.dubbo.common.URL;
 
 @Deprecated
@@ -54,15 +57,28 @@ public interface Invoker<T> extends org.apache.dubbo.rpc.Invoker<T> {
         public org.apache.dubbo.rpc.Result invoke(org.apache.dubbo.rpc.Invocation invocation) throws org.apache.dubbo.rpc.RpcException {
             return new Result.CompatibleResult(invoker.invoke(invocation));
         }
-        
+
         @Override
         public Result invoke(Invocation invocation) throws RpcException {
+            if (invoker instanceof Invoker) {
+                Result result = ((Invoker) invoker).invoke(invocation);
+                if (result instanceof Result.CompatibleResult) {
+                    return result;
+                } else {
+                    AsyncRpcResult asyncRpcResult = AsyncRpcResult.newDefaultAsyncResult(invocation.getOriginal());
+                    asyncRpcResult.setValue(result.getValue());
+                    asyncRpcResult.setException(result.getException());
+                    asyncRpcResult.setObjectAttachments(result.getObjectAttachments());
+
+                    return new Result.CompatibleResult(asyncRpcResult);
+                }
+            }
             return new Result.CompatibleResult(invoker.invoke(invocation.getOriginal()));
         }
 
         @Override
         public URL getUrl() {
-            return new URL(invoker.getUrl());
+            return new DelegateURL(invoker.getUrl());
         }
 
         @Override

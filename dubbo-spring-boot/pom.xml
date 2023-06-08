@@ -40,7 +40,7 @@
     </modules>
 
     <properties>
-        <spring-boot.version>2.7.11</spring-boot.version>
+        <spring-boot.version>2.7.12</spring-boot.version>
         <dubbo.version>${revision}</dubbo.version>
         <!-- Fix the bug of log4j refer:https://github.com/apache/logging-log4j2/pull/608 -->
         <log4j2_version>2.20.0</log4j2_version>

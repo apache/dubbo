@@ -21,6 +21,7 @@ import org.apache.dubbo.common.beanutil.JavaBeanDescriptor;
 import org.apache.dubbo.common.beanutil.JavaBeanSerializeUtil;
 import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.constants.LoggerCodeConstants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.io.UnsafeByteArrayInputStream;
 import org.apache.dubbo.common.io.UnsafeByteArrayOutputStream;
@@ -106,7 +107,9 @@ public class GenericFilter implements Filter, Filter.Listener, ScopeModelAware {
                     || ProtocolUtils.isGenericReturnRawResult(generic)) {
                     try {
                         args = PojoUtils.realize(args, params, method.getGenericParameterTypes());
-                    } catch (IllegalArgumentException e) {
+                    } catch (Exception e) {
+                        logger.error(LoggerCodeConstants.PROTOCOL_ERROR_DESERIALIZE, "", "",
+                            "Deserialize generic invocation failed. ServiceKey: " + inv.getTargetServiceUniqueName(), e);
                         throw new RpcException(e);
                     }
                 } else if (ProtocolUtils.isGsonGenericSerialization(generic)) {
@@ -145,16 +148,18 @@ public class GenericFilter implements Filter, Filter.Listener, ScopeModelAware {
                     }
                 } else if (ProtocolUtils.isBeanGenericSerialization(generic)) {
                     for (int i = 0; i < args.length; i++) {
-                        if (args[i] instanceof JavaBeanDescriptor) {
-                            args[i] = JavaBeanSerializeUtil.deserialize((JavaBeanDescriptor) args[i]);
-                        } else {
-                            throw new RpcException(
-                                "Generic serialization [" +
-                                    GENERIC_SERIALIZATION_BEAN +
-                                    "] only support message type " +
-                                    JavaBeanDescriptor.class.getName() +
-                                    " and your message type is " +
-                                    args[i].getClass().getName());
+                        if (args[i] != null) {
+                            if (args[i] instanceof JavaBeanDescriptor) {
+                                args[i] = JavaBeanSerializeUtil.deserialize((JavaBeanDescriptor) args[i]);
+                            } else {
+                                throw new RpcException(
+                                    "Generic serialization [" +
+                                        GENERIC_SERIALIZATION_BEAN +
+                                        "] only support message type " +
+                                        JavaBeanDescriptor.class.getName() +
+                                        " and your message type is " +
+                                        args[i].getClass().getName());
+                            }
                         }
                     }
                 } else if (ProtocolUtils.isProtobufGenericSerialization(generic)) {

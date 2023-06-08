@@ -19,6 +19,7 @@ package org.apache.dubbo.config;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.constants.LoggerCodeConstants;
 import org.apache.dubbo.common.constants.RegistryConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
@@ -220,7 +221,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
 
     @Override
     @Transient
-    public T get() {
+    public T get(boolean check) {
         if (destroyed) {
             throw new IllegalStateException("The invoker of ReferenceConfig(" + url + ") has already destroyed!");
         }
@@ -229,10 +230,51 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
             // ensure start module, compatible with old api usage
             getScopeModel().getDeployer().start();
 
-            init();
+            init(check);
         }
 
         return ref;
+    }
+
+    @Override
+    public void checkOrDestroy(long timeout) {
+        if (!initialized || ref == null) {
+            return;
+        }
+        try {
+            checkInvokerAvailable(timeout);
+        } catch (Throwable t) {
+            logAndCleanup(t);
+            throw t;
+        }
+    }
+
+    private void logAndCleanup(Throwable t) {
+        try {
+            if (invoker != null) {
+                invoker.destroy();
+            }
+        } catch (Throwable destroy) {
+            logger.warn(CONFIG_FAILED_DESTROY_INVOKER, "", "", "Unexpected error occurred when destroy invoker of ReferenceConfig(" + url + ").", t);
+        }
+        if (consumerModel != null) {
+            ModuleServiceRepository repository = getScopeModel().getServiceRepository();
+            repository.unregisterConsumer(consumerModel);
+        }
+        initialized = false;
+        invoker = null;
+        ref = null;
+        consumerModel = null;
+        serviceMetadata.setTarget(null);
+        serviceMetadata.getAttributeMap().remove(PROXY_CLASS_REF);
+
+        // Thrown by checkInvokerAvailable().
+        if (t.getClass() == IllegalStateException.class &&
+            t.getMessage().contains("No provider available for the service")) {
+
+            // 2-2 - No provider available.
+            logger.error(CLUSTER_NO_VALID_PROVIDER, "server crashed", "", "No provider available.", t);
+        }
     }
 
     @Override
@@ -258,6 +300,10 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
     }
 
     protected synchronized void init() {
+        init(true);
+    }
+
+    protected synchronized void init(boolean check) {
         if (initialized && ref != null) {
             return;
         }
@@ -308,33 +354,11 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
             consumerModel.setProxyObject(ref);
             consumerModel.initMethodModels();
 
-            checkInvokerAvailable();
+            if (check) {
+                checkInvokerAvailable(0);
+            }
         } catch (Throwable t) {
-            try {
-                if (invoker != null) {
-                    invoker.destroy();
-                }
-            } catch (Throwable destroy) {
-                logger.warn(CONFIG_FAILED_DESTROY_INVOKER, "", "", "Unexpected error occurred when destroy invoker of ReferenceConfig(" + url + ").", t);
-            }
-            if (consumerModel != null) {
-                ModuleServiceRepository repository = getScopeModel().getServiceRepository();
-                repository.unregisterConsumer(consumerModel);
-            }
-            initialized = false;
-            invoker = null;
-            ref = null;
-            consumerModel = null;
-            serviceMetadata.setTarget(null);
-            serviceMetadata.getAttributeMap().remove(PROXY_CLASS_REF);
-
-            // Thrown by checkInvokerAvailable().
-            if (t.getClass() == IllegalStateException.class &&
-                t.getMessage().contains("No provider available for the service")) {
-
-                // 2-2 - No provider available.
-                logger.error(CLUSTER_NO_VALID_PROVIDER, "server crashed", "", "No provider available.", t);
-            }
+            logAndCleanup(t);
 
             throw t;
         }
@@ -631,8 +655,31 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         }
     }
 
-    private void checkInvokerAvailable() throws IllegalStateException {
-        if (shouldCheck() && !invoker.isAvailable()) {
+    private void checkInvokerAvailable(long timeout) throws IllegalStateException {
+        if (!shouldCheck()) {
+            return;
+        }
+        boolean available = invoker.isAvailable();
+        if (available) {
+            return;
+        }
+
+        long startTime = System.currentTimeMillis();
+        long checkDeadline = startTime + timeout;
+        do {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            }
+            available = invoker.isAvailable();
+        } while (!available && checkDeadline > System.currentTimeMillis());
+        logger.warn(LoggerCodeConstants.REGISTRY_EMPTY_ADDRESS, "", "",
+            "Check reference of [" + getUniqueServiceName() + "] failed very beginning. " +
+                "After " + (System.currentTimeMillis() - startTime) + "ms reties, finally " +
+                (available ? "succeed" : "failed") + ".");
+        if (!available) {
             // 2-2 - No provider available.
 
             IllegalStateException illegalStateException = new IllegalStateException("Failed to check the status of the service "

@@ -1087,9 +1087,21 @@
             </xsd:annotation>
         </xsd:attribute>
 
+        <xsd:attribute name="export-metrics-service" type="xsd:boolean" default="true">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Enable export metrics service. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+
         <xsd:attribute name="port" type="xsd:string">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ Deprecated. No longer use. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+
+        <xsd:attribute name="enable-rpc" type="xsd:boolean" default="true">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Enable record rpc metrics. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
     </xsd:complexType>
@@ -1121,16 +1133,6 @@
         <xsd:attribute name="http-service-discovery-url" type="xsd:string">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ Http service discovery url. ]]></xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-        <xsd:attribute name="metrics-port" type="xsd:integer">
-            <xsd:annotation>
-                <xsd:documentation><![CDATA[ When using pull method, which port to expose. ]]></xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-        <xsd:attribute name="metrics-path" type="xsd:string">
-            <xsd:annotation>
-                <xsd:documentation><![CDATA[ When using pull mode, which path to expose metrics. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
     </xsd:complexType>
