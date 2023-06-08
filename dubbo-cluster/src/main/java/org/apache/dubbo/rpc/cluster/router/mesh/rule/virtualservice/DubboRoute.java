@@ -26,6 +26,16 @@ public class DubboRoute {
     private String name;
     private List<StringMatch> services;
     private List<DubboRouteDetail> routedetail;
+    // control whether to throw an exception if not matched
+    private boolean throwExceptionIfNotMatched = false;
+
+    public boolean isThrowExceptionIfNotMatched() {
+        return throwExceptionIfNotMatched;
+    }
+
+    public void setThrowExceptionIfNotMatched(boolean throwExceptionIfNotMatched) {
+        this.throwExceptionIfNotMatched = throwExceptionIfNotMatched;
+    }
 
     public String getName() {
         return name;
@@ -54,9 +64,10 @@ public class DubboRoute {
     @Override
     public String toString() {
         return "DubboRoute{" +
-            "name='" + name + '\'' +
-            ", services=" + services +
-            ", routedetail=" + routedetail +
-            '}';
+                "name='" + name + '\'' +
+                ", services=" + services +
+                ", routedetail=" + routedetail +
+                ", throwExceptionIfNotMatched=" + throwExceptionIfNotMatched +
+                '}';
     }
 }

@@ -97,18 +97,22 @@ public abstract class MeshRuleRouter<T> extends AbstractStateRouter<T> implement
         // loop each application
         for (String appName : ruleCache.getAppList()) {
             // find destination by invocation
-            DubboRouteDetail routeDetail = getDubboRouteDetail(ruleCache.getVsDestinationGroup(appName), invocation);
-            if (routeDetail != null) {
-                throwExceptionIfNotMatched = routeDetail.isThrowExceptionIfNotMatched();
-                if (routeDetail.getRoute() != null) {
-                    // aggregate target invokers
-                    String subset = randomSelectDestination(ruleCache, appName, routeDetail.getRoute(), invokers);
-                    if (subset != null) {
-                        BitList<Invoker<T>> destination = meshRuleCache.getSubsetInvokers(appName, subset);
-                        result = result.or(destination);
-                        if (stringBuilder != null) {
-                            stringBuilder.append("Match App: ").append(appName).append(" Subset: ").append(subset).append(' ');
-                        }
+            DubboRoute dubboRoute = getDubboRoute(ruleCache.getVsDestinationGroup(appName), invocation);
+            if (dubboRoute == null) {
+                continue;
+            }
+            // will enable the throwExceptionIfNotMatched if any DubboRoute has this flag enabled
+            throwExceptionIfNotMatched |= dubboRoute.isThrowExceptionIfNotMatched();
+            // match route detail (by params)
+            List<DubboRouteDestination> routeDestination = getDubboRoute(dubboRoute, invocation);
+            if (routeDestination != null) {
+                // aggregate target invokers
+                String subset = randomSelectDestination(ruleCache, appName, routeDestination, invokers);
+                if (subset != null) {
+                    BitList<Invoker<T>> destination = meshRuleCache.getSubsetInvokers(appName, subset);
+                    result = result.or(destination);
+                    if (stringBuilder != null) {
+                        stringBuilder.append("Match App: ").append(appName).append(" Subset: ").append(subset).append(' ');
                     }
                 }
             }
@@ -122,7 +126,7 @@ public abstract class MeshRuleRouter<T> extends AbstractStateRouter<T> implement
                 messageHolder.set("Empty protection after routed.");
             }
             if (throwExceptionIfNotMatched) {
-                throw new RuntimeException("No matched invokers for " + invocation);
+                throw new RuntimeException("No matched route for " + invocation);
             }
             return invokers;
         }
@@ -134,19 +138,15 @@ public abstract class MeshRuleRouter<T> extends AbstractStateRouter<T> implement
     }
 
     /**
-     * Select RouteDestination by Invocation
+     * Select DubboRoute by Invocation
      */
-    protected DubboRouteDetail getDubboRouteDetail(VsDestinationGroup vsDestinationGroup, Invocation invocation) {
+    protected DubboRoute getDubboRoute(VsDestinationGroup vsDestinationGroup, Invocation invocation) {
         if (vsDestinationGroup != null) {
             List<VirtualServiceRule> virtualServiceRuleList = vsDestinationGroup.getVirtualServiceRuleList();
             if (CollectionUtils.isNotEmpty(virtualServiceRuleList)) {
                 for (VirtualServiceRule virtualServiceRule : virtualServiceRuleList) {
                     // match virtual service (by serviceName)
-                    DubboRoute dubboRoute = getDubboRoute(virtualServiceRule, invocation);
-                    if (dubboRoute != null) {
-                        // match route detail (by params)
-                        return getDubboRouteDetail(dubboRoute, invocation);
-                    }
+                    return getDubboRoute(virtualServiceRule, invocation);
                 }
             }
         }
@@ -180,18 +180,18 @@ public abstract class MeshRuleRouter<T> extends AbstractStateRouter<T> implement
     /**
      * Match route detail (by params)
      */
-    protected DubboRouteDetail getDubboRouteDetail(DubboRoute dubboRoute, Invocation invocation) {
+    protected List<DubboRouteDestination> getDubboRoute(DubboRoute dubboRoute, Invocation invocation) {
         List<DubboRouteDetail> dubboRouteDetailList = dubboRoute.getRoutedetail();
         if (CollectionUtils.isNotEmpty(dubboRouteDetailList)) {
             for (DubboRouteDetail dubboRouteDetail : dubboRouteDetailList) {
                 List<DubboMatchRequest> matchRequestList = dubboRouteDetail.getMatch();
                 if (CollectionUtils.isEmpty(matchRequestList)) {
-                    return dubboRouteDetail;
+                    return dubboRouteDetail.getRoute();
                 }
 
                 if (matchRequestList.stream().allMatch(
                     request -> request.isMatch(invocation, sourcesLabels, tracingContextProviders))) {
-                    return dubboRouteDetail;
+                    return dubboRouteDetail.getRoute();
                 }
             }
         }
