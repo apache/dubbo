@@ -40,14 +40,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static org.apache.dubbo.common.constants.CommonConstants.BROADCAST_CLUSTER;
 import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
 import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
 import static org.apache.dubbo.rpc.Constants.SCOPE_KEY;
-import static org.apache.dubbo.rpc.Constants.SCOPE_REMOTE;
 import static org.apache.dubbo.rpc.Constants.SCOPE_LOCAL;
+import static org.apache.dubbo.rpc.Constants.SCOPE_REMOTE;
 import static org.apache.dubbo.rpc.cluster.Constants.PEER_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.BROADCAST_CLUSTER;
 
 /**
  * ScopeClusterInvoker is a cluster invoker which handles the invocation logic of a single service in a specific scope.
@@ -100,7 +100,7 @@ public class ScopeClusterInvoker<T> implements ClusterInvoker<T>, ExporterChange
 
     @Override
     public boolean isAvailable() {
-        return isExported.get() || directory.isAvailable();
+        return (!isBroadcast() && !peerFlag && isInjvmExported()) || directory.isAvailable();
     }
 
     @Override
@@ -128,7 +128,7 @@ public class ScopeClusterInvoker<T> implements ClusterInvoker<T>, ExporterChange
     @Override
     public Result invoke(Invocation invocation) throws RpcException {
         // When broadcasting, it should be called remotely.
-        if (BROADCAST_CLUSTER.equalsIgnoreCase(getUrl().getParameter(CLUSTER_KEY))) {
+        if (isBroadcast()) {
             if (logger.isDebugEnabled()) {
                 logger.debug("Performing broadcast call for method: " + invocation.getMethodName() + " of service: " + getUrl().getServiceKey());
             }
@@ -153,6 +153,10 @@ public class ScopeClusterInvoker<T> implements ClusterInvoker<T>, ExporterChange
         }
         // Otherwise, delegate the invocation to the original Invoker
         return invoker.invoke(invocation);
+    }
+
+    private boolean isBroadcast() {
+        return BROADCAST_CLUSTER.equalsIgnoreCase(getUrl().getParameter(CLUSTER_KEY));
     }
 
     @Override
