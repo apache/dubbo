@@ -743,6 +743,10 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         checkStubAndLocal(interfaceClass);
         ConfigValidationUtils.checkMock(interfaceClass, this);
 
+        if (StringUtils.isEmpty(url)) {
+            checkRegistry();
+        }
+
         resolveFile();
         ConfigValidationUtils.validateReferenceConfig(this);
         postProcessConfig();
