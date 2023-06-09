@@ -40,11 +40,11 @@ public class MockReferenceConfig extends ReferenceConfig<FooService> {
     }
 
     @Override
-    public synchronized FooService get() {
+    public synchronized FooService get(boolean check) {
         if (value != null) return value;
 
         counter.getAndIncrement();
-        value = super.get();
+        value = super.get(check);
         return value;
     }
 

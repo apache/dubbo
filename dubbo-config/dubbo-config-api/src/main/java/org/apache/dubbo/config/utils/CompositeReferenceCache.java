@@ -43,7 +43,7 @@ public class CompositeReferenceCache implements ReferenceCache {
     }
 
     @Override
-    public <T> T get(ReferenceConfigBase<T> referenceConfig) {
+    public <T> T get(ReferenceConfigBase<T> referenceConfig, boolean check) {
 
         Class<?> type = referenceConfig.getInterfaceClass();
         String key = BaseServiceMetadata.buildServiceKey(type.getName(), referenceConfig.getGroup(), referenceConfig.getVersion());
@@ -57,7 +57,7 @@ public class CompositeReferenceCache implements ReferenceCache {
                 "Call ReferenceConfig#get() directly for non-singleton ReferenceConfig instead of using ReferenceCache#get(ReferenceConfig)");
         }
         if (proxy == null) {
-            proxy = referenceConfig.get();
+            proxy = referenceConfig.get(check);
         }
         return proxy;
     }
@@ -108,6 +108,20 @@ public class CompositeReferenceCache implements ReferenceCache {
     public void destroy(String key, Class<?> type) {
         for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
             moduleModel.getDeployer().getReferenceCache().destroy(key, type);
+        }
+    }
+
+    @Override
+    public void check(String key, Class<?> type, long timeout) {
+        for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
+            moduleModel.getDeployer().getReferenceCache().check(key, type, timeout);
+        }
+    }
+
+    @Override
+    public <T> void check(ReferenceConfigBase<T> referenceConfig, long timeout) {
+        for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
+            moduleModel.getDeployer().getReferenceCache().check(referenceConfig, timeout);
         }
     }
 
