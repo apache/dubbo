@@ -170,13 +170,13 @@ public class PathMatcher {
     }
 
     /**
-     * it is needed to compare http method when provider judge http method and set status 405
+     * it is needed to compare http method when one of needCompareHttpMethod is true,and don`t compare when both needCompareHttpMethod are false
      *
      * @param that
      * @return
      */
     private boolean httpMethodMatch(PathMatcher that) {
-        return !(that.needCompareHttpMethod && this.needCompareHttpMethod) ? Objects.equals(httpMethod, that.httpMethod) : true;
+        return !that.needCompareHttpMethod || !this.needCompareHttpMethod ?  true: Objects.equals(this.httpMethod, that.httpMethod);
     }
 
     private boolean serviceMethodEqual(PathMatcher thatPathMatcher, PathMatcher thisPathMatcher) {
