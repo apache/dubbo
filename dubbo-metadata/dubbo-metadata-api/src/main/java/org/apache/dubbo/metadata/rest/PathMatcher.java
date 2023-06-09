@@ -185,7 +185,7 @@ public class PathMatcher {
         return thatMethod != null
             && thisMethod != null
             && (thatPathMatcher.needCompareServiceMethod || thisPathMatcher.needCompareServiceMethod)
-            && thisMethod.getName().equals(thisMethod.getName())
+            && thisMethod.getName().equals(thatMethod.getName())
             && Arrays.equals(thisMethod.getParameterTypes(), thatMethod.getParameterTypes());
     }
 
