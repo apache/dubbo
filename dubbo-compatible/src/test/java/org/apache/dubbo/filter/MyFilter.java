@@ -22,6 +22,7 @@ import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Result;
 import com.alibaba.dubbo.rpc.RpcException;
+import com.alibaba.dubbo.rpc.RpcResult;
 
 
 public class MyFilter implements Filter {
@@ -34,6 +35,10 @@ public class MyFilter implements Filter {
 
         if (invocation.getArguments()[0].equals("aa")) {
             throw new RpcException(new IllegalArgumentException("arg0 illegal"));
+        }
+
+        if (invocation.getArguments()[0].equals("cc")) {
+            return new RpcResult("123test");
         }
 
         Result tmp = invoker.invoke(invocation);

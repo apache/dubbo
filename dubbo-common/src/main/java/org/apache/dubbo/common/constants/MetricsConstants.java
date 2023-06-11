@@ -28,6 +28,8 @@ public interface MetricsConstants {
 
     String TAG_APPLICATION_NAME = "application.name";
 
+    String TAG_APPLICATION_MODULE = "application.module.id";
+
     String TAG_INTERFACE_KEY = "interface";
 
     String TAG_METHOD_KEY = "method";

@@ -90,7 +90,7 @@ public class DubboShutdownHook extends Thread {
 
         boolean hasModuleBindSpring = false;
         // check if any modules are bound to Spring
-        for (ModuleModel module: applicationModel.getModuleModels()) {
+        for (ModuleModel module : applicationModel.getModuleModels()) {
             if (module.isLifeCycleManagedExternally()) {
                 hasModuleBindSpring = true;
                 break;
@@ -104,14 +104,14 @@ public class DubboShutdownHook extends Thread {
                   To avoid shutdown conflicts between Dubbo and Spring,
                   wait for the modules bound to Spring to be handled by Spring until timeout.
                  */
-                logger.info("Waiting for modules managed by Spring to be shutdown.");
+                logger.info("Waiting for modules(" + applicationModel.getDesc() + ") managed by Spring to be shutdown.");
                 while (!applicationModel.isDestroyed() && hasModuleBindSpring
                     && (System.currentTimeMillis() - start) < timeout) {
                     try {
                         TimeUnit.MILLISECONDS.sleep(10);
                         hasModuleBindSpring = false;
                         if (!applicationModel.isDestroyed()) {
-                            for (ModuleModel module: applicationModel.getModuleModels()) {
+                            for (ModuleModel module : applicationModel.getModuleModels()) {
                                 if (module.isLifeCycleManagedExternally()) {
                                     hasModuleBindSpring = true;
                                     break;
@@ -123,11 +123,15 @@ public class DubboShutdownHook extends Thread {
                         Thread.currentThread().interrupt();
                     }
                 }
+                if (!applicationModel.isDestroyed()) {
+                    long usage = System.currentTimeMillis() - start;
+                    logger.info("Dubbo wait for application(" + applicationModel.getDesc() + ") managed by Spring to be shutdown failed, " +
+                        "time usage: " + usage + "ms");
+                }
             }
         }
         if (!applicationModel.isDestroyed()) {
-            logger.info("Dubbo shuts down application " +
-                "after Spring fails to do in time or doesn't do it completely.");
+            logger.info("Dubbo shutdown hooks execute now. " + applicationModel.getDesc());
             applicationModel.destroy();
         }
     }

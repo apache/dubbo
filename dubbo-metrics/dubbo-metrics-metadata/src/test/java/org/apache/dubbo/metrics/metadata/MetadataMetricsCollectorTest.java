@@ -92,17 +92,17 @@ class MetadataMetricsCollectorTest {
                 List<MetricSample> metricSamples = collector.collect();
 
                 // push success +1
-                Assertions.assertEquals(1, metricSamples.size());
-                Assertions.assertTrue(metricSamples.get(0) instanceof GaugeMetricSample);
-                Assertions.assertEquals(metricSamples.get(0).getName(), MetricsKey.METADATA_PUSH_METRIC_NUM.getName());
+                Assertions.assertEquals(MetadataMetricsConstants.APP_LEVEL_KEYS.size(), metricSamples.size());
+                Assertions.assertTrue(metricSamples.stream().allMatch(metricSample -> metricSample instanceof GaugeMetricSample));
+                Assertions.assertTrue(metricSamples.stream().anyMatch(metricSample -> ((GaugeMetricSample) metricSample).applyAsDouble() == 1));
                 return null;
             }
         );
 
         // push finish rt +1
         List<MetricSample> metricSamples = collector.collect();
-        //num(total+success) + rt(5) = 7
-        Assertions.assertEquals(7, metricSamples.size());
+        // App(6) + rt(5) = 7
+        Assertions.assertEquals(MetadataMetricsConstants.APP_LEVEL_KEYS.size() + 5, metricSamples.size());
         long c1 = pushEvent.getTimePair().calc();
 
         pushEvent = MetadataEvent.toPushEvent(applicationModel);
@@ -121,8 +121,8 @@ class MetadataMetricsCollectorTest {
         long c2 = lastTimePair.calc();
         metricSamples = collector.collect();
 
-        // num(total+success+error) + rt(5)
-        Assertions.assertEquals(8, metricSamples.size());
+        // App(6) + rt(5)
+        Assertions.assertEquals(MetadataMetricsConstants.APP_LEVEL_KEYS.size() + 5, metricSamples.size());
 
         // calc rt
         for (MetricSample sample : metricSamples) {
@@ -150,9 +150,9 @@ class MetadataMetricsCollectorTest {
                 List<MetricSample> metricSamples = collector.collect();
 
                 // push success +1
-                Assertions.assertEquals(1, metricSamples.size());
-                Assertions.assertTrue(metricSamples.get(0) instanceof GaugeMetricSample);
-                Assertions.assertEquals(metricSamples.get(0).getName(), MetricsKey.METADATA_SUBSCRIBE_METRIC_NUM.getName());
+                Assertions.assertEquals(MetadataMetricsConstants.APP_LEVEL_KEYS.size(), metricSamples.size());
+                Assertions.assertTrue(metricSamples.stream().allMatch(metricSample -> metricSample instanceof GaugeMetricSample));
+                Assertions.assertTrue(metricSamples.stream().anyMatch(metricSample -> ((GaugeMetricSample) metricSample).applyAsDouble() == 1));
                 return null;
             }
         );
@@ -160,8 +160,9 @@ class MetadataMetricsCollectorTest {
 
         // push finish rt +1
         List<MetricSample> metricSamples = collector.collect();
-        //num(total+success) + rt(5) = 7
-        Assertions.assertEquals(7, metricSamples.size());
+        // App(6) + rt(5) = 7
+        Assertions.assertEquals(MetadataMetricsConstants.APP_LEVEL_KEYS.size() + 5, metricSamples.size());
+
         subscribeEvent = MetadataEvent.toSubscribeEvent(applicationModel);
         TimePair lastTimePair = subscribeEvent.getTimePair();
         MetricsEventBus.post(subscribeEvent,
@@ -179,8 +180,8 @@ class MetadataMetricsCollectorTest {
         long c2 = lastTimePair.calc();
         metricSamples = collector.collect();
 
-        // num(total+success+error) + rt(5)
-        Assertions.assertEquals(8, metricSamples.size());
+        // App(6) + rt(5)
+        Assertions.assertEquals(MetadataMetricsConstants.APP_LEVEL_KEYS.size() + 5, metricSamples.size());
 
         // calc rt
         for (MetricSample sample : metricSamples) {
@@ -209,19 +210,19 @@ class MetadataMetricsCollectorTest {
             () -> {
                 List<MetricSample> metricSamples = collector.collect();
 
-                // push success +1
-                Assertions.assertEquals(1, metricSamples.size());
-                Assertions.assertTrue(metricSamples.get(0) instanceof GaugeMetricSample);
-                Assertions.assertEquals(metricSamples.get(0).getName(), MetricsKey.STORE_PROVIDER_METADATA.getName());
-                Assertions.assertEquals(metricSamples.get(0).getTags().get("interface"), serviceKey);
+                // App(6) + service success(1)
+                Assertions.assertEquals(MetadataMetricsConstants.APP_LEVEL_KEYS.size() + 1, metricSamples.size());
+                Assertions.assertTrue(metricSamples.stream().allMatch(metricSample -> metricSample instanceof GaugeMetricSample));
+                Assertions.assertTrue(metricSamples.stream().anyMatch(metricSample -> ((GaugeMetricSample) metricSample).applyAsDouble() == 1));
                 return null;
             }
         );
 
         // push finish rt +1
         List<MetricSample> metricSamples = collector.collect();
-        //num(total+success) + rt(5) = 7
-        Assertions.assertEquals(7, metricSamples.size());
+        // App(6) + service total/success(2) + rt(5) = 7
+        Assertions.assertEquals(MetadataMetricsConstants.APP_LEVEL_KEYS.size() + 2 + 5, metricSamples.size());
+
         long c1 = metadataEvent.getTimePair().calc();
         metadataEvent = MetadataEvent.toServiceSubscribeEvent(applicationModel, serviceKey);
         TimePair lastTimePair = metadataEvent.getTimePair();
@@ -240,8 +241,8 @@ class MetadataMetricsCollectorTest {
 
         metricSamples = collector.collect();
 
-        // num(total+success+error) + rt(5)
-        Assertions.assertEquals(8, metricSamples.size());
+        // App(6) + service total/success/failed(3) + rt(5)
+        Assertions.assertEquals(MetadataMetricsConstants.APP_LEVEL_KEYS.size() +3 + 5, metricSamples.size());
 
         // calc rt
         for (MetricSample sample : metricSamples) {
