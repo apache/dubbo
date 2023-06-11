@@ -39,7 +39,7 @@ public class ParamMatch {
     }
 
     public boolean isMatch(String input) {
-        if (getValue() != null && input != null) {
+        if (getValue() != null) {
             return getValue().isMatch(input);
         }
         return false;
