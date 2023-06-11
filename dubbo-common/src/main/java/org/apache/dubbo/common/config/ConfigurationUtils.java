@@ -172,23 +172,25 @@ public final class ConfigurationUtils {
 
     public static Map<String, String> parseProperties(String content) throws IOException {
         Map<String, String> map = new HashMap<>();
-
-        Properties properties = new Properties();
-        properties.load(new StringReader(content));
-        properties.stringPropertyNames().forEach(
-            k -> {
-                boolean deny = false;
-                for (String key : securityKey) {
-                    if (k.contains(key)) {
-                        deny = true;
-                        break;
+        if (StringUtils.isEmpty(content)) {
+            logger.warn(COMMON_UNEXPECTED_EXCEPTION, "", "", "Config center was specified, but no config item found.");
+        } else {
+            Properties properties = new Properties();
+            properties.load(new StringReader(content));
+            properties.stringPropertyNames().forEach(
+                k -> {
+                    boolean deny = false;
+                    for (String key : securityKey) {
+                        if (k.contains(key)) {
+                            deny = true;
+                            break;
+                        }
                     }
-                }
-                if (!deny) {
-                    map.put(k, properties.getProperty(k));
-                }
-            });
-
+                    if (!deny) {
+                        map.put(k, properties.getProperty(k));
+                    }
+                });
+        }
         return map;
     }
 
