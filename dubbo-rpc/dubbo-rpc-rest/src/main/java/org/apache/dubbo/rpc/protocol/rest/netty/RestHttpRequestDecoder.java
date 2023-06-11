@@ -30,6 +30,7 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.ThreadPool;
 import org.apache.dubbo.rpc.protocol.rest.RestHeaderEnum;
+import org.apache.dubbo.rpc.protocol.rest.deploy.ServiceDeployer;
 import org.apache.dubbo.rpc.protocol.rest.handler.NettyHttpHandler;
 import org.apache.dubbo.rpc.protocol.rest.request.NettyRequestFacade;
 
@@ -37,12 +38,15 @@ import org.apache.dubbo.rpc.protocol.rest.request.NettyRequestFacade;
 public class RestHttpRequestDecoder extends MessageToMessageDecoder<io.netty.handler.codec.http.FullHttpRequest> {
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
 
-    private final NettyHttpHandler handler;
     private final Executor executor;
+    private final ServiceDeployer serviceDeployer;
+    private final URL url;
 
 
-    public RestHttpRequestDecoder(NettyHttpHandler handler, URL url) {
-        this.handler = handler;
+    public RestHttpRequestDecoder(URL url, ServiceDeployer serviceDeployer) {
+
+        this.url = url;
+        this.serviceDeployer = serviceDeployer;
         executor = url.getOrDefaultFrameworkModel().getExtensionLoader(ThreadPool.class).getAdaptiveExtension().getExecutor(url);
     }
 
@@ -58,7 +62,7 @@ public class RestHttpRequestDecoder extends MessageToMessageDecoder<io.netty.han
 
             // business handler
             try {
-                handler.handle(requestFacade, nettyHttpResponse);
+                new NettyHttpHandler(serviceDeployer, url).handle(requestFacade, nettyHttpResponse);
 
             } catch (IOException e) {
                 logger.error("", e.getCause().getMessage(), "dubbo rest rest http request handler error", e.getMessage(), e);
