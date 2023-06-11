@@ -27,6 +27,12 @@ import static org.apache.dubbo.common.constants.CommonConstants.SERVICE_DEPLOYER
 
 public interface ServiceDeployerContext {
 
+    /**
+     *   return extensions that are  filtered by  extension type
+     * @param extension
+     * @param <T>
+     * @return
+     */
     default <T> List<T> getExtension(Class<T> extension) {
 
         ServiceDeployer serviceDeployer = getServiceDeployer();

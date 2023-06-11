@@ -22,7 +22,10 @@ import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.rpc.protocol.rest.netty.NettyHttpResponse;
 import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
 
-
+/**
+ *  Rest filter will be invoked before http handler
+ *
+ */
 @SPI(scope = ExtensionScope.FRAMEWORK)
 public interface RestFilter {
 

@@ -25,7 +25,10 @@ import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
 
 import static org.apache.dubbo.rpc.protocol.rest.filter.ServiceInvokeRestFilter.writeResult;
 
-@Activate("invoke")
+/**
+ *  default RestResponseInterceptor
+ */
+@Activate(value = "invoke",order = Integer.MAX_VALUE)
 public class ServiceInvokeRestResponseInterceptor implements RestResponseInterceptor {
 
     @Override

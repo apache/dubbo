@@ -22,12 +22,10 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.http.HttpHandler;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.model.FrameworkModel;
-import org.apache.dubbo.rpc.protocol.rest.PathAndInvokerMapper;
 import org.apache.dubbo.rpc.protocol.rest.deploy.ServiceDeployer;
 import org.apache.dubbo.rpc.protocol.rest.exception.MediaTypeUnSupportException;
 import org.apache.dubbo.rpc.protocol.rest.exception.ParamParseException;
 import org.apache.dubbo.rpc.protocol.rest.exception.PathNoFoundException;
-import org.apache.dubbo.rpc.protocol.rest.exception.mapper.ExceptionMapper;
 import org.apache.dubbo.rpc.protocol.rest.filter.RestFilter;
 import org.apache.dubbo.rpc.protocol.rest.filter.RestFilterChain;
 import org.apache.dubbo.rpc.protocol.rest.netty.NettyHttpResponse;
@@ -48,14 +46,10 @@ public class NettyHttpHandler implements HttpHandler<NettyRequestFacade, NettyHt
     private static final List<RestFilter> restFilters = new ArrayList(FrameworkModel.defaultModel().getExtensionLoader(RestFilter.class).getSupportedExtensionInstances());
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
     private final ServiceDeployer serviceDeployer;
-    private final PathAndInvokerMapper pathAndInvokerMapper;
-    private final ExceptionMapper exceptionMapper;
     private final URL url;
 
     public NettyHttpHandler(ServiceDeployer serviceDeployer, URL url) {
         this.serviceDeployer = serviceDeployer;
-        this.pathAndInvokerMapper = serviceDeployer.getPathAndInvokerMapper();
-        this.exceptionMapper = serviceDeployer.getExceptionMapper();
         this.url = url;
 
     }

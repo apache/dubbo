@@ -28,7 +28,6 @@ import org.apache.dubbo.metadata.rest.ServiceRestMetadata;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
 import org.apache.dubbo.rpc.protocol.rest.deploy.ServiceDeployer;
-import org.apache.dubbo.rpc.protocol.rest.handler.NettyHttpHandler;
 import org.apache.dubbo.rpc.protocol.rest.netty.NettyServer;
 import org.apache.dubbo.rpc.protocol.rest.netty.RestHttpRequestDecoder;
 import org.apache.dubbo.rpc.protocol.rest.netty.UnSharedHandlerCreator;

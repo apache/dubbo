@@ -23,7 +23,9 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.protocol.rest.netty.NettyHttpResponse;
 import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
 
-
+/**
+ *  RestResponseInterceptorChain will take effect before result is written to response
+ */
 @SPI(scope = ExtensionScope.FRAMEWORK)
 public interface RestResponseInterceptor {
 

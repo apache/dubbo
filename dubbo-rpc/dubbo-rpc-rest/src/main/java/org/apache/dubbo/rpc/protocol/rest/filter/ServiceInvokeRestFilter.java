@@ -57,11 +57,8 @@ public class ServiceInvokeRestFilter implements RestFilter, ServiceDeployerConte
         NettyRequestFacade nettyRequestFacade = (NettyRequestFacade) requestFacade;
 
         FullHttpRequest nettyHttpRequest = nettyRequestFacade.getRequest();
-        doHandler(nettyHttpRequest,
-            nettyHttpResponse,
-            requestFacade,
-            getPathAndInvokerMapper(),
-            getExceptionMapper(), url);
+
+        doHandler(nettyHttpRequest, nettyHttpResponse, requestFacade, getPathAndInvokerMapper(), getExceptionMapper(), url);
 
     }
 
@@ -116,6 +113,7 @@ public class ServiceInvokeRestFilter implements RestFilter, ServiceDeployerConte
             }
         } else {
 
+            // invoke the intercept chain before Result  write to  response
             new RestResponseInterceptor() {
                 @Override
                 public void intercept(URL url, RequestFacade request, NettyHttpResponse response, Object result, RpcInvocation rpcInvocation, RestResponseInterceptorChain interceptorChain) throws Exception {

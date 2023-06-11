@@ -43,7 +43,7 @@ import java.util.List;
 
 import static org.apache.dubbo.common.constants.CommonConstants.RESTEASY_NETTY_HTTP_REQUEST_ATTRIBUTE_KEY;
 
-@Activate(value = "resteasy", onClass = "javax.ws.rs.ext.WriterInterceptorContext")
+@Activate(value = "resteasy", onClass = {"javax.ws.rs.ext.WriterInterceptorContext", "org.jboss.resteasy.plugins.server.netty.NettyHttpRequest"})
 public class ResteasyWriterInterceptorAdapter implements RestResponseInterceptor, ServiceDeployerContext, ResteasyContext {
 
     private ResteasyProviderFactory resteasyProviderFactory = new ResteasyProviderFactory();
