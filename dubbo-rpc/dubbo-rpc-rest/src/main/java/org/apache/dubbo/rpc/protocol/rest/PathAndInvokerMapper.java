@@ -22,7 +22,6 @@ import org.apache.dubbo.metadata.rest.PathMatcher;
 import org.apache.dubbo.metadata.rest.RestMethodMetadata;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.protocol.rest.exception.DoublePathCheckException;
-import org.apache.dubbo.rpc.protocol.rest.exception.PathNoFoundException;
 import org.apache.dubbo.rpc.protocol.rest.pair.InvokerAndRestMethodMetadataPair;
 
 import java.util.Map;
@@ -56,31 +55,26 @@ public class PathAndInvokerMapper {
         });
     }
 
+
     /**
-     * acquire metadata & invoker by service info
-     *
-     * @param path
-     * @param version
-     * @param group
-     * @param port
+     *  get rest method metadata by path matcher
+     * @param pathMatcher
      * @return
      */
-    public InvokerAndRestMethodMetadataPair getRestMethodMetadata(String path, String version, String group, Integer port,String method) {
-
-
-        PathMatcher pathMather = PathMatcher.getInvokeCreatePathMatcher(path, version, group, port,method);
+    public InvokerAndRestMethodMetadataPair getRestMethodMetadata(PathMatcher pathMatcher) {
 
         // first search from pathToServiceMapNoPathVariable
-        if (pathToServiceMapNoPathVariable.containsKey(pathMather)) {
-            return pathToServiceMapNoPathVariable.get(pathMather);
+        if (pathToServiceMapNoPathVariable.containsKey(pathMatcher)) {
+            return pathToServiceMapNoPathVariable.get(pathMatcher);
         }
 
         // second search from pathToServiceMapContainPathVariable
-        if (pathToServiceMapContainPathVariable.containsKey(pathMather)) {
-            return pathToServiceMapContainPathVariable.get(pathMather);
+        if (pathToServiceMapContainPathVariable.containsKey(pathMatcher)) {
+            return pathToServiceMapContainPathVariable.get(pathMatcher);
         }
 
-        throw new PathNoFoundException("rest service Path no found, current path info:" + pathMather);
+        return null;
+
     }
 
     /**
