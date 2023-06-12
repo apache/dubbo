@@ -18,6 +18,7 @@ package org.apache.dubbo.remoting.exchange.support.header;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.Channel;
@@ -159,7 +160,7 @@ final class HeaderExchangeChannel implements ExchangeChannel {
         closed = true;
         try {
             // graceful close
-            DefaultFuture.closeChannel(channel);
+            DefaultFuture.closeChannel(channel, ConfigurationUtils.getServerShutdownTimeout(channel.getUrl().getOrDefaultApplicationModel()));
         } catch (Exception e) {
             logger.warn(TRANSPORT_FAILED_CLOSE, "", "", e.getMessage(), e);
         }

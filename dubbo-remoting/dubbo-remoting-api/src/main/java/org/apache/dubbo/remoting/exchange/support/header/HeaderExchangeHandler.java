@@ -17,6 +17,7 @@
 package org.apache.dubbo.remoting.exchange.support.header;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -140,7 +141,7 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
         try {
             handler.disconnected(exchangeChannel);
         } finally {
-            DefaultFuture.closeChannel(channel);
+            DefaultFuture.closeChannel(channel, ConfigurationUtils.getServerShutdownTimeout(channel.getUrl().getOrDefaultApplicationModel()));
             HeaderExchangeChannel.removeChannel(channel);
         }
     }
