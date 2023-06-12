@@ -28,12 +28,11 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.FrameworkModel;
-import org.apache.dubbo.rpc.protocol.rest.PathAndInvokerMapper;
 import org.apache.dubbo.rpc.protocol.rest.RestHeaderEnum;
 import org.apache.dubbo.rpc.protocol.rest.RestRPCInvocationUtil;
 import org.apache.dubbo.rpc.protocol.rest.deploy.ServiceDeployer;
+import org.apache.dubbo.rpc.protocol.rest.exception.PathNoFoundException;
 import org.apache.dubbo.rpc.protocol.rest.exception.UnSupportContentTypeException;
-import org.apache.dubbo.rpc.protocol.rest.exception.mapper.ExceptionMapper;
 import org.apache.dubbo.rpc.protocol.rest.extension.ServiceDeployerContext;
 import org.apache.dubbo.rpc.protocol.rest.message.HttpMessageCodecManager;
 import org.apache.dubbo.rpc.protocol.rest.netty.NettyHttpResponse;
@@ -58,7 +57,7 @@ public class ServiceInvokeRestFilter implements RestFilter, ServiceDeployerConte
 
         FullHttpRequest nettyHttpRequest = nettyRequestFacade.getRequest();
 
-        doHandler(nettyHttpRequest, nettyHttpResponse, requestFacade, getPathAndInvokerMapper(), getExceptionMapper(), url, getServiceDeployer());
+        doHandler(nettyHttpRequest, nettyHttpResponse, requestFacade, url, getServiceDeployer());
 
     }
 
@@ -66,12 +65,15 @@ public class ServiceInvokeRestFilter implements RestFilter, ServiceDeployerConte
     private void doHandler(HttpRequest nettyHttpRequest,
                            NettyHttpResponse nettyHttpResponse,
                            RequestFacade request,
-                           PathAndInvokerMapper pathAndInvokerMapper,
-                           ExceptionMapper exceptionMapper,
                            URL url,
                            ServiceDeployer serviceDeployer) throws Exception {
         //  acquire metadata by request
-        InvokerAndRestMethodMetadataPair restMethodMetadataPair = RestRPCInvocationUtil.getRestMethodMetadata(request, pathAndInvokerMapper);
+        InvokerAndRestMethodMetadataPair restMethodMetadataPair = RestRPCInvocationUtil.getRestMethodMetadataAndInvokerPair(request);
+
+        // path NoFound 404
+        if (restMethodMetadataPair == null) {
+            throw new PathNoFoundException("rest service Path no found, current path info:" + RestRPCInvocationUtil.createPathMatcher(request));
+        }
 
         Invoker invoker = restMethodMetadataPair.getInvoker();
 
@@ -103,8 +105,8 @@ public class ServiceInvokeRestFilter implements RestFilter, ServiceDeployerConte
             Throwable exception = result.getException();
             logger.error("", exception.getMessage(), "", "dubbo rest protocol provider Invoker invoke error", exception);
 
-            if (exceptionMapper.hasExceptionMapper(exception)) {
-                writeResult(nettyHttpResponse, request, url, exceptionMapper.exceptionToResult(result.getException()), rpcInvocation.getReturnType());
+            if (serviceDeployer.getExceptionMapper().hasExceptionMapper(exception)) {
+                writeResult(nettyHttpResponse, request, url, serviceDeployer.getExceptionMapper().exceptionToResult(result.getException()), rpcInvocation.getReturnType());
                 nettyHttpResponse.setStatus(200);
             } else {
                 nettyHttpResponse.sendError(500,
