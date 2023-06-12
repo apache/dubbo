@@ -20,6 +20,7 @@ package org.apache.dubbo.metrics.collector;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ReflectionUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.MetricsConfig;
@@ -33,6 +34,7 @@ import org.apache.dubbo.metrics.event.MetricsEventBus;
 import org.apache.dubbo.metrics.event.RequestBeforeEvent;
 import org.apache.dubbo.metrics.event.RequestEvent;
 import org.apache.dubbo.metrics.filter.MetricsFilter;
+import org.apache.dubbo.metrics.listener.MetricsListener;
 import org.apache.dubbo.metrics.model.MethodMetric;
 import org.apache.dubbo.metrics.model.MetricsSupport;
 import org.apache.dubbo.metrics.model.TimePair;
@@ -230,6 +232,48 @@ class AggregateMetricsCollectorTest {
         Assertions.assertEquals(10000, ((TimeWindowCounter) ((GaugeMetricSample<?>) sample).getValue()).get());
     }
 
+
+    @Test
+    public void testRtAggregation() {
+        metricsDispatcher.addListener(collector);
+        ConfigManager configManager = applicationModel.getApplicationConfigManager();
+        MetricsConfig config = configManager.getMetrics().orElse(null);
+        AggregationConfig aggregationConfig = new AggregationConfig();
+        aggregationConfig.setEnabled(true);
+        config.setAggregation(aggregationConfig);
+
+        List<Long> rtList = new ArrayList<>();
+        rtList.add(10L);
+        rtList.add(20L);
+        rtList.add(30L);
+
+        for (Long requestTime: rtList) {
+            RequestEvent requestEvent = RequestEvent.toRequestEvent(applicationModel, invocation);
+            TestRequestEvent testRequestEvent = new TestRequestEvent(requestEvent.getSource(), requestEvent.getTypeWrapper());
+            testRequestEvent.putAttachment(MetricsConstants.INVOCATION, invocation);
+            testRequestEvent.putAttachment(ATTACHMENT_KEY_SERVICE, MetricsSupport.getInterfaceName(invocation));
+            testRequestEvent.putAttachment(MetricsConstants.INVOCATION_SIDE, MetricsSupport.getSide(invocation));
+            testRequestEvent.setRt(requestTime);
+            MetricsEventBus.post(testRequestEvent, () -> null);
+        }
+
+        List<MetricSample> samples = collector.collect();
+        for (MetricSample sample : samples) {
+            GaugeMetricSample gaugeMetricSample = (GaugeMetricSample<?>) sample;
+
+            if(gaugeMetricSample.getName().endsWith("max.milliseconds.aggregate")) {
+                Assertions.assertEquals(30,  gaugeMetricSample.applyAsDouble());
+            }
+            if (gaugeMetricSample.getName().endsWith("min.milliseconds.aggregate")) {
+                Assertions.assertEquals(10L,  gaugeMetricSample.applyAsDouble());
+            }
+
+            if (gaugeMetricSample.getName().endsWith("avg.milliseconds.aggregate")) {
+                Assertions.assertEquals(20L, gaugeMetricSample.applyAsDouble());
+            }
+        }
+    }
+
     @Test
     void testP95AndP99() throws InterruptedException {
 
@@ -288,6 +332,13 @@ class AggregateMetricsCollectorTest {
         System.out.println(Math.abs(1 - p95 / manualP95));
         Assertions.assertTrue(Math.abs(1 - p95 / manualP95) < 0.05);
         Assertions.assertTrue(Math.abs(1 - p99 / manualP99) < 0.05);
+    }
+
+    @Test
+    void testGenericCache() {
+        List<Class<?>> classGenerics = ReflectionUtils.getClassGenerics(AggregateMetricsCollector.class, MetricsListener.class);
+        Assertions.assertTrue(CollectionUtils.isNotEmpty(classGenerics));
+        Assertions.assertEquals(RequestEvent.class, classGenerics.get(0));
     }
 
     public static class TestRequestEvent extends RequestEvent {

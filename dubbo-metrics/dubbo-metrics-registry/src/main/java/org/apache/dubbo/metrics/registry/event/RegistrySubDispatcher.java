@@ -58,6 +58,9 @@ public final class RegistrySubDispatcher extends SimpleMetricsEventMulticaster {
         });
     }
 
+    /**
+     * A closer aggregation of MetricsCat, a summary collection of certain types of events
+     */
     interface CategorySet {
         CategoryOverall APPLICATION_REGISTER = new CategoryOverall(OP_TYPE_REGISTER, MCat.APPLICATION_REGISTER_POST, MCat.APPLICATION_REGISTER_FINISH, MCat.APPLICATION_REGISTER_ERROR);
         CategoryOverall APPLICATION_SUBSCRIBE = new CategoryOverall(OP_TYPE_SUBSCRIBE, MCat.APPLICATION_SUBSCRIBE_POST, MCat.APPLICATION_SUBSCRIBE_FINISH, MCat.APPLICATION_SUBSCRIBE_ERROR);
@@ -70,6 +73,10 @@ public final class RegistrySubDispatcher extends SimpleMetricsEventMulticaster {
     }
 
 
+    /**
+     *  {@link MetricsCat} MetricsCat collection, for better classification processing
+     *  Except for a few custom functions, most of them can build standard event listening functions through the static methods of MetricsApplicationListener
+     */
     interface MCat {
         // MetricsRegisterListener
         MetricsCat APPLICATION_REGISTER_POST = new MetricsCat(MetricsKey.REGISTER_METRIC_REQUESTS, MetricsApplicationListener::onPostEventBuild);
@@ -101,7 +108,7 @@ public final class RegistrySubDispatcher extends SimpleMetricsEventMulticaster {
                 Map<MetricsKey, Map<String, Integer>> summaryMap = event.getAttachmentValue(ATTACHMENT_DIRECTORY_MAP);
                 summaryMap.forEach((metricsKey, map) ->
                     map.forEach(
-                        (k, v) -> collector.setNum(new MetricsKeyWrapper(key, OP_TYPE_DIRECTORY), k, v)));
+                        (k, v) -> collector.setNum(new MetricsKeyWrapper(metricsKey, OP_TYPE_DIRECTORY), k, v)));
             }
         ));
 

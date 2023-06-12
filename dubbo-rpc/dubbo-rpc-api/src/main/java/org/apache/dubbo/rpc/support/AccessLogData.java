@@ -17,8 +17,8 @@
 package org.apache.dubbo.rpc.support;
 
 
-import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.common.utils.ToStringUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcContext;
@@ -248,7 +248,7 @@ public final class AccessLogData {
 
         Object[] args = get(ARGUMENTS) != null ? (Object[]) get(ARGUMENTS) : null;
         if (args != null && args.length > 0) {
-            sn.append(JsonUtils.toJson(args));
+            sn.append(ToStringUtils.printToString(args));
         }
 
         return sn.toString();

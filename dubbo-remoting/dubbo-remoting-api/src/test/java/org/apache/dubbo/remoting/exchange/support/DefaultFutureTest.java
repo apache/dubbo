@@ -142,7 +142,7 @@ class DefaultFutureTest {
         try {
             new InterruptThread(Thread.currentThread()).start();
             while (!f. isDone()){
-                executor.waitAndDrain();
+                executor.waitAndDrain(Long.MAX_VALUE);
             }
             f.get();
         } catch (Exception e) {
