@@ -20,17 +20,25 @@ import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpRequest;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.metadata.rest.media.MediaType;
 import org.apache.dubbo.rpc.protocol.rest.extension.resteay.filter.DubboPreMatchContainerRequestContext;
+import org.apache.dubbo.rpc.protocol.rest.filter.ServiceInvokeRestFilter;
+import org.apache.dubbo.rpc.protocol.rest.netty.NettyHttpResponse;
 import org.apache.dubbo.rpc.protocol.rest.request.NettyRequestFacade;
 import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
 import org.jboss.resteasy.plugins.server.netty.NettyHttpRequest;
 import org.jboss.resteasy.plugins.server.netty.NettyUtil;
+import org.jboss.resteasy.specimpl.BuiltResponse;
 import org.jboss.resteasy.specimpl.ResteasyHttpHeaders;
 import org.jboss.resteasy.spi.ResteasyUriInfo;
 
 import javax.ws.rs.container.ContainerRequestFilter;
+import javax.ws.rs.core.MultivaluedMap;
 import java.io.IOException;
 import java.net.URI;
+import java.util.List;
+import java.util.Map;
 
 public interface ResteasyContext {
     String HTTP_PROTOCOL = "http://";
@@ -102,4 +110,30 @@ public interface ResteasyContext {
 
         return nettyRequest;
     }
+
+    default void writeResteasyResponse(URL url, RequestFacade requestFacade, NettyHttpResponse response, BuiltResponse restResponse) throws Exception {
+        ServiceInvokeRestFilter.writeResult(response, requestFacade, url, restResponse.getEntity(), restResponse.getEntityClass());
+    }
+
+    default MediaType getAcceptMediaType(RequestFacade request, Class<?> returnType) {
+
+        return ServiceInvokeRestFilter.getAcceptMediaType(request, returnType);
+    }
+
+    default void addResponseHeaders(NettyHttpResponse response, MultivaluedMap<String, Object> headers) {
+        if (headers == null || headers.isEmpty()) {
+
+            return;
+        }
+        for (Map.Entry<String, List<Object>> entry : headers.entrySet()) {
+
+            String key = entry.getKey();
+            if (entry.getValue() == null) {
+                continue;
+            }
+            response.addOutputHeaders(key, entry.getValue().toString());
+        }
+    }
+
+
 }

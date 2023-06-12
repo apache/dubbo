@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.rest.extension.resteay.filter;
 
-import org.jboss.resteasy.core.SynchronousDispatcher;
 import org.jboss.resteasy.core.interception.jaxrs.SuspendableContainerRequestContext;
 import org.jboss.resteasy.plugins.server.netty.NettyHttpRequest;
 import org.jboss.resteasy.specimpl.BuiltResponse;
@@ -261,7 +260,7 @@ public class DubboPreMatchContainerRequestContext implements SuspendableContaine
         httpRequest.getAsyncContext().getAsyncResponse().resume(t);
     }
 
-    public synchronized BuiltResponse filter() {
+    public synchronized BuiltResponse filter() throws Throwable {
         while (currentFilter < requestFilters.length) {
             ContainerRequestFilter filter = requestFilters[currentFilter++];
             try {
@@ -277,30 +276,20 @@ public class DubboPreMatchContainerRequestContext implements SuspendableContaine
             }
             if (suspended) {
                 if (!httpRequest.getAsyncContext().isSuspended())
-                    httpRequest.getAsyncContext().suspend();
-                // ignore any abort request until we are resumed
-                filterReturnIsMeaningful = false;
+                    // ignore any abort request until we are resumed
+                    filterReturnIsMeaningful = false;
                 response = null;
                 return null;
             }
             BuiltResponse serverResponse = (BuiltResponse) getResponseAbortedWith();
             if (serverResponse != null) {
                 // handle the case where we've been suspended by a previous filter
-                if (filterReturnIsMeaningful)
-                    return serverResponse;
-                else {
-                    httpRequest.getAsyncContext().getAsyncResponse().resume(serverResponse);
-                    return null;
-                }
+                return serverResponse;
             }
+
             if (throwable != null) {
                 // handle the case where we've been suspended by a previous filter
-                if (filterReturnIsMeaningful)
-                    SynchronousDispatcher.rethrow(throwable);
-                else {
-                    writeException(throwable);
-                    return null;
-                }
+                throw throwable;
             }
         }
         // here it means we reached the last filter

@@ -31,6 +31,7 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.rest.PathAndInvokerMapper;
 import org.apache.dubbo.rpc.protocol.rest.RestHeaderEnum;
 import org.apache.dubbo.rpc.protocol.rest.RestRPCInvocationUtil;
+import org.apache.dubbo.rpc.protocol.rest.deploy.ServiceDeployer;
 import org.apache.dubbo.rpc.protocol.rest.exception.UnSupportContentTypeException;
 import org.apache.dubbo.rpc.protocol.rest.exception.mapper.ExceptionMapper;
 import org.apache.dubbo.rpc.protocol.rest.extension.ServiceDeployerContext;
@@ -42,14 +43,13 @@ import org.apache.dubbo.rpc.protocol.rest.request.NettyRequestFacade;
 import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
 import org.apache.dubbo.rpc.protocol.rest.util.MediaTypeUtil;
 
-import java.util.ArrayList;
 import java.util.List;
 
 
 @Activate(value = "invoke", order = Integer.MAX_VALUE)
 public class ServiceInvokeRestFilter implements RestFilter, ServiceDeployerContext {
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
-    private static final List<RestResponseInterceptor> restResponseInterceptors = new ArrayList(FrameworkModel.defaultModel().getExtensionLoader(RestResponseInterceptor.class).getSupportedExtensionInstances());
+    private static final List<RestResponseInterceptor> restResponseInterceptors = FrameworkModel.defaultModel().getExtensionLoader(RestResponseInterceptor.class).getActivateExtensions();
 
 
     @Override
@@ -58,16 +58,18 @@ public class ServiceInvokeRestFilter implements RestFilter, ServiceDeployerConte
 
         FullHttpRequest nettyHttpRequest = nettyRequestFacade.getRequest();
 
-        doHandler(nettyHttpRequest, nettyHttpResponse, requestFacade, getPathAndInvokerMapper(), getExceptionMapper(), url);
+        doHandler(nettyHttpRequest, nettyHttpResponse, requestFacade, getPathAndInvokerMapper(), getExceptionMapper(), url, getServiceDeployer());
 
     }
 
 
-    private void doHandler(HttpRequest nettyHttpRequest, NettyHttpResponse nettyHttpResponse,
+    private void doHandler(HttpRequest nettyHttpRequest,
+                           NettyHttpResponse nettyHttpResponse,
                            RequestFacade request,
                            PathAndInvokerMapper pathAndInvokerMapper,
                            ExceptionMapper exceptionMapper,
-                           URL url) throws Exception {
+                           URL url,
+                           ServiceDeployer serviceDeployer) throws Exception {
         //  acquire metadata by request
         InvokerAndRestMethodMetadataPair restMethodMetadataPair = RestRPCInvocationUtil.getRestMethodMetadata(request, pathAndInvokerMapper);
 
@@ -116,10 +118,10 @@ public class ServiceInvokeRestFilter implements RestFilter, ServiceDeployerConte
             // invoke the intercept chain before Result  write to  response
             new RestResponseInterceptor() {
                 @Override
-                public void intercept(URL url, RequestFacade request, NettyHttpResponse response, Object result, RpcInvocation rpcInvocation, RestResponseInterceptorChain interceptorChain) throws Exception {
-                    interceptorChain.intercept(url, request, response, result, rpcInvocation, interceptorChain);
+                public void intercept(URL url, RequestFacade request, NettyHttpResponse response, Object result, RpcInvocation rpcInvocation, RestResponseInterceptorChain interceptorChain, ServiceDeployer serviceDeployer) throws Exception {
+                    interceptorChain.intercept(url, request, response, result, rpcInvocation, interceptorChain, serviceDeployer);
                 }
-            }.intercept(url, request, nettyHttpResponse, result.getValue(), rpcInvocation, new RestResponseInterceptorChain(restResponseInterceptors));
+            }.intercept(url, request, nettyHttpResponse, result.getValue(), rpcInvocation, new RestResponseInterceptorChain(restResponseInterceptors), serviceDeployer);
 
         }
     }

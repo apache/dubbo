@@ -16,19 +16,19 @@
  */
 package org.apache.dubbo.rpc.protocol.rest.filter;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionScope;
-import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.protocol.rest.deploy.ServiceDeployer;
-import org.apache.dubbo.rpc.protocol.rest.netty.NettyHttpResponse;
-import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
+import javax.annotation.Priority;
+import javax.ws.rs.Priorities;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.container.ContainerRequestFilter;
+import javax.ws.rs.core.Response;
+import java.io.IOException;
 
-/**
- * RestResponseInterceptorChain will take effect before result is written to response
- */
-@SPI(scope = ExtensionScope.FRAMEWORK)
-public interface RestResponseInterceptor {
 
-    void intercept(URL url, RequestFacade request, NettyHttpResponse response, Object result, RpcInvocation rpcInvocation, RestResponseInterceptorChain interceptorChain, ServiceDeployer serviceDeployer) throws Exception;
+@Priority(Priorities.USER)
+public class TestContainerRequestFilter implements ContainerRequestFilter {
+    @Override
+    public void filter(ContainerRequestContext requestContext) throws IOException {
+
+        requestContext.abortWith(Response.status(200).entity("return-success").build());
+    }
 }

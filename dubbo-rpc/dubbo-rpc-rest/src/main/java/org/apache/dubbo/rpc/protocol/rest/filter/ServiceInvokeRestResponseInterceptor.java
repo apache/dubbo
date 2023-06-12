@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.protocol.rest.filter;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.protocol.rest.deploy.ServiceDeployer;
 import org.apache.dubbo.rpc.protocol.rest.netty.NettyHttpResponse;
 import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
 
@@ -32,7 +33,7 @@ import static org.apache.dubbo.rpc.protocol.rest.filter.ServiceInvokeRestFilter.
 public class ServiceInvokeRestResponseInterceptor implements RestResponseInterceptor {
 
     @Override
-    public void intercept(URL url, RequestFacade request, NettyHttpResponse nettyHttpResponse, Object result, RpcInvocation rpcInvocation, RestResponseInterceptorChain interceptorChain) throws Exception {
+    public void intercept(URL url, RequestFacade request, NettyHttpResponse nettyHttpResponse, Object result, RpcInvocation rpcInvocation, RestResponseInterceptorChain interceptorChain, ServiceDeployer serviceDeployer) throws Exception {
 
         writeResult(nettyHttpResponse, request, url, result, rpcInvocation.getReturnType());
         nettyHttpResponse.setStatus(200);

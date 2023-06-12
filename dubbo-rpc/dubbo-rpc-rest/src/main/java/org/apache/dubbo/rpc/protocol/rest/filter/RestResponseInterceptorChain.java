@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol.rest.filter;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.protocol.rest.deploy.ServiceDeployer;
 import org.apache.dubbo.rpc.protocol.rest.netty.NettyHttpResponse;
 import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
 
@@ -33,9 +34,9 @@ public class RestResponseInterceptorChain {
         this.interceptors = interceptors;
     }
 
-    public void intercept(URL url, RequestFacade request, NettyHttpResponse response, Object result, RpcInvocation rpcInvocation, RestResponseInterceptorChain interceptorChain) throws Exception {
+    public void intercept(URL url, RequestFacade request, NettyHttpResponse response, Object result, RpcInvocation rpcInvocation, RestResponseInterceptorChain interceptorChain, ServiceDeployer serviceDeployer) throws Exception {
         if (pos < interceptors.size()) {
-            interceptors.get(pos++).intercept(url, request, response, result, rpcInvocation, interceptorChain);
+            interceptors.get(pos++).intercept(url, request, response, result, rpcInvocation, interceptorChain,serviceDeployer);
         }
     }
 

@@ -23,18 +23,17 @@ import org.apache.dubbo.rpc.protocol.rest.extension.ServiceDeployerContext;
 import org.apache.dubbo.rpc.protocol.rest.filter.RestFilter;
 import org.apache.dubbo.rpc.protocol.rest.extension.resteay.ResteasyContext;
 import org.apache.dubbo.rpc.protocol.rest.filter.RestFilterChain;
-import org.apache.dubbo.rpc.protocol.rest.message.codec.ResteasyResponseCodec;
 import org.apache.dubbo.rpc.protocol.rest.netty.NettyHttpResponse;
 import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
+import org.jboss.resteasy.specimpl.BuiltResponse;
 
 import javax.ws.rs.container.ContainerRequestFilter;
-import javax.ws.rs.core.Response;
 import java.util.List;
 
 import static org.apache.dubbo.common.constants.CommonConstants.RESTEASY_NETTY_HTTP_REQUEST_ATTRIBUTE_KEY;
 
 
-@Activate(value = "resteasy", onClass = {"javax.ws.rs.container.ContainerRequestFilter", "org.jboss.resteasy.plugins.server.netty.NettyHttpRequest"})
+@Activate(value = "resteasy", onClass = {"javax.ws.rs.container.ContainerRequestFilter", "org.jboss.resteasy.plugins.server.netty.NettyHttpRequest"}, order = Integer.MAX_VALUE - 1)
 public class ResteasyContainerFilterAdapter implements RestFilter, ServiceDeployerContext, ResteasyContext {
 
 
@@ -44,6 +43,7 @@ public class ResteasyContainerFilterAdapter implements RestFilter, ServiceDeploy
         List<ContainerRequestFilter> containerRequestFilters = getExtension(ContainerRequestFilter.class);
 
         if (containerRequestFilters.isEmpty()) {
+            restFilterChain.filter(url, requestFacade, response, restFilterChain);
             return;
         }
 
@@ -52,19 +52,21 @@ public class ResteasyContainerFilterAdapter implements RestFilter, ServiceDeploy
 
         RpcContext.getServiceContext().setObjectAttachment(RESTEASY_NETTY_HTTP_REQUEST_ATTRIBUTE_KEY, containerRequestContext.getHttpRequest());
 
-        Response restResponse = containerRequestContext.filter();
 
-        if (restResponse == null) {
-            restFilterChain.filter(url, requestFacade, response, restFilterChain);
-            return;
-        }
-
-        ResteasyResponseCodec resteasyResponseCodec = new ResteasyResponseCodec();
+        // TODO add headers to response
 
         try {
-            resteasyResponseCodec.encode(response.getOutputStream(), restResponse, null);
-        } catch (Exception e) {
-            throw new RuntimeException("dubbo rest resteasy ContainerRequestFilter write reponse encode error", e);
+            BuiltResponse restResponse = containerRequestContext.filter();
+
+            if (restResponse == null) {
+                restFilterChain.filter(url, requestFacade, response, restFilterChain);
+                return;
+            }
+
+            addResponseHeaders(response, restResponse.getHeaders());
+            writeResteasyResponse(url, requestFacade, response, restResponse);
+        } catch (Throwable e) {
+            throw new RuntimeException("dubbo rest resteasy ContainerRequestFilter write response encode error", e);
         }
 
 

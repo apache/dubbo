@@ -43,7 +43,7 @@ import static org.apache.dubbo.rpc.protocol.rest.filter.ServiceInvokeRestFilter.
  * netty http request handler
  */
 public class NettyHttpHandler implements HttpHandler<NettyRequestFacade, NettyHttpResponse> {
-    private static final List<RestFilter> restFilters = new ArrayList(FrameworkModel.defaultModel().getExtensionLoader(RestFilter.class).getSupportedExtensionInstances());
+    private static final List<RestFilter> restFilters = FrameworkModel.defaultModel().getExtensionLoader(RestFilter.class).getActivateExtensions();
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
     private final ServiceDeployer serviceDeployer;
     private final URL url;
@@ -71,7 +71,7 @@ public class NettyHttpHandler implements HttpHandler<NettyRequestFacade, NettyHt
         // TODO add request filter chain
         Object nettyHttpRequest = requestFacade.getRequest();
 
-        RpcContext.getServerAttachment().setObjectAttachment(SERVICE_DEPLOYER_ATTRIBUTE_KEY, serviceDeployer);
+        RpcContext.getServiceContext().setObjectAttachment(SERVICE_DEPLOYER_ATTRIBUTE_KEY, serviceDeployer);
 
 
         try {
@@ -94,7 +94,7 @@ public class NettyHttpHandler implements HttpHandler<NettyRequestFacade, NettyHt
             nettyHttpResponse.sendError(415, contentTypeException.getMessage());
         } catch (Throwable throwable) {
             logger.error("", throwable.getMessage(), "", "dubbo rest protocol provider error ,and raw request is  " + nettyHttpRequest, throwable);
-            nettyHttpResponse.sendError(500, "dubbo rest invoke Internal error, message is " + throwable.getMessage()
+            nettyHttpResponse.sendError(500, "dubbo rest invoke Internal error, message is " + throwable.getMessage() + " ,and exception type is : " + throwable.getClass()
                 + " , stacktrace is: " + stackTraceToString(throwable));
         }
 
