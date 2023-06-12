@@ -183,7 +183,7 @@ public class AsyncRpcResult implements Result {
         if (executor != null && executor instanceof ThreadlessExecutor) {
             ThreadlessExecutor threadlessExecutor = (ThreadlessExecutor) executor;
             try {
-                while (!responseFuture.isDone()) {
+                while (!responseFuture.isDone() && !responseFuture.isCancelled() && !responseFuture.isCompletedExceptionally() && !threadlessExecutor.isShutdown()) {
                     threadlessExecutor.waitAndDrain(Long.MAX_VALUE);
                 }
             } finally {
@@ -199,7 +199,7 @@ public class AsyncRpcResult implements Result {
         if (executor != null && executor instanceof ThreadlessExecutor) {
             ThreadlessExecutor threadlessExecutor = (ThreadlessExecutor) executor;
             try {
-                while (!responseFuture.isDone()) {
+                while (!responseFuture.isDone() && !responseFuture.isCancelled() && !responseFuture.isCompletedExceptionally() && !threadlessExecutor.isShutdown()) {
                     long restTime = deadline - System.nanoTime();
                     if (restTime > 0) {
                         threadlessExecutor.waitAndDrain(deadline);

@@ -19,6 +19,7 @@ package org.apache.dubbo.remoting.exchange.support;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.resource.GlobalResourceInitializer;
+import org.apache.dubbo.common.serialize.SerializationException;
 import org.apache.dubbo.common.timer.HashedWheelTimer;
 import org.apache.dubbo.common.timer.Timeout;
 import org.apache.dubbo.common.timer.Timer;
@@ -26,7 +27,6 @@ import org.apache.dubbo.common.timer.TimerTask;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.RemotingException;
-import org.apache.dubbo.common.serialize.SerializationException;
 import org.apache.dubbo.remoting.TimeoutException;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.Response;
@@ -180,6 +180,7 @@ public class DefaultFuture extends CompletableFuture<Object> {
                     t.cancel();
                 }
                 future.doReceived(response);
+                shutdownExecutorIfNeeded(future);
             } else {
                 logger.warn(PROTOCOL_TIMEOUT_SERVER, "", "", "The timeout response finally returned at "
                     + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date()))
@@ -198,10 +199,18 @@ public class DefaultFuture extends CompletableFuture<Object> {
         errorResult.setStatus(Response.CLIENT_ERROR);
         errorResult.setErrorMessage("request future has been canceled.");
         this.doReceived(errorResult);
-        FUTURES.remove(id);
+        DefaultFuture future = FUTURES.remove(id);
+        shutdownExecutorIfNeeded(future);
         CHANNELS.remove(id);
         timeoutCheckTask.cancel();
         return true;
+    }
+
+    private static void shutdownExecutorIfNeeded(DefaultFuture future) {
+        ExecutorService executor = future.getExecutor();
+        if (!executor.isShutdown()) {
+            executor.shutdownNow();
+        }
     }
 
     public void cancel() {
