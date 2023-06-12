@@ -43,7 +43,7 @@ public abstract class RegistryNotifier {
     // for the first 10 notification will be notified immediately
     private final AtomicInteger executeTime = new AtomicInteger(0);
 
-    private final AtomicInteger rawAddressesVersion = new AtomicInteger(0);
+    private static final AtomicInteger rawAddressesVersion = new AtomicInteger(0);
 
     private ScheduledExecutorService scheduler;
 
