@@ -134,6 +134,8 @@ public interface Constants {
 
     int DEFAULT_RECONNECT_PERIOD = 2000;
 
+    String CHANNEL_SHUTDOWN_TIMEOUT_KEY = "channel.shutdown.timeout";
+
     String SEND_RECONNECT_KEY = "send.reconnect";
 
     String CHECK_KEY = "check";
