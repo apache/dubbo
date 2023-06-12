@@ -26,6 +26,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 
 public class ConditionMatch {
     private AddressMatch address;
+    private AddressMatch providerAddress;
     private ListStringMatch service;
     private ListStringMatch app;
     private List<ParamMatch> param;
@@ -36,6 +37,14 @@ public class ConditionMatch {
 
     public void setAddress(AddressMatch address) {
         this.address = address;
+    }
+
+    public AddressMatch getProviderAddress() {
+        return providerAddress;
+    }
+
+    public void setProviderAddress(AddressMatch providerAddress) {
+        this.providerAddress = providerAddress;
     }
 
     public ListStringMatch getService() {
@@ -62,8 +71,12 @@ public class ConditionMatch {
         this.param = param;
     }
 
-    public boolean isMatch(URL url) {
-        if (getAddress() != null && !getAddress().isMatch(url.getAddress())) {
+    public boolean isMatch(String host, URL url) {
+        if (getAddress() != null && !getAddress().isMatch(host)) {
+            return false;
+        }
+
+        if (getProviderAddress() != null && !getProviderAddress().isMatch(url.getAddress())) {
             return false;
         }
 
@@ -90,6 +103,7 @@ public class ConditionMatch {
     public String toString() {
         return "ConditionMatch{" +
             "address='" + address + '\'' +
+            "providerAddress='" + providerAddress + '\'' +
             ", service='" + service + '\'' +
             ", app='" + app + '\'' +
             ", param='" + param + '\'' +
