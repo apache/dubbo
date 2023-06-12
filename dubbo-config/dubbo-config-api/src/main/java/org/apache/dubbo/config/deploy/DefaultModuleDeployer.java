@@ -46,6 +46,7 @@ import org.apache.dubbo.rpc.model.ProviderModel;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -395,8 +396,10 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
     }
 
     private void checkReferences() {
+        Optional<ModuleConfig> module = configManager.getModule();
+        long timeout = module.map(ModuleConfig::getCheckReferenceTimeout).orElse(30000L);
         for (ReferenceConfigBase<?> rc : configManager.getReferences()) {
-            referenceCache.check(rc, 3000);
+            referenceCache.check(rc, timeout);
         }
     }
 
