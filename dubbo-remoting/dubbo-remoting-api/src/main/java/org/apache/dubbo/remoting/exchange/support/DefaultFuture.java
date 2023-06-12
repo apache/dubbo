@@ -156,7 +156,7 @@ public class DefaultFuture extends CompletableFuture<Object> {
             if (channel.equals(entry.getValue())) {
                 DefaultFuture future = getFuture(entry.getKey());
                 if (future != null && !future.isDone()) {
-                    long restTime = System.currentTimeMillis() - deadline;
+                    long restTime = deadline - System.currentTimeMillis();
                     if (restTime > 0) {
                         try {
                             future.get(restTime, TimeUnit.MILLISECONDS);
