@@ -683,4 +683,20 @@ class ServiceConfigTest {
 
         scheduledExecutorService.shutdown();
     }
+
+    @Test
+    void testToString() {
+        ServiceConfig<DemoService> serviceConfig = new ServiceConfig<>();
+        service.setRef(new DemoServiceImpl() {
+            @Override
+            public String toString() {
+                throw new IllegalStateException();
+            }
+        });
+        try {
+            serviceConfig.toString();
+        } catch (Throwable t) {
+            Assertions.fail(t);
+        }
+    }
 }
