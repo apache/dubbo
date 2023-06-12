@@ -208,7 +208,7 @@ public class DefaultFuture extends CompletableFuture<Object> {
 
     private static void shutdownExecutorIfNeeded(DefaultFuture future) {
         ExecutorService executor = future.getExecutor();
-        if (!executor.isShutdown()) {
+        if (executor != null && !executor.isShutdown()) {
             executor.shutdownNow();
         }
     }
