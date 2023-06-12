@@ -42,7 +42,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
@@ -63,7 +62,7 @@ public abstract class AbstractProtocol implements Protocol, ScopeModelAware {
     /**
      * <host:port, ProtocolServer>
      */
-    protected final ConcurrentMap<String, ProtocolServer> serverMap = new ConcurrentHashMap<>();
+    protected final Map<String, ProtocolServer> serverMap = new ConcurrentHashMap<>();
 
     // TODO SoftReference
     protected final Set<Invoker<?>> invokers = new ConcurrentHashSet<>();
