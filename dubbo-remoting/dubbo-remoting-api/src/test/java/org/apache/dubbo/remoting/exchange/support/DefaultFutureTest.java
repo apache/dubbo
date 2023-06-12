@@ -177,7 +177,7 @@ class DefaultFutureTest {
         Request request = new Request(123);
         ThreadlessExecutor threadlessExecutor = new ThreadlessExecutor();
         DefaultFuture.newFuture(channel, request, 1000, threadlessExecutor);
-        DefaultFuture.closeChannel(channel);
+        DefaultFuture.closeChannel(channel, 0);
         Assertions.assertTrue(threadlessExecutor.isTerminated());
     }
 
