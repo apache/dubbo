@@ -19,6 +19,7 @@ package org.apache.dubbo.remoting.exchange.support;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.resource.GlobalResourceInitializer;
+import org.apache.dubbo.common.serialize.SerializationException;
 import org.apache.dubbo.common.timer.HashedWheelTimer;
 import org.apache.dubbo.common.timer.Timeout;
 import org.apache.dubbo.common.timer.Timer;
@@ -26,7 +27,6 @@ import org.apache.dubbo.common.timer.TimerTask;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.RemotingException;
-import org.apache.dubbo.common.serialize.SerializationException;
 import org.apache.dubbo.remoting.TimeoutException;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.Response;
@@ -150,20 +150,37 @@ public class DefaultFuture extends CompletableFuture<Object> {
      *
      * @param channel channel to close
      */
-    public static void closeChannel(Channel channel) {
+    public static void closeChannel(Channel channel, long timeout) {
+        long deadline = timeout > 0 ? System.currentTimeMillis() + timeout : 0;
         for (Map.Entry<Long, Channel> entry : CHANNELS.entrySet()) {
             if (channel.equals(entry.getValue())) {
                 DefaultFuture future = getFuture(entry.getKey());
                 if (future != null && !future.isDone()) {
-                    Response disconnectResponse = new Response(future.getId());
-                    disconnectResponse.setStatus(Response.CHANNEL_INACTIVE);
-                    disconnectResponse.setErrorMessage("Channel " +
-                        channel + " is inactive. Directly return the unFinished request : " +
-                        (logger.isDebugEnabled() ? future.getRequest() : future.getRequest().copyWithoutData()));
-                    DefaultFuture.received(channel, disconnectResponse);
+                    long restTime = deadline - System.currentTimeMillis();
+                    if (restTime > 0) {
+                        try {
+                            future.get(restTime, TimeUnit.MILLISECONDS);
+                        } catch (java.util.concurrent.TimeoutException ignore) {
+                            logger.warn(PROTOCOL_TIMEOUT_SERVER, "", "",
+                                "Trying to close channel " + channel + ", but response is not received in "
+                                + timeout + "ms, and the request id is " + future.id);
+                        } catch (Throwable ignore) {}
+                    }
+                    if (!future.isDone()) {
+                        respInactive(channel, future);
+                    }
                 }
             }
         }
+    }
+
+    private static void respInactive(Channel channel, DefaultFuture future) {
+        Response disconnectResponse = new Response(future.getId());
+        disconnectResponse.setStatus(Response.CHANNEL_INACTIVE);
+        disconnectResponse.setErrorMessage("Channel " +
+            channel + " is inactive. Directly return the unFinished request : " +
+            (logger.isDebugEnabled() ? future.getRequest() : future.getRequest().copyWithoutData()));
+        DefaultFuture.received(channel, disconnectResponse);
     }
 
     public static void received(Channel channel, Response response) {
