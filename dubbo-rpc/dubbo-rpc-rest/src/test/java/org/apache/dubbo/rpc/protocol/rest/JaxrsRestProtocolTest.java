@@ -49,6 +49,8 @@ import org.apache.dubbo.rpc.protocol.rest.rest.HttpMethodServiceImpl;
 import org.apache.dubbo.rpc.protocol.rest.rest.RestDemoForTestException;
 import org.apache.dubbo.rpc.protocol.rest.rest.RestDemoService;
 import org.apache.dubbo.rpc.protocol.rest.rest.RestDemoServiceImpl;
+import org.apache.dubbo.rpc.protocol.rest.rest.TestGetInvokerService;
+import org.apache.dubbo.rpc.protocol.rest.rest.TestGetInvokerServiceImpl;
 import org.hamcrest.CoreMatchers;
 import org.jboss.resteasy.specimpl.MultivaluedMapImpl;
 import org.junit.jupiter.api.AfterEach;
@@ -594,6 +596,27 @@ class JaxrsRestProtocolTest {
 
         invoker.destroy();
         exporter.unexport();
+    }
+
+    @Test
+    void testGetInvoker() {
+       Assertions.assertDoesNotThrow(()->{
+           URL exportUrl = URL.valueOf("rest://127.0.0.1:" + availablePort + "/rest?interface=org.apache.dubbo.rpc.protocol.rest.rest.TestGetInvokerService");
+
+           TestGetInvokerService server = new TestGetInvokerServiceImpl();
+
+           URL url = this.registerProvider(exportUrl, server, DemoService.class);
+
+           Exporter<TestGetInvokerService> exporter = protocol.export(proxy.getInvoker(server, TestGetInvokerService.class, url));
+
+           TestGetInvokerService invokerService = this.proxy.getProxy(protocol.refer(TestGetInvokerService.class, url));
+
+
+           String invoker = invokerService.getInvoker();
+           Assertions.assertEquals("success", invoker);
+
+           exporter.unexport();
+       });
     }
 
     private URL registerProvider(URL url, Object impl, Class<?> interfaceClass) {

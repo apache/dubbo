@@ -14,34 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.threadpool;
+package org.apache.dubbo.rpc.protocol.rest.rest;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
 
-import java.util.concurrent.atomic.AtomicBoolean;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
 
-class ThreadlessExecutorTest {
-    private static final ThreadlessExecutor executor;
+@Path("/test")
+public interface TestGetInvokerService {
 
-    static {
-        executor = new ThreadlessExecutor();
-    }
 
-    @Test
-    void test() throws InterruptedException {
-        for (int i = 0; i < 10; i++) {
-            executor.execute(()->{throw new RuntimeException("test");});
-        }
-
-        executor.waitAndDrain(123);
-
-        AtomicBoolean invoked = new AtomicBoolean(false);
-        executor.execute(()->{invoked.set(true);});
-
-        executor.waitAndDrain(123);
-        Assertions.assertTrue(invoked.get());
-
-        executor.shutdown();
-    }
+    @GET
+    @Path("/getInvoker")
+    String getInvoker();
 }

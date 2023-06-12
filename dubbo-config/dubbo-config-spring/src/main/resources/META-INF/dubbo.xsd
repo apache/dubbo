@@ -624,6 +624,11 @@
                 <xsd:documentation><![CDATA[ Thread num for asynchronous export pool size. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
+        <xsd:attribute name="check-reference-timeout" type="xsd:long">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The timeout to check references. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
     </xsd:complexType>
 
     <xsd:complexType name="registryType">

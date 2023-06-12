@@ -184,7 +184,7 @@ public class AsyncRpcResult implements Result {
             ThreadlessExecutor threadlessExecutor = (ThreadlessExecutor) executor;
             try {
                 while (!responseFuture.isDone()) {
-                    threadlessExecutor.waitAndDrain();
+                    threadlessExecutor.waitAndDrain(Long.MAX_VALUE);
                 }
             } finally {
                 threadlessExecutor.shutdown();
@@ -195,17 +195,27 @@ public class AsyncRpcResult implements Result {
 
     @Override
     public Result get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+        long deadline = System.nanoTime() + unit.toNanos(timeout);
         if (executor != null && executor instanceof ThreadlessExecutor) {
             ThreadlessExecutor threadlessExecutor = (ThreadlessExecutor) executor;
             try {
                 while (!responseFuture.isDone()) {
-                    threadlessExecutor.waitAndDrain();
+                    long restTime = deadline - System.nanoTime();
+                    if (restTime > 0) {
+                        threadlessExecutor.waitAndDrain(deadline);
+                    } else {
+                        throw new TimeoutException("Timeout after " + unit.toMillis(timeout) + "ms waiting for result.");
+                    }
                 }
             } finally {
                 threadlessExecutor.shutdown();
             }
         }
-        return responseFuture.get(timeout, unit);
+        long restTime = deadline - System.nanoTime();
+        if (!responseFuture.isDone() && restTime < 0) {
+            throw new TimeoutException("Timeout after " + unit.toMillis(timeout) + "ms waiting for result.");
+        }
+        return responseFuture.get(restTime, TimeUnit.NANOSECONDS);
     }
 
     @Override

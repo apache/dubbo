@@ -35,7 +35,6 @@ import org.apache.dubbo.rpc.protocol.rest.annotation.metadata.MetadataResolver;
 import org.apache.dubbo.rpc.protocol.rest.deploy.ServiceDeployer;
 import org.apache.dubbo.rpc.protocol.rest.deploy.ServiceDeployerManager;
 
-
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;

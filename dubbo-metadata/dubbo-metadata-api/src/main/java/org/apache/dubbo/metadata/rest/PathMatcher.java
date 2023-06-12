@@ -17,6 +17,8 @@
 package org.apache.dubbo.metadata.rest;
 
 
+import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Objects;
 
 /**
@@ -32,8 +34,13 @@ public class PathMatcher {
     private boolean hasPathVariable;
     private String contextPath;
     private String httpMethod;
-    // for provider http method compare
-    private boolean needCompareMethod = true;
+    // for provider http method compare,http 405
+    private boolean needCompareHttpMethod = true;
+    //  compare method directly (for get Invoker by method)
+    private boolean needCompareServiceMethod = false;
+
+    // service method
+    private Method method;
 
 
     public PathMatcher(String path) {
@@ -53,7 +60,14 @@ public class PathMatcher {
         setHttpMethod(httpMethod);
     }
 
+    public PathMatcher(Method method) {
+        this.method = method;
+    }
+
     private void dealPathVariable(String path) {
+        if (path == null) {
+            return;
+        }
         this.pathSplits = path.split(SEPARATOR);
 
         for (String pathSplit : pathSplits) {
@@ -99,6 +113,10 @@ public class PathMatcher {
         return new PathMatcher(path, version, group, port, method).noNeedHttpMethodCompare();
     }
 
+    public static PathMatcher getInvokeCreatePathMatcher(Method serviceMethod) {
+        return new PathMatcher(serviceMethod).setNeedCompareServiceMethod(true);
+    }
+
     public boolean hasPathVariable() {
         return hasPathVariable;
     }
@@ -117,7 +135,20 @@ public class PathMatcher {
     }
 
     private PathMatcher noNeedHttpMethodCompare() {
-        this.needCompareMethod = false;
+        this.needCompareHttpMethod = false;
+        return this;
+    }
+
+    public Method getMethod() {
+        return method;
+    }
+
+    public void setMethod(Method method) {
+        this.method = method;
+    }
+
+    private PathMatcher setNeedCompareServiceMethod(boolean needCompareServiceMethod) {
+        this.needCompareServiceMethod = needCompareServiceMethod;
         return this;
     }
 
@@ -126,10 +157,36 @@ public class PathMatcher {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         PathMatcher that = (PathMatcher) o;
-        return pathEqual(that)
-            && Objects.equals(version, that.version)
-            && (this.needCompareMethod ? Objects.equals(httpMethod, that.httpMethod) : true)
+        return serviceMethodEqual(that, this)
+            || pathMatch(that);
+    }
+
+    private boolean pathMatch(PathMatcher that) {
+        return (!that.needCompareServiceMethod && !needCompareServiceMethod) // no need service method compare
+            && pathEqual(that) // path compare
+            && Objects.equals(version, that.version) // service  version compare
+            && httpMethodMatch(that) // http method compare
             && Objects.equals(group, that.group) && Objects.equals(port, that.port);
+    }
+
+    /**
+     * it is needed to compare http method when one of needCompareHttpMethod is true,and don`t compare when both needCompareHttpMethod are false
+     *
+     * @param that
+     * @return
+     */
+    private boolean httpMethodMatch(PathMatcher that) {
+        return !that.needCompareHttpMethod || !this.needCompareHttpMethod ?  true: Objects.equals(this.httpMethod, that.httpMethod);
+    }
+
+    private boolean serviceMethodEqual(PathMatcher thatPathMatcher, PathMatcher thisPathMatcher) {
+        Method thatMethod = thatPathMatcher.method;
+        Method thisMethod = thisPathMatcher.method;
+        return thatMethod != null
+            && thisMethod != null
+            && (thatPathMatcher.needCompareServiceMethod || thisPathMatcher.needCompareServiceMethod)
+            && thisMethod.getName().equals(thatMethod.getName())
+            && Arrays.equals(thisMethod.getParameterTypes(), thatMethod.getParameterTypes());
     }
 
     @Override
@@ -138,6 +195,10 @@ public class PathMatcher {
     }
 
     private boolean pathEqual(PathMatcher pathMatcher) {
+        // path is null return false directly
+        if (this.path == null || pathMatcher.path == null) {
+            return false;
+        }
 
 
         // no place hold

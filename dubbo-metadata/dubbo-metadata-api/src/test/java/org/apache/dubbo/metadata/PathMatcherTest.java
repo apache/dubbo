@@ -20,6 +20,8 @@ import org.apache.dubbo.metadata.rest.PathMatcher;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.Method;
+
 public class PathMatcherTest {
 
     @Test
@@ -65,4 +67,37 @@ public class PathMatcherTest {
         Assertions.assertEquals(pathMatherMeta, pathMatherMeta1);
         Assertions.assertEquals(pathMatherMeta.toString(), pathMatherMeta1.toString());
     }
+
+    @Test
+    void testMethodCompare() {
+        Method hashCode = null;
+        Method equals = null;
+        try {
+            hashCode = Object.class.getDeclaredMethod("hashCode");
+            equals = Object.class.getDeclaredMethod("equals", Object.class);
+        } catch (NoSuchMethodException e) {
+
+        }
+
+        // no need to compare service method
+        PathMatcher pathMatcher = new PathMatcher(hashCode);
+        PathMatcher pathMatchers = new PathMatcher(hashCode);
+        Assertions.assertNotEquals(pathMatcher, pathMatchers);
+
+
+        //  equal
+        PathMatcher pathMatherMetaHashCode = PathMatcher.getInvokeCreatePathMatcher(hashCode);
+        PathMatcher pathMatherMetaHashCodes = new PathMatcher(hashCode);
+        Assertions.assertEquals(pathMatherMetaHashCode, pathMatherMetaHashCodes);
+
+
+        PathMatcher pathMatherMetaEquals = PathMatcher.getInvokeCreatePathMatcher(equals);
+        PathMatcher pathMatherMetaEqual = PathMatcher.getInvokeCreatePathMatcher(equals);
+        Assertions.assertEquals(pathMatherMetaEqual, pathMatherMetaEquals);
+
+
+        Assertions.assertNotEquals(pathMatherMetaHashCode, pathMatherMetaEquals);
+    }
+
+
 }
