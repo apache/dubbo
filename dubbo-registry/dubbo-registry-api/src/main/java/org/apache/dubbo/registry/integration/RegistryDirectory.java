@@ -33,7 +33,6 @@ import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.metrics.event.MetricsEventBus;
 import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.registry.AddressListener;
-import org.apache.dubbo.registry.support.SkipFailbackWrapperException;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
@@ -127,7 +126,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
             String[] acceptProtocols = queryProtocols.split(",");
             for (String acceptProtocol : acceptProtocols) {
                 if (!moduleModel.getApplicationModel().getExtensionLoader(Protocol.class).hasExtension(acceptProtocol)) {
-                    throw new SkipFailbackWrapperException(new IllegalStateException("No such extension org.apache.dubbo.rpc.Protocol by name " + acceptProtocol + ",  please check whether related SPI module is missing"));
+                    throw new IllegalStateException("No such extension org.apache.dubbo.rpc.Protocol by name " + acceptProtocol + ",  please check whether related SPI module is missing");
                 }
             }
         }
