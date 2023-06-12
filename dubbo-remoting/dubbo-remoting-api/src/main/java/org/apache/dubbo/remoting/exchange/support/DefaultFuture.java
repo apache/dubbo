@@ -20,6 +20,7 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.resource.GlobalResourceInitializer;
 import org.apache.dubbo.common.serialize.SerializationException;
+import org.apache.dubbo.common.threadpool.ThreadlessExecutor;
 import org.apache.dubbo.common.timer.HashedWheelTimer;
 import org.apache.dubbo.common.timer.Timeout;
 import org.apache.dubbo.common.timer.Timer;
@@ -208,7 +209,7 @@ public class DefaultFuture extends CompletableFuture<Object> {
 
     private static void shutdownExecutorIfNeeded(DefaultFuture future) {
         ExecutorService executor = future.getExecutor();
-        if (executor != null && !executor.isShutdown()) {
+        if (executor instanceof ThreadlessExecutor && !executor.isShutdown()) {
             executor.shutdownNow();
         }
     }
