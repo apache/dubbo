@@ -409,6 +409,32 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
             }
 
             URL url = mergeUrl(providerUrl);
+            // 根据 consumer protocol 配置，判断
+            // 1. 如果主 provider url 主protocol == consumer protocol，直接使用
+            // 2. 如果主 provider url 主protocol ！= consumer protocol，则检查 provider url extra-protocol，如果有能匹配的选项，则 setProtocol 为该 protocol
+            if (StringUtils.isNotEmpty(queryProtocols)) {
+                String[] acceptProtocols = queryProtocols.split(",");
+                String acceptedProtocol = acceptProtocols[0];
+                if (!acceptedProtocol.equals(url.getProtocol())) {
+                    String extProtocols = url.getParameter("ext.protocol");
+                    if (StringUtils.isNotEmpty(extProtocols)) {
+                        String[] extProtocolsArr = extProtocols.split(",");
+                        boolean found = false;
+                        for (String p : extProtocolsArr) {
+                            if (p.equalsIgnoreCase(acceptedProtocol)) {
+                                url = url.setProtocol(acceptedProtocol);
+                                found = true;
+                                break;
+                            }
+                        }
+                        if (!found) {
+                            continue;
+                        }
+                    } else {
+                        continue;
+                    }
+                }
+            }
 
             // Cache key is url that does not merge with consumer side parameters,
             // regardless of how the consumer combines parameters,

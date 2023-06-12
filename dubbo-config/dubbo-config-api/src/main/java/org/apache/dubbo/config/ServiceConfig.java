@@ -81,6 +81,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.REVISION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SERVICE_EXECUTOR;
 import static org.apache.dubbo.common.constants.CommonConstants.SERVICE_NAME_MAPPING_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.TRIPLE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_ISOLATED_EXECUTOR_CONFIGURATION_ERROR;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_EXPORT_SERVICE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_NO_METHOD_FOUND;
@@ -726,13 +727,15 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             // export to remote if the config is not local (export to local only when config is local)
             if (!SCOPE_LOCAL.equalsIgnoreCase(scope)) {
                 // export to extra protocol is used in remote export
-                String extProtocol = url.getParameter("ext.protocol", "");
+                URL newURl = appendExtraProtocols(url);
+                String extProtocol = newURl.getParameter("ext.protocol", "");
                 List<String> protocols = new ArrayList<>();
 
                 if (StringUtils.isNotBlank(extProtocol)) {
                     // export original url
                     url = URLBuilder.from(url).
                         addParameter(IS_PU_SERVER_KEY, Boolean.TRUE.toString()).
+                        addParameter(REGISTER_KEY, Boolean.FALSE.toString()).
                         removeParameter("ext.protocol").
                         build();
                 }
@@ -762,6 +765,17 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             }
         }
         this.urls.add(url);
+    }
+
+    private URL appendExtraProtocols(URL url) {
+        String ext = url.getParameter("ext.protocol", "");
+        if (StringUtils.isEmpty(ext) && url.getProtocol().equals(TRIPLE)) {
+            String restProtocol = "rest";
+            if (this.getExtensionLoader(Protocol.class).hasExtension(restProtocol)) {
+                url = url.addParameter("ext.protocol", restProtocol);
+            }
+        }
+        return url;
     }
 
     private URL exportRemote(URL url, List<URL> registryURLs, boolean register) {
