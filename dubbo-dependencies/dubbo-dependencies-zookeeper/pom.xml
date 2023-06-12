@@ -59,7 +59,7 @@
                 <version>${maven_flatten_version}</version>
                 <configuration>
                     <updatePomFile>true</updatePomFile>
-                    <flattenMode>resolveCiFriendliesOnly</flattenMode>
+                    <flattenMode>bom</flattenMode>
                 </configuration>
                 <executions>
                     <execution>
