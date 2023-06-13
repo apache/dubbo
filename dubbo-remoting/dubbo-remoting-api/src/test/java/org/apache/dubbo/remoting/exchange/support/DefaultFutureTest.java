@@ -142,7 +142,7 @@ class DefaultFutureTest {
         try {
             new InterruptThread(Thread.currentThread()).start();
             while (!f. isDone()){
-                executor.waitAndDrain();
+                executor.waitAndDrain(Long.MAX_VALUE);
             }
             f.get();
         } catch (Exception e) {
@@ -167,7 +167,7 @@ class DefaultFutureTest {
         ExecutorService executor = ExtensionLoader.getExtensionLoader(ExecutorRepository.class)
             .getDefaultExtension().createExecutorIfAbsent(URL.valueOf("dubbo://127.0.0.1:23456"));
         DefaultFuture.newFuture(channel, request, 1000, executor);
-        DefaultFuture.closeChannel(channel);
+        DefaultFuture.closeChannel(channel, 0);
         Assertions.assertFalse(executor.isTerminated());
     }
 

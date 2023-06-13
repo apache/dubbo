@@ -92,6 +92,11 @@ public class ModuleConfig extends AbstractConfig {
      */
     private Integer exportThreadNum;
 
+    /**
+     * The timeout to check references
+     */
+    private Long checkReferenceTimeout;
+
     public ModuleConfig() {
         super();
     }
@@ -250,5 +255,13 @@ public class ModuleConfig extends AbstractConfig {
 
     public void setExportAsync(Boolean exportAsync) {
         this.exportAsync = exportAsync;
+    }
+
+    public Long getCheckReferenceTimeout() {
+        return checkReferenceTimeout;
+    }
+
+    public void setCheckReferenceTimeout(Long checkReferenceTimeout) {
+        this.checkReferenceTimeout = checkReferenceTimeout;
     }
 }

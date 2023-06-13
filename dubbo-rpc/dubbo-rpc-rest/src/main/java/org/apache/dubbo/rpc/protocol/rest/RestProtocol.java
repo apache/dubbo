@@ -92,12 +92,14 @@ public class RestProtocol extends AbstractProtocol {
 
         // TODO add Extension filter
         // create rest server
-        RestProtocolServer server = (RestProtocolServer) ConcurrentHashMapUtils.computeIfAbsent(serverMap, getAddr(url), restServer -> {
-            RestProtocolServer s = serverFactory.createServer(url.getParameter(SERVER_KEY, DEFAULT_SERVER));
-            s.setAddress(url.getAddress());
-            s.start(url);
-            return s;
-        });
+        RestProtocolServer server = (RestProtocolServer) ConcurrentHashMapUtils.computeIfAbsent(
+            (ConcurrentMap<? super String, ? super RestProtocolServer>) serverMap,
+            getAddr(url), restServer -> {
+                RestProtocolServer s = serverFactory.createServer(url.getParameter(SERVER_KEY, DEFAULT_SERVER));
+                s.setAddress(url.getAddress());
+                s.start(url);
+                return s;
+            });
 
 
         server.deploy(serviceRestMetadata, invoker);

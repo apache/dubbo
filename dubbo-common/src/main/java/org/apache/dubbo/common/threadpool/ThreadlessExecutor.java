@@ -52,14 +52,18 @@ public class ThreadlessExecutor extends AbstractExecutorService {
      * Waits until there is a task, executes the task and all queued tasks (if there're any). The task is either a normal
      * response or a timeout response.
      */
-    public void waitAndDrain() throws InterruptedException {
+    public void waitAndDrain(long deadline) throws InterruptedException {
         throwIfInterrupted();
         Runnable runnable = queue.poll();
         if (runnable == null) {
             waiter = Thread.currentThread();
             try {
                 while ((runnable = queue.poll()) == null) {
-                    LockSupport.park(this);
+                    long restTime = deadline - System.nanoTime();
+                    if (restTime <= 0) {
+                        return;
+                    }
+                    LockSupport.parkNanos(this, restTime);
                     throwIfInterrupted();
                 }
             } finally {
