@@ -17,9 +17,7 @@
 package org.apache.dubbo.rpc.protocol.rest.extension;
 
 import org.apache.dubbo.rpc.RpcContext;
-import org.apache.dubbo.rpc.protocol.rest.PathAndInvokerMapper;
 import org.apache.dubbo.rpc.protocol.rest.deploy.ServiceDeployer;
-import org.apache.dubbo.rpc.protocol.rest.exception.mapper.ExceptionMapper;
 
 import java.util.List;
 
@@ -43,14 +41,6 @@ public interface ServiceDeployerContext {
 
     default ServiceDeployer getServiceDeployer() {
         return (ServiceDeployer) RpcContext.getServiceContext().getObjectAttachment(SERVICE_DEPLOYER_ATTRIBUTE_KEY);
-    }
-
-    default PathAndInvokerMapper getPathAndInvokerMapper() {
-        return getServiceDeployer().getPathAndInvokerMapper();
-    }
-
-    default ExceptionMapper getExceptionMapper() {
-        return getServiceDeployer().getExceptionMapper();
     }
 
 }
