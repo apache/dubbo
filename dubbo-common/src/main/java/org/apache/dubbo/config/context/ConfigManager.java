@@ -254,6 +254,7 @@ public class ConfigManager extends AbstractConfigManager implements ApplicationE
         // load dubbo.metrics.xxx
         loadConfigsOfTypeFromProps(MetricsConfig.class);
 
+        //load dubbo.tracing.xxx
         loadConfigsOfTypeFromProps(TracingConfig.class);
 
         // load multiple config types:

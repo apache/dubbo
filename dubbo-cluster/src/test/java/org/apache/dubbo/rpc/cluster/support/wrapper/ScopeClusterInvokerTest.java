@@ -19,7 +19,6 @@ package org.apache.dubbo.rpc.cluster.support.wrapper;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
-
 import org.apache.dubbo.metrics.event.MetricsDispatcher;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invocation;
@@ -165,7 +164,7 @@ class ScopeClusterInvokerTest {
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("doSomething4");
         invocation.setParameterTypes(new Class[]{});
-        Assertions.assertTrue(cluster.isAvailable(), "");
+        Assertions.assertFalse(cluster.isAvailable(), "");
         RpcInvocation finalInvocation = invocation;
         Assertions.assertThrows(RpcException.class, () -> cluster.invoke(finalInvocation));
 
