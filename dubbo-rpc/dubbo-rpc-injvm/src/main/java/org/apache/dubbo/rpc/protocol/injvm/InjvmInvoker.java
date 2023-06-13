@@ -103,11 +103,11 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
             invocation.setAttachment(Constants.TOKEN_KEY, serverURL.getParameter(Constants.TOKEN_KEY));
         }
 
-        int timeout = RpcUtils.calculateTimeout(getUrl(), invocation, invocation.getMethodName(), DEFAULT_TIMEOUT);
+        int timeout = RpcUtils.calculateTimeout(getUrl(), invocation, RpcUtils.getMethodName(invocation), DEFAULT_TIMEOUT);
         if (timeout <= 0) {
             return AsyncRpcResult.newDefaultAsyncResult(new RpcException(RpcException.TIMEOUT_TERMINATE,
                 "No time left for making the following call: " + invocation.getServiceName() + "."
-                    + invocation.getMethodName() + ", terminate directly."), invocation);
+                    + RpcUtils.getMethodName(invocation) + ", terminate directly."), invocation);
         }
         invocation.setAttachment(TIMEOUT_KEY, String.valueOf(timeout));
 

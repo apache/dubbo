@@ -35,6 +35,7 @@ import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
 import org.apache.dubbo.rpc.listener.ExporterChangeListener;
 import org.apache.dubbo.rpc.listener.InjvmExporterListener;
+import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -142,26 +143,26 @@ public class ScopeClusterInvoker<T> implements ClusterInvoker<T>, ExporterChange
         // When broadcasting, it should be called remotely.
         if (isBroadcast()) {
             if (logger.isDebugEnabled()) {
-                logger.debug("Performing broadcast call for method: " + invocation.getMethodName() + " of service: " + getUrl().getServiceKey());
+                logger.debug("Performing broadcast call for method: " + RpcUtils.getMethodName(invocation) + " of service: " + getUrl().getServiceKey());
             }
             return invoker.invoke(invocation);
         }
         if (peerFlag) {
             if (logger.isDebugEnabled()) {
-                logger.debug("Performing point-to-point call for method: " + invocation.getMethodName() + " of service: " + getUrl().getServiceKey());
+                logger.debug("Performing point-to-point call for method: " + RpcUtils.getMethodName(invocation) + " of service: " + getUrl().getServiceKey());
             }
             // If it's a point-to-point direct connection, invoke the original Invoker
             return invoker.invoke(invocation);
         }
         if (isInjvmExported()) {
             if (logger.isDebugEnabled()) {
-                logger.debug("Performing local JVM call for method: " + invocation.getMethodName() + " of service: " + getUrl().getServiceKey());
+                logger.debug("Performing local JVM call for method: " + RpcUtils.getMethodName(invocation) + " of service: " + getUrl().getServiceKey());
             }
             // If it's exported to the local JVM, invoke the corresponding Invoker
             return injvmInvoker.invoke(invocation);
         }
         if (logger.isDebugEnabled()) {
-            logger.debug("Performing remote call for method: " + invocation.getMethodName() + " of service: " + getUrl().getServiceKey());
+            logger.debug("Performing remote call for method: " + RpcUtils.getMethodName(invocation) + " of service: " + getUrl().getServiceKey());
         }
         // Otherwise, delegate the invocation to the original Invoker
         return invoker.invoke(invocation);

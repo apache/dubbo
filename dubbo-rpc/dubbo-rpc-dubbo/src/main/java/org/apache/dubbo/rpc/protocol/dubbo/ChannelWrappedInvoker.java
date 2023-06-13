@@ -81,7 +81,7 @@ class ChannelWrappedInvoker<T> extends AbstractInvoker<T> {
 
         try {
             if (RpcUtils.isOneway(getUrl(), inv)) { // may have concurrency issue
-                currentClient.send(request, getUrl().getMethodParameter(invocation.getMethodName(), SENT_KEY, false));
+                currentClient.send(request, getUrl().getMethodParameter(RpcUtils.getMethodName(invocation), SENT_KEY, false));
                 return AsyncRpcResult.newDefaultAsyncResult(invocation);
             } else {
                 CompletableFuture<AppResponse> appResponseFuture = currentClient.request(request).thenApply(AppResponse.class::cast);

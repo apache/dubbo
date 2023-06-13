@@ -26,6 +26,7 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.filter.tps.DefaultTPSLimiter;
 import org.apache.dubbo.rpc.filter.tps.TPSLimiter;
+import org.apache.dubbo.rpc.support.RpcUtils;
 
 import static org.apache.dubbo.rpc.Constants.TPS_LIMIT_RATE_KEY;
 
@@ -49,7 +50,7 @@ public class TpsLimitFilter implements Filter {
                     "Failed to invoke service " +
                             invoker.getInterface().getName() +
                             "." +
-                            invocation.getMethodName() +
+                        RpcUtils.getMethodName(invocation) +
                             " because exceed max service tps.");
         }
 
