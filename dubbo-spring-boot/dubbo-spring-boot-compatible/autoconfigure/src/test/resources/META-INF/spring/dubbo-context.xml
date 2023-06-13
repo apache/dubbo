@@ -7,7 +7,7 @@
        http://dubbo.apache.org/schema/dubbo
        http://dubbo.apache.org/schema/dubbo/dubbo.xsd">
 
-    <dubbo:application name="dubbo-consumer-2.7.x">
+    <dubbo:application id="dubbo-consumer-2.7.x" name="dubbo-consumer-2.7.x">
         <dubbo:parameter key="qos.enable" value="false"/>
     </dubbo:application>
 

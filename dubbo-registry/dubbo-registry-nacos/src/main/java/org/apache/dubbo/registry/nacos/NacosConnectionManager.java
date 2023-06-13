@@ -121,11 +121,15 @@ public class NacosConnectionManager {
         try {
             for (int i = 0; i < retryTimes + 1; i++) {
                 namingService = NacosFactory.createNamingService(nacosProperties);
-                if (!check || (UP.equals(namingService.getServerStatus()) && testNamingService(namingService))) {
+                String serverStatus = namingService.getServerStatus();
+                boolean namingServiceAvailable = testNamingService(namingService);
+                if (!check || (UP.equals(serverStatus) && namingServiceAvailable)) {
                     break;
                 } else {
                     logger.warn(LoggerCodeConstants.REGISTRY_NACOS_EXCEPTION, "", "",
                         "Failed to connect to nacos naming server. " +
+                            "Server status: " + serverStatus + ". " +
+                            "Naming Service Available: " + namingServiceAvailable + ". " +
                             (i < retryTimes ? "Dubbo will try to retry in " + sleepMsBetweenRetries + ". " : "Exceed retry max times.") +
                             "Try times: " + (i + 1));
                 }
