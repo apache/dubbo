@@ -64,8 +64,8 @@ public abstract class ListenableStateRouter<T> extends AbstractStateRouter<T> im
 
     @Override
     public synchronized void process(ConfigChangedEvent event) {
-        if (logger.isDebugEnabled()) {
-            logger.debug("Notification of condition rule, change type is: " + event.getChangeType() +
+        if (logger.isInfoEnabled()) {
+            logger.info("Notification of condition rule, change type is: " + event.getChangeType() +
                     ", raw rule is:\n " + event.getContent());
         }
 

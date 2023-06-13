@@ -17,6 +17,8 @@
 
 package org.apache.dubbo.rpc.protocol.tri.transport;
 
+import io.netty.handler.codec.http2.DefaultHttp2ResetFrame;
+import io.netty.handler.codec.http2.Http2Error;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 
@@ -65,6 +67,17 @@ public class TripleServerConnectionHandler extends Http2ChannelDuplexHandler {
         } else {
             super.channelRead(ctx, msg);
         }
+    }
+
+    @Override
+    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        super.channelInactive(ctx);
+        //reset all active stream on connection close
+        forEachActiveStream(stream -> {
+            DefaultHttp2ResetFrame resetFrame = new DefaultHttp2ResetFrame(Http2Error.NO_ERROR).stream(stream);
+            ctx.fireChannelRead(resetFrame);
+            return true;
+        });
     }
 
     private boolean isQuiteException(Throwable t) {
