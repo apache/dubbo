@@ -163,4 +163,7 @@ public interface Constants {
     String OK_HTTP = "ok-http";
     String URL_CONNECTION = "url-connection";
     String APACHE_HTTP_CLIENT = "apache-http-client";
+
+    String CONTENT_LENGTH_KEY = "content-length";
+
 }
