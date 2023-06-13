@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.rpc.protocol.tri.call;
 
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
@@ -40,12 +41,13 @@ public class UnaryServerCallListener extends AbstractServerCallListener {
     }
 
     @Override
-    public void onMessage(Object message) {
+    public void onMessage(Object message, int actualContentLength) {
         if (message instanceof Object[]) {
             invocation.setArguments((Object[]) message);
         } else {
             invocation.setArguments(new Object[]{message});
         }
+        invocation.put(Constants.CONTENT_LENGTH_KEY, actualContentLength);
     }
 
     @Override
