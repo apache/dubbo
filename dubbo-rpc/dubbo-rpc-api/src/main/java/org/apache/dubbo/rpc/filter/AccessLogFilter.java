@@ -199,7 +199,7 @@ public class AccessLogFilter implements Filter {
     private AccessLogData buildAccessLogData(Invoker<?> invoker, Invocation inv) {
         AccessLogData logData = AccessLogData.newLogData();
         logData.setServiceName(invoker.getInterface().getName());
-        logData.setMethodName(RpcUtils.getMethodName(invocation));
+        logData.setMethodName(RpcUtils.getMethodName(inv));
         logData.setVersion(invoker.getUrl().getVersion());
         logData.setGroup(invoker.getUrl().getGroup());
         logData.setInvocationTime(new Date());
