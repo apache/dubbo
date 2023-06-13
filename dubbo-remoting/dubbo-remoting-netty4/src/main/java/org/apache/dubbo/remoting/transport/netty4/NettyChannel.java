@@ -17,7 +17,10 @@
 package org.apache.dubbo.remoting.transport.netty4;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
+import io.netty.handler.codec.EncoderException;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -33,9 +36,6 @@ import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.transport.AbstractChannel;
 import org.apache.dubbo.remoting.transport.codec.CodecAdapter;
 import org.apache.dubbo.remoting.utils.PayloadDropper;
-
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.net.InetSocketAddress;
@@ -344,7 +344,11 @@ final class NettyChannel extends AbstractChannel {
      */
     private static Response buildErrorResponse(Request request, Throwable t) {
         Response response = new Response(request.getId(), request.getVersion());
-        response.setStatus(Response.BAD_REQUEST);
+        if(t instanceof EncoderException){
+            response.setStatus(Response.SERIALIZATION_ERROR);
+        }else{
+            response.setStatus(Response.BAD_REQUEST);
+        }
         response.setErrorMessage(StringUtils.toString(t));
         return response;
     }

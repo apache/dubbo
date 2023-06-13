@@ -14,29 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.rpc.cluster;
+package org.apache.dubbo.common.serialize;
 
-import org.apache.dubbo.common.URL;
+/**
+ * Serialized runtime exceptions, internal flow,
+ * will be converted into general exceptions and added to serialization tags when returning to rpc
+ */
+public class SerializationException extends Exception {
 
-@Deprecated
-public interface Configurator extends org.apache.dubbo.rpc.cluster.Configurator {
-    /**
-     * Get the configurator url.
-     *
-     * @return configurator url.
-     */
-    com.alibaba.dubbo.common.URL getUrl();
+    private static final long serialVersionUID = -3160452149606778709L;
 
-    /**
-     * Configure the provider url.
-     *
-     * @param url - old provider url.
-     * @return new provider url.
-     */
-    com.alibaba.dubbo.common.URL configure(com.alibaba.dubbo.common.URL url);
-
-    @Override
-    default URL configure(URL url) {
-        return this.configure(new com.alibaba.dubbo.common.DelegateURL(url));
+    public SerializationException(String msg) {
+        super(msg);
     }
+
+    public SerializationException(Throwable cause) {
+        super(cause);
+    }
+
 }

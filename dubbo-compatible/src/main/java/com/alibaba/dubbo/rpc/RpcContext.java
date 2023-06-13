@@ -21,6 +21,7 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.rpc.FutureContext;
 
 import com.alibaba.dubbo.common.Constants;
+import com.alibaba.dubbo.common.DelegateURL;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.rpc.protocol.dubbo.FutureAdapter;
 
@@ -134,7 +135,7 @@ public class RpcContext {
         if (CollectionUtils.isNotEmpty(newUrls)) {
             List<URL> urls = new ArrayList<>(newUrls.size());
             for (org.apache.dubbo.common.URL newUrl : newUrls) {
-                urls.add(new URL(newUrl));
+                urls.add(new DelegateURL(newUrl));
             }
             return urls;
         }
@@ -152,7 +153,7 @@ public class RpcContext {
     }
 
     public URL getUrl() {
-        return new URL(newRpcContext.getUrl());
+        return new DelegateURL(newRpcContext.getUrl());
     }
 
     public void setUrl(URL url) {
