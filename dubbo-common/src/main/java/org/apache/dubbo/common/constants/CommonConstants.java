@@ -639,4 +639,6 @@ public interface CommonConstants {
 
     String DUBBO_PACKABLE_METHOD_FACTORY = "dubbo.application.parameters." + PACKABLE_METHOD_FACTORY_KEY;
 
+    String DUBBO_TAG_HEADER = "dubbo-tag";
+
 }
