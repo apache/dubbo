@@ -158,7 +158,7 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
         if (CollectionUtils.isEmpty(invokers)) {
             return null;
         }
-        String methodName = invocation == null ? StringUtils.EMPTY_STRING : invocation.getMethodName();
+        String methodName = invocation == null ? StringUtils.EMPTY_STRING : RpcUtils.getMethodName(invocation);
 
         boolean sticky = invokers.get(0).getUrl()
             .getMethodParameter(methodName, CLUSTER_STICKY_KEY, DEFAULT_CLUSTER_STICKY);
@@ -363,7 +363,7 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
     protected void checkInvokers(List<Invoker<T>> invokers, Invocation invocation) {
         if (CollectionUtils.isEmpty(invokers)) {
             throw new RpcException(RpcException.NO_INVOKER_AVAILABLE_AFTER_FILTER, "Failed to invoke the method "
-                + invocation.getMethodName() + " in the service " + getInterface().getName()
+                + RpcUtils.getMethodName(invocation) + " in the service " + getInterface().getName()
                 + ". No provider available for the service " + getDirectory().getConsumerUrl().getServiceKey()
                 + " from registry " + getDirectory().getUrl().getAddress()
                 + " on the consumer " + NetUtils.getLocalHost()
