@@ -19,10 +19,10 @@ package org.apache.dubbo.rpc.protocol.dubbo;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.config.ConfigurationUtils;
+import org.apache.dubbo.common.serialize.SerializationException;
 import org.apache.dubbo.common.utils.AtomicPositiveInteger;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
-import org.apache.dubbo.common.serialize.SerializationException;
 import org.apache.dubbo.remoting.TimeoutException;
 import org.apache.dubbo.remoting.exchange.ExchangeClient;
 import org.apache.dubbo.remoting.exchange.Request;
@@ -102,7 +102,7 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
             if (timeout <= 0) {
                 return AsyncRpcResult.newDefaultAsyncResult(new RpcException(RpcException.TIMEOUT_TERMINATE,
                     "No time left for making the following call: " + invocation.getServiceName() + "."
-                        + invocation.getMethodName() + ", terminate directly."), invocation);
+                        + RpcUtils.getMethodName(invocation) + ", terminate directly."), invocation);
             }
 
             invocation.setAttachment(TIMEOUT_KEY, String.valueOf(timeout));
@@ -135,9 +135,9 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
                 return result;
             }
         } catch (TimeoutException e) {
-            throw new RpcException(RpcException.TIMEOUT_EXCEPTION, "Invoke remote method timeout. method: " + invocation.getMethodName() + ", provider: " + getUrl() + ", cause: " + e.getMessage(), e);
+            throw new RpcException(RpcException.TIMEOUT_EXCEPTION, "Invoke remote method timeout. method: " + RpcUtils.getMethodName(invocation) + ", provider: " + getUrl() + ", cause: " + e.getMessage(), e);
         } catch (RemotingException e) {
-            String remoteExpMsg = "Failed to invoke remote method: " + invocation.getMethodName() + ", provider: " + getUrl() + ", cause: " + e.getMessage();
+            String remoteExpMsg = "Failed to invoke remote method: " + RpcUtils.getMethodName(invocation) + ", provider: " + getUrl() + ", cause: " + e.getMessage();
             if (e.getCause() instanceof IOException && e.getCause().getCause() instanceof SerializationException) {
                 throw new RpcException(RpcException.SERIALIZATION_EXCEPTION, remoteExpMsg, e);
             } else {
