@@ -73,7 +73,7 @@ public class URL extends org.apache.dubbo.common.URL {
 
     public static URL valueOf(String url) {
         org.apache.dubbo.common.URL result = org.apache.dubbo.common.URL.valueOf(url);
-        return new URL(result);
+        return new DelegateURL(result);
     }
 
     public static String encode(String value) {

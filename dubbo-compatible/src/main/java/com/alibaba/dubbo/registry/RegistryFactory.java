@@ -27,6 +27,6 @@ public interface RegistryFactory extends org.apache.dubbo.registry.RegistryFacto
 
     @Override
     default Registry getRegistry(URL url) {
-        return this.getRegistry(new com.alibaba.dubbo.common.URL(url));
+        return this.getRegistry(new com.alibaba.dubbo.common.DelegateURL(url));
     }
 }

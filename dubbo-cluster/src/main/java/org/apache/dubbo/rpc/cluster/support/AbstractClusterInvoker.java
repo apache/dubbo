@@ -16,11 +16,6 @@
  */
 package org.apache.dubbo.rpc.cluster.support;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.config.Configuration;
@@ -37,12 +32,18 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.RpcServiceContext;
 import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 import org.apache.dubbo.rpc.support.RpcUtils;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_LOADBALANCE;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_RESELECT_COUNT;
@@ -157,7 +158,7 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
         if (CollectionUtils.isEmpty(invokers)) {
             return null;
         }
-        String methodName = invocation == null ? StringUtils.EMPTY_STRING : invocation.getMethodName();
+        String methodName = invocation == null ? StringUtils.EMPTY_STRING : RpcUtils.getMethodName(invocation);
 
         boolean sticky = invokers.get(0).getUrl()
             .getMethodParameter(methodName, CLUSTER_STICKY_KEY, DEFAULT_CLUSTER_STICKY);
@@ -362,7 +363,7 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
     protected void checkInvokers(List<Invoker<T>> invokers, Invocation invocation) {
         if (CollectionUtils.isEmpty(invokers)) {
             throw new RpcException(RpcException.NO_INVOKER_AVAILABLE_AFTER_FILTER, "Failed to invoke the method "
-                + invocation.getMethodName() + " in the service " + getInterface().getName()
+                + RpcUtils.getMethodName(invocation) + " in the service " + getInterface().getName()
                 + ". No provider available for the service " + getDirectory().getConsumerUrl().getServiceKey()
                 + " from registry " + getDirectory().getUrl().getAddress()
                 + " on the consumer " + NetUtils.getLocalHost()
@@ -372,7 +373,7 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
     }
 
     protected Result invokeWithContext(Invoker<T> invoker, Invocation invocation) {
-        setContext(invoker);
+        Invoker<T> originInvoker = setContext(invoker);
         Result result;
         try {
             if (ProfilerSwitch.isEnableSimpleProfiler()) {
@@ -381,7 +382,7 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
             invocation.addInvokedInvoker(invoker);
             result = invoker.invoke(invocation);
         } finally {
-            clearContext(invoker);
+            clearContext(originInvoker);
             InvocationProfilerUtils.releaseSimpleProfiler(invocation);
         }
         return result;
@@ -394,12 +395,12 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
      * @return
      */
     protected Result invokeWithContextAsync(Invoker<T> invoker, Invocation invocation, URL consumerUrl) {
-        setContext(invoker, consumerUrl);
+        Invoker<T> originInvoker = setContext(invoker, consumerUrl);
         Result result;
         try {
             result = invoker.invoke(invocation);
         } finally {
-            clearContext(invoker);
+            clearContext(originInvoker);
         }
         return result;
     }
@@ -436,19 +437,21 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
     }
 
 
-    private void setContext(Invoker<T> invoker) {
-        setContext(invoker, null);
+    private Invoker<T> setContext(Invoker<T> invoker) {
+        return setContext(invoker, null);
     }
 
-    private void setContext(Invoker<T> invoker, URL consumerUrl) {
-        RpcContext context = RpcContext.getServiceContext();
+    private Invoker<T> setContext(Invoker<T> invoker, URL consumerUrl) {
+        RpcServiceContext context = RpcContext.getServiceContext();
+        Invoker<?> originInvoker = context.getInvoker();
         context.setInvoker(invoker)
             .setConsumerUrl(null != consumerUrl ? consumerUrl : RpcContext.getServiceContext().getConsumerUrl());
+        return (Invoker<T>) originInvoker;
     }
 
     private void clearContext(Invoker<T> invoker) {
         // do nothing
         RpcContext context = RpcContext.getServiceContext();
-        context.setInvoker(null);
+        context.setInvoker(invoker);
     }
 }

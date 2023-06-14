@@ -36,7 +36,7 @@ import java.util.Map;
  *
  * @Consumers & @Produces can be not used ,we will make sure the content-type of request by arg type
  *  but the Request method  is forbidden disappear
- *  parameters which annotation are not present , it is from the body (jaxrs anntation is diffrent from spring web from param(only request param can  ignore anntation))
+ *  parameters which annotation are not present , it is from the body (jaxrs annotation is different from spring web from param(only request param can  ignore annotation))
  *
  *  Every method only one param from body
  *

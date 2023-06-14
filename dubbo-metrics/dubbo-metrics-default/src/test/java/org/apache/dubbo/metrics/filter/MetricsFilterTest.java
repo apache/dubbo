@@ -82,7 +82,6 @@ class MetricsFilterTest {
         config.setName("MockMetrics");
         applicationModel = ApplicationModel.defaultModel();
         applicationModel.getApplicationConfigManager().setApplication(config);
-
         invocation = new RpcInvocation();
         filter = new MetricsFilter();
 
