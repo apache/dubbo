@@ -51,7 +51,7 @@ import static org.apache.dubbo.remoting.Constants.BIND_PORT_KEY;
 public class InternalServiceConfigBuilder<T> {
 
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
-    private static final Set<String> UNACCEPTABLE_PROTOCOL = Stream.of("rest", "grpc").collect(Collectors.toSet());
+    private static final Set<String> ACCEPTABLE_PROTOCOL = Stream.of("dubbo", "tri").collect(Collectors.toSet());
 
     private final ApplicationModel applicationModel;
     private String  protocol;
@@ -121,7 +121,7 @@ public class InternalServiceConfigBuilder<T> {
             .flatMap(Collection::stream)
             .map(ConsumerConfig::getProtocol)
             .filter(StringUtils::isNotEmpty)
-            .filter(p -> !UNACCEPTABLE_PROTOCOL.contains(p))
+            .filter(p -> ACCEPTABLE_PROTOCOL.contains(p))
             .findFirst()
             .orElse("");
         // <dubbo:provider/>
@@ -145,7 +145,7 @@ public class InternalServiceConfigBuilder<T> {
                     }
                 })
                 .filter(StringUtils::isNotEmpty)
-                .filter(p -> !UNACCEPTABLE_PROTOCOL.contains(p))
+                .filter(p -> ACCEPTABLE_PROTOCOL.contains(p))
                 .findFirst()
                 .orElse("");
         }
@@ -156,7 +156,7 @@ public class InternalServiceConfigBuilder<T> {
                 protocol = protocols.stream()
                     .map(ProtocolConfig::getName)
                     .filter(StringUtils::isNotEmpty)
-                    .filter(p -> !UNACCEPTABLE_PROTOCOL.contains(p))
+                    .filter(p -> ACCEPTABLE_PROTOCOL.contains(p))
                     .findFirst()
                     .orElse("");
             }
@@ -171,7 +171,7 @@ public class InternalServiceConfigBuilder<T> {
                 }
             }
         }
-        return StringUtils.isNotEmpty(protocol) && !UNACCEPTABLE_PROTOCOL.contains(protocol) ? protocol : DUBBO_PROTOCOL;
+        return StringUtils.isNotEmpty(protocol) && ACCEPTABLE_PROTOCOL.contains(protocol) ? protocol : DUBBO_PROTOCOL;
     }
 
     public InternalServiceConfigBuilder<T> protocol(String protocol) {
@@ -254,7 +254,11 @@ public class InternalServiceConfigBuilder<T> {
         logger.info("Using " + this.protocol + " protocol to export "+interfaceClass.getName()+" service on port " + protocolConfig.getPort());
 
         applicationModel.getApplicationConfigManager().getProtocol(this.protocol)
-            .ifPresent(protocolConfig::mergeProtocol);
+            .ifPresent(p -> {
+                protocolConfig.mergeProtocol(p);
+                // clear extra protocols possibly merged from global ProtocolConfig
+                protocolConfig.setExtProtocol(null);
+            });
 
         ApplicationConfig applicationConfig = getApplicationConfig();
 

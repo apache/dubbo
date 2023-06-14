@@ -36,6 +36,7 @@ import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.invoker.DelegateProviderMetaDataInvoker;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
+import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.ServiceNameMapping;
 import org.apache.dubbo.metrics.event.MetricsEventBus;
 import org.apache.dubbo.metrics.registry.event.RegistryEvent;
@@ -73,6 +74,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_IP_TO_BIND;
 import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_MANAGEMENT_MODE_ISOLATION;
 import static org.apache.dubbo.common.constants.CommonConstants.EXPORTER_LISTENER_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.EXT_PROTOCOL;
+import static org.apache.dubbo.common.constants.CommonConstants.IS_EXTRA;
 import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
@@ -728,15 +731,13 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             if (!SCOPE_LOCAL.equalsIgnoreCase(scope)) {
                 // export to extra protocol is used in remote export
                 URL newURl = appendExtraProtocols(url);
-                String extProtocol = newURl.getParameter("ext.protocol", "");
+                String extProtocol = newURl.getParameter(EXT_PROTOCOL, "");
                 List<String> protocols = new ArrayList<>();
 
                 if (StringUtils.isNotBlank(extProtocol)) {
                     // export original url
                     url = URLBuilder.from(url).
                         addParameter(IS_PU_SERVER_KEY, Boolean.TRUE.toString()).
-                        addParameter(REGISTER_KEY, Boolean.FALSE.toString()).
-                        removeParameter("ext.protocol").
                         build();
                 }
 
@@ -754,6 +755,8 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                     if (StringUtils.isNotBlank(protocol)) {
                         URL localUrl = URLBuilder.from(url).
                             setProtocol(protocol).
+                            addParameter(IS_EXTRA, Boolean.TRUE.toString()).
+                            removeParameter(EXT_PROTOCOL).
                             build();
                         localUrl = exportRemote(localUrl, registryURLs, register);
                         if (!isGeneric(generic) && !getScopeModel().isInternal()) {
@@ -768,11 +771,13 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     }
 
     private URL appendExtraProtocols(URL url) {
-        String ext = url.getParameter("ext.protocol", "");
-        if (StringUtils.isEmpty(ext) && url.getProtocol().equals(TRIPLE)) {
+        String ext = url.getParameter(EXT_PROTOCOL, "");
+        if (StringUtils.isEmpty(ext)
+            && url.getProtocol().equals(TRIPLE)
+            && !url.getServiceInterface().equals(MetadataService.class.getName())) {
             String restProtocol = "rest";
             if (this.getExtensionLoader(Protocol.class).hasExtension(restProtocol)) {
-                url = url.addParameter("ext.protocol", restProtocol);
+                url = url.addParameter(EXT_PROTOCOL, restProtocol);
             }
         }
         return url;

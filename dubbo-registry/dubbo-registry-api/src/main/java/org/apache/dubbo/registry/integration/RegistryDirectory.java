@@ -59,9 +59,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.DISABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.EXT_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TAG_KEY;
@@ -409,31 +411,10 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
             }
 
             URL url = mergeUrl(providerUrl);
-            // 根据 consumer protocol 配置，判断
-            // 1. 如果主 provider url 主protocol == consumer protocol，直接使用
-            // 2. 如果主 provider url 主protocol ！= consumer protocol，则检查 provider url extra-protocol，如果有能匹配的选项，则 setProtocol 为该 protocol
-            if (StringUtils.isNotEmpty(queryProtocols)) {
-                String[] acceptProtocols = queryProtocols.split(",");
-                String acceptedProtocol = acceptProtocols[0];
-                if (!acceptedProtocol.equals(url.getProtocol())) {
-                    String extProtocols = url.getParameter("ext.protocol");
-                    if (StringUtils.isNotEmpty(extProtocols)) {
-                        String[] extProtocolsArr = extProtocols.split(",");
-                        boolean found = false;
-                        for (String p : extProtocolsArr) {
-                            if (p.equalsIgnoreCase(acceptedProtocol)) {
-                                url = url.setProtocol(acceptedProtocol);
-                                found = true;
-                                break;
-                            }
-                        }
-                        if (!found) {
-                            continue;
-                        }
-                    } else {
-                        continue;
-                    }
-                }
+            // get the effective protocol that this consumer should consume based on consumer side protocol configuration and available protocols in address pool.
+            String effectiveProtocol = getEffectiveProtocol(queryProtocols, url);
+            if (!effectiveProtocol.equals(url.getProtocol())) {
+                url = url.setProtocol(effectiveProtocol);
             }
 
             // Cache key is url that does not merge with consumer side parameters,
@@ -473,6 +454,36 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
             }
         }
         return newUrlInvokerMap;
+    }
+
+    /**
+     * Get the protocol to consume by matching the consumer acceptable protocols and the available provider protocols.
+     * <p>
+     * Only one protocol will be used if consumer set to accept multiple protocols, for example, dubbo.consumer.protocol='tri,rest'.
+     *
+     * @param queryProtocols consumer side protocols.
+     * @param url            provider url that have extra protocols specified.
+     * @return the protocol to consume.
+     */
+    private String getEffectiveProtocol(String queryProtocols, URL url) {
+        String protocol = url.getProtocol();
+        if (StringUtils.isNotEmpty(queryProtocols)) {
+            String[] acceptProtocols = queryProtocols.split(COMMA_SEPARATOR);
+            String acceptedProtocol = acceptProtocols[0];
+            if (!acceptedProtocol.equals(url.getProtocol())) {
+                String extProtocols = url.getParameter(EXT_PROTOCOL);
+                if (StringUtils.isNotEmpty(extProtocols)) {
+                    String[] extProtocolsArr = extProtocols.split(COMMA_SEPARATOR);
+                    for (String p : extProtocolsArr) {
+                        if (p.equalsIgnoreCase(acceptedProtocol)) {
+                            protocol = acceptedProtocol;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        return protocol;
     }
 
     private boolean checkProtocolValid(String queryProtocols, URL providerUrl) {

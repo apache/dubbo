@@ -634,4 +634,7 @@ public interface CommonConstants {
 
     String REST_SERVICE_DEPLOYER_URL_ATTRIBUTE_KEY = "restServiceDeployerAttributeKey";
 
+    String EXT_PROTOCOL = "ext.protocol";
+
+    String IS_EXTRA = "isExtra";
 }
