@@ -47,7 +47,7 @@ public class TimeWindowQuantile {
         return mergeDigest.quantile(q);
     }
 
-    public void add(double value) {
+    public synchronized void add(double value) {
         this.slidingWindow.currentPane().getValue().add(value);
     }
 
