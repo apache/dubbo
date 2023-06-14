@@ -19,31 +19,27 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <artifactId>dubbo-spring-boot-observability-starters</artifactId>
+        <artifactId>dubbo-observability-spring-boot-starters</artifactId>
         <groupId>org.apache.dubbo</groupId>
         <version>${revision}</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>dubbo-spring-boot-tracing-otel-zipkin-starter</artifactId>
+    <artifactId>dubbo-observability-spring-boot-starter</artifactId>
     <packaging>jar</packaging>
-    <description>Apache Dubbo Spring Boot Tracing Otel Zipkin Starter</description>
+    <description>Apache Dubbo Spring Boot Observability Starter</description>
 
     <dependencies>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-spring-boot-observability-autoconfigure</artifactId>
+            <artifactId>dubbo-observability-spring-boot-autoconfigure</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>io.micrometer</groupId>
-            <artifactId>micrometer-tracing-bridge-otel</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.opentelemetry</groupId>
-            <artifactId>opentelemetry-exporter-zipkin</artifactId>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-spring-boot-actuator</artifactId>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
-
 </project>

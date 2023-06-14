@@ -18,22 +18,22 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
     <parent>
-        <artifactId>dubbo-spring-boot-observability-starters</artifactId>
+        <artifactId>dubbo-observability-spring-boot-starters</artifactId>
         <groupId>org.apache.dubbo</groupId>
         <version>${revision}</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
+    <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>dubbo-spring-boot-tracing-otel-otlp-starter</artifactId>
+    <artifactId>dubbo-tracing-otel-zipkin-spring-boot-starter</artifactId>
     <packaging>jar</packaging>
-    <description>Apache Dubbo Spring Boot Tracing Otel OTLP Starter</description>
+    <description>Apache Dubbo Spring Boot Tracing Otel Zipkin Starter</description>
 
     <dependencies>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-spring-boot-observability-autoconfigure</artifactId>
+            <artifactId>dubbo-observability-spring-boot-autoconfigure</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -42,7 +42,7 @@
         </dependency>
         <dependency>
             <groupId>io.opentelemetry</groupId>
-            <artifactId>opentelemetry-exporter-otlp</artifactId>
+            <artifactId>opentelemetry-exporter-zipkin</artifactId>
         </dependency>
     </dependencies>
 

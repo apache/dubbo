@@ -133,7 +133,7 @@
 
         <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-spring-boot-tracing-otel-zipkin-starter</artifactId>
+            <artifactId>dubbo-tracing-otel-zipkin-spring-boot-starter</artifactId>
             <version>${project.version}</version>
         </dependency>
 
