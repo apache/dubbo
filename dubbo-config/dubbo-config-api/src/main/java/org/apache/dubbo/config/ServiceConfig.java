@@ -770,6 +770,14 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         this.urls.add(url);
     }
 
+    /**
+     * Automatically add 'rest' as extra protocol for triple.
+     * <p>
+     * FIXME, remove this step when triple fully supports http unary request
+     *
+     * @param url url to export
+     * @return url with extra protocols
+     */
     private URL appendExtraProtocols(URL url) {
         String ext = url.getParameter(EXT_PROTOCOL, "");
         if (StringUtils.isEmpty(ext)
