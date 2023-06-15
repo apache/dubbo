@@ -179,7 +179,7 @@
         <hessian_lite_version>3.2.13</hessian_lite_version>
         <swagger_version>1.6.11</swagger_version>
 
-        <snappy_java_version>1.1.10.0</snappy_java_version>
+        <snappy_java_version>1.1.10.1</snappy_java_version>
         <bouncycastle-bcprov_version>1.70</bouncycastle-bcprov_version>
         <metrics_version>2.0.6</metrics_version>
         <sofa_registry_version>5.4.3</sofa_registry_version>
