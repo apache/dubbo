@@ -23,11 +23,17 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-public class DubboTagHeaderInterceptor implements HandlerInterceptor {
+public class DubboTagHeaderOrParameterInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        RpcContext.getClientAttachment().setAttachment(CommonConstants.TAG_KEY, request.getHeader(CommonConstants.DUBBO_TAG_HEADER));
+        String tag = request.getHeader(CommonConstants.DUBBO_TAG_HEADER);
+        if (tag == null) {
+            tag = request.getParameter(CommonConstants.DUBBO_TAG_HEADER);
+        }
+        if (tag != null) {
+            RpcContext.getClientAttachment().setAttachment(CommonConstants.TAG_KEY, tag);
+        }
         return true;
     }
 }
