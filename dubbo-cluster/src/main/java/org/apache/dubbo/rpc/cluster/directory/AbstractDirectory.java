@@ -476,12 +476,14 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
     }
 
     private boolean addValidInvoker(Invoker<T> invoker) {
+        MetricsEventBus.publish(RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary()));
         synchronized (this.validInvokers) {
             return this.validInvokers.add(invoker);
         }
     }
 
     private boolean removeValidInvoker(Invoker<T> invoker) {
+        MetricsEventBus.publish(RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary()));
         synchronized (this.validInvokers) {
             return this.validInvokers.remove(invoker);
         }
