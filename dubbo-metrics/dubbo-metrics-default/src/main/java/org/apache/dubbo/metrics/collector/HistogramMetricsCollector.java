@@ -53,10 +53,16 @@ public class HistogramMetricsCollector extends AbstractMetricsListener<RequestEv
 
         ConfigManager configManager = applicationModel.getApplicationConfigManager();
         MetricsConfig config = configManager.getMetrics().orElse(null);
-        if (config != null && config.getHistogram() != null && Boolean.TRUE.equals(config.getHistogram().getEnabled())) {
+        if (config == null || config.getHistogram() == null || config.getHistogram().getEnabled() == null || Boolean.TRUE.equals(config.getHistogram().getEnabled())) {
             registerListener();
 
-            HistogramConfig histogram = config.getHistogram();
+            HistogramConfig histogram;
+            if (config == null || config.getHistogram() == null) {
+                histogram = new HistogramConfig();
+            } else {
+                histogram = config.getHistogram();
+            }
+
             if (!Boolean.TRUE.equals(histogram.getEnabledPercentiles()) && histogram.getBucketsMs() == null) {
                 histogram.setBucketsMs(DEFAULT_BUCKETS_MS);
             }
@@ -86,7 +92,7 @@ public class HistogramMetricsCollector extends AbstractMetricsListener<RequestEv
 
     private void onRTEvent(RequestEvent event) {
         if (metricRegister != null) {
-            MethodMetric metric = new MethodMetric(applicationModel.getApplicationName(), event.getAttachmentValue(MetricsConstants.INVOCATION));
+            MethodMetric metric = new MethodMetric(applicationModel, event.getAttachmentValue(MetricsConstants.INVOCATION));
             long responseTime = event.getTimePair().calc();
 
             HistogramMetricSample sample = new HistogramMetricSample(MetricsKey.METRIC_RT_HISTOGRAM.getNameByType(metric.getSide()),

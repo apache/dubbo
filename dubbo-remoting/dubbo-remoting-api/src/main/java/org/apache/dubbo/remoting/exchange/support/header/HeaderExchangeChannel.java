@@ -18,6 +18,7 @@ package org.apache.dubbo.remoting.exchange.support.header;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.Channel;
@@ -30,6 +31,7 @@ import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.exchange.support.DefaultFuture;
 
 import java.net.InetSocketAddress;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 
@@ -48,6 +50,8 @@ final class HeaderExchangeChannel implements ExchangeChannel {
 
     private final Channel channel;
 
+    private final long shutdownTimeout;
+
     private volatile boolean closed = false;
 
     HeaderExchangeChannel(Channel channel) {
@@ -55,6 +59,10 @@ final class HeaderExchangeChannel implements ExchangeChannel {
             throw new IllegalArgumentException("channel == null");
         }
         this.channel = channel;
+        this.shutdownTimeout = Optional.ofNullable(channel.getUrl())
+            .map(URL::getOrDefaultApplicationModel)
+            .map(ConfigurationUtils::getServerShutdownTimeout)
+            .orElse(DEFAULT_TIMEOUT);
     }
 
     static HeaderExchangeChannel getOrAddChannel(Channel ch) {
@@ -159,7 +167,7 @@ final class HeaderExchangeChannel implements ExchangeChannel {
         closed = true;
         try {
             // graceful close
-            DefaultFuture.closeChannel(channel);
+            DefaultFuture.closeChannel(channel, shutdownTimeout);
         } catch (Exception e) {
             logger.warn(TRANSPORT_FAILED_CLOSE, "", "", e.getMessage(), e);
         }

@@ -17,36 +17,28 @@
 
 package org.apache.dubbo.metrics.model;
 
-import java.util.HashMap;
-import java.util.Map;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import static org.apache.dubbo.common.constants.MetricsConstants.TAG_APPLICATION_NAME;
-import static org.apache.dubbo.common.constants.MetricsConstants.TAG_HOSTNAME;
-import static org.apache.dubbo.common.constants.MetricsConstants.TAG_INTERFACE_KEY;
-import static org.apache.dubbo.common.constants.MetricsConstants.TAG_IP;
-import static org.apache.dubbo.common.utils.NetUtils.getLocalHost;
-import static org.apache.dubbo.common.utils.NetUtils.getLocalHostName;
+import java.util.Map;
 
 /**
  * Metric class for service.
  */
-public class ServiceKeyMetric implements Metric {
-    private final String applicationName;
-    private final String serviceKey;
+public class ServiceKeyMetric extends ApplicationMetric {
+    private final String interfaceName;
 
-    public ServiceKeyMetric(String applicationName, String serviceKey) {
-        this.applicationName = applicationName;
-        this.serviceKey = serviceKey;
+    public ServiceKeyMetric(ApplicationModel applicationModel, String serviceKey) {
+        super(applicationModel);
+        this.interfaceName = serviceKey;
     }
 
     @Override
     public Map<String, String> getTags() {
-        Map<String, String> tags = new HashMap<>();
-        tags.put(TAG_IP, getLocalHost());
-        tags.put(TAG_HOSTNAME, getLocalHostName());
-        tags.put(TAG_APPLICATION_NAME, applicationName);
-        tags.put(TAG_INTERFACE_KEY, serviceKey);
-        return tags;
+        return MetricsSupport.serviceTags(getApplicationModel(), interfaceName);
+    }
+
+    public String getInterfaceName() {
+        return interfaceName;
     }
 
     @Override
@@ -60,24 +52,24 @@ public class ServiceKeyMetric implements Metric {
 
         ServiceKeyMetric that = (ServiceKeyMetric) o;
 
-        if (!applicationName.equals(that.applicationName)) {
+        if (!getApplicationName().equals(that.getApplicationName())) {
             return false;
         }
-        return serviceKey.equals(that.serviceKey);
+        return interfaceName.equals(that.interfaceName);
     }
 
     @Override
     public int hashCode() {
-        int result = applicationName.hashCode();
-        result = 31 * result + serviceKey.hashCode();
+        int result = getApplicationName().hashCode();
+        result = 31 * result + interfaceName.hashCode();
         return result;
     }
 
     @Override
     public String toString() {
         return "ServiceKeyMetric{" +
-            "applicationName='" + applicationName + '\'' +
-            ", serviceKey='" + serviceKey + '\'' +
-            '}';
+                "applicationName='" + getApplicationName() + '\'' +
+                ", serviceKey='" + interfaceName + '\'' +
+                '}';
     }
 }

@@ -136,14 +136,13 @@ public class NettyServer extends AbstractServer {
             .childHandler(new ChannelInitializer<SocketChannel>() {
                 @Override
                 protected void initChannel(SocketChannel ch) throws Exception {
-                    // FIXME: should we use getTimeout()?
-                    int idleTimeout = UrlUtils.getIdleTimeout(getUrl());
+                    int closeTimeout = UrlUtils.getCloseTimeout(getUrl());
                     NettyCodecAdapter adapter = new NettyCodecAdapter(getCodec(), getUrl(), NettyServer.this);
                     ch.pipeline().addLast("negotiation", new SslServerTlsHandler(getUrl()));
                     ch.pipeline()
                         .addLast("decoder", adapter.getDecoder())
                         .addLast("encoder", adapter.getEncoder())
-                        .addLast("server-idle-handler", new IdleStateHandler(0, 0, idleTimeout, MILLISECONDS))
+                        .addLast("server-idle-handler", new IdleStateHandler(0, 0, closeTimeout, MILLISECONDS))
                         .addLast("handler", nettyServerHandler);
                 }
             });

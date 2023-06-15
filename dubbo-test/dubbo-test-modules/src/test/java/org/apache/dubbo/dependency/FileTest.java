@@ -64,7 +64,7 @@ class FileTest {
         ignoredModulesInDubboAll.add(Pattern.compile("dubbo-metadata-processor"));
         ignoredModulesInDubboAll.add(Pattern.compile("dubbo-native.*"));
         ignoredModulesInDubboAll.add(Pattern.compile("dubbo-config-spring6.*"));
-        ignoredModulesInDubboAll.add(Pattern.compile("dubbo-spring-boot.*"));
+        ignoredModulesInDubboAll.add(Pattern.compile(".*spring-boot.*"));
         ignoredModulesInDubboAll.add(Pattern.compile("dubbo-annotation-processor.*"));
         ignoredModulesInDubboAll.add(Pattern.compile("dubbo-maven-plugin"));
     }

@@ -187,11 +187,11 @@ class ConfigParserTest {
             URL notMatchURL3 = URL.valueOf("dubbo://10.0.0.1:20880/DemoService?match_key1=value_not_match");// key not match
 
             ConditionMatch matcher = (ConditionMatch) url.getAttribute(MATCH_CONDITION);
-            Assertions.assertTrue(matcher.isMatch(matchURL1));
-            Assertions.assertTrue(matcher.isMatch(matchURL2));
-            Assertions.assertFalse(matcher.isMatch(notMatchURL1));
-            Assertions.assertFalse(matcher.isMatch(notMatchURL2));
-            Assertions.assertFalse(matcher.isMatch(notMatchURL3));
+            Assertions.assertTrue(matcher.isMatch(matchURL1.getAddress(), matchURL1));
+            Assertions.assertTrue(matcher.isMatch(matchURL2.getAddress(), matchURL2));
+            Assertions.assertFalse(matcher.isMatch(notMatchURL1.getAddress(), notMatchURL1));
+            Assertions.assertFalse(matcher.isMatch(notMatchURL2.getAddress(), notMatchURL2));
+            Assertions.assertFalse(matcher.isMatch(notMatchURL3.getAddress(), notMatchURL3));
         }
     }
 
@@ -211,8 +211,8 @@ class ConfigParserTest {
             URL notMatchURL = URL.valueOf("dubbo://10.0.0.1:20880/DemoService?match_key1=value_not_match");// key not match
 
             ConditionMatch matcher = (ConditionMatch) url.getAttribute(MATCH_CONDITION);
-            Assertions.assertTrue(matcher.isMatch(matchURL));
-            Assertions.assertFalse(matcher.isMatch(notMatchURL));
+            Assertions.assertTrue(matcher.isMatch(matchURL.getAddress(), matchURL));
+            Assertions.assertFalse(matcher.isMatch(notMatchURL.getAddress(), notMatchURL));
         }
     }
 
@@ -232,8 +232,8 @@ class ConfigParserTest {
             URL notMatchURL = URL.valueOf("dubbo://10.0.0.1:20880/DemoService?match_key1=value_not_match");// key not match
 
             ConditionMatch matcher = (ConditionMatch) url.getAttribute(MATCH_CONDITION);
-            Assertions.assertTrue(matcher.isMatch(matchURL));
-            Assertions.assertFalse(matcher.isMatch(notMatchURL));
+            Assertions.assertTrue(matcher.isMatch(matchURL.getAddress(), matchURL));
+            Assertions.assertFalse(matcher.isMatch(notMatchURL.getAddress(), notMatchURL));
         }
     }
 

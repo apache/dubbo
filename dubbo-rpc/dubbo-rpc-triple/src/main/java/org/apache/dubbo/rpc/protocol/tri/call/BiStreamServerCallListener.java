@@ -52,7 +52,7 @@ public class BiStreamServerCallListener extends AbstractServerCallListener {
 
     @Override
     public void onCancel(TriRpcStatus status) {
-        responseObserver.onError(status.asException());
+        requestObserver.onError(status.asException());
     }
 
 

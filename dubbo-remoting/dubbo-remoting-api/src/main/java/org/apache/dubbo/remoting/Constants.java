@@ -18,6 +18,9 @@
 package org.apache.dubbo.remoting;
 
 
+import java.util.Arrays;
+import java.util.List;
+
 public interface Constants {
 
     String BUFFER_KEY = "buffer";
@@ -134,6 +137,8 @@ public interface Constants {
 
     int DEFAULT_RECONNECT_PERIOD = 2000;
 
+    String CHANNEL_SHUTDOWN_TIMEOUT_KEY = "channel.shutdown.timeout";
+
     String SEND_RECONNECT_KEY = "send.reconnect";
 
     String CHECK_KEY = "check";
@@ -144,8 +149,10 @@ public interface Constants {
     String TELNET_KEY = "telnet";
     String HEARTBEAT_KEY = "heartbeat";
     String HEARTBEAT_CONFIG_KEY = "dubbo.protocol.default-heartbeat";
+    String CLOSE_TIMEOUT_CONFIG_KEY = "dubbo.protocol.default-close-timeout";
     int DEFAULT_HEARTBEAT = 60 * 1000;
     String HEARTBEAT_TIMEOUT_KEY = "heartbeat.timeout";
+    String CLOSE_TIMEOUT_KEY = "close.timeout";
     String CONNECTIONS_KEY = "connections";
 
     int DEFAULT_BACKLOG = 1024;
@@ -159,4 +166,8 @@ public interface Constants {
     String OK_HTTP = "ok-http";
     String URL_CONNECTION = "url-connection";
     String APACHE_HTTP_CLIENT = "apache-http-client";
+    String PORT_UNIFICATION_NETTY4_SERVER = "netty4";
+
+    List<String> REST_SERVER = Arrays.asList("jetty", "tomcat", "netty");
+
 }

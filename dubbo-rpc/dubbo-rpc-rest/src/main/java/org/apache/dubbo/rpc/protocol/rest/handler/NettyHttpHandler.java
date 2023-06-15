@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.rest.handler;
 
 import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.HttpRequest;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.metadata.rest.RestMethodMetadata;
@@ -29,6 +30,7 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.protocol.rest.PathAndInvokerMapper;
 import org.apache.dubbo.rpc.protocol.rest.RestRPCInvocationUtil;
 import org.apache.dubbo.rpc.protocol.rest.RestHeaderEnum;
+import org.apache.dubbo.rpc.protocol.rest.deploy.ServiceDeployer;
 import org.apache.dubbo.rpc.protocol.rest.exception.MediaTypeUnSupportException;
 import org.apache.dubbo.rpc.protocol.rest.exception.ParamParseException;
 import org.apache.dubbo.rpc.protocol.rest.exception.PathNoFoundException;
@@ -44,6 +46,8 @@ import org.apache.dubbo.rpc.protocol.rest.util.MediaTypeUtil;
 
 import java.io.IOException;
 
+import static org.apache.dubbo.rpc.protocol.rest.constans.RestConstant.PATH_AND_INVOKER_MAPPER;
+
 /**
  * netty http request handler
  */
@@ -56,6 +60,11 @@ public class NettyHttpHandler implements HttpHandler<NettyRequestFacade, NettyHt
     public NettyHttpHandler(PathAndInvokerMapper pathAndInvokerMapper, ExceptionMapper exceptionMapper) {
         this.pathAndInvokerMapper = pathAndInvokerMapper;
         this.exceptionMapper = exceptionMapper;
+    }
+
+    public NettyHttpHandler(ServiceDeployer serviceDeployer) {
+        this.pathAndInvokerMapper = serviceDeployer.getPathAndInvokerMapper();
+        this.exceptionMapper = serviceDeployer.getExceptionMapper();
     }
 
     @Override
@@ -72,6 +81,8 @@ public class NettyHttpHandler implements HttpHandler<NettyRequestFacade, NettyHt
 
         // set response
         RpcContext.getServiceContext().setResponse(nettyHttpResponse);
+
+        RpcContext.getServerAttachment().setObjectAttachment(PATH_AND_INVOKER_MAPPER, pathAndInvokerMapper);
         // TODO add request filter chain
 
         FullHttpRequest nettyHttpRequest = requestFacade.getRequest();
@@ -96,9 +107,14 @@ public class NettyHttpHandler implements HttpHandler<NettyRequestFacade, NettyHt
 
     }
 
-    private void doHandler(FullHttpRequest nettyHttpRequest, NettyHttpResponse nettyHttpResponse, RequestFacade request) throws Exception {
+    protected void doHandler(HttpRequest nettyHttpRequest, NettyHttpResponse nettyHttpResponse, RequestFacade request) throws Exception {
         //  acquire metadata by request
-        InvokerAndRestMethodMetadataPair restMethodMetadataPair = RestRPCInvocationUtil.getRestMethodMetadata(request, pathAndInvokerMapper);
+        InvokerAndRestMethodMetadataPair restMethodMetadataPair = RestRPCInvocationUtil.getRestMethodMetadataAndInvokerPair(request);
+
+        // path NoFound 404
+        if (restMethodMetadataPair == null) {
+            throw new PathNoFoundException("rest service Path no found, current path info:" + RestRPCInvocationUtil.createPathMatcher(request));
+        }
 
         Invoker invoker = restMethodMetadataPair.getInvoker();
 

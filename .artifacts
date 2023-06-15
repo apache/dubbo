@@ -109,6 +109,10 @@ dubbo-spring-boot-tracing-otel-zipkin-starter
 dubbo-spring-boot-tracing-otel-otlp-starter
 dubbo-spring-boot-observability-starter
 dubbo-spring-boot-starter
+dubbo-spring-boot-starters
+dubbo-nacos-spring-boot-starter
+dubbo-zookeeper-spring-boot-starter
+dubbo-zookeeper-curator5-spring-boot-starter
 dubbo-spring-security
 dubbo-xds
 dubbo-plugin-cluster-mergeable

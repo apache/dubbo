@@ -119,6 +119,18 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
 
     @Override
     public void subscribe(URL url) {
+
+        // Fail-fast detection protocol spi
+        String queryProtocols = this.queryMap.get(PROTOCOL_KEY);
+        if (StringUtils.isNotBlank(queryProtocols)) {
+            String[] acceptProtocols = queryProtocols.split(",");
+            for (String acceptProtocol : acceptProtocols) {
+                if (!moduleModel.getApplicationModel().getExtensionLoader(Protocol.class).hasExtension(acceptProtocol)) {
+                    throw new IllegalStateException("No such extension org.apache.dubbo.rpc.Protocol by name " + acceptProtocol + ",  please check whether related SPI module is missing");
+                }
+            }
+        }
+
         ApplicationModel applicationModel = url.getApplicationModel();
         MetricsEventBus.post(RegistryEvent.toSubscribeEvent(applicationModel),() ->
             {

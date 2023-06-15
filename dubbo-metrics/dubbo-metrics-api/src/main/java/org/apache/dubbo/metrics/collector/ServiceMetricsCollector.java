@@ -26,10 +26,10 @@ import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
  */
 public interface ServiceMetricsCollector<E extends TimeCounterEvent> extends MetricsCollector<E> {
 
-    void increment(String applicationName, String serviceKey, MetricsKeyWrapper wrapper, int size);
+    void increment(String serviceKey, MetricsKeyWrapper wrapper, int size);
 
-    void setNum(MetricsKeyWrapper metricsKey, String applicationName, String serviceKey, int num);
+    void setNum(MetricsKeyWrapper metricsKey, String serviceKey, int num);
 
-    void addRt(String applicationName, String serviceKey, String registryOpType, Long responseTime);
+    void addRt(String serviceKey, String registryOpType, Long responseTime);
 }
 

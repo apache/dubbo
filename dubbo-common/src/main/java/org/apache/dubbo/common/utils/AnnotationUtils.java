@@ -418,7 +418,7 @@ public interface AnnotationUtils {
     static boolean isAnnotationPresent(AnnotatedElement annotatedElement, String annotationClassName) {
         ClassLoader classLoader = annotatedElement.getClass().getClassLoader();
         Class<?> resolvedType = resolveClass(annotationClassName, classLoader);
-        if (!Annotation.class.isAssignableFrom(resolvedType)) {
+        if (resolvedType == null || !Annotation.class.isAssignableFrom(resolvedType)) {
             return false;
         }
         return isAnnotationPresent(annotatedElement, (Class<? extends Annotation>) resolvedType);

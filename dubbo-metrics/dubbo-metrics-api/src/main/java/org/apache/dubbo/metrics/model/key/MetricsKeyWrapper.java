@@ -19,6 +19,8 @@ package org.apache.dubbo.metrics.model.key;
 
 import io.micrometer.common.lang.Nullable;
 import org.apache.dubbo.metrics.model.MetricsSupport;
+import org.apache.dubbo.metrics.model.sample.MetricSample;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Map;
 import java.util.Objects;
@@ -39,12 +41,26 @@ public class MetricsKeyWrapper {
     private final MetricsPlaceValue placeType;
 
     /**
+     * Exported sample type
+     */
+    private MetricSample.Type sampleType = MetricSample.Type.COUNTER;
+
+    /**
      * When the MetricsPlaceType is null, it is equivalent to a single MetricsKey.
      * Use the decorator mode to share a container with MetricsKey
      */
     public MetricsKeyWrapper(MetricsKey metricsKey, @Nullable MetricsPlaceValue placeType) {
         this.metricsKey = metricsKey;
         this.placeType = placeType;
+    }
+
+    public MetricsKeyWrapper setSampleType(MetricSample.Type sampleType) {
+        this.sampleType = sampleType;
+        return this;
+    }
+
+    public MetricSample.Type getSampleType() {
+        return sampleType;
     }
 
     public MetricsPlaceValue getPlaceType() {
@@ -89,17 +105,17 @@ public class MetricsKeyWrapper {
         }
     }
 
-    public Map<String, String> tagName(String key) {
+    public Map<String, String> tagName(ApplicationModel applicationModel, String key) {
         MetricsLevel level = getLevel();
         switch (level) {
             case APP:
-                return MetricsSupport.applicationTags(key);
+                return MetricsSupport.applicationTags(applicationModel);
             case SERVICE:
-                return MetricsSupport.serviceTags(key);
+                return MetricsSupport.serviceTags(applicationModel, key);
             case METHOD:
-                return MetricsSupport.methodTags(key);
+                return MetricsSupport.methodTags(applicationModel, key);
         }
-        return MetricsSupport.applicationTags(key);
+        return MetricsSupport.applicationTags(applicationModel);
     }
 
     public static MetricsKeyWrapper wrapper(MetricsKey metricsKey) {

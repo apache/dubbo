@@ -22,6 +22,8 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
 
+import com.alibaba.dubbo.common.DelegateURL;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -38,7 +40,9 @@ public interface LoadBalance extends org.apache.dubbo.rpc.cluster.LoadBalance {
                 map(invoker -> new com.alibaba.dubbo.rpc.Invoker.CompatibleInvoker<T>(invoker)).
                 collect(Collectors.toList());
 
-        return select(invs, new com.alibaba.dubbo.common.URL(url),
-                new com.alibaba.dubbo.rpc.Invocation.CompatibleInvocation(invocation));
+        com.alibaba.dubbo.rpc.Invoker<T> selected = select(invs, new DelegateURL(url),
+            new com.alibaba.dubbo.rpc.Invocation.CompatibleInvocation(invocation));
+
+        return selected == null ? null : selected.getOriginal();
     }
 }

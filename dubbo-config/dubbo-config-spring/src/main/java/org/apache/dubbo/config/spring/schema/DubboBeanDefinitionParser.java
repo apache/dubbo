@@ -32,8 +32,8 @@ import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.nested.AggregationConfig;
-import org.apache.dubbo.config.nested.PrometheusConfig;
 import org.apache.dubbo.config.nested.HistogramConfig;
+import org.apache.dubbo.config.nested.PrometheusConfig;
 import org.apache.dubbo.config.spring.Constants;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.ServiceBean;
@@ -103,9 +103,11 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
         if (StringUtils.isNotEmpty(configId)) {
             beanDefinition.getPropertyValues().addPropertyValue("id", configId);
         }
-        // get id from name
+
+        String configName = "";
+        // get configName from name
         if (StringUtils.isEmpty(configId)) {
-            configId = resolveAttribute(element, "name", parserContext);
+            configName = resolveAttribute(element, "name", parserContext);
         }
 
         String beanName = configId;
@@ -113,12 +115,13 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
             // generate bean name
             String prefix = beanClass.getName();
             int counter = 0;
-            beanName = prefix + "#" + counter;
+            beanName = prefix + (StringUtils.isEmpty(configName) ? "#" : ("#" + configName + "#")) + counter;
             while (parserContext.getRegistry().containsBeanDefinition(beanName)) {
-                beanName = prefix + "#" + (counter++);
+                beanName = prefix + (StringUtils.isEmpty(configName) ? "#" : ("#" + configName + "#")) + (counter++);
             }
         }
         beanDefinition.setAttribute(BEAN_NAME, beanName);
+
 
         if (ProtocolConfig.class.equals(beanClass)) {
 //            for (String name : parserContext.getRegistry().getBeanDefinitionNames()) {
@@ -184,7 +187,7 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                          * For 'provider' 'protocol' 'registry', keep literal value (should be id/name) and set the value to 'registryIds' 'providerIds' protocolIds'
                          * The following process should make sure each id refers to the corresponding instance, here's how to find the instance for different use cases:
                          * 1. Spring, check existing bean by id, see{@link ServiceBean#afterPropertiesSet()}; then try to use id to find configs defined in remote Config Center
-                         * 2. API, directly use id to find configs defined in remote Config Center; if all config instances are defined locally, please use {@link ServiceConfig#setRegistries(List)}
+                         * 2. API, directly use id to find configs defined in remote Config Center; if all config instances are defined locally, please use {@link org.apache.dubbo.config.ServiceConfig#setRegistries(List)}
                          */
                         beanDefinition.getPropertyValues().addPropertyValue(beanProperty + "Ids", value);
                     } else {

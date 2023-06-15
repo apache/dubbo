@@ -19,7 +19,6 @@ package org.apache.dubbo.rpc.cluster.support.wrapper;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
-
 import org.apache.dubbo.metrics.event.MetricsDispatcher;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invocation;
@@ -165,7 +164,7 @@ class ScopeClusterInvokerTest {
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("doSomething4");
         invocation.setParameterTypes(new Class[]{});
-        Assertions.assertTrue(cluster.isAvailable(), "");
+        Assertions.assertFalse(cluster.isAvailable(), "");
         RpcInvocation finalInvocation = invocation;
         Assertions.assertThrows(RpcException.class, () -> cluster.invoke(finalInvocation));
 
@@ -318,6 +317,24 @@ class ScopeClusterInvokerTest {
         invocation.setParameterTypes(new Class[]{});
         Result ret3 = cluster.invoke(invocation);
         Assertions.assertEquals("doSomething8", ret3.getValue());
+    }
+
+    @Test
+    void testBroadcast() {
+        URL url = URL.valueOf("remote://1.2.3.4/" + DemoService.class.getName());
+        url = url.addParameter(REFER_KEY,
+            URL.encode(PATH_KEY + "=" + DemoService.class.getName()));
+        url = url.addParameter("cluster","broadcast");
+        url = url.setScopeModel(ApplicationModel.defaultModel().getDefaultModule());
+        Invoker<DemoService> cluster = getClusterInvoker(url);
+
+        invokers.add(cluster);
+
+        RpcInvocation invocation = new RpcInvocation();
+        invocation.setMethodName("doSomething8");
+        invocation.setParameterTypes(new Class[]{});
+        Result ret = cluster.invoke(invocation);
+        Assertions.assertEquals("doSomething8", ret.getValue());
     }
 
     private Invoker<DemoService> getClusterInvoker(URL url) {

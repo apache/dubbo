@@ -59,9 +59,12 @@ import static org.hamcrest.MatcherAssert.assertThat;
 public class SpringMvcRestProtocolTest {
     private Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getExtension("rest");
     private ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
-    private final static int availablePort = NetUtils.getAvailablePort();
-    private final static URL exportUrl = URL.valueOf("rest://127.0.0.1:" + availablePort + "/rest?interface=org.apache.dubbo.rpc.protocol.rest.mvc.SpringRestDemoService");
 
+    private static URL getUrl() {
+        return URL.valueOf("rest://127.0.0.1:" + NetUtils.getAvailablePort() + "/rest?interface=org.apache.dubbo.rpc.protocol.rest.mvc.SpringRestDemoService");
+    }
+
+    private static final String SERVER = "netty4";
 
     private final ModuleServiceRepository repository = ApplicationModel.defaultModel().getDefaultModule().getServiceRepository();
 
@@ -83,12 +86,12 @@ public class SpringMvcRestProtocolTest {
     }
 
     public Exporter<SpringRestDemoService> getExport(URL url, SpringRestDemoService server) {
-        url = url.addParameter(SERVER_KEY, Constants.NETTY_HTTP);
+        url = url.addParameter(SERVER_KEY, SERVER);
         return protocol.export(proxy.getInvoker(server, getServerClass(), url));
     }
 
     public Exporter<SpringRestDemoService> getExceptionHandlerExport(URL url, SpringRestDemoService server) {
-        url = url.addParameter(SERVER_KEY, Constants.NETTY_HTTP);
+        url = url.addParameter(SERVER_KEY, SERVER);
         url = url.addParameter(EXTENSION_KEY, TestExceptionMapper.class.getName());
         return protocol.export(proxy.getInvoker(server, getServerClass(), url));
     }
@@ -177,7 +180,7 @@ public class SpringMvcRestProtocolTest {
     void testExport() {
         SpringRestDemoService server = getServerImpl();
 
-        URL url = this.registerProvider(exportUrl, server, SpringRestDemoService.class);
+        URL url = this.registerProvider(getUrl(), server, SpringRestDemoService.class);
 
         RpcContext.getClientAttachment().setAttachment("timeout", "200");
         Exporter<SpringRestDemoService> exporter = getExport(url, server);
@@ -194,7 +197,7 @@ public class SpringMvcRestProtocolTest {
     void testNettyServer() {
         SpringRestDemoService server = getServerImpl();
 
-        URL nettyUrl = this.registerProvider(exportUrl, server, SpringRestDemoService.class);
+        URL nettyUrl = this.registerProvider(getUrl(), server, SpringRestDemoService.class);
 
 
         Exporter<SpringRestDemoService> exporter = getExport(nettyUrl, server);
@@ -213,7 +216,7 @@ public class SpringMvcRestProtocolTest {
         Assertions.assertThrows(RpcException.class, () -> {
             SpringRestDemoService server = getServerImpl();
 
-            URL url = this.registerProvider(exportUrl, server, SpringRestDemoService.class);
+            URL url = this.registerProvider(getUrl(), server, SpringRestDemoService.class);
 
             URL servletUrl = url.addParameter(SERVER_KEY, "servlet");
 
@@ -227,7 +230,7 @@ public class SpringMvcRestProtocolTest {
             exceptionMapper.unRegisterMapper(RuntimeException.class);
             SpringRestDemoService server = getServerImpl();
 
-            URL nettyUrl = this.registerProvider(exportUrl, server, SpringRestDemoService.class);
+            URL nettyUrl = this.registerProvider(getUrl(), server, SpringRestDemoService.class);
 
             Exporter<SpringRestDemoService> exporter = getExport(nettyUrl, server);
 
@@ -241,7 +244,7 @@ public class SpringMvcRestProtocolTest {
     void testInvoke() {
         SpringRestDemoService server = getServerImpl();
 
-        URL url = this.registerProvider(exportUrl, server, SpringRestDemoService.class);
+        URL url = this.registerProvider(getUrl(), server, SpringRestDemoService.class);
 
         Exporter<SpringRestDemoService> exporter = getExport(url, server);
 
@@ -255,7 +258,7 @@ public class SpringMvcRestProtocolTest {
     void testFilter() {
         SpringRestDemoService server = getServerImpl();
 
-        URL url = this.registerProvider(exportUrl, server, SpringRestDemoService.class);
+        URL url = this.registerProvider(getUrl(), server, SpringRestDemoService.class);
 
         Exporter<SpringRestDemoService> exporter = getExport(url, server);
 
@@ -272,7 +275,7 @@ public class SpringMvcRestProtocolTest {
     void testRpcContextFilter() {
         SpringRestDemoService server = getServerImpl();
 
-        URL nettyUrl = this.registerProvider(exportUrl, server, SpringRestDemoService.class);
+        URL nettyUrl = this.registerProvider(getUrl(), server, SpringRestDemoService.class);
 
         // use RpcContextFilter
 //        URL nettyUrl = url.addParameter(SERVER_KEY, "netty")
@@ -307,7 +310,7 @@ public class SpringMvcRestProtocolTest {
         Assertions.assertThrows(RuntimeException.class, () -> {
             SpringRestDemoService server = getServerImpl();
 
-            URL url = this.registerProvider(exportUrl, server, SpringRestDemoService.class);
+            URL url = this.registerProvider(getUrl(), server, SpringRestDemoService.class);
 
             URL nettyUrl = url.addParameter(EXTENSION_KEY, "com.not.existing.Filter");
             Exporter<SpringRestDemoService> exporter = getExport(nettyUrl, server);
@@ -325,7 +328,7 @@ public class SpringMvcRestProtocolTest {
 
         SpringRestDemoService server = getServerImpl();
 
-        URL exceptionUrl = this.registerProvider(exportUrl, server, SpringRestDemoService.class);
+        URL exceptionUrl = this.registerProvider(getUrl(), server, SpringRestDemoService.class);
 
         Exporter<SpringRestDemoService> exporter = getExceptionHandlerExport(exceptionUrl, server);
 
@@ -342,7 +345,7 @@ public class SpringMvcRestProtocolTest {
     void testFormConsumerParser() {
         SpringRestDemoService server = getServerImpl();
 
-        URL nettyUrl = this.registerProvider(exportUrl, server, SpringRestDemoService.class);
+        URL nettyUrl = this.registerProvider(getUrl(), server, SpringRestDemoService.class);
 
 
         Exporter<SpringRestDemoService> exporter = getExport(nettyUrl, server);
@@ -368,7 +371,7 @@ public class SpringMvcRestProtocolTest {
     void testPrimitive() {
         SpringRestDemoService server = getServerImpl();
 
-        URL nettyUrl = this.registerProvider(exportUrl, server, SpringRestDemoService.class);
+        URL nettyUrl = this.registerProvider(getUrl(), server, SpringRestDemoService.class);
 
 
         Exporter<SpringRestDemoService> exporter = getExport(nettyUrl, server);

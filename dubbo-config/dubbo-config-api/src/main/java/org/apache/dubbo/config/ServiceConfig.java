@@ -280,7 +280,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     }
 
     @Override
-    public void export() {
+    public void export(boolean register) {
         if (this.exported) {
             return;
         }
@@ -300,19 +300,37 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                 this.init();
 
                 if (shouldDelay()) {
-                    doDelayExport();
+                    // should register if delay export
+                    doDelayExport(true);
                 } else {
-                    doExport();
+                    doExport(register);
                 }
             }
         }
     }
 
-    protected void doDelayExport() {
+    @Override
+    public void register() {
+        if (!this.exported) {
+            return;
+        }
+
+        synchronized (this) {
+            if (!this.exported) {
+                return;
+            }
+
+            for (Exporter<?> exporter : exporters) {
+                exporter.register();
+            }
+        }
+    }
+
+    protected void doDelayExport(boolean register) {
         ExecutorRepository.getInstance(getScopeModel().getApplicationModel()).getServiceExportExecutor()
             .schedule(() -> {
                 try {
-                    doExport();
+                    doExport(register);
                 } catch (Exception e) {
                     logger.error(CONFIG_FAILED_EXPORT_SERVICE, "configuration server disconnected", "", "Failed to (async)export service config: " + interfaceName, e);
                 }
@@ -438,7 +456,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         checkAndUpdateSubConfigs();
     }
 
-    protected synchronized void doExport() {
+    protected synchronized void doExport(boolean register) {
         if (unexported) {
             throw new IllegalStateException("The service " + interfaceClass.getName() + " has already unexported!");
         }
@@ -449,12 +467,12 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         if (StringUtils.isEmpty(path)) {
             path = interfaceName;
         }
-        doExportUrls();
+        doExportUrls(register);
         exported();
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private void doExportUrls() {
+    private void doExportUrls(boolean register) {
         ModuleServiceRepository repository = getScopeModel().getServiceRepository();
         ServiceDescriptor serviceDescriptor;
         final boolean serverService = ref instanceof ServerService;
@@ -489,7 +507,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                         // In case user specified path, register service one more time to map it to path.
                         repository.registerService(pathKey, interfaceClass);
                     }
-                    doExportUrlsFor1Protocol(protocolConfig, registryURLs);
+                    doExportUrlsFor1Protocol(protocolConfig, registryURLs, register);
                 }
                 return null;
             }
@@ -498,7 +516,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         providerModel.setServiceUrls(urls);
     }
 
-    private void doExportUrlsFor1Protocol(ProtocolConfig protocolConfig, List<URL> registryURLs) {
+    private void doExportUrlsFor1Protocol(ProtocolConfig protocolConfig, List<URL> registryURLs, boolean register) {
         Map<String, String> map = buildAttributes(protocolConfig);
 
         // remove null key and null value
@@ -510,7 +528,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
         processServiceExecutor(url);
 
-        exportUrl(url, registryURLs);
+        exportUrl(url, registryURLs, register);
     }
 
     private void processServiceExecutor(URL url) {
@@ -694,7 +712,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         return url;
     }
 
-    private void exportUrl(URL url, List<URL> registryURLs) {
+    private void exportUrl(URL url, List<URL> registryURLs, boolean register) {
         String scope = url.getParameter(SCOPE_KEY);
         // don't export when none is configured
         if (!SCOPE_NONE.equalsIgnoreCase(scope)) {
@@ -718,7 +736,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                         build();
                 }
 
-                url = exportRemote(url, registryURLs);
+                url = exportRemote(url, registryURLs, register);
                 if (!isGeneric(generic) && !getScopeModel().isInternal()) {
                     MetadataUtils.publishServiceDefinition(url, providerModel.getServiceModel(), getApplicationModel());
                 }
@@ -733,7 +751,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                         URL localUrl = URLBuilder.from(url).
                             setProtocol(protocol).
                             build();
-                        localUrl = exportRemote(localUrl, registryURLs);
+                        localUrl = exportRemote(localUrl, registryURLs, register);
                         if (!isGeneric(generic) && !getScopeModel().isInternal()) {
                             MetadataUtils.publishServiceDefinition(localUrl, providerModel.getServiceModel(), getApplicationModel());
                         }
@@ -745,7 +763,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         this.urls.add(url);
     }
 
-    private URL exportRemote(URL url, List<URL> registryURLs) {
+    private URL exportRemote(URL url, List<URL> registryURLs, boolean register) {
         if (CollectionUtils.isNotEmpty(registryURLs)) {
             for (URL registryURL : registryURLs) {
                 if (SERVICE_REGISTRY_PROTOCOL.equals(registryURL.getProtocol())) {
@@ -777,7 +795,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                     }
                 }
 
-                doExportUrl(registryURL.putAttribute(EXPORT_KEY, url), true);
+                doExportUrl(registryURL.putAttribute(EXPORT_KEY, url), true, register);
             }
 
         } else {
@@ -786,7 +804,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                 logger.info("Export dubbo service " + interfaceClass.getName() + " to url " + url);
             }
 
-            doExportUrl(url, true);
+            doExportUrl(url, true, register);
         }
 
 
@@ -794,7 +812,10 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private void doExportUrl(URL url, boolean withMetaData) {
+    private void doExportUrl(URL url, boolean withMetaData, boolean register) {
+        if (!register) {
+            url = url.addParameter(REGISTER_KEY, false);
+        }
         Invoker<?> invoker = proxyFactory.getInvoker(ref, (Class) interfaceClass, url);
         if (withMetaData) {
             invoker = new DelegateProviderMetaDataInvoker(invoker, this);
@@ -816,7 +837,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         local = local.setScopeModel(getScopeModel())
             .setServiceModel(providerModel);
         local = local.addParameter(EXPORTER_LISTENER_KEY, LOCAL_PROTOCOL);
-        doExportUrl(local, false);
+        doExportUrl(local, false, true);
         logger.info("Export dubbo service " + interfaceClass.getName() + " to local registry url : " + local);
     }
 

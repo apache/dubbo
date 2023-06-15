@@ -22,6 +22,7 @@ import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.nested.AggregationConfig;
 import org.apache.dubbo.metrics.MetricsConstants;
+import org.apache.dubbo.metrics.aggregate.TimeWindowAggregator;
 import org.apache.dubbo.metrics.aggregate.TimeWindowCounter;
 import org.apache.dubbo.metrics.aggregate.TimeWindowQuantile;
 import org.apache.dubbo.metrics.event.MetricsEvent;
@@ -65,6 +66,8 @@ public class AggregateMetricsCollector implements MetricsCollector<RequestEvent>
     private static final Integer DEFAULT_BUCKET_NUM = 10;
     private static final Integer DEFAULT_TIME_WINDOW_SECONDS = 120;
     private Boolean collectEnabled = null;
+    private final ConcurrentMap<MethodMetric, TimeWindowAggregator> rtAgr = new ConcurrentHashMap<>();
+
 
     public AggregateMetricsCollector(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
@@ -132,17 +135,20 @@ public class AggregateMetricsCollector implements MetricsCollector<RequestEvent>
     }
 
     private void onRTEvent(RequestEvent event) {
-        MethodMetric metric = new MethodMetric(applicationModel.getApplicationName(), event.getAttachmentValue(MetricsConstants.INVOCATION));
+        MethodMetric metric = new MethodMetric(applicationModel, event.getAttachmentValue(MetricsConstants.INVOCATION));
         long responseTime = event.getTimePair().calc();
         TimeWindowQuantile quantile = ConcurrentHashMapUtils.computeIfAbsent(rt, metric, k -> new TimeWindowQuantile(DEFAULT_COMPRESSION, bucketNum, timeWindowSeconds));
         quantile.add(responseTime);
+
+        TimeWindowAggregator timeWindowAggregator = ConcurrentHashMapUtils.computeIfAbsent(rtAgr, metric, methodMetric -> new TimeWindowAggregator(bucketNum, timeWindowSeconds));
+        timeWindowAggregator.add(responseTime);
     }
 
 
     private MethodMetric calcWindowCounter(RequestEvent event, MetricsKey targetKey) {
         MetricsPlaceValue placeType = MetricsPlaceValue.of(event.getAttachmentValue(MetricsConstants.INVOCATION_SIDE), MetricsLevel.SERVICE);
         MetricsKeyWrapper metricsKeyWrapper = new MetricsKeyWrapper(targetKey, placeType);
-        MethodMetric metric = new MethodMetric(applicationModel.getApplicationName(), event.getAttachmentValue(MetricsConstants.INVOCATION));
+        MethodMetric metric = new MethodMetric(applicationModel, event.getAttachmentValue(MetricsConstants.INVOCATION));
 
         ConcurrentMap<MethodMetric, TimeWindowCounter> counter = methodTypeCounter.computeIfAbsent(metricsKeyWrapper, k -> new ConcurrentHashMap<>());
 
@@ -198,7 +204,22 @@ public class AggregateMetricsCollector implements MetricsCollector<RequestEvent>
             list.add(new GaugeMetricSample<>(MetricsKey.METRIC_RT_P99.getNameByType(k.getSide()),
                 MetricsKey.METRIC_RT_P99.getDescription(), k.getTags(), RT, v, value -> value.quantile(0.99)));
             list.add(new GaugeMetricSample<>(MetricsKey.METRIC_RT_P95.getNameByType(k.getSide()),
-                MetricsKey.METRIC_RT_P99.getDescription(), k.getTags(), RT, v, value -> value.quantile(0.95)));
+                MetricsKey.METRIC_RT_P95.getDescription(), k.getTags(), RT, v, value -> value.quantile(0.95)));
+            list.add(new GaugeMetricSample<>(MetricsKey.METRIC_RT_P90.getNameByType(k.getSide()),
+                MetricsKey.METRIC_RT_P90.getDescription(), k.getTags(), RT, v, value -> value.quantile(0.90)));
+            list.add(new GaugeMetricSample<>(MetricsKey.METRIC_RT_P50.getNameByType(k.getSide()),
+                MetricsKey.METRIC_RT_P50.getDescription(), k.getTags(), RT, v, value -> value.quantile(0.50)));
+        });
+
+        rtAgr.forEach((k,v)->{
+            list.add(new GaugeMetricSample<>(MetricsKey.METRIC_RT_MIN_AGG.getNameByType(k.getSide()),
+                MetricsKey.METRIC_RT_MIN_AGG.getDescription(), k.getTags(), RT, v, value -> v.get().getMin()));
+
+            list.add(new GaugeMetricSample<>(MetricsKey.METRIC_RT_MAX_AGG.getNameByType(k.getSide()),
+                MetricsKey.METRIC_RT_MAX_AGG.getDescription(), k.getTags(), RT, v, value -> v.get().getMax()));
+
+            list.add(new GaugeMetricSample<>(MetricsKey.METRIC_RT_AVG_AGG.getNameByType(k.getSide()),
+                MetricsKey.METRIC_RT_AVG_AGG.getDescription(), k.getTags(), RT, v, value -> v.get().getAvg()));
         });
     }
 

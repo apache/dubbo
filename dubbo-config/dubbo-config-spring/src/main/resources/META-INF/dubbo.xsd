@@ -624,6 +624,11 @@
                 <xsd:documentation><![CDATA[ Thread num for asynchronous export pool size. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
+        <xsd:attribute name="check-reference-timeout" type="xsd:long">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The timeout to check references. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
     </xsd:complexType>
 
     <xsd:complexType name="registryType">
@@ -1087,9 +1092,21 @@
             </xsd:annotation>
         </xsd:attribute>
 
+        <xsd:attribute name="export-metrics-service" type="xsd:boolean" default="true">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Enable export metrics service. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+
         <xsd:attribute name="port" type="xsd:string">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ Deprecated. No longer use. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+
+        <xsd:attribute name="enable-rpc" type="xsd:boolean" default="true">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Enable record rpc metrics. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
     </xsd:complexType>

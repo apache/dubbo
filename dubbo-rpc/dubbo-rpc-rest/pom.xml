@@ -25,7 +25,7 @@
 	<artifactId>dubbo-rpc-rest</artifactId>
 	<packaging>jar</packaging>
 	<name>${project.artifactId}</name>
-	<description>The JAX-RS rpc module of dubbo project</description>
+	<description>The rest rpc module of dubbo project</description>
 	<properties>
         <skip_maven_deploy>false</skip_maven_deploy>
 	</properties>
@@ -40,6 +40,12 @@
             <artifactId>dubbo-remoting-http</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-remoting-netty4</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+
         <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-cluster</artifactId>
@@ -117,12 +123,6 @@
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-metadata-rest</artifactId>
             <version>${project.parent.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
-            <scope>provided</scope>
         </dependency>
 
         <dependency>

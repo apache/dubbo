@@ -16,6 +16,7 @@
  */
 package com.alibaba.dubbo.registry.support;
 
+import com.alibaba.dubbo.common.DelegateURL;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.registry.NotifyListener;
 import com.alibaba.dubbo.registry.Registry;
@@ -87,12 +88,12 @@ public abstract class FailbackRegistry implements org.apache.dubbo.registry.Regi
 
     @Override
     public List<URL> lookup(URL url) {
-        return failbackRegistry.lookup(url.getOriginalURL()).stream().map(e -> new URL(e)).collect(Collectors.toList());
+        return failbackRegistry.lookup(url.getOriginalURL()).stream().map(e -> new DelegateURL(e)).collect(Collectors.toList());
     }
 
     @Override
     public URL getUrl() {
-        return new URL(failbackRegistry.getUrl());
+        return new DelegateURL(failbackRegistry.getUrl());
     }
 
     @Override
@@ -112,22 +113,22 @@ public abstract class FailbackRegistry implements org.apache.dubbo.registry.Regi
 
     @Override
     public void register(org.apache.dubbo.common.URL url) {
-        this.register(new URL(url));
+        this.register(new DelegateURL(url));
     }
 
     @Override
     public void unregister(org.apache.dubbo.common.URL url) {
-        this.unregister(new URL(url));
+        this.unregister(new DelegateURL(url));
     }
 
     @Override
     public void subscribe(org.apache.dubbo.common.URL url, org.apache.dubbo.registry.NotifyListener listener) {
-        this.subscribe(new URL(url), new NotifyListener.CompatibleNotifyListener(listener));
+        this.subscribe(new DelegateURL(url), new NotifyListener.CompatibleNotifyListener(listener));
     }
 
     @Override
     public void unsubscribe(org.apache.dubbo.common.URL url, org.apache.dubbo.registry.NotifyListener listener) {
-        this.unsubscribe(new URL(url), new NotifyListener.CompatibleNotifyListener(listener));
+        this.unsubscribe(new DelegateURL(url), new NotifyListener.CompatibleNotifyListener(listener));
     }
 
     @Override
@@ -147,22 +148,22 @@ public abstract class FailbackRegistry implements org.apache.dubbo.registry.Regi
 
         @Override
         public void doRegister(org.apache.dubbo.common.URL url) {
-            this.compatibleFailbackRegistry.doRegister(new URL(url));
+            this.compatibleFailbackRegistry.doRegister(new DelegateURL(url));
         }
 
         @Override
         public void doUnregister(org.apache.dubbo.common.URL url) {
-            this.compatibleFailbackRegistry.doUnregister(new URL(url));
+            this.compatibleFailbackRegistry.doUnregister(new DelegateURL(url));
         }
 
         @Override
         public void doSubscribe(org.apache.dubbo.common.URL url, org.apache.dubbo.registry.NotifyListener listener) {
-            this.compatibleFailbackRegistry.doSubscribe(new URL(url), new NotifyListener.CompatibleNotifyListener(listener));
+            this.compatibleFailbackRegistry.doSubscribe(new DelegateURL(url), new NotifyListener.CompatibleNotifyListener(listener));
         }
 
         @Override
         public void doUnsubscribe(org.apache.dubbo.common.URL url, org.apache.dubbo.registry.NotifyListener listener) {
-            this.compatibleFailbackRegistry.doUnsubscribe(new URL(url), new NotifyListener.CompatibleNotifyListener(listener));
+            this.compatibleFailbackRegistry.doUnsubscribe(new DelegateURL(url), new NotifyListener.CompatibleNotifyListener(listener));
         }
 
         @Override

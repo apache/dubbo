@@ -368,7 +368,15 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
     }
 
     @Transient
-    public abstract T get();
+    public abstract T get(boolean check);
+
+    @Transient
+    public abstract void checkOrDestroy(long timeout);
+
+    @Transient
+    public final T get() {
+        return get(true);
+    }
 
     public void destroy() {
         getModuleConfigManager().removeConfig(this);

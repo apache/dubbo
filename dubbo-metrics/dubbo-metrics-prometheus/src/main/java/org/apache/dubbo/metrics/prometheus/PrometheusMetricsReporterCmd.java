@@ -109,7 +109,7 @@ public class PrometheusMetricsReporterCmd implements BaseCommand {
     private String getResponseByApplication(ApplicationModel applicationModel) {
 
         String response = "MetricsReporter not init";
-        MetricsReporter metricsReporter = applicationModel.getBeanFactory().getBean(MetricsReporter.class);
+        MetricsReporter metricsReporter = applicationModel.getBeanFactory().getBean(PrometheusMetricsReporter.class);
         if (metricsReporter != null) {
             long begin = System.currentTimeMillis();
             if (logger.isDebugEnabled()) {

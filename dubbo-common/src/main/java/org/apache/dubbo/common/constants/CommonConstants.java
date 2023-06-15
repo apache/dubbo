@@ -239,6 +239,10 @@ public interface CommonConstants {
 
     String REMOTE_METADATA_STORAGE_TYPE = "remote";
 
+    String INTERFACE_REGISTER_MODE = "interface";
+
+    String DEFAULT_REGISTER_MODE = "all";
+
     String GENERIC_KEY = "generic";
 
     /**
@@ -493,11 +497,6 @@ public interface CommonConstants {
      */
     String URL_MERGE_PROCESSOR_KEY = "url-merge-processor";
 
-    /**
-     * use native image to compile dubbo's identifier
-     */
-    String NATIVE = "native";
-
     String DUBBO_MONITOR_ADDRESS = "dubbo.monitor.address";
 
     String SERVICE_NAME_MAPPING_KEY = "service-name-mapping";
@@ -611,9 +610,7 @@ public interface CommonConstants {
 
 
     /**
-     *
      * used in JVMUtil.java ,Control stack print lines, default is 32 lines
-     *
      */
     String DUBBO_JSTACK_MAXLINE = "dubbo.jstack-dump.max-line";
 
@@ -635,5 +632,7 @@ public interface CommonConstants {
     String PACKABLE_METHOD_FACTORY_KEY = "serialize.packable.factory";
 
     String DUBBO_PACKABLE_METHOD_FACTORY = "dubbo.application.parameters." + PACKABLE_METHOD_FACTORY_KEY;
+
+    String REST_SERVICE_DEPLOYER_URL_ATTRIBUTE_KEY = "restServiceDeployerAttributeKey";
 
 }
