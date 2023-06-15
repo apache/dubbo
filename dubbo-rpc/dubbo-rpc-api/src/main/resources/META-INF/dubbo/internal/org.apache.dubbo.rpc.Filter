@@ -6,11 +6,9 @@ classloader=org.apache.dubbo.rpc.filter.ClassLoaderFilter
 classloader-callback=org.apache.dubbo.rpc.filter.ClassLoaderCallbackFilter
 context=org.apache.dubbo.rpc.filter.ContextFilter
 exception=org.apache.dubbo.rpc.filter.ExceptionFilter
-executelimit=org.apache.dubbo.rpc.filter.ExecuteLimitFilter
 deprecated=org.apache.dubbo.rpc.filter.DeprecatedFilter
 compatible=org.apache.dubbo.rpc.filter.CompatibleFilter
 timeout=org.apache.dubbo.rpc.filter.TimeoutFilter
-tps=org.apache.dubbo.rpc.filter.TpsLimitFilter
 profiler-server=org.apache.dubbo.rpc.filter.ProfilerServerFilter
 adaptiveLoadBalance=org.apache.dubbo.rpc.filter.AdaptiveLoadBalanceFilter
-active-limit=org.apache.dubbo.rpc.filter.ActiveLimitFilter
+

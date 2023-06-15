@@ -43,6 +43,7 @@
         <module>dubbo-plugin-router-tag</module>
         <module>dubbo-plugin-loadbalance-adaptive</module>
         <module>dubbo-plugin-access-log</module>
+        <module>dubbo-plugin-tps</module>
     </modules>
     <properties>
         <skip_maven_deploy>false</skip_maven_deploy>
