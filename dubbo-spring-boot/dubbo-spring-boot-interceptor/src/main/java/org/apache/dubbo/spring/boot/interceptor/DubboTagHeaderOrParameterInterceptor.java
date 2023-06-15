@@ -29,7 +29,7 @@ public class DubboTagHeaderOrParameterInterceptor implements HandlerInterceptor 
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         String tag = request.getHeader(CommonConstants.DUBBO_TAG_HEADER);
         if (tag == null) {
-            tag = request.getParameter(CommonConstants.DUBBO_TAG_HEADER);
+            tag = request.getParameter(CommonConstants.TAG_KEY);
         }
         if (tag != null) {
             RpcContext.getClientAttachment().setAttachment(CommonConstants.TAG_KEY, tag);
