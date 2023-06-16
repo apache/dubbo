@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.proxy.bytebuddy;
+package org.apache.dubbo.rpc.support;
 
-import org.apache.dubbo.rpc.proxy.AbstractProxyTest;
+/**
+ * DemoServiceImpl
+ */
 
-class ByteBuddyProxyFactoryTest extends AbstractProxyTest {
-
-    static {
-        factory = new ByteBuddyProxyFactory();
+public class DemoServiceImpl implements DemoService {
+    public String echo(String text) {
+        return text;
     }
-
 }

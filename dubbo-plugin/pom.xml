@@ -48,6 +48,7 @@
         <module>dubbo-plugin-generic-invoke</module>
         <module>dubbo-plugin-context</module>
         <module>dubbo-plugin-classloader-filter</module>
+        <module>dubbo-plugin-proxy-bytebuddy</module>
     </modules>
     <properties>
         <skip_maven_deploy>false</skip_maven_deploy>
