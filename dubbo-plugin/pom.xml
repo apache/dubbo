@@ -46,6 +46,7 @@
         <module>dubbo-plugin-tps</module>
         <module>dubbo-plugin-token</module>
         <module>dubbo-plugin-generic-invoke</module>
+        <module>dubbo-plugin-context</module>
     </modules>
     <properties>
         <skip_maven_deploy>false</skip_maven_deploy>

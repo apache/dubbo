@@ -1,7 +1,6 @@
 echo=org.apache.dubbo.rpc.filter.EchoFilter
 classloader=org.apache.dubbo.rpc.filter.ClassLoaderFilter
 classloader-callback=org.apache.dubbo.rpc.filter.ClassLoaderCallbackFilter
-context=org.apache.dubbo.rpc.filter.ContextFilter
 exception=org.apache.dubbo.rpc.filter.ExceptionFilter
 deprecated=org.apache.dubbo.rpc.filter.DeprecatedFilter
 compatible=org.apache.dubbo.rpc.filter.CompatibleFilter
