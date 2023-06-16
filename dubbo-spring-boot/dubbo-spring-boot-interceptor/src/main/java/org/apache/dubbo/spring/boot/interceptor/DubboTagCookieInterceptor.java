@@ -33,6 +33,11 @@ public class DubboTagCookieInterceptor implements HandlerInterceptor {
         return true;
     }
 
+    @Override
+    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
+        RpcContext.getClientAttachment().removeAttachment(CommonConstants.TAG_KEY);
+    }
+
     private static String getSingleCookieValue(Cookie[] cookies, String name){
         if (cookies == null || cookies.length == 0) {
             return null;
