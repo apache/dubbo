@@ -30,7 +30,7 @@ import org.apache.dubbo.registry.client.migration.MigrationRuleListener;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.cluster.support.FailoverCluster;
-import org.apache.dubbo.rpc.cluster.support.MergeableCluster;
+//import org.apache.dubbo.rpc.cluster.support.MergeableCluster;
 //import org.apache.dubbo.rpc.cluster.support.wrapper.MockClusterWrapper;
 import org.apache.dubbo.rpc.cluster.support.wrapper.ScopeClusterWrapper;
 import org.apache.dubbo.rpc.model.ApplicationModel;
