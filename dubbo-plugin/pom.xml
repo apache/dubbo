@@ -47,6 +47,7 @@
         <module>dubbo-plugin-token</module>
         <module>dubbo-plugin-generic-invoke</module>
         <module>dubbo-plugin-context</module>
+        <module>dubbo-plugin-classloader-filter</module>
     </modules>
     <properties>
         <skip_maven_deploy>false</skip_maven_deploy>
