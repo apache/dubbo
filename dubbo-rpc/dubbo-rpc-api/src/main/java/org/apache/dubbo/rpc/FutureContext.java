@@ -123,4 +123,8 @@ public class FutureContext {
         }
     }
 
+    public void clearFuture() {
+        this.compatibleFuture = null;
+        this.future = null;
+    }
 }
