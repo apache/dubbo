@@ -44,6 +44,7 @@
         <module>dubbo-plugin-loadbalance-adaptive</module>
         <module>dubbo-plugin-access-log</module>
         <module>dubbo-plugin-tps</module>
+        <module>dubbo-plugin-token</module>
     </modules>
     <properties>
         <skip_maven_deploy>false</skip_maven_deploy>
