@@ -114,4 +114,5 @@ dubbo-nacos-spring-boot-starter
 dubbo-zookeeper-spring-boot-starter
 dubbo-zookeeper-curator5-spring-boot-starter
 dubbo-spring-security
+dubbo-tracing
 dubbo-xds
