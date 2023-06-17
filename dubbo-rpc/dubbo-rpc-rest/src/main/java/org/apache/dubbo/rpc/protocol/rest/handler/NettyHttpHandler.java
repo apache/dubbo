@@ -27,13 +27,13 @@ import org.apache.dubbo.rpc.protocol.rest.exception.MediaTypeUnSupportException;
 import org.apache.dubbo.rpc.protocol.rest.exception.ParamParseException;
 import org.apache.dubbo.rpc.protocol.rest.exception.PathNoFoundException;
 import org.apache.dubbo.rpc.protocol.rest.filter.RestFilter;
-import org.apache.dubbo.rpc.protocol.rest.filter.RestFilterChain;
 import org.apache.dubbo.rpc.protocol.rest.filter.ServiceInvokeRestFilter;
 import org.apache.dubbo.rpc.protocol.rest.netty.NettyHttpResponse;
 import org.apache.dubbo.rpc.protocol.rest.request.NettyRequestFacade;
 import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
 
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.List;
 
 import static org.apache.dubbo.common.constants.CommonConstants.SERVICE_DEPLOYER_ATTRIBUTE_KEY;
@@ -78,11 +78,10 @@ public class NettyHttpHandler implements HttpHandler<NettyRequestFacade, NettyHt
         try {
             new RestFilter() {
                 @Override
-                public void filter(URL url, RequestFacade requestFacade, NettyHttpResponse response, RestFilterChain restFilterChain) throws Exception {
-
-                    restFilterChain.filter(url, requestFacade, response, restFilterChain);
+                public void filter(URL url, RequestFacade requestFacade, NettyHttpResponse response, Iterator<RestFilter> restFilterIterator) throws Exception {
+                    iteratorFilter(url, requestFacade, response, restFilterIterator);
                 }
-            }.filter(url, requestFacade, nettyHttpResponse, new RestFilterChain(restFilters));
+            }.filter(url, requestFacade, nettyHttpResponse, restFilters.iterator());
 
         } catch (PathNoFoundException pathNoFoundException) {
             logger.error("", pathNoFoundException.getMessage(), "", "dubbo rest protocol provider path   no found ,raw request is :" + nettyHttpRequest, pathNoFoundException);

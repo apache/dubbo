@@ -22,12 +22,22 @@ import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.rpc.protocol.rest.netty.NettyHttpResponse;
 import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
 
+import java.util.Iterator;
+
 /**
- *  Rest filter will be invoked before http handler
- *
+ * Rest filter will be invoked before http handler
  */
 @SPI(scope = ExtensionScope.FRAMEWORK)
 public interface RestFilter {
 
-    void filter(URL url, RequestFacade requestFacade, NettyHttpResponse response, RestFilterChain restFilterChain) throws Exception;
+    void filter(URL url, RequestFacade requestFacade, NettyHttpResponse response, Iterator<RestFilter> restFilterIterator) throws Exception;
+
+    default void iteratorFilter(URL url, RequestFacade requestFacade, NettyHttpResponse response, Iterator<RestFilter> restFilterIterator) throws Exception {
+        if (!restFilterIterator.hasNext()) {
+            return;
+        }
+
+        restFilterIterator.next().filter(url, requestFacade, response, restFilterIterator);
+
+    }
 }

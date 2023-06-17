@@ -41,6 +41,7 @@ public class RestHttpRequestDecoder extends MessageToMessageDecoder<io.netty.han
     private final Executor executor;
     private final ServiceDeployer serviceDeployer;
     private final URL url;
+    private final NettyHttpHandler nettyHttpHandler;
 
 
     public RestHttpRequestDecoder(URL url, ServiceDeployer serviceDeployer) {
@@ -48,6 +49,7 @@ public class RestHttpRequestDecoder extends MessageToMessageDecoder<io.netty.han
         this.url = url;
         this.serviceDeployer = serviceDeployer;
         executor = url.getOrDefaultFrameworkModel().getExtensionLoader(ThreadPool.class).getAdaptiveExtension().getExecutor(url);
+        nettyHttpHandler = new NettyHttpHandler(serviceDeployer, url);
     }
 
 
@@ -62,7 +64,7 @@ public class RestHttpRequestDecoder extends MessageToMessageDecoder<io.netty.han
 
             // business handler
             try {
-                new NettyHttpHandler(serviceDeployer, url).handle(requestFacade, nettyHttpResponse);
+                nettyHttpHandler.handle(requestFacade, nettyHttpResponse);
 
             } catch (IOException e) {
                 logger.error("", e.getCause().getMessage(), "dubbo rest rest http request handler error", e.getMessage(), e);

@@ -24,11 +24,21 @@ import org.apache.dubbo.rpc.protocol.rest.deploy.ServiceDeployer;
 import org.apache.dubbo.rpc.protocol.rest.netty.NettyHttpResponse;
 import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
 
+import java.util.Iterator;
+
 /**
  * RestResponseInterceptorChain will take effect before result is written to response
  */
 @SPI(scope = ExtensionScope.FRAMEWORK)
 public interface RestResponseInterceptor {
 
-    void intercept(URL url, RequestFacade request, NettyHttpResponse response, Object result, RpcInvocation rpcInvocation, RestResponseInterceptorChain interceptorChain, ServiceDeployer serviceDeployer) throws Exception;
+    void intercept(URL url, RequestFacade request, NettyHttpResponse response, Object result, RpcInvocation rpcInvocation,Iterator<RestResponseInterceptor> interceptorIterator, ServiceDeployer serviceDeployer) throws Exception;
+
+    default void iteratorIntercept(URL url, RequestFacade request, NettyHttpResponse response, Object result, RpcInvocation rpcInvocation, Iterator<RestResponseInterceptor> interceptorIterator, ServiceDeployer serviceDeployer) throws Exception {
+        if (!interceptorIterator.hasNext()) {
+            return;
+        }
+
+        interceptorIterator.next().intercept(url, request, response, result, rpcInvocation, interceptorIterator, serviceDeployer);
+    }
 }

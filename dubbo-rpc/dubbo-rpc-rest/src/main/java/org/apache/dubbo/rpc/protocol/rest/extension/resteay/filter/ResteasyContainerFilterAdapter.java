@@ -22,12 +22,12 @@ import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.protocol.rest.extension.ServiceDeployerContext;
 import org.apache.dubbo.rpc.protocol.rest.filter.RestFilter;
 import org.apache.dubbo.rpc.protocol.rest.extension.resteay.ResteasyContext;
-import org.apache.dubbo.rpc.protocol.rest.filter.RestFilterChain;
 import org.apache.dubbo.rpc.protocol.rest.netty.NettyHttpResponse;
 import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
 import org.jboss.resteasy.specimpl.BuiltResponse;
 
 import javax.ws.rs.container.ContainerRequestFilter;
+import java.util.Iterator;
 import java.util.List;
 
 import static org.apache.dubbo.common.constants.CommonConstants.RESTEASY_NETTY_HTTP_REQUEST_ATTRIBUTE_KEY;
@@ -38,12 +38,13 @@ public class ResteasyContainerFilterAdapter implements RestFilter, ServiceDeploy
 
 
     @Override
-    public void filter(URL url, RequestFacade requestFacade, NettyHttpResponse response, RestFilterChain restFilterChain) throws Exception {
+    public void filter(URL url, RequestFacade requestFacade, NettyHttpResponse response, Iterator<RestFilter> restFilterIterator) throws Exception {
 
         List<ContainerRequestFilter> containerRequestFilters = getExtension(ContainerRequestFilter.class);
 
         if (containerRequestFilters.isEmpty()) {
-            restFilterChain.filter(url, requestFacade, response, restFilterChain);
+
+            iteratorFilter(url, requestFacade, response, restFilterIterator);
             return;
         }
 
@@ -59,7 +60,7 @@ public class ResteasyContainerFilterAdapter implements RestFilter, ServiceDeploy
             BuiltResponse restResponse = containerRequestContext.filter();
 
             if (restResponse == null) {
-                restFilterChain.filter(url, requestFacade, response, restFilterChain);
+                iteratorFilter(url, requestFacade, response, restFilterIterator);
                 return;
             }
 

@@ -24,6 +24,8 @@ import org.apache.dubbo.rpc.protocol.rest.netty.NettyHttpResponse;
 import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
 
 
+import java.util.Iterator;
+
 import static org.apache.dubbo.rpc.protocol.rest.filter.ServiceInvokeRestFilter.writeResult;
 
 /**
@@ -33,9 +35,8 @@ import static org.apache.dubbo.rpc.protocol.rest.filter.ServiceInvokeRestFilter.
 public class ServiceInvokeRestResponseInterceptor implements RestResponseInterceptor {
 
     @Override
-    public void intercept(URL url, RequestFacade request, NettyHttpResponse nettyHttpResponse, Object result, RpcInvocation rpcInvocation, RestResponseInterceptorChain interceptorChain, ServiceDeployer serviceDeployer) throws Exception {
+    public void intercept(URL url, RequestFacade request, NettyHttpResponse nettyHttpResponse, Object result, RpcInvocation rpcInvocation, Iterator<RestResponseInterceptor> interceptorIterator, ServiceDeployer serviceDeployer) throws Exception {
 
         writeResult(nettyHttpResponse, request, url, result, rpcInvocation.getReturnType());
-        nettyHttpResponse.setStatus(200);
     }
 }

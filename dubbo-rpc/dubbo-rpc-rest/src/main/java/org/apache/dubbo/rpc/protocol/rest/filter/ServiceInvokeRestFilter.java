@@ -42,6 +42,7 @@ import org.apache.dubbo.rpc.protocol.rest.request.NettyRequestFacade;
 import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
 import org.apache.dubbo.rpc.protocol.rest.util.MediaTypeUtil;
 
+import java.util.Iterator;
 import java.util.List;
 
 
@@ -52,7 +53,7 @@ public class ServiceInvokeRestFilter implements RestFilter, ServiceDeployerConte
 
 
     @Override
-    public void filter(URL url, RequestFacade requestFacade, NettyHttpResponse nettyHttpResponse, RestFilterChain restFilterChain) throws Exception {
+    public void filter(URL url, RequestFacade requestFacade, NettyHttpResponse nettyHttpResponse, Iterator<RestFilter> restFilterIterator) throws Exception {
         NettyRequestFacade nettyRequestFacade = (NettyRequestFacade) requestFacade;
 
         FullHttpRequest nettyHttpRequest = nettyRequestFacade.getRequest();
@@ -120,10 +121,10 @@ public class ServiceInvokeRestFilter implements RestFilter, ServiceDeployerConte
             // invoke the intercept chain before Result  write to  response
             new RestResponseInterceptor() {
                 @Override
-                public void intercept(URL url, RequestFacade request, NettyHttpResponse response, Object result, RpcInvocation rpcInvocation, RestResponseInterceptorChain interceptorChain, ServiceDeployer serviceDeployer) throws Exception {
-                    interceptorChain.intercept(url, request, response, result, rpcInvocation, interceptorChain, serviceDeployer);
+                public void intercept(URL url, RequestFacade request, NettyHttpResponse response, Object result, RpcInvocation rpcInvocation, Iterator<RestResponseInterceptor> interceptorIterator, ServiceDeployer serviceDeployer) throws Exception {
+                    iteratorIntercept(url, request, response, result, rpcInvocation, interceptorIterator, serviceDeployer);
                 }
-            }.intercept(url, request, nettyHttpResponse, result.getValue(), rpcInvocation, new RestResponseInterceptorChain(restResponseInterceptors), serviceDeployer);
+            }.intercept(url, request, nettyHttpResponse, result.getValue(), rpcInvocation, restResponseInterceptors.iterator(), serviceDeployer);
 
         }
     }
