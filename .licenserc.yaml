@@ -199,9 +199,25 @@ dependency:
       license: Apache-2.0
     - name: org.sonatype.plexus:plexus-cipher
       license: Apache-2.0
+    - name: com.alibaba.csp:sentinel-apache-dubbo3-adapter
+      license: Apache-2.0
+    - name: com.alibaba.csp:sentinel-transport-simple-http
+      license: Apache-2.0
+    - name: com.alibaba.csp:sentinel-transport-common
+      license: Apache-2.0
+    - name: com.alibaba.csp:sentinel-datasource-extension
+      license: Apache-2.0
+    - name: com.alibaba.csp:sentinel-core
+      license: Apache-2.0
     - name: com.google.protobuf:protobuf-java
       license: BSD 3-clause
     - name: com.google.protobuf:protobuf-java-util
+      license: BSD 3-clause
+    - name: org.antlr:antlr4
+      license: BSD 3-clause
+    - name: org.antlr:antlr-runtime
+      license: BSD 3-clause
+    - name: org.antlr:ST4
       license: BSD 3-clause
     # multi license
     - name: org.javassist:javassist
