@@ -26,7 +26,6 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
 
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_TAG_ROUTE_EMPTY;
 import static org.apache.dubbo.common.utils.StringUtils.isEmpty;
 
 /**
@@ -55,7 +54,7 @@ public class ProviderAppStateRouter<T> extends ListenableStateRouter<T> {
 
         // provider application is empty or equals with the current application
         if (isEmpty(providerApplication) || providerApplication.equals(currentApplication)) {
-            logger.warn(CLUSTER_TAG_ROUTE_EMPTY, "condition router get providerApplication is empty, will not subscribe to provider app rules.", "", "");
+            logger.info("Condition router get providerApplication is empty, will not subscribe to provider app rules. Service Key:" + url.getServiceKey());
             return;
         }
 
@@ -72,6 +71,14 @@ public class ProviderAppStateRouter<T> extends ListenableStateRouter<T> {
                     this.process(new ConfigChangedEvent(key, DynamicConfiguration.DEFAULT_GROUP, rawRule));
                 }
             }
+        }
+    }
+
+    @Override
+    public void stop() {
+        super.stop();
+        if (StringUtils.isNotEmpty(application)) {
+            this.getRuleRepository().removeListener(application + RULE_SUFFIX, this);
         }
     }
 }
