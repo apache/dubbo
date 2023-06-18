@@ -17,6 +17,7 @@
 package org.apache.dubbo.remoting.exchange.support.header;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -132,6 +133,8 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
     public void connected(Channel channel) throws RemotingException {
         ExchangeChannel exchangeChannel = HeaderExchangeChannel.getOrAddChannel(channel);
         handler.connected(exchangeChannel);
+        channel.setAttribute(Constants.CHANNEL_SHUTDOWN_TIMEOUT_KEY,
+            ConfigurationUtils.getServerShutdownTimeout(channel.getUrl().getOrDefaultApplicationModel()));
     }
 
     @Override
@@ -140,7 +143,12 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
         try {
             handler.disconnected(exchangeChannel);
         } finally {
-            DefaultFuture.closeChannel(channel);
+            int shutdownTimeout = 0;
+            Object timeoutObj = channel.getAttribute(Constants.CHANNEL_SHUTDOWN_TIMEOUT_KEY);
+            if (timeoutObj instanceof Integer) {
+                shutdownTimeout = (Integer) timeoutObj;
+            }
+            DefaultFuture.closeChannel(channel, shutdownTimeout);
             HeaderExchangeChannel.removeChannel(channel);
         }
     }
