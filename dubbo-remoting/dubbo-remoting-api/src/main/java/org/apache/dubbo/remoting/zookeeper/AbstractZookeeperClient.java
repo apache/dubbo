@@ -132,6 +132,9 @@ public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildLis
             if (targetListener != null) {
                 removeTargetDataListener(path, targetListener);
             }
+            if (dataListenerMap.isEmpty()) {
+                listeners.remove(path);
+            }
         }
     }
 
@@ -142,6 +145,9 @@ public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildLis
             TargetChildListener targetListener = listeners.remove(listener);
             if (targetListener != null) {
                 removeTargetChildListener(path, targetListener);
+            }
+            if (listeners.isEmpty()) {
+                childListeners.remove(path);
             }
         }
     }

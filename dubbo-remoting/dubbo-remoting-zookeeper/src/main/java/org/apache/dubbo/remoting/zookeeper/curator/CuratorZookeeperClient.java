@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.ConfigItem;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.zookeeper.AbstractZookeeperClient;
@@ -47,10 +48,12 @@ import org.apache.zookeeper.ZooDefs;
 import org.apache.zookeeper.data.ACL;
 import org.apache.zookeeper.data.Stat;
 
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
@@ -69,7 +72,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
 
     private static final Charset CHARSET = StandardCharsets.UTF_8;
     private final CuratorFramework client;
-    private static final Map<String, NodeCache> nodeCacheMap = new ConcurrentHashMap<>();
+    private final Map<String, NodeCacheWrapper> nodeCacheMap = new ConcurrentHashMap<>();
 
     public CuratorZookeeperClient(URL url) {
         super(url);
@@ -366,7 +369,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
 
     @Override
     protected CuratorZookeeperClient.NodeCacheListenerImpl createTargetDataListener(String path, DataListener listener) {
-        return new NodeCacheListenerImpl(listener, path);
+        return new NodeCacheListenerImpl(this, listener, path);
     }
 
     @Override
@@ -377,14 +380,14 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
     @Override
     protected void addTargetDataListener(String path, CuratorZookeeperClient.NodeCacheListenerImpl nodeCacheListener, Executor executor) {
         try {
-            NodeCache nodeCache = new NodeCache(client, path);
+            NodeCacheWrapper nodeCache = new NodeCacheWrapper(new NodeCache(client, path));
             if (nodeCacheMap.putIfAbsent(path, nodeCache) != null) {
                 return;
             }
             if (executor == null) {
-                nodeCache.getListenable().addListener(nodeCacheListener);
+                nodeCache.addListener(nodeCacheListener);
             } else {
-                nodeCache.getListenable().addListener(nodeCacheListener, executor);
+                nodeCache.addListener(nodeCacheListener, executor);
             }
 
             nodeCache.start();
@@ -395,20 +398,33 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
 
     @Override
     protected void removeTargetDataListener(String path, CuratorZookeeperClient.NodeCacheListenerImpl nodeCacheListener) {
-        NodeCache nodeCache = nodeCacheMap.get(path);
-        if (nodeCache != null) {
-            nodeCache.getListenable().removeListener(nodeCacheListener);
+        try {
+            NodeCacheWrapper nodeCache = nodeCacheMap.get(path);
+            if (nodeCache != null) {
+                nodeCache.removeListener(nodeCacheListener);
+                if (nodeCache.isEmptyListener()) {
+                    nodeCache.close();
+                }
+            }
+            nodeCacheListener.dataListener = null;
+        } catch (Exception e) {
+            throw new IllegalStateException("Remove nodeCache listener for path:" + path, e);
         }
-        nodeCacheListener.dataListener = null;
     }
 
     @Override
     public void removeTargetChildListener(String path, CuratorWatcherImpl listener) {
-        listener.unwatch();
+        try {
+            listener.unwatch();
+            client.watches().remove(listener).forPath(path);
+        } catch (Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
     }
 
     static class NodeCacheListenerImpl implements NodeCacheListener {
 
+        private CuratorZookeeperClient client;
         private volatile DataListener dataListener;
 
         private String path;
@@ -416,14 +432,15 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
         protected NodeCacheListenerImpl() {
         }
 
-        public NodeCacheListenerImpl(DataListener dataListener, String path) {
+        public NodeCacheListenerImpl(CuratorZookeeperClient client, DataListener dataListener, String path) {
+            this.client = client;
             this.dataListener = dataListener;
             this.path = path;
         }
 
         @Override
         public void nodeChanged() throws Exception {
-            ChildData childData = nodeCacheMap.get(path).getCurrentData();
+            ChildData childData = client.nodeCacheMap.get(path).getCurrentData();
             String content = null;
             EventType eventType;
             if (childData == null) {
@@ -540,6 +557,52 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
                 }
             }
         }
+    }
+
+    static class NodeCacheWrapper {
+        private final NodeCache nodeCache;
+
+        private final Set<NodeCacheListener> listeners = new ConcurrentHashSet<>();
+
+        public NodeCacheWrapper(NodeCache nodeCache) {
+            this.nodeCache = nodeCache;
+        }
+
+        public ChildData getCurrentData() {
+            return nodeCache.getCurrentData();
+        }
+
+        public void addListener(NodeCacheListener listener) {
+            if (listeners.add(listener)) {
+                nodeCache.getListenable().addListener(listener);
+            }
+        }
+
+        public void addListener(NodeCacheListener listener, Executor executor) {
+            if (listeners.add(listener)) {
+                nodeCache.getListenable().addListener(listener, executor);
+            }
+        }
+
+        public void removeListener(NodeCacheListener listener) {
+            if (listeners.remove(listener)) {
+                nodeCache.getListenable().removeListener(listener);
+            }
+        }
+
+        public boolean isEmptyListener() {
+            return listeners.isEmpty();
+        }
+
+        public void start() throws Exception {
+            nodeCache.start();
+        }
+
+        public void close() throws IOException {
+            nodeCache.close();
+        }
+
+
     }
 
     /**
