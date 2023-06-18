@@ -160,8 +160,8 @@ class ConfigCenterConfigTest {
 
         ApplicationModel.defaultModel().getDefaultModule();
         // Config instance has id, dubbo props has no id
-        ApplicationModel.defaultModel().getModelEnvironment().getPropertiesConfiguration().setProperty("dubbo.config-center.check", "false");
-        ApplicationModel.defaultModel().getModelEnvironment().getPropertiesConfiguration().setProperty("dubbo.config-center.timeout", "1234");
+        ApplicationModel.defaultModel().modelEnvironment().getPropertiesConfiguration().setProperty("dubbo.config-center.check", "false");
+        ApplicationModel.defaultModel().modelEnvironment().getPropertiesConfiguration().setProperty("dubbo.config-center.timeout", "1234");
 
         try {
             // Config instance has id
@@ -179,7 +179,7 @@ class ConfigCenterConfigTest {
             Assertions.assertEquals(3000L, configCenter.getTimeout());
             Assertions.assertEquals(false, configCenter.isCheck());
         } finally {
-            ApplicationModel.defaultModel().getModelEnvironment().getPropertiesConfiguration().refresh();
+            ApplicationModel.defaultModel().modelEnvironment().getPropertiesConfiguration().refresh();
             DubboBootstrap.getInstance().stop();
         }
     }
@@ -215,8 +215,8 @@ class ConfigCenterConfigTest {
 
         ApplicationModel.defaultModel().getDefaultModule();
         // Config instance has id, dubbo props has id
-        ApplicationModel.defaultModel().getModelEnvironment().getPropertiesConfiguration().setProperty("dubbo.config-centers.configcenterA.check", "false");
-        ApplicationModel.defaultModel().getModelEnvironment().getPropertiesConfiguration().setProperty("dubbo.config-centers.configcenterA.timeout", "1234");
+        ApplicationModel.defaultModel().modelEnvironment().getPropertiesConfiguration().setProperty("dubbo.config-centers.configcenterA.check", "false");
+        ApplicationModel.defaultModel().modelEnvironment().getPropertiesConfiguration().setProperty("dubbo.config-centers.configcenterA.timeout", "1234");
 
         try {
             // Config instance has id
@@ -235,7 +235,7 @@ class ConfigCenterConfigTest {
             Assertions.assertEquals(3000L, configCenter.getTimeout());
             Assertions.assertEquals(false, configCenter.isCheck());
         } finally {
-            ApplicationModel.defaultModel().getModelEnvironment().getPropertiesConfiguration().refresh();
+            ApplicationModel.defaultModel().modelEnvironment().getPropertiesConfiguration().refresh();
             DubboBootstrap.getInstance().stop();
         }
     }

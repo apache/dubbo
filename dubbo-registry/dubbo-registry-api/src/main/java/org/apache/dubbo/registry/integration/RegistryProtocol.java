@@ -276,7 +276,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         exporter.setRegistered(register);
 
         ApplicationModel applicationModel = getApplicationModel(providerUrl.getScopeModel());
-        if (applicationModel.getModelEnvironment().getConfiguration().convert(Boolean.class, ENABLE_26X_CONFIGURATION_LISTEN, true)) {
+        if (applicationModel.modelEnvironment().getConfiguration().convert(Boolean.class, ENABLE_26X_CONFIGURATION_LISTEN, true)) {
             if (!registry.isServiceDiscovery()) {
                 // Deprecated! Subscribe to override rules in 2.6.x or before.
                 registry.subscribe(overrideSubscribeUrl, overrideSubscribeListener);
@@ -657,7 +657,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         }
 
         for (ApplicationModel applicationModel : frameworkModel.getApplicationModels()) {
-            if (applicationModel.getModelEnvironment().getConfiguration().convert(Boolean.class, org.apache.dubbo.registry.Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
+            if (applicationModel.modelEnvironment().getConfiguration().convert(Boolean.class, org.apache.dubbo.registry.Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
                 for (ModuleModel moduleModel : applicationModel.getPubModuleModels()) {
                     String applicationName = applicationModel.tryGetApplicationName();
                     if (applicationName == null) {
@@ -869,7 +869,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
             this.providerUrl = providerUrl;
             this.notifyListener = notifyListener;
             this.moduleModel = moduleModel;
-            if (moduleModel.getModelEnvironment().getConfiguration().convert(Boolean.class, ENABLE_CONFIGURATION_LISTEN, true)) {
+            if (moduleModel.modelEnvironment().getConfiguration().convert(Boolean.class, ENABLE_CONFIGURATION_LISTEN, true)) {
                 this.initWith(DynamicConfiguration.getRuleKey(providerUrl) + CONFIGURATORS_SUFFIX);
             }
         }
@@ -899,7 +899,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         public ProviderConfigurationListener(ModuleModel moduleModel) {
             super(moduleModel);
             this.moduleModel = moduleModel;
-            if (moduleModel.getModelEnvironment().getConfiguration().convert(Boolean.class, ENABLE_CONFIGURATION_LISTEN, true)) {
+            if (moduleModel.modelEnvironment().getConfiguration().convert(Boolean.class, ENABLE_CONFIGURATION_LISTEN, true)) {
                 this.initWith(moduleModel.getApplicationModel().getApplicationName() + CONFIGURATORS_SUFFIX);
             }
         }
@@ -1009,12 +1009,12 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
                         if (listeners != null) {
                             if (listeners.remove(notifyListener)) {
                                 ApplicationModel applicationModel = getApplicationModel(registerUrl.getScopeModel());
-                                if (applicationModel.getModelEnvironment().getConfiguration().convert(Boolean.class, ENABLE_26X_CONFIGURATION_LISTEN, true)) {
+                                if (applicationModel.modelEnvironment().getConfiguration().convert(Boolean.class, ENABLE_26X_CONFIGURATION_LISTEN, true)) {
                                     if (!registry.isServiceDiscovery()) {
                                         registry.unsubscribe(subscribeUrl, notifyListener);
                                     }
                                 }
-                                if (applicationModel.getModelEnvironment().getConfiguration().convert(Boolean.class, ENABLE_CONFIGURATION_LISTEN, true)) {
+                                if (applicationModel.modelEnvironment().getConfiguration().convert(Boolean.class, ENABLE_CONFIGURATION_LISTEN, true)) {
                                     for (ModuleModel moduleModel : applicationModel.getPubModuleModels()) {
                                         if (moduleModel.getServiceRepository().getExportedServices().size() > 0) {
                                             moduleModel.getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension()
