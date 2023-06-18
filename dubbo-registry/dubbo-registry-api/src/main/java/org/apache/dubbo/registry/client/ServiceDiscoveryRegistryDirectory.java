@@ -565,14 +565,14 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
             super(moduleModel);
         }
 
-        void addNotifyListener(ServiceDiscoveryRegistryDirectory<?> listener) {
+        synchronized void addNotifyListener(ServiceDiscoveryRegistryDirectory<?> listener) {
             if (listeners.size() == 0) {
                 this.initWith(moduleModel.getApplicationModel().getApplicationName() + CONFIGURATORS_SUFFIX);
             }
             this.listeners.add(listener);
         }
 
-        void removeNotifyListener(ServiceDiscoveryRegistryDirectory<?> listener) {
+        synchronized void removeNotifyListener(ServiceDiscoveryRegistryDirectory<?> listener) {
             this.listeners.remove(listener);
             if (listeners.size() == 0) {
                 this.stopListen(moduleModel.getApplicationModel().getApplicationName() + CONFIGURATORS_SUFFIX);
