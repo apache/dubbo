@@ -27,7 +27,6 @@ import org.apache.dubbo.metadata.rest.media.MediaType;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.rest.RestHeaderEnum;
 import org.apache.dubbo.rpc.protocol.rest.RestRPCInvocationUtil;
 import org.apache.dubbo.rpc.protocol.rest.deploy.ServiceDeployer;
@@ -42,13 +41,11 @@ import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
 import org.apache.dubbo.rpc.protocol.rest.util.MediaTypeUtil;
 
 import java.util.Iterator;
-import java.util.List;
 
 
 @Activate(value = "invoke", order = Integer.MAX_VALUE)
 public class ServiceInvokeRestFilter implements RestRequestFilter {
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
-    private static final List<RestResponseInterceptor> restResponseInterceptors = FrameworkModel.defaultModel().getExtensionLoader(RestResponseInterceptor.class).getActivateExtensions();
 
 
     @Override
@@ -117,13 +114,13 @@ public class ServiceInvokeRestFilter implements RestRequestFilter {
             }
         } else {
 
-            // invoke the intercept chain before Result  write to  response
-            new RestResponseInterceptor() {
-                @Override
-                public void intercept(URL url, RequestFacade request, NettyHttpResponse response, Object result, RpcInvocation rpcInvocation, Iterator<RestResponseInterceptor> interceptorIterator, ServiceDeployer serviceDeployer) throws Exception {
-                    iteratorIntercept(url, request, response, result, rpcInvocation, interceptorIterator, serviceDeployer);
-                }
-            }.intercept(url, request, nettyHttpResponse, result.getValue(), rpcInvocation, restResponseInterceptors.iterator(), serviceDeployer);
+            try {
+                // invoke the intercept chain before Result  write to  response
+                RestFilterManager.executeResponseIntercepts(url, request, nettyHttpResponse, result.getValue(), rpcInvocation, serviceDeployer);
+            } catch (Exception exception) {
+                logger.error("", exception.getMessage(), "", "dubbo rest protocol execute ResponseIntercepts error", exception);
+                throw exception;
+            }
 
         }
     }

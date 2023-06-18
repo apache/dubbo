@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.rest.extension.resteay.filter;
+package org.apache.dubbo.rpc.protocol.rest.extension.resteasy.filter;
 
 import org.jboss.resteasy.core.interception.jaxrs.SuspendableContainerRequestContext;
 import org.jboss.resteasy.plugins.server.netty.NettyHttpRequest;
