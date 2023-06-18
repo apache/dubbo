@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.rest.extension.resteay;
+package org.apache.dubbo.rpc.protocol.rest.extension.resteasy;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.HttpContent;
@@ -22,18 +22,23 @@ import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpRequest;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.metadata.rest.media.MediaType;
-import org.apache.dubbo.rpc.protocol.rest.extension.resteay.filter.DubboPreMatchContainerRequestContext;
+import org.apache.dubbo.rpc.protocol.rest.deploy.ServiceDeployer;
+import org.apache.dubbo.rpc.protocol.rest.extension.resteasy.filter.DubboContainerResponseContextImpl;
+import org.apache.dubbo.rpc.protocol.rest.extension.resteasy.filter.DubboPreMatchContainerRequestContext;
 import org.apache.dubbo.rpc.protocol.rest.filter.ServiceInvokeRestFilter;
 import org.apache.dubbo.rpc.protocol.rest.netty.NettyHttpResponse;
 import org.apache.dubbo.rpc.protocol.rest.request.NettyRequestFacade;
 import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
+import org.jboss.resteasy.core.interception.ResponseContainerRequestContext;
 import org.jboss.resteasy.plugins.server.netty.NettyHttpRequest;
 import org.jboss.resteasy.plugins.server.netty.NettyUtil;
 import org.jboss.resteasy.specimpl.BuiltResponse;
 import org.jboss.resteasy.specimpl.ResteasyHttpHeaders;
+import org.jboss.resteasy.spi.HttpResponse;
 import org.jboss.resteasy.spi.ResteasyUriInfo;
 
 import javax.ws.rs.container.ContainerRequestFilter;
+import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.core.MultivaluedMap;
 import java.io.IOException;
 import java.net.URI;
@@ -45,6 +50,19 @@ public interface ResteasyContext {
     String HTTP = "http";
     String HTTPS_PROTOCOL = "https://";
 
+
+    /**
+     * return extensions that are  filtered by  extension type
+     *
+     * @param extension
+     * @param <T>
+     * @return
+     */
+    default <T> List<T> getExtension(ServiceDeployer serviceDeployer, Class<T> extension) {
+
+        return serviceDeployer.getExtensions(extension);
+
+    }
 
     default DubboPreMatchContainerRequestContext convertHttpRequestToContainerRequestContext(RequestFacade requestFacade, ContainerRequestFilter[] requestFilters) {
 
@@ -133,6 +151,17 @@ public interface ResteasyContext {
             }
             response.addOutputHeaders(key, entry.getValue().toString());
         }
+    }
+
+    default DubboContainerResponseContextImpl createContainerResponseContext(RequestFacade request, HttpResponse httpResponse, BuiltResponse jaxrsResponse, ContainerResponseFilter[] responseFilters) {
+
+        NettyHttpRequest nettyHttpRequest = createNettyHttpRequest(request);
+
+        ResponseContainerRequestContext requestContext = new ResponseContainerRequestContext(nettyHttpRequest);
+        DubboContainerResponseContextImpl responseContext = new DubboContainerResponseContextImpl(nettyHttpRequest, httpResponse, jaxrsResponse,
+            requestContext, responseFilters, null, null);
+
+        return responseContext;
     }
 
 

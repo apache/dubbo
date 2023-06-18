@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.rest.extension.resteay.intercept;
+package org.apache.dubbo.rpc.protocol.rest.extension.resteasy.intercept;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.dubbo.common.URL;
@@ -23,9 +23,8 @@ import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.protocol.rest.RestHeaderEnum;
 import org.apache.dubbo.rpc.protocol.rest.deploy.ServiceDeployer;
-import org.apache.dubbo.rpc.protocol.rest.extension.ServiceDeployerContext;
+import org.apache.dubbo.rpc.protocol.rest.extension.resteasy.ResteasyContext;
 import org.apache.dubbo.rpc.protocol.rest.filter.RestResponseInterceptor;
-import org.apache.dubbo.rpc.protocol.rest.extension.resteay.ResteasyContext;
 import org.apache.dubbo.rpc.protocol.rest.netty.NettyHttpResponse;
 import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
 import org.jboss.resteasy.core.interception.AbstractWriterInterceptorContext;
@@ -46,7 +45,7 @@ import java.util.List;
 import static org.apache.dubbo.common.constants.CommonConstants.RESTEASY_NETTY_HTTP_REQUEST_ATTRIBUTE_KEY;
 
 @Activate(value = "resteasy", onClass = {"javax.ws.rs.ext.WriterInterceptorContext", "org.jboss.resteasy.plugins.server.netty.NettyHttpRequest"})
-public class ResteasyWriterInterceptorAdapter implements RestResponseInterceptor, ServiceDeployerContext, ResteasyContext {
+public class ResteasyWriterInterceptorAdapter implements RestResponseInterceptor, ResteasyContext {
 
     private ResteasyProviderFactory resteasyProviderFactory = new ResteasyProviderFactory();
 

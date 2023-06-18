@@ -14,14 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.rest.extension.resteay.filter;
+package org.apache.dubbo.rpc.protocol.rest.extension.resteasy.filter;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.rpc.RpcContext;
-import org.apache.dubbo.rpc.protocol.rest.extension.ServiceDeployerContext;
+import org.apache.dubbo.rpc.protocol.rest.deploy.ServiceDeployer;
+import org.apache.dubbo.rpc.protocol.rest.extension.resteasy.ResteasyContext;
 import org.apache.dubbo.rpc.protocol.rest.filter.RestFilter;
-import org.apache.dubbo.rpc.protocol.rest.extension.resteay.ResteasyContext;
+import org.apache.dubbo.rpc.protocol.rest.filter.RestRequestFilter;
 import org.apache.dubbo.rpc.protocol.rest.netty.NettyHttpResponse;
 import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
 import org.jboss.resteasy.specimpl.BuiltResponse;
@@ -34,17 +35,17 @@ import static org.apache.dubbo.common.constants.CommonConstants.RESTEASY_NETTY_H
 
 
 @Activate(value = "resteasy", onClass = {"javax.ws.rs.container.ContainerRequestFilter", "org.jboss.resteasy.plugins.server.netty.NettyHttpRequest"}, order = Integer.MAX_VALUE - 1)
-public class ResteasyContainerFilterAdapter implements RestFilter, ServiceDeployerContext, ResteasyContext {
+public class ResteasyRequestContainerFilterAdapter implements RestRequestFilter, ResteasyContext {
 
 
     @Override
-    public void filter(URL url, RequestFacade requestFacade, NettyHttpResponse response, Iterator<RestFilter> restFilterIterator) throws Exception {
+    public void filter(URL url, RequestFacade requestFacade, NettyHttpResponse response, Iterator<RestFilter> restFilterIterator, ServiceDeployer serviceDeployer) throws Exception {
 
-        List<ContainerRequestFilter> containerRequestFilters = getExtension(ContainerRequestFilter.class);
+        List<ContainerRequestFilter> containerRequestFilters = getExtension(serviceDeployer, ContainerRequestFilter.class);
 
         if (containerRequestFilters.isEmpty()) {
 
-            iteratorFilter(url, requestFacade, response, restFilterIterator);
+            iteratorFilter(url, requestFacade, response, restFilterIterator, serviceDeployer);
             return;
         }
 
@@ -60,7 +61,7 @@ public class ResteasyContainerFilterAdapter implements RestFilter, ServiceDeploy
             BuiltResponse restResponse = containerRequestContext.filter();
 
             if (restResponse == null) {
-                iteratorFilter(url, requestFacade, response, restFilterIterator);
+                iteratorFilter(url, requestFacade, response, restFilterIterator, serviceDeployer);
                 return;
             }
 

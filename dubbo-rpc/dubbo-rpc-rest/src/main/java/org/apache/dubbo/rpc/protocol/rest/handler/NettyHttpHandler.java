@@ -21,20 +21,16 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.http.HttpHandler;
 import org.apache.dubbo.rpc.RpcContext;
-import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.rest.deploy.ServiceDeployer;
 import org.apache.dubbo.rpc.protocol.rest.exception.MediaTypeUnSupportException;
 import org.apache.dubbo.rpc.protocol.rest.exception.ParamParseException;
 import org.apache.dubbo.rpc.protocol.rest.exception.PathNoFoundException;
-import org.apache.dubbo.rpc.protocol.rest.filter.RestFilter;
+import org.apache.dubbo.rpc.protocol.rest.filter.RestFilterManager;
 import org.apache.dubbo.rpc.protocol.rest.filter.ServiceInvokeRestFilter;
 import org.apache.dubbo.rpc.protocol.rest.netty.NettyHttpResponse;
 import org.apache.dubbo.rpc.protocol.rest.request.NettyRequestFacade;
-import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
 
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.List;
 
 import static org.apache.dubbo.common.constants.CommonConstants.SERVICE_DEPLOYER_ATTRIBUTE_KEY;
 
@@ -43,7 +39,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.SERVICE_DEPLOYER
  * netty http request handler
  */
 public class NettyHttpHandler implements HttpHandler<NettyRequestFacade, NettyHttpResponse> {
-    private static final List<RestFilter> restFilters = FrameworkModel.defaultModel().getExtensionLoader(RestFilter.class).getActivateExtensions();
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
     private final ServiceDeployer serviceDeployer;
     private final URL url;
@@ -76,13 +71,11 @@ public class NettyHttpHandler implements HttpHandler<NettyRequestFacade, NettyHt
 
 
         try {
-            new RestFilter() {
-                @Override
-                public void filter(URL url, RequestFacade requestFacade, NettyHttpResponse response, Iterator<RestFilter> restFilterIterator) throws Exception {
-                    iteratorFilter(url, requestFacade, response, restFilterIterator);
-                }
-            }.filter(url, requestFacade, nettyHttpResponse, restFilters.iterator());
+            // first request filter
+            RestFilterManager.executeRequestFilters(url, requestFacade, nettyHttpResponse,serviceDeployer);
 
+            // second response filter
+            RestFilterManager.executeResponseFilters(url, requestFacade, nettyHttpResponse,serviceDeployer);
         } catch (PathNoFoundException pathNoFoundException) {
             logger.error("", pathNoFoundException.getMessage(), "", "dubbo rest protocol provider path   no found ,raw request is :" + nettyHttpRequest, pathNoFoundException);
             nettyHttpResponse.sendError(404, pathNoFoundException.getMessage());

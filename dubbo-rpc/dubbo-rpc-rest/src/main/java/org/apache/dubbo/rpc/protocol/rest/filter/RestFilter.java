@@ -17,27 +17,25 @@
 package org.apache.dubbo.rpc.protocol.rest.filter;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionScope;
-import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.rpc.protocol.rest.deploy.ServiceDeployer;
 import org.apache.dubbo.rpc.protocol.rest.netty.NettyHttpResponse;
 import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
 
 import java.util.Iterator;
 
 /**
- * Rest filter will be invoked before http handler
+ * Rest filter is extended by rest request & response filter
  */
-@SPI(scope = ExtensionScope.FRAMEWORK)
 public interface RestFilter {
 
-    void filter(URL url, RequestFacade requestFacade, NettyHttpResponse response, Iterator<RestFilter> restFilterIterator) throws Exception;
+    void filter(URL url, RequestFacade requestFacade, NettyHttpResponse response, Iterator<RestFilter> restFilterIterator, ServiceDeployer serviceDeployer) throws Exception;
 
-    default void iteratorFilter(URL url, RequestFacade requestFacade, NettyHttpResponse response, Iterator<RestFilter> restFilterIterator) throws Exception {
+    default void iteratorFilter(URL url, RequestFacade requestFacade, NettyHttpResponse response, Iterator<RestFilter> restFilterIterator,ServiceDeployer serviceDeployer) throws Exception {
         if (!restFilterIterator.hasNext()) {
             return;
         }
 
-        restFilterIterator.next().filter(url, requestFacade, response, restFilterIterator);
+        restFilterIterator.next().filter(url, requestFacade, response, restFilterIterator,serviceDeployer);
 
     }
 }
