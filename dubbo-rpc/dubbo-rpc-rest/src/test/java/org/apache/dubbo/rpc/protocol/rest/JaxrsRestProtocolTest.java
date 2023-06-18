@@ -654,6 +654,24 @@ class JaxrsRestProtocolTest {
         exporter.unexport();
     }
 
+    @Test
+    void testResponseFilter() {
+        DemoService server = new DemoServiceImpl();
+
+        URL url = this.registerProvider(exportUrl, server, DemoService.class);
+
+        URL nettyUrl = url.addParameter(SERVER_KEY, "netty")
+            .addParameter(EXTENSION_KEY, "org.apache.dubbo.rpc.protocol.rest.filter.TraceFilter");
+
+        Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(server, DemoService.class, nettyUrl));
+
+        DemoService demoService = this.proxy.getProxy(protocol.refer(DemoService.class, nettyUrl));
+
+
+        Assertions.assertEquals("Hello, hello", demoService.sayHello("hello"));
+        exporter.unexport();
+    }
+
     private URL registerProvider(URL url, Object impl, Class<?> interfaceClass) {
         ServiceDescriptor serviceDescriptor = repository.registerService(interfaceClass);
         ProviderModel providerModel = new ProviderModel(

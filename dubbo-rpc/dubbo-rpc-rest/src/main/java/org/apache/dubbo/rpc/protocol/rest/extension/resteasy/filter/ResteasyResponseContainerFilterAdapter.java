@@ -31,7 +31,7 @@ import javax.ws.rs.container.ContainerResponseFilter;
 import java.util.Iterator;
 import java.util.List;
 
-@Activate(value = "resteasy", order = Integer.MAX_VALUE - 1000)
+@Activate(value = "resteasy", order = Integer.MAX_VALUE - 1000,onClass = "org.jboss.resteasy.specimpl.BuiltResponse,javax.ws.rs.container.ContainerResponseFilter,org.jboss.resteasy.spi.HttpResponse")
 public class ResteasyResponseContainerFilterAdapter implements RestResponseFilter, ResteasyContext {
     @Override
     public void filter(URL url, RequestFacade requestFacade, NettyHttpResponse response, Iterator<RestFilter> restFilterIterator, ServiceDeployer serviceDeployer) throws Exception {
