@@ -110,6 +110,7 @@ dubbo-spring-boot-tracing-otel-otlp-starter
 dubbo-spring-boot-observability-starter
 dubbo-spring-boot-starter
 dubbo-spring-boot-starters
+dubbo-spring-boot-interceptor
 dubbo-nacos-spring-boot-starter
 dubbo-zookeeper-spring-boot-starter
 dubbo-zookeeper-curator5-spring-boot-starter
