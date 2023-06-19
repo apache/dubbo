@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 
 public class DubboServiceAddressURL extends ServiceAddressURL {
@@ -58,6 +59,12 @@ public class DubboServiceAddressURL extends ServiceAddressURL {
 
     @Override
     public String getParameter(String key) {
+        if (REMOTE_APPLICATION_KEY.equals(key)) {
+            return getRemoteApplication();
+        } else if (SIDE_KEY.equals(key)) {
+            return getSide();
+        }
+
         String value = null;
         if (overrideURL != null) {
             value = overrideURL.getParameter(key);
@@ -107,6 +114,11 @@ public class DubboServiceAddressURL extends ServiceAddressURL {
             allParameters.putAll(overrideURL.getParameters());
         }
         return Collections.unmodifiableMap(allParameters);
+    }
+
+    @Override
+    public String getRemoteApplication() {
+        return super.getApplication();
     }
 
     public ServiceConfigURL getOverrideURL() {
