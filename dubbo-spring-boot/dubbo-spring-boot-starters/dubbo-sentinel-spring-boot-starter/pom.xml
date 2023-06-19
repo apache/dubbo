@@ -32,19 +32,16 @@
     <description>Apache Dubbo Sentinel Spring Boot Starter</description>
 
     <properties>
-        <sentinel.version>1.8.6</sentinel.version>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>com.alibaba.csp</groupId>
             <artifactId>sentinel-apache-dubbo3-adapter</artifactId>
-            <version>${sentinel.version}</version>
         </dependency>
         <dependency>
             <groupId>com.alibaba.csp</groupId>
             <artifactId>sentinel-transport-simple-http</artifactId>
-            <version>${sentinel.version}</version>
         </dependency>
     </dependencies>
 

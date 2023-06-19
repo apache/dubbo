@@ -32,7 +32,6 @@
     <description>Apache Dubbo Seata Spring Boot Starter</description>
 
     <properties>
-        <seata.version>1.6.1</seata.version>
     </properties>
 
     <dependencies>
@@ -40,7 +39,6 @@
         <dependency>
             <groupId>io.seata</groupId>
             <artifactId>seata-spring-boot-starter</artifactId>
-            <version>${seata.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>io.seata</groupId>
@@ -52,7 +50,6 @@
         <dependency>
             <groupId>io.seata</groupId>
             <artifactId>seata-core</artifactId>
-            <version>${seata.version}</version>
         </dependency>
     </dependencies>
 
