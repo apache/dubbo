@@ -256,6 +256,13 @@
                 <version>${project.version}</version>
             </dependency>
 
+            <!-- tracing -->
+            <dependency>
+                <groupId>org.apache.dubbo</groupId>
+                <artifactId>dubbo-tracing</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
             <!-- monitor -->
             <dependency>
                 <groupId>org.apache.dubbo</groupId>

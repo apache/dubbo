@@ -57,7 +57,7 @@ import java.beans.Transient;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
+import java.util.TreeSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -584,9 +584,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                 logger.warn(CONFIG_NO_METHOD_FOUND, "", "", "No method found in service interface: " + interfaceClass.getName());
                 map.put(METHODS_KEY, ANY_VALUE);
             } else {
-                List<String> copyOfMethods = new ArrayList<>(Arrays.asList(methods));
-                copyOfMethods.sort(Comparator.naturalOrder());
-                map.put(METHODS_KEY, String.join(COMMA_SEPARATOR, copyOfMethods));
+                map.put(METHODS_KEY, StringUtils.join(new TreeSet<>(Arrays.asList(methods)), COMMA_SEPARATOR));
             }
         }
 

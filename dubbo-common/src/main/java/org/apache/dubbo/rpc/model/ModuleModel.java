@@ -150,7 +150,7 @@ public class ModuleModel extends ScopeModel {
     }
 
     @Override
-    public ModuleEnvironment getModelEnvironment() {
+    public ModuleEnvironment modelEnvironment() {
         if (moduleEnvironment == null) {
             moduleEnvironment = (ModuleEnvironment) this.getExtensionLoader(ModuleExt.class)
                 .getExtension(ModuleEnvironment.NAME);
