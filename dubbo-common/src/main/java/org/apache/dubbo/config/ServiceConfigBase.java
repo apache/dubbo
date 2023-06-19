@@ -180,6 +180,7 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
     }
 
     @Override
+    @Transient
     public Map<String, String> getMetaData() {
         return getMetaData(null);
     }
