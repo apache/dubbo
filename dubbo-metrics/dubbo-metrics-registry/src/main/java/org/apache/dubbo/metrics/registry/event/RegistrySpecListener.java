@@ -37,7 +37,6 @@ public class RegistrySpecListener {
         return AbstractMetricsKeyListener.onFinish(metricsKey,
             event -> {
                 List<String> registryClusterNames = event.getAttachmentValue(RegistryMetricsConstants.ATTACHMENT_KEY_MULTI_REGISTRY);
-                ((RegistryMetricsCollector) collector).incrRegisterNum(metricsKey, registryClusterNames);
                 ((RegistryMetricsCollector) collector).incrRegisterFinishNum(metricsKey, OP_TYPE_REGISTER.getType(), registryClusterNames, event.getTimePair().calc());
             }
         );
@@ -47,7 +46,6 @@ public class RegistrySpecListener {
         return AbstractMetricsKeyListener.onError(metricsKey,
             event -> {
                 List<String> registryClusterNames = event.getAttachmentValue(RegistryMetricsConstants.ATTACHMENT_KEY_MULTI_REGISTRY);
-                ((RegistryMetricsCollector) collector).incrRegisterNum(metricsKey, registryClusterNames);
                 ((RegistryMetricsCollector) collector).incrRegisterFinishNum(metricsKey, OP_TYPE_REGISTER.getType(), registryClusterNames, event.getTimePair().calc());
             }
         );

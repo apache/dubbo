@@ -29,9 +29,9 @@ dubbo:
 #    address: zookeeper://114.115.185.128:2181
   registries:
     beijingRegistry:
-      address: zookeeper://114.115.185.128:2181
+      address: zookeeper://10.110.101.203:2181
     shanghaiRegistry:
-      address: zookeeper://114.115.185.128:8848
+      address: zookeeper://10.110.101.203:8848
   metrics:
     protocol: prometheus
     enable-jvm: true

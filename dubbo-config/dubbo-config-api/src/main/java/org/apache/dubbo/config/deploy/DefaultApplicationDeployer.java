@@ -916,14 +916,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     private void registerServiceInstance() {
         try {
             registered = true;
-<<<<<<< Updated upstream
-            MetricsEventBus.post(RegistryEvent.toRegisterEvent(applicationModel),
-                    () -> {
-                        ServiceInstanceMetadataUtils.registerMetadataAndInstance(applicationModel);
-                        return null;
-                    }
-            );
-=======
             List<ServiceDiscovery> serviceDiscoveries = ServiceInstanceMetadataUtils.getServiceDiscoveries(applicationModel);
             if (serviceDiscoveries.size() > 0) {
                 List<String> registryClusterNames = serviceDiscoveries
@@ -939,7 +931,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                     }
                 );
             }
->>>>>>> Stashed changes
         } catch (Exception e) {
             logger.error(CONFIG_REGISTER_INSTANCE_ERROR, "configuration server disconnected", "", "Register instance error.", e);
         }
