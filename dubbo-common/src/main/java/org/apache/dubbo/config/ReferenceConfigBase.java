@@ -150,6 +150,7 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
     }
 
     @Override
+    @Transient
     public Map<String, String> getMetaData() {
         return getMetaData(null);
     }
