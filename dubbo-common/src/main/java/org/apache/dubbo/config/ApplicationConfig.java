@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config;
 
+import org.apache.dubbo.common.aot.NativeDetector;
 import org.apache.dubbo.common.compiler.support.AdaptiveCompiler;
 import org.apache.dubbo.common.infra.InfraAdapter;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
@@ -66,6 +67,7 @@ import static org.apache.dubbo.common.constants.QosConstants.QOS_PORT;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_PORT_COMPATIBLE;
 import static org.apache.dubbo.common.constants.RegistryConstants.ENABLE_EMPTY_PROTECTION_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTER_MODE_KEY;
+import static org.apache.dubbo.config.Constants.DEFAULT_NATIVE_COMPILER;
 import static org.apache.dubbo.config.Constants.DEVELOPMENT_ENVIRONMENT;
 import static org.apache.dubbo.config.Constants.PRODUCTION_ENVIRONMENT;
 import static org.apache.dubbo.config.Constants.TEST_ENVIRONMENT;
@@ -275,7 +277,7 @@ public class ApplicationConfig extends AbstractConfig {
             try {
                 hostname = InetAddress.getLocalHost().getHostName();
             } catch (UnknownHostException e) {
-                LOGGER.warn(COMMON_UNEXPECTED_EXCEPTION,"","","Failed to get the hostname of current instance.", e);
+                LOGGER.warn(COMMON_UNEXPECTED_EXCEPTION, "", "", "Failed to get the hostname of current instance.", e);
                 hostname = "UNKNOWN";
             }
         }
@@ -335,15 +337,15 @@ public class ApplicationConfig extends AbstractConfig {
 
     public void setEnvironment(String environment) {
         if (environment != null && !(DEVELOPMENT_ENVIRONMENT.equals(environment)
-            || TEST_ENVIRONMENT.equals(environment)
-            || PRODUCTION_ENVIRONMENT.equals(environment))) {
+                || TEST_ENVIRONMENT.equals(environment)
+                || PRODUCTION_ENVIRONMENT.equals(environment))) {
 
             throw new IllegalStateException(String.format("Unsupported environment: %s, only support %s/%s/%s, default is %s.",
-                environment,
-                DEVELOPMENT_ENVIRONMENT,
-                TEST_ENVIRONMENT,
-                PRODUCTION_ENVIRONMENT,
-                PRODUCTION_ENVIRONMENT));
+                    environment,
+                    DEVELOPMENT_ENVIRONMENT,
+                    TEST_ENVIRONMENT,
+                    PRODUCTION_ENVIRONMENT,
+                    PRODUCTION_ENVIRONMENT));
         }
         this.environment = environment;
     }
@@ -389,12 +391,22 @@ public class ApplicationConfig extends AbstractConfig {
     }
 
     public String getCompiler() {
-        return compiler;
+        if (NativeDetector.inNativeImage()) {
+            return DEFAULT_NATIVE_COMPILER;
+        } else {
+            return compiler;
+        }
     }
 
     public void setCompiler(String compiler) {
-        this.compiler = compiler;
-        AdaptiveCompiler.setDefaultCompiler(compiler);
+
+        if (NativeDetector.inNativeImage()) {
+            this.compiler = DEFAULT_NATIVE_COMPILER;
+            AdaptiveCompiler.setDefaultCompiler(DEFAULT_NATIVE_COMPILER);
+        } else {
+            this.compiler = compiler;
+            AdaptiveCompiler.setDefaultCompiler(compiler);
+        }
     }
 
     public String getLogger() {
