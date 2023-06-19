@@ -476,17 +476,21 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
     }
 
     private boolean addValidInvoker(Invoker<T> invoker) {
-        MetricsEventBus.publish(RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary()));
+        boolean result;
         synchronized (this.validInvokers) {
-            return this.validInvokers.add(invoker);
+            result = this.validInvokers.add(invoker);
         }
+        MetricsEventBus.publish(RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary()));
+        return result;
     }
 
     private boolean removeValidInvoker(Invoker<T> invoker) {
-        MetricsEventBus.publish(RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary()));
+        boolean result;
         synchronized (this.validInvokers) {
-            return this.validInvokers.remove(invoker);
+            result = this.validInvokers.remove(invoker);
         }
+        MetricsEventBus.publish(RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary()));
+        return result;
     }
 
     protected abstract List<Invoker<T>> doList(SingleRouterChain<T> singleRouterChain,
