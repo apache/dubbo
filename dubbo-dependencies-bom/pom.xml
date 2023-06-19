@@ -134,7 +134,8 @@
         <protostuff_version>1.8.0</protostuff_version>
         <envoy_api_version>0.1.35</envoy_api_version>
         <micrometer.version>1.11.0</micrometer.version>
-
+        <opentelemetry.version>1.26.0</opentelemetry.version>
+        <zipkin-reporter.version>2.16.4</zipkin-reporter.version>
         <micrometer-tracing.version>1.1.1</micrometer-tracing.version>
         <t_digest.version>3.3</t_digest.version>
         <prometheus_client.version>0.16.0</prometheus_client.version>
@@ -179,7 +180,7 @@
         <hessian_lite_version>3.2.13</hessian_lite_version>
         <swagger_version>1.6.11</swagger_version>
 
-        <snappy_java_version>1.1.10.0</snappy_java_version>
+        <snappy_java_version>1.1.10.1</snappy_java_version>
         <bouncycastle-bcprov_version>1.70</bouncycastle-bcprov_version>
         <metrics_version>2.0.6</metrics_version>
         <sofa_registry_version>5.4.3</sofa_registry_version>
@@ -228,6 +229,20 @@
                 <groupId>io.micrometer</groupId>
                 <artifactId>micrometer-tracing-bom</artifactId>
                 <version>${micrometer-tracing.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry</groupId>
+                <artifactId>opentelemetry-bom</artifactId>
+                <version>${opentelemetry.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.zipkin.reporter2</groupId>
+                <artifactId>zipkin-reporter-bom</artifactId>
+                <version>${zipkin-reporter.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>

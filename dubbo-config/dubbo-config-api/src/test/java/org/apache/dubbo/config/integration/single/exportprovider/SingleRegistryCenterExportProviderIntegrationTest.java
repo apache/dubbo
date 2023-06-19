@@ -195,7 +195,7 @@ class SingleRegistryCenterExportProviderIntegrationTest implements IntegrationTe
         // 1. InjvmExporter
         // 2. DubboExporter with service-discovery-registry protocol
         // 3. DubboExporter with registry protocol
-        Assertions.assertEquals(exporterListener.getExportedExporters().size(), 3);
+        Assertions.assertEquals(exporterListener.getExportedExporters().size(), 5);
         // The exported exporter contains SingleRegistryCenterExportProviderFilter
         Assertions.assertTrue(exporterListener.getFilters().contains(filter));
         // The consumer can be notified and get provider's metadata through metadata mapping info.

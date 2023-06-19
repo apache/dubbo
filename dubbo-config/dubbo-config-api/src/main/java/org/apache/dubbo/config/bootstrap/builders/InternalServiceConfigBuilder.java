@@ -275,6 +275,7 @@ public class InternalServiceConfigBuilder<T> {
         serviceConfig.setRef(this.ref);
         serviceConfig.setGroup(applicationConfig.getName());
         serviceConfig.setVersion("1.0.0");
+        serviceConfig.setFilter("-default");
 
         serviceConfig.setExecutor(executor);
 
