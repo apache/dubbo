@@ -76,7 +76,7 @@ public final class ConfigurationUtils {
      * @return
      */
     public static Configuration getSystemConfiguration(ScopeModel scopeModel) {
-        return getScopeModelOrDefaultApplicationModel(scopeModel).getModelEnvironment().getSystemConfiguration();
+        return getScopeModelOrDefaultApplicationModel(scopeModel).modelEnvironment().getSystemConfiguration();
     }
 
     /**
@@ -85,7 +85,7 @@ public final class ConfigurationUtils {
      * @return
      */
     public static Configuration getEnvConfiguration(ScopeModel scopeModel) {
-        return getScopeModelOrDefaultApplicationModel(scopeModel).getModelEnvironment().getEnvironmentConfiguration();
+        return getScopeModelOrDefaultApplicationModel(scopeModel).modelEnvironment().getEnvironmentConfiguration();
     }
 
     /**
@@ -97,11 +97,11 @@ public final class ConfigurationUtils {
      */
 
     public static Configuration getGlobalConfiguration(ScopeModel scopeModel) {
-        return getScopeModelOrDefaultApplicationModel(scopeModel).getModelEnvironment().getConfiguration();
+        return getScopeModelOrDefaultApplicationModel(scopeModel).modelEnvironment().getConfiguration();
     }
 
     public static Configuration getDynamicGlobalConfiguration(ScopeModel scopeModel) {
-        return scopeModel.getModelEnvironment().getDynamicGlobalConfiguration();
+        return scopeModel.modelEnvironment().getDynamicGlobalConfiguration();
     }
 
     // FIXME
@@ -364,7 +364,7 @@ public final class ConfigurationUtils {
      */
     @Deprecated
     public static Configuration getSystemConfiguration() {
-        return ApplicationModel.defaultModel().getModelEnvironment().getSystemConfiguration();
+        return ApplicationModel.defaultModel().modelEnvironment().getSystemConfiguration();
     }
 
     /**
@@ -374,7 +374,7 @@ public final class ConfigurationUtils {
      */
     @Deprecated
     public static Configuration getEnvConfiguration() {
-        return ApplicationModel.defaultModel().getModelEnvironment().getEnvironmentConfiguration();
+        return ApplicationModel.defaultModel().modelEnvironment().getEnvironmentConfiguration();
     }
 
     /**
@@ -384,7 +384,7 @@ public final class ConfigurationUtils {
      */
     @Deprecated
     public static Configuration getGlobalConfiguration() {
-        return ApplicationModel.defaultModel().getModelEnvironment().getConfiguration();
+        return ApplicationModel.defaultModel().modelEnvironment().getConfiguration();
     }
 
     /**
@@ -394,7 +394,7 @@ public final class ConfigurationUtils {
      */
     @Deprecated
     public static Configuration getDynamicGlobalConfiguration() {
-        return ApplicationModel.defaultModel().getDefaultModule().getModelEnvironment().getDynamicGlobalConfiguration();
+        return ApplicationModel.defaultModel().getDefaultModule().modelEnvironment().getDynamicGlobalConfiguration();
     }
 
     /**
