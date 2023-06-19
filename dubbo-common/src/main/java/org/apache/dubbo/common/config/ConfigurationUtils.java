@@ -44,7 +44,6 @@ import java.util.Set;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_SERVER_SHUTDOWN_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_SECONDS_KEY;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXPECTED_EXCEPTION;
 
 /**
  * Utilities for manipulating configurations from different sources
@@ -174,7 +173,7 @@ public final class ConfigurationUtils {
     public static Map<String, String> parseProperties(String content) throws IOException {
         Map<String, String> map = new HashMap<>();
         if (StringUtils.isEmpty(content)) {
-            logger.warn(COMMON_UNEXPECTED_EXCEPTION, "", "", "Config center was specified, but no config item found.");
+            logger.info("Config center was specified, but no config item found.");
         } else {
             Properties properties = new Properties();
             properties.load(new StringReader(content));
