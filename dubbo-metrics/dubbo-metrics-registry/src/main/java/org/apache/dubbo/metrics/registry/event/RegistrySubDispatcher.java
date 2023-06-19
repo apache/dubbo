@@ -74,14 +74,14 @@ public final class RegistrySubDispatcher extends SimpleMetricsEventMulticaster {
 
 
     /**
-     *  {@link MetricsCat} MetricsCat collection, for better classification processing
-     *  Except for a few custom functions, most of them can build standard event listening functions through the static methods of MetricsApplicationListener
+     * {@link MetricsCat} MetricsCat collection, for better classification processing
+     * Except for a few custom functions, most of them can build standard event listening functions through the static methods of MetricsApplicationListener
      */
     interface MCat {
         // MetricsRegisterListener
-        MetricsCat APPLICATION_REGISTER_POST = new MetricsCat(MetricsKey.REGISTER_METRIC_REQUESTS, MetricsApplicationListener::onPostEventBuild);
-        MetricsCat APPLICATION_REGISTER_FINISH = new MetricsCat(MetricsKey.REGISTER_METRIC_REQUESTS_SUCCEED, MetricsApplicationListener::onFinishEventBuild);
-        MetricsCat APPLICATION_REGISTER_ERROR = new MetricsCat(MetricsKey.REGISTER_METRIC_REQUESTS_FAILED, MetricsApplicationListener::onErrorEventBuild);
+        MetricsCat APPLICATION_REGISTER_POST = new MetricsCat(MetricsKey.REGISTER_METRIC_REQUESTS, RegistrySpecListener::onPostOfRegister);
+        MetricsCat APPLICATION_REGISTER_FINISH = new MetricsCat(MetricsKey.REGISTER_METRIC_REQUESTS_SUCCEED, RegistrySpecListener::onFinishOfRegister);
+        MetricsCat APPLICATION_REGISTER_ERROR = new MetricsCat(MetricsKey.REGISTER_METRIC_REQUESTS_FAILED, RegistrySpecListener::onErrorOfRegister);
 
         // MetricsSubscribeListener
         MetricsCat APPLICATION_SUBSCRIBE_POST = new MetricsCat(MetricsKey.SUBSCRIBE_METRIC_NUM, MetricsApplicationListener::onPostEventBuild);

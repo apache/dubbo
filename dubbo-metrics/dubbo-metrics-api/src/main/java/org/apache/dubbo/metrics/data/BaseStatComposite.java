@@ -25,6 +25,7 @@ import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.metrics.report.MetricsExport;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -69,15 +70,15 @@ public abstract class BaseStatComposite implements MetricsExport {
     }
 
     public void calcApplicationRt(String registryOpType, Long responseTime) {
-        rtStatComposite.calcApplicationRt(registryOpType, responseTime);
+        rtStatComposite.calcKeyRt(registryOpType, responseTime, rtStatComposite::getAppName);
     }
 
     public void calcServiceKeyRt(String serviceKey, String registryOpType, Long responseTime) {
-        rtStatComposite.calcServiceKeyRt(serviceKey, registryOpType, responseTime);
+        rtStatComposite.calcKeyRt(registryOpType, responseTime, () -> serviceKey);
     }
 
     public void calcMethodKeyRt(Invocation invocation, String registryOpType, Long responseTime) {
-        rtStatComposite.calcMethodKeyRt(invocation, registryOpType, responseTime);
+        rtStatComposite.calcKeyRt(registryOpType, responseTime, () -> invocation.getTargetServiceUniqueName() + "_" + RpcUtils.getMethodName(invocation));
     }
 
     public void setServiceKey(MetricsKeyWrapper metricsKey, String serviceKey, int num) {

@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.metrics.registry.metrics.collector;
 
+import com.google.common.collect.Lists;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.metrics.event.MetricsDispatcher;
 import org.apache.dubbo.metrics.event.MetricsEventBus;
@@ -73,7 +74,7 @@ class RegistryMetricsCollectorTest {
     @Test
     void testRegisterMetrics() {
 
-        RegistryEvent registryEvent = RegistryEvent.toRegisterEvent(applicationModel);
+        RegistryEvent registryEvent = RegistryEvent.toRegisterEvent(applicationModel, Lists.newArrayList("reg1"));
         MetricsEventBus.post(registryEvent,
             () -> {
                 List<MetricSample> metricSamples = collector.collect();
@@ -92,7 +93,7 @@ class RegistryMetricsCollectorTest {
         long c1 = registryEvent.getTimePair().calc();
 
 
-        registryEvent = RegistryEvent.toRegisterEvent(applicationModel);
+        registryEvent = RegistryEvent.toRegisterEvent(applicationModel, Lists.newArrayList("reg1"));
         TimePair lastTimePair = registryEvent.getTimePair();
         MetricsEventBus.post(registryEvent,
             () -> {
@@ -271,7 +272,7 @@ class RegistryMetricsCollectorTest {
         );
         List<MetricSample> metricSamples = collector.collect();
         // App(7) + num(service*3) + rt(5) = 9
-        Assertions.assertEquals((RegistryMetricsConstants.APP_LEVEL_KEYS.size() + 3 + 5)*3, metricSamples.size());
+        Assertions.assertEquals((RegistryMetricsConstants.APP_LEVEL_KEYS.size() + 3 + 5) * 3, metricSamples.size());
 
     }
 }

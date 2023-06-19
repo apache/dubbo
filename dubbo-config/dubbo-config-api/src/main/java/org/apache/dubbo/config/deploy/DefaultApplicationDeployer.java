@@ -25,6 +25,7 @@ import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.config.configcenter.DynamicConfigurationFactory;
 import org.apache.dubbo.common.config.configcenter.wrapper.CompositeDynamicConfiguration;
 import org.apache.dubbo.common.constants.LoggerCodeConstants;
+import org.apache.dubbo.common.constants.RegistryConstants;
 import org.apache.dubbo.common.deploy.AbstractDeployer;
 import org.apache.dubbo.common.deploy.ApplicationDeployListener;
 import org.apache.dubbo.common.deploy.ApplicationDeployer;
@@ -63,6 +64,7 @@ import org.apache.dubbo.metrics.service.MetricsServiceExporter;
 import org.apache.dubbo.metrics.utils.MetricsSupportUtil;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.RegistryFactory;
+import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
 import org.apache.dubbo.registry.support.RegistryManager;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -914,12 +916,30 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     private void registerServiceInstance() {
         try {
             registered = true;
+<<<<<<< Updated upstream
             MetricsEventBus.post(RegistryEvent.toRegisterEvent(applicationModel),
                     () -> {
                         ServiceInstanceMetadataUtils.registerMetadataAndInstance(applicationModel);
                         return null;
                     }
             );
+=======
+            List<ServiceDiscovery> serviceDiscoveries = ServiceInstanceMetadataUtils.getServiceDiscoveries(applicationModel);
+            if (serviceDiscoveries.size() > 0) {
+                List<String> registryClusterNames = serviceDiscoveries
+                    .stream()
+                    .map(sd -> sd.getUrl().getParameter(RegistryConstants.REGISTRY_CLUSTER_KEY))
+                    .collect(Collectors.toList());
+
+                MetricsEventBus.post(RegistryEvent.toRegisterEvent(applicationModel, registryClusterNames),
+                    () -> {
+                        // register service instance
+                        serviceDiscoveries.forEach(ServiceDiscovery::register);
+                        return null;
+                    }
+                );
+            }
+>>>>>>> Stashed changes
         } catch (Exception e) {
             logger.error(CONFIG_REGISTER_INSTANCE_ERROR, "configuration server disconnected", "", "Register instance error.", e);
         }

@@ -27,6 +27,7 @@ import java.util.function.Consumer;
 /**
  * According to the event template of {@link MetricsEventBus},
  * build a consistent static method for general and custom monitoring consume methods
+ *
  */
 public abstract class AbstractMetricsKeyListener extends AbstractMetricsListener<TimeCounterEvent> implements MetricsLifeListener<TimeCounterEvent> {
 

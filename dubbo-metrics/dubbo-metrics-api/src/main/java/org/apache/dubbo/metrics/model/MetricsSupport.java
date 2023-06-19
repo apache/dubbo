@@ -18,6 +18,7 @@
 package org.apache.dubbo.metrics.model;
 
 import org.apache.dubbo.common.Version;
+import org.apache.dubbo.common.constants.RegistryConstants;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.metrics.collector.MethodMetricsCollector;
 import org.apache.dubbo.metrics.collector.ServiceMetricsCollector;
@@ -74,6 +75,12 @@ public class MetricsSupport {
     public static Map<String, String> serviceTags(ApplicationModel applicationModel, String serviceKey) {
         Map<String, String> tags = applicationTags(applicationModel);
         tags.put(TAG_INTERFACE_KEY, serviceKey);
+        return tags;
+    }
+
+    public static Map<String, String> registryTags(ApplicationModel applicationModel, String registryClusterName) {
+        Map<String, String> tags = applicationTags(applicationModel);
+        tags.put(RegistryConstants.REGISTRY_CLUSTER_KEY, registryClusterName);
         return tags;
     }
 

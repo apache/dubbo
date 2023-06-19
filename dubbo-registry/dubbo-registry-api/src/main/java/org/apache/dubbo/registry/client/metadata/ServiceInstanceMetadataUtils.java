@@ -197,11 +197,11 @@ public class ServiceInstanceMetadataUtils {
         return null;
     }
 
-    public static void registerMetadataAndInstance(ApplicationModel applicationModel) {
+    public static List<ServiceDiscovery> getServiceDiscoveries(ApplicationModel applicationModel) {
         LOGGER.info("Start registering instance address to registry.");
         RegistryManager registryManager = applicationModel.getBeanFactory().getBean(RegistryManager.class);
-        // register service instance
-        registryManager.getServiceDiscoveries().forEach(ServiceDiscovery::register);
+        return registryManager.getServiceDiscoveries();
+
     }
 
     public static void refreshMetadataAndInstance(ApplicationModel applicationModel) {

@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.metrics.registry.metrics.collector;
 
+import com.google.common.collect.Lists;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.context.ConfigManager;
@@ -284,7 +285,7 @@ public class RegistryMetricsTest {
     }
 
     RegistryEvent registerEvent() {
-        RegistryEvent event = RegistryEvent.toRegisterEvent(applicationModel);
+        RegistryEvent event = RegistryEvent.toRegisterEvent(applicationModel, Lists.newArrayList("reg1"));
         event.setAvailable(true);
         return event;
     }

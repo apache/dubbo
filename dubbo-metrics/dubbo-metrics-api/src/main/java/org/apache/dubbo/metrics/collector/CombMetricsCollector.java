@@ -101,5 +101,9 @@ public abstract class CombMetricsCollector<E extends TimeCounterEvent> extends A
     public void onEventError(TimeCounterEvent event) {
         eventMulticaster.publishErrorEvent(event);
     }
+
+    protected BaseStatComposite getStats() {
+        return stats;
+    }
 }
 

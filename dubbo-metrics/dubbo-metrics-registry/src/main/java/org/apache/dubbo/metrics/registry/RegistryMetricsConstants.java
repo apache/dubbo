@@ -46,6 +46,8 @@ import static org.apache.dubbo.metrics.model.key.MetricsKey.SUBSCRIBE_METRIC_NUM
 
 public interface RegistryMetricsConstants {
 
+    String ATTACHMENT_KEY_MULTI_REGISTRY = "multiRegistry";
+
     MetricsPlaceValue OP_TYPE_REGISTER = MetricsPlaceValue.of("register", MetricsLevel.APP);
     MetricsPlaceValue OP_TYPE_SUBSCRIBE = MetricsPlaceValue.of("subscribe", MetricsLevel.APP);
     MetricsPlaceValue OP_TYPE_NOTIFY = MetricsPlaceValue.of("notify", MetricsLevel.APP);
@@ -54,9 +56,13 @@ public interface RegistryMetricsConstants {
     MetricsPlaceValue OP_TYPE_SUBSCRIBE_SERVICE = MetricsPlaceValue.of("subscribe.service", MetricsLevel.SERVICE);
 
     // App-level
-    List<MetricsKey> APP_LEVEL_KEYS = Arrays.asList(REGISTER_METRIC_REQUESTS, REGISTER_METRIC_REQUESTS_SUCCEED, REGISTER_METRIC_REQUESTS_FAILED,
+    List<MetricsKey> APP_LEVEL_KEYS = Arrays.asList(
         SUBSCRIBE_METRIC_NUM, SUBSCRIBE_METRIC_NUM_SUCCEED, SUBSCRIBE_METRIC_NUM_FAILED,
         NOTIFY_METRIC_REQUESTS);
+
+    // App-level
+    List<MetricsKey> REGISTER_LEVEL_KEYS = Arrays.asList(REGISTER_METRIC_REQUESTS, REGISTER_METRIC_REQUESTS_SUCCEED, REGISTER_METRIC_REQUESTS_FAILED);
+
 
     // Service-level
     List<MetricsKeyWrapper> SERVICE_LEVEL_KEYS = Arrays.asList(

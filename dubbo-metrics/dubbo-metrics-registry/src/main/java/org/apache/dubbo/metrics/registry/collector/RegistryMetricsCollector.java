@@ -26,6 +26,7 @@ import org.apache.dubbo.metrics.data.BaseStatComposite;
 import org.apache.dubbo.metrics.data.RtStatComposite;
 import org.apache.dubbo.metrics.data.ServiceStatComposite;
 import org.apache.dubbo.metrics.model.MetricsCategory;
+import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.metrics.registry.RegistryMetricsConstants;
 import org.apache.dubbo.metrics.registry.event.RegistryEvent;
@@ -51,6 +52,7 @@ public class RegistryMetricsCollector extends CombMetricsCollector<RegistryEvent
 
     private Boolean collectEnabled = null;
     private final ApplicationModel applicationModel;
+    private final RegistryStatComposite internalStat;
 
     public RegistryMetricsCollector(ApplicationModel applicationModel) {
         super(new BaseStatComposite(applicationModel) {
@@ -73,6 +75,7 @@ public class RegistryMetricsCollector extends CombMetricsCollector<RegistryEvent
             }
         });
         super.setEventMulticaster(new RegistrySubDispatcher(this));
+        internalStat = new RegistryStatComposite(applicationModel);
         this.applicationModel = applicationModel;
     }
 
@@ -99,7 +102,21 @@ public class RegistryMetricsCollector extends CombMetricsCollector<RegistryEvent
             return list;
         }
         list.addAll(super.export(MetricsCategory.REGISTRY));
+        list.addAll(internalStat.export(MetricsCategory.REGISTRY));
         return list;
+    }
+
+    public void incrRegisterNum(MetricsKey metricsKey, List<String> registryClusterNames) {
+        registryClusterNames.forEach(name -> internalStat.incrRegisterNum(metricsKey, name));
+    }
+
+    public void incrRegisterFinishNum(MetricsKey metricsKey, String registryOpType, List<String> registryClusterNames, Long responseTime) {
+        registryClusterNames.forEach(name ->
+        {
+            internalStat.incrRegisterNum(metricsKey, name);
+            getStats().getRtStatComposite().calcKeyRt(registryOpType, responseTime, () -> name);
+        });
+
     }
 
 }

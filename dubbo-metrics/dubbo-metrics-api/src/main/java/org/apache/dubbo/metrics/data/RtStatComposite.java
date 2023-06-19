@@ -28,9 +28,7 @@ import org.apache.dubbo.metrics.model.key.MetricsPlaceValue;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.metrics.report.AbstractMetricsExport;
-import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -38,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.LongAccumulator;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -79,23 +78,9 @@ public class RtStatComposite extends AbstractMetricsExport {
         return singleRtStats;
     }
 
-    public void calcApplicationRt(String registryOpType, Long responseTime) {
+    public void calcKeyRt(String registryOpType, Long responseTime, Supplier<String> keySupplier) {
         for (LongContainer container : rtStats.stream().filter(longContainer -> longContainer.specifyType(registryOpType)).collect(Collectors.toList())) {
-            Number current = (Number) ConcurrentHashMapUtils.computeIfAbsent(container, getAppName(), container.getInitFunc());
-            container.getConsumerFunc().accept(responseTime, current);
-        }
-    }
-
-    public void calcServiceKeyRt(String serviceKey, String registryOpType, Long responseTime) {
-        for (LongContainer container : rtStats.stream().filter(longContainer -> longContainer.specifyType(registryOpType)).collect(Collectors.toList())) {
-            Number current = (Number) ConcurrentHashMapUtils.computeIfAbsent(container, serviceKey, container.getInitFunc());
-            container.getConsumerFunc().accept(responseTime, current);
-        }
-    }
-
-    public void calcMethodKeyRt(Invocation invocation, String registryOpType, Long responseTime) {
-        for (LongContainer container : rtStats.stream().filter(longContainer -> longContainer.specifyType(registryOpType)).collect(Collectors.toList())) {
-            Number current = (Number) ConcurrentHashMapUtils.computeIfAbsent(container, invocation.getTargetServiceUniqueName() + "_" + RpcUtils.getMethodName(invocation), container.getInitFunc());
+            Number current = (Number) ConcurrentHashMapUtils.computeIfAbsent(container, keySupplier.get(), container.getInitFunc());
             container.getConsumerFunc().accept(responseTime, current);
         }
     }
