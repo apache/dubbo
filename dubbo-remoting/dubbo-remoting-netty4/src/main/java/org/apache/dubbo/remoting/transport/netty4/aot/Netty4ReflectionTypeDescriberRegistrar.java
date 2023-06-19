@@ -19,11 +19,15 @@ package org.apache.dubbo.remoting.transport.netty4.aot;
 import org.apache.dubbo.aot.api.MemberCategory;
 import org.apache.dubbo.aot.api.ReflectionTypeDescriberRegistrar;
 import org.apache.dubbo.aot.api.TypeDescriber;
+import org.apache.dubbo.remoting.transport.netty4.NettyChannelHandler;
 import org.apache.dubbo.remoting.transport.netty4.NettyClientHandler;
+import org.apache.dubbo.remoting.transport.netty4.NettyConnectionHandler;
+import org.apache.dubbo.remoting.transport.netty4.NettyPortUnificationServerHandler;
 import org.apache.dubbo.remoting.transport.netty4.NettyServerHandler;
 import org.apache.dubbo.remoting.transport.netty4.ssl.SslClientTlsHandler;
 import org.apache.dubbo.remoting.transport.netty4.ssl.SslServerTlsHandler;
 
+import java.nio.channels.spi.SelectorProvider;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -35,16 +39,20 @@ public class Netty4ReflectionTypeDescriberRegistrar implements ReflectionTypeDes
     @Override
     public List<TypeDescriber> getTypeDescribers() {
         List<TypeDescriber> typeDescribers = new ArrayList<>();
-        typeDescribers.add(buildTypeDescriberWithDeclaredMethods(NettyServerHandler.class));
-        typeDescribers.add(buildTypeDescriberWithDeclaredMethods(SslServerTlsHandler.class));
-        typeDescribers.add(buildTypeDescriberWithDeclaredMethods(NettyClientHandler.class));
-        typeDescribers.add(buildTypeDescriberWithDeclaredMethods(SslClientTlsHandler.class));
+        typeDescribers.add(buildTypeDescriberWithPublicMethod(NettyServerHandler.class));
+        typeDescribers.add(buildTypeDescriberWithPublicMethod(SslServerTlsHandler.class));
+        typeDescribers.add(buildTypeDescriberWithPublicMethod(NettyClientHandler.class));
+        typeDescribers.add(buildTypeDescriberWithPublicMethod(SslClientTlsHandler.class));
+        typeDescribers.add(buildTypeDescriberWithPublicMethod(SelectorProvider.class));
+        typeDescribers.add(buildTypeDescriberWithPublicMethod(NettyPortUnificationServerHandler.class));
+        typeDescribers.add(buildTypeDescriberWithPublicMethod(NettyChannelHandler.class));
+        typeDescribers.add(buildTypeDescriberWithPublicMethod(NettyConnectionHandler.class));
         return typeDescribers;
     }
 
-    private TypeDescriber buildTypeDescriberWithDeclaredMethods(Class<?> c){
+    private TypeDescriber buildTypeDescriberWithPublicMethod(Class<?> cl) {
         Set<MemberCategory> memberCategories = new HashSet<>();
-        memberCategories.add(MemberCategory.INVOKE_DECLARED_METHODS);
-        return new TypeDescriber(c.getName(), null, new HashSet<>(), new HashSet<>(), new HashSet<>(), memberCategories);
+        memberCategories.add(MemberCategory.INVOKE_PUBLIC_METHODS);
+        return new TypeDescriber(cl.getName(), null, new HashSet<>(), new HashSet<>(), new HashSet<>(), memberCategories);
     }
 }
