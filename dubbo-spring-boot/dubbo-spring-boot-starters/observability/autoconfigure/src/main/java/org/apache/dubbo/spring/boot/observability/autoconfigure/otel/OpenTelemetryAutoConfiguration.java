@@ -18,7 +18,8 @@ package org.apache.dubbo.spring.boot.observability.autoconfigure.otel;
 
 
 import org.apache.dubbo.common.Version;
-import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.spring.boot.autoconfigure.DubboConfigurationProperties;
 import org.apache.dubbo.spring.boot.observability.autoconfigure.DubboMicrometerTracingAutoConfiguration;
 import org.apache.dubbo.spring.boot.observability.autoconfigure.ObservabilityUtils;
@@ -51,12 +52,15 @@ public class OpenTelemetryAutoConfiguration {
     /**
      * Default value for application name if {@code spring.application.name} is not set.
      */
-    private static final String DEFAULT_APPLICATION_NAME = "dubbo-application";
+    private static final String DEFAULT_APPLICATION_NAME = "application";
 
     private final DubboConfigurationProperties dubboConfigProperties;
 
-    OpenTelemetryAutoConfiguration(DubboConfigurationProperties dubboConfigProperties) {
+    private final ModuleModel moduleModel;
+
+    OpenTelemetryAutoConfiguration(DubboConfigurationProperties dubboConfigProperties, ModuleModel moduleModel) {
         this.dubboConfigProperties = dubboConfigProperties;
+        this.moduleModel = moduleModel;
     }
 
     @Bean
@@ -70,10 +74,9 @@ public class OpenTelemetryAutoConfiguration {
     @ConditionalOnMissingBean
     io.opentelemetry.sdk.trace.SdkTracerProvider otelSdkTracerProvider(ObjectProvider<io.opentelemetry.sdk.trace.SpanProcessor> spanProcessors,
                                                                        io.opentelemetry.sdk.trace.samplers.Sampler sampler) {
-        String applicationName = dubboConfigProperties.getApplication().getName();
-        if (StringUtils.isEmpty(applicationName)) {
-            applicationName = DEFAULT_APPLICATION_NAME;
-        }
+        String applicationName = moduleModel.getApplicationModel().getApplicationConfigManager().getApplication()
+                .map(ApplicationConfig::getName)
+                .orElse(DEFAULT_APPLICATION_NAME);
         io.opentelemetry.sdk.trace.SdkTracerProviderBuilder builder = io.opentelemetry.sdk.trace.SdkTracerProvider.builder().setSampler(sampler)
                 .setResource(io.opentelemetry.sdk.resources.Resource.create(io.opentelemetry.api.common.Attributes.of(io.opentelemetry.semconv.resource.attributes.ResourceAttributes.SERVICE_NAME, applicationName)));
         spanProcessors.orderedStream().forEach(builder::addSpanProcessor);

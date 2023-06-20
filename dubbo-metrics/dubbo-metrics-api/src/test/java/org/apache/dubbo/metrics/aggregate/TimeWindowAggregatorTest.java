@@ -17,9 +17,8 @@
 
 package org.apache.dubbo.metrics.aggregate;
 
-
+import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.TimeUnit;
 
