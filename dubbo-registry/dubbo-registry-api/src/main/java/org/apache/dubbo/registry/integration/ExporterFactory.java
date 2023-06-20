@@ -16,25 +16,24 @@
  */
 package org.apache.dubbo.registry.integration;
 
-import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.Protocol;
-import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.Exporter;
 
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ExporterFactory {
     private final Map<String, ReferenceCountExporter<?>> exporters = new ConcurrentHashMap<>();
 
-    private final Protocol protocol;
-
-    public ExporterFactory(FrameworkModel frameworkModel) {
-        this.protocol = frameworkModel.getExtensionLoader(Protocol.class).getAdaptiveExtension();
-    }
-
-    protected ReferenceCountExporter<?> createExporter(String providerKey, Invoker<?> invoker) {
+    protected ReferenceCountExporter<?> createExporter(String providerKey, Callable<Exporter<?>> exporterProducer) {
         return exporters.computeIfAbsent(providerKey,
-            key -> new ReferenceCountExporter<>(protocol.export(invoker), key, this));
+            key -> {
+                try {
+                    return new ReferenceCountExporter<>(exporterProducer.call(), key, this);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            });
     }
 
     protected void remove(String key, ReferenceCountExporter<?> exporter) {

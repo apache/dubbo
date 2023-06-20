@@ -319,7 +319,8 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
             .computeIfAbsent(registryUrlKey, s -> {
                 Invoker<?> invokerDelegate = new InvokerDelegate<>(originInvoker, providerUrl);
                 return new ExporterChangeableWrapper<>(
-                    (ReferenceCountExporter<T>) exporterFactory.createExporter(providerUrlKey, invokerDelegate), originInvoker);
+                    (ReferenceCountExporter<T>) exporterFactory.createExporter(providerUrlKey,
+                        () -> protocol.export(originInvoker)), originInvoker);
             });
     }
 
