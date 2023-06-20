@@ -311,7 +311,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     }
 
     @Override
-    public void register() {
+    public void register(boolean onlyDefault) {
         if (!this.exported) {
             return;
         }
@@ -322,7 +322,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             }
 
             for (Exporter<?> exporter : exporters) {
-                if (exporter.getInvoker().getUrl().getParameter(REGISTER_ORIGIN_KEY, true)) {
+                if (!onlyDefault || exporter.getInvoker().getUrl().getParameter(REGISTER_ORIGIN_KEY, true)) {
                     exporter.register();
                 }
             }
