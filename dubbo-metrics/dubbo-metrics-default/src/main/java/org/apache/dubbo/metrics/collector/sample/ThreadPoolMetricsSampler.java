@@ -88,10 +88,8 @@ public class ThreadPoolMetricsSampler implements MetricsSampler {
         list.add(new GaugeMetricSample<>(MetricsKey.THREAD_POOL_ACTIVE_SIZE, threadPoolMetric.getTags(), THREAD_POOL, threadPoolMetric, ThreadPoolMetric::getActiveCount));
         list.add(new GaugeMetricSample<>(MetricsKey.THREAD_POOL_THREAD_COUNT, threadPoolMetric.getTags(), THREAD_POOL, threadPoolMetric, ThreadPoolMetric::getPoolSize));
         list.add(new GaugeMetricSample<>(MetricsKey.THREAD_POOL_QUEUE_SIZE, threadPoolMetric.getTags(), THREAD_POOL, threadPoolMetric, ThreadPoolMetric::getQueueSize));
-
         return list;
     }
-
     public void registryDefaultSampleThreadPoolExecutor() {
         ApplicationModel applicationModel = collector.getApplicationModel();
         if (applicationModel == null) {
