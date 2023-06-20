@@ -93,6 +93,10 @@ public abstract class BaseStatComposite implements MetricsExport {
         serviceStatComposite.incrementServiceKey(metricsKeyWrapper, attServiceKey, size);
     }
 
+    public void incrementServiceKey(MetricsKeyWrapper metricsKeyWrapper, String attServiceKey, String extra, int size) {
+        serviceStatComposite.incrementExtraServiceKey(metricsKeyWrapper, attServiceKey, extra, size);
+    }
+
     public void incrementMethodKey(MetricsKeyWrapper metricsKeyWrapper, Invocation invocation, int size) {
         methodStatComposite.incrementMethodKey(metricsKeyWrapper, invocation, size);
     }

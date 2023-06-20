@@ -33,7 +33,7 @@ import static org.apache.dubbo.metrics.MetricsConstants.SELF_INCREMENT_SIZE;
 
 public abstract class CombMetricsCollector<E extends TimeCounterEvent> extends AbstractMetricsListener<E> implements ApplicationMetricsCollector<E>, ServiceMetricsCollector<E>, MethodMetricsCollector<E> {
 
-    private final BaseStatComposite stats;
+    protected final BaseStatComposite stats;
     private MetricsEventMulticaster eventMulticaster;
 
 

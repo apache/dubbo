@@ -25,7 +25,6 @@ import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.config.configcenter.DynamicConfigurationFactory;
 import org.apache.dubbo.common.config.configcenter.wrapper.CompositeDynamicConfiguration;
 import org.apache.dubbo.common.constants.LoggerCodeConstants;
-import org.apache.dubbo.common.constants.RegistryConstants;
 import org.apache.dubbo.common.deploy.AbstractDeployer;
 import org.apache.dubbo.common.deploy.ApplicationDeployListener;
 import org.apache.dubbo.common.deploy.ApplicationDeployer;
@@ -157,7 +156,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
         // load spi listener
         Set<ApplicationDeployListener> deployListeners = applicationModel.getExtensionLoader(ApplicationDeployListener.class)
-                .getSupportedExtensionInstances();
+            .getSupportedExtensionInstances();
         for (ApplicationDeployListener listener : deployListeners) {
             this.addDeployListener(listener);
         }
@@ -360,17 +359,17 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         List<RegistryConfig> defaultRegistries = configManager.getDefaultRegistries();
         if (defaultRegistries.size() > 0) {
             defaultRegistries
-                    .stream()
-                    .filter(this::isUsedRegistryAsConfigCenter)
-                    .map(this::registryAsConfigCenter)
-                    .forEach(configCenter -> {
-                        if (configManager.getConfigCenter(configCenter.getId()).isPresent()) {
-                            return;
-                        }
-                        configManager.addConfigCenter(configCenter);
-                        logger.info("use registry as config-center: " + configCenter);
+                .stream()
+                .filter(this::isUsedRegistryAsConfigCenter)
+                .map(this::registryAsConfigCenter)
+                .forEach(configCenter -> {
+                    if (configManager.getConfigCenter(configCenter.getId()).isPresent()) {
+                        return;
+                    }
+                    configManager.addConfigCenter(configCenter);
+                    logger.info("use registry as config-center: " + configCenter);
 
-                    });
+                });
         }
     }
 
@@ -384,7 +383,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             return;
         }
         DefaultMetricsCollector collector =
-                applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class);
+            applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class);
         Optional<MetricsConfig> configOptional = configManager.getMetrics();
         //If no specific metrics type is configured and there is no Prometheus dependency in the dependencies.
         MetricsConfig metricsConfig = configOptional.orElse(new MetricsConfig(applicationModel));
@@ -445,7 +444,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
     private boolean isUsedRegistryAsConfigCenter(RegistryConfig registryConfig) {
         return isUsedRegistryAsCenter(registryConfig, registryConfig::getUseAsConfigCenter, "config",
-                DynamicConfigurationFactory.class);
+            DynamicConfigurationFactory.class);
     }
 
     private ConfigCenterConfig registryAsConfigCenter(RegistryConfig registryConfig) {
@@ -487,9 +486,9 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         }
 
         Collection<MetadataReportConfig> metadataConfigsToOverride = originMetadataConfigs
-                .stream()
-                .filter(m -> Objects.isNull(m.getAddress()))
-                .collect(Collectors.toList());
+            .stream()
+            .filter(m -> Objects.isNull(m.getAddress()))
+            .collect(Collectors.toList());
 
         if (metadataConfigsToOverride.size() > 1) {
             return;
@@ -500,12 +499,12 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         List<RegistryConfig> defaultRegistries = configManager.getDefaultRegistries();
         if (!defaultRegistries.isEmpty()) {
             defaultRegistries
-                    .stream()
-                    .filter(this::isUsedRegistryAsMetadataCenter)
-                    .map(registryConfig -> registryAsMetadataCenter(registryConfig, metadataConfigToOverride))
-                    .forEach(metadataReportConfig -> {
-                        overrideMetadataReportConfig(metadataConfigToOverride, metadataReportConfig);
-                    });
+                .stream()
+                .filter(this::isUsedRegistryAsMetadataCenter)
+                .map(registryConfig -> registryAsMetadataCenter(registryConfig, metadataConfigToOverride))
+                .forEach(metadataReportConfig -> {
+                    overrideMetadataReportConfig(metadataConfigToOverride, metadataReportConfig);
+                });
         }
     }
 
@@ -534,7 +533,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
     private boolean isUsedRegistryAsMetadataCenter(RegistryConfig registryConfig) {
         return isUsedRegistryAsCenter(registryConfig, registryConfig::getUseAsMetadataCenter, "metadata",
-                MetadataReportFactory.class);
+            MetadataReportFactory.class);
     }
 
     /**
@@ -560,13 +559,13 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             supported = supportsExtension(extensionClass, protocol);
             if (logger.isInfoEnabled()) {
                 logger.info(format("No value is configured in the registry, the %s extension[name : %s] %s as the %s center"
-                        , extensionClass.getSimpleName(), protocol, supported ? "supports" : "does not support", centerType));
+                    , extensionClass.getSimpleName(), protocol, supported ? "supports" : "does not support", centerType));
             }
         }
 
         if (logger.isInfoEnabled()) {
             logger.info(format("The registry[%s] will be %s as the %s center", registryConfig,
-                    supported ? "used" : "not used", centerType));
+                supported ? "used" : "not used", centerType));
         }
         return supported;
     }
@@ -589,7 +588,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
     private MetadataReportConfig registryAsMetadataCenter(RegistryConfig registryConfig, MetadataReportConfig originMetadataReportConfig) {
         MetadataReportConfig metadataReportConfig = originMetadataReportConfig == null ?
-                new MetadataReportConfig(registryConfig.getApplicationModel()) : originMetadataReportConfig;
+            new MetadataReportConfig(registryConfig.getApplicationModel()) : originMetadataReportConfig;
         if (metadataReportConfig.getId() == null) {
             metadataReportConfig.setId(registryConfig.getId());
         }
@@ -792,13 +791,13 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
     private void exportMetricsService() {
         boolean exportMetrics = applicationModel.getApplicationConfigManager().getMetrics()
-                .map(MetricsConfig::getExportMetricsService).orElse(true);
+            .map(MetricsConfig::getExportMetricsService).orElse(true);
         if (exportMetrics) {
             try {
                 metricsServiceExporter.export();
             } catch (Exception e) {
                 logger.error(LoggerCodeConstants.COMMON_METRICS_COLLECTOR_EXCEPTION, "", "",
-                        "exportMetricsService an exception occurred when handle starting event", e);
+                    "exportMetricsService an exception occurred when handle starting event", e);
             }
         }
     }
@@ -876,10 +875,10 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
                     // Add metrics
                     MetricsEventBus.publish(ConfigCenterEvent.toChangeEvent(applicationModel, configCenter.getConfigFile(), configCenter.getGroup(),
-                            configCenter.getProtocol(), ConfigChangeType.ADDED.name(), configMap.size()));
+                        configCenter.getProtocol(), ConfigChangeType.ADDED.name(), configMap.size()));
                     if (isNotEmpty(appGroup)) {
                         MetricsEventBus.publish(ConfigCenterEvent.toChangeEvent(applicationModel, appConfigFile, appGroup,
-                                configCenter.getProtocol(), ConfigChangeType.ADDED.name(), appConfigMap.size()));
+                            configCenter.getProtocol(), ConfigChangeType.ADDED.name(), appConfigMap.size()));
                     }
                 } catch (IOException e) {
                     throw new IllegalStateException("Failed to parse configurations from Config Center.", e);
@@ -918,12 +917,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             registered = true;
             List<ServiceDiscovery> serviceDiscoveries = ServiceInstanceMetadataUtils.getServiceDiscoveries(applicationModel);
             if (serviceDiscoveries.size() > 0) {
-                List<String> registryClusterNames = serviceDiscoveries
-                    .stream()
-                    .map(sd -> sd.getUrl().getParameter(RegistryConstants.REGISTRY_CLUSTER_KEY))
-                    .collect(Collectors.toList());
-
-                MetricsEventBus.post(RegistryEvent.toRegisterEvent(applicationModel, registryClusterNames),
+                MetricsEventBus.post(RegistryEvent.toRegisterEvent(applicationModel, ServiceInstanceMetadataUtils.getServiceDiscoveryNames(serviceDiscoveries)),
                     () -> {
                         // register service instance
                         serviceDiscoveries.forEach(ServiceDiscovery::register);
@@ -1043,7 +1037,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
     private void doOffline(ProviderModel.RegisterStatedURL statedURL) {
         RegistryFactory registryFactory =
-                statedURL.getRegistryUrl().getOrDefaultApplicationModel().getExtensionLoader(RegistryFactory.class).getAdaptiveExtension();
+            statedURL.getRegistryUrl().getOrDefaultApplicationModel().getExtensionLoader(RegistryFactory.class).getAdaptiveExtension();
         Registry registry = registryFactory.getRegistry(statedURL.getRegistryUrl());
         registry.unregister(statedURL.getProviderUrl());
         statedURL.setRegistered(false);

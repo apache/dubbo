@@ -9,6 +9,7 @@ import org.apache.dubbo.metrics.registry.collector.RegistryMetricsCollector;
 
 import java.util.List;
 
+import static org.apache.dubbo.metrics.MetricsConstants.ATTACHMENT_KEY_SERVICE;
 import static org.apache.dubbo.metrics.registry.RegistryMetricsConstants.OP_TYPE_REGISTER;
 
 /**
@@ -43,6 +44,33 @@ public class RegistrySpecListener {
     }
 
     public static AbstractMetricsKeyListener onErrorOfRegister(MetricsKey metricsKey, CombMetricsCollector<?> collector) {
+        return AbstractMetricsKeyListener.onError(metricsKey,
+            event -> {
+                List<String> registryClusterNames = event.getAttachmentValue(RegistryMetricsConstants.ATTACHMENT_KEY_MULTI_REGISTRY);
+                ((RegistryMetricsCollector) collector).incrRegisterFinishNum(metricsKey, OP_TYPE_REGISTER.getType(), registryClusterNames, event.getTimePair().calc());
+            }
+        );
+    }
+
+    public static AbstractMetricsKeyListener onPostOfServiceRegister(MetricsKey metricsKey, CombMetricsCollector<?> collector) {
+        return AbstractMetricsKeyListener.onEvent(metricsKey,
+            event -> {
+                List<String> registryClusterNames = event.getAttachmentValue(RegistryMetricsConstants.ATTACHMENT_KEY_MULTI_REGISTRY);
+                ((RegistryMetricsCollector) collector).incrServiceRegisterNum(metricsKey, event.getAttachmentValue(ATTACHMENT_KEY_SERVICE), registryClusterNames);
+            }
+        );
+    }
+
+    public static AbstractMetricsKeyListener onFinishOfServiceRegister(MetricsKey metricsKey, CombMetricsCollector<?> collector) {
+        return AbstractMetricsKeyListener.onFinish(metricsKey,
+            event -> {
+                List<String> registryClusterNames = event.getAttachmentValue(RegistryMetricsConstants.ATTACHMENT_KEY_MULTI_REGISTRY);
+                ((RegistryMetricsCollector) collector).incrRegisterFinishNum(metricsKey, OP_TYPE_REGISTER.getType(), registryClusterNames, event.getTimePair().calc());
+            }
+        );
+    }
+
+    public static AbstractMetricsKeyListener onErrorOfServiceRegister(MetricsKey metricsKey, CombMetricsCollector<?> collector) {
         return AbstractMetricsKeyListener.onError(metricsKey,
             event -> {
                 List<String> registryClusterNames = event.getAttachmentValue(RegistryMetricsConstants.ATTACHMENT_KEY_MULTI_REGISTRY);

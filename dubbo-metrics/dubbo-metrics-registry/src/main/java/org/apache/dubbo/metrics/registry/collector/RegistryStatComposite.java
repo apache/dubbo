@@ -19,26 +19,31 @@ import static org.apache.dubbo.metrics.MetricsConstants.SELF_INCREMENT_SIZE;
 
 public class RegistryStatComposite extends AbstractMetricsExport {
 
-    private final Map<MetricsKey, Map<RegisterKeyMetric, AtomicLong>> numStats = new ConcurrentHashMap<>();
+    private final Map<MetricsKey, Map<RegisterAppKeyMetric, AtomicLong>> appStats = new ConcurrentHashMap<>();
+    private final Map<MetricsKey, Map<RegisterServiceKeyMetric, AtomicLong>> serviceStats = new ConcurrentHashMap<>();
 
     public RegistryStatComposite(ApplicationModel applicationModel) {
         super(applicationModel);
-        init(RegistryMetricsConstants.REGISTER_LEVEL_KEYS);
+        init(RegistryMetricsConstants.REGISTER_LEVEL_APP_KEYS);
     }
 
     public void init(List<MetricsKey> appKeys) {
         if (CollectionUtils.isEmpty(appKeys)) {
             return;
         }
-        appKeys.forEach(appKey -> numStats.put(appKey, new ConcurrentHashMap<>()));
+        appKeys.forEach(appKey ->
+        {
+            appStats.put(appKey, new ConcurrentHashMap<>());
+            serviceStats.put(appKey, new ConcurrentHashMap<>());
+        });
     }
 
     @Override
     public List<MetricSample> export(MetricsCategory category) {
         List<MetricSample> list = new ArrayList<>();
-        for (MetricsKey metricsKey : numStats.keySet()) {
-            Map<RegisterKeyMetric, AtomicLong> stringAtomicLongMap = numStats.get(metricsKey);
-            for (RegisterKeyMetric registerKeyMetric : stringAtomicLongMap.keySet()) {
+        for (MetricsKey metricsKey : appStats.keySet()) {
+            Map<RegisterAppKeyMetric, AtomicLong> stringAtomicLongMap = appStats.get(metricsKey);
+            for (RegisterAppKeyMetric registerKeyMetric : stringAtomicLongMap.keySet()) {
                 list.add(new GaugeMetricSample<>(metricsKey, registerKeyMetric.getTags(), category, stringAtomicLongMap, value -> value.get(registerKeyMetric).get()));
             }
         }
@@ -46,9 +51,9 @@ public class RegistryStatComposite extends AbstractMetricsExport {
     }
 
     public void incrRegisterNum(MetricsKey metricsKey, String name) {
-        if (!numStats.containsKey(metricsKey)) {
+        if (!appStats.containsKey(metricsKey)) {
             return;
         }
-        numStats.get(metricsKey).computeIfAbsent(new RegisterKeyMetric(getApplicationModel(), name), k -> new AtomicLong(0L)).getAndAdd(SELF_INCREMENT_SIZE);
+        appStats.get(metricsKey).computeIfAbsent(new RegisterAppKeyMetric(getApplicationModel(), name), k -> new AtomicLong(0L)).getAndAdd(SELF_INCREMENT_SIZE);
     }
 }

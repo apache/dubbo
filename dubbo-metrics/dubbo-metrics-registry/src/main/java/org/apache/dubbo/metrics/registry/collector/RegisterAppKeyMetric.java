@@ -26,10 +26,10 @@ import java.util.Map;
 /**
  * Metric class for service.
  */
-public class RegisterKeyMetric extends ApplicationMetric {
+public class RegisterAppKeyMetric extends ApplicationMetric {
     private final String registryClusterName;
 
-    public RegisterKeyMetric(ApplicationModel applicationModel, String registryClusterName) {
+    public RegisterAppKeyMetric(ApplicationModel applicationModel, String registryClusterName) {
         super(applicationModel);
         this.registryClusterName = registryClusterName;
     }
@@ -37,10 +37,6 @@ public class RegisterKeyMetric extends ApplicationMetric {
     @Override
     public Map<String, String> getTags() {
         return MetricsSupport.registryTags(getApplicationModel(), registryClusterName);
-    }
-
-    public String getRegistryClusterName() {
-        return registryClusterName;
     }
 
     @Override
@@ -52,7 +48,7 @@ public class RegisterKeyMetric extends ApplicationMetric {
             return false;
         }
 
-        RegisterKeyMetric that = (RegisterKeyMetric) o;
+        RegisterAppKeyMetric that = (RegisterAppKeyMetric) o;
 
         if (!getApplicationName().equals(that.getApplicationName())) {
             return false;

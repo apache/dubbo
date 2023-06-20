@@ -70,10 +70,11 @@ public class RegistryEvent extends TimeCounterEvent {
         };
     }
 
-    public static RegistryEvent toRsEvent(ApplicationModel applicationModel, String serviceKey, int size) {
+    public static RegistryEvent toRsEvent(ApplicationModel applicationModel, String serviceKey, int size, List<String> ServiceDiscoveryNames) {
         RegistryEvent ddEvent = new RegistryEvent(applicationModel, new TypeWrapper(MetricsLevel.SERVICE, MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS, MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS_SUCCEED, MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS_FAILED));
         ddEvent.putAttachment(ATTACHMENT_KEY_SERVICE, serviceKey);
         ddEvent.putAttachment(ATTACHMENT_KEY_SIZE, size);
+        ddEvent.putAttachment(RegistryMetricsConstants.ATTACHMENT_KEY_MULTI_REGISTRY, ServiceDiscoveryNames);
         return ddEvent;
     }
 

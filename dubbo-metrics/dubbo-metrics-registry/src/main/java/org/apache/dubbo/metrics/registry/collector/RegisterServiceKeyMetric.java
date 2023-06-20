@@ -15,8 +15,9 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.metrics.model;
+package org.apache.dubbo.metrics.registry.collector;
 
+import org.apache.dubbo.common.constants.RegistryConstants;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Map;
@@ -25,42 +26,32 @@ import java.util.Objects;
 /**
  * Metric class for service.
  */
-public class ServiceKeyMetric extends ApplicationMetric {
+public class RegisterServiceKeyMetric extends RegisterAppKeyMetric {
     private final String interfaceName;
-    private String extra;
 
-    public ServiceKeyMetric(ApplicationModel applicationModel, String serviceKey) {
-        super(applicationModel);
-        this.interfaceName = serviceKey;
+    public RegisterServiceKeyMetric(ApplicationModel applicationModel, String registryClusterName, String interfaceName) {
+        super(applicationModel, registryClusterName);
+        this.interfaceName = interfaceName;
     }
 
     @Override
     public Map<String, String> getTags() {
-        return MetricsSupport.serviceTags(getApplicationModel(), interfaceName);
-    }
-
-    public String getExtra() {
-        return extra;
-    }
-
-    public void setExtra(String extra) {
-        this.extra = extra;
-    }
-
-    public String getInterfaceName() {
-        return interfaceName;
+        Map<String, String> map = super.getTags();
+        map.put(RegistryConstants.REGISTRY_CLUSTER_KEY, interfaceName);
+        return map;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof ServiceKeyMetric)) return false;
-        ServiceKeyMetric that = (ServiceKeyMetric) o;
-        return interfaceName.equals(that.interfaceName) && Objects.equals(extra, that.extra);
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        RegisterServiceKeyMetric that = (RegisterServiceKeyMetric) o;
+        return interfaceName.equals(that.interfaceName);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(interfaceName, extra);
+        return Objects.hash(super.hashCode(), interfaceName);
     }
 }

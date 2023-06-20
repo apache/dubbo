@@ -114,9 +114,9 @@ public final class RegistrySubDispatcher extends SimpleMetricsEventMulticaster {
 
 
         // MetricsServiceRegisterListener
-        MetricsCat SERVICE_REGISTER_POST = new MetricsCat(MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS, MetricsServiceListener::onPostEventBuild);
-        MetricsCat SERVICE_REGISTER_FINISH = new MetricsCat(MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS_SUCCEED, MetricsServiceListener::onFinishEventBuild);
-        MetricsCat SERVICE_REGISTER_ERROR = new MetricsCat(MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS_FAILED, MetricsServiceListener::onErrorEventBuild);
+        MetricsCat SERVICE_REGISTER_POST = new MetricsCat(MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS, RegistrySpecListener::onPostOfServiceRegister);
+        MetricsCat SERVICE_REGISTER_FINISH = new MetricsCat(MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS_SUCCEED, RegistrySpecListener::onFinishOfServiceRegister);
+        MetricsCat SERVICE_REGISTER_ERROR = new MetricsCat(MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS_FAILED, RegistrySpecListener::onErrorOfServiceRegister);
 
 
         // MetricsServiceSubscribeListener

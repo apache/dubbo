@@ -110,6 +110,10 @@ public class RegistryMetricsCollector extends CombMetricsCollector<RegistryEvent
         registryClusterNames.forEach(name -> internalStat.incrRegisterNum(metricsKey, name));
     }
 
+    public void incrServiceRegisterNum(MetricsKey metricsKey, String serviceKey, List<String> registryClusterNames) {
+        registryClusterNames.forEach(name -> stats.incrementServiceKey(metricsKey, serviceKey, name));
+    }
+
     public void incrRegisterFinishNum(MetricsKey metricsKey, String registryOpType, List<String> registryClusterNames, Long responseTime) {
         registryClusterNames.forEach(name ->
         {
