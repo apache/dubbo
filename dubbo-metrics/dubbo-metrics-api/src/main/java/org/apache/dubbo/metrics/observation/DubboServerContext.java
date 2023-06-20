@@ -14,19 +14,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.metrics.observation;
 
-package org.apache.dubbo.config.deploy;
+import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.Invoker;
 
-import org.apache.dubbo.common.utils.Assert;
-import org.apache.dubbo.rpc.model.ApplicationModel;
+import io.micrometer.observation.transport.ReceiverContext;
 
-import org.junit.jupiter.api.Test;
+/**
+ * Consumer context for RPC.
+ */
+public class DubboServerContext extends ReceiverContext<Invocation> {
 
-class DefaultApplicationDeployerTest {
+    private final Invoker<?> invoker;
 
-    @Test
-    void isSupportPrometheus() {
-        boolean supportPrometheus = new DefaultApplicationDeployer(ApplicationModel.defaultModel()).isSupportPrometheus();
-        Assert.assertTrue(supportPrometheus,"DefaultApplicationDeployer.isSupportPrometheus() should return true");
+    private final Invocation invocation;
+
+    public DubboServerContext(Invoker<?> invoker, Invocation invocation) {
+        super((stringObjectMap, s) -> String.valueOf(stringObjectMap.getAttachment(s)));
+        this.invoker = invoker;
+        this.invocation = invocation;
+        setCarrier(invocation);
+    }
+
+    public Invoker<?> getInvoker() {
+        return invoker;
+    }
+
+    public Invocation getInvocation() {
+        return invocation;
     }
 }

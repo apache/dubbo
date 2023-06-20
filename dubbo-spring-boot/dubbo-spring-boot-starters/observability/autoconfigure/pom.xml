@@ -137,12 +137,6 @@
             <version>${project.version}</version>
             <optional>true</optional>
         </dependency>
-        <dependency>
-            <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-config-spring</artifactId>
-            <version>${project.version}</version>
-            <optional>true</optional>
-        </dependency>
 
         <!-- prometheus client -->
         <dependency>

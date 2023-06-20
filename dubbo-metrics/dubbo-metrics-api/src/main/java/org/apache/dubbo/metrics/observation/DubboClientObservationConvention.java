@@ -14,19 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.metrics.observation;
 
-package org.apache.dubbo.config.deploy;
+import io.micrometer.observation.Observation;
+import io.micrometer.observation.ObservationConvention;
 
-import org.apache.dubbo.common.utils.Assert;
-import org.apache.dubbo.rpc.model.ApplicationModel;
-
-import org.junit.jupiter.api.Test;
-
-class DefaultApplicationDeployerTest {
-
-    @Test
-    void isSupportPrometheus() {
-        boolean supportPrometheus = new DefaultApplicationDeployer(ApplicationModel.defaultModel()).isSupportPrometheus();
-        Assert.assertTrue(supportPrometheus,"DefaultApplicationDeployer.isSupportPrometheus() should return true");
+/**
+ * {@link ObservationConvention} for a {@link DubboClientContext}.
+ */
+public interface DubboClientObservationConvention extends ObservationConvention<DubboClientContext> {
+    @Override
+    default boolean supportsContext(Observation.Context context) {
+        return context instanceof DubboClientContext;
     }
 }
