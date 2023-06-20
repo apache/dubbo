@@ -19,8 +19,7 @@ package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
-import org.apache.dubbo.common.constants.LoggerCodeConstants;
-import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.utils.ExecutorUtil;
@@ -54,7 +53,7 @@ public class TripleProtocol extends AbstractProtocol {
 
 
     public static final String METHOD_ATTR_PACK = "pack";
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(TripleProtocol.class);
+    private static final Logger logger = LoggerFactory.getLogger(TripleProtocol.class);
     private final PathResolver pathResolver;
     private final TriBuiltinService triBuiltinService;
     private final String acceptEncodings;
@@ -116,12 +115,13 @@ public class TripleProtocol extends AbstractProtocol {
 
         Invoker<?> previous = pathResolver.add(url.getServiceKey(), invoker);
         if (previous != null) {
-            String msg = "Already exists an invoker[" + previous.getUrl() + "] on path[" + url.getServiceKey()
-                + "], dubbo will override with invoker[" + url + "]";
             if (url.getServiceKey().equals(url.getServiceModel().getServiceModel().getInterfaceName())) {
-                logger.info(msg);
+                logger.info("Already exists an invoker[" + previous.getUrl() + "] on path[" + url.getServiceKey()
+                    + "], dubbo will override with invoker[" + url + "]");
             } else {
-                logger.warn(LoggerCodeConstants.PROTOCOL_INCORRECT_PARAMETER_VALUES, "", "", msg);
+                throw new IllegalStateException("Already exists an invoker[" + previous.getUrl() + "] on path[" +
+                    url.getServiceKey() + "], failed to add invoker[" + url +
+                    "] , please use unique serviceKey.");
             }
         }
         if (RESOLVE_FALLBACK_TO_DEFAULT) {
