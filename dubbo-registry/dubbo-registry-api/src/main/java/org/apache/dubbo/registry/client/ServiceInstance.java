@@ -103,6 +103,7 @@ public interface ServiceInstance extends Serializable {
 
     void setApplicationModel(ApplicationModel applicationModel);
 
+    @Transient
     ApplicationModel getApplicationModel();
 
     @Transient

@@ -27,7 +27,7 @@ public enum MetricsKey {
     METRIC_REQUESTS_SUCCEED("dubbo.%s.requests.succeed.total", "Total Succeed Requests"),
     METRIC_REQUEST_BUSINESS_FAILED("dubbo.%s.requests.business.failed.total", "Total Failed Business Requests"),
 
-    METRIC_REQUESTS_PROCESSING("dubbo.%s.requests.processing", "Processing Requests"),
+    METRIC_REQUESTS_PROCESSING("dubbo.%s.requests.processing.total", "Processing Requests"),
     METRIC_REQUESTS_TIMEOUT("dubbo.%s.requests.timeout.total", "Total Timeout Failed Requests"),
     METRIC_REQUESTS_LIMIT("dubbo.%s.requests.limit.total", "Total Limit Failed Requests"),
     METRIC_REQUESTS_FAILED("dubbo.%s.requests.unknown.failed.total", "Total Unknown Failed Requests"),

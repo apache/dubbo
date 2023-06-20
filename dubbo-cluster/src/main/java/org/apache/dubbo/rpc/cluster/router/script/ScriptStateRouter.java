@@ -29,6 +29,7 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.router.RouterSnapshotNode;
 import org.apache.dubbo.rpc.cluster.router.state.AbstractStateRouter;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
+import org.apache.dubbo.rpc.support.RpcUtils;
 
 import javax.script.Bindings;
 import javax.script.Compilable;
@@ -139,7 +140,7 @@ public class ScriptStateRouter<T> extends AbstractStateRouter<T> {
                 return function.eval(bindings);
             } catch (ScriptException e) {
                 logger.error(CLUSTER_SCRIPT_EXCEPTION, "Scriptrouter exec script error", "", "Script route error, rule has been ignored. rule: " + rule + ", method:" +
-                    invocation.getMethodName() + ", url: " + RpcContext.getContext().getUrl(), e);
+                    RpcUtils.getMethodName(invocation) + ", url: " + RpcContext.getContext().getUrl(), e);
                 return invokers;
             }
         }, accessControlContext));

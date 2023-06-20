@@ -250,7 +250,7 @@ public class PageServlet extends HttpServlet {
                             + n
                             + "_' + i + '_' + j).innerHTML; if (iv.length > 0 && (tv.length < iv.length || tv.indexOf(iv) == -1)) { m = false; break; } } } document.getElementById('tr_"
                             + n
-                            + "_' + i).style.display = (m ? '' : 'none');}\" sytle=\"width: 100%\" />";
+                            + "_' + i).style.display = (m ? '' : 'none');}\" style=\"width: 100%\" />";
                 }
                 writer.println("        <td>" + col + "</td>");
             }

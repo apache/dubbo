@@ -77,6 +77,14 @@ public abstract class RegistryNotifier {
             }
             scheduler.submit(new NotificationTask(this, notifyTime));
         }
+        try {
+            while (this.lastEventTime == System.currentTimeMillis()) {
+                // wait to let event time refresh
+                Thread.sleep(1);
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 
     public long getDelayTime() {

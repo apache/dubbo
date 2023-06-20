@@ -120,7 +120,6 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
                     Channel channel = ctx.channel();
                     channel.pipeline().addLast(new TripleCommandOutBoundHandler());
                     channel.pipeline().addLast(new TripleHttp2ClientResponseHandler(createTransportListener()));
-                    channel.closeFuture().addListener(f -> transportException(f.cause()));
                 }
             });
         CreateStreamQueueCommand cmd = CreateStreamQueueCommand.create(bootstrap, streamChannelFuture);
@@ -149,7 +148,7 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
     private void transportException(Throwable cause) {
         final TriRpcStatus status = TriRpcStatus.INTERNAL.withDescription("Http2 exception")
             .withCause(cause);
-        listener.onComplete(status, null);
+        listener.onComplete(status, null, null, false);
     }
 
     public ChannelFuture cancelByLocal(TriRpcStatus status) {

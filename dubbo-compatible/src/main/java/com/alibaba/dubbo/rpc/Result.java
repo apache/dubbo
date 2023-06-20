@@ -64,6 +64,16 @@ public interface Result extends org.apache.dubbo.rpc.Result {
         return null;
     }
 
+
+    /**
+     * @see com.alibaba.dubbo.rpc.Result#getValue()
+     * @deprecated Replace to getValue()
+     */
+    @Deprecated
+    default Object getResult() {
+        return getValue();
+    }
+
     class CompatibleResult implements Result {
         private org.apache.dubbo.rpc.Result delegate;
 

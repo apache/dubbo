@@ -22,7 +22,12 @@ import java.util.List;
 
 public interface ReferenceCache {
     @SuppressWarnings("unchecked")
-    <T> T get(ReferenceConfigBase<T> referenceConfig);
+    default <T> T get(ReferenceConfigBase<T> referenceConfig) {
+        return get(referenceConfig, true);
+    }
+
+    @SuppressWarnings("unchecked")
+    <T> T get(ReferenceConfigBase<T> referenceConfig, boolean check);
 
     @SuppressWarnings("unchecked")
     <T> T get(String key, Class<T> type);
@@ -35,6 +40,11 @@ public interface ReferenceCache {
 
     @SuppressWarnings("unchecked")
     <T> T get(Class<T> type);
+
+    @SuppressWarnings("unchecked")
+    <T> void check(ReferenceConfigBase<T> referenceConfig, long timeout);
+
+    void check(String key, Class<?> type, long timeout);
 
     void destroy(String key, Class<?> type);
 
