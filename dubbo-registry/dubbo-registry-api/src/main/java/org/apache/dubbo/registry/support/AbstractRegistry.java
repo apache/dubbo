@@ -73,7 +73,6 @@ import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
 import static org.apache.dubbo.registry.Constants.CACHE;
 import static org.apache.dubbo.registry.Constants.DUBBO_REGISTRY;
-import static org.apache.dubbo.registry.Constants.REGISTER_KEY;
 import static org.apache.dubbo.registry.Constants.REGISTRY_FILESAVE_SYNC_KEY;
 import static org.apache.dubbo.registry.Constants.USER_HOME;
 
@@ -615,9 +614,6 @@ public abstract class AbstractRegistry implements Registry {
     }
 
     protected boolean acceptable(URL urlToRegistry) {
-        if (!registryUrl.getParameter(REGISTER_KEY, true)) {
-            return false;
-        }
         String pattern = registryUrl.getParameter(ACCEPTS_KEY);
         if (StringUtils.isEmpty(pattern)) {
             return true;
