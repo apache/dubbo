@@ -19,7 +19,8 @@ package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.constants.LoggerCodeConstants;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.utils.ExecutorUtil;
@@ -44,16 +45,16 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
+import static org.apache.dubbo.config.Constants.SERVER_THREAD_POOL_NAME;
 import static org.apache.dubbo.rpc.Constants.H2_IGNORE_1_0_0_KEY;
 import static org.apache.dubbo.rpc.Constants.H2_RESOLVE_FALLBACK_TO_DEFAULT_KEY;
-import static org.apache.dubbo.config.Constants.SERVER_THREAD_POOL_NAME;
 import static org.apache.dubbo.rpc.Constants.H2_SUPPORT_NO_LOWER_HEADER_KEY;
 
 public class TripleProtocol extends AbstractProtocol {
 
 
     public static final String METHOD_ATTR_PACK = "pack";
-    private static final Logger logger = LoggerFactory.getLogger(TripleProtocol.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(TripleProtocol.class);
     private final PathResolver pathResolver;
     private final TriBuiltinService triBuiltinService;
     private final String acceptEncodings;
@@ -65,7 +66,7 @@ public class TripleProtocol extends AbstractProtocol {
 
     public static boolean IGNORE_1_0_0_VERSION = false;
 
-    public static boolean RESOLVE_FALLBACK_TO_DEFAULT = false;
+    public static boolean RESOLVE_FALLBACK_TO_DEFAULT = true;
 
     public TripleProtocol(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
@@ -77,7 +78,7 @@ public class TripleProtocol extends AbstractProtocol {
         IGNORE_1_0_0_VERSION = ConfigurationUtils.getEnvConfiguration(ApplicationModel.defaultModel())
             .getBoolean(H2_IGNORE_1_0_0_KEY, false);
         RESOLVE_FALLBACK_TO_DEFAULT = ConfigurationUtils.getEnvConfiguration(ApplicationModel.defaultModel())
-            .getBoolean(H2_RESOLVE_FALLBACK_TO_DEFAULT_KEY, false);
+            .getBoolean(H2_RESOLVE_FALLBACK_TO_DEFAULT_KEY, true);
         Set<String> supported = frameworkModel.getExtensionLoader(DeCompressor.class)
             .getSupportedExtensions();
         this.acceptEncodings = String.join(",", supported);
@@ -113,9 +114,26 @@ public class TripleProtocol extends AbstractProtocol {
 
         invokers.add(invoker);
 
-        pathResolver.add(url.getServiceKey(), invoker);
+        Invoker<?> previous = pathResolver.add(url.getServiceKey(), invoker);
+        if (previous != null) {
+            String msg = "Already exists an invoker[" + previous.getUrl() + "] on path[" + url.getServiceKey()
+                + "], dubbo will override with invoker[" + url + "]";
+            if (url.getServiceKey().equals(url.getServiceModel().getServiceModel().getInterfaceName())) {
+                logger.info(msg);
+            } else {
+                logger.warn(LoggerCodeConstants.PROTOCOL_INCORRECT_PARAMETER_VALUES, "", "", msg);
+            }
+        }
         if (RESOLVE_FALLBACK_TO_DEFAULT) {
-            pathResolver.add(url.getServiceModel().getServiceModel().getInterfaceName(), invoker);
+            previous = pathResolver.addIfAbsent(url.getServiceModel().getServiceModel().getInterfaceName(), invoker);
+            if (previous != null) {
+                logger.info("Already exists an invoker[" + previous.getUrl() + "] on path[" +
+                    url.getServiceModel().getServiceModel().getInterfaceName() +
+                    "], dubbo will skip override with invoker[" + url + "]");
+            } else {
+                logger.info("Add fallback triple invoker[" + url + "] to path[" +
+                    url.getServiceModel().getServiceModel().getInterfaceName() + "] with invoker[" + url + "]");
+            }
         }
 
         // set service status
