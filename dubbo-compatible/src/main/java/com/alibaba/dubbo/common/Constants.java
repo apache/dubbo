@@ -537,4 +537,17 @@ public class Constants implements CommonConstants,
     public static final String GENERIC_SERIALIZATION_NATIVE_JAVA = "nativejava";
 
     public static final String GENERIC_SERIALIZATION_DEFAULT = "true";
+
+    public static final String INVOKER_CONNECTED_KEY = "connected";
+
+    public static final String INVOKER_INSIDE_INVOKERS_KEY = "inside.invokers";
+
+    public static final String INVOKER_INSIDE_INVOKER_COUNT_KEY = "inside.invoker.count";
+
+    public static final String CLUSTER_SWITCH_FACTOR = "cluster.switch.factor";
+
+    public static final String CLUSTER_SWITCH_LOG_ERROR = "cluster.switch.log.error";
+
+    public static final double DEFAULT_CLUSTER_SWITCH_FACTOR = 2;
+
 }
