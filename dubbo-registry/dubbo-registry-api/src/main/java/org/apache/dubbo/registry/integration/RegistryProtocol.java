@@ -314,13 +314,13 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
     private <T> ExporterChangeableWrapper<T> doLocalExport(final Invoker<T> originInvoker, URL providerUrl) {
         String providerUrlKey = getProviderUrlKey(originInvoker);
         String registryUrlKey = getRegistryUrlKey(originInvoker);
+        Invoker<?> invokerDelegate = new InvokerDelegate<>(originInvoker, providerUrl);
 
+        ReferenceCountExporter<?> exporter = exporterFactory.createExporter(providerUrlKey, () -> protocol.export(invokerDelegate));
         return (ExporterChangeableWrapper<T>) bounds.computeIfAbsent(providerUrlKey, _k -> new ConcurrentHashMap<>())
             .computeIfAbsent(registryUrlKey, s -> {
-                Invoker<?> invokerDelegate = new InvokerDelegate<>(originInvoker, providerUrl);
                 return new ExporterChangeableWrapper<>(
-                    (ReferenceCountExporter<T>) exporterFactory.createExporter(providerUrlKey,
-                        () -> protocol.export(originInvoker)), originInvoker);
+                    (ReferenceCountExporter<T>) exporter, originInvoker);
             });
     }
 
