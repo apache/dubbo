@@ -29,6 +29,7 @@ import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -70,15 +71,15 @@ public abstract class BaseStatComposite implements MetricsExport {
     }
 
     public void calcApplicationRt(String registryOpType, Long responseTime) {
-        rtStatComposite.calcKeyRt(registryOpType, responseTime, rtStatComposite::getAppName);
+        rtStatComposite.calcKeyRt(registryOpType, responseTime, rtStatComposite.getAppName());
     }
 
     public void calcServiceKeyRt(String serviceKey, String registryOpType, Long responseTime) {
-        rtStatComposite.calcKeyRt(registryOpType, responseTime, () -> serviceKey);
+        rtStatComposite.calcKeyRt(registryOpType, responseTime, serviceKey);
     }
 
     public void calcMethodKeyRt(Invocation invocation, String registryOpType, Long responseTime) {
-        rtStatComposite.calcKeyRt(registryOpType, responseTime, () -> invocation.getTargetServiceUniqueName() + "_" + RpcUtils.getMethodName(invocation));
+        rtStatComposite.calcKeyRt(registryOpType, responseTime, invocation.getTargetServiceUniqueName() + "_" + RpcUtils.getMethodName(invocation));
     }
 
     public void setServiceKey(MetricsKeyWrapper metricsKey, String serviceKey, int num) {
@@ -93,7 +94,7 @@ public abstract class BaseStatComposite implements MetricsExport {
         serviceStatComposite.incrementServiceKey(metricsKeyWrapper, attServiceKey, size);
     }
 
-    public void incrementServiceKey(MetricsKeyWrapper metricsKeyWrapper, String attServiceKey, String extra, int size) {
+    public void incrementServiceKey(MetricsKeyWrapper metricsKeyWrapper, String attServiceKey, Map<String, String> extra, int size) {
         serviceStatComposite.incrementExtraServiceKey(metricsKeyWrapper, attServiceKey, extra, size);
     }
 

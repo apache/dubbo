@@ -27,7 +27,6 @@ import java.util.Objects;
  */
 public class ServiceKeyMetric extends ApplicationMetric {
     private final String interfaceName;
-    private String extra;
 
     public ServiceKeyMetric(ApplicationModel applicationModel, String serviceKey) {
         super(applicationModel);
@@ -36,15 +35,7 @@ public class ServiceKeyMetric extends ApplicationMetric {
 
     @Override
     public Map<String, String> getTags() {
-        return MetricsSupport.serviceTags(getApplicationModel(), interfaceName);
-    }
-
-    public String getExtra() {
-        return extra;
-    }
-
-    public void setExtra(String extra) {
-        this.extra = extra;
+        return MetricsSupport.serviceTags(getApplicationModel(), interfaceName, getExtraInfo());
     }
 
     public String getInterfaceName() {
@@ -56,11 +47,11 @@ public class ServiceKeyMetric extends ApplicationMetric {
         if (this == o) return true;
         if (!(o instanceof ServiceKeyMetric)) return false;
         ServiceKeyMetric that = (ServiceKeyMetric) o;
-        return interfaceName.equals(that.interfaceName) && Objects.equals(extra, that.extra);
+        return interfaceName.equals(that.interfaceName) && Objects.equals(extraInfo, that.extraInfo);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(interfaceName, extra);
+        return Objects.hash(interfaceName, extraInfo);
     }
 }

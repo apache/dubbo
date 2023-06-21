@@ -57,13 +57,13 @@ public class ServiceStatComposite extends AbstractMetricsExport {
         incrementExtraServiceKey(wrapper, serviceKey, null, size);
     }
 
-    public void incrementExtraServiceKey(MetricsKeyWrapper wrapper, String serviceKey, String extra, int size) {
+    public void incrementExtraServiceKey(MetricsKeyWrapper wrapper, String serviceKey, Map<String,String> extra, int size) {
         if (!serviceWrapperNumStats.containsKey(wrapper)) {
             return;
         }
         ServiceKeyMetric serviceKeyMetric = new ServiceKeyMetric(getApplicationModel(), serviceKey);
         if (extra != null) {
-            serviceKeyMetric.setExtra(extra);
+            serviceKeyMetric.setExtraInfo(extra);
         }
         serviceWrapperNumStats.get(wrapper).computeIfAbsent(serviceKeyMetric, k -> new AtomicLong(0L)).getAndAdd(size);
         MetricsSupport.fillZero(serviceWrapperNumStats);

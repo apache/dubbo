@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.metrics.registry.collector;
 
+import org.apache.dubbo.common.constants.RegistryConstants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.metrics.collector.CombMetricsCollector;
@@ -26,7 +27,9 @@ import org.apache.dubbo.metrics.data.BaseStatComposite;
 import org.apache.dubbo.metrics.data.RtStatComposite;
 import org.apache.dubbo.metrics.data.ServiceStatComposite;
 import org.apache.dubbo.metrics.model.MetricsCategory;
+import org.apache.dubbo.metrics.model.MetricsSupport;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
+import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.metrics.registry.RegistryMetricsConstants;
 import org.apache.dubbo.metrics.registry.event.RegistryEvent;
@@ -110,17 +113,29 @@ public class RegistryMetricsCollector extends CombMetricsCollector<RegistryEvent
         registryClusterNames.forEach(name -> internalStat.incrRegisterNum(metricsKey, name));
     }
 
-    public void incrServiceRegisterNum(MetricsKey metricsKey, String serviceKey, List<String> registryClusterNames) {
-        registryClusterNames.forEach(name -> stats.incrementServiceKey(metricsKey, serviceKey, name));
-    }
-
     public void incrRegisterFinishNum(MetricsKey metricsKey, String registryOpType, List<String> registryClusterNames, Long responseTime) {
         registryClusterNames.forEach(name ->
         {
             internalStat.incrRegisterNum(metricsKey, name);
-            getStats().getRtStatComposite().calcKeyRt(registryOpType, responseTime, () -> name);
+            getStats().getRtStatComposite().calcKeyRt(registryOpType, responseTime, name);
         });
 
     }
+
+    public void incrServiceRegisterNum(MetricsKeyWrapper wrapper, String serviceKey, List<String> registryClusterNames, int size) {
+        registryClusterNames.forEach(name ->
+                stats.incrementServiceKey(wrapper, serviceKey, MetricsSupport.customExtraInfo(RegistryConstants.REGISTRY_CLUSTER_KEY.toLowerCase(), name), size)
+        );
+    }
+
+    public void incrServiceRegisterFinishNum(MetricsKeyWrapper wrapper, String serviceKey, List<String> registryClusterNames, int size, Long responseTime) {
+        registryClusterNames.forEach(name ->
+                {
+                    stats.incrementServiceKey(wrapper, serviceKey, MetricsSupport.customExtraInfo(RegistryConstants.REGISTRY_CLUSTER_KEY.toLowerCase(), name), size);
+                    getStats().getRtStatComposite().calcKeyRt(wrapper.getType(), responseTime, name + "_" + serviceKey);
+                }
+        );
+    }
+
 
 }

@@ -36,7 +36,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.LongAccumulator;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -78,9 +77,9 @@ public class RtStatComposite extends AbstractMetricsExport {
         return singleRtStats;
     }
 
-    public void calcKeyRt(String registryOpType, Long responseTime, Supplier<String> keySupplier) {
+    public void calcKeyRt(String registryOpType, Long responseTime, String rtKey) {
         for (LongContainer container : rtStats.stream().filter(longContainer -> longContainer.specifyType(registryOpType)).collect(Collectors.toList())) {
-            Number current = (Number) ConcurrentHashMapUtils.computeIfAbsent(container, keySupplier.get(), container.getInitFunc());
+            Number current = (Number) ConcurrentHashMapUtils.computeIfAbsent(container, rtKey, container.getInitFunc());
             container.getConsumerFunc().accept(responseTime, current);
         }
     }

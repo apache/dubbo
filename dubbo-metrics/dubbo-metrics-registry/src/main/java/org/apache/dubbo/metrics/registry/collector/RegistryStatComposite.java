@@ -1,7 +1,10 @@
 package org.apache.dubbo.metrics.registry.collector;
 
+import org.apache.dubbo.common.constants.RegistryConstants;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.metrics.model.ApplicationMetric;
 import org.apache.dubbo.metrics.model.MetricsCategory;
+import org.apache.dubbo.metrics.model.MetricsSupport;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
@@ -19,8 +22,7 @@ import static org.apache.dubbo.metrics.MetricsConstants.SELF_INCREMENT_SIZE;
 
 public class RegistryStatComposite extends AbstractMetricsExport {
 
-    private final Map<MetricsKey, Map<RegisterAppKeyMetric, AtomicLong>> appStats = new ConcurrentHashMap<>();
-    private final Map<MetricsKey, Map<RegisterServiceKeyMetric, AtomicLong>> serviceStats = new ConcurrentHashMap<>();
+    private final Map<MetricsKey, Map<ApplicationMetric, AtomicLong>> appStats = new ConcurrentHashMap<>();
 
     public RegistryStatComposite(ApplicationModel applicationModel) {
         super(applicationModel);
@@ -31,19 +33,15 @@ public class RegistryStatComposite extends AbstractMetricsExport {
         if (CollectionUtils.isEmpty(appKeys)) {
             return;
         }
-        appKeys.forEach(appKey ->
-        {
-            appStats.put(appKey, new ConcurrentHashMap<>());
-            serviceStats.put(appKey, new ConcurrentHashMap<>());
-        });
+        appKeys.forEach(appKey -> appStats.put(appKey, new ConcurrentHashMap<>()));
     }
 
     @Override
     public List<MetricSample> export(MetricsCategory category) {
         List<MetricSample> list = new ArrayList<>();
         for (MetricsKey metricsKey : appStats.keySet()) {
-            Map<RegisterAppKeyMetric, AtomicLong> stringAtomicLongMap = appStats.get(metricsKey);
-            for (RegisterAppKeyMetric registerKeyMetric : stringAtomicLongMap.keySet()) {
+            Map<ApplicationMetric, AtomicLong> stringAtomicLongMap = appStats.get(metricsKey);
+            for (ApplicationMetric registerKeyMetric : stringAtomicLongMap.keySet()) {
                 list.add(new GaugeMetricSample<>(metricsKey, registerKeyMetric.getTags(), category, stringAtomicLongMap, value -> value.get(registerKeyMetric).get()));
             }
         }
@@ -54,6 +52,8 @@ public class RegistryStatComposite extends AbstractMetricsExport {
         if (!appStats.containsKey(metricsKey)) {
             return;
         }
-        appStats.get(metricsKey).computeIfAbsent(new RegisterAppKeyMetric(getApplicationModel(), name), k -> new AtomicLong(0L)).getAndAdd(SELF_INCREMENT_SIZE);
+        ApplicationMetric applicationMetric = new ApplicationMetric(getApplicationModel());
+        applicationMetric.setExtraInfo(MetricsSupport.customExtraInfo(RegistryConstants.REGISTRY_CLUSTER_KEY.toLowerCase(), name));
+        appStats.get(metricsKey).computeIfAbsent(applicationMetric, k -> new AtomicLong(0L)).getAndAdd(SELF_INCREMENT_SIZE);
     }
 }

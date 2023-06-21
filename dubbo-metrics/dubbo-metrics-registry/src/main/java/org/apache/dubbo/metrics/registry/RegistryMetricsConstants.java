@@ -52,7 +52,7 @@ public interface RegistryMetricsConstants {
     MetricsPlaceValue OP_TYPE_SUBSCRIBE = MetricsPlaceValue.of("subscribe", MetricsLevel.APP);
     MetricsPlaceValue OP_TYPE_NOTIFY = MetricsPlaceValue.of("notify", MetricsLevel.APP);
     MetricsPlaceValue OP_TYPE_DIRECTORY = MetricsPlaceValue.of("directory", MetricsLevel.APP);
-    MetricsPlaceValue OP_TYPE_REGISTER_SERVICE = MetricsPlaceValue.of("register.service", MetricsLevel.SERVICE);
+    MetricsPlaceValue OP_TYPE_REGISTER_SERVICE = MetricsPlaceValue.of("register.service", MetricsLevel.REGISTRY);
     MetricsPlaceValue OP_TYPE_SUBSCRIBE_SERVICE = MetricsPlaceValue.of("subscribe.service", MetricsLevel.SERVICE);
 
     // App-level
