@@ -550,4 +550,5 @@ public class Constants implements CommonConstants,
 
     public static final double DEFAULT_CLUSTER_SWITCH_FACTOR = 2;
 
+    public static final String DISPATHER_KEY = "dispather";
 }
