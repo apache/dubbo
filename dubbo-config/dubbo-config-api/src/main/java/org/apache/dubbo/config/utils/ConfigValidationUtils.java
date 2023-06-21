@@ -475,7 +475,7 @@ public class ConfigValidationUtils {
 
         // backward compatibility
         ScopeModel scopeModel = ScopeModelUtil.getOrDefaultApplicationModel(config.getScopeModel());
-        PropertiesConfiguration configuration = scopeModel.getModelEnvironment().getPropertiesConfiguration();
+        PropertiesConfiguration configuration = scopeModel.modelEnvironment().getPropertiesConfiguration();
         String wait = configuration.getProperty(SHUTDOWN_WAIT_KEY);
         if (wait != null && wait.trim().length() > 0) {
             System.setProperty(SHUTDOWN_WAIT_KEY, wait.trim());

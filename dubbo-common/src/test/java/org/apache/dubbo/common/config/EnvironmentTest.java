@@ -39,7 +39,7 @@ class EnvironmentTest {
 
     @Test
     void testResolvePlaceholders() {
-        Environment environment = ApplicationModel.defaultModel().getModelEnvironment();
+        Environment environment = ApplicationModel.defaultModel().modelEnvironment();
 
         Map<String, String> externalMap = new LinkedHashMap<>();
         externalMap.put("zookeeper.address", "127.0.0.1");
@@ -65,7 +65,7 @@ class EnvironmentTest {
     void test() {
         FrameworkModel frameworkModel = new FrameworkModel();
         ApplicationModel applicationModel = frameworkModel.newApplication();
-        Environment environment = applicationModel.getModelEnvironment();
+        Environment environment = applicationModel.modelEnvironment();
 
         // test getPrefixedConfiguration
         RegistryConfig registryConfig = new RegistryConfig();

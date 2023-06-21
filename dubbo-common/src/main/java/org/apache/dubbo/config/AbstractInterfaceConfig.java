@@ -302,7 +302,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     protected Environment getEnvironment() {
-        return getScopeModel().getModelEnvironment();
+        return getScopeModel().modelEnvironment();
     }
 
     @Override

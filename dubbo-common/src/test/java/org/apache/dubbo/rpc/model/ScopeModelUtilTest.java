@@ -108,7 +108,7 @@ class ScopeModelUtilTest {
         }
 
         @Override
-        public Environment getModelEnvironment() {
+        public Environment modelEnvironment() {
             return null;
         }
 

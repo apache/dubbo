@@ -20,6 +20,7 @@ package org.apache.dubbo.rpc.cluster.support.wrapper;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.url.component.DubboServiceAddressURL;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.rpc.Exporter;
@@ -179,7 +180,7 @@ public class ScopeClusterInvoker<T> implements ClusterInvoker<T>, ExporterChange
         }
         if (getUrl().getServiceKey().equals(exporter.getInvoker().getUrl().getServiceKey())
             && exporter.getInvoker().getUrl().getProtocol().equalsIgnoreCase(LOCAL_PROTOCOL)) {
-            createInjvmInvoker();
+            createInjvmInvoker(exporter);
             isExported.compareAndSet(false, true);
         }
     }
@@ -275,14 +276,19 @@ public class ScopeClusterInvoker<T> implements ClusterInvoker<T>, ExporterChange
     /**
      * Creates a new Invoker for the current ScopeClusterInvoker and exports it to the local JVM.
      */
-    private void createInjvmInvoker() {
+    private void createInjvmInvoker(Exporter<?> exporter) {
         if (injvmInvoker == null) {
             synchronized (createLock) {
                 if (injvmInvoker == null) {
-                    URL url = new ServiceConfigURL(LOCAL_PROTOCOL, NetUtils.getLocalHost(), getUrl().getPort(), getInterface().getName(), getUrl().getParameters());
+                    URL url = new ServiceConfigURL(LOCAL_PROTOCOL, NetUtils.getLocalHost(), getUrl().getPort(),
+                        getInterface().getName(), getUrl().getParameters());
                     url = url.setScopeModel(getUrl().getScopeModel());
                     url = url.setServiceModel(getUrl().getServiceModel());
-                    Invoker<?> invoker = protocolSPI.refer(getInterface(), url);
+
+                    DubboServiceAddressURL consumerUrl = new DubboServiceAddressURL(url.getUrlAddress(), url.getUrlParam(),
+                        exporter.getInvoker().getUrl(), null);
+
+                    Invoker<?> invoker = protocolSPI.refer(getInterface(), consumerUrl);
                     List<Invoker<?>> invokers = new ArrayList<>();
                     invokers.add(invoker);
                     injvmInvoker = Cluster.getCluster(url.getScopeModel(), Cluster.DEFAULT, false).join(new StaticDirectory(url, invokers), true);
