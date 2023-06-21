@@ -38,6 +38,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.utils.ArrayUtils;
+import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ApplicationConfig;
@@ -46,7 +47,6 @@ import org.apache.dubbo.config.DubboShutdownHook;
 import org.apache.dubbo.config.MetadataReportConfig;
 import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.RegistryConfig;
-import org.apache.dubbo.config.TracingConfig;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.utils.CompositeReferenceCache;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
@@ -60,7 +60,6 @@ import org.apache.dubbo.metrics.report.DefaultMetricsReporterFactory;
 import org.apache.dubbo.metrics.report.MetricsReporter;
 import org.apache.dubbo.metrics.report.MetricsReporterFactory;
 import org.apache.dubbo.metrics.service.MetricsServiceExporter;
-import org.apache.dubbo.metrics.utils.MetricsSupportUtil;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.RegistryFactory;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
@@ -72,8 +71,6 @@ import org.apache.dubbo.rpc.model.ModuleServiceRepository;
 import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
-import org.apache.dubbo.tracing.DubboObservationRegistry;
-import org.apache.dubbo.tracing.utils.ObservationSupportUtil;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -230,9 +227,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
             initMetricsService();
 
-            // @since 3.2.3
-            initObservationRegistry();
-
             // @since 2.7.8
             startMetadataCenter();
 
@@ -379,7 +373,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     }
 
     private void initMetricsReporter() {
-        if (!MetricsSupportUtil.isSupportMetrics()) {
+        if (!isSupportMetrics()) {
             return;
         }
         DefaultMetricsCollector collector =
@@ -388,7 +382,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         //If no specific metrics type is configured and there is no Prometheus dependency in the dependencies.
         MetricsConfig metricsConfig = configOptional.orElse(new MetricsConfig(applicationModel));
         if (StringUtils.isBlank(metricsConfig.getProtocol())) {
-            metricsConfig.setProtocol(MetricsSupportUtil.isSupportPrometheus() ? PROTOCOL_PROMETHEUS : PROTOCOL_DEFAULT);
+            metricsConfig.setProtocol(isSupportPrometheus() ? PROTOCOL_PROMETHEUS : PROTOCOL_DEFAULT);
         }
         collector.setCollectEnabled(true);
         collector.collectApplication();
@@ -416,29 +410,20 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         }
     }
 
-    /**
-     * init ObservationRegistry(Micrometer)
-     */
-    private void initObservationRegistry() {
-        if (!ObservationSupportUtil.isSupportObservation()) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Not found micrometer-observation or plz check the version of micrometer-observation version if already introduced, need > 1.10.0");
-            }
-            return;
-        }
-        if (!ObservationSupportUtil.isSupportTracing()) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Not found micrometer-tracing dependency, skip init ObservationRegistry.");
-            }
-            return;
-        }
-        Optional<TracingConfig> configOptional = configManager.getTracing();
-        if (!configOptional.isPresent() || !configOptional.get().getEnabled()) {
-            return;
-        }
+    public boolean isSupportMetrics() {
+        return isClassPresent("io.micrometer.core.instrument.MeterRegistry");
+    }
 
-        DubboObservationRegistry dubboObservationRegistry = new DubboObservationRegistry(applicationModel, configOptional.get());
-        dubboObservationRegistry.initObservationRegistry();
+    public static boolean isSupportPrometheus() {
+        return isClassPresent("io.micrometer.prometheus.PrometheusConfig")
+            && isClassPresent("io.prometheus.client.exporter.BasicAuthHttpConnectionFactory")
+            && isClassPresent("io.prometheus.client.exporter.HttpConnectionFactory")
+            && isClassPresent("io.prometheus.client.exporter.PushGateway");
+    }
+
+
+    private static boolean isClassPresent(String className) {
+        return ClassUtils.isPresent(className, DefaultApplicationDeployer.class.getClassLoader());
     }
 
 

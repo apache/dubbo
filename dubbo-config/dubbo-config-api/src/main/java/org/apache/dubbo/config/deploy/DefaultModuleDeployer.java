@@ -441,7 +441,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
         if (!sc.isExported()) {
             return;
         }
-        sc.register();
+        sc.register(true);
     }
 
     private void unexportServices() {

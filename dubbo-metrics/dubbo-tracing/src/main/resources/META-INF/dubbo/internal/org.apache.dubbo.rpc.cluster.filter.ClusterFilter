@@ -1,1 +1,0 @@
-observationsender=org.apache.dubbo.tracing.filter.ObservationSenderFilter

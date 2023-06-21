@@ -180,6 +180,7 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
     }
 
     @Override
+    @Transient
     public Map<String, String> getMetaData() {
         return getMetaData(null);
     }
@@ -425,7 +426,25 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
 
     public abstract boolean isUnexported();
 
+    /**
+     * Export service to network
+     *
+     * @param register Whether register service to registry. If false, can be registered manually
+     *                 through the {@link ServiceConfigBase#register(boolean)} API.
+     */
     public abstract void export(boolean register);
 
-    public abstract void register();
+    /**
+     * Register delay published service to registry.
+     */
+    public final void register() {
+        register(false);
+    }
+
+    /**
+     * Register delay published service to registry.
+     *
+     * @param onlyDefault only register those services that export with configured register false
+     */
+    public abstract void register(boolean onlyDefault);
 }

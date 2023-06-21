@@ -188,7 +188,7 @@ class MultipleRegistryCenterExportProviderIntegrationTest implements Integration
         // 1. InjvmExporter
         // 2. DubboExporter with service-discovery-registry protocol
         // 3. DubboExporter with registry protocol
-        Assertions.assertEquals(exporterListener.getExportedExporters().size(), 7);
+        Assertions.assertEquals(exporterListener.getExportedExporters().size(), 4);
         // The exported exporter contains MultipleRegistryCenterExportProviderFilter
         Assertions.assertTrue(exporterListener.getFilters().contains(filter));
 

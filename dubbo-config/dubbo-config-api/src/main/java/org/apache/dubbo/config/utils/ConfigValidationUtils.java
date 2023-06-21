@@ -670,8 +670,9 @@ public class ConfigValidationUtils {
         if (isNotEmpty(value)) {
             String[] values = value.split("\\s*[,]+\\s*");
             for (String v : values) {
+                v = StringUtils.trim(v);
                 if (v.startsWith(REMOVE_VALUE_PREFIX)) {
-                    v = v.substring(1);
+                    continue;
                 }
                 if (DEFAULT_KEY.equals(v)) {
                     continue;

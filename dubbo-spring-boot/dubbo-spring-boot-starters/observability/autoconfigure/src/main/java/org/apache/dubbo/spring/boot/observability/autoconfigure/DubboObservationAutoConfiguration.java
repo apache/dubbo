@@ -18,7 +18,6 @@ package org.apache.dubbo.spring.boot.observability.autoconfigure;
 
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.config.spring.context.event.DubboConfigInitEvent;
 import org.apache.dubbo.qos.protocol.QosProtocolWrapper;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.spring.boot.observability.autoconfigure.annotation.ConditionalOnDubboTracingEnable;
@@ -29,15 +28,14 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.SmartInitializingSingleton;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
-import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.Ordered;
 
 import java.util.Arrays;
 
@@ -48,7 +46,7 @@ import java.util.Arrays;
 @AutoConfiguration(after = DubboMicrometerTracingAutoConfiguration.class, afterName = "org.springframework.boot.actuate.autoconfigure.observation.ObservationAutoConfiguration")
 @ConditionalOnDubboTracingEnable
 @ConditionalOnClass(name = {"io.micrometer.observation.Observation", "io.micrometer.tracing.Tracer"})
-public class DubboObservationAutoConfiguration implements BeanFactoryAware, ApplicationListener<DubboConfigInitEvent>, Ordered {
+public class DubboObservationAutoConfiguration implements BeanFactoryAware, SmartInitializingSingleton {
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(QosProtocolWrapper.class);
 
 
@@ -81,19 +79,14 @@ public class DubboObservationAutoConfiguration implements BeanFactoryAware, Appl
     }
 
     @Override
-    public void onApplicationEvent(DubboConfigInitEvent event) {
+    public void afterSingletonsInstantiated() {
         try {
             applicationModel.getBeanFactory().registerBean(beanFactory.getBean(io.micrometer.observation.ObservationRegistry.class));
-            applicationModel.getBeanFactory().registerBean(beanFactory.getBean(io.micrometer.tracing.Tracer.class));
-            applicationModel.getBeanFactory().registerBean(beanFactory.getBean(io.micrometer.tracing.propagation.Propagator.class));
+            io.micrometer.tracing.Tracer bean = beanFactory.getBean(io.micrometer.tracing.Tracer.class);
+            applicationModel.getBeanFactory().registerBean(bean);
         } catch (NoSuchBeanDefinitionException e) {
-            logger.info("Please use a version of micrometer higher than 1.10.0: " + e.getMessage());
+            logger.info("Please use a version of micrometer higher than 1.10.0 ：{}" + e.getMessage());
         }
-    }
-
-    @Override
-    public int getOrder() {
-        return HIGHEST_PRECEDENCE;
     }
 
     @Configuration(proxyBeanMethods = false)
