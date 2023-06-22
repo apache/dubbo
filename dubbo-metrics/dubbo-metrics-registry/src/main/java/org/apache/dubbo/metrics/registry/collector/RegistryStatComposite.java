@@ -71,5 +71,6 @@ public class RegistryStatComposite extends AbstractMetricsExport {
         ApplicationMetric applicationMetric = new ApplicationMetric(getApplicationModel());
         applicationMetric.setExtraInfo(MetricsSupport.customExtraInfo(RegistryConstants.REGISTRY_CLUSTER_KEY.toLowerCase(), name));
         appStats.get(metricsKey).computeIfAbsent(applicationMetric, k -> new AtomicLong(0L)).getAndAdd(SELF_INCREMENT_SIZE);
+        MetricsSupport.fillZero(appStats);
     }
 }
