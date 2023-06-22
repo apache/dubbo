@@ -29,13 +29,6 @@ public class PropagationConfig implements Serializable {
      */
     private String type = W3C;
 
-    public PropagationConfig() {
-    }
-
-    public PropagationConfig(String type) {
-        this.type = type;
-    }
-
     public String getType() {
         return type;
     }

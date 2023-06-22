@@ -193,11 +193,6 @@
             <artifactId>dubbo-metrics-prometheus</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-tracing</artifactId>
-            <version>${project.version}</version>
-        </dependency>
 
         <!-- monitor -->
         <dependency>
@@ -210,6 +205,7 @@
             <artifactId>dubbo-monitor-default</artifactId>
             <version>${project.version}</version>
         </dependency>
+
         <!-- native -->
         <dependency>
             <groupId>org.apache.dubbo</groupId>

@@ -16,15 +16,16 @@
  */
 package org.apache.dubbo.rpc;
 
-import java.util.List;
-import java.util.Map;
-import java.util.function.Consumer;
-import java.util.stream.Stream;
-
 import org.apache.dubbo.common.Experimental;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 import org.apache.dubbo.rpc.model.ServiceModel;
+
+import java.beans.Transient;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 /**
  * Invocation. (API, Prototype, NonThreadSafe)
@@ -148,6 +149,7 @@ public interface Invocation {
      * @return invoker.
      * @transient
      */
+    @Transient
     Invoker<?> getInvoker();
 
     void setServiceModel(ServiceModel serviceModel);

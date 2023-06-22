@@ -37,7 +37,7 @@ class ConfigurationUtilsTest {
         FrameworkModel frameworkModel = new FrameworkModel();
 
         ApplicationModel applicationModel = frameworkModel.newApplication();
-        Environment originApplicationEnvironment = applicationModel.getModelEnvironment();
+        Environment originApplicationEnvironment = applicationModel.modelEnvironment();
         Environment applicationEnvironment = Mockito.spy(originApplicationEnvironment);
         applicationModel.setEnvironment(applicationEnvironment);
 
@@ -52,7 +52,7 @@ class ConfigurationUtilsTest {
         Assertions.assertEquals("a", ConfigurationUtils.getCachedDynamicProperty(applicationModel, "TestKey", "xxx"));
 
         ModuleModel moduleModel = applicationModel.newModule();
-        ModuleEnvironment originModuleEnvironment = moduleModel.getModelEnvironment();
+        ModuleEnvironment originModuleEnvironment = moduleModel.modelEnvironment();
         ModuleEnvironment moduleEnvironment = Mockito.spy(originModuleEnvironment);
         moduleModel.setModuleEnvironment(moduleEnvironment);
 

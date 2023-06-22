@@ -80,4 +80,13 @@ public class DemoServiceImpl implements DemoService {
         return "DONE";
     }
 
+    @Override
+    public String getApplication() {
+        return RpcContext.getServiceContext().getRemoteApplicationName();
+    }
+
+    @Override
+    public String getRemoteAddress() {
+        return RpcContext.getServiceContext().getRemoteAddressString();
+    }
 }

@@ -92,8 +92,6 @@ public interface LoggerCodeConstants {
 
     String VULNERABILITY_WARNING = "0-28";
 
-    String COMMON_NOT_FOUND_TRACER_DEPENDENCY = "0-29";
-
 
     // Registry module
 

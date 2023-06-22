@@ -696,7 +696,7 @@ public abstract class AbstractConfig implements Serializable {
     }
 
     protected void refreshWithPrefixes(List<String> prefixes, ConfigMode configMode) {
-        Environment environment = getScopeModel().getModelEnvironment();
+        Environment environment = getScopeModel().modelEnvironment();
         List<Map<String, String>> configurationMaps = environment.getConfigurationMaps();
 
         // Search props starts with PREFIX in order
