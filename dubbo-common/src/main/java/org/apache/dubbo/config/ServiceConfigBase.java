@@ -17,6 +17,7 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.RegisterTypeEnum;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.annotation.Service;
@@ -417,7 +418,7 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
      * export service and auto start application instance
      */
     public final void export() {
-        export(true);
+        export(RegisterTypeEnum.AUTO_REGISTER);
     }
 
     public abstract void unexport();
@@ -429,10 +430,9 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
     /**
      * Export service to network
      *
-     * @param register Whether register service to registry. If false, can be registered manually
-     *                 through the {@link ServiceConfigBase#register(boolean)} API.
+     * @param registerType register type of current export action.
      */
-    public abstract void export(boolean register);
+    public abstract void export(RegisterTypeEnum registerType);
 
     /**
      * Register delay published service to registry.
@@ -444,7 +444,7 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
     /**
      * Register delay published service to registry.
      *
-     * @param onlyDefault only register those services that export with configured register false
+     * @param byDeployer register by deployer or not.
      */
-    public abstract void register(boolean onlyDefault);
+    public abstract void register(boolean byDeployer);
 }
