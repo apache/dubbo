@@ -475,7 +475,7 @@ public class ConfigValidationUtils {
 
         // backward compatibility
         ScopeModel scopeModel = ScopeModelUtil.getOrDefaultApplicationModel(config.getScopeModel());
-        PropertiesConfiguration configuration = scopeModel.getModelEnvironment().getPropertiesConfiguration();
+        PropertiesConfiguration configuration = scopeModel.modelEnvironment().getPropertiesConfiguration();
         String wait = configuration.getProperty(SHUTDOWN_WAIT_KEY);
         if (wait != null && wait.trim().length() > 0) {
             System.setProperty(SHUTDOWN_WAIT_KEY, wait.trim());
@@ -670,8 +670,9 @@ public class ConfigValidationUtils {
         if (isNotEmpty(value)) {
             String[] values = value.split("\\s*[,]+\\s*");
             for (String v : values) {
+                v = StringUtils.trim(v);
                 if (v.startsWith(REMOVE_VALUE_PREFIX)) {
-                    v = v.substring(1);
+                    continue;
                 }
                 if (DEFAULT_KEY.equals(v)) {
                     continue;

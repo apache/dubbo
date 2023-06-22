@@ -16,10 +16,11 @@
  */
 package org.apache.dubbo.metrics.observation;
 
-import io.micrometer.common.KeyValues;
 import org.apache.dubbo.metrics.observation.utils.ObservationConventionUtils;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
+
+import io.micrometer.common.KeyValues;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

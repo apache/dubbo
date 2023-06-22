@@ -17,12 +17,12 @@
 
 package org.apache.dubbo.config.nested;
 
+import org.apache.dubbo.config.support.Nested;
+
 import java.io.Serializable;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.apache.dubbo.config.support.Nested;
 
 public class ExporterConfig implements Serializable {
 

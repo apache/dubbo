@@ -169,5 +169,5 @@ public interface Constants {
     String PORT_UNIFICATION_NETTY4_SERVER = "netty4";
 
     List<String> REST_SERVER = Arrays.asList("jetty", "tomcat", "netty");
-
+    String CONTENT_LENGTH_KEY = "content-length";
 }

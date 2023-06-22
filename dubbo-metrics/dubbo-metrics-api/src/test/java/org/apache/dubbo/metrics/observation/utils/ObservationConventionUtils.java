@@ -16,10 +16,11 @@
  */
 package org.apache.dubbo.metrics.observation.utils;
 
-import io.micrometer.common.KeyValue;
-import io.micrometer.common.KeyValues;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.Invoker;
+
+import io.micrometer.common.KeyValue;
+import io.micrometer.common.KeyValues;
 import org.mockito.Mockito;
 
 import java.lang.reflect.Field;

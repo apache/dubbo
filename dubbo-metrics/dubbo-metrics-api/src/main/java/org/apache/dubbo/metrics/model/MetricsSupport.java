@@ -30,7 +30,6 @@ import org.apache.dubbo.metrics.model.key.MetricsPlaceValue;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.HashMap;
@@ -55,7 +54,6 @@ import static org.apache.dubbo.common.utils.NetUtils.getLocalHostName;
 import static org.apache.dubbo.metrics.MetricsConstants.ATTACHMENT_KEY_SERVICE;
 import static org.apache.dubbo.metrics.MetricsConstants.INVOCATION;
 import static org.apache.dubbo.metrics.MetricsConstants.SELF_INCREMENT_SIZE;
-import static org.apache.dubbo.rpc.support.RpcUtils.isGenericCall;
 
 public class MetricsSupport {
 
@@ -157,17 +155,6 @@ public class MetricsSupport {
         }
         String[] ivArr = interfaceAndVersion.split(GROUP_CHAR_SEPARATOR);
         return ivArr[0];
-    }
-
-    public static String getMethodName(Invocation invocation) {
-        String methodName = invocation.getMethodName();
-        if (invocation instanceof RpcInvocation
-            && isGenericCall(((RpcInvocation) invocation).getParameterTypesDesc(), methodName)
-            && invocation.getArguments() != null
-            && invocation.getArguments().length == 3) {
-            methodName = ((String) invocation.getArguments()[0]).trim();
-        }
-        return methodName;
     }
 
     public static String getGroup(Invocation invocation) {
