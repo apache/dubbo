@@ -26,6 +26,10 @@ public class GenericException extends org.apache.dubbo.rpc.service.GenericExcept
     public GenericException() {
     }
 
+    public GenericException(String exceptionMessage) {
+        super(exceptionMessage);
+    }
+
     public GenericException(String exceptionClass, String exceptionMessage) {
         super(exceptionClass, exceptionMessage);
     }
