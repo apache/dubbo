@@ -310,7 +310,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                 if (shouldDelay()) {
                     // should register if delay export
                     doDelayExport();
-                } if (Integer.valueOf(-1).equals(getDelay())) {
+                } else if (Integer.valueOf(-1).equals(getDelay())) {
                     // should not register by default
                     doExport(RegisterTypeEnum.MANUAL_REGISTER);
                 } else {
