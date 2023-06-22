@@ -21,7 +21,6 @@ public interface Constants {
     String REGISTER_IP_KEY = "register.ip";
 
     String REGISTER_KEY = "register";
-    String REGISTER_ORIGIN_KEY = "register_origin";
 
     String SUBSCRIBE_KEY = "subscribe";
 
