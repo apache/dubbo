@@ -14,17 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.rpc.protocol.rest.exception;
 
-package org.apache.dubbo.rpc.protocol.rest.exception.mapper;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.ext.ExceptionMapper;
 
-
-public interface ExceptionHandler<E extends Throwable> {
-
-    Object result(E exception);
-
-    default int status() {
-        return 200;
+public class ResteasyExceptionMapper implements ExceptionMapper<RuntimeException> {
+    @Override
+    public Response toResponse(RuntimeException exception) {
+        return Response.status(200).entity("test-exception").build();
     }
-
-
 }

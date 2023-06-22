@@ -32,6 +32,7 @@ import org.apache.dubbo.rpc.protocol.rest.RestRPCInvocationUtil;
 import org.apache.dubbo.rpc.protocol.rest.deploy.ServiceDeployer;
 import org.apache.dubbo.rpc.protocol.rest.exception.PathNoFoundException;
 import org.apache.dubbo.rpc.protocol.rest.exception.UnSupportContentTypeException;
+import org.apache.dubbo.rpc.protocol.rest.exception.mapper.ExceptionHandlerResult;
 import org.apache.dubbo.rpc.protocol.rest.message.HttpMessageCodecManager;
 import org.apache.dubbo.rpc.protocol.rest.netty.NettyHttpResponse;
 import org.apache.dubbo.rpc.protocol.rest.pair.InvokerAndRestMethodMetadataPair;
@@ -103,8 +104,9 @@ public class ServiceInvokeRestFilter implements RestRequestFilter {
             logger.error("", exception.getMessage(), "", "dubbo rest protocol provider Invoker invoke error", exception);
 
             if (serviceDeployer.getExceptionMapper().hasExceptionMapper(exception)) {
-                writeResult(nettyHttpResponse, request, url, serviceDeployer.getExceptionMapper().exceptionToResult(result.getException()), rpcInvocation.getReturnType());
-                nettyHttpResponse.setStatus(200);
+                ExceptionHandlerResult exceptionToResult = serviceDeployer.getExceptionMapper().exceptionToResult(result.getException());
+                writeResult(nettyHttpResponse, request, url, exceptionToResult.getEntity(), rpcInvocation.getReturnType());
+                nettyHttpResponse.setStatus(exceptionToResult.getStatus());
             } else {
                 nettyHttpResponse.sendError(500,
                     "\n dubbo rest business exception, error cause is: "

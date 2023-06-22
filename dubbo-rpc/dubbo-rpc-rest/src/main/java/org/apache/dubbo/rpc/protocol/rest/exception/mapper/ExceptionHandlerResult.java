@@ -14,17 +14,43 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.rest.exception.mapper;
 
+public class ExceptionHandlerResult {
+    private int status;
+    private Object entity;
 
-public interface ExceptionHandler<E extends Throwable> {
+    public ExceptionHandlerResult() {
 
-    Object result(E exception);
-
-    default int status() {
-        return 200;
     }
 
+    public ExceptionHandlerResult setStatus(int status) {
+        this.status = status;
+        return this;
+    }
 
+    public ExceptionHandlerResult setEntity(Object entity) {
+        this.entity = entity;
+        return this;
+    }
+
+    public static ExceptionHandlerResult build() {
+        return new ExceptionHandlerResult();
+    }
+
+    public int getStatus() {
+        return status;
+    }
+
+    public Object getEntity() {
+        return entity;
+    }
+
+    @Override
+    public String toString() {
+        return "ExceptionHandlerResult{" +
+            "status=" + status +
+            ", entity=" + entity +
+            '}';
+    }
 }

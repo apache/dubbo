@@ -28,8 +28,8 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.protocol.rest.Constants;
 import org.apache.dubbo.rpc.protocol.rest.PathAndInvokerMapper;
 import org.apache.dubbo.rpc.protocol.rest.RpcExceptionMapper;
-import org.apache.dubbo.rpc.protocol.rest.exception.mapper.ExceptionHandler;
 import org.apache.dubbo.rpc.protocol.rest.exception.mapper.ExceptionMapper;
+import org.apache.dubbo.rpc.protocol.rest.exception.mapper.RestEasyExceptionMapper;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -46,7 +46,8 @@ public class ServiceDeployer {
 
 
     private final PathAndInvokerMapper pathAndInvokerMapper = new PathAndInvokerMapper();
-    private final ExceptionMapper exceptionMapper = new ExceptionMapper();
+    private final ExceptionMapper exceptionMapper = createExceptionMapper();
+
     private final Set<Object> extensions = new HashSet<>();
 
 
@@ -82,7 +83,7 @@ public class ServiceDeployer {
                 Class<?> aClass = ClassUtils.forName(clazz);
 
                 // exception handler
-                if (ExceptionHandler.class.isAssignableFrom(aClass)) {
+                if (ExceptionMapper.isSupport(aClass)) {
                     exceptionMapper.registerMapper(clazz);
                 } else {
 
@@ -111,7 +112,8 @@ public class ServiceDeployer {
     }
 
     /**
-     *  get extensions by type
+     * get extensions by type
+     *
      * @param extensionClass
      * @param <T>
      * @return
@@ -132,6 +134,13 @@ public class ServiceDeployer {
         }
 
         return exts;
+    }
+
+    private ExceptionMapper createExceptionMapper() {
+        if (ClassUtils.isPresent("javax.ws.rs.ext.ExceptionMapper", Thread.currentThread().getContextClassLoader())) {
+            return new RestEasyExceptionMapper();
+        }
+        return new ExceptionMapper();
     }
 
 

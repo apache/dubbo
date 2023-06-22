@@ -39,6 +39,7 @@ import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.rest.annotation.metadata.MetadataResolver;
 import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
 import org.apache.dubbo.rpc.protocol.rest.exception.DoublePathCheckException;
+import org.apache.dubbo.rpc.protocol.rest.exception.ResteasyExceptionMapper;
 import org.apache.dubbo.rpc.protocol.rest.exception.mapper.ExceptionHandler;
 import org.apache.dubbo.rpc.protocol.rest.exception.mapper.ExceptionMapper;
 
@@ -333,6 +334,22 @@ class JaxrsRestProtocolTest {
         URL url = this.registerProvider(exportUrl, server, DemoService.class);
 
         URL exceptionUrl = url.addParameter(EXTENSION_KEY, TestExceptionMapper.class.getName());
+
+        protocol.export(proxy.getInvoker(server, DemoService.class, exceptionUrl));
+
+        DemoService referDemoService = this.proxy.getProxy(protocol.refer(DemoService.class, exceptionUrl));
+
+        Assertions.assertEquals("test-exception", referDemoService.error());
+    }
+
+    @Test
+    void testRestExceptionMapper() {
+
+        DemoService server = new DemoServiceImpl();
+
+        URL url = this.registerProvider(exportUrl, server, DemoService.class);
+
+        URL exceptionUrl = url.addParameter(EXTENSION_KEY, ResteasyExceptionMapper.class.getName());
 
         protocol.export(proxy.getInvoker(server, DemoService.class, exceptionUrl));
 
