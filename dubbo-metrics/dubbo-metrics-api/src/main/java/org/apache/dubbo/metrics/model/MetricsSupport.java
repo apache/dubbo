@@ -18,7 +18,7 @@
 package org.apache.dubbo.metrics.model;
 
 import org.apache.dubbo.common.Version;
-import org.apache.dubbo.common.constants.RegistryConstants;
+import org.apache.dubbo.common.lang.Nullable;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.metrics.collector.MethodMetricsCollector;
 import org.apache.dubbo.metrics.collector.ServiceMetricsCollector;
@@ -61,7 +61,7 @@ public class MetricsSupport {
     private static final String version = Version.getVersion();
     private static final String commitId = Version.getLastCommitId();
 
-    public static Map<String, String> applicationTags(ApplicationModel applicationModel) {
+    public static Map<String, String> applicationTags(ApplicationModel applicationModel, @Nullable Map<String, String> extraInfo) {
         Map<String, String> tags = new HashMap<>();
         tags.put(TAG_IP, getLocalHost());
         tags.put(TAG_HOSTNAME, getLocalHostName());
@@ -69,19 +69,32 @@ public class MetricsSupport {
         tags.put(TAG_APPLICATION_MODULE, applicationModel.getInternalId());
         tags.put(TAG_APPLICATION_VERSION_KEY, version);
         tags.put(MetricsKey.METADATA_GIT_COMMITID_METRIC.getName(), commitId);
+        if (CollectionUtils.isNotEmptyMap(extraInfo)) {
+            tags.putAll(extraInfo);
+        }
         return tags;
     }
 
-    public static Map<String, String> serviceTags(ApplicationModel applicationModel, String serviceKey) {
-        Map<String, String> tags = applicationTags(applicationModel);
+    public static Map<String, String> serviceTags(ApplicationModel applicationModel, String serviceKey, Map<String, String> extraInfo) {
+        Map<String, String> tags = applicationTags(applicationModel, extraInfo);
         tags.put(TAG_INTERFACE_KEY, serviceKey);
         return tags;
     }
 
-    public static Map<String, String> registryTags(ApplicationModel applicationModel, String registryClusterName) {
-        Map<String, String> tags = applicationTags(applicationModel);
-        tags.put(RegistryConstants.REGISTRY_CLUSTER_KEY, registryClusterName);
-        return tags;
+    public static Map<String, String> customExtraInfo(String... args) {
+        if (args.length % 2 != 0) {
+            throw new MetricsNeverHappenException("Number of args must be even.");
+        }
+
+        Map<String, String> map = new HashMap<>();
+
+        for (int i = 0; i < args.length; i += 2) {
+            String key = args[i];
+            String value = args[i + 1];
+            map.put(key, value);
+        }
+
+        return map;
     }
 
     public static Map<String, String> methodTags(ApplicationModel applicationModel, String names) {
@@ -93,7 +106,7 @@ public class MetricsSupport {
     }
 
     public static Map<String, String> methodTags(ApplicationModel applicationModel, String serviceKey, String methodName) {
-        Map<String, String> tags = applicationTags(applicationModel);
+        Map<String, String> tags = applicationTags(applicationModel, null);
         tags.put(TAG_INTERFACE_KEY, serviceKey);
         tags.put(TAG_METHOD_KEY, methodName);
         return tags;
@@ -224,7 +237,7 @@ public class MetricsSupport {
     }
 
     /**
-     *  Generate a complete indicator item for an interface/method
+     * Generate a complete indicator item for an interface/method
      */
     public static <T> void fillZero(Map<MetricsKeyWrapper, Map<T, AtomicLong>> data) {
         if (CollectionUtils.isEmptyMap(data)) {

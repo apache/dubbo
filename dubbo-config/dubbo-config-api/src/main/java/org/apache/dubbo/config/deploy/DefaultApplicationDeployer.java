@@ -25,7 +25,6 @@ import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.config.configcenter.DynamicConfigurationFactory;
 import org.apache.dubbo.common.config.configcenter.wrapper.CompositeDynamicConfiguration;
 import org.apache.dubbo.common.constants.LoggerCodeConstants;
-import org.apache.dubbo.common.constants.RegistryConstants;
 import org.apache.dubbo.common.deploy.AbstractDeployer;
 import org.apache.dubbo.common.deploy.ApplicationDeployListener;
 import org.apache.dubbo.common.deploy.ApplicationDeployer;
@@ -901,22 +900,9 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     private void registerServiceInstance() {
         try {
             registered = true;
-<<<<<<< Updated upstream
-            MetricsEventBus.post(RegistryEvent.toRegisterEvent(applicationModel),
-                () -> {
-                    ServiceInstanceMetadataUtils.registerMetadataAndInstance(applicationModel);
-                    return null;
-                }
-            );
-=======
             List<ServiceDiscovery> serviceDiscoveries = ServiceInstanceMetadataUtils.getServiceDiscoveries(applicationModel);
             if (serviceDiscoveries.size() > 0) {
-                List<String> registryClusterNames = serviceDiscoveries
-                    .stream()
-                    .map(sd -> sd.getUrl().getParameter(RegistryConstants.REGISTRY_CLUSTER_KEY))
-                    .collect(Collectors.toList());
-
-                MetricsEventBus.post(RegistryEvent.toRegisterEvent(applicationModel, registryClusterNames),
+                MetricsEventBus.post(RegistryEvent.toRegisterEvent(applicationModel, ServiceInstanceMetadataUtils.getServiceDiscoveryNames(serviceDiscoveries)),
                     () -> {
                         // register service instance
                         serviceDiscoveries.forEach(ServiceDiscovery::register);
@@ -924,7 +910,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                     }
                 );
             }
->>>>>>> Stashed changes
         } catch (Exception e) {
             logger.error(CONFIG_REGISTER_INSTANCE_ERROR, "configuration server disconnected", "", "Register instance error.", e);
         }

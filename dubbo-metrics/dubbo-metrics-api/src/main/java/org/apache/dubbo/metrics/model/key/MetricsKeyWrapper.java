@@ -109,13 +109,13 @@ public class MetricsKeyWrapper {
         MetricsLevel level = getLevel();
         switch (level) {
             case APP:
-                return MetricsSupport.applicationTags(applicationModel);
+                return MetricsSupport.applicationTags(applicationModel, null);
             case SERVICE:
-                return MetricsSupport.serviceTags(applicationModel, key);
+                return MetricsSupport.serviceTags(applicationModel, key, null);
             case METHOD:
                 return MetricsSupport.methodTags(applicationModel, key);
         }
-        return MetricsSupport.applicationTags(applicationModel);
+        return MetricsSupport.applicationTags(applicationModel, null);
     }
 
     public static MetricsKeyWrapper wrapper(MetricsKey metricsKey) {

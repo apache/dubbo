@@ -76,14 +76,14 @@ class RegistryMetricsCollectorTest {
 
         RegistryEvent registryEvent = RegistryEvent.toRegisterEvent(applicationModel, Lists.newArrayList("reg1"));
         MetricsEventBus.post(registryEvent,
-            () -> {
-                List<MetricSample> metricSamples = collector.collect();
-                // push success +1 -> other default 0 = RegistryMetricsConstants.APP_LEVEL_KEYS.size()
-                Assertions.assertEquals(RegistryMetricsConstants.APP_LEVEL_KEYS.size(), metricSamples.size());
-                Assertions.assertTrue(metricSamples.stream().allMatch(metricSample -> metricSample instanceof GaugeMetricSample));
-                Assertions.assertTrue(metricSamples.stream().anyMatch(metricSample -> ((GaugeMetricSample) metricSample).applyAsDouble() == 1));
-                return null;
-            }
+                () -> {
+                    List<MetricSample> metricSamples = collector.collect();
+                    // push success +1 -> other default 0 = RegistryMetricsConstants.APP_LEVEL_KEYS.size()
+                    Assertions.assertEquals(RegistryMetricsConstants.APP_LEVEL_KEYS.size(), metricSamples.size());
+                    Assertions.assertTrue(metricSamples.stream().allMatch(metricSample -> metricSample instanceof GaugeMetricSample));
+                    Assertions.assertTrue(metricSamples.stream().anyMatch(metricSample -> ((GaugeMetricSample) metricSample).applyAsDouble() == 1));
+                    return null;
+                }
         );
 
         // push finish rt +1
@@ -96,14 +96,14 @@ class RegistryMetricsCollectorTest {
         registryEvent = RegistryEvent.toRegisterEvent(applicationModel, Lists.newArrayList("reg1"));
         TimePair lastTimePair = registryEvent.getTimePair();
         MetricsEventBus.post(registryEvent,
-            () -> {
-                try {
-                    Thread.sleep(50);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                return null;
-            }, Objects::nonNull
+                () -> {
+                    try {
+                        Thread.sleep(50);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    return null;
+                }, Objects::nonNull
         );
         // push error rt +1
         long c2 = lastTimePair.calc();
@@ -134,18 +134,19 @@ class RegistryMetricsCollectorTest {
     void testServicePushMetrics() {
 
         String serviceName = "demo.gameService";
+        List<String> rcNames = Lists.newArrayList("demo1");
 
-        RegistryEvent registryEvent = RegistryEvent.toRsEvent(applicationModel, serviceName, 2);
+        RegistryEvent registryEvent = RegistryEvent.toRsEvent(applicationModel, serviceName, 2, rcNames);
         MetricsEventBus.post(registryEvent,
-            () -> {
-                List<MetricSample> metricSamples = collector.collect();
+                () -> {
+                    List<MetricSample> metricSamples = collector.collect();
 
-                // push success +1
-                Assertions.assertEquals(RegistryMetricsConstants.APP_LEVEL_KEYS.size() + RegistryMetricsConstants.SERVICE_LEVEL_KEYS.size(), metricSamples.size());
-                // Service num only 1 and contains tag of interface
-                Assertions.assertEquals(RegistryMetricsConstants.SERVICE_LEVEL_KEYS.size(), metricSamples.stream().filter(metricSample -> serviceName.equals(metricSample.getTags().get("interface"))).count());
-                return null;
-            }
+                    // push success +1
+                    Assertions.assertEquals(RegistryMetricsConstants.APP_LEVEL_KEYS.size() + RegistryMetricsConstants.SERVICE_LEVEL_KEYS.size(), metricSamples.size());
+                    // Service num only 1 and contains tag of interface
+                    Assertions.assertEquals(RegistryMetricsConstants.SERVICE_LEVEL_KEYS.size(), metricSamples.stream().filter(metricSample -> serviceName.equals(metricSample.getTags().get("interface"))).count());
+                    return null;
+                }
         );
 
         // push finish rt +1
@@ -154,17 +155,17 @@ class RegistryMetricsCollectorTest {
         Assertions.assertEquals(RegistryMetricsConstants.APP_LEVEL_KEYS.size() + 5 + RegistryMetricsConstants.SERVICE_LEVEL_KEYS.size(), metricSamples.size());
 
         long c1 = registryEvent.getTimePair().calc();
-        registryEvent = RegistryEvent.toRsEvent(applicationModel, serviceName, 2);
+        registryEvent = RegistryEvent.toRsEvent(applicationModel, serviceName, 2, rcNames);
         TimePair lastTimePair = registryEvent.getTimePair();
         MetricsEventBus.post(registryEvent,
-            () -> {
-                try {
-                    Thread.sleep(50);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                return null;
-            }, Objects::nonNull
+                () -> {
+                    try {
+                        Thread.sleep(50);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    return null;
+                }, Objects::nonNull
         );
         // push error rt +1
         long c2 = lastTimePair.calc();
@@ -198,16 +199,16 @@ class RegistryMetricsCollectorTest {
 
         RegistryEvent subscribeEvent = RegistryEvent.toSsEvent(applicationModel, serviceName);
         MetricsEventBus.post(subscribeEvent,
-            () -> {
-                List<MetricSample> metricSamples = collector.collect();
-                Assertions.assertTrue(metricSamples.stream().allMatch(metricSample -> metricSample instanceof GaugeMetricSample));
-                Assertions.assertTrue(metricSamples.stream().anyMatch(metricSample -> ((GaugeMetricSample) metricSample).applyAsDouble() == 1));
-                // App(default=7) + (service success +1)
-                Assertions.assertEquals(RegistryMetricsConstants.APP_LEVEL_KEYS.size() + RegistryMetricsConstants.SERVICE_LEVEL_KEYS.size(), metricSamples.size());
-                // Service num only 1 and contains tag of interface
-                Assertions.assertEquals(RegistryMetricsConstants.SERVICE_LEVEL_KEYS.size(), metricSamples.stream().filter(metricSample -> serviceName.equals(metricSample.getTags().get("interface"))).count());
-                return null;
-            }
+                () -> {
+                    List<MetricSample> metricSamples = collector.collect();
+                    Assertions.assertTrue(metricSamples.stream().allMatch(metricSample -> metricSample instanceof GaugeMetricSample));
+                    Assertions.assertTrue(metricSamples.stream().anyMatch(metricSample -> ((GaugeMetricSample) metricSample).applyAsDouble() == 1));
+                    // App(default=7) + (service success +1)
+                    Assertions.assertEquals(RegistryMetricsConstants.APP_LEVEL_KEYS.size() + RegistryMetricsConstants.SERVICE_LEVEL_KEYS.size(), metricSamples.size());
+                    // Service num only 1 and contains tag of interface
+                    Assertions.assertEquals(RegistryMetricsConstants.SERVICE_LEVEL_KEYS.size(), metricSamples.stream().filter(metricSample -> serviceName.equals(metricSample.getTags().get("interface"))).count());
+                    return null;
+                }
         );
 
         // push finish rt +1
@@ -219,14 +220,14 @@ class RegistryMetricsCollectorTest {
         subscribeEvent = RegistryEvent.toSsEvent(applicationModel, serviceName);
         TimePair lastTimePair = subscribeEvent.getTimePair();
         MetricsEventBus.post(subscribeEvent,
-            () -> {
-                try {
-                    Thread.sleep(50);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                return null;
-            }, Objects::nonNull
+                () -> {
+                    try {
+                        Thread.sleep(50);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    return null;
+                }, Objects::nonNull
         );
         // push error rt +1
         long c2 = lastTimePair.calc();
@@ -257,18 +258,18 @@ class RegistryMetricsCollectorTest {
     public void testNotify() {
         Map<String, Integer> lastNumMap = new HashMap<>();
         MetricsEventBus.post(RegistryEvent.toNotifyEvent(applicationModel),
-            () -> {
-                try {
-                    Thread.sleep(50L);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+                () -> {
+                    try {
+                        Thread.sleep(50L);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    // 1 different services
+                    lastNumMap.put("demo.service1", 3);
+                    lastNumMap.put("demo.service2", 4);
+                    lastNumMap.put("demo.service3", 5);
+                    return lastNumMap;
                 }
-                // 1 different services
-                lastNumMap.put("demo.service1", 3);
-                lastNumMap.put("demo.service2", 4);
-                lastNumMap.put("demo.service3", 5);
-                return lastNumMap;
-            }
         );
         List<MetricSample> metricSamples = collector.collect();
         // App(7) + num(service*3) + rt(5) = 9

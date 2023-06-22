@@ -17,6 +17,7 @@
 package org.apache.dubbo.registry.client.metadata;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.RegistryConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -37,6 +38,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA_STORAGE_TYPE;
@@ -202,6 +204,17 @@ public class ServiceInstanceMetadataUtils {
         RegistryManager registryManager = applicationModel.getBeanFactory().getBean(RegistryManager.class);
         return registryManager.getServiceDiscoveries();
 
+    }
+
+    public static List<String> getServiceDiscoveryNames(List<ServiceDiscovery> serviceDiscoveries) {
+        return serviceDiscoveries
+            .stream()
+            .map(sd -> sd.getUrl().getParameter(RegistryConstants.REGISTRY_CLUSTER_KEY))
+            .collect(Collectors.toList());
+    }
+
+    public static List<String> getServiceDiscoveryNames(ApplicationModel applicationModel) {
+        return getServiceDiscoveryNames(getServiceDiscoveries(applicationModel));
     }
 
     public static void refreshMetadataAndInstance(ApplicationModel applicationModel) {

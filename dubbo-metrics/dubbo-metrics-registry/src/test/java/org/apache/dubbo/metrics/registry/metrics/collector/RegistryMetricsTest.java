@@ -291,7 +291,8 @@ public class RegistryMetricsTest {
     }
 
     RegistryEvent rsEvent() {
-        RegistryEvent event = RegistryEvent.toRsEvent(applicationModel, "TestServiceInterface1", 1);
+        List<String> rcNames = Lists.newArrayList("demo1");
+        RegistryEvent event = RegistryEvent.toRsEvent(applicationModel, "TestServiceInterface1", 1, rcNames);
         event.setAvailable(true);
         return event;
     }
