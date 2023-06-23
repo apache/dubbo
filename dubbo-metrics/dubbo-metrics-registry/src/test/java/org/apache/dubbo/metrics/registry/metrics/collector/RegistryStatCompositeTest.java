@@ -17,16 +17,20 @@
 
 package org.apache.dubbo.metrics.registry.metrics.collector;
 
+import org.apache.dubbo.common.constants.RegistryConstants;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.metrics.data.ApplicationStatComposite;
 import org.apache.dubbo.metrics.data.BaseStatComposite;
 import org.apache.dubbo.metrics.data.RtStatComposite;
 import org.apache.dubbo.metrics.data.ServiceStatComposite;
+import org.apache.dubbo.metrics.model.ApplicationMetric;
 import org.apache.dubbo.metrics.model.MetricsCategory;
+import org.apache.dubbo.metrics.model.MetricsSupport;
 import org.apache.dubbo.metrics.model.container.LongContainer;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.metrics.registry.RegistryMetricsConstants;
+import org.apache.dubbo.metrics.registry.collector.RegistryStatComposite;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.junit.jupiter.api.Assertions;
@@ -53,6 +57,7 @@ public class RegistryStatCompositeTest {
     private ApplicationModel applicationModel;
     private String applicationName;
     private BaseStatComposite statComposite;
+    private RegistryStatComposite regStatComposite;
 
     @BeforeEach
     public void setup() {
@@ -81,6 +86,7 @@ public class RegistryStatCompositeTest {
                 rtStatComposite.init(OP_TYPE_REGISTER, OP_TYPE_SUBSCRIBE, OP_TYPE_NOTIFY, OP_TYPE_REGISTER_SERVICE, OP_TYPE_SUBSCRIBE_SERVICE);
             }
         };
+        regStatComposite = new RegistryStatComposite(applicationModel);
     }
 
     @Test
@@ -100,8 +106,10 @@ public class RegistryStatCompositeTest {
 
     @Test
     void testIncrement() {
-        statComposite.incrementApp(REGISTER_METRIC_REQUESTS, 1);
-        Assertions.assertEquals(1L, statComposite.getApplicationStatComposite().getApplicationNumStats().get(REGISTER_METRIC_REQUESTS).get());
+        regStatComposite.incrRegisterNum(REGISTER_METRIC_REQUESTS, "beijing");
+        ApplicationMetric applicationMetric = new ApplicationMetric(applicationModel);
+        applicationMetric.setExtraInfo(MetricsSupport.customExtraInfo(RegistryConstants.REGISTRY_CLUSTER_KEY.toLowerCase(), "beijing"));
+        Assertions.assertEquals(1L, regStatComposite.getAppStats().get(REGISTER_METRIC_REQUESTS).get(applicationMetric).get());
     }
 
     @Test

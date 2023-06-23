@@ -73,4 +73,8 @@ public class RegistryStatComposite extends AbstractMetricsExport {
         appStats.get(metricsKey).computeIfAbsent(applicationMetric, k -> new AtomicLong(0L)).getAndAdd(SELF_INCREMENT_SIZE);
         MetricsSupport.fillZero(appStats);
     }
+
+    public Map<MetricsKey, Map<ApplicationMetric, AtomicLong>> getAppStats() {
+        return appStats;
+    }
 }
