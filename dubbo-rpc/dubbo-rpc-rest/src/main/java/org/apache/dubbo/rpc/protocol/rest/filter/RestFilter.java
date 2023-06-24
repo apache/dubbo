@@ -16,26 +16,13 @@
  */
 package org.apache.dubbo.rpc.protocol.rest.filter;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.rpc.protocol.rest.deploy.ServiceDeployer;
-import org.apache.dubbo.rpc.protocol.rest.netty.NettyHttpResponse;
-import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
-
-import java.util.Iterator;
+import org.apache.dubbo.rpc.protocol.rest.filter.context.RestFilterContext;
 
 /**
  * Rest filter is extended by rest request & response filter
  */
 public interface RestFilter {
 
-    void filter(URL url, RequestFacade requestFacade, NettyHttpResponse response, Iterator<RestFilter> restFilterIterator, ServiceDeployer serviceDeployer) throws Exception;
+    void filter(RestFilterContext restFilterContext) throws Exception;
 
-    default void iteratorFilter(URL url, RequestFacade requestFacade, NettyHttpResponse response, Iterator<RestFilter> restFilterIterator,ServiceDeployer serviceDeployer) throws Exception {
-        if (!restFilterIterator.hasNext()) {
-            return;
-        }
-
-        restFilterIterator.next().filter(url, requestFacade, response, restFilterIterator,serviceDeployer);
-
-    }
 }

@@ -33,6 +33,7 @@ import org.apache.dubbo.rpc.protocol.rest.deploy.ServiceDeployer;
 import org.apache.dubbo.rpc.protocol.rest.exception.PathNoFoundException;
 import org.apache.dubbo.rpc.protocol.rest.exception.UnSupportContentTypeException;
 import org.apache.dubbo.rpc.protocol.rest.exception.mapper.ExceptionHandlerResult;
+import org.apache.dubbo.rpc.protocol.rest.filter.context.RestFilterContext;
 import org.apache.dubbo.rpc.protocol.rest.message.HttpMessageCodecManager;
 import org.apache.dubbo.rpc.protocol.rest.netty.NettyHttpResponse;
 import org.apache.dubbo.rpc.protocol.rest.pair.InvokerAndRestMethodMetadataPair;
@@ -41,21 +42,18 @@ import org.apache.dubbo.rpc.protocol.rest.request.NettyRequestFacade;
 import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
 import org.apache.dubbo.rpc.protocol.rest.util.MediaTypeUtil;
 
-import java.util.Iterator;
-
-
 @Activate(value = "invoke", order = Integer.MAX_VALUE)
 public class ServiceInvokeRestFilter implements RestRequestFilter {
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
 
 
     @Override
-    public void filter(URL url, RequestFacade requestFacade, NettyHttpResponse nettyHttpResponse, Iterator<RestFilter> restFilterIterator, ServiceDeployer serviceDeployer) throws Exception {
-        NettyRequestFacade nettyRequestFacade = (NettyRequestFacade) requestFacade;
+    public void filter(RestFilterContext restFilterContext) throws Exception {
+        NettyRequestFacade nettyRequestFacade = (NettyRequestFacade) restFilterContext.getRequestFacade();
 
         FullHttpRequest nettyHttpRequest = nettyRequestFacade.getRequest();
 
-        doHandler(nettyHttpRequest, nettyHttpResponse, requestFacade, url, serviceDeployer);
+        doHandler(nettyHttpRequest, restFilterContext.getResponse(), restFilterContext.getRequestFacade(), restFilterContext.getUrl(), restFilterContext.getServiceDeployer());
 
     }
 

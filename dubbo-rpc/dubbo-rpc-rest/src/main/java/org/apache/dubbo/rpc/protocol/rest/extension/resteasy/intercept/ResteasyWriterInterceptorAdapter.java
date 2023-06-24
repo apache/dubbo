@@ -17,7 +17,6 @@
 package org.apache.dubbo.rpc.protocol.rest.extension.resteasy.intercept;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
@@ -25,6 +24,7 @@ import org.apache.dubbo.rpc.protocol.rest.RestHeaderEnum;
 import org.apache.dubbo.rpc.protocol.rest.deploy.ServiceDeployer;
 import org.apache.dubbo.rpc.protocol.rest.extension.resteasy.ResteasyContext;
 import org.apache.dubbo.rpc.protocol.rest.filter.RestResponseInterceptor;
+import org.apache.dubbo.rpc.protocol.rest.filter.context.RestInterceptContext;
 import org.apache.dubbo.rpc.protocol.rest.netty.NettyHttpResponse;
 import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
 import org.jboss.resteasy.core.interception.AbstractWriterInterceptorContext;
@@ -39,7 +39,6 @@ import javax.ws.rs.ext.WriterInterceptor;
 import java.io.ByteArrayOutputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
-import java.util.Iterator;
 import java.util.List;
 
 import static org.apache.dubbo.common.constants.CommonConstants.RESTEASY_NETTY_HTTP_REQUEST_ATTRIBUTE_KEY;
@@ -51,7 +50,13 @@ public class ResteasyWriterInterceptorAdapter implements RestResponseInterceptor
 
 
     @Override
-    public void intercept(URL url, RequestFacade request, NettyHttpResponse response, Object result, RpcInvocation rpcInvocation, Iterator<RestResponseInterceptor> interceptorIterator, ServiceDeployer serviceDeployer) throws Exception {
+    public void intercept(RestInterceptContext restResponseInterceptor) throws Exception {
+
+        RpcInvocation rpcInvocation = restResponseInterceptor.getRpcInvocation();
+        ServiceDeployer serviceDeployer = restResponseInterceptor.getServiceDeployer();
+        RequestFacade request = restResponseInterceptor.getRequestFacade();
+        NettyHttpResponse response = restResponseInterceptor.getResponse();
+        Object result = restResponseInterceptor.getResult();
 
         Class<?> type = rpcInvocation.getReturnType();
 
@@ -59,7 +64,6 @@ public class ResteasyWriterInterceptorAdapter implements RestResponseInterceptor
         List<WriterInterceptor> extension = serviceDeployer.getExtensions(WriterInterceptor.class);
 
         if (extension.isEmpty()) {
-            iteratorIntercept(url, request, response, result, rpcInvocation, interceptorIterator, serviceDeployer);
             return;
         }
 
@@ -72,10 +76,6 @@ public class ResteasyWriterInterceptorAdapter implements RestResponseInterceptor
 
         try {
 
-
-            //   TODO add headers to response
-            //
-
             MediaType mediaType = MediaType.valueOf(getAcceptMediaType(request, type).value);
 
             AbstractWriterInterceptorContext writerContext = getAbstractWriterInterceptorContext(restRequest, extension, result, type, type, mediaType, os, headers);
@@ -85,18 +85,16 @@ public class ResteasyWriterInterceptorAdapter implements RestResponseInterceptor
 
             addResponseHeaders(response, writerContext.getHeaders());
 
-            // TODO add headers
             if (outputStream.size() <= 0) {
-                iteratorIntercept(url, request, response, result, rpcInvocation, interceptorIterator, serviceDeployer);
                 return;
             }
 
 
-            // TODO write to response
             byte[] bytes = outputStream.toByteArray();
             response.getOutputStream().write(bytes);
             response.addOutputHeaders(RestHeaderEnum.CONTENT_TYPE.getHeader(), mediaType.getType());
 
+            restResponseInterceptor.setComplete(true);
         } finally {
             IOUtils.close(os);
         }

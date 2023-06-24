@@ -16,27 +16,20 @@
  */
 package org.apache.dubbo.rpc.protocol.rest.filter;
 
-import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.protocol.rest.deploy.ServiceDeployer;
-import org.apache.dubbo.rpc.protocol.rest.netty.NettyHttpResponse;
-import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
-
-
-import java.util.Iterator;
+import org.apache.dubbo.rpc.protocol.rest.filter.context.RestInterceptContext;
 
 import static org.apache.dubbo.rpc.protocol.rest.filter.ServiceInvokeRestFilter.writeResult;
 
 /**
- *  default RestResponseInterceptor
+ * default RestResponseInterceptor
  */
-@Activate(value = "invoke",order = Integer.MAX_VALUE)
+@Activate(value = "invoke", order = Integer.MAX_VALUE)
 public class ServiceInvokeRestResponseInterceptor implements RestResponseInterceptor {
 
     @Override
-    public void intercept(URL url, RequestFacade request, NettyHttpResponse nettyHttpResponse, Object result, RpcInvocation rpcInvocation, Iterator<RestResponseInterceptor> interceptorIterator, ServiceDeployer serviceDeployer) throws Exception {
+    public void intercept(RestInterceptContext restInterceptContext) throws Exception {
 
-        writeResult(nettyHttpResponse, request, url, result, rpcInvocation.getReturnType());
+        writeResult(restInterceptContext.getResponse(), restInterceptContext.getRequestFacade(), restInterceptContext.getUrl(), restInterceptContext.getResult(), restInterceptContext.getRpcInvocation().getReturnType());
     }
 }

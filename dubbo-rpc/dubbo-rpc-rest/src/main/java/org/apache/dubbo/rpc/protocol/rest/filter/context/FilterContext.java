@@ -14,18 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.rest.filter;
+package org.apache.dubbo.rpc.protocol.rest.filter.context;
 
-import org.apache.dubbo.common.extension.ExtensionScope;
-import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.rpc.protocol.rest.filter.context.RestInterceptContext;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.rpc.protocol.rest.deploy.ServiceDeployer;
+import org.apache.dubbo.rpc.protocol.rest.netty.HttpResponse;
+import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
 
-/**
- * RestResponseInterceptorChain will take effect before result is written to response
- */
-@SPI(scope = ExtensionScope.FRAMEWORK)
-public interface RestResponseInterceptor {
+public interface FilterContext {
 
-    void intercept(RestInterceptContext restResponseInterceptor) throws Exception;
 
+    URL getUrl();
+
+    RequestFacade getRequestFacade();
+
+    HttpResponse getResponse();
+
+    ServiceDeployer getServiceDeployer();
+
+    boolean complete();
+
+    void setComplete(boolean complete);
 }
