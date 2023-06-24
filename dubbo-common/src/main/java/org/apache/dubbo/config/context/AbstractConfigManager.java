@@ -105,7 +105,7 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
         this.scopeModel = scopeModel;
         this.applicationModel = ScopeModelUtil.getApplicationModel(scopeModel);
         this.supportedConfigTypes = supportedConfigTypes;
-        environment = scopeModel.getModelEnvironment();
+        environment = scopeModel.modelEnvironment();
     }
 
     @Override
@@ -113,7 +113,7 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
         if (!initialized.compareAndSet(false, true)) {
             return;
         }
-        CompositeConfiguration configuration = scopeModel.getModelEnvironment().getConfiguration();
+        CompositeConfiguration configuration = scopeModel.modelEnvironment().getConfiguration();
 
         // dubbo.config.mode
         String configModeStr = (String) configuration.getProperty(ConfigKeys.DUBBO_CONFIG_MODE);

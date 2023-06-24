@@ -17,6 +17,8 @@
 
 package com.alibaba.dubbo.rpc.cluster.loadbalance;
 
+import org.apache.dubbo.rpc.support.RpcUtils;
+
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.rpc.Invocation;
@@ -40,7 +42,7 @@ public abstract class AbstractLoadBalance implements LoadBalance {
     protected abstract <T> Invoker<T> doSelect(List<Invoker<T>> invokers, URL url, Invocation invocation);
 
     protected int getWeight(Invoker<?> invoker, Invocation invocation) {
-        int weight = invoker.getUrl().getMethodParameter(invocation.getMethodName(), Constants.WEIGHT_KEY, Constants.DEFAULT_WEIGHT);
+        int weight = invoker.getUrl().getMethodParameter(RpcUtils.getMethodName(invocation), Constants.WEIGHT_KEY, Constants.DEFAULT_WEIGHT);
         if (weight > 0) {
             long timestamp = invoker.getUrl().getParameter(Constants.TIMESTAMP_KEY, 0L);
             if (timestamp > 0L) {

@@ -14,13 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.common.constants;
 
-package com.alibaba.dubbo.rpc.service;
+/**
+ * Indicate that a service need to be registered to registry or not
+ */
+public enum RegisterTypeEnum {
 
-@Deprecated
-public interface GenericService extends org.apache.dubbo.rpc.service.GenericService {
+    /**
+     * Never register. Cannot be registered by any command(like QoS-online).
+     */
+    NEVER_REGISTER,
 
-    @Override
-    Object $invoke(String method, String[] parameterTypes, Object[] args)
-            throws com.alibaba.dubbo.rpc.service.GenericException;
+    /**
+     * Manual register. Can be registered by command(like QoS-online), but not register by default.
+     */
+    MANUAL_REGISTER,
+
+    /**
+     * (INTERNAL) Auto register by deployer. Will be registered after deployer started.
+     * (Delay publish when starting. Prevent service from being invoked before all services are started)
+     */
+    AUTO_REGISTER_BY_DEPLOYER,
+
+    /**
+     * Auto register. Will be registered when one service is exported.
+     */
+    AUTO_REGISTER;
 }
