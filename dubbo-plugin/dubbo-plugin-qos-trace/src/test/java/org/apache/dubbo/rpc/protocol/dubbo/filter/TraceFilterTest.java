@@ -18,11 +18,11 @@ package org.apache.dubbo.rpc.protocol.dubbo.filter;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.qos.legacy.service.DemoService;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
-import org.apache.dubbo.rpc.protocol.dubbo.support.DemoService;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -106,7 +106,7 @@ class TraceFilterTest {
         // test invoke
         filter.invoke(mockInvoker, mockInvocation);
         String message = listToString(mockChannel.getReceivedObjects());
-        String expectMessage = "org.apache.dubbo.rpc.protocol.dubbo.support.DemoService.sayHello([]) -> \"result\"";
+        String expectMessage = "org.apache.dubbo.qos.legacy.service.DemoService.sayHello([]) -> \"result\"";
         System.out.println("actual message: " + message);
         Assertions.assertTrue(message.contains(expectMessage));
         Assertions.assertTrue(message.contains("elapsed:"));
