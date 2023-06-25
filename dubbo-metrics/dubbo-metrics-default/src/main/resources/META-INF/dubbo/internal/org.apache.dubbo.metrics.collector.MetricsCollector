@@ -1,3 +1,4 @@
 default-collector=org.apache.dubbo.metrics.collector.DefaultMetricsCollector
 aggregateMetricsCollector=org.apache.dubbo.metrics.collector.AggregateMetricsCollector
 configCenterMetricsCollector=org.apache.dubbo.metrics.collector.ConfigCenterMetricsCollector
+histogramMetricsCollector=org.apache.dubbo.metrics.collector.HistogramMetricsCollector

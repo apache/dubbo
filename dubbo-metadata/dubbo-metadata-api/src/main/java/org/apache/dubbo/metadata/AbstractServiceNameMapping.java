@@ -124,18 +124,20 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping {
     @Override
     public MappingListener stopListen(URL subscribeURL, MappingListener listener) {
         synchronized (mappingListeners) {
-            String mappingKey = ServiceNameMapping.buildMappingKey(subscribeURL);
-            Set<MappingListener> listeners = mappingListeners.get(mappingKey);
-            //todo, remove listener from remote metadata center
-            if (CollectionUtils.isNotEmpty(listeners)) {
-                listeners.remove(listener);
-                listener.stop();
-                removeListener(subscribeURL, listener);
-            }
-            if (CollectionUtils.isEmpty(listeners)) {
-                mappingListeners.remove(mappingKey);
-                removeCachedMapping(mappingKey);
-                removeMappingLock(mappingKey);
+            if (listener != null) {
+                String mappingKey = ServiceNameMapping.buildMappingKey(subscribeURL);
+                Set<MappingListener> listeners = mappingListeners.get(mappingKey);
+                //todo, remove listener from remote metadata center
+                if (CollectionUtils.isNotEmpty(listeners)) {
+                    listeners.remove(listener);
+                    listener.stop();
+                    removeListener(subscribeURL, listener);
+                }
+                if (CollectionUtils.isEmpty(listeners)) {
+                    mappingListeners.remove(mappingKey);
+                    removeCachedMapping(mappingKey);
+                    removeMappingLock(mappingKey);
+                }
             }
             return listener;
         }

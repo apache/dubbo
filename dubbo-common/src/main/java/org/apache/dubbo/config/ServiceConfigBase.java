@@ -17,6 +17,7 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.RegisterTypeEnum;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.annotation.Service;
@@ -180,6 +181,7 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
     }
 
     @Override
+    @Transient
     public Map<String, String> getMetaData() {
         return getMetaData(null);
     }
@@ -415,7 +417,9 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
     /**
      * export service and auto start application instance
      */
-    public abstract void export();
+    public final void export() {
+        export(RegisterTypeEnum.AUTO_REGISTER);
+    }
 
     public abstract void unexport();
 
@@ -423,4 +427,24 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
 
     public abstract boolean isUnexported();
 
+    /**
+     * Export service to network
+     *
+     * @param registerType register type of current export action.
+     */
+    public abstract void export(RegisterTypeEnum registerType);
+
+    /**
+     * Register delay published service to registry.
+     */
+    public final void register() {
+        register(false);
+    }
+
+    /**
+     * Register delay published service to registry.
+     *
+     * @param byDeployer register by deployer or not.
+     */
+    public abstract void register(boolean byDeployer);
 }

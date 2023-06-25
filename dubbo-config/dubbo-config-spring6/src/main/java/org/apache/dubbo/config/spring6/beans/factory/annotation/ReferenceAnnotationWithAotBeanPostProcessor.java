@@ -35,6 +35,7 @@ import org.apache.dubbo.config.spring.reference.ReferenceBeanSupport;
 import org.apache.dubbo.config.spring.util.SpringCompatUtils;
 import org.apache.dubbo.config.spring6.beans.factory.aot.ReferencedFieldValueResolver;
 import org.apache.dubbo.config.spring6.beans.factory.aot.ReferencedMethodArgumentsResolver;
+import org.apache.dubbo.config.spring6.utils.AotUtils;
 import org.apache.dubbo.rpc.service.Destroyable;
 import org.apache.dubbo.rpc.service.EchoService;
 import org.apache.dubbo.rpc.service.GenericService;
@@ -120,7 +121,7 @@ import static org.springframework.util.StringUtils.hasText;
  * @since 2.5.7
  */
 public class ReferenceAnnotationWithAotBeanPostProcessor extends AbstractAnnotationBeanPostProcessor
-    implements ApplicationContextAware, BeanRegistrationAotProcessor, BeanFactoryPostProcessor {
+        implements ApplicationContextAware, BeanRegistrationAotProcessor, BeanFactoryPostProcessor {
 
     /**
      * The bean name of {@link ReferenceAnnotationWithAotBeanPostProcessor}
@@ -135,10 +136,10 @@ public class ReferenceAnnotationWithAotBeanPostProcessor extends AbstractAnnotat
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
 
     private final ConcurrentMap<InjectionMetadata.InjectedElement, String> injectedFieldReferenceBeanCache =
-        new ConcurrentHashMap<>(CACHE_SIZE);
+            new ConcurrentHashMap<>(CACHE_SIZE);
 
     private final ConcurrentMap<InjectionMetadata.InjectedElement, String> injectedMethodReferenceBeanCache =
-        new ConcurrentHashMap<>(CACHE_SIZE);
+            new ConcurrentHashMap<>(CACHE_SIZE);
 
     private ApplicationContext applicationContext;
 
@@ -262,8 +263,8 @@ public class ReferenceAnnotationWithAotBeanPostProcessor extends AbstractAnnotat
         if (beanClass == null) {
             String beanMethodSignature = factoryMethodMetadata.getDeclaringClassName() + "#" + factoryMethodMetadata.getMethodName() + "()";
             throw new BeanCreationException("The ReferenceBean is missing necessary generic type, which returned by the @Bean method of Java-config class. " +
-                "The generic type of the returned ReferenceBean must be specified as the referenced interface type, " +
-                "such as ReferenceBean<DemoService>. Please check bean method: " + beanMethodSignature);
+                    "The generic type of the returned ReferenceBean must be specified as the referenced interface type, " +
+                    "such as ReferenceBean<DemoService>. Please check bean method: " + beanMethodSignature);
         }
 
         // get dubbo reference annotation attributes
@@ -295,10 +296,10 @@ public class ReferenceAnnotationWithAotBeanPostProcessor extends AbstractAnnotat
             if (!StringUtils.isEquals(interfaceName, beanClass.getName()) && beanClass != GenericService.class) {
                 String beanMethodSignature = factoryMethodMetadata.getDeclaringClassName() + "#" + factoryMethodMetadata.getMethodName() + "()";
                 throw new BeanCreationException("The 'interfaceClass' or 'interfaceName' attribute value of @DubboReference annotation " +
-                    "is inconsistent with the generic type of the ReferenceBean returned by the bean method. " +
-                    "The interface class of @DubboReference is: " + interfaceName + ", but return ReferenceBean<" + beanClass.getName() + ">. " +
-                    "Please remove the 'interfaceClass' and 'interfaceName' attributes from @DubboReference annotation. " +
-                    "Please check bean method: " + beanMethodSignature);
+                        "is inconsistent with the generic type of the ReferenceBean returned by the bean method. " +
+                        "The interface class of @DubboReference is: " + interfaceName + ", but return ReferenceBean<" + beanClass.getName() + ">. " +
+                        "Please remove the 'interfaceClass' and 'interfaceName' attributes from @DubboReference annotation. " +
+                        "Please check bean method: " + beanMethodSignature);
             }
 
             Class interfaceClass = beanClass;
@@ -352,7 +353,7 @@ public class ReferenceAnnotationWithAotBeanPostProcessor extends AbstractAnnotat
      * @see #postProcessProperties
      */
     public PropertyValues postProcessPropertyValues(
-        PropertyValues pvs, PropertyDescriptor[] pds, Object bean, String beanName) throws BeansException {
+            PropertyValues pvs, PropertyDescriptor[] pds, Object bean, String beanName) throws BeansException {
         return postProcessProperties(pvs, bean, beanName);
     }
 
@@ -363,7 +364,7 @@ public class ReferenceAnnotationWithAotBeanPostProcessor extends AbstractAnnotat
      */
     @Override
     public PropertyValues postProcessProperties(PropertyValues pvs, Object bean, String beanName)
-        throws BeansException {
+            throws BeansException {
         try {
             AnnotatedInjectionMetadata metadata = findInjectionMetadata(beanName, bean.getClass(), pvs);
             prepareInjection(metadata);
@@ -372,7 +373,7 @@ public class ReferenceAnnotationWithAotBeanPostProcessor extends AbstractAnnotat
             throw ex;
         } catch (Throwable ex) {
             throw new BeanCreationException(beanName, "Injection of @" + getAnnotationType().getSimpleName()
-                + " dependencies is failed", ex);
+                    + " dependencies is failed", ex);
         }
         return pvs;
     }
@@ -504,16 +505,16 @@ public class ReferenceAnnotationWithAotBeanPostProcessor extends AbstractAnnotat
             // bean name from attribute 'id' or java-config bean, cannot be renamed
             if (!renameable) {
                 throw new BeanCreationException("Already exists another bean definition with the same bean name [" + referenceBeanName + "], " +
-                    "but cannot rename the reference bean name (specify the id attribute or java-config bean), " +
-                    "please modify the name of one of the beans: " +
-                    "prev: " + prevBeanDesc + ", new: " + newBeanDesc + ". " + checkLocation);
+                        "but cannot rename the reference bean name (specify the id attribute or java-config bean), " +
+                        "please modify the name of one of the beans: " +
+                        "prev: " + prevBeanDesc + ", new: " + newBeanDesc + ". " + checkLocation);
             }
 
             // the prev bean type is different, rename the new reference bean
             int index = 2;
             String newReferenceBeanName = null;
             while (newReferenceBeanName == null || beanDefinitionRegistry.containsBeanDefinition(newReferenceBeanName)
-                || beanDefinitionRegistry.isAlias(newReferenceBeanName)) {
+                    || beanDefinitionRegistry.isAlias(newReferenceBeanName)) {
                 newReferenceBeanName = referenceBeanName + "#" + index;
                 index++;
                 // double check found same name and reference key
@@ -524,9 +525,9 @@ public class ReferenceAnnotationWithAotBeanPostProcessor extends AbstractAnnotat
             newBeanDesc = newReferenceBeanName + "[" + referenceKey + "]";
 
             logger.warn(CONFIG_DUBBO_BEAN_INITIALIZER, "", "", "Already exists another bean definition with the same bean name [" + referenceBeanName + "], " +
-                "rename dubbo reference bean to [" + newReferenceBeanName + "]. " +
-                "It is recommended to modify the name of one of the beans to avoid injection problems. " +
-                "prev: " + prevBeanDesc + ", new: " + newBeanDesc + ". " + checkLocation);
+                    "rename dubbo reference bean to [" + newReferenceBeanName + "]. " +
+                    "It is recommended to modify the name of one of the beans to avoid injection problems. " +
+                    "prev: " + prevBeanDesc + ", new: " + newBeanDesc + ". " + checkLocation);
             referenceBeanName = newReferenceBeanName;
         }
         attributes.put(ReferenceAttributes.ID, referenceBeanName);
@@ -664,19 +665,19 @@ public class ReferenceAnnotationWithAotBeanPostProcessor extends AbstractAnnotat
         @Override
         public void applyTo(GenerationContext generationContext, BeanRegistrationCode beanRegistrationCode) {
             GeneratedClass generatedClass = generationContext.getGeneratedClasses()
-                .addForFeatureComponent("DubboReference", this.target, type -> {
-                    type.addJavadoc("DubboReference for {@link $T}.", this.target);
-                    type.addModifiers(javax.lang.model.element.Modifier.PUBLIC);
-                });
+                    .addForFeatureComponent("DubboReference", this.target, type -> {
+                        type.addJavadoc("DubboReference for {@link $T}.", this.target);
+                        type.addModifiers(javax.lang.model.element.Modifier.PUBLIC);
+                    });
             GeneratedMethod generateMethod = generatedClass.getMethods().add("apply", method -> {
                 method.addJavadoc("Apply the dubbo reference.");
                 method.addModifiers(javax.lang.model.element.Modifier.PUBLIC,
-                    javax.lang.model.element.Modifier.STATIC);
+                        javax.lang.model.element.Modifier.STATIC);
                 method.addParameter(RegisteredBean.class, REGISTERED_BEAN_PARAMETER);
                 method.addParameter(this.target, INSTANCE_PARAMETER);
                 method.returns(this.target);
                 method.addCode(generateMethodCode(generatedClass.getName(),
-                    generationContext.getRuntimeHints()));
+                        generationContext.getRuntimeHints()));
             });
             beanRegistrationCode.addInstancePostProcessor(generateMethod.toMethodReference());
 
@@ -690,13 +691,13 @@ public class ReferenceAnnotationWithAotBeanPostProcessor extends AbstractAnnotat
             if (!CollectionUtils.isEmpty(this.annotatedInjectionMetadata.getFieldElements())) {
                 for (AnnotatedInjectElement referenceElement : this.annotatedInjectionMetadata.getFieldElements()) {
                     code.addStatement(generateMethodStatementForElement(
-                        targetClassName, referenceElement, hints));
+                            targetClassName, referenceElement, hints));
                 }
             }
             if (!CollectionUtils.isEmpty(this.annotatedInjectionMetadata.getMethodElements())) {
                 for (AnnotatedInjectElement referenceElement : this.annotatedInjectionMetadata.getMethodElements()) {
                     code.addStatement(generateMethodStatementForElement(
-                        targetClassName, referenceElement, hints));
+                            targetClassName, referenceElement, hints));
                 }
             }
             code.addStatement("return $L", INSTANCE_PARAMETER);
@@ -712,6 +713,7 @@ public class ReferenceAnnotationWithAotBeanPostProcessor extends AbstractAnnotat
 
             try {
                 Class<?> c = referenceElement.getInjectedType();
+                AotUtils.registerSerializationForService(c, hints);
                 hints.reflection().registerType(TypeReference.of(c), MemberCategory.INVOKE_PUBLIC_METHODS);
                 hints.proxies().registerJdkProxy(c, EchoService.class, Destroyable.class);
                 hints.proxies().registerJdkProxy(c, EchoService.class, Destroyable.class, SpringProxy.class, Advised.class, DecoratingProxy.class);
@@ -721,14 +723,14 @@ public class ReferenceAnnotationWithAotBeanPostProcessor extends AbstractAnnotat
 
             if (member instanceof Field) {
                 return generateMethodStatementForField(
-                    targetClassName, (Field) member, attributes, injectedObject, hints);
+                        targetClassName, (Field) member, attributes, injectedObject, hints);
             }
             if (member instanceof Method) {
                 return generateMethodStatementForMethod(
-                    targetClassName, (Method) member, attributes, injectedObject, hints);
+                        targetClassName, (Method) member, attributes, injectedObject, hints);
             }
             throw new IllegalStateException(
-                "Unsupported member type " + member.getClass().getName());
+                    "Unsupported member type " + member.getClass().getName());
         }
 
         private CodeBlock generateMethodStatementForField(ClassName targetClassName,
@@ -736,17 +738,17 @@ public class ReferenceAnnotationWithAotBeanPostProcessor extends AbstractAnnotat
 
             hints.reflection().registerField(field);
             CodeBlock resolver = CodeBlock.of("$T.$L($S)",
-                ReferencedFieldValueResolver.class,
-                "forRequiredField", field.getName());
+                    ReferencedFieldValueResolver.class,
+                    "forRequiredField", field.getName());
             CodeBlock shortcutResolver = CodeBlock.of("$L.withShortcut($S)", resolver, injectedObject);
             AccessControl accessControl = AccessControl.forMember(field);
 
             if (!accessControl.isAccessibleFrom(targetClassName)) {
                 return CodeBlock.of("$L.resolveAndSet($L, $L)", shortcutResolver,
-                    REGISTERED_BEAN_PARAMETER, INSTANCE_PARAMETER);
+                        REGISTERED_BEAN_PARAMETER, INSTANCE_PARAMETER);
             }
             return CodeBlock.of("$L.$L = $L.resolve($L)", INSTANCE_PARAMETER,
-                field.getName(), shortcutResolver, REGISTERED_BEAN_PARAMETER);
+                    field.getName(), shortcutResolver, REGISTERED_BEAN_PARAMETER);
         }
 
         private CodeBlock generateMethodStatementForMethod(ClassName targetClassName,
@@ -774,9 +776,9 @@ public class ReferenceAnnotationWithAotBeanPostProcessor extends AbstractAnnotat
             } else {
                 hints.reflection().registerMethod(method, ExecutableMode.INTROSPECT);
                 CodeBlock arguments = new AutowiredArgumentsCodeGenerator(this.target,
-                    method).generateCode(method.getParameterTypes());
+                        method).generateCode(method.getParameterTypes());
                 CodeBlock injectionCode = CodeBlock.of("args -> $L.$L($L)",
-                    INSTANCE_PARAMETER, method.getName(), arguments);
+                        INSTANCE_PARAMETER, method.getName(), arguments);
                 code.add(".resolve($L, $L)", REGISTERED_BEAN_PARAMETER, injectionCode);
             }
             return code.build();
@@ -830,7 +832,7 @@ public class ReferenceAnnotationWithAotBeanPostProcessor extends AbstractAnnotat
         private void registerProxyIfNecessary(RuntimeHints runtimeHints, DependencyDescriptor dependencyDescriptor) {
             if (this.candidateResolver != null) {
                 Class<?> proxyClass =
-                    this.candidateResolver.getLazyResolutionProxyClass(dependencyDescriptor, null);
+                        this.candidateResolver.getLazyResolutionProxyClass(dependencyDescriptor, null);
                 if (proxyClass != null) {
                     ClassHintUtils.registerProxyIfNecessary(proxyClass, runtimeHints);
                 }

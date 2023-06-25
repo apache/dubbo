@@ -34,6 +34,8 @@ public class DubboMetricsBinder implements ApplicationListener<ApplicationStarte
     public void onApplicationEvent(ApplicationStartedEvent applicationStartedEvent) {
         if (meterRegistry instanceof CompositeMeterRegistry) {
             MetricsGlobalRegistry.setCompositeRegistry((CompositeMeterRegistry) meterRegistry);
+        }else{
+            MetricsGlobalRegistry.getCompositeRegistry().add(meterRegistry);
         }
     }
 

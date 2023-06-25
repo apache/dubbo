@@ -19,6 +19,7 @@ package org.apache.dubbo.common.constants;
 public interface MetricsConstants {
 
     String PROTOCOL_PROMETHEUS = "prometheus";
+    String PROTOCOL_DEFAULT = "default";
 
     String TAG_IP = "ip";
 

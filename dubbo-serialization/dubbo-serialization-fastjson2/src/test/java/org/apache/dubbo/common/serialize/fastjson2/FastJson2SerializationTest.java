@@ -82,7 +82,7 @@ public class FastJson2SerializationTest {
             byte[] bytes = outputStream.toByteArray();
             ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
             ObjectInput objectInput = serialization.deserialize(url, inputStream);
-            Assertions.assertThrows(RuntimeException.class, objectInput::readUTF);
+            Assertions.assertThrows(IOException.class, objectInput::readUTF);
         }
 
         // write pojo, read failed
@@ -108,7 +108,7 @@ public class FastJson2SerializationTest {
             byte[] bytes = outputStream.toByteArray();
             ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
             ObjectInput objectInput = serialization.deserialize(url, inputStream);
-            Assertions.assertThrows(RuntimeException.class, objectInput::readUTF);
+            Assertions.assertThrows(IOException.class, objectInput::readUTF);
         }
 
         // write list, read failed
@@ -156,7 +156,7 @@ public class FastJson2SerializationTest {
             byte[] bytes = outputStream.toByteArray();
             ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
             ObjectInput objectInput = serialization.deserialize(url, inputStream);
-            Assertions.assertThrows(RuntimeException.class, objectInput::readEvent);
+            Assertions.assertThrows(IOException.class, objectInput::readEvent);
         }
 
         // write pojo, read failed
@@ -182,7 +182,7 @@ public class FastJson2SerializationTest {
             byte[] bytes = outputStream.toByteArray();
             ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
             ObjectInput objectInput = serialization.deserialize(url, inputStream);
-            Assertions.assertThrows(RuntimeException.class, objectInput::readEvent);
+            Assertions.assertThrows(IOException.class, objectInput::readEvent);
         }
 
         // write list, read failed
@@ -230,7 +230,7 @@ public class FastJson2SerializationTest {
             byte[] bytes = outputStream.toByteArray();
             ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
             ObjectInput objectInput = serialization.deserialize(url, inputStream);
-            Assertions.assertThrows(RuntimeException.class, objectInput::readByte);
+            Assertions.assertThrows(IOException.class, objectInput::readByte);
         }
 
         // write pojo, read failed
@@ -243,7 +243,7 @@ public class FastJson2SerializationTest {
             byte[] bytes = outputStream.toByteArray();
             ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
             ObjectInput objectInput = serialization.deserialize(url, inputStream);
-            Assertions.assertThrows(RuntimeException.class, objectInput::readByte);
+            Assertions.assertThrows(IOException.class, objectInput::readByte);
         }
 
         // write map, read failed
@@ -256,7 +256,7 @@ public class FastJson2SerializationTest {
             byte[] bytes = outputStream.toByteArray();
             ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
             ObjectInput objectInput = serialization.deserialize(url, inputStream);
-            Assertions.assertThrows(RuntimeException.class, objectInput::readByte);
+            Assertions.assertThrows(IOException.class, objectInput::readByte);
         }
 
         // write list, read failed
@@ -269,7 +269,7 @@ public class FastJson2SerializationTest {
             byte[] bytes = outputStream.toByteArray();
             ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
             ObjectInput objectInput = serialization.deserialize(url, inputStream);
-            Assertions.assertThrows(RuntimeException.class, objectInput::readByte);
+            Assertions.assertThrows(IOException.class, objectInput::readByte);
         }
 
         frameworkModel.destroy();
@@ -381,7 +381,7 @@ public class FastJson2SerializationTest {
             byte[] bytes = outputStream.toByteArray();
             ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
             ObjectInput objectInput = serialization.deserialize(url, inputStream);
-            Assertions.assertThrows(RuntimeException.class, () -> objectInput.readObject(List.class));
+            Assertions.assertThrows(IOException.class, () -> objectInput.readObject(List.class));
         }
 
         // write pojo, read list failed
@@ -395,7 +395,7 @@ public class FastJson2SerializationTest {
             byte[] bytes = outputStream.toByteArray();
             ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
             ObjectInput objectInput = serialization.deserialize(url, inputStream);
-            Assertions.assertThrows(RuntimeException.class, () -> objectInput.readObject(LinkedList.class));
+            Assertions.assertThrows(IOException.class, () -> objectInput.readObject(LinkedList.class));
         }
 
         // write pojo, read string failed
@@ -423,7 +423,7 @@ public class FastJson2SerializationTest {
             byte[] bytes = outputStream.toByteArray();
             ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
             ObjectInput objectInput = serialization.deserialize(url, inputStream);
-            Assertions.assertThrows(RuntimeException.class, () -> objectInput.readObject(TrustedNotSerializable.class));
+            Assertions.assertThrows(IOException.class, () -> objectInput.readObject(TrustedNotSerializable.class));
         }
 
         // write pojo, read same field failed
@@ -437,7 +437,7 @@ public class FastJson2SerializationTest {
             byte[] bytes = outputStream.toByteArray();
             ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
             ObjectInput objectInput = serialization.deserialize(url, inputStream);
-            Assertions.assertThrows(RuntimeException.class, () -> objectInput.readObject(TrustedPojo2.class));
+            Assertions.assertThrows(IOException.class, () -> objectInput.readObject(TrustedPojo2.class));
         }
 
         // write pojo, read map failed
@@ -451,7 +451,7 @@ public class FastJson2SerializationTest {
             byte[] bytes = outputStream.toByteArray();
             ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
             ObjectInput objectInput = serialization.deserialize(url, inputStream);
-            Assertions.assertThrows(RuntimeException.class, () -> objectInput.readObject(Map.class));
+            Assertions.assertThrows(IOException.class, () -> objectInput.readObject(Map.class));
         }
 
         // write list, read pojo failed
@@ -468,7 +468,7 @@ public class FastJson2SerializationTest {
             byte[] bytes = outputStream.toByteArray();
             ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
             ObjectInput objectInput = serialization.deserialize(url, inputStream);
-            Assertions.assertThrows(RuntimeException.class, () -> objectInput.readObject(TrustedPojo.class));
+            Assertions.assertThrows(IOException.class, () -> objectInput.readObject(TrustedPojo.class));
         }
 
         // write list, read map failed
@@ -485,7 +485,7 @@ public class FastJson2SerializationTest {
             byte[] bytes = outputStream.toByteArray();
             ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
             ObjectInput objectInput = serialization.deserialize(url, inputStream);
-            Assertions.assertThrows(RuntimeException.class, () -> objectInput.readObject(Map.class));
+            Assertions.assertThrows(IOException.class, () -> objectInput.readObject(Map.class));
         }
 
         frameworkModel.destroy();
@@ -542,7 +542,7 @@ public class FastJson2SerializationTest {
             frameworkModel.getBeanFactory().getBean(SerializeSecurityManager.class).setCheckStatus(SerializeCheckStatus.STRICT);
             ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
             ObjectInput objectInput = serialization.deserialize(url, inputStream);
-            Assertions.assertThrows(RuntimeException.class, objectInput::readObject);
+            Assertions.assertThrows(IOException.class, objectInput::readObject);
             frameworkModel.destroy();
         }
     }
@@ -576,7 +576,7 @@ public class FastJson2SerializationTest {
             frameworkModel.getBeanFactory().getBean(SerializeSecurityManager.class).setCheckStatus(SerializeCheckStatus.STRICT);
             ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
             ObjectInput objectInput = serialization.deserialize(url, inputStream);
-            Assertions.assertThrows(RuntimeException.class, objectInput::readObject);
+            Assertions.assertThrows(IOException.class, objectInput::readObject);
             frameworkModel.destroy();
         }
     }

@@ -16,9 +16,10 @@
  */
 package org.apache.dubbo.metrics.observation;
 
-import io.micrometer.observation.transport.ReceiverContext;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
+
+import io.micrometer.observation.transport.ReceiverContext;
 
 /**
  * Consumer context for RPC.

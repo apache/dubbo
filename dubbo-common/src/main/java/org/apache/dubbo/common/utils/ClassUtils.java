@@ -24,6 +24,7 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -87,7 +88,8 @@ public class ClassUtils {
         BigDecimal.class,
         BigInteger.class,
         Date.class,
-        Object.class
+        Object.class,
+        Duration.class
     );
     /**
      * Prefix for internal array class names: "[L"

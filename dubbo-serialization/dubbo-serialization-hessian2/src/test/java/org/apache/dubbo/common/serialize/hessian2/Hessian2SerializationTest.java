@@ -379,7 +379,7 @@ class Hessian2SerializationTest {
             byte[] bytes = outputStream.toByteArray();
             ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
             ObjectInput objectInput = serialization.deserialize(url, inputStream);
-            Assertions.assertThrows(RuntimeException.class, () -> objectInput.readObject(List.class));
+            Assertions.assertThrows(IOException.class, () -> objectInput.readObject(List.class));
         }
 
         // write pojo, read list failed
@@ -393,7 +393,7 @@ class Hessian2SerializationTest {
             byte[] bytes = outputStream.toByteArray();
             ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
             ObjectInput objectInput = serialization.deserialize(url, inputStream);
-            Assertions.assertThrows(RuntimeException.class, () -> objectInput.readObject(LinkedList.class));
+            Assertions.assertThrows(IOException.class, () -> objectInput.readObject(LinkedList.class));
         }
 
         // write pojo, read string failed
@@ -407,7 +407,7 @@ class Hessian2SerializationTest {
             byte[] bytes = outputStream.toByteArray();
             ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
             ObjectInput objectInput = serialization.deserialize(url, inputStream);
-            Assertions.assertThrows(RuntimeException.class, () -> objectInput.readObject(String.class));
+            Assertions.assertThrows(IOException.class, () -> objectInput.readObject(String.class));
         }
 
         // write pojo, read other failed
@@ -421,7 +421,7 @@ class Hessian2SerializationTest {
             byte[] bytes = outputStream.toByteArray();
             ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
             ObjectInput objectInput = serialization.deserialize(url, inputStream);
-            Assertions.assertThrows(RuntimeException.class, () -> objectInput.readObject(TrustedNotSerializable.class));
+            Assertions.assertThrows(IOException.class, () -> objectInput.readObject(TrustedNotSerializable.class));
         }
 
         // write pojo, read same field failed
@@ -466,7 +466,7 @@ class Hessian2SerializationTest {
             byte[] bytes = outputStream.toByteArray();
             ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
             ObjectInput objectInput = serialization.deserialize(url, inputStream);
-            Assertions.assertThrows(RuntimeException.class, () -> objectInput.readObject(TrustedPojo.class));
+            Assertions.assertThrows(IOException.class, () -> objectInput.readObject(TrustedPojo.class));
         }
 
         // write list, read map failed
@@ -483,7 +483,7 @@ class Hessian2SerializationTest {
             byte[] bytes = outputStream.toByteArray();
             ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
             ObjectInput objectInput = serialization.deserialize(url, inputStream);
-            Assertions.assertThrows(RuntimeException.class, () -> objectInput.readObject(Map.class));
+            Assertions.assertThrows(IOException.class, () -> objectInput.readObject(Map.class));
         }
 
         frameworkModel.destroy();
@@ -523,7 +523,7 @@ class Hessian2SerializationTest {
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         ObjectOutput objectOutput = serialization.serialize(url, outputStream);
-        Assertions.assertThrows(IllegalArgumentException.class, () -> objectOutput.writeObject(trustedPojo));
+        Assertions.assertThrows(IOException.class, () -> objectOutput.writeObject(trustedPojo));
 
         frameworkModel.destroy();
     }
@@ -539,7 +539,7 @@ class Hessian2SerializationTest {
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         ObjectOutput objectOutput = serialization.serialize(url, outputStream);
-        Assertions.assertThrows(IllegalArgumentException.class, () -> objectOutput.writeObject(trustedPojo));
+        Assertions.assertThrows(IOException.class, () -> objectOutput.writeObject(trustedPojo));
 
         frameworkModel.destroy();
     }

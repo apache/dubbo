@@ -75,11 +75,15 @@
             <artifactId>dubbo-qos-api</artifactId>
             <version>${project.version}</version>
         </dependency>
-
         <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-native</artifactId>
             <version>${project.parent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-metrics-default</artifactId>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 </project>

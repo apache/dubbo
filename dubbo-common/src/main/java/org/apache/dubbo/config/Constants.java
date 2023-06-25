@@ -171,4 +171,8 @@ public interface Constants {
     Pattern KEY_FOOTER = Pattern.compile(
         "-+END\\s[^-\\r\\n]*PRIVATE\\s+KEY[^-\\r\\n]*-+(?:\\s|\\r|\\n)*");
     Pattern BODY = Pattern.compile("[a-z0-9+/=][a-z0-9+/=\\r\\n]*", Pattern.CASE_INSENSITIVE);
+
+    String DEFAULT_NATIVE_COMPILER="jdk";
+
+    String DEFAULT_NATIVE_PROXY="jdk";
 }

@@ -34,11 +34,11 @@ public interface Monitor extends org.apache.dubbo.monitor.Monitor {
 
     @Override
     default void collect(URL statistics) {
-        this.collect(new com.alibaba.dubbo.common.URL(statistics));
+        this.collect(new com.alibaba.dubbo.common.DelegateURL(statistics));
     }
 
     @Override
     default List<URL> lookup(URL query) {
-        return this.lookup(new com.alibaba.dubbo.common.URL(query)).stream().map(url -> url.getOriginalURL()).collect(Collectors.toList());
+        return this.lookup(new com.alibaba.dubbo.common.DelegateURL(query)).stream().map(url -> url.getOriginalURL()).collect(Collectors.toList());
     }
 }

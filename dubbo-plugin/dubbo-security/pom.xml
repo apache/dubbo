@@ -27,7 +27,7 @@
     <properties>
         <skip_maven_deploy>false</skip_maven_deploy>
         <protobuf-java.version>3.22.2</protobuf-java.version>
-        <grpc.version>1.41.0</grpc.version>
+        <grpc.version>1.55.1</grpc.version>
     </properties>
 
     <artifactId>dubbo-security</artifactId>
@@ -124,6 +124,14 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <!-- Override the maven-javadoc-plugin configuration that depends on the pass -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
             </plugin>
         </plugins>
     </build>

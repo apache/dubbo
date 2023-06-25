@@ -17,7 +17,8 @@
 
 package org.apache.dubbo.metrics.model.key;
 
-import io.micrometer.common.lang.Nullable;
+
+import org.apache.dubbo.common.lang.Nullable;
 
 /**
  *  The overall event set, including the event processing functions in three stages

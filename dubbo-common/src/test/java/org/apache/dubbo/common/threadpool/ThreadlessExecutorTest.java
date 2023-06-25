@@ -16,9 +16,10 @@
  */
 package org.apache.dubbo.common.threadpool;
 
-import org.apache.dubbo.common.URL;
-
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import java.util.concurrent.atomic.AtomicBoolean;
 
 class ThreadlessExecutorTest {
     private static final ThreadlessExecutor executor;
@@ -33,11 +34,13 @@ class ThreadlessExecutorTest {
             executor.execute(()->{throw new RuntimeException("test");});
         }
 
-        executor.waitAndDrain();
+        executor.waitAndDrain(123);
 
-        executor.execute(()->{});
+        AtomicBoolean invoked = new AtomicBoolean(false);
+        executor.execute(()->{invoked.set(true);});
 
-        executor.waitAndDrain();
+        executor.waitAndDrain(123);
+        Assertions.assertTrue(invoked.get());
 
         executor.shutdown();
     }

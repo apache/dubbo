@@ -18,6 +18,7 @@
 package org.apache.dubbo.metrics.model;
 
 import org.apache.dubbo.common.Version;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.metrics.collector.MethodMetricsCollector;
 import org.apache.dubbo.metrics.collector.ServiceMetricsCollector;
 import org.apache.dubbo.metrics.event.MetricsEvent;
@@ -29,12 +30,14 @@ import org.apache.dubbo.metrics.model.key.MetricsPlaceValue;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_CHAR_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
@@ -51,7 +54,6 @@ import static org.apache.dubbo.common.utils.NetUtils.getLocalHostName;
 import static org.apache.dubbo.metrics.MetricsConstants.ATTACHMENT_KEY_SERVICE;
 import static org.apache.dubbo.metrics.MetricsConstants.INVOCATION;
 import static org.apache.dubbo.metrics.MetricsConstants.SELF_INCREMENT_SIZE;
-import static org.apache.dubbo.rpc.support.RpcUtils.isGenericCall;
 
 public class MetricsSupport {
 
@@ -155,17 +157,6 @@ public class MetricsSupport {
         return ivArr[0];
     }
 
-    public static String getMethodName(Invocation invocation) {
-        String methodName = invocation.getMethodName();
-        if (invocation instanceof RpcInvocation
-                && isGenericCall(((RpcInvocation) invocation).getParameterTypesDesc(), methodName)
-                && invocation.getArguments() != null
-                && invocation.getArguments().length == 3) {
-            methodName = ((String) invocation.getArguments()[0]).trim();
-        }
-        return methodName;
-    }
-
     public static String getGroup(Invocation invocation) {
         String serviceUniqueName = invocation.getTargetServiceUniqueName();
         String group = null;
@@ -223,5 +214,22 @@ public class MetricsSupport {
     public static void incrAndAddRt(MetricsKey metricsKey, MetricsPlaceValue placeType, MethodMetricsCollector<TimeCounterEvent> collector, TimeCounterEvent event) {
         collector.increment(event.getAttachmentValue(INVOCATION), new MetricsKeyWrapper(metricsKey, placeType), SELF_INCREMENT_SIZE);
         collector.addRt(event.getAttachmentValue(INVOCATION), placeType.getType(), event.getTimePair().calc());
+    }
+
+    /**
+     *  Generate a complete indicator item for an interface/method
+     */
+    public static <T> void fillZero(Map<MetricsKeyWrapper, Map<T, AtomicLong>> data) {
+        if (CollectionUtils.isEmptyMap(data)) {
+            return;
+        }
+        Set<T> allKeyMetrics = data.values().stream().flatMap(map -> map.keySet().stream()).collect(Collectors.toSet());
+        data.forEach((keyWrapper, mapVal) ->
+        {
+            for (T key : allKeyMetrics) {
+                mapVal.computeIfAbsent(key, k -> new AtomicLong(0));
+            }
+        });
+
     }
 }

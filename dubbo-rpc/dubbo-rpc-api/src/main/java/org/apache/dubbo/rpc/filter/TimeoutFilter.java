@@ -27,6 +27,7 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.TimeoutCountDown;
+import org.apache.dubbo.rpc.support.RpcUtils;
 
 import static org.apache.dubbo.common.constants.CommonConstants.TIME_COUNTDOWN_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROXY_TIMEOUT_REQUEST;
@@ -51,7 +52,7 @@ public class TimeoutFilter implements Filter, Filter.Listener {
             TimeoutCountDown countDown = (TimeoutCountDown) obj;
             if (countDown.isExpired()) {
                 if (logger.isWarnEnabled()) {
-                    logger.warn(PROXY_TIMEOUT_REQUEST, "", "", "invoke timed out. method: " + invocation.getMethodName() +
+                    logger.warn(PROXY_TIMEOUT_REQUEST, "", "", "invoke timed out. method: " + RpcUtils.getMethodName(invocation) +
                         " url is " + invoker.getUrl() + ", invoke elapsed " + countDown.elapsedMillis() + " ms.");
                 }
             }

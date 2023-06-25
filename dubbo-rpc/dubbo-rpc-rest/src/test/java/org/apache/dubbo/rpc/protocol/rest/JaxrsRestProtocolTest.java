@@ -49,6 +49,8 @@ import org.apache.dubbo.rpc.protocol.rest.rest.HttpMethodServiceImpl;
 import org.apache.dubbo.rpc.protocol.rest.rest.RestDemoForTestException;
 import org.apache.dubbo.rpc.protocol.rest.rest.RestDemoService;
 import org.apache.dubbo.rpc.protocol.rest.rest.RestDemoServiceImpl;
+import org.apache.dubbo.rpc.protocol.rest.rest.TestGetInvokerService;
+import org.apache.dubbo.rpc.protocol.rest.rest.TestGetInvokerServiceImpl;
 import org.hamcrest.CoreMatchers;
 import org.jboss.resteasy.specimpl.MultivaluedMapImpl;
 import org.junit.jupiter.api.AfterEach;
@@ -74,6 +76,7 @@ class JaxrsRestProtocolTest {
     private final URL exportUrl = URL.valueOf("rest://127.0.0.1:" + availablePort + "/rest?interface=org.apache.dubbo.rpc.protocol.rest.DemoService");
     private final ModuleServiceRepository repository = ApplicationModel.defaultModel().getDefaultModule().getServiceRepository();
     private final ExceptionMapper exceptionMapper = new ExceptionMapper();
+    private static final String SERVER = "netty4";
 
     @AfterEach
     public void tearDown() {
@@ -197,7 +200,7 @@ class JaxrsRestProtocolTest {
 
         URL url = this.registerProvider(exportUrl, server, DemoService.class);
 
-        URL nettyUrl = url.addParameter(SERVER_KEY, "netty");
+        URL nettyUrl = url.addParameter(SERVER_KEY, SERVER);
         Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(new DemoServiceImpl(), DemoService.class, nettyUrl));
 
         DemoService demoService = this.proxy.getProxy(protocol.refer(DemoService.class, nettyUrl));
@@ -230,7 +233,7 @@ class JaxrsRestProtocolTest {
 
             URL url = this.registerProvider(exportUrl, server, DemoService.class);
 
-            URL nettyUrl = url.addParameter(SERVER_KEY, "netty");
+            URL nettyUrl = url.addParameter(SERVER_KEY, SERVER);
             Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(server, DemoService.class, nettyUrl));
 
             DemoService demoService = this.proxy.getProxy(protocol.refer(DemoService.class, nettyUrl));
@@ -259,7 +262,7 @@ class JaxrsRestProtocolTest {
 
         URL url = this.registerProvider(exportUrl, server, DemoService.class);
 
-        URL nettyUrl = url.addParameter(SERVER_KEY, "netty")
+        URL nettyUrl = url.addParameter(SERVER_KEY, SERVER)
             .addParameter(EXTENSION_KEY, "org.apache.dubbo.rpc.protocol.rest.support.LoggingFilter");
         Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(server, DemoService.class, nettyUrl));
 
@@ -279,7 +282,7 @@ class JaxrsRestProtocolTest {
         URL url = this.registerProvider(exportUrl, server, DemoService.class);
 
         // use RpcContextFilter
-        URL nettyUrl = url.addParameter(SERVER_KEY, "netty")
+        URL nettyUrl = url.addParameter(SERVER_KEY, SERVER)
             .addParameter(EXTENSION_KEY, "org.apache.dubbo.rpc.protocol.rest.RpcContextFilter");
         Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(server, DemoService.class, nettyUrl));
 
@@ -402,7 +405,7 @@ class JaxrsRestProtocolTest {
 
         URL url = this.registerProvider(exportUrl, server, DemoService.class);
 
-        URL nettyUrl = url.addParameter(SERVER_KEY, "netty")
+        URL nettyUrl = url.addParameter(SERVER_KEY, SERVER)
             .addParameter(EXTENSION_KEY, "org.apache.dubbo.rpc.protocol.rest.support.LoggingFilter");
         Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(server, DemoService.class, nettyUrl));
 
@@ -453,7 +456,7 @@ class JaxrsRestProtocolTest {
 
         URL url = this.registerProvider(exportUrl, server, DemoService.class);
 
-        URL nettyUrl = url.addParameter(SERVER_KEY, "netty")
+        URL nettyUrl = url.addParameter(SERVER_KEY, SERVER)
             .addParameter(EXTENSION_KEY, "org.apache.dubbo.rpc.protocol.rest.support.LoggingFilter");
         Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(server, DemoService.class, nettyUrl));
 
@@ -485,7 +488,7 @@ class JaxrsRestProtocolTest {
 
         URL url = this.registerProvider(exportUrl, server, DemoService.class);
 
-        URL nettyUrl = url.addParameter(SERVER_KEY, "netty")
+        URL nettyUrl = url.addParameter(SERVER_KEY, SERVER)
             .addParameter(EXTENSION_KEY, "org.apache.dubbo.rpc.protocol.rest.support.LoggingFilter");
         Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(server, DemoService.class, nettyUrl));
 
@@ -593,6 +596,27 @@ class JaxrsRestProtocolTest {
 
         invoker.destroy();
         exporter.unexport();
+    }
+
+    @Test
+    void testGetInvoker() {
+       Assertions.assertDoesNotThrow(()->{
+           URL exportUrl = URL.valueOf("rest://127.0.0.1:" + availablePort + "/rest?interface=org.apache.dubbo.rpc.protocol.rest.rest.TestGetInvokerService");
+
+           TestGetInvokerService server = new TestGetInvokerServiceImpl();
+
+           URL url = this.registerProvider(exportUrl, server, DemoService.class);
+
+           Exporter<TestGetInvokerService> exporter = protocol.export(proxy.getInvoker(server, TestGetInvokerService.class, url));
+
+           TestGetInvokerService invokerService = this.proxy.getProxy(protocol.refer(TestGetInvokerService.class, url));
+
+
+           String invoker = invokerService.getInvoker();
+           Assertions.assertEquals("success", invoker);
+
+           exporter.unexport();
+       });
     }
 
     private URL registerProvider(URL url, Object impl, Class<?> interfaceClass) {
