@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.filter.tps;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -38,8 +39,8 @@ public class DefaultTPSLimiter implements TPSLimiter {
 
     @Override
     public boolean isAllowable(URL url, Invocation invocation) {
-        int rate = url.getMethodParameter(invocation.getMethodName(), TPS_LIMIT_RATE_KEY, -1);
-        long interval = url.getMethodParameter(invocation.getMethodName(), TPS_LIMIT_INTERVAL_KEY, DEFAULT_TPS_LIMIT_INTERVAL);
+        int rate = url.getMethodParameter(RpcUtils.getMethodName(invocation), TPS_LIMIT_RATE_KEY, -1);
+        long interval = url.getMethodParameter(RpcUtils.getMethodName(invocation), TPS_LIMIT_INTERVAL_KEY, DEFAULT_TPS_LIMIT_INTERVAL);
         String serviceKey = url.getServiceKey();
         if (rate > 0) {
             StatItem statItem = stats.get(serviceKey);

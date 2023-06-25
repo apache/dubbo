@@ -128,7 +128,7 @@ public abstract class AbstractConfigurator implements Configurator {
                 if (apiVersion != null && apiVersion.startsWith(RULE_VERSION_V30)) {
                     ConditionMatch matcher = (ConditionMatch) configuratorUrl.getAttribute(MATCH_CONDITION);
                     if (matcher != null) {
-                        if (matcher.isMatch(url)) {
+                        if (matcher.isMatch(host, url)) {
                             return doConfigure(url, configuratorUrl.removeParameters(conditionKeys));
                         } else {
                             logger.debug("Cannot apply configurator rule, param mismatch, current params are " + url + ", params in rule is " + matcher);

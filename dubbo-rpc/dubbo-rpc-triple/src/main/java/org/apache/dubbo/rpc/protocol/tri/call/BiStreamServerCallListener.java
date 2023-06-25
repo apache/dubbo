@@ -40,7 +40,7 @@ public class BiStreamServerCallListener extends AbstractServerCallListener {
     }
 
     @Override
-    public void onMessage(Object message) {
+    public void onMessage(Object message, int actualContentLength) {
         if (message instanceof Object[]) {
             message = ((Object[]) message)[0];
         }
@@ -52,7 +52,7 @@ public class BiStreamServerCallListener extends AbstractServerCallListener {
 
     @Override
     public void onCancel(TriRpcStatus status) {
-        responseObserver.onError(status.asException());
+        requestObserver.onError(status.asException());
     }
 
 

@@ -34,7 +34,7 @@ public class ServerStreamServerCallListener extends AbstractServerCallListener {
     }
 
     @Override
-    public void onMessage(Object message) {
+    public void onMessage(Object message, int actualContentLength) {
         if (message instanceof Object[]) {
             message = ((Object[]) message)[0];
         }

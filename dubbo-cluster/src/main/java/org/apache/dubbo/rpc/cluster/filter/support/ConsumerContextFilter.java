@@ -110,7 +110,7 @@ public class ConsumerContextFilter implements ClusterFilter, ClusterFilter.Liste
                     if (timeoutCountDown.isExpired()) {
                         return AsyncRpcResult.newDefaultAsyncResult(new RpcException(RpcException.TIMEOUT_TERMINATE,
                             "No time left for making the following call: " + invocation.getServiceName() + "."
-                                + invocation.getMethodName() + ", terminate directly."), invocation);
+                                + RpcUtils.getMethodName(invocation) + ", terminate directly."), invocation);
                     }
                 }
             }

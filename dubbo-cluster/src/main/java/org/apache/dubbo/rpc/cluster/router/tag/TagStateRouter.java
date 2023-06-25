@@ -63,8 +63,8 @@ public class TagStateRouter<T> extends AbstractStateRouter<T> implements Configu
 
     @Override
     public synchronized void process(ConfigChangedEvent event) {
-        if (logger.isDebugEnabled()) {
-            logger.debug("Notification of tag rule, change type is: " + event.getChangeType() + ", raw rule is:\n " +
+        if (logger.isInfoEnabled()) {
+            logger.info("Notification of tag rule, change type is: " + event.getChangeType() + ", raw rule is:\n " +
                 event.getContent());
         }
 

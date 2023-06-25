@@ -10,3 +10,4 @@ string-to-optional=org.apache.dubbo.common.convert.StringToOptionalConverter
 string-to-short=org.apache.dubbo.common.convert.StringToShortConverter
 string-to-string=org.apache.dubbo.common.convert.StringToStringConverter
 string-to-byte=org.apache.dubbo.common.convert.StringToByteConverter
+string-to-duration=org.apache.dubbo.common.convert.StringToDurationConverter

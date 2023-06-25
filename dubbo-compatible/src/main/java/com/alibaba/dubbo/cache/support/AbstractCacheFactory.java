@@ -19,6 +19,7 @@ package com.alibaba.dubbo.cache.support;
 
 import com.alibaba.dubbo.cache.Cache;
 import com.alibaba.dubbo.cache.CacheFactory;
+import com.alibaba.dubbo.common.DelegateURL;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.rpc.Invocation;
 
@@ -48,6 +49,6 @@ public abstract class AbstractCacheFactory implements CacheFactory {
 
     @Override
     public org.apache.dubbo.cache.Cache getCache(org.apache.dubbo.common.URL url, org.apache.dubbo.rpc.Invocation invocation) {
-        return getCache(new URL(url), new Invocation.CompatibleInvocation(invocation));
+        return getCache(new DelegateURL(url), new Invocation.CompatibleInvocation(invocation));
     }
 }
