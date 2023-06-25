@@ -17,46 +17,28 @@
 
 package com.alibaba.dubbo.rpc.service;
 
-import org.apache.dubbo.common.utils.StringUtils;
 
 @Deprecated
-public class GenericException extends RuntimeException {
+public class GenericException extends org.apache.dubbo.rpc.service.GenericException {
 
     private static final long serialVersionUID = -1182299763306599962L;
-
-    private String exceptionClass;
-
-    private String exceptionMessage;
 
     public GenericException() {
     }
 
-    public GenericException(String exceptionClass, String exceptionMessage) {
+    public GenericException(String exceptionMessage) {
         super(exceptionMessage);
-        this.exceptionClass = exceptionClass;
-        this.exceptionMessage = exceptionMessage;
+    }
+
+    public GenericException(String exceptionClass, String exceptionMessage) {
+        super(exceptionClass, exceptionMessage);
     }
 
     public GenericException(Throwable cause) {
-        super(StringUtils.toString(cause));
-        this.exceptionClass = cause.getClass().getName();
-        this.exceptionMessage = cause.getMessage();
+        super(cause);
     }
 
-    public String getExceptionClass() {
-        return exceptionClass;
+    public GenericException(String message, Throwable cause, String exceptionClass, String exceptionMessage) {
+        super(message, cause, exceptionClass, exceptionMessage);
     }
-
-    public void setExceptionClass(String exceptionClass) {
-        this.exceptionClass = exceptionClass;
-    }
-
-    public String getExceptionMessage() {
-        return exceptionMessage;
-    }
-
-    public void setExceptionMessage(String exceptionMessage) {
-        this.exceptionMessage = exceptionMessage;
-    }
-
 }

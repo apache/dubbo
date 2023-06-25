@@ -22,5 +22,5 @@ public interface GenericService extends org.apache.dubbo.rpc.service.GenericServ
 
     @Override
     Object $invoke(String method, String[] parameterTypes, Object[] args)
-            throws com.alibaba.dubbo.rpc.service.GenericException;
+            throws GenericException;
 }
