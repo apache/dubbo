@@ -219,8 +219,6 @@ public class AsyncRpcResult implements Result {
         if (setFutureWhenSync || ((RpcInvocation) invocation).getInvokeMode() != InvokeMode.SYNC) {
             // Necessary! update future in context, see https://github.com/apache/dubbo/issues/9461
             RpcContext.getServiceContext().setFuture(new FutureAdapter<>(this.responseFuture));
-        } else {
-            FutureContext.getContext().clearFuture();
         }
 
         return this;

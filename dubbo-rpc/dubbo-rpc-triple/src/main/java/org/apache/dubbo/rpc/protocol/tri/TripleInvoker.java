@@ -30,16 +30,7 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.remoting.api.connection.AbstractConnectionClient;
-import org.apache.dubbo.rpc.AppResponse;
-import org.apache.dubbo.rpc.AsyncRpcResult;
-import org.apache.dubbo.rpc.CancellationContext;
-import org.apache.dubbo.rpc.FutureContext;
-import org.apache.dubbo.rpc.Invocation;
-import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.Result;
-import org.apache.dubbo.rpc.RpcContext;
-import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.TriRpcStatus;
+import org.apache.dubbo.rpc.*;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.PackableMethod;
@@ -212,7 +203,9 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
             pureArgument = invocation.getArguments();
         }
         result = new AsyncRpcResult(future, invocation);
-        FutureContext.getContext().setCompatibleFuture(future);
+        if (((RpcInvocation) invocation).getInvokeMode() != InvokeMode.SYNC) {
+            FutureContext.getContext().setCompatibleFuture(future);
+        }
 
         result.setExecutor(callbackExecutor);
         ClientCall.Listener callListener = new UnaryClientCallListener(future);
