@@ -17,16 +17,14 @@
 package org.apache.dubbo.registry.support;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.timer.HashedWheelTimer;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.ConcurrentHashSet;
+import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.registry.NotifyListener;
-import org.apache.dubbo.registry.retry.FailedRegisteredTask;
-import org.apache.dubbo.registry.retry.FailedSubscribedTask;
-import org.apache.dubbo.registry.retry.FailedUnregisteredTask;
-import org.apache.dubbo.registry.retry.FailedUnsubscribedTask;
 import org.apache.dubbo.remoting.Constants;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -34,10 +32,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_NOTIFY_EVENT;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_NOTIFY_EVENT;
 import static org.apache.dubbo.registry.Constants.DEFAULT_REGISTRY_RETRY_PERIOD;
 import static org.apache.dubbo.registry.Constants.REGISTRY_RETRY_PERIOD_KEY;
 
@@ -47,33 +49,107 @@ import static org.apache.dubbo.registry.Constants.REGISTRY_RETRY_PERIOD_KEY;
  */
 public abstract class FailbackRegistry extends AbstractRegistry {
 
-    /*  retry task map */
+    // Scheduled executor service
+    private final ScheduledExecutorService retryExecutor = Executors.newScheduledThreadPool(1, new NamedThreadFactory("DubboRegistryFailedRetryTimer", true));
 
-    private final ConcurrentMap<URL, FailedRegisteredTask> failedRegistered = new ConcurrentHashMap<>();
+    // Timer for failure retry, regular check if there is a request for failure, and if there is, an unlimited retry
+    private final ScheduledFuture<?> retryFuture;
 
-    private final ConcurrentMap<URL, FailedUnregisteredTask> failedUnregistered = new ConcurrentHashMap<>();
+    private final Set<URL> failedRegistered = new ConcurrentHashSet<URL>();
 
-    private final ConcurrentMap<Holder, FailedSubscribedTask> failedSubscribed = new ConcurrentHashMap<>();
+    private final Set<URL> failedUnregistered = new ConcurrentHashSet<URL>();
 
-    private final ConcurrentMap<Holder, FailedUnsubscribedTask> failedUnsubscribed = new ConcurrentHashMap<>();
+    private final ConcurrentMap<URL, Set<NotifyListener>> failedSubscribed = new ConcurrentHashMap<URL, Set<NotifyListener>>();
+
+    private final ConcurrentMap<URL, Set<NotifyListener>> failedUnsubscribed = new ConcurrentHashMap<URL, Set<NotifyListener>>();
 
     /**
      * The time in milliseconds the retryExecutor will wait
      */
     private final int retryPeriod;
 
-    // Timer for failure retry, regular check if there is a request for failure, and if there is, an unlimited retry
-    private final HashedWheelTimer retryTimer;
-
     public FailbackRegistry(URL url) {
         super(url);
         this.retryPeriod = url.getParameter(REGISTRY_RETRY_PERIOD_KEY, DEFAULT_REGISTRY_RETRY_PERIOD);
 
-        // since the retry task will not be very much. 128 ticks is enough.
-        retryTimer = new HashedWheelTimer(new NamedThreadFactory("DubboRegistryRetryTimer", true), retryPeriod, TimeUnit.MILLISECONDS, 128);
+        this.retryFuture = retryExecutor.scheduleWithFixedDelay(new Runnable() {
+            @Override
+            public void run() {
+                // Check and connect to the registry
+                try {
+                    retry();
+                } catch (Throwable t) { // Defensive fault tolerance
+                    logger.error("Unexpected error occur at failed retry, cause: " + t.getMessage(), t);
+                }
+            }
+        }, retryPeriod, retryPeriod, TimeUnit.MILLISECONDS);
     }
 
-    public void removeFailedRegisteredTask(URL url) {
+    public Future<?> getRetryFuture() {
+        return retryFuture;
+    }
+
+    public Set<URL> getFailedRegistered() {
+        return failedRegistered;
+    }
+
+    public Set<URL> getFailedUnregistered() {
+        return failedUnregistered;
+    }
+
+    public Map<URL, Set<NotifyListener>> getFailedSubscribed() {
+        return failedSubscribed;
+    }
+
+    public Map<URL, Set<NotifyListener>> getFailedUnsubscribed() {
+        return failedUnsubscribed;
+    }
+
+    public void addFailedSubscribed(URL url, NotifyListener listener) {
+        Set<NotifyListener> listeners = failedSubscribed.get(url);
+        if (listeners == null) {
+            failedSubscribed.putIfAbsent(url, new ConcurrentHashSet<NotifyListener>());
+            listeners = failedSubscribed.get(url);
+        }
+        listeners.add(listener);
+    }
+
+    public void removeFailedSubscribed(URL url, NotifyListener listener) {
+        Set<NotifyListener> listeners = failedSubscribed.get(url);
+        if (listeners != null) {
+            listeners.remove(listener);
+        }
+        listeners = failedUnsubscribed.get(url);
+        if (listeners != null) {
+            listeners.remove(listener);
+        }
+    }
+
+    public void removeFailedSubscribedTask(URL url, NotifyListener listener) {
+        Set<NotifyListener> listeners = failedSubscribed.get(url);
+        if (listeners != null) {
+            listeners.remove(listener);
+        }
+        if (listeners.isEmpty()) {
+            failedSubscribed.remove(url, Collections.emptySet());
+        }
+    }
+
+    public void removeFailedUnSubscribedTask(URL url, NotifyListener listener) {
+        Set<NotifyListener> listeners = failedUnsubscribed.get(url);
+        if (listeners != null) {
+            listeners.remove(listener);
+        }
+        if (listeners.isEmpty()) {
+            failedUnsubscribed.remove(url, Collections.emptySet());
+        }
+    }
+
+    public void removeFailedUnregisteredUrl(URL url) {
+        failedUnregistered.remove(url);
+    }
+
+    public void removeFailedRegisteredUrl(URL url) {
         failedRegistered.remove(url);
     }
 
@@ -81,115 +157,8 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         failedUnregistered.remove(url);
     }
 
-    public void removeFailedSubscribedTask(URL url, NotifyListener listener) {
-        Holder h = new Holder(url, listener);
-        failedSubscribed.remove(h);
-    }
-
-    public void removeFailedUnsubscribedTask(URL url, NotifyListener listener) {
-        Holder h = new Holder(url, listener);
-        failedUnsubscribed.remove(h);
-    }
-
-    private void addFailedRegistered(URL url) {
-        FailedRegisteredTask oldOne = failedRegistered.get(url);
-        if (oldOne != null) {
-            return;
-        }
-        FailedRegisteredTask newTask = new FailedRegisteredTask(url, this);
-        oldOne = failedRegistered.putIfAbsent(url, newTask);
-        if (oldOne == null) {
-            // never has a retry task. then start a new task for retry.
-            retryTimer.newTimeout(newTask, retryPeriod, TimeUnit.MILLISECONDS);
-        }
-    }
-
-    private void removeFailedRegistered(URL url) {
-        FailedRegisteredTask f = failedRegistered.remove(url);
-        if (f != null) {
-            f.cancel();
-        }
-    }
-
-    private void addFailedUnregistered(URL url) {
-        FailedUnregisteredTask oldOne = failedUnregistered.get(url);
-        if (oldOne != null) {
-            return;
-        }
-        FailedUnregisteredTask newTask = new FailedUnregisteredTask(url, this);
-        oldOne = failedUnregistered.putIfAbsent(url, newTask);
-        if (oldOne == null) {
-            // never has a retry task. then start a new task for retry.
-            retryTimer.newTimeout(newTask, retryPeriod, TimeUnit.MILLISECONDS);
-        }
-    }
-
-    private void removeFailedUnregistered(URL url) {
-        FailedUnregisteredTask f = failedUnregistered.remove(url);
-        if (f != null) {
-            f.cancel();
-        }
-    }
-
-    protected void addFailedSubscribed(URL url, NotifyListener listener) {
-        Holder h = new Holder(url, listener);
-        FailedSubscribedTask oldOne = failedSubscribed.get(h);
-        if (oldOne != null) {
-            return;
-        }
-        FailedSubscribedTask newTask = new FailedSubscribedTask(url, this, listener);
-        oldOne = failedSubscribed.putIfAbsent(h, newTask);
-        if (oldOne == null) {
-            // never has a retry task. then start a new task for retry.
-            retryTimer.newTimeout(newTask, retryPeriod, TimeUnit.MILLISECONDS);
-        }
-    }
-
-    public void removeFailedSubscribed(URL url, NotifyListener listener) {
-        Holder h = new Holder(url, listener);
-        FailedSubscribedTask f = failedSubscribed.remove(h);
-        if (f != null) {
-            f.cancel();
-        }
-        removeFailedUnsubscribed(url, listener);
-    }
-
-    private void addFailedUnsubscribed(URL url, NotifyListener listener) {
-        Holder h = new Holder(url, listener);
-        FailedUnsubscribedTask oldOne = failedUnsubscribed.get(h);
-        if (oldOne != null) {
-            return;
-        }
-        FailedUnsubscribedTask newTask = new FailedUnsubscribedTask(url, this, listener);
-        oldOne = failedUnsubscribed.putIfAbsent(h, newTask);
-        if (oldOne == null) {
-            // never has a retry task. then start a new task for retry.
-            retryTimer.newTimeout(newTask, retryPeriod, TimeUnit.MILLISECONDS);
-        }
-    }
-
-    private void removeFailedUnsubscribed(URL url, NotifyListener listener) {
-        Holder h = new Holder(url, listener);
-        FailedUnsubscribedTask f = failedUnsubscribed.remove(h);
-        if (f != null) {
-            f.cancel();
-        }
-    }
-
-    ConcurrentMap<URL, FailedRegisteredTask> getFailedRegistered() {
-        return failedRegistered;
-    }
-
-    ConcurrentMap<URL, FailedUnregisteredTask> getFailedUnregistered() {
-        return failedUnregistered;
-    }
-
-    ConcurrentMap<Holder, FailedSubscribedTask> getFailedSubscribed() {
-        return failedSubscribed;
-    }
-
-    ConcurrentMap<Holder, FailedUnsubscribedTask> getFailedUnsubscribed() {
-        return failedUnsubscribed;
+    public void removeFailedRegisteredTask(URL url) {
+        failedRegistered.remove(url);
     }
 
 
@@ -200,8 +169,8 @@ public abstract class FailbackRegistry extends AbstractRegistry {
             return;
         }
         super.register(url);
-        removeFailedRegistered(url);
-        removeFailedUnregistered(url);
+        removeFailedRegisteredUrl(url);
+        removeFailedUnregisteredUrl(url);
         try {
             // Sending a registration request to the server side
             doRegister(url);
@@ -223,34 +192,15 @@ public abstract class FailbackRegistry extends AbstractRegistry {
             }
 
             // Record a failed registration request to a failed list, retry regularly
-            addFailedRegistered(url);
-        }
-    }
-
-    @Override
-    public void reExportRegister(URL url) {
-        if (!acceptable(url)) {
-            logger.info("URL " + url + " will not be registered to Registry. Registry " + url + " does not accept service of this protocol type.");
-            return;
-        }
-        super.register(url);
-        removeFailedRegistered(url);
-        removeFailedUnregistered(url);
-        try {
-            // Sending a registration request to the server side
-            doRegister(url);
-        } catch (Exception e) {
-            if (!(e instanceof SkipFailbackWrapperException)) {
-                throw new IllegalStateException("Failed to register (re-export) " + url + " to registry " + getUrl().getAddress() + ", cause: " + e.getMessage(), e);
-            }
+            failedRegistered.add(url);
         }
     }
 
     @Override
     public void unregister(URL url) {
         super.unregister(url);
-        removeFailedRegistered(url);
-        removeFailedUnregistered(url);
+        removeFailedRegisteredUrl(url);
+        removeFailedUnregisteredUrl(url);
         try {
             // Sending a cancellation request to the server side
             doUnregister(url);
@@ -272,22 +222,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
             }
 
             // Record a failed registration request to a failed list, retry regularly
-            addFailedUnregistered(url);
-        }
-    }
-
-    @Override
-    public void reExportUnregister(URL url) {
-        super.unregister(url);
-        removeFailedRegistered(url);
-        removeFailedUnregistered(url);
-        try {
-            // Sending a cancellation request to the server side
-            doUnregister(url);
-        } catch (Exception e) {
-            if (!(e instanceof SkipFailbackWrapperException)) {
-                throw new IllegalStateException("Failed to unregister(re-export) " + url + " to registry " + getUrl().getAddress() + ", cause: " + e.getMessage(), e);
-            }
+            failedUnregistered.add(url);
         }
     }
 
@@ -349,7 +284,12 @@ public abstract class FailbackRegistry extends AbstractRegistry {
             }
 
             // Record a failed registration request to a failed list, retry regularly
-            addFailedUnsubscribed(url, listener);
+            Set<NotifyListener> listeners = failedUnsubscribed.get(url);
+            if (listeners == null) {
+                failedUnsubscribed.putIfAbsent(url, new ConcurrentHashSet<NotifyListener>());
+                listeners = failedUnsubscribed.get(url);
+            }
+            listeners.add(listener);
         }
     }
 
@@ -381,12 +321,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
             if (logger.isInfoEnabled()) {
                 logger.info("Recover register url " + recoverRegistered);
             }
-            for (URL url : recoverRegistered) {
-                // remove fail registry or unRegistry task first.
-                removeFailedRegistered(url);
-                removeFailedUnregistered(url);
-                addFailedRegistered(url);
-            }
+            failedRegistered.addAll(recoverRegistered);
         }
         // subscribe
         Map<URL, Set<NotifyListener>> recoverSubscribed = new HashMap<>(getSubscribed());
@@ -397,9 +332,109 @@ public abstract class FailbackRegistry extends AbstractRegistry {
             for (Map.Entry<URL, Set<NotifyListener>> entry : recoverSubscribed.entrySet()) {
                 URL url = entry.getKey();
                 for (NotifyListener listener : entry.getValue()) {
-                    // First remove other tasks to ensure that addFailedSubscribed can succeed.
-                    removeFailedSubscribed(url, listener);
                     addFailedSubscribed(url, listener);
+                }
+            }
+        }
+    }
+
+    // Retry the failed actions
+    protected void retry() {
+        if (!failedRegistered.isEmpty()) {
+            Set<URL> failed = new HashSet<>(failedRegistered);
+            if (failed.size() > 0) {
+                if (logger.isInfoEnabled()) {
+                    logger.info("Retry register " + failed);
+                }
+                try {
+                    for (URL url : failed) {
+                        try {
+                            doRegister(url);
+                            removeFailedRegisteredTask(url);
+                        } catch (Throwable t) { // Ignore all the exceptions and wait for the next retry
+                            logger.warn("Failed to retry register " + failed + ", waiting for again, cause: " + t.getMessage(), t);
+                        }
+                    }
+                } catch (Throwable t) { // Ignore all the exceptions and wait for the next retry
+                    logger.warn("Failed to retry register " + failed + ", waiting for again, cause: " + t.getMessage(), t);
+                }
+            }
+        }
+        if (!failedUnregistered.isEmpty()) {
+            Set<URL> failed = new HashSet<>(failedUnregistered);
+            if (!failed.isEmpty()) {
+                if (logger.isInfoEnabled()) {
+                    logger.info("Retry unregister " + failed);
+                }
+                try {
+                    for (URL url : failed) {
+                        try {
+                            doUnregister(url);
+                            removeFailedUnregisteredTask(url);
+                        } catch (Throwable t) { // Ignore all the exceptions and wait for the next retry
+                            logger.warn("Failed to retry unregister  " + failed + ", waiting for again, cause: " + t.getMessage(), t);
+                        }
+                    }
+                } catch (Throwable t) { // Ignore all the exceptions and wait for the next retry
+                    logger.warn("Failed to retry unregister  " + failed + ", waiting for again, cause: " + t.getMessage(), t);
+                }
+            }
+        }
+        if (!failedSubscribed.isEmpty()) {
+            Map<URL, Set<NotifyListener>> failed = new HashMap<>(failedSubscribed);
+            for (Map.Entry<URL, Set<NotifyListener>> entry : new HashMap<>(failed).entrySet()) {
+                if (entry.getValue() == null || entry.getValue().size() == 0) {
+                    failed.remove(entry.getKey());
+                }
+            }
+            if (failed.size() > 0) {
+                if (logger.isInfoEnabled()) {
+                    logger.info("Retry subscribe " + failed);
+                }
+                try {
+                    for (Map.Entry<URL, Set<NotifyListener>> entry : failed.entrySet()) {
+                        URL url = entry.getKey();
+                        Set<NotifyListener> listeners = entry.getValue();
+                        for (NotifyListener listener : new HashSet<>(listeners)) {
+                            try {
+                                doSubscribe(url, listener);
+                                removeFailedSubscribedTask(url, listener);
+                            } catch (Throwable t) { // Ignore all the exceptions and wait for the next retry
+                                logger.warn("Failed to retry subscribe " + failed + ", waiting for again, cause: " + t.getMessage(), t);
+                            }
+                        }
+                    }
+                } catch (Throwable t) { // Ignore all the exceptions and wait for the next retry
+                    logger.warn("Failed to retry subscribe " + failed + ", waiting for again, cause: " + t.getMessage(), t);
+                }
+            }
+        }
+        if (!failedUnsubscribed.isEmpty()) {
+            Map<URL, Set<NotifyListener>> failed = new HashMap<>(failedUnsubscribed);
+            for (Map.Entry<URL, Set<NotifyListener>> entry : new HashMap<>(failed).entrySet()) {
+                if (entry.getValue() == null || entry.getValue().isEmpty()) {
+                    failed.remove(entry.getKey());
+                }
+            }
+            if (failed.size() > 0) {
+                if (logger.isInfoEnabled()) {
+                    logger.info("Retry unsubscribe " + failed);
+                }
+                try {
+                    for (Map.Entry<URL, Set<NotifyListener>> entry : failed.entrySet()) {
+                        URL url = entry.getKey();
+                        Set<NotifyListener> listeners = entry.getValue();
+                        for (NotifyListener listener : listeners) {
+                            try {
+                                doUnsubscribe(url, listener);
+                                removeFailedUnSubscribedTask(url, listener);
+                            } catch (Throwable t) { // Ignore all the exceptions and wait for the next retry
+                                logger.warn("Failed to retry unsubscribe " + failed + ", waiting for again, cause: " + t.getMessage(), t);
+                            }
+                        }
+                    }
+                } catch (Throwable t) { // Ignore all the exceptions and wait for the next retry
+                    logger.warn("Failed to retry unsubscribe " + failed + ", waiting for again, cause: " + t.getMessage(), t);
                 }
             }
         }
@@ -408,7 +443,12 @@ public abstract class FailbackRegistry extends AbstractRegistry {
     @Override
     public void destroy() {
         super.destroy();
-        retryTimer.stop();
+        try {
+            retryFuture.cancel(true);
+        } catch (Throwable t) {
+            logger.warn(t.getMessage(), t);
+        }
+        ExecutorUtil.gracefulShutdown(retryExecutor, retryPeriod);
     }
 
     // ==== Template method ====
@@ -421,33 +461,4 @@ public abstract class FailbackRegistry extends AbstractRegistry {
 
     public abstract void doUnsubscribe(URL url, NotifyListener listener);
 
-    static class Holder {
-
-        private final URL url;
-
-        private final NotifyListener notifyListener;
-
-        Holder(URL url, NotifyListener notifyListener) {
-            if (url == null || notifyListener == null) {
-                throw new IllegalArgumentException();
-            }
-            this.url = url;
-            this.notifyListener = notifyListener;
-        }
-
-        @Override
-        public int hashCode() {
-            return url.hashCode() + notifyListener.hashCode();
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj instanceof Holder) {
-                Holder h = (Holder) obj;
-                return this.url.equals(h.url) && this.notifyListener.equals(h.notifyListener);
-            } else {
-                return false;
-            }
-        }
-    }
 }

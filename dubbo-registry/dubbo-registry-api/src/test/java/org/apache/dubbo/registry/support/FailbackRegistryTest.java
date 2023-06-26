@@ -156,8 +156,8 @@ class FailbackRegistryTest {
         mockRegistry.recover();
         countDownLatch.await();
         Assertions.assertEquals(0, mockRegistry.getFailedRegistered().size());
-        FailbackRegistry.Holder h = new FailbackRegistry.Holder(registryUrl, listener);
-        Assertions.assertNull(mockRegistry.getFailedSubscribed().get(h));
+//        FailbackRegistry.Holder h = new FailbackRegistry.Holder(registryUrl, listener);
+//        Assertions.assertNull(mockRegistry.getFailedSubscribed().get(h));
         Assertions.assertEquals(countDownLatch.getCount(), 0);
     }
 

@@ -36,22 +36,6 @@ public abstract class FailbackRegistry implements org.apache.dubbo.registry.Regi
         failbackRegistry = new CompatibleFailbackRegistry(url.getOriginalURL(), this);
     }
 
-    public void removeFailedRegisteredTask(URL url) {
-        failbackRegistry.removeFailedRegisteredTask(url.getOriginalURL());
-    }
-
-    public void removeFailedUnregisteredTask(URL url) {
-        failbackRegistry.removeFailedUnregisteredTask(url.getOriginalURL());
-    }
-
-    public void removeFailedSubscribedTask(URL url, NotifyListener listener) {
-        failbackRegistry.removeFailedSubscribedTask(url.getOriginalURL(), new NotifyListener.ReverseCompatibleNotifyListener(listener));
-    }
-
-    public void removeFailedUnsubscribedTask(URL url, NotifyListener listener) {
-        failbackRegistry.removeFailedUnsubscribedTask(url.getOriginalURL(), new NotifyListener.ReverseCompatibleNotifyListener(listener));
-    }
-
     @Override
     public void register(URL url) {
         failbackRegistry.register(url.getOriginalURL());
