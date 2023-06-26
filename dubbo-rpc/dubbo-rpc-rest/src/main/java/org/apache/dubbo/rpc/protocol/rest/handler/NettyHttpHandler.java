@@ -25,12 +25,18 @@ import org.apache.dubbo.rpc.protocol.rest.deploy.ServiceDeployer;
 import org.apache.dubbo.rpc.protocol.rest.exception.MediaTypeUnSupportException;
 import org.apache.dubbo.rpc.protocol.rest.exception.ParamParseException;
 import org.apache.dubbo.rpc.protocol.rest.exception.PathNoFoundException;
-import org.apache.dubbo.rpc.protocol.rest.filter.RestFilterManager;
+import org.apache.dubbo.rpc.protocol.rest.filter.RestFilter;
+import org.apache.dubbo.rpc.protocol.rest.filter.RestRequestFilter;
+import org.apache.dubbo.rpc.protocol.rest.filter.RestResponseFilter;
 import org.apache.dubbo.rpc.protocol.rest.filter.ServiceInvokeRestFilter;
+import org.apache.dubbo.rpc.protocol.rest.filter.context.RestFilterContext;
 import org.apache.dubbo.rpc.protocol.rest.netty.NettyHttpResponse;
 import org.apache.dubbo.rpc.protocol.rest.request.NettyRequestFacade;
+import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.apache.dubbo.common.constants.CommonConstants.SERVICE_DEPLOYER_ATTRIBUTE_KEY;
 
@@ -42,12 +48,17 @@ public class NettyHttpHandler implements HttpHandler<NettyRequestFacade, NettyHt
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
     private final ServiceDeployer serviceDeployer;
     private final URL url;
+    private final List<RestFilter> restRequestFilters;
+    private final List<RestFilter> restResponseFilters;
+
 
     public NettyHttpHandler(ServiceDeployer serviceDeployer, URL url) {
         this.serviceDeployer = serviceDeployer;
         this.url = url;
-
+        restRequestFilters = getRestFiltersFromURL(RestRequestFilter.class);
+        restResponseFilters = getRestFiltersFromURL(RestResponseFilter.class);
     }
+
 
     @Override
     public void handle(NettyRequestFacade requestFacade, NettyHttpResponse nettyHttpResponse) throws IOException {
@@ -71,11 +82,12 @@ public class NettyHttpHandler implements HttpHandler<NettyRequestFacade, NettyHt
 
 
         try {
+
             // first request filter
-            RestFilterManager.executeRequestFilters(url, requestFacade, nettyHttpResponse,serviceDeployer);
+            executeFilters(url, requestFacade, nettyHttpResponse, serviceDeployer, restRequestFilters);
 
             // second response filter
-            RestFilterManager.executeResponseFilters(url, requestFacade, nettyHttpResponse,serviceDeployer);
+            executeFilters(url, requestFacade, nettyHttpResponse, serviceDeployer, restResponseFilters);
         } catch (PathNoFoundException pathNoFoundException) {
             logger.error("", pathNoFoundException.getMessage(), "", "dubbo rest protocol provider path   no found ,raw request is :" + nettyHttpRequest, pathNoFoundException);
             nettyHttpResponse.sendError(404, pathNoFoundException.getMessage());
@@ -93,5 +105,34 @@ public class NettyHttpHandler implements HttpHandler<NettyRequestFacade, NettyHt
 
 
     }
+
+
+    /**
+     * execute response filters
+     *
+     * @param url
+     * @param requestFacade
+     * @param nettyHttpResponse
+     * @throws Exception
+     */
+    public void executeFilters(URL url, RequestFacade requestFacade, NettyHttpResponse nettyHttpResponse, ServiceDeployer serviceDeployer, List<RestFilter> restFilters) throws Exception {
+        RestFilterContext restFilterContext = new RestFilterContext(url, requestFacade, nettyHttpResponse, serviceDeployer);
+
+        for (RestFilter restResponseFilter : restFilters) {
+            restResponseFilter.filter(restFilterContext);
+            if (restFilterContext.complete()) {
+                break;
+            }
+        }
+    }
+
+    private <T> List<T> getExtensionsFromURL(Class<T> extensionClass) {
+        return url.getOrDefaultFrameworkModel().getExtensionLoader(extensionClass).getActivateExtensions();
+    }
+
+    private List<RestFilter> getRestFiltersFromURL(Class<? extends RestFilter> extension) {
+        return new ArrayList<>(getExtensionsFromURL(extension));
+    }
+
 
 }

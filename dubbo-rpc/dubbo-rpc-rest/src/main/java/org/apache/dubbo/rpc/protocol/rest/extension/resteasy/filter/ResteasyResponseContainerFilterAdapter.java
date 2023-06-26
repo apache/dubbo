@@ -16,20 +16,23 @@
  */
 package org.apache.dubbo.rpc.protocol.rest.extension.resteasy.filter;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.rpc.protocol.rest.deploy.ServiceDeployer;
 import org.apache.dubbo.rpc.protocol.rest.extension.resteasy.ResteasyContext;
 import org.apache.dubbo.rpc.protocol.rest.filter.RestResponseFilter;
 import org.apache.dubbo.rpc.protocol.rest.filter.context.RestFilterContext;
+import org.apache.dubbo.rpc.protocol.rest.netty.ChunkOutputStream;
 import org.apache.dubbo.rpc.protocol.rest.netty.NettyHttpResponse;
 import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
 import org.jboss.resteasy.specimpl.BuiltResponse;
 import org.jboss.resteasy.spi.HttpResponse;
 
 import javax.ws.rs.container.ContainerResponseFilter;
+import java.io.IOException;
 import java.util.List;
 
-@Activate(value = "resteasy", order = Integer.MAX_VALUE - 1000, onClass = {"org.jboss.resteasy.specimpl.BuiltResponse", "javax.ws.rs.container.ContainerResponseFilter", "org.jboss.resteasy.spi.HttpResponse"})
+@Activate(value = "resteasy", order = Integer.MAX_VALUE - 1000, onClass = {"org.jboss.resteasy.specimpl.BuiltResponse", "javax.ws.rs.container.ContainerResponseFilter", "org.jboss.resteasy.spi.HttpResponse","org.jboss.resteasy.plugins.server.netty.NettyHttpResponse"})
 public class ResteasyResponseContainerFilterAdapter implements RestResponseFilter, ResteasyContext {
     @Override
     public void filter(RestFilterContext restFilterContext) throws Exception {
@@ -38,12 +41,15 @@ public class ResteasyResponseContainerFilterAdapter implements RestResponseFilte
         ServiceDeployer serviceDeployer = restFilterContext.getServiceDeployer();
         RequestFacade requestFacade = restFilterContext.getRequestFacade();
         NettyHttpResponse response = restFilterContext.getResponse();
+        URL url = restFilterContext.getUrl();
         List<ContainerResponseFilter> containerRequestFilters = getExtension(serviceDeployer, ContainerResponseFilter.class);
 
 
         if (containerRequestFilters.isEmpty()) {
             return;
         }
+
+        // response filter entity first
 
 
         // empty jaxrsResponse
@@ -52,9 +58,19 @@ public class ResteasyResponseContainerFilterAdapter implements RestResponseFilte
         HttpResponse httpResponse = new ResteasyNettyHttpResponse(response);
         DubboContainerResponseContextImpl containerResponseContext = createContainerResponseContext(requestFacade, httpResponse, jaxrsResponse, containerRequestFilters.toArray(new ContainerResponseFilter[0]));
         containerResponseContext.filter();
+        if (jaxrsResponse.getEntity() != null) {
+            // clean  output stream data
+            restOutputStream(response);
+            writeResteasyResponse(url, requestFacade, response, jaxrsResponse);
+        }
         addResponseHeaders(response, httpResponse.getOutputHeaders());
 
         restFilterContext.setComplete(true);
 
+    }
+
+    private void restOutputStream(NettyHttpResponse response) throws IOException {
+        ChunkOutputStream outputStream = (ChunkOutputStream) response.getOutputStream();
+        outputStream.reset();
     }
 }

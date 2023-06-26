@@ -27,6 +27,7 @@ import org.apache.dubbo.metadata.rest.media.MediaType;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.rest.RestHeaderEnum;
 import org.apache.dubbo.rpc.protocol.rest.RestRPCInvocationUtil;
 import org.apache.dubbo.rpc.protocol.rest.deploy.ServiceDeployer;
@@ -34,6 +35,7 @@ import org.apache.dubbo.rpc.protocol.rest.exception.PathNoFoundException;
 import org.apache.dubbo.rpc.protocol.rest.exception.UnSupportContentTypeException;
 import org.apache.dubbo.rpc.protocol.rest.exception.mapper.ExceptionHandlerResult;
 import org.apache.dubbo.rpc.protocol.rest.filter.context.RestFilterContext;
+import org.apache.dubbo.rpc.protocol.rest.filter.context.RestInterceptContext;
 import org.apache.dubbo.rpc.protocol.rest.message.HttpMessageCodecManager;
 import org.apache.dubbo.rpc.protocol.rest.netty.NettyHttpResponse;
 import org.apache.dubbo.rpc.protocol.rest.pair.InvokerAndRestMethodMetadataPair;
@@ -42,10 +44,17 @@ import org.apache.dubbo.rpc.protocol.rest.request.NettyRequestFacade;
 import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
 import org.apache.dubbo.rpc.protocol.rest.util.MediaTypeUtil;
 
+import java.util.List;
+
 @Activate(value = "invoke", order = Integer.MAX_VALUE)
 public class ServiceInvokeRestFilter implements RestRequestFilter {
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
 
+    private final List<RestResponseInterceptor> restResponseInterceptors;
+
+    public ServiceInvokeRestFilter(FrameworkModel frameworkModel) {
+        restResponseInterceptors = frameworkModel.getExtensionLoader(RestResponseInterceptor.class).getActivateExtensions();
+    }
 
     @Override
     public void filter(RestFilterContext restFilterContext) throws Exception {
@@ -116,7 +125,7 @@ public class ServiceInvokeRestFilter implements RestRequestFilter {
 
             try {
                 // invoke the intercept chain before Result  write to  response
-                RestFilterManager.executeResponseIntercepts(url, request, nettyHttpResponse, result.getValue(), rpcInvocation, serviceDeployer);
+                executeResponseIntercepts(url, request, nettyHttpResponse, result.getValue(), rpcInvocation, serviceDeployer);
             } catch (Exception exception) {
                 logger.error("", exception.getMessage(), "", "dubbo rest protocol execute ResponseIntercepts error", exception);
                 throw exception;
@@ -192,5 +201,32 @@ public class ServiceInvokeRestFilter implements RestRequestFilter {
         }
 
         return stringBuilder.toString();
+    }
+
+    /**
+     * execute response Intercepts
+     *
+     * @param url
+     * @param request
+     * @param nettyHttpResponse
+     * @param result
+     * @param rpcInvocation
+     * @param serviceDeployer
+     * @throws Exception
+     */
+    public void executeResponseIntercepts(URL url, RequestFacade request, NettyHttpResponse nettyHttpResponse, Object result, RpcInvocation rpcInvocation, ServiceDeployer serviceDeployer) throws Exception {
+
+        RestInterceptContext restFilterContext = new RestInterceptContext(url, request, nettyHttpResponse, serviceDeployer, result, rpcInvocation);
+
+        for (RestResponseInterceptor restResponseInterceptor : restResponseInterceptors) {
+
+            restResponseInterceptor.intercept(restFilterContext);
+
+            if (restFilterContext.complete()) {
+                break;
+            }
+
+        }
+
     }
 }

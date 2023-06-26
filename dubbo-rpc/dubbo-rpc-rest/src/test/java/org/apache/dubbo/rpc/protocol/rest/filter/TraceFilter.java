@@ -38,6 +38,7 @@ public class TraceFilter implements ContainerRequestFilter, ContainerResponseFil
     public void filter(ContainerRequestContext containerRequestContext, ContainerResponseContext containerResponseContext) throws
 
         IOException {
+        containerResponseContext.setEntity("response-filter");
         System.out.println("Response filter invoked.");
 
     }

@@ -16,12 +16,13 @@
  */
 package org.apache.dubbo.rpc.protocol.rest.extension.resteasy.filter;
 
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.jboss.resteasy.core.Dispatcher;
 import org.jboss.resteasy.core.ServerResponseWriter;
 import org.jboss.resteasy.core.SynchronousDispatcher;
 import org.jboss.resteasy.core.interception.ResponseContainerRequestContext;
 import org.jboss.resteasy.core.interception.jaxrs.SuspendableContainerResponseContext;
-import org.jboss.resteasy.resteasy_jaxrs.i18n.LogMessages;
 import org.jboss.resteasy.specimpl.BuiltResponse;
 import org.jboss.resteasy.spi.ApplicationException;
 import org.jboss.resteasy.spi.HttpRequest;
@@ -34,7 +35,7 @@ import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Link;
- import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
@@ -50,6 +51,8 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 public class DubboContainerResponseContextImpl implements SuspendableContainerResponseContext {
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(DubboContainerResponseContextImpl.class);
+
     protected final HttpRequest request;
     protected final HttpResponse httpResponse;
     protected final BuiltResponse jaxrsResponse;
@@ -66,11 +69,9 @@ public class DubboContainerResponseContextImpl implements SuspendableContainerRe
     private boolean weSuspended;
 
 
-
     public DubboContainerResponseContextImpl(final HttpRequest request, final HttpResponse httpResponse, final BuiltResponse serverResponse,
-                                        final ResponseContainerRequestContext requestContext, final ContainerResponseFilter[] responseFilters,
-                                        final Consumer<Throwable> onComplete, final ServerResponseWriter.RunnableWithIOException continuation)
-    {
+                                             final ResponseContainerRequestContext requestContext, final ContainerResponseFilter[] responseFilters,
+                                             final Consumer<Throwable> onComplete, final ServerResponseWriter.RunnableWithIOException continuation) {
         this.request = request;
         this.httpResponse = httpResponse;
         this.jaxrsResponse = serverResponse;
@@ -81,63 +82,54 @@ public class DubboContainerResponseContextImpl implements SuspendableContainerRe
         contextDataMap = ResteasyProviderFactory.getContextDataMap();
     }
 
-    public BuiltResponse getJaxrsResponse()
-    {
+    public BuiltResponse getJaxrsResponse() {
         return jaxrsResponse;
     }
 
-    public HttpResponse getHttpResponse()
-    {
+    public HttpResponse getHttpResponse() {
         return httpResponse;
     }
 
     @Override
-    public int getStatus()
-    {
+    public int getStatus() {
         return jaxrsResponse.getStatus();
     }
 
     @Override
-    public void setStatus(int code)
-    {
+    public void setStatus(int code) {
         httpResponse.setStatus(code);
         jaxrsResponse.setStatus(code);
     }
 
     @Override
-    public Response.StatusType getStatusInfo()
-    {
+    public Response.StatusType getStatusInfo() {
         return jaxrsResponse.getStatusInfo();
     }
 
     @Override
-    public void setStatusInfo(Response.StatusType statusInfo)
-    {
+    public void setStatusInfo(Response.StatusType statusInfo) {
         httpResponse.setStatus(statusInfo.getStatusCode());
         jaxrsResponse.setStatus(statusInfo.getStatusCode());
     }
 
     @Override
-    public Class<?> getEntityClass()
-    {
+    public Class<?> getEntityClass() {
         return jaxrsResponse.getEntityClass();
     }
 
     @Override
-    public Type getEntityType()
-    {
+    public Type getEntityType() {
         return jaxrsResponse.getGenericType();
     }
 
     @Override
-    public void setEntity(Object entity)
-    {
+    public void setEntity(Object entity) {
         //if (entity != null) logger.info("*** setEntity(Object) " + entity.toString());
-        if (entity != null && jaxrsResponse.getEntity() == null && jaxrsResponse.getStatusInfo().equals(Response.Status.NO_CONTENT)){
-            LogMessages.LOGGER.statusNotSet(Response.Status.NO_CONTENT.getStatusCode(), Response.Status.NO_CONTENT.getReasonPhrase());
+        if (entity != null && jaxrsResponse.getEntity() != null) {
+            logger.info("Dubbo container response context filter set entity ,before entity is: " + jaxrsResponse.getEntity() + "and after entity is: " + entity);
+
         }
         jaxrsResponse.setEntity(entity);
-        // todo TCK does weird things in its testing of get length
         // it resets the entity in a response filter which results
         // in a bad content-length being sent back to the client
         // so, we'll remove any content-length setting
@@ -145,16 +137,14 @@ public class DubboContainerResponseContextImpl implements SuspendableContainerRe
     }
 
     @Override
-    public void setEntity(Object entity, Annotation[] annotations, MediaType mediaType)
-    {
+    public void setEntity(Object entity, Annotation[] annotations, MediaType mediaType) {
         //if (entity != null) logger.info("*** setEntity(Object, Annotation[], MediaType) " + entity.toString() + ", " + mediaType);
-        if (entity != null && jaxrsResponse.getEntity() == null && jaxrsResponse.getStatusInfo().equals(Response.Status.NO_CONTENT)){
-            LogMessages.LOGGER.statusNotSet(Response.Status.NO_CONTENT.getStatusCode(), Response.Status.NO_CONTENT.getReasonPhrase());
+        if (entity != null && jaxrsResponse.getEntity() != null) {
+            logger.info("Dubbo container response context filter set entity ,before entity is: " + jaxrsResponse.getEntity() + "and after entity is: " + entity);
         }
         jaxrsResponse.setEntity(entity);
         jaxrsResponse.setAnnotations(annotations);
         jaxrsResponse.getHeaders().putSingle(HttpHeaders.CONTENT_TYPE, mediaType);
-        // todo TCK does weird things in its testing of get length
         // it resets the entity in a response filter which results
         // in a bad content-length being sent back to the client
         // so, we'll remove any content-length setting
@@ -162,152 +152,127 @@ public class DubboContainerResponseContextImpl implements SuspendableContainerRe
     }
 
     @Override
-    public MultivaluedMap<String, Object> getHeaders()
-    {
+    public MultivaluedMap<String, Object> getHeaders() {
         return jaxrsResponse.getMetadata();
     }
 
     @Override
-    public Set<String> getAllowedMethods()
-    {
+    public Set<String> getAllowedMethods() {
         return jaxrsResponse.getAllowedMethods();
     }
 
     @Override
-    public Date getDate()
-    {
+    public Date getDate() {
         return jaxrsResponse.getDate();
     }
 
     @Override
-    public Locale getLanguage()
-    {
+    public Locale getLanguage() {
         return jaxrsResponse.getLanguage();
     }
 
     @Override
-    public int getLength()
-    {
+    public int getLength() {
         return jaxrsResponse.getLength();
     }
 
     @Override
-    public MediaType getMediaType()
-    {
+    public MediaType getMediaType() {
         return jaxrsResponse.getMediaType();
     }
 
     @Override
-    public Map<String, NewCookie> getCookies()
-    {
+    public Map<String, NewCookie> getCookies() {
         return jaxrsResponse.getCookies();
     }
 
     @Override
-    public EntityTag getEntityTag()
-    {
+    public EntityTag getEntityTag() {
         return jaxrsResponse.getEntityTag();
     }
 
     @Override
-    public Date getLastModified()
-    {
+    public Date getLastModified() {
         return jaxrsResponse.getLastModified();
     }
 
     @Override
-    public URI getLocation()
-    {
+    public URI getLocation() {
         return jaxrsResponse.getLocation();
     }
 
     @Override
-    public Set<Link> getLinks()
-    {
+    public Set<Link> getLinks() {
         return jaxrsResponse.getLinks();
     }
 
     @Override
-    public boolean hasLink(String relation)
-    {
+    public boolean hasLink(String relation) {
         return jaxrsResponse.hasLink(relation);
     }
 
     @Override
-    public Link getLink(String relation)
-    {
+    public Link getLink(String relation) {
         return jaxrsResponse.getLink(relation);
     }
 
     @Override
-    public Link.Builder getLinkBuilder(String relation)
-    {
+    public Link.Builder getLinkBuilder(String relation) {
         return jaxrsResponse.getLinkBuilder(relation);
     }
 
     @Override
-    public boolean hasEntity()
-    {
+    public boolean hasEntity() {
         return !jaxrsResponse.isClosed() && jaxrsResponse.hasEntity();
     }
 
     @Override
-    public Object getEntity()
-    {
+    public Object getEntity() {
         return !jaxrsResponse.isClosed() ? jaxrsResponse.getEntity() : null;
     }
 
     @Override
-    public OutputStream getEntityStream()
-    {
-        try
-        {
+    public OutputStream getEntityStream() {
+        try {
             return httpResponse.getOutputStream();
-        }
-        catch (IOException e)
-        {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
     @Override
-    public void setEntityStream(OutputStream entityStream)
-    {
+    public void setEntityStream(OutputStream entityStream) {
         httpResponse.setOutputStream(entityStream);
     }
 
     @Override
-    public Annotation[] getEntityAnnotations()
-    {
+    public Annotation[] getEntityAnnotations() {
         return jaxrsResponse.getAnnotations();
     }
 
     @Override
-    public MultivaluedMap<String, String> getStringHeaders()
-    {
+    public MultivaluedMap<String, String> getStringHeaders() {
         return jaxrsResponse.getStringHeaders();
     }
 
     @Override
-    public String getHeaderString(String name)
-    {
+    public String getHeaderString(String name) {
         return jaxrsResponse.getHeaderString(name);
     }
 
 
     @Override
     public synchronized void suspend() {
-        if(continuation == null)
+        if (continuation == null)
             throw new RuntimeException("Suspend not supported yet");
         suspended = true;
     }
 
     @Override
     public synchronized void resume() {
-        if(!suspended)
+        if (!suspended)
             throw new RuntimeException("Cannot resume: not suspended");
-        if(inFilter)
-        {
+        if (inFilter) {
             // suspend/resume within filter, same thread: just ignore and move on
             suspended = false;
             return;
@@ -316,7 +281,7 @@ public class DubboContainerResponseContextImpl implements SuspendableContainerRe
         // go on, but with proper exception handling
         try (ResteasyProviderFactory.CloseableContext c = ResteasyProviderFactory.addCloseableContextDataLevel(contextDataMap)) {
             filter();
-        }catch(Throwable t) {
+        } catch (Throwable t) {
             // don't throw to client
             writeException(t);
         }
@@ -324,24 +289,20 @@ public class DubboContainerResponseContextImpl implements SuspendableContainerRe
 
     @Override
     public synchronized void resume(Throwable t) {
-        if(!suspended)
+        if (!suspended)
             throw new RuntimeException("Cannot resume: not suspended");
-        if(inFilter)
-        {
+        if (inFilter) {
             // not suspended, or suspend/abortWith within filter, same thread: collect and move on
             throwable = t;
             suspended = false;
-        }
-        else
-        {
+        } else {
             try (ResteasyProviderFactory.CloseableContext c = ResteasyProviderFactory.addCloseableContextDataLevel(contextDataMap)) {
                 writeException(t);
             }
         }
     }
 
-    private void writeException(Throwable t)
-    {
+    private void writeException(Throwable t) {
         /*
          * Here we cannot call AsyncResponse.resume(t) because that would invoke the response filters
          * and we should not invoke them because we're already in them.
@@ -356,29 +317,21 @@ public class DubboContainerResponseContextImpl implements SuspendableContainerRe
         asyncResponse.completionCallbacks(t);
     }
 
-    public synchronized void filter() throws IOException
-    {
-        while(currentFilter < responseFilters.length)
-        {
+    public synchronized void filter() throws IOException {
+        while (currentFilter < responseFilters.length) {
             ContainerResponseFilter filter = responseFilters[currentFilter++];
-            try
-            {
+            try {
                 suspended = false;
                 throwable = null;
                 inFilter = true;
                 filter.filter(requestContext, this);
-            }
-            catch (IOException e)
-            {
+            } catch (IOException e) {
                 throw new ApplicationException(e);
-            }
-            finally
-            {
+            } finally {
                 inFilter = false;
             }
-            if(suspended) {
-                if(!request.getAsyncContext().isSuspended())
-                {
+            if (suspended) {
+                if (!request.getAsyncContext().isSuspended()) {
                     request.getAsyncContext().suspend();
                     weSuspended = true;
                 }
@@ -386,13 +339,11 @@ public class DubboContainerResponseContextImpl implements SuspendableContainerRe
                 filterReturnIsMeaningful = false;
                 return;
             }
-            if (throwable != null)
-            {
+            if (throwable != null) {
                 // handle the case where we've been suspended by a previous filter
-                if(filterReturnIsMeaningful)
+                if (filterReturnIsMeaningful)
                     SynchronousDispatcher.rethrow(throwable);
-                else
-                {
+                else {
                     writeException(throwable);
                     return;
                 }
@@ -403,31 +354,27 @@ public class DubboContainerResponseContextImpl implements SuspendableContainerRe
         // some frameworks don't support async request filters, in which case suspend() is forbidden
         // so if we get here we're still synchronous and don't have a continuation, which must be in
         // the caller
-        if(continuation == null)
+        if (continuation == null)
             return;
 
         // if we've never been suspended, the caller is valid so let it handle any exception
-        if(filterReturnIsMeaningful) {
+        if (filterReturnIsMeaningful) {
             continuation.run();
             onComplete.accept(null);
             return;
         }
         // if we've been suspended then the caller is a filter and have to invoke our continuation
-        // FIXME: we don't really know if we're already trying to send an exception, so we can't just blindly
         // try to write it out
-        try
-        {
+        try {
             continuation.run();
             onComplete.accept(null);
-            if(weSuspended)
-            {
+            if (weSuspended) {
                 // if we're the ones who turned the request async, nobody will call complete() for us, so we have to
                 HttpServletRequest httpServletRequest = (HttpServletRequest) contextDataMap.get(HttpServletRequest.class);
                 httpServletRequest.getAsyncContext().complete();
             }
-        } catch (IOException e)
-        {
-            LogMessages.LOGGER.unknownException(request.getHttpMethod(), request.getUri().getPath(), e);
+        } catch (IOException e) {
+            logger.error("", "Dubbo container response context filter error", "request method is: " + request.getHttpMethod() + "and request uri is:" + request.getUri().getPath(), "", e);
         }
     }
 }
