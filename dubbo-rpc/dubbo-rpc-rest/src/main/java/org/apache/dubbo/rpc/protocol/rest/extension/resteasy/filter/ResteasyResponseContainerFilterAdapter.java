@@ -29,7 +29,7 @@ import org.jboss.resteasy.spi.HttpResponse;
 import javax.ws.rs.container.ContainerResponseFilter;
 import java.util.List;
 
-@Activate(value = "resteasy", order = Integer.MAX_VALUE - 1000, onClass = "org.jboss.resteasy.specimpl.BuiltResponse,javax.ws.rs.container.ContainerResponseFilter,org.jboss.resteasy.spi.HttpResponse")
+@Activate(value = "resteasy", order = Integer.MAX_VALUE - 1000, onClass = {"org.jboss.resteasy.specimpl.BuiltResponse", "javax.ws.rs.container.ContainerResponseFilter", "org.jboss.resteasy.spi.HttpResponse"})
 public class ResteasyResponseContainerFilterAdapter implements RestResponseFilter, ResteasyContext {
     @Override
     public void filter(RestFilterContext restFilterContext) throws Exception {
