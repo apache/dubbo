@@ -34,13 +34,14 @@ import java.lang.reflect.Method;
 
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_REQUEST;
-import static org.apache.dubbo.rpc.protocol.dubbo.Constants.ASYNC_METHOD_INFO;
 
 /**
  * EventFilter
  */
 @Activate(group = CommonConstants.CONSUMER)
 public class FutureFilter implements ClusterFilter, ClusterFilter.Listener {
+
+    public static final String ASYNC_METHOD_INFO = "async-method-info";
 
     protected static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(FutureFilter.class);
 
