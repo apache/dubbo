@@ -27,11 +27,15 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.spring.security.jackson.ObjectMapperCodec;
 import org.apache.dubbo.spring.security.utils.SecurityNames;
+
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+
+import static org.apache.dubbo.spring.security.utils.SecurityNames.CORE_JACKSON_2_MODULE_CLASS_NAME;
+import static org.apache.dubbo.spring.security.utils.SecurityNames.OBJECT_MAPPER_CLASS_NAME;
 import static org.apache.dubbo.spring.security.utils.SecurityNames.SECURITY_CONTEXT_HOLDER_CLASS_NAME;
 
-@Activate(group = CommonConstants.PROVIDER, order = -10000,onClass = SECURITY_CONTEXT_HOLDER_CLASS_NAME)
+@Activate(group = CommonConstants.PROVIDER, order = -10000, onClass = {SECURITY_CONTEXT_HOLDER_CLASS_NAME, CORE_JACKSON_2_MODULE_CLASS_NAME, OBJECT_MAPPER_CLASS_NAME})
 public class ContextHolderAuthenticationResolverFilter implements Filter {
 
     private final ObjectMapperCodec mapper;

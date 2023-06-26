@@ -150,6 +150,7 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
     }
 
     @Override
+    @Transient
     public Map<String, String> getMetaData() {
         return getMetaData(null);
     }
@@ -226,7 +227,7 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
 
     public static Class<?> determineInterfaceClass(String generic, String interfaceName, ClassLoader classLoader) {
         if (ProtocolUtils.isGeneric(generic)) {
-            return GenericService.class;
+            return com.alibaba.dubbo.rpc.service.GenericService.class;
         }
         try {
             if (StringUtils.isNotEmpty(interfaceName)) {

@@ -17,11 +17,6 @@
 
 package org.apache.dubbo.metrics.observation;
 
-import io.micrometer.common.KeyValues;
-import io.micrometer.core.tck.MeterRegistryAssert;
-import io.micrometer.tracing.Span;
-import io.micrometer.tracing.Tracer;
-import io.micrometer.tracing.test.simple.SpansAssert;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.Filter;
@@ -31,6 +26,12 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
+import io.micrometer.common.KeyValues;
+import io.micrometer.core.tck.MeterRegistryAssert;
+import io.micrometer.tracing.Span;
+import io.micrometer.tracing.Tracer;
+import io.micrometer.tracing.test.simple.SpansAssert;
 import org.assertj.core.api.BDDAssertions;
 
 class ObservationReceiverFilterTest extends AbstractObservationFilterTest {

@@ -15,18 +15,12 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.config.deploy;
+package com.alibaba.dubbo.rpc.service;
 
-import org.apache.dubbo.common.utils.Assert;
-import org.apache.dubbo.rpc.model.ApplicationModel;
+@Deprecated
+public interface GenericService extends org.apache.dubbo.rpc.service.GenericService {
 
-import org.junit.jupiter.api.Test;
-
-class DefaultApplicationDeployerTest {
-
-    @Test
-    void isSupportPrometheus() {
-        boolean supportPrometheus = new DefaultApplicationDeployer(ApplicationModel.defaultModel()).isSupportPrometheus();
-        Assert.assertTrue(supportPrometheus,"DefaultApplicationDeployer.isSupportPrometheus() should return true");
-    }
+    @Override
+    Object $invoke(String method, String[] parameterTypes, Object[] args)
+            throws GenericException;
 }

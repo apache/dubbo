@@ -221,7 +221,7 @@ class ExtensionLoaderTest {
     }
 
     @Test
-    void test_getActivateExtension_WithWrapper() {
+    void test_getActivateExtension_WithWrapper1() {
         URL url = URL.valueOf("test://localhost/test");
         List<ActivateExt1> list = getExtensionLoader(ActivateExt1.class)
             .getActivateExtension(url, new String[]{}, "order");
@@ -596,7 +596,7 @@ class ExtensionLoaderTest {
     }
 
     @Test
-    void testLoadDefaultActivateExtension() {
+    void testLoadDefaultActivateExtension1() {
         // test default
         URL url = URL.valueOf("test://localhost/test?ext=order1,default");
         List<ActivateExt1> list = getExtensionLoader(ActivateExt1.class)
@@ -606,6 +606,31 @@ class ExtensionLoaderTest {
         assertSame(list.get(1).getClass(), ActivateExt1Impl1.class);
 
         url = URL.valueOf("test://localhost/test?ext=default,order1");
+        list = getExtensionLoader(ActivateExt1.class)
+            .getActivateExtension(url, "ext", "default_group");
+        Assertions.assertEquals(2, list.size());
+        assertSame(list.get(0).getClass(), ActivateExt1Impl1.class);
+        assertSame(list.get(1).getClass(), OrderActivateExtImpl1.class);
+
+        url = URL.valueOf("test://localhost/test?ext=order1");
+        list = getExtensionLoader(ActivateExt1.class)
+            .getActivateExtension(url, "ext", "default_group");
+        Assertions.assertEquals(2, list.size());
+        assertSame(list.get(0).getClass(), ActivateExt1Impl1.class);
+        assertSame(list.get(1).getClass(), OrderActivateExtImpl1.class);
+    }
+
+    @Test
+    void testLoadDefaultActivateExtension2() {
+        // test default
+        URL url = URL.valueOf("test://localhost/test?ext=order1  , default");
+        List<ActivateExt1> list = getExtensionLoader(ActivateExt1.class)
+            .getActivateExtension(url, "ext", "default_group");
+        Assertions.assertEquals(2, list.size());
+        assertSame(list.get(0).getClass(), OrderActivateExtImpl1.class);
+        assertSame(list.get(1).getClass(), ActivateExt1Impl1.class);
+
+        url = URL.valueOf("test://localhost/test?ext=default, order1");
         list = getExtensionLoader(ActivateExt1.class)
             .getActivateExtension(url, "ext", "default_group");
         Assertions.assertEquals(2, list.size());

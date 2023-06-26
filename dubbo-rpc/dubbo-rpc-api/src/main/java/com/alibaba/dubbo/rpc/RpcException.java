@@ -14,36 +14,45 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metrics.observation;
 
-import org.apache.dubbo.rpc.Invocation;
-import org.apache.dubbo.rpc.Invoker;
+package com.alibaba.dubbo.rpc;
 
-import io.micrometer.observation.transport.SenderContext;
+@Deprecated
+public class RpcException extends org.apache.dubbo.rpc.RpcException {
 
-import java.util.Objects;
-
-/**
- * Provider context for RPC.
- */
-public class DubboClientContext extends SenderContext<Invocation> {
-
-    private final Invoker<?> invoker;
-
-    private final Invocation invocation;
-
-    public DubboClientContext(Invoker<?> invoker, Invocation invocation) {
-        super((map, key, value) -> Objects.requireNonNull(map).setAttachment(key, value));
-        this.invoker = invoker;
-        this.invocation = invocation;
-        setCarrier(invocation);
+    public RpcException() {
+        super();
     }
 
-    public Invoker<?> getInvoker() {
-        return invoker;
+    public RpcException(String message, Throwable cause) {
+        super(message, cause);
     }
 
-    public Invocation getInvocation() {
-        return invocation;
+    public RpcException(String message) {
+        super(message);
+    }
+
+    public RpcException(Throwable cause) {
+        super(cause);
+    }
+
+    public RpcException(int code) {
+        super(code);
+    }
+
+    public RpcException(int code, String message, Throwable cause) {
+        super(code, message, cause);
+    }
+
+    public RpcException(int code, String message) {
+        super(code, message);
+    }
+
+    public RpcException(int code, Throwable cause) {
+        super(code, cause);
+    }
+
+    public boolean isForbidded() {
+        return isForbidden();
     }
 }

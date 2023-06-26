@@ -115,13 +115,13 @@ class DubboBootstrapTest {
             System.clearProperty(SHUTDOWN_WAIT_SECONDS_KEY);
 
             writeDubboProperties(SHUTDOWN_WAIT_KEY, "100");
-            ApplicationModel.defaultModel().getModelEnvironment().getPropertiesConfiguration().refresh();
+            ApplicationModel.defaultModel().modelEnvironment().getPropertiesConfiguration().refresh();
             ConfigValidationUtils.validateApplicationConfig(new ApplicationConfig("demo"));
             Assertions.assertEquals("100", System.getProperty(SHUTDOWN_WAIT_KEY));
 
             System.clearProperty(SHUTDOWN_WAIT_KEY);
             writeDubboProperties(SHUTDOWN_WAIT_SECONDS_KEY, "1000");
-            ApplicationModel.defaultModel().getModelEnvironment().getPropertiesConfiguration().refresh();
+            ApplicationModel.defaultModel().modelEnvironment().getPropertiesConfiguration().refresh();
             ConfigValidationUtils.validateApplicationConfig(new ApplicationConfig("demo"));
             Assertions.assertEquals("1000", System.getProperty(SHUTDOWN_WAIT_SECONDS_KEY));
         } finally {

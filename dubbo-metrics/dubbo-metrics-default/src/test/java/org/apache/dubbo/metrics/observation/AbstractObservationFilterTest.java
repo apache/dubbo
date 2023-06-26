@@ -17,7 +17,6 @@
 
 package org.apache.dubbo.metrics.observation;
 
-import io.micrometer.tracing.test.SampleTestRunner;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.TracingConfig;
 import org.apache.dubbo.rpc.AppResponse;
@@ -25,6 +24,8 @@ import org.apache.dubbo.rpc.BaseFilter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
+import io.micrometer.tracing.test.SampleTestRunner;
 import org.junit.jupiter.api.AfterEach;
 
 import static org.mockito.BDDMockito.given;
