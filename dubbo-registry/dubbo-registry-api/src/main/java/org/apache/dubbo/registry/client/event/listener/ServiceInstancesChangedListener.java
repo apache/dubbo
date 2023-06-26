@@ -467,7 +467,7 @@ public class ServiceInstancesChangedListener {
             return false;
         }
         ServiceInstancesChangedListener that = (ServiceInstancesChangedListener) o;
-        return Objects.equals(getServiceNames(), that.getServiceNames());
+        return Objects.equals(getServiceNames(), that.getServiceNames()) && Objects.equals(listeners, that.listeners);
     }
 
     @Override
