@@ -30,13 +30,15 @@ import java.util.Set;
 
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_CLUSTER_TYPE_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class MigrationRuleTest {
-    private static ServiceNameMapping mapping = mock(ServiceNameMapping.class);
+    private static final ServiceNameMapping mapping = mock(ServiceNameMapping.class);
 
     @Test
     void test_parse() {
@@ -87,14 +89,14 @@ class MigrationRuleTest {
         assertEquals(0.5f, migrationRule.getThreshold(url));
         assertEquals(30, migrationRule.getProportion(url));
         assertEquals(30, migrationRule.getDelay(url));
-        assertEquals(true, migrationRule.getForce(url));
+        assertTrue(migrationRule.getForce(url));
         assertEquals(MigrationStep.APPLICATION_FIRST, migrationRule.getStep(url));
 
         Mockito.when(url.getDisplayServiceKey()).thenReturn("GreetingService:1.0.0");
         assertEquals(1.0f, migrationRule.getThreshold(url));
         assertEquals(60, migrationRule.getProportion(url));
         assertEquals(60, migrationRule.getDelay(url));
-        assertEquals(false, migrationRule.getForce(url));
+        assertFalse(migrationRule.getForce(url));
         assertEquals(MigrationStep.FORCE_APPLICATION, migrationRule.getStep(url));
 
         Mockito.when(url.getDisplayServiceKey()).thenReturn("GreetingService:1.0.1");
@@ -107,7 +109,7 @@ class MigrationRuleTest {
         assertEquals(0.3f, migrationRule.getThreshold(url));
         assertEquals(20, migrationRule.getProportion(url));
         assertEquals(10, migrationRule.getDelay(url));
-        assertEquals(false, migrationRule.getForce(url));
+        assertFalse(migrationRule.getForce(url));
         assertEquals(MigrationStep.FORCE_INTERFACE, migrationRule.getStep(url));
         when(mapping.getMapping(any(URL.class))).thenReturn(Collections.emptySet());
 

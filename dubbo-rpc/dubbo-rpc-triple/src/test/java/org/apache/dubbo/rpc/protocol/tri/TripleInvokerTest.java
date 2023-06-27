@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.stream.StreamObserver;
+import org.apache.dubbo.common.threadpool.ThreadlessExecutor;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.api.connection.AbstractConnectionClient;
@@ -53,7 +54,7 @@ class TripleInvokerTest {
                 .thenReturn(connectionClient);
         when(connectionClient.getChannel(true))
                 .thenReturn(channel);
-        when(connectionClient.isAvailable()).thenReturn(true);
+        when(connectionClient.isConnected()).thenReturn(true);
 
         ExecutorService executorService = ExecutorRepository.getInstance(url.getOrDefaultApplicationModel())
                 .createExecutorIfAbsent(url);
@@ -69,7 +70,7 @@ class TripleInvokerTest {
         MethodDescriptor echoMethod = new ReflectionMethodDescriptor(
                 IGreeter.class.getDeclaredMethod("echo", String.class));
         Assertions.assertTrue(invoker.isAvailable());
-        invoker.invokeUnary(echoMethod, invocation, call);
+        invoker.invokeUnary(echoMethod, invocation, call, new ThreadlessExecutor());
         invoker.destroy();
         Assertions.assertFalse(invoker.isAvailable());
     }

@@ -41,7 +41,7 @@ import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 
 class ApplicationConfigTest {
     @Test
-    void testName() throws Exception {
+    void testName() {
         ApplicationConfig application = new ApplicationConfig();
         application.setName("app");
         assertThat(application.getName(), equalTo("app"));
@@ -53,7 +53,7 @@ class ApplicationConfigTest {
     }
 
     @Test
-    void testVersion() throws Exception {
+    void testVersion() {
         ApplicationConfig application = new ApplicationConfig("app");
         application.setVersion("1.0.0");
         assertThat(application.getVersion(), equalTo("1.0.0"));
@@ -63,28 +63,28 @@ class ApplicationConfigTest {
     }
 
     @Test
-    void testOwner() throws Exception {
+    void testOwner() {
         ApplicationConfig application = new ApplicationConfig("app");
         application.setOwner("owner");
         assertThat(application.getOwner(), equalTo("owner"));
     }
 
     @Test
-    void testOrganization() throws Exception {
+    void testOrganization() {
         ApplicationConfig application = new ApplicationConfig("app");
         application.setOrganization("org");
         assertThat(application.getOrganization(), equalTo("org"));
     }
 
     @Test
-    void testArchitecture() throws Exception {
+    void testArchitecture() {
         ApplicationConfig application = new ApplicationConfig("app");
         application.setArchitecture("arch");
         assertThat(application.getArchitecture(), equalTo("arch"));
     }
 
     @Test
-    void testEnvironment1() throws Exception {
+    void testEnvironment1() {
         ApplicationConfig application = new ApplicationConfig("app");
         application.setEnvironment("develop");
         assertThat(application.getEnvironment(), equalTo("develop"));
@@ -95,7 +95,7 @@ class ApplicationConfigTest {
     }
 
     @Test
-    void testEnvironment2() throws Exception {
+    void testEnvironment2() {
         Assertions.assertThrows(IllegalStateException.class, () -> {
             ApplicationConfig application = new ApplicationConfig("app");
             application.setEnvironment("illegal-env");
@@ -103,7 +103,7 @@ class ApplicationConfigTest {
     }
 
     @Test
-    void testRegistry() throws Exception {
+    void testRegistry() {
         ApplicationConfig application = new ApplicationConfig("app");
         RegistryConfig registry = new RegistryConfig();
         application.setRegistry(registry);
@@ -114,7 +114,7 @@ class ApplicationConfigTest {
     }
 
     @Test
-    void testMonitor() throws Exception {
+    void testMonitor() {
         ApplicationConfig application = new ApplicationConfig("app");
         application.setMonitor(new MonitorConfig("monitor-addr"));
         assertThat(application.getMonitor().getAddress(), equalTo("monitor-addr"));
@@ -123,21 +123,21 @@ class ApplicationConfigTest {
     }
 
     @Test
-    void testLogger() throws Exception {
+    void testLogger() {
         ApplicationConfig application = new ApplicationConfig("app");
         application.setLogger("log4j");
         assertThat(application.getLogger(), equalTo("log4j"));
     }
 
     @Test
-    void testDefault() throws Exception {
+    void testDefault() {
         ApplicationConfig application = new ApplicationConfig("app");
         application.setDefault(true);
         assertThat(application.isDefault(), is(true));
     }
 
     @Test
-    void testDumpDirectory() throws Exception {
+    void testDumpDirectory() {
         ApplicationConfig application = new ApplicationConfig("app");
         application.setDumpDirectory("/dump");
         assertThat(application.getDumpDirectory(), equalTo("/dump"));
@@ -147,7 +147,7 @@ class ApplicationConfigTest {
     }
 
     @Test
-    void testQosEnable() throws Exception {
+    void testQosEnable() {
         ApplicationConfig application = new ApplicationConfig("app");
         application.setQosEnable(true);
         assertThat(application.getQosEnable(), is(true));
@@ -157,14 +157,14 @@ class ApplicationConfigTest {
     }
 
     @Test
-    void testQosPort() throws Exception {
+    void testQosPort() {
         ApplicationConfig application = new ApplicationConfig("app");
         application.setQosPort(8080);
         assertThat(application.getQosPort(), equalTo(8080));
     }
 
     @Test
-    void testQosAcceptForeignIp() throws Exception {
+    void testQosAcceptForeignIp() {
         ApplicationConfig application = new ApplicationConfig("app");
         application.setQosAcceptForeignIp(true);
         assertThat(application.getQosAcceptForeignIp(), is(true));
@@ -174,7 +174,7 @@ class ApplicationConfigTest {
     }
 
     @Test
-    void testParameters() throws Exception {
+    void testParameters() {
         ApplicationConfig application = new ApplicationConfig("app");
         application.setQosAcceptForeignIp(true);
         Map<String, String> parameters = new HashMap<String, String>();

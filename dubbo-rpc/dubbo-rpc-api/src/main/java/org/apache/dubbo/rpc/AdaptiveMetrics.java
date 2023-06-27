@@ -30,7 +30,7 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class AdaptiveMetrics {
 
-    private ConcurrentMap<String, AdaptiveMetrics> metricsStatistics = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, AdaptiveMetrics> metricsStatistics = new ConcurrentHashMap<>();
 
     private long currentProviderTime = 0;
     private double providerCPULoad = 0;

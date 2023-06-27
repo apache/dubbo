@@ -63,6 +63,8 @@ public interface Constants {
 
     String ACCESS_LOG_KEY = "accesslog";
 
+    String ACCESS_LOG_FIXED_PATH_KEY = "accesslog.fixed.path";
+
     String ACTIVES_KEY = "actives";
 
     String ID_KEY = "id";

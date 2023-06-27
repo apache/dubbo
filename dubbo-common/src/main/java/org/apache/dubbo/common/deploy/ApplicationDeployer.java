@@ -88,4 +88,20 @@ public interface ApplicationDeployer extends Deployer<ApplicationModel> {
      * module state changed callbacks
      */
     void notifyModuleChanged(ModuleModel moduleModel, DeployState state);
+
+    /**
+     * refresh service instance
+     */
+    void refreshServiceInstance();
+
+    /**
+     * Increase the count of service update threads.
+     * NOTE: should call ${@link ApplicationDeployer#decreaseServiceRefreshCount()} after update finished
+     */
+    void increaseServiceRefreshCount();
+
+    /**
+     * Decrease the count of service update threads
+     */
+    void decreaseServiceRefreshCount();
 }

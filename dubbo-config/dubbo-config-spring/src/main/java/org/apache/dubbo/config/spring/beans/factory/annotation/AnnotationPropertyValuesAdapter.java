@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.config.spring.beans.factory.annotation;
 
+import org.apache.dubbo.config.spring.util.AnnotationUtils;
+
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.PropertyValue;
 import org.springframework.beans.PropertyValues;
@@ -23,8 +25,6 @@ import org.springframework.core.env.PropertyResolver;
 
 import java.lang.annotation.Annotation;
 import java.util.Map;
-
-import static com.alibaba.spring.util.AnnotationUtils.getAttributes;
 
 /**
  * {@link Annotation} {@link PropertyValues} Adapter
@@ -45,12 +45,12 @@ public class AnnotationPropertyValuesAdapter implements PropertyValues {
      */
     public AnnotationPropertyValuesAdapter(Map<String, Object> attributes, PropertyResolver propertyResolver,
                                            String... ignoreAttributeNames) {
-        this.delegate = new MutablePropertyValues(getAttributes(attributes, propertyResolver, ignoreAttributeNames));
+        this.delegate = new MutablePropertyValues(AnnotationUtils.getAttributes(attributes, propertyResolver, ignoreAttributeNames));
     }
 
     public AnnotationPropertyValuesAdapter(Annotation annotation, PropertyResolver propertyResolver,
                                            boolean ignoreDefaultValue, String... ignoreAttributeNames) {
-        this.delegate = new MutablePropertyValues(getAttributes(annotation, propertyResolver, ignoreDefaultValue, ignoreAttributeNames));
+        this.delegate = new MutablePropertyValues(AnnotationUtils.getAttributes(annotation, propertyResolver, ignoreDefaultValue, ignoreAttributeNames));
     }
 
     public AnnotationPropertyValuesAdapter(Annotation annotation, PropertyResolver propertyResolver, String... ignoreAttributeNames) {

@@ -29,6 +29,7 @@ import org.apache.dubbo.rpc.model.ServiceMetadata;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
+import java.beans.Transient;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -149,6 +150,7 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
     }
 
     @Override
+    @Transient
     public Map<String, String> getMetaData() {
         return getMetaData(null);
     }
@@ -225,7 +227,7 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
 
     public static Class<?> determineInterfaceClass(String generic, String interfaceName, ClassLoader classLoader) {
         if (ProtocolUtils.isGeneric(generic)) {
-            return GenericService.class;
+            return com.alibaba.dubbo.rpc.service.GenericService.class;
         }
         try {
             if (StringUtils.isNotEmpty(interfaceName)) {
@@ -294,6 +296,7 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
         this.unloadClusterRelated = unloadClusterRelated;
     }
 
+    @Transient
     public ServiceMetadata getServiceMetadata() {
         return serviceMetadata;
     }
@@ -365,7 +368,16 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
         return shouldReferAsync;
     }
 
-    public abstract T get();
+    @Transient
+    public abstract T get(boolean check);
+
+    @Transient
+    public abstract void checkOrDestroy(long timeout);
+
+    @Transient
+    public final T get() {
+        return get(true);
+    }
 
     public void destroy() {
         getModuleConfigManager().removeConfig(this);

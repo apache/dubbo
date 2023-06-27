@@ -278,7 +278,7 @@ public final class URLStrParser {
             String name = decodeComponent(str, nameStart, valueStart - 3, false, tempBuf);
             String value;
             if (valueStart >= valueEnd) {
-                value = name;
+                value = "";
             } else {
                 value = decodeComponent(str, valueStart, valueEnd, false, tempBuf);
             }
@@ -291,7 +291,7 @@ public final class URLStrParser {
             String name = str.substring(nameStart, valueStart - 1);
             String value;
             if (valueStart >= valueEnd) {
-                value = name;
+                value = "";
             } else {
                 value = str.substring(valueStart, valueEnd);
             }

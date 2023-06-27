@@ -38,12 +38,12 @@ import java.util.concurrent.CountDownLatch;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_IO_EXCEPTION;
 
 public class ClassLoaderResourceLoader {
-    private static ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ClassLoaderResourceLoader.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ClassLoaderResourceLoader.class);
     private static SoftReference<Map<ClassLoader, Map<String, Set<URL>>>> classLoaderResourcesCache = null;
 
     static {
         // register resources destroy listener
-        GlobalResourcesRepository.registerGlobalDisposable(() -> destroy());
+        GlobalResourcesRepository.registerGlobalDisposable(ClassLoaderResourceLoader::destroy);
     }
 
     public static Map<ClassLoader, Set<URL>> loadResources(String fileName, Collection<ClassLoader> classLoaders) throws InterruptedException {

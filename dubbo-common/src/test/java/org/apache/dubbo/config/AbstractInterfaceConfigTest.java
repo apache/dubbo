@@ -18,7 +18,6 @@ package org.apache.dubbo.config;
 
 
 import org.apache.dubbo.common.constants.CommonConstants;
-
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -234,6 +233,27 @@ class AbstractInterfaceConfigTest {
         InterfaceConfig interfaceConfig = new InterfaceConfig();
         interfaceConfig.setScope("scope");
         Assertions.assertEquals("scope", interfaceConfig.getScope());
+    }
+
+    @Test
+    void testVerifyMethod() {
+        InterfaceConfig2 interfaceConfig2 = new InterfaceConfig2();
+        MethodConfig methodConfig = new MethodConfig();
+        methodConfig.setTimeout(5000);
+        methodConfig.setName("sayHello");
+        Class<?> clazz = Greeting.class;
+        boolean verifyResult = interfaceConfig2.verifyMethodConfig(methodConfig, clazz, false);
+        Assertions.assertTrue(verifyResult);
+
+        boolean verifyResult2 = interfaceConfig2.verifyMethodConfig(methodConfig, clazz, true);
+        Assertions.assertFalse(verifyResult2);
+    }
+
+    public static class InterfaceConfig2 extends AbstractInterfaceConfig {
+        @Override
+        protected boolean isNeedCheckMethod() {
+            return false;
+        }
     }
 
     public static class InterfaceConfig extends AbstractInterfaceConfig {

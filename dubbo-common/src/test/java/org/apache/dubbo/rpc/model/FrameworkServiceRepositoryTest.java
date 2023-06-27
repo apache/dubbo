@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.model;
 
-import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.support.DemoService;
@@ -43,8 +42,8 @@ class FrameworkServiceRepositoryTest {
     @BeforeEach
     public void setUp() {
         frameworkModel = new FrameworkModel();
-        applicationModel = new ApplicationModel(frameworkModel);
-        moduleModel = new ModuleModel(applicationModel);
+        applicationModel = frameworkModel.newApplication();
+        moduleModel = applicationModel.newModule();
     }
 
     @AfterEach
@@ -82,12 +81,6 @@ class FrameworkServiceRepositoryTest {
         Assertions.assertEquals(providerModels.size(), 1);
         Assertions.assertEquals(providerModels.get(0), providerModel);
 
-        URL url = URL.valueOf("test://127.0.0.1:9103/" + DemoService.class.getName() + "?group=GROUP&version=1.0.0");
-        frameworkServiceRepository.registerProviderUrl(url);
-        List<URL> urls = frameworkServiceRepository.lookupRegisteredProviderUrlsWithoutGroup(keyWithoutGroup(url.getServiceKey()));
-        Assertions.assertEquals(urls.size(), 1);
-        Assertions.assertEquals(urls.get(0), url);
-
         ConsumerModel consumerModel = new ConsumerModel(
             serviceMetadata.getServiceKey(), new DemoServiceImpl(), serviceDescriptor,
             moduleModel, serviceMetadata, null, ClassUtils.getClassLoader(DemoService.class));
@@ -99,7 +92,6 @@ class FrameworkServiceRepositoryTest {
         frameworkServiceRepository.unregisterProvider(providerModel);
         Assertions.assertNull(frameworkServiceRepository.lookupExportedService(serviceKey));
         Assertions.assertNull(frameworkServiceRepository.lookupExportedServiceWithoutGroup(keyWithoutGroup));
-        Assertions.assertNull(frameworkServiceRepository.lookupRegisteredProviderUrlsWithoutGroup(keyWithoutGroup));
 
     }
 

@@ -22,19 +22,20 @@ import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ApplicationConfig;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.executor.ExecutorSupport;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ServiceModel;
 
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 
-import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_MANAGEMENT_MODE_DEFAULT;
+import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_MANAGEMENT_MODE_ISOLATION;
 
 /**
  *
  */
-@SPI(value = "default", scope = ExtensionScope.APPLICATION)
+@SPI(value = "isolation", scope = ExtensionScope.APPLICATION)
 public interface ExecutorRepository {
 
     /**
@@ -53,6 +54,8 @@ public interface ExecutorRepository {
      * @return
      */
     ExecutorService getExecutor(URL url);
+
+    ExecutorService getExecutor(ServiceModel serviceModel, URL url);
 
 
 
@@ -187,7 +190,7 @@ public interface ExecutorRepository {
 
     static String getMode(ApplicationModel applicationModel) {
         Optional<ApplicationConfig> optional = applicationModel.getApplicationConfigManager().getApplication();
-        return optional.map(ApplicationConfig::getExecutorManagementMode).orElse(EXECUTOR_MANAGEMENT_MODE_DEFAULT);
+        return optional.map(ApplicationConfig::getExecutorManagementMode).orElse(EXECUTOR_MANAGEMENT_MODE_ISOLATION);
     }
 
 }

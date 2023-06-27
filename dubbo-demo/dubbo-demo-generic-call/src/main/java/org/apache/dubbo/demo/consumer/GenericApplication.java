@@ -41,7 +41,7 @@ public class GenericApplication {
 
         if (args.length > 0 && CommonConstants.GENERIC_SERIALIZATION_GSON.equals(args[0])) {
             reference.setGeneric(CommonConstants.GENERIC_SERIALIZATION_GSON);
-            param = JsonUtils.getJson().toJson(param + " gson");
+            param = JsonUtils.toJson(param + " gson");
         } else {
             reference.setGeneric("true");
         }

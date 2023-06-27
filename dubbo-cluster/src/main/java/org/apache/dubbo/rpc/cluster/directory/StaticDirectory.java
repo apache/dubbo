@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.rpc.cluster.directory;
 
-import java.util.List;
-
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -29,6 +27,8 @@ import org.apache.dubbo.rpc.cluster.RouterChain;
 import org.apache.dubbo.rpc.cluster.SingleRouterChain;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
 
+import java.util.List;
+
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_FAILED_SITE_SELECTION;
 
 /**
@@ -36,6 +36,7 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_FAIL
  */
 public class StaticDirectory<T> extends AbstractDirectory<T> {
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(StaticDirectory.class);
+    private final Class<T> interfaceClass;
 
     public StaticDirectory(List<Invoker<T>> invokers) {
         this(null, invokers, null);
@@ -55,11 +56,12 @@ public class StaticDirectory<T> extends AbstractDirectory<T> {
             throw new IllegalArgumentException("invokers == null");
         }
         this.setInvokers(new BitList<>(invokers));
+        this.interfaceClass = invokers.get(0).getInterface();
     }
 
     @Override
     public Class<T> getInterface() {
-        return getInvokers().get(0).getInterface();
+        return interfaceClass;
     }
 
     @Override
@@ -75,6 +77,8 @@ public class StaticDirectory<T> extends AbstractDirectory<T> {
         for (Invoker<T> invoker : getValidInvokers()) {
             if (invoker.isAvailable()) {
                 return true;
+            } else {
+                addInvalidateInvoker(invoker);
             }
         }
         return false;

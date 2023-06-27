@@ -44,8 +44,9 @@ public interface ClientCall {
          * Callback when message received.
          *
          * @param message message received
+         * @param actualContentLength actual content length from body
          */
-        void onMessage(Object message);
+        void onMessage(Object message, int actualContentLength);
 
         /**
          * Callback when call is finished.
@@ -53,7 +54,7 @@ public interface ClientCall {
          * @param status   response status
          * @param trailers response trailers
          */
-        void onClose(TriRpcStatus status, Map<String, Object> trailers);
+        void onClose(TriRpcStatus status, Map<String, Object> trailers, boolean isReturnTriException);
     }
 
     /**

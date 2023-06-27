@@ -24,7 +24,7 @@
 
     <artifactId>dubbo-metadata-report-redis</artifactId>
     <properties>
-        <jedis.version>3.9.0</jedis.version>
+        <jedis.version>3.10.0</jedis.version>
     </properties>
 
     <dependencies>

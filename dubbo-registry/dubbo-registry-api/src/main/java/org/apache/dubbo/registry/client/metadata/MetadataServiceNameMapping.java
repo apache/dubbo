@@ -16,12 +16,6 @@
  */
 package org.apache.dubbo.registry.client.metadata;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ThreadLocalRandom;
-
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.config.configcenter.ConfigItem;
@@ -37,10 +31,16 @@ import org.apache.dubbo.metadata.report.MetadataReportInstance;
 import org.apache.dubbo.registry.client.RegistryClusterIdentifier;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
+
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_PROPERTY_TYPE_MISMATCH;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ADDRESS_INVALID;
 import static org.apache.dubbo.registry.Constants.CAS_RETRY_TIMES_KEY;
 import static org.apache.dubbo.registry.Constants.CAS_RETRY_WAIT_TIME_KEY;
 import static org.apache.dubbo.registry.Constants.DEFAULT_CAS_RETRY_TIMES;
@@ -63,13 +63,18 @@ public class MetadataServiceNameMapping extends AbstractServiceNameMapping {
         casRetryWaitTime = ConfigurationUtils.getGlobalConfiguration(applicationModel).getInt(CAS_RETRY_WAIT_TIME_KEY, DEFAULT_CAS_RETRY_WAIT_TIME);
     }
 
+    @Override
+    public boolean hasValidMetadataCenter() {
+        return !CollectionUtils.isEmpty(applicationModel.getApplicationConfigManager().getMetadataConfigs());
+    }
+
     /**
      * Simply register to all metadata center
      */
     @Override
     public boolean map(URL url) {
         if (CollectionUtils.isEmpty(applicationModel.getApplicationConfigManager().getMetadataConfigs())) {
-            logger.warn(REGISTRY_ADDRESS_INVALID, "", "", "No valid metadata config center found for mapping report.");
+            logger.warn(COMMON_PROPERTY_TYPE_MISMATCH, "", "", "No valid metadata config center found for mapping report.");
             return false;
         }
         String serviceInterface = url.getServiceInterface();
@@ -87,17 +92,23 @@ public class MetadataServiceNameMapping extends AbstractServiceNameMapping {
                     continue;
                 }
 
-                boolean succeeded;
+                boolean succeeded = false;
                 int currentRetryTimes = 1;
                 String newConfigContent = appName;
                 do {
                     ConfigItem configItem = metadataReport.getConfigItem(serviceInterface, DEFAULT_MAPPING_GROUP);
                     String oldConfigContent = configItem.getContent();
                     if (StringUtils.isNotEmpty(oldConfigContent)) {
-                        boolean contains = StringUtils.isContains(oldConfigContent, appName);
-                        if (contains) {
-                            // From the user's perspective, it means successful when the oldConfigContent has contained the current appName. So we should not throw an Exception to user, it will confuse the user.
-                            succeeded = true;
+                        String[] oldAppNames = oldConfigContent.split(",");
+                        if (oldAppNames.length > 0) {
+                            for (String oldAppName : oldAppNames) {
+                                if (oldAppName.equals(appName)) {
+                                    succeeded = true;
+                                    break;
+                                }
+                            }
+                        }
+                        if (succeeded) {
                             break;
                         }
                         newConfigContent = oldConfigContent + COMMA_SEPARATOR + appName;

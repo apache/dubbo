@@ -205,7 +205,7 @@ class ReferenceCountExchangeClientTest {
         // invoker status is available because the default value of associated lazy client's initial state is true.
         Assertions.assertTrue(helloServiceInvoker.isAvailable(), "invoker status unavailable");
 
-        // revive: initial the lazy client's exchange client again.  
+        // revive: initial the lazy client's exchange client again.
         Assertions.assertEquals("hello", helloService.hello());
 
         destroy();
@@ -285,11 +285,12 @@ class ReferenceCountExchangeClientTest {
     private List<ExchangeClient> getInvokerClientList(Invoker<?> invoker) {
         @SuppressWarnings("rawtypes") DubboInvoker dInvoker = (DubboInvoker) invoker;
         try {
-            Field clientField = DubboInvoker.class.getDeclaredField("clients");
+            Field clientField = DubboInvoker.class.getDeclaredField("clientsProvider");
             clientField.setAccessible(true);
-            ExchangeClient[] clients = (ExchangeClient[]) clientField.get(dInvoker);
+            ClientsProvider clientsProvider = (ClientsProvider) clientField.get(dInvoker);
+            List<? extends ExchangeClient> clients = clientsProvider.getClients();
 
-            List<ExchangeClient> clientList = new ArrayList<ExchangeClient>(clients.length);
+            List<ExchangeClient> clientList = new ArrayList<ExchangeClient>(clients.size());
             for (ExchangeClient client : clients) {
                 clientList.add(client);
             }

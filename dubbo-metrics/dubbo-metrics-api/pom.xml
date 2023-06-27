@@ -38,11 +38,6 @@
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-cluster</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-rpc-api</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
@@ -53,11 +48,6 @@
         <dependency>
             <groupId>com.tdunning</groupId>
             <artifactId>t-digest</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.micrometer</groupId>
-            <artifactId>micrometer-test</artifactId>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>io.micrometer</groupId>

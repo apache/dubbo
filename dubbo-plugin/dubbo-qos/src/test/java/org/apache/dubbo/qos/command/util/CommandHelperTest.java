@@ -19,15 +19,19 @@ package org.apache.dubbo.qos.command.util;
 import org.apache.dubbo.qos.command.GreetingCommand;
 import org.apache.dubbo.qos.command.impl.ChangeTelnet;
 import org.apache.dubbo.qos.command.impl.CountTelnet;
+import org.apache.dubbo.qos.command.impl.DefaultMetricsReporterCmd;
 import org.apache.dubbo.qos.command.impl.DisableDetailProfiler;
 import org.apache.dubbo.qos.command.impl.DisableRouterSnapshot;
 import org.apache.dubbo.qos.command.impl.DisableSimpleProfiler;
 import org.apache.dubbo.qos.command.impl.EnableDetailProfiler;
 import org.apache.dubbo.qos.command.impl.EnableRouterSnapshot;
 import org.apache.dubbo.qos.command.impl.EnableSimpleProfiler;
+import org.apache.dubbo.qos.command.impl.GetAddress;
+import org.apache.dubbo.qos.command.impl.GetConfig;
 import org.apache.dubbo.qos.command.impl.GetEnabledRouterSnapshot;
 import org.apache.dubbo.qos.command.impl.GetRecentRouterSnapshot;
 import org.apache.dubbo.qos.command.impl.GetRouterSnapshot;
+import org.apache.dubbo.qos.command.impl.GracefulShutdown;
 import org.apache.dubbo.qos.command.impl.Help;
 import org.apache.dubbo.qos.command.impl.InvokeTelnet;
 import org.apache.dubbo.qos.command.impl.Live;
@@ -45,6 +49,8 @@ import org.apache.dubbo.qos.command.impl.PwdTelnet;
 import org.apache.dubbo.qos.command.impl.Quit;
 import org.apache.dubbo.qos.command.impl.Ready;
 import org.apache.dubbo.qos.command.impl.SelectTelnet;
+import org.apache.dubbo.qos.command.impl.SerializeCheckStatus;
+import org.apache.dubbo.qos.command.impl.SerializeWarnedClasses;
 import org.apache.dubbo.qos.command.impl.SetProfilerWarnPercent;
 import org.apache.dubbo.qos.command.impl.ShutdownTelnet;
 import org.apache.dubbo.qos.command.impl.Startup;
@@ -69,13 +75,13 @@ class CommandHelperTest {
     private CommandHelper commandHelper = new CommandHelper(FrameworkModel.defaultModel());
 
     @Test
-    void testHasCommand() throws Exception {
+    void testHasCommand() {
         assertTrue(commandHelper.hasCommand("greeting"));
         assertFalse(commandHelper.hasCommand("not-exiting"));
     }
 
     @Test
-    void testGetAllCommandClass() throws Exception {
+    void testGetAllCommandClass() {
         List<Class<?>> classes = commandHelper.getAllCommandClass();
 
         // update this list when introduce a new command
@@ -115,11 +121,17 @@ class CommandHelperTest {
         expectedClasses.add(LoggerInfo.class);
         expectedClasses.add(SwitchLogger.class);
         expectedClasses.add(SwitchLogLevel.class);
+        expectedClasses.add(SerializeCheckStatus.class);
+        expectedClasses.add(SerializeWarnedClasses.class);
+        expectedClasses.add(GetConfig.class);
+        expectedClasses.add(GetAddress.class);
+        expectedClasses.add(GracefulShutdown.class);
+        expectedClasses.add(DefaultMetricsReporterCmd.class);
         assertThat(classes, containsInAnyOrder(expectedClasses.toArray(new Class<?>[0])));
     }
 
     @Test
-    void testGetCommandClass() throws Exception {
+    void testGetCommandClass() {
         assertThat(commandHelper.getCommandClass("greeting"), equalTo(GreetingCommand.class));
         assertNull(commandHelper.getCommandClass("not-exiting"));
     }

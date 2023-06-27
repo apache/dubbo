@@ -62,7 +62,7 @@ public class BatchExecutorQueue<T> {
             boolean flushedOnce = false;
             while ((item = snapshot.poll()) != null) {
                 if (snapshot.size() == 0) {
-                    i = 0;
+                    flushedOnce = false;
                     break;
                 }
                 if (i == chunkSize) {
@@ -74,7 +74,7 @@ public class BatchExecutorQueue<T> {
                     i++;
                 }
             }
-            if ((i != 0 || !flushedOnce) && item != null) {
+            if (!flushedOnce && item != null) {
                 flush(item);
             }
         } finally {

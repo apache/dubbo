@@ -107,7 +107,7 @@ class AvailableClusterInvokerTest {
             invoker.invoke(invocation);
             fail();
         } catch (RpcException e) {
-            Assertions.assertTrue(e.getMessage().contains("No provider available in"));
+            Assertions.assertTrue(e.getMessage().contains("No provider available"));
             assertFalse(e.getCause() instanceof RpcException);
         }
     }

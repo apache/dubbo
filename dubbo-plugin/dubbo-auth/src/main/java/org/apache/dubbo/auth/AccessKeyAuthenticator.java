@@ -27,9 +27,10 @@ import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.support.RpcUtils;
 
 public class AccessKeyAuthenticator implements Authenticator {
-    private ApplicationModel applicationModel;
+    private final ApplicationModel applicationModel;
 
     public AccessKeyAuthenticator(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
@@ -54,7 +55,7 @@ public class AccessKeyAuthenticator implements Authenticator {
         if (StringUtils.isAnyEmpty(accessKeyId, consumer, requestTimestamp, originSignature)) {
             throw new RpcAuthenticationException("Failed to authenticate, maybe consumer side did not enable the auth");
         }
-        
+
         AccessKeyPair accessKeyPair;
         try {
             accessKeyPair = getAccessKeyPair(invocation, url);
@@ -86,7 +87,7 @@ public class AccessKeyAuthenticator implements Authenticator {
     }
 
     String getSignature(URL url, Invocation invocation, String secretKey, String time) {
-        String requestString = String.format(Constants.SIGNATURE_STRING_FORMAT, url.getColonSeparatedKey(), invocation.getMethodName(), secretKey, time);
+        String requestString = String.format(Constants.SIGNATURE_STRING_FORMAT, url.getColonSeparatedKey(), RpcUtils.getMethodName(invocation), secretKey, time);
         boolean parameterEncrypt = url.getParameter(Constants.PARAMETER_SIGNATURE_ENABLE_KEY, false);
         if (parameterEncrypt) {
             return SignatureUtils.sign(invocation.getArguments(), requestString, secretKey);

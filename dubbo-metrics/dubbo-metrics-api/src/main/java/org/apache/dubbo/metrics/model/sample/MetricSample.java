@@ -121,6 +121,7 @@ public class MetricSample {
             '}';
     }
 
+
     public enum Type {
         COUNTER,
         GAUGE,

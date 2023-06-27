@@ -28,6 +28,7 @@ import java.util.concurrent.CountDownLatch;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.api.CuratorWatcher;
 import org.apache.curator.x.discovery.ServiceCache;
+
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.function.ThrowableConsumer;
 import org.apache.dubbo.common.function.ThrowableFunction;
@@ -44,6 +45,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ZOOKEEPER_EXCEPTION;
 import static org.apache.dubbo.common.function.ThrowableFunction.execute;
 import static org.apache.dubbo.metadata.RevisionResolver.EMPTY_REVISION;
+import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.EXPORTED_SERVICES_REVISION_PROPERTY_NAME;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getExportedServicesRevision;
 import static org.apache.dubbo.registry.zookeeper.util.CuratorFrameworkUtils.build;
 import static org.apache.dubbo.registry.zookeeper.util.CuratorFrameworkUtils.buildCuratorFramework;
@@ -111,7 +113,8 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
 
     @Override
     protected void doUpdate(ServiceInstance oldServiceInstance, ServiceInstance newServiceInstance) throws RuntimeException {
-        if (EMPTY_REVISION.equals(getExportedServicesRevision(newServiceInstance))) {
+        if (EMPTY_REVISION.equals(getExportedServicesRevision(newServiceInstance))
+                || EMPTY_REVISION.equals(oldServiceInstance.getMetadata().get(EXPORTED_SERVICES_REVISION_PROPERTY_NAME))) {
             super.doUpdate(oldServiceInstance, newServiceInstance);
             return;
         }
@@ -119,7 +122,7 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
         org.apache.curator.x.discovery.ServiceInstance<ZookeeperInstance> oldInstance = build(oldServiceInstance);
         org.apache.curator.x.discovery.ServiceInstance<ZookeeperInstance> newInstance = build(newServiceInstance);
         if (!Objects.equals(newInstance.getName(), oldInstance.getName()) ||
-            !Objects.equals(newInstance.getId(), oldInstance.getId())) {
+                !Objects.equals(newInstance.getId(), oldInstance.getId())) {
             // Ignore if id changed. Should unregister first.
             super.doUpdate(oldServiceInstance, newServiceInstance);
             return;
@@ -146,7 +149,7 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
 
     @Override
     public void addServiceInstancesChangedListener(ServiceInstancesChangedListener listener)
-        throws NullPointerException, IllegalArgumentException {
+            throws NullPointerException, IllegalArgumentException {
         // check if listener has already been added through another interface/service
         if (!instanceListeners.add(listener)) {
             return;
@@ -169,7 +172,7 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
                         watcher.getCacheInstance().close();
                     } catch (IOException e) {
                         logger.error(REGISTRY_ZOOKEEPER_EXCEPTION, "curator stop watch failed", "",
-                            "Curator Stop service discovery watch failed. Service Name: " + serviceName);
+                                "Curator Stop service discovery watch failed. Service Name: " + serviceName);
                     }
                 }
             }
@@ -190,8 +193,8 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
 
         ZookeeperServiceDiscoveryChangeWatcher watcher = watcherCaches.computeIfAbsent(serviceName, name -> {
             ServiceCache<ZookeeperInstance> serviceCache = serviceDiscovery.serviceCacheBuilder()
-                .name(name)
-                .build();
+                    .name(name)
+                    .build();
             ZookeeperServiceDiscoveryChangeWatcher newer = new ZookeeperServiceDiscoveryChangeWatcher(this, serviceCache, name, latch);
             serviceCache.addListener(newer);
 

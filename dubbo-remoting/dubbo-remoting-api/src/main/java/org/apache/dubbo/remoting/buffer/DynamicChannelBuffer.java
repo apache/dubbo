@@ -200,4 +200,9 @@ public class DynamicChannelBuffer extends AbstractChannelBuffer {
     public int arrayOffset() {
         return buffer.arrayOffset();
     }
+
+    @Override
+    public void release() {
+        buffer.release();
+    }
 }

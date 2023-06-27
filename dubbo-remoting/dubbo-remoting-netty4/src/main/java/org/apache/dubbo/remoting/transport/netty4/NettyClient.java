@@ -28,8 +28,9 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
-import org.apache.dubbo.remoting.transport.netty4.ssl.SslClientTlsHandler;
 import org.apache.dubbo.remoting.transport.AbstractClient;
+import org.apache.dubbo.remoting.transport.netty4.ssl.SslClientTlsHandler;
+import org.apache.dubbo.remoting.transport.netty4.ssl.SslContexts;
 import org.apache.dubbo.remoting.utils.UrlUtils;
 
 import io.netty.bootstrap.Bootstrap;
@@ -41,13 +42,13 @@ import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.proxy.Socks5ProxyHandler;
+import io.netty.handler.ssl.SslContext;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.EventExecutorGroup;
 
 import java.net.InetSocketAddress;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static org.apache.dubbo.common.constants.CommonConstants.SSL_ENABLED_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_CLIENT_CONNECT_TIMEOUT;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_CONNECT_PROVIDER;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_DISCONNECT_PROVIDER;
@@ -119,14 +120,15 @@ public class NettyClient extends AbstractClient {
             .channel(socketChannelClass());
 
         bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, Math.max(DEFAULT_CONNECT_TIMEOUT, getConnectTimeout()));
+        SslContext sslContext = SslContexts.buildClientSslContext(getUrl());
         bootstrap.handler(new ChannelInitializer<SocketChannel>() {
 
             @Override
             protected void initChannel(SocketChannel ch) throws Exception {
                 int heartbeatInterval = UrlUtils.getHeartbeat(getUrl());
 
-                if (getUrl().getParameter(SSL_ENABLED_KEY, false)) {
-                    ch.pipeline().addLast("negotiation", new SslClientTlsHandler(getUrl()));
+                if (sslContext != null) {
+                    ch.pipeline().addLast("negotiation", new SslClientTlsHandler(sslContext));
                 }
 
                 NettyCodecAdapter adapter = new NettyCodecAdapter(getCodec(), getUrl(), NettyClient.this);

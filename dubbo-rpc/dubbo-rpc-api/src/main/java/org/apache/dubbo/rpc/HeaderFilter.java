@@ -16,9 +16,10 @@
  */
 package org.apache.dubbo.rpc;
 
+import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 
-@SPI
+@SPI(scope = ExtensionScope.FRAMEWORK)
 public interface HeaderFilter {
 
     RpcInvocation invoke(Invoker<?> invoker, RpcInvocation invocation) throws RpcException;

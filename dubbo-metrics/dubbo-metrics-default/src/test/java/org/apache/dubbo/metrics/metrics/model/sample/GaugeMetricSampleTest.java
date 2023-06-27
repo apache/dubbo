@@ -20,13 +20,15 @@ package org.apache.dubbo.metrics.metrics.model.sample;
 import org.apache.dubbo.metrics.model.MetricsCategory;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Supplier;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.ToDoubleFunction;
 
 class GaugeMetricSampleTest {
 
@@ -35,7 +37,8 @@ class GaugeMetricSampleTest {
     private static Map<String, String> tags;
     private static MetricsCategory category;
     private static String baseUnit;
-    private static Supplier<Number> supplier;
+    private static AtomicLong value;
+    private static ToDoubleFunction<AtomicLong> apply;
 
     @BeforeAll
     public static void setup() {
@@ -44,20 +47,21 @@ class GaugeMetricSampleTest {
         tags = new HashMap<>();
         category = MetricsCategory.REQUESTS;
         baseUnit = "byte";
-        supplier = () -> 1;
+        value = new AtomicLong(1);
+        apply = AtomicLong::longValue;
     }
 
     @Test
     void test() {
-        GaugeMetricSample sample = new GaugeMetricSample(name, description, tags, category, baseUnit, supplier);
+        GaugeMetricSample<?> sample = new GaugeMetricSample<>(name, description, tags, category, baseUnit, value, apply);
         Assertions.assertEquals(sample.getName(), name);
         Assertions.assertEquals(sample.getDescription(), description);
         Assertions.assertEquals(sample.getTags(), tags);
         Assertions.assertEquals(sample.getType(), MetricSample.Type.GAUGE);
         Assertions.assertEquals(sample.getCategory(), category);
         Assertions.assertEquals(sample.getBaseUnit(), baseUnit);
-        Assertions.assertEquals(sample.getSupplier().get(), 1);
-        sample.setSupplier(() -> 2);
-        Assertions.assertEquals(sample.getSupplier().get(), 2);
+        Assertions.assertEquals(1, sample.applyAsLong());
+        value.set(2);
+        Assertions.assertEquals(2, sample.applyAsLong());
     }
 }

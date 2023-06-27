@@ -28,6 +28,7 @@ import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.api.WireProtocol;
 import org.apache.dubbo.remoting.api.connection.AbstractConnectionClient;
 import org.apache.dubbo.remoting.transport.netty4.ssl.SslClientTlsHandler;
+import org.apache.dubbo.remoting.transport.netty4.ssl.SslContexts;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -38,6 +39,7 @@ import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoop;
 import io.netty.channel.socket.SocketChannel;
+import io.netty.handler.ssl.SslContext;
 import io.netty.util.AttributeKey;
 import io.netty.util.concurrent.DefaultPromise;
 import io.netty.util.concurrent.GlobalEventExecutor;
@@ -48,7 +50,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_CLIENT_THREADPOOL;
-import static org.apache.dubbo.common.constants.CommonConstants.SSL_ENABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_CLIENT_CONNECT_TIMEOUT;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_CONNECT_PROVIDER;
@@ -107,6 +108,7 @@ public class NettyConnectionClient extends AbstractConnectionClient {
 
         final NettyConnectionHandler connectionHandler = new NettyConnectionHandler(this);
         nettyBootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, getConnectTimeout());
+        SslContext sslContext = SslContexts.buildClientSslContext(getUrl());
         nettyBootstrap.handler(new ChannelInitializer<SocketChannel>() {
             @Override
             protected void initChannel(SocketChannel ch) {
@@ -114,8 +116,8 @@ public class NettyConnectionClient extends AbstractConnectionClient {
                 final ChannelPipeline pipeline = ch.pipeline();
                 NettySslContextOperator nettySslContextOperator = new NettySslContextOperator();
 
-                if (getUrl().getParameter(SSL_ENABLED_KEY, false)) {
-                    pipeline.addLast("negotiation", new SslClientTlsHandler(getUrl()));
+                if (sslContext != null) {
+                    pipeline.addLast("negotiation", new SslClientTlsHandler(sslContext));
                 }
 
 //                pipeline.addLast("logging", new LoggingHandler(LogLevel.INFO)); //for debug

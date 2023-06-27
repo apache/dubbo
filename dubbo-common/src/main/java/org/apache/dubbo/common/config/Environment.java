@@ -70,8 +70,8 @@ public class Environment extends LifecycleAdapter implements ApplicationExt {
 
     private String localMigrationRule;
 
-    private AtomicBoolean initialized = new AtomicBoolean(false);
-    private ScopeModel scopeModel;
+    private final AtomicBoolean initialized = new AtomicBoolean(false);
+    private final ScopeModel scopeModel;
 
     public Environment(ScopeModel scopeModel) {
         this.scopeModel = scopeModel;
@@ -315,7 +315,7 @@ public class Environment extends LifecycleAdapter implements ApplicationExt {
         return localMigrationRule;
     }
 
-    public void refreshClassLoaders() {
+    public synchronized void refreshClassLoaders() {
         propertiesConfiguration.refresh();
         loadMigrationRule();
         this.globalConfiguration = null;

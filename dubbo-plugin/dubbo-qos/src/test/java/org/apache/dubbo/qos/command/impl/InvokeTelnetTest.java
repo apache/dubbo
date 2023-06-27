@@ -17,8 +17,8 @@
 package org.apache.dubbo.qos.command.impl;
 
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
-import org.apache.dubbo.qos.command.BaseCommand;
-import org.apache.dubbo.qos.command.CommandContext;
+import org.apache.dubbo.qos.api.BaseCommand;
+import org.apache.dubbo.qos.api.CommandContext;
 import org.apache.dubbo.qos.legacy.service.DemoService;
 import org.apache.dubbo.qos.legacy.service.DemoServiceImpl;
 import org.apache.dubbo.remoting.RemotingException;
@@ -58,7 +58,7 @@ class InvokeTelnetTest {
         mockChannel = mock(Channel.class);
         mockCommandContext = mock(CommandContext.class);
         given(mockCommandContext.getRemote()).willReturn(mockChannel);
-        ApplicationModel applicationModel = new ApplicationModel(frameworkModel);
+        ApplicationModel applicationModel = frameworkModel.newApplication();
         repository = applicationModel.getDefaultModule().getServiceRepository();
     }
 

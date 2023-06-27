@@ -17,13 +17,20 @@
 
 package org.apache.dubbo.metrics.collector.stat;
 
+import org.apache.dubbo.metrics.event.MetricsEvent;
 import org.apache.dubbo.metrics.model.MethodMetric;
+import org.apache.dubbo.rpc.Invocation;
 
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
 public interface MetricsStatHandler {
     Map<MethodMetric, AtomicLong> get();
-    void increase(String interfaceName, String methodName, String group, String version);
-    void decrease(String interfaceName, String methodName, String group, String version);
+
+    MetricsEvent increase(String applicationName, Invocation invocation);
+
+    MetricsEvent decrease(String applicationName, Invocation invocation);
+
+    MetricsEvent addApplication(String applicationName);
+
 }

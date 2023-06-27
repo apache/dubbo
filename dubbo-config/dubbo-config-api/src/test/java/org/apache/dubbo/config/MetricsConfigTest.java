@@ -19,7 +19,7 @@ package org.apache.dubbo.config;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.config.nested.AggregationConfig;
 import org.apache.dubbo.config.nested.PrometheusConfig;
-
+import org.apache.dubbo.config.nested.HistogramConfig;
 import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMETHEUS;
@@ -47,6 +47,10 @@ class MetricsConfigTest {
         aggregation.setEnabled(true);
         metrics.setAggregation(aggregation);
 
+        HistogramConfig histogram = new HistogramConfig();
+        histogram.setEnabled(true);
+        metrics.setHistogram(histogram);
+
         URL url = metrics.toUrl();
 
         assertThat(url.getProtocol(), equalTo(PROTOCOL_PROMETHEUS));
@@ -56,6 +60,7 @@ class MetricsConfigTest {
         assertThat(url.getParameter("prometheus.exporter.enabled"), equalTo("true"));
         assertThat(url.getParameter("prometheus.pushgateway.enabled"), equalTo("true"));
         assertThat(url.getParameter("aggregation.enabled"), equalTo("true"));
+        assertThat(url.getParameter("histogram.enabled"), equalTo("true"));
     }
 
     @Test
@@ -76,8 +81,6 @@ class MetricsConfigTest {
         exporter.setEnabled(true);
         exporter.setEnableHttpServiceDiscovery(true);
         exporter.setHttpServiceDiscoveryUrl("localhost:8080");
-        exporter.setMetricsPath("/metrics");
-        exporter.setMetricsPort(20888);
         prometheus.setExporter(exporter);
 
         pushgateway.setEnabled(true);
@@ -93,8 +96,6 @@ class MetricsConfigTest {
         assertThat(metrics.getPrometheus().getExporter().getEnabled(), equalTo(true));
         assertThat(metrics.getPrometheus().getExporter().getEnableHttpServiceDiscovery(), equalTo(true));
         assertThat(metrics.getPrometheus().getExporter().getHttpServiceDiscoveryUrl(), equalTo("localhost:8080"));
-        assertThat(metrics.getPrometheus().getExporter().getMetricsPort(), equalTo(20888));
-        assertThat(metrics.getPrometheus().getExporter().getMetricsPath(), equalTo("/metrics"));
         assertThat(metrics.getPrometheus().getPushgateway().getEnabled(), equalTo(true));
         assertThat(metrics.getPrometheus().getPushgateway().getBaseUrl(), equalTo("localhost:9091"));
         assertThat(metrics.getPrometheus().getPushgateway().getUsername(), equalTo("username"));

@@ -52,7 +52,7 @@ import java.util.concurrent.ThreadLocalRandom;
  * @param <E>
  * @since 3.0
  */
-public class BitList<E> extends AbstractList<E> {
+public class BitList<E> extends AbstractList<E> implements Cloneable {
     private final BitSet rootSet;
     private volatile List<E> originList;
     private final static BitList emptyList = new BitList(Collections.emptyList());

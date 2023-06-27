@@ -49,10 +49,10 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_CACHE
 public class FileCacheStore {
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(FileCacheStore.class);
 
-    private String cacheFilePath;
-    private File cacheFile;
-    private File lockFile;
-    private FileLock directoryLock;
+    private final String cacheFilePath;
+    private final File cacheFile;
+    private final File lockFile;
+    private final FileLock directoryLock;
 
     private FileCacheStore(String cacheFilePath, File cacheFile, File lockFile, FileLock directoryLock) {
         this.cacheFilePath = cacheFilePath;

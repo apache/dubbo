@@ -17,56 +17,39 @@
 
 package org.apache.dubbo.metrics.model;
 
-import java.util.HashMap;
+import org.apache.dubbo.metrics.model.sample.MetricSample;
+import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.support.RpcUtils;
+
 import java.util.Map;
 import java.util.Objects;
 
-import static org.apache.dubbo.common.constants.MetricsConstants.TAG_IP;
-import static org.apache.dubbo.common.constants.MetricsConstants.TAG_HOSTNAME;
-import static org.apache.dubbo.common.constants.MetricsConstants.TAG_APPLICATION_NAME;
-import static org.apache.dubbo.common.constants.MetricsConstants.TAG_INTERFACE_KEY;
-import static org.apache.dubbo.common.constants.MetricsConstants.TAG_METHOD_KEY;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_GROUP_KEY;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_VERSION_KEY;
-import static org.apache.dubbo.common.utils.NetUtils.getLocalHost;
-import static org.apache.dubbo.common.utils.NetUtils.getLocalHostName;
+import static org.apache.dubbo.metrics.MetricsConstants.INVOCATION_METRICS_COUNTER;
 
 /**
  * Metric class for method.
  */
-public class MethodMetric {
-    private String applicationName;
-    private String interfaceName;
-    private String methodName;
+public class MethodMetric extends ServiceKeyMetric {
+    private String side;
+    private final String methodName;
     private String group;
     private String version;
+    private final MetricSample.Type sampleType;
 
-    public MethodMetric() {
-
+    public MethodMetric(ApplicationModel applicationModel, Invocation invocation) {
+        super(applicationModel, MetricsSupport.getInterfaceName(invocation));
+        this.methodName = RpcUtils.getMethodName(invocation);
+        this.side = MetricsSupport.getSide(invocation);
+        this.group = MetricsSupport.getGroup(invocation);
+        this.version = MetricsSupport.getVersion(invocation);
+        this.sampleType = (MetricSample.Type) invocation.get(INVOCATION_METRICS_COUNTER);
     }
 
-    public MethodMetric(String applicationName, String interfaceName, String methodName, String group, String version) {
-        this.applicationName = applicationName;
-        this.interfaceName = interfaceName;
-        this.methodName = methodName;
-        this.group = group;
-        this.version = version;
-    }
-
-    public String getInterfaceName() {
-        return interfaceName;
-    }
-
-    public void setInterfaceName(String interfaceName) {
-        this.interfaceName = interfaceName;
-    }
-
-    public String getMethodName() {
-        return methodName;
-    }
-
-    public void setMethodName(String methodName) {
-        this.methodName = methodName;
+    public MetricSample.Type getSampleType() {
+        return sampleType;
     }
 
     public String getGroup() {
@@ -86,16 +69,34 @@ public class MethodMetric {
     }
 
     public Map<String, String> getTags() {
-        Map<String, String> tags = new HashMap<>();
-        tags.put(TAG_IP, getLocalHost());
-        tags.put(TAG_HOSTNAME, getLocalHostName());
-        tags.put(TAG_APPLICATION_NAME, applicationName);
-
-        tags.put(TAG_INTERFACE_KEY, interfaceName);
-        tags.put(TAG_METHOD_KEY, methodName);
+        Map<String, String> tags = MetricsSupport.methodTags(getApplicationModel(), getInterfaceName(), methodName);
         tags.put(TAG_GROUP_KEY, group);
         tags.put(TAG_VERSION_KEY, version);
         return tags;
+    }
+
+    public String getMethodName() {
+        return methodName;
+    }
+
+    public String getSide() {
+        return side;
+    }
+
+    public void setSide(String side) {
+        this.side = side;
+    }
+
+    @Override
+    public String toString() {
+        return "MethodMetric{" +
+                "applicationName='" + getApplicationName() + '\'' +
+                ", side='" + side + '\'' +
+                ", interfaceName='" + getInterfaceName() + '\'' +
+                ", methodName='" + methodName + '\'' +
+                ", group='" + group + '\'' +
+                ", version='" + version + '\'' +
+                '}';
     }
 
     @Override
@@ -103,22 +104,11 @@ public class MethodMetric {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         MethodMetric that = (MethodMetric) o;
-        return Objects.equals(interfaceName, that.interfaceName) && Objects.equals(methodName, that.methodName)
-            && Objects.equals(group, that.group) && Objects.equals(version, that.version);
+        return Objects.equals(getApplicationName(), that.getApplicationName()) && Objects.equals(side, that.side) && Objects.equals(getInterfaceName(), that.getInterfaceName()) && Objects.equals(methodName, that.methodName) && Objects.equals(group, that.group) && Objects.equals(version, that.version);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(interfaceName, methodName, group, version);
-    }
-
-    @Override
-    public String toString() {
-        return "MethodMetric{" +
-            "interfaceName='" + interfaceName + '\'' +
-            ", methodName='" + methodName + '\'' +
-            ", group='" + group + '\'' +
-            ", version='" + version + '\'' +
-            '}';
+        return Objects.hash(getApplicationName(), side, getInterfaceName(), methodName, group, version);
     }
 }

@@ -19,15 +19,21 @@ package org.apache.dubbo.metrics.listener;
 
 import org.apache.dubbo.metrics.event.MetricsEvent;
 
+
 /**
  * Metrics Listener.
  */
-public interface MetricsListener {
+public interface MetricsListener<E extends MetricsEvent> {
+
+
+    boolean isSupport(MetricsEvent event);
 
     /**
      * notify event.
      *
      * @param event BaseMetricsEvent
      */
-    void onEvent(MetricsEvent event);
+    void onEvent(E event);
+
+
 }

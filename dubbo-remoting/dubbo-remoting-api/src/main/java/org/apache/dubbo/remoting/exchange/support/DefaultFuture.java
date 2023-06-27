@@ -19,6 +19,7 @@ package org.apache.dubbo.remoting.exchange.support;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.resource.GlobalResourceInitializer;
+import org.apache.dubbo.common.serialize.SerializationException;
 import org.apache.dubbo.common.threadpool.ThreadlessExecutor;
 import org.apache.dubbo.common.timer.HashedWheelTimer;
 import org.apache.dubbo.common.timer.Timeout;
@@ -124,10 +125,6 @@ public class DefaultFuture extends CompletableFuture<Object> {
     public static DefaultFuture newFuture(Channel channel, Request request, int timeout, ExecutorService executor) {
         final DefaultFuture future = new DefaultFuture(channel, request, timeout);
         future.setExecutor(executor);
-        // ThreadlessExecutor needs to hold the waiting future in case of circuit return.
-        if (executor instanceof ThreadlessExecutor) {
-            ((ThreadlessExecutor) executor).setWaitingFuture(future);
-        }
         // timeout check
         timeoutCheck(future);
         return future;
@@ -154,20 +151,37 @@ public class DefaultFuture extends CompletableFuture<Object> {
      *
      * @param channel channel to close
      */
-    public static void closeChannel(Channel channel) {
+    public static void closeChannel(Channel channel, long timeout) {
+        long deadline = timeout > 0 ? System.currentTimeMillis() + timeout : 0;
         for (Map.Entry<Long, Channel> entry : CHANNELS.entrySet()) {
             if (channel.equals(entry.getValue())) {
                 DefaultFuture future = getFuture(entry.getKey());
                 if (future != null && !future.isDone()) {
-                    Response disconnectResponse = new Response(future.getId());
-                    disconnectResponse.setStatus(Response.CHANNEL_INACTIVE);
-                    disconnectResponse.setErrorMessage("Channel " +
-                        channel + " is inactive. Directly return the unFinished request : " +
-                        (logger.isDebugEnabled() ? future.getRequest() : future.getRequest().copyWithoutData()));
-                    DefaultFuture.received(channel, disconnectResponse);
+                    long restTime = deadline - System.currentTimeMillis();
+                    if (restTime > 0) {
+                        try {
+                            future.get(restTime, TimeUnit.MILLISECONDS);
+                        } catch (java.util.concurrent.TimeoutException ignore) {
+                            logger.warn(PROTOCOL_TIMEOUT_SERVER, "", "",
+                                "Trying to close channel " + channel + ", but response is not received in "
+                                + timeout + "ms, and the request id is " + future.id);
+                        } catch (Throwable ignore) {}
+                    }
+                    if (!future.isDone()) {
+                        respInactive(channel, future);
+                    }
                 }
             }
         }
+    }
+
+    private static void respInactive(Channel channel, DefaultFuture future) {
+        Response disconnectResponse = new Response(future.getId());
+        disconnectResponse.setStatus(Response.CHANNEL_INACTIVE);
+        disconnectResponse.setErrorMessage("Channel " +
+            channel + " is inactive. Directly return the unFinished request : " +
+            (logger.isDebugEnabled() ? future.getRequest() : future.getRequest().copyWithoutData()));
+        DefaultFuture.received(channel, disconnectResponse);
     }
 
     public static void received(Channel channel, Response response) {
@@ -184,6 +198,7 @@ public class DefaultFuture extends CompletableFuture<Object> {
                     t.cancel();
                 }
                 future.doReceived(response);
+                shutdownExecutorIfNeeded(future);
             } else {
                 logger.warn(PROTOCOL_TIMEOUT_SERVER, "", "", "The timeout response finally returned at "
                     + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date()))
@@ -202,10 +217,18 @@ public class DefaultFuture extends CompletableFuture<Object> {
         errorResult.setStatus(Response.CLIENT_ERROR);
         errorResult.setErrorMessage("request future has been canceled.");
         this.doReceived(errorResult);
-        FUTURES.remove(id);
+        DefaultFuture future = FUTURES.remove(id);
+        shutdownExecutorIfNeeded(future);
         CHANNELS.remove(id);
         timeoutCheckTask.cancel();
         return true;
+    }
+
+    private static void shutdownExecutorIfNeeded(DefaultFuture future) {
+        ExecutorService executor = future.getExecutor();
+        if (executor instanceof ThreadlessExecutor && !executor.isShutdown()) {
+            executor.shutdownNow();
+        }
     }
 
     public void cancel() {
@@ -220,18 +243,10 @@ public class DefaultFuture extends CompletableFuture<Object> {
             this.complete(res.getResult());
         } else if (res.getStatus() == Response.CLIENT_TIMEOUT || res.getStatus() == Response.SERVER_TIMEOUT) {
             this.completeExceptionally(new TimeoutException(res.getStatus() == Response.SERVER_TIMEOUT, channel, res.getErrorMessage()));
-        } else {
+        } else if(res.getStatus() == Response.SERIALIZATION_ERROR){
+            this.completeExceptionally(new SerializationException(res.getErrorMessage()));
+        }else {
             this.completeExceptionally(new RemotingException(channel, res.getErrorMessage()));
-        }
-
-        // the result is returning, but the caller thread may still wait
-        // to avoid endless waiting for whatever reason, notify caller thread to return.
-        if (executor != null && executor instanceof ThreadlessExecutor) {
-            ThreadlessExecutor threadlessExecutor = (ThreadlessExecutor) executor;
-            if (threadlessExecutor.isWaiting()) {
-                threadlessExecutor.notifyReturn(new IllegalStateException("The result has returned, but the biz thread is still waiting" +
-                    " which is not an expected state, interrupt the thread manually by returning an exception."));
-            }
         }
     }
 
@@ -288,8 +303,9 @@ public class DefaultFuture extends CompletableFuture<Object> {
                 return;
             }
 
-            if (future.getExecutor() != null) {
-                future.getExecutor().execute(() -> notifyTimeout(future));
+            ExecutorService executor = future.getExecutor();
+            if (executor != null && !executor.isShutdown()) {
+                executor.execute(() -> notifyTimeout(future));
             } else {
                 notifyTimeout(future);
             }

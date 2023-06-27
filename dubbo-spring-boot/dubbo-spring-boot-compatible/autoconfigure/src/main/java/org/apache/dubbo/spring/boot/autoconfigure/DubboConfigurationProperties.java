@@ -26,6 +26,7 @@ import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.RegistryConfig;
+import org.apache.dubbo.config.TracingConfig;
 import org.apache.dubbo.config.context.ConfigMode;
 import org.apache.dubbo.config.spring.ConfigCenterBean;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
@@ -88,6 +89,9 @@ public class DubboConfigurationProperties {
     @NestedConfigurationProperty
     private MetricsConfig metrics = new MetricsConfig();
 
+    @NestedConfigurationProperty
+    private TracingConfig tracing = new TracingConfig();
+
     // Multiple Config Bindings
 
     private Map<String, ModuleConfig> modules = new LinkedHashMap<>();
@@ -107,6 +111,8 @@ public class DubboConfigurationProperties {
     private Map<String, MetadataReportConfig> metadataReports = new LinkedHashMap<>();
 
     private Map<String, MetricsConfig> metricses = new LinkedHashMap<>();
+
+    private Map<String, TracingConfig> tracings = new LinkedHashMap<>();
 
     public Config getConfig() {
         return config;
@@ -204,6 +210,14 @@ public class DubboConfigurationProperties {
         this.metrics = metrics;
     }
 
+    public TracingConfig getTracing() {
+        return tracing;
+    }
+
+    public void setTracing(TracingConfig tracing) {
+        this.tracing = tracing;
+    }
+
     public Map<String, ModuleConfig> getModules() {
         return modules;
     }
@@ -274,6 +288,14 @@ public class DubboConfigurationProperties {
 
     public void setMetricses(Map<String, MetricsConfig> metricses) {
         this.metricses = metricses;
+    }
+
+    public Map<String, TracingConfig> getTracings() {
+        return tracings;
+    }
+
+    public void setTracings(Map<String, TracingConfig> tracings) {
+        this.tracings = tracings;
     }
 
     static class Config {

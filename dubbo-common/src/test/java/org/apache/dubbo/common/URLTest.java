@@ -60,6 +60,17 @@ class URLTest {
     }
 
     @Test
+    void testDefault() {
+        URL url1 = URL.valueOf("dubbo://127.0.0.1:12345?timeout=1234&default.timeout=5678");
+        assertEquals(1234, url1.getParameter("timeout", 0));
+        assertEquals(5678, url1.getParameter("default.timeout", 0));
+
+        URL url2 = URL.valueOf("dubbo://127.0.0.1:12345?default.timeout=5678");
+        assertEquals(5678, url2.getParameter("timeout", 0));
+        assertEquals(5678, url2.getParameter("default.timeout", 0));
+    }
+
+    @Test
     void test_valueOf_noProtocolAndHost() throws Exception {
         URL url = URL.valueOf("/context/path?version=1.0.0&application=morgan");
         assertURLStrDecoder(url);
@@ -308,7 +319,7 @@ class URLTest {
         assertEquals(3, url.getParameters().size());
         assertEquals("1.0.0", url.getVersion());
         assertEquals("morgan", url.getParameter("application"));
-        assertEquals("noValue", url.getParameter("noValue"));
+        assertEquals("", url.getParameter("noValue"));
     }
 
     // TODO Do not want to use spaces? See: DUBBO-502, URL class handles special conventions for special characters.
@@ -325,10 +336,10 @@ class URLTest {
         URL url = URL.valueOf("http://1.2.3.4:8080/path?k0=&k1=v1");
 
         assertURLStrDecoder(url);
-        assertTrue(url.hasParameter("k0"));
+        assertFalse(url.hasParameter("k0"));
 
-        // If a Key has no corresponding Value, then the Key also used as the Value.
-        assertEquals("k0", url.getParameter("k0"));
+        // If a Key has no corresponding Value, then empty string used as the Value.
+        assertEquals("", url.getParameter("k0"));
     }
 
     @Test
@@ -1047,7 +1058,7 @@ class URLTest {
     @Test
     void test_valueOfHasNameWithoutValue() throws Exception {
         URL url = URL.valueOf("dubbo://admin:hello1234@10.20.130.230:20880/context/path?version=1.0.0&application=morgan&noValue");
-        Assertions.assertEquals("noValue", url.getParameter("noValue"));
+        Assertions.assertEquals("", url.getParameter("noValue"));
     }
 
     @Test

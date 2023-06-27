@@ -16,13 +16,6 @@
  */
 package org.apache.dubbo.registry.nacos;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.ThreadLocalRandom;
-
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.LoggerCodeConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
@@ -35,7 +28,13 @@ import com.alibaba.nacos.api.PropertyKeyConst;
 import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.api.naming.NamingService;
 
-import static com.alibaba.nacos.api.PropertyKeyConst.NAMING_LOAD_CACHE_AT_START;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
+
 import static com.alibaba.nacos.api.PropertyKeyConst.PASSWORD;
 import static com.alibaba.nacos.api.PropertyKeyConst.SERVER_ADDR;
 import static com.alibaba.nacos.api.PropertyKeyConst.USERNAME;
@@ -122,11 +121,15 @@ public class NacosConnectionManager {
         try {
             for (int i = 0; i < retryTimes + 1; i++) {
                 namingService = NacosFactory.createNamingService(nacosProperties);
-                if (!check || (UP.equals(namingService.getServerStatus()) && testNamingService(namingService))) {
+                String serverStatus = namingService.getServerStatus();
+                boolean namingServiceAvailable = testNamingService(namingService);
+                if (!check || (UP.equals(serverStatus) && namingServiceAvailable)) {
                     break;
                 } else {
                     logger.warn(LoggerCodeConstants.REGISTRY_NACOS_EXCEPTION, "", "",
                         "Failed to connect to nacos naming server. " +
+                            "Server status: " + serverStatus + ". " +
+                            "Naming Service Available: " + namingServiceAvailable + ". " +
                             (i < retryTimes ? "Dubbo will try to retry in " + sleepMsBetweenRetries + ". " : "Exceed retry max times.") +
                             "Try times: " + (i + 1));
                 }
@@ -199,8 +202,6 @@ public class NacosConnectionManager {
         if (StringUtils.isNotEmpty(url.getPassword())) {
             properties.put(PASSWORD, url.getPassword());
         }
-
-        putPropertyIfAbsent(url, properties, NAMING_LOAD_CACHE_AT_START, "true");
     }
 
     private void putPropertyIfAbsent(URL url, Properties properties, String propertyName, String defaultValue) {

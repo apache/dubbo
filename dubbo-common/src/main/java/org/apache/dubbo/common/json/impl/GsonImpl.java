@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.common.json.impl;
 
-import org.apache.dubbo.common.utils.ClassUtils;
-
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -27,16 +25,6 @@ import java.util.List;
 public class GsonImpl extends AbstractJSONImpl {
     // weak reference of com.google.gson.Gson, prevent throw exception when init
     private volatile Object gsonCache = null;
-
-    @Override
-    public boolean isSupport() {
-        try {
-            Class<?> aClass = ClassUtils.forName("com.google.gson.Gson");
-            return aClass != null;
-        } catch (Throwable t) {
-            return false;
-        }
-    }
 
     @Override
     public <T> T toJavaObject(String json, Type type) {

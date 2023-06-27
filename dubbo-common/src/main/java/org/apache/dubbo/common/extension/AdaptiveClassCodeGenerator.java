@@ -17,6 +17,7 @@
 package org.apache.dubbo.common.extension;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -73,7 +74,7 @@ public class AdaptiveClassCodeGenerator {
 
     private final Class<?> type;
 
-    private String defaultExtName;
+    private final String defaultExtName;
 
     public AdaptiveClassCodeGenerator(Class<?> type, String defaultExtName) {
         this.type = type;
@@ -268,7 +269,7 @@ public class AdaptiveClassCodeGenerator {
         for (int i = value.length - 1; i >= 0; --i) {
             if (i == value.length - 1) {
                 if (null != defaultExtName) {
-                    if (!"protocol".equals(value[i])) {
+                    if (!CommonConstants.PROTOCOL_KEY.equals(value[i])) {
                         if (hasInvocation) {
                             getNameCode = String.format("url.getMethodParameter(methodName, \"%s\", \"%s\")", value[i], defaultExtName);
                         } else {
@@ -278,7 +279,7 @@ public class AdaptiveClassCodeGenerator {
                         getNameCode = String.format("( url.getProtocol() == null ? \"%s\" : url.getProtocol() )", defaultExtName);
                     }
                 } else {
-                    if (!"protocol".equals(value[i])) {
+                    if (!CommonConstants.PROTOCOL_KEY.equals(value[i])) {
                         if (hasInvocation) {
                             getNameCode = String.format("url.getMethodParameter(methodName, \"%s\", \"%s\")", value[i], defaultExtName);
                         } else {
@@ -289,7 +290,7 @@ public class AdaptiveClassCodeGenerator {
                     }
                 }
             } else {
-                if (!"protocol".equals(value[i])) {
+                if (!CommonConstants.PROTOCOL_KEY.equals(value[i])) {
                     if (hasInvocation) {
                         getNameCode = String.format("url.getMethodParameter(methodName, \"%s\", \"%s\")", value[i], defaultExtName);
                     } else {

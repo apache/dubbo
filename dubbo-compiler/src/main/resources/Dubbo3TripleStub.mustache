@@ -72,6 +72,17 @@ public final class {{className}} {
     {{inputType}}.class, {{outputType}}.class, serviceDescriptor, MethodDescriptor.RpcType.UNARY,
     obj -> ((Message) obj).toByteArray(), obj -> ((Message) obj).toByteArray(), {{inputType}}::parseFrom,
     {{outputType}}::parseFrom);
+
+    private static final StubMethodDescriptor {{methodName}}AsyncMethod = new StubMethodDescriptor("{{originMethodName}}",
+    {{inputType}}.class, java.util.concurrent.CompletableFuture.class, serviceDescriptor, MethodDescriptor.RpcType.UNARY,
+    obj -> ((Message) obj).toByteArray(), obj -> ((Message) obj).toByteArray(), {{inputType}}::parseFrom,
+    {{outputType}}::parseFrom);
+
+    private static final StubMethodDescriptor {{methodName}}ProxyAsyncMethod = new StubMethodDescriptor("{{originMethodName}}Async",
+    {{inputType}}.class, {{outputType}}.class, serviceDescriptor, MethodDescriptor.RpcType.UNARY,
+    obj -> ((Message) obj).toByteArray(), obj -> ((Message) obj).toByteArray(), {{inputType}}::parseFrom,
+    {{outputType}}::parseFrom);
+
 {{/unaryMethods}}
 
 {{#serverStreamingMethods}}
@@ -121,6 +132,10 @@ public final class {{className}} {
             return StubInvocationUtil.unaryCall(invoker, {{methodName}}Method, request);
         }
 
+        public CompletableFuture<{{outputType}}> {{methodName}}Async({{inputType}} request){
+            return StubInvocationUtil.unaryCall(invoker, {{methodName}}AsyncMethod, request);
+        }
+
         {{#javaDoc}}
             {{{javaDoc}}}
         {{/javaDoc}}
@@ -163,6 +178,21 @@ public final class {{className}} {
 
     public static abstract class {{interfaceClassName}}ImplBase implements {{interfaceClassName}}, ServerService<{{interfaceClassName}}> {
 
+        private <T, R> BiConsumer<T, StreamObserver<R>> syncToAsync(java.util.function.Function<T, R> syncFun) {
+            return new BiConsumer<T, StreamObserver<R>>() {
+                @Override
+                public void accept(T t, StreamObserver<R> observer) {
+                    try {
+                        R ret = syncFun.apply(t);
+                        observer.onNext(ret);
+                        observer.onCompleted();
+                    } catch (Throwable e) {
+                        observer.onError(e);
+                    }
+                }
+            };
+        }
+
         @Override
         public final Invoker<{{interfaceClassName}}> getInvoker(URL url) {
             PathResolver pathResolver = url.getOrDefaultFrameworkModel()
@@ -172,11 +202,14 @@ public final class {{className}} {
 
         {{#methods}}
             pathResolver.addNativeStub( "/" + SERVICE_NAME + "/{{originMethodName}}" );
+            pathResolver.addNativeStub( "/" + SERVICE_NAME + "/{{originMethodName}}Async" );
         {{/methods}}
 
         {{#unaryMethods}}
             BiConsumer<{{inputType}}, StreamObserver<{{outputType}}>> {{methodName}}Func = this::{{methodName}};
             handlers.put({{methodName}}Method.getMethodName(), new UnaryStubMethodHandler<>({{methodName}}Func));
+            BiConsumer<{{inputType}}, StreamObserver<{{outputType}}>> {{methodName}}AsyncFunc = syncToAsync(this::{{methodName}});
+            handlers.put({{methodName}}ProxyAsyncMethod.getMethodName(), new UnaryStubMethodHandler<>({{methodName}}AsyncFunc));
         {{/unaryMethods}}
 
         {{#serverStreamingMethods}}

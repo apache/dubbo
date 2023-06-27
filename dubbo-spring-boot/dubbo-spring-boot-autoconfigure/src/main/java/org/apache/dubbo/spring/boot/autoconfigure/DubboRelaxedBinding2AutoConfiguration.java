@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.spring.boot.autoconfigure;
 
+import org.apache.dubbo.config.spring.util.PropertySourcesUtils;
+
 import com.alibaba.spring.context.config.ConfigurationBeanBinder;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -35,7 +37,6 @@ import org.springframework.core.env.PropertyResolver;
 import java.util.Map;
 import java.util.Set;
 
-import static com.alibaba.spring.util.PropertySourcesUtils.getSubProperties;
 import static java.util.Collections.emptySet;
 import static org.apache.dubbo.spring.boot.util.DubboUtils.BASE_PACKAGES_BEAN_NAME;
 import static org.apache.dubbo.spring.boot.util.DubboUtils.BASE_PACKAGES_PROPERTY_NAME;
@@ -60,7 +61,7 @@ public class DubboRelaxedBinding2AutoConfiguration {
         ConfigurableEnvironment propertyResolver = new AbstractEnvironment() {
             @Override
             protected void customizePropertySources(MutablePropertySources propertySources) {
-                Map<String, Object> dubboScanProperties = getSubProperties(environment.getPropertySources(), DUBBO_SCAN_PREFIX);
+                Map<String, Object> dubboScanProperties = PropertySourcesUtils.getSubProperties(environment.getPropertySources(), DUBBO_SCAN_PREFIX);
                 propertySources.addLast(new MapPropertySource("dubboScanProperties", dubboScanProperties));
             }
         };

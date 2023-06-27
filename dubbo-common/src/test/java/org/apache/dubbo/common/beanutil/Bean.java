@@ -16,15 +16,16 @@
  */
 package org.apache.dubbo.common.beanutil;
 
-import org.apache.dubbo.rpc.model.person.FullAddress;
-import org.apache.dubbo.rpc.model.person.PersonStatus;
-import org.apache.dubbo.rpc.model.person.Phone;
-
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
 
-public class Bean {
+import org.apache.dubbo.rpc.model.person.FullAddress;
+import org.apache.dubbo.rpc.model.person.PersonStatus;
+import org.apache.dubbo.rpc.model.person.Phone;
+
+public class Bean implements Serializable {
 
     private Class<?> type;
 

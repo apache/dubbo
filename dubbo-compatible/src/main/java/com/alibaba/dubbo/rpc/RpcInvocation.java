@@ -17,6 +17,10 @@
 
 package com.alibaba.dubbo.rpc;
 
+import com.alibaba.dubbo.common.Constants;
+import com.alibaba.dubbo.common.URL;
+
+import java.beans.Transient;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -24,9 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.alibaba.dubbo.common.Constants;
-import com.alibaba.dubbo.common.URL;
-
+@Deprecated
 public class RpcInvocation implements Invocation, Serializable {
 
     private static final long serialVersionUID = -4355285085441097045L;
@@ -101,6 +103,7 @@ public class RpcInvocation implements Invocation, Serializable {
         this.invoker = invoker;
     }
 
+    @Transient
     public Invoker<?> getInvoker() {
         return invoker;
     }

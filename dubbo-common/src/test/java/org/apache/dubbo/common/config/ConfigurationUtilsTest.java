@@ -36,8 +36,8 @@ class ConfigurationUtilsTest {
     void testCachedProperties() {
         FrameworkModel frameworkModel = new FrameworkModel();
 
-        ApplicationModel applicationModel = new ApplicationModel(frameworkModel);
-        Environment originApplicationEnvironment = applicationModel.getModelEnvironment();
+        ApplicationModel applicationModel = frameworkModel.newApplication();
+        Environment originApplicationEnvironment = applicationModel.modelEnvironment();
         Environment applicationEnvironment = Mockito.spy(originApplicationEnvironment);
         applicationModel.setEnvironment(applicationEnvironment);
 
@@ -51,8 +51,8 @@ class ConfigurationUtilsTest {
         // cached key
         Assertions.assertEquals("a", ConfigurationUtils.getCachedDynamicProperty(applicationModel, "TestKey", "xxx"));
 
-        ModuleModel moduleModel = new ModuleModel(applicationModel);
-        ModuleEnvironment originModuleEnvironment = moduleModel.getModelEnvironment();
+        ModuleModel moduleModel = applicationModel.newModule();
+        ModuleEnvironment originModuleEnvironment = moduleModel.modelEnvironment();
         ModuleEnvironment moduleEnvironment = Mockito.spy(originModuleEnvironment);
         moduleModel.setModuleEnvironment(moduleEnvironment);
 

@@ -21,6 +21,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+import javax.lang.model.SourceVersion;
+
 
 class JRETest {
 
@@ -33,17 +35,10 @@ class JRETest {
     }
 
     @Test
-    @Disabled
-    void java8Version() {
-        JRE jre = JRE.currentVersion();
-        Assertions.assertEquals(JRE.JAVA_8, jre);
-    }
+    void testCurrentVersion() {
+        // SourceVersion is an enum, which member name is RELEASE_XX.
 
-    @Test
-    @Disabled
-    void java19Version() {
-        JRE jre = JRE.currentVersion();
-        Assertions.assertNotEquals(JRE.JAVA_19, jre);
+        Assertions.assertEquals(SourceVersion.latest().name().split("_")[1],
+            JRE.currentVersion().name().split("_")[1]);
     }
-
 }

@@ -42,7 +42,7 @@ public class DefaultMigrationAddressComparator implements MigrationAddressCompar
     public static final String OLD_ADDRESS_SIZE = "OLD_ADDRESS_SIZE";
     public static final String NEW_ADDRESS_SIZE = "NEW_ADDRESS_SIZE";
 
-    private ConcurrentMap<String, Map<String, Integer>> serviceMigrationData = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, Map<String, Integer>> serviceMigrationData = new ConcurrentHashMap<>();
 
     @Override
     public <T> boolean shouldMigrate(ClusterInvoker<T> newInvoker, ClusterInvoker<T> oldInvoker, MigrationRule rule) {
@@ -90,10 +90,7 @@ public class DefaultMigrationAddressComparator implements MigrationAddressCompar
             return false;
         }
 
-        if (((float) newAddressSize / (float) oldAddressSize) >= threshold) {
-            return true;
-        }
-        return false;
+        return ((float) newAddressSize / (float) oldAddressSize) >= threshold;
     }
 
     private <T> int getAddressSize(ClusterInvoker<T> invoker) {
@@ -115,6 +112,4 @@ public class DefaultMigrationAddressComparator implements MigrationAddressCompar
         }
         return "interface";
     }
-
-
 }

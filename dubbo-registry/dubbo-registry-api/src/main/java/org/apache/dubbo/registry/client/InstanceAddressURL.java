@@ -188,6 +188,27 @@ public class InstanceAddressURL extends URL {
     }
 
     @Override
+    public String getOriginalParameter(String key) {
+        if (VERSION_KEY.equals(key)) {
+            return getVersion();
+        } else if (GROUP_KEY.equals(key)) {
+            return getGroup();
+        } else if (INTERFACE_KEY.equals(key)) {
+            return getServiceInterface();
+        } else if (REMOTE_APPLICATION_KEY.equals(key)) {
+            return instance.getServiceName();
+        } else if (SIDE_KEY.equals(key)) {
+            return getSide();
+        }
+
+        String protocolServiceKey = getProtocolServiceKey();
+        if (isEmpty(protocolServiceKey)) {
+            return getInstanceParameter(key);
+        }
+        return getServiceParameter(protocolServiceKey, key);
+    }
+
+    @Override
     public String getParameter(String key) {
         if (VERSION_KEY.equals(key)) {
             return getVersion();
@@ -216,6 +237,18 @@ public class InstanceAddressURL extends URL {
             return getInstanceParameter(key);
         }
         return getServiceParameter(protocolServiceKey, key);
+    }
+
+    @Override
+    public String getOriginalServiceParameter(String service, String key) {
+        if (metadataInfo != null) {
+            String value = metadataInfo.getParameter(key, service);
+            if (StringUtils.isNotEmpty(value)) {
+                return value;
+            }
+        }
+
+        return getInstanceParameter(key);
     }
 
     @Override
@@ -393,6 +426,24 @@ public class InstanceAddressURL extends URL {
         return hasServiceMethodParameter(protocolServiceKey, method);
     }
 
+    @Override
+    public Map<String, String> getOriginalServiceParameters(String protocolServiceKey) {
+        Map<String, String> instanceParams = getInstance().getAllParams();
+        Map<String, String> metadataParams = (metadataInfo == null ? new HashMap<>() : metadataInfo.getParameters(protocolServiceKey));
+        int i = instanceParams == null ? 0 : instanceParams.size();
+        int j = metadataParams == null ? 0 : metadataParams.size();
+        Map<String, String> params = new HashMap<>((int) ((i + j) / 0.75) + 1);
+        if (instanceParams != null) {
+            params.putAll(instanceParams);
+        }
+        if (metadataParams != null) {
+            params.putAll(metadataParams);
+        }
+
+        return params;
+    }
+
+
     /**
      * Avoid calling this method in RPC call.
      *
@@ -421,6 +472,15 @@ public class InstanceAddressURL extends URL {
             params.putAll(consumerParams);
         }
         return params;
+    }
+
+    @Override
+    public Map<String, String> getOriginalParameters() {
+        String protocolServiceKey = getProtocolServiceKey();
+        if (isEmpty(protocolServiceKey)) {
+            return getInstance().getAllParams();
+        }
+        return getOriginalServiceParameters(protocolServiceKey);
     }
 
     @Override

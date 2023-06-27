@@ -1,1 +1,0 @@
-observationreceiver=org.apache.dubbo.metrics.filter.observation.ObservationReceiverFilter

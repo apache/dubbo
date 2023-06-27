@@ -20,7 +20,6 @@ import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -28,6 +27,7 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.TimeoutCountDown;
+import org.apache.dubbo.rpc.support.RpcUtils;
 
 import static org.apache.dubbo.common.constants.CommonConstants.TIME_COUNTDOWN_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROXY_TIMEOUT_REQUEST;
@@ -51,9 +51,8 @@ public class TimeoutFilter implements Filter, Filter.Listener {
         if (obj != null) {
             TimeoutCountDown countDown = (TimeoutCountDown) obj;
             if (countDown.isExpired()) {
-                ((AppResponse) appResponse).clear(); // clear response in case of timeout.
                 if (logger.isWarnEnabled()) {
-                    logger.warn(PROXY_TIMEOUT_REQUEST, "", "", "invoke timed out. method: " + invocation.getMethodName() +
+                    logger.warn(PROXY_TIMEOUT_REQUEST, "", "", "invoke timed out. method: " + RpcUtils.getMethodName(invocation) +
                         " url is " + invoker.getUrl() + ", invoke elapsed " + countDown.elapsedMillis() + " ms.");
                 }
             }

@@ -17,6 +17,7 @@
 package org.apache.dubbo.dependency;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
@@ -39,6 +40,7 @@ import java.util.stream.Collectors;
 
 class FileTest {
     private final static List<Pattern> ignoredModules = new LinkedList<>();
+    private final static List<Pattern> ignoredArtifacts = new LinkedList<>();
     private final static List<Pattern> ignoredModulesInDubboAll = new LinkedList<>();
 
     static {
@@ -49,6 +51,9 @@ class FileTest {
         ignoredModules.add(Pattern.compile("dubbo-core-spi"));
         ignoredModules.add(Pattern.compile("dubbo-demo.*"));
 
+        ignoredArtifacts.add(Pattern.compile("dubbo-demo.*"));
+        ignoredArtifacts.add(Pattern.compile("dubbo-test.*"));
+
         ignoredModulesInDubboAll.add(Pattern.compile("dubbo"));
         ignoredModulesInDubboAll.add(Pattern.compile("dubbo-bom"));
         ignoredModulesInDubboAll.add(Pattern.compile("dubbo-compiler"));
@@ -56,7 +61,8 @@ class FileTest {
         ignoredModulesInDubboAll.add(Pattern.compile("dubbo-distribution"));
         ignoredModulesInDubboAll.add(Pattern.compile("dubbo-metadata-processor"));
         ignoredModulesInDubboAll.add(Pattern.compile("dubbo-native.*"));
-        ignoredModulesInDubboAll.add(Pattern.compile("dubbo-spring-boot.*"));
+        ignoredModulesInDubboAll.add(Pattern.compile(".*spring-boot.*"));
+        ignoredModulesInDubboAll.add(Pattern.compile("dubbo-maven-plugin"));
     }
 
     @Test
@@ -96,6 +102,40 @@ class FileTest {
         expectedArtifactIds.removeIf(artifactId -> ignoredModules.stream().anyMatch(pattern -> pattern.matcher(artifactId).matches()));
 
         Assertions.assertTrue(expectedArtifactIds.isEmpty(), "Newly created modules must be added to dubbo-bom. Found modules: " + expectedArtifactIds);
+    }
+
+    @Test
+    void checkArtifacts() throws DocumentException, IOException {
+        File baseFile = getBaseFile();
+
+        List<File> poms = new LinkedList<>();
+        readPoms(baseFile, poms);
+
+        SAXReader reader = new SAXReader();
+
+        List<String> artifactIds = poms.stream()
+            .map(f -> {
+                try {
+                    return reader.read(f);
+                } catch (DocumentException e) {
+                    throw new RuntimeException(e);
+                }
+            })
+            .map(Document::getRootElement)
+            .map(doc -> doc.elementText("artifactId"))
+            .sorted()
+            .collect(Collectors.toList());
+
+        List<String> artifactIdsInRoot = IOUtils.readLines(
+            this.getClass().getClassLoader().getResource("META-INF/versions/.artifacts").openStream(),
+                StandardCharsets.UTF_8);
+        artifactIdsInRoot.removeIf(s -> s.startsWith("#"));
+
+        List<String> expectedArtifactIds = new LinkedList<>(artifactIds);
+        expectedArtifactIds.removeAll(artifactIdsInRoot);
+        expectedArtifactIds.removeIf(artifactId -> ignoredArtifacts.stream().anyMatch(pattern -> pattern.matcher(artifactId).matches()));
+
+        Assertions.assertTrue(expectedArtifactIds.isEmpty(), "Newly created modules must be added to .artifacts (in project root). Found modules: " + expectedArtifactIds);
     }
 
     @Test

@@ -19,8 +19,10 @@ package org.apache.dubbo.remoting.transport.netty4.ssl;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.config.SslConfig;
-import org.apache.dubbo.config.context.ConfigManager;
+import org.apache.dubbo.common.ssl.AuthPolicy;
+import org.apache.dubbo.common.ssl.Cert;
+import org.apache.dubbo.common.ssl.CertManager;
+import org.apache.dubbo.common.ssl.ProviderCert;
 
 import io.netty.handler.ssl.ClientAuth;
 import io.netty.handler.ssl.OpenSsl;
@@ -40,19 +42,16 @@ public class SslContexts {
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(SslContexts.class);
 
-    public static SslContext buildServerSslContext(URL url) {
-        ConfigManager globalConfigManager = url.getOrDefaultApplicationModel().getApplicationConfigManager();
-        SslConfig sslConfig = globalConfigManager.getSsl().orElseThrow(() -> new IllegalStateException("Ssl enabled, but no ssl cert information provided!"));
-
+    public static SslContext buildServerSslContext(ProviderCert providerConnectionConfig) {
         SslContextBuilder sslClientContextBuilder;
         InputStream serverKeyCertChainPathStream = null;
         InputStream serverPrivateKeyPathStream = null;
         InputStream serverTrustCertStream = null;
         try {
-            serverKeyCertChainPathStream = sslConfig.getServerKeyCertChainPathStream();
-            serverPrivateKeyPathStream = sslConfig.getServerPrivateKeyPathStream();
-            serverTrustCertStream = sslConfig.getServerTrustCertCollectionPathStream();
-            String password = sslConfig.getServerKeyPassword();
+            serverKeyCertChainPathStream = providerConnectionConfig.getKeyCertChainInputStream();
+            serverPrivateKeyPathStream = providerConnectionConfig.getPrivateKeyInputStream();
+            serverTrustCertStream = providerConnectionConfig.getTrustCertInputStream();
+            String password = providerConnectionConfig.getPassword();
             if (password != null) {
                 sslClientContextBuilder = SslContextBuilder.forServer(serverKeyCertChainPathStream,
                     serverPrivateKeyPathStream, password);
@@ -63,7 +62,11 @@ public class SslContexts {
 
             if (serverTrustCertStream != null) {
                 sslClientContextBuilder.trustManager(serverTrustCertStream);
-                sslClientContextBuilder.clientAuth(ClientAuth.REQUIRE);
+                if (providerConnectionConfig.getAuthPolicy() == AuthPolicy.CLIENT_AUTH) {
+                    sslClientContextBuilder.clientAuth(ClientAuth.REQUIRE);
+                } else {
+                    sslClientContextBuilder.clientAuth(ClientAuth.OPTIONAL);
+                }
             }
         } catch (Exception e) {
             throw new IllegalArgumentException("Could not find certificate file or the certificate is invalid.", e);
@@ -80,23 +83,26 @@ public class SslContexts {
     }
 
     public static SslContext buildClientSslContext(URL url) {
-        ConfigManager globalConfigManager = url.getOrDefaultApplicationModel().getApplicationConfigManager();
-        SslConfig sslConfig = globalConfigManager.getSsl().orElseThrow(() -> new IllegalStateException("Ssl enabled, but no ssl cert information provided!"));
+        CertManager certManager = url.getOrDefaultFrameworkModel().getBeanFactory().getBean(CertManager.class);
+        Cert consumerConnectionConfig = certManager.getConsumerConnectionConfig(url);
+        if (consumerConnectionConfig == null) {
+            return null;
+        }
 
         SslContextBuilder builder = SslContextBuilder.forClient();
         InputStream clientTrustCertCollectionPath = null;
         InputStream clientCertChainFilePath = null;
         InputStream clientPrivateKeyFilePath = null;
         try {
-            clientTrustCertCollectionPath = sslConfig.getClientTrustCertCollectionPathStream();
+            clientTrustCertCollectionPath = consumerConnectionConfig.getTrustCertInputStream();
             if (clientTrustCertCollectionPath != null) {
                 builder.trustManager(clientTrustCertCollectionPath);
             }
 
-            clientCertChainFilePath = sslConfig.getClientKeyCertChainPathStream();
-            clientPrivateKeyFilePath = sslConfig.getClientPrivateKeyPathStream();
+            clientCertChainFilePath = consumerConnectionConfig.getKeyCertChainInputStream();
+            clientPrivateKeyFilePath = consumerConnectionConfig.getPrivateKeyInputStream();
             if (clientCertChainFilePath != null && clientPrivateKeyFilePath != null) {
-                String password = sslConfig.getClientKeyPassword();
+                String password = consumerConnectionConfig.getPassword();
                 if (password != null) {
                     builder.keyManager(clientCertChainFilePath, clientPrivateKeyFilePath, password);
                 } else {

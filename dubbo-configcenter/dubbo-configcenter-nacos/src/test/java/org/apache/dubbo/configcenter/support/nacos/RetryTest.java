@@ -20,6 +20,7 @@ import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
@@ -34,6 +35,8 @@ import static com.alibaba.nacos.client.constant.Constants.HealthCheck.UP;
 import static org.mockito.ArgumentMatchers.any;
 
 class RetryTest {
+    
+    private static ApplicationModel applicationModel = ApplicationModel.defaultModel();
 
     @Test
     void testRetryCreate() {
@@ -51,10 +54,10 @@ class RetryTest {
             URL url = URL.valueOf("nacos://127.0.0.1:8848")
                 .addParameter("nacos.retry", 5)
                 .addParameter("nacos.retry-wait", 10);
-            Assertions.assertThrows(IllegalStateException.class, () -> new NacosDynamicConfiguration(url));
+            Assertions.assertThrows(IllegalStateException.class, () -> new NacosDynamicConfiguration(url, applicationModel));
 
             try {
-                new NacosDynamicConfiguration(url);
+                new NacosDynamicConfiguration(url, applicationModel);
             } catch (Throwable t) {
                 Assertions.fail(t);
             }
@@ -78,7 +81,7 @@ class RetryTest {
                 .addParameter("nacos.retry-wait", 10)
                 .addParameter("nacos.check", "false");
             try {
-                new NacosDynamicConfiguration(url);
+                new NacosDynamicConfiguration(url, applicationModel);
             } catch (Throwable t) {
                 Assertions.fail(t);
             }
@@ -110,10 +113,10 @@ class RetryTest {
             URL url = URL.valueOf("nacos://127.0.0.1:8848")
                 .addParameter("nacos.retry", 5)
                 .addParameter("nacos.retry-wait", 10);
-            Assertions.assertThrows(IllegalStateException.class, () -> new NacosDynamicConfiguration(url));
+            Assertions.assertThrows(IllegalStateException.class, () -> new NacosDynamicConfiguration(url, applicationModel));
 
             try {
-                new NacosDynamicConfiguration(url);
+                new NacosDynamicConfiguration(url, applicationModel);
             } catch (Throwable t) {
                 Assertions.fail(t);
             }

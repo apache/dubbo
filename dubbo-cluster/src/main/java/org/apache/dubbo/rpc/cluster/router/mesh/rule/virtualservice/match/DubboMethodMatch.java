@@ -18,6 +18,7 @@
 package org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.match;
 
 import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -83,7 +84,7 @@ public class DubboMethodMatch {
 
     public boolean isMatch(Invocation invocation) {
         StringMatch nameMatch = getName_match();
-        if (nameMatch != null && !nameMatch.isMatch(invocation.getMethodName())) {
+        if (nameMatch != null && !nameMatch.isMatch(RpcUtils.getMethodName(invocation))) {
             return false;
         }
 

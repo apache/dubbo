@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.timer.HashedWheelTimer;
 import org.apache.dubbo.remoting.Channel;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -54,7 +55,12 @@ class CloseTimerTaskTest {
         };
 
         AbstractTimerTask.ChannelProvider cp = () -> Collections.<Channel>singletonList(channel);
-        closeTimerTask = new CloseTimerTask(cp, tickDuration / HEARTBEAT_CHECK_TICK, (int) tickDuration);
+        closeTimerTask = new CloseTimerTask(cp, closeTimer, tickDuration / HEARTBEAT_CHECK_TICK, (int) tickDuration);
+    }
+
+    @AfterEach
+    public void teardown() {
+        closeTimerTask.cancel();
     }
 
     @Test

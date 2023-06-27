@@ -1081,9 +1081,7 @@
     "methods": [
       {
         "name": "<init>",
-        "parameterTypes": [
-          "org.apache.dubbo.rpc.model.FrameworkModel"
-        ]
+        "parameterTypes": []
       }
     ]
   },
@@ -1105,9 +1103,7 @@
     "methods": [
       {
         "name": "<init>",
-        "parameterTypes": [
-          "org.apache.dubbo.rpc.model.FrameworkModel"
-        ]
+        "parameterTypes": []
       }
     ]
   },
@@ -1136,7 +1132,30 @@
     ]
   },
   {
+    "name": "org.apache.dubbo.common.utils.SerializeSecurityConfigurator",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": [
+          "org.apache.dubbo.rpc.model.ModuleModel"
+        ]
+      }
+    ]
+  },
+  {
     "name": "org.apache.dubbo.common.utils.SerializeSecurityManager",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": [
+        ]
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.common.utils.DefaultSerializeClassChecker",
     "allPublicMethods": true,
     "methods": [
       {
@@ -2092,6 +2111,16 @@
     ]
   },
   {
+    "name": "org.apache.dubbo.metrics.MetricsScopeModelInitializer",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
     "name": "org.apache.dubbo.rpc.cluster.ConfiguratorFactory",
     "allPublicMethods": true
   },
@@ -2211,7 +2240,14 @@
     ]
   },
   {
-    "name": "org.apache.dubbo.rpc.filter.AccessLogFilter"
+    "name": "org.apache.dubbo.rpc.filter.AccessLogFilter",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
   },
   {
     "name": "org.apache.dubbo.rpc.filter.ClassLoaderFilter",
@@ -2273,7 +2309,16 @@
     ]
   },
   {
-    "name": "org.apache.dubbo.rpc.filter.GenericImplFilter"
+    "name": "org.apache.dubbo.rpc.filter.GenericImplFilter",
+    "allPublicMethods": true,
+    "methods": [
+       {
+         "name": "<init>",
+         "parameterTypes": [
+           "org.apache.dubbo.rpc.model.ModuleModel"
+         ]
+       }
+     ]
   },
   {
     "name": "org.apache.dubbo.rpc.filter.TimeoutFilter",
@@ -2461,9 +2506,6 @@
     "name": "org.apache.dubbo.rpc.filter.GenericFilter"
   },
   {
-    "name": "org.apache.dubbo.rpc.filter.GenericImplFilter"
-  },
-  {
     "name": "org.apache.dubbo.rpc.filter.TimeoutFilter"
   },
   {
@@ -2554,6 +2596,36 @@
       {
         "name": "<init>",
         "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.common.ssl.impl.SSLConfigCertProvider",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.security.cert.DubboCertManager",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": ["org.apache.dubbo.rpc.model.FrameworkModel"]
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.common.ssl.CertManager",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": ["org.apache.dubbo.rpc.model.FrameworkModel"]
       }
     ]
   },
@@ -2851,12 +2923,82 @@
     "methods": [
       {
         "name": "<init>",
-        "parameterTypes": ["org.apache.dubbo.rpc.model.ApplicationModel"]
+        "parameterTypes": []
       }
     ]
   },
   {
     "name": "org.apache.dubbo.config.deploy.DefaultMetricsServiceExporter",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.rpc.cluster.router.condition.matcher.attachment.AttachmentConditionMatcherFactory",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.rpc.cluster.router.condition.matcher.argument.ArgumentConditionMatcherFactory",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.rpc.cluster.router.condition.matcher.param.UrlParamConditionMatcherFactory",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.rpc.cluster.router.condition.matcher.pattern.range.RangeValuePattern",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.rpc.cluster.router.condition.matcher.pattern.wildcard.WildcardValuePattern",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.rpc.cluster.router.condition.config.ProviderAppStateRouterFactory",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.rpc.cluster.router.script.config.AppScriptRouterFactory",
     "allPublicMethods": true,
     "methods": [
       {
@@ -2876,5 +3018,15 @@
   {
     "name": "java.util.Collections$UnmodifiableCollection",
     "allPublicMethods": true
+  },
+  {
+    "name": "org.apache.dubbo.metrics.event.MetricsDispatcher",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": ["org.apache.dubbo.rpc.model.ApplicationModel"]
+      }
+    ]
   }
 ]

@@ -17,74 +17,69 @@
 
 package org.apache.dubbo.metrics.aggregate;
 
+import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.LongAdder;
 
 /**
  * Wrapper around Counter like Long and Integer.
- * <p>
- * Maintains a ring buffer of Counter to provide count over a sliding windows of time.
  */
 public class TimeWindowCounter {
-    private final Long[] ringBuffer;
-    private final Long[] bucketStartTimeMillis;
-    private int currentBucket;
-    private long lastRotateTimestampMillis;
-    private final long durationBetweenRotatesMillis;
+
+    private final LongAdderSlidingWindow slidingWindow;
 
     public TimeWindowCounter(int bucketNum, int timeWindowSeconds) {
-        this.ringBuffer = new Long[bucketNum];
-        this.bucketStartTimeMillis = new Long[bucketNum];
-        for (int i = 0; i < bucketNum; i++) {
-            this.ringBuffer[i] = 0L;
-            this.bucketStartTimeMillis[i] = System.currentTimeMillis();
-        }
-
-        this.currentBucket = 0;
-        this.lastRotateTimestampMillis = System.currentTimeMillis();
-        this.durationBetweenRotatesMillis = TimeUnit.SECONDS.toMillis(timeWindowSeconds) / bucketNum;
+        this.slidingWindow = new LongAdderSlidingWindow(bucketNum, TimeUnit.SECONDS.toMillis(timeWindowSeconds));
     }
 
-    public synchronized double get() {
-        return rotate();
+    public double get() {
+        double result = 0.0;
+        List<LongAdder> windows = this.slidingWindow.values();
+        for (LongAdder window : windows) {
+            result += window.sum();
+        }
+        return result;
     }
 
     public long bucketLivedSeconds() {
-        return TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - bucketStartTimeMillis[currentBucket]);
+        return TimeUnit.MILLISECONDS.toSeconds(this.slidingWindow.values().size() * this.slidingWindow.getPaneIntervalInMs());
     }
 
-    public synchronized void increment() {
+    public void increment() {
         this.increment(1L);
     }
 
-    public synchronized void increment(Long step) {
-        rotate();
-        for (int i = 0; i < ringBuffer.length; i++) {
-            ringBuffer[i] = ringBuffer[i] + step;
-        }
+    public void increment(Long step) {
+        this.slidingWindow.currentPane().getValue().add(step);
     }
 
-    public synchronized void decrement() {
+    public void decrement() {
         this.decrement(1L);
     }
 
-    public synchronized void decrement(Long step) {
-        rotate();
-        for (int i = 0; i < ringBuffer.length; i++) {
-            ringBuffer[i] = ringBuffer[i] - step;
-        }
+    public void decrement(Long step) {
+        this.slidingWindow.currentPane().getValue().add(-step);
     }
 
-    private Long rotate() {
-        long timeSinceLastRotateMillis = System.currentTimeMillis() - lastRotateTimestampMillis;
-        while (timeSinceLastRotateMillis > durationBetweenRotatesMillis) {
-            ringBuffer[currentBucket] = 0L;
-            bucketStartTimeMillis[currentBucket] = lastRotateTimestampMillis + durationBetweenRotatesMillis;
-            if (++currentBucket >= ringBuffer.length) {
-                currentBucket = 0;
-            }
-            timeSinceLastRotateMillis -= durationBetweenRotatesMillis;
-            lastRotateTimestampMillis += durationBetweenRotatesMillis;
+    /**
+     * Sliding window of type LongAdder.
+     */
+    private static class LongAdderSlidingWindow extends SlidingWindow<LongAdder> {
+
+        public LongAdderSlidingWindow(int sampleCount, long intervalInMs) {
+            super(sampleCount, intervalInMs);
         }
-        return ringBuffer[currentBucket];
+
+        @Override
+        public LongAdder newEmptyValue(long timeMillis) {
+            return new LongAdder();
+        }
+
+        @Override
+        protected Pane<LongAdder> resetPaneTo(final Pane<LongAdder> pane, long startTime) {
+            pane.setStartInMs(startTime);
+            pane.getValue().reset();
+            return pane;
+        }
     }
 }

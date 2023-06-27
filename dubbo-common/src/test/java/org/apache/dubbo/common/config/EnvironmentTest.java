@@ -39,7 +39,7 @@ class EnvironmentTest {
 
     @Test
     void testResolvePlaceholders() {
-        Environment environment = ApplicationModel.defaultModel().getModelEnvironment();
+        Environment environment = ApplicationModel.defaultModel().modelEnvironment();
 
         Map<String, String> externalMap = new LinkedHashMap<>();
         externalMap.put("zookeeper.address", "127.0.0.1");
@@ -64,8 +64,8 @@ class EnvironmentTest {
     @Test
     void test() {
         FrameworkModel frameworkModel = new FrameworkModel();
-        ApplicationModel applicationModel = new ApplicationModel(frameworkModel);
-        Environment environment = applicationModel.getModelEnvironment();
+        ApplicationModel applicationModel = frameworkModel.newApplication();
+        Environment environment = applicationModel.modelEnvironment();
 
         // test getPrefixedConfiguration
         RegistryConfig registryConfig = new RegistryConfig();
@@ -77,11 +77,11 @@ class EnvironmentTest {
 
         // test getConfigurationMaps(AbstractConfig config, String prefix)
         List<Map<String, String>> configurationMaps = environment.getConfigurationMaps(registryConfig, prefix);
-        Assertions.assertEquals(configurationMaps.size(), 7);
+        Assertions.assertEquals(7, configurationMaps.size());
 
         // test getConfigurationMaps()
         configurationMaps = environment.getConfigurationMaps();
-        Assertions.assertEquals(configurationMaps.size(), 6);
+        Assertions.assertEquals(6, configurationMaps.size());
 
         CompositeConfiguration configuration1 = environment.getConfiguration();
         CompositeConfiguration configuration2 = environment.getConfiguration();

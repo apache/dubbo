@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.qos.command.decoder;
 
-import org.apache.dubbo.qos.command.CommandContext;
+import org.apache.dubbo.qos.api.CommandContext;
 
 import org.junit.jupiter.api.Test;
 

@@ -139,7 +139,7 @@ public class ReflectionBasedServiceDiscovery extends AbstractServiceDiscovery {
     }
 
     private void updateInstanceMetadata(ServiceInstance serviceInstance) {
-        String metadataString = JsonUtils.getJson().toJson(serviceInstance.getMetadata());
+        String metadataString = JsonUtils.toJson(serviceInstance.getMetadata());
         String metadataRevision = RevisionResolver.calRevision(metadataString);
 
         // check if metadata updated
@@ -196,7 +196,7 @@ public class ReflectionBasedServiceDiscovery extends AbstractServiceDiscovery {
             // Metadata will be updated by provider callback
 
             String metadataString = metadataMap.get(hostId);
-            serviceInstance.setMetadata(JsonUtils.getJson().toJavaObject(metadataString, Map.class));
+            serviceInstance.setMetadata(JsonUtils.toJavaObject(metadataString, Map.class));
         } else {
             // refer from MetadataUtils, this proxy is different from the one used to refer exportedURL
             MetadataService metadataService = getMetadataServiceProxy(serviceInstance);
@@ -215,12 +215,12 @@ public class ReflectionBasedServiceDiscovery extends AbstractServiceDiscovery {
                     }
                 });
             metadataMap.put(hostId, metadata);
-            serviceInstance.setMetadata(JsonUtils.getJson().toJavaObject(metadata, Map.class));
+            serviceInstance.setMetadata(JsonUtils.toJavaObject(metadata, Map.class));
         }
     }
 
     public final void notifyListener(String serviceName, ServiceInstancesChangedListener listener, List<ServiceInstance> instances) {
-        String serviceInstanceRevision = RevisionResolver.calRevision(JsonUtils.getJson().toJson(instances));
+        String serviceInstanceRevision = RevisionResolver.calRevision(JsonUtils.toJson(instances));
         boolean changed = !serviceInstanceRevision.equalsIgnoreCase(
             serviceInstanceRevisionMap.put(serviceName, serviceInstanceRevision));
 

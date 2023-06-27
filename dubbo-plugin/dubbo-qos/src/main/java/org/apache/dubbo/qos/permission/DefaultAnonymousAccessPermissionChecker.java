@@ -16,13 +16,50 @@
  */
 package org.apache.dubbo.qos.permission;
 
-import org.apache.dubbo.qos.command.CommandContext;
+import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.qos.api.CommandContext;
+import org.apache.dubbo.qos.api.PermissionLevel;
+import org.apache.dubbo.qos.api.QosConfiguration;
+
+import io.netty.channel.Channel;
+
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.util.Arrays;
+import java.util.Optional;
 
 public class DefaultAnonymousAccessPermissionChecker implements PermissionChecker {
     public static final DefaultAnonymousAccessPermissionChecker INSTANCE = new DefaultAnonymousAccessPermissionChecker();
 
     @Override
     public boolean access(CommandContext commandContext, PermissionLevel defaultCmdRequiredPermissionLevel) {
-        return commandContext.hasPermission(defaultCmdRequiredPermissionLevel);
+        final InetAddress inetAddress = Optional.ofNullable(commandContext.getRemote())
+            .map(Channel::remoteAddress)
+            .map(InetSocketAddress.class::cast)
+            .map(InetSocketAddress::getAddress)
+            .orElse(null);
+
+        QosConfiguration qosConfiguration = commandContext.getQosConfiguration();
+        String anonymousAllowCommands = qosConfiguration.getAnonymousAllowCommands();
+        if (StringUtils.isNotEmpty(anonymousAllowCommands) &&
+            Arrays.stream(anonymousAllowCommands.split(","))
+                .filter(StringUtils::isNotEmpty)
+                .map(String::trim)
+                .anyMatch(cmd -> cmd.equals(commandContext.getCommandName()))) {
+            return true;
+        }
+
+        PermissionLevel currentLevel = qosConfiguration.getAnonymousAccessPermissionLevel();
+
+        // Local has private permission
+        if (inetAddress != null && inetAddress.isLoopbackAddress()) {
+            currentLevel = PermissionLevel.PRIVATE;
+        } else if (inetAddress != null &&
+            qosConfiguration.getAcceptForeignIpWhitelistPredicate()
+                .test(inetAddress.getHostAddress())) {
+            currentLevel = PermissionLevel.PROTECTED;
+        }
+
+        return currentLevel.getLevel() >= defaultCmdRequiredPermissionLevel.getLevel();
     }
 }

@@ -18,11 +18,9 @@ package org.apache.dubbo.rpc;
 
 import org.apache.dubbo.common.URL;
 
-import org.apache.dubbo.common.url.component.URLParam;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.io.InputStream;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;

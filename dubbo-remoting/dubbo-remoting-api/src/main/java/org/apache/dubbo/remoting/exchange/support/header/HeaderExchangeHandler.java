@@ -17,6 +17,7 @@
 package org.apache.dubbo.remoting.exchange.support.header;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -38,6 +39,7 @@ import java.net.InetSocketAddress;
 import java.util.concurrent.CompletionStage;
 
 import static org.apache.dubbo.common.constants.CommonConstants.READONLY_EVENT;
+import static org.apache.dubbo.common.constants.CommonConstants.WRITEABLE_EVENT;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_RESPONSE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_UNSUPPORTED_MESSAGE;
 
@@ -75,6 +77,11 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
     void handlerEvent(Channel channel, Request req) throws RemotingException {
         if (req.getData() != null && req.getData().equals(READONLY_EVENT)) {
             channel.setAttribute(Constants.CHANNEL_ATTRIBUTE_READONLY_KEY, Boolean.TRUE);
+            logger.info("ChannelReadOnly set true for channel: " + channel);
+        }
+        if (req.getData() != null && req.getData().equals(WRITEABLE_EVENT)) {
+            channel.removeAttribute(Constants.CHANNEL_ATTRIBUTE_READONLY_KEY);
+            logger.info("ChannelReadOnly set false for channel: " + channel);
         }
     }
 
@@ -126,6 +133,8 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
     public void connected(Channel channel) throws RemotingException {
         ExchangeChannel exchangeChannel = HeaderExchangeChannel.getOrAddChannel(channel);
         handler.connected(exchangeChannel);
+        channel.setAttribute(Constants.CHANNEL_SHUTDOWN_TIMEOUT_KEY,
+            ConfigurationUtils.getServerShutdownTimeout(channel.getUrl().getOrDefaultApplicationModel()));
     }
 
     @Override
@@ -134,7 +143,12 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
         try {
             handler.disconnected(exchangeChannel);
         } finally {
-            DefaultFuture.closeChannel(channel);
+            int shutdownTimeout = 0;
+            Object timeoutObj = channel.getAttribute(Constants.CHANNEL_SHUTDOWN_TIMEOUT_KEY);
+            if (timeoutObj instanceof Integer) {
+                shutdownTimeout = (Integer) timeoutObj;
+            }
+            DefaultFuture.closeChannel(channel, shutdownTimeout);
             HeaderExchangeChannel.removeChannel(channel);
         }
     }

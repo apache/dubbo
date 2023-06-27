@@ -20,6 +20,9 @@ import org.apache.dubbo.common.URL;
 
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -32,14 +35,15 @@ import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class UrlUtilsTest {
 
     String localAddress = "127.0.0.1";
+
+
+
+
 
     @Test
     void testAddressNull() {
@@ -384,6 +388,175 @@ class UrlUtilsTest {
         assertTrue(UrlUtils.isMatch(consumerUrl, url));
 
         URL consumerUrl1 = URL.valueOf("consumer://127.0.0.1/com.xxx.XxxService?default.version=1.0.0&default.group=test");
-        assertTrue(UrlUtils.isMatch(consumerUrl, url));
+        assertTrue(UrlUtils.isMatch(consumerUrl1, url));
+    }
+
+    @Test
+    public void testIsConsumer() {
+        String address1 = "remote://root:alibaba@127.0.0.1:9090";
+        URL url1 = UrlUtils.parseURL(address1, null);
+        String address2 = "consumer://root:alibaba@127.0.0.1:9090";
+        URL url2 = UrlUtils.parseURL(address2, null);
+        String address3 = "consumer://root:alibaba@127.0.0.1";
+        URL url3 = UrlUtils.parseURL(address3, null);
+
+        assertFalse(UrlUtils.isConsumer(url1));
+        assertTrue(UrlUtils.isConsumer(url2));
+        assertTrue(UrlUtils.isConsumer(url3));
+
+    }
+
+    @Test
+    public void testPrivateConstructor() throws Exception {
+        Constructor<UrlUtils> constructor = UrlUtils.class.getDeclaredConstructor();
+        assertTrue(Modifier.isPrivate(constructor.getModifiers()));
+        constructor.setAccessible(true);
+        assertThrows(InvocationTargetException.class, () -> {
+            constructor.newInstance();
+        });
+    }
+
+
+    @Test
+    public void testClassifyUrls() {
+
+        String address1 = "remote://root:alibaba@127.0.0.1:9090";
+        URL url1 = UrlUtils.parseURL(address1, null);
+        String address2 = "consumer://root:alibaba@127.0.0.1:9090";
+        URL url2 = UrlUtils.parseURL(address2, null);
+        String address3 = "remote://root:alibaba@127.0.0.1";
+        URL url3 = UrlUtils.parseURL(address3, null);
+        String address4 = "consumer://root:alibaba@127.0.0.1";
+        URL url4 = UrlUtils.parseURL(address4, null);
+
+        List<URL> urls = new ArrayList<>();
+        urls.add(url1);
+        urls.add(url2);
+        urls.add(url3);
+        urls.add(url4);
+
+        List<URL> consumerUrls = UrlUtils.classifyUrls(urls, UrlUtils::isConsumer);
+        assertEquals(2, consumerUrls.size());
+        assertTrue(consumerUrls.contains(url2));
+        assertTrue(consumerUrls.contains(url4));
+
+        List<URL> nonConsumerUrls = UrlUtils.classifyUrls(urls, url -> !UrlUtils.isConsumer(url));
+        assertEquals(2, nonConsumerUrls.size());
+        assertTrue(nonConsumerUrls.contains(url1));
+        assertTrue(nonConsumerUrls.contains(url3));
+    }
+
+    @Test
+    public void testHasServiceDiscoveryRegistryProtocol() {
+        String address1 = "http://root:alibaba@127.0.0.1:9090/dubbo.test.api";
+        URL url1 = UrlUtils.parseURL(address1, null);
+        String address2 = "service-discovery-registry://root:alibaba@127.0.0.1:9090/dubbo.test.api";
+        URL url2 = UrlUtils.parseURL(address2, null);
+
+        assertFalse(UrlUtils.hasServiceDiscoveryRegistryProtocol(url1));
+        assertTrue(UrlUtils.hasServiceDiscoveryRegistryProtocol(url2));
+    }
+
+
+    private static final String SERVICE_REGISTRY_TYPE = "service";
+    private static final String REGISTRY_TYPE_KEY = "registry-type";
+
+    @Test
+    public void testHasServiceDiscoveryRegistryTypeKey() {
+        Map<String, String> parameters1 = new HashMap<>();
+        parameters1.put(REGISTRY_TYPE_KEY, "value2");
+        assertFalse(UrlUtils.hasServiceDiscoveryRegistryTypeKey(parameters1));
+
+        Map<String, String> parameters2 = new HashMap<>();
+        parameters2.put(REGISTRY_TYPE_KEY, SERVICE_REGISTRY_TYPE);
+
+        assertTrue(UrlUtils.hasServiceDiscoveryRegistryTypeKey(parameters2));
+    }
+
+    @Test
+    public void testIsConfigurator() {
+        String address1 = "http://example.com";
+        URL url1 = UrlUtils.parseURL(address1, null);
+        String address2 = "override://example.com";
+        URL url2 = UrlUtils.parseURL(address2, null);
+        String address3 = "http://example.com?category=configurators";
+        URL url3 = UrlUtils.parseURL(address3, null);
+
+        assertFalse(UrlUtils.isConfigurator(url1));
+        assertTrue(UrlUtils.isConfigurator(url2));
+        assertTrue(UrlUtils.isConfigurator(url3));
+    }
+
+    @Test
+    public void testIsRoute() {
+        String address1 = "http://example.com";
+        URL url1 = UrlUtils.parseURL(address1, null);
+        String address2 = "route://example.com";
+        URL url2 = UrlUtils.parseURL(address2, null);
+        String address3 = "http://example.com?category=routers";
+        URL url3 = UrlUtils.parseURL(address3, null);
+
+        assertFalse(UrlUtils.isRoute(url1));
+        assertTrue(UrlUtils.isRoute(url2));
+        assertTrue(UrlUtils.isRoute(url3));
+    }
+
+    @Test
+    public void testIsProvider() {
+        String address1 = "http://example.com";
+        URL url1 = UrlUtils.parseURL(address1, null);
+        String address2 = "override://example.com";
+        URL url2 = UrlUtils.parseURL(address2, null);
+        String address3 = "route://example.com";
+        URL url3 = UrlUtils.parseURL(address3, null);
+        String address4 = "http://example.com?category=providers";
+        URL url4 = UrlUtils.parseURL(address4, null);
+        String address5 = "http://example.com?category=something-else";
+        URL url5 = UrlUtils.parseURL(address5, null);
+
+
+        assertTrue(UrlUtils.isProvider(url1));
+        assertFalse(UrlUtils.isProvider(url2));
+        assertFalse(UrlUtils.isProvider(url3));
+        assertTrue(UrlUtils.isProvider(url4));
+        assertFalse(UrlUtils.isProvider(url5));
+    }
+
+
+    @Test
+    public void testIsRegistry() {
+        String address1 = "http://example.com";
+        URL url1 = UrlUtils.parseURL(address1, null);
+        String address2 = "registry://example.com";
+        URL url2 = UrlUtils.parseURL(address2, null);
+        String address3 = "sr://example.com";
+        URL url3 = UrlUtils.parseURL(address3, null);
+        String address4 = "custom-registry-protocol://example.com";
+        URL url4 = UrlUtils.parseURL(address4, null);
+
+        assertFalse(UrlUtils.isRegistry(url1));
+        assertTrue(UrlUtils.isRegistry(url2));
+        assertFalse(UrlUtils.isRegistry(url3));
+        assertTrue(UrlUtils.isRegistry(url4));
+    }
+
+
+
+    @Test
+    public void testIsServiceDiscoveryURL() {
+        String address1 = "http://example.com";
+        URL url1 = UrlUtils.parseURL(address1, null);
+        String address2 = "service-discovery-registry://example.com";
+        URL url2 = UrlUtils.parseURL(address2, null);
+        String address3 = "SERVICE-DISCOVERY-REGISTRY://example.com";
+        URL url3 = UrlUtils.parseURL(address3, null);
+        String address4 = "http://example.com?registry-type=service";
+        URL url4 = UrlUtils.parseURL(address4, null);
+        url4.addParameter(REGISTRY_TYPE_KEY, SERVICE_REGISTRY_TYPE);
+
+        assertFalse(UrlUtils.isServiceDiscoveryURL(url1));
+        assertTrue(UrlUtils.isServiceDiscoveryURL(url2));
+        assertTrue(UrlUtils.isServiceDiscoveryURL(url3));
+        assertTrue(UrlUtils.isServiceDiscoveryURL(url4));
     }
 }

@@ -48,12 +48,12 @@ class ClassUtilsTest {
     }
 
     @Test
-    void testGetCallerClassLoader() throws Exception {
+    void testGetCallerClassLoader() {
         assertThat(ClassUtils.getCallerClassLoader(ClassUtilsTest.class), sameInstance(ClassUtilsTest.class.getClassLoader()));
     }
 
     @Test
-    void testGetClassLoader1() throws Exception {
+    void testGetClassLoader1() {
         ClassLoader oldClassLoader = Thread.currentThread().getContextClassLoader();
         try {
             assertThat(ClassUtils.getClassLoader(ClassUtilsTest.class), sameInstance(oldClassLoader));
@@ -65,7 +65,7 @@ class ClassUtilsTest {
     }
 
     @Test
-    void testGetClassLoader2() throws Exception {
+    void testGetClassLoader2() {
         assertThat(ClassUtils.getClassLoader(), sameInstance(ClassUtils.class.getClassLoader()));
     }
 
@@ -89,7 +89,7 @@ class ClassUtilsTest {
     }
 
     @Test
-    void testResolvePrimitiveClassName() throws Exception {
+    void testResolvePrimitiveClassName() {
         assertThat(ClassUtils.resolvePrimitiveClassName("boolean") == boolean.class, is(true));
         assertThat(ClassUtils.resolvePrimitiveClassName("byte") == byte.class, is(true));
         assertThat(ClassUtils.resolvePrimitiveClassName("char") == char.class, is(true));
@@ -109,13 +109,13 @@ class ClassUtilsTest {
     }
 
     @Test
-    void testToShortString() throws Exception {
+    void testToShortString() {
         assertThat(ClassUtils.toShortString(null), equalTo("null"));
         assertThat(ClassUtils.toShortString(new ClassUtilsTest()), startsWith("ClassUtilsTest@"));
     }
 
     @Test
-    void testConvertPrimitive() throws Exception {
+    void testConvertPrimitive() {
 
         assertThat(ClassUtils.convertPrimitive(char.class, ""), equalTo(null));
         assertThat(ClassUtils.convertPrimitive(char.class, null), equalTo(null));

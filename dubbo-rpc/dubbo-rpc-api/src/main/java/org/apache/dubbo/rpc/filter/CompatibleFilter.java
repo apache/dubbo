@@ -47,7 +47,7 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FILTE
  */
 public class CompatibleFilter implements Filter, Filter.Listener {
 
-    private static ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(CompatibleFilter.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(CompatibleFilter.class);
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {

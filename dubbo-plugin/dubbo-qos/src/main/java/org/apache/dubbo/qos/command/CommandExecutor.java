@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.qos.command;
 
+import org.apache.dubbo.qos.api.CommandContext;
 import org.apache.dubbo.qos.command.exception.NoSuchCommandException;
 import org.apache.dubbo.qos.command.exception.PermissionDenyException;
 

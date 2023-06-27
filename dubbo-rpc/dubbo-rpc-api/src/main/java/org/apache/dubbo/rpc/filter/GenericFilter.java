@@ -21,6 +21,7 @@ import org.apache.dubbo.common.beanutil.JavaBeanDescriptor;
 import org.apache.dubbo.common.beanutil.JavaBeanSerializeUtil;
 import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.constants.LoggerCodeConstants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.io.UnsafeByteArrayInputStream;
 import org.apache.dubbo.common.io.UnsafeByteArrayOutputStream;
@@ -106,13 +107,15 @@ public class GenericFilter implements Filter, Filter.Listener, ScopeModelAware {
                     || ProtocolUtils.isGenericReturnRawResult(generic)) {
                     try {
                         args = PojoUtils.realize(args, params, method.getGenericParameterTypes());
-                    } catch (IllegalArgumentException e) {
+                    } catch (Exception e) {
+                        logger.error(LoggerCodeConstants.PROTOCOL_ERROR_DESERIALIZE, "", "",
+                            "Deserialize generic invocation failed. ServiceKey: " + inv.getTargetServiceUniqueName(), e);
                         throw new RpcException(e);
                     }
                 } else if (ProtocolUtils.isGsonGenericSerialization(generic)) {
                     args = getGsonGenericArgs(args, method.getGenericParameterTypes());
                 } else if (ProtocolUtils.isJavaGenericSerialization(generic)) {
-                    Configuration configuration = ApplicationModel.ofNullable(applicationModel).getModelEnvironment().getConfiguration();
+                    Configuration configuration = ApplicationModel.ofNullable(applicationModel).modelEnvironment().getConfiguration();
                     if (!configuration.getBoolean(CommonConstants.ENABLE_NATIVE_JAVA_GENERIC_SERIALIZE, false)) {
                         String notice = "Trigger the safety barrier! " +
                             "Native Java Serializer is not allowed by default." +
@@ -145,16 +148,18 @@ public class GenericFilter implements Filter, Filter.Listener, ScopeModelAware {
                     }
                 } else if (ProtocolUtils.isBeanGenericSerialization(generic)) {
                     for (int i = 0; i < args.length; i++) {
-                        if (args[i] instanceof JavaBeanDescriptor) {
-                            args[i] = JavaBeanSerializeUtil.deserialize((JavaBeanDescriptor) args[i]);
-                        } else {
-                            throw new RpcException(
-                                "Generic serialization [" +
-                                    GENERIC_SERIALIZATION_BEAN +
-                                    "] only support message type " +
-                                    JavaBeanDescriptor.class.getName() +
-                                    " and your message type is " +
-                                    args[i].getClass().getName());
+                        if (args[i] != null) {
+                            if (args[i] instanceof JavaBeanDescriptor) {
+                                args[i] = JavaBeanSerializeUtil.deserialize((JavaBeanDescriptor) args[i]);
+                            } else {
+                                throw new RpcException(
+                                    "Generic serialization [" +
+                                        GENERIC_SERIALIZATION_BEAN +
+                                        "] only support message type " +
+                                        JavaBeanDescriptor.class.getName() +
+                                        " and your message type is " +
+                                        args[i].getClass().getName());
+                            }
                         }
                     }
                 } else if (ProtocolUtils.isProtobufGenericSerialization(generic)) {
@@ -230,7 +235,9 @@ public class GenericFilter implements Filter, Filter.Listener, ScopeModelAware {
                 Throwable appException = appResponse.getException();
                 if (appException instanceof GenericException) {
                     GenericException tmp = (GenericException) appException;
-                    appException = new com.alibaba.dubbo.rpc.service.GenericException(tmp.getExceptionClass(), tmp.getExceptionMessage());
+                    appException = new com.alibaba.dubbo.rpc.service.GenericException(tmp.getMessage(), tmp.getCause(),
+                        tmp.getExceptionClass(), tmp.getExceptionMessage());
+                    appException.setStackTrace(tmp.getStackTrace());
                 }
                 if (!(appException instanceof com.alibaba.dubbo.rpc.service.GenericException)) {
                     appException = new com.alibaba.dubbo.rpc.service.GenericException(appException);

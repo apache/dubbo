@@ -28,8 +28,8 @@ public class ServiceRepository {
 
     public static final String NAME = "repository";
 
-    private AtomicBoolean inited = new AtomicBoolean(false);
-    private ApplicationModel applicationModel;
+    private final AtomicBoolean initialized = new AtomicBoolean(false);
+    private final ApplicationModel applicationModel;
 
     public ServiceRepository(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
@@ -37,7 +37,7 @@ public class ServiceRepository {
     }
 
     private void initialize() {
-        if (inited.compareAndSet(false, true)) {
+        if (initialized.compareAndSet(false, true)) {
             Set<BuiltinServiceDetector> builtinServices
                 = applicationModel.getExtensionLoader(BuiltinServiceDetector.class).getSupportedExtensionInstances();
             if (CollectionUtils.isNotEmpty(builtinServices)) {

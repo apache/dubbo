@@ -41,7 +41,6 @@ import static java.util.Collections.emptySet;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Stream.of;
-
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_FAILED_LOAD_MAPPING_CACHE;
 import static org.apache.dubbo.common.constants.RegistryConstants.SUBSCRIBED_SERVICE_NAMES_KEY;
 import static org.apache.dubbo.common.utils.CollectionUtils.toTreeSet;
@@ -125,18 +124,20 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping {
     @Override
     public MappingListener stopListen(URL subscribeURL, MappingListener listener) {
         synchronized (mappingListeners) {
-            String mappingKey = ServiceNameMapping.buildMappingKey(subscribeURL);
-            Set<MappingListener> listeners = mappingListeners.get(mappingKey);
-            //todo, remove listener from remote metadata center
-            if (CollectionUtils.isNotEmpty(listeners)) {
-                listeners.remove(listener);
-                listener.stop();
-                removeListener(subscribeURL, listener);
-            }
-            if (CollectionUtils.isEmpty(listeners)) {
-                mappingListeners.remove(mappingKey);
-                removeCachedMapping(mappingKey);
-                removeMappingLock(mappingKey);
+            if (listener != null) {
+                String mappingKey = ServiceNameMapping.buildMappingKey(subscribeURL);
+                Set<MappingListener> listeners = mappingListeners.get(mappingKey);
+                //todo, remove listener from remote metadata center
+                if (CollectionUtils.isNotEmpty(listeners)) {
+                    listeners.remove(listener);
+                    listener.stop();
+                    removeListener(subscribeURL, listener);
+                }
+                if (CollectionUtils.isEmpty(listeners)) {
+                    mappingListeners.remove(mappingKey);
+                    removeCachedMapping(mappingKey);
+                    removeMappingLock(mappingKey);
+                }
             }
             return listener;
         }

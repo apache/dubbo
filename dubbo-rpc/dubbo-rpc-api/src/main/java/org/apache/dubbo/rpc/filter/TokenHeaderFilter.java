@@ -23,6 +23,7 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.support.RpcUtils;
 
 import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 import static org.apache.dubbo.rpc.RpcException.FORBIDDEN_EXCEPTION;
@@ -36,7 +37,7 @@ public class TokenHeaderFilter implements HeaderFilter {
             Class<?> serviceType = invoker.getInterface();
             String remoteToken = (String) invocation.getObjectAttachmentWithoutConvert(TOKEN_KEY);
             if (!token.equals(remoteToken)) {
-                throw new RpcException(FORBIDDEN_EXCEPTION, "Forbid invoke remote service " + serviceType + " method " + invocation.getMethodName() +
+                throw new RpcException(FORBIDDEN_EXCEPTION, "Forbid invoke remote service " + serviceType + " method " + RpcUtils.getMethodName(invocation) +
                     "() from consumer " + RpcContext.getServiceContext().getRemoteHost() + " to provider " +
                     RpcContext.getServiceContext().getLocalHost() + ", consumer incorrect token is " + remoteToken);
             }

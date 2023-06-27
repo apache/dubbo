@@ -17,7 +17,11 @@
 package org.apache.dubbo.metrics.filter;
 
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.config.MetricsConfig;
+import org.apache.dubbo.metrics.event.MetricsEventBus;
+import org.apache.dubbo.metrics.event.RequestEvent;
 import org.apache.dubbo.rpc.BaseFilter;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
@@ -27,49 +31,62 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
 
-import java.util.function.Consumer;
-
+import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
+import static org.apache.dubbo.metrics.DefaultConstants.METRIC_FILTER_EVENT;
+import static org.apache.dubbo.metrics.DefaultConstants.METRIC_THROWABLE;
 
-@Activate(group = PROVIDER, order = -1)
+@Activate(group = {CONSUMER, PROVIDER}, order = Integer.MIN_VALUE + 100)
 public class MetricsFilter implements Filter, BaseFilter.Listener, ScopeModelAware {
 
-    private DefaultMetricsCollector collector = null;
-
     private ApplicationModel applicationModel;
-
+    private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(MetricsFilter.class);
+    private boolean rpcMetricsEnable;
 
     @Override
     public void setApplicationModel(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
-        collector = applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class);
+        this.rpcMetricsEnable = applicationModel.getApplicationConfigManager().getMetrics().map(MetricsConfig::getEnableRpc).orElse(true);
     }
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
-        if (collector == null || !collector.isCollectEnabled()) {
-            return invoker.invoke(invocation);
+        if (rpcMetricsEnable) {
+            try {
+                RequestEvent requestEvent = RequestEvent.toRequestEvent(applicationModel, invocation);
+                MetricsEventBus.before(requestEvent, () -> invocation.put(METRIC_FILTER_EVENT, requestEvent));
+            } catch (Throwable t) {
+                LOGGER.warn(INTERNAL_ERROR, "", "", "Error occurred when invoke.", t);
+            }
         }
-        collect(invocation, MetricsCollectExecutor::beforeExecute);
-
         return invoker.invoke(invocation);
     }
 
     @Override
     public void onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
-        collect(invocation, collector->collector.postExecute(result));
+        Object eventObj = invocation.get(METRIC_FILTER_EVENT);
+        if (eventObj != null) {
+            try {
+                MetricsEventBus.after((RequestEvent) eventObj, result);
+            } catch (Throwable t) {
+                LOGGER.warn(INTERNAL_ERROR, "", "", "Error occurred when onResponse.", t);
+            }
+        }
     }
 
     @Override
     public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
-        collect(invocation, collector-> collector.throwExecute(t));
+        Object eventObj = invocation.get(METRIC_FILTER_EVENT);
+        if (eventObj != null) {
+            try {
+                RequestEvent requestEvent = (RequestEvent) eventObj;
+                requestEvent.putAttachment(METRIC_THROWABLE, t);
+                MetricsEventBus.error(requestEvent);
+            } catch (Throwable throwable) {
+                LOGGER.warn(INTERNAL_ERROR, "", "", "Error occurred when onResponse.", throwable);
+            }
+        }
     }
 
-    private void collect(Invocation invocation, Consumer<MetricsCollectExecutor> execute) {
-        if (collector == null || !collector.isCollectEnabled()) {
-            return;
-        }
-        MetricsCollectExecutor collectorExecutor = new MetricsCollectExecutor(collector, invocation);
-        execute.accept(collectorExecutor);
-    }
 }

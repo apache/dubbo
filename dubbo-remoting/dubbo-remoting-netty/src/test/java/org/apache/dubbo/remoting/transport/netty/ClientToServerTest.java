@@ -53,7 +53,7 @@ public abstract class ClientToServerTest  {
     }
 
     @BeforeEach
-    protected void tearDown() throws Exception {
+    protected void tearDown() {
         try {
             if (server != null)
                 server.close();

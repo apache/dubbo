@@ -58,7 +58,7 @@ public class SslClientTlsHandler extends ChannelInboundHandlerAdapter {
             SslHandshakeCompletionEvent handshakeEvent = (SslHandshakeCompletionEvent) evt;
             if (handshakeEvent.isSuccess()) {
                 SSLSession session = ctx.pipeline().get(SslHandler.class).engine().getSession();
-                logger.info("TLS negotiation succeed with session: " + session);
+                logger.info("TLS negotiation succeed with: " + session.getPeerHost());
                 ctx.pipeline().remove(this);
             } else {
                 logger.error(INTERNAL_ERROR, "unknown error in remoting module", "", "TLS negotiation failed when trying to accept new connection.", handshakeEvent.cause());

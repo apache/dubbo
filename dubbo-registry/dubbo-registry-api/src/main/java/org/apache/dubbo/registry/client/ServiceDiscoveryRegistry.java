@@ -25,6 +25,8 @@ import org.apache.dubbo.metadata.AbstractServiceNameMapping;
 import org.apache.dubbo.metadata.MappingChangedEvent;
 import org.apache.dubbo.metadata.MappingListener;
 import org.apache.dubbo.metadata.ServiceNameMapping;
+import org.apache.dubbo.metrics.event.MetricsEventBus;
+import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
@@ -39,7 +41,6 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
@@ -192,8 +193,6 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
 
         serviceDiscovery.subscribe(url, listener);
 
-        boolean check = url.getParameter(CHECK_KEY, false);
-
         Set<String> mappingByUrl = ServiceNameMapping.getMappingByUrl(url);
 
         String key = ServiceNameMapping.buildMappingKey(url);
@@ -249,7 +248,9 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
         serviceDiscovery.unsubscribe(url, listener);
         String protocolServiceKey = url.getProtocolServiceKey();
         Set<String> serviceNames = serviceNameMapping.getMapping(url);
-        serviceNameMapping.stopListen(url, mappingListeners.remove(protocolServiceKey));
+        if (mappingListeners.get(protocolServiceKey) != null) {
+            serviceNameMapping.stopListen(url, mappingListeners.remove(protocolServiceKey));
+        }
         if (CollectionUtils.isNotEmpty(serviceNames)) {
             String serviceNamesKey = toStringKeys(serviceNames);
             Lock appSubscriptionLock = getAppSubscription(serviceNamesKey);
@@ -328,7 +329,14 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
             if (!serviceInstancesChangedListener.isDestroyed()) {
                 listener.addServiceListener(serviceInstancesChangedListener);
                 serviceInstancesChangedListener.addListenerAndNotify(url, listener);
-                serviceDiscovery.addServiceInstancesChangedListener(serviceInstancesChangedListener);
+                ServiceInstancesChangedListener finalServiceInstancesChangedListener = serviceInstancesChangedListener;
+
+                MetricsEventBus.post(RegistryEvent.toSsEvent(url.getApplicationModel(), serviceKey),
+                    () -> {
+                        serviceDiscovery.addServiceInstancesChangedListener(finalServiceInstancesChangedListener);
+                        return null;
+                    }
+                );
             } else {
                 logger.info(String.format("Listener of %s has been destroyed by another thread.", serviceNamesKey));
                 serviceListeners.remove(serviceNamesKey);

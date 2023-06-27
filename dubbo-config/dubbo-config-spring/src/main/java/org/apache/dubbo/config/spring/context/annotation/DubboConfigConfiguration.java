@@ -27,6 +27,7 @@ import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.SslConfig;
+import org.apache.dubbo.config.TracingConfig;
 import org.apache.dubbo.config.spring.ConfigCenterBean;
 
 import com.alibaba.spring.beans.factory.annotation.EnableConfigurationBeanBinding;
@@ -66,6 +67,7 @@ public class DubboConfigConfiguration {
             @EnableConfigurationBeanBinding(prefix = "dubbo.config-center", type = ConfigCenterBean.class),
             @EnableConfigurationBeanBinding(prefix = "dubbo.metadata-report", type = MetadataReportConfig.class),
             @EnableConfigurationBeanBinding(prefix = "dubbo.metrics", type = MetricsConfig.class),
+            @EnableConfigurationBeanBinding(prefix = "dubbo.tracing", type = TracingConfig.class),
             @EnableConfigurationBeanBinding(prefix = "dubbo.ssl", type = SslConfig.class)
     })
     public static class Single {
@@ -85,7 +87,8 @@ public class DubboConfigConfiguration {
             @EnableConfigurationBeanBinding(prefix = "dubbo.consumers", type = ConsumerConfig.class, multiple = true),
             @EnableConfigurationBeanBinding(prefix = "dubbo.config-centers", type = ConfigCenterBean.class, multiple = true),
             @EnableConfigurationBeanBinding(prefix = "dubbo.metadata-reports", type = MetadataReportConfig.class, multiple = true),
-            @EnableConfigurationBeanBinding(prefix = "dubbo.metricses", type = MetricsConfig.class, multiple = true)
+            @EnableConfigurationBeanBinding(prefix = "dubbo.metricses", type = MetricsConfig.class, multiple = true),
+            @EnableConfigurationBeanBinding(prefix = "dubbo.tracings", type = TracingConfig.class, multiple = true)
     })
     public static class Multiple {
 

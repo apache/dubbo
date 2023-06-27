@@ -94,7 +94,6 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
         if (exporter == null) {
             throw new RpcException("Service [" + key + "] not found.");
         }
-        RpcContext.getServiceContext().setRemoteAddress(LOCALHOST_VALUE, 0);
         // Solve local exposure, the server opens the token, and the client call fails.
         Invoker<?> invoker = exporter.getInvoker();
         URL serverURL = invoker.getUrl();
@@ -103,13 +102,13 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
             invocation.setAttachment(Constants.TOKEN_KEY, serverURL.getParameter(Constants.TOKEN_KEY));
         }
 
-        int timeout = RpcUtils.calculateTimeout(getUrl(), invocation, invocation.getMethodName(), DEFAULT_TIMEOUT);
+        int timeout = RpcUtils.calculateTimeout(getUrl(), invocation, RpcUtils.getMethodName(invocation), DEFAULT_TIMEOUT);
         if (timeout <= 0) {
             return AsyncRpcResult.newDefaultAsyncResult(new RpcException(RpcException.TIMEOUT_TERMINATE,
                 "No time left for making the following call: " + invocation.getServiceName() + "."
-                    + invocation.getMethodName() + ", terminate directly."), invocation);
+                    + RpcUtils.getMethodName(invocation) + ", terminate directly."), invocation);
         }
-        invocation.setAttachment(TIMEOUT_KEY, timeout);
+        invocation.setAttachment(TIMEOUT_KEY, String.valueOf(timeout));
 
 
         String desc = ReflectUtils.getDesc(invocation.getParameterTypes());
@@ -122,16 +121,24 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
             // use consumer executor
             ExecutorService executor = executorRepository.createExecutorIfAbsent(ExecutorUtil.setThreadName(getUrl(), SERVER_THREAD_POOL_NAME));
             CompletableFuture<AppResponse> appResponseFuture = CompletableFuture.supplyAsync(() -> {
-                Result result = invoker.invoke(copiedInvocation);
-                if (result.hasException()) {
-                    AppResponse appResponse = new AppResponse(result.getException());
-                    appResponse.setObjectAttachments(new HashMap<>(result.getObjectAttachments()));
-                    return appResponse;
-                } else {
-                    rebuildValue(invocation, desc, result);
-                    AppResponse appResponse = new AppResponse(result.getValue());
-                    appResponse.setObjectAttachments(new HashMap<>(result.getObjectAttachments()));
-                    return appResponse;
+                // clear thread local before child invocation, prevent context pollution
+                InternalThreadLocalMap originTL = InternalThreadLocalMap.getAndRemove();
+                try {
+                    RpcContext.getServiceContext().setRemoteAddress(LOCALHOST_VALUE, 0);
+                    RpcContext.getServiceContext().setRemoteApplicationName(getUrl().getApplication());
+                    Result result = invoker.invoke(copiedInvocation);
+                    if (result.hasException()) {
+                        AppResponse appResponse = new AppResponse(result.getException());
+                        appResponse.setObjectAttachments(new HashMap<>(result.getObjectAttachments()));
+                        return appResponse;
+                    } else {
+                        rebuildValue(invocation, desc, result);
+                        AppResponse appResponse = new AppResponse(result.getValue());
+                        appResponse.setObjectAttachments(new HashMap<>(result.getObjectAttachments()));
+                        return appResponse;
+                    }
+                } finally {
+                    InternalThreadLocalMap.set(originTL);
                 }
             }, executor);
             // save for 2.6.x compatibility, for example, TraceFilter in Zipkin uses com.alibaba.xxx.FutureAdapter
@@ -146,6 +153,8 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
             // clear thread local before child invocation, prevent context pollution
             InternalThreadLocalMap originTL = InternalThreadLocalMap.getAndRemove();
             try {
+                RpcContext.getServiceContext().setRemoteAddress(LOCALHOST_VALUE, 0);
+                RpcContext.getServiceContext().setRemoteApplicationName(getUrl().getApplication());
                 result = invoker.invoke(copiedInvocation);
             } finally {
                 InternalThreadLocalMap.set(originTL);
@@ -231,7 +240,7 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
                 if (pts != null && args != null && pts.length == args.length) {
                     realArgument = new Object[pts.length];
                     for (int i = 0; i < pts.length; i++) {
-                        realArgument[i] = paramDeepCopyUtil.copy(invoker.getUrl(), args[i], pts[i]);
+                        realArgument[i] = paramDeepCopyUtil.copy(getUrl(), args[i], pts[i]);
                     }
                 }
                 if (realArgument == null) {

@@ -93,6 +93,23 @@ public abstract class ServiceAddressURL extends URL {
     }
 
     @Override
+    public String getOriginalParameter(String key) {
+        // call corresponding methods directly, then we can remove the following if branches.
+        if (GROUP_KEY.equals(key)) {
+            return getGroup();
+        } else if (VERSION_KEY.equals(key)) {
+            return getVersion();
+        } else if (APPLICATION_KEY.equals(key)) {
+            return getRemoteApplication();
+        } else if (SIDE_KEY.equals(key)) {
+            return getSide();
+        } else if (CATEGORY_KEY.equals(key)) {
+            return getCategory();
+        }
+        return super.getParameter(key);
+    }
+
+    @Override
     public String getParameter(String key) {
         // call corresponding methods directly, then we can remove the following if branches.
         if (GROUP_KEY.equals(key)) {

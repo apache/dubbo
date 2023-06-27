@@ -21,6 +21,7 @@ import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 
 import com.google.common.util.concurrent.SettableFuture;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -46,6 +47,7 @@ class ApolloDynamicConfigurationTest {
     private static final String DEFAULT_NAMESPACE = "dubbo";
     private static ApolloDynamicConfiguration apolloDynamicConfiguration;
     private static URL url;
+    private static ApplicationModel applicationModel;
 
     /**
      * The constant embeddedApollo.
@@ -61,6 +63,7 @@ class ApolloDynamicConfigurationTest {
         String apolloUrl = System.getProperty("apollo.configService");
         String urlForDubbo = "apollo://" + apolloUrl.substring(apolloUrl.lastIndexOf("/") + 1) + "/org.apache.dubbo.apollo.testService?namespace=dubbo&check=true";
         url = URL.valueOf(urlForDubbo).addParameter(SESSION_TIMEOUT_KEY, 15000);
+        applicationModel = ApplicationModel.defaultModel();
     }
 
 //    /**
@@ -88,7 +91,7 @@ class ApolloDynamicConfigurationTest {
         String mockKey = "mockKey1";
         String mockValue = String.valueOf(new Random().nextInt());
         putMockRuleData(mockKey, mockValue, DEFAULT_NAMESPACE);
-        apolloDynamicConfiguration = new ApolloDynamicConfiguration(url);
+        apolloDynamicConfiguration = new ApolloDynamicConfiguration(url, applicationModel);
         assertEquals(mockValue, apolloDynamicConfiguration.getConfig(mockKey, DEFAULT_NAMESPACE, 3000L));
 
         mockKey = "notExistKey";
@@ -106,7 +109,7 @@ class ApolloDynamicConfigurationTest {
         String mockValue = String.valueOf(new Random().nextInt());
         putMockRuleData(mockKey, mockValue, DEFAULT_NAMESPACE);
         TimeUnit.MILLISECONDS.sleep(1000);
-        apolloDynamicConfiguration = new ApolloDynamicConfiguration(url);
+        apolloDynamicConfiguration = new ApolloDynamicConfiguration(url, applicationModel);
         assertEquals(mockValue, apolloDynamicConfiguration.getInternalProperty(mockKey));
 
         mockValue = "mockValue2";
@@ -129,7 +132,7 @@ class ApolloDynamicConfigurationTest {
 
         final SettableFuture<org.apache.dubbo.common.config.configcenter.ConfigChangedEvent> future = SettableFuture.create();
 
-        apolloDynamicConfiguration = new ApolloDynamicConfiguration(url);
+        apolloDynamicConfiguration = new ApolloDynamicConfiguration(url, applicationModel);
 
         apolloDynamicConfiguration.addListener(mockKey, DEFAULT_NAMESPACE, new ConfigurationListener() {
             @Override

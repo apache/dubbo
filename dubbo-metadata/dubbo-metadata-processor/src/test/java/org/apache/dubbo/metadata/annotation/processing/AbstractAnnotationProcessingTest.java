@@ -47,7 +47,7 @@ public abstract class AbstractAnnotationProcessingTest {
     protected Types types;
 
     @BeforeEach
-    public final void init() throws IOException {
+    public final void init() {
         testInstanceHolder.set(this);
     }
 

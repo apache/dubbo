@@ -44,7 +44,7 @@ public class AdaptiveLoadBalance extends AbstractLoadBalance {
     //default key
     private String attachmentKey = "mem,load";
 
-    private AdaptiveMetrics adaptiveMetrics;
+    private final AdaptiveMetrics adaptiveMetrics;
 
     public AdaptiveLoadBalance(ApplicationModel scopeModel){
         adaptiveMetrics = scopeModel.getBeanFactory().getBean(AdaptiveMetrics.class);

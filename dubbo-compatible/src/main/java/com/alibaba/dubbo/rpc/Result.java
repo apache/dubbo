@@ -64,35 +64,17 @@ public interface Result extends org.apache.dubbo.rpc.Result {
         return null;
     }
 
-    abstract class AbstractResult implements Result {
 
-        @Override
-        public void setValue(Object value) {
-
-        }
-
-        @Override
-        public org.apache.dubbo.rpc.Result whenCompleteWithContext(BiConsumer<org.apache.dubbo.rpc.Result, Throwable> fn) {
-            return null;
-        }
-
-        @Override
-        public <U> CompletableFuture<U> thenApply(Function<org.apache.dubbo.rpc.Result, ? extends U> fn) {
-            return null;
-        }
-
-        @Override
-        public org.apache.dubbo.rpc.Result get() throws InterruptedException, ExecutionException {
-            return null;
-        }
-
-        @Override
-        public org.apache.dubbo.rpc.Result get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-            return null;
-        }
+    /**
+     * @see com.alibaba.dubbo.rpc.Result#getValue()
+     * @deprecated Replace to getValue()
+     */
+    @Deprecated
+    default Object getResult() {
+        return getValue();
     }
 
-    class CompatibleResult extends AbstractResult {
+    class CompatibleResult implements Result {
         private org.apache.dubbo.rpc.Result delegate;
 
         public CompatibleResult(org.apache.dubbo.rpc.Result result) {
@@ -101,6 +83,11 @@ public interface Result extends org.apache.dubbo.rpc.Result {
 
         public org.apache.dubbo.rpc.Result getDelegate() {
             return delegate;
+        }
+
+        @Override
+        public org.apache.dubbo.rpc.Result whenCompleteWithContext(BiConsumer<org.apache.dubbo.rpc.Result, Throwable> fn) {
+            return delegate.whenCompleteWithContext(fn);
         }
 
         @Override
@@ -171,6 +158,21 @@ public interface Result extends org.apache.dubbo.rpc.Result {
         @Override
         public void setObjectAttachment(String key, Object value) {
             delegate.setObjectAttachment(key, value);
+        }
+
+        @Override
+        public <U> CompletableFuture<U> thenApply(Function<org.apache.dubbo.rpc.Result, ? extends U> fn) {
+            return delegate.thenApply(fn);
+        }
+
+        @Override
+        public org.apache.dubbo.rpc.Result get() throws InterruptedException, ExecutionException {
+            return delegate.get();
+        }
+
+        @Override
+        public org.apache.dubbo.rpc.Result get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+            return delegate.get(timeout, unit);
         }
     }
 }

@@ -19,8 +19,8 @@ package org.apache.dubbo.qos.server;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.qos.permission.PermissionLevel;
-import org.apache.dubbo.qos.common.QosConfiguration;
+import org.apache.dubbo.qos.api.PermissionLevel;
+import org.apache.dubbo.qos.api.QosConfiguration;
 import org.apache.dubbo.qos.server.handler.QosProcessHandler;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
@@ -57,6 +57,8 @@ public class Server {
     private String acceptForeignIpWhitelist = StringUtils.EMPTY_STRING;
 
     private String anonymousAccessPermissionLevel = PermissionLevel.NONE.name();
+
+    private String anonymousAllowCommands = StringUtils.EMPTY_STRING;
 
     private EventLoopGroup boss;
 
@@ -108,6 +110,7 @@ public class Server {
                         .acceptForeignIp(acceptForeignIp)
                         .acceptForeignIpWhitelist(acceptForeignIpWhitelist)
                         .anonymousAccessPermissionLevel(anonymousAccessPermissionLevel)
+                        .anonymousAllowCommands(anonymousAllowCommands)
                         .build()
                 ));
             }
@@ -165,6 +168,10 @@ public class Server {
 
     public void setAnonymousAccessPermissionLevel(String anonymousAccessPermissionLevel) {
         this.anonymousAccessPermissionLevel = anonymousAccessPermissionLevel;
+    }
+
+    public void setAnonymousAllowCommands(String anonymousAllowCommands) {
+        this.anonymousAllowCommands = anonymousAllowCommands;
     }
 
     public String getWelcome() {

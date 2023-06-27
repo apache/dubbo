@@ -1,0 +1,42 @@
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
+public void com.alibaba.dubbo.config.ModuleConfig.setVersion(java.lang.String)
+public java.lang.String com.alibaba.dubbo.config.ModuleConfig.getOrganization()
+public void com.alibaba.dubbo.config.ModuleConfig.setOrganization(java.lang.String)
+public com.alibaba.dubbo.config.RegistryConfig com.alibaba.dubbo.config.ModuleConfig.getRegistry()
+public void com.alibaba.dubbo.config.ModuleConfig.setRegistry(com.alibaba.dubbo.config.RegistryConfig)
+public java.util.List com.alibaba.dubbo.config.ModuleConfig.getRegistries()
+public void com.alibaba.dubbo.config.ModuleConfig.setRegistries(java.util.List)
+public com.alibaba.dubbo.config.MonitorConfig com.alibaba.dubbo.config.ModuleConfig.getMonitor()
+public void com.alibaba.dubbo.config.ModuleConfig.setMonitor(java.lang.String)
+public void com.alibaba.dubbo.config.ModuleConfig.setMonitor(com.alibaba.dubbo.config.MonitorConfig)
+public java.lang.String com.alibaba.dubbo.config.ModuleConfig.getName()
+public java.lang.Boolean com.alibaba.dubbo.config.ModuleConfig.isDefault()
+public void com.alibaba.dubbo.config.ModuleConfig.setName(java.lang.String)
+public void com.alibaba.dubbo.config.ModuleConfig.setDefault(java.lang.Boolean)
+public java.lang.String com.alibaba.dubbo.config.ModuleConfig.getOwner()
+public void com.alibaba.dubbo.config.ModuleConfig.setOwner(java.lang.String)
+public java.lang.String com.alibaba.dubbo.config.ModuleConfig.getVersion()
+public void com.alibaba.dubbo.config.ModuleConfig.setId(java.lang.String)
+public java.lang.String com.alibaba.dubbo.config.ModuleConfig.toString()
+public java.lang.String com.alibaba.dubbo.config.ModuleConfig.getId()
+public final void com.alibaba.dubbo.config.ModuleConfig.wait(long,int) throws java.lang.InterruptedException
+public final native void com.alibaba.dubbo.config.ModuleConfig.wait(long) throws java.lang.InterruptedException
+public final void com.alibaba.dubbo.config.ModuleConfig.wait() throws java.lang.InterruptedException
+public boolean com.alibaba.dubbo.config.ModuleConfig.equals(java.lang.Object)
+public native int com.alibaba.dubbo.config.ModuleConfig.hashCode()
+public final native java.lang.Class com.alibaba.dubbo.config.ModuleConfig.getClass()
+public final native void com.alibaba.dubbo.config.ModuleConfig.notify()
+public final native void com.alibaba.dubbo.config.ModuleConfig.notifyAll()

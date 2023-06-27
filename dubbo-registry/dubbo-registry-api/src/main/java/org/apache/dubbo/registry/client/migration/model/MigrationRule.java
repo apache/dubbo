@@ -22,6 +22,7 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.ServiceNameMapping;
 
+import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
@@ -316,13 +317,13 @@ public class MigrationRule {
     }
 
     public static MigrationRule parse(String rawRule) {
-        Yaml yaml = new Yaml(new SafeConstructor());
+        Yaml yaml = new Yaml(new SafeConstructor(new LoaderOptions()));
         Map<String, Object> map = yaml.load(rawRule);
         return parseFromMap(map);
     }
 
     public static String toYaml(MigrationRule rule) {
-        Constructor constructor = new Constructor(MigrationRule.class);
+        Constructor constructor = new Constructor(MigrationRule.class, new LoaderOptions());
         Yaml yaml = new Yaml(constructor);
         return yaml.dump(rule);
     }

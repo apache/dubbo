@@ -28,7 +28,7 @@ import java.util.Set;
 
 public class OrderedPropertiesConfiguration implements Configuration {
     private Properties properties;
-    private ModuleModel moduleModel;
+    private final ModuleModel moduleModel;
 
     public OrderedPropertiesConfiguration(ModuleModel moduleModel) {
         this.moduleModel = moduleModel;

@@ -20,7 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.qos.DemoService;
 import org.apache.dubbo.qos.DemoServiceImpl;
-import org.apache.dubbo.qos.command.CommandContext;
+import org.apache.dubbo.qos.api.CommandContext;
 import org.apache.dubbo.registry.RegistryService;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ModuleServiceRepository;

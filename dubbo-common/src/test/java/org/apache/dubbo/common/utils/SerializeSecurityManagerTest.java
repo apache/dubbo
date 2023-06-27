@@ -16,113 +16,115 @@
  */
 package org.apache.dubbo.common.utils;
 
-import org.apache.dubbo.rpc.model.FrameworkModel;
-
-import com.service.DemoService1;
-import com.service.DemoService2;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Vector;
-
-public class SerializeSecurityManagerTest {
+class SerializeSecurityManagerTest {
     @Test
-    public void test() {
-        SerializeSecurityManager ssm = new SerializeSecurityManager(FrameworkModel.defaultModel());
+    void testPrefix() {
+        TestAllowClassNotifyListener.setCount(0);
+        SerializeSecurityManager ssm = new SerializeSecurityManager();
         ssm.registerListener(new TestAllowClassNotifyListener());
+
+        ssm.addToAllowed("java.util.HashMap");
+        ssm.addToAllowed("com.example.DemoInterface");
+        ssm.addToAllowed("com.sun.Interface1");
+        ssm.addToAllowed("com.sun.Interface2");
+
         Assertions.assertTrue(ssm.getAllowedPrefix().contains("java.util.HashMap"));
         Assertions.assertTrue(ssm.getAllowedPrefix().contains("com.example.DemoInterface"));
         Assertions.assertTrue(ssm.getAllowedPrefix().contains("com.sun.Interface1"));
-        Assertions.assertFalse(ssm.getAllowedPrefix().contains("com.sun.Interface2"));
+        Assertions.assertTrue(ssm.getAllowedPrefix().contains("com.sun.Interface2"));
 
-        Assertions.assertEquals(ssm.getAllowedPrefix(), TestAllowClassNotifyListener.getPrefixList());
+        Assertions.assertEquals(ssm.getAllowedPrefix(), TestAllowClassNotifyListener.getAllowedList());
+        Assertions.assertEquals(7, TestAllowClassNotifyListener.getCount());
+
+        ssm.addToDisAllowed("com.sun.Interface");
+        Assertions.assertFalse(ssm.getAllowedPrefix().contains("com.sun.Interface1"));
+        Assertions.assertFalse(ssm.getAllowedPrefix().contains("com.sun.Interface2"));
+        Assertions.assertEquals(ssm.getDisAllowedPrefix(), TestAllowClassNotifyListener.getDisAllowedList());
+        Assertions.assertEquals(9, TestAllowClassNotifyListener.getCount());
+
+        ssm.addToAllowed("com.sun.Interface3");
+        Assertions.assertFalse(ssm.getAllowedPrefix().contains("com.sun.Interface3"));
+        Assertions.assertEquals(9, TestAllowClassNotifyListener.getCount());
+
+        ssm.addToAllowed("java.util.HashMap");
+        Assertions.assertEquals(9, TestAllowClassNotifyListener.getCount());
+
+        ssm.addToDisAllowed("com.sun.Interface");
+        Assertions.assertEquals(9, TestAllowClassNotifyListener.getCount());
+
+        ssm.addToAlwaysAllowed("com.sun.Interface3");
+        Assertions.assertTrue(ssm.getAllowedPrefix().contains("com.sun.Interface3"));
+        Assertions.assertEquals(10, TestAllowClassNotifyListener.getCount());
+
+        ssm.addToAlwaysAllowed("com.sun.Interface3");
+        Assertions.assertTrue(ssm.getAllowedPrefix().contains("com.sun.Interface3"));
+        Assertions.assertEquals(10, TestAllowClassNotifyListener.getCount());
     }
 
     @Test
-    public void addToAllow() {
-        SerializeSecurityManager ssm = new SerializeSecurityManager(FrameworkModel.defaultModel());
+    void testStatus1() {
+        SerializeSecurityManager ssm = new SerializeSecurityManager();
         ssm.registerListener(new TestAllowClassNotifyListener());
-        Assertions.assertFalse(ssm.getAllowedPrefix().contains("com.sun.Interface2"));
-        Assertions.assertEquals(ssm.getAllowedPrefix(), TestAllowClassNotifyListener.getPrefixList());
 
-        ssm.addToAllow("com.sun.Interface2");
-        Assertions.assertFalse(ssm.getAllowedPrefix().contains("com.sun.Interface2"));
-        Assertions.assertEquals(ssm.getAllowedPrefix(), TestAllowClassNotifyListener.getPrefixList());
+        Assertions.assertEquals(AllowClassNotifyListener.DEFAULT_STATUS, ssm.getCheckStatus());
+        Assertions.assertEquals(AllowClassNotifyListener.DEFAULT_STATUS, TestAllowClassNotifyListener.getStatus());
 
-        ssm.addToAllow("java.util.Interface1");
-        Assertions.assertTrue(ssm.getAllowedPrefix().contains("java.util.Interface1"));
-        Assertions.assertEquals(ssm.getAllowedPrefix(), TestAllowClassNotifyListener.getPrefixList());
+        ssm.setCheckStatus(SerializeCheckStatus.STRICT);
+        Assertions.assertEquals(ssm.getCheckStatus(), TestAllowClassNotifyListener.getStatus());
+        Assertions.assertEquals(SerializeCheckStatus.STRICT, TestAllowClassNotifyListener.getStatus());
 
-        ssm.addToAllow("java.util.package.Interface1");
-        Assertions.assertTrue(ssm.getAllowedPrefix().contains("java.util.package.Interface1"));
-        Assertions.assertEquals(ssm.getAllowedPrefix(), TestAllowClassNotifyListener.getPrefixList());
+        ssm.setCheckStatus(SerializeCheckStatus.WARN);
+        Assertions.assertEquals(ssm.getCheckStatus(), TestAllowClassNotifyListener.getStatus());
+        Assertions.assertEquals(SerializeCheckStatus.WARN, TestAllowClassNotifyListener.getStatus());
 
-        ssm.addToAllow("com.example.Interface2");
-        Assertions.assertTrue(ssm.getAllowedPrefix().contains("com.example.Interface2"));
-        Assertions.assertEquals(ssm.getAllowedPrefix(), TestAllowClassNotifyListener.getPrefixList());
+        ssm.setCheckStatus(SerializeCheckStatus.STRICT);
+        Assertions.assertEquals(ssm.getCheckStatus(), TestAllowClassNotifyListener.getStatus());
+        Assertions.assertEquals(SerializeCheckStatus.WARN, TestAllowClassNotifyListener.getStatus());
 
-        ssm.addToAllow("com.example.package.Interface1");
-        Assertions.assertTrue(ssm.getAllowedPrefix().contains("com.example.package"));
-        Assertions.assertEquals(ssm.getAllowedPrefix(), TestAllowClassNotifyListener.getPrefixList());
+        ssm.setCheckStatus(SerializeCheckStatus.DISABLE);
+        Assertions.assertEquals(ssm.getCheckStatus(), TestAllowClassNotifyListener.getStatus());
+        Assertions.assertEquals(SerializeCheckStatus.DISABLE, TestAllowClassNotifyListener.getStatus());
+
+        ssm.setCheckStatus(SerializeCheckStatus.STRICT);
+        Assertions.assertEquals(ssm.getCheckStatus(), TestAllowClassNotifyListener.getStatus());
+        Assertions.assertEquals(SerializeCheckStatus.DISABLE, TestAllowClassNotifyListener.getStatus());
+
+        ssm.setCheckStatus(SerializeCheckStatus.WARN);
+        Assertions.assertEquals(ssm.getCheckStatus(), TestAllowClassNotifyListener.getStatus());
+        Assertions.assertEquals(SerializeCheckStatus.DISABLE, TestAllowClassNotifyListener.getStatus());
     }
 
     @Test
-    public void testRegister1() {
-        SerializeSecurityManager ssm = new SerializeSecurityManager(FrameworkModel.defaultModel());
+    void testStatus2() {
+        SerializeSecurityManager ssm = new SerializeSecurityManager();
+
+        ssm.setCheckStatus(SerializeCheckStatus.STRICT);
         ssm.registerListener(new TestAllowClassNotifyListener());
-
-        ssm.registerInterface(DemoService1.class);
-        Assertions.assertTrue(ssm.getAllowedPrefix().contains("com.service.DemoService1"));
-        Assertions.assertTrue(ssm.getAllowedPrefix().contains("com.pojo.Demo1"));
-        Assertions.assertTrue(ssm.getAllowedPrefix().contains("com.pojo.Demo2"));
-        Assertions.assertTrue(ssm.getAllowedPrefix().contains("com.pojo.Demo3"));
-        Assertions.assertTrue(ssm.getAllowedPrefix().contains("com.pojo.Demo4"));
-        Assertions.assertTrue(ssm.getAllowedPrefix().contains("com.pojo.Demo5"));
-        Assertions.assertTrue(ssm.getAllowedPrefix().contains("com.pojo.Demo6"));
-        Assertions.assertTrue(ssm.getAllowedPrefix().contains("com.pojo.Demo7"));
-        Assertions.assertTrue(ssm.getAllowedPrefix().contains("com.pojo.Demo8"));
-        Assertions.assertTrue(ssm.getAllowedPrefix().contains("com.pojo.Simple"));
-
-        Assertions.assertTrue(ssm.getAllowedPrefix().contains(List.class.getName()));
-        Assertions.assertTrue(ssm.getAllowedPrefix().contains(Set.class.getName()));
-        Assertions.assertTrue(ssm.getAllowedPrefix().contains(Map.class.getName()));
-        Assertions.assertTrue(ssm.getAllowedPrefix().contains(LinkedList.class.getName()));
-        Assertions.assertTrue(ssm.getAllowedPrefix().contains(Vector.class.getName()));
-        Assertions.assertTrue(ssm.getAllowedPrefix().contains(HashSet.class.getName()));
-
-        Assertions.assertEquals(ssm.getAllowedPrefix(), TestAllowClassNotifyListener.getPrefixList());
+        Assertions.assertEquals(ssm.getCheckStatus(), TestAllowClassNotifyListener.getStatus());
+        Assertions.assertEquals(SerializeCheckStatus.STRICT, TestAllowClassNotifyListener.getStatus());
     }
 
-
     @Test
-    public void testRegister2() {
-        SerializeSecurityManager ssm = new SerializeSecurityManager(FrameworkModel.defaultModel());
+    void testSerializable() {
+        SerializeSecurityManager ssm = new SerializeSecurityManager();
         ssm.registerListener(new TestAllowClassNotifyListener());
 
-        ssm.registerInterface(DemoService2.class);
-        Assertions.assertTrue(ssm.getAllowedPrefix().contains("com.service.DemoService2"));
-        Assertions.assertTrue(ssm.getAllowedPrefix().contains("com.pojo.Demo1"));
-        Assertions.assertTrue(ssm.getAllowedPrefix().contains("com.pojo.Demo2"));
-        Assertions.assertTrue(ssm.getAllowedPrefix().contains("com.pojo.Demo3"));
-        Assertions.assertTrue(ssm.getAllowedPrefix().contains("com.pojo.Demo4"));
-        Assertions.assertTrue(ssm.getAllowedPrefix().contains("com.pojo.Demo5"));
-        Assertions.assertTrue(ssm.getAllowedPrefix().contains("com.pojo.Demo6"));
-        Assertions.assertTrue(ssm.getAllowedPrefix().contains("com.pojo.Demo7"));
-        Assertions.assertTrue(ssm.getAllowedPrefix().contains("com.pojo.Demo8"));
-        Assertions.assertTrue(ssm.getAllowedPrefix().contains("com.pojo.Simple"));
+        Assertions.assertTrue(ssm.isCheckSerializable());
+        Assertions.assertTrue(TestAllowClassNotifyListener.isCheckSerializable());
 
-        Assertions.assertTrue(ssm.getAllowedPrefix().contains(List.class.getName()));
-        Assertions.assertTrue(ssm.getAllowedPrefix().contains(Set.class.getName()));
-        Assertions.assertTrue(ssm.getAllowedPrefix().contains(Map.class.getName()));
-        Assertions.assertTrue(ssm.getAllowedPrefix().contains(LinkedList.class.getName()));
-        Assertions.assertTrue(ssm.getAllowedPrefix().contains(Vector.class.getName()));
-        Assertions.assertTrue(ssm.getAllowedPrefix().contains(HashSet.class.getName()));
+        ssm.setCheckSerializable(true);
+        Assertions.assertTrue(ssm.isCheckSerializable());
+        Assertions.assertTrue(TestAllowClassNotifyListener.isCheckSerializable());
 
-        Assertions.assertEquals(ssm.getAllowedPrefix(), TestAllowClassNotifyListener.getPrefixList());
+        ssm.setCheckSerializable(false);
+        Assertions.assertFalse(ssm.isCheckSerializable());
+        Assertions.assertFalse(TestAllowClassNotifyListener.isCheckSerializable());
+
+        ssm.setCheckSerializable(true);
+        Assertions.assertFalse(ssm.isCheckSerializable());
+        Assertions.assertFalse(TestAllowClassNotifyListener.isCheckSerializable());
     }
 }

@@ -20,8 +20,11 @@ import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.common.config.ConfigurationCache;
 import org.apache.dubbo.common.convert.ConverterUtil;
 import org.apache.dubbo.common.lang.ShutdownHookCallbacks;
+import org.apache.dubbo.common.ssl.CertManager;
 import org.apache.dubbo.common.status.reporter.FrameworkStatusReportService;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
+import org.apache.dubbo.common.utils.DefaultSerializeClassChecker;
+import org.apache.dubbo.common.utils.SerializeSecurityConfigurator;
 import org.apache.dubbo.common.utils.SerializeSecurityManager;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -35,6 +38,8 @@ public class CommonScopeModelInitializer implements ScopeModelInitializer {
         beanFactory.registerBean(FrameworkExecutorRepository.class);
         beanFactory.registerBean(ConverterUtil.class);
         beanFactory.registerBean(SerializeSecurityManager.class);
+        beanFactory.registerBean(DefaultSerializeClassChecker.class);
+        beanFactory.registerBean(CertManager.class);
     }
 
     @Override
@@ -49,5 +54,6 @@ public class CommonScopeModelInitializer implements ScopeModelInitializer {
     public void initializeModuleModel(ModuleModel moduleModel) {
         ScopeBeanFactory beanFactory = moduleModel.getBeanFactory();
         beanFactory.registerBean(new ConfigurationCache());
+        beanFactory.registerBean(SerializeSecurityConfigurator.class);
     }
 }

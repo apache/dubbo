@@ -34,7 +34,11 @@ public class UnaryStubMethodHandler<T, R> implements StubMethodHandler<T, R> {
         T request = (T) arguments[0];
         CompletableFuture<R> future = new CompletableFuture<>();
         StreamObserver<R> responseObserver = new FutureToObserverAdaptor<>(future);
-        func.accept(request, responseObserver);
+        try {
+            func.accept(request, responseObserver);
+        } catch (Throwable e) {
+            future.completeExceptionally(e);
+        }
         return future;
     }
 }

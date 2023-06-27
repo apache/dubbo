@@ -27,6 +27,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MediaType;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -103,5 +104,28 @@ public class StandardRestService implements RestService {
         map.put("name", user.getName());
         map.put("age", user.getAge());
         return map;
+    }
+
+    @Path("noAnnotationJsonBody/json")
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Override
+    public void noAnnotationJsonBody(User user) {
+
+    }
+
+    @Path("noAnnotationFormBody/form")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @POST
+    @Override
+    public void noAnnotationFormBody(User user) {
+
+    }
+
+    @Path("noAnnotationParam/text")
+    @POST
+    @Override
+    public void noAnnotationParam(String text) {
+
     }
 }

@@ -19,6 +19,9 @@ package org.apache.dubbo.remoting.transport.netty4.ssl;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.ssl.AuthPolicy;
+import org.apache.dubbo.common.ssl.CertManager;
+import org.apache.dubbo.common.ssl.ProviderCert;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -36,25 +39,18 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERR
 public class SslServerTlsHandler extends ByteToMessageDecoder {
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(SslServerTlsHandler.class);
 
-    private final SslContext sslContext;
-    private final boolean detectSsl;
+    private final URL url;
 
-
-    public SslServerTlsHandler() {
-        this(null, false);
-    }
+    private final boolean sslDetected;
 
     public SslServerTlsHandler(URL url) {
-        this(SslContexts.buildServerSslContext(url));
+        this.url = url;
+        this.sslDetected = false;
     }
 
-    public SslServerTlsHandler(SslContext sslContext) {
-        this(sslContext, true);
-    }
-
-    public SslServerTlsHandler(SslContext sslContext, boolean detectSsl) {
-        this.sslContext = sslContext;
-        this.detectSsl = detectSsl;
+    public SslServerTlsHandler(URL url, boolean sslDetected) {
+        this.url = url;
+        this.sslDetected = sslDetected;
     }
 
     @Override
@@ -68,7 +64,7 @@ public class SslServerTlsHandler extends ByteToMessageDecoder {
             SslHandshakeCompletionEvent handshakeEvent = (SslHandshakeCompletionEvent) evt;
             if (handshakeEvent.isSuccess()) {
                 SSLSession session = ctx.pipeline().get(SslHandler.class).engine().getSession();
-                logger.info("TLS negotiation succeed with session: " + session);
+                logger.info("TLS negotiation succeed with: " + session.getPeerHost());
                 // Remove after handshake success.
                 ctx.pipeline().remove(this);
             } else {
@@ -86,23 +82,42 @@ public class SslServerTlsHandler extends ByteToMessageDecoder {
             return;
         }
 
-        if (isSsl(byteBuf)) {
-            enableSsl(channelHandlerContext);
+        if (sslDetected) {
+            return;
         }
 
+        CertManager certManager = url.getOrDefaultFrameworkModel().getBeanFactory().getBean(CertManager.class);
+        ProviderCert providerConnectionConfig = certManager.getProviderConnectionConfig(url, channelHandlerContext.channel().remoteAddress());
+
+        if (providerConnectionConfig == null) {
+            ChannelPipeline p = channelHandlerContext.pipeline();
+            p.remove(this);
+            return;
+        }
+
+        if (isSsl(byteBuf)) {
+            SslContext sslContext = SslContexts.buildServerSslContext(providerConnectionConfig);
+            enableSsl(channelHandlerContext, sslContext);
+            return;
+        }
+
+        if (providerConnectionConfig.getAuthPolicy() == AuthPolicy.NONE) {
+            ChannelPipeline p = channelHandlerContext.pipeline();
+            p.remove(this);
+        }
+
+        logger.error(INTERNAL_ERROR, "", "", "TLS negotiation failed when trying to accept new connection.");
+        channelHandlerContext.close();
     }
 
     private boolean isSsl(ByteBuf buf) {
-        if (detectSsl) {
-            return SslHandler.isEncrypted(buf);
-        }
-        return false;
+        return SslHandler.isEncrypted(buf);
     }
 
-    private void enableSsl(ChannelHandlerContext ctx) {
+    private void enableSsl(ChannelHandlerContext ctx, SslContext sslContext) {
         ChannelPipeline p = ctx.pipeline();
         ctx.pipeline().addAfter(ctx.name(), null, sslContext.newHandler(ctx.alloc()));
-        p.addLast("unificationA", new SslServerTlsHandler(sslContext, false));
+        p.addLast("unificationA", new SslServerTlsHandler(url, true));
         p.remove(this);
     }
 

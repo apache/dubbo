@@ -47,6 +47,7 @@ public interface Streams {
         return filterStream(values, predicate).collect(LinkedHashSet::new, Set::add, Set::addAll);
     }
 
+    @SuppressWarnings("unchecked")
     static <T, S extends Iterable<T>> S filter(S values, Predicate<T> predicate) {
         final boolean isSet = Set.class.isAssignableFrom(values.getClass());
         return (S) (isSet ? filterSet(values, predicate) : filterList(values, predicate));

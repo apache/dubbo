@@ -38,56 +38,56 @@ class AbstractMethodConfigTest {
     }
 
     @Test
-    void testTimeout() throws Exception {
+    void testTimeout() {
         MethodConfig methodConfig = new MethodConfig();
         methodConfig.setTimeout(10);
         assertThat(methodConfig.getTimeout(), equalTo(10));
     }
 
     @Test
-    void testForks() throws Exception {
+    void testForks() {
         MethodConfig methodConfig = new MethodConfig();
         methodConfig.setForks(10);
         assertThat(methodConfig.getForks(), equalTo(10));
     }
 
     @Test
-    void testRetries() throws Exception {
+    void testRetries() {
         MethodConfig methodConfig = new MethodConfig();
         methodConfig.setRetries(3);
         assertThat(methodConfig.getRetries(), equalTo(3));
     }
 
     @Test
-    void testLoadbalance() throws Exception {
+    void testLoadbalance() {
         MethodConfig methodConfig = new MethodConfig();
         methodConfig.setLoadbalance("mockloadbalance");
         assertThat(methodConfig.getLoadbalance(), equalTo("mockloadbalance"));
     }
 
     @Test
-    void testAsync() throws Exception {
+    void testAsync() {
         MethodConfig methodConfig = new MethodConfig();
         methodConfig.setAsync(true);
         assertThat(methodConfig.isAsync(), is(true));
     }
 
     @Test
-    void testActives() throws Exception {
+    void testActives() {
         MethodConfig methodConfig = new MethodConfig();
         methodConfig.setActives(10);
         assertThat(methodConfig.getActives(), equalTo(10));
     }
 
     @Test
-    void testSent() throws Exception {
+    void testSent() {
         MethodConfig methodConfig = new MethodConfig();
         methodConfig.setSent(true);
         assertThat(methodConfig.getSent(), is(true));
     }
 
     @Test
-    void testMock() throws Exception {
+    void testMock() {
         MethodConfig methodConfig = new MethodConfig();
         methodConfig.setMock((Boolean) null);
         assertThat(methodConfig.getMock(), isEmptyOrNullString());
@@ -100,21 +100,21 @@ class AbstractMethodConfigTest {
     }
 
     @Test
-    void testMerger() throws Exception {
+    void testMerger() {
         MethodConfig methodConfig = new MethodConfig();
         methodConfig.setMerger("merger");
         assertThat(methodConfig.getMerger(), equalTo("merger"));
     }
 
     @Test
-    void testCache() throws Exception {
+    void testCache() {
         MethodConfig methodConfig = new MethodConfig();
         methodConfig.setCache("cache");
         assertThat(methodConfig.getCache(), equalTo("cache"));
     }
 
     @Test
-    void testValidation() throws Exception {
+    void testValidation() {
         MethodConfig methodConfig = new MethodConfig();
         methodConfig.setValidation("validation");
         assertThat(methodConfig.getValidation(), equalTo("validation"));

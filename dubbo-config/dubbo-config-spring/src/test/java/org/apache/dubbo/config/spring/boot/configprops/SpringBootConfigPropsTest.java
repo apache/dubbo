@@ -55,15 +55,14 @@ import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMET
         "dubbo.protocol.name=dubbo",
         "dubbo.protocol.port=20880",
         "dubbo.metrics.protocol=prometheus",
-        "dubbo.metrics.enable-jvm-metrics=true",
+        "dubbo.metrics.enable-jvm=true",
         "dubbo.metrics.prometheus.exporter.enabled=true",
         "dubbo.metrics.prometheus.exporter.enable-http-service-discovery=true",
         "dubbo.metrics.prometheus.exporter.http-service-discovery-url=localhost:8080",
-        "dubbo.metrics.prometheus.exporter.metrics-port=20888",
-        "dubbo.metrics.prometheus.exporter.metrics-path=/metrics",
         "dubbo.metrics.aggregation.enabled=true",
         "dubbo.metrics.aggregation.bucket-num=5",
         "dubbo.metrics.aggregation.time-window-seconds=120",
+        "dubbo.metrics.histogram.enabled=true",
         "dubbo.monitor.address=zookeeper://127.0.0.1:32770",
         "dubbo.Config-center.address=${zookeeper.connection.address.1}",
         "dubbo.config-Center.group=group1",
@@ -111,11 +110,10 @@ class SpringBootConfigPropsTest {
         Assertions.assertTrue(metricsConfig.getPrometheus().getExporter().getEnabled());
         Assertions.assertTrue(metricsConfig.getPrometheus().getExporter().getEnableHttpServiceDiscovery());
         Assertions.assertEquals("localhost:8080", metricsConfig.getPrometheus().getExporter().getHttpServiceDiscoveryUrl());
-        Assertions.assertEquals(20888, metricsConfig.getPrometheus().getExporter().getMetricsPort());
-        Assertions.assertEquals("/metrics", metricsConfig.getPrometheus().getExporter().getMetricsPath());
         Assertions.assertEquals(5, metricsConfig.getAggregation().getBucketNum());
         Assertions.assertEquals(120, metricsConfig.getAggregation().getTimeWindowSeconds());
         Assertions.assertTrue(metricsConfig.getAggregation().getEnabled());
+        Assertions.assertTrue(metricsConfig.getHistogram().getEnabled());
 
         List<ProtocolConfig> defaultProtocols = configManager.getDefaultProtocols();
         Assertions.assertEquals(1, defaultProtocols.size());

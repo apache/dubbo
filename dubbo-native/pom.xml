@@ -30,49 +30,9 @@
 
 
     <dependencies>
-
         <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-common</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
-
-
-        <dependency>
-            <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-metadata-api</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
-
-
-        <dependency>
-            <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-monitor-api</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-registry-api</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
-
-
-        <dependency>
-            <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-remoting-zookeeper</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-test-check</artifactId>
-            <version>${project.parent.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-metrics-default</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
     </dependencies>

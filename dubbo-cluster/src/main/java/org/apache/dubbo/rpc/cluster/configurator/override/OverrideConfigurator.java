@@ -17,12 +17,15 @@
 package org.apache.dubbo.rpc.cluster.configurator.override;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.cluster.configurator.AbstractConfigurator;
 
 /**
  * OverrideConfigurator
  */
 public class OverrideConfigurator extends AbstractConfigurator {
+    public static final Logger logger = LoggerFactory.getLogger(OverrideConfigurator.class);
 
     public OverrideConfigurator(URL url) {
         super(url);
@@ -30,6 +33,7 @@ public class OverrideConfigurator extends AbstractConfigurator {
 
     @Override
     public URL doConfigure(URL currentUrl, URL configUrl) {
+        logger.info("Start overriding url " + currentUrl + " with override url " + configUrl);
         return currentUrl.addParameters(configUrl.getParameters());
     }
 

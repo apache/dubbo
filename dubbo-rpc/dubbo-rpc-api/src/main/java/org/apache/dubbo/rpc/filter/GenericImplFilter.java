@@ -23,6 +23,7 @@ import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.DefaultSerializeClassChecker;
 import org.apache.dubbo.common.utils.PojoUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.rpc.Constants;
@@ -32,6 +33,7 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 import org.apache.dubbo.rpc.support.RpcUtils;
@@ -58,6 +60,12 @@ public class GenericImplFilter implements Filter, Filter.Listener {
     private static final Class<?>[] GENERIC_PARAMETER_TYPES = new Class<?>[]{String.class, String[].class, Object[].class};
 
     private static final String GENERIC_IMPL_MARKER = "GENERIC_IMPL";
+
+    private final ModuleModel moduleModel;
+
+    public GenericImplFilter(ModuleModel moduleModel) {
+        this.moduleModel = moduleModel;
+    }
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
@@ -114,7 +122,7 @@ public class GenericImplFilter implements Filter, Filter.Listener {
                 }
             } else if (ProtocolUtils.isBeanGenericSerialization(generic)) {
                 for (Object arg : args) {
-                    if (!(arg instanceof JavaBeanDescriptor)) {
+                    if (arg != null && !(arg instanceof JavaBeanDescriptor)) {
                         error(generic, JavaBeanDescriptor.class.getName(), arg.getClass().getName());
                     }
                 }
@@ -147,7 +155,7 @@ public class GenericImplFilter implements Filter, Filter.Listener {
                             // find the real interface from url
                             String realInterface = invoker.getUrl().getParameter(Constants.INTERFACE);
                             invokerInterface = ReflectUtils.forName(realInterface);
-                        } catch (Throwable e) {
+                        } catch (Exception e) {
                             // ignore
                         }
                     }
@@ -172,11 +180,13 @@ public class GenericImplFilter implements Filter, Filter.Listener {
                 com.alibaba.dubbo.rpc.service.GenericException exception = (com.alibaba.dubbo.rpc.service.GenericException) appResponse.getException();
                 try {
                     String className = exception.getExceptionClass();
-                    Class<?> clazz = ReflectUtils.forName(className);
+                    DefaultSerializeClassChecker classChecker = moduleModel.getApplicationModel()
+                        .getFrameworkModel().getBeanFactory().getBean(DefaultSerializeClassChecker.class);
+                    Class<?> clazz = classChecker.loadClass(Thread.currentThread().getContextClassLoader(), className);
                     Throwable targetException = null;
                     Throwable lastException = null;
                     try {
-                        targetException = (Throwable) clazz.newInstance();
+                        targetException = (Throwable) clazz.getDeclaredConstructor().newInstance();
                     } catch (Throwable e) {
                         lastException = e;
                         for (Constructor<?> constructor : clazz.getConstructors()) {

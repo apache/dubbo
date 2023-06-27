@@ -356,7 +356,8 @@
                 </xsd:attribute>
                 <xsd:attribute name="prefer-serialization" type="xsd:string">
                     <xsd:annotation>
-                        <xsd:documentation><![CDATA[ The prefer serialization protocol of service, multiple serialization protocol are separated by commas, default fastjson2,hessian2. ]]></xsd:documentation>
+                        <xsd:documentation>
+                            <![CDATA[ The prefer serialization protocol of service, multiple serialization protocol are separated by commas, default fastjson2,hessian2. ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
                 <xsd:attribute name="export-async" type="xsd:boolean">
@@ -369,6 +370,11 @@
                     <xsd:annotation>
                         <xsd:documentation>
                             <![CDATA[ Bean name of service executor(thread pool), used for thread pool isolation between services. ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+                <xsd:attribute name="payload" type="xsd:string">
+                    <xsd:annotation>
+                        <xsd:documentation><![CDATA[ The max payload. ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
                 <xsd:anyAttribute namespace="##other" processContents="lax"/>
@@ -487,6 +493,66 @@
                 <xsd:documentation><![CDATA[ The retry interval of service name mapping. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
+        <xsd:attribute name="serialize-check-status" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The check level of serialize check. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="auto-trust-serialize-class" type="xsd:boolean">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Whether trust class for serialization by scanning. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="trust-serialize-class-level" type="xsd:integer">
+            <xsd:annotation>
+                <xsd:documentation>
+                    <![CDATA[ The trust package level of serialize class scanning. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="check-serializable" type="xsd:boolean">
+            <xsd:annotation>
+                <xsd:documentation>
+                    <![CDATA[ Whether restrict the serialized should implement Serializable interface. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="qos-enable" type="xsd:boolean">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Whether to enable qos or not. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="qos-host" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The qos host to listen. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="qos-port" type="xsd:integer">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The qos host to listen. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="qos-accept-foreign-ip" type="xsd:boolean">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Whether to accept foreign ip. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="qos-accept-foreign-ip-whitelist" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation>
+                    <![CDATA[ Support specifying foreign ip in whitelist when accepting foreign ip is disabled. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="qos-anonymous-access-permission-level" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation>
+                    <![CDATA[ Anonymous (any foreign ip) access level, the default is NONE, can not access any cmd. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="qos-anonymous-allow-commands" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation>
+                    <![CDATA[ Anonymous(any foreign ip) allow commands, default is empty, can not access any cmd. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
     </xsd:complexType>
 
     <xsd:complexType name="moduleType">
@@ -556,6 +622,11 @@
         <xsd:attribute name="export-thread-num" type="xsd:boolean">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ Thread num for asynchronous export pool size. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="check-reference-timeout" type="xsd:long">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The timeout to check references. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
     </xsd:complexType>
@@ -989,6 +1060,7 @@
             <xsd:element ref="prometheus-exporter" minOccurs="0"/>
             <xsd:element ref="prometheus-pushgateway" minOccurs="0"/>
             <xsd:element ref="aggregation" minOccurs="0"/>
+            <xsd:element ref="histogram" minOccurs="0"/>
         </xsd:all>
         <xsd:attribute name="protocol" type="xsd:string">
             <xsd:annotation>
@@ -996,15 +1068,58 @@
             </xsd:annotation>
         </xsd:attribute>
 
-        <xsd:attribute name="enable-jvm-metrics" type="xsd:boolean" default="false">
+        <xsd:attribute name="enable-jvm" type="xsd:boolean" default="false">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ Enable jvm metrics when collecting. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+
+        <xsd:attribute name="enable-threadpool" type="xsd:boolean" default="true">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Enable threadpool metrics when collecting. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+
+        <xsd:attribute name="enable-registry" type="xsd:boolean" default="true">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Enable registry metrics when collecting. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+
+        <xsd:attribute name="enable-metadata" type="xsd:boolean" default="true">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Enable metadata metrics when collecting. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+
+        <xsd:attribute name="export-metrics-service" type="xsd:boolean" default="true">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Enable export metrics service. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
 
         <xsd:attribute name="port" type="xsd:string">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ Deprecated. No longer use. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+
+        <xsd:attribute name="enable-rpc" type="xsd:boolean" default="true">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Enable record rpc metrics. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+    </xsd:complexType>
+
+    <xsd:complexType name="tracingType">
+        <xsd:all>
+            <xsd:element ref="sampling" minOccurs="0"/>
+            <xsd:element ref="propagation" minOccurs="0"/>
+            <xsd:element ref="baggage" minOccurs="0"/>
+        </xsd:all>
+        <xsd:attribute name="enabled" type="xsd:boolean" default="false">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Enable tracing. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
     </xsd:complexType>
@@ -1023,16 +1138,6 @@
         <xsd:attribute name="http-service-discovery-url" type="xsd:string">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ Http service discovery url. ]]></xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-        <xsd:attribute name="metrics-port" type="xsd:integer">
-            <xsd:annotation>
-                <xsd:documentation><![CDATA[ When using pull method, which port to expose. ]]></xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-        <xsd:attribute name="metrics-path" type="xsd:string">
-            <xsd:annotation>
-                <xsd:documentation><![CDATA[ When using pull mode, which path to expose metrics. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
     </xsd:complexType>
@@ -1084,6 +1189,92 @@
         <xsd:attribute name="time-window-seconds" type="xsd:integer">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ Time window seconds for time window quantile. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+    </xsd:complexType>
+
+
+    <xsd:complexType name="histogramType">
+        <xsd:attribute name="enabled" type="xsd:boolean">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Enable local rt histogram or not. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+    </xsd:complexType>
+
+    <xsd:complexType name="samplingType">
+        <xsd:attribute name="probability" type="xsd:float">
+            <xsd:annotation>
+                <xsd:documentation>
+                    <![CDATA[ Probability in the range from 0.0 to 1.0 that a trace will be sampled. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+    </xsd:complexType>
+
+    <xsd:complexType name="propagationType">
+        <xsd:attribute name="type" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation>
+                    <![CDATA[ Tracing context propagation type, include W3C and B3. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+    </xsd:complexType>
+
+    <xsd:complexType name="baggageType">
+        <xsd:all>
+            <xsd:element ref="remoteFields" minOccurs="0"/>
+            <xsd:element ref="correlation" minOccurs="0"/>
+        </xsd:all>
+        <xsd:attribute name="enabled" type="xsd:boolean">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Enable baggage or not. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+    </xsd:complexType>
+
+    <xsd:complexType name="correlationType">
+        <xsd:all>
+            <xsd:element ref="fields" minOccurs="0"/>
+        </xsd:all>
+        <xsd:attribute name="enabled" type="xsd:boolean">
+            <xsd:annotation>
+                <xsd:documentation>
+                    <![CDATA[ Whether to enable correlation of the baggage context with logging contexts. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+    </xsd:complexType>
+
+    <xsd:complexType name="fieldsType">
+        <xsd:simpleContent>
+            <xsd:extension base="xsd:string">
+                <xsd:attribute name="name" type="xsd:string"/>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="tracingExporterType">
+        <xsd:all>
+            <xsd:element ref="zipkin-config" minOccurs="0"/>
+        </xsd:all>
+    </xsd:complexType>
+
+    <xsd:complexType name="zipkinConfigType">
+        <xsd:attribute name="endpoint" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation>
+                    <![CDATA[ The url of zipkin server. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="connectTimeout" type="xsd:duration">
+            <xsd:annotation>
+                <xsd:documentation>
+                    <![CDATA[ Connection timeout for requests to Zipkin. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="readTimeout" type="xsd:duration">
+            <xsd:annotation>
+                <xsd:documentation>
+                    <![CDATA[ Read timeout for requests to Zipkin. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
     </xsd:complexType>
@@ -1390,7 +1581,8 @@
         </xsd:attribute>
         <xsd:attribute name="prefer-serialization" type="xsd:string">
             <xsd:annotation>
-                <xsd:documentation><![CDATA[ The prefer serialization protocol of service, multiple serialization protocol are separated by commas, default fastjson2,hessian2. ]]></xsd:documentation>
+                <xsd:documentation>
+                    <![CDATA[ The prefer serialization protocol of service, multiple serialization protocol are separated by commas, default fastjson2,hessian2. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="keepalive" type="xsd:boolean">
@@ -1572,11 +1764,6 @@
                 <xsd:attribute name="charset" type="xsd:string">
                     <xsd:annotation>
                         <xsd:documentation><![CDATA[ The protocol charset. ]]></xsd:documentation>
-                    </xsd:annotation>
-                </xsd:attribute>
-                <xsd:attribute name="payload" type="xsd:string">
-                    <xsd:annotation>
-                        <xsd:documentation><![CDATA[ The max payload. ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
                 <xsd:attribute name="buffer" type="xsd:string">
@@ -1966,6 +2153,17 @@
         </xsd:annotation>
     </xsd:element>
 
+    <xsd:element name="tracing" type="tracingType">
+        <xsd:annotation>
+            <xsd:documentation><![CDATA[ The tracing service ]]></xsd:documentation>
+            <xsd:appinfo>
+                <tool:annotation>
+                    <tool:exports type="org.apache.dubbo.config.TracingConfig"/>
+                </tool:annotation>
+            </xsd:appinfo>
+        </xsd:annotation>
+    </xsd:element>
+
     <xsd:element name="prometheus-exporter" type="prometheusExporterType">
         <xsd:annotation>
             <xsd:documentation><![CDATA[ The metrics prometheus exporter config. ]]></xsd:documentation>
@@ -1981,6 +2179,67 @@
     <xsd:element name="aggregation" type="aggregationType">
         <xsd:annotation>
             <xsd:documentation><![CDATA[ The metrics aggregation config. ]]></xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
+
+    <xsd:element name="histogram" type="histogramType">
+        <xsd:annotation>
+            <xsd:documentation><![CDATA[ The metrics rt histogram config. ]]></xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
+
+    <xsd:element name="sampling" type="samplingType">
+        <xsd:annotation>
+            <xsd:documentation><![CDATA[ The tracing sampling config. ]]></xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
+
+    <xsd:element name="propagation" type="propagationType">
+        <xsd:annotation>
+            <xsd:documentation><![CDATA[ The tracing propagation config. ]]></xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
+
+    <xsd:element name="baggage" type="baggageType">
+        <xsd:annotation>
+            <xsd:documentation><![CDATA[ The tracing baggage config. ]]></xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
+
+    <xsd:element name="remoteFields" type="fieldsType">
+        <xsd:annotation>
+            <xsd:documentation>
+                <![CDATA[ The tracing baggage remoteFields config. List of fields that are referenced
+                the same in-process as it is on the wire. For example, the field "x-vcap-request-id" would
+                 be set as-is including the prefix. ]]></xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
+
+    <xsd:element name="correlation" type="correlationType">
+        <xsd:annotation>
+            <xsd:documentation><![CDATA[ The tracing baggage correlation config. ]]></xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
+
+    <xsd:element name="fields" type="fieldsType">
+        <xsd:annotation>
+            <xsd:documentation>
+                <![CDATA[ List of fields that should be correlated with the logging context. That
+                means that these fields would end up as key-value pairs in e.g. MDC. ]]></xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
+
+    <xsd:element name="tracing-exporter" type="tracingExporterType">
+        <xsd:annotation>
+            <xsd:documentation>
+                <![CDATA[ Exporter of tracing. ]]></xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
+
+    <xsd:element name="zipkin-config" type="zipkinConfigType">
+        <xsd:annotation>
+            <xsd:documentation>
+                <![CDATA[ Config of zipkin exporter. ]]></xsd:documentation>
         </xsd:annotation>
     </xsd:element>
 </xsd:schema>

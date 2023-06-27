@@ -16,18 +16,15 @@
  */
 package org.apache.dubbo.common.threadpool;
 
-import org.apache.dubbo.common.URL;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 class ThreadlessExecutorTest {
-    private static ThreadlessExecutor executor;
+    private static final ThreadlessExecutor executor;
 
     static {
-        URL url = URL.valueOf("dubbo://127.0.0.1:12345");
         executor = new ThreadlessExecutor();
     }
 
@@ -37,15 +34,13 @@ class ThreadlessExecutorTest {
             executor.execute(()->{throw new RuntimeException("test");});
         }
 
-        CompletableFuture<Object> stubFuture = new CompletableFuture<>();
-        executor.setWaitingFuture(stubFuture);
-        Assertions.assertEquals(executor.getWaitingFuture(),stubFuture);
+        executor.waitAndDrain(123);
 
-        executor.waitAndDrain();
+        AtomicBoolean invoked = new AtomicBoolean(false);
+        executor.execute(()->{invoked.set(true);});
 
-        executor.execute(()->{});
-
-        executor.waitAndDrain();
+        executor.waitAndDrain(123);
+        Assertions.assertTrue(invoked.get());
 
         executor.shutdown();
     }

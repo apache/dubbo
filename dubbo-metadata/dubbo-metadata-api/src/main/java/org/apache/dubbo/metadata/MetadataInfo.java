@@ -191,7 +191,7 @@ public class MetadataInfo implements Serializable {
                     logger.info(String.format("metadata revision changed: %s -> %s, app: %s, services: %d", this.revision, tempRevision, this.app, this.services.size()));
                 }
                 this.revision = tempRevision;
-                this.rawMetadataInfo = JsonUtils.getJson().toJson(this);
+                this.rawMetadataInfo = JsonUtils.toJson(this);
             }
         }
         return revision;

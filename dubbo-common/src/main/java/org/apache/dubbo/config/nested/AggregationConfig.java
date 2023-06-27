@@ -16,7 +16,9 @@
  */
 package org.apache.dubbo.config.nested;
 
-public class AggregationConfig {
+import java.io.Serializable;
+
+public class AggregationConfig implements Serializable {
 
     /**
      * Enable local aggregation or not

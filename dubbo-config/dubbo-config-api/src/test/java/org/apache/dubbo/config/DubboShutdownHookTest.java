@@ -39,7 +39,7 @@ public class DubboShutdownHookTest {
     public void init() {
         SysProps.setProperty(CommonConstants.IGNORE_LISTEN_SHUTDOWN_HOOK, "false");
         FrameworkModel frameworkModel = new FrameworkModel();
-        applicationModel = new ApplicationModel(frameworkModel);
+        applicationModel = frameworkModel.newApplication();
         ModuleModel moduleModel = applicationModel.newModule();
         dubboShutdownHook = new DubboShutdownHook(applicationModel);
     }

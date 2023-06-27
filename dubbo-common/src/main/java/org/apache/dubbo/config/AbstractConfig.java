@@ -16,6 +16,31 @@
  */
 package org.apache.dubbo.config;
 
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.ConfigurationUtils;
+import org.apache.dubbo.common.config.Environment;
+import org.apache.dubbo.common.config.InmemoryConfiguration;
+import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ClassUtils;
+import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
+import org.apache.dubbo.common.utils.FieldUtils;
+import org.apache.dubbo.common.utils.MethodUtils;
+import org.apache.dubbo.common.utils.ReflectUtils;
+import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.common.utils.ToStringUtils;
+import org.apache.dubbo.config.context.ConfigManager;
+import org.apache.dubbo.config.context.ConfigMode;
+import org.apache.dubbo.config.support.Nested;
+import org.apache.dubbo.config.support.Parameter;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ModuleModel;
+import org.apache.dubbo.rpc.model.ScopeModel;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
+
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
@@ -38,30 +63,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.config.ConfigurationUtils;
-import org.apache.dubbo.common.config.Environment;
-import org.apache.dubbo.common.config.InmemoryConfiguration;
-import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.ClassUtils;
-import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
-import org.apache.dubbo.common.utils.FieldUtils;
-import org.apache.dubbo.common.utils.MethodUtils;
-import org.apache.dubbo.common.utils.ReflectUtils;
-import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.config.context.ConfigManager;
-import org.apache.dubbo.config.context.ConfigMode;
-import org.apache.dubbo.config.support.Nested;
-import org.apache.dubbo.config.support.Parameter;
-import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.ModuleModel;
-import org.apache.dubbo.rpc.model.ScopeModel;
-import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_FAILED_OVERRIDE_FIELD;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_REFLECTIVE_OPERATION_FAILED;
@@ -539,10 +540,12 @@ public abstract class AbstractConfig implements Serializable {
      * @see AbstractConfig#checkDefault()
      * @see AbstractConfig#appendParameters(Map, Object, String)
      */
+    @Transient
     public Map<String, String> getMetaData() {
         return getMetaData(null);
     }
 
+    @Transient
     public Map<String, String> getMetaData(String prefix) {
         Map<String, String> metaData = new HashMap<>();
         appendAttributes(metaData, this, prefix);
@@ -569,6 +572,7 @@ public abstract class AbstractConfig implements Serializable {
     }
 
     @Parameter(excluded = true, attribute = false)
+    @Transient
     public List<String> getPrefixes() {
         List<String> prefixes = new ArrayList<>();
         if (StringUtils.hasText(this.getId())) {
@@ -595,6 +599,7 @@ public abstract class AbstractConfig implements Serializable {
         return CommonConstants.DUBBO + "." + getTagName(cls);
     }
 
+    @Transient
     public ConfigMode getConfigMode() {
         return getApplicationModel().getApplicationConfigManager().getConfigMode();
     }
@@ -612,7 +617,7 @@ public abstract class AbstractConfig implements Serializable {
                 try {
                     String propertyName = extractPropertyName(method.getName());
                     String getterName = calculatePropertyToGetter(propertyName);
-                    getterMethod = this.getClass().getDeclaredMethod(getterName);
+                    getterMethod = this.getClass().getMethod(getterName);
                 } catch (Exception ignore) {
                     continue;
                 }
@@ -691,7 +696,7 @@ public abstract class AbstractConfig implements Serializable {
     }
 
     protected void refreshWithPrefixes(List<String> prefixes, ConfigMode configMode) {
-        Environment environment = getScopeModel().getModelEnvironment();
+        Environment environment = getScopeModel().modelEnvironment();
         List<Map<String, String>> configurationMaps = environment.getConfigurationMaps();
 
         // Search props starts with PREFIX in order
@@ -740,13 +745,12 @@ public abstract class AbstractConfig implements Serializable {
 
         // loop methods, get override value and set the new value back to method
         List<Method> methods = MethodUtils.getMethods(obj.getClass(), method -> method.getDeclaringClass() != Object.class);
-        Method[] methodsList = this.getClass().getDeclaredMethods();
         for (Method method : methods) {
             if (MethodUtils.isSetter(method)) {
                 String propertyName = extractPropertyName(method.getName());
 
                 // if config mode is OVERRIDE_IF_ABSENT and property has set, skip
-                if (overrideIfAbsent && isPropertySet(methodsList, propertyName)) {
+                if (overrideIfAbsent && isPropertySet(methods, propertyName)) {
                     continue;
                 }
 
@@ -792,7 +796,7 @@ public abstract class AbstractConfig implements Serializable {
                 Map<String, String> oldMap = null;
                 try {
                     String getterName = calculatePropertyToGetter(propertyName);
-                    Method getterMethod = this.getClass().getDeclaredMethod(getterName);
+                    Method getterMethod = this.getClass().getMethod(getterName);
                     Object oldOne = getterMethod.invoke(this);
                     if (oldOne instanceof Map) {
                         oldMap = (Map) oldOne;
@@ -833,7 +837,7 @@ public abstract class AbstractConfig implements Serializable {
         }
     }
 
-    private boolean isPropertySet(Method[] methods, String propertyName) {
+    private boolean isPropertySet(List<Method> methods, String propertyName) {
         try {
             String getterName = calculatePropertyToGetter(propertyName);
             Method getterMethod = findGetMethod(methods, getterName);
@@ -850,7 +854,7 @@ public abstract class AbstractConfig implements Serializable {
         return false;
     }
 
-    private Method findGetMethod(Method[] methods, String methodName) {
+    private Method findGetMethod(List<Method> methods, String methodName) {
         for (Method method : methods) {
             if (method.getName().equals(methodName) && method.getParameterCount() == 0) {
                 return method;
@@ -964,7 +968,7 @@ public abstract class AbstractConfig implements Serializable {
                         buf.append(' ');
                         buf.append(key);
                         buf.append("=\"");
-                        buf.append(key.equals("password") ? "******" : value);
+                        buf.append(key.equals("password") ? "******" : ToStringUtils.toString(value));
                         buf.append('\"');
                     }
                 } catch (Exception e) {
@@ -1031,6 +1035,7 @@ public abstract class AbstractConfig implements Serializable {
         return hashCode;
     }
 
+    @Transient
     private List<Method> getAttributedMethods() {
         Class<? extends AbstractConfig> cls = this.getClass();
         return ConcurrentHashMapUtils.computeIfAbsent(attributedMethodCache, cls, (key) -> computeAttributedMethods());
@@ -1064,6 +1069,7 @@ public abstract class AbstractConfig implements Serializable {
         return methods;
     }
 
+    @Transient
     protected ConfigManager getConfigManager() {
         return getApplicationModel().getApplicationConfigManager();
     }

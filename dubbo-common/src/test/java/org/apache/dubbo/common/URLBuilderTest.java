@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.common;
 
+import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.NetUtils;
 
 import org.junit.jupiter.api.Test;
@@ -45,6 +46,24 @@ class URLBuilderTest {
         assertThat(url2.getParameter("newKey1"), equalTo("newValue1"));
         assertThat(url2.getParameter("newKey2"), equalTo("2"));
         assertThat(url2.getVersion(), equalTo("1"));
+    }
+
+    @Test
+    void testDefault() {
+        ServiceConfigURL url1 = URLBuilder.from(URL.valueOf(""))
+            .addParameter("timeout", "1234")
+            .addParameter("default.timeout", "5678")
+            .build();
+
+        assertThat(url1.getParameter("timeout"), equalTo("1234"));
+        assertThat(url1.getParameter("default.timeout"), equalTo("5678"));
+
+        ServiceConfigURL url2 = URLBuilder.from(URL.valueOf(""))
+            .addParameter("default.timeout", "5678")
+            .build();
+
+        assertThat(url2.getParameter("timeout"), equalTo("5678"));
+        assertThat(url2.getParameter("default.timeout"), equalTo("5678"));
     }
 
     @Test

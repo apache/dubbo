@@ -26,6 +26,7 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.Watch;
 import io.fabric8.kubernetes.client.Watcher;
 import io.fabric8.kubernetes.client.WatcherException;
+import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
 
@@ -93,7 +94,7 @@ public class KubernetesMeshEnvListener implements MeshEnvListener {
                             }
 
                             if (action == Action.ADDED || action == Action.MODIFIED) {
-                                String vsRule = new Yaml(new SafeConstructor()).dump(resource);
+                                String vsRule = new Yaml(new SafeConstructor(new LoaderOptions())).dump(resource);
                                 vsAppCache.put(appName, vsRule);
                                 if (drAppCache.containsKey(appName)) {
                                     notifyListener(vsRule, appName, drAppCache.get(appName));
@@ -116,7 +117,7 @@ public class KubernetesMeshEnvListener implements MeshEnvListener {
                         .inNamespace(namespace)
                         .withName(appName)
                         .get();
-                vsAppCache.put(appName, new Yaml(new SafeConstructor()).dump(vsRule));
+                vsAppCache.put(appName, new Yaml(new SafeConstructor(new LoaderOptions())).dump(vsRule));
             } catch (Throwable ignore) {
 
             }
@@ -151,7 +152,7 @@ public class KubernetesMeshEnvListener implements MeshEnvListener {
                             }
 
                             if (action == Action.ADDED || action == Action.MODIFIED) {
-                                String drRule = new Yaml(new SafeConstructor()).dump(resource);
+                                String drRule = new Yaml(new SafeConstructor(new LoaderOptions())).dump(resource);
 
                                 drAppCache.put(appName, drRule);
                                 if (vsAppCache.containsKey(appName)) {
@@ -175,7 +176,7 @@ public class KubernetesMeshEnvListener implements MeshEnvListener {
                         .inNamespace(namespace)
                         .withName(appName)
                         .get();
-                drAppCache.put(appName, new Yaml(new SafeConstructor()).dump(drRule));
+                drAppCache.put(appName, new Yaml(new SafeConstructor(new LoaderOptions())).dump(drRule));
             } catch (Throwable ignore) {
 
             }

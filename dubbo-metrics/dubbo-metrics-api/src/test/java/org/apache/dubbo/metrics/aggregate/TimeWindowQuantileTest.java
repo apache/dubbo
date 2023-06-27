@@ -20,18 +20,42 @@ package org.apache.dubbo.metrics.aggregate;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 class TimeWindowQuantileTest {
 
     @Test
-    void test() throws Exception {
-        TimeWindowQuantile quantile = new TimeWindowQuantile(100, 12, 1);
+    void test() {
+        TimeWindowQuantile quantile = new TimeWindowQuantile(100, 10, 1);
         for (int i = 1; i <= 100; i++) {
             quantile.add(i);
         }
 
         Assertions.assertEquals(quantile.quantile(0.01), 2);
         Assertions.assertEquals(quantile.quantile(0.99), 100);
-        Thread.sleep(1000);
-        Assertions.assertEquals(quantile.quantile(0.99), Double.NaN);
     }
+
+    @Test
+    void testMulti() {
+
+        ExecutorService executorService = Executors.newFixedThreadPool(200);
+
+        TimeWindowQuantile quantile = new TimeWindowQuantile(100, 10, 120);
+        int index = 0;
+        while (index < 100) {
+            for (int i = 0; i < 100; i++) {
+                int finalI = i;
+                executorService.execute(() ->
+                    Assertions.assertDoesNotThrow(() -> quantile.add(finalI)));
+            }
+            index++;
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
 }

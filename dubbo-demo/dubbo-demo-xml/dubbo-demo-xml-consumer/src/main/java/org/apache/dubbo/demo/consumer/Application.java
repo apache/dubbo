@@ -22,7 +22,11 @@ import org.apache.dubbo.demo.RestDemoService;
 import org.apache.dubbo.demo.TripleService;
 
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import po.TestPO;
 
+import javax.ws.rs.core.MultivaluedHashMap;
+import javax.ws.rs.core.MultivaluedMap;
+import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
 
 public class Application {
@@ -56,23 +60,22 @@ public class Application {
         new Thread(() -> {
             while (true) {
                 try {
-                    String restResult = restDemoService.sayHello("rest");
+                    Object restResult = restDemoService.sayHello("rest");
                     System.out.println(restResult + " from separated thread.");
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                }
-            }
-        }).start();
+                    restResult = restDemoService.testBody5(TestPO.getInstance());
+                    System.out.println(restResult + " from separated thread.");
 
-        new Thread(() -> {
-            while (true) {
-                try {
-                    String restResult = tripleService.hello();
+                    restResult = restDemoService.hello(1, 2);
                     System.out.println(restResult + " from separated thread.");
+
+                    String form1 = restDemoService.testForm1("form1");
+                    System.out.println(form1);
+
+                    MultivaluedHashMap multivaluedHashMap = new MultivaluedHashMap();
+                    multivaluedHashMap.put("1", Arrays.asList("1"));
+                    multivaluedHashMap.put("2", Arrays.asList("2"));
+                    MultivaluedMap form2 = restDemoService.testForm2(multivaluedHashMap);
+                    System.out.println(form2);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

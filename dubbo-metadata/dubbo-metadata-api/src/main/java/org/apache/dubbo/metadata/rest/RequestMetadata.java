@@ -32,6 +32,7 @@ import java.util.Set;
 
 import static java.util.Collections.unmodifiableMap;
 import static org.apache.dubbo.common.utils.PathUtils.normalize;
+import static org.apache.dubbo.common.utils.StringUtils.SLASH;
 import static org.apache.dubbo.common.utils.StringUtils.isBlank;
 
 /**
@@ -55,6 +56,7 @@ public class RequestMetadata implements Serializable {
 
     private Set<String> produces = new LinkedHashSet<>();
 
+
     /**
      * Default Constructor
      */
@@ -75,6 +77,11 @@ public class RequestMetadata implements Serializable {
 
     public void setPath(String path) {
         this.path = normalize(path);
+
+        if (!path.startsWith(SLASH)) {
+            this.path = SLASH + path;
+        }
+
     }
 
     public Map<String, List<String>> getParams() {
@@ -192,6 +199,17 @@ public class RequestMetadata implements Serializable {
         return this;
     }
 
+    public void appendContextPathFromUrl(String contextPathFromUrl) {
+        if (contextPathFromUrl == null) {
+            return;
+        }
+        setPath(contextPathFromUrl + path);
+    }
+
+    public boolean methodAllowed(String method) {
+        return method != null && method.equals(this.method);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -202,12 +220,12 @@ public class RequestMetadata implements Serializable {
         }
         RequestMetadata that = (RequestMetadata) o;
         return Objects.equals(method, that.method)
-                && Objects.equals(path, that.path)
-                && Objects.equals(consumes, that.consumes)
-                && Objects.equals(produces, that.produces) &&
-                // Metadata should not compare the values
-                Objects.equals(getParamNames(), that.getParamNames())
-                && Objects.equals(getHeaderNames(), that.getHeaderNames());
+            && Objects.equals(path, that.path)
+            && Objects.equals(consumes, that.consumes)
+            && Objects.equals(produces, that.produces) &&
+            // Metadata should not compare the values
+            Objects.equals(getParamNames(), that.getParamNames())
+            && Objects.equals(getHeaderNames(), that.getHeaderNames());
 
     }
 
@@ -215,13 +233,13 @@ public class RequestMetadata implements Serializable {
     public int hashCode() {
         // The values of metadata should not use for the hashCode() method
         return Objects.hash(method, path, consumes, produces, getParamNames(),
-                getHeaderNames());
+            getHeaderNames());
     }
 
     @Override
     public String toString() {
         return "RequestMetadata{" + "method='" + method + '\'' + ", path='" + path + '\''
-                + ", params=" + params + ", headers=" + headers + ", consumes=" + consumes
-                + ", produces=" + produces + '}';
+            + ", params=" + params + ", headers=" + headers + ", consumes=" + consumes
+            + ", produces=" + produces + '}';
     }
 }

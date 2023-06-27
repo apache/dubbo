@@ -38,7 +38,7 @@ public class ObserverToClientCallListenerAdapter implements ClientCall.Listener 
     }
 
     @Override
-    public void onMessage(Object message) {
+    public void onMessage(Object message, int actualContentLength) {
         delegate.onNext(message);
         if (call.isAutoRequest()) {
             call.request(1);
@@ -46,7 +46,7 @@ public class ObserverToClientCallListenerAdapter implements ClientCall.Listener 
     }
 
     @Override
-    public void onClose(TriRpcStatus status, Map<String, Object> trailers) {
+    public void onClose(TriRpcStatus status, Map<String, Object> trailers, boolean isReturnTriException) {
         if (status.isOk()) {
             delegate.onCompleted();
         } else {

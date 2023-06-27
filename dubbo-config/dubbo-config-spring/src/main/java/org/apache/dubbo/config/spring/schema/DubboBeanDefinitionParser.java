@@ -32,6 +32,7 @@ import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.nested.AggregationConfig;
+import org.apache.dubbo.config.nested.HistogramConfig;
 import org.apache.dubbo.config.nested.PrometheusConfig;
 import org.apache.dubbo.config.spring.Constants;
 import org.apache.dubbo.config.spring.ReferenceBean;
@@ -102,9 +103,11 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
         if (StringUtils.isNotEmpty(configId)) {
             beanDefinition.getPropertyValues().addPropertyValue("id", configId);
         }
-        // get id from name
+
+        String configName = "";
+        // get configName from name
         if (StringUtils.isEmpty(configId)) {
-            configId = resolveAttribute(element, "name", parserContext);
+            configName = resolveAttribute(element, "name", parserContext);
         }
 
         String beanName = configId;
@@ -112,12 +115,13 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
             // generate bean name
             String prefix = beanClass.getName();
             int counter = 0;
-            beanName = prefix + "#" + counter;
+            beanName = prefix + (StringUtils.isEmpty(configName) ? "#" : ("#" + configName + "#")) + counter;
             while (parserContext.getRegistry().containsBeanDefinition(beanName)) {
-                beanName = prefix + "#" + (counter++);
+                beanName = prefix + (StringUtils.isEmpty(configName) ? "#" : ("#" + configName + "#")) + (counter++);
             }
         }
         beanDefinition.setAttribute(BEAN_NAME, beanName);
+
 
         if (ProtocolConfig.class.equals(beanClass)) {
 //            for (String name : parserContext.getRegistry().getBeanDefinitionNames()) {
@@ -174,13 +178,16 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                     if ("registry".equals(property) && RegistryConfig.NO_AVAILABLE.equalsIgnoreCase(value)) {
                         RegistryConfig registryConfig = new RegistryConfig();
                         registryConfig.setAddress(RegistryConfig.NO_AVAILABLE);
-                        beanDefinition.getPropertyValues().addPropertyValue(beanProperty, registryConfig);
+                        // see AbstractInterfaceConfig#registries, It will be invoker setRegistries method when BeanDefinition is registered,
+                        beanDefinition.getPropertyValues().addPropertyValue("registries", registryConfig);
+                        // If registry is N/A, don't init it until the reference is invoked
+                        beanDefinition.setLazyInit(true);
                     } else if ("provider".equals(property) || "registry".equals(property) || ("protocol".equals(property) && AbstractServiceConfig.class.isAssignableFrom(beanClass))) {
                         /**
                          * For 'provider' 'protocol' 'registry', keep literal value (should be id/name) and set the value to 'registryIds' 'providerIds' protocolIds'
                          * The following process should make sure each id refers to the corresponding instance, here's how to find the instance for different use cases:
                          * 1. Spring, check existing bean by id, see{@link ServiceBean#afterPropertiesSet()}; then try to use id to find configs defined in remote Config Center
-                         * 2. API, directly use id to find configs defined in remote Config Center; if all config instances are defined locally, please use {@link ServiceConfig#setRegistries(List)}
+                         * 2. API, directly use id to find configs defined in remote Config Center; if all config instances are defined locally, please use {@link org.apache.dubbo.config.ServiceConfig#setRegistries(List)}
                          */
                         beanDefinition.getPropertyValues().addPropertyValue(beanProperty + "Ids", value);
                     } else {
@@ -265,6 +272,10 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                 AggregationConfig aggregation = new AggregationConfig();
                 assignProperties(aggregation, child, parserContext);
                 beanDefinition.getPropertyValues().addPropertyValue("aggregation", aggregation);
+            }else if("histogram".equals(child.getNodeName()) || "histogram".equals(child.getLocalName())){
+                HistogramConfig histogram = new HistogramConfig();
+                assignProperties(histogram, child, parserContext);
+                beanDefinition.getPropertyValues().addPropertyValue("histogram", histogram);
             } else if ("prometheus-exporter".equals(child.getNodeName()) || "prometheus-exporter".equals(child.getLocalName())) {
                 if (prometheus == null) {
                     prometheus = new PrometheusConfig();

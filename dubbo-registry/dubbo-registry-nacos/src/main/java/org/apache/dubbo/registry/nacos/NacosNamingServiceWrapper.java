@@ -60,7 +60,6 @@ public class NacosNamingServiceWrapper {
 
     private final ConcurrentMap<InstanceId, InstancesInfo> registerStatus = new ConcurrentHashMap<>();
     private final ConcurrentMap<SubscribeInfo, NamingService> subscribeStatus = new ConcurrentHashMap<>();
-    private final Lock mapLock = new ReentrantLock();
 
     public NacosNamingServiceWrapper(NacosConnectionManager nacosConnectionManager, int retryTimes, int sleepMsBetweenRetries) {
         this.nacosConnectionManager = nacosConnectionManager;
@@ -108,13 +107,7 @@ public class NacosNamingServiceWrapper {
 
     public void registerInstance(String serviceName, String group, Instance instance) throws NacosException {
         String nacosServiceName = handleInnerSymbol(serviceName);
-        InstancesInfo instancesInfo;
-        try {
-            mapLock.lock();
-            instancesInfo = ConcurrentHashMapUtils.computeIfAbsent(registerStatus, new InstanceId(nacosServiceName, group), id -> new InstancesInfo());
-        } finally {
-            mapLock.unlock();
-        }
+        InstancesInfo instancesInfo = ConcurrentHashMapUtils.computeIfAbsent(registerStatus, new InstanceId(nacosServiceName, group), id -> new InstancesInfo());
 
         try {
             instancesInfo.lock();
@@ -176,13 +169,7 @@ public class NacosNamingServiceWrapper {
 
     public void updateInstance(String serviceName, String group, Instance oldInstance, Instance newInstance) throws NacosException {
         String nacosServiceName = handleInnerSymbol(serviceName);
-        InstancesInfo instancesInfo;
-        try {
-            mapLock.lock();
-            instancesInfo = ConcurrentHashMapUtils.computeIfAbsent(registerStatus, new InstanceId(nacosServiceName, group), id -> new InstancesInfo());
-        } finally {
-            mapLock.unlock();
-        }
+        InstancesInfo instancesInfo = ConcurrentHashMapUtils.computeIfAbsent(registerStatus, new InstanceId(nacosServiceName, group), id -> new InstancesInfo());
 
         try {
             instancesInfo.lock();
@@ -222,13 +209,7 @@ public class NacosNamingServiceWrapper {
 
     public void deregisterInstance(String serviceName, String group, String ip, int port) throws NacosException {
         String nacosServiceName = handleInnerSymbol(serviceName);
-        InstancesInfo instancesInfo;
-        try {
-            mapLock.lock();
-            instancesInfo = ConcurrentHashMapUtils.computeIfAbsent(registerStatus, new InstanceId(nacosServiceName, group), id -> new InstancesInfo());
-        } finally {
-            mapLock.unlock();
-        }
+        InstancesInfo instancesInfo = ConcurrentHashMapUtils.computeIfAbsent(registerStatus, new InstanceId(nacosServiceName, group), id -> new InstancesInfo());
 
         try {
             instancesInfo.lock();
@@ -249,13 +230,7 @@ public class NacosNamingServiceWrapper {
 
     public void deregisterInstance(String serviceName, String group, Instance instance) throws NacosException {
         String nacosServiceName = handleInnerSymbol(serviceName);
-        InstancesInfo instancesInfo;
-        try {
-            mapLock.lock();
-            instancesInfo = ConcurrentHashMapUtils.computeIfAbsent(registerStatus, new InstanceId(nacosServiceName, group), id -> new InstancesInfo());
-        } finally {
-            mapLock.unlock();
-        }
+        InstancesInfo instancesInfo = ConcurrentHashMapUtils.computeIfAbsent(registerStatus, new InstanceId(nacosServiceName, group), id -> new InstancesInfo());
 
         try {
             instancesInfo.lock();
@@ -269,14 +244,9 @@ public class NacosNamingServiceWrapper {
             InstanceInfo instanceInfo = optional.get();
             instancesInfo.getInstances().remove(instanceInfo);
 
-            try {
-                mapLock.lock();
-                if (instancesInfo.getInstances().isEmpty()) {
-                    registerStatus.remove(new InstanceId(nacosServiceName, group));
-                    instancesInfo.setValid(false);
-                }
-            } finally {
-                mapLock.unlock();
+            if (instancesInfo.getInstances().isEmpty()) {
+                registerStatus.remove(new InstanceId(nacosServiceName, group));
+                instancesInfo.setValid(false);
             }
 
             // only one registered

@@ -45,6 +45,8 @@ public class EnvironmentAdapter implements InfraAdapter, ScopeModelAware {
     /**
      * 1. OS Environment: DUBBO_LABELS=tag=pre;key=value
      * 2. JVM Options: -Denv_keys = DUBBO_KEY1, DUBBO_KEY2
+     *
+     * @param params information of this Dubbo process, currently includes application name and host address.
      */
     @Override
     public Map<String, String> getExtraAttributes(Map<String, String> params) {
@@ -67,6 +69,9 @@ public class EnvironmentAdapter implements InfraAdapter, ScopeModelAware {
             for (String key : keys) {
                 String value = ConfigurationUtils.getProperty(applicationModel, key);
                 if (value != null) {
+                    // since 3.2
+                    parameters.put(key.toLowerCase(), value);
+                    // upper-case key kept for compatibility
                     parameters.put(key, value);
                 }
             }

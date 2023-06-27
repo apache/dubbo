@@ -73,7 +73,7 @@ public class TypeDefinitionBuilder {
         return null;
     }
 
-    private Map<String, TypeDefinition> typeCache = new HashMap<>();
+    private final Map<String, TypeDefinition> typeCache = new HashMap<>();
 
     public TypeDefinition build(Type type, Class<?> clazz) {
         return build(type, clazz, typeCache);

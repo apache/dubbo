@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.cluster.router.mesh.route;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invoker;
@@ -109,7 +110,7 @@ public class MeshRuleCache<T> {
                         List<Invoker<T>> subsetInvokers = subsetMap.computeIfAbsent(subsetName, (k) -> new BitList<>(invokers.getOriginList(), true));
 
                         Map<String, String> labels = subset.getLabels();
-                        if (containMapKeyValue(invoker.getUrl().getServiceParameters(protocolServiceKey), labels)) {
+                        if (isLabelMatch(invoker.getUrl(), protocolServiceKey, labels)) {
                             subsetInvokers.add(invoker);
                             matched = true;
                         }
@@ -133,7 +134,7 @@ public class MeshRuleCache<T> {
         return new MeshRuleCache<>(Collections.emptyList(), Collections.emptyMap(), Collections.emptyMap(), BitList.emptyList());
     }
 
-    protected static boolean containMapKeyValue(Map<String, String> originMap, Map<String, String> inputMap) {
+    protected static boolean isLabelMatch(URL url, String protocolServiceKey, Map<String, String> inputMap) {
         if (inputMap == null || inputMap.size() == 0) {
             return true;
         }
@@ -142,7 +143,7 @@ public class MeshRuleCache<T> {
             String key = entry.getKey();
             String value = entry.getValue();
 
-            String originMapValue = originMap.get(key);
+            String originMapValue = url.getOriginalServiceParameter(protocolServiceKey, key);
             if (!value.equals(originMapValue)) {
                 return false;
             }

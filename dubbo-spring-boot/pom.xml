@@ -36,15 +36,16 @@
         <module>dubbo-spring-boot-autoconfigure</module>
         <module>dubbo-spring-boot-compatible</module>
         <module>dubbo-spring-boot-starter</module>
+        <module>dubbo-spring-boot-starters</module>
     </modules>
 
     <properties>
-        <spring-boot.version>2.7.8</spring-boot.version>
+        <spring-boot.version>2.7.12</spring-boot.version>
         <dubbo.version>${revision}</dubbo.version>
         <!-- Fix the bug of log4j refer:https://github.com/apache/logging-log4j2/pull/608 -->
-        <log4j2_version>2.19.0</log4j2_version>
+        <log4j2_version>2.20.0</log4j2_version>
         <!-- Spring boot buddy is lower than the delivery dependency package version and can only show the defined dependency version -->
-        <byte-buddy.version>1.12.22</byte-buddy.version>
+        <byte-buddy.version>1.14.5</byte-buddy.version>
     </properties>
 
     <dependencyManagement>

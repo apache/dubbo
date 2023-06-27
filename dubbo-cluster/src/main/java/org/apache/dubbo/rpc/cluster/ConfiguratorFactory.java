@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.cluster;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Adaptive;
 import org.apache.dubbo.common.extension.SPI;
 
@@ -33,7 +34,7 @@ public interface ConfiguratorFactory {
      * @param url - configurator url.
      * @return configurator instance.
      */
-    @Adaptive("protocol")
+    @Adaptive(CommonConstants.PROTOCOL_KEY)
     Configurator getConfigurator(URL url);
 
 }

@@ -22,8 +22,8 @@ import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import java.util.concurrent.Executor;
 
 public class DefaultExecutorSupport implements ExecutorSupport {
-    private ExecutorRepository executorRepository;
-    private URL url;
+    private final ExecutorRepository executorRepository;
+    private final URL url;
 
     public DefaultExecutorSupport(URL url) {
         this.url = url;

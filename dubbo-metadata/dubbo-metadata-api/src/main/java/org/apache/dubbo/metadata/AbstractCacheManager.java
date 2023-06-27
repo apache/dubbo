@@ -140,7 +140,7 @@ public abstract class AbstractCacheManager<V> implements Disposable {
             cache.lock();
             try {
                 for (Map.Entry<String, V> entry : cache.entrySet()) {
-                    properties.put(entry.getKey(), JsonUtils.getJson().toJson(entry.getValue()));
+                    properties.put(entry.getKey(), JsonUtils.toJson(entry.getValue()));
                 }
             } finally {
                 cache.releaseLock();

@@ -17,12 +17,13 @@
 
 package org.apache.dubbo.common.model;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 /**
  * this class has no nullary constructor and some field is primitive
  */
-public class User {
+public class User implements Serializable {
     private int age;
 
     private String name;

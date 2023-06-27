@@ -17,6 +17,8 @@
 
 package org.apache.dubbo.common.utils;
 
+import java.util.function.Supplier;
+
 public abstract class Assert {
 
     protected Assert() {
@@ -44,6 +46,16 @@ public abstract class Assert {
         if (!condition) {
             throw new IllegalArgumentException(message);
         }
+    }
+
+    public static void assertTrue(boolean expression, Supplier<String> messageSupplier) {
+        if (!expression) {
+            throw new IllegalStateException(nullSafeGet(messageSupplier));
+        }
+    }
+
+    private static String nullSafeGet(Supplier<String> messageSupplier) {
+        return (messageSupplier != null ? messageSupplier.get() : null);
     }
 
 }

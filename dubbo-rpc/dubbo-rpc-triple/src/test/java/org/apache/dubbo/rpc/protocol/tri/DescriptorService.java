@@ -18,7 +18,12 @@ package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.stream.StreamObserver;
 
+import java.util.concurrent.CompletableFuture;
+
 public interface DescriptorService {
+
+
+    CompletableFuture<String> unaryFuture();
 
     void noParameterMethod();
 

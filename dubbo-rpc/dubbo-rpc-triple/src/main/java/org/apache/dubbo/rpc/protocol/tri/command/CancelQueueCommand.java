@@ -21,16 +21,18 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http2.DefaultHttp2ResetFrame;
 import io.netty.handler.codec.http2.Http2Error;
+import org.apache.dubbo.rpc.protocol.tri.stream.TripleStreamChannelFuture;
 
-public class CancelQueueCommand extends QueuedCommand {
+public class CancelQueueCommand extends StreamQueueCommand {
     private final Http2Error error;
 
-    public CancelQueueCommand(Http2Error error) {
+    public CancelQueueCommand(TripleStreamChannelFuture streamChannelFuture, Http2Error error) {
+        super(streamChannelFuture);
         this.error = error;
     }
 
-    public static CancelQueueCommand createCommand(Http2Error error) {
-        return new CancelQueueCommand(error);
+    public static CancelQueueCommand createCommand(TripleStreamChannelFuture streamChannelFuture, Http2Error error) {
+        return new CancelQueueCommand(streamChannelFuture, error);
     }
 
 
