@@ -667,7 +667,7 @@ class JaxrsRestProtocolTest {
         DemoService demoService = this.proxy.getProxy(protocol.refer(DemoService.class, nettyUrl));
 
 
-        Assertions.assertEquals("Hello, hello", demoService.sayHello("hello"));
+        Assertions.assertEquals("intercept", demoService.sayHello("hello"));
         exporter.unexport();
     }
 

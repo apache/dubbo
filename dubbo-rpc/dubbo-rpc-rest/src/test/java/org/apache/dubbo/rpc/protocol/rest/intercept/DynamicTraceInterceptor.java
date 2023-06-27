@@ -25,9 +25,13 @@ import javax.ws.rs.ext.ReaderInterceptorContext;
 import javax.ws.rs.ext.WriterInterceptor;
 import javax.ws.rs.ext.WriterInterceptorContext;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 @Priority(Priorities.USER)
 public class DynamicTraceInterceptor implements ReaderInterceptor, WriterInterceptor {
+
+    public DynamicTraceInterceptor() {
+    }
 
     @Override
     public Object aroundReadFrom(ReaderInterceptorContext readerInterceptorContext) throws IOException, WebApplicationException {
@@ -38,6 +42,7 @@ public class DynamicTraceInterceptor implements ReaderInterceptor, WriterInterce
     @Override
     public void aroundWriteTo(WriterInterceptorContext writerInterceptorContext) throws IOException, WebApplicationException {
         System.out.println("Dynamic writer interceptor invoked");
+        writerInterceptorContext.getOutputStream().write("intercept".getBytes(StandardCharsets.UTF_8));
         writerInterceptorContext.proceed();
     }
 }

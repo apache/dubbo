@@ -43,7 +43,7 @@ import java.util.List;
 
 import static org.apache.dubbo.common.constants.CommonConstants.RESTEASY_NETTY_HTTP_REQUEST_ATTRIBUTE_KEY;
 
-@Activate(value = "resteasy", onClass = {"javax.ws.rs.ext.WriterInterceptorContext", "org.jboss.resteasy.plugins.server.netty.NettyHttpRequest","org.jboss.resteasy.plugins.server.netty.NettyHttpResponse"})
+@Activate(value = "resteasy", onClass = {"javax.ws.rs.ext.WriterInterceptorContext", "org.jboss.resteasy.plugins.server.netty.NettyHttpRequest", "org.jboss.resteasy.plugins.server.netty.NettyHttpResponse"})
 public class ResteasyWriterInterceptorAdapter implements RestResponseInterceptor, ResteasyContext {
 
     private ResteasyProviderFactory resteasyProviderFactory = new ResteasyProviderFactory();
@@ -76,7 +76,10 @@ public class ResteasyWriterInterceptorAdapter implements RestResponseInterceptor
 
         try {
 
-            MediaType mediaType = MediaType.valueOf(getAcceptMediaType(request, type).value);
+            // get content-type
+            String value = getAcceptMediaType(request, type).value;
+
+            MediaType mediaType = MediaType.valueOf(value);
 
             AbstractWriterInterceptorContext writerContext = getAbstractWriterInterceptorContext(restRequest, extension, result, type, type, mediaType, os, headers);
 
@@ -94,7 +97,7 @@ public class ResteasyWriterInterceptorAdapter implements RestResponseInterceptor
 
             byte[] bytes = outputStream.toByteArray();
             response.getOutputStream().write(bytes);
-            response.addOutputHeaders(RestHeaderEnum.CONTENT_TYPE.getHeader(), mediaType.getType());
+            response.addOutputHeaders(RestHeaderEnum.CONTENT_TYPE.getHeader(), value);
 
             restResponseInterceptor.setComplete(true);
         } finally {
