@@ -46,7 +46,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.RESTEASY_NETTY_H
 @Activate(value = "resteasy", onClass = {"javax.ws.rs.ext.WriterInterceptorContext", "org.jboss.resteasy.plugins.server.netty.NettyHttpRequest", "org.jboss.resteasy.plugins.server.netty.NettyHttpResponse"})
 public class ResteasyWriterInterceptorAdapter implements RestResponseInterceptor, ResteasyContext {
 
-    private ResteasyProviderFactory resteasyProviderFactory = new ResteasyProviderFactory();
+    private ResteasyProviderFactory resteasyProviderFactory = getResteasyProviderFactory();
 
 
     @Override
@@ -119,6 +119,10 @@ public class ResteasyWriterInterceptorAdapter implements RestResponseInterceptor
             resteasyProviderFactory, entity, type, genericType, new Annotation[0], mediaType,
             headers, os, request);
         return writerContext;
+    }
+
+    protected ResteasyProviderFactory getResteasyProviderFactory() {
+        return new ResteasyProviderFactory();
     }
 
 
