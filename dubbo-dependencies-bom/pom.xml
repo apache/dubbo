@@ -103,8 +103,8 @@
         <httpcore_version>4.4.16</httpcore_version>
         <fastjson_version>1.2.83</fastjson_version>
         <fastjson2_version>2.0.33</fastjson2_version>
-        <zookeeper_version>3.4.14</zookeeper_version>
-        <curator_version>4.3.0</curator_version>
+        <zookeeper_version>3.7.0</zookeeper_version>
+        <curator_version>5.1.0</curator_version>
         <curator_test_version>2.12.0</curator_test_version>
         <jedis_version>3.10.0</jedis_version>
         <consul_version>1.4.5</consul_version>
@@ -939,13 +939,14 @@
 
     <profiles>
         <profile>
-            <id>curator5</id>
+            <id>curator4</id>
             <activation>
-                <jdk>[17,)</jdk>
+                <jdk>(,16]</jdk>
             </activation>
             <properties>
-                <zookeeper_version>3.7.0</zookeeper_version>
-                <curator_version>5.1.0</curator_version>
+                <!-- For compatibility testing -->
+                <zookeeper_version>3.4.14</zookeeper_version>
+                <curator_version>4.3.0</curator_version>
             </properties>
         </profile>
         <profile>
