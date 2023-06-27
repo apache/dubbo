@@ -81,6 +81,11 @@
         <!-- config-center -->
         <dependency>
             <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-configcenter-file</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-configcenter-zookeeper</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -137,6 +142,11 @@
         <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-metadata-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-metadata-rest</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -203,6 +213,11 @@
         <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-monitor-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-monitor-common</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -298,6 +313,55 @@
             <version>${project.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-plugin-access-log</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-plugin-tps</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-plugin-token</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-plugin-generic-invoke</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-plugin-context</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-plugin-classloader-filter</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-plugin-proxy-bytebuddy</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-plugin-qos-trace</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+
         <!-- registry -->
         <dependency>
             <groupId>org.apache.dubbo</groupId>
@@ -344,6 +408,11 @@
         <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-remoting-netty4</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-remoting-zookeeper-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
