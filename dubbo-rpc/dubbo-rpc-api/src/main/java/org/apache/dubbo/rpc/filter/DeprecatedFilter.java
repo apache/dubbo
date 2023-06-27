@@ -26,6 +26,7 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.util.Set;
 
@@ -47,10 +48,10 @@ public class DeprecatedFilter implements Filter {
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
-        String key = invoker.getInterface().getName() + "." + invocation.getMethodName();
+        String key = invoker.getInterface().getName() + "." + RpcUtils.getMethodName(invocation);
         if (!LOGGED.contains(key)) {
             LOGGED.add(key);
-            if (invoker.getUrl().getMethodParameter(invocation.getMethodName(), DEPRECATED_KEY, false)) {
+            if (invoker.getUrl().getMethodParameter(RpcUtils.getMethodName(invocation), DEPRECATED_KEY, false)) {
                 LOGGER.error(COMMON_UNSUPPORTED_INVOKER, "", "", "The service method " + invoker.getInterface().getName() + "." + getMethodSignature(invocation) + " is DEPRECATED! Declare from " + invoker.getUrl());
             }
         }
@@ -58,7 +59,7 @@ public class DeprecatedFilter implements Filter {
     }
 
     private String getMethodSignature(Invocation invocation) {
-        StringBuilder buf = new StringBuilder(invocation.getMethodName());
+        StringBuilder buf = new StringBuilder(RpcUtils.getMethodName(invocation));
         buf.append('(');
         Class<?>[] types = invocation.getParameterTypes();
         if (types != null && types.length > 0) {

@@ -14,19 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.common.constants;
 
-package org.apache.dubbo.config.deploy;
+/**
+ * Indicate that a service need to be registered to registry or not
+ */
+public enum RegisterTypeEnum {
 
-import org.apache.dubbo.common.utils.Assert;
-import org.apache.dubbo.rpc.model.ApplicationModel;
+    /**
+     * Never register. Cannot be registered by any command(like QoS-online).
+     */
+    NEVER_REGISTER,
 
-import org.junit.jupiter.api.Test;
+    /**
+     * Manual register. Can be registered by command(like QoS-online), but not register by default.
+     */
+    MANUAL_REGISTER,
 
-class DefaultApplicationDeployerTest {
+    /**
+     * (INTERNAL) Auto register by deployer. Will be registered after deployer started.
+     * (Delay publish when starting. Prevent service from being invoked before all services are started)
+     */
+    AUTO_REGISTER_BY_DEPLOYER,
 
-    @Test
-    void isSupportPrometheus() {
-        boolean supportPrometheus = new DefaultApplicationDeployer(ApplicationModel.defaultModel()).isSupportPrometheus();
-        Assert.assertTrue(supportPrometheus,"DefaultApplicationDeployer.isSupportPrometheus() should return true");
-    }
+    /**
+     * Auto register. Will be registered when one service is exported.
+     */
+    AUTO_REGISTER;
 }

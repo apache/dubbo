@@ -16,14 +16,14 @@
  */
 package org.apache.dubbo.metrics.observation;
 
-import io.micrometer.common.KeyValues;
-import io.micrometer.common.docs.KeyName;
-import io.micrometer.common.lang.Nullable;
-
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.support.RpcUtils;
+
+import io.micrometer.common.KeyValues;
+import io.micrometer.common.docs.KeyName;
+import io.micrometer.common.lang.Nullable;
 
 import static org.apache.dubbo.metrics.observation.DubboObservationDocumentation.LowCardinalityKeyNames.RPC_METHOD;
 import static org.apache.dubbo.metrics.observation.DubboObservationDocumentation.LowCardinalityKeyNames.RPC_SERVICE;

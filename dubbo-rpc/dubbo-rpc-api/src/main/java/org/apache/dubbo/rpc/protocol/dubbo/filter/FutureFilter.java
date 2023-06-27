@@ -28,11 +28,11 @@ import org.apache.dubbo.rpc.cluster.filter.ClusterFilter;
 import org.apache.dubbo.rpc.model.AsyncMethodInfo;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.model.ServiceModel;
+import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_REQUEST;
 
 /**
@@ -181,10 +181,10 @@ public class FutureFilter implements ClusterFilter, ClusterFilter.Listener {
                 }
                 onthrowMethod.invoke(onthrowInst, params);
             } catch (Throwable e) {
-                logger.error(PROTOCOL_FAILED_REQUEST, "", "", invocation.getMethodName() + ".call back method invoke error . callback method :" + onthrowMethod + ", url:" + invoker.getUrl(), e);
+                logger.error(PROTOCOL_FAILED_REQUEST, "", "", RpcUtils.getMethodName(invocation) + ".call back method invoke error . callback method :" + onthrowMethod + ", url:" + invoker.getUrl(), e);
             }
         } else {
-            logger.error(PROTOCOL_FAILED_REQUEST, "", "", invocation.getMethodName() + ".call back method invoke error . callback method :" + onthrowMethod + ", url:" + invoker.getUrl(), exception);
+            logger.error(PROTOCOL_FAILED_REQUEST, "", "", RpcUtils.getMethodName(invocation) + ".call back method invoke error . callback method :" + onthrowMethod + ", url:" + invoker.getUrl(), exception);
         }
     }
 
@@ -199,10 +199,7 @@ public class FutureFilter implements ClusterFilter, ClusterFilter.Listener {
             return null;
         }
 
-        String methodName = invocation.getMethodName();
-        if (methodName.equals($INVOKE)) {
-            methodName = (String) invocation.getArguments()[0];
-        }
+        String methodName = RpcUtils.getMethodName(invocation);
 
         return ((ConsumerModel) serviceModel).getAsyncInfo(methodName);
     }

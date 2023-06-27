@@ -52,8 +52,8 @@ import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_CREATE_STREAM_TRIPLE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_PARSE;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_SERIALIZE_TRIPLE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_REQUEST;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_SERIALIZE_TRIPLE;
 
 public abstract class AbstractServerCall implements ServerCall, ServerStream.Listener {
 
@@ -212,7 +212,7 @@ public abstract class AbstractServerCall implements ServerCall, ServerStream.Lis
             .getContextClassLoader();
         try {
             Object instance = parseSingleMessage(message);
-            listener.onMessage(instance);
+            listener.onMessage(instance, message.length);
         } catch (Exception e) {
             final TriRpcStatus status = TriRpcStatus.UNKNOWN.withDescription("Server error")
                 .withCause(e);

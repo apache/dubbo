@@ -17,13 +17,14 @@
 
 package com.alibaba.dubbo.rpc;
 
+import org.apache.dubbo.rpc.model.ServiceModel;
+
+import java.beans.Transient;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
-
-import org.apache.dubbo.rpc.model.ServiceModel;
 
 @Deprecated
 public interface Invocation extends org.apache.dubbo.rpc.Invocation {
@@ -184,6 +185,7 @@ public interface Invocation extends org.apache.dubbo.rpc.Invocation {
         }
 
         @Override
+        @Transient
         public Invoker<?> getInvoker() {
             return new Invoker.CompatibleInvoker(delegate.getInvoker());
         }
