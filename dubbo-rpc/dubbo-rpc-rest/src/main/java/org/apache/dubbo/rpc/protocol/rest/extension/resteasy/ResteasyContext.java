@@ -26,6 +26,7 @@ import org.apache.dubbo.rpc.protocol.rest.deploy.ServiceDeployer;
 import org.apache.dubbo.rpc.protocol.rest.extension.resteasy.filter.DubboContainerResponseContextImpl;
 import org.apache.dubbo.rpc.protocol.rest.extension.resteasy.filter.DubboPreMatchContainerRequestContext;
 import org.apache.dubbo.rpc.protocol.rest.filter.ServiceInvokeRestFilter;
+import org.apache.dubbo.rpc.protocol.rest.netty.ChunkOutputStream;
 import org.apache.dubbo.rpc.protocol.rest.netty.NettyHttpResponse;
 import org.apache.dubbo.rpc.protocol.rest.request.NettyRequestFacade;
 import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
@@ -162,6 +163,11 @@ public interface ResteasyContext {
             requestContext, responseFilters, null, null);
 
         return responseContext;
+    }
+
+    default void restOutputStream(NettyHttpResponse response) throws IOException {
+        ChunkOutputStream outputStream = (ChunkOutputStream) response.getOutputStream();
+        outputStream.reset();
     }
 
 

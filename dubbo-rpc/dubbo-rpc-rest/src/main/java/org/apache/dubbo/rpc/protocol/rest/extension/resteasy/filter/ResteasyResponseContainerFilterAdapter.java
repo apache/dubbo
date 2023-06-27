@@ -22,14 +22,12 @@ import org.apache.dubbo.rpc.protocol.rest.deploy.ServiceDeployer;
 import org.apache.dubbo.rpc.protocol.rest.extension.resteasy.ResteasyContext;
 import org.apache.dubbo.rpc.protocol.rest.filter.RestResponseFilter;
 import org.apache.dubbo.rpc.protocol.rest.filter.context.RestFilterContext;
-import org.apache.dubbo.rpc.protocol.rest.netty.ChunkOutputStream;
 import org.apache.dubbo.rpc.protocol.rest.netty.NettyHttpResponse;
 import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
 import org.jboss.resteasy.specimpl.BuiltResponse;
 import org.jboss.resteasy.spi.HttpResponse;
 
 import javax.ws.rs.container.ContainerResponseFilter;
-import java.io.IOException;
 import java.util.List;
 
 @Activate(value = "resteasy", order = Integer.MAX_VALUE - 1000, onClass = {"org.jboss.resteasy.specimpl.BuiltResponse", "javax.ws.rs.container.ContainerResponseFilter", "org.jboss.resteasy.spi.HttpResponse","org.jboss.resteasy.plugins.server.netty.NettyHttpResponse"})
@@ -69,8 +67,5 @@ public class ResteasyResponseContainerFilterAdapter implements RestResponseFilte
 
     }
 
-    private void restOutputStream(NettyHttpResponse response) throws IOException {
-        ChunkOutputStream outputStream = (ChunkOutputStream) response.getOutputStream();
-        outputStream.reset();
-    }
+
 }

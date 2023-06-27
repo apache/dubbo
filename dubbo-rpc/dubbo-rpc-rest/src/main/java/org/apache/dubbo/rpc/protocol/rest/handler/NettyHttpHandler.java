@@ -55,8 +55,8 @@ public class NettyHttpHandler implements HttpHandler<NettyRequestFacade, NettyHt
     public NettyHttpHandler(ServiceDeployer serviceDeployer, URL url) {
         this.serviceDeployer = serviceDeployer;
         this.url = url;
-        restRequestFilters = getRestFiltersFromURL(RestRequestFilter.class);
-        restResponseFilters = getRestFiltersFromURL(RestResponseFilter.class);
+        restRequestFilters = new ArrayList<>(url.getOrDefaultFrameworkModel().getExtensionLoader(RestRequestFilter.class).getActivateExtensions());
+        restResponseFilters = new ArrayList<>(url.getOrDefaultFrameworkModel().getExtensionLoader(RestResponseFilter.class).getActivateExtensions());
     }
 
 
@@ -75,7 +75,6 @@ public class NettyHttpHandler implements HttpHandler<NettyRequestFacade, NettyHt
         // set response
         RpcContext.getServiceContext().setResponse(nettyHttpResponse);
 
-        // TODO add request filter chain
         Object nettyHttpRequest = requestFacade.getRequest();
 
         RpcContext.getServiceContext().setObjectAttachment(SERVICE_DEPLOYER_ATTRIBUTE_KEY, serviceDeployer);
@@ -125,14 +124,5 @@ public class NettyHttpHandler implements HttpHandler<NettyRequestFacade, NettyHt
             }
         }
     }
-
-    private <T> List<T> getExtensionsFromURL(Class<T> extensionClass) {
-        return url.getOrDefaultFrameworkModel().getExtensionLoader(extensionClass).getActivateExtensions();
-    }
-
-    private List<RestFilter> getRestFiltersFromURL(Class<? extends RestFilter> extension) {
-        return new ArrayList<>(getExtensionsFromURL(extension));
-    }
-
 
 }

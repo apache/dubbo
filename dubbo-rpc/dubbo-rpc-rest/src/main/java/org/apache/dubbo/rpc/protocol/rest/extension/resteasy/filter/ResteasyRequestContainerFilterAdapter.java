@@ -57,9 +57,6 @@ public class ResteasyRequestContainerFilterAdapter implements RestRequestFilter,
 
         RpcContext.getServiceContext().setObjectAttachment(RESTEASY_NETTY_HTTP_REQUEST_ATTRIBUTE_KEY, containerRequestContext.getHttpRequest());
 
-
-        // TODO add headers to response
-
         try {
             BuiltResponse restResponse = containerRequestContext.filter();
 

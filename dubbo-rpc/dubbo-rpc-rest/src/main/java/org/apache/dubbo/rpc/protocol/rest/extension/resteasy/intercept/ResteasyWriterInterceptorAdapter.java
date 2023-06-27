@@ -89,6 +89,8 @@ public class ResteasyWriterInterceptorAdapter implements RestResponseInterceptor
                 return;
             }
 
+            // intercept response  first
+            restOutputStream(response);
 
             byte[] bytes = outputStream.toByteArray();
             response.getOutputStream().write(bytes);

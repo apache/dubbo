@@ -16,8 +16,9 @@
  */
 package org.apache.dubbo.rpc.protocol.rest.extension.resteasy.intercept;
 
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.jboss.resteasy.core.interception.ServerWriterInterceptorContext;
-import org.jboss.resteasy.resteasy_jaxrs.i18n.LogMessages;
 import org.jboss.resteasy.spi.HttpRequest;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 
@@ -31,6 +32,8 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 
 public class DubboServerWriterInterceptorContext extends ServerWriterInterceptorContext {
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(DubboServerWriterInterceptorContext.class);
+
     public DubboServerWriterInterceptorContext(WriterInterceptor[] interceptors, ResteasyProviderFactory providerFactory, Object entity, Class type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, Object> headers, OutputStream outputStream, HttpRequest request) {
         super(interceptors, providerFactory, entity, type, genericType, annotations, mediaType, headers, outputStream, request);
     }
@@ -38,14 +41,14 @@ public class DubboServerWriterInterceptorContext extends ServerWriterInterceptor
 
     @Override
     public void proceed() throws IOException, WebApplicationException {
-        LogMessages.LOGGER.debugf("Interceptor Context: %s,  Method : proceed", getClass().getName());
+        logger.debug("Dubbo server writer intercept  context: " + getClass().getName() + "  Method : proceed");
 
         if (interceptors == null || index >= interceptors.length) {
             return;
         } else {
-            LogMessages.LOGGER.debugf("WriterInterceptor: %s", interceptors[index].getClass().getName());
+
+            logger.debug("Dubbo server writer intercept  context WriterInterceptor: " + interceptors[index].getClass().getName());
             interceptors[index++].aroundWriteTo(this);
-            // we used to pop the index, but the TCK doesn't like this
         }
     }
 }
