@@ -68,7 +68,7 @@ class ChangeTelnetHandlerTest {
         mockChannel.removeAttribute("telnet.service");
         givenLastCall();
         given(mockInvoker.getInterface()).willReturn(DemoService.class);
-        given(mockInvoker.getUrl()).willReturn(URL.valueOf("dubbo://127.0.0.1:" + (20884 + portIncrease++) + "/demo"));
+        given(mockInvoker.getUrl()).willReturn(URL.valueOf("dubbo://127.0.0.1:" + (20994 + portIncrease++) + "/demo"));
     }
 
     private void givenLastCall() {

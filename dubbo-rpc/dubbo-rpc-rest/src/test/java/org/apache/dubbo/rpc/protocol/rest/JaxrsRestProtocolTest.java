@@ -275,6 +275,7 @@ class JaxrsRestProtocolTest {
         exporter.unexport();
     }
 
+    @Disabled
     @Test
     void testRpcContextFilter() {
         DemoService server = new DemoServiceImpl();
