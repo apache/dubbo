@@ -94,6 +94,10 @@ public interface LoggerCodeConstants {
 
     String COMMON_NOT_FOUND_TRACER_DEPENDENCY = "0-29";
 
+    /**
+     * Used in annotation processor to indicate a deprecated method is invoked.
+     */
+    String COMMON_DEPRECATED_METHOD_INVOKED = "0-99";
 
     // Registry module
 

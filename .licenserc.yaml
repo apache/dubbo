@@ -97,10 +97,11 @@ header:
     - 'dubbo-maven-plugin/src/main/java/org/apache/dubbo/maven/plugin/aot/RunArguments.java'
     - 'dubbo-maven-plugin/src/main/java/org/apache/dubbo/maven/plugin/aot/RunProcess.java'
     - 'dubbo-native/src/main/java/org/apache/dubbo/aot/generate/BasicJsonWriter.java'
-    - 'dubbo-native/src/main/java/org/apache/dubbo/aot/generate/ExecutableMode.java'
-    - 'dubbo-native/src/main/java/org/apache/dubbo/aot/generate/MemberCategory.java'
+    - 'dubbo-native/src/main/java/org/apache/dubbo/aot/api/ExecutableMode.java'
+    - 'dubbo-native/src/main/java/org/apache/dubbo/aot/api/MemberCategory.java'
     - 'dubbo-metrics/dubbo-metrics-api/src/main/java/org/apache/dubbo/metrics/aggregate/DubboMergingDigest.java'
     - 'dubbo-metrics/dubbo-metrics-api/src/main/java/org/apache/dubbo/metrics/aggregate/DubboAbstractTDigest.java'
+    - 'dubbo-annotation-processor/src/main/java/org/apache/dubbo/annotation/permit/**'
 
   comment: on-failure
 

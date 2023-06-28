@@ -19,6 +19,7 @@ package org.apache.dubbo.config.spring.schema;
 import org.apache.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessor;
 import org.apache.dubbo.config.spring.beans.factory.annotation.ServiceAnnotationPostProcessor;
 
+import org.apache.dubbo.config.spring.util.SpringCompatUtils;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser;
@@ -73,7 +74,7 @@ public class AnnotationBeanDefinitionParser extends AbstractSingleBeanDefinition
 
     @Override
     protected Class<?> getBeanClass(Element element) {
-        return ServiceAnnotationPostProcessor.class;
+        return SpringCompatUtils.serviceAnnotationPostProcessor();
     }
 
 }

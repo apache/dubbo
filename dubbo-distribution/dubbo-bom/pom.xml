@@ -78,6 +78,12 @@
                 <version>${project.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>org.apache.dubbo</groupId>
+                <artifactId>dubbo-config-spring6</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
             <!-- config-center -->
             <dependency>
                 <groupId>org.apache.dubbo</groupId>
@@ -284,13 +290,6 @@
             <dependency>
                 <groupId>org.apache.dubbo</groupId>
                 <artifactId>dubbo-native</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <!-- native-plugin -->
-            <dependency>
-                <groupId>org.apache.dubbo</groupId>
-                <artifactId>dubbo-native-plugin</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -501,6 +500,11 @@
             <dependency>
                 <groupId>org.apache.dubbo</groupId>
                 <artifactId>dubbo-spring-boot-starter</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.dubbo</groupId>
+                <artifactId>dubbo-spring-boot-interceptor</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

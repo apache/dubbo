@@ -124,6 +124,7 @@ import static org.apache.dubbo.config.Constants.LAYER_KEY;
 import static org.apache.dubbo.config.Constants.NAME;
 import static org.apache.dubbo.config.Constants.ORGANIZATION;
 import static org.apache.dubbo.config.Constants.OWNER;
+import static org.apache.dubbo.config.Constants.REGISTER_KEY;
 import static org.apache.dubbo.config.Constants.STATUS_KEY;
 import static org.apache.dubbo.monitor.Constants.LOGSTAT_PROTOCOL;
 import static org.apache.dubbo.registry.Constants.REGISTER_IP_KEY;
@@ -225,7 +226,10 @@ public class ConfigValidationUtils {
                             .setScopeModel(interfaceConfig.getScopeModel())
                             .build();
                         // provider delay register state will be checked in RegistryProtocol#export
-                        if (provider || url.getParameter(SUBSCRIBE_KEY, true)) {
+                        if (provider && url.getParameter(REGISTER_KEY, true)) {
+                            registryList.add(url);
+                        }
+                        if (!provider && url.getParameter(SUBSCRIBE_KEY, true)) {
                             registryList.add(url);
                         }
                     }

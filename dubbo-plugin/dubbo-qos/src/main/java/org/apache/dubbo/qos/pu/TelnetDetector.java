@@ -43,20 +43,20 @@ public class TelnetDetector implements ProtocolDetector {
     @Override
     public Result detect(ChannelBuffer in) {
         if (in.readableBytes() >= MaxSize) {
-            return Result.UNRECOGNIZED;
+            return Result.unrecognized();
         }
         Result resCommand = commandDetect(in);
-        if (resCommand.equals(Result.RECOGNIZED)) {
+        if (resCommand.equals(Result.recognized())) {
             return resCommand;
         }
         Result resAyt = telnetAytDetect(in);
-        if (resAyt.equals(Result.RECOGNIZED)) {
+        if (resAyt.equals(Result.recognized())) {
             return resAyt;
         }
-        if (resAyt.equals(Result.UNRECOGNIZED) && resCommand.equals(Result.UNRECOGNIZED)) {
-            return Result.UNRECOGNIZED;
+        if (resAyt.equals(Result.unrecognized()) && resCommand.equals(Result.unrecognized())) {
+            return Result.unrecognized();
         }
-        return Result.NEED_MORE_DATA;
+        return Result.needMoreData();
     }
 
     private Result commandDetect(ChannelBuffer in) {
@@ -75,9 +75,9 @@ public class TelnetDetector implements ProtocolDetector {
         s = s.trim();
         CommandContext commandContext = TelnetCommandDecoder.decode(s);
         if (frameworkModel.getExtensionLoader(BaseCommand.class).hasExtension(commandContext.getCommandName())) {
-            return Result.RECOGNIZED;
+            return Result.recognized();
         }
-        return Result.UNRECOGNIZED;
+        return Result.unrecognized();
     }
 
     private Result telnetAytDetect(ChannelBuffer in) {
@@ -85,16 +85,16 @@ public class TelnetDetector implements ProtocolDetector {
         int prefaceLen = AytPreface.readableBytes();
         int bytesRead = min(in.readableBytes(), prefaceLen);
         if (bytesRead == 0 || !ChannelBuffers.prefixEquals(in, AytPreface, bytesRead)) {
-            return Result.UNRECOGNIZED;
+            return Result.unrecognized();
         }
         if (bytesRead == prefaceLen) {
             // we need to consume preface because it's not a qos command
             // consume and remember to mark, pu server handler reset reader index
             in.readBytes(AytPreface.readableBytes());
             in.markReaderIndex();
-            return Result.RECOGNIZED;
+            return Result.recognized();
         }
-        return Result.NEED_MORE_DATA;
+        return Result.needMoreData();
     }
 
 }

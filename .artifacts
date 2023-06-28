@@ -28,6 +28,7 @@ dubbo-compiler
 dubbo-config
 dubbo-config-api
 dubbo-config-spring
+dubbo-config-spring6
 dubbo-configcenter
 dubbo-configcenter-apollo
 dubbo-configcenter-nacos
@@ -65,7 +66,6 @@ dubbo-monitor
 dubbo-monitor-api
 dubbo-monitor-default
 dubbo-native
-dubbo-native-plugin
 dubbo-parent
 dubbo-plugin
 dubbo-qos
@@ -110,6 +110,7 @@ dubbo-spring-boot-tracing-otel-otlp-starter
 dubbo-spring-boot-observability-starter
 dubbo-spring-boot-starter
 dubbo-spring-boot-starters
+dubbo-spring-boot-interceptor
 dubbo-nacos-spring-boot-starter
 dubbo-zookeeper-spring-boot-starter
 dubbo-zookeeper-curator5-spring-boot-starter
