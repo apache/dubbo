@@ -21,7 +21,6 @@ public interface Constants {
     String REGISTER_IP_KEY = "register.ip";
 
     String REGISTER_KEY = "register";
-    String REGISTER_ORIGIN_KEY = "register_origin";
 
     String SUBSCRIBE_KEY = "subscribe";
 
@@ -67,9 +66,9 @@ public interface Constants {
     int DEFAULT_SESSION_TIMEOUT = 60 * 1000;
 
     /**
-     * Default value for the times of retry: 3
+     * Default value for the times of retry: -1 (forever)
      */
-    int DEFAULT_REGISTRY_RETRY_TIMES = 3;
+    int DEFAULT_REGISTRY_RETRY_TIMES = -1;
 
     int DEFAULT_REGISTRY_RECONNECT_PERIOD = 3 * 1000;
 

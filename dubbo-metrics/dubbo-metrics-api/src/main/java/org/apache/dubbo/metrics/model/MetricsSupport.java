@@ -239,7 +239,7 @@ public class MetricsSupport {
     /**
      * Generate a complete indicator item for an interface/method
      */
-    public static <T> void fillZero(Map<MetricsKeyWrapper, Map<T, AtomicLong>> data) {
+    public static <T> void fillZero(Map<?, Map<T, AtomicLong>> data) {
         if (CollectionUtils.isEmptyMap(data)) {
             return;
         }

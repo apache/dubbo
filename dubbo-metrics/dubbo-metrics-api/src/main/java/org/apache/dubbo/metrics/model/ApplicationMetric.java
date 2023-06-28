@@ -20,6 +20,7 @@ package org.apache.dubbo.metrics.model;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Map;
+import java.util.Objects;
 
 public class ApplicationMetric implements Metric {
     private final ApplicationModel applicationModel;
@@ -48,5 +49,18 @@ public class ApplicationMetric implements Metric {
 
     public void setExtraInfo(Map<String, String> extraInfo) {
         this.extraInfo = extraInfo;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ApplicationMetric that = (ApplicationMetric) o;
+        return applicationModel.equals(that.applicationModel) && Objects.equals(extraInfo, that.extraInfo);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(applicationModel, extraInfo);
     }
 }
