@@ -98,7 +98,9 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
         RootBeanDefinition beanDefinition = new RootBeanDefinition();
         beanDefinition.setBeanClass(beanClass);
         beanDefinition.setLazyInit(false);
-        beanDefinition.setAutowireMode(AbstractBeanDefinition.AUTOWIRE_CONSTRUCTOR);
+        if (ServiceBean.class.equals(beanClass)) {
+            beanDefinition.setAutowireMode(AbstractBeanDefinition.AUTOWIRE_CONSTRUCTOR);
+        }
         // config id
         String configId = resolveAttribute(element, "id", parserContext);
         if (StringUtils.isNotEmpty(configId)) {
