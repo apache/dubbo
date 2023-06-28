@@ -16,6 +16,12 @@
  */
 package org.apache.dubbo.aot.generate;
 
+import org.apache.dubbo.aot.api.JdkProxyDescriber;
+import org.apache.dubbo.aot.api.ProxyDescriberRegistrar;
+import org.apache.dubbo.aot.api.ReflectionTypeDescriberRegistrar;
+import org.apache.dubbo.aot.api.TypeDescriber;
+import org.apache.dubbo.rpc.model.FrameworkModel;
+
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -44,10 +50,31 @@ public class AotProcessor {
             .registerSpiExtensionType(new ArrayList<>(ClassSourceScanner.INSTANCE.distinctSpiExtensionClasses(ResourceScanner.INSTANCE.distinctSpiResource()).values()))
             .registerAdaptiveType(new ArrayList<>(ClassSourceScanner.INSTANCE.adaptiveClasses().values()))
             .registerBeanType(ClassSourceScanner.INSTANCE.scopeModelInitializer())
-            .registerConfigType(ClassSourceScanner.INSTANCE.configClasses());
+            .registerConfigType(ClassSourceScanner.INSTANCE.configClasses())
+            .registerTypeDescriber(getTypes());
         writer.writeReflectionConfig(reflectRepository);
 
+        ProxyConfigMetadataRepository proxyRepository = new ProxyConfigMetadataRepository();
+        proxyRepository.registerProxyDescribers(getProxyDescribers());
+        writer.writeProxyConfig(proxyRepository);
+    }
 
+    private static List<TypeDescriber> getTypes() {
+        List<TypeDescriber> typeDescribers = new ArrayList<>();
+        FrameworkModel.defaultModel().defaultApplication().getExtensionLoader(ReflectionTypeDescriberRegistrar.class).getSupportedExtensionInstances().forEach(reflectionTypeDescriberRegistrar -> {
+            typeDescribers.addAll(reflectionTypeDescriberRegistrar.getTypeDescribers());
+        });
+
+        return typeDescribers;
+    }
+
+    private static List<JdkProxyDescriber> getProxyDescribers() {
+        List<JdkProxyDescriber> jdkProxyDescribers = new ArrayList<>();
+        FrameworkModel.defaultModel().defaultApplication().getExtensionLoader(ProxyDescriberRegistrar.class).getSupportedExtensionInstances().forEach(reflectionTypeDescriberRegistrar -> {
+            jdkProxyDescribers.addAll(reflectionTypeDescriberRegistrar.getJdkProxyDescribers());
+        });
+
+        return jdkProxyDescribers;
     }
 
 
