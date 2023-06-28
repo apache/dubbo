@@ -103,7 +103,7 @@ public abstract class AbstractMethodConfig extends AbstractConfig {
     protected Integer forks;
 
     public AbstractMethodConfig() {
-        super();
+
     }
 
     public AbstractMethodConfig(ModuleModel moduleModel) {
@@ -124,9 +124,6 @@ public abstract class AbstractMethodConfig extends AbstractConfig {
 
     @Override
     protected void checkScopeModel(ScopeModel scopeModel) {
-        if (scopeModel == null) {
-            throw new IllegalArgumentException("scopeModel cannot be null");
-        }
         if (!(scopeModel instanceof ModuleModel)) {
             throw new IllegalArgumentException("Invalid scope model, expect to be a ModuleModel but got: " + scopeModel);
         }

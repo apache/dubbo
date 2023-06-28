@@ -235,7 +235,9 @@ public class GenericFilter implements Filter, Filter.Listener, ScopeModelAware {
                 Throwable appException = appResponse.getException();
                 if (appException instanceof GenericException) {
                     GenericException tmp = (GenericException) appException;
-                    appException = new com.alibaba.dubbo.rpc.service.GenericException(tmp.getExceptionClass(), tmp.getExceptionMessage());
+                    appException = new com.alibaba.dubbo.rpc.service.GenericException(tmp.getMessage(), tmp.getCause(),
+                        tmp.getExceptionClass(), tmp.getExceptionMessage());
+                    appException.setStackTrace(tmp.getStackTrace());
                 }
                 if (!(appException instanceof com.alibaba.dubbo.rpc.service.GenericException)) {
                     appException = new com.alibaba.dubbo.rpc.service.GenericException(appException);
