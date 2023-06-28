@@ -501,8 +501,8 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         repository.registerProvider(providerModel);
 
         List<URL> registryURLs = ConfigValidationUtils.loadRegistries(this, true);
-        List<String> ServiceDiscoveryNames = registryURLs.stream().map(url-> url.getParameter(RegistryConstants.REGISTRY_CLUSTER_KEY)).distinct().collect(Collectors.toList());
-        MetricsEventBus.post(RegistryEvent.toRsEvent(module.getApplicationModel(), getUniqueServiceName(), protocols.size(), ServiceDiscoveryNames),
+        List<String> serviceDiscoveryNames = registryURLs.stream().map(url-> url.getParameter(RegistryConstants.REGISTRY_CLUSTER_KEY)).distinct().collect(Collectors.toList());
+        MetricsEventBus.post(RegistryEvent.toRsEvent(module.getApplicationModel(), getUniqueServiceName(), protocols.size(), serviceDiscoveryNames),
             () -> {
                 for (ProtocolConfig protocolConfig : protocols) {
                     String pathKey = URL.buildKey(getContextPath(protocolConfig)
