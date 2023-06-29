@@ -694,4 +694,10 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
         }
     }
 
+    @Override
+    public String toString() {
+        return "RegistryDirectory(" +
+            "registry: " + getUrl().getAddress() +
+            ")-" + super.toString();
+    }
 }
