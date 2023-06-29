@@ -122,4 +122,5 @@ public class FutureContext {
             this.setFuture(new FutureAdapter(compatibleFuture));
         }
     }
+
 }
