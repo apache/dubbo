@@ -64,6 +64,11 @@ public interface Constants {
     long LEAST_HEARTBEAT_DURATION = 1000;
 
     /**
+     * the least reconnect during is 60000 ms.
+     */
+    long LEAST_RECONNECT_DURATION = 60000;
+
+    /**
      * ticks per wheel.
      */
     int TICKS_PER_WHEEL = 128;

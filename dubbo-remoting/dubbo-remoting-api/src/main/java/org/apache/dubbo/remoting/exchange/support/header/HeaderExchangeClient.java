@@ -37,6 +37,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.remoting.Constants.HEARTBEAT_CHECK_TICK;
 import static org.apache.dubbo.remoting.Constants.LEAST_HEARTBEAT_DURATION;
+import static org.apache.dubbo.remoting.Constants.LEAST_RECONNECT_DURATION;
 import static org.apache.dubbo.remoting.Constants.TICKS_PER_WHEEL;
 import static org.apache.dubbo.remoting.utils.UrlUtils.getHeartbeat;
 import static org.apache.dubbo.remoting.utils.UrlUtils.getIdleTimeout;
@@ -225,8 +226,10 @@ public class HeaderExchangeClient implements ExchangeClient {
     private void startReconnectTask(URL url) {
         if (shouldReconnect(url)) {
             long heartbeatTimeoutTick = calculateLeastDuration(idleTimeout);
-            reconnectTimerTask = new ReconnectTimerTask(() -> Collections.singleton(this), RECONNECT_TIMER.get(), heartbeatTimeoutTick, idleTimeout);
-            disconnectTimerTask = new DisconnectTimerTask(() -> Collections.singleton(this), DISCONNECT_TIMER.get(), heartbeatTimeoutTick, idleTimeout);
+            reconnectTimerTask = new ReconnectTimerTask(() -> Collections.singleton(this), RECONNECT_TIMER.get(),
+                Math.max(LEAST_RECONNECT_DURATION, heartbeatTimeoutTick), idleTimeout);
+            disconnectTimerTask = new DisconnectTimerTask(() -> Collections.singleton(this), DISCONNECT_TIMER.get(),
+                heartbeatTimeoutTick, idleTimeout);
         }
     }
 
