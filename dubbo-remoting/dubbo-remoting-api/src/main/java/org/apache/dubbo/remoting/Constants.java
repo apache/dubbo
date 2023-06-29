@@ -68,6 +68,8 @@ public interface Constants {
      */
     long LEAST_RECONNECT_DURATION = 60000;
 
+    String LEAST_RECONNECT_DURATION_KEY = "reconnect.duration";
+
     /**
      * ticks per wheel.
      */
