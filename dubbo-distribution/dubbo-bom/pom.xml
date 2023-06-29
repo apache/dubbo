@@ -272,6 +272,13 @@
                 <version>${project.version}</version>
             </dependency>
 
+            <!-- tracing -->
+            <dependency>
+                <groupId>org.apache.dubbo</groupId>
+                <artifactId>dubbo-tracing</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
             <!-- monitor -->
             <dependency>
                 <groupId>org.apache.dubbo</groupId>
@@ -604,6 +611,11 @@
             <dependency>
                 <groupId>org.apache.dubbo</groupId>
                 <artifactId>dubbo-spring-boot-starter</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.dubbo</groupId>
+                <artifactId>dubbo-spring-boot-interceptor</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
