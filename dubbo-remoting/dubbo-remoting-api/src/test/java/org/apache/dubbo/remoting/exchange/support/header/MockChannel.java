@@ -129,6 +129,11 @@ public class MockChannel implements Channel, Client {
     }
 
     @Override
+    public void disconnect() throws RemotingException {
+
+    }
+
+    @Override
     public void reconnect() throws RemotingException {
         reconnectCount++;
     }

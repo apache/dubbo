@@ -32,6 +32,8 @@ public interface Client extends Endpoint, Channel, Resetable, IdleSensible {
      */
     void reconnect() throws RemotingException;
 
+    void disconnect() throws RemotingException;
+
     @Deprecated
     void reset(org.apache.dubbo.common.Parameters parameters);
 

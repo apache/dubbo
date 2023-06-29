@@ -225,6 +225,12 @@ final class LazyConnectExchangeClient implements ExchangeClient {
     }
 
     @Override
+    public void disconnect() throws RemotingException {
+        checkClient();
+        client.disconnect();
+    }
+
+    @Override
     public void reconnect() throws RemotingException {
         checkClient();
         client.reconnect();

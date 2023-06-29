@@ -100,6 +100,11 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
     }
 
     @Override
+    public void disconnect() throws RemotingException {
+        client.disconnect();
+    }
+
+    @Override
     public void reconnect() throws RemotingException {
         client.reconnect();
     }

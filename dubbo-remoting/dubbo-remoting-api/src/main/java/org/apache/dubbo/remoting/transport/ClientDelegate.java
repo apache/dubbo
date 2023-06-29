@@ -70,6 +70,11 @@ public class ClientDelegate implements Client {
     }
 
     @Override
+    public void disconnect() throws RemotingException {
+        client.disconnect();
+    }
+
+    @Override
     public void reconnect() throws RemotingException {
         client.reconnect();
     }
