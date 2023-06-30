@@ -345,7 +345,7 @@ public class RpcServiceContext extends RpcContext {
 
     @Override
     public String getRemoteApplicationName() {
-        return remoteApplicationName;
+        return remoteApplicationName == null ? getUrl().getRemoteApplication() : remoteApplicationName;
     }
 
     @Override
