@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -189,7 +190,7 @@ public class RpcServiceContext extends RpcContext {
     public void setUrls(List<URL> urls) {
         this.urls = urls;
         if (!urls.isEmpty()) {
-            this.url = urls.get(0);
+            setUrl(urls.get(0));
         }
     }
 
@@ -201,6 +202,10 @@ public class RpcServiceContext extends RpcContext {
     @Override
     public void setUrl(URL url) {
         this.url = url;
+        if (url.getSide().equals(CommonConstants.CONSUMER)) {
+            this.remoteApplicationName = url.getRemoteApplication();
+            this.setRemoteAddress(url.getHost(), url.getPort());
+        }
     }
 
     /**
@@ -345,7 +350,7 @@ public class RpcServiceContext extends RpcContext {
 
     @Override
     public String getRemoteApplicationName() {
-        return remoteApplicationName == null ? getUrl().getRemoteApplication() : remoteApplicationName;
+        return remoteApplicationName;
     }
 
     @Override

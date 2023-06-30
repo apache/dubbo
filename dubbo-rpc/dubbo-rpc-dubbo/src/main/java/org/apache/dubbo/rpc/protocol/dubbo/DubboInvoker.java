@@ -107,8 +107,6 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
 
             invocation.setAttachment(TIMEOUT_KEY, String.valueOf(timeout));
 
-            RpcContext.getServiceContext().setRemoteAddress(currentClient.getRemoteAddress());
-
             Integer payload = getUrl().getParameter(PAYLOAD, Integer.class);
 
             Request request = new Request();
