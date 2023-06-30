@@ -26,6 +26,7 @@ import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
+import org.apache.dubbo.metrics.registry.RegistryMetricsConstants;
 import org.apache.dubbo.metrics.registry.collector.RegistryMetricsCollector;
 import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -47,7 +48,6 @@ import static org.apache.dubbo.metrics.registry.RegistryMetricsConstants.OP_TYPE
 import static org.apache.dubbo.metrics.registry.RegistryMetricsConstants.OP_TYPE_REGISTER_SERVICE;
 import static org.apache.dubbo.metrics.registry.RegistryMetricsConstants.OP_TYPE_SUBSCRIBE_SERVICE;
 import static org.apache.dubbo.metrics.registry.RegistryMetricsConstants.REGISTER_LEVEL_APP_KEYS;
-import static org.apache.dubbo.metrics.registry.RegistryMetricsConstants.SERVICE_LEVEL_KEYS;
 
 
 class RegistryMetricsCollectorTest {
@@ -144,9 +144,9 @@ class RegistryMetricsCollectorTest {
                 List<MetricSample> metricSamples = collector.collect();
 
                 // push success +1
-                Assertions.assertEquals(APP_LEVEL_KEYS.size() + SERVICE_LEVEL_KEYS.size(), metricSamples.size());
+                Assertions.assertEquals(RegistryMetricsConstants.APP_LEVEL_KEYS.size() + 1, metricSamples.size());
                 // Service num only 1 and contains tag of interface
-                Assertions.assertEquals(SERVICE_LEVEL_KEYS.size(), metricSamples.stream().filter(metricSample -> serviceName.equals(metricSample.getTags().get("interface"))).count());
+                Assertions.assertEquals(1, metricSamples.stream().filter(metricSample -> serviceName.equals(metricSample.getTags().get("interface"))).count());
                 return null;
             }
         );
@@ -154,7 +154,7 @@ class RegistryMetricsCollectorTest {
         // push finish rt +1
         List<MetricSample> metricSamples = collector.collect();
         // App(7) + rt(5) + service(total/success) = 14
-        Assertions.assertEquals(APP_LEVEL_KEYS.size() + 5 + SERVICE_LEVEL_KEYS.size(), metricSamples.size());
+        Assertions.assertEquals(RegistryMetricsConstants.APP_LEVEL_KEYS.size() + 5 + 2, metricSamples.size());
 
         long c1 = registryEvent.getTimePair().calc();
         registryEvent = RegistryEvent.toRsEvent(applicationModel, serviceName, 2, rcNames);
@@ -175,7 +175,7 @@ class RegistryMetricsCollectorTest {
         metricSamples = collector.collect();
 
         // App(7) + rt(5) + service(total/success/failed) = 15
-        Assertions.assertEquals(APP_LEVEL_KEYS.size() + 5 + SERVICE_LEVEL_KEYS.size(), metricSamples.size());
+        Assertions.assertEquals(RegistryMetricsConstants.APP_LEVEL_KEYS.size() + 5 + 3, metricSamples.size());
 
         // calc rt
         for (MetricSample sample : metricSamples) {
@@ -206,9 +206,9 @@ class RegistryMetricsCollectorTest {
                 Assertions.assertTrue(metricSamples.stream().allMatch(metricSample -> metricSample instanceof GaugeMetricSample));
                 Assertions.assertTrue(metricSamples.stream().anyMatch(metricSample -> ((GaugeMetricSample) metricSample).applyAsDouble() == 1));
                 // App(default=7) + (service success +1)
-                Assertions.assertEquals(APP_LEVEL_KEYS.size() + SERVICE_LEVEL_KEYS.size(), metricSamples.size());
+                Assertions.assertEquals(RegistryMetricsConstants.APP_LEVEL_KEYS.size() + 1, metricSamples.size());
                 // Service num only 1 and contains tag of interface
-                Assertions.assertEquals(SERVICE_LEVEL_KEYS.size(), metricSamples.stream().filter(metricSample -> serviceName.equals(metricSample.getTags().get("interface"))).count());
+                Assertions.assertEquals(1, metricSamples.stream().filter(metricSample -> serviceName.equals(metricSample.getTags().get("interface"))).count());
                 return null;
             }
         );
@@ -216,7 +216,7 @@ class RegistryMetricsCollectorTest {
         // push finish rt +1
         List<MetricSample> metricSamples = collector.collect();
         // App(7) + rt(5) + service(total/success) = 14
-        Assertions.assertEquals(APP_LEVEL_KEYS.size() + 5 + SERVICE_LEVEL_KEYS.size(), metricSamples.size());
+        Assertions.assertEquals(RegistryMetricsConstants.APP_LEVEL_KEYS.size() + 5 + 2, metricSamples.size());
 
         long c1 = subscribeEvent.getTimePair().calc();
         subscribeEvent = RegistryEvent.toSsEvent(applicationModel, serviceName);
@@ -237,7 +237,7 @@ class RegistryMetricsCollectorTest {
         metricSamples = collector.collect();
 
         // App(7) + rt(5) + service(total/success/failed) = 15
-        Assertions.assertEquals(APP_LEVEL_KEYS.size() + 5 + SERVICE_LEVEL_KEYS.size(), metricSamples.size());
+        Assertions.assertEquals(RegistryMetricsConstants.APP_LEVEL_KEYS.size() + 5 + 3, metricSamples.size());
 
         // calc rt
         for (MetricSample sample : metricSamples) {
@@ -274,8 +274,8 @@ class RegistryMetricsCollectorTest {
             }
         );
         List<MetricSample> metricSamples = collector.collect();
-        // App(4) + service num(*3) + rt(5)
-        Assertions.assertEquals((APP_LEVEL_KEYS.size() + SERVICE_LEVEL_KEYS.size()* 3 + 5) , metricSamples.size());
+        // App(7) + num(service*3) + rt(5) = 9
+        Assertions.assertEquals((RegistryMetricsConstants.APP_LEVEL_KEYS.size() + 3 + 5), metricSamples.size());
 
     }
 }
