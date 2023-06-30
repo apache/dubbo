@@ -544,4 +544,13 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
     public URL getConsumerUrl() {
         return consumerUrl;
     }
+
+    @Override
+    public String toString() {
+        return "MigrationInvoker{" +
+            "serviceKey=" + consumerUrl.getServiceKey() +
+            ", invoker=" + decideInvoker() +
+            ", step=" + step +
+            '}';
+    }
 }
