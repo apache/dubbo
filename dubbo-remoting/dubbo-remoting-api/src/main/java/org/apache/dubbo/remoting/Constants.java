@@ -68,7 +68,7 @@ public interface Constants {
      */
     long LEAST_RECONNECT_DURATION = 60000;
 
-    String LEAST_RECONNECT_DURATION_KEY = "reconnect.duration";
+    String LEAST_RECONNECT_DURATION_KEY = "dubbo.application.least-reconnect-duration";
 
     /**
      * ticks per wheel.

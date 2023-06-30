@@ -228,7 +228,7 @@ public class HeaderExchangeClient implements ExchangeClient {
         if (shouldReconnect(url)) {
             long heartbeatTimeoutTick = calculateLeastDuration(idleTimeout);
             reconnectTimerTask = new ReconnectTimerTask(() -> Collections.singleton(this), IDLE_CHECK_TIMER.get(),
-                calculateReconnectDuration(heartbeatTimeoutTick), idleTimeout);
+                calculateReconnectDuration(url, heartbeatTimeoutTick), idleTimeout);
             disconnectTimerTask = new DisconnectTimerTask(() -> Collections.singleton(this), DISCONNECT_TIMER.get(),
                 heartbeatTimeoutTick, idleTimeout);
         }
@@ -260,9 +260,9 @@ public class HeaderExchangeClient implements ExchangeClient {
         }
     }
 
-    private long calculateReconnectDuration(long tick) {
-        String leastReconnectDuration = System.getProperty(LEAST_RECONNECT_DURATION_KEY, String.valueOf(LEAST_RECONNECT_DURATION));
-        return Math.max(Long.parseLong(leastReconnectDuration), tick);
+    private long calculateReconnectDuration(URL url, long tick) {
+        long leastReconnectDuration = url.getParameter(LEAST_RECONNECT_DURATION_KEY, LEAST_RECONNECT_DURATION);
+        return Math.max(leastReconnectDuration, tick);
     }
 
     private boolean shouldReconnect(URL url) {

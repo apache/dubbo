@@ -44,7 +44,6 @@ class ClientReconnectTest {
 
     @BeforeEach
     public void clear() {
-        System.setProperty(LEAST_RECONNECT_DURATION_KEY, "0");
         DubboAppender.clear();
     }
 
@@ -79,7 +78,7 @@ class ClientReconnectTest {
 
     public Client startClient(int port, int heartbeat) throws RemotingException {
         URL url = URL.valueOf("exchange://127.0.0.1:" + port + "/client.reconnect.test?check=false&codec=exchange&client=netty3&" +
-            Constants.HEARTBEAT_KEY + "=" + heartbeat);
+            Constants.HEARTBEAT_KEY + "=" + heartbeat + "&" + LEAST_RECONNECT_DURATION_KEY + "=0");
         ApplicationModel applicationModel = ApplicationModel.defaultModel();
         ApplicationConfig applicationConfig = new ApplicationConfig("provider-app");
         applicationConfig.setExecutorManagementMode(EXECUTOR_MANAGEMENT_MODE_DEFAULT);
