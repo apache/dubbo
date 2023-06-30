@@ -429,6 +429,7 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
         BeanDefinitionBuilder builder = rootBeanDefinition(ServiceBean.class);
 
         AbstractBeanDefinition beanDefinition = builder.getBeanDefinition();
+        beanDefinition.setAutowireMode(AbstractBeanDefinition.AUTOWIRE_CONSTRUCTOR);
 
         MutablePropertyValues propertyValues = beanDefinition.getPropertyValues();
 

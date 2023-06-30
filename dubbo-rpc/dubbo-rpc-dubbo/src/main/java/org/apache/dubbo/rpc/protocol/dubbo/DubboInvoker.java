@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.protocol.dubbo;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.config.ConfigurationUtils;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.serialize.SerializationException;
 import org.apache.dubbo.common.utils.AtomicPositiveInteger;
 import org.apache.dubbo.remoting.Constants;
@@ -30,6 +31,7 @@ import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.FutureContext;
 import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.InvokeMode;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
@@ -69,6 +71,8 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
     private final Set<Invoker<?>> invokers;
 
     private final int serverShutdownTimeout;
+
+    private static final boolean setFutureWhenSync = Boolean.parseBoolean(System.getProperty(CommonConstants.SET_FUTURE_IN_SYNC_MODE, "true"));
 
     public DubboInvoker(Class<T> serviceType, URL url, ClientsProvider clientsProvider) {
         this(serviceType, url, clientsProvider, null);
@@ -129,7 +133,9 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
                 CompletableFuture<AppResponse> appResponseFuture =
                     currentClient.request(request, timeout, executor).thenApply(AppResponse.class::cast);
                 // save for 2.6.x compatibility, for example, TraceFilter in Zipkin uses com.alibaba.xxx.FutureAdapter
-                FutureContext.getContext().setCompatibleFuture(appResponseFuture);
+                if (setFutureWhenSync || ((RpcInvocation) invocation).getInvokeMode() != InvokeMode.SYNC) {
+                    FutureContext.getContext().setCompatibleFuture(appResponseFuture);
+                }
                 AsyncRpcResult result = new AsyncRpcResult(appResponseFuture, inv);
                 result.setExecutor(executor);
                 return result;
