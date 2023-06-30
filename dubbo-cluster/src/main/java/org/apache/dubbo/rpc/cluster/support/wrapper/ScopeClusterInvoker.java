@@ -307,4 +307,13 @@ public class ScopeClusterInvoker<T> implements ClusterInvoker<T>, ExporterChange
         }
     }
 
+    @Override
+    public String toString() {
+        return "ScopeClusterInvoker{" +
+            "directory=" + directory +
+            ", isExported=" + isExported +
+            ", peerFlag=" + peerFlag +
+            ", injvmFlag=" + injvmFlag +
+            '}';
+    }
 }
