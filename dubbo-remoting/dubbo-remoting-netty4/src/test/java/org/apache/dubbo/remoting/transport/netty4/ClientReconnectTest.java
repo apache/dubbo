@@ -32,11 +32,13 @@ import org.apache.dubbo.remoting.exchange.support.ExchangeHandlerAdapter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_MANAGEMENT_MODE_DEFAULT;
+import static org.apache.dubbo.remoting.Constants.LEAST_RECONNECT_DURATION_KEY;
 
 /**
  * Client reconnect test
@@ -81,7 +83,8 @@ class ClientReconnectTest {
 
 
     public Client startClient(int port, int heartbeat) throws RemotingException {
-        URL url = URL.valueOf("exchange://127.0.0.1:" + port + "/client.reconnect.test?client=netty4&check=false&" + Constants.HEARTBEAT_KEY + "=" + heartbeat);
+        URL url = URL.valueOf("exchange://127.0.0.1:" + port + "/client.reconnect.test?client=netty4&check=false&" +
+            Constants.HEARTBEAT_KEY + "=" + heartbeat + "&" + LEAST_RECONNECT_DURATION_KEY + "=0");
         FrameworkModel frameworkModel = new FrameworkModel();
         ApplicationModel applicationModel = frameworkModel.newApplication();
         ApplicationConfig applicationConfig = new ApplicationConfig("provider-app");
