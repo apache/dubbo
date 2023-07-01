@@ -190,7 +190,7 @@ public class RpcServiceContext extends RpcContext {
     public void setUrls(List<URL> urls) {
         this.urls = urls;
         if (!urls.isEmpty()) {
-            setUrl(urls.get(0));
+            this.url = urls.get(0);
         }
     }
 
@@ -202,10 +202,6 @@ public class RpcServiceContext extends RpcContext {
     @Override
     public void setUrl(URL url) {
         this.url = url;
-        if (url.getSide().equals(CommonConstants.CONSUMER)) {
-            this.remoteApplicationName = url.getRemoteApplication();
-            this.setRemoteAddress(url.getHost(), url.getPort());
-        }
     }
 
     /**

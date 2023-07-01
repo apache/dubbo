@@ -379,13 +379,24 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
             if (ProfilerSwitch.isEnableSimpleProfiler()) {
                 InvocationProfilerUtils.enterProfiler(invocation, "Invoker invoke. Target Address: " + invoker.getUrl().getAddress());
             }
-            invocation.addInvokedInvoker(invoker);
+            setRemote(invoker, invocation);
             result = invoker.invoke(invocation);
         } finally {
             clearContext(originInvoker);
             InvocationProfilerUtils.releaseSimpleProfiler(invocation);
         }
         return result;
+    }
+
+    /**
+     * Set the remoteAddress and remoteApplicationName so that filter can get them.
+     *
+     */
+    private void setRemote(Invoker<?> invoker, Invocation invocation) {
+        invocation.addInvokedInvoker(invoker);
+        RpcServiceContext serviceContext = RpcContext.getServiceContext();
+        serviceContext.setRemoteAddress(invoker.getUrl().toInetSocketAddress());
+        serviceContext.setRemoteApplicationName(invoker.getUrl().getRemoteApplication());
     }
 
     /**
