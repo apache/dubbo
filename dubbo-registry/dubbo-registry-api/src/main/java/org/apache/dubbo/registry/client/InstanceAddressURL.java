@@ -495,6 +495,16 @@ public class InstanceAddressURL extends URL {
      */
     @Override
     public String getAnyMethodParameter(String key) {
+        if (consumerParamFirst(key)) {
+            URL consumerUrl = RpcContext.getServiceContext().getConsumerUrl();
+            if (consumerUrl != null) {
+                String v = consumerUrl.getAnyMethodParameter(key);
+                if (StringUtils.isNotEmpty(v)) {
+                    return v;
+                }
+            }
+        }
+
         String suffix = "." + key;
         String protocolServiceKey = getProtocolServiceKey();
         if (StringUtils.isNotEmpty(protocolServiceKey)) {
