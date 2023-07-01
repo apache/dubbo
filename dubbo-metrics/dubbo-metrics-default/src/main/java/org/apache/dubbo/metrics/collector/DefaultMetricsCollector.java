@@ -100,6 +100,7 @@ public class DefaultMetricsCollector extends CombMetricsCollector<RequestEvent> 
         this.collectEnabled = collectEnabled;
     }
 
+    @Override
     public boolean isCollectEnabled() {
         return collectEnabled;
     }

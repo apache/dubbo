@@ -18,35 +18,36 @@
 package org.apache.dubbo.metrics.collector.sample;
 
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
+import org.apache.dubbo.metrics.model.ErrorCodeMetric;
 import org.apache.dubbo.metrics.model.MetricsCategory;
-import org.apache.dubbo.metrics.model.ThreadPoolRejectMetric;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
-import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
+import org.apache.dubbo.metrics.model.sample.CounterMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 
 import java.util.concurrent.atomic.AtomicLong;
 
-import static org.apache.dubbo.metrics.model.MetricsCategory.THREAD_POOL;
+/**
+ * This sampler used count the number of occurrences of each error code.
+ */
+public class ErrorCodeSampler extends MetricsNameCountSampler<String, String, ErrorCodeMetric> {
 
-public class ThreadRejectMetricsCountSampler extends MetricsNameCountSampler<String, String, ThreadPoolRejectMetric> {
-
-    public ThreadRejectMetricsCountSampler(DefaultMetricsCollector collector) {
-        super(collector, THREAD_POOL,MetricsKey.THREAD_POOL_THREAD_REJECT_COUNT);
+    public ErrorCodeSampler(DefaultMetricsCollector collector) {
+        super(collector, MetricsCategory.ERROR_CODE, MetricsKey.ERROR_CODE_COUNT);
     }
 
     @Override
-    protected MetricSample provideMetricsSample(ThreadPoolRejectMetric metric, AtomicLong count, MetricsKey metricsKey, MetricsCategory metricsCategory) {
-        return new GaugeMetricSample<>(
-            metricsKey.getNameByType(metric.getThreadPoolName()),
+    protected MetricSample provideMetricsSample(ErrorCodeMetric metric, AtomicLong count, MetricsKey metricsKey, MetricsCategory metricsCategory) {
+        return new CounterMetricSample<>(
+            metricsKey.getNameByType(metric.getErrorCode()),
             metricsKey.getDescription(),
             metric.getTags(),
             metricsCategory,
-            count,
-            AtomicLong::get);
+            count
+        );
     }
 
     @Override
-    protected void countConfigure(MetricsCountSampleConfigurer<String, String, ThreadPoolRejectMetric> sampleConfigure) {
-        sampleConfigure.configureMetrics(configure -> new ThreadPoolRejectMetric(collector.getApplicationName(),configure.getSource()));
+    protected void countConfigure(MetricsCountSampleConfigurer<String, String, ErrorCodeMetric> sampleConfigure) {
+        sampleConfigure.configureMetrics(configure -> new ErrorCodeMetric(collector.getApplicationName(), configure.getSource()));
     }
 }
