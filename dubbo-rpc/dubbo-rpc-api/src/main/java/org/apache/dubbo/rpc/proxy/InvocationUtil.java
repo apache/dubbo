@@ -24,6 +24,7 @@ import org.apache.dubbo.common.profiler.Profiler;
 import org.apache.dubbo.common.profiler.ProfilerEntry;
 import org.apache.dubbo.common.profiler.ProfilerSwitch;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.RpcServiceContext;
 import org.apache.dubbo.rpc.support.RpcUtils;
@@ -36,53 +37,64 @@ public class InvocationUtil {
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(InvokerInvocationHandler.class);
 
     public static Object invoke(Invoker<?> invoker, RpcInvocation rpcInvocation) throws Throwable {
-        URL url = invoker.getUrl();
-        String serviceKey = url.getServiceKey();
-        rpcInvocation.setTargetServiceUniqueName(serviceKey);
+        try {
+            URL url = invoker.getUrl();
+            String serviceKey = url.getServiceKey();
+            rpcInvocation.setTargetServiceUniqueName(serviceKey);
 
-        // invoker.getUrl() returns consumer url.
-        RpcServiceContext.getServiceContext().setConsumerUrl(url);
+            // invoker.getUrl() returns consumer url.
+            RpcServiceContext.getServiceContext().setConsumerUrl(url);
 
-        if (ProfilerSwitch.isEnableSimpleProfiler()) {
-            ProfilerEntry parentProfiler = Profiler.getBizProfiler();
-            ProfilerEntry bizProfiler;
-            if (parentProfiler != null) {
-                bizProfiler = Profiler.enter(parentProfiler,
-                    "Receive request. Client invoke begin. ServiceKey: " + serviceKey + " MethodName:" + rpcInvocation.getMethodName());
-            } else {
-                bizProfiler = Profiler.start("Receive request. Client invoke begin. ServiceKey: " + serviceKey + " " + "MethodName:" + rpcInvocation.getMethodName());
-            }
-            rpcInvocation.put(Profiler.PROFILER_KEY, bizProfiler);
-            try {
-                return invoker.invoke(rpcInvocation).recreate();
-            } finally {
-                Profiler.release(bizProfiler);
-                Long timeout = RpcUtils.convertToNumber(rpcInvocation.getObjectAttachmentWithoutConvert(TIMEOUT_KEY));
-
-                if (timeout == null) {
-                    timeout = (long) url.getMethodPositiveParameter(rpcInvocation.getMethodName(),
-                        TIMEOUT_KEY,
-                        DEFAULT_TIMEOUT);
+            if (ProfilerSwitch.isEnableSimpleProfiler()) {
+                ProfilerEntry parentProfiler = Profiler.getBizProfiler();
+                ProfilerEntry bizProfiler;
+                if (parentProfiler != null) {
+                    bizProfiler = Profiler.enter(parentProfiler,
+                        "Receive request. Client invoke begin. ServiceKey: " + serviceKey + " MethodName:" + rpcInvocation.getMethodName());
+                } else {
+                    bizProfiler = Profiler.start("Receive request. Client invoke begin. ServiceKey: " + serviceKey + " " + "MethodName:" + rpcInvocation.getMethodName());
                 }
-                long usage = bizProfiler.getEndTime() - bizProfiler.getStartTime();
-                if ((usage / (1000_000L * ProfilerSwitch.getWarnPercent())) > timeout) {
-                    StringBuilder attachment = new StringBuilder();
-                    rpcInvocation.foreachAttachment((entry) -> {
-                        attachment.append(entry.getKey()).append("=").append(entry.getValue()).append(";\n");
-                    });
+                rpcInvocation.put(Profiler.PROFILER_KEY, bizProfiler);
+                try {
+                    return invoker.invoke(rpcInvocation).recreate();
+                } finally {
+                    Profiler.release(bizProfiler);
+                    Long timeout = RpcUtils.convertToNumber(rpcInvocation.getObjectAttachmentWithoutConvert(TIMEOUT_KEY));
 
-                    logger.warn(PROXY_TIMEOUT_REQUEST, "", "", String.format(
-                        "[Dubbo-Consumer] execute service %s#%s cost %d.%06d ms, this invocation almost (maybe already) timeout. Timeout: %dms\n" + "invocation context:\n%s" + "thread info: \n%s",
-                        rpcInvocation.getProtocolServiceKey(),
-                        rpcInvocation.getMethodName(),
-                        usage / 1000_000,
-                        usage % 1000_000,
-                        timeout,
-                        attachment,
-                        Profiler.buildDetail(bizProfiler)));
+                    if (timeout == null) {
+                        timeout = (long) url.getMethodPositiveParameter(rpcInvocation.getMethodName(),
+                            TIMEOUT_KEY,
+                            DEFAULT_TIMEOUT);
+                    }
+                    long usage = bizProfiler.getEndTime() - bizProfiler.getStartTime();
+                    if ((usage / (1000_000L * ProfilerSwitch.getWarnPercent())) > timeout) {
+                        StringBuilder attachment = new StringBuilder();
+                        rpcInvocation.foreachAttachment((entry) -> {
+                            attachment.append(entry.getKey()).append("=").append(entry.getValue()).append(";\n");
+                        });
+
+                        logger.warn(PROXY_TIMEOUT_REQUEST, "", "", String.format(
+                            "[Dubbo-Consumer] execute service %s#%s cost %d.%06d ms, this invocation almost (maybe already) timeout. Timeout: %dms\n" + "invocation context:\n%s" + "thread info: \n%s",
+                            rpcInvocation.getProtocolServiceKey(),
+                            rpcInvocation.getMethodName(),
+                            usage / 1000_000,
+                            usage % 1000_000,
+                            timeout,
+                            attachment,
+                            Profiler.buildDetail(bizProfiler)));
+                    }
                 }
             }
+            return invoker.invoke(rpcInvocation).recreate();
+        } catch (RpcException exception) {
+            if ((exception instanceof RpcException) && !(exception instanceof com.alibaba.dubbo.rpc.RpcException)) {
+                com.alibaba.dubbo.rpc.RpcException recreated =
+                    new com.alibaba.dubbo.rpc.RpcException(exception.getCode(),
+                        exception.getMessage(), exception.getCause());
+                recreated.setStackTrace(exception.getStackTrace());
+                throw recreated;
+            }
+            throw exception;
         }
-        return invoker.invoke(rpcInvocation).recreate();
     }
 }
