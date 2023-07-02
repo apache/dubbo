@@ -179,7 +179,7 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
                 if (invokers != null) {
                     invokers.remove(this);
                 }
-                clientsProvider.close(ConfigurationUtils.reCalShutdownTime(serverShutdownTimeout));
+                clientsProvider.close(serverShutdownTimeout);
             } finally {
                 destroyLock.unlock();
             }

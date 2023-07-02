@@ -50,7 +50,7 @@ final class HeaderExchangeChannel implements ExchangeChannel {
 
     private final Channel channel;
 
-    private final int shutdownTimeout;
+    private final long shutdownTimeout;
 
     private volatile boolean closed = false;
 
@@ -167,7 +167,7 @@ final class HeaderExchangeChannel implements ExchangeChannel {
         closed = true;
         try {
             // graceful close
-            DefaultFuture.closeChannel(channel, ConfigurationUtils.reCalShutdownTime(shutdownTimeout));
+            DefaultFuture.closeChannel(channel, shutdownTimeout);
         } catch (Exception e) {
             logger.warn(TRANSPORT_FAILED_CLOSE, "", "", e.getMessage(), e);
         }

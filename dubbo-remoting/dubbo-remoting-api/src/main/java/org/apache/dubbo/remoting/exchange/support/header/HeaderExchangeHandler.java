@@ -148,7 +148,7 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
             if (timeoutObj instanceof Integer) {
                 shutdownTimeout = (Integer) timeoutObj;
             }
-            DefaultFuture.closeChannel(channel, ConfigurationUtils.reCalShutdownTime(shutdownTimeout));
+            DefaultFuture.closeChannel(channel, shutdownTimeout);
             HeaderExchangeChannel.removeChannel(channel);
         }
     }

@@ -174,7 +174,7 @@ public class NettyServer extends AbstractServer {
         }
         try {
             if (bootstrap != null) {
-                long timeout = ConfigurationUtils.reCalShutdownTime(serverShutdownTimeoutMills);
+                long timeout = serverShutdownTimeoutMills;
                 long quietPeriod = Math.min(2000L, timeout);
                 Future<?> bossGroupShutdownFuture = bossGroup.shutdownGracefully(quietPeriod, timeout, MILLISECONDS);
                 Future<?> workerGroupShutdownFuture = workerGroup.shutdownGracefully(quietPeriod, timeout, MILLISECONDS);

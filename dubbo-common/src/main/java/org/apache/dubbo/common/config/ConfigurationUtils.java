@@ -60,8 +60,6 @@ public final class ConfigurationUtils {
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ConfigurationUtils.class);
     private static final List<String> securityKey;
 
-    private static volatile long expectedShutdownTime = Long.MAX_VALUE;
-
     static {
         List<String> keys = new LinkedList<>();
         keys.add("accesslog");
@@ -115,9 +113,6 @@ public final class ConfigurationUtils {
      */
     @SuppressWarnings("deprecation")
     public static int getServerShutdownTimeout(ScopeModel scopeModel) {
-        if (expectedShutdownTime < System.currentTimeMillis()) {
-            return 1;
-        }
         int timeout = DEFAULT_SERVER_SHUTDOWN_TIMEOUT;
         Configuration configuration = getGlobalConfiguration(scopeModel);
         String value = StringUtils.trim(configuration.getString(SHUTDOWN_WAIT_KEY));
@@ -138,28 +133,7 @@ public final class ConfigurationUtils {
                 }
             }
         }
-
-        if (expectedShutdownTime - System.currentTimeMillis() < timeout) {
-            return (int) Math.max(1, expectedShutdownTime - System.currentTimeMillis());
-        }
-
         return timeout;
-    }
-
-    public static int reCalShutdownTime(int expectedShutdownTime) {
-        if (expectedShutdownTime < System.currentTimeMillis()) {
-            return 1;
-        }
-
-        if (expectedShutdownTime - System.currentTimeMillis() < expectedShutdownTime) {
-            return (int) Math.max(1, expectedShutdownTime - System.currentTimeMillis());
-        }
-
-        return expectedShutdownTime;
-    }
-
-    public static void setExpectedShutdownTime(long expectedShutdownTime) {
-        ConfigurationUtils.expectedShutdownTime = expectedShutdownTime;
     }
 
     public static String getCachedDynamicProperty(ScopeModel realScopeModel, String key, String defaultValue) {
