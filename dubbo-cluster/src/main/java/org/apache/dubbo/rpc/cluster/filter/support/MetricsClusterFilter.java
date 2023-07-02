@@ -21,7 +21,7 @@ package org.apache.dubbo.rpc.cluster.filter.support;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
 import org.apache.dubbo.metrics.event.MetricsEventBus;
-import org.apache.dubbo.metrics.event.RequestBeforeEvent;
+import org.apache.dubbo.metrics.event.RequestEvent;
 import org.apache.dubbo.rpc.BaseFilter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -67,7 +67,7 @@ public class MetricsClusterFilter implements ClusterFilter, BaseFilter.Listener,
         if (t instanceof RpcException) {
             RpcException e = (RpcException) t;
             if (e.isForbidden()) {
-                MetricsEventBus.publish(RequestBeforeEvent.toEvent(applicationModel, invocation));
+                MetricsEventBus.publish(RequestEvent.toRequestBeforeEvent(applicationModel, invocation));
             }
         }
     }

@@ -22,6 +22,7 @@ import org.apache.dubbo.metrics.MetricsConstants;
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
 import org.apache.dubbo.metrics.exception.MetricsNeverHappenException;
 import org.apache.dubbo.metrics.model.MetricsSupport;
+import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.key.MetricsLevel;
 import org.apache.dubbo.metrics.model.key.TypeWrapper;
 import org.apache.dubbo.rpc.Invocation;
@@ -67,5 +68,19 @@ public class RequestEvent extends TimeCounterEvent {
         return requestEvent;
     }
 
+    /**
+     * Acts on MetricsClusterFilter to monitor exceptions that occur before request execution
+     */
+    public static RequestEvent toRequestBeforeEvent(ApplicationModel applicationModel, Invocation invocation) {
+        RequestEvent event = new RequestEvent(applicationModel, new TypeWrapper(MetricsLevel.METHOD, MetricsKey.METRIC_REQUESTS));
+        event.putAttachment(ATTACHMENT_KEY_SERVICE, MetricsSupport.getInterfaceName(invocation));
+        event.putAttachment(MetricsConstants.INVOCATION_SIDE, MetricsSupport.getSide(invocation));
+        event.putAttachment(MetricsConstants.INVOCATION, invocation);
+        event.putAttachment(MetricsConstants.INVOCATION_REQUEST_BEFORE, "");
+        return event;
+    }
 
+    public boolean isRequestBeforeEvent(){
+        return getAttachmentValue(MetricsConstants.INVOCATION_REQUEST_BEFORE) != null;
+    }
 }
