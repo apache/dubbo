@@ -178,7 +178,7 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
 
         try {
             if (bootstrap != null) {
-                long timeout = serverShutdownTimeoutMills;
+                long timeout = ConfigurationUtils.reCalShutdownTime(serverShutdownTimeoutMills);
                 long quietPeriod = Math.min(2000L, timeout);
                 Future<?> bossGroupShutdownFuture = bossGroup.shutdownGracefully(quietPeriod,
                     timeout, MILLISECONDS);
