@@ -20,6 +20,16 @@ public class WebMvcConfig implements WebMvcConfigurer {
 ```
 ### copy the cookie(dubbo.tag=tagx) to dubbo 
 ```
+@DubboTagCrossThread
+public class TargetClass implements Runnable{
+    @Override
+    public void run() {
+        // ...
+    }
+}
+
+```
+```
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
     @Override
