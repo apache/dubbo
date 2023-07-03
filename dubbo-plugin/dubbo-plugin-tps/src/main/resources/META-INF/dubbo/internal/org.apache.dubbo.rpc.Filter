@@ -1,0 +1,3 @@
+executelimit=org.apache.dubbo.rpc.filter.ExecuteLimitFilter
+active-limit=org.apache.dubbo.rpc.filter.ActiveLimitFilter
+tps=org.apache.dubbo.rpc.filter.TpsLimitFilter

@@ -134,7 +134,8 @@
         <protostuff_version>1.8.0</protostuff_version>
         <envoy_api_version>0.1.35</envoy_api_version>
         <micrometer.version>1.11.1</micrometer.version>
-
+        <opentelemetry.version>1.26.0</opentelemetry.version>
+        <zipkin-reporter.version>2.16.4</zipkin-reporter.version>
         <micrometer-tracing.version>1.1.2</micrometer-tracing.version>
         <t_digest.version>3.3</t_digest.version>
         <prometheus_client.version>0.16.0</prometheus_client.version>
@@ -190,7 +191,7 @@
         <portlet_version>2.0</portlet_version>
         <maven_flatten_version>1.5.0</maven_flatten_version>
         <commons_compress_version>1.23.0</commons_compress_version>
-        <revision>3.2.4-SNAPSHOT</revision>
+        <revision>3.3.0-beta.1-SNAPSHOT</revision>
     </properties>
 
     <dependencyManagement>
@@ -228,6 +229,20 @@
                 <groupId>io.micrometer</groupId>
                 <artifactId>micrometer-tracing-bom</artifactId>
                 <version>${micrometer-tracing.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry</groupId>
+                <artifactId>opentelemetry-bom</artifactId>
+                <version>${opentelemetry.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.zipkin.reporter2</groupId>
+                <artifactId>zipkin-reporter-bom</artifactId>
+                <version>${zipkin-reporter.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>

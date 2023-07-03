@@ -30,6 +30,7 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.protocol.rest.PathAndInvokerMapper;
 import org.apache.dubbo.rpc.protocol.rest.RestRPCInvocationUtil;
 import org.apache.dubbo.rpc.protocol.rest.RestHeaderEnum;
+import org.apache.dubbo.rpc.protocol.rest.deploy.ServiceDeployer;
 import org.apache.dubbo.rpc.protocol.rest.exception.MediaTypeUnSupportException;
 import org.apache.dubbo.rpc.protocol.rest.exception.ParamParseException;
 import org.apache.dubbo.rpc.protocol.rest.exception.PathNoFoundException;
@@ -59,6 +60,11 @@ public class NettyHttpHandler implements HttpHandler<NettyRequestFacade, NettyHt
     public NettyHttpHandler(PathAndInvokerMapper pathAndInvokerMapper, ExceptionMapper exceptionMapper) {
         this.pathAndInvokerMapper = pathAndInvokerMapper;
         this.exceptionMapper = exceptionMapper;
+    }
+
+    public NettyHttpHandler(ServiceDeployer serviceDeployer) {
+        this.pathAndInvokerMapper = serviceDeployer.getPathAndInvokerMapper();
+        this.exceptionMapper = serviceDeployer.getExceptionMapper();
     }
 
     @Override

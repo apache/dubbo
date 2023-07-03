@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.aot.generate;
 
+import org.apache.dubbo.aot.api.ResourcePatternDescriber;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

@@ -39,6 +39,19 @@ public class BaggageConfig implements Serializable {
      */
     private List<String> remoteFields = new ArrayList<>();
 
+    public BaggageConfig() {
+    }
+
+    public BaggageConfig(Boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    public BaggageConfig(Boolean enabled, Correlation correlation, List<String> remoteFields) {
+        this.enabled = enabled;
+        this.correlation = correlation;
+        this.remoteFields = remoteFields;
+    }
+
     public Boolean getEnabled() {
         return enabled;
     }
@@ -75,6 +88,18 @@ public class BaggageConfig implements Serializable {
          * means that these fields would end up as key-value pairs in e.g. MDC.
          */
         private List<String> fields = new ArrayList<>();
+
+        public Correlation() {
+        }
+
+        public Correlation(boolean enabled) {
+            this.enabled = enabled;
+        }
+
+        public Correlation(boolean enabled, List<String> fields) {
+            this.enabled = enabled;
+            this.fields = fields;
+        }
 
         public boolean isEnabled() {
             return this.enabled;
