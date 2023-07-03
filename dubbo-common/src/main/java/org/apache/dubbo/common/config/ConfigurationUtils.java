@@ -146,16 +146,19 @@ public final class ConfigurationUtils {
         return timeout;
     }
 
-    public static int reCalShutdownTime(int expectedShutdownTime) {
+    public static int reCalShutdownTime(int expected) {
+        // already timeout
         if (expectedShutdownTime < System.currentTimeMillis()) {
             return 1;
         }
 
-        if (expectedShutdownTime - System.currentTimeMillis() < expectedShutdownTime) {
+        if (expectedShutdownTime - System.currentTimeMillis() < expected) {
+            // the shutdown time rest is less than expected
             return (int) Math.max(1, expectedShutdownTime - System.currentTimeMillis());
         }
 
-        return expectedShutdownTime;
+        // return the expected
+        return expected;
     }
 
     public static void setExpectedShutdownTime(long expectedShutdownTime) {
