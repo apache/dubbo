@@ -28,7 +28,6 @@ import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
 
 /**
@@ -97,10 +96,7 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
         }
 
         public Invoker<T> select(Invocation invocation) {
-            boolean isGeneric = invocation.getMethodName().equals($INVOKE);
-            String key = toKey(invocation.getArguments(),isGeneric);
-
-            byte[] digest = Bytes.getMD5(key);
+            byte[] digest = Bytes.getMD5(RpcUtils.getMethodName(invocation));
             return selectForKey(hash(digest, 0));
         }
 

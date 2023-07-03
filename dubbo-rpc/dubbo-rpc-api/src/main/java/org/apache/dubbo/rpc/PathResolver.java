@@ -27,7 +27,9 @@ import org.apache.dubbo.common.extension.SPI;
 @SPI(value = CommonConstants.TRIPLE, scope = ExtensionScope.FRAMEWORK)
 public interface PathResolver {
 
-    void add(String path, Invoker<?> invoker);
+    Invoker<?> add(String path, Invoker<?> invoker);
+
+    Invoker<?> addIfAbsent(String path, Invoker<?> invoker);
 
     Invoker<?> resolve(String path);
 

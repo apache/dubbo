@@ -23,6 +23,7 @@ import io.netty.channel.ChannelPromise;
 import org.apache.dubbo.common.BatchExecutorQueue;
 import org.apache.dubbo.rpc.protocol.tri.command.QueuedCommand;
 
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.Executor;
 
 public class TripleWriteQueue extends BatchExecutorQueue<QueuedCommand> {
@@ -55,13 +56,22 @@ public class TripleWriteQueue extends BatchExecutorQueue<QueuedCommand> {
 
     @Override
     protected void prepare(QueuedCommand item) {
-        item.run(item.channel());
+        try {
+            Channel channel = item.channel();
+            item.run(channel);
+        } catch (CompletionException e) {
+            item.promise().tryFailure(e.getCause());
+        }
     }
 
     @Override
     protected void flush(QueuedCommand item) {
-        Channel channel = item.channel();
-        item.run(channel);
-        channel.flush();
+        try {
+            Channel channel = item.channel();
+            item.run(channel);
+            channel.flush();
+        } catch (CompletionException e) {
+            item.promise().tryFailure(e.getCause());
+        }
     }
 }

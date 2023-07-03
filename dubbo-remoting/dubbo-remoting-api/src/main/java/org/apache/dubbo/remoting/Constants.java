@@ -18,6 +18,9 @@
 package org.apache.dubbo.remoting;
 
 
+import java.util.Arrays;
+import java.util.List;
+
 public interface Constants {
 
     String BUFFER_KEY = "buffer";
@@ -134,6 +137,8 @@ public interface Constants {
 
     int DEFAULT_RECONNECT_PERIOD = 2000;
 
+    String CHANNEL_SHUTDOWN_TIMEOUT_KEY = "channel.shutdown.timeout";
+
     String SEND_RECONNECT_KEY = "send.reconnect";
 
     String CHECK_KEY = "check";
@@ -161,4 +166,8 @@ public interface Constants {
     String OK_HTTP = "ok-http";
     String URL_CONNECTION = "url-connection";
     String APACHE_HTTP_CLIENT = "apache-http-client";
+    String PORT_UNIFICATION_NETTY4_SERVER = "netty4";
+
+    List<String> REST_SERVER = Arrays.asList("jetty", "tomcat", "netty");
+    String CONTENT_LENGTH_KEY = "content-length";
 }

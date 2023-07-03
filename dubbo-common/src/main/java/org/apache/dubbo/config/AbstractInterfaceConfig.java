@@ -19,6 +19,7 @@ package org.apache.dubbo.config;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.aot.NativeDetector;
+import org.apache.dubbo.common.compiler.support.AdaptiveCompiler;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.config.InmemoryConfiguration;
@@ -55,6 +56,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.TAG_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_NO_METHOD_FOUND;
 import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMETHEUS;
+import static org.apache.dubbo.config.Constants.DEFAULT_NATIVE_PROXY;
 
 
 /**
@@ -255,7 +257,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         for (RegistryConfig registryConfig : registries) {
             if (!registryConfig.isValid()) {
                 throw new IllegalStateException("No registry config found or it's not a valid config! " +
-                    "The registry config is: " + registryConfig);
+                        "The registry config is: " + registryConfig);
             }
         }
     }
@@ -277,9 +279,10 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     protected void appendMetricsCompatible(Map<String, String> map) {
         MetricsConfig metricsConfig = getConfigManager().getMetrics().orElse(null);
         if (metricsConfig != null) {
-            if (metricsConfig.getProtocol() != null && !StringUtils.isEquals(metricsConfig.getProtocol(), PROTOCOL_PROMETHEUS)) {
+            String protocol = Optional.ofNullable(metricsConfig.getProtocol()).orElse(PROTOCOL_PROMETHEUS);
+            if (!StringUtils.isEquals(protocol, PROTOCOL_PROMETHEUS)) {
                 Assert.notEmptyString(metricsConfig.getPort(), "Metrics port cannot be null");
-                map.put("metrics.protocol", metricsConfig.getProtocol());
+                map.put("metrics.protocol", protocol);
                 map.put("metrics.port", metricsConfig.getPort());
             }
         }
@@ -300,7 +303,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     protected Environment getEnvironment() {
-        return getScopeModel().getModelEnvironment();
+        return getScopeModel().modelEnvironment();
     }
 
     @Override
@@ -342,7 +345,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                     java.lang.reflect.Parameter[] arguments = method.getParameters();
                     for (int i = 0; i < arguments.length; i++) {
                         if (getArgumentByIndex(methodConfig, i) == null &&
-                            hasArgumentConfigProps(configProperties, methodConfig.getName(), i)) {
+                                hasArgumentConfigProps(configProperties, methodConfig.getName(), i)) {
 
                             ArgumentConfig argumentConfig = new ArgumentConfig();
                             argumentConfig.setIndex(i);
@@ -357,7 +360,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             if (methodConfigs != null && methodConfigs.size() > 0) {
                 // whether ignore invalid method config
                 Object ignoreInvalidMethodConfigVal = getEnvironment().getConfiguration()
-                    .getProperty(ConfigKeys.DUBBO_CONFIG_IGNORE_INVALID_METHOD_CONFIG, "false");
+                        .getProperty(ConfigKeys.DUBBO_CONFIG_IGNORE_INVALID_METHOD_CONFIG, "false");
                 boolean ignoreInvalidMethodConfig = Boolean.parseBoolean(ignoreInvalidMethodConfigVal.toString());
 
                 Class<?> finalInterfaceClass = interfaceClass;
@@ -375,8 +378,9 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     /**
-     *  it is used for skipping the check of interface since dubbo 3.2
-     *  rest protocol allow the service is implement class
+     * it is used for skipping the check of interface since dubbo 3.2
+     * rest protocol allow the service is implement class
+     *
      * @return
      */
     protected boolean canSkipInterfaceCheck() {
@@ -387,8 +391,8 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         String methodName = methodConfig.getName();
         if (StringUtils.isEmpty(methodName)) {
             String msg = "<dubbo:method> name attribute is required! Please check: " +
-                "<dubbo:service interface=\"" + interfaceName + "\" ... >" +
-                "<dubbo:method name=\"\" ... /></<dubbo:reference>";
+                    "<dubbo:service interface=\"" + interfaceName + "\" ... >" +
+                    "<dubbo:method name=\"\" ... /></<dubbo:reference>";
             if (ignoreInvalidMethodConfig) {
                 logger.warn(CONFIG_NO_METHOD_FOUND, "", "", msg);
                 return false;
@@ -400,7 +404,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         boolean hasMethod = Arrays.stream(interfaceClass.getMethods()).anyMatch(method -> method.getName().equals(methodName));
         if (!hasMethod) {
             String msg = "Found invalid method config, the interface " + interfaceClass.getName() + " not found method \""
-                + methodName + "\" : [" + methodConfig + "]";
+                    + methodName + "\" : [" + methodConfig + "]";
             if (ignoreInvalidMethodConfig) {
                 logger.warn(CONFIG_NO_METHOD_FOUND, "", "", msg);
                 return false;
@@ -462,7 +466,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     private void verifyStubAndLocal(String className, String label, Class<?> interfaceClass) {
         if (ConfigUtils.isNotEmpty(className)) {
             Class<?> localClass = ConfigUtils.isDefault(className) ?
-                ReflectUtils.forName(interfaceClass.getName() + label) : ReflectUtils.forName(className);
+                    ReflectUtils.forName(interfaceClass.getName() + label) : ReflectUtils.forName(className);
             verify(interfaceClass, localClass);
         }
     }
@@ -470,7 +474,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     private void verify(Class<?> interfaceClass, Class<?> localClass) {
         if (!interfaceClass.isAssignableFrom(localClass)) {
             throw new IllegalStateException("The local implementation class " + localClass.getName() +
-                " not implement interface " + interfaceClass.getName());
+                    " not implement interface " + interfaceClass.getName());
         }
 
         try {
@@ -478,7 +482,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             ReflectUtils.findConstructor(localClass, interfaceClass);
         } catch (NoSuchMethodException e) {
             throw new IllegalStateException("No such constructor \"public " + localClass.getSimpleName() +
-                "(" + interfaceClass.getName() + ")\" in local implementation class " + localClass.getName());
+                    "(" + interfaceClass.getName() + ")\" in local implementation class " + localClass.getName());
         }
     }
 
@@ -610,11 +614,20 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     public String getProxy() {
-        return proxy;
+        if (NativeDetector.inNativeImage()) {
+            return DEFAULT_NATIVE_PROXY;
+        } else {
+            return this.proxy;
+        }
     }
 
     public void setProxy(String proxy) {
-        this.proxy = proxy;
+        if (NativeDetector.inNativeImage()) {
+            this.proxy = DEFAULT_NATIVE_PROXY;
+            AdaptiveCompiler.setDefaultCompiler(DEFAULT_NATIVE_PROXY);
+        } else {
+            this.proxy = proxy;
+        }
     }
 
     public Integer getConnections() {

@@ -17,11 +17,6 @@
 
 package org.apache.dubbo.configcenter.support.nacos;
 
-import com.alibaba.nacos.api.NacosFactory;
-import com.alibaba.nacos.api.PropertyKeyConst;
-import com.alibaba.nacos.api.config.ConfigService;
-import com.alibaba.nacos.api.config.listener.AbstractSharedListener;
-import com.alibaba.nacos.api.exception.NacosException;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
 import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
@@ -37,6 +32,12 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metrics.config.event.ConfigCenterEvent;
 import org.apache.dubbo.metrics.event.MetricsEventBus;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
+import com.alibaba.nacos.api.NacosFactory;
+import com.alibaba.nacos.api.PropertyKeyConst;
+import com.alibaba.nacos.api.config.ConfigService;
+import com.alibaba.nacos.api.config.listener.AbstractSharedListener;
+import com.alibaba.nacos.api.exception.NacosException;
 
 import java.util.Map;
 import java.util.Properties;
@@ -107,11 +108,15 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
         try {
             for (int i = 0; i < retryTimes + 1; i++) {
                 tmpConfigServices = NacosFactory.createConfigService(nacosProperties);
-                if (!check || (UP.equals(tmpConfigServices.getServerStatus()) && testConfigService(tmpConfigServices))) {
+                String serverStatus = tmpConfigServices.getServerStatus();
+                boolean configServiceAvailable = testConfigService(tmpConfigServices);
+                if (!check || (UP.equals(serverStatus) && configServiceAvailable)) {
                     break;
                 } else {
                     logger.warn(LoggerCodeConstants.CONFIG_ERROR_NACOS, "", "",
                         "Failed to connect to nacos config server. " +
+                            "Server status: " + serverStatus + ". " +
+                            "Config Service Available: " + configServiceAvailable + ". " +
                             (i < retryTimes ? "Dubbo will try to retry in " + sleepMsBetweenRetries + ". " : "Exceed retry max times.") +
                             "Try times: " + (i + 1));
                 }

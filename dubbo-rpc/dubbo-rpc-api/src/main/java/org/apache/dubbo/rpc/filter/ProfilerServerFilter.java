@@ -103,7 +103,7 @@ public class ProfilerServerFilter implements Filter, BaseFilter.Listener {
         Long timeout = RpcUtils.convertToNumber(invocation.getObjectAttachmentWithoutConvert(TIMEOUT_KEY));
 
         if (timeout == null) {
-            timeout = (long) invoker.getUrl().getMethodPositiveParameter(invocation.getMethodName(), TIMEOUT_KEY, DEFAULT_TIMEOUT);
+            timeout = (long) invoker.getUrl().getMethodPositiveParameter(RpcUtils.getMethodName(invocation), TIMEOUT_KEY, DEFAULT_TIMEOUT);
         }
         long usage = profiler.getEndTime() - profiler.getStartTime();
         if (((usage / (1000_000L * ProfilerSwitch.getWarnPercent())) > timeout) && timeout != -1) {
@@ -118,7 +118,7 @@ public class ProfilerServerFilter implements Filter, BaseFilter.Listener {
                         "client: %s\n" +
                         "invocation context:\n%s" +
                         "thread info: \n%s",
-                    invocation.getTargetServiceUniqueName(), invocation.getMethodName(), usage / 1000_000, usage % 1000_000, timeout,
+                    invocation.getTargetServiceUniqueName(), RpcUtils.getMethodName(invocation), usage / 1000_000, usage % 1000_000, timeout,
                     invocation.get(CLIENT_IP_KEY), attachment, Profiler.buildDetail(profiler)));
         }
     }

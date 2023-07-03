@@ -17,6 +17,7 @@
 
 package com.alibaba.dubbo.registry;
 
+import com.alibaba.dubbo.common.DelegateURL;
 import com.alibaba.dubbo.common.URL;
 
 import java.util.List;
@@ -54,7 +55,7 @@ public interface NotifyListener {
         @Override
         public void notify(List<org.apache.dubbo.common.URL> urls) {
             if (listener != null) {
-                listener.notify(urls.stream().map(url -> new URL(url)).collect(Collectors.toList()));
+                listener.notify(urls.stream().map(url -> new DelegateURL(url)).collect(Collectors.toList()));
             }
         }
     }

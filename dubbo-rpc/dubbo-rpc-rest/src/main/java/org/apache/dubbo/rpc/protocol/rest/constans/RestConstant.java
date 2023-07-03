@@ -63,5 +63,10 @@ public interface RestConstant {
     int IDLE_TIMEOUT = -1;
     int KEEP_ALIVE_TIMEOUT = 60;
 
+    /**
+     * ServerAttachment  pathAndInvokerMapper key
+     */
+    String PATH_AND_INVOKER_MAPPER = "pathAndInvokerMapper";
+
 
 }

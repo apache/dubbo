@@ -17,8 +17,9 @@
 
 package org.apache.dubbo.metrics.aggregate;
 
-import org.junit.Test;
+
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.TimeUnit;
 
@@ -27,7 +28,8 @@ public class TimeWindowAggregatorTest {
     public void testTimeWindowAggregator() {
         TimeWindowAggregator aggregator = new TimeWindowAggregator(5, 5);
 
-        // 第一个时间窗口，时间范围：0秒 - 5秒
+        //First time window, time range: 0 - 5 seconds
+
         aggregator.add(10);
         aggregator.add(20);
         aggregator.add(30);
@@ -39,7 +41,7 @@ public class TimeWindowAggregatorTest {
         Assertions.assertEquals(30, entry1.getMax());
         Assertions.assertEquals(10, entry1.getMin());
 
-        // 第二个时间窗口，时间范围：5秒 - 10秒
+        //Second time window, time range: 5 - 10 seconds
         try {
             TimeUnit.SECONDS.sleep(5);
         } catch (InterruptedException e) {
@@ -57,7 +59,9 @@ public class TimeWindowAggregatorTest {
         Assertions.assertEquals(35, entry2.getMax());
         Assertions.assertEquals(15, entry2.getMin());
 
-        // 第三个时间窗口，时间范围：10秒 - 15秒
+
+        //Third time window, time range: 10 - 15 seconds
+
         try {
             TimeUnit.SECONDS.sleep(5);
         } catch (InterruptedException e) {
