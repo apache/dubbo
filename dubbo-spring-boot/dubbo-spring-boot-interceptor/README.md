@@ -29,3 +29,34 @@ public class WebMvcConfig implements WebMvcConfigurer {
 }
 ```
 
+### copy dubbo.tag cross thread
+- start byte-buddy , intercept Callable or Runnable
+```
+@SpringBootApplication
+@ComponentScan(basePackages = "org.apache.your-package")
+public class SpringBootDemoApplication {
+
+    public static void main(String[] args) {
+       SpringApplication application = new SpringApplication(SpringBootDemoApplication.class);
+       application.addListeners(new DubboCrossThreadAnnotationListener(ByteBuddyAgent.install()));
+       application.run(args);
+    }
+}
+```
+- wrap Callable or Runnable
+```
+Callable<String> callable = CallableWrapper.of(new Callable<String>() {
+    @Override
+    public String call() throws Exception {
+        return null;
+    }
+});
+```
+```
+Runnable runnable = RunnableWrapper.of(new Runnable() {
+    @Override
+    public void run() {
+        // ...
+    }
+});
+```
