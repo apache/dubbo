@@ -28,6 +28,7 @@ import org.apache.dubbo.metrics.aggregate.TimeWindowQuantile;
 import org.apache.dubbo.metrics.event.MetricsEvent;
 import org.apache.dubbo.metrics.event.RequestEvent;
 import org.apache.dubbo.metrics.model.MethodMetric;
+import org.apache.dubbo.metrics.model.MethodMetricCache;
 import org.apache.dubbo.metrics.model.MetricsSupport;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
@@ -35,6 +36,7 @@ import org.apache.dubbo.metrics.model.key.MetricsLevel;
 import org.apache.dubbo.metrics.model.key.MetricsPlaceValue;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
+import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.ArrayList;
@@ -89,7 +91,7 @@ public class AggregateMetricsCollector implements MetricsCollector<RequestEvent>
             this.collectEnabled = collectEnabled;
         }
     }
-    
+
 
     @Override
     public boolean isCollectEnabled() {
@@ -135,7 +137,9 @@ public class AggregateMetricsCollector implements MetricsCollector<RequestEvent>
     }
 
     private void onRTEvent(RequestEvent event) {
-        MethodMetric metric = new MethodMetric(applicationModel, event.getAttachmentValue(MetricsConstants.INVOCATION));
+        Invocation invocation = event.getAttachmentValue(MetricsConstants.INVOCATION);
+        MethodMetric metric = MethodMetricCache.putIfAbsent(invocation.getTargetServiceUniqueName(),
+            applicationModel, invocation);
         long responseTime = event.getTimePair().calc();
         TimeWindowQuantile quantile = ConcurrentHashMapUtils.computeIfAbsent(rt, metric, k -> new TimeWindowQuantile(DEFAULT_COMPRESSION, bucketNum, timeWindowSeconds));
         quantile.add(responseTime);
@@ -148,8 +152,9 @@ public class AggregateMetricsCollector implements MetricsCollector<RequestEvent>
     private MethodMetric calcWindowCounter(RequestEvent event, MetricsKey targetKey) {
         MetricsPlaceValue placeType = MetricsPlaceValue.of(event.getAttachmentValue(MetricsConstants.INVOCATION_SIDE), MetricsLevel.SERVICE);
         MetricsKeyWrapper metricsKeyWrapper = new MetricsKeyWrapper(targetKey, placeType);
-        MethodMetric metric = new MethodMetric(applicationModel, event.getAttachmentValue(MetricsConstants.INVOCATION));
-
+        Invocation invocation = event.getAttachmentValue(MetricsConstants.INVOCATION);
+        MethodMetric metric = MethodMetricCache.putIfAbsent(invocation.getTargetServiceUniqueName(),
+            applicationModel, invocation);
         ConcurrentMap<MethodMetric, TimeWindowCounter> counter = methodTypeCounter.computeIfAbsent(metricsKeyWrapper, k -> new ConcurrentHashMap<>());
 
         TimeWindowCounter windowCounter = ConcurrentHashMapUtils.computeIfAbsent(counter, metric, methodMetric -> new TimeWindowCounter(bucketNum, timeWindowSeconds));
@@ -211,7 +216,7 @@ public class AggregateMetricsCollector implements MetricsCollector<RequestEvent>
                 MetricsKey.METRIC_RT_P50.getDescription(), k.getTags(), RT, v, value -> value.quantile(0.50)));
         });
 
-        rtAgr.forEach((k,v)->{
+        rtAgr.forEach((k, v) -> {
             list.add(new GaugeMetricSample<>(MetricsKey.METRIC_RT_MIN_AGG.getNameByType(k.getSide()),
                 MetricsKey.METRIC_RT_MIN_AGG.getDescription(), k.getTags(), RT, v, value -> v.get().getMin()));
 

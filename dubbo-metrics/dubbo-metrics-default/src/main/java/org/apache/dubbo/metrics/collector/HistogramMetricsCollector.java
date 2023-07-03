@@ -27,10 +27,12 @@ import org.apache.dubbo.metrics.MetricsGlobalRegistry;
 import org.apache.dubbo.metrics.event.RequestEvent;
 import org.apache.dubbo.metrics.listener.AbstractMetricsListener;
 import org.apache.dubbo.metrics.model.MethodMetric;
+import org.apache.dubbo.metrics.model.MethodMetricCache;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.metrics.register.HistogramMetricRegister;
 import org.apache.dubbo.metrics.sample.HistogramMetricSample;
+import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.ArrayList;
@@ -86,7 +88,9 @@ public class HistogramMetricsCollector extends AbstractMetricsListener<RequestEv
 
     private void onRTEvent(RequestEvent event) {
         if (metricRegister != null) {
-            MethodMetric metric = new MethodMetric(applicationModel, event.getAttachmentValue(MetricsConstants.INVOCATION));
+            Invocation invocation = event.getAttachmentValue(MetricsConstants.INVOCATION);
+            MethodMetric metric = MethodMetricCache.putIfAbsent(invocation.getTargetServiceUniqueName(),
+                applicationModel, invocation);
             long responseTime = event.getTimePair().calc();
 
             HistogramMetricSample sample = new HistogramMetricSample(MetricsKey.METRIC_RT_HISTOGRAM.getNameByType(metric.getSide()),

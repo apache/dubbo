@@ -22,6 +22,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.metrics.exception.MetricsNeverHappenException;
 import org.apache.dubbo.metrics.model.MethodMetric;
+import org.apache.dubbo.metrics.model.MethodMetricCache;
 import org.apache.dubbo.metrics.model.MetricsCategory;
 import org.apache.dubbo.metrics.model.MetricsSupport;
 import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
@@ -64,7 +65,9 @@ public class MethodStatComposite extends AbstractMetricsExport {
         if (!methodNumStats.containsKey(wrapper)) {
             return;
         }
-        methodNumStats.get(wrapper).computeIfAbsent(new MethodMetric(getApplicationModel(), invocation), k -> new AtomicLong(0L)).getAndAdd(size);
+        MethodMetric methodMetric = MethodMetricCache.putIfAbsent(invocation.getTargetServiceUniqueName(),
+            getApplicationModel(), invocation);
+        methodNumStats.get(wrapper).computeIfAbsent(methodMetric, k -> new AtomicLong(0L)).getAndAdd(size);
         MetricsSupport.fillZero(methodNumStats);
     }
 

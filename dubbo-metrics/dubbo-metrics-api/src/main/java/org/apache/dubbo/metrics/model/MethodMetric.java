@@ -38,7 +38,7 @@ public class MethodMetric extends ServiceKeyMetric {
     private String version;
     private final MetricSample.Type sampleType;
 
-    public MethodMetric(ApplicationModel applicationModel, Invocation invocation) {
+    protected MethodMetric(ApplicationModel applicationModel, Invocation invocation) {
         super(applicationModel, MetricsSupport.getInterfaceName(invocation));
         this.methodName = MetricsSupport.getMethodName(invocation);
         this.side = MetricsSupport.getSide(invocation);

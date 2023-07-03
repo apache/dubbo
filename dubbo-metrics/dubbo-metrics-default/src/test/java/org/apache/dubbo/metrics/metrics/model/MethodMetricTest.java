@@ -20,6 +20,7 @@ package org.apache.dubbo.metrics.metrics.model;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.metrics.model.MethodMetric;
+import org.apache.dubbo.metrics.model.MethodMetricCache;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -72,7 +73,8 @@ class MethodMetricTest {
 
     @Test
     void test() {
-        MethodMetric metric = new MethodMetric(applicationModel, invocation);
+        MethodMetric metric = MethodMetricCache.putIfAbsent(invocation.getTargetServiceUniqueName(),
+            applicationModel, invocation);
         Assertions.assertEquals(metric.getInterfaceName(), interfaceName);
         Assertions.assertEquals(metric.getMethodName(), methodName);
         Assertions.assertEquals(metric.getGroup(), group);

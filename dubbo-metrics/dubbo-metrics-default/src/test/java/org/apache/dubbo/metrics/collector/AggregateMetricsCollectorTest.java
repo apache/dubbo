@@ -36,6 +36,7 @@ import org.apache.dubbo.metrics.event.RequestEvent;
 import org.apache.dubbo.metrics.filter.MetricsFilter;
 import org.apache.dubbo.metrics.listener.MetricsListener;
 import org.apache.dubbo.metrics.model.MethodMetric;
+import org.apache.dubbo.metrics.model.MethodMetricCache;
 import org.apache.dubbo.metrics.model.MetricsSupport;
 import org.apache.dubbo.metrics.model.TimePair;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
@@ -90,7 +91,8 @@ class AggregateMetricsCollectorTest {
 
     public MethodMetric getTestMethodMetric() {
 
-        MethodMetric methodMetric = new MethodMetric(applicationModel, invocation);
+        MethodMetric methodMetric = MethodMetricCache.putIfAbsent(invocation.getTargetServiceUniqueName(),
+            applicationModel, invocation);
         methodMetric.setGroup("TestGroup");
         methodMetric.setVersion("1.0.0");
         methodMetric.setSide("PROVIDER");
