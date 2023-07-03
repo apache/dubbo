@@ -21,15 +21,13 @@ public interface MetricsConstants {
 
     String INVOCATION = "metric_filter_invocation";
     String INVOCATION_METRICS_COUNTER = "metric_filter_invocation_counter";
-
     String INVOCATION_SIDE = "metric_filter_side";
+    String INVOCATION_REQUEST_BEFORE = "metric_request_before";
 
     String ATTACHMENT_KEY_SERVICE = "serviceKey";
     String ATTACHMENT_KEY_SIZE = "size";
     String ATTACHMENT_KEY_LAST_NUM_MAP = "lastNumMap";
     String ATTACHMENT_DIRECTORY_MAP = "dirNum";
-
-    String INVOCATION_REQUEST_BEFORE = "metric_request_before";
 
     int SELF_INCREMENT_SIZE = 1;
 
