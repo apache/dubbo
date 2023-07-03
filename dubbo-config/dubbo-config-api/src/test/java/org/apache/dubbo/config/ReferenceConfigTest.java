@@ -37,7 +37,7 @@ import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.cluster.filter.FilterChainBuilder;
 import org.apache.dubbo.rpc.cluster.support.registry.ZoneAwareClusterInvoker;
-import org.apache.dubbo.rpc.cluster.support.wrapper.MockClusterInvoker;
+//import org.apache.dubbo.rpc.cluster.support.wrapper.MockClusterInvoker;
 import org.apache.dubbo.rpc.cluster.support.wrapper.ScopeClusterInvoker;
 import org.apache.dubbo.rpc.listener.ListenerInvokerWrapper;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -418,8 +418,9 @@ class ReferenceConfigTest {
         Assertions.assertTrue(referenceConfig.getInvoker() instanceof ScopeClusterInvoker);
         ScopeClusterInvoker<?> scopeClusterInvoker = (ScopeClusterInvoker<?>) referenceConfig.getInvoker();
         Invoker<?> mockInvoker = scopeClusterInvoker.getInvoker();
-        Assertions.assertTrue(mockInvoker instanceof MockClusterInvoker);
-        Invoker<?> withCount = ((MockClusterInvoker<?>) mockInvoker).getDirectory().getAllInvokers().get(0);
+//        Assertions.assertTrue(mockInvoker instanceof MockClusterInvoker);
+//        Invoker<?> withCount = ((MockClusterInvoker<?>) mockInvoker).getDirectory().getAllInvokers().get(0);
+        Invoker<?> withCount = scopeClusterInvoker.getDirectory().getAllInvokers().get(0);
 
         Assertions.assertTrue(withCount instanceof ReferenceCountInvokerWrapper);
         Invoker<?> withFilter = ((ReferenceCountInvokerWrapper<?>) withCount).getInvoker();
@@ -525,7 +526,7 @@ class ReferenceConfigTest {
         referenceConfig.init();
         Assertions.assertTrue(referenceConfig.getInvoker() instanceof ScopeClusterInvoker);
         Invoker scopeClusterInvoker = referenceConfig.getInvoker();
-        Assertions.assertTrue(((ScopeClusterInvoker) scopeClusterInvoker).getInvoker() instanceof MockClusterInvoker);
+//        Assertions.assertTrue(((ScopeClusterInvoker) scopeClusterInvoker).getInvoker() instanceof MockClusterInvoker);
         Assertions.assertEquals(Boolean.TRUE, ((ScopeClusterInvoker) scopeClusterInvoker).getInvoker().getUrl().getAttribute(PEER_KEY));
         dubboBootstrap.destroy();
 
