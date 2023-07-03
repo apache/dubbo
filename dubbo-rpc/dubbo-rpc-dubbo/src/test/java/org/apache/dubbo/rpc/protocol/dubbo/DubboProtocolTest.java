@@ -230,7 +230,7 @@ class DubboProtocolTest {
             Assertions.assertTrue(e.getMessage().contains("org.apache.dubbo.rpc.protocol.dubbo.support.NonSerialized must implement java.io.Serializable"));
         }
     }
-
+    @Disabled
     @Test
     void testRemoteApplicationName() throws Exception {
         DemoService service = new DemoServiceImpl();

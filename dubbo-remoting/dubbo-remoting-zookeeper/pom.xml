@@ -34,7 +34,7 @@
     <dependencies>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-remoting-api</artifactId>
+            <artifactId>dubbo-remoting-zookeeper-api</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>

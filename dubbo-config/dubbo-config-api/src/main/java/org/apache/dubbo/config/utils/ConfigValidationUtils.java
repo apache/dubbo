@@ -66,7 +66,6 @@ import org.apache.dubbo.rpc.cluster.LoadBalance;
 import org.apache.dubbo.rpc.cluster.filter.ClusterFilter;
 import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
-import org.apache.dubbo.rpc.support.MockInvoker;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -354,45 +353,6 @@ public class ConfigValidationUtils {
         return null;
     }
 
-    /**
-     * Legitimacy check and setup of local simulated operations. The operations can be a string with Simple operation or
-     * a classname whose {@link Class} implements a particular function
-     *
-     * @param interfaceClass for provider side, it is the {@link Class} of the service that will be exported; for consumer
-     *                       side, it is the {@link Class} of the remote service interface that will be referenced
-     */
-    public static void checkMock(Class<?> interfaceClass, AbstractInterfaceConfig config) {
-        String mock = config.getMock();
-        if (ConfigUtils.isEmpty(mock)) {
-            return;
-        }
-
-        String normalizedMock = MockInvoker.normalizeMock(mock);
-        if (normalizedMock.startsWith(RETURN_PREFIX)) {
-            normalizedMock = normalizedMock.substring(RETURN_PREFIX.length()).trim();
-            try {
-                //Check whether the mock value is legal, if it is illegal, throw exception
-                MockInvoker.parseMockValue(normalizedMock);
-            } catch (Exception e) {
-                throw new IllegalStateException("Illegal mock return in <dubbo:service/reference ... " +
-                    "mock=\"" + mock + "\" />");
-            }
-        } else if (normalizedMock.startsWith(THROW_PREFIX)) {
-            normalizedMock = normalizedMock.substring(THROW_PREFIX.length()).trim();
-            if (ConfigUtils.isNotEmpty(normalizedMock)) {
-                try {
-                    //Check whether the mock value is legal
-                    MockInvoker.getThrowable(normalizedMock);
-                } catch (Exception e) {
-                    throw new IllegalStateException("Illegal mock throw in <dubbo:service/reference ... " +
-                        "mock=\"" + mock + "\" />");
-                }
-            }
-        } else {
-            //Check whether the mock class is a implementation of the interfaceClass, and if it has a default constructor
-            MockInvoker.getMockObject(config.getScopeModel().getExtensionDirector(), normalizedMock, interfaceClass);
-        }
-    }
 
     public static void validateAbstractInterfaceConfig(AbstractInterfaceConfig config) {
         checkName(LOCAL_KEY, config.getLocal());
