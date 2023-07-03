@@ -24,6 +24,9 @@ import java.util.Objects;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_APPLICATION_NAME;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_ERROR_CODE;
 
+/**
+ * ErrorCodeMetric. Provide tags for error code metrics.
+ */
 public class ErrorCodeMetric implements Metric {
 
     private final String errorCode;

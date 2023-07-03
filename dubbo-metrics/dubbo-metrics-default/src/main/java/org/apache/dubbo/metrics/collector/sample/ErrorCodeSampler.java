@@ -24,15 +24,26 @@ import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.sample.CounterMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * This sampler used count the number of occurrences of each error code.
+ * This sampler is used to count the number of occurrences of each error code.
  */
 public class ErrorCodeSampler extends MetricsNameCountSampler<String, String, ErrorCodeMetric> {
 
+    private final ErrorCodeMetricsListenRegister register;
+
+    /**
+     * Map<ErrorCode,Metric>
+     */
+    private final Map<String, ErrorCodeMetric> errorCodeMetrics;
+
     public ErrorCodeSampler(DefaultMetricsCollector collector) {
         super(collector, MetricsCategory.ERROR_CODE, MetricsKey.ERROR_CODE_COUNT);
+        this.register = new ErrorCodeMetricsListenRegister(this);
+        this.errorCodeMetrics = new ConcurrentHashMap<>();
     }
 
     @Override
@@ -48,6 +59,16 @@ public class ErrorCodeSampler extends MetricsNameCountSampler<String, String, Er
 
     @Override
     protected void countConfigure(MetricsCountSampleConfigurer<String, String, ErrorCodeMetric> sampleConfigure) {
-        sampleConfigure.configureMetrics(configure -> new ErrorCodeMetric(collector.getApplicationName(), configure.getSource()));
+        sampleConfigure.configureMetrics(configure -> {
+
+            String errorCode = configure.getSource();
+            ErrorCodeMetric metric = errorCodeMetrics.get(errorCode);
+
+            if (metric == null) {
+                metric = new ErrorCodeMetric(collector.getApplicationName(), errorCode);
+                errorCodeMetrics.put(errorCode, metric);
+            }
+            return metric;
+        });
     }
 }
