@@ -29,11 +29,13 @@ import org.apache.dubbo.remoting.exchange.Exchangers;
 import org.apache.dubbo.remoting.exchange.support.ExchangeHandlerAdapter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_MANAGEMENT_MODE_DEFAULT;
+import static org.apache.dubbo.remoting.Constants.LEAST_RECONNECT_DURATION_KEY;
 
 /**
  * Client reconnect test
@@ -76,7 +78,7 @@ class ClientReconnectTest {
 
     public Client startClient(int port, int heartbeat) throws RemotingException {
         URL url = URL.valueOf("exchange://127.0.0.1:" + port + "/client.reconnect.test?check=false&codec=exchange&client=netty3&" +
-            Constants.HEARTBEAT_KEY + "=" + heartbeat);
+            Constants.HEARTBEAT_KEY + "=" + heartbeat + "&" + LEAST_RECONNECT_DURATION_KEY + "=0");
         ApplicationModel applicationModel = ApplicationModel.defaultModel();
         ApplicationConfig applicationConfig = new ApplicationConfig("provider-app");
         applicationConfig.setExecutorManagementMode(EXECUTOR_MANAGEMENT_MODE_DEFAULT);
