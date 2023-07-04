@@ -62,8 +62,8 @@ public class ErrorCodeSampleTest {
 
         List<MetricSample> samples = defaultMetricsCollector.collect();
 
-        Assert.assertTrue(samples.size() == 4,"样本数量错误");
-        samples.forEach(metricSample ->  Assert.assertTrue(((AtomicLong)((CounterMetricSample<?>)metricSample).getValue()).get() == 2L,"样本计数错误"));
+        Assert.assertTrue(samples.size() == 4,"Wrong number of samples.");
+        samples.forEach(metricSample ->  Assert.assertTrue(((AtomicLong)((CounterMetricSample<?>)metricSample).getValue()).get() == 2L,"Sample count error."));
 
         System.out.println(samples);
     }
