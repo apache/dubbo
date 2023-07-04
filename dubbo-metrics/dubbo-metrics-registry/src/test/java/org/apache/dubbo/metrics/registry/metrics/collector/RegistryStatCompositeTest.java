@@ -22,6 +22,7 @@ import org.apache.dubbo.metrics.data.ApplicationStatComposite;
 import org.apache.dubbo.metrics.data.BaseStatComposite;
 import org.apache.dubbo.metrics.data.RtStatComposite;
 import org.apache.dubbo.metrics.data.ServiceStatComposite;
+import org.apache.dubbo.metrics.model.Metric;
 import org.apache.dubbo.metrics.model.MetricsCategory;
 import org.apache.dubbo.metrics.model.container.LongContainer;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
@@ -92,7 +93,7 @@ public class RegistryStatCompositeTest {
             Assertions.assertEquals(v.get(), new AtomicLong(0L).get())));
         statComposite.getRtStatComposite().getRtStats().forEach(rtContainer ->
         {
-            for (Map.Entry<String, ? extends Number> entry : rtContainer.entrySet()) {
+            for (Map.Entry<Metric, ? extends Number> entry : rtContainer.entrySet()) {
                 Assertions.assertEquals(0L, rtContainer.getValueSupplier().apply(entry.getKey()));
             }
         });
