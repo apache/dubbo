@@ -19,7 +19,6 @@ package org.apache.dubbo.metrics.model;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_APPLICATION_NAME;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_ERROR_CODE;
@@ -36,11 +35,6 @@ public class ErrorCodeMetric implements Metric {
     public ErrorCodeMetric(String applicationName, String errorCode) {
         this.errorCode = errorCode;
         this.applicationName = applicationName;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(applicationName, errorCode);
     }
 
     @Override
