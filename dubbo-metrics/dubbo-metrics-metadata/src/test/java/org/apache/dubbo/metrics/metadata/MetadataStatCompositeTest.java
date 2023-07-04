@@ -22,6 +22,7 @@ import org.apache.dubbo.metrics.data.ApplicationStatComposite;
 import org.apache.dubbo.metrics.data.BaseStatComposite;
 import org.apache.dubbo.metrics.data.RtStatComposite;
 import org.apache.dubbo.metrics.data.ServiceStatComposite;
+import org.apache.dubbo.metrics.model.ApplicationMetric;
 import org.apache.dubbo.metrics.model.Metric;
 import org.apache.dubbo.metrics.model.container.LongContainer;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
@@ -96,9 +97,9 @@ public class MetadataStatCompositeTest {
 
     @Test
     void testCalcRt() {
-        statComposite.calcApplicationRt( OP_TYPE_SUBSCRIBE.getType(), 10L);
+        statComposite.calcApplicationRt(OP_TYPE_SUBSCRIBE.getType(), 10L);
         Assertions.assertTrue(statComposite.getRtStatComposite().getRtStats().stream().anyMatch(longContainer -> longContainer.specifyType(OP_TYPE_SUBSCRIBE.getType())));
         Optional<LongContainer<? extends Number>> subContainer = statComposite.getRtStatComposite().getRtStats().stream().filter(longContainer -> longContainer.specifyType(OP_TYPE_SUBSCRIBE.getType())).findFirst();
-        subContainer.ifPresent(v -> Assertions.assertEquals(10L, v.get(applicationModel.getApplicationName()).longValue()));
+        subContainer.ifPresent(v -> Assertions.assertEquals(10L, v.get(new ApplicationMetric(applicationModel)).longValue()));
     }
 }
