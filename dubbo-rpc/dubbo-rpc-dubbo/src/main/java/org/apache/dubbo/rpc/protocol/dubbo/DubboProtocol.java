@@ -554,7 +554,7 @@ public class DubboProtocol extends AbstractProtocol {
                     logger.info("Closing dubbo server: " + server.getLocalAddress());
                 }
 
-                server.close(getServerShutdownTimeout(protocolServer));
+                server.close(ConfigurationUtils.reCalShutdownTime(getServerShutdownTimeout(protocolServer)));
 
             } catch (Throwable t) {
                 logger.warn(PROTOCOL_ERROR_CLOSE_SERVER, "", "", "Close dubbo server [" + server.getLocalAddress() + "] failed: " + t.getMessage(), t);

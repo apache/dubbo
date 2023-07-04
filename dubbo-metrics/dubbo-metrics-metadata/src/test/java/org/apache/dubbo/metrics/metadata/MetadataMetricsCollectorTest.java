@@ -30,6 +30,7 @@ import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -211,7 +212,7 @@ class MetadataMetricsCollectorTest {
                 List<MetricSample> metricSamples = collector.collect();
 
                 // App(6) + service success(1)
-                Assertions.assertEquals(MetadataMetricsConstants.APP_LEVEL_KEYS.size() + MetadataMetricsConstants.SERVICE_LEVEL_KEYS.size(), metricSamples.size());
+                Assertions.assertEquals(MetadataMetricsConstants.APP_LEVEL_KEYS.size() + 1, metricSamples.size());
                 Assertions.assertTrue(metricSamples.stream().allMatch(metricSample -> metricSample instanceof GaugeMetricSample));
                 Assertions.assertTrue(metricSamples.stream().anyMatch(metricSample -> ((GaugeMetricSample) metricSample).applyAsDouble() == 1));
                 return null;
@@ -221,7 +222,7 @@ class MetadataMetricsCollectorTest {
         // push finish rt +1
         List<MetricSample> metricSamples = collector.collect();
         // App(6) + service total/success(2) + rt(5) = 7
-        Assertions.assertEquals(MetadataMetricsConstants.APP_LEVEL_KEYS.size() + MetadataMetricsConstants.SERVICE_LEVEL_KEYS.size() + 5, metricSamples.size());
+        Assertions.assertEquals(MetadataMetricsConstants.APP_LEVEL_KEYS.size() + 2 + 5, metricSamples.size());
 
         long c1 = metadataEvent.getTimePair().calc();
         metadataEvent = MetadataEvent.toServiceSubscribeEvent(applicationModel, serviceKey);

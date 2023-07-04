@@ -181,7 +181,7 @@ public interface DubboBeanUtils {
 
     static DubboSpringInitContext getInitializationContext(BeanFactory beanFactory) {
         String beanName = DubboSpringInitContext.class.getName();
-        if (beanFactory.containsBean(beanName)) {
+        if (beanFactory != null && beanFactory.containsBean(beanName)) {
             return beanFactory.getBean(beanName, DubboSpringInitContext.class);
         }
         return null;
@@ -189,7 +189,7 @@ public interface DubboBeanUtils {
 
     static ApplicationModel getApplicationModel(BeanFactory beanFactory) {
         String beanName = ApplicationModel.class.getName();
-        if (beanFactory.containsBean(beanName)) {
+        if (beanFactory != null && beanFactory.containsBean(beanName)) {
             return beanFactory.getBean(beanName, ApplicationModel.class);
         }
         return null;
@@ -197,7 +197,7 @@ public interface DubboBeanUtils {
 
     static ModuleModel getModuleModel(BeanFactory beanFactory) {
         String beanName = ModuleModel.class.getName();
-        if (beanFactory.containsBean(beanName)) {
+        if (beanFactory != null && beanFactory.containsBean(beanName)) {
             return beanFactory.getBean(beanName, ModuleModel.class);
         }
         return null;
