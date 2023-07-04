@@ -88,7 +88,7 @@ public final class DefaultSubDispatcher extends SimpleMetricsEventMulticaster {
                         event ->
                         {
                             MetricsKey targetKey = MetricsSupport.getMetricsKey(event.getAttachmentValue(METRIC_THROWABLE));
-                            // Dynamic MetricsKey && dynamicPlaceType
+                            // Dynamic metricsKey && dynamicPlaceType
                             MetricsPlaceValue dynamicPlaceType = MetricsPlaceValue.of(event.getAttachmentValue(MetricsConstants.INVOCATION_SIDE), MetricsLevel.METHOD);
                             MetricsSupport.increment(MetricsKey.METRIC_REQUESTS_TOTAL_FAILED, dynamicPlaceType, (MethodMetricsCollector) collector, event);
                             MetricsSupport.dec(MetricsKey.METRIC_REQUESTS_PROCESSING, dynamicPlaceType, collector, event);
@@ -96,7 +96,6 @@ public final class DefaultSubDispatcher extends SimpleMetricsEventMulticaster {
                         }
                 )));
 
-        //
     }
 
 }
