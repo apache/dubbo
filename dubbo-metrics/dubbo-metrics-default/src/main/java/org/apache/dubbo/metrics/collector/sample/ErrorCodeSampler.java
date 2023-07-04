@@ -65,7 +65,7 @@ public class ErrorCodeSampler extends MetricsNameCountSampler<String, String, Er
             ErrorCodeMetric metric = errorCodeMetrics.get(errorCode);
 
             if (metric == null) {
-                metric = new ErrorCodeMetric(collector.getApplicationName(), errorCode);
+                metric = new ErrorCodeMetric(collector.getApplicationModel().getApplicationName(), errorCode);
                 errorCodeMetrics.put(errorCode, metric);
             }
             return metric;

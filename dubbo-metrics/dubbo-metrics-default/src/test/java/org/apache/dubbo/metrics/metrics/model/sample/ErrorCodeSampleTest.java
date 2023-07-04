@@ -40,7 +40,7 @@ public class ErrorCodeSampleTest {
         ApplicationModel applicationModel = frameworkModel.newApplication();
 
         ApplicationConfig applicationConfig = new ApplicationConfig();
-        applicationModel.setModelName("myApplication1");
+        applicationConfig.setName("MyApplication1");
 
         applicationModel.getApplicationConfigManager().setApplication(applicationConfig);
 
@@ -61,7 +61,6 @@ public class ErrorCodeSampleTest {
         register.onMessage("1-3", null);
 
         List<MetricSample> samples = defaultMetricsCollector.collect();
-
 
         Assert.assertTrue(samples.size() == 4,"样本数量错误");
         samples.forEach(metricSample ->  Assert.assertTrue(((AtomicLong)((CounterMetricSample<?>)metricSample).getValue()).get() == 2L,"样本计数错误"));
