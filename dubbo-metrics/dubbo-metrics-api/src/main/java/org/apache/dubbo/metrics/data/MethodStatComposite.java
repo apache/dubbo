@@ -17,8 +17,6 @@
 
 package org.apache.dubbo.metrics.data;
 
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.metrics.exception.MetricsNeverHappenException;
 import org.apache.dubbo.metrics.model.MethodMetric;
