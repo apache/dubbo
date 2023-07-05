@@ -85,7 +85,7 @@ public class DubboInfraBeanRegisterPostProcessor implements BeanDefinitionRegist
         // Extract dubbo props from Spring env and put them to app config
         ConfigurableEnvironment environment = (ConfigurableEnvironment) applicationContext.getEnvironment();
         SortedMap<String, String> dubboProperties = EnvironmentUtils.filterDubboProperties(environment);
-        applicationModel.getModelEnvironment().setAppConfigMap(dubboProperties);
+        applicationModel.modelEnvironment().setAppConfigMap(dubboProperties);
 
         // register ConfigManager singleton
         beanFactory.registerSingleton(ConfigManager.BEAN_NAME, applicationModel.getApplicationConfigManager());

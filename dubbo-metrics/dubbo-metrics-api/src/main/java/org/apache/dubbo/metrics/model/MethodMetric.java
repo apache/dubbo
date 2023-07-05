@@ -20,6 +20,7 @@ package org.apache.dubbo.metrics.model;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.util.Map;
 import java.util.Objects;
@@ -40,7 +41,7 @@ public class MethodMetric extends ServiceKeyMetric {
 
     protected MethodMetric(ApplicationModel applicationModel, Invocation invocation) {
         super(applicationModel, MetricsSupport.getInterfaceName(invocation));
-        this.methodName = MetricsSupport.getMethodName(invocation);
+        this.methodName = RpcUtils.getMethodName(invocation);
         this.side = MetricsSupport.getSide(invocation);
         this.group = MetricsSupport.getGroup(invocation);
         this.version = MetricsSupport.getVersion(invocation);

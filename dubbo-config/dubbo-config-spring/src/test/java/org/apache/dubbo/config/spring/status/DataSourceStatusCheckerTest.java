@@ -51,7 +51,7 @@ class DataSourceStatusCheckerTest {
     public void setUp() throws Exception {
         initMocks(this);
         this.dataSourceStatusChecker = new DataSourceStatusChecker(applicationContext);
-        new ServiceBean<Object>().setApplicationContext(applicationContext);
+        new ServiceBean<Object>(applicationContext).setApplicationContext(applicationContext);
     }
 
     @AfterEach

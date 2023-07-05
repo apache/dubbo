@@ -142,7 +142,7 @@ class DefaultFutureTest {
         try {
             new InterruptThread(Thread.currentThread()).start();
             while (!f. isDone()){
-                executor.waitAndDrain();
+                executor.waitAndDrain(Long.MAX_VALUE);
             }
             f.get();
         } catch (Exception e) {
@@ -161,14 +161,24 @@ class DefaultFutureTest {
     }
 
     @Test
-    void testClose() {
+    void testClose1() {
         Channel channel = new MockedChannel();
         Request request = new Request(123);
         ExecutorService executor = ExtensionLoader.getExtensionLoader(ExecutorRepository.class)
             .getDefaultExtension().createExecutorIfAbsent(URL.valueOf("dubbo://127.0.0.1:23456"));
         DefaultFuture.newFuture(channel, request, 1000, executor);
-        DefaultFuture.closeChannel(channel);
+        DefaultFuture.closeChannel(channel, 0);
         Assertions.assertFalse(executor.isTerminated());
+    }
+
+    @Test
+    void testClose2() {
+        Channel channel = new MockedChannel();
+        Request request = new Request(123);
+        ThreadlessExecutor threadlessExecutor = new ThreadlessExecutor();
+        DefaultFuture.newFuture(channel, request, 1000, threadlessExecutor);
+        DefaultFuture.closeChannel(channel, 0);
+        Assertions.assertTrue(threadlessExecutor.isTerminated());
     }
 
     /**

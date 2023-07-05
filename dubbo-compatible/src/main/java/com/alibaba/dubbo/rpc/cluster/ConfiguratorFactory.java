@@ -28,6 +28,6 @@ public interface ConfiguratorFactory extends org.apache.dubbo.rpc.cluster.Config
 
     @Override
     default Configurator getConfigurator(URL url) {
-        return this.getConfigurator(new com.alibaba.dubbo.common.URL(url));
+        return this.getConfigurator(new com.alibaba.dubbo.common.DelegateURL(url));
     }
 }

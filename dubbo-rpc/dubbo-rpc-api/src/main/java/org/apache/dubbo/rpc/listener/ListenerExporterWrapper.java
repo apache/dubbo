@@ -63,6 +63,11 @@ public class ListenerExporterWrapper<T> implements Exporter<T> {
     }
 
     @Override
+    public void register() {
+        exporter.register();
+    }
+
+    @Override
     public void unregister() {
         exporter.unregister();
     }

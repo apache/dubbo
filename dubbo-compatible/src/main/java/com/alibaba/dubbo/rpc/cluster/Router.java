@@ -23,6 +23,7 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Deprecated
@@ -44,9 +45,9 @@ public interface Router extends org.apache.dubbo.rpc.cluster.Router{
         List<com.alibaba.dubbo.rpc.Invoker<T>> invs = invokers.stream().map(invoker -> new com.alibaba.dubbo.rpc.Invoker.CompatibleInvoker<T>(invoker)).
                 collect(Collectors.toList());
 
-        List<com.alibaba.dubbo.rpc.Invoker<T>> res = this.route(invs, new com.alibaba.dubbo.common.URL(url), new com.alibaba.dubbo.rpc.Invocation.CompatibleInvocation(invocation));
+        List<com.alibaba.dubbo.rpc.Invoker<T>> res = this.route(invs, new com.alibaba.dubbo.common.DelegateURL(url), new com.alibaba.dubbo.rpc.Invocation.CompatibleInvocation(invocation));
 
-        return res.stream().map(inv -> inv.getOriginal()).collect(Collectors.toList());
+        return res.stream().map(inv -> inv.getOriginal()).filter(Objects::nonNull).collect(Collectors.toList());
     }
 
     @Override

@@ -22,6 +22,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.cluster.router.condition.matcher.pattern.ValuePattern;
 import org.apache.dubbo.rpc.model.ModuleModel;
+import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.util.HashSet;
 import java.util.List;
@@ -55,7 +56,7 @@ public abstract class AbstractConditionMatcher implements ConditionMatcher {
         String sampleValue;
         //get real invoked method name from invocation
         if (invocation != null && (METHOD_KEY.equals(conditionKey) || METHODS_KEY.equals(conditionKey))) {
-            sampleValue = invocation.getMethodName();
+            sampleValue = RpcUtils.getMethodName(invocation);
         } else {
             sampleValue = sample.get(conditionKey);
         }
