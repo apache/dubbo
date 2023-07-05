@@ -18,11 +18,8 @@
 package org.apache.dubbo.metrics.data;
 
 import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
-import org.apache.dubbo.metrics.model.ApplicationMetric;
-import org.apache.dubbo.metrics.model.MethodMetric;
 import org.apache.dubbo.metrics.model.Metric;
 import org.apache.dubbo.metrics.model.MetricsCategory;
-import org.apache.dubbo.metrics.model.ServiceKeyMetric;
 import org.apache.dubbo.metrics.model.container.AtomicLongContainer;
 import org.apache.dubbo.metrics.model.container.LongAccumulatorContainer;
 import org.apache.dubbo.metrics.model.container.LongContainer;
@@ -32,7 +29,6 @@ import org.apache.dubbo.metrics.model.key.MetricsPlaceValue;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.metrics.report.AbstractMetricsExport;
-import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.ArrayList;
