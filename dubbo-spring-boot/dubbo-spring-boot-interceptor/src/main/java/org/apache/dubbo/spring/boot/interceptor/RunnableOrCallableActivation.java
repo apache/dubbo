@@ -18,6 +18,7 @@ package org.apache.dubbo.spring.boot.interceptor;
 
 import java.lang.instrument.Instrumentation;
 import java.security.ProtectionDomain;
+
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.modifier.Visibility;
@@ -25,6 +26,7 @@ import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType;
 import net.bytebuddy.matcher.ElementMatchers;
 import net.bytebuddy.utility.JavaModule;
+
 import org.apache.dubbo.spring.boot.toolkit.DubboCrossThread;
 
 import static net.bytebuddy.matcher.ElementMatchers.isAnnotatedWith;
@@ -44,8 +46,8 @@ public class RunnableOrCallableActivation {
             .transform(new AgentBuilder.Transformer() {
                 @Override
                 public DynamicType.Builder<?> transform(DynamicType.Builder<?> builder, TypeDescription typeDescription,
-                    ClassLoader classLoader, JavaModule module,
-                    ProtectionDomain protectionDomain) {
+                                                        ClassLoader classLoader, JavaModule module,
+                                                        ProtectionDomain protectionDomain) {
                     return builder
                         .defineField(FIELD_NAME_DUBBO_TAG, String.class, Visibility.PUBLIC)
                         .method(
