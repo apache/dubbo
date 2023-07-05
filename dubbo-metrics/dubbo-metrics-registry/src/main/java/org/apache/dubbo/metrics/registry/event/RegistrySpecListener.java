@@ -26,10 +26,16 @@ import org.apache.dubbo.metrics.model.key.MetricsPlaceValue;
 import org.apache.dubbo.metrics.registry.RegistryMetricsConstants;
 import org.apache.dubbo.metrics.registry.collector.RegistryMetricsCollector;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
+import static org.apache.dubbo.metrics.MetricsConstants.ATTACHMENT_DIRECTORY_MAP;
+import static org.apache.dubbo.metrics.MetricsConstants.ATTACHMENT_KEY_LAST_NUM_MAP;
 import static org.apache.dubbo.metrics.MetricsConstants.ATTACHMENT_KEY_SERVICE;
 import static org.apache.dubbo.metrics.MetricsConstants.ATTACHMENT_KEY_SIZE;
+import static org.apache.dubbo.metrics.registry.RegistryMetricsConstants.OP_TYPE_DIRECTORY;
+import static org.apache.dubbo.metrics.registry.RegistryMetricsConstants.OP_TYPE_NOTIFY;
 import static org.apache.dubbo.metrics.registry.RegistryMetricsConstants.OP_TYPE_REGISTER;
 
 /**
@@ -44,37 +50,67 @@ public class RegistrySpecListener {
      */
     public static AbstractMetricsKeyListener onPostOfRegister(MetricsKey metricsKey, CombMetricsCollector<?> collector) {
         return AbstractMetricsKeyListener.onEvent(metricsKey,
-                event -> ((RegistryMetricsCollector) collector).incrRegisterNum(metricsKey, getRgs(event))
+            event -> ((RegistryMetricsCollector) collector).incrRegisterNum(metricsKey, getRgs(event))
         );
     }
 
     public static AbstractMetricsKeyListener onFinishOfRegister(MetricsKey metricsKey, CombMetricsCollector<?> collector) {
         return AbstractMetricsKeyListener.onFinish(metricsKey,
-                event -> ((RegistryMetricsCollector) collector).incrRegisterFinishNum(metricsKey, OP_TYPE_REGISTER.getType(), getRgs(event), event.getTimePair().calc())
+            event -> ((RegistryMetricsCollector) collector).incrRegisterFinishNum(metricsKey, OP_TYPE_REGISTER.getType(), getRgs(event), event.getTimePair().calc())
         );
     }
 
     public static AbstractMetricsKeyListener onErrorOfRegister(MetricsKey metricsKey, CombMetricsCollector<?> collector) {
         return AbstractMetricsKeyListener.onError(metricsKey,
-                event -> ((RegistryMetricsCollector) collector).incrRegisterFinishNum(metricsKey, OP_TYPE_REGISTER.getType(), getRgs(event), event.getTimePair().calc())
+            event -> ((RegistryMetricsCollector) collector).incrRegisterFinishNum(metricsKey, OP_TYPE_REGISTER.getType(), getRgs(event), event.getTimePair().calc())
         );
     }
 
     public static AbstractMetricsKeyListener onPostOfServiceRegister(MetricsKey metricsKey, MetricsPlaceValue placeType, CombMetricsCollector<?> collector) {
         return AbstractMetricsKeyListener.onEvent(metricsKey,
-                event -> ((RegistryMetricsCollector) collector).incrServiceRegisterNum(new MetricsKeyWrapper(metricsKey, placeType), getServiceKey(event), getRgs(event), getSize(event))
+            event -> ((RegistryMetricsCollector) collector).incrServiceRegisterNum(new MetricsKeyWrapper(metricsKey, placeType), getServiceKey(event), getRgs(event), getSize(event))
         );
     }
 
     public static AbstractMetricsKeyListener onFinishOfServiceRegister(MetricsKey metricsKey, MetricsPlaceValue placeType, CombMetricsCollector<?> collector) {
         return AbstractMetricsKeyListener.onFinish(metricsKey,
-                event -> ((RegistryMetricsCollector) collector).incrServiceRegisterFinishNum(new MetricsKeyWrapper(metricsKey, placeType), getServiceKey(event), getRgs(event), getSize(event), event.getTimePair().calc())
+            event -> ((RegistryMetricsCollector) collector).incrServiceRegisterFinishNum(new MetricsKeyWrapper(metricsKey, placeType), getServiceKey(event), getRgs(event), getSize(event), event.getTimePair().calc())
+        );
+    }
+
+    /**
+     * Every time an event is triggered, multiple serviceKey related to notify are increment
+     */
+    public static AbstractMetricsKeyListener onFinishOfNotify(MetricsKey metricsKey, MetricsPlaceValue placeType, CombMetricsCollector<?> collector) {
+        return AbstractMetricsKeyListener.onEvent(metricsKey,
+            event ->
+            {
+                collector.addRt(event.appName(), placeType.getType(), event.getTimePair().calc());
+                Map<String, Integer> lastNumMap = Collections.unmodifiableMap(event.getAttachmentValue(ATTACHMENT_KEY_LAST_NUM_MAP));
+                lastNumMap.forEach(
+                    (k, v) -> collector.setNum(new MetricsKeyWrapper(metricsKey, OP_TYPE_NOTIFY), k, v));
+            }
+        );
+    }
+
+    /**
+     * Every time an event is triggered, multiple fixed key related to directory are increment, which has nothing to do with the monitored key
+     */
+    public static AbstractMetricsKeyListener onPostOfDirectory(MetricsKey metricsKey, CombMetricsCollector<?> collector) {
+        return AbstractMetricsKeyListener.onFinish(metricsKey,
+            event -> {
+                Map<MetricsKey, Map<String, Integer>> summaryMap = event.getAttachmentValue(ATTACHMENT_DIRECTORY_MAP);
+                summaryMap.forEach((summaryKey, map) ->
+                    map.forEach(
+                        (k, v) -> collector.setNum(new MetricsKeyWrapper(summaryKey, OP_TYPE_DIRECTORY), k, v)));
+
+            }
         );
     }
 
     public static AbstractMetricsKeyListener onErrorOfServiceRegister(MetricsKey metricsKey, MetricsPlaceValue placeType, CombMetricsCollector<?> collector) {
         return AbstractMetricsKeyListener.onError(metricsKey,
-                event -> ((RegistryMetricsCollector) collector).incrServiceRegisterFinishNum(new MetricsKeyWrapper(metricsKey, placeType), getServiceKey(event), getRgs(event), getSize(event), event.getTimePair().calc())
+            event -> ((RegistryMetricsCollector) collector).incrServiceRegisterFinishNum(new MetricsKeyWrapper(metricsKey, placeType), getServiceKey(event), getRgs(event), getSize(event), event.getTimePair().calc())
         );
     }
 
