@@ -126,6 +126,9 @@ public class MetricsEventBus {
     }
 
     private static MetricsDispatcher validate(MetricsEvent event) {
+        if (!(event instanceof TimeCounterEvent)) {
+            return null;
+        }
         if (event.getSource() == null) {
             return null;
         }
@@ -138,12 +141,7 @@ public class MetricsEventBus {
             return null;
         }
         MetricsDispatcher dispatcher = beanFactory.getBean(MetricsDispatcher.class);
-        if (dispatcher == null) {
-            return null;
-        }
-        if (!(event instanceof TimeCounterEvent)) {
-            return null;
-        }
+
         return dispatcher;
     }
 }
