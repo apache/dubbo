@@ -26,20 +26,20 @@ import java.util.Objects;
  * Metric class for service.
  */
 public class ServiceKeyMetric extends ApplicationMetric {
-    private final String interfaceName;
+    private final String serviceKey;
 
     public ServiceKeyMetric(ApplicationModel applicationModel, String serviceKey) {
         super(applicationModel);
-        this.interfaceName = serviceKey;
+        this.serviceKey = serviceKey;
     }
 
     @Override
     public Map<String, String> getTags() {
-        return MetricsSupport.serviceTags(getApplicationModel(), interfaceName, getExtraInfo());
+        return MetricsSupport.serviceTags(getApplicationModel(), serviceKey, getExtraInfo());
     }
 
-    public String getInterfaceName() {
-        return interfaceName;
+    public String getServiceKey() {
+        return serviceKey;
     }
 
     @Override
@@ -47,11 +47,11 @@ public class ServiceKeyMetric extends ApplicationMetric {
         if (this == o) return true;
         if (!(o instanceof ServiceKeyMetric)) return false;
         ServiceKeyMetric that = (ServiceKeyMetric) o;
-        return interfaceName.equals(that.interfaceName) && Objects.equals(extraInfo, that.extraInfo);
+        return serviceKey.equals(that.serviceKey) && Objects.equals(extraInfo, that.extraInfo);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(interfaceName, extraInfo);
+        return Objects.hash(serviceKey, extraInfo);
     }
 }

@@ -18,14 +18,16 @@
 package org.apache.dubbo.metrics.data;
 
 import org.apache.dubbo.metrics.collector.MetricsCollector;
+import org.apache.dubbo.metrics.model.ApplicationMetric;
+import org.apache.dubbo.metrics.model.MethodMetric;
 import org.apache.dubbo.metrics.model.MetricsCategory;
+import org.apache.dubbo.metrics.model.ServiceKeyMetric;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.metrics.report.MetricsExport;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -71,15 +73,15 @@ public abstract class BaseStatComposite implements MetricsExport {
     }
 
     public void calcApplicationRt(String registryOpType, Long responseTime) {
-        rtStatComposite.calcKeyRt(registryOpType, responseTime, rtStatComposite.getAppName());
+        rtStatComposite.calcKeyRt(registryOpType, responseTime, new ApplicationMetric(rtStatComposite.getApplicationModel()));
     }
 
     public void calcServiceKeyRt(String serviceKey, String registryOpType, Long responseTime) {
-        rtStatComposite.calcKeyRt(registryOpType, responseTime, serviceKey);
+        rtStatComposite.calcKeyRt(registryOpType, responseTime, new ServiceKeyMetric(rtStatComposite.getApplicationModel(), serviceKey));
     }
 
     public void calcMethodKeyRt(Invocation invocation, String registryOpType, Long responseTime) {
-        rtStatComposite.calcKeyRt(registryOpType, responseTime, invocation.getTargetServiceUniqueName() + "_" + RpcUtils.getMethodName(invocation));
+        rtStatComposite.calcKeyRt(registryOpType, responseTime, new MethodMetric(rtStatComposite.getApplicationModel(), invocation));
     }
 
     public void setServiceKey(MetricsKeyWrapper metricsKey, String serviceKey, int num) {

@@ -18,7 +18,11 @@
 package org.apache.dubbo.metrics.data;
 
 import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
+import org.apache.dubbo.metrics.model.ApplicationMetric;
+import org.apache.dubbo.metrics.model.MethodMetric;
+import org.apache.dubbo.metrics.model.Metric;
 import org.apache.dubbo.metrics.model.MetricsCategory;
+import org.apache.dubbo.metrics.model.ServiceKeyMetric;
 import org.apache.dubbo.metrics.model.container.AtomicLongContainer;
 import org.apache.dubbo.metrics.model.container.LongAccumulatorContainer;
 import org.apache.dubbo.metrics.model.container.LongContainer;
@@ -28,12 +32,12 @@ import org.apache.dubbo.metrics.model.key.MetricsPlaceValue;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.metrics.report.AbstractMetricsExport;
+import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.LongAccumulator;
 import java.util.stream.Collectors;
@@ -77,9 +81,9 @@ public class RtStatComposite extends AbstractMetricsExport {
         return singleRtStats;
     }
 
-    public void calcKeyRt(String registryOpType, Long responseTime, String rtKey) {
+    public void calcKeyRt(String registryOpType, Long responseTime, Metric metricKey) {
         for (LongContainer container : rtStats.stream().filter(longContainer -> longContainer.specifyType(registryOpType)).collect(Collectors.toList())) {
-            Number current = (Number) ConcurrentHashMapUtils.computeIfAbsent(container, rtKey, container.getInitFunc());
+            Number current = (Number) ConcurrentHashMapUtils.computeIfAbsent(container, metricKey, container.getInitFunc());
             container.getConsumerFunc().accept(responseTime, current);
         }
     }
@@ -88,8 +92,9 @@ public class RtStatComposite extends AbstractMetricsExport {
         List<MetricSample> list = new ArrayList<>();
         for (LongContainer<? extends Number> rtContainer : rtStats) {
             MetricsKeyWrapper metricsKeyWrapper = rtContainer.getMetricsKeyWrapper();
-            for (Map.Entry<String, ? extends Number> entry : rtContainer.entrySet()) {
-                list.add(new GaugeMetricSample<>(metricsKeyWrapper.targetKey(), metricsKeyWrapper.targetDesc(), metricsKeyWrapper.tagName(getApplicationModel(), entry.getKey()), category, entry.getKey().intern(), value -> rtContainer.getValueSupplier().apply(value.intern())));
+            for (Metric key : rtContainer.keySet()) {
+                // Use keySet to obtain the original key instance reference of ConcurrentHashMap to avoid early recycling of the micrometer
+                list.add(new GaugeMetricSample<>(metricsKeyWrapper.targetKey(), metricsKeyWrapper.targetDesc(), key.getTags(), category, key, value -> rtContainer.getValueSupplier().apply(value)));
             }
         }
         return list;
@@ -98,5 +103,6 @@ public class RtStatComposite extends AbstractMetricsExport {
     public List<LongContainer<? extends Number>> getRtStats() {
         return rtStats;
     }
+
 
 }

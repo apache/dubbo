@@ -56,11 +56,12 @@ public class ApplicationMetric implements Metric {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ApplicationMetric that = (ApplicationMetric) o;
-        return applicationModel.equals(that.applicationModel) && Objects.equals(extraInfo, that.extraInfo);
+        return getApplicationName().equals(that.applicationModel.getApplicationName()) && Objects.equals(extraInfo, that.extraInfo);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(applicationModel, extraInfo);
+        return Objects.hash(getApplicationName(), extraInfo);
     }
+
 }
