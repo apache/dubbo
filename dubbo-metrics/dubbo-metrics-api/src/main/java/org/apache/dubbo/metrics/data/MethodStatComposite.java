@@ -44,8 +44,6 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class MethodStatComposite extends AbstractMetricsExport {
 
-    private static final Logger logger = LoggerFactory.getLogger(MethodStatComposite.class);
-
     public MethodStatComposite(ApplicationModel applicationModel) {
         super(applicationModel);
     }
