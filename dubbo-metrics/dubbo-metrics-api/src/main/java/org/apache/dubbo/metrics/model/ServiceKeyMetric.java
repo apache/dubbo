@@ -25,20 +25,20 @@ import java.util.Map;
  * Metric class for service.
  */
 public class ServiceKeyMetric extends ApplicationMetric {
-    private final String interfaceName;
+    private final String serviceKey;
 
     public ServiceKeyMetric(ApplicationModel applicationModel, String serviceKey) {
         super(applicationModel);
-        this.interfaceName = serviceKey;
+        this.serviceKey = serviceKey;
     }
 
     @Override
     public Map<String, String> getTags() {
-        return MetricsSupport.serviceTags(getApplicationModel(), interfaceName);
+        return MetricsSupport.serviceTags(getApplicationModel(), serviceKey);
     }
 
-    public String getInterfaceName() {
-        return interfaceName;
+    public String getServiceKey() {
+        return serviceKey;
     }
 
     @Override
@@ -55,13 +55,13 @@ public class ServiceKeyMetric extends ApplicationMetric {
         if (!getApplicationName().equals(that.getApplicationName())) {
             return false;
         }
-        return interfaceName.equals(that.interfaceName);
+        return serviceKey.equals(that.serviceKey);
     }
 
     @Override
     public int hashCode() {
         int result = getApplicationName().hashCode();
-        result = 31 * result + interfaceName.hashCode();
+        result = 31 * result + serviceKey.hashCode();
         return result;
     }
 
@@ -69,7 +69,7 @@ public class ServiceKeyMetric extends ApplicationMetric {
     public String toString() {
         return "ServiceKeyMetric{" +
                 "applicationName='" + getApplicationName() + '\'' +
-                ", serviceKey='" + interfaceName + '\'' +
+                ", serviceKey='" + serviceKey + '\'' +
                 '}';
     }
 }
