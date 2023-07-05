@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.common.utils;
 
-import java.util.StringJoiner;
 import org.apache.dubbo.common.io.UnsafeStringWriter;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
