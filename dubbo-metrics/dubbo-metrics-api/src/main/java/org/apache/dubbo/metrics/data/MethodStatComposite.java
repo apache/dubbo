@@ -17,8 +17,6 @@
 
 package org.apache.dubbo.metrics.data;
 
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.metrics.exception.MetricsNeverHappenException;
 import org.apache.dubbo.metrics.model.MethodMetric;
@@ -43,8 +41,6 @@ import java.util.concurrent.atomic.AtomicLong;
  * the key will not be displayed when exporting (to be optimized)
  */
 public class MethodStatComposite extends AbstractMetricsExport {
-
-    private static final Logger logger = LoggerFactory.getLogger(MethodStatComposite.class);
 
     public MethodStatComposite(ApplicationModel applicationModel) {
         super(applicationModel);
