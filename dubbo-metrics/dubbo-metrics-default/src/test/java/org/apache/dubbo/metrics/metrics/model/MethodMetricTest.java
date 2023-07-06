@@ -76,6 +76,7 @@ class MethodMetricTest {
         MethodMetric metric = MethodMetricCache.putIfAbsent(invocation.getTargetServiceUniqueName(),
             applicationModel, invocation);
         Assertions.assertEquals(metric.getInterfaceName(), interfaceName);
+        Assertions.assertEquals(metric.getServiceKey(), interfaceName);
         Assertions.assertEquals(metric.getMethodName(), methodName);
         Assertions.assertEquals(metric.getGroup(), group);
         Assertions.assertEquals(metric.getVersion(), version);
