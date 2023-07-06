@@ -89,6 +89,17 @@ public class MethodMetric extends ServiceKeyMetric {
     }
 
     @Override
+    public String toString() {
+        return "MethodMetric{" +
+            "side='" + side + '\'' +
+            ", methodName='" + methodName + '\'' +
+            ", group='" + group + '\'' +
+            ", version='" + version + '\'' +
+            ", sampleType=" + sampleType +
+            "} " + super.toString();
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof MethodMetric)) return false;
