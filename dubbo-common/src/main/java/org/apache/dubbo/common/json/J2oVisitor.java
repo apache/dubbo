@@ -233,7 +233,7 @@ class J2oVisitor implements JSONVisitor {
         try {
             return mConverter.readValue(mType, obj);
         } catch (IOException e) {
-            throw new IllegalStateException(e.getMessage(), e);
+            throw new ParseException(e.getMessage());
         }
     }
 
@@ -248,7 +248,7 @@ class J2oVisitor implements JSONVisitor {
                 try {
                     mValue = mType.newInstance();
                 } catch (Exception e) {
-                    throw new IllegalStateException(e.getMessage(), e);
+                    throw new ParseException(e.getMessage());
                 }
             } else if (mType == ConcurrentMap.class) {
                 mValue = new ConcurrentHashMap<String, Object>();
@@ -339,7 +339,7 @@ class J2oVisitor implements JSONVisitor {
                     try {
                         items = (Collection<Object>) mType.newInstance();
                     } catch (Exception e) {
-                        throw new IllegalStateException(e.getMessage(), e);
+                        throw new ParseException(e.getMessage());
                     }
                 } else if (mType.isAssignableFrom(ArrayList.class)) { // List
                     items = new ArrayList<Object>(count);
