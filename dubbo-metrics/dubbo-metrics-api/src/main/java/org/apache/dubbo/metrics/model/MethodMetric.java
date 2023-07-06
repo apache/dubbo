@@ -39,6 +39,7 @@ public class MethodMetric extends ServiceKeyMetric {
     private String version;
     private final MetricSample.Type sampleType;
 
+
     public MethodMetric(ApplicationModel applicationModel, Invocation invocation) {
         super(applicationModel, MetricsSupport.getInterfaceName(invocation));
         this.methodName = RpcUtils.getMethodName(invocation);
@@ -88,27 +89,16 @@ public class MethodMetric extends ServiceKeyMetric {
     }
 
     @Override
-    public String toString() {
-        return "MethodMetric{" +
-                "applicationName='" + getApplicationName() + '\'' +
-                ", side='" + side + '\'' +
-                ", interfaceName='" + getServiceKey() + '\'' +
-                ", methodName='" + methodName + '\'' +
-                ", group='" + group + '\'' +
-                ", version='" + version + '\'' +
-                '}';
-    }
-
-    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (!(o instanceof MethodMetric)) return false;
+        if (!super.equals(o)) return false;
         MethodMetric that = (MethodMetric) o;
-        return Objects.equals(getApplicationName(), that.getApplicationName()) && Objects.equals(side, that.side) && Objects.equals(getServiceKey(), that.getServiceKey()) && Objects.equals(methodName, that.methodName) && Objects.equals(group, that.group) && Objects.equals(version, that.version);
+        return Objects.equals(side, that.side) && Objects.equals(methodName, that.methodName) && Objects.equals(group, that.group) && Objects.equals(version, that.version) && sampleType == that.sampleType;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getApplicationName(), side, getServiceKey(), methodName, group, version);
+        return Objects.hash(super.hashCode(), side, methodName, group, version, sampleType);
     }
 }

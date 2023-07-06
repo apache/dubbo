@@ -37,8 +37,11 @@ public class ApplicationMetric implements Metric {
     private static final String version = Version.getVersion();
     private static final String commitId = Version.getLastCommitId();
 
+    private String applicationName;
+
     public ApplicationMetric(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
+        this.applicationName = applicationModel.getApplicationName();
     }
 
     public ApplicationModel getApplicationModel() {
@@ -67,13 +70,13 @@ public class ApplicationMetric implements Metric {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof ApplicationMetric)) return false;
+        if (o == null || getClass() != o.getClass()) return false;
         ApplicationMetric that = (ApplicationMetric) o;
-        return Objects.equals(getApplicationName(), that.applicationModel.getApplicationName());
+        return Objects.equals(applicationModel, that.applicationModel) && Objects.equals(applicationName, that.applicationName);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getApplicationName());
+        return Objects.hash(applicationModel, applicationName);
     }
 }
