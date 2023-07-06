@@ -20,6 +20,7 @@ import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.MetricsConfig;
+import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
 import org.apache.dubbo.metrics.event.MetricsDispatcher;
 import org.apache.dubbo.metrics.event.MetricsEventBus;
 import org.apache.dubbo.metrics.event.RequestEvent;
@@ -46,6 +47,7 @@ public class MetricsFilter implements Filter, BaseFilter.Listener, ScopeModelAwa
     private boolean rpcMetricsEnable;
     private String appName;
     private MetricsDispatcher metricsDispatcher;
+    private DefaultMetricsCollector defaultMetricsCollector;
 
     @Override
     public void setApplicationModel(ApplicationModel applicationModel) {
@@ -53,13 +55,14 @@ public class MetricsFilter implements Filter, BaseFilter.Listener, ScopeModelAwa
         this.rpcMetricsEnable = applicationModel.getApplicationConfigManager().getMetrics().map(MetricsConfig::getEnableRpc).orElse(true);
         this.appName = applicationModel.getApplicationName();
         this.metricsDispatcher = applicationModel.getBeanFactory().getBean(MetricsDispatcher.class);
+        this.defaultMetricsCollector = applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class);
     }
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         if (rpcMetricsEnable) {
             try {
-                RequestEvent requestEvent = RequestEvent.toRequestEvent(applicationModel, appName, metricsDispatcher, invocation);
+                RequestEvent requestEvent = RequestEvent.toRequestEvent(applicationModel, appName, metricsDispatcher, defaultMetricsCollector, invocation);
                 MetricsEventBus.before(requestEvent);
                 invocation.put(METRIC_FILTER_EVENT, requestEvent);
             } catch (Throwable t) {

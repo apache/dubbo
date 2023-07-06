@@ -112,7 +112,7 @@ class DefaultCollectorTest {
     @Test
     void testListener() {
         DefaultMetricsCollector metricsCollector = new DefaultMetricsCollector(applicationModel);
-        RequestEvent event = RequestEvent.toRequestEvent(applicationModel, null, null, invocation);
+        RequestEvent event = RequestEvent.toRequestEvent(applicationModel, null, null, null, invocation);
         RequestBeforeEvent beforeEvent = new RequestBeforeEvent(applicationModel, null, null, new TypeWrapper(MetricsLevel.METHOD, MetricsKey.METRIC_REQUESTS));
         Assertions.assertTrue(metricsCollector.isSupport(event));
         Assertions.assertTrue(metricsCollector.isSupport(beforeEvent));

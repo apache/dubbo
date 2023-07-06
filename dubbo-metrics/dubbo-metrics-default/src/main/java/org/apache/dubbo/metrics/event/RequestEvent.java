@@ -39,20 +39,21 @@ import static org.apache.dubbo.metrics.model.key.MetricsKey.METRIC_REQUEST_BUSIN
  * Request related events
  */
 public class RequestEvent extends TimeCounterEvent {
-    public RequestEvent(ApplicationModel applicationModel, String appName, MetricsDispatcher metricsDispatcher, TypeWrapper typeWrapper) {
+    public RequestEvent(ApplicationModel applicationModel, String appName, MetricsDispatcher metricsDispatcher, DefaultMetricsCollector collector, TypeWrapper typeWrapper) {
         super(applicationModel, appName, metricsDispatcher, typeWrapper);
-        ScopeBeanFactory beanFactory = applicationModel.getBeanFactory();
-        DefaultMetricsCollector collector;
-        if (!beanFactory.isDestroyed()) {
-            collector = beanFactory.getBean(DefaultMetricsCollector.class);
-            super.setAvailable(collector != null && collector.isCollectEnabled());
+        if (collector == null) {
+            ScopeBeanFactory beanFactory = applicationModel.getBeanFactory();
+            if (!beanFactory.isDestroyed()) {
+                collector = beanFactory.getBean(DefaultMetricsCollector.class);
+            }
         }
+        super.setAvailable(collector != null && collector.isCollectEnabled());
     }
 
     private static final TypeWrapper typeWrapper = new TypeWrapper(MetricsLevel.SERVICE, METRIC_REQUESTS, METRIC_REQUESTS_SUCCEED, METRIC_REQUEST_BUSINESS_FAILED);
 
-    public static RequestEvent toRequestEvent(ApplicationModel applicationModel, String appName, MetricsDispatcher metricsDispatcher, Invocation invocation) {
-        RequestEvent requestEvent = new RequestEvent(applicationModel, appName, metricsDispatcher, typeWrapper);
+    public static RequestEvent toRequestEvent(ApplicationModel applicationModel, String appName, MetricsDispatcher metricsDispatcher, DefaultMetricsCollector collector, Invocation invocation) {
+        RequestEvent requestEvent = new RequestEvent(applicationModel, appName, metricsDispatcher, collector, typeWrapper);
         requestEvent.putAttachment(MetricsConstants.INVOCATION, invocation);
         requestEvent.putAttachment(MetricsConstants.METHOD_METRICS, new MethodMetric(applicationModel, invocation));
         requestEvent.putAttachment(ATTACHMENT_KEY_SERVICE, MetricsSupport.getInterfaceName(invocation));
