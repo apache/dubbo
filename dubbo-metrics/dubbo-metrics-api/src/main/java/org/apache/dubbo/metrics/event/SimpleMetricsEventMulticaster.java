@@ -54,7 +54,7 @@ public class SimpleMetricsEventMulticaster implements MetricsEventMulticaster {
     private boolean validateIfApplicationConfigExist(MetricsEvent event) {
         if (event.getSource() != null) {
             // Check if exist application config
-            return StringUtils.isNotEmpty(event.appName());
+            return StringUtils.isEmpty(event.appName());
         }
         return false;
     }
