@@ -35,11 +35,13 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.LongAccumulator;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 /**
@@ -111,25 +113,77 @@ public class RtStatComposite extends AbstractMetricsExport {
         }
     }
 
+    public void calcServiceKeyRt(Invocation invocation, String registryOpType, Long responseTime) {
+        Map<String, Object> attributeMap = invocation.getServiceModel().getServiceMetadata().getAttributeMap();
+
+        Map<String, List<Action>> cache = (Map<String, List<Action>>) attributeMap.get("ServiceKeyRt");
+        if (cache == null) {
+            attributeMap.putIfAbsent("ServiceKeyRt", new ConcurrentHashMap<>(32));
+            cache = (Map<String, List<Action>>) attributeMap.get("ServiceKeyRt");
+        }
+        List<Action> actions = cache.get(registryOpType);
+        if (actions == null) {
+            actions = new LinkedList<>();
+
+            ServiceKeyMetric key = new ServiceKeyMetric(getApplicationModel(), invocation.getTargetServiceUniqueName());
+            for (LongContainer container : rtStats.get(registryOpType)) {
+                Number current = (Number) container.get(key);
+                if (current == null) {
+                    container.putIfAbsent(key, container.getInitFunc().apply(key));
+                    current = (Number) container.get(key);
+                }
+                actions.add(new Action(container.getConsumerFunc(), current));
+            }
+            cache.putIfAbsent(registryOpType, actions);
+            actions = cache.get(registryOpType);
+        }
+
+        for (Action action : actions) {
+            action.run(responseTime);
+        }
+    }
+
+    private static class Action {
+        private final BiConsumer<Long, Number> consumerFunc;
+        private final Number initValue;
+
+        public Action(BiConsumer<Long, Number> consumerFunc, Number initValue) {
+            this.consumerFunc = consumerFunc;
+            this.initValue = initValue;
+        }
+
+        public void run(Long responseTime) {
+            consumerFunc.accept(responseTime, initValue);
+        }
+    }
+
     public void calcMethodKeyRt(Invocation invocation, String registryOpType, Long responseTime) {
         Map<String, Object> attributeMap = invocation.getServiceModel().getServiceMetadata().getAttributeMap();
-        Map<String, MethodMetric> cache = (Map<String, MethodMetric>) attributeMap.get("MethodKeyRtCache");
+        Map<String, List<Action>> cache = (Map<String, List<Action>>) attributeMap.get("MethodKeyRt");
         if (cache == null) {
-            attributeMap.putIfAbsent("MethodKeyRtCache", new ConcurrentHashMap<>());
-            cache = (Map<String, MethodMetric>) attributeMap.get("MethodKeyRtCache");
+            attributeMap.putIfAbsent("MethodKeyRt", new ConcurrentHashMap<>(32));
+            cache = (Map<String, List<Action>>) attributeMap.get("MethodKeyRt");
         }
-        MethodMetric key = cache.get(invocation.getMethodName());
-        if (key == null) {
-            cache.putIfAbsent(invocation.getMethodName(), new MethodMetric(getApplicationModel(), invocation));
-            key = cache.get(invocation.getMethodName());
-        }
-        for (LongContainer container : rtStats.get(registryOpType)) {
-            Number current = (Number) container.get(key);
-            if (current == null) {
-                container.putIfAbsent(key, container.getInitFunc().apply(key));
-                current = (Number) container.get(key);
+
+        List<Action> actions = cache.get(registryOpType);
+        if (actions == null) {
+            actions = new LinkedList<>();
+            for (LongContainer container : rtStats.get(registryOpType)) {
+                MethodMetric key = new MethodMetric(getApplicationModel(), invocation);
+                Number current = (Number) container.get(key);
+                if (current == null) {
+                    container.putIfAbsent(key, container.getInitFunc().apply(key));
+                    current = (Number) container.get(key);
+                }
+                actions.add(new Action(container.getConsumerFunc(), current));
             }
-            container.getConsumerFunc().accept(responseTime, current);
+            cache.putIfAbsent(registryOpType, actions);
+            actions = cache.get(registryOpType);
+        }
+
+
+        for (Action action : actions) {
+            action.run(responseTime);
         }
     }
 

@@ -211,7 +211,13 @@ public class MetricsSupport {
      */
     public static void incrAndAddRt(MetricsKey metricsKey, MetricsPlaceValue placeType, ServiceMetricsCollector<TimeCounterEvent> collector, TimeCounterEvent event) {
         collector.increment(event.getAttachmentValue(ATTACHMENT_KEY_SERVICE), new MetricsKeyWrapper(metricsKey, placeType), SELF_INCREMENT_SIZE);
-        collector.addRt(event.getAttachmentValue(ATTACHMENT_KEY_SERVICE), placeType.getType(), event.getTimePair().calc());
+        Invocation invocation = event.getAttachmentValue(INVOCATION);
+        if (invocation != null) {
+            collector.addServiceRt(invocation, placeType.getType(), event.getTimePair().calc());
+            return;
+        } else {
+            collector.addServiceRt((String) event.getAttachmentValue(ATTACHMENT_KEY_SERVICE), placeType.getType(), event.getTimePair().calc());
+        }
     }
 
     /**
@@ -233,7 +239,7 @@ public class MetricsSupport {
      */
     public static void incrAndAddRt(MetricsKey metricsKey, MetricsPlaceValue placeType, MethodMetricsCollector<TimeCounterEvent> collector, TimeCounterEvent event) {
         collector.increment(event.getAttachmentValue(METHOD_METRICS), new MetricsKeyWrapper(metricsKey, placeType), SELF_INCREMENT_SIZE);
-        collector.addRt(event.getAttachmentValue(INVOCATION), placeType.getType(), event.getTimePair().calc());
+        collector.addMethodRt(event.getAttachmentValue(INVOCATION), placeType.getType(), event.getTimePair().calc());
     }
 
     /**

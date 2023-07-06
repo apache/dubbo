@@ -48,6 +48,8 @@ import org.apache.dubbo.rpc.support.ProtocolUtils;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.IntStream;
 
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE;
@@ -67,6 +69,8 @@ public class GenericFilter implements Filter, Filter.Listener, ScopeModelAware {
 
     private ApplicationModel applicationModel;
 
+    private final Map<Class<?>, Map<String, Map<String[], Method>>> methodCache = new ConcurrentHashMap<>();
+
     @Override
     public void setApplicationModel(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
@@ -82,7 +86,21 @@ public class GenericFilter implements Filter, Filter.Listener, ScopeModelAware {
             String[] types = (String[]) inv.getArguments()[1];
             Object[] args = (Object[]) inv.getArguments()[2];
             try {
-                Method method = ReflectUtils.findMethodByMethodSignature(invoker.getInterface(), name, types);
+                Map<String, Map<String[], Method>> nameMap = methodCache.get(invoker.getInterface());
+                if (nameMap == null) {
+                    methodCache.putIfAbsent(invoker.getInterface(), new ConcurrentHashMap<>());
+                    nameMap = methodCache.get(invoker.getInterface());
+                }
+                Map<String[], Method> typesMap = nameMap.get(name);
+                if (typesMap == null) {
+                    nameMap.putIfAbsent(name, new ConcurrentHashMap<>());
+                    typesMap = nameMap.get(name);
+                }
+                Method method = typesMap.get(types);
+                if (method == null) {
+                    typesMap.put(types, ReflectUtils.findMethodByMethodSignature(invoker.getInterface(), name, types));
+                    method = typesMap.get(types);
+                }
                 Class<?>[] params = method.getParameterTypes();
                 if (args == null) {
                     args = new Object[params.length];

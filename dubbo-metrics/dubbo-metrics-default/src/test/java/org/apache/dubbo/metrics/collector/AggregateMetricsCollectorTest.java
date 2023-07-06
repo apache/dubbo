@@ -142,7 +142,7 @@ class AggregateMetricsCollectorTest {
     @Test
     void testListener() {
         AggregateMetricsCollector metricsCollector = new AggregateMetricsCollector(applicationModel);
-        RequestEvent event = RequestEvent.toRequestEvent(applicationModel, null, null, null, invocation);
+        RequestEvent event = RequestEvent.toRequestEvent(applicationModel, null, null, null, invocation, MetricsSupport.getSide(invocation));
         RequestBeforeEvent beforeEvent = new RequestBeforeEvent(applicationModel, null, null, new TypeWrapper(MetricsLevel.METHOD, MetricsKey.METRIC_REQUESTS));
         Assertions.assertTrue(metricsCollector.isSupport(event));
         Assertions.assertFalse(metricsCollector.isSupport(beforeEvent));
@@ -249,7 +249,7 @@ class AggregateMetricsCollectorTest {
         rtList.add(30L);
 
         for (Long requestTime: rtList) {
-            RequestEvent requestEvent = RequestEvent.toRequestEvent(applicationModel, null, null, null, invocation);
+            RequestEvent requestEvent = RequestEvent.toRequestEvent(applicationModel, null, null, null, invocation, MetricsSupport.getSide(invocation));
             TestRequestEvent testRequestEvent = new TestRequestEvent(requestEvent.getSource(), requestEvent.getTypeWrapper());
             testRequestEvent.putAttachment(MetricsConstants.INVOCATION, invocation);
             testRequestEvent.putAttachment(ATTACHMENT_KEY_SERVICE, MetricsSupport.getInterfaceName(invocation));
@@ -299,7 +299,7 @@ class AggregateMetricsCollectorTest {
         double manualP99 = requestTimes.get((int) Math.round(p99Index));
 
         for (Long requestTime : requestTimes) {
-            RequestEvent requestEvent = RequestEvent.toRequestEvent(applicationModel, null, null, null, invocation);
+            RequestEvent requestEvent = RequestEvent.toRequestEvent(applicationModel, null, null, null, invocation, MetricsSupport.getSide(invocation));
             TestRequestEvent testRequestEvent = new TestRequestEvent(requestEvent.getSource(), requestEvent.getTypeWrapper());
             testRequestEvent.putAttachment(MetricsConstants.INVOCATION, invocation);
             testRequestEvent.putAttachment(ATTACHMENT_KEY_SERVICE, MetricsSupport.getInterfaceName(invocation));

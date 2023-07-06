@@ -52,12 +52,12 @@ public class RequestEvent extends TimeCounterEvent {
 
     private static final TypeWrapper typeWrapper = new TypeWrapper(MetricsLevel.SERVICE, METRIC_REQUESTS, METRIC_REQUESTS_SUCCEED, METRIC_REQUEST_BUSINESS_FAILED);
 
-    public static RequestEvent toRequestEvent(ApplicationModel applicationModel, String appName, MetricsDispatcher metricsDispatcher, DefaultMetricsCollector collector, Invocation invocation) {
+    public static RequestEvent toRequestEvent(ApplicationModel applicationModel, String appName, MetricsDispatcher metricsDispatcher, DefaultMetricsCollector collector, Invocation invocation, String side) {
         RequestEvent requestEvent = new RequestEvent(applicationModel, appName, metricsDispatcher, collector, typeWrapper);
         requestEvent.putAttachment(MetricsConstants.INVOCATION, invocation);
         requestEvent.putAttachment(MetricsConstants.METHOD_METRICS, new MethodMetric(applicationModel, invocation));
         requestEvent.putAttachment(ATTACHMENT_KEY_SERVICE, MetricsSupport.getInterfaceName(invocation));
-        requestEvent.putAttachment(MetricsConstants.INVOCATION_SIDE, MetricsSupport.getSide(invocation));
+        requestEvent.putAttachment(MetricsConstants.INVOCATION_SIDE, side);
         return requestEvent;
     }
 

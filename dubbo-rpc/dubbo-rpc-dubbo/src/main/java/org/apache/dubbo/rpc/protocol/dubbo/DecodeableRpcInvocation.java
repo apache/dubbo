@@ -23,7 +23,6 @@ import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.CacheableSupplier;
 import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.Codec;
@@ -158,10 +157,13 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
             if (desc.length() > 0) {
                 pts = drawPts(path, version, desc, pts);
                 if (pts == DubboCodec.EMPTY_CLASS_ARRAY) {
-                    if (!RpcUtils.isGenericCall(desc, getMethodName()) && !RpcUtils.isEcho(desc, getMethodName())) {
+                    if (RpcUtils.isGenericCall(desc, getMethodName())) {
+                        pts = new Class<?>[]{String.class, String[].class, Object[].class};
+                    } else if (RpcUtils.isEcho(desc, getMethodName())) {
+                        pts = new Class<?>[]{Object.class};
+                    } else {
                         throw new IllegalArgumentException("Service not found:" + path + ", " + getMethodName());
                     }
-                    pts = ReflectUtils.desc2classArray(desc);
                 }
                 args = drawArgs(in, pts);
             }

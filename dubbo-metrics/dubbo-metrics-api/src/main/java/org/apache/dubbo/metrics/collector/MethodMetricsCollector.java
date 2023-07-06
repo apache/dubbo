@@ -29,6 +29,6 @@ public interface MethodMetricsCollector<E extends TimeCounterEvent> extends Metr
 
     void increment(MethodMetric methodMetric, MetricsKeyWrapper wrapper, int size);
 
-    void addRt(Invocation invocation, String registryOpType, Long responseTime);
+    void addMethodRt(Invocation invocation, String registryOpType, Long responseTime);
 }
 
