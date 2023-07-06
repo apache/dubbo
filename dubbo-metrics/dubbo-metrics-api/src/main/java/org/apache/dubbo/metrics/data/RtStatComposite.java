@@ -88,33 +88,46 @@ public class RtStatComposite extends AbstractMetricsExport {
     }
 
     public void calcApplicationRt(String registryOpType, Long responseTime) {
+        ApplicationMetric key = new ApplicationMetric(getApplicationModel());
         for (LongContainer container : rtStats.get(registryOpType)) {
-            Number current = (Number) container.get(new ApplicationMetric(getApplicationModel()));
+            Number current = (Number) container.get(key);
             if (current == null) {
-                container.putIfAbsent(new ApplicationMetric(getApplicationModel()), container.getInitFunc().apply(new ApplicationMetric(getApplicationModel())));
-                current = (Number) container.get(new ApplicationMetric(getApplicationModel()));
+                container.putIfAbsent(key, container.getInitFunc().apply(key));
+                current = (Number) container.get(key);
             }
             container.getConsumerFunc().accept(responseTime, current);
         }
     }
 
     public void calcServiceKeyRt(String serviceKey, String registryOpType, Long responseTime) {
+        ServiceKeyMetric key = new ServiceKeyMetric(getApplicationModel(), serviceKey);
         for (LongContainer container : rtStats.get(registryOpType)) {
-            Number current = (Number) container.get(new ServiceKeyMetric(getApplicationModel(), serviceKey));
+            Number current = (Number) container.get(key);
             if (current == null) {
-                container.putIfAbsent(new ServiceKeyMetric(getApplicationModel(), serviceKey), container.getInitFunc().apply(new ServiceKeyMetric(getApplicationModel(), serviceKey)));
-                current = (Number) container.get(new ServiceKeyMetric(getApplicationModel(), serviceKey));
+                container.putIfAbsent(key, container.getInitFunc().apply(key));
+                current = (Number) container.get(key);
             }
             container.getConsumerFunc().accept(responseTime, current);
         }
     }
 
     public void calcMethodKeyRt(Invocation invocation, String registryOpType, Long responseTime) {
+        Map<String, Object> attributeMap = invocation.getServiceModel().getServiceMetadata().getAttributeMap();
+        Map<String, MethodMetric> cache = (Map<String, MethodMetric>) attributeMap.get("MethodKeyRtCache");
+        if (cache == null) {
+            attributeMap.putIfAbsent("MethodKeyRtCache", new ConcurrentHashMap<>());
+            cache = (Map<String, MethodMetric>) attributeMap.get("MethodKeyRtCache");
+        }
+        MethodMetric key = cache.get(invocation.getMethodName());
+        if (key == null) {
+            cache.putIfAbsent(invocation.getMethodName(), new MethodMetric(getApplicationModel(), invocation));
+            key = cache.get(invocation.getMethodName());
+        }
         for (LongContainer container : rtStats.get(registryOpType)) {
-            Number current = (Number) container.get(new MethodMetric(getApplicationModel(), invocation));
+            Number current = (Number) container.get(key);
             if (current == null) {
-                container.putIfAbsent(new MethodMetric(getApplicationModel(), invocation), container.getInitFunc().apply(new MethodMetric(getApplicationModel(), invocation)));
-                current = (Number) container.get(new MethodMetric(getApplicationModel(), invocation));
+                container.putIfAbsent(key, container.getInitFunc().apply(key));
+                current = (Number) container.get(key);
             }
             container.getConsumerFunc().accept(responseTime, current);
         }

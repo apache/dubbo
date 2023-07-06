@@ -105,8 +105,12 @@ public class MethodMetric extends ServiceKeyMetric {
         return Objects.equals(getApplicationModel(), that.getApplicationModel()) && Objects.equals(side, that.side) && Objects.equals(getServiceKey(), that.getServiceKey()) && Objects.equals(methodName, that.methodName) && Objects.equals(group, that.group) && Objects.equals(version, that.version);
     }
 
+    private volatile int hashCode = 0;
     @Override
     public int hashCode() {
-        return Objects.hash(getApplicationModel(), side, getServiceKey(), methodName, group, version);
+        if (hashCode == 0) {
+            hashCode = Objects.hash(getApplicationModel(), side, getServiceKey(), methodName, group, version);
+        }
+        return hashCode;
     }
 }
