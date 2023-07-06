@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.constants.LoggerCodeConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -25,6 +26,7 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -53,8 +55,16 @@ public class ReferenceCountInvokerWrapper<T> implements Invoker<T> {
     @Override
     public void destroy() {
         try {
-            lock.writeLock().lock();
+            int timeout = ConfigurationUtils.getServerShutdownTimeout(invoker.getUrl().getScopeModel());
+            boolean locked = lock.writeLock().tryLock(
+                timeout, TimeUnit.MILLISECONDS);
+            if (!locked) {
+                logger.warn(LoggerCodeConstants.PROTOCOL_CLOSED_SERVER, "", "",
+                    "Failed to wait for invocation end in " + timeout + "ms.");
+            }
             destroyed.set(true);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         } finally {
             lock.writeLock().unlock();
         }
