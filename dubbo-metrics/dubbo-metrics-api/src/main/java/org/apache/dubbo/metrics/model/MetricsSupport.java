@@ -50,6 +50,7 @@ import static org.apache.dubbo.common.constants.MetricsConstants.TAG_METHOD_KEY;
 import static org.apache.dubbo.common.utils.NetUtils.getLocalHost;
 import static org.apache.dubbo.common.utils.NetUtils.getLocalHostName;
 import static org.apache.dubbo.metrics.MetricsConstants.ATTACHMENT_KEY_SERVICE;
+import static org.apache.dubbo.metrics.MetricsConstants.INVOCATION;
 import static org.apache.dubbo.metrics.MetricsConstants.METHOD_METRICS;
 import static org.apache.dubbo.metrics.MetricsConstants.SELF_INCREMENT_SIZE;
 
@@ -232,7 +233,7 @@ public class MetricsSupport {
      */
     public static void incrAndAddRt(MetricsKey metricsKey, MetricsPlaceValue placeType, MethodMetricsCollector<TimeCounterEvent> collector, TimeCounterEvent event) {
         collector.increment(event.getAttachmentValue(METHOD_METRICS), new MetricsKeyWrapper(metricsKey, placeType), SELF_INCREMENT_SIZE);
-        collector.addRt(event.getAttachmentValue(METHOD_METRICS), placeType.getType(), event.getTimePair().calc());
+        collector.addRt(event.getAttachmentValue(INVOCATION), placeType.getType(), event.getTimePair().calc());
     }
 
     /**

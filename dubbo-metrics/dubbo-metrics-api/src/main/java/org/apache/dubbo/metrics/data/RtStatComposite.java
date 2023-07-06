@@ -17,7 +17,6 @@
 
 package org.apache.dubbo.metrics.data;
 
-import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.metrics.model.ApplicationMetric;
 import org.apache.dubbo.metrics.model.MethodMetric;
 import org.apache.dubbo.metrics.model.Metric;
@@ -36,8 +35,9 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.LongAccumulator;
 import java.util.stream.Collectors;
@@ -54,13 +54,19 @@ public class RtStatComposite extends AbstractMetricsExport {
         super(applicationModel);
     }
 
-    private final List<LongContainer<? extends Number>> rtStats = new ArrayList<>();
+    private final Map<String, List<LongContainer<? extends Number>>> rtStats = new ConcurrentHashMap<>();
 
     public void init(MetricsPlaceValue... placeValues) {
         if (placeValues == null) {
             return;
         }
-        Arrays.stream(placeValues).forEach(metricsPlaceType -> rtStats.addAll(initStats(metricsPlaceType)));
+        for (MetricsPlaceValue placeValue : placeValues) {
+            List<LongContainer<? extends Number>> containers = initStats(placeValue);
+            for (LongContainer<? extends Number> container : containers) {
+                rtStats.computeIfAbsent(container.getMetricsKeyWrapper().getType(), k -> new ArrayList<>())
+                    .add(container);
+            }
+        }
     }
 
     private List<LongContainer<? extends Number>> initStats(MetricsPlaceValue placeValue) {
@@ -72,7 +78,7 @@ public class RtStatComposite extends AbstractMetricsExport {
         // AvgContainer is a special counter that stores the number of times but outputs function of sum/times
         AtomicLongContainer avgContainer = new AtomicLongContainer(new MetricsKeyWrapper(MetricsKey.METRIC_RT_AVG, placeValue), (k, v) -> v.incrementAndGet());
         avgContainer.setValueSupplier(applicationName -> {
-            LongContainer<? extends Number> totalContainer = rtStats.stream().filter(longContainer -> longContainer.isKeyWrapper(MetricsKey.METRIC_RT_SUM, placeValue.getType())).findFirst().get();
+            LongContainer<? extends Number> totalContainer = rtStats.values().stream().flatMap(List::stream).filter(longContainer -> longContainer.isKeyWrapper(MetricsKey.METRIC_RT_SUM, placeValue.getType())).findFirst().get();
             AtomicLong totalRtTimes = avgContainer.get(applicationName);
             AtomicLong totalRtSum = (AtomicLong) totalContainer.get(applicationName);
             return totalRtSum.get() / totalRtTimes.get();
@@ -82,41 +88,59 @@ public class RtStatComposite extends AbstractMetricsExport {
     }
 
     public void calcApplicationRt(String registryOpType, Long responseTime) {
-        for (LongContainer container : rtStats.stream().filter(longContainer -> longContainer.specifyType(registryOpType)).collect(Collectors.toList())) {
-            Number current = (Number) ConcurrentHashMapUtils.computeIfAbsent(container, new ApplicationMetric(getApplicationModel()), container.getInitFunc());
+        for (LongContainer container : rtStats.get(registryOpType)) {
+            Number current = (Number) container.get(new ApplicationMetric(getApplicationModel()));
+            if (current == null) {
+                container.putIfAbsent(new ApplicationMetric(getApplicationModel()), container.getInitFunc().apply(new ApplicationMetric(getApplicationModel())));
+                current = (Number) container.get(new ApplicationMetric(getApplicationModel()));
+            }
             container.getConsumerFunc().accept(responseTime, current);
         }
     }
 
     public void calcServiceKeyRt(String serviceKey, String registryOpType, Long responseTime) {
-        for (LongContainer container : rtStats.stream().filter(longContainer -> longContainer.specifyType(registryOpType)).collect(Collectors.toList())) {
-            Number current = (Number) ConcurrentHashMapUtils.computeIfAbsent(container, new ServiceKeyMetric(getApplicationModel(), serviceKey), container.getInitFunc());
+        for (LongContainer container : rtStats.get(registryOpType)) {
+            Number current = (Number) container.get(new ServiceKeyMetric(getApplicationModel(), serviceKey));
+            if (current == null) {
+                container.putIfAbsent(new ServiceKeyMetric(getApplicationModel(), serviceKey), container.getInitFunc().apply(new ServiceKeyMetric(getApplicationModel(), serviceKey)));
+                current = (Number) container.get(new ServiceKeyMetric(getApplicationModel(), serviceKey));
+            }
             container.getConsumerFunc().accept(responseTime, current);
         }
     }
 
     public void calcMethodKeyRt(Invocation invocation, String registryOpType, Long responseTime) {
-        for (LongContainer container : rtStats.stream().filter(longContainer -> longContainer.specifyType(registryOpType)).collect(Collectors.toList())) {
-            Number current = (Number) ConcurrentHashMapUtils.computeIfAbsent(container, new MethodMetric(getApplicationModel(), invocation), container.getInitFunc());
+        for (LongContainer container : rtStats.get(registryOpType)) {
+            Number current = (Number) container.get(new MethodMetric(getApplicationModel(), invocation));
+            if (current == null) {
+                container.putIfAbsent(new MethodMetric(getApplicationModel(), invocation), container.getInitFunc().apply(new MethodMetric(getApplicationModel(), invocation)));
+                current = (Number) container.get(new MethodMetric(getApplicationModel(), invocation));
+            }
             container.getConsumerFunc().accept(responseTime, current);
         }
     }
 
     public List<MetricSample> export(MetricsCategory category) {
         List<MetricSample> list = new ArrayList<>();
-        for (LongContainer<? extends Number> rtContainer : rtStats) {
-            MetricsKeyWrapper metricsKeyWrapper = rtContainer.getMetricsKeyWrapper();
-            for (Metric key : rtContainer.keySet()) {
-                // Use keySet to obtain the original key instance reference of ConcurrentHashMap to avoid early recycling of the micrometer
-                list.add(new GaugeMetricSample<>(metricsKeyWrapper.targetKey(), metricsKeyWrapper.targetDesc(), key.getTags(), category, key, value -> rtContainer.getValueSupplier().apply(value)));
+        for (List<LongContainer<? extends Number>> containers : rtStats.values()) {
+            for (LongContainer<? extends Number> container : containers) {
+                MetricsKeyWrapper metricsKeyWrapper = container.getMetricsKeyWrapper();
+                for (Metric key : container.keySet()) {
+                    // Use keySet to obtain the original key instance reference of ConcurrentHashMap to avoid early recycling of the micrometer
+                    list.add(new GaugeMetricSample<>(metricsKeyWrapper.targetKey(),
+                        metricsKeyWrapper.targetDesc(),
+                        key.getTags(),
+                        category,
+                        key,
+                        value -> container.getValueSupplier().apply(value)));
+                }
             }
         }
         return list;
     }
 
     public List<LongContainer<? extends Number>> getRtStats() {
-        return rtStats;
+        return rtStats.values().stream().flatMap(List::stream).collect(Collectors.toList());
     }
-
 
 }

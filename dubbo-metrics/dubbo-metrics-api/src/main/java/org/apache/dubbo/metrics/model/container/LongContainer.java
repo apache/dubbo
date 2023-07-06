@@ -18,8 +18,8 @@
 package org.apache.dubbo.metrics.model.container;
 
 import org.apache.dubbo.metrics.model.Metric;
-import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
+import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -52,6 +52,7 @@ public class LongContainer<N extends Number> extends ConcurrentHashMap<Metric, N
 
 
     public LongContainer(MetricsKeyWrapper metricsKeyWrapper, Supplier<N> initFunc, BiConsumer<Long, N> consumerFunc) {
+        super(128, 0.5f);
         this.metricsKeyWrapper = metricsKeyWrapper;
         this.initFunc = s -> initFunc.get();
         this.consumerFunc = consumerFunc;
