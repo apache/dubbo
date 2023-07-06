@@ -468,7 +468,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
 
         // FIXME, kept for mock
         if (providerUrl.hasParameter(MOCK_KEY) || providerUrl.getAnyMethodParameter(MOCK_KEY) != null) {
-            providerUrl = providerUrl.removeParameter(TAG_KEY);
+            providerUrl = providerUrl.removeParameter(MOCK_KEY);
         }
 
         if ((providerUrl.getPath() == null || providerUrl.getPath()
