@@ -31,8 +31,6 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.ServiceMetadata;
-import org.apache.dubbo.rpc.model.ServiceModel;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -41,8 +39,6 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
-import static org.apache.dubbo.common.constants.CommonConstants.GROUP_CHAR_SEPARATOR;
-import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_APPLICATION_MODULE;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_APPLICATION_NAME;
@@ -147,56 +143,59 @@ public class MetricsSupport {
 
 
     public static String getInterfaceName(Invocation invocation) {
-        Optional<String> nameOptional = Optional.ofNullable(invocation.getServiceModel())
-            .map(ServiceModel::getServiceMetadata)
-            .map(ServiceMetadata::getServiceInterfaceName);
-        if (nameOptional.isPresent()) {
-            return nameOptional.get();
-        }
-        String serviceUniqueName = invocation.getTargetServiceUniqueName();
-        String interfaceAndVersion;
-        String[] arr = serviceUniqueName.split(PATH_SEPARATOR);
-        if (arr.length == 2) {
-            interfaceAndVersion = arr[1];
-        } else {
-            interfaceAndVersion = arr[0];
-        }
-        String[] ivArr = interfaceAndVersion.split(GROUP_CHAR_SEPARATOR);
-        return ivArr[0];
+        return invocation.getServiceModel().getServiceMetadata().getServiceInterfaceName();
+//        Optional<String> nameOptional = Optional.ofNullable(invocation.getServiceModel())
+//            .map(ServiceModel::getServiceMetadata)
+//            .map(ServiceMetadata::getServiceInterfaceName);
+//        if (nameOptional.isPresent()) {
+//            return nameOptional.get();
+//        }
+//        String serviceUniqueName = invocation.getTargetServiceUniqueName();
+//        String interfaceAndVersion;
+//        String[] arr = serviceUniqueName.split(PATH_SEPARATOR);
+//        if (arr.length == 2) {
+//            interfaceAndVersion = arr[1];
+//        } else {
+//            interfaceAndVersion = arr[0];
+//        }
+//        String[] ivArr = interfaceAndVersion.split(GROUP_CHAR_SEPARATOR);
+//        return ivArr[0];
     }
 
     public static String getGroup(Invocation invocation) {
-        Optional<String> groupOptional = Optional.ofNullable(invocation.getServiceModel())
-            .map(ServiceModel::getServiceMetadata)
-            .map(ServiceMetadata::getDefaultGroup);
-        if (groupOptional.isPresent()) {
-            return groupOptional.get();
-        }
-        String serviceUniqueName = invocation.getTargetServiceUniqueName();
-        String group = null;
-        String[] arr = serviceUniqueName.split(PATH_SEPARATOR);
-        if (arr.length == 2) {
-            group = arr[0];
-        }
-        return group;
+        return invocation.getServiceModel().getServiceMetadata().getGroup();
+//        Optional<String> groupOptional = Optional.ofNullable(invocation.getServiceModel())
+//            .map(ServiceModel::getServiceMetadata)
+//            .map(ServiceMetadata::getDefaultGroup);
+//        if (groupOptional.isPresent()) {
+//            return groupOptional.get();
+//        }
+//        String serviceUniqueName = invocation.getTargetServiceUniqueName();
+//        String group = null;
+//        String[] arr = serviceUniqueName.split(PATH_SEPARATOR);
+//        if (arr.length == 2) {
+//            group = arr[0];
+//        }
+//        return group;
     }
 
     public static String getVersion(Invocation invocation) {
-        Optional<String> versionOptional = Optional.ofNullable(invocation.getServiceModel())
-            .map(ServiceModel::getServiceMetadata)
-            .map(ServiceMetadata::getVersion);
-        if (versionOptional.isPresent()) {
-            return versionOptional.get();
-        }
-        String interfaceAndVersion;
-        String[] arr = invocation.getTargetServiceUniqueName().split(PATH_SEPARATOR);
-        if (arr.length == 2) {
-            interfaceAndVersion = arr[1];
-        } else {
-            interfaceAndVersion = arr[0];
-        }
-        String[] ivArr = interfaceAndVersion.split(GROUP_CHAR_SEPARATOR);
-        return ivArr.length == 2 ? ivArr[1] : null;
+        return invocation.getServiceModel().getServiceMetadata().getVersion();
+//        Optional<String> versionOptional = Optional.ofNullable(invocation.getServiceModel())
+//            .map(ServiceModel::getServiceMetadata)
+//            .map(ServiceMetadata::getVersion);
+//        if (versionOptional.isPresent()) {
+//            return versionOptional.get();
+//        }
+//        String interfaceAndVersion;
+//        String[] arr = invocation.getTargetServiceUniqueName().split(PATH_SEPARATOR);
+//        if (arr.length == 2) {
+//            interfaceAndVersion = arr[1];
+//        } else {
+//            interfaceAndVersion = arr[0];
+//        }
+//        String[] ivArr = interfaceAndVersion.split(GROUP_CHAR_SEPARATOR);
+//        return ivArr.length == 2 ? ivArr[1] : null;
     }
 
     /**
