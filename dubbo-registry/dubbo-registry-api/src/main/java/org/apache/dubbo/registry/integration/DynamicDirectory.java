@@ -52,6 +52,7 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAI
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_DESTROY_UNREGISTER_URL;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONSUMERS_CATEGORY;
+import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDED_BY;
 import static org.apache.dubbo.registry.Constants.REGISTER_KEY;
 import static org.apache.dubbo.registry.Constants.SIMPLIFIED_KEY;
 import static org.apache.dubbo.registry.integration.InterfaceCompatibleRegistryProtocol.DEFAULT_REGISTER_CONSUMER_KEYS;
@@ -195,8 +196,8 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
         if (forbidden && shouldFailFast) {
             // 1. No service provider 2. Service providers are disabled
             throw new RpcException(RpcException.FORBIDDEN_EXCEPTION, "No provider available from registry " +
-                getUrl().getAddress() + " for service " + getConsumerUrl().getServiceKey() + " on consumer " +
-                NetUtils.getLocalHost() + " use dubbo version " + Version.getVersion() +
+                getUrl().getAddress() + " for service " + getConsumerUrl().getParameter(PROVIDED_BY, getConsumerUrl().getServiceKey()) +
+                " on consumer " + NetUtils.getLocalHost() + " use dubbo version " + Version.getVersion() +
                 ", please check status of providers(disabled, not registered or in blacklist).");
         }
 
