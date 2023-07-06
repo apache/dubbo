@@ -23,6 +23,8 @@ class RequestTest {
 
     @Test
     void test() {
+        Request requestStart = new Request();
+
         Request request = new Request();
         request.setTwoWay(true);
         request.setBroken(true);
@@ -35,7 +37,7 @@ class RequestTest {
         Assertions.assertTrue(request.isEvent());
         Assertions.assertEquals(request.getVersion(), "1.0.0");
         Assertions.assertEquals(request.getData(), "data");
-        Assertions.assertTrue(request.getId() >= 0);
+        Assertions.assertEquals(requestStart.getId() + 1, request.getId());
 
         request.setHeartbeat(true);
         Assertions.assertTrue(request.isHeartbeat());
