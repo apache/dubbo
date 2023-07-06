@@ -21,6 +21,7 @@ import org.apache.dubbo.metrics.data.BaseStatComposite;
 import org.apache.dubbo.metrics.event.MetricsEventMulticaster;
 import org.apache.dubbo.metrics.event.TimeCounterEvent;
 import org.apache.dubbo.metrics.listener.AbstractMetricsListener;
+import org.apache.dubbo.metrics.model.MethodMetric;
 import org.apache.dubbo.metrics.model.MetricsCategory;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
@@ -69,8 +70,8 @@ public abstract class CombMetricsCollector<E extends TimeCounterEvent> extends A
     }
 
     @Override
-    public void increment(Invocation invocation, MetricsKeyWrapper wrapper, int size) {
-        this.stats.incrementMethodKey(wrapper, invocation, size);
+    public void increment(MethodMetric methodMetric, MetricsKeyWrapper wrapper, int size) {
+        this.stats.incrementMethodKey(wrapper, methodMetric, size);
     }
 
     @Override

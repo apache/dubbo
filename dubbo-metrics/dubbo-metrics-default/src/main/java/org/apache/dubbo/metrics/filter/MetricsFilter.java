@@ -20,6 +20,7 @@ import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.MetricsConfig;
+import org.apache.dubbo.metrics.event.MetricsDispatcher;
 import org.apache.dubbo.metrics.event.MetricsEventBus;
 import org.apache.dubbo.metrics.event.RequestEvent;
 import org.apache.dubbo.rpc.BaseFilter;
@@ -43,19 +44,24 @@ public class MetricsFilter implements Filter, BaseFilter.Listener, ScopeModelAwa
     private ApplicationModel applicationModel;
     private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(MetricsFilter.class);
     private boolean rpcMetricsEnable;
+    private String appName;
+    private MetricsDispatcher metricsDispatcher;
 
     @Override
     public void setApplicationModel(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
         this.rpcMetricsEnable = applicationModel.getApplicationConfigManager().getMetrics().map(MetricsConfig::getEnableRpc).orElse(true);
+        this.appName = applicationModel.getApplicationName();
+        this.metricsDispatcher = applicationModel.getBeanFactory().getBean(MetricsDispatcher.class);
     }
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         if (rpcMetricsEnable) {
             try {
-                RequestEvent requestEvent = RequestEvent.toRequestEvent(applicationModel, invocation);
-                MetricsEventBus.before(requestEvent, () -> invocation.put(METRIC_FILTER_EVENT, requestEvent));
+                RequestEvent requestEvent = RequestEvent.toRequestEvent(applicationModel, appName, metricsDispatcher, invocation);
+                MetricsEventBus.before(requestEvent);
+                invocation.put(METRIC_FILTER_EVENT, requestEvent);
             } catch (Throwable t) {
                 LOGGER.warn(INTERNAL_ERROR, "", "", "Error occurred when invoke.", t);
             }

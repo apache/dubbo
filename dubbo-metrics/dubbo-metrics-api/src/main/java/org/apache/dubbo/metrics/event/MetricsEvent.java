@@ -17,12 +17,13 @@
 
 package org.apache.dubbo.metrics.event;
 
+import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.metrics.exception.MetricsNeverHappenException;
 import org.apache.dubbo.metrics.model.MethodMetric;
 import org.apache.dubbo.metrics.model.key.TypeWrapper;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Map;
 
 /**
@@ -33,13 +34,15 @@ public abstract class MetricsEvent {
     /**
      * Metric object. (eg. {@link MethodMetric})
      */
-    protected transient ApplicationModel source;
+    protected transient final ApplicationModel source;
     private boolean available = true;
     private final TypeWrapper typeWrapper;
+    private final String appName;
+    private final MetricsDispatcher metricsDispatcher;
 
-    private final Map<String, Object> attachment = new HashMap<>(8);
+    private final Map<String, Object> attachment = new IdentityHashMap<>(8);
 
-    public MetricsEvent(ApplicationModel source, TypeWrapper typeWrapper) {
+    public MetricsEvent(ApplicationModel source, String appName, MetricsDispatcher metricsDispatcher, TypeWrapper typeWrapper) {
         this.typeWrapper = typeWrapper;
         if (source == null) {
             this.source = ApplicationModel.defaultModel();
@@ -47,6 +50,26 @@ public abstract class MetricsEvent {
             this.available = false;
         } else {
             this.source = source;
+        }
+        if (metricsDispatcher == null) {
+            if (this.source.isDestroyed()) {
+                this.metricsDispatcher = null;
+            } else {
+                ScopeBeanFactory beanFactory = this.source.getBeanFactory();
+                if (beanFactory.isDestroyed()) {
+                    this.metricsDispatcher = null;
+                } else {
+                    MetricsDispatcher dispatcher = beanFactory.getBean(MetricsDispatcher.class);
+                    this.metricsDispatcher = dispatcher;
+                }
+            }
+        } else {
+            this.metricsDispatcher = metricsDispatcher;
+        }
+        if (appName == null) {
+            this.appName = this.source.getApplicationName();
+        } else {
+            this.appName = appName;
         }
     }
 
@@ -79,8 +102,12 @@ public abstract class MetricsEvent {
         return source;
     }
 
+    public MetricsDispatcher getMetricsDispatcher() {
+        return metricsDispatcher;
+    }
+
     public String appName() {
-        return getSource().getApplicationName();
+        return appName;
     }
 
     public TypeWrapper getTypeWrapper() {

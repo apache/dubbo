@@ -39,6 +39,7 @@ import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.metadata.ServiceNameMapping;
 import org.apache.dubbo.metrics.event.MetricsEventBus;
+import org.apache.dubbo.metrics.registry.collector.RegistryMetricsCollector;
 import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.registry.client.metadata.MetadataUtils;
 import org.apache.dubbo.rpc.Exporter;
@@ -514,7 +515,8 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
         List<URL> registryURLs = ConfigValidationUtils.loadRegistries(this, true);
 
-        MetricsEventBus.post(RegistryEvent.toRsEvent(module.getApplicationModel(), getUniqueServiceName(), protocols.size() * registryURLs.size()),
+        MetricsEventBus.post(RegistryEvent.toRsEvent(getApplicationModel(), getApplicationModel().getBeanFactory().getBean(RegistryMetricsCollector.class),
+                getUniqueServiceName(), protocols.size() * registryURLs.size()),
             () -> {
                 for (ProtocolConfig protocolConfig : protocols) {
                     String pathKey = URL.buildKey(getContextPath(protocolConfig)

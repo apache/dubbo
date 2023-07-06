@@ -31,6 +31,8 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ServiceMetadata;
+import org.apache.dubbo.rpc.model.ServiceModel;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -52,7 +54,7 @@ import static org.apache.dubbo.common.constants.MetricsConstants.TAG_METHOD_KEY;
 import static org.apache.dubbo.common.utils.NetUtils.getLocalHost;
 import static org.apache.dubbo.common.utils.NetUtils.getLocalHostName;
 import static org.apache.dubbo.metrics.MetricsConstants.ATTACHMENT_KEY_SERVICE;
-import static org.apache.dubbo.metrics.MetricsConstants.INVOCATION;
+import static org.apache.dubbo.metrics.MetricsConstants.METHOD_METRICS;
 import static org.apache.dubbo.metrics.MetricsConstants.SELF_INCREMENT_SIZE;
 
 public class MetricsSupport {
@@ -145,6 +147,12 @@ public class MetricsSupport {
 
 
     public static String getInterfaceName(Invocation invocation) {
+        Optional<String> nameOptional = Optional.ofNullable(invocation.getServiceModel())
+            .map(ServiceModel::getServiceMetadata)
+            .map(ServiceMetadata::getServiceInterfaceName);
+        if (nameOptional.isPresent()) {
+            return nameOptional.get();
+        }
         String serviceUniqueName = invocation.getTargetServiceUniqueName();
         String interfaceAndVersion;
         String[] arr = serviceUniqueName.split(PATH_SEPARATOR);
@@ -158,6 +166,12 @@ public class MetricsSupport {
     }
 
     public static String getGroup(Invocation invocation) {
+        Optional<String> groupOptional = Optional.ofNullable(invocation.getServiceModel())
+            .map(ServiceModel::getServiceMetadata)
+            .map(ServiceMetadata::getDefaultGroup);
+        if (groupOptional.isPresent()) {
+            return groupOptional.get();
+        }
         String serviceUniqueName = invocation.getTargetServiceUniqueName();
         String group = null;
         String[] arr = serviceUniqueName.split(PATH_SEPARATOR);
@@ -168,6 +182,12 @@ public class MetricsSupport {
     }
 
     public static String getVersion(Invocation invocation) {
+        Optional<String> versionOptional = Optional.ofNullable(invocation.getServiceModel())
+            .map(ServiceModel::getServiceMetadata)
+            .map(ServiceMetadata::getVersion);
+        if (versionOptional.isPresent()) {
+            return versionOptional.get();
+        }
         String interfaceAndVersion;
         String[] arr = invocation.getTargetServiceUniqueName().split(PATH_SEPARATOR);
         if (arr.length == 2) {
@@ -198,22 +218,22 @@ public class MetricsSupport {
      * Incr method num
      */
     public static void increment(MetricsKey metricsKey, MetricsPlaceValue placeType, MethodMetricsCollector<TimeCounterEvent> collector, MetricsEvent event) {
-        collector.increment(event.getAttachmentValue(INVOCATION), new MetricsKeyWrapper(metricsKey, placeType), SELF_INCREMENT_SIZE);
+        collector.increment(event.getAttachmentValue(METHOD_METRICS), new MetricsKeyWrapper(metricsKey, placeType), SELF_INCREMENT_SIZE);
     }
 
     /**
      * Dec method num
      */
     public static void dec(MetricsKey metricsKey, MetricsPlaceValue placeType, MethodMetricsCollector<TimeCounterEvent> collector, MetricsEvent event) {
-        collector.increment(event.getAttachmentValue(INVOCATION), new MetricsKeyWrapper(metricsKey, placeType), -SELF_INCREMENT_SIZE);
+        collector.increment(event.getAttachmentValue(METHOD_METRICS), new MetricsKeyWrapper(metricsKey, placeType), -SELF_INCREMENT_SIZE);
     }
 
     /**
      * Incr method num&&rt
      */
     public static void incrAndAddRt(MetricsKey metricsKey, MetricsPlaceValue placeType, MethodMetricsCollector<TimeCounterEvent> collector, TimeCounterEvent event) {
-        collector.increment(event.getAttachmentValue(INVOCATION), new MetricsKeyWrapper(metricsKey, placeType), SELF_INCREMENT_SIZE);
-        collector.addRt(event.getAttachmentValue(INVOCATION), placeType.getType(), event.getTimePair().calc());
+        collector.increment(event.getAttachmentValue(METHOD_METRICS), new MetricsKeyWrapper(metricsKey, placeType), SELF_INCREMENT_SIZE);
+        collector.addRt(event.getAttachmentValue(METHOD_METRICS), placeType.getType(), event.getTimePair().calc());
     }
 
     /**
