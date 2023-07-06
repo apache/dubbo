@@ -82,7 +82,7 @@ public class RegistrySpecListener {
      * Every time an event is triggered, multiple serviceKey related to notify are increment
      */
     public static AbstractMetricsKeyListener onFinishOfNotify(MetricsKey metricsKey, MetricsPlaceValue placeType, CombMetricsCollector<?> collector) {
-        return AbstractMetricsKeyListener.onEvent(metricsKey,
+        return AbstractMetricsKeyListener.onFinish(metricsKey,
             event ->
             {
                 collector.addRt(event.appName(), placeType.getType(), event.getTimePair().calc());
@@ -97,7 +97,7 @@ public class RegistrySpecListener {
      * Every time an event is triggered, multiple fixed key related to directory are increment, which has nothing to do with the monitored key
      */
     public static AbstractMetricsKeyListener onPostOfDirectory(MetricsKey metricsKey, CombMetricsCollector<?> collector) {
-        return AbstractMetricsKeyListener.onFinish(metricsKey,
+        return AbstractMetricsKeyListener.onEvent(metricsKey,
             event -> {
                 Map<MetricsKey, Map<String, Integer>> summaryMap = event.getAttachmentValue(ATTACHMENT_DIRECTORY_MAP);
                 summaryMap.forEach((summaryKey, map) ->
