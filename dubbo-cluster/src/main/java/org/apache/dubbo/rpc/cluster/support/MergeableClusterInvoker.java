@@ -73,16 +73,7 @@ public class MergeableClusterInvoker<T> extends AbstractClusterInvoker<T> {
                     }
                 }
             }
-            Invoker<T>  invoker = invokers.iterator().next();
-			try {
-            	return invoker.invoke(invocation);
-            } catch (RpcException e) {
-                if (e.isNoInvokerAvailableAfterFilter()) {
-                    log.debug("No available provider for service" + getUrl().getServiceKey() + " on group " + invoker.getUrl().getParameter(GROUP_KEY) + ", will continue to try another group.");
-                } else {
-                    throw e;
-                }
-            }
+            return invokers.iterator().next().invoke(invocation);
         }
 
         Class<?> returnType;
@@ -97,15 +88,7 @@ public class MergeableClusterInvoker<T> extends AbstractClusterInvoker<T> {
         for (final Invoker<T> invoker : invokers) {
             RpcInvocation subInvocation = new RpcInvocation(invocation, invoker);
             subInvocation.setAttachment(ASYNC_KEY, "true");
-            try {
-            	results.put(invoker.getUrl().getServiceKey(), invoker.invoke(subInvocation));
-            } catch (RpcException e) {
-                if (e.isNoInvokerAvailableAfterFilter()) {
-                    log.debug("No available provider for service" + getUrl().getServiceKey() + " on group " + invoker.getUrl().getParameter(GROUP_KEY) + ", will continue to try another group.");
-                } else {
-                    throw e;
-                }
-            }
+            results.put(invoker.getUrl().getServiceKey(), invoker.invoke(subInvocation));
         }
 
         Object result = null;
