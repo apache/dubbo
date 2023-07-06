@@ -18,6 +18,7 @@ package org.apache.dubbo.remoting.exchange;
 
 import org.apache.dubbo.common.utils.StringUtils;
 
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static org.apache.dubbo.common.constants.CommonConstants.HEARTBEAT_EVENT;
@@ -27,7 +28,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.HEARTBEAT_EVENT;
  */
 public class Request {
 
-    private static final AtomicLong INVOKE_ID = new AtomicLong(0);
+    private static final AtomicLong INVOKE_ID = new AtomicLong(ThreadLocalRandom.current().nextLong());
 
     private final long mId;
 
