@@ -50,7 +50,7 @@ public class MetricsFilter implements ScopeModelAware {
     public void setApplicationModel(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
         this.rpcMetricsEnable = applicationModel.getApplicationConfigManager().getMetrics().map(MetricsConfig::getEnableRpc).orElse(true);
-        this.appName = applicationModel.getApplicationName();
+        this.appName = applicationModel.tryGetApplicationName();
         this.metricsDispatcher = applicationModel.getBeanFactory().getBean(MetricsDispatcher.class);
         this.defaultMetricsCollector = applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class);
     }
