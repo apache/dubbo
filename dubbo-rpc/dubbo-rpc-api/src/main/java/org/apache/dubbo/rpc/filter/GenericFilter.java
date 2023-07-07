@@ -263,11 +263,15 @@ public class GenericFilter implements Filter, Filter.Listener, ScopeModelAware {
                     cacheMap.put(parameterTypes[i], types[i]);
                 }
             }
-            MethodDescriptor methodDescriptor = serviceModel.getServiceModel().getMethod(methodName, types);
-            if (methodDescriptor == null) {
-                throw new NoSuchMethodException("No such method " + methodName + " in class " + clazz);
+            if (serviceModel != null) {
+                MethodDescriptor methodDescriptor = serviceModel.getServiceModel().getMethod(methodName, types);
+                if (methodDescriptor == null) {
+                    throw new NoSuchMethodException("No such method " + methodName + " in class " + clazz);
+                }
+                method = methodDescriptor.getMethod();
+            } else {
+                method = clazz.getMethod(methodName, types);
             }
-            method = methodDescriptor.getMethod();
         }
         return method;
     }
