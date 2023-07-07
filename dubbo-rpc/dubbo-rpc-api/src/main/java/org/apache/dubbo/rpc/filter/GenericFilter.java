@@ -48,6 +48,8 @@ import org.apache.dubbo.rpc.support.ProtocolUtils;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.IntStream;
@@ -70,6 +72,7 @@ public class GenericFilter implements Filter, Filter.Listener, ScopeModelAware {
     private ApplicationModel applicationModel;
 
     private final Map<Class<?>, Map<String, Map<String[], Method>>> methodCache = new ConcurrentHashMap<>();
+    private final Map<String, Class<?>> classCache = new ConcurrentHashMap<>();
 
     @Override
     public void setApplicationModel(ApplicationModel applicationModel) {
@@ -98,7 +101,7 @@ public class GenericFilter implements Filter, Filter.Listener, ScopeModelAware {
                 }
                 Method method = typesMap.get(types);
                 if (method == null) {
-                    typesMap.put(types, ReflectUtils.findMethodByMethodSignature(invoker.getInterface(), name, types));
+                    typesMap.put(types, findMethodByMethodSignature(invoker.getInterface(), name, types));
                     method = typesMap.get(types);
                 }
                 Class<?>[] params = method.getParameterTypes();
@@ -235,6 +238,40 @@ public class GenericFilter implements Filter, Filter.Listener, ScopeModelAware {
             generic = RpcContext.getClientAttachment().getAttachment(GENERIC_KEY);
         }
         return generic;
+    }
+
+    public Method findMethodByMethodSignature(Class<?> clazz, String methodName, String[] parameterTypes)
+        throws NoSuchMethodException, ClassNotFoundException {
+        Method method;
+        if (parameterTypes == null) {
+            List<Method> finded = new ArrayList<>();
+            for (Method m : clazz.getMethods()) {
+                if (m.getName().equals(methodName)) {
+                    finded.add(m);
+                }
+            }
+            if (finded.isEmpty()) {
+                throw new NoSuchMethodException("No such method " + methodName + " in class " + clazz);
+            }
+            if (finded.size() > 1) {
+                String msg = String.format("Not unique method for method name(%s) in class(%s), find %d methods.",
+                    methodName, clazz.getName(), finded.size());
+                throw new IllegalStateException(msg);
+            }
+            method = finded.get(0);
+        } else {
+            Class<?>[] types = new Class<?>[parameterTypes.length];
+            for (int i = 0; i < parameterTypes.length; i++) {
+                types[i] = classCache.get(parameterTypes[i]);
+                if (types[i] == null) {
+                    types[i] = ReflectUtils.name2class(parameterTypes[i]);
+                    classCache.put(parameterTypes[i], types[i]);
+                }
+            }
+            method = clazz.getMethod(methodName, types);
+
+        }
+        return method;
     }
 
     @Override
