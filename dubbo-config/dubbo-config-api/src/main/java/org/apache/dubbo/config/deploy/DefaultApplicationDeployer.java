@@ -25,12 +25,7 @@ import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.config.configcenter.DynamicConfigurationFactory;
 import org.apache.dubbo.common.config.configcenter.wrapper.CompositeDynamicConfiguration;
 import org.apache.dubbo.common.constants.LoggerCodeConstants;
-import org.apache.dubbo.common.deploy.AbstractDeployer;
-import org.apache.dubbo.common.deploy.ApplicationDeployListener;
-import org.apache.dubbo.common.deploy.ApplicationDeployer;
-import org.apache.dubbo.common.deploy.DeployListener;
-import org.apache.dubbo.common.deploy.DeployState;
-import org.apache.dubbo.common.deploy.ModuleDeployer;
+import org.apache.dubbo.common.deploy.*;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.lang.ShutdownHookCallbacks;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
@@ -41,12 +36,8 @@ import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.config.ApplicationConfig;
-import org.apache.dubbo.config.ConfigCenterConfig;
-import org.apache.dubbo.config.DubboShutdownHook;
-import org.apache.dubbo.config.MetadataReportConfig;
-import org.apache.dubbo.config.MetricsConfig;
-import org.apache.dubbo.config.RegistryConfig;
+//TODO: remove *
+import org.apache.dubbo.config.*;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.utils.CompositeReferenceCache;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
@@ -64,22 +55,12 @@ import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.RegistryFactory;
 import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
 import org.apache.dubbo.registry.support.RegistryManager;
-import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.ModuleModel;
-import org.apache.dubbo.rpc.model.ModuleServiceRepository;
-import org.apache.dubbo.rpc.model.ProviderModel;
-import org.apache.dubbo.rpc.model.ScopeModel;
-import org.apache.dubbo.rpc.model.ScopeModelUtil;
+//TODO: remove *
+import org.apache.dubbo.rpc.model.*;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+//TODO: remove *
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledFuture;
@@ -93,12 +74,7 @@ import static java.lang.String.format;
 import static org.apache.dubbo.common.config.ConfigurationUtils.parseProperties;
 import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_METRICS_COLLECTOR_EXCEPTION;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_EXECUTE_DESTROY;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_INIT_CONFIG_CENTER;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_START_MODEL;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_REFRESH_INSTANCE_ERROR;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_REGISTER_INSTANCE_ERROR;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.*;
 import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_DEFAULT;
 import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMETHEUS;
 import static org.apache.dubbo.common.utils.StringUtils.isEmpty;
@@ -123,21 +99,41 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     private final ReferenceCache referenceCache;
 
     private final FrameworkExecutorRepository frameworkExecutorRepository;
+
     private final ExecutorRepository executorRepository;
 
     private final AtomicBoolean hasPreparedApplicationInstance = new AtomicBoolean(false);
+
+    private final DubboShutdownHook dubboShutdownHook;
+
+    private final Object stateLock = new Object();
+
+    private final Object startLock = new Object();
+
+    private final Object destroyLock = new Object();
+
+    private final Object internalModuleLock = new Object();
+
+    //TODO: remove: in registry life manager
+    private final AtomicInteger instanceRefreshScheduleTimes = new AtomicInteger(0);
+
+    /**
+     * Indicate that how many threads are updating service
+     */
+    private final AtomicInteger serviceRefreshState = new AtomicInteger(0);
+
     private volatile boolean hasPreparedInternalModule = false;
 
     private ScheduledFuture<?> asyncMetadataFuture;
-    private volatile CompletableFuture<Boolean> startFuture;
-    private final DubboShutdownHook dubboShutdownHook;
 
+    private volatile CompletableFuture<Boolean> startFuture;
+
+    //TODO: remove: in metrics life manager
     private volatile MetricsServiceExporter metricsServiceExporter;
 
-    private final Object stateLock = new Object();
-    private final Object startLock = new Object();
-    private final Object destroyLock = new Object();
-    private final Object internalModuleLock = new Object();
+    private volatile boolean registered;
+
+    private final PackageLifeManagerLoader packageLifeManagerLoader;
 
     public DefaultApplicationDeployer(ApplicationModel applicationModel) {
         super(applicationModel);
@@ -156,6 +152,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         for (ApplicationDeployListener listener : deployListeners) {
             this.addDeployListener(listener);
         }
+        packageLifeManagerLoader = new PackageLifeManagerLoader(this);
     }
 
     public static ApplicationDeployer get(ScopeModel moduleOrApplicationModel) {
@@ -167,12 +164,23 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         return applicationDeployer;
     }
 
+    public static boolean isSupportPrometheus() {
+        return isClassPresent("io.micrometer.prometheus.PrometheusConfig")
+            && isClassPresent("io.prometheus.client.exporter.BasicAuthHttpConnectionFactory")
+            && isClassPresent("io.prometheus.client.exporter.HttpConnectionFactory")
+            && isClassPresent("io.prometheus.client.exporter.PushGateway");
+    }
+
+    private static boolean isClassPresent(String className) {
+        return ClassUtils.isPresent(className, DefaultApplicationDeployer.class.getClassLoader());
+    }
+
     @Override
     public ApplicationModel getApplicationModel() {
         return applicationModel;
     }
 
-    private <T> ExtensionLoader<T> getExtensionLoader(Class<T> type) {
+    public <T> ExtensionLoader<T> getExtensionLoader(Class<T> type) {
         return applicationModel.getExtensionLoader(type);
     }
 
@@ -184,7 +192,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
      * Close registration of instance for pure Consumer process by setting registerConsumer to 'false'
      * by default is true.
      */
-    private boolean isRegisterConsumerInstance() {
+    public boolean isRegisterConsumerInstance() {
         Boolean registerConsumer = getApplication().getRegisterConsumer();
         if (registerConsumer == null) {
             return true;
@@ -212,22 +220,23 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             }
             onInitialize();
 
-            // register shutdown hook
-            registerShutdownHook();
+            packageLifeManagerLoader.packageRunInit();
 
-            startConfigCenter();
+//            // register shutdown hook
+//            registerShutdownHook();
+//            //Config
+//            startConfigCenter();
 
             loadApplicationConfigs();
 
             initModuleDeployers();
 
-
-            initMetricsReporter();
-
-            initMetricsService();
-
-            // @since 2.7.8
-            startMetadataCenter();
+//            initMetricsReporter();
+//
+//            initMetricsService();
+//
+//            // @since 2.7.8
+//            startMetadataCenter();
 
             initialized = true;
 
@@ -413,19 +422,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         return isClassPresent("io.micrometer.core.instrument.MeterRegistry");
     }
 
-    public static boolean isSupportPrometheus() {
-        return isClassPresent("io.micrometer.prometheus.PrometheusConfig")
-            && isClassPresent("io.prometheus.client.exporter.BasicAuthHttpConnectionFactory")
-            && isClassPresent("io.prometheus.client.exporter.HttpConnectionFactory")
-            && isClassPresent("io.prometheus.client.exporter.PushGateway");
-    }
-
-
-    private static boolean isClassPresent(String className) {
-        return ClassUtils.isPresent(className, DefaultApplicationDeployer.class.getClassLoader());
-    }
-
-
     private boolean isUsedRegistryAsConfigCenter(RegistryConfig registryConfig) {
         return isUsedRegistryAsCenter(registryConfig, registryConfig::getUseAsConfigCenter, "config",
             DynamicConfigurationFactory.class);
@@ -530,9 +526,9 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
      * @return
      * @since 2.7.8
      */
-    private boolean isUsedRegistryAsCenter(RegistryConfig registryConfig, Supplier<Boolean> usedRegistryAsCenter,
-                                           String centerType,
-                                           Class<?> extensionClass) {
+    public boolean isUsedRegistryAsCenter(RegistryConfig registryConfig, Supplier<Boolean> usedRegistryAsCenter,
+                                          String centerType,
+                                          Class<?> extensionClass) {
         final boolean supported;
 
         Boolean configuredValue = usedRegistryAsCenter.get();
@@ -604,7 +600,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         return metadataReportConfig;
     }
 
-    private String getRegistryCompatibleAddress(RegistryConfig registryConfig) {
+    public String getRegistryCompatibleAddress(RegistryConfig registryConfig) {
         String registryAddress = registryConfig.getAddress();
         String[] addresses = REGISTRY_SPLIT_PATTERN.split(registryAddress);
         if (ArrayUtils.isEmpty(addresses)) {
@@ -737,18 +733,21 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             return;
         }
 
-        // export MetricsService
+        //TODO: metrics
         exportMetricsService();
 
         if (isRegisterConsumerInstance()) {
+            //TODO: metadata T
             exportMetadataService();
             if (hasPreparedApplicationInstance.compareAndSet(false, true)) {
                 // register the local ServiceInstance if required
+                //TODO: registry T
                 registerServiceInstance();
             }
         }
     }
 
+    @Override
     public void prepareInternalModule() {
         if (hasPreparedInternalModule) {
             return;
@@ -887,18 +886,10 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         return factory.getDynamicConfiguration(connectionURL);
     }
 
-    private volatile boolean registered;
-
-    private final AtomicInteger instanceRefreshScheduleTimes = new AtomicInteger(0);
-
-    /**
-     * Indicate that how many threads are updating service
-     */
-    private final AtomicInteger serviceRefreshState = new AtomicInteger(0);
-
     private void registerServiceInstance() {
         try {
             registered = true;
+            //通知 Metrics
             MetricsEventBus.post(RegistryEvent.toRegisterEvent(applicationModel),
                 () -> {
                     ServiceInstanceMetadataUtils.registerMetadataAndInstance(applicationModel);
@@ -963,7 +954,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         serviceRefreshState.decrementAndGet();
     }
 
-    private void unregisterServiceInstance() {
+    private void unregisterMetadataServiceInstance() {
         if (registered) {
             ServiceInstanceMetadataUtils.unregisterMetadataAndInstance(applicationModel);
         }
@@ -982,13 +973,19 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             }
             onStopping();
 
+            //TODO: lifeManagerLoader().preDestroy()
+
+            //Registry
             offline();
+            //Registry
+            unregisterMetadataServiceInstance();
 
-            unregisterServiceInstance();
-
+            //Metrics
             unexportMetricsService();
 
             unRegisterShutdownHook();
+
+            //Metadata
             if (asyncMetadataFuture != null) {
                 asyncMetadataFuture.cancel(true);
             }
@@ -1031,7 +1028,12 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 return;
             }
             try {
+                //TODO: lifeManager.postDestroy()
+
+                //Registry
                 destroyRegistries();
+
+                //Metadata
                 destroyMetadataReports();
 
                 executeShutdownCallbacks();
@@ -1070,7 +1072,9 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     @Override
     public void checkState(ModuleModel moduleModel, DeployState moduleState) {
         synchronized (stateLock) {
+            //TODO : lifeManager.moduleChanged(moduleModule,moduleState)
             if (!moduleModel.isInternal() && moduleState == DeployState.STARTED) {
+                //TODO: lifecycle:moduleChanged
                 prepareApplicationInstance();
             }
             DeployState newState = calculateState();
@@ -1308,9 +1312,48 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         }
     }
 
-    private ApplicationConfig getApplication() {
+    public ApplicationConfig getApplication() {
         return configManager.getApplicationOrElseThrow();
     }
 
 
+    public ConfigManager getConfigManager() {
+        return configManager;
+    }
+
+    public Environment getEnvironment() {
+        return environment;
+    }
+
+    public AtomicBoolean getHasPreparedApplicationInstance() {
+        return hasPreparedApplicationInstance;
+    }
+
+    public boolean registered() {
+        return registered;
+    }
+
+    public void setRegistered(boolean registered) {
+        this.registered = registered;
+    }
+
+    public ScheduledFuture<?> getAsyncMetadataFuture() {
+        return this.asyncMetadataFuture;
+    }
+
+    public void setAsyncMetadataFuture(ScheduledFuture<?> scheduledFuture){
+        this.asyncMetadataFuture = scheduledFuture;
+    }
+
+    public FrameworkExecutorRepository getFrameworkExecutorRepository() {
+        return frameworkExecutorRepository;
+    }
+
+    public AtomicInteger getServiceRefreshState(){
+        return serviceRefreshState;
+    }
+
+    public List<DeployListener<ApplicationModel>> getListeners(){
+        return listeners;
+    }
 }

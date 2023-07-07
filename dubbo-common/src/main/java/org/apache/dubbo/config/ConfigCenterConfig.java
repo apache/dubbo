@@ -251,13 +251,11 @@ public class ConfigCenterConfig extends AbstractConfig {
         this.check = check;
     }
 
-    @Deprecated
     @Parameter(key = CONFIG_ENABLE_KEY)
     public Boolean isHighestPriority() {
         return highestPriority;
     }
 
-    @Deprecated
     public void setHighestPriority(Boolean highestPriority) {
         this.highestPriority = highestPriority;
     }
