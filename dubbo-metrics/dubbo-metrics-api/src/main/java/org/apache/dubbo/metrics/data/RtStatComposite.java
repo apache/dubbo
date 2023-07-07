@@ -114,28 +114,22 @@ public class RtStatComposite extends AbstractMetricsExport {
     }
 
     public void calcServiceKeyRt(Invocation invocation, String registryOpType, Long responseTime) {
-        Map<String, Object> attributeMap = invocation.getServiceModel().getServiceMetadata().getAttributeMap();
-
-        Map<String, List<Action>> cache = (Map<String, List<Action>>) attributeMap.get("ServiceKeyRt");
-        if (cache == null) {
-            attributeMap.putIfAbsent("ServiceKeyRt", new ConcurrentHashMap<>(32));
-            cache = (Map<String, List<Action>>) attributeMap.get("ServiceKeyRt");
-        }
-        List<Action> actions = cache.get(registryOpType);
-        if (actions == null) {
-            actions = new LinkedList<>();
-
-            ServiceKeyMetric key = new ServiceKeyMetric(getApplicationModel(), invocation.getTargetServiceUniqueName());
-            for (LongContainer container : rtStats.get(registryOpType)) {
-                Number current = (Number) container.get(key);
-                if (current == null) {
-                    container.putIfAbsent(key, container.getInitFunc().apply(key));
-                    current = (Number) container.get(key);
-                }
-                actions.add(new Action(container.getConsumerFunc(), current));
+        List<Action> actions;
+        if (invocation.getServiceModel() != null && invocation.getServiceModel().getServiceKey() != null) {
+            Map<String, Object> attributeMap = invocation.getServiceModel().getServiceMetadata().getAttributeMap();
+            Map<String, List<Action>> cache = (Map<String, List<Action>>) attributeMap.get("ServiceKeyRt");
+            if (cache == null) {
+                attributeMap.putIfAbsent("ServiceKeyRt", new ConcurrentHashMap<>(32));
+                cache = (Map<String, List<Action>>) attributeMap.get("ServiceKeyRt");
             }
-            cache.putIfAbsent(registryOpType, actions);
             actions = cache.get(registryOpType);
+            if (actions == null) {
+                actions = calServiceRtActions(invocation, registryOpType);
+                cache.putIfAbsent(registryOpType, actions);
+                actions = cache.get(registryOpType);
+            }
+        } else {
+            actions = calServiceRtActions(invocation, registryOpType);
         }
 
         for (Action action : actions) {
@@ -143,48 +137,60 @@ public class RtStatComposite extends AbstractMetricsExport {
         }
     }
 
-    private static class Action {
-        private final BiConsumer<Long, Number> consumerFunc;
-        private final Number initValue;
+    private List<Action> calServiceRtActions(Invocation invocation, String registryOpType) {
+        List<Action> actions;
+        actions = new LinkedList<>();
 
-        public Action(BiConsumer<Long, Number> consumerFunc, Number initValue) {
-            this.consumerFunc = consumerFunc;
-            this.initValue = initValue;
+        ServiceKeyMetric key = new ServiceKeyMetric(getApplicationModel(), invocation.getTargetServiceUniqueName());
+        for (LongContainer container : rtStats.get(registryOpType)) {
+            Number current = (Number) container.get(key);
+            if (current == null) {
+                container.putIfAbsent(key, container.getInitFunc().apply(key));
+                current = (Number) container.get(key);
+            }
+            actions.add(new Action(container.getConsumerFunc(), current));
         }
-
-        public void run(Long responseTime) {
-            consumerFunc.accept(responseTime, initValue);
-        }
+        return actions;
     }
 
     public void calcMethodKeyRt(Invocation invocation, String registryOpType, Long responseTime) {
-        Map<String, Object> attributeMap = invocation.getServiceModel().getServiceMetadata().getAttributeMap();
-        Map<String, List<Action>> cache = (Map<String, List<Action>>) attributeMap.get("MethodKeyRt");
-        if (cache == null) {
-            attributeMap.putIfAbsent("MethodKeyRt", new ConcurrentHashMap<>(32));
-            cache = (Map<String, List<Action>>) attributeMap.get("MethodKeyRt");
-        }
+        List<Action> actions;
 
-        List<Action> actions = cache.get(registryOpType);
-        if (actions == null) {
-            actions = new LinkedList<>();
-            for (LongContainer container : rtStats.get(registryOpType)) {
-                MethodMetric key = new MethodMetric(getApplicationModel(), invocation);
-                Number current = (Number) container.get(key);
-                if (current == null) {
-                    container.putIfAbsent(key, container.getInitFunc().apply(key));
-                    current = (Number) container.get(key);
-                }
-                actions.add(new Action(container.getConsumerFunc(), current));
+        if (invocation.getServiceModel() != null && invocation.getServiceModel().getServiceMetadata() != null) {
+            Map<String, Object> attributeMap = invocation.getServiceModel().getServiceMetadata().getAttributeMap();
+            Map<String, List<Action>> cache = (Map<String, List<Action>>) attributeMap.get("MethodKeyRt");
+            if (cache == null) {
+                attributeMap.putIfAbsent("MethodKeyRt", new ConcurrentHashMap<>(32));
+                cache = (Map<String, List<Action>>) attributeMap.get("MethodKeyRt");
             }
-            cache.putIfAbsent(registryOpType, actions);
             actions = cache.get(registryOpType);
+            if (actions == null) {
+                actions = calMethodRtActions(invocation, registryOpType);
+                cache.putIfAbsent(registryOpType, actions);
+                actions = cache.get(registryOpType);
+            }
+        } else {
+            actions = calMethodRtActions(invocation, registryOpType);
         }
-
 
         for (Action action : actions) {
             action.run(responseTime);
         }
+    }
+
+    private List<Action> calMethodRtActions(Invocation invocation, String registryOpType) {
+        List<Action> actions;
+        actions = new LinkedList<>();
+        for (LongContainer container : rtStats.get(registryOpType)) {
+            MethodMetric key = new MethodMetric(getApplicationModel(), invocation);
+            Number current = (Number) container.get(key);
+            if (current == null) {
+                container.putIfAbsent(key, container.getInitFunc().apply(key));
+                current = (Number) container.get(key);
+            }
+            actions.add(new Action(container.getConsumerFunc(), current));
+        }
+        return actions;
     }
 
     public List<MetricSample> export(MetricsCategory category) {
@@ -210,4 +216,18 @@ public class RtStatComposite extends AbstractMetricsExport {
         return rtStats.values().stream().flatMap(List::stream).collect(Collectors.toList());
     }
 
+
+    private static class Action {
+        private final BiConsumer<Long, Number> consumerFunc;
+        private final Number initValue;
+
+        public Action(BiConsumer<Long, Number> consumerFunc, Number initValue) {
+            this.consumerFunc = consumerFunc;
+            this.initValue = initValue;
+        }
+
+        public void run(Long responseTime) {
+            consumerFunc.accept(responseTime, initValue);
+        }
+    }
 }
