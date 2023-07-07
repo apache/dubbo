@@ -140,7 +140,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
                 return null;
             }
         );
-        if (moduleModel.getModelEnvironment().getConfiguration().convert(Boolean.class, org.apache.dubbo.registry.Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
+        if (moduleModel.modelEnvironment().getConfiguration().convert(Boolean.class, org.apache.dubbo.registry.Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
             consumerConfigurationListener.addNotifyListener(this);
             referenceConfigurationListener = new ReferenceConfigurationListener(moduleModel, this, url);
         }
@@ -154,7 +154,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
     @Override
     public void unSubscribe(URL url) {
         super.unSubscribe(url);
-        if (moduleModel.getModelEnvironment().getConfiguration().convert(Boolean.class, org.apache.dubbo.registry.Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
+        if (moduleModel.modelEnvironment().getConfiguration().convert(Boolean.class, org.apache.dubbo.registry.Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
             consumerConfigurationListener.removeNotifyListener(this);
             if (referenceConfigurationListener != null) {
                 referenceConfigurationListener.stop();
@@ -165,7 +165,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
     @Override
     public void destroy() {
         super.destroy();
-        if (moduleModel.getModelEnvironment().getConfiguration().convert(Boolean.class, org.apache.dubbo.registry.Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
+        if (moduleModel.modelEnvironment().getConfiguration().convert(Boolean.class, org.apache.dubbo.registry.Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
             consumerConfigurationListener.removeNotifyListener(this);
             if (referenceConfigurationListener != null) {
                 referenceConfigurationListener.stop();
@@ -185,7 +185,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
             .filter(this::isNotCompatibleFor26x)
             .collect(Collectors.groupingBy(this::judgeCategory));
 
-        if (moduleModel.getModelEnvironment().getConfiguration().convert(Boolean.class, ENABLE_26X_CONFIGURATION_LISTEN, true)) {
+        if (moduleModel.modelEnvironment().getConfiguration().convert(Boolean.class, ENABLE_26X_CONFIGURATION_LISTEN, true)) {
             List<URL> configuratorURLs = categoryUrls.getOrDefault(CONFIGURATORS_CATEGORY, Collections.emptyList());
             this.configurators = Configurator.toConfigurators(configuratorURLs).orElse(this.configurators);
 
@@ -731,4 +731,10 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
         }
     }
 
+    @Override
+    public String toString() {
+        return "RegistryDirectory(" +
+            "registry: " + getUrl().getAddress() +
+            ")-" + super.toString();
+    }
 }

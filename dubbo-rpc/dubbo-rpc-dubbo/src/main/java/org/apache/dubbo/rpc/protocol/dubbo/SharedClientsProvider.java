@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.dubbo;
 
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -116,7 +117,7 @@ public class SharedClientsProvider implements ClientsProvider {
                 logger.info("Close dubbo connect: " + client.getLocalAddress() + "-->" + client.getRemoteAddress());
             }
 
-            client.close(client.getShutdownWaitTime());
+            client.close(ConfigurationUtils.reCalShutdownTime(client.getShutdownWaitTime()));
 
             // TODO
             /*

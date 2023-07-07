@@ -31,6 +31,7 @@ import org.apache.dubbo.common.utils.FieldUtils;
 import org.apache.dubbo.common.utils.MethodUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.common.utils.ToStringUtils;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.context.ConfigMode;
 import org.apache.dubbo.config.support.Nested;
@@ -424,9 +425,6 @@ public abstract class AbstractConfig implements Serializable {
     }
 
     protected void checkScopeModel(ScopeModel scopeModel) {
-        if (scopeModel == null) {
-            throw new IllegalArgumentException("scopeModel cannot be null");
-        }
         if (!(scopeModel instanceof ApplicationModel)) {
             throw new IllegalArgumentException("Invalid scope model, expect to be a ApplicationModel but got: " + scopeModel);
         }
@@ -695,7 +693,7 @@ public abstract class AbstractConfig implements Serializable {
     }
 
     protected void refreshWithPrefixes(List<String> prefixes, ConfigMode configMode) {
-        Environment environment = getScopeModel().getModelEnvironment();
+        Environment environment = getScopeModel().modelEnvironment();
         List<Map<String, String>> configurationMaps = environment.getConfigurationMaps();
 
         // Search props starts with PREFIX in order
@@ -967,7 +965,7 @@ public abstract class AbstractConfig implements Serializable {
                         buf.append(' ');
                         buf.append(key);
                         buf.append("=\"");
-                        buf.append(key.equals("password") ? "******" : value);
+                        buf.append(key.equals("password") ? "******" : ToStringUtils.toString(value));
                         buf.append('\"');
                     }
                 } catch (Exception e) {

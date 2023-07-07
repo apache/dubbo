@@ -54,7 +54,7 @@ public class DefaultGovernanceRuleRepositoryImpl implements GovernanceRuleReposi
     }
 
     private DynamicConfiguration getDynamicConfiguration() {
-        return moduleModel.getModelEnvironment().getDynamicConfiguration().orElse(null);
+        return moduleModel.modelEnvironment().getDynamicConfiguration().orElse(null);
     }
 
 }

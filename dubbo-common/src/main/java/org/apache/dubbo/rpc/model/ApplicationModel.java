@@ -201,7 +201,7 @@ public class ApplicationModel extends ScopeModel {
     }
 
     @Override
-    public Environment getModelEnvironment() {
+    public Environment modelEnvironment() {
         if (environment == null) {
             environment = (Environment) this.getExtensionLoader(ApplicationExt.class)
                 .getExtension(Environment.NAME);
@@ -390,11 +390,11 @@ public class ApplicationModel extends ScopeModel {
     }
 
     /**
-     * @deprecated Replace to {@link ScopeModel#getModelEnvironment()}
+     * @deprecated Replace to {@link ScopeModel#modelEnvironment()}
      */
     @Deprecated
     public static Environment getEnvironment() {
-        return defaultModel().getModelEnvironment();
+        return defaultModel().modelEnvironment();
     }
 
     /**

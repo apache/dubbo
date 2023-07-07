@@ -114,14 +114,29 @@ public class DubboCodec extends ExchangeCodec {
                         }
                     } else {
                         DecodeableRpcResult result;
+                        Invocation inv = (Invocation) getRequestData(channel, res, id);
                         if (channel.getUrl().getParameter(DECODE_IN_IO_THREAD_KEY, DEFAULT_DECODE_IN_IO_THREAD)) {
-                            result = new DecodeableRpcResult(channel, res, is,
-                                (Invocation) getRequestData(channel, res, id), proto);
+                            if (customByteAccessor != null) {
+                                result = customByteAccessor.getRpcResult(channel, res,
+                                    new UnsafeByteArrayInputStream(readMessageData(is)),
+                                    inv, proto);
+                            } else {
+                                result = new DecodeableRpcResult(channel, res,
+                                    new UnsafeByteArrayInputStream(readMessageData(is)),
+                                    inv, proto);
+                            }
                             result.decode();
                         } else {
-                            result = new DecodeableRpcResult(channel, res,
-                                new UnsafeByteArrayInputStream(readMessageData(is)),
-                                (Invocation) getRequestData(channel, res, id), proto);
+                            if (customByteAccessor != null) {
+                                result = customByteAccessor.getRpcResult(channel, res,
+                                    new UnsafeByteArrayInputStream(readMessageData(is)),
+                                    inv, proto);
+                            } else {
+                                result = new DecodeableRpcResult(channel, res,
+                                    new UnsafeByteArrayInputStream(readMessageData(is)),
+                                    inv, proto);
+                            }
+
                         }
                         data = result;
                     }

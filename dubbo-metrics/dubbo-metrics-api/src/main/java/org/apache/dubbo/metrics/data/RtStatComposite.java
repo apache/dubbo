@@ -30,6 +30,7 @@ import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.metrics.report.AbstractMetricsExport;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -94,7 +95,7 @@ public class RtStatComposite extends AbstractMetricsExport {
 
     public void calcMethodKeyRt(Invocation invocation, String registryOpType, Long responseTime) {
         for (LongContainer container : rtStats.stream().filter(longContainer -> longContainer.specifyType(registryOpType)).collect(Collectors.toList())) {
-            Number current = (Number) ConcurrentHashMapUtils.computeIfAbsent(container, invocation.getTargetServiceUniqueName() + "_" + invocation.getMethodName(), container.getInitFunc());
+            Number current = (Number) ConcurrentHashMapUtils.computeIfAbsent(container, invocation.getTargetServiceUniqueName() + "_" + RpcUtils.getMethodName(invocation), container.getInitFunc());
             container.getConsumerFunc().accept(responseTime, current);
         }
     }

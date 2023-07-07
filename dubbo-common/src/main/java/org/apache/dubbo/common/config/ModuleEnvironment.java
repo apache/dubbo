@@ -54,7 +54,7 @@ public class ModuleEnvironment extends Environment implements ModuleExt {
     public ModuleEnvironment(ModuleModel moduleModel) {
         super(moduleModel);
         this.moduleModel = moduleModel;
-        this.applicationDelegate = moduleModel.getApplicationModel().getModelEnvironment();
+        this.applicationDelegate = moduleModel.getApplicationModel().modelEnvironment();
     }
 
     @Override

@@ -367,7 +367,7 @@ public class FrameworkModel extends ScopeModel {
     }
 
     @Override
-    public Environment getModelEnvironment() {
+    public Environment modelEnvironment() {
         throw new UnsupportedOperationException("Environment is inaccessible for FrameworkModel");
     }
 

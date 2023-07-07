@@ -74,6 +74,12 @@
 
         <dependency>
             <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-tracing</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-monitor-api</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
@@ -222,6 +228,20 @@
         <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-filter-validation</artifactId>
+            <version>${project.parent.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-plugin-router-condition</artifactId>
+            <version>${project.parent.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-plugin-router-tag</artifactId>
             <version>${project.parent.version}</version>
             <scope>test</scope>
         </dependency>

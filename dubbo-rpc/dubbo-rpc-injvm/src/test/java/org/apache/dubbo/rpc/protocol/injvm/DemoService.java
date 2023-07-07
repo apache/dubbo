@@ -40,4 +40,8 @@ public interface DemoService {
     Type enumlength(Type... types);
 
     String getAsyncResult();
+
+    String getApplication();
+
+    String getRemoteAddress();
 }

@@ -97,7 +97,7 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
 
     private void init() {
         this.ruleKey = moduleModel.getApplicationModel().getApplicationName() + ".migration";
-        this.configuration = moduleModel.getModelEnvironment().getDynamicConfiguration().orElse(null);
+        this.configuration = moduleModel.modelEnvironment().getDynamicConfiguration().orElse(null);
 
         if (this.configuration != null) {
             logger.info("Listening for migration rules on dataId " + ruleKey + ", group " + DUBBO_SERVICEDISCOVERY_MIGRATION);
@@ -115,7 +115,7 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
             setRawRule(INIT);
         }
 
-        String localRawRule = moduleModel.getModelEnvironment().getLocalMigrationRule();
+        String localRawRule = moduleModel.modelEnvironment().getLocalMigrationRule();
         if (!StringUtils.isEmpty(localRawRule)) {
             localRuleMigrationFuture = moduleModel.getApplicationModel().getFrameworkModel().getBeanFactory()
                 .getBean(FrameworkExecutorRepository.class).getSharedScheduledExecutor()

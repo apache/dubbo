@@ -113,7 +113,7 @@ public abstract class AbstractRetryTask implements TimerTask {
             // other thread cancel this timeout or stop the timer.
             return;
         }
-        if (times > retryTimes) {
+        if (retryTimes > 0 && times > retryTimes) {
             // 1-13 - failed to execute the retrying task.
 
             logger.warn(

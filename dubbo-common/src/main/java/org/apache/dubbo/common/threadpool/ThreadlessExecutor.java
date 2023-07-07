@@ -26,6 +26,7 @@ import java.util.concurrent.AbstractExecutorService;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.LockSupport;
 
 /**
@@ -46,7 +47,7 @@ public class ThreadlessExecutor extends AbstractExecutorService {
     /**
      * Wait thread. It must be visible to other threads and does not need to be thread-safe
      */
-    private volatile Object waiter;
+    private final AtomicReference<Object> waiter = new AtomicReference<>();
 
     /**
      * Waits until there is a task, executes the task and all queued tasks (if there're any). The task is either a normal
@@ -56,22 +57,25 @@ public class ThreadlessExecutor extends AbstractExecutorService {
         throwIfInterrupted();
         Runnable runnable = queue.poll();
         if (runnable == null) {
-            waiter = Thread.currentThread();
-            try {
-                while ((runnable = queue.poll()) == null) {
-                    long restTime = deadline - System.nanoTime();
-                    if (restTime <= 0) {
-                        return;
+            if (waiter.compareAndSet(null, Thread.currentThread())) {
+                try {
+                    while ((runnable = queue.poll()) == null && waiter.get() == Thread.currentThread()) {
+                        long restTime = deadline - System.nanoTime();
+                        if (restTime <= 0) {
+                            return;
+                        }
+                        LockSupport.parkNanos(this, restTime);
+                        throwIfInterrupted();
                     }
-                    LockSupport.parkNanos(this, restTime);
-                    throwIfInterrupted();
+                } finally {
+                    waiter.compareAndSet(Thread.currentThread(), null);
                 }
-            } finally {
-                waiter = null;
             }
         }
         do {
-            runnable.run();
+            if (runnable != null) {
+                runnable.run();
+            }
         } while ((runnable = queue.poll()) != null);
     }
 
@@ -91,8 +95,8 @@ public class ThreadlessExecutor extends AbstractExecutorService {
     public void execute(Runnable runnable) {
         RunnableWrapper run = new RunnableWrapper(runnable);
         queue.add(run);
-        if (waiter != SHUTDOWN) {
-            LockSupport.unpark((Thread) waiter);
+        if (waiter.get() != SHUTDOWN) {
+            LockSupport.unpark((Thread) waiter.get());
         } else if (queue.remove(run)) {
             throw new RejectedExecutionException();
         }
@@ -109,7 +113,10 @@ public class ThreadlessExecutor extends AbstractExecutorService {
 
     @Override
     public List<Runnable> shutdownNow() {
-        waiter = SHUTDOWN;
+        if (waiter.get() != SHUTDOWN) {
+            LockSupport.unpark((Thread) waiter.get());
+        }
+        waiter.set(SHUTDOWN);
         Runnable runnable;
         while ((runnable = queue.poll()) != null) {
             runnable.run();
@@ -119,7 +126,7 @@ public class ThreadlessExecutor extends AbstractExecutorService {
 
     @Override
     public boolean isShutdown() {
-        return waiter == SHUTDOWN;
+        return waiter.get() == SHUTDOWN;
     }
 
     @Override
