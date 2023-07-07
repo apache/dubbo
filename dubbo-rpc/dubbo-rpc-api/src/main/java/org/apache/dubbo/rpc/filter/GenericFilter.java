@@ -29,6 +29,7 @@ import org.apache.dubbo.common.json.GsonUtils;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.serialize.Serialization;
+import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.PojoUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -40,7 +41,9 @@ import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
+import org.apache.dubbo.rpc.model.ServiceModel;
 import org.apache.dubbo.rpc.service.GenericException;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
@@ -71,8 +74,7 @@ public class GenericFilter implements Filter, Filter.Listener, ScopeModelAware {
 
     private ApplicationModel applicationModel;
 
-    private final Map<Class<?>, Map<String, Map<String[], Method>>> methodCache = new ConcurrentHashMap<>();
-    private final Map<String, Class<?>> classCache = new ConcurrentHashMap<>();
+    private final Map<ClassLoader, Map<String, Class<?>>> classCache = new ConcurrentHashMap<>();
 
     @Override
     public void setApplicationModel(ApplicationModel applicationModel) {
@@ -89,21 +91,7 @@ public class GenericFilter implements Filter, Filter.Listener, ScopeModelAware {
             String[] types = (String[]) inv.getArguments()[1];
             Object[] args = (Object[]) inv.getArguments()[2];
             try {
-                Map<String, Map<String[], Method>> nameMap = methodCache.get(invoker.getInterface());
-                if (nameMap == null) {
-                    methodCache.putIfAbsent(invoker.getInterface(), new ConcurrentHashMap<>());
-                    nameMap = methodCache.get(invoker.getInterface());
-                }
-                Map<String[], Method> typesMap = nameMap.get(name);
-                if (typesMap == null) {
-                    nameMap.putIfAbsent(name, new ConcurrentHashMap<>());
-                    typesMap = nameMap.get(name);
-                }
-                Method method = typesMap.get(types);
-                if (method == null) {
-                    typesMap.put(types, findMethodByMethodSignature(invoker.getInterface(), name, types));
-                    method = typesMap.get(types);
-                }
+                Method method = findMethodByMethodSignature(invoker.getInterface(), name, types, inv.getServiceModel());
                 Class<?>[] params = method.getParameterTypes();
                 if (args == null) {
                     args = new Object[params.length];
@@ -240,7 +228,7 @@ public class GenericFilter implements Filter, Filter.Listener, ScopeModelAware {
         return generic;
     }
 
-    public Method findMethodByMethodSignature(Class<?> clazz, String methodName, String[] parameterTypes)
+    public Method findMethodByMethodSignature(Class<?> clazz, String methodName, String[] parameterTypes, ServiceModel serviceModel)
         throws NoSuchMethodException, ClassNotFoundException {
         Method method;
         if (parameterTypes == null) {
@@ -262,14 +250,24 @@ public class GenericFilter implements Filter, Filter.Listener, ScopeModelAware {
         } else {
             Class<?>[] types = new Class<?>[parameterTypes.length];
             for (int i = 0; i < parameterTypes.length; i++) {
-                types[i] = classCache.get(parameterTypes[i]);
+                ClassLoader classLoader = ClassUtils.getClassLoader();
+                Map<String, Class<?>> cacheMap = classCache.get(classLoader);
+                if (cacheMap == null) {
+                    cacheMap = new ConcurrentHashMap<>();
+                    classCache.putIfAbsent(classLoader, cacheMap);
+                    cacheMap = classCache.get(classLoader);
+                }
+                types[i] = cacheMap.get(parameterTypes[i]);
                 if (types[i] == null) {
                     types[i] = ReflectUtils.name2class(parameterTypes[i]);
-                    classCache.put(parameterTypes[i], types[i]);
+                    cacheMap.put(parameterTypes[i], types[i]);
                 }
             }
-            method = clazz.getMethod(methodName, types);
-
+            MethodDescriptor methodDescriptor = serviceModel.getServiceModel().getMethod(methodName, types);
+            if (methodDescriptor == null) {
+                throw new NoSuchMethodException("No such method " + methodName + " in class " + clazz);
+            }
+            method = methodDescriptor.getMethod();
         }
         return method;
     }
