@@ -37,6 +37,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
 
 @Deprecated
 public class RpcContext {
@@ -320,6 +321,25 @@ public class RpcContext {
         return isConsumerSide();
     }
 
+    @Deprecated
+    public Invoker<?> getInvoker() {
+        org.apache.dubbo.rpc.Invoker<?> invoker = newRpcContext.getInvoker();
+        if (invoker == null) {
+            return null;
+        }
+        return new Invoker.CompatibleInvoker<>(invoker);
+    }
+
+    @Deprecated
+    public List<Invoker<?>> getInvokers() {
+        List<org.apache.dubbo.rpc.Invoker<?>> invokers = newRpcContext.getInvokers();
+        if (CollectionUtils.isEmpty(invokers)) {
+            return Collections.emptyList();
+        }
+        return invokers.stream()
+            .map(Invoker.CompatibleInvoker::new)
+            .collect(Collectors.toList());
+    }
     /**
      * Async invocation. Timeout will be handled even if <code>Future.get()</code> is not called.
      *

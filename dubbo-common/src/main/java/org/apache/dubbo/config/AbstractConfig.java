@@ -425,9 +425,6 @@ public abstract class AbstractConfig implements Serializable {
     }
 
     protected void checkScopeModel(ScopeModel scopeModel) {
-        if (scopeModel == null) {
-            throw new IllegalArgumentException("scopeModel cannot be null");
-        }
         if (!(scopeModel instanceof ApplicationModel)) {
             throw new IllegalArgumentException("Invalid scope model, expect to be a ApplicationModel but got: " + scopeModel);
         }
@@ -696,7 +693,7 @@ public abstract class AbstractConfig implements Serializable {
     }
 
     protected void refreshWithPrefixes(List<String> prefixes, ConfigMode configMode) {
-        Environment environment = getScopeModel().getModelEnvironment();
+        Environment environment = getScopeModel().modelEnvironment();
         List<Map<String, String>> configurationMaps = environment.getConfigurationMaps();
 
         // Search props starts with PREFIX in order

@@ -29,6 +29,7 @@ import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.RegistryNotifier;
 import org.apache.dubbo.registry.support.FailbackRegistry;
+import org.apache.dubbo.registry.support.SkipFailbackWrapperException;
 import org.apache.dubbo.rpc.RpcException;
 
 import com.alibaba.nacos.api.common.Constants;
@@ -141,7 +142,7 @@ public class NacosRegistry extends FailbackRegistry {
     public NacosRegistry(URL url, NacosNamingServiceWrapper namingService) {
         super(url);
         this.namingService = namingService;
-        this.supportLegacyServiceName = url.getParameter("nacos.subscribe.legacy-name", true);
+        this.supportLegacyServiceName = url.getParameter("nacos.subscribe.legacy-name", false);
     }
 
     @Override
@@ -163,7 +164,9 @@ public class NacosRegistry extends FailbackRegistry {
                 urls.addAll(buildURLs(url, instances));
             }
             return urls;
-        } catch (Exception cause) {
+        } catch (SkipFailbackWrapperException exception) {
+            throw exception;
+        }  catch (Exception cause) {
             throw new RpcException("Failed to lookup " + url + " from nacos " + getUrl() + ", cause: " + cause.getMessage(), cause);
         }
     }
@@ -185,6 +188,8 @@ public class NacosRegistry extends FailbackRegistry {
             } else {
                 logger.info("Please set 'dubbo.registry.parameters.register-consumer-url=true' to turn on consumer url registration.");
             }
+        } catch (SkipFailbackWrapperException exception) {
+            throw exception;
         } catch (Exception cause) {
             throw new RpcException("Failed to register " + url + " to nacos " + getUrl() + ", cause: " + cause.getMessage(), cause);
         }
@@ -199,7 +204,9 @@ public class NacosRegistry extends FailbackRegistry {
                 getUrl().getGroup(Constants.DEFAULT_GROUP),
                 instance.getIp()
                 , instance.getPort());
-        } catch (Exception cause) {
+        } catch (SkipFailbackWrapperException exception) {
+            throw exception;
+        }  catch (Exception cause) {
             throw new RpcException("Failed to unregister " + url + " to nacos " + getUrl() + ", cause: " + cause.getMessage(), cause);
         }
     }
@@ -251,7 +258,9 @@ public class NacosRegistry extends FailbackRegistry {
                     subscribeEventListener(serviceName, subscriberURL, listener);
                 }
             }
-        } catch (Throwable cause) {
+        } catch (SkipFailbackWrapperException exception) {
+            throw exception;
+        }  catch (Throwable cause) {
             throw new RpcException("Failed to subscribe " + url + " to nacos " + getUrl() + ", cause: " + cause.getMessage(), cause);
         }
     }
@@ -355,7 +364,9 @@ public class NacosRegistry extends FailbackRegistry {
                 .map(NacosServiceName::toString)
                 .collect(Collectors.toList()));
             return serviceNames;
-        } catch (Throwable cause) {
+        } catch (SkipFailbackWrapperException exception) {
+            throw exception;
+        }  catch (Throwable cause) {
             throw new RpcException("Failed to filter serviceName from nacos, url: " + getUrl() + ", serviceName: " + serviceName + ", cause: " + cause.getMessage(), cause);
         }
     }
@@ -458,7 +469,9 @@ public class NacosRegistry extends FailbackRegistry {
                 serviceNames.addAll(listView.getData());
             }
             return serviceNames;
-        } catch (Throwable cause) {
+        } catch (SkipFailbackWrapperException exception) {
+            throw exception;
+        }  catch (Throwable cause) {
             throw new RpcException("Failed to get all serviceName from nacos, url: " + getUrl() + ", cause: " + cause.getMessage(), cause);
         }
     }

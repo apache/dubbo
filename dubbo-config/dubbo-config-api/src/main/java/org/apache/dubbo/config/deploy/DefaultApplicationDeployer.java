@@ -146,7 +146,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         super(applicationModel);
         this.applicationModel = applicationModel;
         configManager = applicationModel.getApplicationConfigManager();
-        environment = applicationModel.getModelEnvironment();
+        environment = applicationModel.modelEnvironment();
 
         referenceCache = new CompositeReferenceCache(applicationModel);
         frameworkExecutorRepository = applicationModel.getFrameworkModel().getBeanFactory().getBean(FrameworkExecutorRepository.class);

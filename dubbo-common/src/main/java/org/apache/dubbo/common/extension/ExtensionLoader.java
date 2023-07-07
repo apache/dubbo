@@ -18,6 +18,7 @@ package org.apache.dubbo.common.extension;
 
 import org.apache.dubbo.common.Extension;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.aot.NativeDetector;
 import org.apache.dubbo.common.beans.support.InstantiationStrategy;
 import org.apache.dubbo.common.context.Lifecycle;
 import org.apache.dubbo.common.extension.support.ActivateComparator;
@@ -33,7 +34,6 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.Holder;
-import org.apache.dubbo.common.utils.NativeUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -73,6 +73,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
 import static java.util.ServiceLoader.load;
@@ -107,8 +108,8 @@ public class ExtensionLoader<T> {
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(
         ExtensionLoader.class);
 
-    private static final Pattern NAME_SEPARATOR         = Pattern.compile("\\s*[,]+\\s*");
-    private static final String  SPECIAL_SPI_PROPERTIES = "special_spi.properties";
+    private static final Pattern NAME_SEPARATOR = Pattern.compile("\\s*[,]+\\s*");
+    private static final String SPECIAL_SPI_PROPERTIES = "special_spi.properties";
 
     private final ConcurrentMap<Class<?>, Object> extensionInstances = new ConcurrentHashMap<>(64);
 
@@ -120,17 +121,17 @@ public class ExtensionLoader<T> {
 
     private final Holder<Map<String, Class<?>>> cachedClasses = new Holder<>();
 
-    private final    Map<String, Object>                   cachedActivates        = Collections.synchronizedMap(
+    private final Map<String, Object> cachedActivates = Collections.synchronizedMap(
         new LinkedHashMap<>());
-    private final    Map<String, Set<String>>              cachedActivateGroups   = Collections.synchronizedMap(
+    private final Map<String, Set<String>> cachedActivateGroups = Collections.synchronizedMap(
         new LinkedHashMap<>());
-    private final    Map<String, String[][]>               cachedActivateValues   = Collections.synchronizedMap(
+    private final Map<String, String[][]> cachedActivateValues = Collections.synchronizedMap(
         new LinkedHashMap<>());
-    private final    ConcurrentMap<String, Holder<Object>> cachedInstances        = new ConcurrentHashMap<>();
-    private final    Holder<Object>                        cachedAdaptiveInstance = new Holder<>();
-    private volatile Class<?>                              cachedAdaptiveClass    = null;
-    private          String                                cachedDefaultName;
-    private volatile Throwable                             createAdaptiveInstanceError;
+    private final ConcurrentMap<String, Holder<Object>> cachedInstances = new ConcurrentHashMap<>();
+    private final Holder<Object> cachedAdaptiveInstance = new Holder<>();
+    private volatile Class<?> cachedAdaptiveClass = null;
+    private String cachedDefaultName;
+    private volatile Throwable createAdaptiveInstanceError;
 
     private Set<Class<?>> cachedWrapperClasses;
 
@@ -148,13 +149,13 @@ public class ExtensionLoader<T> {
     /**
      * Record all unacceptable exceptions when using SPI
      */
-    private final Set<String>                  unacceptableExceptions = new ConcurrentHashSet<>();
-    private final ExtensionDirector            extensionDirector;
+    private final Set<String> unacceptableExceptions = new ConcurrentHashSet<>();
+    private final ExtensionDirector extensionDirector;
     private final List<ExtensionPostProcessor> extensionPostProcessors;
-    private InstantiationStrategy        instantiationStrategy;
-    private final ActivateComparator           activateComparator;
-    private final ScopeModel                   scopeModel;
-    private final AtomicBoolean                destroyed              = new AtomicBoolean();
+    private InstantiationStrategy instantiationStrategy;
+    private final ActivateComparator activateComparator;
+    private final ScopeModel scopeModel;
+    private final AtomicBoolean destroyed = new AtomicBoolean();
 
     public static void setLoadingStrategies(LoadingStrategy... strategies) {
         if (ArrayUtils.isNotEmpty(strategies)) {
@@ -346,7 +347,9 @@ public class ExtensionLoader<T> {
         checkDestroyed();
         // solve the bug of using @SPI's wrapper method to report a null pointer exception.
         Map<Class<?>, T> activateExtensionsMap = new TreeMap<>(activateComparator);
-        List<String> names = values == null ? new ArrayList<>(0) : asList(values);
+        List<String> names = values == null ?
+            new ArrayList<>(0) :
+            Arrays.stream(values).map(StringUtils::trim).collect(Collectors.toList());
         Set<String> namesSet = new HashSet<>(names);
         if (!namesSet.contains(REMOVE_VALUE_PREFIX + DEFAULT_KEY)) {
             if (cachedActivateGroups.size() == 0) {
@@ -1409,7 +1412,7 @@ public class ExtensionLoader<T> {
         // Adaptive Classes' ClassLoader should be the same with Real SPI interface classes' ClassLoader
         ClassLoader classLoader = type.getClassLoader();
         try {
-            if (NativeUtils.isNative()) {
+            if (NativeDetector.inNativeImage()) {
                 return classLoader.loadClass(type.getName() + "$Adaptive");
             }
         } catch (Throwable ignore) {

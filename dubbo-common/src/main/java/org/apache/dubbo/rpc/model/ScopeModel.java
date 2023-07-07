@@ -243,7 +243,28 @@ public abstract class ScopeModel implements ExtensionAccessor {
         return Collections.unmodifiableSet(classLoaders);
     }
 
-    public abstract Environment getModelEnvironment();
+    /**
+     * Get current model's environment.
+     * </br>
+     * Note: This method should not start with `get` or it would be invoked due to Spring boot refresh.
+     * @see <a href="https://github.com/apache/dubbo/issues/12542">Configuration refresh issue</a>
+     */
+    public abstract Environment modelEnvironment();
+
+    /**
+     * Get current model's environment.
+     *
+     * @see <a href="https://github.com/apache/dubbo/issues/12542">Configuration refresh issue</a>
+     * @deprecated use modelEnvironment() instead
+     */
+    @Deprecated
+    public final Environment getModelEnvironment() {
+        try {
+            return modelEnvironment();
+        } catch (Exception ex) {
+            return null;
+        }
+    }
 
     public String getInternalId() {
         return this.internalId;

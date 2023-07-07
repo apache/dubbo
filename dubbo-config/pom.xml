@@ -32,6 +32,7 @@
     <modules>
         <module>dubbo-config-api</module>
         <module>dubbo-config-spring</module>
+        <module>dubbo-config-spring6</module>
     </modules>
 
     <dependencies>

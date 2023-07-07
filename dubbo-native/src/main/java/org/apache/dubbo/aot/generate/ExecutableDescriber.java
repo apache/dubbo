@@ -17,6 +17,9 @@
 package org.apache.dubbo.aot.generate;
 
 
+import org.apache.dubbo.aot.api.ExecutableMode;
+import org.apache.dubbo.aot.api.MemberDescriber;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Executable;
 import java.util.Arrays;

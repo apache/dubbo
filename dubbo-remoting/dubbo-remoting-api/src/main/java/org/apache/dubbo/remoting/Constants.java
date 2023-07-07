@@ -18,6 +18,9 @@
 package org.apache.dubbo.remoting;
 
 
+import java.util.Arrays;
+import java.util.List;
+
 public interface Constants {
 
     String BUFFER_KEY = "buffer";
@@ -62,6 +65,13 @@ public interface Constants {
      * the least heartbeat during is 1000 ms.
      */
     long LEAST_HEARTBEAT_DURATION = 1000;
+
+    /**
+     * the least reconnect during is 60000 ms.
+     */
+    long LEAST_RECONNECT_DURATION = 60000;
+
+    String LEAST_RECONNECT_DURATION_KEY = "dubbo.application.least-reconnect-duration";
 
     /**
      * ticks per wheel.
@@ -163,7 +173,8 @@ public interface Constants {
     String OK_HTTP = "ok-http";
     String URL_CONNECTION = "url-connection";
     String APACHE_HTTP_CLIENT = "apache-http-client";
+    String PORT_UNIFICATION_NETTY4_SERVER = "netty4";
 
+    List<String> REST_SERVER = Arrays.asList("jetty", "tomcat", "netty");
     String CONTENT_LENGTH_KEY = "content-length";
-
 }

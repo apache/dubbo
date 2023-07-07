@@ -28,7 +28,9 @@ dubbo-compiler
 dubbo-config
 dubbo-config-api
 dubbo-config-spring
+dubbo-config-spring6
 dubbo-configcenter
+dubbo-configcenter-file
 dubbo-configcenter-apollo
 dubbo-configcenter-nacos
 dubbo-configcenter-zookeeper
@@ -49,6 +51,7 @@ dubbo-kubernetes
 dubbo-maven-plugin
 dubbo-metadata
 dubbo-metadata-api
+dubbo-metadata-rest
 dubbo-metadata-definition-protobuf
 dubbo-metadata-processor
 dubbo-metadata-report-nacos
@@ -63,9 +66,9 @@ dubbo-metrics-registry
 dubbo-metrics-config-center
 dubbo-monitor
 dubbo-monitor-api
+dubbo-monitor-common
 dubbo-monitor-default
 dubbo-native
-dubbo-native-plugin
 dubbo-parent
 dubbo-plugin
 dubbo-qos
@@ -82,6 +85,7 @@ dubbo-remoting-api
 dubbo-remoting-http
 dubbo-remoting-netty
 dubbo-remoting-netty4
+dubbo-remoting-zookeeper-api
 dubbo-remoting-zookeeper
 dubbo-remoting-zookeeper-curator5
 dubbo-rpc
@@ -110,6 +114,7 @@ dubbo-tracing-otel-otlp-spring-boot-starter
 dubbo-observability-spring-boot-starter
 dubbo-spring-boot-starter
 dubbo-spring-boot-starters
+dubbo-spring-boot-interceptor
 dubbo-nacos-spring-boot-starter
 dubbo-zookeeper-spring-boot-starter
 dubbo-zookeeper-curator5-spring-boot-starter
@@ -118,3 +123,18 @@ dubbo-seata-spring-boot-starter
 dubbo-spring-security
 dubbo-tracing
 dubbo-xds
+dubbo-plugin-cluster-mergeable
+dubbo-plugin-mock
+dubbo-plugin-router-script
+dubbo-plugin-router-mesh
+dubbo-plugin-router-condition
+dubbo-plugin-router-tag
+dubbo-plugin-loadbalance-adaptive
+dubbo-plugin-access-log
+dubbo-plugin-tps
+dubbo-plugin-token
+dubbo-plugin-generic-invoke
+dubbo-plugin-context
+dubbo-plugin-classloader-filter
+dubbo-plugin-proxy-bytebuddy
+dubbo-plugin-qos-trace
