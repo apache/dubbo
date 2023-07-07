@@ -195,8 +195,13 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
                                    BitList<Invoker<T>> invokers, Invocation invocation) {
         if (forbidden && shouldFailFast) {
             // 1. No service provider 2. Service providers are disabled
+            String providerBy = getConsumerUrl().getParameter(PROVIDED_BY);
+            String providerByError = "";
+            if (StringUtils.isNotEmpty(providerBy)) {
+                providerByError = " provide by " + providerBy;
+            }
             throw new RpcException(RpcException.FORBIDDEN_EXCEPTION, "No provider available from registry " +
-                getUrl().getAddress() + " for service " + getConsumerUrl().getParameter(PROVIDED_BY, getConsumerUrl().getServiceKey()) +
+                getUrl().getAddress() + " for service " + getConsumerUrl().getServiceKey() + providerByError +
                 " on consumer " + NetUtils.getLocalHost() + " use dubbo version " + Version.getVersion() +
                 ", please check status of providers(disabled, not registered or in blacklist).");
         }
