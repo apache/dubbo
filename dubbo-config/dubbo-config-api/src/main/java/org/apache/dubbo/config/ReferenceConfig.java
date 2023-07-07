@@ -563,6 +563,8 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                 url = url.setServiceModel(consumerModel);
                 if (UrlUtils.isRegistry(url)) {
                     urls.add(url.putAttribute(REFER_KEY, referenceParameters));
+                    // add an invalid registry config into config manager to indicate service discovery enabled or not.
+                    getScopeModel().getConfigManager().addConfig(new RegistryConfig());
                 } else {
                     URL peerUrl = getScopeModel().getApplicationModel().getBeanFactory().getBean(ClusterUtils.class).mergeUrl(url, referenceParameters);
                     peerUrl = peerUrl.putAttribute(PEER_KEY, true);

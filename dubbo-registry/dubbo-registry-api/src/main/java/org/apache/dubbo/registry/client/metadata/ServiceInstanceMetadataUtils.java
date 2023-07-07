@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.MetadataInfo;
@@ -198,10 +199,12 @@ public class ServiceInstanceMetadataUtils {
     }
 
     public static void registerMetadataAndInstance(ApplicationModel applicationModel) {
-        LOGGER.info("Start registering instance address to registry.");
         RegistryManager registryManager = applicationModel.getBeanFactory().getBean(RegistryManager.class);
-        // register service instance
-        registryManager.getServiceDiscoveries().forEach(ServiceDiscovery::register);
+        if (CollectionUtils.isNotEmpty(registryManager.getServiceDiscoveries())) {
+            LOGGER.info("Start registering instance address to registry.");
+            // register service instance
+            registryManager.getServiceDiscoveries().forEach(ServiceDiscovery::register);
+        }
     }
 
     public static void refreshMetadataAndInstance(ApplicationModel applicationModel) {

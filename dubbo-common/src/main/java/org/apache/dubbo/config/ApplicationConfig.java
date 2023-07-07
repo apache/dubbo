@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_PROTOCOL_KEY;
@@ -79,6 +80,8 @@ public class ApplicationConfig extends AbstractConfig {
     private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(ApplicationConfig.class);
 
     private static final long serialVersionUID = 5508512956753757169L;
+
+    private static final String DEFAULT_NAME_PREFIX = "DUBBO_APP_";
 
     /**
      * Application name
@@ -735,6 +738,12 @@ public class ApplicationConfig extends AbstractConfig {
     public void refresh() {
         super.refresh();
         appendEnvironmentProperties();
+        if (StringUtils.isEmpty(getName())) {
+            String defaultName = DEFAULT_NAME_PREFIX + UUID.randomUUID();
+            this.setName(defaultName);
+            LOGGER.warn("No application name was set, '" + defaultName + "' will be used as the default application name," +
+                " it's highly recommended to set a unique and customized name for it can be critical for some service governance features.");
+        }
     }
 
     private void appendEnvironmentProperties() {

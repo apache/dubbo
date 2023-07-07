@@ -740,7 +740,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         // export MetricsService
         exportMetricsService();
 
-        if (isRegisterConsumerInstance()) {
+        if (isRegisterConsumerInstance() && CollectionUtils.isNotEmpty(applicationModel.getApplicationConfigManager().getRegistries())) {
             exportMetadataService();
             if (hasPreparedApplicationInstance.compareAndSet(false, true)) {
                 // register the local ServiceInstance if required
