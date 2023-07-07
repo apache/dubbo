@@ -1,0 +1,1 @@
+bytebuddy=org.apache.dubbo.rpc.proxy.bytebuddy.ByteBuddyProxyFactory

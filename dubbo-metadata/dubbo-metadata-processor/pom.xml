@@ -34,7 +34,7 @@
     <dependencies>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-metadata-api</artifactId>
+            <artifactId>dubbo-metadata-rest</artifactId>
             <version>${project.parent.version}</version>
             <exclusions>
                 <exclusion>
