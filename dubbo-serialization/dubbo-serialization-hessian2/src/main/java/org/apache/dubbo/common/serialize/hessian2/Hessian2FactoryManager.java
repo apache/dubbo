@@ -74,7 +74,7 @@ public class Hessian2FactoryManager {
                 }
             }
         }
-        sticky = factory;
+        stickySerializerFactory = factory;
         return factory;
     }
 
