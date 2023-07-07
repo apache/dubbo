@@ -71,7 +71,7 @@ public abstract class MetricsEvent {
             this.metricsDispatcher = metricsDispatcher;
         }
         if (appName == null) {
-            this.appName = this.source.getApplicationName();
+            this.appName = this.source.tryGetApplicationName();
         } else {
             this.appName = appName;
         }
