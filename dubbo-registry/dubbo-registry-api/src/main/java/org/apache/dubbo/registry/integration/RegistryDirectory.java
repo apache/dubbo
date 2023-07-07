@@ -31,7 +31,6 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.metrics.event.MetricsEventBus;
-import org.apache.dubbo.metrics.registry.collector.RegistryMetricsCollector;
 import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.registry.AddressListener;
 import org.apache.dubbo.remoting.Constants;
@@ -110,13 +109,11 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
      */
     protected volatile Set<URL> cachedInvokerUrls;
     private final ModuleModel moduleModel;
-    private final RegistryMetricsCollector registryMetricsCollector;
 
     public RegistryDirectory(Class<T> serviceType, URL url) {
         super(serviceType, url);
         moduleModel = getModuleModel(url.getScopeModel());
         consumerConfigurationListener = getConsumerConfigurationListener(moduleModel);
-        registryMetricsCollector = moduleModel.getApplicationModel().getBeanFactory().getBean(RegistryMetricsCollector.class);
     }
 
     @Override
@@ -134,7 +131,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
         }
 
         ApplicationModel applicationModel = url.getApplicationModel();
-        MetricsEventBus.post(RegistryEvent.toSubscribeEvent(applicationModel, registryMetricsCollector),() ->
+        MetricsEventBus.post(RegistryEvent.toSubscribeEvent(applicationModel),() ->
             {
                 super.subscribe(url);
                 return null;

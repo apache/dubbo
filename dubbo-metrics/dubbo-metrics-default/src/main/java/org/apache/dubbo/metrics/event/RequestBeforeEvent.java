@@ -39,10 +39,10 @@ public class RequestBeforeEvent extends TimeCounterEvent {
     }
 
     private static final TypeWrapper REQUEST_BEFORE_EVENT = new TypeWrapper(MetricsLevel.METHOD, MetricsKey.METRIC_REQUESTS);
-    public static RequestBeforeEvent toEvent(ApplicationModel applicationModel, String appName, MetricsDispatcher metricsDispatcher, Invocation invocation) {
+    public static RequestBeforeEvent toEvent(ApplicationModel applicationModel, String appName, MetricsDispatcher metricsDispatcher, Invocation invocation, String side) {
         RequestBeforeEvent event = new RequestBeforeEvent(applicationModel, appName, metricsDispatcher, REQUEST_BEFORE_EVENT);
         event.putAttachment(ATTACHMENT_KEY_SERVICE, MetricsSupport.getInterfaceName(invocation));
-        event.putAttachment(MetricsConstants.INVOCATION_SIDE, MetricsSupport.getSide(invocation));
+        event.putAttachment(MetricsConstants.INVOCATION_SIDE, side);
         event.putAttachment(MetricsConstants.INVOCATION, invocation);
         event.putAttachment(MetricsConstants.METHOD_METRICS, new MethodMetric(applicationModel, invocation));
         return event;

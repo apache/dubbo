@@ -42,6 +42,10 @@ public abstract class MetricsEvent {
 
     private final Map<String, Object> attachment = new IdentityHashMap<>(8);
 
+    public MetricsEvent(ApplicationModel source, TypeWrapper typeWrapper) {
+        this(source, null, null, typeWrapper);
+    }
+
     public MetricsEvent(ApplicationModel source, String appName, MetricsDispatcher metricsDispatcher, TypeWrapper typeWrapper) {
         this.typeWrapper = typeWrapper;
         if (source == null) {

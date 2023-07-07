@@ -33,6 +33,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
+import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 
 @Activate(group = CONSUMER, onClass = "org.apache.dubbo.metrics.collector.DefaultMetricsCollector")
 public class MetricsClusterFilter implements ClusterFilter, BaseFilter.Listener, ScopeModelAware {
@@ -72,7 +73,7 @@ public class MetricsClusterFilter implements ClusterFilter, BaseFilter.Listener,
         if (t instanceof RpcException) {
             RpcException e = (RpcException) t;
             if (e.isForbidden()) {
-                MetricsEventBus.publish(RequestBeforeEvent.toEvent(applicationModel, appName, metricsDispatcher, invocation));
+                MetricsEventBus.publish(RequestBeforeEvent.toEvent(applicationModel, appName, metricsDispatcher, invocation, CONSUMER_SIDE));
             }
         }
     }

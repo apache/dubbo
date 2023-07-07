@@ -29,7 +29,6 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metrics.event.MetricsEventBus;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
-import org.apache.dubbo.metrics.registry.collector.RegistryMetricsCollector;
 import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -134,7 +133,6 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
     private final int reconnectTaskPeriod;
 
     private ApplicationModel applicationModel;
-    private RegistryMetricsCollector registryMetricsCollector;
 
     public AbstractDirectory(URL url) {
         this(url, null, false);
@@ -163,7 +161,6 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         // remove some local only parameters
         applicationModel = url.getOrDefaultApplicationModel();
         this.queryMap = applicationModel.getBeanFactory().getBean(ClusterUtils.class).mergeLocalParams(queryMap);
-        this.registryMetricsCollector = applicationModel.getBeanFactory().getBean(RegistryMetricsCollector.class);
 
         if (consumerUrl == null) {
             String host = isNotEmpty(queryMap.get(REGISTER_IP_KEY)) ? queryMap.get(REGISTER_IP_KEY) : this.url.getHost();
@@ -355,7 +352,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
                 }
             }, reconnectTaskPeriod, TimeUnit.MILLISECONDS);
         }
-        MetricsEventBus.publish(RegistryEvent.refreshDirectoryEvent(applicationModel, registryMetricsCollector, getSummary()));
+        MetricsEventBus.publish(RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary()));
     }
 
     /**
@@ -369,7 +366,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         if (invokersInitialized) {
             refreshInvokerInternal();
         }
-        MetricsEventBus.publish(RegistryEvent.refreshDirectoryEvent(applicationModel, registryMetricsCollector, getSummary()));
+        MetricsEventBus.publish(RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary()));
     }
 
     private synchronized void refreshInvokerInternal() {
@@ -398,7 +395,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
             removeValidInvoker(invoker);
             logger.info("Disable service address: " + invoker.getUrl() + ".");
         }
-        MetricsEventBus.publish(RegistryEvent.refreshDirectoryEvent(applicationModel, registryMetricsCollector, getSummary()));
+        MetricsEventBus.publish(RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary()));
     }
 
     @Override
@@ -411,7 +408,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
 
             }
         }
-        MetricsEventBus.publish(RegistryEvent.refreshDirectoryEvent(applicationModel, registryMetricsCollector, getSummary()));
+        MetricsEventBus.publish(RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary()));
     }
 
     protected final void refreshRouter(BitList<Invoker<T>> newlyInvokers, Runnable switchAction) {
@@ -468,7 +465,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         refreshInvokerInternal();
         this.invokersInitialized = true;
 
-        MetricsEventBus.publish(RegistryEvent.refreshDirectoryEvent(applicationModel, registryMetricsCollector, getSummary()));
+        MetricsEventBus.publish(RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary()));
     }
 
     protected void destroyInvokers() {
@@ -483,7 +480,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         synchronized (this.validInvokers) {
             result = this.validInvokers.add(invoker);
         }
-        MetricsEventBus.publish(RegistryEvent.refreshDirectoryEvent(applicationModel, registryMetricsCollector, getSummary()));
+        MetricsEventBus.publish(RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary()));
         return result;
     }
 
@@ -492,7 +489,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         synchronized (this.validInvokers) {
             result = this.validInvokers.remove(invoker);
         }
-        MetricsEventBus.publish(RegistryEvent.refreshDirectoryEvent(applicationModel, registryMetricsCollector, getSummary()));
+        MetricsEventBus.publish(RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary()));
         return result;
     }
 

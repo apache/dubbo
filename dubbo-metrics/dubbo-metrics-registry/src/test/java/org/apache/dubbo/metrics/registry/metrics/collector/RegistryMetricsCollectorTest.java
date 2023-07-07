@@ -74,7 +74,7 @@ class RegistryMetricsCollectorTest {
     @Test
     void testRegisterMetrics() {
 
-        RegistryEvent registryEvent = RegistryEvent.toRegisterEvent(applicationModel, null);
+        RegistryEvent registryEvent = RegistryEvent.toRegisterEvent(applicationModel);
         MetricsEventBus.post(registryEvent,
             () -> {
                 List<MetricSample> metricSamples = collector.collect();
@@ -93,7 +93,7 @@ class RegistryMetricsCollectorTest {
         long c1 = registryEvent.getTimePair().calc();
 
 
-        registryEvent = RegistryEvent.toRegisterEvent(applicationModel, null);
+        registryEvent = RegistryEvent.toRegisterEvent(applicationModel);
         TimePair lastTimePair = registryEvent.getTimePair();
         MetricsEventBus.post(registryEvent,
             () -> {
@@ -135,7 +135,7 @@ class RegistryMetricsCollectorTest {
 
         String serviceName = "demo.gameService";
 
-        RegistryEvent registryEvent = RegistryEvent.toRsEvent(applicationModel, null, serviceName, 2);
+        RegistryEvent registryEvent = RegistryEvent.toRsEvent(applicationModel, serviceName, 2);
         MetricsEventBus.post(registryEvent,
             () -> {
                 List<MetricSample> metricSamples = collector.collect();
@@ -154,7 +154,7 @@ class RegistryMetricsCollectorTest {
         Assertions.assertEquals(RegistryMetricsConstants.APP_LEVEL_KEYS.size() + 5 + 2, metricSamples.size());
 
         long c1 = registryEvent.getTimePair().calc();
-        registryEvent = RegistryEvent.toRsEvent(applicationModel, null, serviceName, 2);
+        registryEvent = RegistryEvent.toRsEvent(applicationModel, serviceName, 2);
         TimePair lastTimePair = registryEvent.getTimePair();
         MetricsEventBus.post(registryEvent,
             () -> {
@@ -196,7 +196,7 @@ class RegistryMetricsCollectorTest {
 
         String serviceName = "demo.gameService";
 
-        RegistryEvent subscribeEvent = RegistryEvent.toSsEvent(applicationModel, null, serviceName);
+        RegistryEvent subscribeEvent = RegistryEvent.toSsEvent(applicationModel, serviceName);
         MetricsEventBus.post(subscribeEvent,
             () -> {
                 List<MetricSample> metricSamples = collector.collect();
@@ -216,7 +216,7 @@ class RegistryMetricsCollectorTest {
         Assertions.assertEquals(RegistryMetricsConstants.APP_LEVEL_KEYS.size() + 5 + 2, metricSamples.size());
 
         long c1 = subscribeEvent.getTimePair().calc();
-        subscribeEvent = RegistryEvent.toSsEvent(applicationModel, null, serviceName);
+        subscribeEvent = RegistryEvent.toSsEvent(applicationModel, serviceName);
         TimePair lastTimePair = subscribeEvent.getTimePair();
         MetricsEventBus.post(subscribeEvent,
             () -> {
@@ -256,7 +256,7 @@ class RegistryMetricsCollectorTest {
     @Test
     public void testNotify() {
         Map<String, Integer> lastNumMap = new HashMap<>();
-        MetricsEventBus.post(RegistryEvent.toNotifyEvent(applicationModel, null),
+        MetricsEventBus.post(RegistryEvent.toNotifyEvent(applicationModel),
             () -> {
                 try {
                     Thread.sleep(50L);

@@ -55,7 +55,6 @@ import org.apache.dubbo.metadata.report.MetadataReportInstance;
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
 import org.apache.dubbo.metrics.config.event.ConfigCenterEvent;
 import org.apache.dubbo.metrics.event.MetricsEventBus;
-import org.apache.dubbo.metrics.registry.collector.RegistryMetricsCollector;
 import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.metrics.report.DefaultMetricsReporterFactory;
 import org.apache.dubbo.metrics.report.MetricsReporter;
@@ -900,7 +899,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     private void registerServiceInstance() {
         try {
             registered = true;
-            MetricsEventBus.post(RegistryEvent.toRegisterEvent(applicationModel, applicationModel.getBeanFactory().getBean(RegistryMetricsCollector.class)),
+            MetricsEventBus.post(RegistryEvent.toRegisterEvent(applicationModel),
                 () -> {
                     ServiceInstanceMetadataUtils.registerMetadataAndInstance(applicationModel);
                     return null;

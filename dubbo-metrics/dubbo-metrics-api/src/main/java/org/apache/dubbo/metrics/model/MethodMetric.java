@@ -35,7 +35,6 @@ public class MethodMetric extends ServiceKeyMetric {
     private final String methodName;
     private String group;
     private String version;
-//    private final MetricSample.Type sampleType;
 
     public MethodMetric(ApplicationModel applicationModel, Invocation invocation) {
         super(applicationModel, MetricsSupport.getInterfaceName(invocation));
@@ -43,12 +42,7 @@ public class MethodMetric extends ServiceKeyMetric {
         this.side = MetricsSupport.getSide(invocation);
         this.group = MetricsSupport.getGroup(invocation);
         this.version = MetricsSupport.getVersion(invocation);
-//        this.sampleType = (MetricSample.Type) invocation.get(INVOCATION_METRICS_COUNTER);
     }
-
-//    public MetricSample.Type getSampleType() {
-//        return sampleType;
-//    }
 
     public String getGroup() {
         return group;

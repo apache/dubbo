@@ -62,7 +62,8 @@ public class MetricsFilter implements ScopeModelAware {
     public Result invoke(Invoker<?> invoker, Invocation invocation, boolean isProvider) throws RpcException {
         if (rpcMetricsEnable) {
             try {
-                RequestEvent requestEvent = RequestEvent.toRequestEvent(applicationModel, appName, metricsDispatcher, defaultMetricsCollector, invocation, isProvider ? PROVIDER : CONSUMER);
+                RequestEvent requestEvent = RequestEvent.toRequestEvent(applicationModel, appName, metricsDispatcher,
+                    defaultMetricsCollector, invocation, isProvider ? PROVIDER : CONSUMER);
                 MetricsEventBus.before(requestEvent);
                 invocation.put(METRIC_FILTER_EVENT, requestEvent);
             } catch (Throwable t) {

@@ -289,19 +289,19 @@ public class RegistryMetricsTest {
     }
 
     RegistryEvent registerEvent() {
-        RegistryEvent event = RegistryEvent.toRegisterEvent(applicationModel, null);
+        RegistryEvent event = RegistryEvent.toRegisterEvent(applicationModel);
         event.setAvailable(true);
         return event;
     }
 
     RegistryEvent rsEvent() {
-        RegistryEvent event = RegistryEvent.toRsEvent(applicationModel, null, "TestServiceInterface1", 1);
+        RegistryEvent event = RegistryEvent.toRsEvent(applicationModel, "TestServiceInterface1", 1);
         event.setAvailable(true);
         return event;
     }
 
     RegistryEvent subscribeEvent() {
-        RegistryEvent event = RegistryEvent.toSubscribeEvent(applicationModel, null);
+        RegistryEvent event = RegistryEvent.toSubscribeEvent(applicationModel);
         event.setAvailable(true);
         return event;
     }

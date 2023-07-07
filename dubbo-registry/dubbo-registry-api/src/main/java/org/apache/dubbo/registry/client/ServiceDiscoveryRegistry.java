@@ -26,7 +26,6 @@ import org.apache.dubbo.metadata.MappingChangedEvent;
 import org.apache.dubbo.metadata.MappingListener;
 import org.apache.dubbo.metadata.ServiceNameMapping;
 import org.apache.dubbo.metrics.event.MetricsEventBus;
-import org.apache.dubbo.metrics.registry.collector.RegistryMetricsCollector;
 import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
@@ -84,14 +83,12 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
     And the lock should be destroyed when listener destroying its corresponding instance listener.
     * */
     private final ConcurrentMap<String, Lock> appSubscriptionLocks = new ConcurrentHashMap<>();
-    private final RegistryMetricsCollector registryMetricsCollector;
 
     public ServiceDiscoveryRegistry(URL registryURL, ApplicationModel applicationModel) {
         super(registryURL);
         this.serviceDiscovery = createServiceDiscovery(registryURL);
         this.serviceNameMapping = (AbstractServiceNameMapping) ServiceNameMapping.getDefaultExtension(registryURL.getScopeModel());
         super.applicationModel = applicationModel;
-        this.registryMetricsCollector = applicationModel.getBeanFactory().getBean(RegistryMetricsCollector.class);
     }
 
     // Currently, for test purpose
@@ -99,7 +96,6 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
         super(registryURL);
         this.serviceDiscovery = serviceDiscovery;
         this.serviceNameMapping = (AbstractServiceNameMapping) serviceNameMapping;
-        this.registryMetricsCollector = applicationModel.getBeanFactory().getBean(RegistryMetricsCollector.class);
     }
 
     public ServiceDiscovery getServiceDiscovery() {
@@ -335,7 +331,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
                 serviceInstancesChangedListener.addListenerAndNotify(url, listener);
                 ServiceInstancesChangedListener finalServiceInstancesChangedListener = serviceInstancesChangedListener;
 
-                MetricsEventBus.post(RegistryEvent.toSsEvent(url.getApplicationModel(), registryMetricsCollector, serviceKey),
+                MetricsEventBus.post(RegistryEvent.toSsEvent(url.getApplicationModel(), serviceKey),
                     () -> {
                         serviceDiscovery.addServiceInstancesChangedListener(finalServiceInstancesChangedListener);
                         return null;

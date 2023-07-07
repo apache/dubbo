@@ -28,7 +28,6 @@ import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.MetadataInfo.ServiceInfo;
 import org.apache.dubbo.metrics.event.MetricsEventBus;
-import org.apache.dubbo.metrics.registry.collector.RegistryMetricsCollector;
 import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
@@ -94,8 +93,6 @@ public class ServiceInstancesChangedListener {
     private final Set<ServiceInstanceNotificationCustomizer> serviceInstanceNotificationCustomizers;
     private final ApplicationModel applicationModel;
 
-    private final RegistryMetricsCollector registryMetricsCollector;
-
     public ServiceInstancesChangedListener(Set<String> serviceNames, ServiceDiscovery serviceDiscovery) {
         this.serviceNames = serviceNames;
         this.serviceDiscovery = serviceDiscovery;
@@ -107,7 +104,6 @@ public class ServiceInstancesChangedListener {
         this.scheduler = applicationModel.getBeanFactory().getBean(FrameworkExecutorRepository.class).getMetadataRetryExecutor();
         this.serviceInstanceNotificationCustomizers = applicationModel.getExtensionLoader(ServiceInstanceNotificationCustomizer.class).getSupportedExtensionInstances();
         this.applicationModel = applicationModel;
-        this.registryMetricsCollector = applicationModel.getBeanFactory().getBean(RegistryMetricsCollector.class);
     }
 
     /**
@@ -408,7 +404,7 @@ public class ServiceInstancesChangedListener {
      */
     protected void notifyAddressChanged() {
 
-        MetricsEventBus.post(RegistryEvent.toNotifyEvent(applicationModel, registryMetricsCollector),
+        MetricsEventBus.post(RegistryEvent.toNotifyEvent(applicationModel),
             () -> {
                 Map<String, Integer> lastNumMap = new HashMap<>();
                 // 1 different services
