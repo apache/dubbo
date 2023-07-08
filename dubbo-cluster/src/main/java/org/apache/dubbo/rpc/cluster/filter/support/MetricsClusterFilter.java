@@ -47,7 +47,7 @@ public class MetricsClusterFilter implements ClusterFilter, BaseFilter.Listener,
     public void setApplicationModel(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
         this.collector = applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class);
-        this.appName = applicationModel.getApplicationName();
+        this.appName = applicationModel.tryGetApplicationName();
         this.metricsDispatcher = applicationModel.getBeanFactory().getBean(MetricsDispatcher.class);
     }
 
