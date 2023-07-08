@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.metadata.rest.jaxrs;
 
+import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.metadata.rest.AbstractServiceRestMetadataResolver;
 import org.apache.dubbo.metadata.rest.ServiceRestMetadataResolver;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -40,6 +41,7 @@ import static org.apache.dubbo.metadata.rest.RestMetadataConstants.JAX_RS.PRODUC
  *
  * @since 2.7.6
  */
+@Activate(order = 100)
 public class JAXRSServiceRestMetadataResolver extends AbstractServiceRestMetadataResolver {
     public JAXRSServiceRestMetadataResolver(ApplicationModel applicationModel) {
         super(applicationModel);
