@@ -189,7 +189,6 @@ public class ReferenceBeanManager implements ApplicationContextAware {
 
             // register ReferenceConfig
             moduleModel.getConfigManager().addReference(referenceConfig);
-            moduleModel.getDeployer().setPending();
         }
 
         // associate referenceConfig to referenceBean
