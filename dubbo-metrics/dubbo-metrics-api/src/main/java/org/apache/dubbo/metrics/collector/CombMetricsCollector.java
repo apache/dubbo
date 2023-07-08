@@ -78,6 +78,10 @@ public abstract class CombMetricsCollector<E extends TimeCounterEvent> extends A
         stats.calcMethodKeyRt(invocation, registryOpType, responseTime);
     }
 
+    public void setAppNum(MetricsKey metricsKey,Long num) {
+        stats.setAppKey(metricsKey, num);
+    }
+
     protected List<MetricSample> export(MetricsCategory category) {
         return stats.export(category);
     }
