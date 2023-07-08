@@ -92,7 +92,7 @@
         <!-- Common libs -->
         <!-- <spring_version>4.3.30.RELEASE</spring_version> -->
         <spring_version>5.3.25</spring_version>
-        <spring_security_version>5.8.3</spring_security_version>
+        <spring_security_version>5.8.4</spring_security_version>
         <javassist_version>3.29.2-GA</javassist_version>
         <bytebuddy.version>1.14.5</bytebuddy.version>
         <netty_version>3.2.10.Final</netty_version>
@@ -102,7 +102,7 @@
         <httpclient_version>4.5.14</httpclient_version>
         <httpcore_version>4.4.16</httpcore_version>
         <fastjson_version>1.2.83</fastjson_version>
-        <fastjson2_version>2.0.33</fastjson2_version>
+        <fastjson2_version>2.0.34</fastjson2_version>
         <zookeeper_version>3.4.14</zookeeper_version>
         <curator_version>4.3.0</curator_version>
         <curator_test_version>2.12.0</curator_test_version>
@@ -134,7 +134,8 @@
         <protostuff_version>1.8.0</protostuff_version>
         <envoy_api_version>0.1.35</envoy_api_version>
         <micrometer.version>1.11.1</micrometer.version>
-
+        <opentelemetry.version>1.26.0</opentelemetry.version>
+        <zipkin-reporter.version>2.16.4</zipkin-reporter.version>
         <micrometer-tracing.version>1.1.2</micrometer-tracing.version>
         <t_digest.version>3.3</t_digest.version>
         <prometheus_client.version>0.16.0</prometheus_client.version>
@@ -148,7 +149,9 @@
         <codehaus-jackson_version>1.9.13</codehaus-jackson_version>
         <tomcat_embed_version>8.5.87</tomcat_embed_version>
         <jetcd_version>0.7.5</jetcd_version>
-        <nacos_version>2.2.3</nacos_version>
+        <nacos_version>2.2.4</nacos_version>
+        <sentinel.version>1.8.6</sentinel.version>
+        <seata.version>1.6.1</seata.version>
         <grpc.version>1.56.0</grpc.version>
         <grpc_contrib_verdion>0.8.1</grpc_contrib_verdion>
         <jprotoc_version>1.2.2</jprotoc_version>
@@ -228,6 +231,20 @@
                 <groupId>io.micrometer</groupId>
                 <artifactId>micrometer-tracing-bom</artifactId>
                 <version>${micrometer-tracing.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry</groupId>
+                <artifactId>opentelemetry-bom</artifactId>
+                <version>${opentelemetry.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.zipkin.reporter2</groupId>
+                <artifactId>zipkin-reporter-bom</artifactId>
+                <version>${zipkin-reporter.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -802,6 +819,34 @@
                 <groupId>com.alibaba.nacos</groupId>
                 <artifactId>nacos-client</artifactId>
                 <version>${nacos_version}</version>
+            </dependency>
+            <!-- sentinel related dependencies -->
+            <dependency>
+                <groupId>com.alibaba.csp</groupId>
+                <artifactId>sentinel-apache-dubbo3-adapter</artifactId>
+                <version>${sentinel.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.alibaba.csp</groupId>
+                <artifactId>sentinel-transport-simple-http</artifactId>
+                <version>${sentinel.version}</version>
+            </dependency>
+            <!-- seata related dependencies -->
+            <dependency>
+                <groupId>io.seata</groupId>
+                <artifactId>seata-spring-boot-starter</artifactId>
+                <version>${seata.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>io.seata</groupId>
+                        <artifactId>seata-core</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.seata</groupId>
+                <artifactId>seata-core</artifactId>
+                <version>${seata.version}</version>
             </dependency>
             <!-- grpc related dependencies -->
             <dependency>

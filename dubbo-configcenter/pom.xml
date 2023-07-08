@@ -34,6 +34,7 @@
         <module>dubbo-configcenter-zookeeper</module>
         <module>dubbo-configcenter-apollo</module>
         <module>dubbo-configcenter-nacos</module>
+        <module>dubbo-configcenter-file</module>
     </modules>
 
     <dependencies>

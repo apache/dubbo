@@ -532,4 +532,28 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
 
         return serviceNumMap;
     }
+
+    @Override
+    public String toString() {
+        return "Directory(" +
+            "invokers: " + invokers.size() + "[" +
+            invokers.stream()
+                .map(Invoker::getUrl)
+                .map(URL::getAddress)
+                .limit(3)
+                .collect(Collectors.joining(", ")) + "]" +
+            ", validInvokers: " + validInvokers.size() + "[" +
+            validInvokers.stream()
+                .map(Invoker::getUrl)
+                .map(URL::getAddress)
+                .limit(3)
+                .collect(Collectors.joining(", ")) + "]" +
+            ", invokersToReconnect: " + invokersToReconnect.size() + "[" +
+            invokersToReconnect.stream()
+                .map(Invoker::getUrl)
+                .map(URL::getAddress)
+                .limit(3)
+                .collect(Collectors.joining(", ")) + "]" +
+            ')';
+    }
 }
