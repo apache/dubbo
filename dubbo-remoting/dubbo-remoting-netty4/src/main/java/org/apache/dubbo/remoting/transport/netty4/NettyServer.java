@@ -22,6 +22,7 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.metrics.MetricsGlobalRegistry;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Constants;
@@ -31,6 +32,9 @@ import org.apache.dubbo.remoting.transport.dispatcher.ChannelHandlers;
 import org.apache.dubbo.remoting.transport.netty4.ssl.SslServerTlsHandler;
 import org.apache.dubbo.remoting.utils.UrlUtils;
 
+import io.micrometer.core.instrument.binder.netty4.NettyAllocatorMetrics;
+import io.micrometer.core.instrument.binder.netty4.NettyEventExecutorMetrics;
+import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelFuture;
@@ -109,6 +113,8 @@ public class NettyServer extends AbstractServer {
         channelFuture.syncUninterruptibly();
         channel = channelFuture.channel();
 
+        CompositeMeterRegistry compositeRegistry = MetricsGlobalRegistry.getCompositeRegistry();
+        new NettyEventExecutorMetrics(workerGroup).bindTo(compositeRegistry);
     }
 
     protected EventLoopGroup createBossGroup() {
@@ -146,6 +152,8 @@ public class NettyServer extends AbstractServer {
                         .addLast("handler", nettyServerHandler);
                 }
             });
+        CompositeMeterRegistry compositeRegistry = MetricsGlobalRegistry.getCompositeRegistry();
+        new NettyAllocatorMetrics(PooledByteBufAllocator.DEFAULT).bindTo(compositeRegistry);
     }
 
     @Override
