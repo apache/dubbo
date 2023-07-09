@@ -18,6 +18,7 @@ package org.apache.dubbo.metadata.rest;
 
 import org.apache.dubbo.metadata.definition.model.MethodDefinition;
 import org.apache.dubbo.metadata.rest.noannotaion.NoAnnotationServiceRestMetadataResolver;
+import org.apache.dubbo.metadata.rest.tag.NoAnnotationTag;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
@@ -176,7 +177,9 @@ public class RestMethodMetadata implements Serializable {
     }
 
     public void addArgInfo(ArgInfo argInfo) {
-        argInfo.setNoAnnotationMode(isNoAnnotationMode());
+        if (currentCodeStyleIsNoAnnotationMode()) {
+            argInfo.setParamAnnotationType(NoAnnotationTag.class);
+        }
         getArgInfos().add(argInfo);
     }
 
@@ -197,7 +200,7 @@ public class RestMethodMetadata implements Serializable {
         this.codeStyle = codeStyle;
     }
 
-    public boolean isNoAnnotationMode() {
+    public boolean currentCodeStyleIsNoAnnotationMode() {
         return NoAnnotationServiceRestMetadataResolver.class.equals(getCodeStyle());
     }
 

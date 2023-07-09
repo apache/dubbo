@@ -76,6 +76,6 @@ public class HttpConnectionCreateContext {
     }
 
     public boolean isNoAnnotationMode() {
-        return restMethodMetadata.isNoAnnotationMode();
+        return restMethodMetadata.currentCodeStyleIsNoAnnotationMode();
     }
 }

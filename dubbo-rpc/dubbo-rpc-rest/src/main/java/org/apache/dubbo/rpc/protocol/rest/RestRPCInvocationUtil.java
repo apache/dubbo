@@ -92,13 +92,13 @@ public class RestRPCInvocationUtil {
         ProviderParseContext parseContext = new ProviderParseContext(request);
         parseContext.setResponse(originResponse);
         parseContext.setRequest(originRequest);
-        parseContext.setNoAnnotationMode(restMethodMetadata.isNoAnnotationMode());
+        parseContext.setNoAnnotationMode(restMethodMetadata.currentCodeStyleIsNoAnnotationMode());
         Object[] objects = new Object[restMethodMetadata.getArgInfos().size()];
         parseContext.setArgs(Arrays.asList(objects));
         parseContext.setArgInfos(restMethodMetadata.getArgInfos());
 
         // parse object arrays body
-        if (restMethodMetadata.isNoAnnotationMode()) {
+        if (restMethodMetadata.currentCodeStyleIsNoAnnotationMode()) {
             parseContext.setArrayArgs(NoAnnotationBodyParseUtil.doParse(parseContext));
         }
 

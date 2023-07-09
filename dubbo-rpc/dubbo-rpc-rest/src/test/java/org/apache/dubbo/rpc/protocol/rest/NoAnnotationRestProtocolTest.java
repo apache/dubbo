@@ -32,8 +32,6 @@ import org.apache.dubbo.rpc.model.ServiceDescriptor;
 
 import org.apache.dubbo.rpc.protocol.rest.noannotation.NoAnnotationDemoService;
 import org.apache.dubbo.rpc.protocol.rest.noannotation.NoAnnotationDemoServiceImpl;
-import org.apache.dubbo.rpc.protocol.rest.rest.HttpMethodService;
-import org.apache.dubbo.rpc.protocol.rest.rest.HttpMethodServiceImpl;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
