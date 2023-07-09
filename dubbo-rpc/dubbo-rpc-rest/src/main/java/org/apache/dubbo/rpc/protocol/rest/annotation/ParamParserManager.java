@@ -51,7 +51,11 @@ public class ParamParserManager {
         List<ArgInfo> args = parseContext.getArgInfos();
 
         for (int i = 0; i < args.size(); i++) {
-            for (ParamParser paramParser : providerParamParsers) {
+            for (BaseProviderParamParser paramParser : providerParamParsers) {
+
+                if (!paramParser.matchParseType(args.get(i).getParamAnnotationType())) {
+                    continue;
+                }
 
                 paramParser.parse(parseContext, args.get(i));
             }

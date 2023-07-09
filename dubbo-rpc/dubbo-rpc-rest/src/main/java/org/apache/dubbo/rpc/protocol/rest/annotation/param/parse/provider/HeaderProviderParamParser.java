@@ -59,7 +59,7 @@ public class HeaderProviderParamParser extends ProviderParamParser {
     }
 
     @Override
-    protected ParamType getParamType() {
+    public ParamType getParamType() {
         return ParamType.HEADER;
     }
 }

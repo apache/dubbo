@@ -17,10 +17,12 @@
 package org.apache.dubbo.metadata.rest;
 
 
+import org.apache.dubbo.metadata.rest.tag.NoAnnotationTag;
+
 import java.lang.reflect.Parameter;
 
 /**
- *  description of service method args info
+ * description of service method args info
  */
 public class ArgInfo {
     /**
@@ -55,6 +57,8 @@ public class ArgInfo {
     private Object defaultValue;
 
     private boolean formContentType;
+
+    private boolean isNoAnnotationMode;
 
     public ArgInfo(int index, String name, Class paramType) {
         this.index = index;
@@ -151,6 +155,18 @@ public class ArgInfo {
         this.formContentType = isFormContentType;
         return this;
     }
+
+    public boolean isNoAnnotationMode() {
+        return isNoAnnotationMode;
+    }
+
+    public void setNoAnnotationMode(boolean noAnnotationMode) {
+        isNoAnnotationMode = noAnnotationMode;
+        if (isNoAnnotationMode) {
+            setParamAnnotationType(NoAnnotationTag.class);
+        }
+    }
+
 
     @Override
     public String toString() {

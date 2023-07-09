@@ -14,24 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.provider;
+package org.apache.dubbo.metadata.rest.tag;
 
-
-import org.apache.dubbo.common.extension.ExtensionScope;
-import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.metadata.rest.ParamType;
-import org.apache.dubbo.rpc.protocol.rest.annotation.ParamParser;
-
-@SPI(scope = ExtensionScope.FRAMEWORK)
-public interface BaseProviderParamParser extends ParamParser<ProviderParseContext> {
-
-
-    default boolean matchParseType(Class paramAnno) {
-
-        ParamType paramAnnotType = getParamType();
-        return paramAnnotType.supportAnno(paramAnno);
-    }
-
-
-    ParamType getParamType();
+/**
+ *  for no annotation mode param
+ */
+public interface NoAnnotationTag {
 }

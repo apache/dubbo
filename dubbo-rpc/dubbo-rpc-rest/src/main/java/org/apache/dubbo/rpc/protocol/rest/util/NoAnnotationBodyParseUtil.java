@@ -14,44 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.provider;
+package org.apache.dubbo.rpc.protocol.rest.util;
 
-import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.metadata.rest.ArgInfo;
-import org.apache.dubbo.metadata.rest.ParamType;
 import org.apache.dubbo.metadata.rest.media.MediaType;
-import org.apache.dubbo.rpc.protocol.rest.RestHeaderEnum;
-import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
+import org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.provider.ProviderParseContext;
 import org.apache.dubbo.rpc.protocol.rest.exception.ParamParseException;
 import org.apache.dubbo.rpc.protocol.rest.message.HttpMessageCodecManager;
 import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
-import org.apache.dubbo.rpc.protocol.rest.util.MediaTypeUtil;
+
+public class NoAnnotationBodyParseUtil {
 
 
-
-/**
- * body param parse
- */
-@Activate(value = RestConstant.PROVIDER_BODY_PARSE)
-public class BodyProviderParamParser extends ProviderParamParser {
-
-    @Override
-    protected void doParse(ProviderParseContext parseContext, ArgInfo argInfo) {
-
+    public static Object[] doParse(ProviderParseContext parseContext) {
         RequestFacade request = parseContext.getRequestFacade();
-
         try {
-            String contentType = parseContext.getRequestFacade().getHeader(RestHeaderEnum.CONTENT_TYPE.getHeader());
-            MediaType mediaType = MediaTypeUtil.convertMediaType(argInfo.getParamType(), contentType);
-            Object param = HttpMessageCodecManager.httpMessageDecode(request.getInputStream(), argInfo.getParamType(), mediaType);
-            parseContext.setValueByIndex(argInfo.getIndex(), param);
+            Class<?> objectArraysType = Object[].class;
+            MediaType mediaType = MediaTypeUtil.convertMediaType(objectArraysType, MediaType.APPLICATION_JSON_VALUE.value);
+            Object[] params = (Object[]) HttpMessageCodecManager.httpMessageDecode(request.getInputStream(), objectArraysType, mediaType);
+            return params;
         } catch (Throwable e) {
             throw new ParamParseException("dubbo rest protocol provider body param parser  error: " + e.getMessage());
         }
-    }
-
-    @Override
-    public ParamType getParamType() {
-        return ParamType.PROVIDER_BODY;
     }
 }

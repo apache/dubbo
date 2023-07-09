@@ -65,7 +65,8 @@ public class NoAnnotationServiceRestMetadataResolver extends AbstractServiceRest
     @Override
     protected String resolveRequestPath(Method serviceMethod, Class<?> serviceType, Class<?> serviceInterfaceClass) {
 
-        return buildPath(serviceType.getName(), serviceMethod.getName());
+        // use serviceInterfaceClass class name
+        return buildPath(serviceInterfaceClass.getName(), serviceMethod.getName());
     }
 
     @Override

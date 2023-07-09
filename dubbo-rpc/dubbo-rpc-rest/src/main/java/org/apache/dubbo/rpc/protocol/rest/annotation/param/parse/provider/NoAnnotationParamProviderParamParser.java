@@ -16,31 +16,44 @@
  */
 package org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.provider;
 
-
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
+import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.metadata.rest.ArgInfo;
 import org.apache.dubbo.metadata.rest.ParamType;
+import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
+import org.apache.dubbo.rpc.protocol.rest.util.DataParseUtils;
 
 
 /**
- * path param parse
+ * body param parse
  */
-@Activate(value = RestConstant.PROVIDER_PATH_PARSE)
-public class PathProviderParamParser extends ProviderParamParser {
+@Activate(value = RestConstant.PROVIDER_NO_ANNOTATION)
+public class NoAnnotationParamProviderParamParser extends ProviderParamParser {
+
     @Override
     protected void doParse(ProviderParseContext parseContext, ArgInfo argInfo) {
 
-        String pathVariable = parseContext.getPathVariable(argInfo.getUrlSplitIndex());
+        Object[] arrayArgs = parseContext.getArrayArgs();
 
-        Object pathVariableValue = paramTypeConvert(argInfo.getParamType(), pathVariable);
+        int index = argInfo.getIndex();
 
-        parseContext.setValueByIndex(argInfo.getIndex(), pathVariableValue);
+        Object arg = arrayArgs[index];
+
+        Object convertArg = null;
+
+        if (DataParseUtils.isTextType(argInfo.getParamType())) {
+            convertArg = DataParseUtils.stringTypeConvert(argInfo.getParamType(), String.valueOf(arg));
+        } else {
+            convertArg = JsonUtils.toJavaObject(arg.toString(), argInfo.getParamType());
+        }
+
+        parseContext.setValueByIndex(index, convertArg);
+
 
     }
 
     @Override
     public ParamType getParamType() {
-        return ParamType.PATH;
+        return ParamType.PROVIDER_NO_ANNOTATION;
     }
 }
