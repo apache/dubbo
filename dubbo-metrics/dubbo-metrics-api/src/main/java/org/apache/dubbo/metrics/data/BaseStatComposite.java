@@ -113,4 +113,8 @@ public abstract class BaseStatComposite implements MetricsExport {
     public RtStatComposite getRtStatComposite() {
         return rtStatComposite;
     }
+
+    public void setAppKey(MetricsKey metricsKey, Long num) {
+        applicationStatComposite.setAppKey(metricsKey, num);
+    }
 }

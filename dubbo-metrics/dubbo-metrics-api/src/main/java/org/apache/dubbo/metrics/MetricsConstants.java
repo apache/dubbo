@@ -31,4 +31,6 @@ public interface MetricsConstants {
 
     int SELF_INCREMENT_SIZE = 1;
 
+    String NETTY_METRICS_MAP = "nettyMetricsMap";
+
 }
