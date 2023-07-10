@@ -18,26 +18,31 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-
+    <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.apache.dubbo</groupId>
-        <artifactId>dubbo-spring-boot</artifactId>
+        <artifactId>dubbo-spring-boot-starters</artifactId>
         <version>${revision}</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-    <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>dubbo-spring-boot-starters</artifactId>
-    <packaging>pom</packaging>
-    <description>Apache Dubbo Spring Boot Starters</description>
+    <artifactId>dubbo-sentinel-spring-boot-starter</artifactId>
+    <version>${revision}</version>
+    <packaging>jar</packaging>
+    <description>Apache Dubbo Sentinel Spring Boot Starter</description>
 
-    <modules>
-        <module>observability</module>
-        <module>dubbo-nacos-spring-boot-starter</module>
-        <module>dubbo-zookeeper-spring-boot-starter</module>
-        <module>dubbo-zookeeper-curator5-spring-boot-starter</module>
-        <module>dubbo-sentinel-spring-boot-starter</module>
-        <module>dubbo-seata-spring-boot-starter</module>
-    </modules>
+    <properties>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.alibaba.csp</groupId>
+            <artifactId>sentinel-apache-dubbo3-adapter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba.csp</groupId>
+            <artifactId>sentinel-transport-simple-http</artifactId>
+        </dependency>
+    </dependencies>
 
 </project>
