@@ -24,24 +24,40 @@ dubbo:
   protocol:
     name: dubbo
     port: -1
-  registry:
-    id: zk-registry
-    address: zookeeper://127.0.0.1:2181
-  config-center:
-    address: zookeeper://127.0.0.1:2181
-  metadata-report:
-    address: zookeeper://127.0.0.1:2181
-  metrics:
-    protocol: prometheus
-    enable-jvm: true
-    enable-registry: true
-    aggregation:
-      enabled: true
-    prometheus:
-      exporter:
-        enabled: true
-    enable-metadata: true
-logging:
-  pattern:
-    level: '%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]'
-
+#  registry:
+#    id: zk-registry
+#    address: zookeeper://tjwqonebox.zk.hadoop.srv:2182
+##  config-center:
+##    address: zookeeper://127.0.0.1:2181
+##  metadata-report:
+##    address: zookeeper://127.0.0.1:2181
+#  metrics:
+#    protocol: prometheus
+#    enable-jvm: true
+#    enable-registry: true
+#    aggregation:
+#      enabled: true
+#    prometheus:
+#      exporter:
+#        enabled: true
+#    enable-metadata: true
+#logging:
+#  pattern:
+#    level: '%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]'
+    parameters:
+      registry-type: service
+  registries:
+    a:
+      address: nacos://staging-nacos.api.xiaomi.net:80
+      group: DUBBO_SERVICE_GROUP
+      parameters:
+        namespace: a
+        username: nacos
+        password: nacosstaging
+    b:
+      address: nacos://staging-nacos.api.xiaomi.net:80
+      group: DUBBO_SERVICE_GROUP
+      parameters:
+        namespace: b
+        username: nacos
+        password: nacosstaging

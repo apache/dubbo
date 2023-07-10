@@ -19,7 +19,6 @@ package org.apache.dubbo.metrics.registry.event;
 
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.metrics.event.TimeCounterEvent;
-import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.key.MetricsLevel;
 import org.apache.dubbo.metrics.model.key.TypeWrapper;
 import org.apache.dubbo.metrics.registry.collector.NettyMetricsCollector;
@@ -43,7 +42,7 @@ public class NettyEvent extends TimeCounterEvent {
     }
 
     public static NettyEvent toNettyEvent(ApplicationModel applicationModel) {
-        return new NettyEvent(applicationModel, new TypeWrapper(MetricsLevel.APP, MetricsKey.NETTY_ALLOCATOR_HEAP_MEMORY_USED,null,  null)) {
+        return new NettyEvent(applicationModel, new TypeWrapper(MetricsLevel.APP, null,null,  null)) {
             @Override
             public void customAfterPost(Object postResult) {
                 super.putAttachment(NETTY_METRICS_MAP, postResult);

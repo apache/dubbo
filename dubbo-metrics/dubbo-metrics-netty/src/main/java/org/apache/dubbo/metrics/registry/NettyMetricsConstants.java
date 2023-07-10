@@ -37,8 +37,6 @@ import static org.apache.dubbo.metrics.model.key.MetricsKey.NETTY_ALLOCATOR_THRE
 
 public interface NettyMetricsConstants {
 
-    MetricsPlaceValue OP_TYPE_MEMORY = MetricsPlaceValue.of("memory", MetricsLevel.APP);
-
     // App-level
     List<MetricsKey> APP_LEVEL_KEYS = Arrays.asList(NETTY_ALLOCATOR_HEAP_MEMORY_USED,NETTY_ALLOCATOR_DIRECT_MEMORY_USED
     ,NETTY_ALLOCATOR_PINNED_DIRECT_MEMORY,NETTY_ALLOCATOR_PINNED_HEAP_MEMORY,NETTY_ALLOCATOR_HEAP_ARENAS_NUM
