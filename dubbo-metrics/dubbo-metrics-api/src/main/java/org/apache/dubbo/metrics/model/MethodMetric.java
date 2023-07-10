@@ -69,7 +69,7 @@ public class MethodMetric extends ServiceKeyMetric {
     }
 
     public Map<String, String> getTags() {
-        Map<String, String> tags = MetricsSupport.methodTags(getApplicationModel(), getInterfaceName(), methodName);
+        Map<String, String> tags = MetricsSupport.methodTags(getApplicationModel(), getServiceKey(), methodName);
         tags.put(TAG_GROUP_KEY, group);
         tags.put(TAG_VERSION_KEY, version);
         return tags;
@@ -92,7 +92,7 @@ public class MethodMetric extends ServiceKeyMetric {
         return "MethodMetric{" +
                 "applicationName='" + getApplicationName() + '\'' +
                 ", side='" + side + '\'' +
-                ", interfaceName='" + getInterfaceName() + '\'' +
+                ", interfaceName='" + getServiceKey() + '\'' +
                 ", methodName='" + methodName + '\'' +
                 ", group='" + group + '\'' +
                 ", version='" + version + '\'' +
@@ -104,11 +104,11 @@ public class MethodMetric extends ServiceKeyMetric {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         MethodMetric that = (MethodMetric) o;
-        return Objects.equals(getApplicationName(), that.getApplicationName()) && Objects.equals(side, that.side) && Objects.equals(getInterfaceName(), that.getInterfaceName()) && Objects.equals(methodName, that.methodName) && Objects.equals(group, that.group) && Objects.equals(version, that.version);
+        return Objects.equals(getApplicationName(), that.getApplicationName()) && Objects.equals(side, that.side) && Objects.equals(getServiceKey(), that.getServiceKey()) && Objects.equals(methodName, that.methodName) && Objects.equals(group, that.group) && Objects.equals(version, that.version);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getApplicationName(), side, getInterfaceName(), methodName, group, version);
+        return Objects.hash(getApplicationName(), side, getServiceKey(), methodName, group, version);
     }
 }

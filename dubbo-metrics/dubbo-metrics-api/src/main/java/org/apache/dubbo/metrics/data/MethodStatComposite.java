@@ -17,13 +17,10 @@
 
 package org.apache.dubbo.metrics.data;
 
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.metrics.exception.MetricsNeverHappenException;
 import org.apache.dubbo.metrics.model.MethodMetric;
 import org.apache.dubbo.metrics.model.MetricsCategory;
-import org.apache.dubbo.metrics.model.MetricsSupport;
 import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
 import org.apache.dubbo.metrics.model.sample.CounterMetricSample;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
@@ -45,8 +42,6 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class MethodStatComposite extends AbstractMetricsExport {
 
-    private static final Logger logger = LoggerFactory.getLogger(MethodStatComposite.class);
-
     public MethodStatComposite(ApplicationModel applicationModel) {
         super(applicationModel);
     }
@@ -65,7 +60,7 @@ public class MethodStatComposite extends AbstractMetricsExport {
             return;
         }
         methodNumStats.get(wrapper).computeIfAbsent(new MethodMetric(getApplicationModel(), invocation), k -> new AtomicLong(0L)).getAndAdd(size);
-        MetricsSupport.fillZero(methodNumStats);
+//        MetricsSupport.fillZero(methodNumStats);
     }
 
     public List<MetricSample> export(MetricsCategory category) {

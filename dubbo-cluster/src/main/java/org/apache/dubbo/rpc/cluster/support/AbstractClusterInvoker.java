@@ -365,7 +365,7 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
             throw new RpcException(RpcException.NO_INVOKER_AVAILABLE_AFTER_FILTER, "Failed to invoke the method "
                 + RpcUtils.getMethodName(invocation) + " in the service " + getInterface().getName()
                 + ". No provider available for the service " + getDirectory().getConsumerUrl().getServiceKey()
-                + " from registry " + getDirectory().getUrl().getAddress()
+                + " from registry " + getDirectory()
                 + " on the consumer " + NetUtils.getLocalHost()
                 + " using the dubbo version " + Version.getVersion()
                 + ". Please check if the providers have been started and registered.");
@@ -379,13 +379,24 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
             if (ProfilerSwitch.isEnableSimpleProfiler()) {
                 InvocationProfilerUtils.enterProfiler(invocation, "Invoker invoke. Target Address: " + invoker.getUrl().getAddress());
             }
-            invocation.addInvokedInvoker(invoker);
+            setRemote(invoker, invocation);
             result = invoker.invoke(invocation);
         } finally {
             clearContext(originInvoker);
             InvocationProfilerUtils.releaseSimpleProfiler(invocation);
         }
         return result;
+    }
+
+    /**
+     * Set the remoteAddress and remoteApplicationName so that filter can get them.
+     *
+     */
+    private void setRemote(Invoker<?> invoker, Invocation invocation) {
+        invocation.addInvokedInvoker(invoker);
+        RpcServiceContext serviceContext = RpcContext.getServiceContext();
+        serviceContext.setRemoteAddress(invoker.getUrl().toInetSocketAddress());
+        serviceContext.setRemoteApplicationName(invoker.getUrl().getRemoteApplication());
     }
 
     /**

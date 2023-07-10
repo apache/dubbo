@@ -68,6 +68,8 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
 
     private final boolean shouldIgnoreSameModule;
 
+    private static final boolean setFutureWhenSync = Boolean.parseBoolean(System.getProperty(CommonConstants.SET_FUTURE_IN_SYNC_MODE, "true"));
+
     InjvmInvoker(Class<T> type, URL url, String key, Map<String, Exporter<?>> exporterMap) {
         super(type, url);
         this.key = key;
@@ -142,7 +144,9 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
                 }
             }, executor);
             // save for 2.6.x compatibility, for example, TraceFilter in Zipkin uses com.alibaba.xxx.FutureAdapter
-            FutureContext.getContext().setCompatibleFuture(appResponseFuture);
+            if (setFutureWhenSync || ((RpcInvocation) invocation).getInvokeMode() != InvokeMode.SYNC) {
+                FutureContext.getContext().setCompatibleFuture(appResponseFuture);
+            }
             AsyncRpcResult result = new AsyncRpcResult(appResponseFuture, copiedInvocation);
             result.setExecutor(executor);
             return result;
