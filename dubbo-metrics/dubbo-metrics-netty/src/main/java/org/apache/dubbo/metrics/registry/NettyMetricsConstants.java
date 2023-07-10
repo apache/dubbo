@@ -18,8 +18,6 @@
 package org.apache.dubbo.metrics.registry;
 
 import org.apache.dubbo.metrics.model.key.MetricsKey;
-import org.apache.dubbo.metrics.model.key.MetricsLevel;
-import org.apache.dubbo.metrics.model.key.MetricsPlaceValue;
 
 import java.util.Arrays;
 import java.util.List;
