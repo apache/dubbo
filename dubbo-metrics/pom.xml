@@ -24,6 +24,7 @@
         <module>dubbo-metrics-metadata</module>
         <module>dubbo-metrics-prometheus</module>
         <module>dubbo-metrics-config-center</module>
+        <module>dubbo-metrics-event</module>
     </modules>
     <parent>
         <groupId>org.apache.dubbo</groupId>

@@ -17,8 +17,8 @@
 
 package org.apache.dubbo.metrics.listener;
 
-import org.apache.dubbo.metrics.event.MetricsEvent;
 
+import org.apache.dubbo.metrics.event.MetricsEvent;
 
 /**
  * Metrics Listener.

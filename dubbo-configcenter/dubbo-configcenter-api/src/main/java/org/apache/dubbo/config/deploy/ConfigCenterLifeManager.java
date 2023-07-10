@@ -13,8 +13,8 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ConfigCenterConfig;
-import org.apache.dubbo.config.PackageLifeCycleManager;
 import org.apache.dubbo.config.RegistryConfig;
+import org.apache.dubbo.config.deploy.lifecycle.ApplicationLifecycleManager;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.metrics.config.event.ConfigCenterEvent;
 import org.apache.dubbo.metrics.event.MetricsEventBus;
@@ -34,7 +34,7 @@ import static org.apache.dubbo.remoting.Constants.CLIENT_KEY;
 /**
  * Config-center package life cycle manager.
  */
-public class ConfigCenterLifeManager implements PackageLifeCycleManager {
+public class ConfigCenterLifeManager implements ApplicationLifecycleManager {
 
     private static final String NAME = "config_center";
 

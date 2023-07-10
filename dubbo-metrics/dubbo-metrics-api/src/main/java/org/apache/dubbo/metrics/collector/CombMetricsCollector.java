@@ -55,6 +55,7 @@ public abstract class CombMetricsCollector<E extends TimeCounterEvent> extends A
         this.stats.incrementApp(metricsKey, SELF_INCREMENT_SIZE);
     }
 
+    @Override
     public void increment(String serviceKey, MetricsKeyWrapper metricsKeyWrapper, int size) {
         this.stats.incrementServiceKey(metricsKeyWrapper, serviceKey, size);
     }
@@ -64,6 +65,7 @@ public abstract class CombMetricsCollector<E extends TimeCounterEvent> extends A
         stats.calcApplicationRt(registryOpType, responseTime);
     }
 
+    @Override
     public void addRt(String serviceKey, String registryOpType, Long responseTime) {
         stats.calcServiceKeyRt(serviceKey, registryOpType, responseTime);
     }

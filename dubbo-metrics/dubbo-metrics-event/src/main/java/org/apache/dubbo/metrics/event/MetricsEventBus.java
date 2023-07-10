@@ -29,6 +29,8 @@ import java.util.function.Supplier;
  */
 public class MetricsEventBus {
 
+    private static final String DISPATCHER_IMPL_NAME = "metricsDispatcher";
+
     /**
      * Posts an event to all registered subscribers and only once.
      *
@@ -46,7 +48,8 @@ public class MetricsEventBus {
         if (beanFactory.isDestroyed()) {
             return;
         }
-        MetricsDispatcher dispatcher = beanFactory.getBean(MetricsDispatcher.class);
+        //TODO: by interface
+        MetricsEventMulticaster dispatcher = beanFactory.getBean(DISPATCHER_IMPL_NAME,MetricsEventMulticaster.class);;
         Optional.ofNullable(dispatcher).ifPresent(d -> d.publishEvent(event));
     }
 
@@ -104,7 +107,7 @@ public class MetricsEventBus {
      * eventSaveRunner saves the event, so that the calculation rt is introverted
      */
     public static void before(MetricsEvent event, Runnable eventSaveRunner) {
-        MetricsDispatcher dispatcher = validate(event);
+        MetricsEventMulticaster dispatcher = validate(event);
         if (dispatcher == null) return;
         dispatcher.publishEvent(event);
         if (eventSaveRunner != null) {
@@ -113,19 +116,19 @@ public class MetricsEventBus {
     }
 
     public static void after(MetricsEvent event, Object result) {
-        MetricsDispatcher dispatcher = validate(event);
+        MetricsEventMulticaster dispatcher = validate(event);
         if (dispatcher == null) return;
         event.customAfterPost(result);
         dispatcher.publishFinishEvent((TimeCounterEvent) event);
     }
 
     public static void error(MetricsEvent event) {
-        MetricsDispatcher dispatcher = validate(event);
+        MetricsEventMulticaster dispatcher = validate(event);
         if (dispatcher == null) return;
         dispatcher.publishErrorEvent((TimeCounterEvent) event);
     }
 
-    private static MetricsDispatcher validate(MetricsEvent event) {
+    private static MetricsEventMulticaster validate(MetricsEvent event) {
         if (event.getSource() == null) {
             return null;
         }
@@ -137,7 +140,8 @@ public class MetricsEventBus {
         if (beanFactory.isDestroyed()) {
             return null;
         }
-        MetricsDispatcher dispatcher = beanFactory.getBean(MetricsDispatcher.class);
+        //TODO: get Bean By interface
+        MetricsEventMulticaster dispatcher = beanFactory.getBean(DISPATCHER_IMPL_NAME,MetricsEventMulticaster.class);
         if (dispatcher == null) {
             return null;
         }

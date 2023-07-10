@@ -17,7 +17,6 @@
 
 package org.apache.dubbo.metrics.collector.stat;
 
-import org.apache.dubbo.metrics.event.MetricsEvent;
 import org.apache.dubbo.metrics.model.MethodMetric;
 import org.apache.dubbo.rpc.Invocation;
 

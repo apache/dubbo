@@ -18,7 +18,6 @@
 package org.apache.dubbo.metrics.event;
 
 import org.apache.dubbo.metrics.exception.MetricsNeverHappenException;
-import org.apache.dubbo.metrics.model.MethodMetric;
 import org.apache.dubbo.metrics.model.key.TypeWrapper;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
@@ -31,7 +30,7 @@ import java.util.Map;
 public abstract class MetricsEvent {
 
     /**
-     * Metric object. (eg. {@link MethodMetric})
+     * Metric object. (eg. MethodMetric})
      */
     protected transient ApplicationModel source;
     private boolean available = true;
@@ -91,6 +90,7 @@ public abstract class MetricsEvent {
         return typeWrapper.isAssignableFrom(type);
     }
 
+    @Override
     public String toString() {
         return getClass().getName() + "[source=" + source + "]";
     }

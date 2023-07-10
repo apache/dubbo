@@ -1,4 +1,4 @@
-package org.apache.dubbo.config;
+package org.apache.dubbo.metadata.deploy;
 
 import org.apache.dubbo.common.deploy.ApplicationDeployListener;
 import org.apache.dubbo.common.deploy.DeployListener;
@@ -6,7 +6,11 @@ import org.apache.dubbo.common.deploy.DeployState;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.config.MetadataReportConfig;
+import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.context.ConfigManager;
+import org.apache.dubbo.config.deploy.lifecycle.ApplicationLifecycleManager;
 import org.apache.dubbo.config.deploy.DefaultApplicationDeployer;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.metadata.report.MetadataReportFactory;
@@ -22,9 +26,9 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILE
 import static org.apache.dubbo.remoting.Constants.CLIENT_KEY;
 
 /**
- * metadata package life manager
+ * Metadata Package Life Manager
  */
-public class MetadataLifeManager implements PackageLifeCycleManager {
+public class MetadataLifeManager implements ApplicationLifecycleManager {
 
     private static final String NAME = "metadata";
 
@@ -208,7 +212,7 @@ public class MetadataLifeManager implements PackageLifeCycleManager {
     }
 
     @Override
-    public List<String> dependOnPostDestroy() {
+    public List<String> postDestroyDependencies() {
         return Collections.singletonList("registry");
     }
 
@@ -227,12 +231,12 @@ public class MetadataLifeManager implements PackageLifeCycleManager {
     }
 
     @Override
-    public List<String> dependOnModuleChanged() {
+    public List<String> dependOnPreModuleChanged() {
         return Collections.singletonList("metrics");
     }
 
     @Override
-    public void moduleChanged(ModuleModel changedModule, DeployState moduleState) {
+    public void preModuleChanged(ModuleModel changedModule, DeployState moduleState) {
         exportMetadataService();
     }
 

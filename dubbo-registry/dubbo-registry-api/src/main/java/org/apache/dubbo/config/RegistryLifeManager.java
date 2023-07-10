@@ -7,6 +7,7 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.config.deploy.DefaultApplicationDeployer;
+import org.apache.dubbo.config.deploy.lifecycle.ApplicationLifecycleManager;
 import org.apache.dubbo.metrics.event.MetricsEventBus;
 import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.registry.Registry;
@@ -31,7 +32,7 @@ import static org.apache.dubbo.metadata.MetadataConstants.METADATA_PUBLISH_DELAY
 /**
  * Registry Package Life Manager.
  */
-public class RegistryLifeManager implements PackageLifeCycleManager {
+public class RegistryLifeManager implements ApplicationLifecycleManager {
 
     private static final String NAME = "registry";
 
@@ -113,7 +114,7 @@ public class RegistryLifeManager implements PackageLifeCycleManager {
 
 
     @Override
-    public List<String> dependOnModuleChanged() {
+    public List<String> dependOnPreModuleChanged() {
         return Collections.singletonList("metadata");
     }
 
@@ -124,7 +125,7 @@ public class RegistryLifeManager implements PackageLifeCycleManager {
      * @param moduleState   moduleState
      */
     @Override
-    public void moduleChanged(ModuleModel changedModule, DeployState moduleState) {
+    public void preModuleChanged(ModuleModel changedModule, DeployState moduleState) {
 
         if (!changedModule.isInternal() && moduleState == DeployState.STARTED &&
             !applicationDeployer.getHasPreparedApplicationInstance().get() &&
@@ -187,5 +188,26 @@ public class RegistryLifeManager implements PackageLifeCycleManager {
         }
     }
 
+    @Override
+    public List<String> dependOnPostModuleChanged() {
+        return Collections.singletonList("metrics");
+    }
+
+    @Override
+    public void postModuleChanged(ModuleModel changedModule, DeployState moduleState, DeployState newState) {
+        if(!applicationDeployer.isStarting() && newState.equals(DeployState.STARTED)){
+            refreshMetadata();
+        }
+    }
+
+    private void refreshMetadata(){
+        try {
+            if (applicationDeployer.registered()) {
+                ServiceInstanceMetadataUtils.refreshMetadataAndInstance(applicationDeployer.getApplicationModel());
+            }
+        } catch (Exception e) {
+            logger.error(CONFIG_REFRESH_INSTANCE_ERROR, "", "", "Refresh instance and metadata error.", e);
+        }
+    }
 
 }

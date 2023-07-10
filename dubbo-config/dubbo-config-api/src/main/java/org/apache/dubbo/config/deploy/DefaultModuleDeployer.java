@@ -17,7 +17,6 @@
 package org.apache.dubbo.config.deploy;
 
 import org.apache.dubbo.common.config.ReferenceCache;
-import org.apache.dubbo.common.constants.LoggerCodeConstants;
 import org.apache.dubbo.common.constants.RegisterTypeEnum;
 import org.apache.dubbo.common.deploy.AbstractDeployer;
 import org.apache.dubbo.common.deploy.ApplicationDeployer;
@@ -37,9 +36,8 @@ import org.apache.dubbo.config.ReferenceConfigBase;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.ServiceConfigBase;
 import org.apache.dubbo.config.context.ModuleConfigManager;
+import org.apache.dubbo.config.deploy.lifecycle.loader.ModuleLifecycleManagerLoader;
 import org.apache.dubbo.config.utils.SimpleReferenceCache;
-import org.apache.dubbo.registry.Registry;
-import org.apache.dubbo.registry.RegistryFactory;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ModuleServiceRepository;
@@ -83,6 +81,9 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
     private final SimpleReferenceCache referenceCache;
 
     private final ApplicationDeployer applicationDeployer;
+
+    private final ModuleLifecycleManagerLoader moduleLifecycleManagerLoader;
+
     private CompletableFuture startFuture;
     private Boolean background;
     private Boolean exportAsync;
@@ -105,6 +106,8 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
         for (ModuleDeployListener listener : listeners) {
             this.addDeployListener(listener);
         }
+
+        this.moduleLifecycleManagerLoader = new ModuleLifecycleManagerLoader(this);
     }
 
     @Override
@@ -241,35 +244,36 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
         if (isStopping() || isStopped()) {
             return;
         }
-        onModuleStopping();
-
-        offline();
+        //TODO: ModuleLifeManager.onModulePreDestroy
+        moduleLifecycleManagerLoader.moduleRunPreDestroy();
+//        onModuleStopping();
+//        offline();
     }
 
-    private void offline() {
-        try {
-            ModuleServiceRepository serviceRepository = moduleModel.getServiceRepository();
-            List<ProviderModel> exportedServices = serviceRepository.getExportedServices();
-            for (ProviderModel exportedService : exportedServices) {
-                List<ProviderModel.RegisterStatedURL> statedUrls = exportedService.getStatedUrl();
-                for (ProviderModel.RegisterStatedURL statedURL : statedUrls) {
-                    if (statedURL.isRegistered()) {
-                        doOffline(statedURL);
-                    }
-                }
-            }
-        } catch (Throwable t) {
-            logger.error(LoggerCodeConstants.INTERNAL_ERROR, "", "", "Exceptions occurred when unregister services.", t);
-        }
-    }
-
-    private void doOffline(ProviderModel.RegisterStatedURL statedURL) {
-        RegistryFactory registryFactory =
-            statedURL.getRegistryUrl().getOrDefaultApplicationModel().getExtensionLoader(RegistryFactory.class).getAdaptiveExtension();
-        Registry registry = registryFactory.getRegistry(statedURL.getRegistryUrl());
-        registry.unregister(statedURL.getProviderUrl());
-        statedURL.setRegistered(false);
-    }
+//    private void offline() {
+//        try {
+//            ModuleServiceRepository serviceRepository = moduleModel.getServiceRepository();
+//            List<ProviderModel> exportedServices = serviceRepository.getExportedServices();
+//            for (ProviderModel exportedService : exportedServices) {
+//                List<ProviderModel.RegisterStatedURL> statedUrls = exportedService.getStatedUrl();
+//                for (ProviderModel.RegisterStatedURL statedURL : statedUrls) {
+//                    if (statedURL.isRegistered()) {
+//                        doOffline(statedURL);
+//                    }
+//                }
+//            }
+//        } catch (Throwable t) {
+//            logger.error(LoggerCodeConstants.INTERNAL_ERROR, "", "", "Exceptions occurred when unregister services.", t);
+//        }
+//    }
+//
+//    private void doOffline(ProviderModel.RegisterStatedURL statedURL) {
+//        RegistryFactory registryFactory =
+//            statedURL.getRegistryUrl().getOrDefaultApplicationModel().getExtensionLoader(RegistryFactory.class).getAdaptiveExtension();
+//        Registry registry = registryFactory.getRegistry(statedURL.getRegistryUrl());
+//        registry.unregister(statedURL.getProviderUrl());
+//        statedURL.setRegistered(false);
+//    }
 
     @Override
     public synchronized void postDestroy() throws IllegalStateException {
@@ -355,7 +359,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
         }
     }
 
-    private void onModuleStopping() {
+    public void onModuleStopping() {
         try {
             setStopping();
             logger.info(getIdentifier() + " is stopping.");
@@ -571,4 +575,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
         this.initialize();
     }
 
+    public ModuleModel getModuleModel() {
+        return moduleModel;
+    }
 }

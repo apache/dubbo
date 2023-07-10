@@ -21,7 +21,7 @@ import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import org.junit.jupiter.api.Test;
-
+//TODO: move to metrics
 class DefaultApplicationDeployerTest {
 
     @Test

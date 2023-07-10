@@ -29,9 +29,11 @@ import java.util.function.Consumer;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
 
 public class ListenerRegistryWrapper implements Registry {
+
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ListenerRegistryWrapper.class);
 
     private final Registry registry;
+
     private final List<RegistryServiceListener> listeners;
 
 

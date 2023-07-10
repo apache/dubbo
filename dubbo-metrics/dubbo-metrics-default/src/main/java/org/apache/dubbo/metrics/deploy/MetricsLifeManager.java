@@ -1,4 +1,4 @@
-package org.apache.dubbo.config.deploy;
+package org.apache.dubbo.metrics.deploy;
 
 import org.apache.dubbo.common.constants.LoggerCodeConstants;
 import org.apache.dubbo.common.deploy.DeployState;
@@ -7,7 +7,8 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.MetricsConfig;
-import org.apache.dubbo.config.PackageLifeCycleManager;
+import org.apache.dubbo.config.deploy.DefaultApplicationDeployer;
+import org.apache.dubbo.config.deploy.lifecycle.ApplicationLifecycleManager;
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
 import org.apache.dubbo.metrics.report.DefaultMetricsReporterFactory;
 import org.apache.dubbo.metrics.report.MetricsReporter;
@@ -18,6 +19,7 @@ import org.apache.dubbo.rpc.model.ModuleModel;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_METRICS_COLLECTOR_EXCEPTION;
@@ -27,7 +29,7 @@ import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMET
 /**
  * metrics package life manager.
  */
-public class MetricsLifeManager implements PackageLifeCycleManager {
+public class MetricsLifeManager implements ApplicationLifecycleManager {
 
     private static final String NAME = "metrics";
 
@@ -67,6 +69,7 @@ public class MetricsLifeManager implements PackageLifeCycleManager {
     }
 
     private void initMetricsReporter() {
+
         ApplicationModel applicationModel = applicationDeployer.getApplicationModel();
         DefaultMetricsCollector collector = applicationDeployer.getApplicationModel().getBeanFactory().getBean(DefaultMetricsCollector.class);
         Optional<MetricsConfig> configOptional = applicationDeployer.getConfigManager().getMetrics();
@@ -154,7 +157,7 @@ public class MetricsLifeManager implements PackageLifeCycleManager {
      * @param moduleState   moduleState
      */
     @Override
-    public void moduleChanged(ModuleModel changedModule, DeployState moduleState) {
+    public void preModuleChanged(ModuleModel changedModule, DeployState moduleState) {
         if (!changedModule.isInternal() && moduleState == DeployState.STARTED && !applicationDeployer.getHasPreparedApplicationInstance().get()) {
             exportMetricsService();
         }
@@ -173,4 +176,30 @@ public class MetricsLifeManager implements PackageLifeCycleManager {
             }
         }
     }
+
+    @Override
+    public List<String> dependOnPostModuleChanged() {
+        return Collections.singletonList("default");
+    }
+
+    @Override
+    public void postModuleChanged(ModuleModel changedModule, DeployState moduleState, DeployState newState) {
+        if(DeployState.STARTED.equals(newState) && applicationDeployer.isStarting()){
+            startMetricsCollector();
+        }
+    }
+
+    private void startMetricsCollector() {
+
+        DefaultMetricsCollector collector = applicationDeployer.getApplicationModel().getBeanFactory().getBean(DefaultMetricsCollector.class);
+        ErrorTypeAwareLogger deployerLogger  = applicationDeployer.getLogger();
+
+        if (Objects.nonNull(collector) && collector.isThreadpoolCollectEnabled()) {
+            collector.registryDefaultSample();
+        }
+        if (deployerLogger.isInfoEnabled()) {
+            deployerLogger.info(applicationDeployer.getIdentifier() + " is ready.");
+        }
+    }
+
 }

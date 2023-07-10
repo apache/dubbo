@@ -18,22 +18,13 @@
 package org.apache.dubbo.metrics.metadata.event;
 
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
+import org.apache.dubbo.metrics.MetricsConstants;
 import org.apache.dubbo.metrics.event.TimeCounterEvent;
 import org.apache.dubbo.metrics.metadata.collector.MetadataMetricsCollector;
+import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.key.MetricsLevel;
 import org.apache.dubbo.metrics.model.key.TypeWrapper;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-
-import static org.apache.dubbo.metrics.MetricsConstants.ATTACHMENT_KEY_SERVICE;
-import static org.apache.dubbo.metrics.model.key.MetricsKey.METADATA_PUSH_METRIC_NUM;
-import static org.apache.dubbo.metrics.model.key.MetricsKey.METADATA_PUSH_METRIC_NUM_FAILED;
-import static org.apache.dubbo.metrics.model.key.MetricsKey.METADATA_PUSH_METRIC_NUM_SUCCEED;
-import static org.apache.dubbo.metrics.model.key.MetricsKey.METADATA_SUBSCRIBE_METRIC_NUM;
-import static org.apache.dubbo.metrics.model.key.MetricsKey.METADATA_SUBSCRIBE_METRIC_NUM_FAILED;
-import static org.apache.dubbo.metrics.model.key.MetricsKey.METADATA_SUBSCRIBE_METRIC_NUM_SUCCEED;
-import static org.apache.dubbo.metrics.model.key.MetricsKey.STORE_PROVIDER_METADATA;
-import static org.apache.dubbo.metrics.model.key.MetricsKey.STORE_PROVIDER_METADATA_FAILED;
-import static org.apache.dubbo.metrics.model.key.MetricsKey.STORE_PROVIDER_METADATA_SUCCEED;
 
 /**
  * Registry related events
@@ -50,16 +41,16 @@ public class MetadataEvent extends TimeCounterEvent {
     }
 
     public static MetadataEvent toPushEvent(ApplicationModel applicationModel) {
-        return new MetadataEvent(applicationModel, new TypeWrapper(MetricsLevel.APP, METADATA_PUSH_METRIC_NUM, METADATA_PUSH_METRIC_NUM_SUCCEED, METADATA_PUSH_METRIC_NUM_FAILED));
+        return new MetadataEvent(applicationModel, new TypeWrapper(MetricsLevel.APP, MetricsKey.METADATA_PUSH_METRIC_NUM, MetricsKey.METADATA_PUSH_METRIC_NUM_SUCCEED, MetricsKey.METADATA_PUSH_METRIC_NUM_FAILED));
     }
 
     public static MetadataEvent toSubscribeEvent(ApplicationModel applicationModel) {
-        return new MetadataEvent(applicationModel, new TypeWrapper(MetricsLevel.APP, METADATA_SUBSCRIBE_METRIC_NUM, METADATA_SUBSCRIBE_METRIC_NUM_SUCCEED, METADATA_SUBSCRIBE_METRIC_NUM_FAILED));
+        return new MetadataEvent(applicationModel, new TypeWrapper(MetricsLevel.APP, MetricsKey.METADATA_SUBSCRIBE_METRIC_NUM, MetricsKey.METADATA_SUBSCRIBE_METRIC_NUM_SUCCEED, MetricsKey.METADATA_SUBSCRIBE_METRIC_NUM_FAILED));
     }
 
     public static MetadataEvent toServiceSubscribeEvent(ApplicationModel applicationModel, String serviceKey) {
-        MetadataEvent metadataEvent = new MetadataEvent(applicationModel, new TypeWrapper(MetricsLevel.APP, STORE_PROVIDER_METADATA, STORE_PROVIDER_METADATA_SUCCEED, STORE_PROVIDER_METADATA_FAILED));
-        metadataEvent.putAttachment(ATTACHMENT_KEY_SERVICE, serviceKey);
+        MetadataEvent metadataEvent = new MetadataEvent(applicationModel, new TypeWrapper(MetricsLevel.APP, MetricsKey.STORE_PROVIDER_METADATA, MetricsKey.STORE_PROVIDER_METADATA_SUCCEED, MetricsKey.STORE_PROVIDER_METADATA_FAILED));
+        metadataEvent.putAttachment(MetricsConstants.ATTACHMENT_KEY_SERVICE, serviceKey);
         return metadataEvent;
     }
 
