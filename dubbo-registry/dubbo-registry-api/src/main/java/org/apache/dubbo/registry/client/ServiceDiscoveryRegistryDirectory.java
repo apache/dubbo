@@ -498,6 +498,11 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
         this.destroyInvokers();
     }
 
+    @Override
+    public String subscribedKey() {
+        return CollectionUtils.isEmpty(serviceListener.getServiceNames()) ? super.subscribedKey() : serviceListener.getServiceNames().toString();
+    }
+
     /**
      * Check whether the invoker in the cache needs to be destroyed
      * If set attribute of url: refer.autodestroy=false, the invokers will only increase without decreasing,there may be a refer leak
@@ -566,7 +571,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
         }
 
         void addNotifyListener(ServiceDiscoveryRegistryDirectory<?> listener) {
-            if (listeners.size() == 0) {
+            if (listeners.isEmpty()) {
                 this.initWith(moduleModel.getApplicationModel().getApplicationName() + CONFIGURATORS_SUFFIX);
             }
             this.listeners.add(listener);
@@ -574,7 +579,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
 
         void removeNotifyListener(ServiceDiscoveryRegistryDirectory<?> listener) {
             this.listeners.remove(listener);
-            if (listeners.size() == 0) {
+            if (listeners.isEmpty()) {
                 this.stopListen(moduleModel.getApplicationModel().getApplicationName() + CONFIGURATORS_SUFFIX);
             }
         }

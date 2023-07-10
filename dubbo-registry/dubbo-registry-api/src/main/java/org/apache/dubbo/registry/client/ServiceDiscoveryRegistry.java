@@ -393,7 +393,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
             Lock mappingLock = serviceNameMapping.getMappingLock(event.getServiceKey());
             try {
                 mappingLock.lock();
-                if (CollectionUtils.isEmpty(tempOldApps) && newApps.size() > 0) {
+                if (CollectionUtils.isEmpty(tempOldApps) && CollectionUtils.isNotEmpty(newApps)) {
                     serviceNameMapping.putCachedMapping(ServiceNameMapping.buildMappingKey(url), newApps);
                     subscribeURLs(url, listener, newApps);
                     oldApps = newApps;

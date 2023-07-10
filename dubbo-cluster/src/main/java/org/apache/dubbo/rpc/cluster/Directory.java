@@ -98,4 +98,8 @@ public interface Directory<T> extends Node {
     default boolean isNotificationReceived() {
         return false;
     }
+
+    default String subscribedKey() {
+        return getConsumerUrl().getServiceKey();
+    }
 }

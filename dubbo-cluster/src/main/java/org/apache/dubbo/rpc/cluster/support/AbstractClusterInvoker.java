@@ -364,7 +364,7 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
         if (CollectionUtils.isEmpty(invokers)) {
             throw new RpcException(RpcException.NO_INVOKER_AVAILABLE_AFTER_FILTER, "Failed to invoke the method "
                 + RpcUtils.getMethodName(invocation) + " in the service " + getInterface().getName()
-                + ". No provider available for the service " + getDirectory().getConsumerUrl().getServiceKey()
+                + ". No provider available for subscribe " + getDirectory().subscribedKey()
                 + " from registry " + getDirectory()
                 + " on the consumer " + NetUtils.getLocalHost()
                 + " using the dubbo version " + Version.getVersion()
