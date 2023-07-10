@@ -17,6 +17,7 @@
 package org.apache.dubbo.metrics.config.event;
 
 import org.apache.dubbo.metrics.config.collector.ConfigCenterMetricsCollector;
+import org.apache.dubbo.metrics.event.MetricsEvent;
 import org.apache.dubbo.metrics.event.SimpleMetricsEventMulticaster;
 import org.apache.dubbo.metrics.event.TimeCounterEvent;
 import org.apache.dubbo.metrics.listener.AbstractMetricsKeyListener;

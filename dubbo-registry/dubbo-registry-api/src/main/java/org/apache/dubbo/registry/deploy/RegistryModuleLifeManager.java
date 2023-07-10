@@ -1,10 +1,12 @@
-package org.apache.dubbo.registry;
+package org.apache.dubbo.registry.deploy;
 
 import org.apache.dubbo.common.constants.LoggerCodeConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.deploy.DefaultModuleDeployer;
 import org.apache.dubbo.config.deploy.lifecycle.ModuleLifecycleManager;
+import org.apache.dubbo.registry.Registry;
+import org.apache.dubbo.registry.RegistryFactory;
 import org.apache.dubbo.rpc.model.ModuleServiceRepository;
 import org.apache.dubbo.rpc.model.ProviderModel;
 

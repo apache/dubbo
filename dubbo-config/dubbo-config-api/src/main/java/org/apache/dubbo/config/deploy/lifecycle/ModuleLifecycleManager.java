@@ -25,7 +25,7 @@ public interface ModuleLifecycleManager extends LifecycleManager {
      *
      * @return ApplicationLifecycleManager names. Can be null or empty list.
      */
-    default List<String> dependOnModulePreDestroy(){return null;};
+    default List<String> dependOnModulePreDestroy(){return null;}
 
     /**
      * Define what to do when {@link DefaultModuleDeployer#preDestroy()}

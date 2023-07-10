@@ -1,4 +1,4 @@
-package org.apache.dubbo.config.deploy;
+package org.apache.dubbo.configcenter.deploy;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
@@ -14,6 +14,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ConfigCenterConfig;
 import org.apache.dubbo.config.RegistryConfig;
+import org.apache.dubbo.config.deploy.DefaultApplicationDeployer;
 import org.apache.dubbo.config.deploy.lifecycle.ApplicationLifecycleManager;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.metrics.config.event.ConfigCenterEvent;

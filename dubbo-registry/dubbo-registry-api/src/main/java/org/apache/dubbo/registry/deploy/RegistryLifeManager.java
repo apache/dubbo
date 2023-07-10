@@ -1,4 +1,4 @@
-package org.apache.dubbo.config;
+package org.apache.dubbo.registry.deploy;
 
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.constants.LoggerCodeConstants;
