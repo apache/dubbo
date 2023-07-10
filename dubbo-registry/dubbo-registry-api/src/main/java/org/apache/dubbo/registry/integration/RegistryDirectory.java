@@ -247,13 +247,9 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
         if (invokerUrls.size() == 1
             && invokerUrls.get(0) != null
             && EMPTY_PROTOCOL.equals(invokerUrls.get(0).getProtocol())) {
-            refreshRouter(BitList.emptyList(), () ->
-                this.forbidden = true // Forbid to access
-            );
+            refreshRouter(BitList.emptyList(), () -> {});
             destroyAllInvokers(); // Close all invokers
         } else {
-            this.forbidden = false; // Allow to access
-
             if (invokerUrls == Collections.<URL>emptyList()) {
                 invokerUrls = new ArrayList<>();
             }

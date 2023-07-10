@@ -94,7 +94,6 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
      * Initialization at the time of injection, the assertion is not null
      */
     protected Registry registry;
-    protected volatile boolean forbidden = false;
     protected boolean shouldRegister;
     protected boolean shouldSimplified;
 
@@ -192,7 +191,7 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
     @Override
     public List<Invoker<T>> doList(SingleRouterChain<T> singleRouterChain,
                                    BitList<Invoker<T>> invokers, Invocation invocation) {
-        if (forbidden && shouldFailFast) {
+        if (invokers.isEmpty() && shouldFailFast) {
             // 1. No service provider 2. Service providers are disabled
             throw new RpcException(RpcException.FORBIDDEN_EXCEPTION, "No provider available from registry " +
                 getUrl().getAddress() + " for service " + getConsumerUrl().getServiceKey() + " on consumer " +
@@ -284,7 +283,7 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
 
     @Override
     public boolean isAvailable() {
-        if (isDestroyed() || this.forbidden) {
+        if (isDestroyed()) {
             return false;
         }
         for (Invoker<T> validInvoker : getValidInvokers()) {
