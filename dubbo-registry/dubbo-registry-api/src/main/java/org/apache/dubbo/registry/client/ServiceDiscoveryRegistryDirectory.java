@@ -500,7 +500,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
 
     @Override
     public String subscribedKey() {
-        return CollectionUtils.isEmpty(serviceListener.getServiceNames()) ? super.subscribedKey() : serviceListener.getServiceNames().toString();
+        return serviceListener == null || CollectionUtils.isEmpty(serviceListener.getServiceNames()) ? super.subscribedKey() : serviceListener.getServiceNames().toString();
     }
 
     /**
