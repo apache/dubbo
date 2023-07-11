@@ -286,15 +286,11 @@ public class DubboMergingDigest extends DubboAbstractTDigest {
         if (Double.isNaN(x)) {
             throw new IllegalArgumentException("Cannot add NaN to t-digest");
         }
-        while (merging) {
-            try {
-                Thread.sleep(10);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
+
+        synchronized (this) {
+            if (tempUsed.get() >= tempWeight.length - lastUsedCell.get() - 1) {
+                mergeNewValues();
             }
-        }
-        if (tempUsed.get() >= tempWeight.length - lastUsedCell.get() - 1) {
-            mergeNewValues();
         }
         int where = tempUsed.getAndIncrement();
         tempWeight[where] = w;
@@ -327,12 +323,7 @@ public class DubboMergingDigest extends DubboAbstractTDigest {
     }
 
     private synchronized void mergeNewValues() {
-        merging = true;
-        try {
-            mergeNewValues(false, compression);
-        } finally {
-            merging = false;
-        }
+        mergeNewValues(false, compression);
     }
 
     private void mergeNewValues(boolean force, double compression) {
