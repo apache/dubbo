@@ -119,8 +119,6 @@ public class DubboMergingDigest extends DubboAbstractTDigest {
     // weight limits.
     public static boolean useWeightLimit = true;
 
-    private volatile boolean merging = false;
-
     /**
      * Allocates a buffer merging t-digest.  This is the normally used constructor that
      * allocates default sized internal arrays.  Other versions are available, but should
