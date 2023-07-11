@@ -631,32 +631,32 @@
             </dependency>
             <dependency>
                 <groupId>org.apache.dubbo</groupId>
-                <artifactId>dubbo-spring-boot-observability-starters</artifactId>
+                <artifactId>dubbo-observability-spring-boot-starters</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.dubbo</groupId>
-                <artifactId>dubbo-spring-boot-observability-autoconfigure</artifactId>
+                <artifactId>dubbo-observability-spring-boot-autoconfigure</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.dubbo</groupId>
-                <artifactId>dubbo-spring-boot-tracing-otel-zipkin-starter</artifactId>
+                <artifactId>dubbo-tracing-otel-zipkin-spring-boot-starter</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.dubbo</groupId>
-                <artifactId>dubbo-spring-boot-tracing-otel-otlp-starter</artifactId>
+                <artifactId>dubbo-tracing-otel-otlp-spring-boot-starter</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.dubbo</groupId>
-                <artifactId>dubbo-spring-boot-tracing-brave-zipkin-starter</artifactId>
+                <artifactId>dubbo-tracing-brave-zipkin-spring-boot-starter</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.dubbo</groupId>
-                <artifactId>dubbo-spring-boot-observability-starter</artifactId>
+                <artifactId>dubbo-observability-spring-boot-starter</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -672,6 +672,16 @@
             <dependency>
                 <groupId>org.apache.dubbo</groupId>
                 <artifactId>dubbo-zookeeper-curator5-spring-boot-starter</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.dubbo</groupId>
+                <artifactId>dubbo-sentinel-spring-boot-starter</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.dubbo</groupId>
+                <artifactId>dubbo-seata-spring-boot-starter</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
