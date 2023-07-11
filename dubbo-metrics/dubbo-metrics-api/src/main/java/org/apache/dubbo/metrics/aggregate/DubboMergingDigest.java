@@ -286,6 +286,7 @@ public class DubboMergingDigest extends DubboAbstractTDigest {
         }
 
         synchronized (this) {
+            // There is a small probability of entering here
             if (tempUsed.get() >= tempWeight.length - lastUsedCell.get() - 1) {
                 mergeNewValues();
             }
