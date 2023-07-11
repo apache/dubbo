@@ -97,4 +97,8 @@ public class MetadataIdentifier extends BaseServiceMetadataIdentifier implements
         this.application = application;
     }
 
+    public String getUniqueServiceName() {
+        return serviceInterface != null ? URL.buildKey(serviceInterface, getGroup(), getVersion()) : null;
+    }
+
 }

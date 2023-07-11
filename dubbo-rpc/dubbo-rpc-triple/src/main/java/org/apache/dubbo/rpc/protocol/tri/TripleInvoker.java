@@ -63,7 +63,6 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -91,6 +90,8 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
     private final ExecutorService streamExecutor;
     private final String acceptEncodings;
     private final TripleWriteQueue writeQueue = new TripleWriteQueue(256);
+
+    private static final boolean setFutureWhenSync = Boolean.parseBoolean(System.getProperty(CommonConstants.SET_FUTURE_IN_SYNC_MODE, "true"));
 
     public TripleInvoker(Class<T> serviceType,
         URL url,
@@ -133,7 +134,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         final MethodDescriptor methodDescriptor = serviceDescriptor.getMethod(
             invocation.getMethodName(),
             invocation.getParameterTypes());
-        Executor callbackExecutor = isSync(methodDescriptor, invocation) ? new ThreadlessExecutor() : streamExecutor;
+        ExecutorService callbackExecutor = isSync(methodDescriptor, invocation) ? new ThreadlessExecutor() : streamExecutor;
         ClientCall call = new TripleClientCall(connectionClient, callbackExecutor,
             getUrl().getOrDefaultFrameworkModel(), writeQueue);
         AsyncRpcResult result;
@@ -217,13 +218,13 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
     }
 
     AsyncRpcResult invokeUnary(MethodDescriptor methodDescriptor, Invocation invocation,
-                               ClientCall call, Executor callbackExecutor) {
+                               ClientCall call, ExecutorService callbackExecutor) {
 
-        int timeout = RpcUtils.calculateTimeout(getUrl(), invocation, invocation.getMethodName(), 3000);
+        int timeout = RpcUtils.calculateTimeout(getUrl(), invocation, RpcUtils.getMethodName(invocation), 3000);
         if (timeout <= 0) {
             return AsyncRpcResult.newDefaultAsyncResult(new RpcException(RpcException.TIMEOUT_TERMINATE,
                 "No time left for making the following call: " + invocation.getServiceName() + "."
-                    + invocation.getMethodName() + ", terminate directly."), invocation);
+                    + RpcUtils.getMethodName(invocation)+ ", terminate directly."), invocation);
         }
         invocation.setAttachment(TIMEOUT_KEY, String.valueOf(timeout));
 
@@ -241,7 +242,9 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
             pureArgument = invocation.getArguments();
         }
         result = new AsyncRpcResult(future, invocation);
-        FutureContext.getContext().setCompatibleFuture(future);
+        if (setFutureWhenSync || ((RpcInvocation) invocation).getInvokeMode() != InvokeMode.SYNC) {
+            FutureContext.getContext().setCompatibleFuture(future);
+        }
 
         result.setExecutor(callbackExecutor);
         ClientCall.Listener callListener = new UnaryClientCallListener(future);

@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcStatus;
+import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
@@ -60,7 +61,7 @@ public class LeastActiveLoadBalance extends AbstractLoadBalance {
         for (int i = 0; i < length; i++) {
             Invoker<T> invoker = invokers.get(i);
             // Get the active number of the invoker
-            int active = RpcStatus.getStatus(invoker.getUrl(), invocation.getMethodName()).getActive();
+            int active = RpcStatus.getStatus(invoker.getUrl(), RpcUtils.getMethodName(invocation)).getActive();
             // Get the weight of the invoker's configuration. The default value is 100.
             int afterWarmup = getWeight(invoker, invocation);
             // save for later use
@@ -97,7 +98,7 @@ public class LeastActiveLoadBalance extends AbstractLoadBalance {
             return invokers.get(leastIndexes[0]);
         }
         if (!sameWeight && totalWeight > 0) {
-            // If (not every invoker has the same weight & at least one invoker's weight>0), select randomly based on 
+            // If (not every invoker has the same weight & at least one invoker's weight>0), select randomly based on
             // totalWeight.
             int offsetWeight = ThreadLocalRandom.current().nextInt(totalWeight);
             // Return a invoker based on the random value.
