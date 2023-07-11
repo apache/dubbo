@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.common.threadpool.manager;
 
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.resource.Disposable;
@@ -31,6 +32,7 @@ import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_SERVER_SHUTDOWN_TIMEOUT;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXPECTED_EXECUTORS_SHUTDOWN;
 
 public class FrameworkExecutorRepository implements Disposable {
@@ -225,6 +227,12 @@ public class FrameworkExecutorRepository implements Disposable {
     private void shutdownExecutorService(ExecutorService executorService, String name) {
         try {
             executorService.shutdownNow();
+            if (!executorService.awaitTermination(
+                ConfigurationUtils.reCalShutdownTime(DEFAULT_SERVER_SHUTDOWN_TIMEOUT),
+                TimeUnit.MILLISECONDS)) {
+                logger.warn(COMMON_UNEXPECTED_EXECUTORS_SHUTDOWN, "", "",
+                    "Wait global executor service terminated timeout.");
+            }
         } catch (Exception e) {
             String msg = "shutdown executor service [" + name + "] failed: ";
             logger.warn(COMMON_UNEXPECTED_EXECUTORS_SHUTDOWN, "", "", msg + e.getMessage(), e);
