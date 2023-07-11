@@ -753,7 +753,7 @@ public class ApplicationConfig extends AbstractConfig {
         if (StringUtils.isEmpty(getName())) {
             String defaultName = DEFAULT_NAME_PREFIX + UUID.randomUUID();
             this.setName(defaultName);
-            LOGGER.warn("No application name was set, '" + defaultName + "' will be used as the default application name," +
+            LOGGER.info("No application name was set, '" + defaultName + "' will be used as the default application name," +
                 " it's highly recommended to set a unique and customized name for it can be critical for some service governance features.");
         }
     }
