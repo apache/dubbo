@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.metadata.rest.springmvc;
 
+import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.metadata.rest.AbstractServiceRestMetadataResolver;
 import org.apache.dubbo.metadata.rest.ServiceRestMetadataResolver;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -45,6 +46,7 @@ import static org.apache.dubbo.metadata.rest.RestMetadataConstants.SPRING_MVC.RE
  *
  * @since 2.7.6
  */
+@Activate(order = 100)
 public class SpringMvcServiceRestMetadataResolver extends AbstractServiceRestMetadataResolver {
 
     private static final int FIRST_ELEMENT_INDEX = 0;

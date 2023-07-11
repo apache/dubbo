@@ -32,6 +32,7 @@ import org.apache.dubbo.rpc.protocol.rest.exception.ParamParseException;
 import org.apache.dubbo.rpc.protocol.rest.pair.InvokerAndRestMethodMetadataPair;
 import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
 import org.apache.dubbo.rpc.protocol.rest.util.HttpHeaderUtil;
+import org.apache.dubbo.rpc.protocol.rest.util.NoAnnotationBodyParseUtil;
 
 
 import java.lang.reflect.Method;
@@ -91,10 +92,15 @@ public class RestRPCInvocationUtil {
         ProviderParseContext parseContext = new ProviderParseContext(request);
         parseContext.setResponse(originResponse);
         parseContext.setRequest(originRequest);
-
+        parseContext.setNoAnnotationMode(restMethodMetadata.currentCodeStyleIsNoAnnotationMode());
         Object[] objects = new Object[restMethodMetadata.getArgInfos().size()];
         parseContext.setArgs(Arrays.asList(objects));
         parseContext.setArgInfos(restMethodMetadata.getArgInfos());
+
+        // parse object arrays body
+        if (restMethodMetadata.currentCodeStyleIsNoAnnotationMode()) {
+            parseContext.setArrayArgs(NoAnnotationBodyParseUtil.doParse(parseContext));
+        }
 
 
         return parseContext;

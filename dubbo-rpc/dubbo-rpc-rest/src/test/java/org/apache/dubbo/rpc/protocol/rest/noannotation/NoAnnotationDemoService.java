@@ -14,24 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.provider;
+package org.apache.dubbo.rpc.protocol.rest.noannotation;
 
 
-import org.apache.dubbo.common.extension.ExtensionScope;
-import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.metadata.rest.ParamType;
-import org.apache.dubbo.rpc.protocol.rest.annotation.ParamParser;
-
-@SPI(scope = ExtensionScope.FRAMEWORK)
-public interface BaseProviderParamParser extends ParamParser<ProviderParseContext> {
+import org.apache.dubbo.rpc.protocol.rest.User;
 
 
-    default boolean matchParseType(Class paramAnno) {
+public interface NoAnnotationDemoService {
+    Integer hello(Integer a, Integer b);
 
-        ParamType paramAnnotType = getParamType();
-        return paramAnnotType.supportAnno(paramAnno);
-    }
+    String error();
 
+    String sayHello(String name);
 
-    ParamType getParamType();
+    User noBodyArg(User user);
+
 }

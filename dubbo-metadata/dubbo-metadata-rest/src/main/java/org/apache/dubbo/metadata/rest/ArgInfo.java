@@ -20,7 +20,7 @@ package org.apache.dubbo.metadata.rest;
 import java.lang.reflect.Parameter;
 
 /**
- *  description of service method args info
+ * description of service method args info
  */
 public class ArgInfo {
     /**
