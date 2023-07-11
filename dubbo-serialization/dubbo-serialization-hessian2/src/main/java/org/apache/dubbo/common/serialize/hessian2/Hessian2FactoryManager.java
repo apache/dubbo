@@ -64,7 +64,7 @@ public class Hessian2FactoryManager {
         }
 
         SerializerFactory factory = CL_2_SERIALIZER_FACTORY.get(classLoader);
-        if (!CL_2_SERIALIZER_FACTORY.containsKey(classLoader)) {
+        if (factory != null) {
             synchronized (this) {
                 if (!CL_2_SERIALIZER_FACTORY.containsKey(classLoader)) {
                     SerializerFactory serializerFactory = createSerializerFactory();

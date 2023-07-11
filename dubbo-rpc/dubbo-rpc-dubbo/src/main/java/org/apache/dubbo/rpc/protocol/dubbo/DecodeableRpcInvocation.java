@@ -158,9 +158,9 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
                 pts = drawPts(path, version, desc, pts);
                 if (pts == DubboCodec.EMPTY_CLASS_ARRAY) {
                     if (RpcUtils.isGenericCall(desc, getMethodName())) {
-                        pts = new Class<?>[]{String.class, String[].class, Object[].class};
+                        pts = DubboCodec.GENERIC_PTS_ARRAY;
                     } else if (RpcUtils.isEcho(desc, getMethodName())) {
-                        pts = new Class<?>[]{Object.class};
+                        pts = DubboCodec.ECHO_PTS_ARRAY;
                     } else {
                         throw new IllegalArgumentException("Service not found:" + path + ", " + getMethodName());
                     }
