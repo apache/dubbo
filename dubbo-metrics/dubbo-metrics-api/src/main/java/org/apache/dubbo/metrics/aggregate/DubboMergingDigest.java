@@ -322,7 +322,7 @@ public class DubboMergingDigest extends DubboAbstractTDigest {
         throw new MetricsNeverHappenException("Method not used");
     }
 
-    private synchronized void mergeNewValues() {
+    private void mergeNewValues() {
         mergeNewValues(false, compression);
     }
 
