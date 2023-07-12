@@ -17,7 +17,9 @@
 package org.apache.dubbo.rpc.protocol.rest;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 
 import org.apache.dubbo.rpc.Exporter;
@@ -38,14 +40,14 @@ import org.junit.jupiter.api.Assertions;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
+import java.util.List;
+
 
 class NoAnnotationRestProtocolTest {
     private final Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getExtension("rest");
     private final ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
-    private final int availablePort = NetUtils.getAvailablePort();
-    private final URL exportUrl = URL.valueOf("rest://127.0.0.1:" + availablePort + "/rest?interface=org.apache.dubbo.rpc.protocol.rest.noannotation.NoAnnotationDemoService");
     private final ModuleServiceRepository repository = ApplicationModel.defaultModel().getDefaultModule().getServiceRepository();
-    private static final String SERVER = "netty4";
 
     @AfterEach
     public void tearDown() {
@@ -54,6 +56,19 @@ class NoAnnotationRestProtocolTest {
     }
 
     @Test
+    void testJson() {
+        List<String> jsons = Arrays.asList("fastjson", "fastjson2", "jackson", "gson");
+        for (String json : jsons) {
+            new JsonUtils() {
+                public void clearJson() {
+                    setJson(null);
+                }
+            }.clearJson();
+            System.setProperty(CommonConstants.PREFER_JSON_FRAMEWORK_NAME, json);
+            testRestProtocol();
+        }
+    }
+
     void testRestProtocol() {
         URL url = URL.valueOf("rest://127.0.0.1:" + NetUtils.getAvailablePort() + "/?version=1.0.0&interface=org.apache.dubbo.rpc.protocol.rest.noannotation.NoAnnotationDemoService");
 
