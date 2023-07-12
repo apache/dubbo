@@ -14,13 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.cache;
+package org.apache.dubbo.metadata.event;
 
-/**
- * ValidationService
- */
-public interface CacheService {
+public interface MappingListener {
+    void onEvent(MappingChangedEvent event);
 
-    String findCache(String id);
-
+    void stop();
 }

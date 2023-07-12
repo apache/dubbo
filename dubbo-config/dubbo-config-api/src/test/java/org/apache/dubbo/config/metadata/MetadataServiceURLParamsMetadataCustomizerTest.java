@@ -16,15 +16,15 @@
  */
 package org.apache.dubbo.config.metadata;
 
+import org.apache.dubbo.config.api.DemoService;
+import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
-import org.apache.dubbo.config.api.DemoService;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
-import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.metadata.MetadataServiceURLParamsMetadataCustomizer;
 import org.apache.dubbo.rpc.model.ApplicationModel;

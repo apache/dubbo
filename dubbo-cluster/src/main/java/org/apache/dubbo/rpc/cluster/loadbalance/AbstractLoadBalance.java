@@ -28,10 +28,10 @@ import java.util.List;
 
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_SERVICE_REFERENCE_PATH;
-import static org.apache.dubbo.rpc.cluster.Constants.DEFAULT_WARMUP;
-import static org.apache.dubbo.rpc.cluster.Constants.DEFAULT_WEIGHT;
-import static org.apache.dubbo.rpc.cluster.Constants.WARMUP_KEY;
-import static org.apache.dubbo.rpc.cluster.Constants.WEIGHT_KEY;
+import static org.apache.dubbo.common.constants.ClusterConstants.DEFAULT_WARMUP;
+import static org.apache.dubbo.common.constants.ClusterConstants.DEFAULT_WEIGHT;
+import static org.apache.dubbo.common.constants.ClusterConstants.WARMUP_KEY;
+import static org.apache.dubbo.common.constants.ClusterConstants.WEIGHT_KEY;
 
 /**
  * AbstractLoadBalance

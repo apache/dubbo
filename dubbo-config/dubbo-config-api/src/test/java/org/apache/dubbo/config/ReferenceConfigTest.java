@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config;
 
+import org.apache.dubbo.config.api.DemoService;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.compiler.support.CtClassBuilder;
@@ -27,7 +28,6 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.annotation.Argument;
 import org.apache.dubbo.config.annotation.Method;
 import org.apache.dubbo.config.annotation.Reference;
-import org.apache.dubbo.config.api.DemoService;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.context.ModuleConfigManager;
 import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
@@ -114,12 +114,12 @@ import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_HOST;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_PORT;
-import static org.apache.dubbo.registry.Constants.REGISTER_IP_KEY;
+import static org.apache.dubbo.common.registry.Constants.REGISTER_IP_KEY;
 import static org.apache.dubbo.rpc.Constants.DEFAULT_STUB_EVENT;
 import static org.apache.dubbo.rpc.Constants.LOCAL_KEY;
 import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
 import static org.apache.dubbo.rpc.Constants.SCOPE_REMOTE;
-import static org.apache.dubbo.rpc.cluster.Constants.PEER_KEY;
+import static org.apache.dubbo.common.constants.ClusterConstants.PEER_KEY;
 
 class ReferenceConfigTest {
     private static String zkUrl1;

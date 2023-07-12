@@ -41,7 +41,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.InstanceMetadataChangedListener;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.RevisionResolver;
-import org.apache.dubbo.registry.Constants;
+import org.apache.dubbo.common.registry.Constants;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 import org.apache.dubbo.registry.client.metadata.MetadataServiceDelegation;

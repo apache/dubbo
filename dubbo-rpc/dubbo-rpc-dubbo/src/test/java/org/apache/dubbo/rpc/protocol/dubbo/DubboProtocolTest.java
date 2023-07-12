@@ -121,8 +121,8 @@ class DubboProtocolTest {
 //    public void testDubboProtocolWithMina() throws Exception {
 //        DemoService service = new DemoServiceImpl();
 //        int port = NetUtils.getAvailablePort();
-//        protocol.export(proxy.getInvoker(service, DemoService.class, URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName()).addParameter(Constants.SERVER_KEY, "mina")));
-//        service = proxy.getProxy(protocol.refer(DemoService.class, URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName()).addParameter(Constants.CLIENT_KEY, "mina").addParameter("timeout",
+//        protocol.export(proxy.getInvoker(service, DemoService.class, URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName()).addParameter(MonitorConstants.SERVER_KEY, "mina")));
+//        service = proxy.getProxy(protocol.refer(DemoService.class, URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName()).addParameter(MonitorConstants.CLIENT_KEY, "mina").addParameter("timeout",
 //                3000L)));
 //        for (int i = 0; i < 10; i++) {
 //            assertEquals(service.enumlength(new Type[]{}), Type.Lower);

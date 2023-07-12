@@ -75,7 +75,7 @@ import static org.apache.dubbo.common.constants.RegistryConstants.ENABLE_EMPTY_P
 import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDERS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTER_CONSUMER_URL_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.ROUTERS_CATEGORY;
-import static org.apache.dubbo.registry.Constants.ADMIN_PROTOCOL;
+import static org.apache.dubbo.common.registry.Constants.ADMIN_PROTOCOL;
 import static org.apache.dubbo.registry.nacos.NacosServiceName.NAME_SEPARATOR;
 import static org.apache.dubbo.registry.nacos.NacosServiceName.valueOf;
 

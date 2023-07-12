@@ -17,7 +17,7 @@
 package org.apache.dubbo.config.spring;
 
 /**
- * Constants of dubbo spring config
+ * MonitorConstants of dubbo spring config
  */
 public interface Constants {
 

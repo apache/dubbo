@@ -16,9 +16,9 @@
  */
 package org.apache.dubbo.config.integration.multiple.injvm;
 
+import org.apache.dubbo.config.integration.AbstractRegistryCenterExporterListener;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.config.integration.AbstractRegistryCenterExporterListener;
 
 @Activate(group = CommonConstants.PROVIDER, order = 1000)
 public class MultipleRegistryCenterInjvmExporterListener extends AbstractRegistryCenterExporterListener {

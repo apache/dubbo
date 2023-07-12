@@ -29,8 +29,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.apache.dubbo.rpc.cluster.Constants.RULE_VERSION_V30;
-import static org.apache.dubbo.rpc.cluster.Constants.TAGS_KEY;
+import static org.apache.dubbo.common.constants.ClusterConstants.RULE_VERSION_V30;
+import static org.apache.dubbo.common.constants.ClusterConstants.TAGS_KEY;
 
 /**
  * %YAML1.2

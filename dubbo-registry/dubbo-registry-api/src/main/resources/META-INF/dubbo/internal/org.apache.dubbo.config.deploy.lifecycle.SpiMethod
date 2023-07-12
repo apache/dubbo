@@ -1,0 +1,2 @@
+publishServiceDefinition=org.apache.dubbo.registry.client.spi.PublishServiceDefinition
+loadRegistry=org.apache.dubbo.registry.spi.LoadRegistry

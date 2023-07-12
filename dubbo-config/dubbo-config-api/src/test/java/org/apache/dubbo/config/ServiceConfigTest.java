@@ -17,18 +17,18 @@
 
 package org.apache.dubbo.config;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.config.api.DemoService;
 import org.apache.dubbo.config.api.Greeting;
-import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.mock.MockProtocol2;
-import org.apache.dubbo.config.mock.MockRegistryFactory2;
 import org.apache.dubbo.config.mock.MockServiceListener;
 import org.apache.dubbo.config.mock.TestProxyFactory;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
+import org.apache.dubbo.config.mock.MockRegistryFactory2;
 import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
 import org.apache.dubbo.metadata.MappingListener;
-import org.apache.dubbo.metadata.ServiceNameMapping;
+import org.apache.dubbo.metadata.event.ServiceNameMapping;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
@@ -66,10 +66,8 @@ import static org.apache.dubbo.config.Constants.SHUTDOWN_TIMEOUT_KEY;
 import static org.apache.dubbo.remoting.Constants.BIND_IP_KEY;
 import static org.apache.dubbo.remoting.Constants.BIND_PORT_KEY;
 import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
-import static org.apache.dubbo.rpc.cluster.Constants.EXPORT_KEY;
+import static org.apache.dubbo.common.constants.ClusterConstants.EXPORT_KEY;
 import static org.awaitility.Awaitility.await;
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasEntry;
@@ -81,7 +79,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.withSettings;
@@ -106,7 +103,7 @@ class ServiceConfigTest {
 
         MockProtocol2.delegate = protocolDelegate;
         MockRegistryFactory2.registry = registryDelegate;
-        Mockito.when(protocolDelegate.export(Mockito.any(Invoker.class))).thenReturn(exporter);
+        Mockito.when(protocolDelegate.export(any(Invoker.class))).thenReturn(exporter);
 
         ApplicationConfig app = new ApplicationConfig("app");
 
@@ -171,23 +168,23 @@ class ServiceConfigTest {
     void testExport() throws Exception {
         service.export();
 
-        assertThat(service.getExportedUrls(), hasSize(1));
+        MatcherAssert.assertThat(service.getExportedUrls(), Matchers.hasSize(1));
         URL url = service.toUrl();
-        assertThat(url.getProtocol(), equalTo("mockprotocol2"));
-        assertThat(url.getPath(), equalTo(DemoService.class.getName()));
-        assertThat(url.getParameters(), hasEntry(ANYHOST_KEY, "true"));
-        assertThat(url.getParameters(), hasEntry(APPLICATION_KEY, "app"));
-        assertThat(url.getParameters(), hasKey(BIND_IP_KEY));
-        assertThat(url.getParameters(), hasKey(BIND_PORT_KEY));
-        assertThat(url.getParameters(), hasEntry(EXPORT_KEY, "true"));
-        assertThat(url.getParameters(), hasEntry("echo.0.callback", "false"));
-        assertThat(url.getParameters(), hasEntry(GENERIC_KEY, "false"));
-        assertThat(url.getParameters(), hasEntry(INTERFACE_KEY, DemoService.class.getName()));
-        assertThat(url.getParameters(), hasKey(METHODS_KEY));
-        assertThat(url.getParameters().get(METHODS_KEY), containsString("echo"));
-        assertThat(url.getParameters(), hasEntry(SIDE_KEY, PROVIDER));
+        MatcherAssert.assertThat(url.getProtocol(), CoreMatchers.equalTo("mockprotocol2"));
+        MatcherAssert.assertThat(url.getPath(), CoreMatchers.equalTo(DemoService.class.getName()));
+        MatcherAssert.assertThat(url.getParameters(), Matchers.hasEntry(ANYHOST_KEY, "true"));
+        MatcherAssert.assertThat(url.getParameters(), Matchers.hasEntry(APPLICATION_KEY, "app"));
+        MatcherAssert.assertThat(url.getParameters(), Matchers.hasKey(BIND_IP_KEY));
+        MatcherAssert.assertThat(url.getParameters(), Matchers.hasKey(BIND_PORT_KEY));
+        MatcherAssert.assertThat(url.getParameters(), Matchers.hasEntry(EXPORT_KEY, "true"));
+        MatcherAssert.assertThat(url.getParameters(), Matchers.hasEntry("echo.0.callback", "false"));
+        MatcherAssert.assertThat(url.getParameters(), Matchers.hasEntry(GENERIC_KEY, "false"));
+        MatcherAssert.assertThat(url.getParameters(), Matchers.hasEntry(INTERFACE_KEY, DemoService.class.getName()));
+        MatcherAssert.assertThat(url.getParameters(), Matchers.hasKey(METHODS_KEY));
+        MatcherAssert.assertThat(url.getParameters().get(METHODS_KEY), CoreMatchers.containsString("echo"));
+        MatcherAssert.assertThat(url.getParameters(), Matchers.hasEntry(SIDE_KEY, PROVIDER));
         // export MetadataService and DemoService in "mockprotocol2" protocol.
-        Mockito.verify(protocolDelegate, times(2)).export(Mockito.any(Invoker.class));
+        verify(protocolDelegate, times(2)).export(any(Invoker.class));
     }
 
     @Test
@@ -211,8 +208,8 @@ class ServiceConfigTest {
     void testProxy() throws Exception {
         service2.export();
 
-        assertThat(service2.getExportedUrls(), hasSize(1));
-        assertEquals(2, TestProxyFactory.count); // local injvm and registry protocol, so expected is 2
+        MatcherAssert.assertThat(service2.getExportedUrls(), Matchers.hasSize(1));
+        Assertions.assertEquals(2, TestProxyFactory.count); // local injvm and registry protocol, so expected is 2
         TestProxyFactory.count = 0;
     }
 
@@ -224,7 +221,7 @@ class ServiceConfigTest {
             @Override
             public void exported(ServiceConfig sc) {
                 assertEquals(delayService, sc);
-                assertThat(delayService.getExportedUrls(), hasSize(1));
+                MatcherAssert.assertThat(delayService.getExportedUrls(), Matchers.hasSize(1));
                 latch.countDown();
             }
 
@@ -245,7 +242,7 @@ class ServiceConfigTest {
             service.export();
             service.unexport();
 //            Thread.sleep(1000);
-            Mockito.verify(exporter, Mockito.atLeastOnce()).unexport();
+            verify(exporter, Mockito.atLeastOnce()).unexport();
         } finally {
             System.clearProperty(SHUTDOWN_TIMEOUT_KEY);
         }
@@ -256,10 +253,10 @@ class ServiceConfigTest {
         ServiceConfig<Greeting> service = new ServiceConfig<>();
         service.setInterface(Greeting.class.getName());
         service.setRef(Mockito.mock(Greeting.class));
-        assertThat(service.getInterfaceClass() == Greeting.class, is(true));
+        MatcherAssert.assertThat(service.getInterfaceClass() == Greeting.class, CoreMatchers.is(true));
         service = new ServiceConfig<>();
         service.setRef(Mockito.mock(Greeting.class, withSettings().extraInterfaces(GenericService.class)));
-        assertThat(service.getInterfaceClass() == GenericService.class, is(true));
+        MatcherAssert.assertThat(service.getInterfaceClass() == GenericService.class, CoreMatchers.is(true));
     }
 
     @Test
@@ -274,7 +271,7 @@ class ServiceConfigTest {
     void testInterface2() throws Exception {
         ServiceConfig<DemoService> service = new ServiceConfig<>();
         service.setInterface(DemoService.class);
-        assertThat(service.getInterface(), equalTo(DemoService.class.getName()));
+        MatcherAssert.assertThat(service.getInterface(), CoreMatchers.equalTo(DemoService.class.getName()));
     }
 
     @Test
@@ -282,18 +279,18 @@ class ServiceConfigTest {
         ServiceConfig service = new ServiceConfig();
         ProviderConfig provider = new ProviderConfig();
         service.setProvider(provider);
-        assertThat(service.getProvider(), is(provider));
+        MatcherAssert.assertThat(service.getProvider(), CoreMatchers.is(provider));
     }
 
     @Test
     void testGeneric1() throws Exception {
         ServiceConfig service = new ServiceConfig();
         service.setGeneric(GENERIC_SERIALIZATION_DEFAULT);
-        assertThat(service.getGeneric(), equalTo(GENERIC_SERIALIZATION_DEFAULT));
+        MatcherAssert.assertThat(service.getGeneric(), CoreMatchers.equalTo(GENERIC_SERIALIZATION_DEFAULT));
         service.setGeneric(GENERIC_SERIALIZATION_NATIVE_JAVA);
-        assertThat(service.getGeneric(), equalTo(GENERIC_SERIALIZATION_NATIVE_JAVA));
+        MatcherAssert.assertThat(service.getGeneric(), CoreMatchers.equalTo(GENERIC_SERIALIZATION_NATIVE_JAVA));
         service.setGeneric(GENERIC_SERIALIZATION_BEAN);
-        assertThat(service.getGeneric(), equalTo(GENERIC_SERIALIZATION_BEAN));
+        MatcherAssert.assertThat(service.getGeneric(), CoreMatchers.equalTo(GENERIC_SERIALIZATION_BEAN));
     }
 
     @Test
@@ -308,7 +305,7 @@ class ServiceConfigTest {
     void testApplicationInUrl() {
         service.export();
         assertNotNull(service.toUrl().getApplication());
-        Assertions.assertEquals("app", service.toUrl().getApplication());
+        assertEquals("app", service.toUrl().getApplication());
     }
 
     @Test
@@ -316,7 +313,7 @@ class ServiceConfigTest {
         // test new instance
         ServiceConfig config = new ServiceConfig();
         Map<String, String> metaData = config.getMetaData();
-        Assertions.assertEquals(0, metaData.size(), "Expect empty metadata but found: " + metaData);
+        assertEquals(0, metaData.size(), "Expect empty metadata but found: " + metaData);
 
         // test merged and override provider attributes
         ProviderConfig providerConfig = new ProviderConfig();
@@ -326,9 +323,9 @@ class ServiceConfigTest {
         config.setAsync(false);// override
 
         metaData = config.getMetaData();
-        Assertions.assertEquals(2, metaData.size());
-        Assertions.assertEquals("" + providerConfig.getActives(), metaData.get("actives"));
-        Assertions.assertEquals("" + config.isAsync(), metaData.get("async"));
+        assertEquals(2, metaData.size());
+        assertEquals("" + providerConfig.getActives(), metaData.get("actives"));
+        assertEquals("" + config.isAsync(), metaData.get("async"));
     }
 
 
@@ -336,23 +333,23 @@ class ServiceConfigTest {
     void testExportWithoutRegistryConfig() {
         serviceWithoutRegistryConfig.export();
 
-        assertThat(serviceWithoutRegistryConfig.getExportedUrls(), hasSize(1));
+        MatcherAssert.assertThat(serviceWithoutRegistryConfig.getExportedUrls(), Matchers.hasSize(1));
         URL url = serviceWithoutRegistryConfig.toUrl();
-        assertThat(url.getProtocol(), equalTo("mockprotocol2"));
-        assertThat(url.getPath(), equalTo(DemoService.class.getName()));
-        assertThat(url.getParameters(), hasEntry(ANYHOST_KEY, "true"));
-        assertThat(url.getParameters(), hasEntry(APPLICATION_KEY, "app"));
-        assertThat(url.getParameters(), hasKey(BIND_IP_KEY));
-        assertThat(url.getParameters(), hasKey(BIND_PORT_KEY));
-        assertThat(url.getParameters(), hasEntry(EXPORT_KEY, "true"));
-        assertThat(url.getParameters(), hasEntry("echo.0.callback", "false"));
-        assertThat(url.getParameters(), hasEntry(GENERIC_KEY, "false"));
-        assertThat(url.getParameters(), hasEntry(INTERFACE_KEY, DemoService.class.getName()));
-        assertThat(url.getParameters(), hasKey(METHODS_KEY));
-        assertThat(url.getParameters().get(METHODS_KEY), containsString("echo"));
-        assertThat(url.getParameters(), hasEntry(SIDE_KEY, PROVIDER));
+        MatcherAssert.assertThat(url.getProtocol(), CoreMatchers.equalTo("mockprotocol2"));
+        MatcherAssert.assertThat(url.getPath(), CoreMatchers.equalTo(DemoService.class.getName()));
+        MatcherAssert.assertThat(url.getParameters(), Matchers.hasEntry(ANYHOST_KEY, "true"));
+        MatcherAssert.assertThat(url.getParameters(), Matchers.hasEntry(APPLICATION_KEY, "app"));
+        MatcherAssert.assertThat(url.getParameters(), Matchers.hasKey(BIND_IP_KEY));
+        MatcherAssert.assertThat(url.getParameters(), Matchers.hasKey(BIND_PORT_KEY));
+        MatcherAssert.assertThat(url.getParameters(), Matchers.hasEntry(EXPORT_KEY, "true"));
+        MatcherAssert.assertThat(url.getParameters(), Matchers.hasEntry("echo.0.callback", "false"));
+        MatcherAssert.assertThat(url.getParameters(), Matchers.hasEntry(GENERIC_KEY, "false"));
+        MatcherAssert.assertThat(url.getParameters(), Matchers.hasEntry(INTERFACE_KEY, DemoService.class.getName()));
+        MatcherAssert.assertThat(url.getParameters(), Matchers.hasKey(METHODS_KEY));
+        MatcherAssert.assertThat(url.getParameters().get(METHODS_KEY), CoreMatchers.containsString("echo"));
+        MatcherAssert.assertThat(url.getParameters(), Matchers.hasEntry(SIDE_KEY, PROVIDER));
         // export MetadataService and DemoService in "mockprotocol2" protocol.
-        Mockito.verify(protocolDelegate, times(2)).export(Mockito.any(Invoker.class));
+        verify(protocolDelegate, times(2)).export(any(Invoker.class));
     }
 
     @Test
@@ -550,7 +547,7 @@ class ServiceConfigTest {
         serviceConfig.setRef(new DemoServiceImpl());
         serviceConfig.setVersion("1.0.0");
         serviceConfig.refresh();
-        Assertions.assertEquals("1.0.0", serviceConfig.getVersion());
+        assertEquals("1.0.0", serviceConfig.getVersion());
         System.clearProperty("dubbo.service.version");
     }
 
@@ -616,7 +613,7 @@ class ServiceConfigTest {
         serviceConfig.setApplication(applicationConfig);
         serviceConfig.mapServiceName(URL.valueOf(""), serviceNameMapping, scheduledExecutorService);
 
-        await().until(() -> count.get() > 10);
+        Awaitility.await().until(() -> count.get() > 10);
         scheduledExecutorService.shutdown();
     }
 
@@ -679,7 +676,7 @@ class ServiceConfigTest {
         serviceConfig.setApplication(applicationConfig);
         serviceConfig.mapServiceName(URL.valueOf(""), serviceNameMapping, scheduledExecutorService);
 
-        verify(scheduledExecutorService, times(0)).schedule((Runnable) any(), anyLong(), any());
+        verify(scheduledExecutorService, times(0)).schedule((Runnable) ArgumentMatchers.any(), ArgumentMatchers.anyLong(), ArgumentMatchers.any());
 
         scheduledExecutorService.shutdown();
     }

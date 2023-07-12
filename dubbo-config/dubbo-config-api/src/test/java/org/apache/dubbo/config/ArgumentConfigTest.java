@@ -17,7 +17,11 @@
 
 package org.apache.dubbo.config;
 
+import org.apache.dubbo.config.AbstractServiceConfig;
+import org.apache.dubbo.config.ArgumentConfig;
 import org.junit.jupiter.api.Test;
+import org.testcontainers.shaded.org.hamcrest.MatcherAssert;
+import org.testcontainers.shaded.org.hamcrest.Matchers;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -32,21 +36,21 @@ class ArgumentConfigTest {
     void testIndex() {
         ArgumentConfig argument = new ArgumentConfig();
         argument.setIndex(1);
-        assertThat(argument.getIndex(), is(1));
+        MatcherAssert.assertThat(argument.getIndex(), Matchers.is(1));
     }
 
     @Test
     void testType() {
         ArgumentConfig argument = new ArgumentConfig();
         argument.setType("int");
-        assertThat(argument.getType(), equalTo("int"));
+        MatcherAssert.assertThat(argument.getType(), Matchers.equalTo("int"));
     }
 
     @Test
     void testCallback() {
         ArgumentConfig argument = new ArgumentConfig();
         argument.setCallback(true);
-        assertThat(argument.isCallback(), is(true));
+        MatcherAssert.assertThat(argument.isCallback(), Matchers.is(true));
     }
 
     @Test
@@ -57,7 +61,7 @@ class ArgumentConfigTest {
         argument.setCallback(true);
         Map<String, String> parameters = new HashMap<String, String>();
         AbstractServiceConfig.appendParameters(parameters, argument);
-        assertThat(parameters, hasEntry("callback", "true"));
-        assertThat(parameters.size(), is(1));
+        MatcherAssert.assertThat(parameters, Matchers.hasEntry("callback", "true"));
+        MatcherAssert.assertThat(parameters.size(), Matchers.is(1));
     }
 }

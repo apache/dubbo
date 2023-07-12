@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster;
+package org.apache.dubbo.common.constants;
 
-public interface Constants {
+public interface ClusterConstants {
 
     String FAIL_BACK_TASKS_KEY = "failbacktasks";
 

@@ -18,16 +18,16 @@ package org.apache.dubbo.rpc.cluster.router;
 
 import java.util.Map;
 
-import static org.apache.dubbo.rpc.cluster.Constants.CONFIG_VERSION_KEY;
-import static org.apache.dubbo.rpc.cluster.Constants.DYNAMIC_KEY;
-import static org.apache.dubbo.rpc.cluster.Constants.ENABLED_KEY;
-import static org.apache.dubbo.rpc.cluster.Constants.FORCE_KEY;
-import static org.apache.dubbo.rpc.cluster.Constants.KEY_KEY;
-import static org.apache.dubbo.rpc.cluster.Constants.PRIORITY_KEY;
-import static org.apache.dubbo.rpc.cluster.Constants.RAW_RULE_KEY;
-import static org.apache.dubbo.rpc.cluster.Constants.RUNTIME_KEY;
-import static org.apache.dubbo.rpc.cluster.Constants.SCOPE_KEY;
-import static org.apache.dubbo.rpc.cluster.Constants.VALID_KEY;
+import static org.apache.dubbo.common.constants.ClusterConstants.CONFIG_VERSION_KEY;
+import static org.apache.dubbo.common.constants.ClusterConstants.DYNAMIC_KEY;
+import static org.apache.dubbo.common.constants.ClusterConstants.ENABLED_KEY;
+import static org.apache.dubbo.common.constants.ClusterConstants.FORCE_KEY;
+import static org.apache.dubbo.common.constants.ClusterConstants.KEY_KEY;
+import static org.apache.dubbo.common.constants.ClusterConstants.PRIORITY_KEY;
+import static org.apache.dubbo.common.constants.ClusterConstants.RAW_RULE_KEY;
+import static org.apache.dubbo.common.constants.ClusterConstants.RUNTIME_KEY;
+import static org.apache.dubbo.common.constants.ClusterConstants.SCOPE_KEY;
+import static org.apache.dubbo.common.constants.ClusterConstants.VALID_KEY;
 
 /**
  * TODO Extract more code here if necessary

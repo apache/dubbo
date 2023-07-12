@@ -21,84 +21,40 @@ import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.constants.LoggerCodeConstants;
 import org.apache.dubbo.common.constants.RegistryConstants;
+import org.apache.dubbo.common.constants.SpiMethods;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
-import org.apache.dubbo.common.utils.ArrayUtils;
-import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.common.utils.ConfigUtils;
-import org.apache.dubbo.common.utils.NetUtils;
-import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.common.utils.UrlUtils;
+import org.apache.dubbo.common.utils.*;
 import org.apache.dubbo.config.annotation.Reference;
+import org.apache.dubbo.config.deploy.lifecycle.manager.SpiMethodManager;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
-import org.apache.dubbo.registry.client.metadata.MetadataUtils;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
-import org.apache.dubbo.rpc.cluster.Cluster;
-import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
-import org.apache.dubbo.rpc.cluster.support.ClusterUtils;
-import org.apache.dubbo.rpc.cluster.support.registry.ZoneAwareCluster;
-import org.apache.dubbo.rpc.model.AsyncMethodInfo;
-import org.apache.dubbo.rpc.model.ConsumerModel;
-import org.apache.dubbo.rpc.model.DubboStub;
-import org.apache.dubbo.rpc.model.ModuleModel;
-import org.apache.dubbo.rpc.model.ModuleServiceRepository;
-import org.apache.dubbo.rpc.model.ScopeModel;
-import org.apache.dubbo.rpc.model.ServiceDescriptor;
-import org.apache.dubbo.rpc.protocol.injvm.InjvmProtocol;
+import org.apache.dubbo.rpc.model.*;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.stub.StubSuppliers;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
 import java.beans.Transient;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.TreeSet;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
-import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
-import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
-import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR_CHAR;
-import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
-import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_CLUSTER_DOMAIN;
-import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_MESH_PORT;
-import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_VALUE;
-import static org.apache.dubbo.common.constants.CommonConstants.MESH_ENABLE;
-import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.PROXY_CLASS_REF;
-import static org.apache.dubbo.common.constants.CommonConstants.REVISION_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.SEMICOLON_SPLIT_PATTERN;
-import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.SVC;
-import static org.apache.dubbo.common.constants.CommonConstants.TRIPLE;
-import static org.apache.dubbo.common.constants.CommonConstants.UNLOAD_CLUSTER_RELATED;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_NO_VALID_PROVIDER;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_DESTROY_INVOKER;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_LOAD_ENV_VARIABLE;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_NO_METHOD_FOUND;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_PROPERTY_CONFLICT;
+import static org.apache.dubbo.common.constants.ClusterConstants.PEER_KEY;
+import static org.apache.dubbo.common.constants.ClusterConstants.REFER_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.*;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.*;
 import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDED_BY;
 import static org.apache.dubbo.common.constants.RegistryConstants.SUBSCRIBED_SERVICE_NAMES_KEY;
+import static org.apache.dubbo.common.registry.Constants.CONSUMER_PROTOCOL;
+import static org.apache.dubbo.common.registry.Constants.REGISTER_IP_KEY;
 import static org.apache.dubbo.common.utils.NetUtils.isInvalidLocalHost;
 import static org.apache.dubbo.common.utils.StringUtils.splitToSet;
 import static org.apache.dubbo.config.Constants.DUBBO_IP_TO_REGISTRY;
-import static org.apache.dubbo.registry.Constants.CONSUMER_PROTOCOL;
-import static org.apache.dubbo.registry.Constants.REGISTER_IP_KEY;
 import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
-import static org.apache.dubbo.rpc.cluster.Constants.PEER_KEY;
-import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
 
 /**
  * Please avoid using this class for any new application,
@@ -470,7 +426,13 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                 referenceParameters.get(INTERFACE_KEY), referenceParameters);
         consumerUrl = consumerUrl.setScopeModel(getScopeModel());
         consumerUrl = consumerUrl.setServiceModel(consumerModel);
-        MetadataUtils.publishServiceDefinition(consumerUrl, consumerModel.getServiceModel(), getApplicationModel());
+
+        //TODO: spi method manager
+        SpiMethodManager.get()
+            .ifPresent()
+            .invoke(SpiMethods.publishServiceDefinition,consumerUrl, consumerModel.getServiceModel(), getApplicationModel());
+
+        //MetadataUtils.publishServiceDefinition(consumerUrl, consumerModel.getServiceModel(), getApplicationModel());
 
         // create service proxy
         return (T) proxyFactory.getProxy(invoker, ProtocolUtils.isGeneric(generic));
@@ -562,7 +524,9 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                 if (UrlUtils.isRegistry(url)) {
                     urls.add(url.putAttribute(REFER_KEY, referenceParameters));
                 } else {
-                    URL peerUrl = getScopeModel().getApplicationModel().getBeanFactory().getBean(ClusterUtils.class).mergeUrl(url, referenceParameters);
+
+                    URL peerUrl = (URL) SpiMethodManager.get().ifPresent().invoke(SpiMethods.mergeUrl,getScopeModel(),url,referenceParameters);
+//                    URL peerUrl = getScopeModel().getApplicationModel().getBeanFactory().getBean(ClusterUtils.class).mergeUrl(url, referenceParameters);
                     peerUrl = peerUrl.putAttribute(PEER_KEY, true);
                     urls.add(peerUrl);
                 }
@@ -575,10 +539,12 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
      */
     private void aggregateUrlFromRegistry(Map<String, String> referenceParameters) {
         checkRegistry();
-        List<URL> us = ConfigValidationUtils.loadRegistries(this, false);
+        List<URL> us = ConfigValidationUtils.tryLoadRegistries(this, false);
         if (CollectionUtils.isNotEmpty(us)) {
             for (URL u : us) {
+
                 URL monitorUrl = ConfigValidationUtils.loadMonitor(this, u);
+
                 if (monitorUrl != null) {
                     u = u.putAttribute(MONITOR_KEY, monitorUrl);
                 }
@@ -610,48 +576,63 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
     private void createInvoker() {
+
+        Invoker<?> clusterInvoker;
+
         if (urls.size() == 1) {
             URL curUrl = urls.get(0);
             invoker = protocolSPI.refer(interfaceClass, curUrl);
             // registry url, mesh-enable and unloadClusterRelated is true, not need Cluster.
-            if (!UrlUtils.isRegistry(curUrl) &&
-                    !curUrl.getParameter(UNLOAD_CLUSTER_RELATED, false)) {
-                List<Invoker<?>> invokers = new ArrayList<>();
-                invokers.add(invoker);
-                invoker = Cluster.getCluster(getScopeModel(), Cluster.DEFAULT).join(new StaticDirectory(curUrl, invokers), true);
-            }
+
+            clusterInvoker = (Invoker<?>) SpiMethodManager.get()
+                .ifPresent().invoke(SpiMethods.createClusterInvoker,urls,protocolSPI,interfaceClass,getScopeModel(),false);
+//            if (!UrlUtils.isRegistry(curUrl) &&
+//                    !curUrl.getParameter(UNLOAD_CLUSTER_RELATED, false)) {
+//                List<Invoker<?>> invokers = new ArrayList<>();
+//                invokers.add(invoker);
+//                invoker = Cluster.getCluster(getScopeModel(), Cluster.DEFAULT).join(new StaticDirectory(curUrl, invokers), true);
+//            }
         } else {
-            List<Invoker<?>> invokers = new ArrayList<>();
-            URL registryUrl = null;
-            for (URL url : urls) {
-                // For multi-registry scenarios, it is not checked whether each referInvoker is available.
-                // Because this invoker may become available later.
-                invokers.add(protocolSPI.refer(interfaceClass, url));
 
-                if (UrlUtils.isRegistry(url)) {
-                    // use last registry url
-                    registryUrl = url;
-                }
-            }
+            clusterInvoker = (Invoker<?>) SpiMethodManager.get()
+                .assertPresent().invoke(SpiMethods.createClusterInvoker,urls,protocolSPI,interfaceClass,getScopeModel(),true);
+//            List<Invoker<?>> invokers = new ArrayList<>();
+//            URL registryUrl = null;
+//            for (URL url : urls) {
+//                // For multi-registry scenarios, it is not checked whether each referInvoker is available.
+//                // Because this invoker may become available later.
+//                invokers.add(protocolSPI.refer(interfaceClass, url));
+//
+//                if (UrlUtils.isRegistry(url)) {
+//                    // use last registry url
+//                    registryUrl = url;
+//                }
+//            }
 
-            if (registryUrl != null) {
-                // registry url is available
-                // for multi-subscription scenario, use 'zone-aware' policy by default
-                String cluster = registryUrl.getParameter(CLUSTER_KEY, ZoneAwareCluster.NAME);
-                // The invoker wrap sequence would be: ZoneAwareClusterInvoker(StaticDirectory) -> FailoverClusterInvoker
-                // (RegistryDirectory, routing happens here) -> Invoker
-                invoker = Cluster.getCluster(registryUrl.getScopeModel(), cluster, false).join(new StaticDirectory(registryUrl, invokers), false);
-            } else {
-                // not a registry url, must be direct invoke.
-                if (CollectionUtils.isEmpty(invokers)) {
-                    throw new IllegalArgumentException("invokers == null");
-                }
-                URL curUrl = invokers.get(0).getUrl();
-                String cluster = curUrl.getParameter(CLUSTER_KEY, Cluster.DEFAULT);
-                invoker = Cluster.getCluster(getScopeModel(), cluster).join(new StaticDirectory(curUrl, invokers), true);
-            }
+//            if (registryUrl != null) {
+//                // registry url is available
+//                // for multi-subscription scenario, use 'zone-aware' policy by default
+//                String cluster = registryUrl.getParameter(CLUSTER_KEY, ZoneAwareCluster.NAME);
+//                // The invoker wrap sequence would be: ZoneAwareClusterInvoker(StaticDirectory) -> FailoverClusterInvoker
+//                // (RegistryDirectory, routing happens here) -> Invoker
+//                invoker = Cluster.getCluster(registryUrl.getScopeModel(), cluster, false).join(new StaticDirectory(registryUrl, invokers), false);
+//            } else {
+//                // not a registry url, must be direct invoke.
+//                if (CollectionUtils.isEmpty(invokers)) {
+//                    throw new IllegalArgumentException("invokers == null");
+//                }
+//                URL curUrl = invokers.get(0).getUrl();
+//                String cluster = curUrl.getParameter(CLUSTER_KEY, Cluster.DEFAULT);
+//                invoker = Cluster.getCluster(getScopeModel(), cluster).join(new StaticDirectory(curUrl, invokers), true);
+//            }
+        }
+
+        if(clusterInvoker != null){
+            invoker = clusterInvoker;
         }
     }
+
+
 
     private void checkInvokerAvailable(long timeout) throws IllegalStateException {
         if (!shouldCheck()) {
@@ -782,7 +763,11 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
             } else {
                 // by default, reference local service if there is
                 URL tmpUrl = new ServiceConfigURL("temp", "localhost", 0, map);
-                isJvmRefer = InjvmProtocol.getInjvmProtocol(getScopeModel()).isInjvmRefer(tmpUrl);
+
+                isJvmRefer = (boolean) SpiMethodManager.get().ifPresent().elseReturn(()-> false)
+                    .invoke(SpiMethods.isJvmRefer,getScopeModel(),tmpUrl);
+
+//                isJvmRefer = InjvmProtocol.getInjvmProtocol(getScopeModel()).isInjvmRefer(tmpUrl);
             }
         } else {
             isJvmRefer = isInjvm();

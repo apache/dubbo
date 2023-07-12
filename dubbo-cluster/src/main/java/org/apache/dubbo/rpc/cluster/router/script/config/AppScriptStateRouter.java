@@ -38,11 +38,11 @@ import org.apache.dubbo.rpc.cluster.router.state.BitList;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_TAG_ROUTE_EMPTY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_TAG_ROUTE_INVALID;
 import static org.apache.dubbo.common.utils.StringUtils.isEmpty;
-import static org.apache.dubbo.rpc.cluster.Constants.DEFAULT_SCRIPT_TYPE_KEY;
-import static org.apache.dubbo.rpc.cluster.Constants.FORCE_KEY;
-import static org.apache.dubbo.rpc.cluster.Constants.RULE_KEY;
-import static org.apache.dubbo.rpc.cluster.Constants.RUNTIME_KEY;
-import static org.apache.dubbo.rpc.cluster.Constants.TYPE_KEY;
+import static org.apache.dubbo.common.constants.ClusterConstants.DEFAULT_SCRIPT_TYPE_KEY;
+import static org.apache.dubbo.common.constants.ClusterConstants.FORCE_KEY;
+import static org.apache.dubbo.common.constants.ClusterConstants.RULE_KEY;
+import static org.apache.dubbo.common.constants.ClusterConstants.RUNTIME_KEY;
+import static org.apache.dubbo.common.constants.ClusterConstants.TYPE_KEY;
 
 public class AppScriptStateRouter<T> extends AbstractStateRouter<T> implements ConfigurationListener {
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(AppScriptStateRouter.class);

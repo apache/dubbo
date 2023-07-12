@@ -22,6 +22,8 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.config.deploy.lifecycle.SpiMethod;
+import org.apache.dubbo.config.deploy.lifecycle.manager.SpiMethodManager;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
@@ -249,5 +251,4 @@ public class MetadataUtils {
             return internalModel;
         }
     }
-
 }

@@ -57,14 +57,14 @@ import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
 import static org.apache.dubbo.common.constants.RegistryConstants.OVERRIDE_PROTOCOL;
 import static org.apache.dubbo.common.constants.RegistryConstants.ROUTE_PROTOCOL;
-import static org.apache.dubbo.registry.Constants.CONSUMER_PROTOCOL;
-import static org.apache.dubbo.registry.Constants.DEFAULT_SESSION_TIMEOUT;
-import static org.apache.dubbo.registry.Constants.REGISTER;
-import static org.apache.dubbo.registry.Constants.REGISTER_KEY;
-import static org.apache.dubbo.registry.Constants.SESSION_TIMEOUT_KEY;
-import static org.apache.dubbo.registry.Constants.SUBSCRIBE;
-import static org.apache.dubbo.registry.Constants.UNREGISTER;
-import static org.apache.dubbo.registry.Constants.UNSUBSCRIBE;
+import static org.apache.dubbo.common.registry.Constants.CONSUMER_PROTOCOL;
+import static org.apache.dubbo.common.registry.Constants.DEFAULT_SESSION_TIMEOUT;
+import static org.apache.dubbo.common.registry.Constants.REGISTER;
+import static org.apache.dubbo.common.registry.Constants.REGISTER_KEY;
+import static org.apache.dubbo.common.registry.Constants.SESSION_TIMEOUT_KEY;
+import static org.apache.dubbo.common.registry.Constants.SUBSCRIBE;
+import static org.apache.dubbo.common.registry.Constants.UNREGISTER;
+import static org.apache.dubbo.common.registry.Constants.UNSUBSCRIBE;
 
 /**
  * MulticastRegistry

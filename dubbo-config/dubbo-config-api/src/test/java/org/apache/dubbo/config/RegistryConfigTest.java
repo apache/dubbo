@@ -38,7 +38,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KE
 import static org.apache.dubbo.config.Constants.SHUTDOWN_TIMEOUT_KEY;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.not;
@@ -59,35 +58,35 @@ class RegistryConfigTest {
     void testProtocol() throws Exception {
         RegistryConfig registry = new RegistryConfig();
         registry.setProtocol("protocol");
-        assertThat(registry.getProtocol(), equalTo(registry.getProtocol()));
+        MatcherAssert.assertThat(registry.getProtocol(), Matchers.equalTo(registry.getProtocol()));
     }
 
     @Test
     void testAddress() throws Exception {
         RegistryConfig registry = new RegistryConfig();
         registry.setAddress("zookeeper://mrh:123@localhost:9103/registry?backup=localhost:9104&k1=v1");
-        assertThat(registry.getAddress(), equalTo("zookeeper://mrh:123@localhost:9103/registry?backup=localhost:9104&k1=v1"));
-        assertThat(registry.getProtocol(), equalTo("zookeeper"));
-        assertThat(registry.getUsername(), equalTo("mrh"));
-        assertThat(registry.getPassword(), equalTo("123"));
-        assertThat(registry.getParameters().get("k1"), equalTo("v1"));
+        MatcherAssert.assertThat(registry.getAddress(), Matchers.equalTo("zookeeper://mrh:123@localhost:9103/registry?backup=localhost:9104&k1=v1"));
+        MatcherAssert.assertThat(registry.getProtocol(), Matchers.equalTo("zookeeper"));
+        MatcherAssert.assertThat(registry.getUsername(), Matchers.equalTo("mrh"));
+        MatcherAssert.assertThat(registry.getPassword(), Matchers.equalTo("123"));
+        MatcherAssert.assertThat(registry.getParameters().get("k1"), Matchers.equalTo("v1"));
         Map<String, String> parameters = new HashMap<>();
         RegistryConfig.appendParameters(parameters, registry);
-        assertThat(parameters, not(hasKey("address")));
+        MatcherAssert.assertThat(parameters, Matchers.not(Matchers.hasKey("address")));
     }
 
     @Test
     void testUsername() throws Exception {
         RegistryConfig registry = new RegistryConfig();
         registry.setUsername("username");
-        assertThat(registry.getUsername(), equalTo("username"));
+        MatcherAssert.assertThat(registry.getUsername(), Matchers.equalTo("username"));
     }
 
     @Test
     void testPassword() throws Exception {
         RegistryConfig registry = new RegistryConfig();
         registry.setPassword("password");
-        assertThat(registry.getPassword(), equalTo("password"));
+        MatcherAssert.assertThat(registry.getPassword(), Matchers.equalTo("password"));
     }
 
     @Test
@@ -95,8 +94,8 @@ class RegistryConfigTest {
         try {
             RegistryConfig registry = new RegistryConfig();
             registry.setWait(10);
-            assertThat(registry.getWait(), is(10));
-            assertThat(System.getProperty(SHUTDOWN_WAIT_KEY), equalTo("10"));
+            MatcherAssert.assertThat(registry.getWait(), CoreMatchers.is(10));
+            MatcherAssert.assertThat(System.getProperty(SHUTDOWN_WAIT_KEY), Matchers.equalTo("10"));
         } finally {
             System.clearProperty(SHUTDOWN_TIMEOUT_KEY);
         }
@@ -106,101 +105,101 @@ class RegistryConfigTest {
     void testCheck() throws Exception {
         RegistryConfig registry = new RegistryConfig();
         registry.setCheck(true);
-        assertThat(registry.isCheck(), is(true));
+        MatcherAssert.assertThat(registry.isCheck(), CoreMatchers.is(true));
     }
 
     @Test
     void testFile() throws Exception {
         RegistryConfig registry = new RegistryConfig();
         registry.setFile("file");
-        assertThat(registry.getFile(), equalTo("file"));
+        MatcherAssert.assertThat(registry.getFile(), Matchers.equalTo("file"));
     }
 
     @Test
     void testTransporter() throws Exception {
         RegistryConfig registry = new RegistryConfig();
         registry.setTransporter("transporter");
-        assertThat(registry.getTransporter(), equalTo("transporter"));
+        MatcherAssert.assertThat(registry.getTransporter(), Matchers.equalTo("transporter"));
     }
 
     @Test
     void testClient() throws Exception {
         RegistryConfig registry = new RegistryConfig();
         registry.setClient("client");
-        assertThat(registry.getClient(), equalTo("client"));
+        MatcherAssert.assertThat(registry.getClient(), Matchers.equalTo("client"));
     }
 
     @Test
     void testTimeout() throws Exception {
         RegistryConfig registry = new RegistryConfig();
         registry.setTimeout(10);
-        assertThat(registry.getTimeout(), is(10));
+        MatcherAssert.assertThat(registry.getTimeout(), CoreMatchers.is(10));
     }
 
     @Test
     void testSession() throws Exception {
         RegistryConfig registry = new RegistryConfig();
         registry.setSession(10);
-        assertThat(registry.getSession(), is(10));
+        MatcherAssert.assertThat(registry.getSession(), CoreMatchers.is(10));
     }
 
     @Test
     void testDynamic() throws Exception {
         RegistryConfig registry = new RegistryConfig();
         registry.setDynamic(true);
-        assertThat(registry.isDynamic(), is(true));
+        MatcherAssert.assertThat(registry.isDynamic(), CoreMatchers.is(true));
     }
 
     @Test
     void testRegister() throws Exception {
         RegistryConfig registry = new RegistryConfig();
         registry.setRegister(true);
-        assertThat(registry.isRegister(), is(true));
+        MatcherAssert.assertThat(registry.isRegister(), CoreMatchers.is(true));
     }
 
     @Test
     void testSubscribe() throws Exception {
         RegistryConfig registry = new RegistryConfig();
         registry.setSubscribe(true);
-        assertThat(registry.isSubscribe(), is(true));
+        MatcherAssert.assertThat(registry.isSubscribe(), CoreMatchers.is(true));
     }
 
     @Test
     void testCluster() throws Exception {
         RegistryConfig registry = new RegistryConfig();
         registry.setCluster("cluster");
-        assertThat(registry.getCluster(), equalTo("cluster"));
+        MatcherAssert.assertThat(registry.getCluster(), Matchers.equalTo("cluster"));
     }
 
     @Test
     void testGroup() throws Exception {
         RegistryConfig registry = new RegistryConfig();
         registry.setGroup("group");
-        assertThat(registry.getGroup(), equalTo("group"));
+        MatcherAssert.assertThat(registry.getGroup(), Matchers.equalTo("group"));
     }
 
     @Test
     void testVersion() throws Exception {
         RegistryConfig registry = new RegistryConfig();
         registry.setVersion("1.0.0");
-        assertThat(registry.getVersion(), equalTo("1.0.0"));
+        MatcherAssert.assertThat(registry.getVersion(), Matchers.equalTo("1.0.0"));
     }
 
     @Test
     void testParameters() throws Exception {
         RegistryConfig registry = new RegistryConfig();
         registry.setParameters(Collections.singletonMap("k1", "v1"));
-        assertThat(registry.getParameters(), hasEntry("k1", "v1"));
+        MatcherAssert.assertThat(registry.getParameters(), Matchers.hasEntry("k1", "v1"));
         Map<String, String> parameters = new HashMap<String, String>();
         RegistryConfig.appendParameters(parameters, registry);
-        assertThat(parameters, hasEntry("k1", "v1"));
+        MatcherAssert.assertThat(parameters, Matchers.hasEntry("k1", "v1"));
     }
 
     @Test
     void testDefault() throws Exception {
         RegistryConfig registry = new RegistryConfig();
         registry.setDefault(true);
-        assertThat(registry.isDefault(), is(true));
+        MatcherAssert.assertThat(registry.isDefault(), CoreMatchers.is(true));
     }
 
     @Test

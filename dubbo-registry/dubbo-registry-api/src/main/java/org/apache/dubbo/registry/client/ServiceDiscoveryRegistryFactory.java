@@ -22,7 +22,7 @@ import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.support.AbstractRegistryFactory;
 
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_KEY;
-import static org.apache.dubbo.registry.Constants.DEFAULT_REGISTRY;
+import static org.apache.dubbo.common.registry.Constants.DEFAULT_REGISTRY;
 
 public class ServiceDiscoveryRegistryFactory extends AbstractRegistryFactory {
 

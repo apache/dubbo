@@ -17,8 +17,8 @@
 
 package org.apache.dubbo.config.invoker;
 
-import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.api.Greeting;
+import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 
@@ -27,7 +27,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.sameInstance;
 
 class DelegateProviderMetaDataInvokerTest {
     private ServiceConfig service;
@@ -54,7 +53,7 @@ class DelegateProviderMetaDataInvokerTest {
         Mockito.verify(invoker).invoke(invocation);
         delegate.destroy();
         Mockito.verify(invoker).destroy();
-        assertThat(delegate.getMetadata(), sameInstance(service));
+        MatcherAssert.assertThat(delegate.getMetadata(), Matchers.sameInstance(service));
     }
 
 }

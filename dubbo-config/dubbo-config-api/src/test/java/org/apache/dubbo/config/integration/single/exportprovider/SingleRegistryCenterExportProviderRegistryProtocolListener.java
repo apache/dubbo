@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config.integration.single.exportprovider;
 
+import org.apache.dubbo.config.integration.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.registry.integration.InterfaceCompatibleRegistryProtocol;
@@ -24,12 +25,10 @@ import org.apache.dubbo.registry.integration.RegistryProtocolListener;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 
-import static org.apache.dubbo.config.integration.Constants.SINGLE_CONFIG_CENTER_EXPORT_PROVIDER;
-
 /**
  * The {@link RegistryProtocolListener} for {@link SingleRegistryCenterExportProviderService}
  */
-@Activate(order = 100, value = SINGLE_CONFIG_CENTER_EXPORT_PROVIDER)
+@Activate(order = 100, value = Constants.SINGLE_CONFIG_CENTER_EXPORT_PROVIDER)
 public class SingleRegistryCenterExportProviderRegistryProtocolListener implements RegistryProtocolListener {
 
     private boolean exported = false;

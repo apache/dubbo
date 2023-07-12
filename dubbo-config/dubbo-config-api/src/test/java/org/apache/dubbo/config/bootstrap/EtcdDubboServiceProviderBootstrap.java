@@ -16,12 +16,12 @@
  */
 package org.apache.dubbo.config.bootstrap;
 
+import org.apache.dubbo.config.bootstrap.rest.UserService;
+import org.apache.dubbo.config.bootstrap.rest.UserServiceImpl;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
-import org.apache.dubbo.config.bootstrap.rest.UserService;
-import org.apache.dubbo.config.bootstrap.rest.UserServiceImpl;
 
 import java.util.Arrays;
 

@@ -14,10 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.cache;
+package org.apache.dubbo.cache;
 
-import org.apache.dubbo.cache.Cache;
-import org.apache.dubbo.cache.CacheFactory;
 import org.apache.dubbo.cache.support.threadlocal.ThreadLocalCache;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;

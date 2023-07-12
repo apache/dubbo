@@ -16,24 +16,18 @@
  */
 package org.apache.dubbo.config.bootstrap;
 
+import org.apache.dubbo.config.ExporterDeployListener;
+import org.apache.dubbo.config.SysProps;
+import org.apache.dubbo.config.api.DemoService;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.deploy.ApplicationDeployListener;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
-import org.apache.dubbo.config.AbstractInterfaceConfig;
-import org.apache.dubbo.config.ApplicationConfig;
-import org.apache.dubbo.config.MetadataReportConfig;
-import org.apache.dubbo.config.MonitorConfig;
-import org.apache.dubbo.config.ProtocolConfig;
-import org.apache.dubbo.config.RegistryConfig;
-import org.apache.dubbo.config.ServiceConfig;
-import org.apache.dubbo.config.SysProps;
-import org.apache.dubbo.config.api.DemoService;
+import org.apache.dubbo.config.*;
 import org.apache.dubbo.config.deploy.DefaultApplicationDeployer;
 import org.apache.dubbo.metadata.ConfigurableMetadataServiceExporter;
-import org.apache.dubbo.config.ExporterDeployListener;
 import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.metadata.MetadataService;
@@ -147,7 +141,7 @@ class DubboBootstrapTest {
         serviceConfig.refresh();
 
         //ApplicationModel.defaultModel().getEnvironment().setDynamicConfiguration(new CompositeDynamicConfiguration());
-        List<URL> urls = ConfigValidationUtils.loadRegistries(serviceConfig, true);
+        List<URL> urls = ConfigValidationUtils.tryLoadRegistries(serviceConfig, true);
         Assertions.assertEquals(2, urls.size());
         for (URL url : urls) {
             Assertions.assertTrue(url.getProtocol().contains("registry"));
@@ -338,7 +332,7 @@ class DubboBootstrapTest {
             serviceConfig.setInterface(MetadataService.class);
             serviceConfig.setGroup(ApplicationModel.defaultModel().getCurrentConfig().getName());
             serviceConfig.setVersion(MetadataService.VERSION);
-            assertThat(exporters, hasEntry(is(serviceConfig.getUniqueServiceName() + ":" + availablePort), anything()));
+            MatcherAssert.assertThat(exporters, Matchers.hasEntry(Matchers.is(serviceConfig.getUniqueServiceName() + ":" + availablePort), CoreMatchers.anything()));
         } else {
             Assertions.assertEquals(1, exporters.size());
         }

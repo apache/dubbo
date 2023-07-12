@@ -18,7 +18,10 @@
 package org.apache.dubbo.config;
 
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.testcontainers.shaded.org.hamcrest.MatcherAssert;
+import org.testcontainers.shaded.org.hamcrest.Matchers;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -27,194 +30,186 @@ import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.EXPORTER_LISTENER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SERVICE_FILTER_KEY;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasEntry;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
-import static org.junit.jupiter.api.Assertions.assertNull;
 
 class AbstractServiceConfigTest {
     @Test
     void testVersion() {
         ServiceConfig serviceConfig = new ServiceConfig();
         serviceConfig.setVersion("version");
-        assertThat(serviceConfig.getVersion(), equalTo("version"));
+        MatcherAssert.assertThat(serviceConfig.getVersion(), Matchers.equalTo("version"));
     }
 
     @Test
     void testGroup() {
         ServiceConfig serviceConfig = new ServiceConfig();
         serviceConfig.setGroup("group");
-        assertThat(serviceConfig.getGroup(), equalTo("group"));
+        MatcherAssert.assertThat(serviceConfig.getGroup(), Matchers.equalTo("group"));
     }
 
     @Test
     void testDelay() {
         ServiceConfig serviceConfig = new ServiceConfig();
         serviceConfig.setDelay(1000);
-        assertThat(serviceConfig.getDelay(), equalTo(1000));
+        MatcherAssert.assertThat(serviceConfig.getDelay(), Matchers.equalTo(1000));
     }
 
     @Test
     void testExport() {
         ServiceConfig serviceConfig = new ServiceConfig();
         serviceConfig.setExport(true);
-        assertThat(serviceConfig.getExport(), is(true));
+        MatcherAssert.assertThat(serviceConfig.getExport(), Matchers.is(true));
     }
 
     @Test
     void testWeight() {
         ServiceConfig serviceConfig = new ServiceConfig();
         serviceConfig.setWeight(500);
-        assertThat(serviceConfig.getWeight(), equalTo(500));
+        MatcherAssert.assertThat(serviceConfig.getWeight(), Matchers.equalTo(500));
     }
 
     @Test
     void testDocument() {
         ServiceConfig serviceConfig = new ServiceConfig();
         serviceConfig.setDocument("http://dubbo.apache.org");
-        assertThat(serviceConfig.getDocument(), equalTo("http://dubbo.apache.org"));
+        MatcherAssert.assertThat(serviceConfig.getDocument(), Matchers.equalTo("http://dubbo.apache.org"));
         Map<String, String> parameters = new HashMap<String, String>();
         AbstractServiceConfig.appendParameters(parameters, serviceConfig);
-        assertThat(parameters, hasEntry("document", "http%3A%2F%2Fdubbo.apache.org"));
+        MatcherAssert.assertThat(parameters, Matchers.hasEntry("document", "http%3A%2F%2Fdubbo.apache.org"));
     }
 
     @Test
     void testToken() {
         ServiceConfig serviceConfig = new ServiceConfig();
         serviceConfig.setToken("token");
-        assertThat(serviceConfig.getToken(), equalTo("token"));
+        MatcherAssert.assertThat(serviceConfig.getToken(), Matchers.equalTo("token"));
         serviceConfig.setToken((Boolean) null);
-        assertThat(serviceConfig.getToken(), nullValue());
+        MatcherAssert.assertThat(serviceConfig.getToken(), Matchers.nullValue());
         serviceConfig.setToken(true);
-        assertThat(serviceConfig.getToken(), is("true"));
+        MatcherAssert.assertThat(serviceConfig.getToken(), Matchers.is("true"));
     }
 
     @Test
     void testDeprecated() {
         ServiceConfig serviceConfig = new ServiceConfig();
         serviceConfig.setDeprecated(true);
-        assertThat(serviceConfig.isDeprecated(), is(true));
+        MatcherAssert.assertThat(serviceConfig.isDeprecated(), Matchers.is(true));
     }
 
     @Test
     void testDynamic() {
         ServiceConfig serviceConfig = new ServiceConfig();
         serviceConfig.setDynamic(true);
-        assertThat(serviceConfig.isDynamic(), is(true));
+        MatcherAssert.assertThat(serviceConfig.isDynamic(), Matchers.is(true));
     }
 
     @Test
     void testProtocol() {
         ServiceConfig serviceConfig = new ServiceConfig();
-        assertThat(serviceConfig.getProtocol(), nullValue());
+        MatcherAssert.assertThat(serviceConfig.getProtocol(), Matchers.nullValue());
         serviceConfig.setProtocol(new ProtocolConfig());
-        assertThat(serviceConfig.getProtocol(), notNullValue());
+        MatcherAssert.assertThat(serviceConfig.getProtocol(), Matchers.notNullValue());
         serviceConfig.setProtocols(new ArrayList<>(Collections.singletonList(new ProtocolConfig())));
-        assertThat(serviceConfig.getProtocols(), hasSize(1));
+        MatcherAssert.assertThat(serviceConfig.getProtocols(), Matchers.hasSize(1));
     }
 
     @Test
     void testAccesslog() {
         ServiceConfig serviceConfig = new ServiceConfig();
         serviceConfig.setAccesslog("access.log");
-        assertThat(serviceConfig.getAccesslog(), equalTo("access.log"));
+        MatcherAssert.assertThat(serviceConfig.getAccesslog(), Matchers.equalTo("access.log"));
         serviceConfig.setAccesslog((Boolean) null);
-        assertThat(serviceConfig.getAccesslog(), nullValue());
+        MatcherAssert.assertThat(serviceConfig.getAccesslog(), Matchers.nullValue());
         serviceConfig.setAccesslog(true);
-        assertThat(serviceConfig.getAccesslog(), equalTo("true"));
+        MatcherAssert.assertThat(serviceConfig.getAccesslog(), Matchers.equalTo("true"));
     }
 
     @Test
     void testExecutes() {
         ServiceConfig serviceConfig = new ServiceConfig();
         serviceConfig.setExecutes(10);
-        assertThat(serviceConfig.getExecutes(), equalTo(10));
+        MatcherAssert.assertThat(serviceConfig.getExecutes(), Matchers.equalTo(10));
     }
 
     @Test
     void testFilter() {
         ServiceConfig serviceConfig = new ServiceConfig();
         serviceConfig.setFilter("mockfilter");
-        assertThat(serviceConfig.getFilter(), equalTo("mockfilter"));
+        MatcherAssert.assertThat(serviceConfig.getFilter(), Matchers.equalTo("mockfilter"));
         Map<String, String> parameters = new HashMap<String, String>();
         parameters.put(SERVICE_FILTER_KEY, "prefilter");
         AbstractServiceConfig.appendParameters(parameters, serviceConfig);
-        assertThat(parameters, hasEntry(SERVICE_FILTER_KEY, "prefilter,mockfilter"));
+        MatcherAssert.assertThat(parameters, Matchers.hasEntry(SERVICE_FILTER_KEY, "prefilter,mockfilter"));
     }
 
     @Test
     void testListener() {
         ServiceConfig serviceConfig = new ServiceConfig();
         serviceConfig.setListener("mockexporterlistener");
-        assertThat(serviceConfig.getListener(), equalTo("mockexporterlistener"));
+        MatcherAssert.assertThat(serviceConfig.getListener(), Matchers.equalTo("mockexporterlistener"));
         Map<String, String> parameters = new HashMap<String, String>();
         parameters.put(EXPORTER_LISTENER_KEY, "prelistener");
         AbstractServiceConfig.appendParameters(parameters, serviceConfig);
-        assertThat(parameters, hasEntry(EXPORTER_LISTENER_KEY, "prelistener,mockexporterlistener"));
+        MatcherAssert.assertThat(parameters, Matchers.hasEntry(EXPORTER_LISTENER_KEY, "prelistener,mockexporterlistener"));
     }
 
     @Test
     void testRegister() {
         ServiceConfig serviceConfig = new ServiceConfig();
         serviceConfig.setRegister(true);
-        assertThat(serviceConfig.isRegister(), is(true));
+        MatcherAssert.assertThat(serviceConfig.isRegister(), Matchers.is(true));
     }
 
     @Test
     void testWarmup() {
         ServiceConfig serviceConfig = new ServiceConfig();
         serviceConfig.setWarmup(100);
-        assertThat(serviceConfig.getWarmup(), equalTo(100));
+        MatcherAssert.assertThat(serviceConfig.getWarmup(), Matchers.equalTo(100));
     }
 
     @Test
     void testSerialization() {
         ServiceConfig serviceConfig = new ServiceConfig();
         serviceConfig.setSerialization("serialization");
-        assertThat(serviceConfig.getSerialization(), equalTo("serialization"));
+        MatcherAssert.assertThat(serviceConfig.getSerialization(), Matchers.equalTo("serialization"));
     }
 
     @Test
     void testPreferSerialization() {
         ServiceConfig serviceConfig = new ServiceConfig();
         serviceConfig.setPreferSerialization("preferSerialization");
-        assertThat(serviceConfig.getPreferSerialization(), equalTo("preferSerialization"));
+        MatcherAssert.assertThat(serviceConfig.getPreferSerialization(), Matchers.equalTo("preferSerialization"));
     }
 
     @Test
     void testPreferSerializationDefault1() {
         ServiceConfig serviceConfig = new ServiceConfig();
-        assertNull(serviceConfig.getPreferSerialization());
+        Assertions.assertNull(serviceConfig.getPreferSerialization());
 
         serviceConfig.checkDefault();
-        assertNull(serviceConfig.getPreferSerialization());
+        Assertions.assertNull(serviceConfig.getPreferSerialization());
 
         serviceConfig = new ServiceConfig();
         serviceConfig.setSerialization("x-serialization");
-        assertNull(serviceConfig.getPreferSerialization());
+        Assertions.assertNull(serviceConfig.getPreferSerialization());
 
         serviceConfig.checkDefault();
-        assertThat(serviceConfig.getPreferSerialization(), equalTo("x-serialization"));
+        MatcherAssert.assertThat(serviceConfig.getPreferSerialization(), Matchers.equalTo("x-serialization"));
     }
 
     @Test
     void testPreferSerializationDefault2() {
         ServiceConfig serviceConfig = new ServiceConfig();
-        assertNull(serviceConfig.getPreferSerialization());
+        Assertions.assertNull(serviceConfig.getPreferSerialization());
 
         serviceConfig.refresh();
-        assertNull(serviceConfig.getPreferSerialization());
+        Assertions.assertNull(serviceConfig.getPreferSerialization());
 
         serviceConfig = new ServiceConfig();
         serviceConfig.setSerialization("x-serialization");
-        assertNull(serviceConfig.getPreferSerialization());
+        Assertions.assertNull(serviceConfig.getPreferSerialization());
 
         serviceConfig.refresh();
-        assertThat(serviceConfig.getPreferSerialization(), equalTo("x-serialization"));
+        MatcherAssert.assertThat(serviceConfig.getPreferSerialization(), Matchers.equalTo("x-serialization"));
     }
 
 

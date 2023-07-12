@@ -44,7 +44,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ENABLE_CONNECTIVITY_VALIDATION;
-import static org.apache.dubbo.rpc.cluster.Constants.RUNTIME_KEY;
+import static org.apache.dubbo.common.constants.ClusterConstants.RUNTIME_KEY;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 

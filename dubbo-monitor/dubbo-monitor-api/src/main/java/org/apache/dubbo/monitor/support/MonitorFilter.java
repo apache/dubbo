@@ -50,11 +50,11 @@ import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_MONITOR_EXCEPTION;
-import static org.apache.dubbo.monitor.Constants.CONCURRENT_KEY;
-import static org.apache.dubbo.monitor.Constants.COUNT_PROTOCOL;
-import static org.apache.dubbo.monitor.Constants.ELAPSED_KEY;
-import static org.apache.dubbo.monitor.Constants.FAILURE_KEY;
-import static org.apache.dubbo.monitor.Constants.SUCCESS_KEY;
+import static org.apache.dubbo.common.constants.MonitorConstants.CONCURRENT_KEY;
+import static org.apache.dubbo.common.constants.MonitorConstants.COUNT_PROTOCOL;
+import static org.apache.dubbo.common.constants.MonitorConstants.ELAPSED_KEY;
+import static org.apache.dubbo.common.constants.MonitorConstants.FAILURE_KEY;
+import static org.apache.dubbo.common.constants.MonitorConstants.SUCCESS_KEY;
 import static org.apache.dubbo.rpc.Constants.INPUT_KEY;
 import static org.apache.dubbo.rpc.Constants.OUTPUT_KEY;
 

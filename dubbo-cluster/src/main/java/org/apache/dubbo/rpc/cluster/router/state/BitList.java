@@ -114,7 +114,7 @@ public class BitList<E> extends AbstractList<E> implements Cloneable {
     }
 
     /**
-     * And operation between two bitList. Return a new cloned list.
+     * And method between two bitList. Return a new cloned list.
      * TailList in source bitList will be totally saved even if it is not appeared in the target bitList.
      *
      * @param target target bitList
@@ -238,7 +238,7 @@ public class BitList<E> extends AbstractList<E> implements Cloneable {
     }
 
     /**
-     * Caution: This operation will clear originList for removing references purpose.
+     * Caution: This method will clear originList for removing references purpose.
      * This may change the default behaviour when adding new element later.
      */
     @Override

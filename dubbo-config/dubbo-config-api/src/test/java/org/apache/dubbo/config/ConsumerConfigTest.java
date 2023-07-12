@@ -17,8 +17,8 @@
 
 package org.apache.dubbo.config;
 
-import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.config.api.DemoService;
+import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
@@ -32,7 +32,6 @@ import java.util.Collections;
 import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 
 class ConsumerConfigTest {
@@ -52,50 +51,50 @@ class ConsumerConfigTest {
         System.clearProperty("sun.rmi.transport.tcp.responseTimeout");
         ConsumerConfig consumer = new ConsumerConfig();
         consumer.setTimeout(10);
-        assertThat(consumer.getTimeout(), is(10));
-        assertThat(System.getProperty("sun.rmi.transport.tcp.responseTimeout"), equalTo("10"));
+        MatcherAssert.assertThat(consumer.getTimeout(), Matchers.is(10));
+        MatcherAssert.assertThat(System.getProperty("sun.rmi.transport.tcp.responseTimeout"), Matchers.equalTo("10"));
     }
 
     @Test
     void testDefault() throws Exception {
         ConsumerConfig consumer = new ConsumerConfig();
         consumer.setDefault(true);
-        assertThat(consumer.isDefault(), is(true));
+        MatcherAssert.assertThat(consumer.isDefault(), Matchers.is(true));
     }
 
     @Test
     void testClient() {
         ConsumerConfig consumer = new ConsumerConfig();
         consumer.setClient("client");
-        assertThat(consumer.getClient(), equalTo("client"));
+        MatcherAssert.assertThat(consumer.getClient(), Matchers.equalTo("client"));
     }
 
     @Test
     void testThreadpool() {
         ConsumerConfig consumer = new ConsumerConfig();
         consumer.setThreadpool("fixed");
-        assertThat(consumer.getThreadpool(), equalTo("fixed"));
+        MatcherAssert.assertThat(consumer.getThreadpool(), Matchers.equalTo("fixed"));
     }
 
     @Test
     void testCorethreads() {
         ConsumerConfig consumer = new ConsumerConfig();
         consumer.setCorethreads(10);
-        assertThat(consumer.getCorethreads(), equalTo(10));
+        MatcherAssert.assertThat(consumer.getCorethreads(), Matchers.equalTo(10));
     }
 
     @Test
     void testThreads() {
         ConsumerConfig consumer = new ConsumerConfig();
         consumer.setThreads(20);
-        assertThat(consumer.getThreads(), equalTo(20));
+        MatcherAssert.assertThat(consumer.getThreads(), Matchers.equalTo(20));
     }
 
     @Test
     void testQueues() {
         ConsumerConfig consumer = new ConsumerConfig();
         consumer.setQueues(5);
-        assertThat(consumer.getQueues(), equalTo(5));
+        MatcherAssert.assertThat(consumer.getQueues(), Matchers.equalTo(5));
     }
 
     @Test

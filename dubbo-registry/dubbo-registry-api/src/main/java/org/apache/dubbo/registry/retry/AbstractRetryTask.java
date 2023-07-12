@@ -29,10 +29,10 @@ import org.apache.dubbo.registry.support.FailbackRegistry;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_EXECUTE_RETRYING_TASK;
-import static org.apache.dubbo.registry.Constants.DEFAULT_REGISTRY_RETRY_PERIOD;
-import static org.apache.dubbo.registry.Constants.DEFAULT_REGISTRY_RETRY_TIMES;
-import static org.apache.dubbo.registry.Constants.REGISTRY_RETRY_PERIOD_KEY;
-import static org.apache.dubbo.registry.Constants.REGISTRY_RETRY_TIMES_KEY;
+import static org.apache.dubbo.common.registry.Constants.DEFAULT_REGISTRY_RETRY_PERIOD;
+import static org.apache.dubbo.common.registry.Constants.DEFAULT_REGISTRY_RETRY_TIMES;
+import static org.apache.dubbo.common.registry.Constants.REGISTRY_RETRY_PERIOD_KEY;
+import static org.apache.dubbo.common.registry.Constants.REGISTRY_RETRY_TIMES_KEY;
 
 /**
  * AbstractRetryTask

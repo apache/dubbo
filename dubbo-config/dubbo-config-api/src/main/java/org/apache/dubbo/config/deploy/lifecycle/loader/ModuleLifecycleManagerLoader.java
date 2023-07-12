@@ -14,7 +14,6 @@ public class ModuleLifecycleManagerLoader extends AbstractLifecycleManagerLoader
 
     private static final String PRE_DESTROY = "preDestroy";
 
-
     public ModuleLifecycleManagerLoader(DefaultModuleDeployer moduleDeployer) {
         this.moduleDeployer = moduleDeployer;
     }
@@ -29,7 +28,7 @@ public class ModuleLifecycleManagerLoader extends AbstractLifecycleManagerLoader
     }
 
     /**
-     * Map operation name to the method that provides dependency relations.
+     * Map method name to the method that provides dependency relations.
      */
     @Override
     protected void mapOperationsToDependencyProvider(Map<String, Function<ModuleLifecycleManager, List<String>>> dependencyProviders) {

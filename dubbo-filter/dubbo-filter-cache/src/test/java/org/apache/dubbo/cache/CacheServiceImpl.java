@@ -14,10 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata;
+package org.apache.dubbo.cache;
 
-public interface MappingListener {
-    void onEvent(MappingChangedEvent event);
+import java.util.concurrent.atomic.AtomicInteger;
 
-    void stop();
+/**
+ * ValidationServiceImpl
+ */
+public class CacheServiceImpl implements CacheService {
+
+    private final AtomicInteger i = new AtomicInteger();
+
+    public String findCache(String id) {
+        return "request: " + id + ", response: " + i.getAndIncrement();
+    }
+
 }

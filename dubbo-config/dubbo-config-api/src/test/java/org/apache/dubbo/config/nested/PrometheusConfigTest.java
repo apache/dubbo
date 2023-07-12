@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config.nested;
 
+import org.apache.dubbo.config.nested.PrometheusConfig;
 import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -33,9 +34,9 @@ class PrometheusConfigTest {
         exporter.setHttpServiceDiscoveryUrl("localhost:8080");
         prometheusConfig.setExporter(exporter);
 
-        assertThat(prometheusConfig.getExporter().getEnabled(), equalTo(true));
-        assertThat(prometheusConfig.getExporter().getEnableHttpServiceDiscovery(), equalTo(true));
-        assertThat(prometheusConfig.getExporter().getHttpServiceDiscoveryUrl(), equalTo("localhost:8080"));
+        MatcherAssert.assertThat(prometheusConfig.getExporter().getEnabled(), Matchers.equalTo(true));
+        MatcherAssert.assertThat(prometheusConfig.getExporter().getEnableHttpServiceDiscovery(), Matchers.equalTo(true));
+        MatcherAssert.assertThat(prometheusConfig.getExporter().getHttpServiceDiscoveryUrl(), Matchers.equalTo("localhost:8080"));
     }
 
     @Test
@@ -51,11 +52,11 @@ class PrometheusConfigTest {
         pushgateway.setPushInterval(30);
         prometheusConfig.setPushgateway(pushgateway);
 
-        assertThat(prometheusConfig.getPushgateway().getEnabled(), equalTo(true));
-        assertThat(prometheusConfig.getPushgateway().getBaseUrl(), equalTo("localhost:9091"));
-        assertThat(prometheusConfig.getPushgateway().getUsername(), equalTo("username"));
-        assertThat(prometheusConfig.getPushgateway().getPassword(), equalTo("password"));
-        assertThat(prometheusConfig.getPushgateway().getJob(), equalTo("job"));
-        assertThat(prometheusConfig.getPushgateway().getPushInterval(), equalTo(30));
+        MatcherAssert.assertThat(prometheusConfig.getPushgateway().getEnabled(), Matchers.equalTo(true));
+        MatcherAssert.assertThat(prometheusConfig.getPushgateway().getBaseUrl(), Matchers.equalTo("localhost:9091"));
+        MatcherAssert.assertThat(prometheusConfig.getPushgateway().getUsername(), Matchers.equalTo("username"));
+        MatcherAssert.assertThat(prometheusConfig.getPushgateway().getPassword(), Matchers.equalTo("password"));
+        MatcherAssert.assertThat(prometheusConfig.getPushgateway().getJob(), Matchers.equalTo("job"));
+        MatcherAssert.assertThat(prometheusConfig.getPushgateway().getPushInterval(), Matchers.equalTo(30));
     }
 }

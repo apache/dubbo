@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.config;
 
+import org.apache.dubbo.config.ProviderConfig;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -36,7 +37,7 @@ class ProviderConfigTest {
     void testProtocol() throws Exception {
         ProviderConfig provider = new ProviderConfig();
         provider.setProtocol("protocol");
-        assertThat(provider.getProtocol().getName(), equalTo("protocol"));
+        MatcherAssert.assertThat(provider.getProtocol().getName(), Matchers.equalTo("protocol"));
     }
 
     @Test
@@ -45,8 +46,8 @@ class ProviderConfigTest {
         provider.setDefault(true);
         Map<String, String> parameters = new HashMap<String, String>();
         ProviderConfig.appendParameters(parameters, provider);
-        assertThat(provider.isDefault(), is(true));
-        assertThat(parameters, not(hasKey("default")));
+        MatcherAssert.assertThat(provider.isDefault(), Matchers.is(true));
+        MatcherAssert.assertThat(parameters, Matchers.not(Matchers.hasKey("default")));
     }
 
     @Test
@@ -55,8 +56,8 @@ class ProviderConfigTest {
         provider.setHost("demo-host");
         Map<String, String> parameters = new HashMap<String, String>();
         ProviderConfig.appendParameters(parameters, provider);
-        assertThat(provider.getHost(), equalTo("demo-host"));
-        assertThat(parameters, not(hasKey("host")));
+        MatcherAssert.assertThat(provider.getHost(), Matchers.equalTo("demo-host"));
+        MatcherAssert.assertThat(parameters, Matchers.not(Matchers.hasKey("host")));
     }
 
     @Test
@@ -65,8 +66,8 @@ class ProviderConfigTest {
         provider.setPort(8080);
         Map<String, String> parameters = new HashMap<String, String>();
         ProviderConfig.appendParameters(parameters, provider);
-        assertThat(provider.getPort(), is(8080));
-        assertThat(parameters, not(hasKey("port")));
+        MatcherAssert.assertThat(provider.getPort(), Matchers.is(8080));
+        MatcherAssert.assertThat(parameters, Matchers.not(Matchers.hasKey("port")));
     }
 
     @Test
@@ -75,9 +76,9 @@ class ProviderConfigTest {
         provider.setPath("/path");
         Map<String, String> parameters = new HashMap<String, String>();
         ProviderConfig.appendParameters(parameters, provider);
-        assertThat(provider.getPath(), equalTo("/path"));
-        assertThat(provider.getContextpath(), equalTo("/path"));
-        assertThat(parameters, not(hasKey("path")));
+        MatcherAssert.assertThat(provider.getPath(), Matchers.equalTo("/path"));
+        MatcherAssert.assertThat(provider.getContextpath(), Matchers.equalTo("/path"));
+        MatcherAssert.assertThat(parameters, Matchers.not(Matchers.hasKey("path")));
     }
 
     @Test
@@ -86,85 +87,85 @@ class ProviderConfigTest {
         provider.setContextpath("/context-path");
         Map<String, String> parameters = new HashMap<String, String>();
         ProviderConfig.appendParameters(parameters, provider);
-        assertThat(provider.getContextpath(), equalTo("/context-path"));
-        assertThat(parameters, not(hasKey("/context-path")));
+        MatcherAssert.assertThat(provider.getContextpath(), Matchers.equalTo("/context-path"));
+        MatcherAssert.assertThat(parameters, Matchers.not(Matchers.hasKey("/context-path")));
     }
 
     @Test
     void testThreadpool() throws Exception {
         ProviderConfig provider = new ProviderConfig();
         provider.setThreadpool("mockthreadpool");
-        assertThat(provider.getThreadpool(), equalTo("mockthreadpool"));
+        MatcherAssert.assertThat(provider.getThreadpool(), Matchers.equalTo("mockthreadpool"));
     }
 
     @Test
     void testThreads() throws Exception {
         ProviderConfig provider = new ProviderConfig();
         provider.setThreads(10);
-        assertThat(provider.getThreads(), is(10));
+        MatcherAssert.assertThat(provider.getThreads(), Matchers.is(10));
     }
 
     @Test
     void testIothreads() throws Exception {
         ProviderConfig provider = new ProviderConfig();
         provider.setIothreads(10);
-        assertThat(provider.getIothreads(), is(10));
+        MatcherAssert.assertThat(provider.getIothreads(), Matchers.is(10));
     }
 
     @Test
     void testQueues() throws Exception {
         ProviderConfig provider = new ProviderConfig();
         provider.setQueues(10);
-        assertThat(provider.getQueues(), is(10));
+        MatcherAssert.assertThat(provider.getQueues(), Matchers.is(10));
     }
 
     @Test
     void testAccepts() throws Exception {
         ProviderConfig provider = new ProviderConfig();
         provider.setAccepts(10);
-        assertThat(provider.getAccepts(), is(10));
+        MatcherAssert.assertThat(provider.getAccepts(), Matchers.is(10));
     }
 
     @Test
     void testCharset() throws Exception {
         ProviderConfig provider = new ProviderConfig();
         provider.setCharset("utf-8");
-        assertThat(provider.getCharset(), equalTo("utf-8"));
+        MatcherAssert.assertThat(provider.getCharset(), Matchers.equalTo("utf-8"));
     }
 
     @Test
     void testPayload() throws Exception {
         ProviderConfig provider = new ProviderConfig();
         provider.setPayload(10);
-        assertThat(provider.getPayload(), is(10));
+        MatcherAssert.assertThat(provider.getPayload(), Matchers.is(10));
     }
 
     @Test
     void testBuffer() throws Exception {
         ProviderConfig provider = new ProviderConfig();
         provider.setBuffer(10);
-        assertThat(provider.getBuffer(), is(10));
+        MatcherAssert.assertThat(provider.getBuffer(), Matchers.is(10));
     }
 
     @Test
     void testServer() throws Exception {
         ProviderConfig provider = new ProviderConfig();
         provider.setServer("demo-server");
-        assertThat(provider.getServer(), equalTo("demo-server"));
+        MatcherAssert.assertThat(provider.getServer(), Matchers.equalTo("demo-server"));
     }
 
     @Test
     void testClient() throws Exception {
         ProviderConfig provider = new ProviderConfig();
         provider.setClient("client");
-        assertThat(provider.getClient(), equalTo("client"));
+        MatcherAssert.assertThat(provider.getClient(), Matchers.equalTo("client"));
     }
 
     @Test
     void testTelnet() throws Exception {
         ProviderConfig provider = new ProviderConfig();
         provider.setTelnet("mocktelnethandler");
-        assertThat(provider.getTelnet(), equalTo("mocktelnethandler"));
+        MatcherAssert.assertThat(provider.getTelnet(), Matchers.equalTo("mocktelnethandler"));
     }
 
     @Test
@@ -173,50 +174,50 @@ class ProviderConfigTest {
         provider.setPrompt("#");
         Map<String, String> parameters = new HashMap<String, String>();
         ProviderConfig.appendParameters(parameters, provider);
-        assertThat(provider.getPrompt(), equalTo("#"));
-        assertThat(parameters, hasEntry("prompt", "%23"));
+        MatcherAssert.assertThat(provider.getPrompt(), Matchers.equalTo("#"));
+        MatcherAssert.assertThat(parameters, Matchers.hasEntry("prompt", "%23"));
     }
 
     @Test
     void testStatus() throws Exception {
         ProviderConfig provider = new ProviderConfig();
         provider.setStatus("mockstatuschecker");
-        assertThat(provider.getStatus(), equalTo("mockstatuschecker"));
+        MatcherAssert.assertThat(provider.getStatus(), Matchers.equalTo("mockstatuschecker"));
     }
 
     @Test
     void testTransporter() throws Exception {
         ProviderConfig provider = new ProviderConfig();
         provider.setTransporter("mocktransporter");
-        assertThat(provider.getTransporter(), equalTo("mocktransporter"));
+        MatcherAssert.assertThat(provider.getTransporter(), Matchers.equalTo("mocktransporter"));
     }
 
     @Test
     void testExchanger() throws Exception {
         ProviderConfig provider = new ProviderConfig();
         provider.setExchanger("mockexchanger");
-        assertThat(provider.getExchanger(), equalTo("mockexchanger"));
+        MatcherAssert.assertThat(provider.getExchanger(), Matchers.equalTo("mockexchanger"));
     }
 
     @Test
     void testDispatcher() throws Exception {
         ProviderConfig provider = new ProviderConfig();
         provider.setDispatcher("mockdispatcher");
-        assertThat(provider.getDispatcher(), equalTo("mockdispatcher"));
+        MatcherAssert.assertThat(provider.getDispatcher(), Matchers.equalTo("mockdispatcher"));
     }
 
     @Test
     void testNetworker() throws Exception {
         ProviderConfig provider = new ProviderConfig();
         provider.setNetworker("networker");
-        assertThat(provider.getNetworker(), equalTo("networker"));
+        MatcherAssert.assertThat(provider.getNetworker(), Matchers.equalTo("networker"));
     }
 
     @Test
     void testWait() throws Exception {
         ProviderConfig provider = new ProviderConfig();
         provider.setWait(10);
-        assertThat(provider.getWait(), equalTo(10));
+        MatcherAssert.assertThat(provider.getWait(), Matchers.equalTo(10));
     }
 
     @Test

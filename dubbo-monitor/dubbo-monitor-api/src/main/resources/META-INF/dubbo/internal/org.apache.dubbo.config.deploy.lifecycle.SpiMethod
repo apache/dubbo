@@ -1,0 +1,2 @@
+isSupportMonitor=org.apache.dubbo.monitor.spi.IsSupportMonitor
+loadMonitor=org.apache.dubbo.monitor.spi.LoadMonitor

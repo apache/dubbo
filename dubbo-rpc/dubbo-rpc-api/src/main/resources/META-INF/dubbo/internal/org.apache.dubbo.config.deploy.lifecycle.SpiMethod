@@ -1,0 +1,1 @@
+destroyProtocols=org.apache.dubbo.rpc.spi.DestroyProtocols

@@ -29,7 +29,7 @@ import org.mockito.Mockito;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.apache.dubbo.rpc.cluster.Constants.INVOCATION_NEED_MOCK;
+import static org.apache.dubbo.common.constants.ClusterConstants.INVOCATION_NEED_MOCK;
 
 class MockInvokersSelectorTest {
     @Test

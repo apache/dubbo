@@ -16,6 +16,10 @@
  */
 package org.apache.dubbo.config.bootstrap;
 
+import org.apache.dubbo.config.SysProps;
+import org.apache.dubbo.config.api.DemoService;
+import org.apache.dubbo.config.api.Greeting;
+import org.apache.dubbo.config.mock.GreetingLocal2;
 import org.apache.dubbo.common.deploy.ApplicationDeployer;
 import org.apache.dubbo.common.deploy.DeployListener;
 import org.apache.dubbo.common.deploy.DeployState;
@@ -24,15 +28,7 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.config.ApplicationConfig;
-import org.apache.dubbo.config.ProtocolConfig;
-import org.apache.dubbo.config.ReferenceConfig;
-import org.apache.dubbo.config.RegistryConfig;
-import org.apache.dubbo.config.ServiceConfig;
-import org.apache.dubbo.config.SysProps;
-import org.apache.dubbo.config.api.DemoService;
-import org.apache.dubbo.config.api.Greeting;
-import org.apache.dubbo.config.mock.GreetingLocal2;
+import org.apache.dubbo.config.*;
 import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
 import org.apache.dubbo.registry.client.migration.MigrationInvoker;
 import org.apache.dubbo.rpc.Invoker;

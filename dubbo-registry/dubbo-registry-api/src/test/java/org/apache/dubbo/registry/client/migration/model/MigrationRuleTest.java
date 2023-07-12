@@ -17,7 +17,7 @@
 package org.apache.dubbo.registry.client.migration.model;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.metadata.ServiceNameMapping;
+import org.apache.dubbo.metadata.event.ServiceNameMapping;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import org.junit.jupiter.api.Test;

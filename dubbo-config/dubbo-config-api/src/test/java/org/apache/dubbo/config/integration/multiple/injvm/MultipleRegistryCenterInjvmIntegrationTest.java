@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config.integration.multiple.injvm;
 
+import org.apache.dubbo.config.integration.IntegrationTest;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ProtocolConfig;
@@ -24,7 +25,6 @@ import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.ServiceListener;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
-import org.apache.dubbo.config.integration.IntegrationTest;
 import org.apache.dubbo.rpc.ExporterListener;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.test.check.registrycenter.config.ZookeeperRegistryCenterConfig;

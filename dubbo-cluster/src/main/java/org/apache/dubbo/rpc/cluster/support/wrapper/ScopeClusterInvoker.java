@@ -49,7 +49,7 @@ import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
 import static org.apache.dubbo.rpc.Constants.SCOPE_KEY;
 import static org.apache.dubbo.rpc.Constants.SCOPE_LOCAL;
 import static org.apache.dubbo.rpc.Constants.SCOPE_REMOTE;
-import static org.apache.dubbo.rpc.cluster.Constants.PEER_KEY;
+import static org.apache.dubbo.common.constants.ClusterConstants.PEER_KEY;
 
 /**
  * ScopeClusterInvoker is a cluster invoker which handles the invocation logic of a single service in a specific scope.

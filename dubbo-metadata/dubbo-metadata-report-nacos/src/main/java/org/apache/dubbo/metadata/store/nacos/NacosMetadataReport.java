@@ -38,10 +38,10 @@ import org.apache.dubbo.common.constants.LoggerCodeConstants;
 import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.MD5Utils;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.metadata.MappingChangedEvent;
-import org.apache.dubbo.metadata.MappingListener;
+import org.apache.dubbo.metadata.event.MappingChangedEvent;
+import org.apache.dubbo.metadata.event.MappingListener;
 import org.apache.dubbo.metadata.MetadataInfo;
-import org.apache.dubbo.metadata.ServiceNameMapping;
+import org.apache.dubbo.metadata.event.ServiceNameMapping;
 import org.apache.dubbo.metadata.report.identifier.BaseMetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.KeyTypeEnum;
 import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
@@ -65,8 +65,8 @@ import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
 import static org.apache.dubbo.common.utils.StringConstantFieldValuePredicate.of;
 import static org.apache.dubbo.common.utils.StringUtils.HYPHEN_CHAR;
 import static org.apache.dubbo.metadata.MetadataConstants.REPORT_CONSUMER_URL_KEY;
-import static org.apache.dubbo.metadata.ServiceNameMapping.DEFAULT_MAPPING_GROUP;
-import static org.apache.dubbo.metadata.ServiceNameMapping.getAppNames;
+import static org.apache.dubbo.metadata.event.ServiceNameMapping.DEFAULT_MAPPING_GROUP;
+import static org.apache.dubbo.metadata.event.ServiceNameMapping.getAppNames;
 
 /**
  * metadata report impl for nacos

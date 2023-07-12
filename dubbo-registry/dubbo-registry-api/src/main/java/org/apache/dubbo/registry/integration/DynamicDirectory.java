@@ -36,7 +36,7 @@ import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.cluster.Configurator;
-import org.apache.dubbo.rpc.cluster.Constants;
+import org.apache.dubbo.common.constants.ClusterConstants;
 import org.apache.dubbo.rpc.cluster.RouterChain;
 import org.apache.dubbo.rpc.cluster.RouterFactory;
 import org.apache.dubbo.rpc.cluster.SingleRouterChain;
@@ -52,8 +52,8 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAI
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_DESTROY_UNREGISTER_URL;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONSUMERS_CATEGORY;
-import static org.apache.dubbo.registry.Constants.REGISTER_KEY;
-import static org.apache.dubbo.registry.Constants.SIMPLIFIED_KEY;
+import static org.apache.dubbo.common.registry.Constants.REGISTER_KEY;
+import static org.apache.dubbo.common.registry.Constants.SIMPLIFIED_KEY;
 import static org.apache.dubbo.registry.integration.InterfaceCompatibleRegistryProtocol.DEFAULT_REGISTER_CONSUMER_KEYS;
 import static org.apache.dubbo.remoting.Constants.CHECK_KEY;
 
@@ -150,7 +150,7 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
         String group = directoryUrl.getGroup("");
         this.multiGroup = group != null && (ANY_VALUE.equals(group) || group.contains(","));
 
-        this.shouldFailFast = Boolean.parseBoolean(ConfigurationUtils.getProperty(moduleModel, Constants.SHOULD_FAIL_FAST_KEY, "true"));
+        this.shouldFailFast = Boolean.parseBoolean(ConfigurationUtils.getProperty(moduleModel, ClusterConstants.SHOULD_FAIL_FAST_KEY, "true"));
     }
 
     @Override

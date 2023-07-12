@@ -27,7 +27,7 @@ import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PROTOCOL;
-import static org.apache.dubbo.registry.Constants.DEFAULT_REGISTRY;
+import static org.apache.dubbo.common.registry.Constants.DEFAULT_REGISTRY;
 
 /**
  * RegistryProtocol

@@ -18,6 +18,7 @@ package org.apache.dubbo.config.bootstrap.builders;
 
 import org.apache.dubbo.config.RegistryConfig;
 
+import org.apache.dubbo.config.bootstrap.builders.RegistryBuilder;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

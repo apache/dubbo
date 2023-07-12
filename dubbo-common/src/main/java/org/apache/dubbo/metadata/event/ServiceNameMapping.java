@@ -14,10 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata;
+package org.apache.dubbo.metadata.event;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.constants.RegistryConstants;
+import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -30,15 +31,13 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import static java.util.Collections.emptySet;
-import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
-import static org.apache.dubbo.common.extension.ExtensionScope.APPLICATION;
 
 /**
  * This will interact with remote metadata center to find the interface-app mapping and will cache the data locally.
  *
  * Call variants of getCachedMapping() methods whenever need to use the mapping data.
  */
-@SPI(value = "metadata", scope = APPLICATION)
+@SPI(value = "metadata", scope = ExtensionScope.APPLICATION)
 public interface ServiceNameMapping extends Destroyable {
 
     String DEFAULT_MAPPING_GROUP = "mapping";
@@ -77,7 +76,7 @@ public interface ServiceNameMapping extends Destroyable {
         StringBuilder builder = new StringBuilder();
         for (String n : serviceNames) {
             builder.append(n);
-            builder.append(COMMA_SEPARATOR);
+            builder.append(CommonConstants.COMMA_SEPARATOR);
         }
 
         builder.deleteCharAt(builder.length() - 1);
@@ -88,16 +87,16 @@ public interface ServiceNameMapping extends Destroyable {
         if (StringUtils.isBlank(content)) {
             return emptySet();
         }
-        return new TreeSet<>(Arrays.asList(content.split(COMMA_SEPARATOR)));
+        return new TreeSet<>(Arrays.asList(content.split(CommonConstants.COMMA_SEPARATOR)));
     }
 
-    static Set<String> getMappingByUrl(URL consumerURL) {
-        String providedBy = consumerURL.getParameter(RegistryConstants.PROVIDED_BY);
-        if(StringUtils.isBlank(providedBy)) {
-            return null;
-        }
-        return AbstractServiceNameMapping.parseServices(providedBy);
-    }
+//    static Set<String> getMappingByUrl(URL consumerURL) {
+//        String providedBy = consumerURL.getParameter(RegistryConstants.PROVIDED_BY);
+//        if(StringUtils.isBlank(providedBy)) {
+//            return null;
+//        }
+//        return AbstractServiceNameMapping.parseServices(providedBy);
+//    }
 
     /**
      * Get the latest mapping result from remote center and register listener at the same time to get notified once mapping changes.

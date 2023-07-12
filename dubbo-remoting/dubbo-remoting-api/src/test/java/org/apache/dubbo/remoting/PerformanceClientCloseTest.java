@@ -32,7 +32,7 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_UNDEF
 
 /**
  * ProformanceClient
- * The test class will report abnormal thread pool, because the judgment on the thread pool concurrency problems produced in DefaultChannelHandler (connected event has been executed asynchronously, judgment, then closed the thread pool, thread pool and execution error, this problem can be specified through the Constants.CHANNEL_HANDLER_KEY=connection.)
+ * The test class will report abnormal thread pool, because the judgment on the thread pool concurrency problems produced in DefaultChannelHandler (connected event has been executed asynchronously, judgment, then closed the thread pool, thread pool and execution error, this problem can be specified through the MonitorConstants.CHANNEL_HANDLER_KEY=connection.)
  */
 class PerformanceClientCloseTest {
 
@@ -55,7 +55,7 @@ class PerformanceClientCloseTest {
 
         final String url = "exchange://" + server + "?transporter=" + transporter
             + "&serialization=" + serialization
-//            + "&"+Constants.CHANNEL_HANDLER_KEY+"=connection"
+//            + "&"+MonitorConstants.CHANNEL_HANDLER_KEY+"=connection"
             + "&timeout=" + timeout;
 
         final AtomicInteger count = new AtomicInteger();

@@ -43,9 +43,9 @@ import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.COMPATIBLE_CONFIG_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_KEY;
-import static org.apache.dubbo.rpc.cluster.Constants.CONFIG_VERSION_KEY;
-import static org.apache.dubbo.rpc.cluster.Constants.OVERRIDE_PROVIDERS_KEY;
-import static org.apache.dubbo.rpc.cluster.Constants.RULE_VERSION_V30;
+import static org.apache.dubbo.common.constants.ClusterConstants.CONFIG_VERSION_KEY;
+import static org.apache.dubbo.common.constants.ClusterConstants.OVERRIDE_PROVIDERS_KEY;
+import static org.apache.dubbo.common.constants.ClusterConstants.RULE_VERSION_V30;
 import static org.apache.dubbo.rpc.cluster.configurator.parser.model.ConfiguratorConfig.MATCH_CONDITION;
 
 /**

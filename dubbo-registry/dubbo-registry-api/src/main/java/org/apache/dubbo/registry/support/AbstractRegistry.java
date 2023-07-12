@@ -71,10 +71,10 @@ import static org.apache.dubbo.common.constants.RegistryConstants.ACCEPTS_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
-import static org.apache.dubbo.registry.Constants.CACHE;
-import static org.apache.dubbo.registry.Constants.DUBBO_REGISTRY;
-import static org.apache.dubbo.registry.Constants.REGISTRY_FILESAVE_SYNC_KEY;
-import static org.apache.dubbo.registry.Constants.USER_HOME;
+import static org.apache.dubbo.common.registry.Constants.CACHE;
+import static org.apache.dubbo.common.registry.Constants.DUBBO_REGISTRY;
+import static org.apache.dubbo.common.registry.Constants.REGISTRY_FILESAVE_SYNC_KEY;
+import static org.apache.dubbo.common.registry.Constants.USER_HOME;
 
 /**
  * <p>

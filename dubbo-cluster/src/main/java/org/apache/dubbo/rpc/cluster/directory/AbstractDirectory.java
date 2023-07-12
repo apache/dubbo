@@ -70,8 +70,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.RECONNECT_TASK_T
 import static org.apache.dubbo.common.constants.CommonConstants.REGISTER_IP_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_NO_VALID_PROVIDER;
 import static org.apache.dubbo.common.utils.StringUtils.isNotEmpty;
-import static org.apache.dubbo.rpc.cluster.Constants.CONSUMER_URL_KEY;
-import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
+import static org.apache.dubbo.common.constants.ClusterConstants.CONSUMER_URL_KEY;
+import static org.apache.dubbo.common.constants.ClusterConstants.REFER_KEY;
 
 /**
  * Abstract implementation of Directory: Invoker list returned from this Directory's list method have been filtered by Routers

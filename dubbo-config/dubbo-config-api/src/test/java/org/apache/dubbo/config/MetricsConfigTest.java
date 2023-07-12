@@ -17,6 +17,7 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.nested.AggregationConfig;
 import org.apache.dubbo.config.nested.PrometheusConfig;
 import org.apache.dubbo.config.nested.HistogramConfig;
@@ -53,21 +54,21 @@ class MetricsConfigTest {
 
         URL url = metrics.toUrl();
 
-        assertThat(url.getProtocol(), equalTo(PROTOCOL_PROMETHEUS));
-        assertThat(url.getAddress(), equalTo("localhost:9090"));
-        assertThat(url.getHost(), equalTo("localhost"));
-        assertThat(url.getPort(), equalTo(9090));
-        assertThat(url.getParameter("prometheus.exporter.enabled"), equalTo("true"));
-        assertThat(url.getParameter("prometheus.pushgateway.enabled"), equalTo("true"));
-        assertThat(url.getParameter("aggregation.enabled"), equalTo("true"));
-        assertThat(url.getParameter("histogram.enabled"), equalTo("true"));
+        MatcherAssert.assertThat(url.getProtocol(), Matchers.equalTo(PROTOCOL_PROMETHEUS));
+        MatcherAssert.assertThat(url.getAddress(), Matchers.equalTo("localhost:9090"));
+        MatcherAssert.assertThat(url.getHost(), Matchers.equalTo("localhost"));
+        MatcherAssert.assertThat(url.getPort(), Matchers.equalTo(9090));
+        MatcherAssert.assertThat(url.getParameter("prometheus.exporter.enabled"), Matchers.equalTo("true"));
+        MatcherAssert.assertThat(url.getParameter("prometheus.pushgateway.enabled"), Matchers.equalTo("true"));
+        MatcherAssert.assertThat(url.getParameter("aggregation.enabled"), Matchers.equalTo("true"));
+        MatcherAssert.assertThat(url.getParameter("histogram.enabled"), Matchers.equalTo("true"));
     }
 
     @Test
     void testProtocol() {
         MetricsConfig metrics = new MetricsConfig();
         metrics.setProtocol(PROTOCOL_PROMETHEUS);
-        assertThat(metrics.getProtocol(), equalTo(PROTOCOL_PROMETHEUS));
+        MatcherAssert.assertThat(metrics.getProtocol(), Matchers.equalTo(PROTOCOL_PROMETHEUS));
     }
 
     @Test
@@ -93,15 +94,15 @@ class MetricsConfigTest {
 
         metrics.setPrometheus(prometheus);
 
-        assertThat(metrics.getPrometheus().getExporter().getEnabled(), equalTo(true));
-        assertThat(metrics.getPrometheus().getExporter().getEnableHttpServiceDiscovery(), equalTo(true));
-        assertThat(metrics.getPrometheus().getExporter().getHttpServiceDiscoveryUrl(), equalTo("localhost:8080"));
-        assertThat(metrics.getPrometheus().getPushgateway().getEnabled(), equalTo(true));
-        assertThat(metrics.getPrometheus().getPushgateway().getBaseUrl(), equalTo("localhost:9091"));
-        assertThat(metrics.getPrometheus().getPushgateway().getUsername(), equalTo("username"));
-        assertThat(metrics.getPrometheus().getPushgateway().getPassword(), equalTo("password"));
-        assertThat(metrics.getPrometheus().getPushgateway().getJob(), equalTo("job"));
-        assertThat(metrics.getPrometheus().getPushgateway().getPushInterval(), equalTo(30));
+        MatcherAssert.assertThat(metrics.getPrometheus().getExporter().getEnabled(), Matchers.equalTo(true));
+        MatcherAssert.assertThat(metrics.getPrometheus().getExporter().getEnableHttpServiceDiscovery(), Matchers.equalTo(true));
+        MatcherAssert.assertThat(metrics.getPrometheus().getExporter().getHttpServiceDiscoveryUrl(), Matchers.equalTo("localhost:8080"));
+        MatcherAssert.assertThat(metrics.getPrometheus().getPushgateway().getEnabled(), Matchers.equalTo(true));
+        MatcherAssert.assertThat(metrics.getPrometheus().getPushgateway().getBaseUrl(), Matchers.equalTo("localhost:9091"));
+        MatcherAssert.assertThat(metrics.getPrometheus().getPushgateway().getUsername(), Matchers.equalTo("username"));
+        MatcherAssert.assertThat(metrics.getPrometheus().getPushgateway().getPassword(), Matchers.equalTo("password"));
+        MatcherAssert.assertThat(metrics.getPrometheus().getPushgateway().getJob(), Matchers.equalTo("job"));
+        MatcherAssert.assertThat(metrics.getPrometheus().getPushgateway().getPushInterval(), Matchers.equalTo(30));
     }
 
     @Test
@@ -114,8 +115,8 @@ class MetricsConfigTest {
         aggregation.setTimeWindowSeconds(120);
         metrics.setAggregation(aggregation);
 
-        assertThat(metrics.getAggregation().getEnabled(), equalTo(true));
-        assertThat(metrics.getAggregation().getBucketNum(), equalTo(5));
-        assertThat(metrics.getAggregation().getTimeWindowSeconds(), equalTo(120));
+        MatcherAssert.assertThat(metrics.getAggregation().getEnabled(), Matchers.equalTo(true));
+        MatcherAssert.assertThat(metrics.getAggregation().getBucketNum(), Matchers.equalTo(5));
+        MatcherAssert.assertThat(metrics.getAggregation().getTimeWindowSeconds(), Matchers.equalTo(120));
     }
 }

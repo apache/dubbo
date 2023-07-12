@@ -28,7 +28,7 @@ import java.util.Optional;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
-import static org.apache.dubbo.rpc.cluster.Constants.PRIORITY_KEY;
+import static org.apache.dubbo.common.constants.ClusterConstants.PRIORITY_KEY;
 
 /**
  * Configurator. (SPI, Prototype, ThreadSafe)

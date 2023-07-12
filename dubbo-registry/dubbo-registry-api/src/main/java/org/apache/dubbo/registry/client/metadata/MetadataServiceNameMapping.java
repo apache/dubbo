@@ -24,8 +24,9 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.AbstractServiceNameMapping;
-import org.apache.dubbo.metadata.MappingListener;
+
 import org.apache.dubbo.metadata.MetadataService;
+import org.apache.dubbo.metadata.event.MappingListener;
 import org.apache.dubbo.metadata.report.MetadataReport;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
 import org.apache.dubbo.registry.client.RegistryClusterIdentifier;
@@ -41,10 +42,10 @@ import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_PROPERTY_TYPE_MISMATCH;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
-import static org.apache.dubbo.registry.Constants.CAS_RETRY_TIMES_KEY;
-import static org.apache.dubbo.registry.Constants.CAS_RETRY_WAIT_TIME_KEY;
-import static org.apache.dubbo.registry.Constants.DEFAULT_CAS_RETRY_TIMES;
-import static org.apache.dubbo.registry.Constants.DEFAULT_CAS_RETRY_WAIT_TIME;
+import static org.apache.dubbo.common.registry.Constants.CAS_RETRY_TIMES_KEY;
+import static org.apache.dubbo.common.registry.Constants.CAS_RETRY_WAIT_TIME_KEY;
+import static org.apache.dubbo.common.registry.Constants.DEFAULT_CAS_RETRY_TIMES;
+import static org.apache.dubbo.common.registry.Constants.DEFAULT_CAS_RETRY_WAIT_TIME;
 
 public class MetadataServiceNameMapping extends AbstractServiceNameMapping {
 
@@ -116,7 +117,7 @@ public class MetadataServiceNameMapping extends AbstractServiceNameMapping {
                     succeeded = metadataReport.registerServiceAppMapping(serviceInterface, DEFAULT_MAPPING_GROUP, newConfigContent, configItem.getTicket());
                     if (!succeeded) {
                         int waitTime = ThreadLocalRandom.current().nextInt(casRetryWaitTime);
-                        logger.info("Failed to publish service name mapping to metadata center by cas operation. " +
+                        logger.info("Failed to publish service name mapping to metadata center by cas method. " +
                             "Times: " + currentRetryTimes + ". " +
                             "Next retry delay: " + waitTime + ". " +
                             "Service Interface: " + serviceInterface + ". " +

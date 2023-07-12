@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static org.apache.dubbo.rpc.cluster.Constants.CONDITIONS_KEY;
+import static org.apache.dubbo.common.constants.ClusterConstants.CONDITIONS_KEY;
 
 public class ConditionRouterRule extends AbstractRouterRule {
     private List<String> conditions;

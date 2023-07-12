@@ -17,41 +17,16 @@
 package org.apache.dubbo.config.utils;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.URLBuilder;
-import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.config.PropertiesConfiguration;
+import org.apache.dubbo.common.constants.SpiMethods;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.serialize.Serialization;
 import org.apache.dubbo.common.status.StatusChecker;
-import org.apache.dubbo.common.status.reporter.FrameworkStatusReportService;
 import org.apache.dubbo.common.threadpool.ThreadPool;
-import org.apache.dubbo.common.utils.ClassUtils;
-import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.common.utils.ConfigUtils;
-import org.apache.dubbo.common.utils.NetUtils;
-import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.common.utils.UrlUtils;
-import org.apache.dubbo.config.AbstractConfig;
-import org.apache.dubbo.config.AbstractInterfaceConfig;
-import org.apache.dubbo.config.ApplicationConfig;
-import org.apache.dubbo.config.ConfigCenterConfig;
-import org.apache.dubbo.config.ConsumerConfig;
-import org.apache.dubbo.config.MetadataReportConfig;
-import org.apache.dubbo.config.MethodConfig;
-import org.apache.dubbo.config.MetricsConfig;
-import org.apache.dubbo.config.ModuleConfig;
-import org.apache.dubbo.config.MonitorConfig;
-import org.apache.dubbo.config.ProtocolConfig;
-import org.apache.dubbo.config.ProviderConfig;
-import org.apache.dubbo.config.ReferenceConfig;
-import org.apache.dubbo.config.RegistryConfig;
-import org.apache.dubbo.config.ServiceConfig;
-import org.apache.dubbo.config.SslConfig;
-import org.apache.dubbo.config.TracingConfig;
-import org.apache.dubbo.monitor.MonitorFactory;
-import org.apache.dubbo.monitor.MonitorService;
-import org.apache.dubbo.registry.RegistryService;
+import org.apache.dubbo.common.utils.*;
+import org.apache.dubbo.config.*;
+import org.apache.dubbo.config.deploy.lifecycle.manager.SpiMethodManager;
 import org.apache.dubbo.remoting.Codec2;
 import org.apache.dubbo.remoting.Dispatcher;
 import org.apache.dubbo.remoting.Transporter;
@@ -70,81 +45,21 @@ import org.apache.dubbo.rpc.support.MockInvoker;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
-import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_MONITOR_ADDRESS;
-import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
-import static org.apache.dubbo.common.constants.CommonConstants.FILE_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.FILTER_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.HOST_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.LOADBALANCE_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_VALUE;
-import static org.apache.dubbo.common.constants.CommonConstants.PASSWORD_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.REMOVE_VALUE_PREFIX;
-import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_SECONDS_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.USERNAME_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.*;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_CLASS_NOT_FOUND;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_PARAMETER_FORMAT_ERROR;
-import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_REGISTER_MODE_ALL;
-import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_REGISTER_MODE_INSTANCE;
-import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_REGISTER_MODE_INTERFACE;
-import static org.apache.dubbo.common.constants.RegistryConstants.DUBBO_REGISTER_MODE_DEFAULT_KEY;
-import static org.apache.dubbo.common.constants.RegistryConstants.REGISTER_MODE_KEY;
-import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_KEY;
-import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PROTOCOL;
-import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_TYPE_KEY;
-import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGISTRY_PROTOCOL;
+import static org.apache.dubbo.common.constants.RegistryConstants.*;
 import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
 import static org.apache.dubbo.common.utils.StringUtils.isEmpty;
 import static org.apache.dubbo.common.utils.StringUtils.isNotEmpty;
-import static org.apache.dubbo.config.Constants.ARCHITECTURE;
-import static org.apache.dubbo.config.Constants.CONTEXTPATH_KEY;
-import static org.apache.dubbo.config.Constants.DUBBO_IP_TO_REGISTRY;
-import static org.apache.dubbo.config.Constants.ENVIRONMENT;
-import static org.apache.dubbo.config.Constants.IGNORE_CHECK_KEYS;
-import static org.apache.dubbo.config.Constants.LAYER_KEY;
-import static org.apache.dubbo.config.Constants.NAME;
-import static org.apache.dubbo.config.Constants.ORGANIZATION;
-import static org.apache.dubbo.config.Constants.OWNER;
-import static org.apache.dubbo.config.Constants.STATUS_KEY;
-import static org.apache.dubbo.monitor.Constants.LOGSTAT_PROTOCOL;
-import static org.apache.dubbo.registry.Constants.REGISTER_IP_KEY;
-import static org.apache.dubbo.registry.Constants.SUBSCRIBE_KEY;
-import static org.apache.dubbo.remoting.Constants.CLIENT_KEY;
-import static org.apache.dubbo.remoting.Constants.CODEC_KEY;
-import static org.apache.dubbo.remoting.Constants.DISPATCHER_KEY;
-import static org.apache.dubbo.remoting.Constants.EXCHANGER_KEY;
-import static org.apache.dubbo.remoting.Constants.SERIALIZATION_KEY;
-import static org.apache.dubbo.remoting.Constants.SERVER_KEY;
-import static org.apache.dubbo.remoting.Constants.TELNET_KEY;
-import static org.apache.dubbo.remoting.Constants.TRANSPORTER_KEY;
-import static org.apache.dubbo.rpc.Constants.FAIL_PREFIX;
-import static org.apache.dubbo.rpc.Constants.FORCE_PREFIX;
-import static org.apache.dubbo.rpc.Constants.LOCAL_KEY;
-import static org.apache.dubbo.rpc.Constants.MOCK_KEY;
-import static org.apache.dubbo.rpc.Constants.PROXY_KEY;
-import static org.apache.dubbo.rpc.Constants.RETURN_PREFIX;
-import static org.apache.dubbo.rpc.Constants.THROW_PREFIX;
-import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
-import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
+import static org.apache.dubbo.config.Constants.*;
+import static org.apache.dubbo.remoting.Constants.*;
+import static org.apache.dubbo.rpc.Constants.*;
 
 public class ConfigValidationUtils {
     private static ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ConfigValidationUtils.class);
@@ -192,166 +107,177 @@ public class ConfigValidationUtils {
 
     public static final String IPV6_END_MARK = "]";
 
-    public static List<URL> loadRegistries(AbstractInterfaceConfig interfaceConfig, boolean provider) {
+    public static List<URL> tryLoadRegistries(AbstractInterfaceConfig interfaceConfig, boolean provider) {
         // check && override if necessary
-        List<URL> registryList = new ArrayList<>();
-        ApplicationConfig application = interfaceConfig.getApplication();
-        List<RegistryConfig> registries = interfaceConfig.getRegistries();
-        if (CollectionUtils.isNotEmpty(registries)) {
-            for (RegistryConfig config : registries) {
-                // try to refresh registry in case it is set directly by user using config.setRegistries()
-                if (!config.isRefreshed()) {
-                    config.refresh();
-                }
-                String address = config.getAddress();
-                if (StringUtils.isEmpty(address)) {
-                    address = ANYHOST_VALUE;
-                }
-                if (!RegistryConfig.NO_AVAILABLE.equalsIgnoreCase(address)) {
-                    Map<String, String> map = new HashMap<String, String>();
-                    AbstractConfig.appendParameters(map, application);
-                    AbstractConfig.appendParameters(map, config);
-                    map.put(PATH_KEY, RegistryService.class.getName());
-                    AbstractInterfaceConfig.appendRuntimeParameters(map);
-                    if (!map.containsKey(PROTOCOL_KEY)) {
-                        map.put(PROTOCOL_KEY, DUBBO_PROTOCOL);
-                    }
-                    List<URL> urls = UrlUtils.parseURLs(address, map);
+        return (List<URL>) SpiMethodManager.get().ifPresent().invoke(SpiMethods.loadRegistry,interfaceConfig,provider);
 
-                    for (URL url : urls) {
-                        url = URLBuilder.from(url)
-                            .addParameter(REGISTRY_KEY, url.getProtocol())
-                            .setProtocol(extractRegistryType(url))
-                            .setScopeModel(interfaceConfig.getScopeModel())
-                            .build();
-                        // provider delay register state will be checked in RegistryProtocol#export
-                        if (provider || url.getParameter(SUBSCRIBE_KEY, true)) {
-                            registryList.add(url);
-                        }
-                    }
-                }
-            }
-        }
-        return genCompatibleRegistries(interfaceConfig.getScopeModel(), registryList, provider);
+//        List<URL> registryList = new ArrayList<>();
+//        ApplicationConfig application = interfaceConfig.getApplication();
+//        List<RegistryConfig> registries = interfaceConfig.getRegistries();
+//        if (CollectionUtils.isNotEmpty(registries)) {
+//            for (RegistryConfig config : registries) {
+//                // try to refresh registry in case it is set directly by user using config.setRegistries()
+//                if (!config.isRefreshed()) {
+//                    config.refresh();
+//                }
+//                String address = config.getAddress();
+//                if (StringUtils.isEmpty(address)) {
+//                    address = ANYHOST_VALUE;
+//                }
+//                if (!RegistryConfig.NO_AVAILABLE.equalsIgnoreCase(address)) {
+//                    Map<String, String> map = new HashMap<String, String>();
+//                    AbstractConfig.appendParameters(map, application);
+//                    AbstractConfig.appendParameters(map, config);
+//                    map.put(PATH_KEY, RegistryService.class.getName());
+//                    AbstractInterfaceConfig.appendRuntimeParameters(map);
+//                    if (!map.containsKey(PROTOCOL_KEY)) {
+//                        map.put(PROTOCOL_KEY, DUBBO_PROTOCOL);
+//                    }
+//                    List<URL> urls = UrlUtils.parseURLs(address, map);
+//
+//                    for (URL url : urls) {
+//                        url = URLBuilder.from(url)
+//                            .addParameter(REGISTRY_KEY, url.getProtocol())
+//                            .setProtocol(extractRegistryType(url))
+//                            .setScopeModel(interfaceConfig.getScopeModel())
+//                            .build();
+//                        // provider delay register state will be checked in RegistryProtocol#export
+//                        if (provider || url.getParameter(SUBSCRIBE_KEY, true)) {
+//                            registryList.add(url);
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//        return genCompatibleRegistries(interfaceConfig.getScopeModel(), registryList, provider);
     }
 
-    private static List<URL> genCompatibleRegistries(ScopeModel scopeModel, List<URL> registryList, boolean provider) {
-        List<URL> result = new ArrayList<>(registryList.size());
-        registryList.forEach(registryURL -> {
-            if (provider) {
-                // for registries enabled service discovery, automatically register interface compatible addresses.
-                String registerMode;
-                if (SERVICE_REGISTRY_PROTOCOL.equals(registryURL.getProtocol())) {
-                    registerMode = registryURL.getParameter(REGISTER_MODE_KEY, ConfigurationUtils.getCachedDynamicProperty(scopeModel, DUBBO_REGISTER_MODE_DEFAULT_KEY, DEFAULT_REGISTER_MODE_INSTANCE));
-                    if (!isValidRegisterMode(registerMode)) {
-                        registerMode = DEFAULT_REGISTER_MODE_INSTANCE;
-                    }
-                    result.add(registryURL);
-                    if (DEFAULT_REGISTER_MODE_ALL.equalsIgnoreCase(registerMode)
-                        && registryNotExists(registryURL, registryList, REGISTRY_PROTOCOL)) {
-                        URL interfaceCompatibleRegistryURL = URLBuilder.from(registryURL)
-                            .setProtocol(REGISTRY_PROTOCOL)
-                            .removeParameter(REGISTRY_TYPE_KEY)
-                            .build();
-                        result.add(interfaceCompatibleRegistryURL);
-                    }
-                } else {
-                    registerMode = registryURL.getParameter(REGISTER_MODE_KEY, ConfigurationUtils.getCachedDynamicProperty(scopeModel, DUBBO_REGISTER_MODE_DEFAULT_KEY, DEFAULT_REGISTER_MODE_ALL));
-                    if (!isValidRegisterMode(registerMode)) {
-                        registerMode = DEFAULT_REGISTER_MODE_INTERFACE;
-                    }
-                    if ((DEFAULT_REGISTER_MODE_INSTANCE.equalsIgnoreCase(registerMode) || DEFAULT_REGISTER_MODE_ALL.equalsIgnoreCase(registerMode))
-                        && registryNotExists(registryURL, registryList, SERVICE_REGISTRY_PROTOCOL)) {
-                        URL serviceDiscoveryRegistryURL = URLBuilder.from(registryURL)
-                            .setProtocol(SERVICE_REGISTRY_PROTOCOL)
-                            .removeParameter(REGISTRY_TYPE_KEY)
-                            .build();
-                        result.add(serviceDiscoveryRegistryURL);
-                    }
+//    private static List<URL> genCompatibleRegistries(ScopeModel scopeModel, List<URL> registryList, boolean provider) {
+//        List<URL> result = new ArrayList<>(registryList.size());
+//        registryList.forEach(registryURL -> {
+//            if (provider) {
+//                // for registries enabled service discovery, automatically register interface compatible addresses.
+//                String registerMode;
+//                if (SERVICE_REGISTRY_PROTOCOL.equals(registryURL.getProtocol())) {
+//                    registerMode = registryURL.getParameter(REGISTER_MODE_KEY, ConfigurationUtils.getCachedDynamicProperty(scopeModel, DUBBO_REGISTER_MODE_DEFAULT_KEY, DEFAULT_REGISTER_MODE_INSTANCE));
+//                    if (!isValidRegisterMode(registerMode)) {
+//                        registerMode = DEFAULT_REGISTER_MODE_INSTANCE;
+//                    }
+//                    result.add(registryURL);
+//                    if (DEFAULT_REGISTER_MODE_ALL.equalsIgnoreCase(registerMode)
+//                        && registryNotExists(registryURL, registryList, REGISTRY_PROTOCOL)) {
+//                        URL interfaceCompatibleRegistryURL = URLBuilder.from(registryURL)
+//                            .setProtocol(REGISTRY_PROTOCOL)
+//                            .removeParameter(REGISTRY_TYPE_KEY)
+//                            .build();
+//                        result.add(interfaceCompatibleRegistryURL);
+//                    }
+//                } else {
+//                    registerMode = registryURL.getParameter(REGISTER_MODE_KEY, ConfigurationUtils.getCachedDynamicProperty(scopeModel, DUBBO_REGISTER_MODE_DEFAULT_KEY, DEFAULT_REGISTER_MODE_ALL));
+//                    if (!isValidRegisterMode(registerMode)) {
+//                        registerMode = DEFAULT_REGISTER_MODE_INTERFACE;
+//                    }
+//                    if ((DEFAULT_REGISTER_MODE_INSTANCE.equalsIgnoreCase(registerMode) || DEFAULT_REGISTER_MODE_ALL.equalsIgnoreCase(registerMode))
+//                        && registryNotExists(registryURL, registryList, SERVICE_REGISTRY_PROTOCOL)) {
+//                        URL serviceDiscoveryRegistryURL = URLBuilder.from(registryURL)
+//                            .setProtocol(SERVICE_REGISTRY_PROTOCOL)
+//                            .removeParameter(REGISTRY_TYPE_KEY)
+//                            .build();
+//                        result.add(serviceDiscoveryRegistryURL);
+//                    }
+//
+//                    if (DEFAULT_REGISTER_MODE_INTERFACE.equalsIgnoreCase(registerMode) || DEFAULT_REGISTER_MODE_ALL.equalsIgnoreCase(registerMode)) {
+//                        result.add(registryURL);
+//                    }
+//                }
+//
+//                FrameworkStatusReportService reportService = ScopeModelUtil.getApplicationModel(scopeModel).getBeanFactory().getBean(FrameworkStatusReportService.class);
+//                reportService.reportRegistrationStatus(reportService.createRegistrationReport(registerMode));
+//            } else {
+//                result.add(registryURL);
+//            }
+//        });
+//
+//        return result;
+//    }
 
-                    if (DEFAULT_REGISTER_MODE_INTERFACE.equalsIgnoreCase(registerMode) || DEFAULT_REGISTER_MODE_ALL.equalsIgnoreCase(registerMode)) {
-                        result.add(registryURL);
-                    }
-                }
+//    private static boolean isValidRegisterMode(String mode) {
+//        return isNotEmpty(mode)
+//            && (DEFAULT_REGISTER_MODE_INTERFACE.equalsIgnoreCase(mode)
+//            || DEFAULT_REGISTER_MODE_INSTANCE.equalsIgnoreCase(mode)
+//            || DEFAULT_REGISTER_MODE_ALL.equalsIgnoreCase(mode)
+//        );
+//    }
 
-                FrameworkStatusReportService reportService = ScopeModelUtil.getApplicationModel(scopeModel).getBeanFactory().getBean(FrameworkStatusReportService.class);
-                reportService.reportRegistrationStatus(reportService.createRegistrationReport(registerMode));
-            } else {
-                result.add(registryURL);
-            }
-        });
-
-        return result;
-    }
-
-    private static boolean isValidRegisterMode(String mode) {
-        return isNotEmpty(mode)
-            && (DEFAULT_REGISTER_MODE_INTERFACE.equalsIgnoreCase(mode)
-            || DEFAULT_REGISTER_MODE_INSTANCE.equalsIgnoreCase(mode)
-            || DEFAULT_REGISTER_MODE_ALL.equalsIgnoreCase(mode)
-        );
-    }
-
-    private static boolean registryNotExists(URL registryURL, List<URL> registryList, String registryType) {
-        return registryList.stream().noneMatch(
-            url -> registryType.equals(url.getProtocol()) && registryURL.getBackupAddress().equals(url.getBackupAddress())
-        );
-    }
+//    private static boolean registryNotExists(URL registryURL, List<URL> registryList, String registryType) {
+//        return registryList.stream().noneMatch(
+//            url -> registryType.equals(url.getProtocol()) && registryURL.getBackupAddress().equals(url.getBackupAddress())
+//        );
+//    }
 
     public static URL loadMonitor(AbstractInterfaceConfig interfaceConfig, URL registryURL) {
-        Map<String, String> map = new HashMap<String, String>();
-        map.put(INTERFACE_KEY, MonitorService.class.getName());
-        AbstractInterfaceConfig.appendRuntimeParameters(map);
-        //set ip
-        String hostToRegistry = ConfigUtils.getSystemProperty(DUBBO_IP_TO_REGISTRY);
-        if (StringUtils.isEmpty(hostToRegistry)) {
-            hostToRegistry = NetUtils.getLocalHost();
-        } else if (NetUtils.isInvalidLocalHost(hostToRegistry)) {
-            throw new IllegalArgumentException("Specified invalid registry ip from property:" +
-                DUBBO_IP_TO_REGISTRY + ", value:" + hostToRegistry);
-        }
-        map.put(REGISTER_IP_KEY, hostToRegistry);
-
-        MonitorConfig monitor = interfaceConfig.getMonitor();
-        ApplicationConfig application = interfaceConfig.getApplication();
-        AbstractConfig.appendParameters(map, monitor);
-        AbstractConfig.appendParameters(map, application);
-        String address = null;
-        String sysAddress = System.getProperty(DUBBO_MONITOR_ADDRESS);
-        if (sysAddress != null && sysAddress.length() > 0) {
-            address = sysAddress;
-        } else if (monitor != null) {
-            address = monitor.getAddress();
-        }
-        String protocol = monitor == null ? null : monitor.getProtocol();
-        if (monitor != null &&
-            (REGISTRY_PROTOCOL.equals(protocol) || SERVICE_REGISTRY_PROTOCOL.equals(protocol))
-            && registryURL != null) {
-            return URLBuilder.from(registryURL)
-                .setProtocol(DUBBO_PROTOCOL)
-                .addParameter(PROTOCOL_KEY, protocol)
-                .putAttribute(REFER_KEY, map)
-                .build();
-        } else if (ConfigUtils.isNotEmpty(address) || ConfigUtils.isNotEmpty(protocol)) {
-            if (!map.containsKey(PROTOCOL_KEY)) {
-                if (interfaceConfig.getScopeModel().getExtensionLoader(MonitorFactory.class).hasExtension(LOGSTAT_PROTOCOL)) {
-                    map.put(PROTOCOL_KEY, LOGSTAT_PROTOCOL);
-                } else if (ConfigUtils.isNotEmpty(protocol)) {
-                    map.put(PROTOCOL_KEY, protocol);
-                } else {
-                    map.put(PROTOCOL_KEY, DUBBO_PROTOCOL);
-                }
-            }
-            if (ConfigUtils.isEmpty(address)) {
-                address = LOCALHOST_VALUE;
-            }
-            return UrlUtils.parseURL(address, map);
-        }
-        return null;
+        return (URL) SpiMethodManager.get().ifPresent().invoke(SpiMethods.loadMonitor,interfaceConfig,registryURL);
+//        Map<String, String> map = new HashMap<String, String>();
+//        map.put(INTERFACE_KEY, MonitorService.class.getName());
+//        AbstractInterfaceConfig.appendRuntimeParameters(map);
+//        //set ip
+//        String hostToRegistry = ConfigUtils.getSystemProperty(DUBBO_IP_TO_REGISTRY);
+//        if (StringUtils.isEmpty(hostToRegistry)) {
+//            hostToRegistry = NetUtils.getLocalHost();
+//        } else if (NetUtils.isInvalidLocalHost(hostToRegistry)) {
+//            throw new IllegalArgumentException("Specified invalid registry ip from property:" +
+//                DUBBO_IP_TO_REGISTRY + ", value:" + hostToRegistry);
+//        }
+//        map.put(REGISTER_IP_KEY, hostToRegistry);
+//
+//        MonitorConfig monitor = interfaceConfig.getMonitor();
+//        ApplicationConfig application = interfaceConfig.getApplication();
+//        AbstractConfig.appendParameters(map, monitor);
+//        AbstractConfig.appendParameters(map, application);
+//        String address = null;
+//        String sysAddress = System.getProperty(DUBBO_MONITOR_ADDRESS);
+//        if (sysAddress != null && sysAddress.length() > 0) {
+//            address = sysAddress;
+//        } else if (monitor != null) {
+//            address = monitor.getAddress();
+//        }
+//        String protocol = monitor == null ? null : monitor.getProtocol();
+//        if (monitor != null &&
+//            (REGISTRY_PROTOCOL.equals(protocol) || SERVICE_REGISTRY_PROTOCOL.equals(protocol))
+//            && registryURL != null) {
+//            return URLBuilder.from(registryURL)
+//                .setProtocol(DUBBO_PROTOCOL)
+//                .addParameter(PROTOCOL_KEY, protocol)
+//                .putAttribute(REFER_KEY, map)
+//                .build();
+//        } else if (ConfigUtils.isNotEmpty(address) || ConfigUtils.isNotEmpty(protocol)) {
+//            if (!map.containsKey(PROTOCOL_KEY)) {
+//
+//                boolean supportMonitor;
+//
+//                if(SpiMethodManager.get().packagePresent(PackageName.MONITOR)){
+//                    supportMonitor = (Boolean)SpiMethodManager.get().invoke(SpiMethods.isSupportMonitor,interfaceConfig);
+//                }else {
+//                    supportMonitor = false;
+//                }
+//                if (supportMonitor) {
+//                    map.put(PROTOCOL_KEY, LOGSTAT_PROTOCOL);
+//                } else if (ConfigUtils.isNotEmpty(protocol)) {
+//                    map.put(PROTOCOL_KEY, protocol);
+//                } else {
+//                    map.put(PROTOCOL_KEY, DUBBO_PROTOCOL);
+//                }
+//            }
+//            if (ConfigUtils.isEmpty(address)) {
+//                address = LOCALHOST_VALUE;
+//            }
+//            return UrlUtils.parseURL(address, map);
+//        }
+//        return null;
     }
 
     /**
-     * Legitimacy check and setup of local simulated operations. The operations can be a string with Simple operation or
+     * Legitimacy check and setup of local simulated operations. The operations can be a string with Simple method or
      * a classname whose {@link Class} implements a particular function
      *
      * @param interfaceClass for provider side, it is the {@link Class} of the service that will be exported; for consumer

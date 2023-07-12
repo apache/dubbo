@@ -75,7 +75,7 @@ public interface MetadataService {
      * @see URL#toFullString()
      */
     default SortedSet<String> getSubscribedURLs() {
-        throw new UnsupportedOperationException("This operation is not supported for consumer.");
+        throw new UnsupportedOperationException("This method is not supported for consumer.");
     }
 
     /**

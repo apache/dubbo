@@ -52,11 +52,11 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_SCRIPT_EXCEPTION;
-import static org.apache.dubbo.rpc.cluster.Constants.DEFAULT_SCRIPT_TYPE_KEY;
-import static org.apache.dubbo.rpc.cluster.Constants.FORCE_KEY;
-import static org.apache.dubbo.rpc.cluster.Constants.RULE_KEY;
-import static org.apache.dubbo.rpc.cluster.Constants.RUNTIME_KEY;
-import static org.apache.dubbo.rpc.cluster.Constants.TYPE_KEY;
+import static org.apache.dubbo.common.constants.ClusterConstants.DEFAULT_SCRIPT_TYPE_KEY;
+import static org.apache.dubbo.common.constants.ClusterConstants.FORCE_KEY;
+import static org.apache.dubbo.common.constants.ClusterConstants.RULE_KEY;
+import static org.apache.dubbo.common.constants.ClusterConstants.RUNTIME_KEY;
+import static org.apache.dubbo.common.constants.ClusterConstants.TYPE_KEY;
 
 /**
  * ScriptRouter

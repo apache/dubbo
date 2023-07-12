@@ -34,7 +34,6 @@ import java.util.Map;
 
 import static org.apache.dubbo.common.constants.ProviderConstants.DEFAULT_PREFER_SERIALIZATION;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -63,9 +62,9 @@ class ProtocolConfigTest {
         protocol.setName(protocolName);
         Map<String, String> parameters = new HashMap<String, String>();
         ProtocolConfig.appendParameters(parameters, protocol);
-        assertThat(protocol.getName(), equalTo(protocolName));
-        assertThat(protocol.getId(), equalTo(null));
-        assertThat(parameters.isEmpty(), is(true));
+        MatcherAssert.assertThat(protocol.getName(), Matchers.equalTo(protocolName));
+        MatcherAssert.assertThat(protocol.getId(), Matchers.equalTo(null));
+        MatcherAssert.assertThat(parameters.isEmpty(), Matchers.is(true));
     }
 
     @Test
@@ -74,8 +73,8 @@ class ProtocolConfigTest {
         protocol.setHost("host");
         Map<String, String> parameters = new HashMap<String, String>();
         ProtocolConfig.appendParameters(parameters, protocol);
-        assertThat(protocol.getHost(), equalTo("host"));
-        assertThat(parameters.isEmpty(), is(true));
+        MatcherAssert.assertThat(protocol.getHost(), Matchers.equalTo("host"));
+        MatcherAssert.assertThat(parameters.isEmpty(), Matchers.is(true));
     }
 
     @Test
@@ -85,8 +84,8 @@ class ProtocolConfigTest {
         protocol.setPort(port);
         Map<String, String> parameters = new HashMap<String, String>();
         ProtocolConfig.appendParameters(parameters, protocol);
-        assertThat(protocol.getPort(), equalTo(port));
-        assertThat(parameters.isEmpty(), is(true));
+        MatcherAssert.assertThat(protocol.getPort(), Matchers.equalTo(port));
+        MatcherAssert.assertThat(parameters.isEmpty(), Matchers.is(true));
     }
 
     @Test
@@ -95,47 +94,47 @@ class ProtocolConfigTest {
         protocol.setContextpath("context-path");
         Map<String, String> parameters = new HashMap<String, String>();
         ProtocolConfig.appendParameters(parameters, protocol);
-        assertThat(protocol.getPath(), equalTo("context-path"));
-        assertThat(protocol.getContextpath(), equalTo("context-path"));
-        assertThat(parameters.isEmpty(), is(true));
+        MatcherAssert.assertThat(protocol.getPath(), Matchers.equalTo("context-path"));
+        MatcherAssert.assertThat(protocol.getContextpath(), Matchers.equalTo("context-path"));
+        MatcherAssert.assertThat(parameters.isEmpty(), Matchers.is(true));
         protocol.setPath("path");
-        assertThat(protocol.getPath(), equalTo("path"));
-        assertThat(protocol.getContextpath(), equalTo("path"));
+        MatcherAssert.assertThat(protocol.getPath(), Matchers.equalTo("path"));
+        MatcherAssert.assertThat(protocol.getContextpath(), Matchers.equalTo("path"));
     }
 
     @Test
     void testCorethreads() throws Exception {
         ProtocolConfig protocol = new ProtocolConfig();
         protocol.setCorethreads(10);
-        assertThat(protocol.getCorethreads(), is(10));
+        MatcherAssert.assertThat(protocol.getCorethreads(), Matchers.is(10));
     }
 
     @Test
     void testThreads() throws Exception {
         ProtocolConfig protocol = new ProtocolConfig();
         protocol.setThreads(10);
-        assertThat(protocol.getThreads(), is(10));
+        MatcherAssert.assertThat(protocol.getThreads(), Matchers.is(10));
     }
 
     @Test
     void testIothreads() throws Exception {
         ProtocolConfig protocol = new ProtocolConfig();
         protocol.setIothreads(10);
-        assertThat(protocol.getIothreads(), is(10));
+        MatcherAssert.assertThat(protocol.getIothreads(), Matchers.is(10));
     }
 
     @Test
     void testQueues() throws Exception {
         ProtocolConfig protocol = new ProtocolConfig();
         protocol.setQueues(10);
-        assertThat(protocol.getQueues(), is(10));
+        MatcherAssert.assertThat(protocol.getQueues(), Matchers.is(10));
     }
 
     @Test
     void testAccepts() throws Exception {
         ProtocolConfig protocol = new ProtocolConfig();
         protocol.setAccepts(10);
-        assertThat(protocol.getAccepts(), is(10));
+        MatcherAssert.assertThat(protocol.getAccepts(), Matchers.is(10));
     }
 
     @Test
@@ -143,91 +142,91 @@ class ProtocolConfigTest {
         ProtocolConfig protocol = new ProtocolConfig();
         protocol.setName("dubbo");
         protocol.setCodec("mockcodec");
-        assertThat(protocol.getCodec(), equalTo("mockcodec"));
+        MatcherAssert.assertThat(protocol.getCodec(), Matchers.equalTo("mockcodec"));
     }
 
     @Test
     void testAccesslog() throws Exception {
         ProtocolConfig protocol = new ProtocolConfig();
         protocol.setAccesslog("access.log");
-        assertThat(protocol.getAccesslog(), equalTo("access.log"));
+        MatcherAssert.assertThat(protocol.getAccesslog(), Matchers.equalTo("access.log"));
     }
 
     @Test
     void testTelnet() throws Exception {
         ProtocolConfig protocol = new ProtocolConfig();
         protocol.setTelnet("mocktelnethandler");
-        assertThat(protocol.getTelnet(), equalTo("mocktelnethandler"));
+        MatcherAssert.assertThat(protocol.getTelnet(), Matchers.equalTo("mocktelnethandler"));
     }
 
     @Test
     void testRegister() throws Exception {
         ProtocolConfig protocol = new ProtocolConfig();
         protocol.setRegister(true);
-        assertThat(protocol.isRegister(), is(true));
+        MatcherAssert.assertThat(protocol.isRegister(), Matchers.is(true));
     }
 
     @Test
     void testTransporter() throws Exception {
         ProtocolConfig protocol = new ProtocolConfig();
         protocol.setTransporter("mocktransporter");
-        assertThat(protocol.getTransporter(), equalTo("mocktransporter"));
+        MatcherAssert.assertThat(protocol.getTransporter(), Matchers.equalTo("mocktransporter"));
     }
 
     @Test
     void testExchanger() throws Exception {
         ProtocolConfig protocol = new ProtocolConfig();
         protocol.setExchanger("mockexchanger");
-        assertThat(protocol.getExchanger(), equalTo("mockexchanger"));
+        MatcherAssert.assertThat(protocol.getExchanger(), Matchers.equalTo("mockexchanger"));
     }
 
     @Test
     void testDispatcher() throws Exception {
         ProtocolConfig protocol = new ProtocolConfig();
         protocol.setDispatcher("mockdispatcher");
-        assertThat(protocol.getDispatcher(), equalTo("mockdispatcher"));
+        MatcherAssert.assertThat(protocol.getDispatcher(), Matchers.equalTo("mockdispatcher"));
     }
 
     @Test
     void testNetworker() throws Exception {
         ProtocolConfig protocol = new ProtocolConfig();
         protocol.setNetworker("networker");
-        assertThat(protocol.getNetworker(), equalTo("networker"));
+        MatcherAssert.assertThat(protocol.getNetworker(), Matchers.equalTo("networker"));
     }
 
     @Test
     void testParameters() throws Exception {
         ProtocolConfig protocol = new ProtocolConfig();
         protocol.setParameters(Collections.singletonMap("k1", "v1"));
-        assertThat(protocol.getParameters(), hasEntry("k1", "v1"));
+        MatcherAssert.assertThat(protocol.getParameters(), Matchers.hasEntry("k1", "v1"));
     }
 
     @Test
     void testDefault() throws Exception {
         ProtocolConfig protocol = new ProtocolConfig();
         protocol.setDefault(true);
-        assertThat(protocol.isDefault(), is(true));
+        MatcherAssert.assertThat(protocol.isDefault(), Matchers.is(true));
     }
 
     @Test
     void testKeepAlive() throws Exception {
         ProtocolConfig protocol = new ProtocolConfig();
         protocol.setKeepAlive(true);
-        assertThat(protocol.getKeepAlive(), is(true));
+        MatcherAssert.assertThat(protocol.getKeepAlive(), Matchers.is(true));
     }
 
     @Test
     void testOptimizer() throws Exception {
         ProtocolConfig protocol = new ProtocolConfig();
         protocol.setOptimizer("optimizer");
-        assertThat(protocol.getOptimizer(), equalTo("optimizer"));
+        MatcherAssert.assertThat(protocol.getOptimizer(), Matchers.equalTo("optimizer"));
     }
 
     @Test
     void testExtension() throws Exception {
         ProtocolConfig protocol = new ProtocolConfig();
         protocol.setExtension("extension");
-        assertThat(protocol.getExtension(), equalTo("extension"));
+        MatcherAssert.assertThat(protocol.getExtension(), Matchers.equalTo("extension"));
     }
 
     @Test
@@ -394,14 +393,14 @@ class ProtocolConfigTest {
         assertNull(protocolConfig.getPreferSerialization());
 
         protocolConfig.checkDefault();
-        assertThat(protocolConfig.getPreferSerialization(), equalTo(DEFAULT_PREFER_SERIALIZATION));
+        MatcherAssert.assertThat(protocolConfig.getPreferSerialization(), Matchers.equalTo(DEFAULT_PREFER_SERIALIZATION));
 
         protocolConfig = new ProtocolConfig();
         protocolConfig.setSerialization("x-serialization");
         assertNull(protocolConfig.getPreferSerialization());
 
         protocolConfig.checkDefault();
-        assertThat(protocolConfig.getPreferSerialization(), equalTo("x-serialization"));
+        MatcherAssert.assertThat(protocolConfig.getPreferSerialization(), Matchers.equalTo("x-serialization"));
     }
 
     @Test
@@ -410,14 +409,14 @@ class ProtocolConfigTest {
         assertNull(protocolConfig.getPreferSerialization());
 
         protocolConfig.refresh();
-        assertThat(protocolConfig.getPreferSerialization(), equalTo(DEFAULT_PREFER_SERIALIZATION));
+        MatcherAssert.assertThat(protocolConfig.getPreferSerialization(), Matchers.equalTo(DEFAULT_PREFER_SERIALIZATION));
 
         protocolConfig = new ProtocolConfig();
         protocolConfig.setSerialization("x-serialization");
         assertNull(protocolConfig.getPreferSerialization());
 
         protocolConfig.refresh();
-        assertThat(protocolConfig.getPreferSerialization(), equalTo("x-serialization"));
+        MatcherAssert.assertThat(protocolConfig.getPreferSerialization(), Matchers.equalTo("x-serialization"));
     }
 
 

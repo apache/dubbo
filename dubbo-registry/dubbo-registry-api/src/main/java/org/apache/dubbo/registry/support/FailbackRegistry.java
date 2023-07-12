@@ -38,8 +38,8 @@ import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_NOTIFY_EVENT;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
-import static org.apache.dubbo.registry.Constants.DEFAULT_REGISTRY_RETRY_PERIOD;
-import static org.apache.dubbo.registry.Constants.REGISTRY_RETRY_PERIOD_KEY;
+import static org.apache.dubbo.common.registry.Constants.DEFAULT_REGISTRY_RETRY_PERIOD;
+import static org.apache.dubbo.common.registry.Constants.REGISTRY_RETRY_PERIOD_KEY;
 
 /**
  * A template implementation of registry service that provides auto-retry ability.

@@ -18,11 +18,11 @@ package org.apache.dubbo.registry.client.migration.model;
 
 import java.util.Map;
 
-import static org.apache.dubbo.registry.Constants.MIGRATION_RULE_DELAY_KEY;
-import static org.apache.dubbo.registry.Constants.MIGRATION_RULE_FORCE_KEY;
-import static org.apache.dubbo.registry.Constants.MIGRATION_RULE_PROPORTION_KEY;
-import static org.apache.dubbo.registry.Constants.MIGRATION_RULE_STEP_KEY;
-import static org.apache.dubbo.registry.Constants.MIGRATION_RULE_THRESHOLD_KEY;
+import static org.apache.dubbo.common.registry.Constants.MIGRATION_RULE_DELAY_KEY;
+import static org.apache.dubbo.common.registry.Constants.MIGRATION_RULE_FORCE_KEY;
+import static org.apache.dubbo.common.registry.Constants.MIGRATION_RULE_PROPORTION_KEY;
+import static org.apache.dubbo.common.registry.Constants.MIGRATION_RULE_STEP_KEY;
+import static org.apache.dubbo.common.registry.Constants.MIGRATION_RULE_THRESHOLD_KEY;
 
 public class SubMigrationRule {
     private String serviceKey;

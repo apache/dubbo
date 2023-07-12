@@ -16,8 +16,8 @@
  */
 package org.apache.dubbo.config.bootstrap;
 
-import org.apache.dubbo.config.MetadataReportConfig;
 import org.apache.dubbo.config.bootstrap.rest.UserService;
+import org.apache.dubbo.config.MetadataReportConfig;
 import org.apache.dubbo.test.check.registrycenter.config.ZookeeperRegistryCenterConfig;
 
 /**

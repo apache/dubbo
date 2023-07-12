@@ -19,6 +19,7 @@ package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.URL;
 
+import org.apache.dubbo.config.MetadataReportConfig;
 import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -29,11 +30,11 @@ class MetadataReportConfigTest {
     void testFile() {
         MetadataReportConfig metadataReportConfig = new MetadataReportConfig();
         metadataReportConfig.setFile("file");
-        assertThat(metadataReportConfig.getFile(), equalTo("file"));
+        MatcherAssert.assertThat(metadataReportConfig.getFile(), Matchers.equalTo("file"));
 
         metadataReportConfig.setAddress("file://dir-to-file");
         URL url = metadataReportConfig.toUrl();
-        assertThat(url.getParameter("file"), equalTo("file"));
+        MatcherAssert.assertThat(url.getParameter("file"), Matchers.equalTo("file"));
 
     }
 

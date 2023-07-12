@@ -1,0 +1,2 @@
+postMetricsEvent=org.apache.dubbo.metrics.spi.PostMetricsEvent
+publishMetricsEvent=org.apache.dubbo.metrics.spi.PublishMetricsEvent

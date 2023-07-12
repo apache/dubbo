@@ -42,8 +42,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_FAILBACK
 import static org.apache.dubbo.common.constants.CommonConstants.RETRIES_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_FAILED_INVOKE_SERVICE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_TIMER_RETRY_FAILED;
-import static org.apache.dubbo.rpc.cluster.Constants.DEFAULT_FAILBACK_TASKS;
-import static org.apache.dubbo.rpc.cluster.Constants.FAIL_BACK_TASKS_KEY;
+import static org.apache.dubbo.common.constants.ClusterConstants.DEFAULT_FAILBACK_TASKS;
+import static org.apache.dubbo.common.constants.ClusterConstants.FAIL_BACK_TASKS_KEY;
 
 /**
  * When fails, record failure requests and schedule for retry on a regular interval.

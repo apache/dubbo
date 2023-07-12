@@ -19,8 +19,6 @@ package org.apache.dubbo.config.deploy;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.config.ReferenceCache;
-import org.apache.dubbo.common.config.configcenter.DynamicConfigurationFactory;
-//TODO: remove *
 import org.apache.dubbo.common.deploy.*;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
@@ -29,21 +27,18 @@ import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.ClassUtils;
-import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ApplicationConfig;
-import org.apache.dubbo.config.ConfigCenterConfig;
 import org.apache.dubbo.config.DubboShutdownHook;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.deploy.lifecycle.loader.ApplicationLifeManagerLoader;
+import org.apache.dubbo.config.deploy.lifecycle.manager.SpiMethodManager;
 import org.apache.dubbo.config.utils.CompositeReferenceCache;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -59,7 +54,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_SPLIT_P
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_START_MODEL;
 import static org.apache.dubbo.common.utils.StringUtils.isEmpty;
 import static org.apache.dubbo.common.utils.StringUtils.isNotEmpty;
-import static org.apache.dubbo.remoting.Constants.CLIENT_KEY;
 
 /**
  * initialize and start application instance
@@ -132,6 +126,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             this.addDeployListener(listener);
         }
         applicationLifeManagerLoader = new ApplicationLifeManagerLoader(this);
+        SpiMethodManager.registerNewInstance(applicationModel);
     }
 
     public static ApplicationDeployer get(ScopeModel moduleOrApplicationModel) {

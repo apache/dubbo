@@ -62,12 +62,12 @@ import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_SERVICE
 import static org.apache.dubbo.common.constants.CommonConstants.METHOD_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_METRICS_COLLECTOR_EXCEPTION;
-import static org.apache.dubbo.monitor.Constants.DUBBO_CONSUMER;
-import static org.apache.dubbo.monitor.Constants.DUBBO_CONSUMER_METHOD;
-import static org.apache.dubbo.monitor.Constants.DUBBO_GROUP;
-import static org.apache.dubbo.monitor.Constants.DUBBO_PROVIDER;
-import static org.apache.dubbo.monitor.Constants.DUBBO_PROVIDER_METHOD;
-import static org.apache.dubbo.monitor.Constants.SERVICE;
+import static org.apache.dubbo.common.constants.MonitorConstants.DUBBO_CONSUMER;
+import static org.apache.dubbo.common.constants.MonitorConstants.DUBBO_CONSUMER_METHOD;
+import static org.apache.dubbo.common.constants.MonitorConstants.DUBBO_GROUP;
+import static org.apache.dubbo.common.constants.MonitorConstants.DUBBO_PROVIDER;
+import static org.apache.dubbo.common.constants.MonitorConstants.DUBBO_PROVIDER_METHOD;
+import static org.apache.dubbo.common.constants.MonitorConstants.SERVICE;
 
 /**
  * @deprecated After metrics config is refactored.

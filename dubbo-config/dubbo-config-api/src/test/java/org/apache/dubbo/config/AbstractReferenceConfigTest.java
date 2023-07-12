@@ -38,15 +38,13 @@ import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_SERIALIZ
 import static org.apache.dubbo.common.constants.CommonConstants.INVOKER_LISTENER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REFERENCE_FILTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.STUB_EVENT_KEY;
-import static org.apache.dubbo.rpc.cluster.Constants.CLUSTER_STICKY_KEY;
-import static org.apache.dubbo.rpc.cluster.Constants.ROUTER_KEY;
+import static org.apache.dubbo.common.constants.ClusterConstants.CLUSTER_STICKY_KEY;
+import static org.apache.dubbo.common.constants.ClusterConstants.ROUTER_KEY;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasValue;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 class AbstractReferenceConfigTest {
 
@@ -59,97 +57,97 @@ class AbstractReferenceConfigTest {
     void testCheck() {
         ReferenceConfig referenceConfig = new ReferenceConfig();
         referenceConfig.setCheck(true);
-        assertThat(referenceConfig.isCheck(), is(true));
+        MatcherAssert.assertThat(referenceConfig.isCheck(), Matchers.is(true));
     }
 
     @Test
     void testInit() {
         ReferenceConfig referenceConfig = new ReferenceConfig();
         referenceConfig.setInit(true);
-        assertThat(referenceConfig.isInit(), is(true));
+        MatcherAssert.assertThat(referenceConfig.isInit(), Matchers.is(true));
     }
 
     @Test
     void testGeneric() {
         ReferenceConfig referenceConfig = new ReferenceConfig();
         referenceConfig.setGeneric(true);
-        assertThat(referenceConfig.isGeneric(), is(true));
+        MatcherAssert.assertThat(referenceConfig.isGeneric(), Matchers.is(true));
         Map<String, String> parameters = new HashMap<String, String>();
         AbstractInterfaceConfig.appendParameters(parameters, referenceConfig);
         // FIXME: not sure why AbstractReferenceConfig has both isGeneric and getGeneric
-        assertThat(parameters, hasKey("generic"));
+        MatcherAssert.assertThat(parameters, Matchers.hasKey("generic"));
     }
 
     @Test
     void testInjvm() {
         ReferenceConfig referenceConfig = new ReferenceConfig();
         referenceConfig.setInjvm(true);
-        assertThat(referenceConfig.isInjvm(), is(true));
+        MatcherAssert.assertThat(referenceConfig.isInjvm(), Matchers.is(true));
     }
 
     @Test
     void testFilter() {
         ReferenceConfig referenceConfig = new ReferenceConfig();
         referenceConfig.setFilter("mockfilter");
-        assertThat(referenceConfig.getFilter(), equalTo("mockfilter"));
+        MatcherAssert.assertThat(referenceConfig.getFilter(), Matchers.equalTo("mockfilter"));
         Map<String, String> parameters = new HashMap<String, String>();
         parameters.put(REFERENCE_FILTER_KEY, "prefilter");
         AbstractInterfaceConfig.appendParameters(parameters, referenceConfig);
-        assertThat(parameters, hasValue("prefilter,mockfilter"));
+        MatcherAssert.assertThat(parameters, Matchers.hasValue("prefilter,mockfilter"));
     }
 
     @Test
     void testRouter() {
         ReferenceConfig referenceConfig = new ReferenceConfig();
         referenceConfig.setRouter("condition");
-        assertThat(referenceConfig.getRouter(), equalTo("condition"));
+        MatcherAssert.assertThat(referenceConfig.getRouter(), Matchers.equalTo("condition"));
         Map<String, String> parameters = new HashMap<String, String>();
         parameters.put(ROUTER_KEY, "tag");
         AbstractInterfaceConfig.appendParameters(parameters, referenceConfig);
-        assertThat(parameters, hasValue("tag,condition"));
-        URL url = mock(URL.class);
-        when(url.getParameter(ROUTER_KEY)).thenReturn("condition");
+        MatcherAssert.assertThat(parameters, Matchers.hasValue("tag,condition"));
+        URL url = Mockito.mock(URL.class);
+        Mockito.when(url.getParameter(ROUTER_KEY)).thenReturn("condition");
         List<StateRouterFactory> routerFactories = ExtensionLoader.getExtensionLoader(StateRouterFactory.class).getActivateExtension(url, ROUTER_KEY);
-        assertThat(routerFactories.stream().anyMatch(routerFactory -> routerFactory.getClass().equals(ConditionStateRouterFactory.class)), is(true));
-        when(url.getParameter(ROUTER_KEY)).thenReturn("-tag,-app");
+        MatcherAssert.assertThat(routerFactories.stream().anyMatch(routerFactory -> routerFactory.getClass().equals(ConditionStateRouterFactory.class)), Matchers.is(true));
+        Mockito.when(url.getParameter(ROUTER_KEY)).thenReturn("-tag,-app");
         routerFactories = ExtensionLoader.getExtensionLoader(StateRouterFactory.class).getActivateExtension(url, ROUTER_KEY);
-        assertThat(routerFactories.stream()
+        MatcherAssert.assertThat(routerFactories.stream()
             .allMatch(routerFactory -> !routerFactory.getClass().equals(TagStateRouterFactory.class)
-                && !routerFactory.getClass().equals(AppStateRouterFactory.class)), is(true));
+                && !routerFactory.getClass().equals(AppStateRouterFactory.class)), Matchers.is(true));
     }
 
     @Test
     void testListener() {
         ReferenceConfig referenceConfig = new ReferenceConfig();
         referenceConfig.setListener("mockinvokerlistener");
-        assertThat(referenceConfig.getListener(), equalTo("mockinvokerlistener"));
+        MatcherAssert.assertThat(referenceConfig.getListener(), Matchers.equalTo("mockinvokerlistener"));
         Map<String, String> parameters = new HashMap<String, String>();
         parameters.put(INVOKER_LISTENER_KEY, "prelistener");
         AbstractInterfaceConfig.appendParameters(parameters, referenceConfig);
-        assertThat(parameters, hasValue("prelistener,mockinvokerlistener"));
+        MatcherAssert.assertThat(parameters, Matchers.hasValue("prelistener,mockinvokerlistener"));
     }
 
     @Test
     void testLazy() {
         ReferenceConfig referenceConfig = new ReferenceConfig();
         referenceConfig.setLazy(true);
-        assertThat(referenceConfig.getLazy(), is(true));
+        MatcherAssert.assertThat(referenceConfig.getLazy(), Matchers.is(true));
     }
 
     @Test
     void testOnconnect() {
         ReferenceConfig referenceConfig = new ReferenceConfig();
         referenceConfig.setOnconnect("onConnect");
-        assertThat(referenceConfig.getOnconnect(), equalTo("onConnect"));
-        assertThat(referenceConfig.getStubevent(), is(true));
+        MatcherAssert.assertThat(referenceConfig.getOnconnect(), Matchers.equalTo("onConnect"));
+        MatcherAssert.assertThat(referenceConfig.getStubevent(), Matchers.is(true));
     }
 
     @Test
     void testOndisconnect() {
         ReferenceConfig referenceConfig = new ReferenceConfig();
         referenceConfig.setOndisconnect("onDisconnect");
-        assertThat(referenceConfig.getOndisconnect(), equalTo("onDisconnect"));
-        assertThat(referenceConfig.getStubevent(), is(true));
+        MatcherAssert.assertThat(referenceConfig.getOndisconnect(), Matchers.equalTo("onDisconnect"));
+        MatcherAssert.assertThat(referenceConfig.getStubevent(), Matchers.is(true));
     }
 
     @Test
@@ -158,7 +156,7 @@ class AbstractReferenceConfigTest {
         referenceConfig.setOnconnect("onConnect");
         Map<String, String> parameters = new HashMap<String, String>();
         AbstractInterfaceConfig.appendParameters(parameters, referenceConfig);
-        assertThat(parameters, hasKey(STUB_EVENT_KEY));
+        MatcherAssert.assertThat(parameters, Matchers.hasKey(STUB_EVENT_KEY));
     }
 
     @Test
@@ -167,8 +165,8 @@ class AbstractReferenceConfigTest {
         referenceConfig.setReconnect("reconnect");
         Map<String, String> parameters = new HashMap<String, String>();
         AbstractInterfaceConfig.appendParameters(parameters, referenceConfig);
-        assertThat(referenceConfig.getReconnect(), equalTo("reconnect"));
-        assertThat(parameters, hasKey(Constants.RECONNECT_KEY));
+        MatcherAssert.assertThat(referenceConfig.getReconnect(), Matchers.equalTo("reconnect"));
+        MatcherAssert.assertThat(parameters, Matchers.hasKey(Constants.RECONNECT_KEY));
     }
 
     @Test
@@ -177,22 +175,22 @@ class AbstractReferenceConfigTest {
         referenceConfig.setSticky(true);
         Map<String, String> parameters = new HashMap<String, String>();
         AbstractInterfaceConfig.appendParameters(parameters, referenceConfig);
-        assertThat(referenceConfig.getSticky(), is(true));
-        assertThat(parameters, hasKey(CLUSTER_STICKY_KEY));
+        MatcherAssert.assertThat(referenceConfig.getSticky(), Matchers.is(true));
+        MatcherAssert.assertThat(parameters, Matchers.hasKey(CLUSTER_STICKY_KEY));
     }
 
     @Test
     void testVersion() {
         ReferenceConfig referenceConfig = new ReferenceConfig();
         referenceConfig.setVersion("version");
-        assertThat(referenceConfig.getVersion(), equalTo("version"));
+        MatcherAssert.assertThat(referenceConfig.getVersion(), Matchers.equalTo("version"));
     }
 
     @Test
     void testGroup() {
         ReferenceConfig referenceConfig = new ReferenceConfig();
         referenceConfig.setGroup("group");
-        assertThat(referenceConfig.getGroup(), equalTo("group"));
+        MatcherAssert.assertThat(referenceConfig.getGroup(), Matchers.equalTo("group"));
     }
 
     @Test

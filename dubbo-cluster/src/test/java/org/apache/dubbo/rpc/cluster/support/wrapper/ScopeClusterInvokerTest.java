@@ -52,9 +52,9 @@ import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
 import static org.apache.dubbo.rpc.Constants.SCOPE_LOCAL;
-import static org.apache.dubbo.rpc.cluster.Constants.PEER_KEY;
-import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
-import static org.apache.dubbo.rpc.cluster.Constants.SCOPE_KEY;
+import static org.apache.dubbo.common.constants.ClusterConstants.PEER_KEY;
+import static org.apache.dubbo.common.constants.ClusterConstants.REFER_KEY;
+import static org.apache.dubbo.common.constants.ClusterConstants.SCOPE_KEY;
 
 class ScopeClusterInvokerTest {
 

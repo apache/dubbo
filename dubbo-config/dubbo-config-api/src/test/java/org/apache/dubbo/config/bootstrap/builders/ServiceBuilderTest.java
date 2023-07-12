@@ -20,6 +20,7 @@ import org.apache.dubbo.config.MethodConfig;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.ServiceConfig;
 
+import org.apache.dubbo.config.bootstrap.builders.ServiceBuilder;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -77,11 +78,11 @@ class ServiceBuilderTest {
     void generic() throws Exception {
         ServiceBuilder builder = new ServiceBuilder();
         builder.generic(GENERIC_SERIALIZATION_DEFAULT);
-        assertThat(builder.build().getGeneric(), equalTo(GENERIC_SERIALIZATION_DEFAULT));
+        MatcherAssert.assertThat(builder.build().getGeneric(), CoreMatchers.equalTo(GENERIC_SERIALIZATION_DEFAULT));
         builder.generic(GENERIC_SERIALIZATION_NATIVE_JAVA);
-        assertThat(builder.build().getGeneric(), equalTo(GENERIC_SERIALIZATION_NATIVE_JAVA));
+        MatcherAssert.assertThat(builder.build().getGeneric(), CoreMatchers.equalTo(GENERIC_SERIALIZATION_NATIVE_JAVA));
         builder.generic(GENERIC_SERIALIZATION_BEAN);
-        assertThat(builder.build().getGeneric(), equalTo(GENERIC_SERIALIZATION_BEAN));
+        MatcherAssert.assertThat(builder.build().getGeneric(), CoreMatchers.equalTo(GENERIC_SERIALIZATION_BEAN));
     }
 
     @Test
@@ -120,7 +121,7 @@ class ServiceBuilderTest {
         ServiceConfig config = builder.build();
         ServiceConfig config2 = builder.build();
 
-        assertThat(config.getGeneric(), equalTo(GENERIC_SERIALIZATION_DEFAULT));
+        MatcherAssert.assertThat(config.getGeneric(), CoreMatchers.equalTo(GENERIC_SERIALIZATION_DEFAULT));
         Assertions.assertEquals("path", config.getPath());
         Assertions.assertEquals("providerIds", config.getProviderIds());
         Assertions.assertSame(provider, config.getProvider());

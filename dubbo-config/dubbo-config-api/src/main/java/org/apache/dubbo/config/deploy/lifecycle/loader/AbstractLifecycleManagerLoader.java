@@ -30,7 +30,7 @@ public abstract class AbstractLifecycleManagerLoader<T extends LifecycleManager>
     }
 
     /**
-     * Map operation name to the method that provides dependency relations.
+     * Map method name to the method that provides dependency relations.
      */
     protected abstract void mapOperationsToDependencyProvider(Map<String,Function<T,List<String>>> dependencyProviders);
 
@@ -41,7 +41,7 @@ public abstract class AbstractLifecycleManagerLoader<T extends LifecycleManager>
     protected abstract List<T> loadManagers();
 
     /**
-     * Map operation sequences.
+     * Map method sequences.
      */
     protected void loadSequence(){
 

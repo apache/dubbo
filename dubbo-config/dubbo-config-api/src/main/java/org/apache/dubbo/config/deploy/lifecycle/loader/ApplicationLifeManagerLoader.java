@@ -60,7 +60,7 @@ public class ApplicationLifeManagerLoader extends AbstractLifecycleManagerLoader
 
 
     /**
-     * Map operation name to the method that provides dependency relations.
+     * Map method name to the method that provides dependency relations.
      */
     @Override
     protected void mapOperationsToDependencyProvider(Map<String, Function<ApplicationLifecycleManager, List<String>>> dependencyProviders) {

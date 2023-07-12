@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.config.integration.single.exportprovider;
 
+import org.apache.dubbo.config.integration.Constants;
+import org.apache.dubbo.config.integration.IntegrationTest;
 import org.apache.dubbo.common.config.configcenter.ConfigItem;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
@@ -26,8 +28,7 @@ import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.ServiceListener;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
-import org.apache.dubbo.config.integration.IntegrationTest;
-import org.apache.dubbo.metadata.ServiceNameMapping;
+import org.apache.dubbo.metadata.event.ServiceNameMapping;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
 import org.apache.dubbo.registry.integration.RegistryProtocolListener;
 import org.apache.dubbo.rpc.ExporterListener;
@@ -47,7 +48,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_PROTOCOL_LISTENER_KEY;
-import static org.apache.dubbo.config.integration.Constants.SINGLE_CONFIG_CENTER_EXPORT_PROVIDER;
 import static org.apache.dubbo.rpc.Constants.SCOPE_LOCAL;
 
 /**
@@ -131,16 +131,16 @@ class SingleRegistryCenterExportProviderIntegrationTest implements IntegrationTe
     private void beforeExport() {
         registryProtocolListener = (SingleRegistryCenterExportProviderRegistryProtocolListener) ExtensionLoader
             .getExtensionLoader(RegistryProtocolListener.class)
-            .getExtension(SINGLE_CONFIG_CENTER_EXPORT_PROVIDER);
+            .getExtension(Constants.SINGLE_CONFIG_CENTER_EXPORT_PROVIDER);
         exporterListener = (SingleRegistryCenterExportProviderExporterListener) ExtensionLoader
             .getExtensionLoader(ExporterListener.class)
-            .getExtension(SINGLE_CONFIG_CENTER_EXPORT_PROVIDER);
+            .getExtension(Constants.SINGLE_CONFIG_CENTER_EXPORT_PROVIDER);
         filter = (SingleRegistryCenterExportProviderFilter) ExtensionLoader
             .getExtensionLoader(Filter.class)
-            .getExtension(SINGLE_CONFIG_CENTER_EXPORT_PROVIDER);
+            .getExtension(Constants.SINGLE_CONFIG_CENTER_EXPORT_PROVIDER);
         serviceListener = (SingleRegistryCenterExportProviderServiceListener) ExtensionLoader
             .getExtensionLoader(ServiceListener.class)
-            .getExtension(SINGLE_CONFIG_CENTER_EXPORT_PROVIDER);
+            .getExtension(Constants.SINGLE_CONFIG_CENTER_EXPORT_PROVIDER);
         // ---------------checkpoints--------------- //
         // ServiceConfig isn't exported
         Assertions.assertFalse(serviceConfig.isExported());

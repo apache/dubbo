@@ -77,7 +77,7 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
      * Whether to support event in stub.
      */
     //TODO solve merge problem
-    protected Boolean stubevent;//= Constants.DEFAULT_STUB_EVENT;
+    protected Boolean stubevent;//= MonitorConstants.DEFAULT_STUB_EVENT;
 
 
     /**

@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config;
 
+import org.apache.dubbo.config.AbstractMethodConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 
 import org.junit.jupiter.api.AfterAll;
@@ -41,83 +42,83 @@ class AbstractMethodConfigTest {
     void testTimeout() {
         MethodConfig methodConfig = new MethodConfig();
         methodConfig.setTimeout(10);
-        assertThat(methodConfig.getTimeout(), equalTo(10));
+        MatcherAssert.assertThat(methodConfig.getTimeout(), Matchers.equalTo(10));
     }
 
     @Test
     void testForks() {
         MethodConfig methodConfig = new MethodConfig();
         methodConfig.setForks(10);
-        assertThat(methodConfig.getForks(), equalTo(10));
+        MatcherAssert.assertThat(methodConfig.getForks(), Matchers.equalTo(10));
     }
 
     @Test
     void testRetries() {
         MethodConfig methodConfig = new MethodConfig();
         methodConfig.setRetries(3);
-        assertThat(methodConfig.getRetries(), equalTo(3));
+        MatcherAssert.assertThat(methodConfig.getRetries(), Matchers.equalTo(3));
     }
 
     @Test
     void testLoadbalance() {
         MethodConfig methodConfig = new MethodConfig();
         methodConfig.setLoadbalance("mockloadbalance");
-        assertThat(methodConfig.getLoadbalance(), equalTo("mockloadbalance"));
+        MatcherAssert.assertThat(methodConfig.getLoadbalance(), Matchers.equalTo("mockloadbalance"));
     }
 
     @Test
     void testAsync() {
         MethodConfig methodConfig = new MethodConfig();
         methodConfig.setAsync(true);
-        assertThat(methodConfig.isAsync(), is(true));
+        MatcherAssert.assertThat(methodConfig.isAsync(), Matchers.is(true));
     }
 
     @Test
     void testActives() {
         MethodConfig methodConfig = new MethodConfig();
         methodConfig.setActives(10);
-        assertThat(methodConfig.getActives(), equalTo(10));
+        MatcherAssert.assertThat(methodConfig.getActives(), Matchers.equalTo(10));
     }
 
     @Test
     void testSent() {
         MethodConfig methodConfig = new MethodConfig();
         methodConfig.setSent(true);
-        assertThat(methodConfig.getSent(), is(true));
+        MatcherAssert.assertThat(methodConfig.getSent(), Matchers.is(true));
     }
 
     @Test
     void testMock() {
         MethodConfig methodConfig = new MethodConfig();
         methodConfig.setMock((Boolean) null);
-        assertThat(methodConfig.getMock(), isEmptyOrNullString());
+        MatcherAssert.assertThat(methodConfig.getMock(), Matchers.isEmptyOrNullString());
         methodConfig.setMock(true);
-        assertThat(methodConfig.getMock(), equalTo("true"));
+        MatcherAssert.assertThat(methodConfig.getMock(), Matchers.equalTo("true"));
         methodConfig.setMock("return null");
-        assertThat(methodConfig.getMock(), equalTo("return null"));
+        MatcherAssert.assertThat(methodConfig.getMock(), Matchers.equalTo("return null"));
         methodConfig.setMock("mock");
-        assertThat(methodConfig.getMock(), equalTo("mock"));
+        MatcherAssert.assertThat(methodConfig.getMock(), Matchers.equalTo("mock"));
     }
 
     @Test
     void testMerger() {
         MethodConfig methodConfig = new MethodConfig();
         methodConfig.setMerger("merger");
-        assertThat(methodConfig.getMerger(), equalTo("merger"));
+        MatcherAssert.assertThat(methodConfig.getMerger(), Matchers.equalTo("merger"));
     }
 
     @Test
     void testCache() {
         MethodConfig methodConfig = new MethodConfig();
         methodConfig.setCache("cache");
-        assertThat(methodConfig.getCache(), equalTo("cache"));
+        MatcherAssert.assertThat(methodConfig.getCache(), Matchers.equalTo("cache"));
     }
 
     @Test
     void testValidation() {
         MethodConfig methodConfig = new MethodConfig();
         methodConfig.setValidation("validation");
-        assertThat(methodConfig.getValidation(), equalTo("validation"));
+        MatcherAssert.assertThat(methodConfig.getValidation(), Matchers.equalTo("validation"));
     }
 
     @Test
@@ -126,7 +127,7 @@ class AbstractMethodConfigTest {
         Map<String, String> parameters = new HashMap<String, String>();
         parameters.put("key", "value");
         methodConfig.setParameters(parameters);
-        assertThat(methodConfig.getParameters(), sameInstance(parameters));
+        MatcherAssert.assertThat(methodConfig.getParameters(), Matchers.sameInstance(parameters));
     }
 
     private static class MethodConfig extends AbstractMethodConfig {

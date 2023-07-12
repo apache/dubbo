@@ -82,10 +82,10 @@ import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL
 import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDERS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.ROUTERS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.ROUTE_PROTOCOL;
-import static org.apache.dubbo.registry.Constants.CONFIGURATORS_SUFFIX;
-import static org.apache.dubbo.registry.Constants.ENABLE_26X_CONFIGURATION_LISTEN;
+import static org.apache.dubbo.common.registry.Constants.CONFIGURATORS_SUFFIX;
+import static org.apache.dubbo.common.registry.Constants.ENABLE_26X_CONFIGURATION_LISTEN;
 import static org.apache.dubbo.rpc.Constants.MOCK_KEY;
-import static org.apache.dubbo.rpc.cluster.Constants.ROUTER_KEY;
+import static org.apache.dubbo.common.constants.ClusterConstants.ROUTER_KEY;
 import static org.apache.dubbo.rpc.model.ScopeModelUtil.getModuleModel;
 
 
@@ -138,7 +138,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
                 return null;
             }
         );
-        if (moduleModel.modelEnvironment().getConfiguration().convert(Boolean.class, org.apache.dubbo.registry.Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
+        if (moduleModel.modelEnvironment().getConfiguration().convert(Boolean.class, org.apache.dubbo.common.registry.Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
             consumerConfigurationListener.addNotifyListener(this);
             referenceConfigurationListener = new ReferenceConfigurationListener(moduleModel, this, url);
         }
@@ -152,7 +152,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
     @Override
     public void unSubscribe(URL url) {
         super.unSubscribe(url);
-        if (moduleModel.modelEnvironment().getConfiguration().convert(Boolean.class, org.apache.dubbo.registry.Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
+        if (moduleModel.modelEnvironment().getConfiguration().convert(Boolean.class, org.apache.dubbo.common.registry.Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
             consumerConfigurationListener.removeNotifyListener(this);
             if (referenceConfigurationListener != null) {
                 referenceConfigurationListener.stop();
@@ -163,7 +163,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
     @Override
     public void destroy() {
         super.destroy();
-        if (moduleModel.modelEnvironment().getConfiguration().convert(Boolean.class, org.apache.dubbo.registry.Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
+        if (moduleModel.modelEnvironment().getConfiguration().convert(Boolean.class, org.apache.dubbo.common.registry.Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
             consumerConfigurationListener.removeNotifyListener(this);
             if (referenceConfigurationListener != null) {
                 referenceConfigurationListener.stop();

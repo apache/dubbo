@@ -42,7 +42,7 @@ public class RpcUtils extends org.apache.dubbo.rpc.support.RpcUtils {
     }
 
     /**
-     * Idempotent operation: invocation id will be added in async operation by default
+     * Idempotent method: invocation id will be added in async method by default
      *
      * @param url
      * @param inv

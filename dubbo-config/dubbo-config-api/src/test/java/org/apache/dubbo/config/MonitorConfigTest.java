@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.config;
 
+import org.apache.dubbo.config.MonitorConfig;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -34,54 +35,54 @@ class MonitorConfigTest {
     void testAddress() throws Exception {
         MonitorConfig monitor = new MonitorConfig();
         monitor.setAddress("monitor-addr");
-        assertThat(monitor.getAddress(), equalTo("monitor-addr"));
+        MatcherAssert.assertThat(monitor.getAddress(), Matchers.equalTo("monitor-addr"));
         Map<String, String> parameters = new HashMap<String, String>();
         MonitorConfig.appendParameters(parameters, monitor);
-        assertThat(parameters.isEmpty(), is(true));
+        MatcherAssert.assertThat(parameters.isEmpty(), Matchers.is(true));
     }
 
     @Test
     void testProtocol() throws Exception {
         MonitorConfig monitor = new MonitorConfig();
         monitor.setProtocol("protocol");
-        assertThat(monitor.getProtocol(), equalTo("protocol"));
+        MatcherAssert.assertThat(monitor.getProtocol(), Matchers.equalTo("protocol"));
         Map<String, String> parameters = new HashMap<String, String>();
         MonitorConfig.appendParameters(parameters, monitor);
-        assertThat(parameters.isEmpty(), is(true));
+        MatcherAssert.assertThat(parameters.isEmpty(), Matchers.is(true));
     }
 
     @Test
     void testUsername() throws Exception {
         MonitorConfig monitor = new MonitorConfig();
         monitor.setUsername("user");
-        assertThat(monitor.getUsername(), equalTo("user"));
+        MatcherAssert.assertThat(monitor.getUsername(), Matchers.equalTo("user"));
         Map<String, String> parameters = new HashMap<String, String>();
         MonitorConfig.appendParameters(parameters, monitor);
-        assertThat(parameters.isEmpty(), is(true));
+        MatcherAssert.assertThat(parameters.isEmpty(), Matchers.is(true));
     }
 
     @Test
     void testPassword() throws Exception {
         MonitorConfig monitor = new MonitorConfig();
         monitor.setPassword("secret");
-        assertThat(monitor.getPassword(), equalTo("secret"));
+        MatcherAssert.assertThat(monitor.getPassword(), Matchers.equalTo("secret"));
         Map<String, String> parameters = new HashMap<String, String>();
         MonitorConfig.appendParameters(parameters, monitor);
-        assertThat(parameters.isEmpty(), is(true));
+        MatcherAssert.assertThat(parameters.isEmpty(), Matchers.is(true));
     }
 
     @Test
     void testGroup() throws Exception {
         MonitorConfig monitor = new MonitorConfig();
         monitor.setGroup("group");
-        assertThat(monitor.getGroup(), equalTo("group"));
+        MatcherAssert.assertThat(monitor.getGroup(), Matchers.equalTo("group"));
     }
 
     @Test
     void testVersion() throws Exception {
         MonitorConfig monitor = new MonitorConfig();
         monitor.setVersion("1.0.0");
-        assertThat(monitor.getVersion(), equalTo("1.0.0"));
+        MatcherAssert.assertThat(monitor.getVersion(), Matchers.equalTo("1.0.0"));
     }
 
     @Test
@@ -89,21 +90,21 @@ class MonitorConfigTest {
         MonitorConfig monitor = new MonitorConfig();
         Map<String, String> parameters = Collections.singletonMap("k1", "v1");
         monitor.setParameters(parameters);
-        assertThat(monitor.getParameters(), hasEntry("k1", "v1"));
+        MatcherAssert.assertThat(monitor.getParameters(), Matchers.hasEntry("k1", "v1"));
     }
 
     @Test
     void testDefault() throws Exception {
         MonitorConfig monitor = new MonitorConfig();
         monitor.setDefault(true);
-        assertThat(monitor.isDefault(), is(true));
+        MatcherAssert.assertThat(monitor.isDefault(), Matchers.is(true));
     }
 
     @Test
     void testInterval() throws Exception {
         MonitorConfig monitor = new MonitorConfig();
         monitor.setInterval("100");
-        assertThat(monitor.getInterval(), equalTo("100"));
+        MatcherAssert.assertThat(monitor.getInterval(), Matchers.equalTo("100"));
     }
 
     @Test

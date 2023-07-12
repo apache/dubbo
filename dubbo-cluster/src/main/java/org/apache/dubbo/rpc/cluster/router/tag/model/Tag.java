@@ -25,7 +25,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_FAILED_RULE_PARSING;
-import static org.apache.dubbo.rpc.cluster.Constants.RULE_VERSION_V30;
+import static org.apache.dubbo.common.constants.ClusterConstants.RULE_VERSION_V30;
 
 public class Tag {
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(Tag.class);

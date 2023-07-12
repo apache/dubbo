@@ -51,10 +51,10 @@ import static org.apache.dubbo.common.constants.CommonConstants.ENABLE_CONNECTIV
 import static org.apache.dubbo.common.constants.CommonConstants.LOADBALANCE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.RESELECT_COUNT;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_FAILED_RESELECT_INVOKERS;
-import static org.apache.dubbo.rpc.cluster.Constants.CLUSTER_AVAILABLE_CHECK_KEY;
-import static org.apache.dubbo.rpc.cluster.Constants.CLUSTER_STICKY_KEY;
-import static org.apache.dubbo.rpc.cluster.Constants.DEFAULT_CLUSTER_AVAILABLE_CHECK;
-import static org.apache.dubbo.rpc.cluster.Constants.DEFAULT_CLUSTER_STICKY;
+import static org.apache.dubbo.common.constants.ClusterConstants.CLUSTER_AVAILABLE_CHECK_KEY;
+import static org.apache.dubbo.common.constants.ClusterConstants.CLUSTER_STICKY_KEY;
+import static org.apache.dubbo.common.constants.ClusterConstants.DEFAULT_CLUSTER_AVAILABLE_CHECK;
+import static org.apache.dubbo.common.constants.ClusterConstants.DEFAULT_CLUSTER_STICKY;
 
 /**
  * AbstractClusterInvoker

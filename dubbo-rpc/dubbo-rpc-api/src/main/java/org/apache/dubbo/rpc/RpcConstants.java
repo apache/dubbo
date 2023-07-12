@@ -25,7 +25,7 @@ import org.apache.dubbo.common.constants.RemotingConstants;
 /**
  * RpcConstants
  *
- * @deprecated Replace to org.apache.dubbo.common.Constants
+ * @deprecated Replace to org.apache.dubbo.common.MonitorConstants
  */
 @Deprecated
 public final class RpcConstants implements CommonConstants, QosConstants, FilterConstants,

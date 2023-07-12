@@ -19,7 +19,7 @@
 //import org.apache.dubbo.common.URL;
 //import org.apache.dubbo.config.ApplicationConfig;
 //import org.apache.dubbo.metadata.MetadataService;
-//import org.apache.dubbo.metadata.ServiceNameMapping;
+//import org.apache.dubbo.metadata.event.ServiceNameMapping;
 //import org.apache.dubbo.registry.Registry;
 //import org.apache.dubbo.registry.client.DefaultServiceInstance;
 //import org.apache.dubbo.registry.client.InMemoryServiceDiscovery;

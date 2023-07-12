@@ -18,6 +18,7 @@ package org.apache.dubbo.config.bootstrap.builders;
 
 import org.apache.dubbo.config.MonitorConfig;
 
+import org.apache.dubbo.config.bootstrap.builders.MonitorBuilder;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

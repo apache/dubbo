@@ -44,9 +44,9 @@ import java.util.regex.Pattern;
 import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_CONDITIONAL_ROUTE_LIST_EMPTY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_FAILED_EXEC_CONDITION_ROUTER;
-import static org.apache.dubbo.rpc.cluster.Constants.FORCE_KEY;
-import static org.apache.dubbo.rpc.cluster.Constants.RULE_KEY;
-import static org.apache.dubbo.rpc.cluster.Constants.RUNTIME_KEY;
+import static org.apache.dubbo.common.constants.ClusterConstants.FORCE_KEY;
+import static org.apache.dubbo.common.constants.ClusterConstants.RULE_KEY;
+import static org.apache.dubbo.common.constants.ClusterConstants.RUNTIME_KEY;
 
 /**
  * Condition Router directs traffics matching the 'when condition' to a particular address subset determined by the 'then condition'.

@@ -18,6 +18,7 @@ package org.apache.dubbo.config.bootstrap.builders;
 
 import org.apache.dubbo.config.AbstractMethodConfig;
 
+import org.apache.dubbo.config.bootstrap.builders.AbstractMethodBuilder;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

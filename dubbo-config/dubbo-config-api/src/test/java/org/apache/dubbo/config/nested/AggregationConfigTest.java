@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config.nested;
 
+import org.apache.dubbo.config.nested.AggregationConfig;
 import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -27,20 +28,20 @@ class AggregationConfigTest {
     void testEnabled() {
         AggregationConfig aggregationConfig = new AggregationConfig();
         aggregationConfig.setEnabled(true);
-        assertThat(aggregationConfig.getEnabled(), equalTo(true));
+        MatcherAssert.assertThat(aggregationConfig.getEnabled(), Matchers.equalTo(true));
     }
 
     @Test
     void testBucketNum() {
         AggregationConfig aggregationConfig = new AggregationConfig();
         aggregationConfig.setBucketNum(5);
-        assertThat(aggregationConfig.getBucketNum(), equalTo(5));
+        MatcherAssert.assertThat(aggregationConfig.getBucketNum(), Matchers.equalTo(5));
     }
 
     @Test
     void testTimeWindowSeconds() {
         AggregationConfig aggregationConfig = new AggregationConfig();
         aggregationConfig.setTimeWindowSeconds(120);
-        assertThat(aggregationConfig.getTimeWindowSeconds(), equalTo(120));
+        MatcherAssert.assertThat(aggregationConfig.getTimeWindowSeconds(), Matchers.equalTo(120));
     }
 }

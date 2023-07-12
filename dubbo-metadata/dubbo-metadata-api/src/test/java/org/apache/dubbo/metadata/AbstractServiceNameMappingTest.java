@@ -17,6 +17,9 @@
 package org.apache.dubbo.metadata;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.metadata.event.MappingChangedEvent;
+import org.apache.dubbo.metadata.event.MappingListener;
+import org.apache.dubbo.metadata.event.ServiceNameMapping;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import org.junit.jupiter.api.AfterEach;

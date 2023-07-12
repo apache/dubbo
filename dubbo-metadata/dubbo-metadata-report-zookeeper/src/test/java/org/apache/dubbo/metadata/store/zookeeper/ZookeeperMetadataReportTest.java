@@ -20,7 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.ConfigItem;
 import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.NetUtils;
-import org.apache.dubbo.metadata.MappingChangedEvent;
+import org.apache.dubbo.metadata.event.MappingChangedEvent;
 import org.apache.dubbo.metadata.MappingListener;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.definition.ServiceDefinitionBuilder;
@@ -48,7 +48,7 @@ import java.util.concurrent.ExecutionException;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
-import static org.apache.dubbo.metadata.ServiceNameMapping.DEFAULT_MAPPING_GROUP;
+import static org.apache.dubbo.metadata.event.ServiceNameMapping.DEFAULT_MAPPING_GROUP;
 
 /**
  * 2018/10/9

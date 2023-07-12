@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.monitor;
+package org.apache.dubbo.common.constants;
 
-public interface Constants {
+public interface MonitorConstants {
     String DUBBO_PROVIDER = "dubbo.provider";
 
     String DUBBO_CONSUMER = "dubbo.consumer";

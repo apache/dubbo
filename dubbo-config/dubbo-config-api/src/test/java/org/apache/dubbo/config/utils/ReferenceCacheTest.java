@@ -54,7 +54,7 @@ class ReferenceCacheTest {
 
         assertEquals(1L, config.getCounter());
         assertEquals(1L, configCopy.getCounter());
-        assertEquals(proxy, proxyOfCopyConfig);
+        Assertions.assertEquals(proxy, proxyOfCopyConfig);
     }
 
     @Test
@@ -69,10 +69,10 @@ class ReferenceCacheTest {
         assertEquals(1L, config.getCounter());
 
         XxxMockReferenceConfig configCopy = buildXxxMockReferenceConfig("org.apache.dubbo.config.utils.service.XxxService", "group1", "1.0.0");
-        assertEquals(0L, configCopy.getCounter());
+        Assertions.assertEquals(0L, configCopy.getCounter());
         cache.get(configCopy);
-        assertTrue(configCopy.isGetMethodRun());
-        assertEquals(1L, configCopy.getCounter());
+        Assertions.assertTrue(configCopy.isGetMethodRun());
+        Assertions.assertEquals(1L, configCopy.getCounter());
     }
 
     @Test
@@ -108,13 +108,13 @@ class ReferenceCacheTest {
         cache.get(config);
         XxxMockReferenceConfig configCopy = buildXxxMockReferenceConfig("org.apache.dubbo.config.utils.service.XxxService", "group1", "1.0.0");
         cache.get(configCopy);
-        assertEquals(2, cache.getReferenceMap().size());
+        Assertions.assertEquals(2, cache.getReferenceMap().size());
         cache.destroy(config);
         assertTrue(config.isDestroyMethodRun());
-        assertEquals(1, cache.getReferenceMap().size());
+        Assertions.assertEquals(1, cache.getReferenceMap().size());
         cache.destroy(configCopy);
-        assertTrue(configCopy.isDestroyMethodRun());
-        assertEquals(0, cache.getReferenceMap().size());
+        Assertions.assertTrue(configCopy.isDestroyMethodRun());
+        Assertions.assertEquals(0, cache.getReferenceMap().size());
     }
 
     @Test
@@ -124,11 +124,11 @@ class ReferenceCacheTest {
         cache.get(config);
         XxxMockReferenceConfig configCopy = buildXxxMockReferenceConfig("org.apache.dubbo.config.utils.service.XxxService", "group1", "1.0.0");
         cache.get(configCopy);
-        assertEquals(2, cache.getReferenceMap().size());
+        Assertions.assertEquals(2, cache.getReferenceMap().size());
         cache.destroyAll();
         assertTrue(config.isDestroyMethodRun());
-        assertTrue(configCopy.isDestroyMethodRun());
-        assertEquals(0, cache.getReferenceMap().size());
+        Assertions.assertTrue(configCopy.isDestroyMethodRun());
+        Assertions.assertEquals(0, cache.getReferenceMap().size());
     }
 
     private MockReferenceConfig buildMockReferenceConfig(String service, String group, String version) {

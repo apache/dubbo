@@ -20,7 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.metadata.ServiceNameMapping;
+import org.apache.dubbo.metadata.event.ServiceNameMapping;
 
 import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
@@ -35,19 +35,19 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static org.apache.dubbo.registry.Constants.MIGRATION_DELAY_KEY;
-import static org.apache.dubbo.registry.Constants.MIGRATION_FORCE_KEY;
-import static org.apache.dubbo.registry.Constants.MIGRATION_PROMOTION_KEY;
-import static org.apache.dubbo.registry.Constants.MIGRATION_RULE_APPLICATIONS_KEY;
-import static org.apache.dubbo.registry.Constants.MIGRATION_RULE_DELAY_KEY;
-import static org.apache.dubbo.registry.Constants.MIGRATION_RULE_FORCE_KEY;
-import static org.apache.dubbo.registry.Constants.MIGRATION_RULE_INTERFACES_KEY;
-import static org.apache.dubbo.registry.Constants.MIGRATION_RULE_KEY;
-import static org.apache.dubbo.registry.Constants.MIGRATION_RULE_PROPORTION_KEY;
-import static org.apache.dubbo.registry.Constants.MIGRATION_RULE_STEP_KEY;
-import static org.apache.dubbo.registry.Constants.MIGRATION_RULE_THRESHOLD_KEY;
-import static org.apache.dubbo.registry.Constants.MIGRATION_STEP_KEY;
-import static org.apache.dubbo.registry.Constants.MIGRATION_THRESHOLD_KEY;
+import static org.apache.dubbo.common.registry.Constants.MIGRATION_DELAY_KEY;
+import static org.apache.dubbo.common.registry.Constants.MIGRATION_FORCE_KEY;
+import static org.apache.dubbo.common.registry.Constants.MIGRATION_PROMOTION_KEY;
+import static org.apache.dubbo.common.registry.Constants.MIGRATION_RULE_APPLICATIONS_KEY;
+import static org.apache.dubbo.common.registry.Constants.MIGRATION_RULE_DELAY_KEY;
+import static org.apache.dubbo.common.registry.Constants.MIGRATION_RULE_FORCE_KEY;
+import static org.apache.dubbo.common.registry.Constants.MIGRATION_RULE_INTERFACES_KEY;
+import static org.apache.dubbo.common.registry.Constants.MIGRATION_RULE_KEY;
+import static org.apache.dubbo.common.registry.Constants.MIGRATION_RULE_PROPORTION_KEY;
+import static org.apache.dubbo.common.registry.Constants.MIGRATION_RULE_STEP_KEY;
+import static org.apache.dubbo.common.registry.Constants.MIGRATION_RULE_THRESHOLD_KEY;
+import static org.apache.dubbo.common.registry.Constants.MIGRATION_STEP_KEY;
+import static org.apache.dubbo.common.registry.Constants.MIGRATION_THRESHOLD_KEY;
 import static org.apache.dubbo.registry.client.migration.MigrationRuleHandler.DUBBO_SERVICEDISCOVERY_MIGRATION;
 
 /**

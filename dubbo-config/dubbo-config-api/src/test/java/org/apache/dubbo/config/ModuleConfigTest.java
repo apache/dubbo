@@ -17,6 +17,9 @@
 
 package org.apache.dubbo.config;
 
+import org.apache.dubbo.config.ModuleConfig;
+import org.apache.dubbo.config.MonitorConfig;
+import org.apache.dubbo.config.RegistryConfig;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -38,11 +41,11 @@ class ModuleConfigTest {
     void testName2() throws Exception {
         ModuleConfig module = new ModuleConfig();
         module.setName("module-name");
-        assertThat(module.getName(), equalTo("module-name"));
-        assertThat(module.getId(), equalTo(null));
+        MatcherAssert.assertThat(module.getName(), equalTo("module-name"));
+        MatcherAssert.assertThat(module.getId(), equalTo(null));
         Map<String, String> parameters = new HashMap<String, String>();
         ModuleConfig.appendParameters(parameters, module);
-        assertThat(parameters, hasEntry("module", "module-name"));
+        MatcherAssert.assertThat(parameters, hasEntry("module", "module-name"));
     }
 
     @Test
@@ -50,24 +53,24 @@ class ModuleConfigTest {
         ModuleConfig module = new ModuleConfig();
         module.setName("module-name");
         module.setVersion("1.0.0");
-        assertThat(module.getVersion(), equalTo("1.0.0"));
+        MatcherAssert.assertThat(module.getVersion(), equalTo("1.0.0"));
         Map<String, String> parameters = new HashMap<String, String>();
         ModuleConfig.appendParameters(parameters, module);
-        assertThat(parameters, hasEntry("module.version", "1.0.0"));
+        MatcherAssert.assertThat(parameters, hasEntry("module.version", "1.0.0"));
     }
 
     @Test
     void testOwner() throws Exception {
         ModuleConfig module = new ModuleConfig();
         module.setOwner("owner");
-        assertThat(module.getOwner(), equalTo("owner"));
+        MatcherAssert.assertThat(module.getOwner(), equalTo("owner"));
     }
 
     @Test
     void testOrganization() throws Exception {
         ModuleConfig module = new ModuleConfig();
         module.setOrganization("org");
-        assertThat(module.getOrganization(), equalTo("org"));
+        MatcherAssert.assertThat(module.getOrganization(), equalTo("org"));
     }
 
     @Test
@@ -75,7 +78,7 @@ class ModuleConfigTest {
         ModuleConfig module = new ModuleConfig();
         RegistryConfig registry = new RegistryConfig();
         module.setRegistry(registry);
-        assertThat(module.getRegistry(), sameInstance(registry));
+        MatcherAssert.assertThat(module.getRegistry(), sameInstance(registry));
     }
 
     @Test
@@ -83,24 +86,24 @@ class ModuleConfigTest {
         ModuleConfig module = new ModuleConfig();
         RegistryConfig registry = new RegistryConfig();
         module.setRegistries(Collections.singletonList(registry));
-        assertThat(module.getRegistries(), Matchers.<RegistryConfig>hasSize(1));
-        assertThat(module.getRegistries(), contains(registry));
+        MatcherAssert.assertThat(module.getRegistries(), Matchers.<RegistryConfig>hasSize(1));
+        MatcherAssert.assertThat(module.getRegistries(), contains(registry));
     }
 
     @Test
     void testMonitor() throws Exception {
         ModuleConfig module = new ModuleConfig();
         module.setMonitor("monitor-addr1");
-        assertThat(module.getMonitor().getAddress(), equalTo("monitor-addr1"));
+        MatcherAssert.assertThat(module.getMonitor().getAddress(), equalTo("monitor-addr1"));
         module.setMonitor(new MonitorConfig("monitor-addr2"));
-        assertThat(module.getMonitor().getAddress(), equalTo("monitor-addr2"));
+        MatcherAssert.assertThat(module.getMonitor().getAddress(), equalTo("monitor-addr2"));
     }
 
     @Test
     void testDefault() throws Exception {
         ModuleConfig module = new ModuleConfig();
         module.setDefault(true);
-        assertThat(module.isDefault(), is(true));
+        MatcherAssert.assertThat(module.isDefault(), is(true));
     }
 
     @Test

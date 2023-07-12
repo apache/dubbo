@@ -18,7 +18,7 @@
 package org.apache.dubbo.common.constants;
 
 /**
- * <p>Constants of Error Codes used in logger.
+ * <p>MonitorConstants of Error Codes used in logger.
  *
  * <p>Format: <i>[Category]-[Code]</i>, where:
  * <li>[Category] is the category code which identifies the module.

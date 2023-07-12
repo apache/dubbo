@@ -17,7 +17,7 @@
 package org.apache.dubbo.common.constants;
 
 /**
- * Provider Constants
+ * Provider MonitorConstants
  */
 public interface ProviderConstants {
 

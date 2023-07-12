@@ -92,8 +92,8 @@ class ArgumentCallbackTest {
                 ApplicationModel.defaultModel().getDefaultModule(), null, null, ClassUtils.getClassLoader(IDemoService.class)));
 
         //      uncomment is unblock invoking
-//        serviceURL = serviceURL.addParameter("yyy."+Constants.ASYNC_KEY,String.valueOf(true));
-//        consumerUrl = consumerUrl.addParameter("yyy."+Constants.ASYNC_KEY,String.valueOf(true));
+//        serviceURL = serviceURL.addParameter("yyy."+MonitorConstants.ASYNC_KEY,String.valueOf(true));
+//        consumerUrl = consumerUrl.addParameter("yyy."+MonitorConstants.ASYNC_KEY,String.valueOf(true));
     }
 
     public void initOrResetService() {

@@ -22,7 +22,7 @@ import org.apache.dubbo.common.utils.Holder;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.cluster.Constants;
+import org.apache.dubbo.common.constants.ClusterConstants;
 import org.apache.dubbo.rpc.cluster.governance.GovernanceRuleRepository;
 import org.apache.dubbo.rpc.cluster.router.RouterSnapshotNode;
 import org.apache.dubbo.rpc.model.ModuleModel;
@@ -49,7 +49,7 @@ public abstract class AbstractStateRouter<T> implements StateRouter<T> {
         moduleModel = url.getOrDefaultModuleModel();
         this.ruleRepository = moduleModel.getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension();
         this.url = url;
-        this.shouldFailFast = Boolean.parseBoolean(ConfigurationUtils.getProperty(moduleModel, Constants.SHOULD_FAIL_FAST_KEY, "true"));
+        this.shouldFailFast = Boolean.parseBoolean(ConfigurationUtils.getProperty(moduleModel, ClusterConstants.SHOULD_FAIL_FAST_KEY, "true"));
     }
 
     @Override

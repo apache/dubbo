@@ -17,12 +17,18 @@
 package org.apache.dubbo.metadata;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.RegistryConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ApplicationConfig;
+
+
+import org.apache.dubbo.metadata.event.MappingChangedEvent;
+import org.apache.dubbo.metadata.event.MappingListener;
+import org.apache.dubbo.metadata.event.ServiceNameMapping;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.HashSet;
@@ -47,10 +53,15 @@ import static org.apache.dubbo.common.utils.CollectionUtils.toTreeSet;
 import static org.apache.dubbo.common.utils.StringUtils.isBlank;
 
 public abstract class AbstractServiceNameMapping implements ServiceNameMapping {
+
     protected final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
+
     protected ApplicationModel applicationModel;
+
     private final MappingCacheManager mappingCacheManager;
-    private final Map<String, Set<MappingListener>> mappingListeners = new ConcurrentHashMap<>();
+
+    private final Map<String, Set<org.apache.dubbo.metadata.event.MappingListener>> mappingListeners = new ConcurrentHashMap<>();
+
     // mapping lock is shared among registries of the same application.
     private final ConcurrentMap<String, ReentrantLock> mappingLocks = new ConcurrentHashMap<>();
 
@@ -84,7 +95,7 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping {
      *
      * @return
      */
-    abstract public Set<String> getAndListen(URL url, MappingListener mappingListener);
+    abstract public Set<String> getAndListen(URL url, org.apache.dubbo.metadata.event.MappingListener mappingListener);
 
     abstract protected void removeListener(URL url, MappingListener mappingListener);
 
@@ -170,11 +181,19 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping {
 
     @Override
     public Set<String> getMapping(URL consumerURL) {
-        Set<String> mappingByUrl = ServiceNameMapping.getMappingByUrl(consumerURL);
+        Set<String> mappingByUrl = getMappingByUrl(consumerURL);
         if(mappingByUrl != null) {
             return mappingByUrl;
         }
         return mappingCacheManager.get(ServiceNameMapping.buildMappingKey(consumerURL));
+    }
+
+    public static Set<String> getMappingByUrl(URL consumerURL) {
+        String providedBy = consumerURL.getParameter(RegistryConstants.PROVIDED_BY);
+        if(StringUtils.isBlank(providedBy)) {
+            return null;
+        }
+        return AbstractServiceNameMapping.parseServices(providedBy);
     }
 
     @Override

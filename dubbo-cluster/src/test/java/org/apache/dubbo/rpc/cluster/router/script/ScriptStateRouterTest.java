@@ -35,7 +35,7 @@ import org.junit.jupiter.api.condition.JRE;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.apache.dubbo.rpc.cluster.Constants.RULE_KEY;
+import static org.apache.dubbo.common.constants.ClusterConstants.RULE_KEY;
 
 @DisabledForJreRange(min = JRE.JAVA_16)
 class ScriptStateRouterTest {

@@ -18,6 +18,7 @@ package org.apache.dubbo.config.bootstrap.builders;
 
 import org.apache.dubbo.config.ArgumentConfig;
 
+import org.apache.dubbo.config.bootstrap.builders.ArgumentBuilder;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

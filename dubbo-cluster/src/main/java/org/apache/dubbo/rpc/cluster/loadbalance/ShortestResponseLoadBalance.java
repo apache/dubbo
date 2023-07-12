@@ -22,7 +22,7 @@ import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcStatus;
-import org.apache.dubbo.rpc.cluster.Constants;
+import org.apache.dubbo.common.constants.ClusterConstants;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
 import org.apache.dubbo.rpc.support.RpcUtils;
@@ -59,7 +59,7 @@ public class ShortestResponseLoadBalance extends AbstractLoadBalance implements 
 
     @Override
     public void setApplicationModel(ApplicationModel applicationModel) {
-        slidePeriod = applicationModel.modelEnvironment().getConfiguration().getInt(Constants.SHORTEST_RESPONSE_SLIDE_PERIOD, 30_000);
+        slidePeriod = applicationModel.modelEnvironment().getConfiguration().getInt(ClusterConstants.SHORTEST_RESPONSE_SLIDE_PERIOD, 30_000);
         executorService = applicationModel.getFrameworkModel().getBeanFactory()
             .getBean(FrameworkExecutorRepository.class).getSharedExecutor();
     }

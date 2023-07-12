@@ -100,7 +100,7 @@ class ConfigValidationUtilsTest {
     @Test
     void testValidateApplicationConfig() throws Exception {
         try (MockedStatic<ConfigValidationUtils> mockedStatic = Mockito.mockStatic(ConfigValidationUtils.class);) {
-            mockedStatic.when(() -> ConfigValidationUtils.validateApplicationConfig(any())).thenCallRealMethod();
+            mockedStatic.when(() -> ConfigValidationUtils.validateApplicationConfig(ArgumentMatchers.any())).thenCallRealMethod();
             ApplicationConfig config = new ApplicationConfig();
             Assertions.assertThrows(IllegalStateException.class, () -> {
                 ConfigValidationUtils.validateApplicationConfig(config);
@@ -117,13 +117,13 @@ class ConfigValidationUtilsTest {
             config.setParameters(map);
             ConfigValidationUtils.validateApplicationConfig(config);
             mockedStatic.verify(() -> {
-                ConfigValidationUtils.checkName(any(), any());
+                ConfigValidationUtils.checkName(ArgumentMatchers.any(), ArgumentMatchers.any());
             }, times(4));
             mockedStatic.verify(() -> {
-                ConfigValidationUtils.checkMultiName(any(), any());
+                ConfigValidationUtils.checkMultiName(ArgumentMatchers.any(), ArgumentMatchers.any());
             }, times(1));
             mockedStatic.verify(() -> {
-                ConfigValidationUtils.checkParameterName(any());
+                ConfigValidationUtils.checkParameterName(ArgumentMatchers.any());
             }, times(1));
         }
     }
@@ -137,11 +137,11 @@ class ConfigValidationUtilsTest {
         config.setName("testName");
         config.setQosEnable(false);
         mock.validateApplicationConfig(config);
-        verify(loggerMock, never()).warn(any(), any());
+        verify(loggerMock, never()).warn(ArgumentMatchers.any(), ArgumentMatchers.any());
 
         config.setQosEnable(true);
         mock.validateApplicationConfig(config);
-        verify(loggerMock).warn(eq(COMMON_CLASS_NOT_FOUND), eq(""), eq(""), eq("No QosProtocolWrapper class was found. Please check the dependency of dubbo-qos whether was imported correctly."), any());
+        verify(loggerMock).warn(ArgumentMatchers.eq(COMMON_CLASS_NOT_FOUND), ArgumentMatchers.eq(""), ArgumentMatchers.eq(""), ArgumentMatchers.eq("No QosProtocolWrapper class was found. Please check the dependency of dubbo-qos whether was imported correctly."), ArgumentMatchers.any());
     }
 
     private void injectField(Field field, Object newValue) throws Exception {

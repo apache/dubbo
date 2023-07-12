@@ -18,6 +18,7 @@ package org.apache.dubbo.config.bootstrap.builders;
 
 import org.apache.dubbo.config.MetadataReportConfig;
 
+import org.apache.dubbo.config.bootstrap.builders.MetadataReportBuilder;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

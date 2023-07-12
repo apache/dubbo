@@ -14,31 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata;
+package org.apache.dubbo.registry.common;
 
-import java.util.Set;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.registry.Registry;
+import org.apache.dubbo.registry.RegistryFactory;
 
-public class MappingChangedEvent {
+/**
+ * TODO Comment of MockRegistryFactory
+ */
+public class MockRegistryFactory implements RegistryFactory {
 
-    private final String serviceKey;
-    private final Set<String> apps;
-
-    public MappingChangedEvent(String serviceKey, Set<String> apps) {
-        this.serviceKey = serviceKey;
-        this.apps = apps;
-    }
-
-    public String getServiceKey() {
-        return serviceKey;
-    }
-
-    public Set<String> getApps() {
-        return apps;
-    }
-
+    /*
+     * @see org.apache.dubbo.registry.RegistryFactory#getRegistry(org.apache.dubbo.common.URL)
+     */
     @Override
-    public String toString() {
-        return "{serviceKey: " + serviceKey + ", apps: " +
-                apps.toString() + "}";
+    public Registry getRegistry(URL url) {
+
+        return new MockRegistry();
     }
+
 }

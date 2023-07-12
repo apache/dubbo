@@ -14,19 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.cache;
+package org.apache.dubbo.metadata.event;
 
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Set;
 
-/**
- * ValidationServiceImpl
- */
-public class CacheServiceImpl implements CacheService {
+public class MappingChangedEvent {
 
-    private final AtomicInteger i = new AtomicInteger();
+    private final String serviceKey;
+    private final Set<String> apps;
 
-    public String findCache(String id) {
-        return "request: " + id + ", response: " + i.getAndIncrement();
+    public MappingChangedEvent(String serviceKey, Set<String> apps) {
+        this.serviceKey = serviceKey;
+        this.apps = apps;
     }
 
+    public String getServiceKey() {
+        return serviceKey;
+    }
+
+    public Set<String> getApps() {
+        return apps;
+    }
+
+    @Override
+    public String toString() {
+        return "{serviceKey: " + serviceKey + ", apps: " +
+                apps.toString() + "}";
+    }
 }

@@ -456,7 +456,7 @@ public abstract class AbstractConfig implements Serializable {
 //        }
     }
 
-    protected <T> ExtensionLoader<T> getExtensionLoader(Class<T> type) {
+    public <T> ExtensionLoader<T> getExtensionLoader(Class<T> type) {
         if (scopeModel == null) {
             setScopeModel(getScopeModel());
         }

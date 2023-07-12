@@ -16,8 +16,8 @@
  */
 package org.apache.dubbo.config.integration.single.exportprovider;
 
-import org.apache.dubbo.config.ServiceListener;
 import org.apache.dubbo.config.integration.AbstractRegistryCenterServiceListener;
+import org.apache.dubbo.config.ServiceListener;
 
 /**
  * This implementation of {@link ServiceListener} is to record exported services with injvm protocol in single registry center.

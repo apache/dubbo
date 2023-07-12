@@ -17,7 +17,7 @@
 package org.apache.dubbo.rpc.cluster.router.condition.matcher.argument;
 
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.rpc.cluster.Constants;
+import org.apache.dubbo.common.constants.ClusterConstants;
 import org.apache.dubbo.rpc.cluster.router.condition.matcher.ConditionMatcher;
 import org.apache.dubbo.rpc.cluster.router.condition.matcher.ConditionMatcherFactory;
 import org.apache.dubbo.rpc.model.ModuleModel;
@@ -27,7 +27,7 @@ public class ArgumentConditionMatcherFactory implements ConditionMatcherFactory 
 
     @Override
     public boolean shouldMatch(String key) {
-        return key.startsWith(Constants.ARGUMENTS);
+        return key.startsWith(ClusterConstants.ARGUMENTS);
     }
 
     @Override

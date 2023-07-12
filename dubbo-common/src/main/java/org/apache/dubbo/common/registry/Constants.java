@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.registry;
+package org.apache.dubbo.common.registry;
 
 public interface Constants {
     String REGISTER_IP_KEY = "register.ip";

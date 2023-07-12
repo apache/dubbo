@@ -41,8 +41,8 @@ import java.util.List;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_FAILED_MOCK_REQUEST;
 import static org.apache.dubbo.rpc.Constants.MOCK_KEY;
-import static org.apache.dubbo.rpc.cluster.Constants.FORCE_KEY;
-import static org.apache.dubbo.rpc.cluster.Constants.INVOCATION_NEED_MOCK;
+import static org.apache.dubbo.common.constants.ClusterConstants.FORCE_KEY;
+import static org.apache.dubbo.common.constants.ClusterConstants.INVOCATION_NEED_MOCK;
 
 public class MockClusterInvoker<T> implements ClusterInvoker<T> {
 
@@ -179,7 +179,7 @@ public class MockClusterInvoker<T> implements ClusterInvoker<T> {
     /**
      * Return MockInvoker
      * Contract：
-     * directory.list() will return a list of normal invokers if Constants.INVOCATION_NEED_MOCK is absent or not true in invocation, otherwise, a list of mock invokers will return.
+     * directory.list() will return a list of normal invokers if MonitorConstants.INVOCATION_NEED_MOCK is absent or not true in invocation, otherwise, a list of mock invokers will return.
      * if directory.list() returns more than one mock invoker, only one of them will be used.
      *
      * @param invocation
@@ -191,7 +191,7 @@ public class MockClusterInvoker<T> implements ClusterInvoker<T> {
         if (invocation instanceof RpcInvocation) {
             //Note the implicit contract (although the description is added to the interface declaration, but extensibility is a problem. The practice placed in the attachment needs to be improved)
             invocation.setAttachment(INVOCATION_NEED_MOCK, Boolean.TRUE.toString());
-            //directory will return a list of normal invokers if Constants.INVOCATION_NEED_MOCK is absent or not true in invocation, otherwise, a list of mock invokers will return.
+            //directory will return a list of normal invokers if MonitorConstants.INVOCATION_NEED_MOCK is absent or not true in invocation, otherwise, a list of mock invokers will return.
             try {
                 RpcContext.getServiceContext().setConsumerUrl(getUrl());
                 invokers = directory.list(invocation);

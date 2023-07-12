@@ -38,18 +38,18 @@ import java.util.concurrent.atomic.AtomicReference;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_MONITOR_EXCEPTION;
-import static org.apache.dubbo.monitor.Constants.CONCURRENT_KEY;
-import static org.apache.dubbo.monitor.Constants.DEFAULT_MONITOR_SEND_DATA_INTERVAL;
-import static org.apache.dubbo.monitor.Constants.ELAPSED_KEY;
-import static org.apache.dubbo.monitor.Constants.FAILURE_KEY;
-import static org.apache.dubbo.monitor.Constants.INPUT_KEY;
-import static org.apache.dubbo.monitor.Constants.MAX_CONCURRENT_KEY;
-import static org.apache.dubbo.monitor.Constants.MAX_ELAPSED_KEY;
-import static org.apache.dubbo.monitor.Constants.MAX_INPUT_KEY;
-import static org.apache.dubbo.monitor.Constants.MAX_OUTPUT_KEY;
-import static org.apache.dubbo.monitor.Constants.MONITOR_SEND_DATA_INTERVAL_KEY;
-import static org.apache.dubbo.monitor.Constants.OUTPUT_KEY;
-import static org.apache.dubbo.monitor.Constants.SUCCESS_KEY;
+import static org.apache.dubbo.common.constants.MonitorConstants.CONCURRENT_KEY;
+import static org.apache.dubbo.common.constants.MonitorConstants.DEFAULT_MONITOR_SEND_DATA_INTERVAL;
+import static org.apache.dubbo.common.constants.MonitorConstants.ELAPSED_KEY;
+import static org.apache.dubbo.common.constants.MonitorConstants.FAILURE_KEY;
+import static org.apache.dubbo.common.constants.MonitorConstants.INPUT_KEY;
+import static org.apache.dubbo.common.constants.MonitorConstants.MAX_CONCURRENT_KEY;
+import static org.apache.dubbo.common.constants.MonitorConstants.MAX_ELAPSED_KEY;
+import static org.apache.dubbo.common.constants.MonitorConstants.MAX_INPUT_KEY;
+import static org.apache.dubbo.common.constants.MonitorConstants.MAX_OUTPUT_KEY;
+import static org.apache.dubbo.common.constants.MonitorConstants.MONITOR_SEND_DATA_INTERVAL_KEY;
+import static org.apache.dubbo.common.constants.MonitorConstants.OUTPUT_KEY;
+import static org.apache.dubbo.common.constants.MonitorConstants.SUCCESS_KEY;
 
 /**
  * DubboMonitor

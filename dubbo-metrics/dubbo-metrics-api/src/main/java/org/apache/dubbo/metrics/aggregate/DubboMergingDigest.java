@@ -105,7 +105,7 @@ public class DubboMergingDigest extends DubboAbstractTDigest {
 
 
     // array used for sorting the temp centroids.  This is a field
-    // to avoid allocations during operation
+    // to avoid allocations during method
     private final int[] order;
 
     // if true, alternate upward and downward merge passes
@@ -756,7 +756,7 @@ public class DubboMergingDigest extends DubboAbstractTDigest {
 
                     @Override
                     public void remove() {
-                        throw new UnsupportedOperationException("Default operation");
+                        throw new UnsupportedOperationException("Default method");
                     }
                 };
             }

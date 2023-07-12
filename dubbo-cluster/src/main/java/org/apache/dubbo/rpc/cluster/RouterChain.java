@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
+import org.apache.dubbo.common.constants.ClusterConstants;
 import org.apache.dubbo.common.constants.LoggerCodeConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -36,7 +37,7 @@ import org.apache.dubbo.rpc.cluster.router.state.StateRouterFactory;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
-import static org.apache.dubbo.rpc.cluster.Constants.ROUTER_KEY;
+import static org.apache.dubbo.common.constants.ClusterConstants.ROUTER_KEY;
 
 /**
  * Router chain
@@ -74,7 +75,7 @@ public class RouterChain<T> {
             .collect(Collectors.toList());
 
 
-        boolean shouldFailFast = Boolean.parseBoolean(ConfigurationUtils.getProperty(moduleModel, Constants.SHOULD_FAIL_FAST_KEY, "true"));
+        boolean shouldFailFast = Boolean.parseBoolean(ConfigurationUtils.getProperty(moduleModel, ClusterConstants.SHOULD_FAIL_FAST_KEY, "true"));
 
         RouterSnapshotSwitcher routerSnapshotSwitcher = ScopeModelUtil.getFrameworkModel(moduleModel).getBeanFactory().getBean(RouterSnapshotSwitcher.class);
 

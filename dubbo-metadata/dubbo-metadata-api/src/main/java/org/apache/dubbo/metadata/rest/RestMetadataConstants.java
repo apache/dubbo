@@ -22,7 +22,7 @@ import static org.apache.dubbo.common.utils.ClassUtils.getClassLoader;
 import static org.apache.dubbo.common.utils.ClassUtils.resolveClass;
 
 /**
- * The REST Metadata Constants definition interface
+ * The REST Metadata MonitorConstants definition interface
  *
  * @since 2.7.6
  */

@@ -98,7 +98,7 @@ public @interface Reference {
     /**
      * Export an stub service for event dispatch, default value is false.
      * <p>
-     * see org.apache.dubbo.rpc.Constants#STUB_EVENT_METHODS_KEY
+     * see org.apache.dubbo.rpc.MonitorConstants#STUB_EVENT_METHODS_KEY
      */
     boolean stubevent() default false;
 
@@ -106,14 +106,14 @@ public @interface Reference {
      * Whether to reconnect if connection is lost, if not specify, reconnect is enabled by default, and the interval
      * for retry connecting is 2000 ms
      * <p>
-     * see org.apache.dubbo.remoting.Constants#DEFAULT_RECONNECT_PERIOD
+     * see org.apache.dubbo.remoting.MonitorConstants#DEFAULT_RECONNECT_PERIOD
      */
     String reconnect() default "";
 
     /**
      * Whether to stick to the same node in the cluster, the default value is false
      * <p>
-     * see Constants#DEFAULT_CLUSTER_STICKY
+     * see MonitorConstants#DEFAULT_CLUSTER_STICKY
      */
     boolean sticky() default false;
 
@@ -140,7 +140,7 @@ public @interface Reference {
     /**
      * The callback instance limit peer connection
      * <p>
-     * see org.apache.dubbo.rpc.Constants#DEFAULT_CALLBACK_INSTANCES
+     * see org.apache.dubbo.rpc.MonitorConstants#DEFAULT_CALLBACK_INSTANCES
      */
     int callbacks() default -1;
 
@@ -167,14 +167,14 @@ public @interface Reference {
     /**
      * Service invocation retry times
      * <p>
-     * see Constants#DEFAULT_RETRIES
+     * see MonitorConstants#DEFAULT_RETRIES
      */
     int retries() default -1;
 
     /**
      * Load balance strategy, legal values include: random, roundrobin, leastactive
      * <p>
-     * see Constants#DEFAULT_LOADBALANCE
+     * see MonitorConstants#DEFAULT_LOADBALANCE
      */
     String loadbalance() default "";
 

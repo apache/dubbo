@@ -47,7 +47,7 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 import org.apache.dubbo.rpc.cluster.Configurator;
-import org.apache.dubbo.rpc.cluster.Constants;
+import org.apache.dubbo.common.constants.ClusterConstants;
 import org.apache.dubbo.rpc.cluster.governance.GovernanceRuleRepository;
 import org.apache.dubbo.rpc.cluster.support.MergeableCluster;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -116,15 +116,15 @@ import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGISTRY_PROTOCOL;
 import static org.apache.dubbo.common.utils.StringUtils.isEmpty;
 import static org.apache.dubbo.common.utils.UrlUtils.classifyUrls;
-import static org.apache.dubbo.registry.Constants.CONFIGURATORS_SUFFIX;
-import static org.apache.dubbo.registry.Constants.DEFAULT_REGISTRY_RETRY_PERIOD;
-import static org.apache.dubbo.registry.Constants.ENABLE_26X_CONFIGURATION_LISTEN;
-import static org.apache.dubbo.registry.Constants.ENABLE_CONFIGURATION_LISTEN;
-import static org.apache.dubbo.registry.Constants.PROVIDER_PROTOCOL;
-import static org.apache.dubbo.registry.Constants.REGISTER_IP_KEY;
-import static org.apache.dubbo.registry.Constants.REGISTER_KEY;
-import static org.apache.dubbo.registry.Constants.REGISTRY_RETRY_PERIOD_KEY;
-import static org.apache.dubbo.registry.Constants.SIMPLIFIED_KEY;
+import static org.apache.dubbo.common.registry.Constants.CONFIGURATORS_SUFFIX;
+import static org.apache.dubbo.common.registry.Constants.DEFAULT_REGISTRY_RETRY_PERIOD;
+import static org.apache.dubbo.common.registry.Constants.ENABLE_26X_CONFIGURATION_LISTEN;
+import static org.apache.dubbo.common.registry.Constants.ENABLE_CONFIGURATION_LISTEN;
+import static org.apache.dubbo.common.registry.Constants.PROVIDER_PROTOCOL;
+import static org.apache.dubbo.common.registry.Constants.REGISTER_IP_KEY;
+import static org.apache.dubbo.common.registry.Constants.REGISTER_KEY;
+import static org.apache.dubbo.common.registry.Constants.REGISTRY_RETRY_PERIOD_KEY;
+import static org.apache.dubbo.common.registry.Constants.SIMPLIFIED_KEY;
 import static org.apache.dubbo.remoting.Constants.BIND_IP_KEY;
 import static org.apache.dubbo.remoting.Constants.BIND_PORT_KEY;
 import static org.apache.dubbo.remoting.Constants.CHECK_KEY;
@@ -138,11 +138,11 @@ import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 import static org.apache.dubbo.rpc.Constants.INTERFACES;
 import static org.apache.dubbo.rpc.Constants.MOCK_KEY;
 import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
-import static org.apache.dubbo.rpc.cluster.Constants.CONSUMER_URL_KEY;
-import static org.apache.dubbo.rpc.cluster.Constants.EXPORT_KEY;
-import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
-import static org.apache.dubbo.rpc.cluster.Constants.WARMUP_KEY;
-import static org.apache.dubbo.rpc.cluster.Constants.WEIGHT_KEY;
+import static org.apache.dubbo.common.constants.ClusterConstants.CONSUMER_URL_KEY;
+import static org.apache.dubbo.common.constants.ClusterConstants.EXPORT_KEY;
+import static org.apache.dubbo.common.constants.ClusterConstants.REFER_KEY;
+import static org.apache.dubbo.common.constants.ClusterConstants.WARMUP_KEY;
+import static org.apache.dubbo.common.constants.ClusterConstants.WEIGHT_KEY;
 import static org.apache.dubbo.rpc.model.ScopeModelUtil.getApplicationModel;
 
 /**
@@ -661,7 +661,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         }
 
         for (ApplicationModel applicationModel : frameworkModel.getApplicationModels()) {
-            if (applicationModel.modelEnvironment().getConfiguration().convert(Boolean.class, org.apache.dubbo.registry.Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
+            if (applicationModel.modelEnvironment().getConfiguration().convert(Boolean.class, org.apache.dubbo.common.registry.Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
                 for (ModuleModel moduleModel : applicationModel.getPubModuleModels()) {
                     String applicationName = applicationModel.tryGetApplicationName();
                     if (applicationName == null) {
@@ -827,7 +827,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
             newUrl = getConfiguredInvokerUrl(serviceConfigurationListeners.get(originUrl.getServiceKey())
                 .getConfigurators(), newUrl);
             if (!newUrl.equals(currentUrl)) {
-                if (newUrl.getParameter(Constants.NEED_REEXPORT, true)) {
+                if (newUrl.getParameter(ClusterConstants.NEED_REEXPORT, true)) {
                     RegistryProtocol.this.reExport(originInvoker, newUrl);
                 }
                 logger.info("exported provider url changed, origin url: " + originUrl +

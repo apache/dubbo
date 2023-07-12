@@ -16,8 +16,8 @@
  */
 package org.apache.dubbo.config.bootstrap;
 
-import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.bootstrap.rest.UserService;
+import org.apache.dubbo.config.ApplicationConfig;
 
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
 
