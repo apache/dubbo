@@ -72,7 +72,7 @@ public class RestInvoker<T> extends AbstractInvoker<T> {
             RequestTemplate requestTemplate = new RequestTemplate(invocation, restMethodMetadata.getRequest().getMethod(), getUrl().getAddress());
 
             HttpConnectionCreateContext httpConnectionCreateContext =
-                creatHttpConnectionCreateContext(invocation, serviceRestMetadata, restMethodMetadata, requestTemplate);
+                createHttpConnectionCreateContext(invocation, serviceRestMetadata, restMethodMetadata, requestTemplate);
 
             // fill real  data
             for (HttpConnectionPreBuildIntercept intercept : httpConnectionPreBuildIntercepts) {
@@ -128,7 +128,7 @@ public class RestInvoker<T> extends AbstractInvoker<T> {
      * @param requestTemplate
      * @return
      */
-    private HttpConnectionCreateContext creatHttpConnectionCreateContext(Invocation invocation, ServiceRestMetadata serviceRestMetadata, RestMethodMetadata restMethodMetadata, RequestTemplate requestTemplate) {
+    private HttpConnectionCreateContext createHttpConnectionCreateContext(Invocation invocation, ServiceRestMetadata serviceRestMetadata, RestMethodMetadata restMethodMetadata, RequestTemplate requestTemplate) {
         HttpConnectionCreateContext httpConnectionCreateContext = new HttpConnectionCreateContext();
         httpConnectionCreateContext.setRequestTemplate(requestTemplate);
         httpConnectionCreateContext.setRestMethodMetadata(restMethodMetadata);

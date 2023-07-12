@@ -93,7 +93,7 @@ public final class RegistrySubDispatcher extends SimpleMetricsEventMulticaster {
         MetricsCat APPLICATION_NOTIFY_FINISH = new MetricsCat(MetricsKey.NOTIFY_METRIC_NUM_LAST,
             (key, placeType, collector) -> AbstractMetricsKeyListener.onFinish(key,
                 event -> {
-                    collector.addRt(event.appName(), placeType.getType(), event.getTimePair().calc());
+                    collector.addServiceRt(event.appName(), placeType.getType(), event.getTimePair().calc());
                     Map<String, Integer> lastNumMap = Collections.unmodifiableMap(event.getAttachmentValue(ATTACHMENT_KEY_LAST_NUM_MAP));
                     lastNumMap.forEach(
                         (k, v) -> collector.setNum(new MetricsKeyWrapper(key, OP_TYPE_NOTIFY), k, v));
