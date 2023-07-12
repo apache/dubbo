@@ -85,16 +85,15 @@ public class AggregateMetricsCollector implements MetricsCollector<RequestEvent>
             if (optional.isPresent()) {
                 registerListener();
                 AggregationConfig aggregation = optional.get().getAggregation();
-                this.bucketNum = aggregation.getBucketNum() == null ?
-                    DEFAULT_BUCKET_NUM : aggregation.getBucketNum();
-                this.timeWindowSeconds = aggregation.getTimeWindowSeconds() == null ?
-                    DEFAULT_TIME_WINDOW_SECONDS : aggregation.getTimeWindowSeconds();
-                this.qpsTimeWindowMillSeconds = aggregation.getQpsTimeWindowMillSeconds() == null ?
-                    DEFAULT_QPS_TIME_WINDOW_MILL_SECONDS : aggregation.getQpsTimeWindowMillSeconds();
-                this.enableQps = aggregation.getEnableQps() == null || aggregation.getEnableQps();
-                this.enableRtPxx = aggregation.getEnableRtPxx() == null || aggregation.getEnableRtPxx();
-                this.enableRt = aggregation.getEnableRt() == null || aggregation.getEnableRt();
-                this.enableRequest = aggregation.getEnableRequest() == null || aggregation.getEnableRequest();
+                this.bucketNum = Optional.ofNullable(aggregation.getBucketNum()).orElse(DEFAULT_BUCKET_NUM);
+                this.timeWindowSeconds = Optional.ofNullable(aggregation.getTimeWindowSeconds())
+                    .orElse(DEFAULT_TIME_WINDOW_SECONDS);
+                this.qpsTimeWindowMillSeconds = Optional.ofNullable(aggregation.getQpsTimeWindowMillSeconds())
+                    .orElse(DEFAULT_QPS_TIME_WINDOW_MILL_SECONDS);
+                this.enableQps = Optional.ofNullable(aggregation.getEnableQps()).orElse(true);
+                this.enableRtPxx = Optional.ofNullable(aggregation.getEnableRtPxx()).orElse(true);
+                this.enableRt = Optional.ofNullable(aggregation.getEnableRt()).orElse(true);
+                this.enableRequest = Optional.ofNullable(aggregation.getEnableRequest()).orElse(true);
             }
         }
     }
