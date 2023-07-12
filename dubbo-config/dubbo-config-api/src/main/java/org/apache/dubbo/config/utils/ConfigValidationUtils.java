@@ -463,7 +463,7 @@ public class ConfigValidationUtils {
             try {
                 ClassUtils.forName("org.apache.dubbo.qos.protocol.QosProtocolWrapper");
             } catch (ClassNotFoundException e) {
-                logger.info("QosProtocolWrapper not found, qos will not be enabled, please check if dependency was imported correctly.");
+                logger.info("QosProtocolWrapper not found, qos will not be enabled, please check if 'dubbo-qos' dependency was imported correctly.");
             }
         }
     }

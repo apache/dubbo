@@ -51,7 +51,7 @@ import static org.apache.dubbo.remoting.Constants.BIND_PORT_KEY;
 public class InternalServiceConfigBuilder<T> {
 
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
-    private static final Set<String> ACCEPTABLE_PROTOCOL = Stream.of("dubbo", "tri").collect(Collectors.toSet());
+    private static final Set<String> ACCEPTABLE_PROTOCOL = Stream.of("dubbo", "tri", "injvm").collect(Collectors.toSet());
 
     private final ApplicationModel applicationModel;
     private String  protocol;
@@ -112,19 +112,20 @@ public class InternalServiceConfigBuilder<T> {
      */
     private String getRelatedOrDefaultProtocol() {
         String protocol = "";
-        // <dubbo:consumer/>
-        List<ModuleModel> moduleModels = applicationModel.getPubModuleModels();
-        protocol = moduleModels.stream()
-            .map(ModuleModel::getConfigManager)
-            .map(ModuleConfigManager::getConsumers)
-            .filter(CollectionUtils::isNotEmpty)
-            .flatMap(Collection::stream)
-            .map(ConsumerConfig::getProtocol)
-            .filter(StringUtils::isNotEmpty)
-            .filter(p -> ACCEPTABLE_PROTOCOL.contains(p))
-            .findFirst()
-            .orElse("");
+        // <dubbo:protocol/>
+        if (StringUtils.isEmpty(protocol)) {
+            Collection<ProtocolConfig> protocols = applicationModel.getApplicationConfigManager().getProtocols();
+            if (CollectionUtils.isNotEmpty(protocols)) {
+                protocol = protocols.stream()
+                    .map(ProtocolConfig::getName)
+                    .filter(StringUtils::isNotEmpty)
+                    .filter(p -> ACCEPTABLE_PROTOCOL.contains(p))
+                    .findFirst()
+                    .orElse("");
+            }
+        }
         // <dubbo:provider/>
+        List<ModuleModel> moduleModels = applicationModel.getPubModuleModels();
         if (StringUtils.isEmpty(protocol)) {
             Stream<ProviderConfig> providerConfigStream = moduleModels.stream()
                 .map(ModuleModel::getConfigManager)
@@ -149,18 +150,6 @@ public class InternalServiceConfigBuilder<T> {
                 .findFirst()
                 .orElse("");
         }
-        // <dubbo:protocol/>
-        if (StringUtils.isEmpty(protocol)) {
-            Collection<ProtocolConfig> protocols = applicationModel.getApplicationConfigManager().getProtocols();
-            if (CollectionUtils.isNotEmpty(protocols)) {
-                protocol = protocols.stream()
-                    .map(ProtocolConfig::getName)
-                    .filter(StringUtils::isNotEmpty)
-                    .filter(p -> ACCEPTABLE_PROTOCOL.contains(p))
-                    .findFirst()
-                    .orElse("");
-            }
-        }
         // <dubbo:application/>
         if (StringUtils.isEmpty(protocol)) {
             protocol = getApplicationConfig().getProtocol();
@@ -171,6 +160,17 @@ public class InternalServiceConfigBuilder<T> {
                 }
             }
         }
+        // <dubbo:consumer/>
+        protocol = moduleModels.stream()
+            .map(ModuleModel::getConfigManager)
+            .map(ModuleConfigManager::getConsumers)
+            .filter(CollectionUtils::isNotEmpty)
+            .flatMap(Collection::stream)
+            .map(ConsumerConfig::getProtocol)
+            .filter(StringUtils::isNotEmpty)
+            .filter(p -> ACCEPTABLE_PROTOCOL.contains(p))
+            .findFirst()
+            .orElse("");
         return StringUtils.isNotEmpty(protocol) && ACCEPTABLE_PROTOCOL.contains(protocol) ? protocol : DUBBO_PROTOCOL;
     }
 

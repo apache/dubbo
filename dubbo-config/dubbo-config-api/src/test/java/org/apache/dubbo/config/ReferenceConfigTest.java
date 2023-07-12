@@ -37,7 +37,6 @@ import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.cluster.filter.FilterChainBuilder;
 import org.apache.dubbo.rpc.cluster.support.registry.ZoneAwareClusterInvoker;
-//import org.apache.dubbo.rpc.cluster.support.wrapper.MockClusterInvoker;
 import org.apache.dubbo.rpc.cluster.support.wrapper.ScopeClusterInvoker;
 import org.apache.dubbo.rpc.listener.ListenerInvokerWrapper;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -1041,6 +1040,7 @@ class ReferenceConfigTest {
         referenceConfig1.setRegistry(new RegistryConfig(zkUrl1));
         referenceConfig1.setScopeModel(moduleModel);
         referenceConfig1.setScope("remote");
+        referenceConfig1.setTimeout(30000);
         Object object1 = referenceConfig1.get();
 
         java.lang.reflect.Method callBean1 = object1.getClass().getDeclaredMethod("call", requestClazzOrigin);

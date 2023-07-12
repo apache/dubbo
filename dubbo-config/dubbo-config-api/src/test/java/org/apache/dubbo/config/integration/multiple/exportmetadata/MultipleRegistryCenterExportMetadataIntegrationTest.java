@@ -39,7 +39,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.apache.dubbo.rpc.Constants.SCOPE_LOCAL;
 
@@ -159,13 +158,9 @@ class MultipleRegistryCenterExportMetadataIntegrationTest implements Integration
         // 1. Metadata Service exporter with Injvm protocol
         // 2. MultipleRegistryCenterExportMetadataService exporter with Injvm protocol
         Assertions.assertEquals(exporterListener.getExportedExporters().size(), 2);
-        List<Exporter<?>> injvmExporters = exporterListener.getExportedExporters()
-            .stream()
-            .filter(
-                exporter -> PROTOCOL_NAME.equalsIgnoreCase(exporter.getInvoker().getUrl().getProtocol())
-            ).collect(Collectors.toList());
+        List<Exporter<?>> injvmExporters = exporterListener.getExportedExporters();
         // Make sure there two injvmExporters
-        Assertions.assertEquals(injvmExporters.size(), 2);
+        Assertions.assertEquals(2, injvmExporters.size());
     }
 
     @AfterEach

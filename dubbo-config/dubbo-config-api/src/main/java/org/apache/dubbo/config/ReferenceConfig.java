@@ -57,12 +57,12 @@ import org.apache.dubbo.rpc.support.ProtocolUtils;
 import java.beans.Transient;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.TreeSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TreeSet;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
@@ -561,8 +561,6 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                 url = url.setServiceModel(consumerModel);
                 if (UrlUtils.isRegistry(url)) {
                     urls.add(url.putAttribute(REFER_KEY, referenceParameters));
-                    // add an invalid registry config into config manager to indicate service discovery enabled or not.
-                    getScopeModel().getConfigManager().addConfig(new RegistryConfig());
                 } else {
                     URL peerUrl = getScopeModel().getApplicationModel().getBeanFactory().getBean(ClusterUtils.class).mergeUrl(url, referenceParameters);
                     peerUrl = peerUrl.putAttribute(PEER_KEY, true);

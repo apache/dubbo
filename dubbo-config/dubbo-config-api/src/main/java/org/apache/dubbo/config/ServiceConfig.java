@@ -369,7 +369,17 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                 mapServiceName(url, serviceNameMapping, scheduledExecutor);
             }
         });
+
         onExported();
+
+        if (hasRegistrySpecified()) {
+            getScopeModel().getDeployer().getApplicationDeployer().exportMetadataService();
+        }
+    }
+
+    public boolean hasRegistrySpecified() {
+        return CollectionUtils.isNotEmpty(this.getRegistries())
+            || CollectionUtils.isNotEmpty(getScopeModel().getApplicationModel().getApplicationConfigManager().getRegistries());
     }
 
     protected void mapServiceName(URL url, ServiceNameMapping serviceNameMapping, ScheduledExecutorService scheduledExecutor) {
