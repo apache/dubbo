@@ -50,9 +50,10 @@ public final class DefaultSubDispatcher extends SimpleMetricsEventMulticaster {
                 return event instanceof RequestBeforeEvent;
             }
 
+
+            private final MetricsPlaceValue dynamicPlaceType = MetricsPlaceValue.of(CommonConstants.CONSUMER, MetricsLevel.METHOD);
             @Override
             public void onEvent(RequestBeforeEvent event) {
-                MetricsPlaceValue dynamicPlaceType = MetricsPlaceValue.of(CommonConstants.CONSUMER, MetricsLevel.METHOD);
                 MetricsSupport.increment(METRIC_REQUESTS_SERVICE_UNAVAILABLE_FAILED, dynamicPlaceType, (MethodMetricsCollector) collector, event);
             }
         });

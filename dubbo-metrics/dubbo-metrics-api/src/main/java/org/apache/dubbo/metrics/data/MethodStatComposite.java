@@ -26,7 +26,6 @@ import org.apache.dubbo.metrics.model.sample.CounterMetricSample;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.metrics.report.AbstractMetricsExport;
-import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.ArrayList;
@@ -55,11 +54,16 @@ public class MethodStatComposite extends AbstractMetricsExport {
         metricsKeyWrappers.forEach(appKey -> methodNumStats.put(appKey, new ConcurrentHashMap<>()));
     }
 
-    public void incrementMethodKey(MetricsKeyWrapper wrapper, Invocation invocation, int size) {
+    public void incrementMethodKey(MetricsKeyWrapper wrapper, MethodMetric methodMetric, int size) {
         if (!methodNumStats.containsKey(wrapper)) {
             return;
         }
-        methodNumStats.get(wrapper).computeIfAbsent(new MethodMetric(getApplicationModel(), invocation), k -> new AtomicLong(0L)).getAndAdd(size);
+        AtomicLong stat = methodNumStats.get(wrapper).get(methodMetric);
+        if (stat == null) {
+            methodNumStats.get(wrapper).putIfAbsent(methodMetric, new AtomicLong(0L));
+            stat = methodNumStats.get(wrapper).get(methodMetric);
+        }
+        stat.getAndAdd(size);
 //        MetricsSupport.fillZero(methodNumStats);
     }
 

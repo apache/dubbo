@@ -20,6 +20,7 @@ package org.apache.dubbo.metrics.model;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Metric class for service.
@@ -58,11 +59,15 @@ public class ServiceKeyMetric extends ApplicationMetric {
         return serviceKey.equals(that.serviceKey);
     }
 
+
+    private volatile int hashCode = 0;
+
     @Override
     public int hashCode() {
-        int result = getApplicationName().hashCode();
-        result = 31 * result + serviceKey.hashCode();
-        return result;
+        if (hashCode == 0) {
+            hashCode = Objects.hash(getApplicationName(), serviceKey);
+        }
+        return hashCode;
     }
 
     @Override

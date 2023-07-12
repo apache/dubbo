@@ -72,8 +72,13 @@ public class ApplicationMetric implements Metric {
         return Objects.equals(getApplicationName(), that.applicationModel.getApplicationName());
     }
 
+    private volatile int hashCode;
+
     @Override
     public int hashCode() {
-        return Objects.hash(getApplicationName());
+        if (hashCode == 0) {
+            hashCode = Objects.hash(getApplicationName());
+        }
+        return hashCode;
     }
 }

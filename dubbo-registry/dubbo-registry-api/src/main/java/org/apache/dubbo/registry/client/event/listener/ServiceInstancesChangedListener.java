@@ -93,7 +93,6 @@ public class ServiceInstancesChangedListener {
     private final Set<ServiceInstanceNotificationCustomizer> serviceInstanceNotificationCustomizers;
     private final ApplicationModel applicationModel;
 
-
     public ServiceInstancesChangedListener(Set<String> serviceNames, ServiceDiscovery serviceDiscovery) {
         this.serviceNames = serviceNames;
         this.serviceDiscovery = serviceDiscovery;
