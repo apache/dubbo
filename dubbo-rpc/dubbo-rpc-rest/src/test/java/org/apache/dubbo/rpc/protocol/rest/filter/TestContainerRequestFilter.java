@@ -14,17 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.rpc.protocol.rest.filter;
 
-package org.apache.dubbo.rpc.protocol.rest.exception.mapper;
+import javax.annotation.Priority;
+import javax.ws.rs.Priorities;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.container.ContainerRequestFilter;
+import javax.ws.rs.core.Response;
+import java.io.IOException;
 
 
-public interface ExceptionHandler<E extends Throwable> {
+@Priority(Priorities.USER)
+public class TestContainerRequestFilter implements ContainerRequestFilter {
+    @Override
+    public void filter(ContainerRequestContext requestContext) throws IOException {
 
-    Object result(E exception);
-
-    default int status() {
-        return 200;
+        requestContext.abortWith(Response.status(200).entity("return-success").build());
     }
-
-
 }

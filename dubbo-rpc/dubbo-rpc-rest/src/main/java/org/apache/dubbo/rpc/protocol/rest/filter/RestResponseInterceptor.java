@@ -14,17 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.rpc.protocol.rest.filter;
 
-package org.apache.dubbo.rpc.protocol.rest.exception.mapper;
+import org.apache.dubbo.common.extension.ExtensionScope;
+import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.rpc.protocol.rest.filter.context.RestInterceptContext;
 
+/**
+ * RestResponseInterceptorChain will take effect before result is written to response
+ */
+@SPI(scope = ExtensionScope.FRAMEWORK)
+public interface RestResponseInterceptor {
 
-public interface ExceptionHandler<E extends Throwable> {
-
-    Object result(E exception);
-
-    default int status() {
-        return 200;
-    }
-
+    void intercept(RestInterceptContext restResponseInterceptor) throws Exception;
 
 }

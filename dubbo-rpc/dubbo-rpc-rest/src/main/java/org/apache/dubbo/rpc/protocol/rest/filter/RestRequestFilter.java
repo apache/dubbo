@@ -14,17 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.rpc.protocol.rest.filter;
 
-package org.apache.dubbo.rpc.protocol.rest.exception.mapper;
+import org.apache.dubbo.common.extension.ExtensionScope;
+import org.apache.dubbo.common.extension.SPI;
 
-
-public interface ExceptionHandler<E extends Throwable> {
-
-    Object result(E exception);
-
-    default int status() {
-        return 200;
-    }
-
+/**
+ * Rest filter will be invoked before http handler
+ */
+@SPI(scope = ExtensionScope.FRAMEWORK)
+public interface RestRequestFilter extends RestFilter {
 
 }

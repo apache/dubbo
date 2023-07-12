@@ -14,17 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.rpc.protocol.rest.filter;
 
-package org.apache.dubbo.rpc.protocol.rest.exception.mapper;
+import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.rpc.protocol.rest.filter.context.RestInterceptContext;
 
+import static org.apache.dubbo.rpc.protocol.rest.filter.ServiceInvokeRestFilter.writeResult;
 
-public interface ExceptionHandler<E extends Throwable> {
+/**
+ * default RestResponseInterceptor
+ */
+@Activate(value = "invoke", order = Integer.MAX_VALUE)
+public class ServiceInvokeRestResponseInterceptor implements RestResponseInterceptor {
 
-    Object result(E exception);
+    @Override
+    public void intercept(RestInterceptContext restInterceptContext) throws Exception {
 
-    default int status() {
-        return 200;
+        writeResult(restInterceptContext.getResponse(), restInterceptContext.getRequestFacade(), restInterceptContext.getUrl(), restInterceptContext.getResult(), restInterceptContext.getRpcInvocation().getReturnType());
     }
-
-
 }

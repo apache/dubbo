@@ -14,17 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.rpc.protocol.rest.filter;
 
-package org.apache.dubbo.rpc.protocol.rest.exception.mapper;
+import org.apache.dubbo.rpc.protocol.rest.filter.context.RestFilterContext;
 
+/**
+ * Rest filter is extended by rest request & response filter
+ */
+public interface RestFilter {
 
-public interface ExceptionHandler<E extends Throwable> {
-
-    Object result(E exception);
-
-    default int status() {
-        return 200;
-    }
-
+    void filter(RestFilterContext restFilterContext) throws Exception;
 
 }

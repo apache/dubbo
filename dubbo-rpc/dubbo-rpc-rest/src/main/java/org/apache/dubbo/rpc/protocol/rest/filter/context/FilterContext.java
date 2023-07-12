@@ -14,17 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.rpc.protocol.rest.filter.context;
 
-package org.apache.dubbo.rpc.protocol.rest.exception.mapper;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.rpc.protocol.rest.deploy.ServiceDeployer;
+import org.apache.dubbo.rpc.protocol.rest.netty.HttpResponse;
+import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
 
-
-public interface ExceptionHandler<E extends Throwable> {
-
-    Object result(E exception);
-
-    default int status() {
-        return 200;
-    }
+public interface FilterContext {
 
 
+    URL getUrl();
+
+    RequestFacade getRequestFacade();
+
+    HttpResponse getResponse();
+
+    ServiceDeployer getServiceDeployer();
+
+    boolean complete();
+
+    void setComplete(boolean complete);
 }
