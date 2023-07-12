@@ -68,9 +68,9 @@ public class AggregateMetricsCollector implements MetricsCollector<RequestEvent>
     private static final Integer DEFAULT_TIME_WINDOW_SECONDS = 120;
     private static final Integer DEFAULT_QPS_TIME_WINDOW_MILL_SECONDS = 3000;
     private Boolean collectEnabled = null;
-    private boolean enableQPS;
-    private boolean enableRTPXX;
-    private boolean enableRT;
+    private boolean enableQps;
+    private boolean enableRtPxx;
+    private boolean enableRt;
     private boolean enableRequest;
 
     private final ConcurrentMap<MethodMetric, TimeWindowAggregator> rtAgr = new ConcurrentHashMap<>();
@@ -91,9 +91,9 @@ public class AggregateMetricsCollector implements MetricsCollector<RequestEvent>
                     DEFAULT_TIME_WINDOW_SECONDS : aggregation.getTimeWindowSeconds();
                 this.qpsTimeWindowMillSeconds = aggregation.getQpsTimeWindowMillSeconds() == null ?
                     DEFAULT_QPS_TIME_WINDOW_MILL_SECONDS : aggregation.getQpsTimeWindowMillSeconds();
-                this.enableQPS = aggregation.getEnableQPS() == null || aggregation.getEnableQPS();
-                this.enableRTPXX = aggregation.getEnableRTPXX() == null || aggregation.getEnableRTPXX();
-                this.enableRT = aggregation.getEnableRT() == null || aggregation.getEnableRT();
+                this.enableQps = aggregation.getEnableQps() == null || aggregation.getEnableQps();
+                this.enableRtPxx = aggregation.getEnableRtPxx() == null || aggregation.getEnableRtPxx();
+                this.enableRt = aggregation.getEnableRt() == null || aggregation.getEnableRt();
                 this.enableRequest = aggregation.getEnableRequest() == null || aggregation.getEnableRequest();
             }
         }
@@ -122,7 +122,7 @@ public class AggregateMetricsCollector implements MetricsCollector<RequestEvent>
 
     @Override
     public void onEvent(RequestEvent event) {
-        if (enableQPS) {
+        if (enableQps) {
             MethodMetric metric = calcWindowCounter(event, MetricsKey.METRIC_REQUESTS);
             TimeWindowCounter qpsCounter = ConcurrentHashMapUtils.computeIfAbsent(qps, metric,
                 methodMetric -> new TimeWindowCounter(bucketNum, qpsTimeWindowMillSeconds));
@@ -151,7 +151,7 @@ public class AggregateMetricsCollector implements MetricsCollector<RequestEvent>
             }
             calcWindowCounter(event, targetKey);
         }
-        if (enableRT || enableRTPXX) {
+        if (enableRt || enableRtPxx) {
             onRTEvent(event);
         }
     }
@@ -159,13 +159,13 @@ public class AggregateMetricsCollector implements MetricsCollector<RequestEvent>
     private void onRTEvent(RequestEvent event) {
         MethodMetric metric = new MethodMetric(applicationModel, event.getAttachmentValue(MetricsConstants.INVOCATION));
         long responseTime = event.getTimePair().calc();
-        if (enableRT) {
+        if (enableRt) {
             TimeWindowQuantile quantile = ConcurrentHashMapUtils.computeIfAbsent(rt, metric,
                 k -> new TimeWindowQuantile(DEFAULT_COMPRESSION, bucketNum, timeWindowSeconds));
             quantile.add(responseTime);
         }
 
-        if (enableRTPXX) {
+        if (enableRtPxx) {
             TimeWindowAggregator timeWindowAggregator = ConcurrentHashMapUtils.computeIfAbsent(rtAgr, metric,
                 methodMetric -> new TimeWindowAggregator(bucketNum, timeWindowSeconds));
             timeWindowAggregator.add(responseTime);

@@ -25,11 +25,11 @@ public class AggregationConfig implements Serializable {
      */
     private Boolean enabled;
 
-    private Boolean enableQPS;
+    private Boolean enableQps;
 
-    private Boolean enableRTPXX;
+    private Boolean enableRtPxx;
 
-    private Boolean enableRT;
+    private Boolean enableRt;
 
     private Boolean enableRequest;
 
@@ -72,28 +72,28 @@ public class AggregationConfig implements Serializable {
         this.timeWindowSeconds = timeWindowSeconds;
     }
 
-    public Boolean getEnableQPS() {
-        return enableQPS;
+    public Boolean getEnableQps() {
+        return enableQps;
     }
 
-    public void setEnableQPS(Boolean enableQPS) {
-        this.enableQPS = enableQPS;
+    public void setEnableQps(Boolean enableQps) {
+        this.enableQps = enableQps;
     }
 
-    public Boolean getEnableRTPXX() {
-        return enableRTPXX;
+    public Boolean getEnableRtPxx() {
+        return enableRtPxx;
     }
 
-    public void setEnableRTPXX(Boolean enableRTPXX) {
-        this.enableRTPXX = enableRTPXX;
+    public void setEnableRtPxx(Boolean enableRtPxx) {
+        this.enableRtPxx = enableRtPxx;
     }
 
-    public Boolean getEnableRT() {
-        return enableRT;
+    public Boolean getEnableRt() {
+        return enableRt;
     }
 
-    public void setEnableRT(Boolean enableRT) {
-        this.enableRT = enableRT;
+    public void setEnableRt(Boolean enableRt) {
+        this.enableRt = enableRt;
     }
 
     public Boolean getEnableRequest() {
