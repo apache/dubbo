@@ -122,8 +122,6 @@ public class NettyServer extends AbstractServer {
                 Map<String, Long> dataMap = new HashMap<>();
                 dataMap.put(MetricsKey.NETTY_ALLOCATOR_HEAP_MEMORY_USED.getName(), PooledByteBufAllocator.DEFAULT.metric().usedHeapMemory());
                 dataMap.put(MetricsKey.NETTY_ALLOCATOR_DIRECT_MEMORY_USED.getName(), PooledByteBufAllocator.DEFAULT.metric().usedDirectMemory());
-                dataMap.put(MetricsKey.NETTY_ALLOCATOR_PINNED_HEAP_MEMORY.getName(), PooledByteBufAllocator.DEFAULT.pinnedHeapMemory());
-                dataMap.put(MetricsKey.NETTY_ALLOCATOR_PINNED_DIRECT_MEMORY.getName(), PooledByteBufAllocator.DEFAULT.pinnedDirectMemory());
                 dataMap.put(MetricsKey.NETTY_ALLOCATOR_HEAP_ARENAS_NUM.getName(), (long) PooledByteBufAllocator.DEFAULT.numHeapArenas());
                 dataMap.put(MetricsKey.NETTY_ALLOCATOR_DIRECT_ARENAS_NUM.getName(), (long) PooledByteBufAllocator.DEFAULT.numDirectArenas());
                 dataMap.put(MetricsKey.NETTY_ALLOCATOR_NORMAL_CACHE_SIZE.getName(), (long) PooledByteBufAllocator.DEFAULT.normalCacheSize());
