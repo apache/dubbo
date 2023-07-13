@@ -112,6 +112,8 @@ public class MetricsSupport {
             if (e.isNetwork()) {
                 targetKey = MetricsKey.METRIC_REQUESTS_NETWORK_FAILED;
             }
+        } else {
+            targetKey = MetricsKey.METRIC_REQUEST_BUSINESS_FAILED;
         }
         return targetKey;
     }
@@ -135,6 +137,8 @@ public class MetricsSupport {
             if (e.isNetwork()) {
                 targetKey = MetricsKey.METRIC_REQUESTS_NETWORK_FAILED_AGG;
             }
+        } else {
+            targetKey = MetricsKey.METRIC_REQUEST_BUSINESS_FAILED_AGG;
         }
         return targetKey;
     }
