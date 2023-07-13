@@ -137,7 +137,7 @@ public class NettyServer extends AbstractServer {
 
     private boolean isSupportMetrics() {
         return ClassUtils.isPresent("io.netty.buffer.PooledByteBufAllocatorMetric", NettyServer.class.getClassLoader()) &&
-            ClassUtils.isPresent("io.netty.channel.ServerChannelRecvByteBufAllocator", NettyServer.class.getClassLoader());
+            ClassUtils.isPresent("io.netty.handler.codec.compression.EncoderUtil", NettyServer.class.getClassLoader());
     }
 
     protected EventLoopGroup createBossGroup() {
