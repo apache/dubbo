@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.metrics.event.MetricsEventBus;
@@ -116,18 +117,26 @@ public class NettyServer extends AbstractServer {
 
         // metrics
         ApplicationModel applicationModel = ApplicationModel.defaultModel();
-        MetricsEventBus.post(NettyEvent.toNettyEvent(applicationModel), () -> {
-            Map<String, Long> dataMap = new HashMap<>();
-            dataMap.put(MetricsKey.NETTY_ALLOCATOR_HEAP_MEMORY_USED.getName(), PooledByteBufAllocator.DEFAULT.metric().usedHeapMemory());
-            dataMap.put(MetricsKey.NETTY_ALLOCATOR_DIRECT_MEMORY_USED.getName(), PooledByteBufAllocator.DEFAULT.metric().usedDirectMemory());
-            dataMap.put(MetricsKey.NETTY_ALLOCATOR_HEAP_ARENAS_NUM.getName(), (long) PooledByteBufAllocator.DEFAULT.numHeapArenas());
-            dataMap.put(MetricsKey.NETTY_ALLOCATOR_DIRECT_ARENAS_NUM.getName(), (long) PooledByteBufAllocator.DEFAULT.numDirectArenas());
-            dataMap.put(MetricsKey.NETTY_ALLOCATOR_NORMAL_CACHE_SIZE.getName(), (long) PooledByteBufAllocator.DEFAULT.normalCacheSize());
-            dataMap.put(MetricsKey.NETTY_ALLOCATOR_SMALL_CACHE_SIZE.getName(), (long) PooledByteBufAllocator.DEFAULT.smallCacheSize());
-            dataMap.put(MetricsKey.NETTY_ALLOCATOR_THREAD_LOCAL_CACHES_NUM.getName(), (long) PooledByteBufAllocator.DEFAULT.numThreadLocalCaches());
-            dataMap.put(MetricsKey.NETTY_ALLOCATOR_CHUNK_SIZE.getName(), (long) PooledByteBufAllocator.DEFAULT.chunkSize());
-            return dataMap;
-        });
+        if(isSupportMetrics()){
+            MetricsEventBus.post(NettyEvent.toNettyEvent(applicationModel), () -> {
+                Map<String, Long> dataMap = new HashMap<>();
+                dataMap.put(MetricsKey.NETTY_ALLOCATOR_HEAP_MEMORY_USED.getName(), PooledByteBufAllocator.DEFAULT.metric().usedHeapMemory());
+                dataMap.put(MetricsKey.NETTY_ALLOCATOR_DIRECT_MEMORY_USED.getName(), PooledByteBufAllocator.DEFAULT.metric().usedDirectMemory());
+                dataMap.put(MetricsKey.NETTY_ALLOCATOR_PINNED_HEAP_MEMORY.getName(), PooledByteBufAllocator.DEFAULT.pinnedHeapMemory());
+                dataMap.put(MetricsKey.NETTY_ALLOCATOR_PINNED_DIRECT_MEMORY.getName(), PooledByteBufAllocator.DEFAULT.pinnedDirectMemory());
+                dataMap.put(MetricsKey.NETTY_ALLOCATOR_HEAP_ARENAS_NUM.getName(), (long) PooledByteBufAllocator.DEFAULT.numHeapArenas());
+                dataMap.put(MetricsKey.NETTY_ALLOCATOR_DIRECT_ARENAS_NUM.getName(), (long) PooledByteBufAllocator.DEFAULT.numDirectArenas());
+                dataMap.put(MetricsKey.NETTY_ALLOCATOR_NORMAL_CACHE_SIZE.getName(), (long) PooledByteBufAllocator.DEFAULT.normalCacheSize());
+                dataMap.put(MetricsKey.NETTY_ALLOCATOR_SMALL_CACHE_SIZE.getName(), (long) PooledByteBufAllocator.DEFAULT.smallCacheSize());
+                dataMap.put(MetricsKey.NETTY_ALLOCATOR_THREAD_LOCAL_CACHES_NUM.getName(), (long) PooledByteBufAllocator.DEFAULT.numThreadLocalCaches());
+                dataMap.put(MetricsKey.NETTY_ALLOCATOR_CHUNK_SIZE.getName(), (long) PooledByteBufAllocator.DEFAULT.chunkSize());
+                return dataMap;
+            });
+        }
+    }
+
+    private boolean isSupportMetrics() {
+        return ClassUtils.isPresent("io.netty.buffer.PooledByteBufAllocatorMetric", NettyServer.class.getClassLoader());
     }
 
     protected EventLoopGroup createBossGroup() {
