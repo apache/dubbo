@@ -56,8 +56,9 @@ import static org.apache.dubbo.metrics.model.MetricsCategory.RT;
  * This collector only enabled when metrics aggregation config is enabled.
  */
 public class AggregateMetricsCollector implements MetricsCollector<RequestEvent> {
-    private int bucketNum;
-    private int timeWindowSeconds;
+    private int bucketNum = DEFAULT_BUCKET_NUM;
+    private int timeWindowSeconds = DEFAULT_TIME_WINDOW_SECONDS;
+    private int qpsTimeWindowMillSeconds = DEFAULT_QPS_TIME_WINDOW_MILL_SECONDS;
     private final Map<MetricsKeyWrapper, ConcurrentHashMap<MethodMetric, TimeWindowCounter>> methodTypeCounter = new ConcurrentHashMap<>();
     private final ConcurrentMap<MethodMetric, TimeWindowQuantile> rt = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<MethodMetric, TimeWindowCounter> qps = new ConcurrentHashMap<>();
@@ -65,7 +66,13 @@ public class AggregateMetricsCollector implements MetricsCollector<RequestEvent>
     private static final Integer DEFAULT_COMPRESSION = 100;
     private static final Integer DEFAULT_BUCKET_NUM = 10;
     private static final Integer DEFAULT_TIME_WINDOW_SECONDS = 120;
+    private static final Integer DEFAULT_QPS_TIME_WINDOW_MILL_SECONDS = 3000;
     private Boolean collectEnabled = null;
+    private boolean enableQps;
+    private boolean enableRtPxx;
+    private boolean enableRt;
+    private boolean enableRequest;
+
     private final ConcurrentMap<MethodMetric, TimeWindowAggregator> rtAgr = new ConcurrentHashMap<>();
 
 
@@ -78,8 +85,15 @@ public class AggregateMetricsCollector implements MetricsCollector<RequestEvent>
             if (optional.isPresent()) {
                 registerListener();
                 AggregationConfig aggregation = optional.get().getAggregation();
-                this.bucketNum = aggregation.getBucketNum() == null ? DEFAULT_BUCKET_NUM : aggregation.getBucketNum();
-                this.timeWindowSeconds = aggregation.getTimeWindowSeconds() == null ? DEFAULT_TIME_WINDOW_SECONDS : aggregation.getTimeWindowSeconds();
+                this.bucketNum = Optional.ofNullable(aggregation.getBucketNum()).orElse(DEFAULT_BUCKET_NUM);
+                this.timeWindowSeconds = Optional.ofNullable(aggregation.getTimeWindowSeconds())
+                    .orElse(DEFAULT_TIME_WINDOW_SECONDS);
+                this.qpsTimeWindowMillSeconds = Optional.ofNullable(aggregation.getQpsTimeWindowMillSeconds())
+                    .orElse(DEFAULT_QPS_TIME_WINDOW_MILL_SECONDS);
+                this.enableQps = Optional.ofNullable(aggregation.getEnableQps()).orElse(true);
+                this.enableRtPxx = Optional.ofNullable(aggregation.getEnableRtPxx()).orElse(true);
+                this.enableRt = Optional.ofNullable(aggregation.getEnableRt()).orElse(true);
+                this.enableRequest = Optional.ofNullable(aggregation.getEnableRequest()).orElse(true);
             }
         }
     }
@@ -89,7 +103,7 @@ public class AggregateMetricsCollector implements MetricsCollector<RequestEvent>
             this.collectEnabled = collectEnabled;
         }
     }
-    
+
 
     @Override
     public boolean isCollectEnabled() {
@@ -107,9 +121,12 @@ public class AggregateMetricsCollector implements MetricsCollector<RequestEvent>
 
     @Override
     public void onEvent(RequestEvent event) {
-        MethodMetric metric = calcWindowCounter(event, MetricsKey.METRIC_REQUESTS);
-        TimeWindowCounter qpsCounter = ConcurrentHashMapUtils.computeIfAbsent(qps, metric, methodMetric -> new TimeWindowCounter(bucketNum, timeWindowSeconds));
-        qpsCounter.increment();
+        if (enableQps) {
+            MethodMetric metric = calcWindowCounter(event, MetricsKey.METRIC_REQUESTS);
+            TimeWindowCounter qpsCounter = ConcurrentHashMapUtils.computeIfAbsent(qps, metric,
+                methodMetric -> new TimeWindowCounter(bucketNum, qpsTimeWindowMillSeconds));
+            qpsCounter.increment();
+        }
     }
 
     @Override
@@ -125,23 +142,33 @@ public class AggregateMetricsCollector implements MetricsCollector<RequestEvent>
 
     @Override
     public void onEventError(RequestEvent event) {
-        MetricsKey targetKey = MetricsKey.METRIC_REQUESTS_FAILED;
-        Object throwableObj = event.getAttachmentValue(METRIC_THROWABLE);
-        if (throwableObj != null) {
-            targetKey = MetricsSupport.getAggMetricsKey((Throwable) throwableObj);
+        if (enableRequest) {
+            MetricsKey targetKey = MetricsKey.METRIC_REQUESTS_FAILED;
+            Object throwableObj = event.getAttachmentValue(METRIC_THROWABLE);
+            if (throwableObj != null) {
+                targetKey = MetricsSupport.getAggMetricsKey((Throwable) throwableObj);
+            }
+            calcWindowCounter(event, targetKey);
         }
-        calcWindowCounter(event, targetKey);
-        onRTEvent(event);
+        if (enableRt || enableRtPxx) {
+            onRTEvent(event);
+        }
     }
 
     private void onRTEvent(RequestEvent event) {
         MethodMetric metric = new MethodMetric(applicationModel, event.getAttachmentValue(MetricsConstants.INVOCATION));
         long responseTime = event.getTimePair().calc();
-        TimeWindowQuantile quantile = ConcurrentHashMapUtils.computeIfAbsent(rt, metric, k -> new TimeWindowQuantile(DEFAULT_COMPRESSION, bucketNum, timeWindowSeconds));
-        quantile.add(responseTime);
+        if (enableRt) {
+            TimeWindowQuantile quantile = ConcurrentHashMapUtils.computeIfAbsent(rt, metric,
+                k -> new TimeWindowQuantile(DEFAULT_COMPRESSION, bucketNum, timeWindowSeconds));
+            quantile.add(responseTime);
+        }
 
-        TimeWindowAggregator timeWindowAggregator = ConcurrentHashMapUtils.computeIfAbsent(rtAgr, metric, methodMetric -> new TimeWindowAggregator(bucketNum, timeWindowSeconds));
-        timeWindowAggregator.add(responseTime);
+        if (enableRtPxx) {
+            TimeWindowAggregator timeWindowAggregator = ConcurrentHashMapUtils.computeIfAbsent(rtAgr, metric,
+                methodMetric -> new TimeWindowAggregator(bucketNum, timeWindowSeconds));
+            timeWindowAggregator.add(responseTime);
+        }
     }
 
 
@@ -152,7 +179,8 @@ public class AggregateMetricsCollector implements MetricsCollector<RequestEvent>
 
         ConcurrentMap<MethodMetric, TimeWindowCounter> counter = methodTypeCounter.computeIfAbsent(metricsKeyWrapper, k -> new ConcurrentHashMap<>());
 
-        TimeWindowCounter windowCounter = ConcurrentHashMapUtils.computeIfAbsent(counter, metric, methodMetric -> new TimeWindowCounter(bucketNum, timeWindowSeconds));
+        TimeWindowCounter windowCounter = ConcurrentHashMapUtils.computeIfAbsent(counter, metric,
+            methodMetric -> new TimeWindowCounter(bucketNum, timeWindowSeconds));
         windowCounter.increment();
         return metric;
     }
@@ -196,7 +224,11 @@ public class AggregateMetricsCollector implements MetricsCollector<RequestEvent>
 
     private void collectQPS(List<MetricSample> list) {
         qps.forEach((k, v) -> list.add(new GaugeMetricSample<>(MetricsKey.METRIC_QPS.getNameByType(k.getSide()),
-            MetricsKey.METRIC_QPS.getDescription(), k.getTags(), QPS, v, value -> value.get() / value.bucketLivedSeconds())));
+            MetricsKey.METRIC_QPS.getDescription(), k.getTags(), QPS, v, value -> {
+            double total = value.get();
+            long millSeconds = value.bucketLivedMillSeconds();
+            return total / millSeconds * 1000;
+        })));
     }
 
     private void collectRT(List<MetricSample> list) {
@@ -211,7 +243,7 @@ public class AggregateMetricsCollector implements MetricsCollector<RequestEvent>
                 MetricsKey.METRIC_RT_P50.getDescription(), k.getTags(), RT, v, value -> value.quantile(0.50)));
         });
 
-        rtAgr.forEach((k,v)->{
+        rtAgr.forEach((k, v) -> {
             list.add(new GaugeMetricSample<>(MetricsKey.METRIC_RT_MIN_AGG.getNameByType(k.getSide()),
                 MetricsKey.METRIC_RT_MIN_AGG.getDescription(), k.getTags(), RT, v, value -> v.get().getMin()));
 
