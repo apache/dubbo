@@ -34,6 +34,7 @@ public class StubMethodDescriptor implements MethodDescriptor, PackableMethod {
     private final String methodName;
     private final String[] compatibleParamSignatures;
     private final Class<?>[] parameterClasses;
+    private final Type[] genericParameterTypes;
     private final Class<?> returnClass;
     private final Type[] returnTypes;
     private final String paramDesc;
@@ -44,14 +45,14 @@ public class StubMethodDescriptor implements MethodDescriptor, PackableMethod {
     private final UnPack responseUnpack;
 
     public StubMethodDescriptor(String methodName,
-        Class<?> requestClass,
-        Class<?> responseClass,
-        StubServiceDescriptor serviceDescriptor,
-        RpcType rpcType,
-        Pack requestPack,
-        Pack responsePack,
-        UnPack requestUnpack,
-        UnPack responseUnpack) {
+                                Class<?> requestClass,
+                                Class<?> responseClass,
+                                StubServiceDescriptor serviceDescriptor,
+                                RpcType rpcType,
+                                Pack requestPack,
+                                Pack responsePack,
+                                UnPack requestUnpack,
+                                UnPack responseUnpack) {
         this.methodName = methodName;
         this.serviceDescriptor = serviceDescriptor;
         this.rpcType = rpcType;
@@ -60,6 +61,7 @@ public class StubMethodDescriptor implements MethodDescriptor, PackableMethod {
         this.responseUnpack = responseUnpack;
         this.requestUnpack = requestUnpack;
         this.parameterClasses = new Class<?>[]{requestClass};
+        this.genericParameterTypes = new Type[]{requestClass};
         this.returnClass = responseClass;
         this.paramDesc = ReflectUtils.getDesc(parameterClasses);
         this.compatibleParamSignatures = Stream.of(parameterClasses).map(Class::getName).toArray(String[]::new);
@@ -86,6 +88,11 @@ public class StubMethodDescriptor implements MethodDescriptor, PackableMethod {
     @Override
     public Class<?>[] getParameterClasses() {
         return parameterClasses;
+    }
+
+    @Override
+    public Type[] getGenericParameterTypes() {
+        return genericParameterTypes;
     }
 
     @Override

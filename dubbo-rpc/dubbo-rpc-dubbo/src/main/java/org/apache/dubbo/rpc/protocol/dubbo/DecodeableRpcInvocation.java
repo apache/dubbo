@@ -46,6 +46,9 @@ import org.apache.dubbo.rpc.support.RpcUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -154,8 +157,10 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
             }
             Object[] args = DubboCodec.EMPTY_OBJECT_ARRAY;
             Class<?>[] pts = DubboCodec.EMPTY_CLASS_ARRAY;
+            Type[][] parameterTypes;
             if (desc.length() > 0) {
-                pts = drawPts(path, version, desc, pts);
+                parameterTypes = drawPts(path, version, desc, pts);
+                pts = removeActualParameterType(parameterTypes);
                 if (pts == DubboCodec.EMPTY_CLASS_ARRAY) {
                     if (RpcUtils.isGenericCall(desc, getMethodName())) {
                         pts = DubboCodec.GENERIC_PTS_ARRAY;
@@ -165,7 +170,7 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
                         throw new IllegalArgumentException("Service not found:" + path + ", " + getMethodName());
                     }
                 }
-                args = drawArgs(in, pts);
+                args = drawArgs(in, parameterTypes);
             }
             setParameterTypes(pts);
 
@@ -200,10 +205,17 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
         setTargetServiceUniqueName(targetServiceName);
     }
 
-    protected Class<?>[] drawPts(String path, String version, String desc, Class<?>[] pts) {
+    protected Type[][] drawPts(String path, String version, String desc, Class<?>[] pts) {
         FrameworkServiceRepository repository = frameworkModel.getServiceRepository();
         List<ProviderModel> providerModels = repository.lookupExportedServicesWithoutGroup(keyWithoutGroup(path, version));
         ServiceDescriptor serviceDescriptor = null;
+        Type[][] parameterTypes = new Type[pts.length][2];
+
+        for (int i = 0; i < pts.length; i++) {
+            parameterTypes[i][0] = pts[i];
+            parameterTypes[i][1] = pts[i];
+        }
+
         if (CollectionUtils.isNotEmpty(providerModels)) {
             for (ProviderModel providerModel : providerModels) {
                 serviceDescriptor = providerModel.getServiceModel();
@@ -228,6 +240,21 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
             MethodDescriptor methodDescriptor = serviceDescriptor.getMethod(getMethodName(), desc);
             if (methodDescriptor != null) {
                 pts = methodDescriptor.getParameterClasses();
+                parameterTypes = new Type[pts.length][2];
+                Type[] genericParameterTypes = methodDescriptor.getGenericParameterTypes();
+                for (int i = 0; i < genericParameterTypes.length; i++) {
+                    if (genericParameterTypes[i] instanceof ParameterizedType) {
+                        Type actualArgType = ((ParameterizedType) genericParameterTypes[i]).getActualTypeArguments()[0];
+                        parameterTypes[i][0] = ((ParameterizedType) genericParameterTypes[i]).getRawType();
+                        parameterTypes[i][1] = actualArgType;
+                    } else if (genericParameterTypes[i] instanceof TypeVariable) {
+                        parameterTypes[i][0] = ((TypeVariable<?>) genericParameterTypes[i]).getBounds()[0];
+                        parameterTypes[i][1] = genericParameterTypes[i];
+                    } else {
+                        parameterTypes[i][0] = genericParameterTypes[i];
+                        parameterTypes[i][1] = genericParameterTypes[i];
+                    }
+                }
                 this.setReturnTypes(methodDescriptor.getReturnTypes());
 
                 // switch TCCL
@@ -257,14 +284,25 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
                 }
             }
         }
+        return parameterTypes;
+    }
+
+    private Class<?>[] removeActualParameterType(Type[][] parameterTypes) {
+        if (parameterTypes.length == 0) {
+            return DubboCodec.EMPTY_CLASS_ARRAY;
+        }
+        Class<?>[] pts = new Class<?>[parameterTypes.length];
+        for (int i = 0; i < parameterTypes.length; i++) {
+            pts[i] = parameterTypes[i][0].getClass();
+        }
         return pts;
     }
 
-    protected Object[] drawArgs(ObjectInput in, Class<?>[] pts) throws IOException, ClassNotFoundException {
+    protected Object[] drawArgs(ObjectInput in, Type[][] pts) throws IOException, ClassNotFoundException {
         Object[] args;
         args = new Object[pts.length];
         for (int i = 0; i < args.length; i++) {
-            args[i] = in.readObject(pts[i]);
+            args[i] = in.readObject((Class<?>) pts[i][0], pts[i][1]);
         }
         return args;
     }
