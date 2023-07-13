@@ -20,6 +20,7 @@ package org.apache.dubbo.metrics;
 public interface MetricsConstants {
 
     String INVOCATION = "metric_filter_invocation";
+    String METHOD_METRICS = "metric_filter_method_metrics";
     String INVOCATION_METRICS_COUNTER = "metric_filter_invocation_counter";
 
     String INVOCATION_SIDE = "metric_filter_side";

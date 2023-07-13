@@ -25,6 +25,7 @@ import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.metrics.registry.collector.RegistryMetricsCollector;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -64,8 +65,8 @@ class RegistryMetricsSampleTest {
         RegistryMetricsCollector collector = new RegistryMetricsCollector(applicationModel);
         collector.setCollectEnabled(true);
         String applicationName = applicationModel.getApplicationName();
-        collector.addRt(applicationName, OP_TYPE_REGISTER.getType(), 10L);
-        collector.addRt(applicationName, OP_TYPE_REGISTER.getType(), 0L);
+        collector.addServiceRt(applicationName, OP_TYPE_REGISTER.getType(), 10L);
+        collector.addServiceRt(applicationName, OP_TYPE_REGISTER.getType(), 0L);
 
         List<MetricSample> samples = collector.collect();
         for (MetricSample sample : samples) {

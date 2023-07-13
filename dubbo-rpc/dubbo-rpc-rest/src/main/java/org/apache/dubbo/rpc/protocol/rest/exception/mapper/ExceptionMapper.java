@@ -34,19 +34,26 @@ public class ExceptionMapper {
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
 
 
-    // TODO static or instance ? think about influence  between  difference url exception
     private final Map<Class<?>, ExceptionHandler> exceptionHandlerMap = new ConcurrentHashMap<>();
 
-    public Object exceptionToResult(Object throwable) {
-        ExceptionHandler exceptionHandler = getExceptionHandler(throwable.getClass());
-        if (exceptionHandler == null) {
-            return throwable;
-        }
-        return exceptionHandler.result((Throwable) throwable);
+    private final Map allExceptionHandlers = new ConcurrentHashMap<>();
+
+    public ExceptionHandlerResult exceptionToResult(Object throwable) {
+        ExceptionHandler exceptionHandler = (ExceptionHandler) getExceptionHandler(throwable.getClass());
+
+        Object result = exceptionHandler.result((Throwable) throwable);
+
+        return ExceptionHandlerResult.build().setEntity(result).setStatus(exceptionHandler.status());
     }
 
-    public ExceptionHandler getExceptionHandler(Class causeClass) {
-        ExceptionHandler exceptionHandler = null;
+
+    public Object getExceptionHandler(Class causeClass) {
+
+        return getExceptionHandler(allExceptionHandlers, causeClass);
+    }
+
+    public Object getExceptionHandler(Map exceptionHandlerMap, Class causeClass) {
+        Object exceptionHandler = null;
         while (causeClass != null) {
             exceptionHandler = exceptionHandlerMap.get(causeClass);
             if (exceptionHandler != null) {
@@ -62,7 +69,7 @@ public class ExceptionMapper {
         if (throwable == null) {
             return false;
         }
-        return getExceptionHandler(throwable.getClass()) != null;
+        return allExceptionHandlers.containsKey(throwable.getClass());
     }
 
 
@@ -70,12 +77,11 @@ public class ExceptionMapper {
 
 
         try {
-            if (!ExceptionHandler.class.isAssignableFrom(exceptionHandler)) {
+            List<Method> methods = getExceptionHandlerMethods(exceptionHandler);
+
+            if (methods == null || methods.isEmpty()) {
                 return;
             }
-            // resolve Java_Zulu_jdk/17.0.6-10/x64 param is not throwable
-            List<Method> methods = ReflectUtils.getMethodByNameList(exceptionHandler, "result");
-
 
             Set<Class<?>> exceptions = new HashSet<>();
 
@@ -107,15 +113,38 @@ public class ExceptionMapper {
             // if exceptionHandler is inner class , no arg construct don`t appear , so  newInstance don`t use noArgConstruct
             Object handler = constructors.get(0).newInstance(new Object[constructors.get(0).getParameterCount()]);
 
-            for (Class<?> exception : exceptions) {
-                exceptionHandlerMap.put(exception, (ExceptionHandler) handler);
-            }
+            putExtensionToMap(exceptions, handler);
 
         } catch (Exception e) {
             throw new RuntimeException("dubbo rest protocol exception mapper register error ", e);
         }
 
 
+    }
+
+    protected void putExtensionToMap(Set<Class<?>> exceptions, Object handler) {
+
+        Map exceptionHandlerMaps = getExceptionHandlerMap(handler);
+
+        for (Class<?> exception : exceptions) {
+            // put to instance map
+            exceptionHandlerMaps.put(exception, handler);
+            // put to all map
+            allExceptionHandlers.put(exception, handler);
+        }
+    }
+
+    protected Map getExceptionHandlerMap(Object handler) {
+        return exceptionHandlerMap;
+    }
+
+    protected List<Method> getExceptionHandlerMethods(Class<?> exceptionHandler) {
+        if (!ExceptionHandler.class.isAssignableFrom(exceptionHandler)) {
+            return null;
+        }
+        // resolve Java_Zulu_jdk/17.0.6-10/x64 param is not throwable
+        List<Method> methods = ReflectUtils.getMethodByNameList(exceptionHandler, "result");
+        return methods;
     }
 
     public void registerMapper(String exceptionMapper) {
@@ -130,5 +159,13 @@ public class ExceptionMapper {
 
     public void unRegisterMapper(Class<?> exception) {
         exceptionHandlerMap.remove(exception);
+    }
+
+    public static boolean isSupport(Class<?> exceptionHandler) {
+        try {
+            return ExceptionHandler.class.isAssignableFrom(exceptionHandler) || ReflectUtils.findClassTryException("javax.ws.rs.ext.ExceptionMapper").isAssignableFrom(exceptionHandler);
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

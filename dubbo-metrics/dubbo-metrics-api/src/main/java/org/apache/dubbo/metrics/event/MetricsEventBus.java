@@ -17,9 +17,6 @@
 
 package org.apache.dubbo.metrics.event;
 
-import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
-import org.apache.dubbo.rpc.model.ApplicationModel;
-
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -38,15 +35,7 @@ public class MetricsEventBus {
         if (event.getSource() == null) {
             return;
         }
-        ApplicationModel applicationModel = event.getSource();
-        if (applicationModel.isDestroyed()) {
-            return;
-        }
-        ScopeBeanFactory beanFactory = applicationModel.getBeanFactory();
-        if (beanFactory.isDestroyed()) {
-            return;
-        }
-        MetricsDispatcher dispatcher = beanFactory.getBean(MetricsDispatcher.class);
+        MetricsDispatcher dispatcher = event.getMetricsDispatcher();
         Optional.ofNullable(dispatcher).ifPresent(d -> d.publishEvent(event));
     }
 
@@ -95,21 +84,14 @@ public class MetricsEventBus {
         return result;
     }
 
-    public static void before(MetricsEvent event) {
-        before(event, null);
-    }
-
     /**
      * Applicable to the scene where execution and return are separated,
      * eventSaveRunner saves the event, so that the calculation rt is introverted
      */
-    public static void before(MetricsEvent event, Runnable eventSaveRunner) {
+    public static void before(MetricsEvent event) {
         MetricsDispatcher dispatcher = validate(event);
         if (dispatcher == null) return;
         dispatcher.publishEvent(event);
-        if (eventSaveRunner != null) {
-            eventSaveRunner.run();
-        }
     }
 
     public static void after(MetricsEvent event, Object result) {
@@ -126,18 +108,7 @@ public class MetricsEventBus {
     }
 
     private static MetricsDispatcher validate(MetricsEvent event) {
-        if (event.getSource() == null) {
-            return null;
-        }
-        ApplicationModel applicationModel = event.getSource();
-        if (applicationModel.isDestroyed()) {
-            return null;
-        }
-        ScopeBeanFactory beanFactory = applicationModel.getBeanFactory();
-        if (beanFactory.isDestroyed()) {
-            return null;
-        }
-        MetricsDispatcher dispatcher = beanFactory.getBean(MetricsDispatcher.class);
+        MetricsDispatcher dispatcher = event.getMetricsDispatcher();
         if (dispatcher == null) {
             return null;
         }

@@ -18,6 +18,7 @@
 package org.apache.dubbo.metrics.event;
 
 import org.apache.dubbo.metrics.MetricsConstants;
+import org.apache.dubbo.metrics.model.MethodMetric;
 import org.apache.dubbo.metrics.model.MetricsSupport;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.key.MetricsLevel;
@@ -32,16 +33,18 @@ import static org.apache.dubbo.metrics.MetricsConstants.ATTACHMENT_KEY_SERVICE;
  */
 public class RequestBeforeEvent extends TimeCounterEvent {
 
-    public RequestBeforeEvent(ApplicationModel source, TypeWrapper typeWrapper) {
-        super(source, typeWrapper);
+    public RequestBeforeEvent(ApplicationModel source, String appName, MetricsDispatcher metricsDispatcher, TypeWrapper typeWrapper) {
+        super(source, appName, metricsDispatcher, typeWrapper);
 
     }
 
-    public static RequestBeforeEvent toEvent(ApplicationModel applicationModel, Invocation invocation) {
-        RequestBeforeEvent event = new RequestBeforeEvent(applicationModel, new TypeWrapper(MetricsLevel.METHOD, MetricsKey.METRIC_REQUESTS));
+    private static final TypeWrapper REQUEST_BEFORE_EVENT = new TypeWrapper(MetricsLevel.METHOD, MetricsKey.METRIC_REQUESTS);
+    public static RequestBeforeEvent toEvent(ApplicationModel applicationModel, String appName, MetricsDispatcher metricsDispatcher, Invocation invocation, String side) {
+        RequestBeforeEvent event = new RequestBeforeEvent(applicationModel, appName, metricsDispatcher, REQUEST_BEFORE_EVENT);
         event.putAttachment(ATTACHMENT_KEY_SERVICE, MetricsSupport.getInterfaceName(invocation));
-        event.putAttachment(MetricsConstants.INVOCATION_SIDE, MetricsSupport.getSide(invocation));
+        event.putAttachment(MetricsConstants.INVOCATION_SIDE, side);
         event.putAttachment(MetricsConstants.INVOCATION, invocation);
+        event.putAttachment(MetricsConstants.METHOD_METRICS, new MethodMetric(applicationModel, invocation));
         return event;
     }
 
