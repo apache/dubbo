@@ -50,13 +50,12 @@ public class ParamParserManager {
         List<ArgInfo> args = parseContext.getArgInfos();
 
         for (int i = 0; i < args.size(); i++) {
-            parsersLoop:
             for (BaseProviderParamParser paramParser : providerParamParsers) {
 
                 if (paramParser.matchParseType(args.get(i).getParamAnnotationType())) {
                     paramParser.parse(parseContext, args.get(i));
                     // one arg only can be parsed by one parser
-                    break parsersLoop;
+                    break;
                 }
             }
         }
