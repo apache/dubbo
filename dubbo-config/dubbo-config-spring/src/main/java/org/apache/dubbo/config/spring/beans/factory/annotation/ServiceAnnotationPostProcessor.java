@@ -33,7 +33,6 @@ import org.apache.dubbo.config.spring.schema.AnnotationBeanDefinitionParser;
 import org.apache.dubbo.config.spring.util.DubboAnnotationUtils;
 import org.apache.dubbo.config.spring.util.ObjectUtils;
 import org.apache.dubbo.config.spring.util.SpringCompatUtils;
-
 import org.springframework.beans.BeansException;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.BeanClassLoaderAware;
@@ -218,11 +217,8 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
             }
 
             // Registers @Service Bean first
-            scanner.scan(packageToScan);
-
             // Finds all BeanDefinitionHolders of @Service whether @ComponentScan scans or not.
-            Set<BeanDefinitionHolder> beanDefinitionHolders =
-                    findServiceBeanDefinitionHolders(scanner, packageToScan, registry, beanNameGenerator);
+            Set<BeanDefinitionHolder> beanDefinitionHolders = scanner.doScan(packageToScan);
 
             if (!CollectionUtils.isEmpty(beanDefinitionHolders)) {
                 if (logger.isInfoEnabled()) {
