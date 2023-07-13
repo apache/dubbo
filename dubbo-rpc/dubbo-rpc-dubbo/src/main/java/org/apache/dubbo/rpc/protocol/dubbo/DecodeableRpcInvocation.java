@@ -164,8 +164,10 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
                 if (pts == DubboCodec.EMPTY_CLASS_ARRAY) {
                     if (RpcUtils.isGenericCall(desc, getMethodName())) {
                         pts = DubboCodec.GENERIC_PTS_ARRAY;
+                        parameterTypes = DubboCodec.GENERIC_PARAMETER_TYPE_ARRAY;
                     } else if (RpcUtils.isEcho(desc, getMethodName())) {
                         pts = DubboCodec.ECHO_PTS_ARRAY;
+                        parameterTypes = DubboCodec.ECHO_PARAMETER_TYPE_ARRAY;
                     } else {
                         throw new IllegalArgumentException("Service not found:" + path + ", " + getMethodName());
                     }
