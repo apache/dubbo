@@ -293,7 +293,7 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
         }
         Class<?>[] pts = new Class<?>[parameterTypes.length];
         for (int i = 0; i < parameterTypes.length; i++) {
-            pts[i] = parameterTypes[i][0].getClass();
+            pts[i] = (Class<?>)parameterTypes[i][0];
         }
         return pts;
     }
