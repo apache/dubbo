@@ -293,7 +293,7 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
         }
         Class<?>[] pts = new Class<?>[parameterTypes.length];
         for (int i = 0; i < parameterTypes.length; i++) {
-            pts[i] = (Class<?>)parameterTypes[i][0];
+            pts[i] = (Class<?>) parameterTypes[i][0];
         }
         return pts;
     }
@@ -302,7 +302,11 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
         Object[] args;
         args = new Object[pts.length];
         for (int i = 0; i < args.length; i++) {
-            args[i] = in.readObject((Class<?>) pts[i][0], pts[i][1]);
+            if (pts[i][0] == pts[i][1]) {
+                args[i] = in.readObject((Class<?>) pts[i][0]);
+            } else {
+                args[i] = in.readObject((Class<?>) pts[i][0], pts[i][1]);
+            }
         }
         return args;
     }

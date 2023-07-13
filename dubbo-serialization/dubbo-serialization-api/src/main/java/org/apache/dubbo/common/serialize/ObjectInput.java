@@ -82,7 +82,7 @@ public interface ObjectInput extends DataInput {
         return readUTF();
     }
 
-    default Map<String, Object> readAttachments() throws IOException, ClassNotFoundException {
+    default Map readAttachments() throws IOException, ClassNotFoundException {
         return readObject(Map.class);
     }
 }
