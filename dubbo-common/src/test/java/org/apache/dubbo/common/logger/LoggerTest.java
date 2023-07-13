@@ -56,7 +56,13 @@ class LoggerTest {
         logger.warn("warn");
         logger.info("info");
         logger.debug("debug");
-        logger.trace("info");
+        logger.trace("trace");
+
+        logger.error("error:{}", "arg1");
+        logger.warn("warn:{}", "arg1");
+        logger.info("info:{}", "arg1");
+        logger.debug("debug:{}", "arg1");
+        logger.trace("trace:{}", "arg1");
 
         logger.error(new Exception("error"));
         logger.warn(new Exception("warn"));
@@ -69,6 +75,12 @@ class LoggerTest {
         logger.info("info", new Exception("info"));
         logger.debug("debug", new Exception("debug"));
         logger.trace("trace", new Exception("trace"));
+
+        logger.error("error:{}","arg1", new Exception("error"));
+        logger.warn("warn:{}", "arg1", new Exception("warn"));
+        logger.info("info:{}", "arg1", new Exception("info"));
+        logger.debug("debug:{}", "arg1", new Exception("debug"));
+        logger.trace("trace:{}", "arg1", new Exception("trace"));
     }
 
     @ParameterizedTest

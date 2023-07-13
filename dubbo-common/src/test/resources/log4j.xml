@@ -34,7 +34,7 @@
         </layout>
     </appender>
     <root>
-        <level value="INFO"/>
+        <level value="TRACE"/>
         <appender-ref ref="dubbo"/>
         <appender-ref ref="CONSOLE"/>
     </root>

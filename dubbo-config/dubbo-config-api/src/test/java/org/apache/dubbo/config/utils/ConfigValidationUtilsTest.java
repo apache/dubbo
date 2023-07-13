@@ -105,7 +105,7 @@ class ConfigValidationUtilsTest {
         config.setName("testName");
         config.setQosEnable(false);
         mock.validateApplicationConfig(config);
-        verify(loggerMock, never()).warn(any(), any());
+        verify(loggerMock, never()).warn(any(), any(Throwable.class));
 
         config.setQosEnable(true);
         mock.validateApplicationConfig(config);
