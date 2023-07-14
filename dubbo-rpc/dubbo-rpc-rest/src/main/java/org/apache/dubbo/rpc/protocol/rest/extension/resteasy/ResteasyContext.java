@@ -30,6 +30,7 @@ import org.apache.dubbo.rpc.protocol.rest.netty.ChunkOutputStream;
 import org.apache.dubbo.rpc.protocol.rest.netty.NettyHttpResponse;
 import org.apache.dubbo.rpc.protocol.rest.request.NettyRequestFacade;
 import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
+import org.apache.dubbo.rpc.protocol.rest.util.MediaTypeUtil;
 import org.jboss.resteasy.core.interception.ResponseContainerRequestContext;
 import org.jboss.resteasy.plugins.server.netty.NettyHttpRequest;
 import org.jboss.resteasy.plugins.server.netty.NettyUtil;
@@ -130,8 +131,9 @@ public interface ResteasyContext {
         return nettyRequest;
     }
 
-    default void writeResteasyResponse(URL url, RequestFacade requestFacade, NettyHttpResponse response, BuiltResponse restResponse) throws Exception {
-        ServiceInvokeRestFilter.writeResult(response, requestFacade, url, restResponse.getEntity(), restResponse.getEntityClass());
+    default void writeResteasyResponse(URL url, NettyHttpResponse response, BuiltResponse restResponse) throws Exception {
+        MediaType mediaType = MediaTypeUtil.convertMediaType(restResponse.getEntityClass(), restResponse.getMediaType().toString());
+        ServiceInvokeRestFilter.writeResult(response, url, restResponse.getEntity(), restResponse.getEntityClass(), mediaType);
     }
 
     default MediaType getAcceptMediaType(RequestFacade request, Class<?> returnType) {

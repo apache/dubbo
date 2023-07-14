@@ -33,7 +33,7 @@ import java.util.List;
 import static org.apache.dubbo.common.constants.CommonConstants.RESTEASY_NETTY_HTTP_REQUEST_ATTRIBUTE_KEY;
 
 
-@Activate(value = "resteasy", onClass = {"javax.ws.rs.container.ContainerRequestFilter", "org.jboss.resteasy.plugins.server.netty.NettyHttpRequest","org.jboss.resteasy.plugins.server.netty.NettyHttpResponse"}, order = Integer.MAX_VALUE - 1)
+@Activate(value = "resteasy", onClass = {"javax.ws.rs.container.ContainerRequestFilter", "org.jboss.resteasy.plugins.server.netty.NettyHttpRequest", "org.jboss.resteasy.plugins.server.netty.NettyHttpResponse"}, order = Integer.MAX_VALUE - 1)
 public class ResteasyRequestContainerFilterAdapter implements RestRequestFilter, ResteasyContext {
 
 
@@ -65,7 +65,7 @@ public class ResteasyRequestContainerFilterAdapter implements RestRequestFilter,
             }
 
             addResponseHeaders(response, restResponse.getHeaders());
-            writeResteasyResponse(url, requestFacade, response, restResponse);
+            writeResteasyResponse(url, response, restResponse);
             // completed
             restFilterContext.setComplete(true);
         } catch (Throwable e) {

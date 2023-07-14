@@ -144,9 +144,13 @@ public class ServiceInvokeRestFilter implements RestRequestFilter {
      * @param returnType
      * @throws Exception
      */
-    public static void writeResult(NettyHttpResponse nettyHttpResponse, RequestFacade request, URL url, Object value, Class returnType) throws Exception {
+    public static void writeResult(NettyHttpResponse nettyHttpResponse, RequestFacade<?> request, URL url, Object value, Class<?> returnType) throws Exception {
         MediaType mediaType = getAcceptMediaType(request, returnType);
+        writeResult(nettyHttpResponse, url, value, returnType, mediaType);
+    }
 
+
+    public static void writeResult(NettyHttpResponse nettyHttpResponse, URL url, Object value, Class<?> returnType, MediaType mediaType) throws Exception {
         MessageCodecResultPair booleanMediaTypePair = HttpMessageCodecManager.httpMessageEncode(nettyHttpResponse.getOutputStream(), value, url, mediaType, returnType);
 
         nettyHttpResponse.addOutputHeaders(RestHeaderEnum.CONTENT_TYPE.getHeader(), booleanMediaTypePair.getMediaType().value);
