@@ -55,4 +55,8 @@ public abstract class AbstractServiceDiscoveryFactory implements ServiceDiscover
     }
 
     protected abstract ServiceDiscovery createDiscovery(URL registryURL);
+
+    protected ConcurrentMap<String, ServiceDiscovery> getDiscoveries() {
+        return discoveries;
+    }
 }

@@ -17,11 +17,23 @@
 package org.apache.dubbo.registry.nacos;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.registry.client.AbstractServiceDiscoveryFactory;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 
+import static org.apache.dubbo.common.constants.CommonConstants.CONFIG_NAMESPACE_KEY;
+
 public class NacosServiceDiscoveryFactory extends AbstractServiceDiscoveryFactory {
 
+    public ServiceDiscovery getServiceDiscovery(URL registryURL) {
+        String namespace = registryURL.getParameter(CONFIG_NAMESPACE_KEY);
+        URL url = URL.valueOf(registryURL.toServiceStringWithoutResolving());
+        if (StringUtils.isNotEmpty(namespace)) {
+            url = url.addParameter(CONFIG_NAMESPACE_KEY, namespace);
+        }
+        return ConcurrentHashMapUtils.computeIfAbsent(getDiscoveries(), url.toFullString(), k -> createDiscovery(registryURL));
+    }
     @Override
     protected ServiceDiscovery createDiscovery(URL registryURL) {
         return new NacosServiceDiscovery(applicationModel, registryURL);
