@@ -17,19 +17,17 @@
 package org.apache.dubbo.config.integration.single.exportmetadata;
 
 import org.apache.dubbo.config.ServiceListener;
-import org.apache.dubbo.config.integration.AbstractRegistryCenterServiceListener;
-import org.apache.dubbo.metadata.MetadataService;
 
 /**
  * This implementation of {@link ServiceListener} is to record exported metadata services in single registry center.
  */
-public class SingleRegistryCenterExportMetadataServiceListener extends AbstractRegistryCenterServiceListener {
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected Class<?> getInterface() {
-        return MetadataService.class;
-    }
-}
+//public class SingleRegistryCenterExportMetadataServiceListener extends AbstractRegistryCenterServiceListener {
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    @Override
+//    protected Class<?> getInterface() {
+//        return MetadataService.class;
+//    }
+//}

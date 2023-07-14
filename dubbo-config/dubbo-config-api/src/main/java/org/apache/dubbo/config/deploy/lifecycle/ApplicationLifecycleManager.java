@@ -128,5 +128,4 @@ public interface ApplicationLifecycleManager extends LifecycleManager {
      * @return ApplicationLifecycleManager names. Can be null or empty list.
      */
     default List<String> dependOnRefreshServiceInstance(){return null;}
-
 }

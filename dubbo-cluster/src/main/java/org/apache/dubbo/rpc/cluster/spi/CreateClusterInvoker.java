@@ -1,7 +1,7 @@
 package org.apache.dubbo.rpc.cluster.spi;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.constants.SpiMethods;
+import org.apache.dubbo.common.constants.SpiMethodNames;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.config.deploy.lifecycle.SpiMethod;
@@ -21,8 +21,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.UNLOAD_CLUSTER_R
 public class CreateClusterInvoker implements SpiMethod {
 
     @Override
-    public SpiMethods methodName() {
-        return SpiMethods.createClusterInvoker;
+    public SpiMethodNames methodName() {
+        return SpiMethodNames.createClusterInvoker;
     }
 
 

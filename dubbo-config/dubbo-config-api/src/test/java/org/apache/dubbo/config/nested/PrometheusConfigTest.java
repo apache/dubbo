@@ -16,11 +16,9 @@
  */
 package org.apache.dubbo.config.nested;
 
-import org.apache.dubbo.config.nested.PrometheusConfig;
 import org.junit.jupiter.api.Test;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
+import org.testcontainers.shaded.org.hamcrest.MatcherAssert;
+import org.testcontainers.shaded.org.hamcrest.Matchers;
 
 class PrometheusConfigTest {
 

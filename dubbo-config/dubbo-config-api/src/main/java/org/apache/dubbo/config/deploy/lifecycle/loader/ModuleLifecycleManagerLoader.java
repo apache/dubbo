@@ -10,9 +10,9 @@ import java.util.function.Function;
 
 public class ModuleLifecycleManagerLoader extends AbstractLifecycleManagerLoader<ModuleLifecycleManager> {
 
-    private final DefaultModuleDeployer moduleDeployer;
-
     private static final String PRE_DESTROY = "preDestroy";
+
+    private final DefaultModuleDeployer moduleDeployer;
 
     public ModuleLifecycleManagerLoader(DefaultModuleDeployer moduleDeployer) {
         this.moduleDeployer = moduleDeployer;

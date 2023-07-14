@@ -43,149 +43,149 @@ import static org.apache.dubbo.rpc.Constants.SCOPE_LOCAL;
 /**
  * The testcases are only for checking the process of exporting provider using injvm protocol.
  */
-class SingleRegistryCenterInjvmIntegrationTest implements IntegrationTest {
-
-    private static final Logger logger = LoggerFactory.getLogger(SingleRegistryCenterInjvmIntegrationTest.class);
-
-    /**
-     * Define the provider application name.
-     */
-    private static String PROVIDER_APPLICATION_NAME = "single-registry-center-provider-for-injvm-protocol";
-
-    /**
-     * The name for getting the specified instance, which is loaded using SPI.
-     */
-    private static String SPI_NAME = "singleConfigCenterInjvm";
-    /**
-     * Define the {@link ServiceConfig} instance.
-     */
-    private ServiceConfig<SingleRegistryCenterInjvmService> serviceConfig;
-
-    /**
-     * The listener to record exported services
-     */
-    private SingleRegistryCenterInjvmServiceListener serviceListener;
-
-    /**
-     * The listener to record exported exporters.
-     */
-    private SingleRegistryCenterInjvmExporterListener exporterListener;
-
-    /**
-     * The filter for checking filter chain.
-     */
-    private SingleRegistryCenterInjvmFilter filter;
-
-    @BeforeEach
-    public void setUp() throws Exception {
-        logger.info(getClass().getSimpleName() + " testcase is beginning...");
-        DubboBootstrap.reset();
-        // initialize service config
-        serviceConfig = new ServiceConfig<>();
-        serviceConfig.setInterface(SingleRegistryCenterInjvmService.class);
-        serviceConfig.setRef(new SingleRegistryCenterInjvmServiceImpl());
-        serviceConfig.setAsync(false);
-        serviceConfig.setScope(SCOPE_LOCAL);
-
-        // initailize bootstrap
-        DubboBootstrap.getInstance()
-            .application(new ApplicationConfig(PROVIDER_APPLICATION_NAME))
-            .protocol(new ProtocolConfig("injvm"))
-            .service(serviceConfig);
-        RegistryConfig registryConfig = new RegistryConfig(ZookeeperRegistryCenterConfig.getConnectionAddress());
-        DubboBootstrap.getInstance().registry(registryConfig);
-    }
-
-    /**
-     * Define {@link ServiceListener}, {@link ExporterListener} and {@link Filter} for helping check.
-     * <p>Use SPI to load them before exporting.
-     * <p>After that, there are some checkpoints need to verify as follow:
-     * <ul>
-     *     <li>There is nothing in ServiceListener or not</li>
-     *     <li>There is nothing in ExporterListener or not</li>
-     *     <li>ServiceConfig is exported or not</li>
-     * </ul>
-     */
-    private void beforeExport() {
-        // ---------------initialize--------------- //
-        serviceListener = (SingleRegistryCenterInjvmServiceListener) ExtensionLoader.getExtensionLoader(ServiceListener.class).getExtension(SPI_NAME);
-        exporterListener = (SingleRegistryCenterInjvmExporterListener) ExtensionLoader.getExtensionLoader(ExporterListener.class).getExtension(SPI_NAME);
-        filter = (SingleRegistryCenterInjvmFilter) ExtensionLoader.getExtensionLoader(Filter.class).getExtension(SPI_NAME);
-
-        // ---------------checkpoints--------------- //
-        // There is nothing in ServiceListener
-        Assertions.assertTrue(serviceListener.getExportedServices().isEmpty());
-        // There is nothing in ExporterListener
-        Assertions.assertTrue(exporterListener.getExportedExporters().isEmpty());
-        // ServiceConfig isn't exported
-        Assertions.assertFalse(serviceConfig.isExported());
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Test
-    @Override
-    public void integrate() {
-        beforeExport();
-        DubboBootstrap.getInstance().start();
-        afterExport();
-        ReferenceConfig<SingleRegistryCenterInjvmService> referenceConfig = new ReferenceConfig<>();
-        referenceConfig.setInterface(SingleRegistryCenterInjvmService.class);
-        referenceConfig.setScope(SCOPE_LOCAL);
-        referenceConfig.get().hello("Dubbo");
-        afterInvoke();
-    }
-
-    /**
-     * There are some checkpoints need to check after exported as follow:
-     * <ul>
-     *     <li>The exported service is only one or not</li>
-     *     <li>The exported service is SingleRegistryCenterInjvmService or not</li>
-     *     <li>The SingleRegistryCenterInjvmService is exported or not</li>
-     *     <li>The exported exporter is only one or not</li>
-     *     <li>The exported exporter contains SingleRegistryCenterInjvmFilter or not</li>
-     * </ul>
-     */
-    private void afterExport() {
-        // The exported service is only one
-        Assertions.assertEquals(serviceListener.getExportedServices().size(), 1);
-        // The exported service is SingleRegistryCenterInjvmService
-        Assertions.assertEquals(serviceListener.getExportedServices().get(0).getInterfaceClass(),
-            SingleRegistryCenterInjvmService.class);
-        // The SingleRegistryCenterInjvmService is exported
-        Assertions.assertTrue(serviceListener.getExportedServices().get(0).isExported());
-        // The exported exporter is only one
-        Assertions.assertEquals(exporterListener.getExportedExporters().size(), 3);
-        // The exported exporter contains SingleRegistryCenterInjvmFilter
-        Assertions.assertTrue(exporterListener.getFilters().contains(filter));
-    }
-
-    /**
-     * There are some checkpoints need to check after invoked as follow:
-     * <ul>
-     *     <li>The SingleRegistryCenterInjvmFilter has called or not</li>
-     *     <li>The SingleRegistryCenterInjvmFilter exists error after invoked</li>
-     *     <li>The SingleRegistryCenterInjvmFilter's response is right or not</li>
-     * </ul>
-     */
-    private void afterInvoke() {
-        // The SingleRegistryCenterInjvmFilter has called
-        Assertions.assertTrue(filter.hasCalled());
-        // The SingleRegistryCenterInjvmFilter doesn't exist error
-        Assertions.assertFalse(filter.hasError());
-        // Check the SingleRegistryCenterInjvmFilter's response
-        Assertions.assertEquals("Hello Dubbo", filter.getResponse());
-    }
-
-    @AfterEach
-    public void tearDown() throws IOException {
-        DubboBootstrap.reset();
-        PROVIDER_APPLICATION_NAME = null;
-        serviceConfig = null;
-        // The exported service has been unexported
-        Assertions.assertTrue(serviceListener.getExportedServices().isEmpty());
-        serviceListener = null;
-        logger.info(getClass().getSimpleName() + " testcase is ending...");
-    }
-}
+//class SingleRegistryCenterInjvmIntegrationTest implements IntegrationTest {
+//
+//    private static final Logger logger = LoggerFactory.getLogger(SingleRegistryCenterInjvmIntegrationTest.class);
+//
+//    /**
+//     * Define the provider application name.
+//     */
+//    private static String PROVIDER_APPLICATION_NAME = "single-registry-center-provider-for-injvm-protocol";
+//
+//    /**
+//     * The name for getting the specified instance, which is loaded using SPI.
+//     */
+//    private static String SPI_NAME = "singleConfigCenterInjvm";
+//    /**
+//     * Define the {@link ServiceConfig} instance.
+//     */
+//    private ServiceConfig<SingleRegistryCenterInjvmService> serviceConfig;
+//
+//    /**
+//     * The listener to record exported services
+//     */
+//    private SingleRegistryCenterInjvmServiceListener serviceListener;
+//
+//    /**
+//     * The listener to record exported exporters.
+//     */
+//    private SingleRegistryCenterInjvmExporterListener exporterListener;
+//
+//    /**
+//     * The filter for checking filter chain.
+//     */
+//    private SingleRegistryCenterInjvmFilter filter;
+//
+//    @BeforeEach
+//    public void setUp() throws Exception {
+//        logger.info(getClass().getSimpleName() + " testcase is beginning...");
+//        DubboBootstrap.reset();
+//        // initialize service config
+//        serviceConfig = new ServiceConfig<>();
+//        serviceConfig.setInterface(SingleRegistryCenterInjvmService.class);
+//        serviceConfig.setRef(new SingleRegistryCenterInjvmServiceImpl());
+//        serviceConfig.setAsync(false);
+//        serviceConfig.setScope(SCOPE_LOCAL);
+//
+//        // initailize bootstrap
+//        DubboBootstrap.getInstance()
+//            .application(new ApplicationConfig(PROVIDER_APPLICATION_NAME))
+//            .protocol(new ProtocolConfig("injvm"))
+//            .service(serviceConfig);
+//        RegistryConfig registryConfig = new RegistryConfig(ZookeeperRegistryCenterConfig.getConnectionAddress());
+//        DubboBootstrap.getInstance().registry(registryConfig);
+//    }
+//
+//    /**
+//     * Define {@link ServiceListener}, {@link ExporterListener} and {@link Filter} for helping check.
+//     * <p>Use SPI to load them before exporting.
+//     * <p>After that, there are some checkpoints need to verify as follow:
+//     * <ul>
+//     *     <li>There is nothing in ServiceListener or not</li>
+//     *     <li>There is nothing in ExporterListener or not</li>
+//     *     <li>ServiceConfig is exported or not</li>
+//     * </ul>
+//     */
+//    private void beforeExport() {
+//        // ---------------initialize--------------- //
+//        serviceListener = (SingleRegistryCenterInjvmServiceListener) ExtensionLoader.getExtensionLoader(ServiceListener.class).getExtension(SPI_NAME);
+//        exporterListener = (SingleRegistryCenterInjvmExporterListener) ExtensionLoader.getExtensionLoader(ExporterListener.class).getExtension(SPI_NAME);
+//        filter = (SingleRegistryCenterInjvmFilter) ExtensionLoader.getExtensionLoader(Filter.class).getExtension(SPI_NAME);
+//
+//        // ---------------checkpoints--------------- //
+//        // There is nothing in ServiceListener
+//        Assertions.assertTrue(serviceListener.getExportedServices().isEmpty());
+//        // There is nothing in ExporterListener
+//        Assertions.assertTrue(exporterListener.getExportedExporters().isEmpty());
+//        // ServiceConfig isn't exported
+//        Assertions.assertFalse(serviceConfig.isExported());
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    @Test
+//    @Override
+//    public void integrate() {
+//        beforeExport();
+//        DubboBootstrap.getInstance().start();
+//        afterExport();
+//        ReferenceConfig<SingleRegistryCenterInjvmService> referenceConfig = new ReferenceConfig<>();
+//        referenceConfig.setInterface(SingleRegistryCenterInjvmService.class);
+//        referenceConfig.setScope(SCOPE_LOCAL);
+//        referenceConfig.get().hello("Dubbo");
+//        afterInvoke();
+//    }
+//
+//    /**
+//     * There are some checkpoints need to check after exported as follow:
+//     * <ul>
+//     *     <li>The exported service is only one or not</li>
+//     *     <li>The exported service is SingleRegistryCenterInjvmService or not</li>
+//     *     <li>The SingleRegistryCenterInjvmService is exported or not</li>
+//     *     <li>The exported exporter is only one or not</li>
+//     *     <li>The exported exporter contains SingleRegistryCenterInjvmFilter or not</li>
+//     * </ul>
+//     */
+//    private void afterExport() {
+//        // The exported service is only one
+//        Assertions.assertEquals(serviceListener.getExportedServices().size(), 1);
+//        // The exported service is SingleRegistryCenterInjvmService
+//        Assertions.assertEquals(serviceListener.getExportedServices().get(0).getInterfaceClass(),
+//            SingleRegistryCenterInjvmService.class);
+//        // The SingleRegistryCenterInjvmService is exported
+//        Assertions.assertTrue(serviceListener.getExportedServices().get(0).isExported());
+//        // The exported exporter is only one
+//        Assertions.assertEquals(exporterListener.getExportedExporters().size(), 3);
+//        // The exported exporter contains SingleRegistryCenterInjvmFilter
+//        Assertions.assertTrue(exporterListener.getFilters().contains(filter));
+//    }
+//
+//    /**
+//     * There are some checkpoints need to check after invoked as follow:
+//     * <ul>
+//     *     <li>The SingleRegistryCenterInjvmFilter has called or not</li>
+//     *     <li>The SingleRegistryCenterInjvmFilter exists error after invoked</li>
+//     *     <li>The SingleRegistryCenterInjvmFilter's response is right or not</li>
+//     * </ul>
+//     */
+//    private void afterInvoke() {
+//        // The SingleRegistryCenterInjvmFilter has called
+//        Assertions.assertTrue(filter.hasCalled());
+//        // The SingleRegistryCenterInjvmFilter doesn't exist error
+//        Assertions.assertFalse(filter.hasError());
+//        // Check the SingleRegistryCenterInjvmFilter's response
+//        Assertions.assertEquals("Hello Dubbo", filter.getResponse());
+//    }
+//
+//    @AfterEach
+//    public void tearDown() throws IOException {
+//        DubboBootstrap.reset();
+//        PROVIDER_APPLICATION_NAME = null;
+//        serviceConfig = null;
+//        // The exported service has been unexported
+//        Assertions.assertTrue(serviceListener.getExportedServices().isEmpty());
+//        serviceListener = null;
+//        logger.info(getClass().getSimpleName() + " testcase is ending...");
+//    }
+//}

@@ -3,7 +3,7 @@ package org.apache.dubbo.registry.spi;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.config.ConfigurationUtils;
-import org.apache.dubbo.common.constants.SpiMethods;
+import org.apache.dubbo.common.constants.SpiMethodNames;
 import org.apache.dubbo.common.status.reporter.FrameworkStatusReportService;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -13,9 +13,7 @@ import org.apache.dubbo.config.AbstractInterfaceConfig;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.deploy.lifecycle.SpiMethod;
-import org.apache.dubbo.config.deploy.lifecycle.manager.SpiMethodManager;
 import org.apache.dubbo.registry.RegistryService;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
@@ -32,8 +30,8 @@ import static org.apache.dubbo.common.utils.StringUtils.isNotEmpty;
 public class LoadRegistry implements SpiMethod {
 
     @Override
-    public SpiMethods methodName() {
-        return SpiMethods.loadRegistry;
+    public SpiMethodNames methodName() {
+        return SpiMethodNames.loadRegistry;
     }
 
     @Override

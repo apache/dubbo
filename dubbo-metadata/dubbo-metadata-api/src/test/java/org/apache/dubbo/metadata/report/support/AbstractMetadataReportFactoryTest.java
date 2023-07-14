@@ -19,7 +19,7 @@ package org.apache.dubbo.metadata.report.support;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.NetUtils;
-import org.apache.dubbo.metadata.MappingListener;
+import org.apache.dubbo.metadata.event.MappingListener;
 import org.apache.dubbo.metadata.definition.model.ServiceDefinition;
 import org.apache.dubbo.metadata.report.MetadataReport;
 import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;

@@ -16,20 +16,14 @@
  */
 package org.apache.dubbo.config;
 
-import org.apache.dubbo.config.AbstractMethodConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
-
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
+import org.testcontainers.shaded.org.hamcrest.MatcherAssert;
+import org.testcontainers.shaded.org.hamcrest.Matchers;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.isEmptyOrNullString;
-import static org.hamcrest.Matchers.sameInstance;
 
 class AbstractMethodConfigTest {
 

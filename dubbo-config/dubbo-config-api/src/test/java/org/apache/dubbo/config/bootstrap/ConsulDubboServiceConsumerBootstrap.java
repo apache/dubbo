@@ -16,37 +16,33 @@
  */
 package org.apache.dubbo.config.bootstrap;
 
-import org.apache.dubbo.config.bootstrap.rest.UserService;
-
-import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA_STORAGE_TYPE;
-
 /**
  * Dubbo Provider Bootstrap
  *
  * @since 2.7.5
  */
-public class ConsulDubboServiceConsumerBootstrap {
-
-    public static void main(String[] args) throws Exception {
-
-        DubboBootstrap bootstrap = DubboBootstrap.getInstance()
-                .application("consul-dubbo-consumer", app -> app.metadata(DEFAULT_METADATA_STORAGE_TYPE))
-                .registry("zookeeper", builder -> builder.address("consul://127.0.0.1:8500?registry-type=service&subscribed-services=consul-dubbo-provider")
-                        .useAsConfigCenter(true)
-                        .useAsMetadataCenter(true))
-                .reference("echo", builder -> builder.interfaceClass(EchoService.class).protocol("dubbo"))
-                .reference("user", builder -> builder.interfaceClass(UserService.class).protocol("rest"))
-                .start();
-
-        EchoService echoService = bootstrap.getCache().get(EchoService.class);
-        UserService userService = bootstrap.getCache().get(UserService.class);
-
-        for (int i = 0; i < 5; i++) {
-            Thread.sleep(2000L);
-            System.out.println(echoService.echo("Hello,World"));
-            System.out.println(userService.getUser(i * 1L));
-        }
-
-        bootstrap.stop();
-    }
-}
+//public class ConsulDubboServiceConsumerBootstrap {
+//
+//    public static void main(String[] args) throws Exception {
+//
+//        DubboBootstrap bootstrap = DubboBootstrap.getInstance()
+//                .application("consul-dubbo-consumer", app -> app.metadata(DEFAULT_METADATA_STORAGE_TYPE))
+//                .registry("zookeeper", builder -> builder.address("consul://127.0.0.1:8500?registry-type=service&subscribed-services=consul-dubbo-provider")
+//                        .useAsConfigCenter(true)
+//                        .useAsMetadataCenter(true))
+//                .reference("echo", builder -> builder.interfaceClass(EchoService.class).protocol("dubbo"))
+//                .reference("user", builder -> builder.interfaceClass(UserService.class).protocol("rest"))
+//                .start();
+//
+//        EchoService echoService = bootstrap.getCache().get(EchoService.class);
+//        UserService userService = bootstrap.getCache().get(UserService.class);
+//
+//        for (int i = 0; i < 5; i++) {
+//            Thread.sleep(2000L);
+//            System.out.println(echoService.echo("Hello,World"));
+//            System.out.println(userService.getUser(i * 1L));
+//        }
+//
+//        bootstrap.stop();
+//    }
+//}

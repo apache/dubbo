@@ -16,58 +16,55 @@
  */
 package org.apache.dubbo.config.integration.multiple.servicediscoveryregistry;
 
-import org.apache.dubbo.registry.client.ServiceDiscoveryRegistry;
-import org.apache.dubbo.registry.client.metadata.MetadataServiceDelegation;
-
 /**
  * The instance to wrap {@link org.apache.dubbo.registry.client.ServiceDiscoveryRegistry}
  */
-public class ServiceDiscoveryRegistryInfoWrapper {
-
-    private ServiceDiscoveryRegistry serviceDiscoveryRegistry;
-    private MetadataServiceDelegation inMemoryWritableMetadataService;
-    private boolean registered;
-    private boolean subscribed;
-    private String host;
-    private int port;
-
-    public ServiceDiscoveryRegistry getServiceDiscoveryRegistry() {
-        return serviceDiscoveryRegistry;
-    }
-
-    public void setServiceDiscoveryRegistry(ServiceDiscoveryRegistry serviceDiscoveryRegistry) {
-        this.serviceDiscoveryRegistry = serviceDiscoveryRegistry;
-    }
-
-    public boolean isRegistered() {
-        return registered;
-    }
-
-    public void setRegistered(boolean registered) {
-        this.registered = registered;
-    }
-
-    public boolean isSubscribed() {
-        return subscribed;
-    }
-
-    public void setSubscribed(boolean subscribed) {
-        this.subscribed = subscribed;
-    }
-
-    public String getHost() {
-        return host;
-    }
-
-    public void setHost(String host) {
-        this.host = host;
-    }
-
-    public int getPort() {
-        return port;
-    }
-
-    public void setPort(int port) {
-        this.port = port;
-    }
-}
+//public class ServiceDiscoveryRegistryInfoWrapper {
+//
+//    private ServiceDiscoveryRegistry serviceDiscoveryRegistry;
+//    private MetadataServiceDelegation inMemoryWritableMetadataService;
+//    private boolean registered;
+//    private boolean subscribed;
+//    private String host;
+//    private int port;
+//
+//    public ServiceDiscoveryRegistry getServiceDiscoveryRegistry() {
+//        return serviceDiscoveryRegistry;
+//    }
+//
+//    public void setServiceDiscoveryRegistry(ServiceDiscoveryRegistry serviceDiscoveryRegistry) {
+//        this.serviceDiscoveryRegistry = serviceDiscoveryRegistry;
+//    }
+//
+//    public boolean isRegistered() {
+//        return registered;
+//    }
+//
+//    public void setRegistered(boolean registered) {
+//        this.registered = registered;
+//    }
+//
+//    public boolean isSubscribed() {
+//        return subscribed;
+//    }
+//
+//    public void setSubscribed(boolean subscribed) {
+//        this.subscribed = subscribed;
+//    }
+//
+//    public String getHost() {
+//        return host;
+//    }
+//
+//    public void setHost(String host) {
+//        this.host = host;
+//    }
+//
+//    public int getPort() {
+//        return port;
+//    }
+//
+//    public void setPort(int port) {
+//        this.port = port;
+//    }
+//}

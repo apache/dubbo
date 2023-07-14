@@ -18,7 +18,7 @@ package org.apache.dubbo.config.utils;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.PropertiesConfiguration;
-import org.apache.dubbo.common.constants.SpiMethods;
+import org.apache.dubbo.common.constants.SpiMethodNames;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.serialize.Serialization;
@@ -33,12 +33,8 @@ import org.apache.dubbo.remoting.Transporter;
 import org.apache.dubbo.remoting.exchange.Exchanger;
 import org.apache.dubbo.remoting.telnet.TelnetHandler;
 import org.apache.dubbo.rpc.ExporterListener;
-import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.InvokerListener;
 import org.apache.dubbo.rpc.ProxyFactory;
-import org.apache.dubbo.rpc.cluster.Cluster;
-import org.apache.dubbo.rpc.cluster.LoadBalance;
-import org.apache.dubbo.rpc.cluster.filter.ClusterFilter;
 import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 import org.apache.dubbo.rpc.support.MockInvoker;
@@ -53,7 +49,8 @@ import java.util.stream.Collectors;
 import static org.apache.dubbo.common.constants.CommonConstants.*;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_CLASS_NOT_FOUND;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_PARAMETER_FORMAT_ERROR;
-import static org.apache.dubbo.common.constants.RegistryConstants.*;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PROTOCOL;
+import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGISTRY_PROTOCOL;
 import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
 import static org.apache.dubbo.common.utils.StringUtils.isEmpty;
 import static org.apache.dubbo.common.utils.StringUtils.isNotEmpty;
@@ -109,7 +106,7 @@ public class ConfigValidationUtils {
 
     public static List<URL> tryLoadRegistries(AbstractInterfaceConfig interfaceConfig, boolean provider) {
         // check && override if necessary
-        return (List<URL>) SpiMethodManager.get().ifPresent().invoke(SpiMethods.loadRegistry,interfaceConfig,provider);
+        return (List<URL>) SpiMethodManager.get().ifPresent().invoke(SpiMethodNames.loadRegistry,interfaceConfig,provider);
 
 //        List<URL> registryList = new ArrayList<>();
 //        ApplicationConfig application = interfaceConfig.getApplication();
@@ -216,7 +213,7 @@ public class ConfigValidationUtils {
 //    }
 
     public static URL loadMonitor(AbstractInterfaceConfig interfaceConfig, URL registryURL) {
-        return (URL) SpiMethodManager.get().ifPresent().invoke(SpiMethods.loadMonitor,interfaceConfig,registryURL);
+        return (URL) SpiMethodManager.get().ifPresent().invoke(SpiMethodNames.loadMonitor,interfaceConfig,registryURL);
 //        Map<String, String> map = new HashMap<String, String>();
 //        map.put(INTERFACE_KEY, MonitorService.class.getName());
 //        AbstractInterfaceConfig.appendRuntimeParameters(map);
@@ -256,7 +253,7 @@ public class ConfigValidationUtils {
 //                boolean supportMonitor;
 //
 //                if(SpiMethodManager.get().packagePresent(PackageName.MONITOR)){
-//                    supportMonitor = (Boolean)SpiMethodManager.get().invoke(SpiMethods.isSupportMonitor,interfaceConfig);
+//                    supportMonitor = (Boolean)SpiMethodManager.get().invoke(SpiMethodNames.isSupportMonitor,interfaceConfig);
 //                }else {
 //                    supportMonitor = false;
 //                }
@@ -284,6 +281,7 @@ public class ConfigValidationUtils {
      *                       side, it is the {@link Class} of the remote service interface that will be referenced
      */
     public static void checkMock(Class<?> interfaceClass, AbstractInterfaceConfig config) {
+
         String mock = config.getMock();
         if (ConfigUtils.isEmpty(mock)) {
             return;
@@ -311,7 +309,7 @@ public class ConfigValidationUtils {
                 }
             }
         } else {
-            //Check whether the mock class is a implementation of the interfaceClass, and if it has a default constructor
+            //Check whether the mock class is an implementation of the interfaceClass, and if it has a default constructor
             MockInvoker.getMockObject(config.getScopeModel().getExtensionDirector(), normalizedMock, interfaceClass);
         }
     }
@@ -322,13 +320,16 @@ public class ConfigValidationUtils {
         checkMultiName("owner", config.getOwner());
 
         checkExtension(config.getScopeModel(), ProxyFactory.class, PROXY_KEY, config.getProxy());
-        checkExtension(config.getScopeModel(), Cluster.class, CLUSTER_KEY, config.getCluster());
-        checkMultiExtension(config.getScopeModel(), Arrays.asList(Filter.class, ClusterFilter.class), FILTER_KEY, config.getFilter());
+
+        SpiMethodManager.get().assertPresent().invoke(SpiMethodNames.checkClusterExtension,config);
+//      checkExtension(config.getScopeModel(), Cluster.class, CLUSTER_KEY, config.getCluster());
+//      checkMultiExtension(config.getScopeModel(), Arrays.asList(Filter.class, ClusterFilter.class), FILTER_KEY, config.getFilter());
+
         checkNameHasSymbol(LAYER_KEY, config.getLayer());
 
         List<MethodConfig> methods = config.getMethods();
         if (CollectionUtils.isNotEmpty(methods)) {
-            methods.forEach(ConfigValidationUtils::validateMethodConfig);
+            methods.forEach(method -> SpiMethodManager.get().assertPresent().invoke(SpiMethodNames.checkClusterExtension,method));
         }
     }
 
@@ -546,7 +547,7 @@ public class ConfigValidationUtils {
     }
 
     public static void validateMethodConfig(MethodConfig config) {
-        checkExtension(config.getScopeModel(), LoadBalance.class, LOADBALANCE_KEY, config.getLoadbalance());
+//        checkExtension(config.getScopeModel(), LoadBalance.class, LOADBALANCE_KEY, config.getLoadbalance());
         checkParameterName(config.getParameters());
         checkMethodName("name", config.getName());
 

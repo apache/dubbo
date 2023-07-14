@@ -16,36 +16,33 @@
  */
 package org.apache.dubbo.config.bootstrap;
 
-import org.apache.dubbo.config.bootstrap.rest.UserService;
-import org.apache.dubbo.config.MetadataReportConfig;
-
 /**
  * Dubbo Provider Bootstrap
- *
+ * TODO: registry-etcd
  * @since 2.7.5
  */
-public class EtcdDubboServiceConsumerBootstrap {
-
-    public static void main(String[] args) throws Exception {
-
-        DubboBootstrap bootstrap = DubboBootstrap.getInstance()
-                .application("dubbo-consumer-demo")
-                // Zookeeper
-                .protocol(builder -> builder.port(20887).name("dubbo"))
-                .registry("etcd3", builder -> builder.address("etcd3://127.0.0.1:2379?registry-type=service&subscribed-services=dubbo-provider-demo"))
-                .metadataReport(new MetadataReportConfig("etcd://127.0.0.1:2379"))
-                // Nacos
-//                .registry("consul", builder -> builder.address("consul://127.0.0.1:8500?registry.type=service&subscribed.services=dubbo-provider-demo").group("namespace1"))
-                .reference("echo", builder -> builder.interfaceClass(EchoService.class).protocol("dubbo"))
-                .reference("user", builder -> builder.interfaceClass(UserService.class).protocol("rest"))
-                .start();
-
-        EchoService echoService = bootstrap.getCache().get(EchoService.class);
-
-        for (int i = 0; i < 500; i++) {
-            Thread.sleep(2000L);
-            System.out.println(echoService.echo("Hello,World"));
-        }
-
-    }
-}
+//public class EtcdDubboServiceConsumerBootstrap {
+//
+//    public static void main(String[] args) throws Exception {
+//
+//        DubboBootstrap bootstrap = DubboBootstrap.getInstance()
+//                .application("dubbo-consumer-demo")
+//                // Zookeeper
+//                .protocol(builder -> builder.port(20887).name("dubbo"))
+//                .registry("etcd3", builder -> builder.address("etcd3://127.0.0.1:2379?registry-type=service&subscribed-services=dubbo-provider-demo"))
+//                .metadataReport(new MetadataReportConfig("etcd://127.0.0.1:2379"))
+//                // Nacos
+////                .registry("consul", builder -> builder.address("consul://127.0.0.1:8500?registry.type=service&subscribed.services=dubbo-provider-demo").group("namespace1"))
+//                .reference("echo", builder -> builder.interfaceClass(EchoService.class).protocol("dubbo"))
+//                .reference("user", builder -> builder.interfaceClass(UserService.class).protocol("rest"))
+//                .start();
+//
+//        EchoService echoService = bootstrap.getCache().get(EchoService.class);
+//
+//        for (int i = 0; i < 500; i++) {
+//            Thread.sleep(2000L);
+//            System.out.println(echoService.echo("Hello,World"));
+//        }
+//
+//    }
+//}

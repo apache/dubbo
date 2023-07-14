@@ -31,5 +31,4 @@ public interface ModuleLifecycleManager extends LifecycleManager {
      * Define what to do when {@link DefaultModuleDeployer#preDestroy()}
      */
     void onModulePreDestroy();
-
 }

@@ -1,6 +1,6 @@
 package org.apache.dubbo.metrics.registry.spi;
 
-import org.apache.dubbo.common.constants.SpiMethods;
+import org.apache.dubbo.common.constants.SpiMethodNames;
 import org.apache.dubbo.config.deploy.lifecycle.SpiMethod;
 import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -9,8 +9,8 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 public class ToRsEvent implements SpiMethod {
 
     @Override
-    public SpiMethods methodName() {
-        return SpiMethods.toRsEvent;
+    public SpiMethodNames methodName() {
+        return SpiMethodNames.toRsEvent;
     }
 
     @Override

@@ -16,18 +16,15 @@
  */
 package org.apache.dubbo.config.integration.multiple.exportprovider;
 
-import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.config.integration.AbstractRegistryCenterExporterListener;
-
-@Activate(group = CommonConstants.PROVIDER, order = 1000)
-public class MultipleRegistryCenterExportProviderExporterListener extends AbstractRegistryCenterExporterListener {
-
-    /**
-     * Returns the interface of exported service.
-     */
-    @Override
-    protected Class<?> getInterface() {
-        return MultipleRegistryCenterExportProviderService.class;
-    }
-}
+//
+//@Activate(group = CommonConstants.PROVIDER, order = 1000)
+//public class MultipleRegistryCenterExportProviderExporterListener extends AbstractRegistryCenterExporterListener {
+//
+//    /**
+//     * Returns the interface of exported service.
+//     */
+//    @Override
+//    protected Class<?> getInterface() {
+//        return MultipleRegistryCenterExportProviderService.class;
+//    }
+//}

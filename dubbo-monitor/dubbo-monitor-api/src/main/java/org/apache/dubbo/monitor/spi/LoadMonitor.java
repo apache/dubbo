@@ -3,7 +3,7 @@ package org.apache.dubbo.monitor.spi;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.constants.PackageName;
-import org.apache.dubbo.common.constants.SpiMethods;
+import org.apache.dubbo.common.constants.SpiMethodNames;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -31,8 +31,8 @@ import static org.apache.dubbo.common.constants.ClusterConstants.REFER_KEY;
 public class LoadMonitor implements SpiMethod {
 
     @Override
-    public SpiMethods methodName() {
-        return SpiMethods.loadMonitor;
+    public SpiMethodNames methodName() {
+        return SpiMethodNames.loadMonitor;
     }
 
     @Override
@@ -89,7 +89,7 @@ public class LoadMonitor implements SpiMethod {
                 boolean supportMonitor;
 
                 if(SpiMethodManager.get().packagePresent(PackageName.MONITOR)){
-                    supportMonitor = (Boolean)SpiMethodManager.get().invoke(SpiMethods.isSupportMonitor,interfaceConfig);
+                    supportMonitor = (Boolean)SpiMethodManager.get().invoke(SpiMethodNames.isSupportMonitor,interfaceConfig);
                 }else {
                     supportMonitor = false;
                 }

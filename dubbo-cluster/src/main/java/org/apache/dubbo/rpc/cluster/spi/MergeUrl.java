@@ -1,7 +1,7 @@
 package org.apache.dubbo.rpc.cluster.spi;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.constants.SpiMethods;
+import org.apache.dubbo.common.constants.SpiMethodNames;
 import org.apache.dubbo.config.deploy.lifecycle.SpiMethod;
 import org.apache.dubbo.rpc.cluster.support.ClusterUtils;
 import org.apache.dubbo.rpc.model.ModuleModel;
@@ -15,8 +15,8 @@ import java.util.Map;
 public class MergeUrl implements SpiMethod {
 
     @Override
-    public SpiMethods methodName() {
-        return SpiMethods.mergeUrl;
+    public SpiMethodNames methodName() {
+        return SpiMethodNames.mergeUrl;
     }
 
     @Override

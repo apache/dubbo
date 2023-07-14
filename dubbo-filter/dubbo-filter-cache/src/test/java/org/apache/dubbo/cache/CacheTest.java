@@ -20,16 +20,10 @@ import org.apache.dubbo.cache.support.threadlocal.ThreadLocalCache;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
-import org.apache.dubbo.config.ApplicationConfig;
-import org.apache.dubbo.config.MethodConfig;
-import org.apache.dubbo.config.ProtocolConfig;
-import org.apache.dubbo.config.ReferenceConfig;
-import org.apache.dubbo.config.RegistryConfig;
-import org.apache.dubbo.config.ServiceConfig;
+import org.apache.dubbo.config.*;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.RpcInvocation;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

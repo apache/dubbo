@@ -16,19 +16,15 @@
  */
 package org.apache.dubbo.config.integration.single.exportmetadata;
 
-import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.config.integration.AbstractRegistryCenterExporterListener;
-import org.apache.dubbo.metadata.MetadataService;
-
-@Activate(group = CommonConstants.PROVIDER, order = 1000)
-public class SingleRegistryCenterExportMetadataExporterListener extends AbstractRegistryCenterExporterListener {
-
-    /**
-     * Returns the interface of exported service.
-     */
-    @Override
-    protected Class<?> getInterface() {
-        return MetadataService.class;
-    }
-}
+//
+//@Activate(group = CommonConstants.PROVIDER, order = 1000)
+//public class SingleRegistryCenterExportMetadataExporterListener extends AbstractRegistryCenterExporterListener {
+//
+//    /**
+//     * Returns the interface of exported service.
+//     */
+//    @Override
+//    protected Class<?> getInterface() {
+//        return MetadataService.class;
+//    }
+//}

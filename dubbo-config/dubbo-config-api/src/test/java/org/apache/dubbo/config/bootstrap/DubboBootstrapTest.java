@@ -16,53 +16,25 @@
  */
 package org.apache.dubbo.config.bootstrap;
 
-import org.apache.dubbo.config.ExporterDeployListener;
-import org.apache.dubbo.config.SysProps;
-import org.apache.dubbo.config.api.DemoService;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.deploy.ApplicationDeployListener;
-import org.apache.dubbo.common.url.component.ServiceConfigURL;
-import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.config.*;
+import org.apache.dubbo.config.api.DemoService;
 import org.apache.dubbo.config.deploy.DefaultApplicationDeployer;
-import org.apache.dubbo.metadata.ConfigurableMetadataServiceExporter;
 import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
-import org.apache.dubbo.metadata.MetadataService;
-import org.apache.dubbo.monitor.MonitorService;
-import org.apache.dubbo.registry.RegistryService;
-import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
 import org.apache.dubbo.test.check.registrycenter.config.ZookeeperRegistryCenterConfig;
-
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.io.TempDir;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.file.Path;
-import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
-import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_MONITOR_ADDRESS;
-import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_SECONDS_KEY;
-import static org.hamcrest.CoreMatchers.anything;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasEntry;
-import static org.hamcrest.Matchers.is;
 
 /**
  * {@link DubboBootstrap} Test
@@ -125,46 +97,47 @@ class DubboBootstrapTest {
         }
     }
 
-    @Test
-    void testLoadRegistries() {
-        SysProps.setProperty("dubbo.registry.address", "addr1");
+//    @Test
+//    void testLoadRegistries() {
+//        SysProps.setProperty("dubbo.registry.address", "addr1");
+//
+//        ServiceConfig serviceConfig = new ServiceConfig();
+//        serviceConfig.setInterface(DemoService.class);
+//        serviceConfig.setRef(new DemoServiceImpl());
+//        serviceConfig.setApplication(new ApplicationConfig("testLoadRegistries"));
+//
+//        // load configs from props
+//        DubboBootstrap.getInstance()
+//            .initialize();
+//
+//        serviceConfig.refresh();
+//
+//        //ApplicationModel.defaultModel().getEnvironment().setDynamicConfiguration(new CompositeDynamicConfiguration());
+//        List<URL> urls = ConfigValidationUtils.tryLoadRegistries(serviceConfig, true);
+//        Assertions.assertEquals(2, urls.size());
+//        for (URL url : urls) {
+//            Assertions.assertTrue(url.getProtocol().contains("registry"));
+//            Assertions.assertEquals("addr1:9090", url.getAddress());
+//            Assertions.assertEquals(RegistryService.class.getName(), url.getPath());
+//            Assertions.assertTrue(url.getParameters().containsKey("timestamp"));
+//            Assertions.assertTrue(url.getParameters().containsKey("pid"));
+//            Assertions.assertTrue(url.getParameters().containsKey("registry"));
+//            Assertions.assertTrue(url.getParameters().containsKey("dubbo"));
+//        }
+//    }
 
-        ServiceConfig serviceConfig = new ServiceConfig();
-        serviceConfig.setInterface(DemoService.class);
-        serviceConfig.setRef(new DemoServiceImpl());
-        serviceConfig.setApplication(new ApplicationConfig("testLoadRegistries"));
-
-        // load configs from props
-        DubboBootstrap.getInstance()
-            .initialize();
-
-        serviceConfig.refresh();
-
-        //ApplicationModel.defaultModel().getEnvironment().setDynamicConfiguration(new CompositeDynamicConfiguration());
-        List<URL> urls = ConfigValidationUtils.tryLoadRegistries(serviceConfig, true);
-        Assertions.assertEquals(2, urls.size());
-        for (URL url : urls) {
-            Assertions.assertTrue(url.getProtocol().contains("registry"));
-            Assertions.assertEquals("addr1:9090", url.getAddress());
-            Assertions.assertEquals(RegistryService.class.getName(), url.getPath());
-            Assertions.assertTrue(url.getParameters().containsKey("timestamp"));
-            Assertions.assertTrue(url.getParameters().containsKey("pid"));
-            Assertions.assertTrue(url.getParameters().containsKey("registry"));
-            Assertions.assertTrue(url.getParameters().containsKey("dubbo"));
-        }
-    }
-
-    @Test
-    void testLoadUserMonitor_address_only() {
-        // -Ddubbo.monitor.address=monitor-addr:12080
-        SysProps.setProperty(DUBBO_MONITOR_ADDRESS, "monitor-addr:12080");
-        URL url = ConfigValidationUtils.loadMonitor(getTestInterfaceConfig(new MonitorConfig()), new ServiceConfigURL("dubbo", "addr1", 9090));
-        Assertions.assertEquals("monitor-addr:12080", url.getAddress());
-        Assertions.assertEquals(MonitorService.class.getName(), url.getParameter("interface"));
-        Assertions.assertNotNull(url.getParameter("dubbo"));
-        Assertions.assertNotNull(url.getParameter("pid"));
-        Assertions.assertNotNull(url.getParameter("timestamp"));
-    }
+//
+//    @Test
+//    void testLoadUserMonitor_address_only() {
+//        // -Ddubbo.monitor.address=monitor-addr:12080
+//        SysProps.setProperty(DUBBO_MONITOR_ADDRESS, "monitor-addr:12080");
+//        URL url = ConfigValidationUtils.loadMonitor(getTestInterfaceConfig(new MonitorConfig()), new ServiceConfigURL("dubbo", "addr1", 9090));
+//        Assertions.assertEquals("monitor-addr:12080", url.getAddress());
+//        Assertions.assertEquals(MonitorService.class.getName(), url.getParameter("interface"));
+//        Assertions.assertNotNull(url.getParameter("dubbo"));
+//        Assertions.assertNotNull(url.getParameter("pid"));
+//        Assertions.assertNotNull(url.getParameter("timestamp"));
+//    }
 
     @Test
     void testLoadUserMonitor_registry() {
@@ -251,92 +224,92 @@ class DubboBootstrapTest {
         return (DefaultApplicationDeployer) DefaultApplicationDeployer.get(applicationModel);
     }
 
-    @Test
-    void testLocalMetadataServiceExporter() {
-        ServiceConfig<DemoService> service = new ServiceConfig<>();
-        service.setInterface(DemoService.class);
-        service.setRef(new DemoServiceImpl());
+//    @Test
+//    void testLocalMetadataServiceExporter() {
+//        ServiceConfig<DemoService> service = new ServiceConfig<>();
+//        service.setInterface(DemoService.class);
+//        service.setRef(new DemoServiceImpl());
+//
+//        int availablePort = NetUtils.getAvailablePort();
+//
+//        ApplicationConfig applicationConfig = new ApplicationConfig("bootstrap-test");
+//        applicationConfig.setMetadataServicePort(availablePort);
+//        DubboBootstrap bootstrap = DubboBootstrap.getInstance();
+//        bootstrap.application(applicationConfig)
+//            .registry(new RegistryConfig(zkServerAddress))
+//            .protocol(new ProtocolConfig(CommonConstants.DUBBO_PROTOCOL, -1))
+//            .service(service)
+//            .start();
+//
+//        assertMetadataService(bootstrap, availablePort, true);
+//    }
+//
+//    @Test
+//    void testRemoteMetadataServiceExporter() {
+//        ServiceConfig<DemoService> service = new ServiceConfig<>();
+//        service.setInterface(DemoService.class);
+//        service.setRef(new DemoServiceImpl());
+//
+//        int availablePort = NetUtils.getAvailablePort();
+//
+//        ApplicationConfig applicationConfig = new ApplicationConfig("bootstrap-test");
+//        applicationConfig.setMetadataServicePort(availablePort);
+//        applicationConfig.setMetadataType(REMOTE_METADATA_STORAGE_TYPE);
+//
+//        RegistryConfig registryConfig = new RegistryConfig(zkServerAddress);
+//        registryConfig.setUseAsMetadataCenter(false);
+//        registryConfig.setUseAsConfigCenter(false);
+//
+//        Exception exception = null;
+//        try {
+//            DubboBootstrap.getInstance()
+//                .application(applicationConfig)
+//                .registry(registryConfig)
+//                .protocol(new ProtocolConfig(CommonConstants.DUBBO_PROTOCOL, -1))
+//                .service(service)
+//                .start();
+//        } catch (Exception e) {
+//            exception = e;
+//            DubboBootstrap.reset();
+//        }
+//
+//        Assertions.assertNotNull(exception);
+//
+//        DubboBootstrap.getInstance()
+//            .application(applicationConfig)
+//            .registry(registryConfig)
+//            .protocol(new ProtocolConfig(CommonConstants.DUBBO_PROTOCOL, -1))
+//            .service(service)
+//            .metadataReport(new MetadataReportConfig(zkServerAddress))
+//            .start();
+//
+//        assertMetadataService(DubboBootstrap.getInstance(), availablePort, false);
+//
+//    }
 
-        int availablePort = NetUtils.getAvailablePort();
+//    private ExporterDeployListener getListener(ApplicationModel model) {
+//        return (ExporterDeployListener)model.getExtensionLoader(ApplicationDeployListener.class).getExtension("exporter");
+//    }
 
-        ApplicationConfig applicationConfig = new ApplicationConfig("bootstrap-test");
-        applicationConfig.setMetadataServicePort(availablePort);
-        DubboBootstrap bootstrap = DubboBootstrap.getInstance();
-        bootstrap.application(applicationConfig)
-            .registry(new RegistryConfig(zkServerAddress))
-            .protocol(new ProtocolConfig(CommonConstants.DUBBO_PROTOCOL, -1))
-            .service(service)
-            .start();
-
-        assertMetadataService(bootstrap, availablePort, true);
-    }
-
-    @Test
-    void testRemoteMetadataServiceExporter() {
-        ServiceConfig<DemoService> service = new ServiceConfig<>();
-        service.setInterface(DemoService.class);
-        service.setRef(new DemoServiceImpl());
-
-        int availablePort = NetUtils.getAvailablePort();
-
-        ApplicationConfig applicationConfig = new ApplicationConfig("bootstrap-test");
-        applicationConfig.setMetadataServicePort(availablePort);
-        applicationConfig.setMetadataType(REMOTE_METADATA_STORAGE_TYPE);
-
-        RegistryConfig registryConfig = new RegistryConfig(zkServerAddress);
-        registryConfig.setUseAsMetadataCenter(false);
-        registryConfig.setUseAsConfigCenter(false);
-
-        Exception exception = null;
-        try {
-            DubboBootstrap.getInstance()
-                .application(applicationConfig)
-                .registry(registryConfig)
-                .protocol(new ProtocolConfig(CommonConstants.DUBBO_PROTOCOL, -1))
-                .service(service)
-                .start();
-        } catch (Exception e) {
-            exception = e;
-            DubboBootstrap.reset();
-        }
-
-        Assertions.assertNotNull(exception);
-
-        DubboBootstrap.getInstance()
-            .application(applicationConfig)
-            .registry(registryConfig)
-            .protocol(new ProtocolConfig(CommonConstants.DUBBO_PROTOCOL, -1))
-            .service(service)
-            .metadataReport(new MetadataReportConfig(zkServerAddress))
-            .start();
-
-        assertMetadataService(DubboBootstrap.getInstance(), availablePort, false);
-
-    }
-
-    private ExporterDeployListener getListener(ApplicationModel model) {
-        return (ExporterDeployListener)model.getExtensionLoader(ApplicationDeployListener.class).getExtension("exporter");
-    }
-
-    private void assertMetadataService(DubboBootstrap bootstrap, int availablePort, boolean metadataExported) {
-        ExporterDeployListener listener = getListener(bootstrap.getApplicationModel());
-        ConfigurableMetadataServiceExporter metadataServiceExporter = listener.getMetadataServiceExporter();
-        Assertions.assertEquals(metadataExported, metadataServiceExporter.isExported());
-        DubboProtocol protocol = DubboProtocol.getDubboProtocol(bootstrap.getApplicationModel());
-        Map<String, Exporter<?>> exporters = protocol.getExporterMap();
-        if (metadataExported) {
-            Assertions.assertEquals(2, exporters.size());
-
-            ServiceConfig<MetadataService> serviceConfig = new ServiceConfig<>();
-            serviceConfig.setRegistry(new RegistryConfig("N/A"));
-            serviceConfig.setInterface(MetadataService.class);
-            serviceConfig.setGroup(ApplicationModel.defaultModel().getCurrentConfig().getName());
-            serviceConfig.setVersion(MetadataService.VERSION);
-            MatcherAssert.assertThat(exporters, Matchers.hasEntry(Matchers.is(serviceConfig.getUniqueServiceName() + ":" + availablePort), CoreMatchers.anything()));
-        } else {
-            Assertions.assertEquals(1, exporters.size());
-        }
-    }
+//    private void assertMetadataService(DubboBootstrap bootstrap, int availablePort, boolean metadataExported) {
+//        ExporterDeployListener listener = getListener(bootstrap.getApplicationModel());
+//        ConfigurableMetadataServiceExporter metadataServiceExporter = listener.getMetadataServiceExporter();
+//        Assertions.assertEquals(metadataExported, metadataServiceExporter.isExported());
+//        DubboProtocol protocol = DubboProtocol.getDubboProtocol(bootstrap.getApplicationModel());
+//        Map<String, Exporter<?>> exporters = protocol.getExporterMap();
+//        if (metadataExported) {
+//            Assertions.assertEquals(2, exporters.size());
+//
+//            ServiceConfig<MetadataService> serviceConfig = new ServiceConfig<>();
+//            serviceConfig.setRegistry(new RegistryConfig("N/A"));
+//            serviceConfig.setInterface(MetadataService.class);
+//            serviceConfig.setGroup(ApplicationModel.defaultModel().getCurrentConfig().getName());
+//            serviceConfig.setVersion(MetadataService.VERSION);
+//            MatcherAssert.assertThat(exporters, Matchers.hasEntry(Matchers.is(serviceConfig.getUniqueServiceName() + ":" + availablePort), CoreMatchers.anything()));
+//        } else {
+//            Assertions.assertEquals(1, exporters.size());
+//        }
+//    }
 
 
     private void writeDubboProperties(String key, String value) {

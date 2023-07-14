@@ -1,6 +1,6 @@
 package org.apache.dubbo.metrics.spi;
 
-import org.apache.dubbo.common.constants.SpiMethods;
+import org.apache.dubbo.common.constants.SpiMethodNames;
 import org.apache.dubbo.config.deploy.lifecycle.SpiMethod;
 import org.apache.dubbo.metrics.event.MetricsEvent;
 import org.apache.dubbo.metrics.event.MetricsEventBus;
@@ -11,8 +11,8 @@ import java.util.function.Supplier;
 public class PostMetricsEvent implements SpiMethod {
 
     @Override
-    public SpiMethods methodName() {
-        return SpiMethods.postMetricsEvent;
+    public SpiMethodNames methodName() {
+        return SpiMethodNames.postMetricsEvent;
     }
 
     @Override

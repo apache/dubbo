@@ -1,6 +1,6 @@
 package org.apache.dubbo.config.deploy.lifecycle;
 
-import org.apache.dubbo.common.constants.SpiMethods;
+import org.apache.dubbo.common.constants.SpiMethodNames;
 import org.apache.dubbo.common.extension.SPI;
 
 /**
@@ -13,7 +13,7 @@ public interface SpiMethod {
      * The name of this method.
      * @return the name of this method
      */
-    SpiMethods methodName();
+    SpiMethodNames methodName();
 
     /**
      * Whether this method binding to a certain {@link org.apache.dubbo.rpc.model.ApplicationModel}.

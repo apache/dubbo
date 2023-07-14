@@ -23,7 +23,7 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.metadata.AbstractServiceNameMapping;
 import org.apache.dubbo.metadata.event.MappingChangedEvent;
-import org.apache.dubbo.metadata.MappingListener;
+import org.apache.dubbo.metadata.event.MappingListener;
 import org.apache.dubbo.metadata.event.ServiceNameMapping;
 import org.apache.dubbo.metrics.event.MetricsEventBus;
 import org.apache.dubbo.metrics.registry.event.RegistryEvent;

@@ -21,7 +21,7 @@ import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.constants.LoggerCodeConstants;
 import org.apache.dubbo.common.constants.RegistryConstants;
-import org.apache.dubbo.common.constants.SpiMethods;
+import org.apache.dubbo.common.constants.SpiMethodNames;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -430,7 +430,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         //TODO: spi method manager
         SpiMethodManager.get()
             .ifPresent()
-            .invoke(SpiMethods.publishServiceDefinition,consumerUrl, consumerModel.getServiceModel(), getApplicationModel());
+            .invoke(SpiMethodNames.publishServiceDefinition,consumerUrl, consumerModel.getServiceModel(), getApplicationModel());
 
         //MetadataUtils.publishServiceDefinition(consumerUrl, consumerModel.getServiceModel(), getApplicationModel());
 
@@ -525,7 +525,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                     urls.add(url.putAttribute(REFER_KEY, referenceParameters));
                 } else {
 
-                    URL peerUrl = (URL) SpiMethodManager.get().ifPresent().invoke(SpiMethods.mergeUrl,getScopeModel(),url,referenceParameters);
+                    URL peerUrl = (URL) SpiMethodManager.get().ifPresent().invoke(SpiMethodNames.mergeUrl,getScopeModel(),url,referenceParameters);
 //                    URL peerUrl = getScopeModel().getApplicationModel().getBeanFactory().getBean(ClusterUtils.class).mergeUrl(url, referenceParameters);
                     peerUrl = peerUrl.putAttribute(PEER_KEY, true);
                     urls.add(peerUrl);
@@ -585,7 +585,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
             // registry url, mesh-enable and unloadClusterRelated is true, not need Cluster.
 
             clusterInvoker = (Invoker<?>) SpiMethodManager.get()
-                .ifPresent().invoke(SpiMethods.createClusterInvoker,urls,protocolSPI,interfaceClass,getScopeModel(),false);
+                .ifPresent().invoke(SpiMethodNames.createClusterInvoker,urls,protocolSPI,interfaceClass,getScopeModel(),false);
 //            if (!UrlUtils.isRegistry(curUrl) &&
 //                    !curUrl.getParameter(UNLOAD_CLUSTER_RELATED, false)) {
 //                List<Invoker<?>> invokers = new ArrayList<>();
@@ -595,7 +595,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         } else {
 
             clusterInvoker = (Invoker<?>) SpiMethodManager.get()
-                .assertPresent().invoke(SpiMethods.createClusterInvoker,urls,protocolSPI,interfaceClass,getScopeModel(),true);
+                .assertPresent().invoke(SpiMethodNames.createClusterInvoker,urls,protocolSPI,interfaceClass,getScopeModel(),true);
 //            List<Invoker<?>> invokers = new ArrayList<>();
 //            URL registryUrl = null;
 //            for (URL url : urls) {
@@ -765,7 +765,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                 URL tmpUrl = new ServiceConfigURL("temp", "localhost", 0, map);
 
                 isJvmRefer = (boolean) SpiMethodManager.get().ifPresent().elseReturn(()-> false)
-                    .invoke(SpiMethods.isJvmRefer,getScopeModel(),tmpUrl);
+                    .invoke(SpiMethodNames.isJvmRefer,getScopeModel(),tmpUrl);
 
 //                isJvmRefer = InjvmProtocol.getInjvmProtocol(getScopeModel()).isInjvmRefer(tmpUrl);
             }

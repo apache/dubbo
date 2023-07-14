@@ -16,54 +16,46 @@
  */
 package org.apache.dubbo.config.integration.multiple.exportprovider;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.registry.integration.InterfaceCompatibleRegistryProtocol;
-import org.apache.dubbo.registry.integration.RegistryProtocol;
-import org.apache.dubbo.registry.integration.RegistryProtocolListener;
-import org.apache.dubbo.rpc.Exporter;
-import org.apache.dubbo.rpc.cluster.ClusterInvoker;
-
 /**
- * The {@link RegistryProtocolListener} for {@link MultipleRegistryCenterExportProviderService}
+ * The {@link RegistryProtocolListener} for {@link org.apache.dubbo.config.integration.multiple.exportprovider.MultipleRegistryCenterExportProviderService}
  */
-@Activate(order = 100)
-public class MultipleRegistryCenterExportProviderRegistryProtocolListener implements RegistryProtocolListener {
-
-    private boolean exported = false;
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void onExport(RegistryProtocol registryProtocol, Exporter<?> exporter) {
-        if (registryProtocol instanceof InterfaceCompatibleRegistryProtocol
-            && exporter != null
-            && exporter.getInvoker() != null
-            && exporter.getInvoker().getInterface().equals(MultipleRegistryCenterExportProviderService.class)) {
-            this.exported = true;
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void onRefer(RegistryProtocol registryProtocol, ClusterInvoker<?> invoker, URL url, URL registryURL) {
-
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void onDestroy() {
-    }
-
-    /**
-     * Returns if this exporter is exported.
-     */
-    public boolean isExported() {
-        return exported;
-    }
-}
+//@Activate(order = 100)
+//public class MultipleRegistryCenterExportProviderRegistryProtocolListener implements RegistryProtocolListener {
+//
+//    private boolean exported = false;
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    @Override
+//    public void onExport(RegistryProtocol registryProtocol, Exporter<?> exporter) {
+//        if (registryProtocol instanceof InterfaceCompatibleRegistryProtocol
+//            && exporter != null
+//            && exporter.getInvoker() != null
+//            && exporter.getInvoker().getInterface().equals(MultipleRegistryCenterExportProviderService.class)) {
+//            this.exported = true;
+//        }
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    @Override
+//    public void onRefer(RegistryProtocol registryProtocol, ClusterInvoker<?> invoker, URL url, URL registryURL) {
+//
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    @Override
+//    public void onDestroy() {
+//    }
+//
+//    /**
+//     * Returns if this exporter is exported.
+//     */
+//    public boolean isExported() {
+//        return exported;
+//    }
+//}

@@ -22,7 +22,7 @@ import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.constants.RegisterTypeEnum;
-import org.apache.dubbo.common.constants.SpiMethods;
+import org.apache.dubbo.common.constants.SpiMethodNames;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -462,8 +462,8 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         List<URL> registryURLs = ConfigValidationUtils.tryLoadRegistries(this, true);
 
         SpiMethodManager.get().ifPresent()
-            .invoke(SpiMethods.postMetricsEvent,
-                SpiMethodManager.get().ifPresent().invoke(SpiMethods.toRsEvent, module.getApplicationModel(), getUniqueServiceName(), protocols.size() * registryURLs.size())
+            .invoke(SpiMethodNames.postMetricsEvent,
+                SpiMethodManager.get().ifPresent().invoke(SpiMethodNames.toRsEvent, module.getApplicationModel(), getUniqueServiceName(), protocols.size() * registryURLs.size())
                 , (Supplier) () -> {
                     for (ProtocolConfig protocolConfig : protocols) {
                         String pathKey = URL.buildKey(getContextPath(protocolConfig)
@@ -681,10 +681,10 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         URL url = new ServiceConfigURL(name, null, null, host, port, getContextPath(protocolConfig).map(p -> p + "/" + path).orElse(path), params);
 
         // You can customize Configurator to append extra parameters
-        Class<?> configuratorFactoryClass = (Class<?>) SpiMethodManager.get().ifPresent().invoke(SpiMethods.getConfiguratorUrl);
+        Class<?> configuratorFactoryClass = (Class<?>) SpiMethodManager.get().ifPresent().invoke(SpiMethodNames.getConfiguratorUrl);
 
 
-        URL configuratorUrl = (URL) SpiMethodManager.get().ifPresent().invoke(SpiMethods.getConfiguratorUrl,this,url);
+        URL configuratorUrl = (URL) SpiMethodManager.get().ifPresent().invoke(SpiMethodNames.getConfiguratorUrl,this,url);
 
         if(configuratorUrl != null){
             url = configuratorUrl;
@@ -728,7 +728,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                 if (!isGeneric(generic) && !getScopeModel().isInternal()) {
                     SpiMethodManager.get()
                         .ifPresent()
-                        .invoke(SpiMethods.publishServiceDefinition,url, providerModel.getServiceModel(), getApplicationModel());
+                        .invoke(SpiMethodNames.publishServiceDefinition,url, providerModel.getServiceModel(), getApplicationModel());
 //                    MetadataUtils.publishServiceDefinition(url, providerModel.getServiceModel(), getApplicationModel());
                 }
 
@@ -747,7 +747,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
                             SpiMethodManager.get()
                                 .ifPresent()
-                                .invoke(SpiMethods.publishServiceDefinition,localUrl, providerModel.getServiceModel(), getApplicationModel());
+                                .invoke(SpiMethodNames.publishServiceDefinition,localUrl, providerModel.getServiceModel(), getApplicationModel());
 //                            MetadataUtils.publishServiceDefinition(localUrl, providerModel.getServiceModel(), getApplicationModel());
                         }
                         this.urls.add(localUrl);

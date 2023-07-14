@@ -1,3 +1,4 @@
 createClusterInvoke=org.apache.dubbo.rpc.cluster.spi.CreateClusterInvoker
 getConfigurationUrl=org.apache.dubbo.rpc.cluster.spi.GetConfiguratorUrl
 mergeUrl=org.apache.dubbo.rpc.cluster.spi.MergeUrl
+checkClusterExtension=org.apache.dubbo.rpc.cluster.spi.CheckClusterExtension

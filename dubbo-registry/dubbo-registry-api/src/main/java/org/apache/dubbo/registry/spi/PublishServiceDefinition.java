@@ -2,7 +2,7 @@ package org.apache.dubbo.registry.spi;
 
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.constants.SpiMethods;
+import org.apache.dubbo.common.constants.SpiMethodNames;
 import org.apache.dubbo.config.deploy.lifecycle.SpiMethod;
 import org.apache.dubbo.registry.client.metadata.MetadataUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -11,8 +11,8 @@ import org.apache.dubbo.rpc.model.ServiceDescriptor;
 public class PublishServiceDefinition implements SpiMethod {
 
     @Override
-    public SpiMethods methodName() {
-        return SpiMethods.publishServiceDefinition;
+    public SpiMethodNames methodName() {
+        return SpiMethodNames.publishServiceDefinition;
     }
 
     @Override

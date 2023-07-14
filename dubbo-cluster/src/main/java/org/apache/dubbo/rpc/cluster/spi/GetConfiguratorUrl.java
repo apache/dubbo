@@ -1,7 +1,7 @@
 package org.apache.dubbo.rpc.cluster.spi;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.constants.SpiMethods;
+import org.apache.dubbo.common.constants.SpiMethodNames;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.deploy.lifecycle.SpiMethod;
 import org.apache.dubbo.rpc.cluster.ConfiguratorFactory;
@@ -9,8 +9,8 @@ import org.apache.dubbo.rpc.cluster.ConfiguratorFactory;
 public class GetConfiguratorUrl implements SpiMethod {
 
     @Override
-    public SpiMethods methodName() {
-        return SpiMethods.getConfiguratorUrl;
+    public SpiMethodNames methodName() {
+        return SpiMethodNames.getConfiguratorUrl;
     }
 
 

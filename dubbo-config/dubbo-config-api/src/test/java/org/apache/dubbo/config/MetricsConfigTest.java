@@ -17,15 +17,14 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.nested.AggregationConfig;
-import org.apache.dubbo.config.nested.PrometheusConfig;
 import org.apache.dubbo.config.nested.HistogramConfig;
+import org.apache.dubbo.config.nested.PrometheusConfig;
 import org.junit.jupiter.api.Test;
+import org.testcontainers.shaded.org.hamcrest.MatcherAssert;
+import org.testcontainers.shaded.org.hamcrest.Matchers;
 
 import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMETHEUS;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
 
 class MetricsConfigTest {
 

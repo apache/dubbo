@@ -1,7 +1,6 @@
 package org.apache.dubbo.monitor.spi;
 
-import org.apache.dubbo.common.constants.PackageName;
-import org.apache.dubbo.common.constants.SpiMethods;
+import org.apache.dubbo.common.constants.SpiMethodNames;
 import org.apache.dubbo.config.AbstractInterfaceConfig;
 import org.apache.dubbo.config.deploy.lifecycle.SpiMethod;
 import org.apache.dubbo.monitor.MonitorFactory;
@@ -11,8 +10,8 @@ import static org.apache.dubbo.common.constants.MonitorConstants.LOGSTAT_PROTOCO
 public class IsSupportMonitor implements SpiMethod {
 
     @Override
-    public SpiMethods methodName() {
-        return SpiMethods.isSupportMonitor;
+    public SpiMethodNames methodName() {
+        return SpiMethodNames.isSupportMonitor;
     }
 
     @Override

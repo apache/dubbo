@@ -21,7 +21,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.config.ApplicationConfig;
-import org.apache.dubbo.metadata.MappingListener;
+import org.apache.dubbo.metadata.event.MappingListener;
 import org.apache.dubbo.metadata.definition.ServiceDefinitionBuilder;
 import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
 import org.apache.dubbo.metadata.report.identifier.KeyTypeEnum;

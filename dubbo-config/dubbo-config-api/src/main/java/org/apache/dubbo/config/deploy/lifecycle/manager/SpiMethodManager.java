@@ -1,7 +1,7 @@
 package org.apache.dubbo.config.deploy.lifecycle.manager;
 
 import org.apache.dubbo.common.constants.PackageName;
-import org.apache.dubbo.common.constants.SpiMethods;
+import org.apache.dubbo.common.constants.SpiMethodNames;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.config.deploy.lifecycle.SpiMethod;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -34,7 +34,7 @@ public class SpiMethodManager {
     /**
      * packageName -> methodName -> method
      */
-    private final Map<PackageName, Map<SpiMethods, SpiMethod>> methods;
+    private final Map<PackageName, Map<SpiMethodNames, SpiMethod>> methods;
 
     public SpiMethodManager(ApplicationModel applicationModel) {
         this(applicationModel,false);
@@ -70,6 +70,16 @@ public class SpiMethodManager {
         return INSTANCES.get(DEFAULT).new Invoker();
     }
 
+    /**
+     * Get spi method manager by application name
+     * @param appName application name
+     */
+    public Invoker getByApplication(String appName) {
+        SpiMethodManager manager = INSTANCES.get(appName);
+        Assert.assertTrue(manager != null, "Application not found , application name:" + appName);
+        return manager.new Invoker();
+    }
+
     public class Invoker {
 
         static final byte OP_DEFAULT = 0;
@@ -82,31 +92,29 @@ public class SpiMethodManager {
 
         Supplier<?> supplier;
 
-
-
+        /**
+         * If target method/package not found, just returns null.
+         */
         public Invoker ifPresent() {
             operation = OP_IF_PRESENT;
             return this;
         }
 
+        /**
+         * If target method/package not found, throw an exception.
+         */
         public Invoker assertPresent() {
             operation = OP_ASSERT_PRESENT;
             return this;
         }
 
+        /**
+         * If target method/package not found, return another value.
+         * @param supplier supplier
+         */
         public Invoker elseReturn(Supplier<?> supplier){
             this.supplier = supplier;
             return this;
-        }
-
-        /**
-         * Get spi method manager by name
-         * @param appName application name
-         */
-        public Invoker getByApplication(String appName) {
-            SpiMethodManager manager = INSTANCES.get(appName);
-            Assert.assertTrue(manager != null, "Application not found , application name:" + appName);
-            return manager.new Invoker();
         }
 
         /**
@@ -124,11 +132,11 @@ public class SpiMethodManager {
          * @param methodName method name
          *
          */
-        public boolean methodPresent(SpiMethods methodName){
+        public boolean methodPresent(SpiMethodNames methodName){
             return methods.containsKey(methodName.getPackageName()) && methods.get(methodName.getPackageName()).containsKey(methodName);
         }
 
-        public Object invoke(SpiMethods methodName, Object... params) {
+        public Object invoke(SpiMethodNames methodName, Object... params) {
 
             SpiMethod method = null;
 

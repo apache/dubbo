@@ -16,18 +16,14 @@
  */
 package org.apache.dubbo.config.integration.single.injvm;
 
-import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.config.integration.AbstractRegistryCenterExporterListener;
-
-@Activate(group = CommonConstants.PROVIDER, order = 1000)
-public class SingleRegistryCenterInjvmExporterListener extends AbstractRegistryCenterExporterListener {
-
-    /**
-     * Returns the interface of exported service.
-     */
-    @Override
-    protected Class<?> getInterface() {
-        return SingleRegistryCenterInjvmService.class;
-    }
-}
+//@Activate(group = CommonConstants.PROVIDER, order = 1000)
+//public class SingleRegistryCenterInjvmExporterListener extends AbstractRegistryCenterExporterListener {
+//
+//    /**
+//     * Returns the interface of exported service.
+//     */
+//    @Override
+//    protected Class<?> getInterface() {
+//        return SingleRegistryCenterInjvmService.class;
+//    }
+//}

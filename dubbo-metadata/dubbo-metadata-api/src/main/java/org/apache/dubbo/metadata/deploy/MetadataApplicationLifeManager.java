@@ -28,13 +28,13 @@ import static org.apache.dubbo.remoting.Constants.CLIENT_KEY;
 /**
  * Metadata Package Life Manager
  */
-public class MetadataLifeManager implements ApplicationLifecycleManager {
+public class MetadataApplicationLifeManager implements ApplicationLifecycleManager {
 
     private static final String NAME = "metadata";
 
     private DefaultApplicationDeployer applicationDeployer;
 
-    private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(MetadataLifeManager.class);
+    private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(MetadataApplicationLifeManager.class);
 
     @Override
     public void setApplicationDeployer(DefaultApplicationDeployer defaultApplicationDeployer) {
