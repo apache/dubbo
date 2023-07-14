@@ -28,13 +28,15 @@ import java.io.OutputStream;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 
-@Activate(onClass="javax.ws.rs.core.Response")
+@Activate(onClass = "javax.ws.rs.core.Response")
 public class ResteasyResponseCodec implements HttpMessageCodec<byte[], OutputStream> {
 
     private Class<?> responseClass;
-    public ResteasyResponseCodec(){
+
+    public ResteasyResponseCodec() {
         try {
             responseClass = ClassUtils.forName("javax.ws.rs.core.Response");
+            JsonCodec.addUnSupportClass(responseClass);
         } catch (Exception exception) {
             responseClass = null;
         }
