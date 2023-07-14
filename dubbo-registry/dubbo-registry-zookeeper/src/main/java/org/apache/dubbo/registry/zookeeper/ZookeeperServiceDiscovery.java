@@ -186,8 +186,8 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
         return isConnected() && CollectionUtils.isNotEmpty(getServices());
     }
 
-    private boolean isConnected(){
-        if(curatorFramework == null || curatorFramework.getZookeeperClient() == null){
+    private boolean isConnected() {
+        if (curatorFramework == null || curatorFramework.getZookeeperClient() == null) {
             return false;
         }
         return curatorFramework.getZookeeperClient().isConnected();
