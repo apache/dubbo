@@ -133,7 +133,7 @@ public interface ResteasyContext {
 
     default void writeResteasyResponse(URL url, RequestFacade requestFacade, NettyHttpResponse response, BuiltResponse restResponse) throws Exception {
         if (restResponse.getMediaType() != null) {
-            MediaType mediaType = MediaTypeUtil.convertMediaType(restResponse.getEntityClass(), restResponse.getMediaType().getType());
+            MediaType mediaType = MediaTypeUtil.convertMediaType(restResponse.getEntityClass(), restResponse.getMediaType().toString());
             ServiceInvokeRestFilter.writeResult(response, url, restResponse.getEntity(), restResponse.getEntityClass(), mediaType);
         } else {
             ServiceInvokeRestFilter.writeResult(response, requestFacade, url, restResponse.getEntity(), restResponse.getEntityClass());
