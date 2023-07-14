@@ -87,8 +87,10 @@ class NoAnnotationRestProtocolTest {
         result = client.hello(1, 2);
         Assertions.assertEquals(3, result);
 
-        User user = client.noBodyArg(User.getInstance());
+        User user = client.user(User.getInstance());
         Assertions.assertEquals("invoked", user.getName());
+
+        Assertions.assertEquals(User.getInstance(),client.userList(Arrays.asList(User.getInstance())).get(0));
 
 
         invoker.destroy();

@@ -26,6 +26,7 @@ import org.apache.dubbo.rpc.protocol.rest.message.HttpMessageCodec;
 
 import java.io.OutputStream;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 
 @Activate(onClass = "javax.ws.rs.core.Response")
@@ -58,7 +59,7 @@ public class ResteasyResponseCodec implements HttpMessageCodec<byte[], OutputStr
     }
 
     @Override
-    public Object decode(byte[] body, Class<?> targetType) throws Exception {
+    public Object decode(byte[] body, Class<?> targetType, Type type) throws Exception {
         if (null == body || body.length == 0) {
             return null;
         }

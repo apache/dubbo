@@ -40,6 +40,7 @@ import org.apache.dubbo.rpc.protocol.rest.message.HttpMessageCodecManager;
 import org.apache.dubbo.rpc.protocol.rest.util.HttpHeaderUtil;
 import org.apache.dubbo.rpc.protocol.rest.util.MediaTypeUtil;
 
+import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -100,9 +101,10 @@ public class RestInvoker<T> extends AbstractInvoker<T> {
                         } else if (responseCode >= 500) {
                             responseFuture.completeExceptionally(new RemoteServerInternalException(r.getMessage()));
                         } else if (responseCode < 400) {
-                            mediaType = MediaTypeUtil.convertMediaType(restMethodMetadata.getReflectMethod().getReturnType(), r.getContentType());
+                            Method reflectMethod = restMethodMetadata.getReflectMethod();
+                            mediaType = MediaTypeUtil.convertMediaType(reflectMethod.getReturnType(), r.getContentType());
                             Object value = HttpMessageCodecManager.httpMessageDecode(r.getBody(),
-                                restMethodMetadata.getReflectMethod().getReturnType(), mediaType);
+                                reflectMethod.getReturnType(), reflectMethod.getGenericReturnType(), mediaType);
                             appResponse.setValue(value);
                             // resolve response attribute & attachment
                             HttpHeaderUtil.parseResponseHeader(appResponse, r);

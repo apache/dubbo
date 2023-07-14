@@ -25,6 +25,7 @@ import org.apache.dubbo.rpc.protocol.rest.message.MediaTypeMatcher;
 import org.apache.dubbo.rpc.protocol.rest.util.DataParseUtils;
 
 import java.io.OutputStream;
+import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Set;
@@ -42,8 +43,8 @@ public class JsonCodec implements HttpMessageCodec<byte[], OutputStream> {
     }
 
     @Override
-    public Object decode(byte[] body, Class<?> targetType) throws Exception {
-        return DataParseUtils.jsonConvert(targetType, body);
+    public Object decode(byte[] body, Class<?> targetType, Type actualType) throws Exception {
+        return DataParseUtils.jsonConvert(actualType, body);
     }
 
     @Override

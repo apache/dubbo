@@ -41,7 +41,7 @@ public class NoAnnotationParamProviderParamParser extends ProviderParamParser {
 
         Object arg = arrayArgs[index];
 
-        Object convertArg = JsonUtils.toJavaObject(JsonUtils.toJson(arg), argInfo.getParamType());
+        Object convertArg = JsonUtils.toJavaObject(JsonUtils.toJson(arg), argInfo.actualReflectType());
 
         parseContext.setValueByIndex(index, convertArg);
 
