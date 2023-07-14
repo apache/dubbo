@@ -55,7 +55,7 @@ public class Slf4jLoggerAdapter implements LoggerAdapter {
 
     @Override
     public void setLevel(Level level) {
-        logger.warn("","","",String.format("The level of slf4j logger can not be set, using the default level: %s",Slf4jLogger.getLevel(ROOT_LOGGER)));
+        logger.warn("","","",String.format("The level of slf4j logger current can not be set, using the default level: %s",Slf4jLogger.getLevel(ROOT_LOGGER)));
         this.level = level;
     }
 
