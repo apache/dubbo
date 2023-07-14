@@ -18,7 +18,7 @@
 package org.apache.dubbo.rpc.protocol.rest;
 
 /**
- * MonitorConstants definition.
+ * Constants definition.
  */
 public interface Constants {
     String KEEP_ALIVE_KEY = "keepalive";
