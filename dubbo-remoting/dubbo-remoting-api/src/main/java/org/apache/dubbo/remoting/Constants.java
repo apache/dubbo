@@ -173,4 +173,5 @@ public interface Constants {
 
     String CONTENT_LENGTH_KEY = "content-length";
 
+    String USE_SECURE_RANDOM_ID = "dubbo.application.use-secure-random-request-id";
 }
