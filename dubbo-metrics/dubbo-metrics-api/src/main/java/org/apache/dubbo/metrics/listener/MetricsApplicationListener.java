@@ -37,7 +37,7 @@ public class MetricsApplicationListener extends AbstractMetricsKeyListener {
         return AbstractMetricsKeyListener.onFinish(metricsKey,
                 event -> {
                     collector.increment(metricsKey);
-                    collector.addRt(placeType.getType(), event.getTimePair().calc());
+                    collector.addApplicationRt(placeType.getType(), event.getTimePair().calc());
                 }
         );
     }
@@ -46,7 +46,7 @@ public class MetricsApplicationListener extends AbstractMetricsKeyListener {
         return AbstractMetricsKeyListener.onError(metricsKey,
                 event -> {
                     collector.increment(metricsKey);
-                    collector.addRt(placeType.getType(), event.getTimePair().calc());
+                    collector.addApplicationRt(placeType.getType(), event.getTimePair().calc());
                 }
         );
     }

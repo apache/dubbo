@@ -71,7 +71,7 @@ class MetadataMetricsCollectorTest {
     @Test
     void testListener() {
         MetadataEvent event = MetadataEvent.toPushEvent(applicationModel);
-        MetricsEvent otherEvent = new MetricsEvent(applicationModel,null){
+        MetricsEvent otherEvent = new MetricsEvent(applicationModel,null, null, null){
         };
         Assertions.assertTrue(collector.isSupport(event));
         Assertions.assertFalse(collector.isSupport(otherEvent));

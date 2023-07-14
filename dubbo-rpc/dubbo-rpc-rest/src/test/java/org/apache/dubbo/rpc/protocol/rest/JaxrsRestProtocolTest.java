@@ -39,6 +39,7 @@ import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.rest.annotation.metadata.MetadataResolver;
 import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
 import org.apache.dubbo.rpc.protocol.rest.exception.DoublePathCheckException;
+import org.apache.dubbo.rpc.protocol.rest.exception.ResteasyExceptionMapper;
 import org.apache.dubbo.rpc.protocol.rest.exception.mapper.ExceptionHandler;
 import org.apache.dubbo.rpc.protocol.rest.exception.mapper.ExceptionMapper;
 
@@ -342,6 +343,22 @@ class JaxrsRestProtocolTest {
     }
 
     @Test
+    void testRestExceptionMapper() {
+
+        DemoService server = new DemoServiceImpl();
+
+        URL url = this.registerProvider(exportUrl, server, DemoService.class);
+
+        URL exceptionUrl = url.addParameter(EXTENSION_KEY, ResteasyExceptionMapper.class.getName());
+
+        protocol.export(proxy.getInvoker(server, DemoService.class, exceptionUrl));
+
+        DemoService referDemoService = this.proxy.getProxy(protocol.refer(DemoService.class, exceptionUrl));
+
+        Assertions.assertEquals("test-exception", referDemoService.error());
+    }
+
+    @Test
     void testFormConsumerParser() {
         DemoService server = new DemoServiceImpl();
         URL nettyUrl = this.registerProvider(exportUrl, server, DemoService.class);
@@ -616,6 +633,60 @@ class JaxrsRestProtocolTest {
 
            exporter.unexport();
        });
+    }
+
+    @Test
+    void testContainerRequestFilter() {
+        DemoService server = new DemoServiceImpl();
+
+        URL url = this.registerProvider(exportUrl, server, DemoService.class);
+
+        URL nettyUrl = url.addParameter(SERVER_KEY, "netty")
+            .addParameter(EXTENSION_KEY, "org.apache.dubbo.rpc.protocol.rest.filter.TestContainerRequestFilter");
+
+        Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(server, DemoService.class, nettyUrl));
+
+        DemoService demoService = this.proxy.getProxy(protocol.refer(DemoService.class, nettyUrl));
+
+
+        Assertions.assertEquals("return-success", demoService.sayHello("hello"));
+        exporter.unexport();
+    }
+
+    @Test
+    void testIntercept() {
+        DemoService server = new DemoServiceImpl();
+
+        URL url = this.registerProvider(exportUrl, server, DemoService.class);
+
+        URL nettyUrl = url.addParameter(SERVER_KEY, "netty")
+            .addParameter(EXTENSION_KEY, "org.apache.dubbo.rpc.protocol.rest.intercept.DynamicTraceInterceptor");
+
+        Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(server, DemoService.class, nettyUrl));
+
+        DemoService demoService = this.proxy.getProxy(protocol.refer(DemoService.class, nettyUrl));
+
+
+        Assertions.assertEquals("intercept", demoService.sayHello("hello"));
+        exporter.unexport();
+    }
+
+    @Test
+    void testResponseFilter() {
+        DemoService server = new DemoServiceImpl();
+
+        URL url = this.registerProvider(exportUrl, server, DemoService.class);
+
+        URL nettyUrl = url.addParameter(SERVER_KEY, "netty")
+            .addParameter(EXTENSION_KEY, "org.apache.dubbo.rpc.protocol.rest.filter.TraceFilter");
+
+        Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(server, DemoService.class, nettyUrl));
+
+        DemoService demoService = this.proxy.getProxy(protocol.refer(DemoService.class, nettyUrl));
+
+
+        Assertions.assertEquals("response-filter", demoService.sayHello("hello"));
+        exporter.unexport();
     }
 
     private URL registerProvider(URL url, Object impl, Class<?> interfaceClass) {

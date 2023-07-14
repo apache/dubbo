@@ -21,6 +21,7 @@ import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.metrics.MetricsConstants;
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
 import org.apache.dubbo.metrics.exception.MetricsNeverHappenException;
+import org.apache.dubbo.metrics.model.MethodMetric;
 import org.apache.dubbo.metrics.model.MetricsSupport;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.key.MetricsLevel;
@@ -39,33 +40,40 @@ import static org.apache.dubbo.metrics.model.key.MetricsKey.METRIC_REQUEST_BUSIN
  * Request related events
  */
 public class RequestEvent extends TimeCounterEvent {
-    public RequestEvent(ApplicationModel applicationModel, TypeWrapper typeWrapper) {
-        super(applicationModel,typeWrapper);
-        ScopeBeanFactory beanFactory = applicationModel.getBeanFactory();
-        DefaultMetricsCollector collector;
-        if (!beanFactory.isDestroyed()) {
-            collector = beanFactory.getBean(DefaultMetricsCollector.class);
-            super.setAvailable(collector != null && collector.isCollectEnabled());
+    private static final TypeWrapper TYPE_WRAPPER = new TypeWrapper(MetricsLevel.SERVICE, METRIC_REQUESTS, METRIC_REQUESTS_SUCCEED, METRIC_REQUEST_BUSINESS_FAILED);
+
+    public RequestEvent(ApplicationModel applicationModel, String appName, MetricsDispatcher metricsDispatcher, DefaultMetricsCollector collector, TypeWrapper TYPE_WRAPPER) {
+        super(applicationModel, appName, metricsDispatcher, TYPE_WRAPPER);
+        if (collector == null) {
+            ScopeBeanFactory beanFactory = applicationModel.getBeanFactory();
+            if (!beanFactory.isDestroyed()) {
+                collector = beanFactory.getBean(DefaultMetricsCollector.class);
+            }
         }
+        super.setAvailable(collector != null && collector.isCollectEnabled());
     }
 
-    public static RequestEvent toRequestEvent(ApplicationModel applicationModel, Invocation invocation) {
-        RequestEvent requestEvent = new RequestEvent(applicationModel, new TypeWrapper(MetricsLevel.SERVICE, METRIC_REQUESTS, METRIC_REQUESTS_SUCCEED, METRIC_REQUEST_BUSINESS_FAILED)) {
-            @Override
-            public void customAfterPost(Object postResult) {
-                if (postResult == null) {
-                    return;
-                }
-                if (!(postResult instanceof Result)) {
-                    throw new MetricsNeverHappenException("Result type error, postResult:" + postResult.getClass().getName());
-                }
-                super.putAttachment(METRIC_THROWABLE, ((Result) postResult).getException());
-            }
-        };
+    public static RequestEvent toRequestEvent(ApplicationModel applicationModel, String appName,
+                                              MetricsDispatcher metricsDispatcher, DefaultMetricsCollector collector,
+                                              Invocation invocation, String side) {
+        MethodMetric methodMetric = new MethodMetric(applicationModel, invocation);
+        RequestEvent requestEvent = new RequestEvent(applicationModel, appName, metricsDispatcher, collector, TYPE_WRAPPER);
         requestEvent.putAttachment(MetricsConstants.INVOCATION, invocation);
+        requestEvent.putAttachment(MetricsConstants.METHOD_METRICS, methodMetric);
         requestEvent.putAttachment(ATTACHMENT_KEY_SERVICE, MetricsSupport.getInterfaceName(invocation));
-        requestEvent.putAttachment(MetricsConstants.INVOCATION_SIDE, MetricsSupport.getSide(invocation));
+        requestEvent.putAttachment(MetricsConstants.INVOCATION_SIDE, side);
         return requestEvent;
+    }
+
+    @Override
+    public void customAfterPost(Object postResult) {
+        if (postResult == null) {
+            return;
+        }
+        if (!(postResult instanceof Result)) {
+            throw new MetricsNeverHappenException("Result type error, postResult:" + postResult.getClass().getName());
+        }
+        super.putAttachment(METRIC_THROWABLE, ((Result) postResult).getException());
     }
 
     /**

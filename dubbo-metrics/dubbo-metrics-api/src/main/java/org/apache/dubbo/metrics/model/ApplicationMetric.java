@@ -23,6 +23,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_APPLICATION_NAME;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_APPLICATION_VERSION_KEY;
@@ -61,5 +62,23 @@ public class ApplicationMetric implements Metric {
         tags.put(TAG_APPLICATION_VERSION_KEY, version);
         tags.put(MetricsKey.METADATA_GIT_COMMITID_METRIC.getName(), commitId);
         return tags;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ApplicationMetric)) return false;
+        ApplicationMetric that = (ApplicationMetric) o;
+        return Objects.equals(getApplicationName(), that.applicationModel.getApplicationName());
+    }
+
+    private volatile int hashCode;
+
+    @Override
+    public int hashCode() {
+        if (hashCode == 0) {
+            hashCode = Objects.hash(getApplicationName());
+        }
+        return hashCode;
     }
 }
