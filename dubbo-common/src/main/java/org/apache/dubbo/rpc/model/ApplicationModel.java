@@ -25,6 +25,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.utils.Assert;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.context.ConfigManager;
 
@@ -66,6 +67,7 @@ public class ApplicationModel extends ScopeModel {
     private final ModuleModel internalModule;
 
     private volatile ModuleModel defaultModule;
+    private String name;
 
     // internal module index is 0, default module index is 1
     private final AtomicInteger moduleIndex = new AtomicInteger(0);
@@ -234,12 +236,18 @@ public class ApplicationModel extends ScopeModel {
     }
 
     public String getApplicationName() {
-        return getCurrentConfig().getName();
+        if (StringUtils.isBlank(this.name)) {
+            this.name = getCurrentConfig().getName();
+        }
+        return this.name;
     }
 
     public String tryGetApplicationName() {
-        Optional<ApplicationConfig> appCfgOptional = getApplicationConfigManager().getApplication();
-        return appCfgOptional.isPresent() ? appCfgOptional.get().getName() : null;
+        if (StringUtils.isBlank(this.name)) {
+            Optional<ApplicationConfig> appCfgOptional = getApplicationConfigManager().getApplication();
+            this.name = appCfgOptional.map(ApplicationConfig::getName).orElse(null);
+        }
+        return this.name;
     }
 
     void addModule(ModuleModel moduleModel, boolean isInternal) {

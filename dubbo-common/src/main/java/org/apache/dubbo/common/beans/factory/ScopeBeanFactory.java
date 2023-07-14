@@ -30,6 +30,7 @@ import org.apache.dubbo.rpc.model.ScopeModelAccessor;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -53,7 +54,9 @@ public class ScopeBeanFactory {
     private final List<BeanInfo> registeredBeanInfos = new CopyOnWriteArrayList<>();
     private InstantiationStrategy instantiationStrategy;
     private final AtomicBoolean destroyed = new AtomicBoolean();
-    private List<Class<?>> registeredClasses = new ArrayList<>();
+    private final List<Class<?>> registeredClasses = new ArrayList<>();
+
+    private final Map<Class<?>, Object> registeredCacheBeanMap = new ConcurrentHashMap<>(64);
 
     public ScopeBeanFactory(ScopeBeanFactory parent, ExtensionAccessor extensionAccessor) {
         this.parent = parent;
@@ -197,8 +200,16 @@ public class ScopeBeanFactory {
         return currentBeans;
     }
 
+    @SuppressWarnings("unchecked")
     public <T> T getBean(Class<T> type) {
-        return this.getBean(null, type);
+        if (registeredCacheBeanMap.containsKey(type)) {
+            return (T) registeredCacheBeanMap.get(type);
+        }
+        T bean = this.getBean(null, type);
+        if (bean != null) {
+            registeredCacheBeanMap.put(type, bean);
+        }
+        return bean;
     }
 
     public <T> T getBean(String name, Class<T> type) {
