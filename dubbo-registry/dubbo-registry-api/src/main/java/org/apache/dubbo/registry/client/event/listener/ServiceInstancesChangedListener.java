@@ -65,8 +65,6 @@ import static org.apache.dubbo.common.constants.RegistryConstants.ENABLE_EMPTY_P
 import static org.apache.dubbo.metadata.RevisionResolver.EMPTY_REVISION;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getExportedServicesRevision;
 
-;
-
 /**
  * TODO, refactor to move revision-metadata mapping to ServiceDiscovery. Instances should have already been mapped with metadata when reached here.
  * <p>
@@ -208,11 +206,7 @@ public class ServiceInstancesChangedListener {
 
             Map<Integer, Map<Set<String>, Object>> portToRevisions = protocolRevisionsToUrls.computeIfAbsent(serviceInfo.getProtocol(), k -> new HashMap<>());
             Map<Set<String>, Object> revisionsToUrls = portToRevisions.computeIfAbsent(serviceInfo.getPort(), k -> new HashMap<>());
-            Object urls = revisionsToUrls.get(revisions);
-            if (urls == null) {
-                urls = getServiceUrlsCache(revisionToInstances, revisions, serviceInfo.getProtocol(), serviceInfo.getPort());
-                revisionsToUrls.put(revisions, urls);
-            }
+            Object urls = revisionsToUrls.computeIfAbsent(revisions, k -> getServiceUrlsCache(revisionToInstances, revisions, serviceInfo.getProtocol(), serviceInfo.getPort()));
 
             List<ProtocolServiceKeyWithUrls> list = newServiceUrls.computeIfAbsent(serviceInfo.getPath(), k -> new LinkedList<>());
             list.add(new ProtocolServiceKeyWithUrls(serviceInfo.getProtocolServiceKey(), (List<URL>) urls));
@@ -254,7 +248,7 @@ public class ServiceInstancesChangedListener {
             notifyListeners.removeIf(listener -> listener.getNotifyListener().equals(notifyListener));
 
             // ServiceKey has no listener, remove set
-            if (notifyListeners.size() == 0) {
+            if (notifyListeners.isEmpty()) {
                 this.listeners.remove(serviceKey);
             }
         }
@@ -477,7 +471,7 @@ public class ServiceInstancesChangedListener {
 
     @Override
     public int hashCode() {
-        return Objects.hash(getClass(), getServiceNames(), listeners);
+        return Objects.hash(getClass(), getServiceNames());
     }
 
     protected class AddressRefreshRetryTask implements Runnable {
