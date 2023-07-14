@@ -88,7 +88,7 @@ public class RtStatComposite extends AbstractMetricsExport {
         return singleRtStats;
     }
 
-    public void calcMetricRt(String registryOpType, Long responseTime, Metric key) {
+    public void calcServiceKeyRt(String registryOpType, Long responseTime, Metric key) {
         for (LongContainer container : rtStats.get(registryOpType)) {
             Number current = (Number) container.get(key);
             if (current == null) {
@@ -99,7 +99,7 @@ public class RtStatComposite extends AbstractMetricsExport {
         }
     }
 
-    public void calcMetricRt(Invocation invocation, String registryOpType, Long responseTime) {
+    public void calcServiceKeyRt(Invocation invocation, String registryOpType, Long responseTime) {
         List<Action> actions;
         if (invocation.getServiceModel() != null && invocation.getServiceModel().getServiceKey() != null) {
             Map<String, Object> attributeMap = invocation.getServiceModel().getServiceMetadata().getAttributeMap();

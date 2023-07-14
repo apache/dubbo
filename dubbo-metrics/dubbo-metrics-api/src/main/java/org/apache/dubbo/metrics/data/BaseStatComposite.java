@@ -73,15 +73,15 @@ public abstract class BaseStatComposite implements MetricsExport {
     }
 
     public void calcApplicationRt(String registryOpType, Long responseTime) {
-        rtStatComposite.calcMetricRt(registryOpType, responseTime, new ApplicationMetric(rtStatComposite.getApplicationModel()));
+        rtStatComposite.calcServiceKeyRt(registryOpType, responseTime, new ApplicationMetric(rtStatComposite.getApplicationModel()));
     }
 
     public void calcServiceKeyRt(String serviceKey, String registryOpType, Long responseTime) {
-        rtStatComposite.calcMetricRt(registryOpType, responseTime,new ServiceKeyMetric(rtStatComposite.getApplicationModel(), serviceKey));
+        rtStatComposite.calcServiceKeyRt(registryOpType, responseTime,new ServiceKeyMetric(rtStatComposite.getApplicationModel(), serviceKey));
     }
 
     public void calcServiceKeyRt(Invocation invocation, String registryOpType, Long responseTime) {
-        rtStatComposite.calcMetricRt(invocation, registryOpType, responseTime);
+        rtStatComposite.calcServiceKeyRt(invocation, registryOpType, responseTime);
     }
 
     public void calcMethodKeyRt(Invocation invocation, String registryOpType, Long responseTime) {
