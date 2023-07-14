@@ -50,8 +50,22 @@ public class ServiceKeyMetric extends ApplicationMetric {
         return serviceKey.equals(that.serviceKey) && Objects.equals(extraInfo, that.extraInfo);
     }
 
+
+    private volatile int hashCode = 0;
+
     @Override
     public int hashCode() {
-        return Objects.hash(serviceKey, extraInfo);
+        if (hashCode == 0) {
+            hashCode = Objects.hash(getApplicationName(), serviceKey, extraInfo);
+        }
+        return hashCode;
+    }
+
+    @Override
+    public String toString() {
+        return "ServiceKeyMetric{" +
+                "applicationName='" + getApplicationName() + '\'' +
+                ", serviceKey='" + serviceKey + '\'' +
+                '}';
     }
 }

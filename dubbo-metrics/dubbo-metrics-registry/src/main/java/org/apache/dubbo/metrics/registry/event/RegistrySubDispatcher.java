@@ -86,7 +86,6 @@ public final class RegistrySubDispatcher extends SimpleMetricsEventMulticaster {
         MetricsCat APPLICATION_NOTIFY_POST = new MetricsCat(MetricsKey.NOTIFY_METRIC_REQUESTS, MetricsApplicationListener::onPostEventBuild);
         MetricsCat APPLICATION_NOTIFY_FINISH = new MetricsCat(MetricsKey.NOTIFY_METRIC_NUM_LAST, RegistrySpecListener::onFinishOfNotify);
 
-
         MetricsCat APPLICATION_DIRECTORY_POST = new MetricsCat(MetricsKey.DIRECTORY_METRIC_NUM_VALID, RegistrySpecListener::onPostOfDirectory);
 
 

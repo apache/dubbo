@@ -73,15 +73,19 @@ public abstract class BaseStatComposite implements MetricsExport {
     }
 
     public void calcApplicationRt(String registryOpType, Long responseTime) {
-        rtStatComposite.calcKeyRt(registryOpType, responseTime, new ApplicationMetric(rtStatComposite.getApplicationModel()));
+        rtStatComposite.calcMetricRt(registryOpType, responseTime, new ApplicationMetric(rtStatComposite.getApplicationModel()));
     }
 
     public void calcServiceKeyRt(String serviceKey, String registryOpType, Long responseTime) {
-        rtStatComposite.calcKeyRt(registryOpType, responseTime, new ServiceKeyMetric(rtStatComposite.getApplicationModel(), serviceKey));
+        rtStatComposite.calcMetricRt(registryOpType, responseTime,new ServiceKeyMetric(rtStatComposite.getApplicationModel(), serviceKey));
+    }
+
+    public void calcServiceKeyRt(Invocation invocation, String registryOpType, Long responseTime) {
+        rtStatComposite.calcMetricRt(invocation, registryOpType, responseTime);
     }
 
     public void calcMethodKeyRt(Invocation invocation, String registryOpType, Long responseTime) {
-        rtStatComposite.calcKeyRt(registryOpType, responseTime, new MethodMetric(rtStatComposite.getApplicationModel(), invocation));
+        rtStatComposite.calcMethodKeyRt(invocation, registryOpType, responseTime);
     }
 
     public void setServiceKey(MetricsKeyWrapper metricsKey, String serviceKey, int num) {
@@ -100,8 +104,8 @@ public abstract class BaseStatComposite implements MetricsExport {
         serviceStatComposite.incrementExtraServiceKey(metricsKeyWrapper, attServiceKey, extra, size);
     }
 
-    public void incrementMethodKey(MetricsKeyWrapper metricsKeyWrapper, Invocation invocation, int size) {
-        methodStatComposite.incrementMethodKey(metricsKeyWrapper, invocation, size);
+    public void incrementMethodKey(MetricsKeyWrapper metricsKeyWrapper, MethodMetric methodMetric, int size) {
+        methodStatComposite.incrementMethodKey(metricsKeyWrapper, methodMetric, size);
     }
 
     @Override

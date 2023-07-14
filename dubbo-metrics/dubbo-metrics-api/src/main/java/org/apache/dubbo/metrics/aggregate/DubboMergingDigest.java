@@ -119,8 +119,6 @@ public class DubboMergingDigest extends DubboAbstractTDigest {
     // weight limits.
     public static boolean useWeightLimit = true;
 
-    private volatile boolean merging = false;
-
     /**
      * Allocates a buffer merging t-digest.  This is the normally used constructor that
      * allocates default sized internal arrays.  Other versions are available, but should
@@ -286,15 +284,12 @@ public class DubboMergingDigest extends DubboAbstractTDigest {
         if (Double.isNaN(x)) {
             throw new IllegalArgumentException("Cannot add NaN to t-digest");
         }
-        while (merging) {
-            try {
-                Thread.sleep(10);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
+
+        synchronized (this) {
+            // There is a small probability of entering here
+            if (tempUsed.get() >= tempWeight.length - lastUsedCell.get() - 1) {
+                mergeNewValues();
             }
-        }
-        if (tempUsed.get() >= tempWeight.length - lastUsedCell.get() - 1) {
-            mergeNewValues();
         }
         int where = tempUsed.getAndIncrement();
         tempWeight[where] = w;
@@ -326,13 +321,8 @@ public class DubboMergingDigest extends DubboAbstractTDigest {
         throw new MetricsNeverHappenException("Method not used");
     }
 
-    private synchronized void mergeNewValues() {
-        merging = true;
-        try {
-            mergeNewValues(false, compression);
-        } finally {
-            merging = false;
-        }
+    private void mergeNewValues() {
+        mergeNewValues(false, compression);
     }
 
     private void mergeNewValues(boolean force, double compression) {

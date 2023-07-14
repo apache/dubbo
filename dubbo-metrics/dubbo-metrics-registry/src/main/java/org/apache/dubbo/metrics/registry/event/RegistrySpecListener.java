@@ -85,7 +85,7 @@ public class RegistrySpecListener {
         return AbstractMetricsKeyListener.onFinish(metricsKey,
             event ->
             {
-                collector.addRt(event.appName(), placeType.getType(), event.getTimePair().calc());
+                collector.addServiceRt(event.appName(), placeType.getType(), event.getTimePair().calc());
                 Map<String, Integer> lastNumMap = Collections.unmodifiableMap(event.getAttachmentValue(ATTACHMENT_KEY_LAST_NUM_MAP));
                 lastNumMap.forEach(
                     (k, v) -> collector.setNum(new MetricsKeyWrapper(metricsKey, OP_TYPE_NOTIFY), k, v));

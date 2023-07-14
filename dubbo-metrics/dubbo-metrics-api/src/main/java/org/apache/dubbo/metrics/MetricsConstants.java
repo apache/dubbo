@@ -19,9 +19,11 @@ package org.apache.dubbo.metrics;
 
 public interface MetricsConstants {
 
-    String INVOCATION = "metricFilterInvocation";
-    String INVOCATION_METRICS_COUNTER = "metricFilterInvocationCounter";
-    String INVOCATION_SIDE = "metricFilterSide";
+    String INVOCATION = "metric_filter_invocation";
+    String METHOD_METRICS = "metric_filter_method_metrics";
+    String INVOCATION_METRICS_COUNTER = "metric_filter_invocation_counter";
+
+    String INVOCATION_SIDE = "metric_filter_side";
 
     String ATTACHMENT_KEY_SERVICE = "serviceKey";
     String ATTACHMENT_KEY_SIZE = "size";

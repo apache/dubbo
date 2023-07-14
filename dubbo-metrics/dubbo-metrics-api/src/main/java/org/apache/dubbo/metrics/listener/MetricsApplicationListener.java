@@ -53,10 +53,10 @@ public class MetricsApplicationListener extends AbstractMetricsKeyListener {
      */
     public static AbstractMetricsKeyListener onFinishEventBuild(MetricsKey metricsKey, MetricsPlaceValue placeType, CombMetricsCollector<?> collector) {
         return AbstractMetricsKeyListener.onFinish(metricsKey,
-            event -> {
-                collector.increment(metricsKey);
-                collector.addRt(placeType.getType(), event.getTimePair().calc());
-            }
+                event -> {
+                    collector.increment(metricsKey);
+                    collector.addApplicationRt(placeType.getType(), event.getTimePair().calc());
+                }
         );
     }
 
@@ -65,10 +65,10 @@ public class MetricsApplicationListener extends AbstractMetricsKeyListener {
      */
     public static AbstractMetricsKeyListener onErrorEventBuild(MetricsKey metricsKey, MetricsPlaceValue placeType, CombMetricsCollector<?> collector) {
         return AbstractMetricsKeyListener.onError(metricsKey,
-            event -> {
-                collector.increment(metricsKey);
-                collector.addRt(placeType.getType(), event.getTimePair().calc());
-            }
+                event -> {
+                    collector.increment(metricsKey);
+                    collector.addApplicationRt(placeType.getType(), event.getTimePair().calc());
+                }
         );
     }
 }

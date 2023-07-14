@@ -122,7 +122,7 @@ public class RegistryMetricsCollector extends CombMetricsCollector<RegistryEvent
             ApplicationMetric applicationMetric = new ApplicationMetric(applicationModel);
             applicationMetric.setExtraInfo(MetricsSupport.customExtraInfo(RegistryConstants.REGISTRY_CLUSTER_KEY.toLowerCase(), name));
             internalStat.incrRegisterNum(metricsKey, name);
-            getStats().getRtStatComposite().calcKeyRt(registryOpType, responseTime, applicationMetric);
+            getStats().getRtStatComposite().calcMetricRt(registryOpType, responseTime, applicationMetric);
         });
 
     }
@@ -140,7 +140,7 @@ public class RegistryMetricsCollector extends CombMetricsCollector<RegistryEvent
                 ServiceKeyMetric serviceKeyMetric = new ServiceKeyMetric(applicationModel, serviceKey);
                 serviceKeyMetric.setExtraInfo(extraInfo);
                 stats.incrementServiceKey(wrapper, serviceKey, extraInfo, size);
-                getStats().getRtStatComposite().calcKeyRt(wrapper.getType(), responseTime, serviceKeyMetric);
+                getStats().getRtStatComposite().calcMetricRt(wrapper.getType(), responseTime, serviceKeyMetric);
             }
         );
     }

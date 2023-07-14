@@ -516,7 +516,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
         List<URL> registryURLs = ConfigValidationUtils.loadRegistries(this, true);
         List<String> serviceDiscoveryNames = registryURLs.stream().map(url-> url.getParameter(RegistryConstants.REGISTRY_CLUSTER_KEY)).distinct().collect(Collectors.toList());
-        MetricsEventBus.post(RegistryEvent.toRsEvent(module.getApplicationModel(), getUniqueServiceName(), protocols.size(), serviceDiscoveryNames),
+        MetricsEventBus.post(RegistryEvent.toRsEvent(getApplicationModel(), getUniqueServiceName(), protocols.size(), serviceDiscoveryNames),
             () -> {
                 for (ProtocolConfig protocolConfig : protocols) {
                     String pathKey = URL.buildKey(getContextPath(protocolConfig)

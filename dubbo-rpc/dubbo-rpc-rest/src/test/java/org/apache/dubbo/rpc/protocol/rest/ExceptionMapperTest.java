@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.rest;
 
 import org.apache.dubbo.rpc.protocol.rest.exception.mapper.ExceptionHandler;
+import org.apache.dubbo.rpc.protocol.rest.exception.mapper.ExceptionHandlerResult;
 import org.apache.dubbo.rpc.protocol.rest.exception.mapper.ExceptionMapper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -32,10 +33,10 @@ public class ExceptionMapperTest {
         exceptionMapper.registerMapper(TestExceptionHandler.class);
 
 
-        Object result = exceptionMapper.exceptionToResult(new RuntimeException("test"));
+        ExceptionHandlerResult result = exceptionMapper.exceptionToResult(new RuntimeException("test"));
 
 
-        Assertions.assertEquals("test", result);
+        Assertions.assertEquals("test", result.getEntity());
 
 
     }
