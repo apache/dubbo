@@ -141,8 +141,9 @@ class AggregateMetricsCollectorTest {
     @Test
     void testListener() {
         AggregateMetricsCollector metricsCollector = new AggregateMetricsCollector(applicationModel);
-        RequestEvent event = RequestEvent.toRequestEvent(applicationModel, invocation);
-        RequestEvent beforeEvent = new RequestEvent(applicationModel, new TypeWrapper(MetricsLevel.METHOD, MetricsKey.METRIC_REQUESTS));
+        RequestEvent event = RequestEvent.toRequestEvent(applicationModel, null, null, null, invocation, MetricsSupport.getSide(invocation));
+        RequestEvent beforeEvent = RequestEvent.toRequestBeforeEvent(applicationModel, null, null, invocation, MetricsSupport.getSide(invocation));
+
         Assertions.assertTrue(metricsCollector.isSupport(event));
         Assertions.assertTrue(metricsCollector.isSupport(beforeEvent));
     }
