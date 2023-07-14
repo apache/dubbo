@@ -59,7 +59,7 @@ public class ResteasyResponseContainerFilterAdapter implements RestResponseFilte
         if (jaxrsResponse.getEntity() != null) {
             // clean  output stream data
             restOutputStream(response);
-            writeResteasyResponse(url, response, jaxrsResponse);
+            writeResteasyResponse(url, requestFacade, response, jaxrsResponse);
         }
         addResponseHeaders(response, httpResponse.getOutputHeaders());
 

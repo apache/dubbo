@@ -65,7 +65,7 @@ public class ResteasyRequestContainerFilterAdapter implements RestRequestFilter,
             }
 
             addResponseHeaders(response, restResponse.getHeaders());
-            writeResteasyResponse(url, response, restResponse);
+            writeResteasyResponse(url, requestFacade, response, restResponse);
             // completed
             restFilterContext.setComplete(true);
         } catch (Throwable e) {

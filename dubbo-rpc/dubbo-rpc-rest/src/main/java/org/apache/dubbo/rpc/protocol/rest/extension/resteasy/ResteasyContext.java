@@ -131,9 +131,13 @@ public interface ResteasyContext {
         return nettyRequest;
     }
 
-    default void writeResteasyResponse(URL url, NettyHttpResponse response, BuiltResponse restResponse) throws Exception {
-        MediaType mediaType = MediaTypeUtil.convertMediaType(restResponse.getEntityClass(), restResponse.getMediaType().toString());
-        ServiceInvokeRestFilter.writeResult(response, url, restResponse.getEntity(), restResponse.getEntityClass(), mediaType);
+    default void writeResteasyResponse(URL url, RequestFacade requestFacade, NettyHttpResponse response, BuiltResponse restResponse) throws Exception {
+        if (restResponse.getMediaType() != null) {
+            MediaType mediaType = MediaTypeUtil.convertMediaType(restResponse.getEntityClass(), restResponse.getMediaType().getType());
+            ServiceInvokeRestFilter.writeResult(response, url, restResponse.getEntity(), restResponse.getEntityClass(), mediaType);
+        } else {
+            ServiceInvokeRestFilter.writeResult(response, requestFacade, url, restResponse.getEntity(), restResponse.getEntityClass());
+        }
     }
 
     default MediaType getAcceptMediaType(RequestFacade request, Class<?> returnType) {
