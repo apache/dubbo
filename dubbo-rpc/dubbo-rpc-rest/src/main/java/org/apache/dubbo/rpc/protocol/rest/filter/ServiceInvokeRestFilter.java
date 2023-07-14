@@ -121,16 +121,14 @@ public class ServiceInvokeRestFilter implements RestRequestFilter {
                         + "\n message is: " + result.getException().getMessage()
                         + "\n stacktrace is: " + stackTraceToString(exception));
             }
-        } else {
+        }
 
-            try {
-                // invoke the intercept chain before Result  write to  response
-                executeResponseIntercepts(url, request, nettyHttpResponse, result.getValue(), rpcInvocation, serviceDeployer);
-            } catch (Exception exception) {
-                logger.error("", exception.getMessage(), "", "dubbo rest protocol execute ResponseIntercepts error", exception);
-                throw exception;
-            }
-
+        try {
+            // invoke the intercept chain before Result  write to  response
+            executeResponseIntercepts(url, request, nettyHttpResponse, result.getValue(), rpcInvocation, serviceDeployer);
+        } catch (Exception exception) {
+            logger.error("", exception.getMessage(), "", "dubbo rest protocol execute ResponseIntercepts error", exception);
+            throw exception;
         }
     }
 
