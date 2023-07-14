@@ -796,6 +796,11 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         configPostProcessors.forEach(component -> component.postProcessReferConfig(this));
     }
 
+    @Transient
+    public boolean isInitialized() {
+        return initialized;
+    }
+
     /**
      * just for test
      *
