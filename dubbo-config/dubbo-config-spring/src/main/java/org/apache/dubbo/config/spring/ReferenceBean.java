@@ -53,6 +53,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_DUBBO_BEAN_INITIALIZER;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROXY_FAILED;
 
 
@@ -142,6 +143,9 @@ public class ReferenceBean<T> implements FactoryBean<T>,
 
     //actual reference config
     private ReferenceConfig referenceConfig;
+
+    // Dubbo ReferenceBean Manager
+    private ReferenceBeanManager referenceBeanManager;
 
     // Registration sources of this reference, may be xml file or annotation location
     private List<Map<String,Object>> sources = new ArrayList<>();
@@ -251,8 +255,8 @@ public class ReferenceBean<T> implements FactoryBean<T>,
         }
         Assert.notNull(this.interfaceName, "The interface name of ReferenceBean is not initialized");
 
-        ReferenceBeanManager referenceBeanManager = beanFactory.getBean(ReferenceBeanManager.BEAN_NAME, ReferenceBeanManager.class);
-        referenceBeanManager.addReference(this);
+        this.referenceBeanManager = beanFactory.getBean(ReferenceBeanManager.BEAN_NAME, ReferenceBeanManager.class);
+        this.referenceBeanManager.addReference(this);
     }
 
     private ConfigurableListableBeanFactory getBeanFactory() {
@@ -387,8 +391,12 @@ public class ReferenceBean<T> implements FactoryBean<T>,
 
     private Object getCallProxy() throws Exception {
         if (referenceConfig == null) {
-            throw new IllegalStateException("ReferenceBean is not ready yet, please make sure to call reference interface method after dubbo is started.");
+            this.applicationContext.getBean(DubboConfigBeanInitializer.BEAN_NAME, DubboConfigBeanInitializer.class).afterPropertiesSet();
+            logger.warn(CONFIG_DUBBO_BEAN_INITIALIZER, "", "", "Early initialize reference bean before DubboConfigBeanInitializer," +
+                " the BeanPostProcessor has not been loaded at this time, which may cause unexpected properties loading(such property resolvers): " + this.getKey());
+//            throw new IllegalStateException("ReferenceBean is not ready yet, please make sure to call reference interface method after dubbo is started.");
         }
+
         //get reference proxy
         //Subclasses should synchronize on the given Object if they perform any sort of extended singleton creation phase.
         // In particular, subclasses should not have their own mutexes involved in singleton creation, to avoid the potential for deadlocks in lazy-init situations.
