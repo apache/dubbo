@@ -82,6 +82,7 @@ public final class DefaultSubDispatcher extends SimpleMetricsEventMulticaster {
                                 targetKey = key;
                             } else {
                                 targetKey = MetricsSupport.getMetricsKey((Throwable) throwableObj);
+                                MetricsSupport.increment(MetricsKey.METRIC_REQUESTS_TOTAL_FAILED, dynamicPlaceType, (MethodMetricsCollector) collector, event);
                             }
                             MetricsSupport.incrAndAddRt(targetKey, dynamicPlaceType, (MethodMetricsCollector) collector, event);
                         })),

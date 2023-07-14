@@ -85,8 +85,6 @@ public class NettyHttpHandler implements HttpHandler<NettyRequestFacade, NettyHt
             // first request filter
             executeFilters(url, requestFacade, nettyHttpResponse, serviceDeployer, restRequestFilters);
 
-            // second response filter
-            executeFilters(url, requestFacade, nettyHttpResponse, serviceDeployer, restResponseFilters);
         } catch (PathNoFoundException pathNoFoundException) {
             logger.error("", pathNoFoundException.getMessage(), "", "dubbo rest protocol provider path   no found ,raw request is :" + nettyHttpRequest, pathNoFoundException);
             nettyHttpResponse.sendError(404, pathNoFoundException.getMessage());
@@ -102,6 +100,14 @@ public class NettyHttpHandler implements HttpHandler<NettyRequestFacade, NettyHt
                 + " , stacktrace is: " + ServiceInvokeRestFilter.stackTraceToString(throwable));
         }
 
+        // second response filter
+        try {
+            executeFilters(url, requestFacade, nettyHttpResponse, serviceDeployer, restResponseFilters);
+        } catch (Throwable throwable) {
+            logger.error("", throwable.getMessage(), "", "dubbo rest protocol provider error ,and raw request is  " + nettyHttpRequest, throwable);
+            nettyHttpResponse.sendError(500, "dubbo rest invoke Internal error, message is " + throwable.getMessage() + " ,and exception type is : " + throwable.getClass()
+                + " , stacktrace is: " + ServiceInvokeRestFilter.stackTraceToString(throwable));
+        }
 
     }
 
