@@ -55,4 +55,10 @@ public class NopServiceDiscovery extends AbstractServiceDiscovery {
     public List<ServiceInstance> getInstances(String serviceName) throws NullPointerException {
         return null;
     }
+
+    @Override
+    public boolean isAvailable() {
+        // NopServiceDiscovery is designed for compatibility, check availability is meaningless, just return true
+        return true;
+    }
 }

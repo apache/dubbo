@@ -34,6 +34,7 @@ import org.apache.dubbo.common.function.ThrowableConsumer;
 import org.apache.dubbo.common.function.ThrowableFunction;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.registry.client.AbstractServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
@@ -177,6 +178,19 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
                 }
             }
         });
+    }
+
+    @Override
+    public boolean isAvailable() {
+        //Fix the issue of timeout for all calls to the isAvailable method after the zookeeper is disconnected
+        return isConnected() && CollectionUtils.isNotEmpty(getServices());
+    }
+
+    private boolean isConnected(){
+        if(curatorFramework == null || curatorFramework.getZookeeperClient() == null){
+            return false;
+        }
+        return curatorFramework.getZookeeperClient().isConnected();
     }
 
 

@@ -21,6 +21,7 @@ import java.util.Set;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.lang.Prioritized;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.registry.RegistryService;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
@@ -92,6 +93,13 @@ public interface ServiceDiscovery extends RegistryService, Prioritized {
 
     default long getDelay() {
         return getUrl().getParameter(REGISTRY_DELAY_NOTIFICATION_KEY, 5000);
+    }
+
+    /**
+     * Get services is the default way for service discovery to be available
+     */
+    default boolean isAvailable() {
+        return CollectionUtils.isNotEmpty(getServices());
     }
 
     /**
