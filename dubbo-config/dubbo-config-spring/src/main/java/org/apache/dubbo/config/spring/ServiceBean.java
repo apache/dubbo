@@ -52,6 +52,11 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
 
     private ApplicationEventPublisher applicationEventPublisher;
 
+    public ServiceBean() {
+        super();
+        this.service = null;
+    }
+
     public ServiceBean(ApplicationContext applicationContext) {
         super();
         this.service = null;
