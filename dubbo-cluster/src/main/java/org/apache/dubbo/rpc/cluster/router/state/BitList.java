@@ -114,7 +114,7 @@ public class BitList<E> extends AbstractList<E> implements Cloneable {
     }
 
     /**
-     * And method between two bitList. Return a new cloned list.
+     * And operation between two bitList. Return a new cloned list.
      * TailList in source bitList will be totally saved even if it is not appeared in the target bitList.
      *
      * @param target target bitList

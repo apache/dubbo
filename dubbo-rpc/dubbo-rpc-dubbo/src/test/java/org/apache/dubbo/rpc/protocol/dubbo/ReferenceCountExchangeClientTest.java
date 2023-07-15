@@ -191,7 +191,7 @@ class ReferenceCountExchangeClientTest {
 
         /**
          * This is the third time to close the same client. Under normal circumstances,
-         * a client value should be closed once (that is, the shutdown method is irreversible).
+         * a client value should be closed once (that is, the shutdown operation is irreversible).
          * After closing, the value of the reference counter of the client has become -1.
          *
          * But this is a bit special, because after the client is closed twice, there are several calls to helloService,
