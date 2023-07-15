@@ -26,9 +26,6 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 
 
-import org.apache.dubbo.metadata.event.MappingChangedEvent;
-import org.apache.dubbo.metadata.event.MappingListener;
-import org.apache.dubbo.metadata.event.ServiceNameMapping;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.HashSet;
@@ -60,7 +57,7 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping {
 
     private final MappingCacheManager mappingCacheManager;
 
-    private final Map<String, Set<org.apache.dubbo.metadata.event.MappingListener>> mappingListeners = new ConcurrentHashMap<>();
+    private final Map<String, Set<MappingListener>> mappingListeners = new ConcurrentHashMap<>();
 
     // mapping lock is shared among registries of the same application.
     private final ConcurrentMap<String, ReentrantLock> mappingLocks = new ConcurrentHashMap<>();
@@ -95,7 +92,7 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping {
      *
      * @return
      */
-    abstract public Set<String> getAndListen(URL url, org.apache.dubbo.metadata.event.MappingListener mappingListener);
+    abstract public Set<String> getAndListen(URL url, MappingListener mappingListener);
 
     abstract protected void removeListener(URL url, MappingListener mappingListener);
 

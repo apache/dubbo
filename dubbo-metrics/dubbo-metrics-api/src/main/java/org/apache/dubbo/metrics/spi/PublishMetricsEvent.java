@@ -5,6 +5,9 @@ import org.apache.dubbo.config.deploy.lifecycle.SpiMethod;
 import org.apache.dubbo.metrics.event.MetricsEvent;
 import org.apache.dubbo.metrics.event.MetricsEventBus;
 
+/**
+ * {@link MetricsEventBus#publish(MetricsEvent)}
+ */
 public class PublishMetricsEvent implements SpiMethod {
 
     @Override

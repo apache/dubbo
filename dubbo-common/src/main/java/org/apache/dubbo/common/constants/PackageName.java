@@ -20,11 +20,13 @@ public enum PackageName {
 
     CLUSTER("dubbo-cluster");
 
-
-
     final String name;
 
     PackageName(String name){
         this.name = name;
+    }
+
+    public String getName(){
+        return name;
     }
 }

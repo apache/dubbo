@@ -26,7 +26,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.AbstractServiceNameMapping;
 
 import org.apache.dubbo.metadata.MetadataService;
-import org.apache.dubbo.metadata.event.MappingListener;
+import org.apache.dubbo.metadata.MappingListener;
 import org.apache.dubbo.metadata.report.MetadataReport;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
 import org.apache.dubbo.registry.client.RegistryClusterIdentifier;

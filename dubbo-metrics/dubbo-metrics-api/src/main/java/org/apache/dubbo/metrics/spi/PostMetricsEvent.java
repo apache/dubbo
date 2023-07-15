@@ -8,6 +8,10 @@ import org.apache.dubbo.metrics.event.MetricsEventBus;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+/**
+ * {@link MetricsEventBus#post(MetricsEvent, Supplier)}
+ * {@link MetricsEventBus#post(MetricsEvent, Supplier, Function)}
+ */
 public class PostMetricsEvent implements SpiMethod {
 
     @Override
@@ -20,10 +24,7 @@ public class PostMetricsEvent implements SpiMethod {
         return false;
     }
 
-    /**
-     * {@link MetricsEventBus#post(MetricsEvent, Supplier)}
-     * {@link MetricsEventBus#post(MetricsEvent, Supplier, Function)}
-     */
+
     @Override
     public Object invoke(Object... params) {
         if(params.length == 2){

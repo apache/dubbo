@@ -35,14 +35,14 @@ import static java.util.Collections.singleton;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.SUBSCRIBED_SERVICE_NAMES_KEY;
 import static org.apache.dubbo.common.config.configcenter.DynamicConfigurationServiceNameMapping.buildGroup;
-import static org.apache.dubbo.metadata.event.ServiceNameMapping.getDefaultExtension;
+import static org.apache.dubbo.metadata.ServiceNameMapping.getDefaultExtension;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 */
 /**
- * {@link org.apache.dubbo.metadata.event.ServiceNameMapping} Test
+ * {@link org.apache.dubbo.metadata.ServiceNameMapping} Test
  *
  * @since 2.7.8
  *//*

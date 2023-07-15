@@ -27,6 +27,9 @@ import static org.apache.dubbo.common.constants.RegistryConstants.*;
 import static org.apache.dubbo.common.registry.Constants.SUBSCRIBE_KEY;
 import static org.apache.dubbo.common.utils.StringUtils.isNotEmpty;
 
+/**
+ * Load registry.
+ */
 public class LoadRegistry implements SpiMethod {
 
     @Override
@@ -39,12 +42,6 @@ public class LoadRegistry implements SpiMethod {
         return false;
     }
 
-    /**
-     * The spi method.
-     *
-     * @param params params
-     * @return return value
-     */
     @Override
     public Object invoke(Object... params) {
         return loadRegistries((AbstractInterfaceConfig) params[0], (Boolean) params[1]);

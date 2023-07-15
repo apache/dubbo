@@ -23,8 +23,8 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.metadata.event.MappingChangedEvent;
-import org.apache.dubbo.metadata.event.MappingListener;
+import org.apache.dubbo.metadata.MappingChangedEvent;
+import org.apache.dubbo.metadata.MappingListener;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.report.identifier.BaseMetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.KeyTypeEnum;
@@ -50,8 +50,8 @@ import java.util.concurrent.ConcurrentMap;
 
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ZOOKEEPER_EXCEPTION;
-import static org.apache.dubbo.metadata.event.ServiceNameMapping.DEFAULT_MAPPING_GROUP;
-import static org.apache.dubbo.metadata.event.ServiceNameMapping.getAppNames;
+import static org.apache.dubbo.metadata.ServiceNameMapping.DEFAULT_MAPPING_GROUP;
+import static org.apache.dubbo.metadata.ServiceNameMapping.getAppNames;
 
 /**
  * ZookeeperMetadataReport

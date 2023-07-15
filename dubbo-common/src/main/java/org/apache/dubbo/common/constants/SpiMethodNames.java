@@ -55,7 +55,4 @@ public enum SpiMethodNames {
         return packageName;
     }
 
-    public String getMethodName() {
-        return methodName;
-    }
 }

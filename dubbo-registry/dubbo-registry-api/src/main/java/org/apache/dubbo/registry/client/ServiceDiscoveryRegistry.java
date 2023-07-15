@@ -22,9 +22,9 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.metadata.AbstractServiceNameMapping;
-import org.apache.dubbo.metadata.event.MappingChangedEvent;
-import org.apache.dubbo.metadata.event.MappingListener;
-import org.apache.dubbo.metadata.event.ServiceNameMapping;
+import org.apache.dubbo.metadata.MappingChangedEvent;
+import org.apache.dubbo.metadata.MappingListener;
+import org.apache.dubbo.metadata.ServiceNameMapping;
 import org.apache.dubbo.metrics.event.MetricsEventBus;
 import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.registry.NotifyListener;
@@ -49,7 +49,7 @@ import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_TYPE_
 import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGISTRY_TYPE;
 import static org.apache.dubbo.common.function.ThrowableAction.execute;
 import static org.apache.dubbo.common.utils.CollectionUtils.toTreeSet;
-import static org.apache.dubbo.metadata.event.ServiceNameMapping.toStringKeys;
+import static org.apache.dubbo.metadata.ServiceNameMapping.toStringKeys;
 import static org.apache.dubbo.registry.client.ServiceDiscoveryFactory.getExtension;
 
 /**

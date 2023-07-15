@@ -8,6 +8,9 @@ import org.apache.dubbo.registry.client.metadata.MetadataUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 
+/**
+ * {@link MetadataUtils#publishServiceDefinition(URL, ServiceDescriptor, ApplicationModel)}
+ */
 public class PublishServiceDefinition implements SpiMethod {
 
     @Override

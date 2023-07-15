@@ -35,7 +35,7 @@ import org.apache.dubbo.config.deploy.lifecycle.manager.SpiMethodManager;
 import org.apache.dubbo.config.invoker.DelegateProviderMetaDataInvoker;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
-import org.apache.dubbo.metadata.event.ServiceNameMapping;
+import org.apache.dubbo.metadata.ServiceNameMapping;
 import org.apache.dubbo.rpc.*;
 import org.apache.dubbo.rpc.model.*;
 import org.apache.dubbo.rpc.service.GenericService;
