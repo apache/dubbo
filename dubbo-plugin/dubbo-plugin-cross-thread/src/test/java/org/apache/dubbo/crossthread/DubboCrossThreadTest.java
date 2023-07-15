@@ -25,13 +25,15 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+
 import net.bytebuddy.agent.ByteBuddyAgent;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.crossthread.toolkit.CallableWrapper;
 import org.apache.dubbo.crossthread.toolkit.RunnableWrapper;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class DubboCrossThreadTest {
     @Test
@@ -48,7 +50,7 @@ public class DubboCrossThreadTest {
         });
         ExecutorService threadPool = Executors.newSingleThreadExecutor();
         Future<String> submit = threadPool.submit(callable);
-        Assert.assertEquals(tag, submit.get(1, TimeUnit.SECONDS));
+        assertEquals(tag, submit.get(1, TimeUnit.SECONDS));
         threadPool.shutdown();
     }
 
@@ -72,7 +74,7 @@ public class DubboCrossThreadTest {
         ExecutorService threadPool = Executors.newSingleThreadExecutor();
         threadPool.submit(runnable);
         latch.await(1, TimeUnit.SECONDS);
-        Assert.assertEquals(tag, tagCrossThread);
+        assertEquals(tag, tagCrossThread);
         threadPool.shutdown();
     }
 
