@@ -26,6 +26,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.CONFIG_NAMESPACE
 
 public class NacosServiceDiscoveryFactory extends AbstractServiceDiscoveryFactory {
 
+    @Override
     public ServiceDiscovery getServiceDiscovery(URL registryURL) {
         String namespace = registryURL.getParameter(CONFIG_NAMESPACE_KEY);
         URL url = URL.valueOf(registryURL.toServiceStringWithoutResolving());
