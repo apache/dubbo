@@ -14,23 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.crossthread.interceptor;
 
-package org.apache.dubbo.spring.boot.toolkit;
+import java.lang.reflect.Field;
 
-@DubboCrossThread
-public class RunnableWrapper implements Runnable {
-    final Runnable runnable;
+import net.bytebuddy.asm.Advice;
 
-    public RunnableWrapper(Runnable runnable) {
-        this.runnable = runnable;
+import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.rpc.RpcContext;
+
+public class RunnableOrCallableConstructInterceptor {
+
+    @Advice.OnMethodEnter
+    public static void onMethodEnter() {
+
     }
 
-    public static RunnableWrapper of(Runnable r) {
-        return new RunnableWrapper(r);
+    @Advice.OnMethodExit
+    public static void onMethodExit(@Advice.This Object thiz) throws IllegalAccessException, NoSuchFieldException {
+        Field tag = thiz.getClass().getDeclaredField(RunnableOrCallableActivation.FIELD_NAME_DUBBO_TAG);
+        // copy tag to RunnableOrCallable's field from RpcContext
+        String dubboTag = RpcContext.getClientAttachment().getAttachment(CommonConstants.TAG_KEY);
+        tag.set(thiz, dubboTag);
     }
 
-    @Override
-    public void run() {
-        this.runnable.run();
-    }
 }

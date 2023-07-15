@@ -15,24 +15,25 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.spring.boot.toolkit;
+package org.apache.dubbo.crossthread.toolkit;
 
-import java.util.concurrent.Callable;
+import java.util.function.Function;
 
 @DubboCrossThread
-public class CallableWrapper<V> implements Callable<V> {
-    final Callable<V> callable;
+public class FunctionWrapper<T, R> implements Function<T, R> {
+    final Function<T, R> function;
 
-    public static <V> CallableWrapper<V> of(Callable<V> r) {
-        return new CallableWrapper<>(r);
+    public FunctionWrapper(Function<T, R> function) {
+        this.function = function;
     }
 
-    public CallableWrapper(Callable<V> callable) {
-        this.callable = callable;
+    public static <T, R> FunctionWrapper<T, R> of(Function<T, R> function) {
+        return new FunctionWrapper(function);
     }
 
     @Override
-    public V call() throws Exception {
-        return callable.call();
+    public R apply(T t) {
+        return this.function.apply(t);
     }
+
 }

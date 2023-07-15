@@ -14,26 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.spring.boot.interceptor;
 
-import net.bytebuddy.asm.Advice;
+package org.apache.dubbo.crossthread.toolkit;
 
-import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.rpc.RpcContext;
+@DubboCrossThread
+public class RunnableWrapper implements Runnable {
+    final Runnable runnable;
 
-public class RunnableOrCallableMethodInterceptor {
-
-    @Advice.OnMethodEnter
-    public static void onMethodEnter(
-        @Advice.FieldValue(value = RunnableOrCallableActivation.FIELD_NAME_DUBBO_TAG, readOnly = false) String dubboTag) {
-        // copy tag to RpcContext from RunnableOrCallable's field value
-        RpcContext.getClientAttachment().setAttachment(CommonConstants.TAG_KEY, dubboTag);
+    public RunnableWrapper(Runnable runnable) {
+        this.runnable = runnable;
     }
 
-    @Advice.OnMethodExit
-    public static void onMethodExit() {
-        // clear tag in RpcContext
-        RpcContext.getClientAttachment().removeAttachment(CommonConstants.TAG_KEY);
+    public static RunnableWrapper of(Runnable r) {
+        return new RunnableWrapper(r);
     }
 
+    @Override
+    public void run() {
+        this.runnable.run();
+    }
 }

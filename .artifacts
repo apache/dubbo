@@ -136,3 +136,4 @@ dubbo-plugin-context
 dubbo-plugin-classloader-filter
 dubbo-plugin-proxy-bytebuddy
 dubbo-plugin-qos-trace
+dubbo-plugin-cross-thread

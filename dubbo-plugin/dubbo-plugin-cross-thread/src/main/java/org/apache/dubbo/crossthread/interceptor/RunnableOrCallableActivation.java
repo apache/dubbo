@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.spring.boot.interceptor;
+package org.apache.dubbo.crossthread.interceptor;
 
 import java.lang.instrument.Instrumentation;
 import java.security.ProtectionDomain;
@@ -27,7 +27,7 @@ import net.bytebuddy.dynamic.DynamicType;
 import net.bytebuddy.matcher.ElementMatchers;
 import net.bytebuddy.utility.JavaModule;
 
-import org.apache.dubbo.spring.boot.toolkit.DubboCrossThread;
+import org.apache.dubbo.crossthread.toolkit.DubboCrossThread;
 
 import static net.bytebuddy.matcher.ElementMatchers.isAnnotatedWith;
 import static net.bytebuddy.matcher.ElementMatchers.takesArguments;

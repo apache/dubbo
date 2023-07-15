@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.spring.boot.interceptor;
+package org.apache.dubbo.crossthread.interceptor;
 
 import java.lang.instrument.Instrumentation;
 import java.util.concurrent.Callable;
@@ -28,8 +28,8 @@ import java.util.concurrent.TimeoutException;
 import net.bytebuddy.agent.ByteBuddyAgent;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.rpc.RpcContext;
-import org.apache.dubbo.spring.boot.toolkit.CallableWrapper;
-import org.apache.dubbo.spring.boot.toolkit.RunnableWrapper;
+import org.apache.dubbo.crossthread.toolkit.CallableWrapper;
+import org.apache.dubbo.crossthread.toolkit.RunnableWrapper;
 import org.junit.Assert;
 import org.junit.Test;
 

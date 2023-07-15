@@ -14,26 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.crossthread.toolkit;
 
-package org.apache.dubbo.spring.boot.toolkit;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-import java.util.function.Function;
-
-@DubboCrossThread
-public class FunctionWrapper<T, R> implements Function<T, R> {
-    final Function<T, R> function;
-
-    public FunctionWrapper(Function<T, R> function) {
-        this.function = function;
-    }
-
-    public static <T, R> FunctionWrapper<T, R> of(Function<T, R> function) {
-        return new FunctionWrapper(function);
-    }
-
-    @Override
-    public R apply(T t) {
-        return this.function.apply(t);
-    }
-
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface DubboCrossThread {
 }

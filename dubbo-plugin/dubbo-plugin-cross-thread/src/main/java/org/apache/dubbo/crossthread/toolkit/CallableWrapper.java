@@ -14,28 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.spring.boot.interceptor;
 
-import java.lang.reflect.Field;
+package org.apache.dubbo.crossthread.toolkit;
 
-import net.bytebuddy.asm.Advice;
+import java.util.concurrent.Callable;
 
-import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.rpc.RpcContext;
+@DubboCrossThread
+public class CallableWrapper<V> implements Callable<V> {
+    final Callable<V> callable;
 
-public class RunnableOrCallableConstructInterceptor {
-
-    @Advice.OnMethodEnter
-    public static void onMethodEnter() {
-
+    public static <V> CallableWrapper<V> of(Callable<V> r) {
+        return new CallableWrapper<>(r);
     }
 
-    @Advice.OnMethodExit
-    public static void onMethodExit(@Advice.This Object thiz) throws IllegalAccessException, NoSuchFieldException {
-        Field tag = thiz.getClass().getDeclaredField(RunnableOrCallableActivation.FIELD_NAME_DUBBO_TAG);
-        // copy tag to RunnableOrCallable's field from RpcContext
-        String dubboTag = RpcContext.getClientAttachment().getAttachment(CommonConstants.TAG_KEY);
-        tag.set(thiz, dubboTag);
+    public CallableWrapper(Callable<V> callable) {
+        this.callable = callable;
     }
 
+    @Override
+    public V call() throws Exception {
+        return callable.call();
+    }
 }

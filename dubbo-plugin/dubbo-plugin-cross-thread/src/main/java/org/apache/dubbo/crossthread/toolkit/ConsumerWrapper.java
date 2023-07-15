@@ -14,14 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.spring.boot.toolkit;
+package org.apache.dubbo.crossthread.toolkit;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.util.function.Consumer;
 
-@Target(ElementType.TYPE)
-@Retention(RetentionPolicy.RUNTIME)
-public @interface DubboCrossThread {
+@DubboCrossThread
+public class ConsumerWrapper<V> implements Consumer<V> {
+    final Consumer<V> consumer;
+
+    public ConsumerWrapper(Consumer<V> consumer) {
+        this.consumer = consumer;
+    }
+
+    public static <V> ConsumerWrapper<V> of(Consumer<V> consumer) {
+        return new ConsumerWrapper(consumer);
+    }
+
+    @Override
+    public void accept(V v) {
+        this.consumer.accept(v);
+    }
+
 }
