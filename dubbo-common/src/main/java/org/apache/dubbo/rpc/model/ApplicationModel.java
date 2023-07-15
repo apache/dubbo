@@ -67,7 +67,7 @@ public class ApplicationModel extends ScopeModel {
     private final ModuleModel internalModule;
 
     private volatile ModuleModel defaultModule;
-    private String name;
+    private String applicationName;
 
     // internal module index is 0, default module index is 1
     private final AtomicInteger moduleIndex = new AtomicInteger(0);
@@ -236,18 +236,18 @@ public class ApplicationModel extends ScopeModel {
     }
 
     public String getApplicationName() {
-        if (StringUtils.isBlank(this.name)) {
-            this.name = getCurrentConfig().getName();
+        if (StringUtils.isBlank(this.applicationName)) {
+            this.applicationName = getCurrentConfig().getName();
         }
-        return this.name;
+        return this.applicationName;
     }
 
     public String tryGetApplicationName() {
-        if (StringUtils.isBlank(this.name)) {
+        if (StringUtils.isBlank(this.applicationName)) {
             Optional<ApplicationConfig> appCfgOptional = getApplicationConfigManager().getApplication();
-            this.name = appCfgOptional.map(ApplicationConfig::getName).orElse(null);
+            this.applicationName = appCfgOptional.map(ApplicationConfig::getName).orElse(null);
         }
-        return this.name;
+        return this.applicationName;
     }
 
     void addModule(ModuleModel moduleModel, boolean isInternal) {
