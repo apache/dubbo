@@ -62,6 +62,10 @@ public class MetricsSupport {
     private static final String version = Version.getVersion();
     private static final String commitId = Version.getLastCommitId();
 
+    public static Map<String, String> applicationTags(ApplicationModel applicationModel) {
+        return applicationTags(applicationModel, null);
+    }
+
     public static Map<String, String> applicationTags(ApplicationModel applicationModel, @Nullable Map<String, String> extraInfo) {
         Map<String, String> tags = new HashMap<>();
         tags.put(TAG_IP, getLocalHost());
@@ -98,16 +102,8 @@ public class MetricsSupport {
         return map;
     }
 
-    public static Map<String, String> methodTags(ApplicationModel applicationModel, String names) {
-        String[] keys = names.split("_");
-        if (keys.length != 2) {
-            throw new MetricsNeverHappenException("Error names: " + names);
-        }
-        return methodTags(applicationModel, keys[0], keys[1]);
-    }
-
     public static Map<String, String> methodTags(ApplicationModel applicationModel, String serviceKey, String methodName) {
-        Map<String, String> tags = applicationTags(applicationModel, null);
+        Map<String, String> tags = applicationTags(applicationModel);
         tags.put(TAG_INTERFACE_KEY, serviceKey);
         tags.put(TAG_METHOD_KEY, methodName);
         return tags;

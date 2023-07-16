@@ -105,19 +105,6 @@ public class MetricsKeyWrapper {
         }
     }
 
-    public Map<String, String> tagName(ApplicationModel applicationModel, String key) {
-        MetricsLevel level = getLevel();
-        switch (level) {
-            case APP:
-                return MetricsSupport.applicationTags(applicationModel, null);
-            case SERVICE:
-                return MetricsSupport.serviceTags(applicationModel, key, null);
-            case METHOD:
-                return MetricsSupport.methodTags(applicationModel, key);
-        }
-        return MetricsSupport.applicationTags(applicationModel, null);
-    }
-
     public static MetricsKeyWrapper wrapper(MetricsKey metricsKey) {
         return new MetricsKeyWrapper(metricsKey, null);
     }

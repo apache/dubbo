@@ -71,7 +71,7 @@ public class ApplicationStatComposite extends AbstractMetricsExport {
 
     @SuppressWarnings({"rawtypes"})
     private GaugeMetricSample convertToSample(MetricsKey type, MetricsCategory category, AtomicLong targetNumber) {
-        return new GaugeMetricSample<>(type, MetricsSupport.applicationTags(getApplicationModel(), null), category, targetNumber, AtomicLong::get);
+        return new GaugeMetricSample<>(type, MetricsSupport.applicationTags(getApplicationModel()), category, targetNumber, AtomicLong::get);
     }
 
     public Map<MetricsKey, AtomicLong> getApplicationNumStats() {
