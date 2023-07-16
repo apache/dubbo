@@ -27,14 +27,16 @@ import static org.apache.dubbo.common.constants.CommonConstants.CONFIG_NAMESPACE
 public class NacosServiceDiscoveryFactory extends AbstractServiceDiscoveryFactory {
 
     @Override
-    public ServiceDiscovery getServiceDiscovery(URL registryURL) {
-        String namespace = registryURL.getParameter(CONFIG_NAMESPACE_KEY);
-        URL url = URL.valueOf(registryURL.toServiceStringWithoutResolving());
+    protected String createRegistryCacheKey(URL url) {
+        String namespace = url.getParameter(CONFIG_NAMESPACE_KEY);
+        url = URL.valueOf(url.toServiceStringWithoutResolving());
         if (StringUtils.isNotEmpty(namespace)) {
             url = url.addParameter(CONFIG_NAMESPACE_KEY, namespace);
         }
-        return ConcurrentHashMapUtils.computeIfAbsent(getDiscoveries(), url.toFullString(), k -> createDiscovery(registryURL));
+
+        return url.toFullString();
     }
+
     @Override
     protected ServiceDiscovery createDiscovery(URL registryURL) {
         return new NacosServiceDiscovery(applicationModel, registryURL);
