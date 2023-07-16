@@ -900,20 +900,10 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     private void registerServiceInstance() {
         try {
             registered = true;
-            List<ServiceDiscovery> serviceDiscoveries = ServiceInstanceMetadataUtils.getServiceDiscoveries(applicationModel);
-            if (serviceDiscoveries.size() > 0) {
-                MetricsEventBus.post(RegistryEvent.toRegisterEvent(applicationModel, ServiceInstanceMetadataUtils.getServiceDiscoveryNames(serviceDiscoveries)),
-                    () -> {
-                        // register service instance
-                        serviceDiscoveries.forEach(ServiceDiscovery::register);
-                        return null;
-                    }
-                );
-            }
+            ServiceInstanceMetadataUtils.registerMetadataAndInstance(applicationModel);
         } catch (Exception e) {
             logger.error(CONFIG_REGISTER_INSTANCE_ERROR, "configuration server disconnected", "", "Register instance error.", e);
         }
-
         if (registered) {
             // scheduled task for updating Metadata and ServiceInstance
             asyncMetadataFuture = frameworkExecutorRepository.getSharedScheduledExecutor().scheduleWithFixedDelay(() -> {

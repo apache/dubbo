@@ -25,6 +25,8 @@ import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.MetadataService;
+import org.apache.dubbo.metrics.event.MetricsEventBus;
+import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.DefaultServiceInstance.Endpoint;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
@@ -199,22 +201,28 @@ public class ServiceInstanceMetadataUtils {
         return null;
     }
 
-    public static List<ServiceDiscovery> getServiceDiscoveries(ApplicationModel applicationModel) {
+    public static void registerMetadataAndInstance(ApplicationModel applicationModel) {
         LOGGER.info("Start registering instance address to registry.");
         RegistryManager registryManager = applicationModel.getBeanFactory().getBean(RegistryManager.class);
-        return registryManager.getServiceDiscoveries();
-
+        // register service instance
+        List<ServiceDiscovery> serviceDiscoveries = registryManager.getServiceDiscoveries();
+        serviceDiscoveries.forEach(ServiceDiscovery::register);
+        if (serviceDiscoveries.size() > 0) {
+            MetricsEventBus.post(RegistryEvent.toRegisterEvent(applicationModel, getServiceDiscoveryNames(serviceDiscoveries)),
+                () -> {
+                    // register service instance
+                    serviceDiscoveries.forEach(ServiceDiscovery::register);
+                    return null;
+                }
+            );
+        }
     }
 
-    public static List<String> getServiceDiscoveryNames(List<ServiceDiscovery> serviceDiscoveries) {
+    private static List<String> getServiceDiscoveryNames(List<ServiceDiscovery> serviceDiscoveries) {
         return serviceDiscoveries
             .stream()
             .map(sd -> sd.getUrl().getParameter(RegistryConstants.REGISTRY_CLUSTER_KEY))
             .collect(Collectors.toList());
-    }
-
-    public static List<String> getServiceDiscoveryNames(ApplicationModel applicationModel) {
-        return getServiceDiscoveryNames(getServiceDiscoveries(applicationModel));
     }
 
     public static void refreshMetadataAndInstance(ApplicationModel applicationModel) {
