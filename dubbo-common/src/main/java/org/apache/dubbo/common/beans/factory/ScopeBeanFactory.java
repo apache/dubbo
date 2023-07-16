@@ -56,7 +56,7 @@ public class ScopeBeanFactory {
     private final AtomicBoolean destroyed = new AtomicBoolean();
     private final List<Class<?>> registeredClasses = new ArrayList<>();
 
-    private final Map<Class<?>, Object> registeredCacheBeansWithNoName = new ConcurrentHashMap<>(64);
+    private final Map<Class<?>, Object> registeredCacheBeansWithUniqueName = new ConcurrentHashMap<>(64);
 
     public ScopeBeanFactory(ScopeBeanFactory parent, ExtensionAccessor extensionAccessor) {
         this.parent = parent;
@@ -202,12 +202,12 @@ public class ScopeBeanFactory {
 
     @SuppressWarnings("unchecked")
     public <T> T getBean(Class<T> type) {
-        if (registeredCacheBeansWithNoName.containsKey(type)) {
-            return (T) registeredCacheBeansWithNoName.get(type);
+        if (registeredCacheBeansWithUniqueName.containsKey(type)) {
+            return (T) registeredCacheBeansWithUniqueName.get(type);
         }
         T bean = this.getBean(null, type);
         if (bean != null) {
-            registeredCacheBeansWithNoName.put(type, bean);
+            registeredCacheBeansWithUniqueName.put(type, bean);
         }
         return bean;
     }
