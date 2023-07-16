@@ -52,4 +52,11 @@ class ServiceBeanTest {
     abstract class TestService implements Service {
 
     }
+
+
+    @Test
+    void testGetServiceWithNoArgs() {
+        ServiceBean serviceBean = new ServiceBean();
+        MatcherAssert.assertThat(serviceBean.getService(), nullValue());
+    }
 }
