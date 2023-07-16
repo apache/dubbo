@@ -515,23 +515,18 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         repository.registerProvider(providerModel);
 
         List<URL> registryURLs = ConfigValidationUtils.loadRegistries(this, true);
-        List<String> serviceDiscoveryNames = registryURLs.stream().map(url-> url.getParameter(RegistryConstants.REGISTRY_CLUSTER_KEY)).distinct().collect(Collectors.toList());
-        MetricsEventBus.post(RegistryEvent.toRsEvent(getApplicationModel(), getUniqueServiceName(), protocols.size(), serviceDiscoveryNames),
-            () -> {
-                for (ProtocolConfig protocolConfig : protocols) {
-                    String pathKey = URL.buildKey(getContextPath(protocolConfig)
-                        .map(p -> p + "/" + path)
-                        .orElse(path), group, version);
-                    // stub service will use generated service name
-                    if (!serverService) {
-                        // In case user specified path, registerImmediately service one more time to map it to path.
-                        repository.registerService(pathKey, interfaceClass);
-                    }
-                    doExportUrlsFor1Protocol(protocolConfig, registryURLs, registerType);
-                }
-                return null;
+
+        for (ProtocolConfig protocolConfig : protocols) {
+            String pathKey = URL.buildKey(getContextPath(protocolConfig)
+                .map(p -> p + "/" + path)
+                .orElse(path), group, version);
+            // stub service will use generated service name
+            if (!serverService) {
+                // In case user specified path, register service one more time to map it to path.
+                repository.registerService(pathKey, interfaceClass);
             }
-        );
+            doExportUrlsFor1Protocol(protocolConfig, registryURLs, registerType);
+        }
 
         providerModel.setServiceUrls(urls);
     }

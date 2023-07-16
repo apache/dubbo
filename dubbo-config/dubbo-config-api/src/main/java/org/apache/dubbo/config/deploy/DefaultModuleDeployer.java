@@ -16,9 +16,11 @@
  */
 package org.apache.dubbo.config.deploy;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ReferenceCache;
 import org.apache.dubbo.common.constants.LoggerCodeConstants;
 import org.apache.dubbo.common.constants.RegisterTypeEnum;
+import org.apache.dubbo.common.constants.RegistryConstants;
 import org.apache.dubbo.common.deploy.AbstractDeployer;
 import org.apache.dubbo.common.deploy.ApplicationDeployer;
 import org.apache.dubbo.common.deploy.DeployListener;
@@ -29,15 +31,12 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
-import org.apache.dubbo.config.ConsumerConfig;
-import org.apache.dubbo.config.ModuleConfig;
-import org.apache.dubbo.config.ProviderConfig;
-import org.apache.dubbo.config.ReferenceConfig;
-import org.apache.dubbo.config.ReferenceConfigBase;
-import org.apache.dubbo.config.ServiceConfig;
-import org.apache.dubbo.config.ServiceConfigBase;
+import org.apache.dubbo.config.*;
 import org.apache.dubbo.config.context.ModuleConfigManager;
+import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.config.utils.SimpleReferenceCache;
+import org.apache.dubbo.metrics.event.MetricsEventBus;
+import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.RegistryFactory;
 import org.apache.dubbo.rpc.model.ConsumerModel;
@@ -52,6 +51,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_EXPORT_SERVICE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_REFERENCE_MODEL;
@@ -428,7 +428,14 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
             asyncExportingFutures.add(future);
         } else {
             if (!sc.isExported()) {
-                sc.export(RegisterTypeEnum.AUTO_REGISTER_BY_DEPLOYER);
+                List<URL> registryURLs = ConfigValidationUtils.loadRegistries(sc, true);
+                List<String> serviceDiscoveryNames = registryURLs.stream().map(url-> url.getParameter(RegistryConstants.REGISTRY_CLUSTER_KEY)).distinct().collect(Collectors.toList());
+                MetricsEventBus.post(RegistryEvent.toRsEvent(applicationDeployer.getApplicationModel(), sc.getUniqueServiceName(), sc.getProtocols().size(), serviceDiscoveryNames),
+                    () -> {
+                        sc.export(RegisterTypeEnum.AUTO_REGISTER_BY_DEPLOYER);
+                        return null;
+                    }
+                );
                 exportedServices.add(sc);
             }
         }
