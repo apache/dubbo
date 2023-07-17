@@ -194,6 +194,7 @@
         <maven_flatten_version>1.5.0</maven_flatten_version>
         <commons_compress_version>1.23.0</commons_compress_version>
         <revision>3.3.0-beta.1-SNAPSHOT</revision>
+        <open_feign_version>3.1.5</open_feign_version>
     </properties>
 
     <dependencyManagement>
@@ -948,6 +949,11 @@
                 <groupId>io.reactivex.rxjava2</groupId>
                 <artifactId>rxjava</artifactId>
                 <version>${rxjava.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-openfeign-core</artifactId>
+                <version>${open_feign_version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
