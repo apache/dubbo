@@ -19,6 +19,8 @@ package org.apache.dubbo.rpc.protocol.rest.noannotation;
 
 import org.apache.dubbo.rpc.protocol.rest.User;
 
+import java.util.List;
+
 
 public interface NoAnnotationDemoService {
     Integer hello(Integer a, Integer b);
@@ -27,6 +29,8 @@ public interface NoAnnotationDemoService {
 
     String sayHello(String name);
 
-    User noBodyArg(User user);
+    User user(User user);
+
+    List<User> userList(List<User> users);
 
 }

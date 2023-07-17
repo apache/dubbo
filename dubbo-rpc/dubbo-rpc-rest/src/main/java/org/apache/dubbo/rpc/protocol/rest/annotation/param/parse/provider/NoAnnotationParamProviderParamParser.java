@@ -21,13 +21,15 @@ import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.metadata.rest.ArgInfo;
 import org.apache.dubbo.metadata.rest.ParamType;
 import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
-import org.apache.dubbo.rpc.protocol.rest.util.DataParseUtils;
 
 
 /**
  * body param parse
+ * users can custom NoAnnotationParamProviderParamParser
+ * and getParamType must return ParamType.PROVIDER_NO_ANNOTATION
+ * and order is smaller than NoAnnotationParamProviderParamParser`s order
  */
-@Activate(value = RestConstant.PROVIDER_NO_ANNOTATION)
+@Activate(value = RestConstant.PROVIDER_NO_ANNOTATION, order = Integer.MAX_VALUE)
 public class NoAnnotationParamProviderParamParser extends ProviderParamParser {
 
     @Override
@@ -39,13 +41,7 @@ public class NoAnnotationParamProviderParamParser extends ProviderParamParser {
 
         Object arg = arrayArgs[index];
 
-        Object convertArg = null;
-
-        if (DataParseUtils.isTextType(argInfo.getParamType())) {
-            convertArg = DataParseUtils.stringTypeConvert(argInfo.getParamType(), String.valueOf(arg));
-        } else {
-            convertArg = JsonUtils.toJavaObject(arg.toString(), argInfo.getParamType());
-        }
+        Object convertArg = JsonUtils.toJavaObject(JsonUtils.toJson(arg), argInfo.actualReflectType());
 
         parseContext.setValueByIndex(index, convertArg);
 

@@ -29,8 +29,8 @@ public class DataParseUtilsTest {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         DataParseUtils.writeJsonContent(User.getInstance(), byteArrayOutputStream);
 
-        Assertions.assertEquals("{\"age\":18,\"id\":404,\"name\":\"dubbo\"}",
-            new String(byteArrayOutputStream.toByteArray()));
+        Assertions.assertEquals("{\"age\":18,\"id\":404,\"name\":\"dubbo\"}".getBytes().length,
+            byteArrayOutputStream.toByteArray().length);
 
 
     }

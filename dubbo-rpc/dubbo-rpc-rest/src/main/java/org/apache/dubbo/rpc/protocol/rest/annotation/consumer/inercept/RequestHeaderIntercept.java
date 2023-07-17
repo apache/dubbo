@@ -49,7 +49,7 @@ public class RequestHeaderIntercept implements HttpConnectionPreBuildIntercept {
         if (produces == null || produces.isEmpty()) {
             requestTemplate.addHeader(RestHeaderEnum.ACCEPT.getHeader(), RestConstant.DEFAULT_ACCEPT);
         } else {
-            requestTemplate.addHeader(RestHeaderEnum.ACCEPT.getHeader(), produces);
+            requestTemplate.addHeaders(RestHeaderEnum.ACCEPT.getHeader(), produces);
         }
 
 //        URL url = connectionCreateContext.getUrl();

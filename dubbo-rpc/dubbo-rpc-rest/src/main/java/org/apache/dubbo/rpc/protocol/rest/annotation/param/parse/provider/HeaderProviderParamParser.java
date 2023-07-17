@@ -33,7 +33,6 @@ public class HeaderProviderParamParser extends ProviderParamParser {
     @Override
     protected void doParse(ProviderParseContext parseContext, ArgInfo argInfo) {
 
-        //TODO MAP<String,String> convert
         RequestFacade request = parseContext.getRequestFacade();
         if (Map.class.isAssignableFrom(argInfo.getParamType())) {
 

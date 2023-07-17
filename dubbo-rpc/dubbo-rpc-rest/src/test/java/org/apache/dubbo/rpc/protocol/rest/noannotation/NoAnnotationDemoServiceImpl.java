@@ -19,6 +19,8 @@ package org.apache.dubbo.rpc.protocol.rest.noannotation;
 
 import org.apache.dubbo.rpc.protocol.rest.User;
 
+import java.util.List;
+
 
 public class NoAnnotationDemoServiceImpl implements NoAnnotationDemoService {
 
@@ -39,8 +41,13 @@ public class NoAnnotationDemoServiceImpl implements NoAnnotationDemoService {
     }
 
     @Override
-    public User noBodyArg(User user) {
+    public User user(User user) {
         user.setName("invoked");
         return user;
+    }
+
+    @Override
+    public List<User> userList(List<User> users) {
+        return users;
     }
 }
