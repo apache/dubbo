@@ -1,6 +1,6 @@
 # Dubbo Plugin Cross Thread
 
-`dubbo-spring-boot-interceptor` copy the header(dubbo-tag)/cookie(dubbo.tag)/urlParameter(dubbo.tag) to dubbo . 
+`dubbo-plugin-cross-thread` copy dubbo-tag cross thread lightly . 
 
 ## Integrate example
 ### scan annotation by byte-buddy
