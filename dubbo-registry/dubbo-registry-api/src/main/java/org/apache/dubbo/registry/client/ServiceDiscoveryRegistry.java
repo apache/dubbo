@@ -271,7 +271,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
 
     @Override
     public boolean isAvailable() {
-        //Obtaining services is just an implementation of service discovery available
+        //serviceDiscovery isAvailable has a default method, which can be used as a reference when implementing
         return serviceDiscovery.isAvailable();
     }
 
