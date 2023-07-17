@@ -272,7 +272,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
     @Override
     public boolean isAvailable() {
         //Obtaining services is just an implementation of service discovery available
-        return !serviceDiscovery.isDestroy() && serviceDiscovery.isAvailable();
+        return serviceDiscovery.isAvailable();
     }
 
     @Override

@@ -99,7 +99,7 @@ public interface ServiceDiscovery extends RegistryService, Prioritized {
      * Get services is the default way for service discovery to be available
      */
     default boolean isAvailable() {
-        return CollectionUtils.isNotEmpty(getServices());
+        return !isDestroy() && CollectionUtils.isNotEmpty(getServices());
     }
 
     /**

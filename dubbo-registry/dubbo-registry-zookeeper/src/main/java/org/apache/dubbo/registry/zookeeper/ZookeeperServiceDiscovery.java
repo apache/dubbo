@@ -183,7 +183,7 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
     @Override
     public boolean isAvailable() {
         //Fix the issue of timeout for all calls to the isAvailable method after the zookeeper is disconnected
-        return isConnected() && CollectionUtils.isNotEmpty(getServices());
+        return !isDestroy() && isConnected() && CollectionUtils.isNotEmpty(getServices());
     }
 
     private boolean isConnected() {
