@@ -32,6 +32,7 @@ import javax.xml.transform.Source;
 import javax.xml.transform.sax.SAXSource;
 import java.io.OutputStream;
 import java.io.StringReader;
+import java.lang.reflect.Type;
 
 /**
  *  body content-type is xml
@@ -41,7 +42,7 @@ public class XMLCodec implements HttpMessageCodec<byte[], OutputStream> {
 
 
     @Override
-    public Object decode(byte[] body, Class<?> targetType) throws Exception {
+    public Object decode(byte[] body, Class<?> targetType, Type type) throws Exception {
 
 
         SAXParserFactory spf = SAXParserFactory.newInstance();
