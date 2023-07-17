@@ -46,8 +46,9 @@ class TimeWindowQuantileTest {
         while (index < 100) {
             for (int i = 0; i < 100; i++) {
                 int finalI = i;
+                Assertions.assertDoesNotThrow(() -> quantile.add(finalI));
                 executorService.execute(() ->
-                    Assertions.assertDoesNotThrow(() -> quantile.add(finalI)));
+                    quantile.add(finalI));
             }
             index++;
             try {

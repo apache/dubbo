@@ -32,6 +32,7 @@ import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.HttpConnectionPreB
 import org.apache.dubbo.rpc.protocol.rest.annotation.metadata.MetadataResolver;
 
 
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -59,7 +60,7 @@ public class RestProtocol extends AbstractProtocol {
 
     public RestProtocol(FrameworkModel frameworkModel) {
         this.clientFactory = frameworkModel.getExtensionLoader(RestClientFactory.class).getAdaptiveExtension();
-        this.httpConnectionPreBuildIntercepts = frameworkModel.getExtensionLoader(HttpConnectionPreBuildIntercept.class).getSupportedExtensionInstances();
+        this.httpConnectionPreBuildIntercepts = new LinkedHashSet<>(frameworkModel.getExtensionLoader(HttpConnectionPreBuildIntercept.class).getActivateExtensions());
     }
 
 
@@ -91,12 +92,14 @@ public class RestProtocol extends AbstractProtocol {
 
         // TODO add Extension filter
         // create rest server
-        RestProtocolServer server = (RestProtocolServer) ConcurrentHashMapUtils.computeIfAbsent(serverMap, getAddr(url), restServer -> {
-            RestProtocolServer s = serverFactory.createServer(url.getParameter(SERVER_KEY, DEFAULT_SERVER));
-            s.setAddress(url.getAddress());
-            s.start(url);
-            return s;
-        });
+        RestProtocolServer server = (RestProtocolServer) ConcurrentHashMapUtils.computeIfAbsent(
+            (ConcurrentMap<? super String, ? super RestProtocolServer>) serverMap,
+            getAddr(url), restServer -> {
+                RestProtocolServer s = serverFactory.createServer(url.getParameter(SERVER_KEY, DEFAULT_SERVER));
+                s.setAddress(url.getAddress());
+                s.start(url);
+                return s;
+            });
 
 
         server.deploy(serviceRestMetadata, invoker);

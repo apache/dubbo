@@ -14,13 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.rpc.protocol.rest.filter;
 
-package com.alibaba.dubbo.rpc.service;
+import org.apache.dubbo.common.extension.ExtensionScope;
+import org.apache.dubbo.common.extension.SPI;
 
-@Deprecated
-public interface GenericService extends org.apache.dubbo.rpc.service.GenericService {
+/**
+ * Rest  response filter will be invoked when  response is written to channel
+ */
+@SPI(scope = ExtensionScope.FRAMEWORK)
+public interface RestResponseFilter extends RestFilter {
 
-    @Override
-    Object $invoke(String method, String[] parameterTypes, Object[] args)
-            throws com.alibaba.dubbo.rpc.service.GenericException;
 }

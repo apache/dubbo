@@ -23,10 +23,10 @@ import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.CacheableSupplier;
 import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.Codec;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.Decodeable;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.exchange.Request;
@@ -119,6 +119,9 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
 
     @Override
     public Object decode(Channel channel, InputStream input) throws IOException {
+        int contentLength = input.available();
+        getAttributes().put(Constants.CONTENT_LENGTH_KEY, contentLength);
+
         ObjectInput in = CodecSupport.getSerialization(serializationType)
             .deserialize(channel.getUrl(), input);
         this.put(SERIALIZATION_ID_KEY, serializationType);
@@ -154,10 +157,13 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
             if (desc.length() > 0) {
                 pts = drawPts(path, version, desc, pts);
                 if (pts == DubboCodec.EMPTY_CLASS_ARRAY) {
-                    if (!RpcUtils.isGenericCall(desc, getMethodName()) && !RpcUtils.isEcho(desc, getMethodName())) {
+                    if (RpcUtils.isGenericCall(desc, getMethodName())) {
+                        pts = DubboCodec.GENERIC_PTS_ARRAY;
+                    } else if (RpcUtils.isEcho(desc, getMethodName())) {
+                        pts = DubboCodec.ECHO_PTS_ARRAY;
+                    } else {
                         throw new IllegalArgumentException("Service not found:" + path + ", " + getMethodName());
                     }
-                    pts = ReflectUtils.desc2classArray(desc);
                 }
                 args = drawArgs(in, pts);
             }

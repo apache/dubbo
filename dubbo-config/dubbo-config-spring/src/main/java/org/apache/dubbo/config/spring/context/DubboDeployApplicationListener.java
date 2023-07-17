@@ -16,11 +16,6 @@
  */
 package org.apache.dubbo.config.spring.context;
 
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_STOP_DUBBO_ERROR;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_START_MODEL;
-import static org.springframework.util.ObjectUtils.nullSafeEquals;
-
-import java.util.concurrent.Future;
 import org.apache.dubbo.common.deploy.DeployListenerAdapter;
 import org.apache.dubbo.common.deploy.DeployState;
 import org.apache.dubbo.common.deploy.ModuleDeployer;
@@ -28,10 +23,13 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.config.spring.context.event.DubboApplicationStateEvent;
+import org.apache.dubbo.config.spring.context.event.DubboModuleStateEvent;
 import org.apache.dubbo.config.spring.util.DubboBeanUtils;
+import org.apache.dubbo.config.spring.util.LockUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModelConstants;
 import org.apache.dubbo.rpc.model.ModuleModel;
+
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -40,6 +38,12 @@ import org.springframework.context.event.ApplicationContextEvent;
 import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.Ordered;
+
+import java.util.concurrent.Future;
+
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_START_MODEL;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_STOP_DUBBO_ERROR;
+import static org.springframework.util.ObjectUtils.nullSafeEquals;
 
 /**
  * An ApplicationListener to control Dubbo application.
@@ -62,37 +66,71 @@ public class DubboDeployApplicationListener implements ApplicationListener<Appli
         applicationModel.getDeployer().addDeployListener(new DeployListenerAdapter<ApplicationModel>(){
             @Override
             public void onStarting(ApplicationModel scopeModel) {
-                publishEvent(DeployState.STARTING);
+                publishApplicationEvent(DeployState.STARTING);
             }
 
             @Override
             public void onStarted(ApplicationModel scopeModel) {
-                publishEvent(DeployState.STARTED);
+                publishApplicationEvent(DeployState.STARTED);
             }
 
             @Override
             public void onStopping(ApplicationModel scopeModel) {
-                publishEvent(DeployState.STOPPING);
+                publishApplicationEvent(DeployState.STOPPING);
             }
 
             @Override
             public void onStopped(ApplicationModel scopeModel) {
-                publishEvent(DeployState.STOPPED);
+                publishApplicationEvent(DeployState.STOPPED);
             }
 
             @Override
             public void onFailure(ApplicationModel scopeModel, Throwable cause) {
-                publishEvent(DeployState.FAILED, cause);
+                publishApplicationEvent(DeployState.FAILED, cause);
+            }
+        });
+        moduleModel.getDeployer().addDeployListener(new DeployListenerAdapter<ModuleModel>(){
+            @Override
+            public void onStarting(ModuleModel scopeModel) {
+                publishModuleEvent(DeployState.STARTING);
+            }
+
+            @Override
+            public void onStarted(ModuleModel scopeModel) {
+                publishModuleEvent(DeployState.STARTED);
+            }
+
+            @Override
+            public void onStopping(ModuleModel scopeModel) {
+                publishModuleEvent(DeployState.STOPPING);
+            }
+
+            @Override
+            public void onStopped(ModuleModel scopeModel) {
+                publishModuleEvent(DeployState.STOPPED);
+            }
+
+            @Override
+            public void onFailure(ModuleModel scopeModel, Throwable cause) {
+                publishModuleEvent(DeployState.FAILED, cause);
             }
         });
     }
 
-    private void publishEvent(DeployState state) {
+    private void publishApplicationEvent(DeployState state) {
         applicationContext.publishEvent(new DubboApplicationStateEvent(applicationModel, state));
     }
 
-    private void publishEvent(DeployState state, Throwable cause) {
+    private void publishApplicationEvent(DeployState state, Throwable cause) {
         applicationContext.publishEvent(new DubboApplicationStateEvent(applicationModel, state, cause));
+    }
+
+    private void publishModuleEvent(DeployState state) {
+        applicationContext.publishEvent(new DubboModuleStateEvent(moduleModel, state));
+    }
+
+    private void publishModuleEvent(DeployState state, Throwable cause) {
+        applicationContext.publishEvent(new DubboModuleStateEvent(moduleModel, state, cause));
     }
 
     @Override
@@ -109,8 +147,12 @@ public class DubboDeployApplicationListener implements ApplicationListener<Appli
     private void onContextRefreshedEvent(ContextRefreshedEvent event) {
         ModuleDeployer deployer = moduleModel.getDeployer();
         Assert.notNull(deployer, "Module deployer is null");
+        Object singletonMutex = LockUtils.getSingletonMutex(applicationContext);
         // start module
-        Future future = deployer.start();
+        Future future = null;
+        synchronized (singletonMutex) {
+            future = deployer.start();
+        }
 
         // if the module does not start in background, await finish
         if (!deployer.isBackground()) {
@@ -140,7 +182,7 @@ public class DubboDeployApplicationListener implements ApplicationListener<Appli
 
     @Override
     public int getOrder() {
-        return LOWEST_PRECEDENCE;
+        return HIGHEST_PRECEDENCE;
     }
 
 }

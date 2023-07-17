@@ -30,6 +30,7 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.support.AccessLogData;
+import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -198,7 +199,7 @@ public class AccessLogFilter implements Filter {
     private AccessLogData buildAccessLogData(Invoker<?> invoker, Invocation inv) {
         AccessLogData logData = AccessLogData.newLogData();
         logData.setServiceName(invoker.getInterface().getName());
-        logData.setMethodName(inv.getMethodName());
+        logData.setMethodName(RpcUtils.getMethodName(inv));
         logData.setVersion(invoker.getUrl().getVersion());
         logData.setGroup(invoker.getUrl().getGroup());
         logData.setInvocationTime(new Date());

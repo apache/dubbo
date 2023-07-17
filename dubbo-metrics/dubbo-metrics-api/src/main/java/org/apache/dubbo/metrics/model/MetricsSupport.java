@@ -30,7 +30,6 @@ import org.apache.dubbo.metrics.model.key.MetricsPlaceValue;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.HashMap;
@@ -54,8 +53,8 @@ import static org.apache.dubbo.common.utils.NetUtils.getLocalHost;
 import static org.apache.dubbo.common.utils.NetUtils.getLocalHostName;
 import static org.apache.dubbo.metrics.MetricsConstants.ATTACHMENT_KEY_SERVICE;
 import static org.apache.dubbo.metrics.MetricsConstants.INVOCATION;
+import static org.apache.dubbo.metrics.MetricsConstants.METHOD_METRICS;
 import static org.apache.dubbo.metrics.MetricsConstants.SELF_INCREMENT_SIZE;
-import static org.apache.dubbo.rpc.support.RpcUtils.isGenericCall;
 
 public class MetricsSupport {
 
@@ -113,6 +112,8 @@ public class MetricsSupport {
             if (e.isNetwork()) {
                 targetKey = MetricsKey.METRIC_REQUESTS_NETWORK_FAILED;
             }
+        } else {
+            targetKey = MetricsKey.METRIC_REQUEST_BUSINESS_FAILED;
         }
         return targetKey;
     }
@@ -136,6 +137,8 @@ public class MetricsSupport {
             if (e.isNetwork()) {
                 targetKey = MetricsKey.METRIC_REQUESTS_NETWORK_FAILED_AGG;
             }
+        } else {
+            targetKey = MetricsKey.METRIC_REQUEST_BUSINESS_FAILED_AGG;
         }
         return targetKey;
     }
@@ -147,49 +150,50 @@ public class MetricsSupport {
 
 
     public static String getInterfaceName(Invocation invocation) {
-        String serviceUniqueName = invocation.getTargetServiceUniqueName();
-        String interfaceAndVersion;
-        String[] arr = serviceUniqueName.split(PATH_SEPARATOR);
-        if (arr.length == 2) {
-            interfaceAndVersion = arr[1];
+        if (invocation.getServiceModel() != null && invocation.getServiceModel().getServiceMetadata() != null) {
+            return invocation.getServiceModel().getServiceMetadata().getServiceInterfaceName();
         } else {
-            interfaceAndVersion = arr[0];
+            String serviceUniqueName = invocation.getTargetServiceUniqueName();
+            String interfaceAndVersion;
+            String[] arr = serviceUniqueName.split(PATH_SEPARATOR);
+            if (arr.length == 2) {
+                interfaceAndVersion = arr[1];
+            } else {
+                interfaceAndVersion = arr[0];
+            }
+            String[] ivArr = interfaceAndVersion.split(GROUP_CHAR_SEPARATOR);
+            return ivArr[0];
         }
-        String[] ivArr = interfaceAndVersion.split(GROUP_CHAR_SEPARATOR);
-        return ivArr[0];
-    }
-
-    public static String getMethodName(Invocation invocation) {
-        String methodName = invocation.getMethodName();
-        if (invocation instanceof RpcInvocation
-            && isGenericCall(((RpcInvocation) invocation).getParameterTypesDesc(), methodName)
-            && invocation.getArguments() != null
-            && invocation.getArguments().length == 3) {
-            methodName = ((String) invocation.getArguments()[0]).trim();
-        }
-        return methodName;
     }
 
     public static String getGroup(Invocation invocation) {
-        String serviceUniqueName = invocation.getTargetServiceUniqueName();
-        String group = null;
-        String[] arr = serviceUniqueName.split(PATH_SEPARATOR);
-        if (arr.length == 2) {
-            group = arr[0];
+        if (invocation.getServiceModel() != null && invocation.getServiceModel().getServiceMetadata() != null) {
+            return invocation.getServiceModel().getServiceMetadata().getGroup();
+        } else {
+            String serviceUniqueName = invocation.getTargetServiceUniqueName();
+            String group = null;
+            String[] arr = serviceUniqueName.split(PATH_SEPARATOR);
+            if (arr.length == 2) {
+                group = arr[0];
+            }
+            return group;
         }
-        return group;
     }
 
     public static String getVersion(Invocation invocation) {
-        String interfaceAndVersion;
-        String[] arr = invocation.getTargetServiceUniqueName().split(PATH_SEPARATOR);
-        if (arr.length == 2) {
-            interfaceAndVersion = arr[1];
+        if (invocation.getServiceModel() != null && invocation.getServiceModel().getServiceMetadata() != null) {
+            return invocation.getServiceModel().getServiceMetadata().getVersion();
         } else {
-            interfaceAndVersion = arr[0];
+            String interfaceAndVersion;
+            String[] arr = invocation.getTargetServiceUniqueName().split(PATH_SEPARATOR);
+            if (arr.length == 2) {
+                interfaceAndVersion = arr[1];
+            } else {
+                interfaceAndVersion = arr[0];
+            }
+            String[] ivArr = interfaceAndVersion.split(GROUP_CHAR_SEPARATOR);
+            return ivArr.length == 2 ? ivArr[1] : null;
         }
-        String[] ivArr = interfaceAndVersion.split(GROUP_CHAR_SEPARATOR);
-        return ivArr.length == 2 ? ivArr[1] : null;
     }
 
     /**
@@ -204,29 +208,35 @@ public class MetricsSupport {
      */
     public static void incrAndAddRt(MetricsKey metricsKey, MetricsPlaceValue placeType, ServiceMetricsCollector<TimeCounterEvent> collector, TimeCounterEvent event) {
         collector.increment(event.getAttachmentValue(ATTACHMENT_KEY_SERVICE), new MetricsKeyWrapper(metricsKey, placeType), SELF_INCREMENT_SIZE);
-        collector.addRt(event.getAttachmentValue(ATTACHMENT_KEY_SERVICE), placeType.getType(), event.getTimePair().calc());
+        Invocation invocation = event.getAttachmentValue(INVOCATION);
+        if (invocation != null) {
+            collector.addServiceRt(invocation, placeType.getType(), event.getTimePair().calc());
+            return;
+        } else {
+            collector.addServiceRt((String) event.getAttachmentValue(ATTACHMENT_KEY_SERVICE), placeType.getType(), event.getTimePair().calc());
+        }
     }
 
     /**
      * Incr method num
      */
     public static void increment(MetricsKey metricsKey, MetricsPlaceValue placeType, MethodMetricsCollector<TimeCounterEvent> collector, MetricsEvent event) {
-        collector.increment(event.getAttachmentValue(INVOCATION), new MetricsKeyWrapper(metricsKey, placeType), SELF_INCREMENT_SIZE);
+        collector.increment(event.getAttachmentValue(METHOD_METRICS), new MetricsKeyWrapper(metricsKey, placeType), SELF_INCREMENT_SIZE);
     }
 
     /**
      * Dec method num
      */
     public static void dec(MetricsKey metricsKey, MetricsPlaceValue placeType, MethodMetricsCollector<TimeCounterEvent> collector, MetricsEvent event) {
-        collector.increment(event.getAttachmentValue(INVOCATION), new MetricsKeyWrapper(metricsKey, placeType), -SELF_INCREMENT_SIZE);
+        collector.increment(event.getAttachmentValue(METHOD_METRICS), new MetricsKeyWrapper(metricsKey, placeType), -SELF_INCREMENT_SIZE);
     }
 
     /**
      * Incr method num&&rt
      */
     public static void incrAndAddRt(MetricsKey metricsKey, MetricsPlaceValue placeType, MethodMetricsCollector<TimeCounterEvent> collector, TimeCounterEvent event) {
-        collector.increment(event.getAttachmentValue(INVOCATION), new MetricsKeyWrapper(metricsKey, placeType), SELF_INCREMENT_SIZE);
-        collector.addRt(event.getAttachmentValue(INVOCATION), placeType.getType(), event.getTimePair().calc());
+        collector.increment(event.getAttachmentValue(METHOD_METRICS), new MetricsKeyWrapper(metricsKey, placeType), SELF_INCREMENT_SIZE);
+        collector.addMethodRt(event.getAttachmentValue(INVOCATION), placeType.getType(), event.getTimePair().calc());
     }
 
     /**

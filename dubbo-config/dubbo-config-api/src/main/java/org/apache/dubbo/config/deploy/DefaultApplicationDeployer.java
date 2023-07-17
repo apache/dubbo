@@ -143,7 +143,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         super(applicationModel);
         this.applicationModel = applicationModel;
         configManager = applicationModel.getApplicationConfigManager();
-        environment = applicationModel.getModelEnvironment();
+        environment = applicationModel.modelEnvironment();
 
         referenceCache = new CompositeReferenceCache(applicationModel);
         frameworkExecutorRepository = applicationModel.getFrameworkModel().getBeanFactory().getBean(FrameworkExecutorRepository.class);
@@ -837,12 +837,18 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
             if (StringUtils.isNotEmpty(configCenter.getConfigFile())) {
                 String configContent = dynamicConfiguration.getProperties(configCenter.getConfigFile(), configCenter.getGroup());
+                if (StringUtils.isNotEmpty(configContent)) {
+                    logger.info(String.format("Got global remote configuration from config center with key-%s and group-%s: \n %s", configCenter.getConfigFile(), configCenter.getGroup(), configContent));
+                }
                 String appGroup = getApplication().getName();
                 String appConfigContent = null;
                 String appConfigFile = null;
                 if (isNotEmpty(appGroup)) {
                     appConfigFile = isNotEmpty(configCenter.getAppConfigFile()) ? configCenter.getAppConfigFile() : configCenter.getConfigFile();
                     appConfigContent = dynamicConfiguration.getProperties(appConfigFile, appGroup);
+                    if (StringUtils.isNotEmpty(appConfigContent)) {
+                        logger.info(String.format("Got application specific remote configuration from config center with key %s and group %s: \n %s", appConfigFile, appGroup, appConfigContent));
+                    }
                 }
                 try {
                     Map<String, String> configMap = parseProperties(configContent);
@@ -933,6 +939,17 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                     }
                 }
             }, 0, ConfigurationUtils.get(applicationModel, METADATA_PUBLISH_DELAY_KEY, DEFAULT_METADATA_PUBLISH_DELAY), TimeUnit.MILLISECONDS);
+        }
+    }
+
+    @Override
+    public void refreshServiceInstance() {
+        if (registered) {
+            try {
+                ServiceInstanceMetadataUtils.refreshMetadataAndInstance(applicationModel);
+            } catch (Exception e) {
+                logger.error(CONFIG_REFRESH_INSTANCE_ERROR, "", "", "Refresh instance and metadata error.", e);
+            }
         }
     }
 

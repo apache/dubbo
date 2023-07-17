@@ -16,15 +16,6 @@
  */
 package org.apache.dubbo.rpc.cluster.router.xds;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.stream.Collectors;
-
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
@@ -45,6 +36,16 @@ import org.apache.dubbo.rpc.cluster.router.xds.rule.HeaderMatcher;
 import org.apache.dubbo.rpc.cluster.router.xds.rule.HttpRequestMatch;
 import org.apache.dubbo.rpc.cluster.router.xds.rule.PathMatcher;
 import org.apache.dubbo.rpc.cluster.router.xds.rule.XdsRouteRule;
+import org.apache.dubbo.rpc.support.RpcUtils;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
 
 public class XdsRouter<T> extends AbstractStateRouter<T> implements XdsRouteRuleListener, EdsEndpointListener {
 
@@ -171,7 +172,7 @@ public class XdsRouter<T> extends AbstractStateRouter<T> implements XdsRouteRule
         }
         PathMatcher pathMatcher = requestMatch.getPathMatcher();
         if (pathMatcher != null) {
-            String path = "/" + invocation.getInvoker().getUrl().getPath() + "/" + invocation.getMethodName();
+            String path = "/" + invocation.getInvoker().getUrl().getPath() + "/" + RpcUtils.getMethodName(invocation);
             if (!pathMatcher.isMatch(path)) {
                 return null;
             }

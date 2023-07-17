@@ -639,4 +639,7 @@ public interface CommonConstants {
 
     String DUBBO_PACKABLE_METHOD_FACTORY = "dubbo.application.parameters." + PACKABLE_METHOD_FACTORY_KEY;
 
+    String SERVICE_DEPLOYER_ATTRIBUTE_KEY = "serviceDeployer";
+    String RESTEASY_NETTY_HTTP_REQUEST_ATTRIBUTE_KEY = "resteasyNettyHttpRequest";
+
 }

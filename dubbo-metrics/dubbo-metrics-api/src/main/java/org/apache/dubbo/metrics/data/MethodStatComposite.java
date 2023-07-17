@@ -17,19 +17,15 @@
 
 package org.apache.dubbo.metrics.data;
 
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.metrics.exception.MetricsNeverHappenException;
 import org.apache.dubbo.metrics.model.MethodMetric;
 import org.apache.dubbo.metrics.model.MetricsCategory;
-import org.apache.dubbo.metrics.model.MetricsSupport;
 import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
 import org.apache.dubbo.metrics.model.sample.CounterMetricSample;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.metrics.report.AbstractMetricsExport;
-import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.ArrayList;
@@ -45,8 +41,6 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class MethodStatComposite extends AbstractMetricsExport {
 
-    private static final Logger logger = LoggerFactory.getLogger(MethodStatComposite.class);
-
     public MethodStatComposite(ApplicationModel applicationModel) {
         super(applicationModel);
     }
@@ -60,12 +54,17 @@ public class MethodStatComposite extends AbstractMetricsExport {
         metricsKeyWrappers.forEach(appKey -> methodNumStats.put(appKey, new ConcurrentHashMap<>()));
     }
 
-    public void incrementMethodKey(MetricsKeyWrapper wrapper, Invocation invocation, int size) {
+    public void incrementMethodKey(MetricsKeyWrapper wrapper, MethodMetric methodMetric, int size) {
         if (!methodNumStats.containsKey(wrapper)) {
             return;
         }
-        methodNumStats.get(wrapper).computeIfAbsent(new MethodMetric(getApplicationModel(), invocation), k -> new AtomicLong(0L)).getAndAdd(size);
-        MetricsSupport.fillZero(methodNumStats);
+        AtomicLong stat = methodNumStats.get(wrapper).get(methodMetric);
+        if (stat == null) {
+            methodNumStats.get(wrapper).putIfAbsent(methodMetric, new AtomicLong(0L));
+            stat = methodNumStats.get(wrapper).get(methodMetric);
+        }
+        stat.getAndAdd(size);
+//        MetricsSupport.fillZero(methodNumStats);
     }
 
     public List<MetricSample> export(MetricsCategory category) {

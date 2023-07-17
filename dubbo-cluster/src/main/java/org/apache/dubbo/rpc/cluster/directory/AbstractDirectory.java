@@ -476,15 +476,21 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
     }
 
     private boolean addValidInvoker(Invoker<T> invoker) {
+        boolean result;
         synchronized (this.validInvokers) {
-            return this.validInvokers.add(invoker);
+            result = this.validInvokers.add(invoker);
         }
+        MetricsEventBus.publish(RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary()));
+        return result;
     }
 
     private boolean removeValidInvoker(Invoker<T> invoker) {
+        boolean result;
         synchronized (this.validInvokers) {
-            return this.validInvokers.remove(invoker);
+            result = this.validInvokers.remove(invoker);
         }
+        MetricsEventBus.publish(RegistryEvent.refreshDirectoryEvent(applicationModel, getSummary()));
+        return result;
     }
 
     protected abstract List<Invoker<T>> doList(SingleRouterChain<T> singleRouterChain,
@@ -525,5 +531,29 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         }
 
         return serviceNumMap;
+    }
+
+    @Override
+    public String toString() {
+        return "Directory(" +
+            "invokers: " + invokers.size() + "[" +
+            invokers.stream()
+                .map(Invoker::getUrl)
+                .map(URL::getAddress)
+                .limit(3)
+                .collect(Collectors.joining(", ")) + "]" +
+            ", validInvokers: " + validInvokers.size() + "[" +
+            validInvokers.stream()
+                .map(Invoker::getUrl)
+                .map(URL::getAddress)
+                .limit(3)
+                .collect(Collectors.joining(", ")) + "]" +
+            ", invokersToReconnect: " + invokersToReconnect.size() + "[" +
+            invokersToReconnect.stream()
+                .map(Invoker::getUrl)
+                .map(URL::getAddress)
+                .limit(3)
+                .collect(Collectors.joining(", ")) + "]" +
+            ')';
     }
 }

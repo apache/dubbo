@@ -16,16 +16,16 @@
  */
 package org.apache.dubbo.common.serialize.hessian2;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.Optional;
-
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.serialize.ObjectOutput;
 import org.apache.dubbo.common.serialize.Serialization;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Optional;
 
 import static org.apache.dubbo.common.serialize.Constants.HESSIAN2_SERIALIZATION_ID;
 
@@ -52,7 +52,7 @@ public class Hessian2Serialization implements Serialization {
     public ObjectOutput serialize(URL url, OutputStream out) throws IOException {
         Hessian2FactoryManager hessian2FactoryManager = Optional.ofNullable(url)
             .map(URL::getOrDefaultFrameworkModel)
-            .orElse(FrameworkModel.defaultModel())
+            .orElseGet(FrameworkModel::defaultModel)
             .getBeanFactory().getBean(Hessian2FactoryManager.class);
         return new Hessian2ObjectOutput(out, hessian2FactoryManager);
     }
@@ -61,7 +61,7 @@ public class Hessian2Serialization implements Serialization {
     public ObjectInput deserialize(URL url, InputStream is) throws IOException {
         Hessian2FactoryManager hessian2FactoryManager = Optional.ofNullable(url)
             .map(URL::getOrDefaultFrameworkModel)
-            .orElse(FrameworkModel.defaultModel())
+            .orElseGet(FrameworkModel::defaultModel)
             .getBeanFactory().getBean(Hessian2FactoryManager.class);
         return new Hessian2ObjectInput(is, hessian2FactoryManager);
     }

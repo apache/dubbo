@@ -30,7 +30,7 @@ public interface ApplicationMetricsCollector<E extends TimeCounterEvent> extends
 
     void increment(MetricsKey metricsKey);
 
-    void addRt(String registryOpType, Long responseTime);
+    void addApplicationRt(String registryOpType, Long responseTime);
 
 }
 
