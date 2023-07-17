@@ -31,6 +31,7 @@ import org.apache.dubbo.config.spring.reference.ReferenceBeanSupport;
 import org.apache.dubbo.config.spring.schema.DubboBeanDefinitionParser;
 import org.apache.dubbo.config.spring.util.LazyTargetInvocationHandler;
 import org.apache.dubbo.config.spring.util.LazyTargetSource;
+import org.apache.dubbo.config.spring.util.LockUtils;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.proxy.AbstractProxyFactory;
 
@@ -43,7 +44,6 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
-import org.springframework.beans.factory.support.DefaultSingletonBeanRegistry;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
@@ -396,7 +396,7 @@ public class ReferenceBean<T> implements FactoryBean<T>,
         if (referenceConfig.configInitialized()) {
             return referenceConfig.get();
         }
-        synchronized (((DefaultSingletonBeanRegistry)getBeanFactory()).getSingletonMutex()) {
+        synchronized (LockUtils.getSingletonMutex(applicationContext)) {
             return referenceConfig.get();
         }
     }
