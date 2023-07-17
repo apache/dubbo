@@ -30,6 +30,7 @@ import org.apache.dubbo.rpc.model.ModelConstants;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.support.DefaultSingletonBeanRegistry;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationListener;
@@ -146,8 +147,12 @@ public class DubboDeployApplicationListener implements ApplicationListener<Appli
     private void onContextRefreshedEvent(ContextRefreshedEvent event) {
         ModuleDeployer deployer = moduleModel.getDeployer();
         Assert.notNull(deployer, "Module deployer is null");
+        Object singletonMutex = ((DefaultSingletonBeanRegistry) applicationContext.getAutowireCapableBeanFactory()).getSingletonMutex();
         // start module
-        Future future = deployer.start();
+        Future future = null;
+        synchronized (singletonMutex) {
+            future = deployer.start();
+        }
 
         // if the module does not start in background, await finish
         if (!deployer.isBackground()) {
@@ -177,7 +182,7 @@ public class DubboDeployApplicationListener implements ApplicationListener<Appli
 
     @Override
     public int getOrder() {
-        return LOWEST_PRECEDENCE;
+        return HIGHEST_PRECEDENCE;
     }
 
 }

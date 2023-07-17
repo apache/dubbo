@@ -393,6 +393,9 @@ public class ReferenceBean<T> implements FactoryBean<T>,
         //Subclasses should synchronize on the given Object if they perform any sort of extended singleton creation phase.
         // In particular, subclasses should not have their own mutexes involved in singleton creation, to avoid the potential for deadlocks in lazy-init situations.
         //The redundant type cast is to be compatible with earlier than spring-4.2
+        if (referenceConfig.configInitialized()) {
+            return referenceConfig.get();
+        }
         synchronized (((DefaultSingletonBeanRegistry)getBeanFactory()).getSingletonMutex()) {
             return referenceConfig.get();
         }
