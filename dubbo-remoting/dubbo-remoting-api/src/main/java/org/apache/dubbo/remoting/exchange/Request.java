@@ -18,17 +18,19 @@ package org.apache.dubbo.remoting.exchange;
 
 import org.apache.dubbo.common.utils.StringUtils;
 
+import java.security.SecureRandom;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static org.apache.dubbo.common.constants.CommonConstants.HEARTBEAT_EVENT;
+import static org.apache.dubbo.remoting.Constants.USE_SECURE_RANDOM_ID;
 
 /**
  * Request.
  */
 public class Request {
 
-    private static final AtomicLong INVOKE_ID = new AtomicLong(ThreadLocalRandom.current().nextLong());
+    private static final AtomicLong INVOKE_ID;
 
     private final long mId;
 
@@ -50,6 +52,18 @@ public class Request {
 
     public Request(long id) {
         mId = id;
+    }
+
+    static {
+        long startID = ThreadLocalRandom.current().nextLong();
+        if (Boolean.parseBoolean(System.getProperty(USE_SECURE_RANDOM_ID, "false"))) {
+            try {
+                SecureRandom rand = new SecureRandom(SecureRandom.getSeed(20));
+                startID = rand.nextLong();
+            } catch (Throwable ignore) {
+            }
+        }
+        INVOKE_ID = new AtomicLong(startID);
     }
 
     private static long newId() {

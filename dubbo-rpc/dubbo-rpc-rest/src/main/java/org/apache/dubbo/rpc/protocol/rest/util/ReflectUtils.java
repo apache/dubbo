@@ -79,6 +79,11 @@ public class ReflectUtils {
     }
 
     public static List<Method> getMethodByNameList(Class clazz, String name) {
+
+        return getMethodByNameList(clazz, name, false);
+    }
+
+    public static List<Method> getMethodByNameList(Class clazz, String name, boolean declare) {
         // prevent duplicate method
         Set<Method> methods = new HashSet<>();
 
@@ -89,14 +94,18 @@ public class ReflectUtils {
 
         }
 
+        if (!declare) {
+            return new ArrayList<>(methods);
+        }
+
+
         try {
             filterMethod(name, methods, clazz.getMethods());
         } catch (Exception e) {
 
         }
+
         return new ArrayList<>(methods);
-
-
     }
 
     public static List<Constructor<?>> getConstructList(Class clazz) {
@@ -137,7 +146,7 @@ public class ReflectUtils {
 
     public static Method getMethodByName(Class clazz, String name) {
 
-        List<Method> methodByNameList = getMethodByNameList(clazz, name);
+        List<Method> methodByNameList = getMethodByNameList(clazz, name, true);
         if (methodByNameList.isEmpty()) {
             return null;
         } else {
