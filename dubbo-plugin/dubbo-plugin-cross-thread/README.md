@@ -4,9 +4,9 @@
 
 ## Integrate example
 ### scan annotation by byte-buddy
-(you can install with ByteBuddyAgent or use it with -javaagent= <agentjar>)
+(you can install with ByteBuddyAgent or use it with `-javaagent=<agentjar>`)
 ```
-Instrumentation instrumentation = ByteBuddyAgent.install();
+        Instrumentation instrumentation = ByteBuddyAgent.install();
         RunnableOrCallableActivation.install(instrumentation);
         RpcContext.getClientAttachment().setAttachment(CommonConstants.TAG_KEY, tag);
         Callable<String> callable = CallableWrapper.of(new Callable<String>() {
