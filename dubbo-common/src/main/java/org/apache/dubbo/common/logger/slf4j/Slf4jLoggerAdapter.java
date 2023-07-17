@@ -25,6 +25,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.QOS_UNEXPECTED_EXCEPTION;
+
 public class Slf4jLoggerAdapter implements LoggerAdapter {
     public static final String NAME = "slf4j";
 
@@ -55,7 +57,7 @@ public class Slf4jLoggerAdapter implements LoggerAdapter {
 
     @Override
     public void setLevel(Level level) {
-        logger.warn("", "", "", String.format("The level of slf4j logger current can not be set, using the default level: %s", Slf4jLogger.getLevel(ROOT_LOGGER)));
+        logger.warn(QOS_UNEXPECTED_EXCEPTION, "", "", String.format("The level of slf4j logger current can not be set, using the default level: %s", Slf4jLogger.getLevel(ROOT_LOGGER)));
         this.level = level;
     }
 
