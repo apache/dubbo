@@ -193,7 +193,6 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
         return curatorFramework.getZookeeperClient().isConnected();
     }
 
-
     private void doInServiceRegistry(ThrowableConsumer<org.apache.curator.x.discovery.ServiceDiscovery> consumer) {
         ThrowableConsumer.execute(serviceDiscovery, s -> consumer.accept(s));
     }
