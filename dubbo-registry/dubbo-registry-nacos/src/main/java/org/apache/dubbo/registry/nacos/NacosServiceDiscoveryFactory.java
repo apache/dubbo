@@ -17,7 +17,6 @@
 package org.apache.dubbo.registry.nacos;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.registry.client.AbstractServiceDiscoveryFactory;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
