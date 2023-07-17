@@ -14,24 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.tracing.tracer.brave;
 
-import org.apache.dubbo.tracing.tracer.PropagatorProvider;
+package org.apache.dubbo.tracing.utils;
 
-import io.micrometer.tracing.brave.bridge.BravePropagator;
-import io.micrometer.tracing.propagation.Propagator;
+public enum PropagationType {
 
+    W3C("W3C"),
+    B3("B3");
 
-public class BravePropagatorProvider implements PropagatorProvider {
+    private final String value;
 
-    private static Propagator propagator;
-
-    @Override
-    public Propagator getPropagator() {
-        return propagator;
+    PropagationType(String type) {
+        this.value = type;
     }
 
-    protected static void createMicrometerPropagator(brave.Tracing tracing) {
-        propagator = new BravePropagator(tracing);
+    public String getValue() {
+        return value;
+    }
+
+    public static PropagationType forValue(String value) {
+        PropagationType[] values = values();
+        for (PropagationType type : values) {
+            if (type.getValue().equals(value)) {
+                return type;
+            }
+        }
+        return null;
     }
 }

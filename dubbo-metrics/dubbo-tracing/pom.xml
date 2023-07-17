@@ -107,5 +107,12 @@
             <artifactId>zipkin-reporter-brave</artifactId>
             <optional>true</optional>
         </dependency>
+
+        <!-- sender -->
+        <dependency>
+            <groupId>io.zipkin.reporter2</groupId>
+            <artifactId>zipkin-sender-urlconnection</artifactId>
+            <optional>true</optional>
+        </dependency>
     </dependencies>
 </project>
