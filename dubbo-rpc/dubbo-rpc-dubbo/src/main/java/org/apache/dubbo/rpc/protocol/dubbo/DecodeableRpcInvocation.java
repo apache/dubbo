@@ -251,7 +251,7 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
                         parameterTypes[i][1] = actualArgType;
                     } else if (genericParameterTypes[i] instanceof TypeVariable) {
                         parameterTypes[i][0] = ((TypeVariable<?>) genericParameterTypes[i]).getBounds()[0];
-                        parameterTypes[i][1] = genericParameterTypes[i];
+                        parameterTypes[i][1] = ((TypeVariable<?>) genericParameterTypes[i]).getBounds()[0];
                     } else {
                         parameterTypes[i][0] = genericParameterTypes[i];
                         parameterTypes[i][1] = genericParameterTypes[i];
