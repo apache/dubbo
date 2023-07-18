@@ -14,16 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.http12;
+package org.apache.dubbo.remoting.http12.exception;
 
-import org.apache.dubbo.common.stream.StreamObserver;
+public class UnimplementedException extends RuntimeException {
 
-/**
- * @author icodening
- * @date 2023.06.11
- */
-public interface HttpChannelObserver extends StreamObserver<Object> {
+    public UnimplementedException() {
+    }
 
-    HttpChannel getHttpChannel();
+    public UnimplementedException(String message) {
+        super(message);
+    }
 
+    public UnimplementedException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public UnimplementedException(Throwable cause) {
+        super(cause);
+    }
+
+    public UnimplementedException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+        super(message, cause, enableSuppression, writableStackTrace);
+    }
 }

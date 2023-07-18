@@ -30,13 +30,9 @@ import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.Objects;
 
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_CREATE_STREAM_TRIPLE;
-
-public abstract class AbstractServerCall implements ServerCall, ServerCall.Listener {
+public abstract class AbstractServerCall implements ServerCall {
 
     private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(AbstractServerCall.class);
 
@@ -56,16 +52,13 @@ public abstract class AbstractServerCall implements ServerCall, ServerCall.Liste
 
     public final ServiceDescriptor serviceDescriptor;
 
-    protected final HttpChannelObserver responseObserver;
-
     CancellationContext cancellationContext;
 
     protected AbstractServerCall(String serviceName,
                                  String methodName,
                                  HttpMessageCodec messageCodec,
                                  Invoker<?> invoker,
-                                 FrameworkModel frameworkModel,
-                                 HttpChannelObserver responseObserver
+                                 FrameworkModel frameworkModel
     ) {
         this.serviceDescriptor = Objects.requireNonNull(getServiceDescriptor(invoker.getUrl()),
             "No service descriptor found for " + invoker.getUrl());
@@ -74,7 +67,6 @@ public abstract class AbstractServerCall implements ServerCall, ServerCall.Liste
         this.messageCodec = messageCodec;
         this.invoker = invoker;
         this.frameworkModel = frameworkModel;
-        this.responseObserver = responseObserver;
         this.startCall();
     }
 
@@ -125,50 +117,25 @@ public abstract class AbstractServerCall implements ServerCall, ServerCall.Liste
         MethodDescriptor methodDescriptor,
         Invoker<?> invoker) {
         this.cancellationContext = RpcContext.getCancellationContext();
-        try {
-            ServerCall.Listener listener;
-            switch (methodDescriptor.getRpcType()) {
-                case UNARY:
-                    listener = new UnaryServerCallListener(invocation, invoker, responseObserver);
-                    break;
-                case SERVER_STREAM:
-                case BI_STREAM:
-                case CLIENT_STREAM:
-                default:
-                    throw new IllegalStateException("Can not reach here");
-            }
-            return listener;
-        } catch (Exception e) {
-            LOGGER.error(PROTOCOL_FAILED_CREATE_STREAM_TRIPLE, "", "", "Create triple stream failed", e);
-        }
+//        try {
+//            ServerCall.Listener listener;
+//            switch (methodDescriptor.getRpcType()) {
+//                case UNARY:
+//                    listener = new UnaryServerCallListener(invocation, invoker, responseObserver);
+//                    break;
+//                case SERVER_STREAM:
+//                    listener = new ServerStreamServerCallListener(invocation, invoker,
+//                        responseObserver);
+//                    break;
+//                case BI_STREAM:
+//                case CLIENT_STREAM:
+//                default:
+//                    throw new IllegalStateException("Can not reach here");
+//            }
+//            return listener;
+//        } catch (Exception e) {
+//            LOGGER.error(PROTOCOL_FAILED_CREATE_STREAM_TRIPLE, "", "", "Create triple stream failed", e);
+//        }
         return null;
-    }
-
-    @Override
-    public void onMessageAvailable(InputStream inputStream) {
-        try {
-            Class<?>[] parameterClasses = this.methodDescriptor.getParameterClasses();
-            if (parameterClasses.length == 1) {
-                Object decodeMessage = this.messageCodec.decode(inputStream, parameterClasses[0]);
-                onMessage(decodeMessage);
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    @Override
-    public void onMessage(Object message) {
-        serverCallListener.onMessage(message);
-    }
-
-    @Override
-    public void onCancel(Object obj) {
-
-    }
-
-    @Override
-    public void onComplete() {
-        serverCallListener.onComplete();
     }
 }

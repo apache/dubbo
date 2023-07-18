@@ -43,9 +43,8 @@ public class ReflectionServerCall extends AbstractServerCall {
                                 HttpMessageCodec messageCodec,
                                 Invoker<?> invoker,
                                 FrameworkModel frameworkModel,
-                                HttpChannelObserver httpChannelObserver,
                                 List<HeaderFilter> headerFilters) {
-        super(serviceName, methodName, messageCodec, invoker, frameworkModel, httpChannelObserver);
+        super(serviceName, methodName, messageCodec, invoker, frameworkModel);
         this.headerFilters = headerFilters;
     }
 
@@ -104,7 +103,6 @@ public class ReflectionServerCall extends AbstractServerCall {
                 }
             }
         }
-        trySetListener();
     }
 
     private void trySetListener() {

@@ -66,7 +66,7 @@ public interface Stream {
      * @param status cancel status to send to remote peer
      * @return future to callback when cancel is done
      */
-    CompletableFuture<?> cancelByLocal(Object status);
+    CompletableFuture<?> cancelByLocal(int status);
 
     /**
      * Get remote peer address.

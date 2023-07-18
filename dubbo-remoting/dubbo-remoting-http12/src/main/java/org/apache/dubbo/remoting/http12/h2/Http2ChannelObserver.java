@@ -20,10 +20,6 @@ import org.apache.dubbo.remoting.http12.HttpChannel;
 import org.apache.dubbo.remoting.http12.HttpChannelObserver;
 import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.HttpHeaders;
-import org.apache.dubbo.remoting.http12.h2.Http2Header;
-import org.apache.dubbo.remoting.http12.h2.Http2Message;
-import org.apache.dubbo.remoting.http12.h2.Http2MessageFrame;
-import org.apache.dubbo.remoting.http12.h2.Http2MetadataFrame;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
 
 import java.io.ByteArrayInputStream;
@@ -36,32 +32,36 @@ import java.io.IOException;
  */
 public class Http2ChannelObserver implements HttpChannelObserver {
 
-    private final HttpChannel httpChannel;
+    private final H2StreamChannel h2StreamChannel;
 
-    private final HttpMessageCodec codec;
+    private HttpMessageCodec httpMessageCodec;
 
     private boolean headerSent;
 
-    public Http2ChannelObserver(HttpChannel httpChannel, HttpMessageCodec codec) {
-        this.httpChannel = httpChannel;
-        this.codec = codec;
+    public Http2ChannelObserver(H2StreamChannel h2StreamChannel) {
+        this.h2StreamChannel = h2StreamChannel;
+    }
+
+    public void setHttpMessageCodec(HttpMessageCodec httpMessageCodec) {
+        this.httpMessageCodec = httpMessageCodec;
     }
 
     @Override
     public void onNext(Object data) {
         if (!headerSent) {
             HttpHeaders httpHeaders = new HttpHeaders();
-            httpHeaders.set(HttpHeaderNames.CONTENT_TYPE.getName(), codec.contentType().getName());
+            httpHeaders.set(":status", "200");
+            httpHeaders.set(HttpHeaderNames.CONTENT_TYPE.getName(), httpMessageCodec.contentType().getName());
             httpHeaders.set(HttpHeaderNames.TE.getName(), "trailers");
             Http2Header http2Header = new Http2MetadataFrame(httpHeaders, false);
             this.headerSent = true;
-            this.httpChannel.writeHeader(http2Header);
+            this.h2StreamChannel.writeHeader(http2Header);
         }
         try {
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            this.codec.encode(bos, data);
+            this.httpMessageCodec.encode(bos, data);
             Http2Message http2Message = new Http2MessageFrame(new ByteArrayInputStream(bos.toByteArray()));
-            this.httpChannel.writeMessage(http2Message);
+            this.h2StreamChannel.writeMessage(http2Message);
         } catch (IOException e) {
             onError(e);
         }
@@ -78,6 +78,11 @@ public class Http2ChannelObserver implements HttpChannelObserver {
         //trailer
         HttpHeaders httpHeaders = new HttpHeaders();
         Http2Header http2Header = new Http2MetadataFrame(httpHeaders, true);
-        this.httpChannel.writeHeader(http2Header);
+        this.h2StreamChannel.writeHeader(http2Header);
+    }
+
+    @Override
+    public HttpChannel getHttpChannel() {
+        return this.h2StreamChannel;
     }
 }

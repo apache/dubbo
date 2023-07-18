@@ -22,10 +22,6 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
 
-/**
- * @author icodening
- * @date 2023.06.03
- */
 public abstract class AbstractServerCallListener implements ServerCall.Listener {
 
     protected final RpcInvocation invocation;
@@ -34,7 +30,8 @@ public abstract class AbstractServerCallListener implements ServerCall.Listener 
 
     protected final StreamObserver<Object> responseObserver;
 
-    public AbstractServerCallListener(RpcInvocation invocation, Invoker<?> invoker,
+    public AbstractServerCallListener(RpcInvocation invocation,
+                                      Invoker<?> invoker,
                                       StreamObserver<Object> responseObserver) {
         this.invocation = invocation;
         this.invoker = invoker;

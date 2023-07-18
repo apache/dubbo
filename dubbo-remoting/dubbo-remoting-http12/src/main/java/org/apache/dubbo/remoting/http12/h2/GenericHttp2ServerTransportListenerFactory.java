@@ -17,7 +17,6 @@
 package org.apache.dubbo.remoting.http12.h2;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.remoting.http12.Http2ServerTransportListenerFactory;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 /**
@@ -32,6 +31,11 @@ public class GenericHttp2ServerTransportListenerFactory implements Http2ServerTr
     public Http2ServerTransportListener newInstance(H2StreamChannel streamChannel,
                                                     URL url,
                                                     FrameworkModel frameworkModel) {
-        return new GenericHttp2ServerTransportListener(streamChannel, frameworkModel);
+        return new GenericHttp2ServerTransportListener(streamChannel, url, frameworkModel);
+    }
+
+    @Override
+    public boolean supportContentType(String contentType) {
+        return true;
     }
 }

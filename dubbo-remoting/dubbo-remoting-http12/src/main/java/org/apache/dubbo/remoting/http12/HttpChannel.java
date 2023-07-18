@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.remoting.http12;
 
+import java.net.SocketAddress;
 import java.util.concurrent.CompletableFuture;
 
 public interface HttpChannel {
@@ -23,5 +24,7 @@ public interface HttpChannel {
     CompletableFuture<Void> writeHeader(HttpMetadata httpMetadata);
 
     CompletableFuture<Void> writeMessage(HttpMessage httpMessage);
+
+    SocketAddress remoteAddress();
 
 }

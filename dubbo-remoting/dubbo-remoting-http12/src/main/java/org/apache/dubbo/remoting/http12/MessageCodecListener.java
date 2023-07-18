@@ -16,14 +16,10 @@
  */
 package org.apache.dubbo.remoting.http12;
 
-import org.apache.dubbo.common.stream.StreamObserver;
+import java.io.InputStream;
 
-/**
- * @author icodening
- * @date 2023.06.11
- */
-public interface HttpChannelObserver extends StreamObserver<Object> {
+public interface MessageCodecListener {
 
-    HttpChannel getHttpChannel();
+    void onMessage(InputStream data);
 
 }

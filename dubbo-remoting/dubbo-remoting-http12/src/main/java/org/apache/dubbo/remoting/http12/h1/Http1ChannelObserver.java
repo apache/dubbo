@@ -38,21 +38,29 @@ public class Http1ChannelObserver implements HttpChannelObserver {
 
     private final HttpChannel httpChannel;
 
-    private final HttpMessageCodec codec;
+    private HttpMessageCodec httpMessageCodec;
 
-    public Http1ChannelObserver(HttpChannel httpChannel, HttpMessageCodec codec) {
+    public Http1ChannelObserver(HttpChannel httpChannel) {
         this.httpChannel = httpChannel;
-        this.codec = codec;
+    }
+
+    public Http1ChannelObserver(HttpChannel httpChannel, HttpMessageCodec httpMessageCodec) {
+        this.httpChannel = httpChannel;
+        this.httpMessageCodec = httpMessageCodec;
+    }
+
+    public void setHttpMessageCodec(HttpMessageCodec httpMessageCodec) {
+        this.httpMessageCodec = httpMessageCodec;
     }
 
     @Override
     public void onNext(Object data) {
         try {
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            this.codec.encode(bos, data);
+            this.httpMessageCodec.encode(bos, data);
             byte[] dataBytes = bos.toByteArray();
             HttpHeaders httpHeaders = new HttpHeaders();
-            httpHeaders.set(HttpHeaderNames.CONTENT_TYPE.getName(), codec.contentType().getName());
+            httpHeaders.set(HttpHeaderNames.CONTENT_TYPE.getName(), httpMessageCodec.contentType().getName());
             httpHeaders.set(HttpHeaderNames.CONTENT_LENGTH.getName(), String.valueOf(dataBytes.length));
             HttpMetadata httpMetadata = new SimpleHttpMetadata(httpHeaders);
             this.httpChannel.writeHeader(httpMetadata);
@@ -71,5 +79,10 @@ public class Http1ChannelObserver implements HttpChannelObserver {
     @Override
     public void onCompleted() {
 
+    }
+
+    @Override
+    public HttpChannel getHttpChannel() {
+        return this.httpChannel;
     }
 }

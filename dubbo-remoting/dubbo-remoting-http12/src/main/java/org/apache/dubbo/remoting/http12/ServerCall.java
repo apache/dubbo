@@ -16,12 +16,6 @@
  */
 package org.apache.dubbo.remoting.http12;
 
-import java.io.InputStream;
-
-/**
- * @author icodening
- * @date 2023.06.03
- */
 public interface ServerCall {
 
     interface Listener {
@@ -34,16 +28,13 @@ public interface ServerCall {
         void onMessage(Object message);
 
         /**
-         * TODO
-         * @param status when the call is canceled.
+         * @param code when the call is canceled.
          */
-        void onCancel(Object obj);
+        void onCancel(int code);
 
         /**
          * Request completed.
          */
         void onComplete();
     }
-
-    void onMessageAvailable(InputStream inputStream);
 }

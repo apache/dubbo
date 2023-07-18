@@ -14,16 +14,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.http12;
+package org.apache.dubbo.demo;
 
-import org.apache.dubbo.common.stream.StreamObserver;
+public class User {
 
-/**
- * @author icodening
- * @date 2023.06.11
- */
-public interface HttpChannelObserver extends StreamObserver<Object> {
+    private String name;
 
-    HttpChannel getHttpChannel();
+    private int age;
 
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public int getAge() {
+        return age;
+    }
+
+    public void setAge(int age) {
+        this.age = age;
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+            "name='" + name + '\'' +
+            ", age=" + age +
+            '}';
+    }
 }

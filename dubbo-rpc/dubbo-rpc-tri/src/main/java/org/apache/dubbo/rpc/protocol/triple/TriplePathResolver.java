@@ -28,8 +28,14 @@ public class TriplePathResolver implements PathResolver {
     private final ConcurrentHashMap<String, Object> nativeStub = new ConcurrentHashMap<>();
 
     @Override
-    public void add(String path, Invoker<?> invoker) {
+    public Invoker<?> add(String path, Invoker<?> invoker) {
         path2Invoker.put(path, invoker);
+        return invoker;
+    }
+
+    @Override
+    public Invoker<?> addIfAbsent(String path, Invoker<?> invoker) {
+        return path2Invoker.putIfAbsent(path, invoker);
     }
 
     @Override

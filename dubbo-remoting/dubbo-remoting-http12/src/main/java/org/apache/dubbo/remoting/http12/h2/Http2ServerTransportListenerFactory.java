@@ -14,16 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.http12;
+package org.apache.dubbo.remoting.http12.h2;
 
-import org.apache.dubbo.common.stream.StreamObserver;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.ExtensionScope;
+import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
-/**
- * @author icodening
- * @date 2023.06.11
- */
-public interface HttpChannelObserver extends StreamObserver<Object> {
+@SPI(scope = ExtensionScope.FRAMEWORK)
+public interface Http2ServerTransportListenerFactory {
 
-    HttpChannel getHttpChannel();
+    Http2ServerTransportListener newInstance(H2StreamChannel streamChannel, URL url, FrameworkModel frameworkModel);
+
+    boolean supportContentType(String contentType);
 
 }

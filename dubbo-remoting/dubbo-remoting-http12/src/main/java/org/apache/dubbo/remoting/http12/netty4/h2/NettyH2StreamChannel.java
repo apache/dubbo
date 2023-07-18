@@ -24,6 +24,7 @@ import org.apache.dubbo.remoting.http12.HttpMetadata;
 import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
 import org.apache.dubbo.remoting.http12.netty4.NettyHttpChannelFutureListener;
 
+import java.net.SocketAddress;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -44,7 +45,7 @@ public class NettyH2StreamChannel implements H2StreamChannel {
     public CompletableFuture<Void> writeHeader(HttpMetadata httpMetadata) {
         //WriteQueue.enqueue header frame
         NettyHttpChannelFutureListener nettyHttpChannelFutureListener = new NettyHttpChannelFutureListener();
-        http2StreamChannel.write(httpMetadata).addListener(nettyHttpChannelFutureListener);
+        http2StreamChannel.writeAndFlush(httpMetadata).addListener(nettyHttpChannelFutureListener);
         return nettyHttpChannelFutureListener;
     }
 
@@ -52,15 +53,20 @@ public class NettyH2StreamChannel implements H2StreamChannel {
     public CompletableFuture<Void> writeMessage(HttpMessage httpMessage) {
         //WriteQueue.enqueue data frame
         NettyHttpChannelFutureListener nettyHttpChannelFutureListener = new NettyHttpChannelFutureListener();
-        http2StreamChannel.write(httpMessage).addListener(nettyHttpChannelFutureListener);
+        http2StreamChannel.writeAndFlush(httpMessage).addListener(nettyHttpChannelFutureListener);
         return nettyHttpChannelFutureListener;
+    }
+
+    @Override
+    public SocketAddress remoteAddress() {
+        return this.http2StreamChannel.remoteAddress();
     }
 
     @Override
     public CompletableFuture<Void> writeResetFrame(long errorCode) {
         DefaultHttp2ResetFrame resetFrame = new DefaultHttp2ResetFrame(errorCode);
         NettyHttpChannelFutureListener nettyHttpChannelFutureListener = new NettyHttpChannelFutureListener();
-        http2StreamChannel.write(resetFrame).addListener(nettyHttpChannelFutureListener);
+        http2StreamChannel.writeAndFlush(resetFrame).addListener(nettyHttpChannelFutureListener);
         return nettyHttpChannelFutureListener;
     }
 

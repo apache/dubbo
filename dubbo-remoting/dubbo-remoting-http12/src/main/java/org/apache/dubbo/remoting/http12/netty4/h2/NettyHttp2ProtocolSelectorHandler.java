@@ -17,18 +17,21 @@
 package org.apache.dubbo.remoting.http12.netty4.h2;
 
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelPipeline;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http2.Http2StreamChannel;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.remoting.http12.Http2ServerTransportListenerFactory;
 import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.HttpHeaders;
 import org.apache.dubbo.remoting.http12.HttpMetadata;
 import org.apache.dubbo.remoting.http12.h2.GenericHttp2ServerTransportListenerFactory;
 import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
+import org.apache.dubbo.remoting.http12.h2.Http2ServerTransportListenerFactory;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+
+import java.util.List;
 
 public class NettyHttp2ProtocolSelectorHandler extends SimpleChannelInboundHandler<HttpMetadata> {
 
@@ -46,18 +49,21 @@ public class NettyHttp2ProtocolSelectorHandler extends SimpleChannelInboundHandl
         HttpHeaders headers = metadata.headers();
         String contentType = headers.getFirst(HttpHeaderNames.CONTENT_TYPE.getName());
         Assert.assertTrue(StringUtils.hasText(contentType), "content-type must be not null.");
-        Http2ServerTransportListenerFactory factory = null;
-        try {
-            factory = frameworkModel.getExtension(Http2ServerTransportListenerFactory.class, contentType);
-        } catch (Throwable ignore) {
-
-        }
-        if (factory == null) {
-            factory = GenericHttp2ServerTransportListenerFactory.INSTANCE;
-        }
+        Http2ServerTransportListenerFactory factory = adaptHttp2ServerTransportListenerFactory(contentType);
         H2StreamChannel h2StreamChannel = new NettyH2StreamChannel((Http2StreamChannel) ctx.channel());
-        ctx.pipeline().addLast(new NettyHttp2FrameHandler(factory.newInstance(h2StreamChannel, url, frameworkModel)));
-        ctx.pipeline().remove(this);
+        ChannelPipeline pipeline = ctx.pipeline();
+        pipeline.addLast(new NettyHttp2FrameHandler(factory.newInstance(h2StreamChannel, url, frameworkModel)));
+        pipeline.remove(this);
         ctx.fireChannelRead(metadata);
+    }
+
+    private Http2ServerTransportListenerFactory adaptHttp2ServerTransportListenerFactory(String contentType) {
+        List<Http2ServerTransportListenerFactory> http2ServerTransportListenerFactories = frameworkModel.getExtensionLoader(Http2ServerTransportListenerFactory.class).getActivateExtensions();
+        for (Http2ServerTransportListenerFactory factory : http2ServerTransportListenerFactories) {
+            if (factory.supportContentType(contentType)) {
+                return factory;
+            }
+        }
+        return GenericHttp2ServerTransportListenerFactory.INSTANCE;
     }
 }

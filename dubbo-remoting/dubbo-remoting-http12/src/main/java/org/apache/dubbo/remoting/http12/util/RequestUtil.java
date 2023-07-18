@@ -14,18 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.http12;
+package org.apache.dubbo.remoting.http12.util;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionScope;
-import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
-import org.apache.dubbo.remoting.http12.h2.Http2ServerTransportListener;
-import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.remoting.http12.HttpHeaders;
 
-@SPI(scope = ExtensionScope.FRAMEWORK)
-public interface Http2ServerTransportListenerFactory {
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
-    Http2ServerTransportListener newInstance(H2StreamChannel streamChannel, URL url, FrameworkModel frameworkModel);
+public class RequestUtil {
 
+    public static Map<String, Object> headerToAttachment(HttpHeaders headers) {
+        if (headers == null || headers.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        Map<String, Object> ret = new HashMap<>(headers.toSingleValueMap());
+        //remove exclude
+        return ret;
+    }
 }

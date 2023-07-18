@@ -23,6 +23,7 @@ import org.apache.dubbo.remoting.http12.HttpMetadata;
 import org.apache.dubbo.remoting.http12.h1.DefaultHttp1Response;
 import org.apache.dubbo.remoting.http12.netty4.NettyHttpChannelFutureListener;
 
+import java.net.SocketAddress;
 import java.util.concurrent.CompletableFuture;
 
 public class NettyHttp1Channel implements HttpChannel {
@@ -46,5 +47,10 @@ public class NettyHttp1Channel implements HttpChannel {
         NettyHttpChannelFutureListener nettyHttpChannelFutureListener = new NettyHttpChannelFutureListener();
         this.channel.writeAndFlush(new DefaultHttp1Response(httpMetadata, httpMessage)).addListener(nettyHttpChannelFutureListener);
         return nettyHttpChannelFutureListener;
+    }
+
+    @Override
+    public SocketAddress remoteAddress() {
+        return channel.remoteAddress();
     }
 }

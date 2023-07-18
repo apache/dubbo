@@ -31,4 +31,7 @@ public interface GreeterService {
 
     CompletableFuture<String> sayHelloAsync(String request);
 
+
+    CompletableFuture<String> sayHelloAsync2(String request, User obj);
+
 }

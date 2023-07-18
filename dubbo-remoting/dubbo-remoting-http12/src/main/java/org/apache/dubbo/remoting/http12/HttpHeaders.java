@@ -213,6 +213,14 @@ public class HttpHeaders implements Map<String, List<String>>, Serializable, Clo
         return entrySet;
     }
 
+    public Map<String, String> toSingleValueMap() {
+        Map<String, String> result = new HashMap<>(this.targetMap.size());
+        for (String key : keySet()) {
+            result.put(key, getFirst(key));
+        }
+        return result;
+    }
+
     @Override
     public boolean equals(Object other) {
         return (this == other || this.targetMap.equals(other));
