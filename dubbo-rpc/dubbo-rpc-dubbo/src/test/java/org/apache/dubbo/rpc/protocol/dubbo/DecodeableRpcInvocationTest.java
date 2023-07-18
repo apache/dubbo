@@ -22,6 +22,7 @@ import org.apache.dubbo.common.serialize.Serialization;
 import org.apache.dubbo.common.serialize.support.DefaultSerializationSelector;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.buffer.ChannelBuffer;
 import org.apache.dubbo.remoting.buffer.ChannelBufferInputStream;
@@ -29,27 +30,39 @@ import org.apache.dubbo.remoting.buffer.ChannelBufferOutputStream;
 import org.apache.dubbo.remoting.buffer.ChannelBuffers;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.transport.CodecSupport;
+import org.apache.dubbo.rpc.Protocol;
+import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.PermittedSerializationKeeper;
 import org.apache.dubbo.rpc.protocol.dubbo.decode.MockChannel;
 import org.apache.dubbo.rpc.protocol.dubbo.support.DemoService;
-
+import org.apache.dubbo.rpc.protocol.dubbo.support.DemoServiceImpl;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.rpc.protocol.dubbo.DubboCodec.DUBBO_VERSION;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * {@link DecodeableRpcInvocation}
  */
 class DecodeableRpcInvocationTest {
+
+    @BeforeAll
+    public static void setup() {
+        ApplicationModel.defaultModel().getDefaultModule().getServiceRepository().registerService(DemoService.class);
+    }
+
 
     @Test
     void test() throws Exception {
@@ -93,6 +106,29 @@ class DecodeableRpcInvocationTest {
 
         frameworkModel.destroy();
     }
+
+
+    @Test
+    void testPrecisionLossForHessian2Serialization() throws Exception {
+        Protocol protocol = ApplicationModel.defaultModel().getExtensionDirector().getExtensionLoader(Protocol.class).getAdaptiveExtension();
+        ProxyFactory proxy = ApplicationModel.defaultModel().getExtensionDirector().getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+        DemoService service = new DemoServiceImpl();
+        int port = NetUtils.getAvailablePort();
+        URL demoServiceUrl = URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName())
+            .addParameter("prefer-serialization", "hessian2");
+        protocol.export(proxy.getInvoker(service, DemoService.class, demoServiceUrl));
+
+        URL referUrl = URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName()).addParameter("timeout",
+            3000L);
+        service = proxy.getProxy(protocol.refer(DemoService.class, referUrl));
+
+        List<Short> sl = new ArrayList<>();
+        sl.add((short) 1);
+        List<Short> result = service.shorts(sl);
+
+        assertEquals(Short.class, result.get(0).getClass());
+    }
+
 
     private ChannelBuffer writeBuffer(URL url, RpcInvocation inv, Byte proto) throws IOException {
         Serialization serialization = CodecSupport.getSerializationById(proto);

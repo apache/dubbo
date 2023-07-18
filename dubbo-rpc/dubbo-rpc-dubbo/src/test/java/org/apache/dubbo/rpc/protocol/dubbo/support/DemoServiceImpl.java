@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.protocol.dubbo.support;
 import org.apache.dubbo.rpc.RpcContext;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -134,4 +135,11 @@ public class DemoServiceImpl implements DemoService {
         Arrays.fill(bytes, (byte) 0);
         return bytes;
     }
+
+    @Override
+    public List<Short> shorts(List<Short> shorts) {
+        return shorts;
+    }
+
+
 }
