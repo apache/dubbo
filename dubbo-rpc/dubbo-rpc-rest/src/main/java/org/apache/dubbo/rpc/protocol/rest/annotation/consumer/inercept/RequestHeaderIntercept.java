@@ -29,9 +29,9 @@ import java.util.Collection;
 import java.util.Set;
 
 /**
- *  resolve method args from header
+ * resolve method args from header
  */
-@Activate(value = RestConstant.REQUEST_HEADER_INTERCEPT, order = 2)
+@Activate(value = RestConstant.REQUEST_HEADER_INTERCEPT, order = Integer.MAX_VALUE - 1)
 public class RequestHeaderIntercept implements HttpConnectionPreBuildIntercept {
 
     @Override
@@ -44,6 +44,7 @@ public class RequestHeaderIntercept implements HttpConnectionPreBuildIntercept {
         Set<String> consumes = restMethodMetadata.getRequest().getConsumes();
 
         requestTemplate.addHeaders(RestHeaderEnum.CONTENT_TYPE.getHeader(), consumes);
+
 
         Collection<String> produces = restMethodMetadata.getRequest().getProduces();
         if (produces == null || produces.isEmpty()) {

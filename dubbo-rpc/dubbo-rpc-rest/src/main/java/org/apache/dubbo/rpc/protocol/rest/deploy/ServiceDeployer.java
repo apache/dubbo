@@ -17,6 +17,9 @@
 package org.apache.dubbo.rpc.protocol.rest.deploy;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.rest.PathMatcher;
 import org.apache.dubbo.metadata.rest.RestMethodMetadata;
@@ -26,15 +29,26 @@ import org.apache.dubbo.rpc.protocol.rest.Constants;
 import org.apache.dubbo.rpc.protocol.rest.PathAndInvokerMapper;
 import org.apache.dubbo.rpc.protocol.rest.RpcExceptionMapper;
 import org.apache.dubbo.rpc.protocol.rest.exception.mapper.ExceptionMapper;
+import org.apache.dubbo.rpc.protocol.rest.exception.mapper.RestEasyExceptionMapper;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
 
 public class ServiceDeployer {
 
+
+    private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
+
+
     private final PathAndInvokerMapper pathAndInvokerMapper = new PathAndInvokerMapper();
-    private final ExceptionMapper exceptionMapper = new ExceptionMapper();
+    private final ExceptionMapper exceptionMapper = createExceptionMapper();
+
+    private final Set<Object> extensions = new HashSet<>();
 
 
     public void deploy(ServiceRestMetadata serviceRestMetadata, Invoker invoker) {
@@ -58,12 +72,30 @@ public class ServiceDeployer {
 
     }
 
-    public void registerExceptionMapper(URL url) {
+    public void registerExtension(URL url) {
 
         for (String clazz : COMMA_SPLIT_PATTERN.split(url.getParameter(Constants.EXTENSION_KEY, RpcExceptionMapper.class.getName()))) {
-            if (!StringUtils.isEmpty(clazz)) {
-                exceptionMapper.registerMapper(clazz);
+
+            if (StringUtils.isEmpty(clazz)) {
+                continue;
             }
+            try {
+                Class<?> aClass = ClassUtils.forName(clazz);
+
+                // exception handler
+                if (ExceptionMapper.isSupport(aClass)) {
+                    exceptionMapper.registerMapper(clazz);
+                } else {
+
+
+                    extensions.add(aClass.newInstance());
+                }
+
+            } catch (Exception e) {
+                logger.warn("", "", "dubbo rest registerExtension error: ", e.getMessage(), e);
+            }
+
+
         }
     }
 
@@ -74,4 +106,42 @@ public class ServiceDeployer {
     public ExceptionMapper getExceptionMapper() {
         return exceptionMapper;
     }
+
+    public Set<Object> getExtensions() {
+        return extensions;
+    }
+
+    /**
+     * get extensions by type
+     *
+     * @param extensionClass
+     * @param <T>
+     * @return
+     */
+    // TODO add  javax.annotation.Priority sort
+    public <T> List<T> getExtensions(Class<T> extensionClass) {
+
+        ArrayList<T> exts = new ArrayList<>();
+        if (extensions.isEmpty()) {
+            return exts;
+        }
+
+
+        for (Object extension : extensions) {
+            if (extensionClass.isAssignableFrom(extension.getClass())) {
+                exts.add((T) extension);
+            }
+        }
+
+        return exts;
+    }
+
+    private ExceptionMapper createExceptionMapper() {
+        if (ClassUtils.isPresent("javax.ws.rs.ext.ExceptionMapper", Thread.currentThread().getContextClassLoader())) {
+            return new RestEasyExceptionMapper();
+        }
+        return new ExceptionMapper();
+    }
+
+
 }
