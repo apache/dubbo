@@ -25,12 +25,12 @@ import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.config.spring.context.event.DubboApplicationStateEvent;
 import org.apache.dubbo.config.spring.context.event.DubboModuleStateEvent;
 import org.apache.dubbo.config.spring.util.DubboBeanUtils;
+import org.apache.dubbo.config.spring.util.LockUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModelConstants;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.support.DefaultSingletonBeanRegistry;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationListener;
@@ -147,7 +147,7 @@ public class DubboDeployApplicationListener implements ApplicationListener<Appli
     private void onContextRefreshedEvent(ContextRefreshedEvent event) {
         ModuleDeployer deployer = moduleModel.getDeployer();
         Assert.notNull(deployer, "Module deployer is null");
-        Object singletonMutex = ((DefaultSingletonBeanRegistry) applicationContext.getAutowireCapableBeanFactory()).getSingletonMutex();
+        Object singletonMutex = LockUtils.getSingletonMutex(applicationContext);
         // start module
         Future future = null;
         synchronized (singletonMutex) {

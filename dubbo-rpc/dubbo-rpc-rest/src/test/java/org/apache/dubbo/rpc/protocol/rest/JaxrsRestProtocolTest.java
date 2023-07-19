@@ -59,8 +59,10 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 import static org.apache.dubbo.remoting.Constants.SERVER_KEY;
@@ -616,23 +618,23 @@ class JaxrsRestProtocolTest {
 
     @Test
     void testGetInvoker() {
-       Assertions.assertDoesNotThrow(()->{
-           URL exportUrl = URL.valueOf("rest://127.0.0.1:" + availablePort + "/rest?interface=org.apache.dubbo.rpc.protocol.rest.rest.TestGetInvokerService");
+        Assertions.assertDoesNotThrow(() -> {
+            URL exportUrl = URL.valueOf("rest://127.0.0.1:" + availablePort + "/rest?interface=org.apache.dubbo.rpc.protocol.rest.rest.TestGetInvokerService");
 
-           TestGetInvokerService server = new TestGetInvokerServiceImpl();
+            TestGetInvokerService server = new TestGetInvokerServiceImpl();
 
-           URL url = this.registerProvider(exportUrl, server, DemoService.class);
+            URL url = this.registerProvider(exportUrl, server, DemoService.class);
 
-           Exporter<TestGetInvokerService> exporter = protocol.export(proxy.getInvoker(server, TestGetInvokerService.class, url));
+            Exporter<TestGetInvokerService> exporter = protocol.export(proxy.getInvoker(server, TestGetInvokerService.class, url));
 
-           TestGetInvokerService invokerService = this.proxy.getProxy(protocol.refer(TestGetInvokerService.class, url));
+            TestGetInvokerService invokerService = this.proxy.getProxy(protocol.refer(TestGetInvokerService.class, url));
 
 
-           String invoker = invokerService.getInvoker();
-           Assertions.assertEquals("success", invoker);
+            String invoker = invokerService.getInvoker();
+            Assertions.assertEquals("success", invoker);
 
-           exporter.unexport();
-       });
+            exporter.unexport();
+        });
     }
 
     @Test
@@ -686,6 +688,37 @@ class JaxrsRestProtocolTest {
 
 
         Assertions.assertEquals("response-filter", demoService.sayHello("hello"));
+        exporter.unexport();
+    }
+
+    @Test
+    void testCollectionResult() {
+        DemoService server = new DemoServiceImpl();
+
+        URL url = this.registerProvider(exportUrl, server, DemoService.class);
+
+        URL nettyUrl = url.addParameter(SERVER_KEY, "netty");
+
+        Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(server, DemoService.class, nettyUrl));
+
+        DemoService demoService = this.proxy.getProxy(protocol.refer(DemoService.class, nettyUrl));
+
+
+        Assertions.assertEquals(User.getInstance(), demoService.list(Arrays.asList(User.getInstance())).get(0));
+
+        HashSet<User> objects = new HashSet<>();
+        objects.add(User.getInstance());
+        Assertions.assertEquals(User.getInstance(), new ArrayList<>(demoService.set(objects)).get(0));
+
+        Assertions.assertEquals(User.getInstance(), demoService.array(objects.toArray(new User[0]))[0]);
+
+        Map<String, User> map = new HashMap<>();
+        map.put("map", User.getInstance());
+        Assertions.assertEquals(User.getInstance(), demoService.stringMap(map).get("map"));
+
+        Map<User, User> maps = new HashMap<>();
+        maps.put(User.getInstance(), User.getInstance());
+        Assertions.assertEquals(User.getInstance(), demoService.userMap(maps).get(User.getInstance()));
         exporter.unexport();
     }
 

@@ -56,7 +56,7 @@ public class Request {
 
     static {
         long startID = ThreadLocalRandom.current().nextLong();
-        if (Boolean.parseBoolean(System.getProperty(USE_SECURE_RANDOM_ID, "true"))) {
+        if (Boolean.parseBoolean(System.getProperty(USE_SECURE_RANDOM_ID, "false"))) {
             try {
                 SecureRandom rand = new SecureRandom(SecureRandom.getSeed(20));
                 startID = rand.nextLong();
