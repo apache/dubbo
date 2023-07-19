@@ -133,8 +133,6 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
 
     private volatile boolean scanned = false;
 
-    private ApplicationContext applicationContext;
-
     public ServiceAnnotationPostProcessor(String... packagesToScan) {
         this(asList(packagesToScan));
     }
@@ -430,9 +428,6 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
 
         AbstractBeanDefinition beanDefinition = builder.getBeanDefinition();
         beanDefinition.setAutowireMode(AbstractBeanDefinition.AUTOWIRE_CONSTRUCTOR);
-        ConstructorArgumentValues constructorArgumentValues = new ConstructorArgumentValues();
-        constructorArgumentValues.addGenericArgumentValue(applicationContext);
-        beanDefinition.setConstructorArgumentValues(constructorArgumentValues);
 
         MutablePropertyValues propertyValues = beanDefinition.getPropertyValues();
 
@@ -627,7 +622,6 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        this.applicationContext = applicationContext;
         this.servicePackagesHolder = applicationContext.getBean(ServicePackagesHolder.BEAN_NAME, ServicePackagesHolder.class);
     }
 
