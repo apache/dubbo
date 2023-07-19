@@ -278,7 +278,7 @@ public class NacosNamingServiceWrapper {
     }
 
     public List<Instance> selectInstances(String serviceName, String group, boolean healthy) throws NacosException {
-        return apply(() -> nacosConnectionManager.getNamingService().selectInstances(handleInnerSymbol(serviceName), group, healthy));
+        return apply(() -> nacosConnectionManager.getNamingService().selectInstances(handleInnerSymbol(serviceName), group, healthy, false));
     }
 
     public void shutdown() throws NacosException {
