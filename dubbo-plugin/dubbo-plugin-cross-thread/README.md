@@ -1,6 +1,6 @@
 # Dubbo Plugin Cross Thread
 
-`dubbo-plugin-cross-thread` copy dubbo-tag cross thread lightly . 
+`dubbo-plugin-cross-thread` copy dubbo.tag cross thread lightly . 
 
 ## Integrate example
 ### scan annotation by byte-buddy
@@ -48,7 +48,7 @@ Runnable runnable = RunnableWrapper.of(new Runnable() {
 ```
 ## Integrate with spring boot
 
-### make listener
+### add a listener
 ```
 public class DubboCrossThreadAnnotationListener implements ApplicationListener<ApplicationEnvironmentPreparedEvent> {
     private Logger logger = LoggerFactory.getLogger(DubboCrossThreadAnnotationListener.class);
