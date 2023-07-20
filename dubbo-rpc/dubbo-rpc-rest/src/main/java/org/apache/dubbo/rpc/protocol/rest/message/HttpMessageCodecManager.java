@@ -23,6 +23,7 @@ import org.apache.dubbo.rpc.protocol.rest.exception.UnSupportContentTypeExceptio
 import org.apache.dubbo.rpc.protocol.rest.pair.MessageCodecResultPair;
 
 import java.io.OutputStream;
+import java.lang.reflect.Type;
 import java.util.Set;
 
 public class HttpMessageCodecManager {
@@ -30,14 +31,14 @@ public class HttpMessageCodecManager {
         FrameworkModel.defaultModel().getExtensionLoader(HttpMessageCodec.class).getSupportedExtensionInstances();
 
 
-    public static Object httpMessageDecode(byte[] body, Class<?> type, MediaType mediaType) throws Exception {
+    public static Object httpMessageDecode(byte[] body, Class<?> type, Type actualType, MediaType mediaType) throws Exception {
         if (body == null || body.length == 0) {
             return null;
         }
 
         for (HttpMessageCodec httpMessageCodec : httpMessageCodecs) {
             if (httpMessageCodec.contentTypeSupport(mediaType, type) || typeJudge(mediaType, type, httpMessageCodec)) {
-                return httpMessageCodec.decode(body, type);
+                return httpMessageCodec.decode(body, type,actualType);
             }
         }
         throw new UnSupportContentTypeException("UnSupport content-type :" + mediaType.value);
