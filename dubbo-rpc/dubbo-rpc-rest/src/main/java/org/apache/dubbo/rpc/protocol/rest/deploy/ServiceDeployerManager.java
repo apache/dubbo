@@ -50,7 +50,7 @@ public class ServiceDeployerManager {
         newServiceDeployer.deploy(serviceRestMetadata, invoker);
 
         // register exception mapper
-        newServiceDeployer.registerExceptionMapper(currentURL);
+        newServiceDeployer.registerExtension(currentURL);
 
         // not new URL
         if (!isNewCreate.get()) {

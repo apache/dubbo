@@ -60,7 +60,8 @@ public class SerializeBodyIntercept implements HttpConnectionPreBuildIntercept {
             MediaType mediaType = MediaTypeUtil.convertMediaType(requestTemplate.getBodyType(), headers.toArray(new String[0]));
 
             // add mediaType by targetClass serialize
-            if (headers.isEmpty() && mediaType != null && !mediaType.equals(MediaType.ALL_VALUE)) {
+            if (mediaType != null && !mediaType.equals(MediaType.ALL_VALUE)) {
+                headers.clear();
                 headers.add(mediaType.value);
             }
             HttpMessageCodecManager.httpMessageEncode(outputStream, unSerializedBody, url, mediaType, requestTemplate.getBodyType());

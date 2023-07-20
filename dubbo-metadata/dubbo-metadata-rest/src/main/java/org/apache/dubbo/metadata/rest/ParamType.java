@@ -17,6 +17,7 @@
 package org.apache.dubbo.metadata.rest;
 
 import org.apache.dubbo.metadata.rest.tag.BodyTag;
+import org.apache.dubbo.metadata.rest.tag.NoAnnotationTag;
 import org.apache.dubbo.metadata.rest.tag.ParamTag;
 
 import java.util.ArrayList;
@@ -40,8 +41,10 @@ public enum ParamType {
         SpringMvcClassConstants.REQUEST_BODY_ANNOTATION_CLASS)),
 
     PROVIDER_BODY(addSupportTypes(
-        JAXRSClassConstants.REST_EASY_BODY_ANNOTATION_CLASS,JAXRSClassConstants.FORM_PARAM_ANNOTATION_CLASS,
+        JAXRSClassConstants.REST_EASY_BODY_ANNOTATION_CLASS, JAXRSClassConstants.FORM_PARAM_ANNOTATION_CLASS,
         SpringMvcClassConstants.REQUEST_BODY_ANNOTATION_CLASS, BodyTag.class)),
+
+    PROVIDER_NO_ANNOTATION(addSupportTypes(NoAnnotationTag.class)),
 
     EMPTY(addSupportTypes());
     private List<Class> annotationClasses;
