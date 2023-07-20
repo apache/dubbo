@@ -131,6 +131,7 @@
         <apollo_client_version>2.1.0</apollo_client_version>
         <snakeyaml_version>2.0</snakeyaml_version>
         <commons_lang3_version>3.12.0</commons_lang3_version>
+        <commons_net_version>3.9.0</commons_net_version>
         <protostuff_version>1.8.0</protostuff_version>
         <envoy_api_version>0.1.35</envoy_api_version>
         <micrometer.version>1.11.2</micrometer.version>
@@ -652,6 +653,11 @@
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-lang3</artifactId>
                 <version>${commons_lang3_version}</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-net</groupId>
+                <artifactId>commons-net</artifactId>
+                <version>${commons_net_version}</version>
             </dependency>
             <dependency>
                 <groupId>io.envoyproxy.controlplane</groupId>

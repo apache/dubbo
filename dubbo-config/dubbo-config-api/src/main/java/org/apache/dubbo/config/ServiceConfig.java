@@ -37,6 +37,7 @@ import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.invoker.DelegateProviderMetaDataInvoker;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
+import org.apache.dubbo.config.utils.SubnetUtil;
 import org.apache.dubbo.metadata.ServiceNameMapping;
 import org.apache.dubbo.metrics.event.MetricsEventBus;
 import org.apache.dubbo.metrics.registry.event.RegistryEvent;
@@ -713,9 +714,20 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             params.put(CommonConstants.IPV6_KEY, ipv6Host);
         }
 
+        if (StringUtils.isBlank(getTag())) {
+            if (SubnetUtil.isEmpty()) {
+                String content = ConfigurationUtils.getCachedDynamicProperty(getScopeModel(), SubnetUtil.TAG_SUBNETS_KEY, null);
+                SubnetUtil.init(content);
+            }
+            if (!SubnetUtil.isEmpty()) {
+                String tagLevel = SubnetUtil.getTagLevelByHost(params.get(BIND_IP_KEY));
+                setTag(tagLevel);
+                params.put(CommonConstants.TAG_KEY, tagLevel);
+            }
+        }
+
         Integer port = findConfiguredPort(protocolConfig, provider, this.getExtensionLoader(Protocol.class), name, params);
         URL url = new ServiceConfigURL(name, null, null, host, port, getContextPath(protocolConfig).map(p -> p + "/" + path).orElse(path), params);
-
         // You can customize Configurator to append extra parameters
         if (this.getExtensionLoader(ConfiguratorFactory.class)
             .hasExtension(url.getProtocol())) {
