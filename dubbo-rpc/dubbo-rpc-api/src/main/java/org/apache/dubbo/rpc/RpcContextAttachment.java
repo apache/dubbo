@@ -22,8 +22,9 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import java.util.HashMap;
 import java.util.Map;
 
-public class RpcContextAttachment extends RpcContext{
+public class RpcContextAttachment extends RpcContext {
     protected volatile Map<String, Object> attachments = new HashMap<>();
+    protected volatile Map<String, Object> overrideAttachments = new HashMap<>();
     // only useful on provider side.
     protected AsyncContext asyncContext;
 
@@ -75,6 +76,13 @@ public class RpcContextAttachment extends RpcContext{
      */
     @Override
     public String getAttachment(String key) {
+        if (overrideAttachments != null) {
+            Object value = overrideAttachments.get(key);
+            if (value instanceof String) {
+                return (String) value;
+            }
+            return null;
+        }
         Object value = attachments.get(key);
         if (value instanceof String) {
             return (String) value;
@@ -91,6 +99,9 @@ public class RpcContextAttachment extends RpcContext{
     @Override
     @Experimental("Experiment api for supporting Object transmission")
     public Object getObjectAttachment(String key) {
+        if (overrideAttachments != null) {
+            return overrideAttachments.get(key);
+        }
         return attachments.get(key);
     }
 
@@ -114,6 +125,13 @@ public class RpcContextAttachment extends RpcContext{
     @Override
     @Experimental("Experiment api for supporting Object transmission")
     public RpcContextAttachment setObjectAttachment(String key, Object value) {
+        if (overrideAttachments != null) {
+            if (value == null) {
+                overrideAttachments.remove(key);
+            } else {
+                overrideAttachments.put(key, value);
+            }
+        }
         if (value == null) {
             attachments.remove(key);
         } else {
@@ -130,6 +148,9 @@ public class RpcContextAttachment extends RpcContext{
      */
     @Override
     public RpcContextAttachment removeAttachment(String key) {
+        if (overrideAttachments != null) {
+            overrideAttachments.remove(key);
+        }
         attachments.remove(key);
         return this;
     }
@@ -153,6 +174,9 @@ public class RpcContextAttachment extends RpcContext{
     @Override
     @Experimental("Experiment api for supporting Object transmission")
     public Map<String, Object> getObjectAttachments() {
+        if (overrideAttachments != null) {
+            return overrideAttachments;
+        }
         return attachments;
     }
 
@@ -167,6 +191,9 @@ public class RpcContextAttachment extends RpcContext{
         this.attachments.clear();
         if (attachment != null && attachment.size() > 0) {
             this.attachments.putAll(attachment);
+            if (overrideAttachments != null) {
+                this.overrideAttachments.putAll(attachment);
+            }
         }
         return this;
     }
@@ -183,12 +210,20 @@ public class RpcContextAttachment extends RpcContext{
         this.attachments.clear();
         if (CollectionUtils.isNotEmptyMap(attachment)) {
             this.attachments = attachment;
+            if (overrideAttachments != null) {
+                this.overrideAttachments.putAll(attachment);
+            }
         }
         return this;
     }
 
     @Override
     public void clearAttachments() {
+        if (this.overrideAttachments != null) {
+            for (Map.Entry<String, Object> entry : this.attachments.entrySet()) {
+                this.overrideAttachments.remove(entry.getKey(), entry.getValue());
+            }
+        }
         this.attachments.clear();
     }
 
@@ -240,6 +275,10 @@ public class RpcContextAttachment extends RpcContext{
         return getAttachment(key);
     }
 
+    public void setOverrideAttachments(Map<String, Object> overrideAttachments) {
+        this.overrideAttachments = overrideAttachments;
+    }
+
     /**
      * Also see {@link RpcServiceContext#copyOf(boolean)}
      *
@@ -258,6 +297,9 @@ public class RpcContextAttachment extends RpcContext{
             if (asyncContext != null) {
                 copy.asyncContext = this.asyncContext;
             }
+            if (overrideAttachments != null) {
+                copy.overrideAttachments = this.overrideAttachments;
+            }
             return copy;
         } else {
             return this;
@@ -265,6 +307,6 @@ public class RpcContextAttachment extends RpcContext{
     }
 
     protected boolean isValid() {
-        return CollectionUtils.isNotEmptyMap(attachments);
+        return CollectionUtils.isNotEmptyMap(overrideAttachments) || CollectionUtils.isNotEmptyMap(attachments);
     }
 }
