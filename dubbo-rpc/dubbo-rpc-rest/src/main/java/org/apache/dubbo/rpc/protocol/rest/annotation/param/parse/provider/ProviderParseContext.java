@@ -27,6 +27,7 @@ public class ProviderParseContext extends BaseParseContext {
     private RequestFacade requestFacade;
     private Object response;
     private Object request;
+    private Object[] arrayArgs;
 
 
     public ProviderParseContext(RequestFacade request) {
@@ -66,5 +67,12 @@ public class ProviderParseContext extends BaseParseContext {
 
     }
 
+    public Object[] getArrayArgs() {
+        return arrayArgs;
+    }
 
+    public void setArrayArgs(Object[] objects) {
+        this.arrayArgs = objects;
+
+    }
 }

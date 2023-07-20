@@ -250,4 +250,8 @@ public class NettyRequestFacade extends RequestFacade<FullHttpRequest> {
         }
 
     }
+
+    public ChannelHandlerContext getNettyChannelContext() {
+        return context;
+    }
 }

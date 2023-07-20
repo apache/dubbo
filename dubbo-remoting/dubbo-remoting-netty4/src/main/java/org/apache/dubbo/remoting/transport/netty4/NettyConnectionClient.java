@@ -89,6 +89,7 @@ public class NettyConnectionClient extends AbstractConnectionClient {
         this.channel = new AtomicReference<>();
         this.closePromise = new DefaultPromise<>(GlobalEventExecutor.INSTANCE);
         this.init = new AtomicBoolean(false);
+        this.increase();
     }
 
     @Override

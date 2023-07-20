@@ -31,6 +31,14 @@ public interface Logger {
     void trace(String msg);
 
     /**
+     * Logs a message with trace log level.
+     *
+     * @param msg log this message
+     * @param arguments a list of arguments
+     */
+    void trace(String msg, Object... arguments);
+
+    /**
      * Logs an error with trace log level.
      *
      * @param e log this cause
@@ -53,6 +61,14 @@ public interface Logger {
     void debug(String msg);
 
     /**
+     * Logs a message with debug log level.
+     *
+     * @param msg log this message
+     * @param arguments a list of arguments
+     */
+    void debug(String msg, Object... arguments);
+
+    /**
      * Logs an error with debug log level.
      *
      * @param e log this cause
@@ -73,6 +89,14 @@ public interface Logger {
      * @param msg log this message
      */
     void info(String msg);
+
+    /**
+     * Logs a message with info log level.
+     *
+     * @param msg log this message
+     * @param arguments a list of arguments
+     */
+    void info(String msg, Object... arguments);
 
     /**
      * Logs an error with info log level.
@@ -99,6 +123,14 @@ public interface Logger {
     /**
      * Logs a message with warn log level.
      *
+     * @param msg log this message
+     * @param arguments a list of arguments
+     */
+    void warn(String msg, Object... arguments);
+
+    /**
+     * Logs a message with warn log level.
+     *
      * @param e log this message
      */
     void warn(Throwable e);
@@ -117,6 +149,14 @@ public interface Logger {
      * @param msg log this message
      */
     void error(String msg);
+
+    /**
+     * Logs a message with error log level.
+     *
+     * @param msg log this message
+     * @param arguments a list of arguments
+     */
+    void error(String msg, Object... arguments);
 
     /**
      * Logs an error with error log level.

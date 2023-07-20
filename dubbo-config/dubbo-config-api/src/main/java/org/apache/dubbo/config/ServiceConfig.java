@@ -514,8 +514,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         List<URL> registryURLs = !Boolean.FALSE.equals(isRegister()) ?
             ConfigValidationUtils.loadRegistries(this, true) : Collections.emptyList();
 
-        MetricsEventBus.post(RegistryEvent.toRsEvent(module.getApplicationModel(), getUniqueServiceName(), protocols.size() * registryURLs.size()),
-            () -> {
+        MetricsEventBus.post(RegistryEvent.toRsEvent(getApplicationModel(), getUniqueServiceName(), protocols.size() * registryURLs.size()),            () -> {
                 for (ProtocolConfig protocolConfig : protocols) {
                     String pathKey = URL.buildKey(getContextPath(protocolConfig)
                         .map(p -> p + "/" + path)

@@ -22,6 +22,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Type;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
@@ -151,7 +152,7 @@ public class DataParseUtils {
 
     }
 
-    public static Object jsonConvert(Class targetType, byte[] body) throws Exception {
+    public static Object jsonConvert(Type targetType, byte[] body) throws Exception {
         return JsonUtils.toJavaObject(new String(body, StandardCharsets.UTF_8), targetType);
     }
 

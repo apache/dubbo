@@ -32,6 +32,7 @@ public interface RestConstant {
     String PROVIDER_PARAM_PARSE = "param";
     String PROVIDER_HEADER_PARSE = "header";
     String PROVIDER_PATH_PARSE = "path";
+    String PROVIDER_NO_ANNOTATION = "no-annotation";
 
     String ADD_MUST_ATTTACHMENT = "must-intercept";
     String RPCCONTEXT_INTERCEPT = "rpc-context";
