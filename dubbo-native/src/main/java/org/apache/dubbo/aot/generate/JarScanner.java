@@ -139,7 +139,6 @@ public class JarScanner {
     }
 
     private String toClassName(String path) {
-        return path.substring(0, path.length() - 6).replace(File.separator, ".");
+        return path.contains(File.separator) ? path.substring(0, path.length() - 6).replace(File.separator, ".") : path.substring(0, path.length() - 6).replace("/", ".");
     }
-
 }
