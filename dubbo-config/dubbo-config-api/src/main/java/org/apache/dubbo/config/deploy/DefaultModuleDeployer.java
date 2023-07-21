@@ -45,6 +45,7 @@ import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ModuleServiceRepository;
 import org.apache.dubbo.rpc.model.ProviderModel;
 
+import java.lang.reflect.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -383,8 +384,54 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
 
     private void exportServices() {
         for (ServiceConfigBase sc : configManager.getServices()) {
-            exportServiceInternal(sc);
+            if (checkJsonCompatibility(sc)) {
+                exportServiceInternal(sc);
+            }
         }
+    }
+
+    private boolean checkJsonCompatibility(ServiceConfigBase sc) {
+        ServiceConfig<?> serviceConfig = (ServiceConfig<?>) sc;
+        Object obj = serviceConfig.getRef();
+        Class<?> clazz = obj.getClass();
+        Method[] methods = clazz.getMethods();
+        for (Method method : methods) {
+            Parameter[] parameters = method.getParameters();
+            for (Parameter parameter : parameters) {
+                Class<?> parameterType = parameter.getType();
+                boolean result = check(parameterType);
+                if (!result) {
+                    System.out.printf("%s Not support !%n", sc.getId());
+                    return false;
+                }
+                System.out.println("Parameter Type: " + parameter.getType().getName());
+            }
+            Class<?> returnType =  method.getReturnType();
+            boolean result = check(returnType);
+            if (!result) {
+                System.out.printf("%s Not support !%n", sc.getId());
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean check(Class<?> clazz) {
+        // 判断是否是接口
+        if (clazz.isInterface()) {
+            return false;
+        }
+        // 判断是否是抽象类
+        if (Modifier.isAbstract(clazz.getModifiers())) {
+            return false;
+        }
+        // 判断是否包含泛型
+        Type type = clazz.getGenericSuperclass();
+        if (type instanceof ParameterizedType) {
+            // 如果Type对象是ParameterizedType类型，说明该类是泛型类
+            return false;
+        }
+        return true;
     }
 
     private void registerServices() {
