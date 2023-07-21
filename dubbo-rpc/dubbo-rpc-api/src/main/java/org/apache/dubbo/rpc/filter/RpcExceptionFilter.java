@@ -14,43 +14,47 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.filter;
 
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.filter.tps.DefaultTPSLimiter;
-import org.apache.dubbo.rpc.filter.tps.TPSLimiter;
-import org.apache.dubbo.rpc.support.RpcUtils;
+
 
 /**
- * TpsLimitFilter limit the TPS (transaction per second) for all method of a service or a particular method.
- * Service or method url can define <b>tps</b> or <b>tps.interval</b> to control this control.It use {@link DefaultTPSLimiter}
- * as it limit checker. If a provider service method is configured with <b>tps</b>(optionally with <b>tps.interval</b>),then
- * if invocation count exceed the configured <b>tps</b> value (default is -1 which means unlimited) then invocation will get
- * RpcException.
+ * RpcExceptionFilter
+ * <p>
+ * Functions:
+ * <ol>
+ * <li> The RpcException will be rethrown on consumer side.</li>
+ * </ol>
  */
-@Activate(group = CommonConstants.PROVIDER)
-public class TpsLimitFilter implements Filter {
-
-    private final TPSLimiter tpsLimiter = new DefaultTPSLimiter();
+@Activate(group = CommonConstants.CONSUMER)
+public class RpcExceptionFilter implements Filter, Filter.Listener {
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
-
-        if (!tpsLimiter.isAllowable(invoker.getUrl(), invocation)) {
-            return AsyncRpcResult.newDefaultAsyncResult(new RpcException("Failed to invoke service " +
-                    invoker.getInterface().getName() + "." + RpcUtils.getMethodName(invocation) + " because exceed max service tps.")
-                , invocation);
-        }
-
         return invoker.invoke(invocation);
     }
 
+    @Override
+    public void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
+        if (appResponse.hasException()) {
+            Throwable exception = appResponse.getException();
+            // directly throw if it's RpcException
+            if ((exception instanceof RpcException)) {
+                throw (RpcException) exception;
+            }
+        }
+    }
+
+    @Override
+    public void onError(Throwable e, Invoker<?> invoker, Invocation invocation) {
+
+    }
 }
+
