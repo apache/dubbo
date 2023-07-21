@@ -30,7 +30,7 @@ public class RunnableOrCallableConstructInterceptor {
 
     }
 
-    @Advice.OnMethodExit
+    @Advice.OnMethodExit(onThrowable = Throwable.class)
     public static void onMethodExit(@Advice.This Object thiz) throws IllegalAccessException, NoSuchFieldException {
         Field tag = thiz.getClass().getDeclaredField(RunnableOrCallableActivation.FIELD_NAME_DUBBO_TAG);
         // copy tag to RunnableOrCallable's field from RpcContext

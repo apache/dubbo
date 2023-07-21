@@ -16,10 +16,10 @@
  */
 package org.apache.dubbo.crossthread.interceptor;
 
-import net.bytebuddy.asm.Advice;
-
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.rpc.RpcContext;
+
+import net.bytebuddy.asm.Advice;
 
 public class RunnableOrCallableMethodInterceptor {
 
@@ -30,7 +30,7 @@ public class RunnableOrCallableMethodInterceptor {
         RpcContext.getClientAttachment().setAttachment(CommonConstants.TAG_KEY, dubboTag);
     }
 
-    @Advice.OnMethodExit
+    @Advice.OnMethodExit(onThrowable = Throwable.class)
     public static void onMethodExit() {
         // clear tag in RpcContext
         RpcContext.getClientAttachment().removeAttachment(CommonConstants.TAG_KEY);
