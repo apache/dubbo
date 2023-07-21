@@ -1,6 +1,7 @@
 # Dubbo Plugin Cross Thread
 
 `dubbo-plugin-cross-thread` copy dubbo.tag cross thread lightly . 
+this plugin will conflict with skywalking and ttl . 
 
 ## Integrate example
 ### scan annotation by byte-buddy
