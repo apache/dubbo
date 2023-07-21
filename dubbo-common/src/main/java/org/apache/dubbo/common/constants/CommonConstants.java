@@ -32,6 +32,8 @@ public interface CommonConstants {
     String PROVIDER = "provider";
 
     String CONSUMER = "consumer";
+    
+    String CALLBACK = "callback";
 
     String APPLICATION_KEY = "application";
 
