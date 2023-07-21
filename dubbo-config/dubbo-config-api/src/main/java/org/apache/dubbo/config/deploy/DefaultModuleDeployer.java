@@ -417,18 +417,14 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
     }
 
     private boolean check(Class<?> clazz) {
-        // 判断是否是接口
         if (clazz.isInterface()) {
             return false;
         }
-        // 判断是否是抽象类
         if (Modifier.isAbstract(clazz.getModifiers())) {
             return false;
         }
-        // 判断是否包含泛型
         Type type = clazz.getGenericSuperclass();
         if (type instanceof ParameterizedType) {
-            // 如果Type对象是ParameterizedType类型，说明该类是泛型类
             return false;
         }
         return true;
