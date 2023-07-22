@@ -44,7 +44,7 @@ public class TracingApplicationLifecycle implements ApplicationLifecycle {
             return;
         }
 
-        Optional<TracingConfig> configManager = defaultApplicationDeployer.getConfigManager().getTracing();
+        Optional<TracingConfig> configManager = defaultApplicationDeployer.getApplicationModel().getApplicationConfigManager().getTracing();
         boolean needInitialize = configManager.isPresent() && configManager.get().getEnabled();
 
         if (needInitialize) {

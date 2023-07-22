@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_METRICS_COLLECTOR_EXCEPTION;
 import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_DEFAULT;
@@ -72,7 +73,7 @@ public class MetricsApplicationLifecycle implements ApplicationLifecycle {
 
         ApplicationModel applicationModel = applicationDeployer.getApplicationModel();
         DefaultMetricsCollector collector = applicationDeployer.getApplicationModel().getBeanFactory().getBean(DefaultMetricsCollector.class);
-        Optional<MetricsConfig> configOptional = applicationDeployer.getConfigManager().getMetrics();
+        Optional<MetricsConfig> configOptional = applicationDeployer.getApplicationModel().getApplicationConfigManager().getMetrics();;
 
         //If no specific metrics type is configured and there is no Prometheus dependency in the dependencies.
         MetricsConfig metricsConfig = configOptional.orElse(new MetricsConfig(applicationDeployer.getApplicationModel()));
@@ -111,7 +112,7 @@ public class MetricsApplicationLifecycle implements ApplicationLifecycle {
     }
 
     private void initMetricsService() {
-        this.metricsServiceExporter = applicationDeployer.getExtensionLoader(MetricsServiceExporter.class).getDefaultExtension();
+        this.metricsServiceExporter = applicationDeployer.getApplicationModel().getExtensionLoader(MetricsServiceExporter.class).getDefaultExtension();
         this.metricsServiceExporter.init();
     }
 
@@ -157,8 +158,8 @@ public class MetricsApplicationLifecycle implements ApplicationLifecycle {
      * @param moduleState   moduleState
      */
     @Override
-    public void preModuleChanged(ModuleModel changedModule, DeployState moduleState) {
-        if (!changedModule.isInternal() && moduleState == DeployState.STARTED && ! applicationDeployer.getHasPreparedApplicationInstance().get()) {
+    public void preModuleChanged(ModuleModel changedModule, DeployState moduleState, AtomicBoolean hasPreparedApplicationInstance) {
+        if (!changedModule.isInternal() && moduleState == DeployState.STARTED && ! hasPreparedApplicationInstance.get()) {
             exportMetricsService();
         }
     }

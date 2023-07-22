@@ -1,9 +1,11 @@
 package org.apache.dubbo.metadata.deploy;
 
-import org.apache.dubbo.common.deploy.DeployState;
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.MetadataReportConfig;
@@ -14,12 +16,18 @@ import org.apache.dubbo.config.deploy.lifecycle.ApplicationLifecycle;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.metadata.report.MetadataReportFactory;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
-import org.apache.dubbo.rpc.model.ModuleModel;
+import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
 
 import java.util.*;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import static java.lang.String.format;
+import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_REFRESH_INSTANCE_ERROR;
+import static org.apache.dubbo.common.utils.StringUtils.isEmpty;
+import static org.apache.dubbo.common.utils.StringUtils.isNotEmpty;
 import static org.apache.dubbo.remoting.Constants.CLIENT_KEY;
 
 /**
@@ -29,10 +37,9 @@ import static org.apache.dubbo.remoting.Constants.CLIENT_KEY;
 public class MetadataApplicationLifecycle implements ApplicationLifecycle {
 
     private static final String NAME = "metadata";
-
+    private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(MetadataApplicationLifecycle.class);
     private DefaultApplicationDeployer applicationDeployer;
 
-    private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(MetadataApplicationLifecycle.class);
 
     @Override
     public void setApplicationDeployer(DefaultApplicationDeployer defaultApplicationDeployer) {
@@ -63,8 +70,8 @@ public class MetadataApplicationLifecycle implements ApplicationLifecycle {
 
         useRegistryAsMetadataCenterIfNecessary();
 
-        ApplicationConfig applicationConfig = applicationDeployer.getApplication();
-        ConfigManager configManager = applicationDeployer.getConfigManager();
+        ApplicationConfig applicationConfig = applicationDeployer.getApplicationModel().getCurrentConfig();
+        ConfigManager configManager = applicationDeployer.getApplicationModel().getApplicationConfigManager();
 
         String metadataType = applicationConfig.getMetadataType();
 
@@ -96,7 +103,7 @@ public class MetadataApplicationLifecycle implements ApplicationLifecycle {
 
     private void useRegistryAsMetadataCenterIfNecessary() {
 
-        ConfigManager configManager = applicationDeployer.getConfigManager();
+        ConfigManager configManager = applicationDeployer.getApplicationModel().getApplicationConfigManager();
 
         Collection<MetadataReportConfig> originMetadataConfigs = configManager.getMetadataConfigs();
         if (originMetadataConfigs.stream().anyMatch(m -> Objects.nonNull(m.getAddress()))) {
@@ -128,7 +135,7 @@ public class MetadataApplicationLifecycle implements ApplicationLifecycle {
 
     private void overrideMetadataReportConfig(MetadataReportConfig metadataConfigToOverride, MetadataReportConfig metadataReportConfig) {
 
-        ConfigManager configManager = applicationDeployer.getConfigManager();
+        ConfigManager configManager = applicationDeployer.getApplicationModel().getApplicationConfigManager();
 
         if (metadataReportConfig.getId() == null) {
             Collection<MetadataReportConfig> metadataReportConfigs = configManager.getMetadataConfigs();
@@ -152,11 +159,51 @@ public class MetadataApplicationLifecycle implements ApplicationLifecycle {
         logger.info("use registry as metadata-center: " + metadataReportConfig);
     }
 
-
     private boolean isUsedRegistryAsMetadataCenter(RegistryConfig registryConfig) {
-        return applicationDeployer.isUsedRegistryAsCenter(registryConfig, registryConfig::getUseAsMetadataCenter, "metadata",
+        return isUsedRegistryAsCenter(registryConfig, registryConfig::getUseAsMetadataCenter, "metadata",
             MetadataReportFactory.class);
     }
+
+    private boolean isUsedRegistryAsCenter(RegistryConfig registryConfig, Supplier<Boolean> usedRegistryAsCenter,
+                                           String centerType,
+                                           Class<?> extensionClass) {
+        final boolean supported;
+
+        Boolean configuredValue = usedRegistryAsCenter.get();
+        if (configuredValue != null) { // If configured, take its value.
+            supported = configuredValue.booleanValue();
+        } else {                       // Or check the extension existence
+            String protocol = registryConfig.getProtocol();
+            supported = supportsExtension(extensionClass, protocol);
+            if (logger.isInfoEnabled()) {
+                logger.info(format("No value is configured in the registry, the %s extension[name : %s] %s as the %s center"
+                    , extensionClass.getSimpleName(), protocol, supported ? "supports" : "does not support", centerType));
+            }
+        }
+
+        if (logger.isInfoEnabled()) {
+            logger.info(format("The registry[%s] will be %s as the %s center", registryConfig,
+                supported ? "used" : "not used", centerType));
+        }
+        return supported;
+    }
+
+    /**
+     * Supports the extension with the specified class and name
+     *
+     * @param extensionClass the {@link Class} of extension
+     * @param name           the name of extension
+     * @return if supports, return <code>true</code>, or <code>false</code>
+     * @since 2.7.8
+     */
+    private boolean supportsExtension(Class<?> extensionClass, String name) {
+        if (isNotEmpty(name)) {
+            ExtensionLoader<?> extensionLoader = applicationDeployer.getApplicationModel().getExtensionLoader(extensionClass);
+            return extensionLoader.hasExtension(name);
+        }
+        return false;
+    }
+
 
     private MetadataReportConfig registryAsMetadataCenter(RegistryConfig registryConfig, MetadataReportConfig originMetadataReportConfig) {
 
@@ -183,7 +230,7 @@ public class MetadataApplicationLifecycle implements ApplicationLifecycle {
             metadataReportConfig.setGroup(registryConfig.getGroup());
         }
         if (metadataReportConfig.getAddress() == null) {
-            metadataReportConfig.setAddress(applicationDeployer.getRegistryCompatibleAddress(registryConfig));
+            metadataReportConfig.setAddress(getRegistryCompatibleAddress(registryConfig));
         }
         if (metadataReportConfig.getUsername() == null) {
             metadataReportConfig.setUsername(registryConfig.getUsername());
@@ -197,6 +244,27 @@ public class MetadataApplicationLifecycle implements ApplicationLifecycle {
         return metadataReportConfig;
     }
 
+    private String getRegistryCompatibleAddress(RegistryConfig registryConfig) {
+        String registryAddress = registryConfig.getAddress();
+        String[] addresses = REGISTRY_SPLIT_PATTERN.split(registryAddress);
+        if (ArrayUtils.isEmpty(addresses)) {
+            throw new IllegalStateException("Invalid registry address found.");
+        }
+        String address = addresses[0];
+        // since 2.7.8
+        // Issue : https://github.com/apache/dubbo/issues/6476
+        StringBuilder metadataAddressBuilder = new StringBuilder();
+        URL url = URL.valueOf(address, registryConfig.getScopeModel());
+        String protocolFromAddress = url.getProtocol();
+        if (isEmpty(protocolFromAddress)) {
+            // If the protocol from address is missing, is like :
+            // "dubbo.registry.address = 127.0.0.1:2181"
+            String protocolFromConfig = registryConfig.getProtocol();
+            metadataAddressBuilder.append(protocolFromConfig).append("://");
+        }
+        metadataAddressBuilder.append(address);
+        return metadataAddressBuilder.toString();
+    }
 
 
     @Override
@@ -211,22 +279,32 @@ public class MetadataApplicationLifecycle implements ApplicationLifecycle {
 
     private void destroyMetadataReports() {
         // only destroy MetadataReport of this application
-        List<MetadataReportFactory> metadataReportFactories = applicationDeployer.getExtensionLoader(MetadataReportFactory.class).getLoadedExtensionInstances();
+        List<MetadataReportFactory> metadataReportFactories = applicationDeployer.getApplicationModel().getExtensionLoader(MetadataReportFactory.class).getLoadedExtensionInstances();
 
         for (MetadataReportFactory metadataReportFactory : metadataReportFactories) {
             metadataReportFactory.destroy();
         }
     }
 
-    @Override
-    public List<String> dependOnPreModuleChanged() {
-        return Collections.singletonList("metrics");
-    }
 
-    @Override
-    public void preModuleChanged(ModuleModel changedModule, DeployState moduleState) {
+//    @Override
+//    public List<String> dependOnPreModuleChanged() {
+//        return Collections.singletonList("metrics");
+//    }
+
+
+//    public void preModuleChanged(ModuleModel changedModule, DeployState moduleState, AtomicBoolean hasPreparedApplicationInstance) {
+//
+//
+//        if (!changedModule.isInternal()
+//            && moduleState == DeployState.STARTED
+//            && !hasPreparedApplicationInstance.get()
+//            && applicationDeployer.isRegisterConsumerInstance()
+//            && hasPreparedApplicationInstance.compareAndSet(false, true)
+//        ) {
+//
+//        }
 //        exportMetadataService();
-    }
 //
 //    private void exportMetadataService() {
 //        if (!applicationDeployer.isStarting()) {
@@ -244,4 +322,16 @@ public class MetadataApplicationLifecycle implements ApplicationLifecycle {
 //    }
 
 
+    @Override
+    public void onRefreshServiceInstance() {
+
+        if (applicationDeployer.isRegistered()) {
+            try {
+                //MetadataLifeManager
+                ServiceInstanceMetadataUtils.refreshMetadataAndInstance(applicationDeployer.getApplicationModel());
+            } catch (Exception e) {
+                logger.error(CONFIG_REFRESH_INSTANCE_ERROR, "", "", "Refresh instance and metadata error.", e);
+            }
+        }
+    }
 }

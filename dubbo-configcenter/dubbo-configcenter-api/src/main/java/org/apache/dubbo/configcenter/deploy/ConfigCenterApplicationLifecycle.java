@@ -11,11 +11,13 @@ import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ConfigCenterConfig;
 import org.apache.dubbo.config.RegistryConfig;
+import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.deploy.DefaultApplicationDeployer;
 import org.apache.dubbo.config.deploy.lifecycle.ApplicationLifecycle;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
@@ -28,9 +30,13 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
+import static java.lang.String.format;
 import static org.apache.dubbo.common.config.ConfigurationUtils.parseProperties;
+import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_INIT_CONFIG_CENTER;
+import static org.apache.dubbo.common.utils.StringUtils.isEmpty;
 import static org.apache.dubbo.common.utils.StringUtils.isNotEmpty;
 import static org.apache.dubbo.remoting.Constants.CLIENT_KEY;
 
@@ -63,8 +69,10 @@ public class ConfigCenterApplicationLifecycle implements ApplicationLifecycle {
 
     @Override
     public void initialize() {
+        ConfigManager configManager  = applicationDeployer.getApplicationModel().getApplicationConfigManager();
+
         // load application config
-        applicationDeployer.getConfigManager().loadConfigsOfTypeFromProps(ApplicationConfig.class);
+        configManager.loadConfigsOfTypeFromProps(ApplicationConfig.class);
 
         // try set model name
         if (StringUtils.isBlank(applicationDeployer.getApplicationModel().getModelName())) {
@@ -72,20 +80,20 @@ public class ConfigCenterApplicationLifecycle implements ApplicationLifecycle {
         }
 
         // load config centers
-        applicationDeployer.getConfigManager().loadConfigsOfTypeFromProps(ConfigCenterConfig.class);
+        configManager.loadConfigsOfTypeFromProps(ConfigCenterConfig.class);
 
         useRegistryAsConfigCenterIfNecessary();
 
         // check Config Center
-        Collection<ConfigCenterConfig> configCenters = applicationDeployer.getConfigManager().getConfigCenters();
+        Collection<ConfigCenterConfig> configCenters = configManager.getConfigCenters();
         if (CollectionUtils.isEmpty(configCenters)) {
             ConfigCenterConfig configCenterConfig = new ConfigCenterConfig();
             configCenterConfig.setScopeModel(applicationDeployer.getApplicationModel());
             configCenterConfig.refresh();
             ConfigValidationUtils.validateConfigCenterConfig(configCenterConfig);
             if (configCenterConfig.isValid()) {
-                applicationDeployer.getConfigManager().addConfigCenter(configCenterConfig);
-                configCenters = applicationDeployer.getConfigManager().getConfigCenters();
+                configManager.addConfigCenter(configCenterConfig);
+                configCenters = configManager.getConfigCenters();
             }
         } else {
             for (ConfigCenterConfig configCenterConfig : configCenters) {
@@ -191,29 +199,31 @@ public class ConfigCenterApplicationLifecycle implements ApplicationLifecycle {
      * useAsConfigCenter of registryConfig is null or true
      */
     private void useRegistryAsConfigCenterIfNecessary() {
+        ConfigManager configManager = applicationDeployer.getApplicationModel().getApplicationConfigManager();
+
         // we use the loading status of DynamicConfiguration to decide whether ConfigCenter has been initiated.
         if (applicationDeployer.getApplicationModel().modelEnvironment().getDynamicConfiguration().isPresent()) {
             return;
         }
 
-        if (CollectionUtils.isNotEmpty(applicationDeployer.getConfigManager().getConfigCenters())) {
+        if (CollectionUtils.isNotEmpty(configManager.getConfigCenters())) {
             return;
         }
 
         // load registry
-        applicationDeployer.getConfigManager().loadConfigsOfTypeFromProps(RegistryConfig.class);
+        configManager.loadConfigsOfTypeFromProps(RegistryConfig.class);
 
-        List<RegistryConfig> defaultRegistries = applicationDeployer.getConfigManager().getDefaultRegistries();
+        List<RegistryConfig> defaultRegistries = configManager.getDefaultRegistries();
         if (defaultRegistries.size() > 0) {
             defaultRegistries
                 .stream()
                 .filter(this::isUsedRegistryAsConfigCenter)
                 .map(this::registryAsConfigCenter)
                 .forEach(configCenter -> {
-                    if (applicationDeployer.getConfigManager().getConfigCenter(configCenter.getId()).isPresent()) {
+                    if (configManager.getConfigCenter(configCenter.getId()).isPresent()) {
                         return;
                     }
-                    applicationDeployer.getConfigManager().addConfigCenter(configCenter);
+                    configManager.addConfigCenter(configCenter);
                     logger.info("use registry as config-center: " + configCenter);
 
                 });
@@ -221,8 +231,42 @@ public class ConfigCenterApplicationLifecycle implements ApplicationLifecycle {
     }
 
     private boolean isUsedRegistryAsConfigCenter(RegistryConfig registryConfig) {
-        return applicationDeployer.isUsedRegistryAsCenter(registryConfig, registryConfig::getUseAsConfigCenter, "config",
+        return isUsedRegistryAsCenter(registryConfig, registryConfig::getUseAsConfigCenter, "config",
             DynamicConfigurationFactory.class);
+    }
+
+    /**
+     * Is used the specified registry as a center infrastructure
+     *
+     * @param registryConfig       the {@link RegistryConfig}
+     * @param usedRegistryAsCenter the configured value on
+     * @param centerType           the type name of center
+     * @param extensionClass       an extension class of a center infrastructure
+     * @return
+     * @since 2.7.8
+     */
+    private boolean isUsedRegistryAsCenter(RegistryConfig registryConfig, Supplier<Boolean> usedRegistryAsCenter,
+                                           String centerType,
+                                           Class<?> extensionClass) {
+        final boolean supported;
+
+        Boolean configuredValue = usedRegistryAsCenter.get();
+        if (configuredValue != null) { // If configured, take its value.
+            supported = configuredValue.booleanValue();
+        } else {                       // Or check the extension existence
+            String protocol = registryConfig.getProtocol();
+            supported = supportsExtension(extensionClass, protocol);
+            if (logger.isInfoEnabled()) {
+                logger.info(format("No value is configured in the registry, the %s extension[name : %s] %s as the %s center"
+                    , extensionClass.getSimpleName(), protocol, supported ? "supports" : "does not support", centerType));
+            }
+        }
+
+        if (logger.isInfoEnabled()) {
+            logger.info(format("The registry[%s] will be %s as the %s center", registryConfig,
+                supported ? "used" : "not used", centerType));
+        }
+        return supported;
     }
 
     private ConfigCenterConfig registryAsConfigCenter(RegistryConfig registryConfig) {
@@ -251,7 +295,7 @@ public class ConfigCenterApplicationLifecycle implements ApplicationLifecycle {
             configCenterConfig.setGroup(registryConfig.getGroup());
         }
 
-        configCenterConfig.setAddress(applicationDeployer.getRegistryCompatibleAddress(registryConfig));
+        configCenterConfig.setAddress(getRegistryCompatibleAddress(registryConfig));
         configCenterConfig.setNamespace(registryConfig.getGroup());
         configCenterConfig.setUsername(registryConfig.getUsername());
         configCenterConfig.setPassword(registryConfig.getPassword());
@@ -261,6 +305,28 @@ public class ConfigCenterApplicationLifecycle implements ApplicationLifecycle {
         }
         configCenterConfig.setHighestPriority(false);
         return configCenterConfig;
+    }
+
+    private String getRegistryCompatibleAddress(RegistryConfig registryConfig) {
+        String registryAddress = registryConfig.getAddress();
+        String[] addresses = REGISTRY_SPLIT_PATTERN.split(registryAddress);
+        if (ArrayUtils.isEmpty(addresses)) {
+            throw new IllegalStateException("Invalid registry address found.");
+        }
+        String address = addresses[0];
+        // since 2.7.8
+        // Issue : https://github.com/apache/dubbo/issues/6476
+        StringBuilder metadataAddressBuilder = new StringBuilder();
+        URL url = URL.valueOf(address, registryConfig.getScopeModel());
+        String protocolFromAddress = url.getProtocol();
+        if (isEmpty(protocolFromAddress)) {
+            // If the protocol from address is missing, is like :
+            // "dubbo.registry.address = 127.0.0.1:2181"
+            String protocolFromConfig = registryConfig.getProtocol();
+            metadataAddressBuilder.append(protocolFromConfig).append("://");
+        }
+        metadataAddressBuilder.append(address);
+        return metadataAddressBuilder.toString();
     }
 
 
@@ -274,7 +340,7 @@ public class ConfigCenterApplicationLifecycle implements ApplicationLifecycle {
      */
     private boolean supportsExtension(Class<?> extensionClass, String name) {
         if (isNotEmpty(name)) {
-            ExtensionLoader<?> extensionLoader = applicationDeployer.getExtensionLoader(extensionClass);
+            ExtensionLoader<?> extensionLoader = applicationDeployer.getApplicationModel().getExtensionLoader(extensionClass);
             return extensionLoader.hasExtension(name);
         }
         return false;

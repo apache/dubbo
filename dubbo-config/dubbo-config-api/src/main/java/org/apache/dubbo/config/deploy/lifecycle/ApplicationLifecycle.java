@@ -6,6 +6,7 @@ import org.apache.dubbo.config.deploy.DefaultApplicationDeployer;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * ApplicationLifecycle.
@@ -31,6 +32,7 @@ public interface ApplicationLifecycle extends Lifecycle {
      */
     void setApplicationDeployer(DefaultApplicationDeployer defaultApplicationDeployer);
 
+
     /**
      * Specifies which ApplicationLifecycle should be called before this one
      * when {@link DefaultApplicationDeployer#initialize()}. They are guaranteed to
@@ -53,6 +55,7 @@ public interface ApplicationLifecycle extends Lifecycle {
      */
     void initialize();
 
+
     /**
      * Specifies which ApplicationLifecycle should be called before this one
      * when {@link DefaultApplicationDeployer#preDestroy()}.
@@ -69,6 +72,7 @@ public interface ApplicationLifecycle extends Lifecycle {
      * preDestroy.
      */
     default void preDestroy() {}
+
 
     /**
      * Specifies which ApplicationLifecycle should be called before this one
@@ -87,13 +91,6 @@ public interface ApplicationLifecycle extends Lifecycle {
      */
     default void postDestroy() {}
 
-    /**
-     * What to do when a module changed.
-     *
-     * @param changedModule changed module
-     * @param moduleState module state
-     */
-    default void preModuleChanged(ModuleModel changedModule, DeployState moduleState){}
 
     /**
      * Specifies which ApplicationLifecycle should be called before this one when {@link DefaultApplicationDeployer#checkState(ModuleModel, DeployState)}. Works just like dependOnInit().
@@ -103,12 +100,13 @@ public interface ApplicationLifecycle extends Lifecycle {
     default List<String> dependOnPreModuleChanged(){return null;}
 
     /**
-     * What to do after a module changed.
+     * What to do when a module changed.
+     *
      * @param changedModule changed module
      * @param moduleState module state
-     * @param newState new application state
      */
-    default void postModuleChanged(ModuleModel changedModule,DeployState moduleState, DeployState newState){}
+    default void preModuleChanged(ModuleModel changedModule, DeployState moduleState, AtomicBoolean hasPreparedApplicationInstance){}
+
 
     /**
      * Specifies which ApplicationLifecycle should be called before this one after {@link DefaultApplicationDeployer#checkState(ModuleModel, DeployState)}. Works just like dependOnInit().
@@ -118,9 +116,13 @@ public interface ApplicationLifecycle extends Lifecycle {
     default List<String> dependOnPostModuleChanged(){return null;}
 
     /**
-     * What to do when {@link DefaultApplicationDeployer#refreshServiceInstance()}.
+     * What to do after a module changed.
+     * @param changedModule changed module
+     * @param moduleState module state
+     * @param newState new application state
      */
-    default void onRefreshServiceInstance(){return;}
+    default void postModuleChanged(ModuleModel changedModule,DeployState moduleState, DeployState newState){}
+
 
     /**
      * Specifies which ApplicationLifecycle should be called before this one after {@link DefaultApplicationDeployer#refreshServiceInstance()}. Works just like dependOnInit().
@@ -128,4 +130,10 @@ public interface ApplicationLifecycle extends Lifecycle {
      * @return ApplicationLifecycle names. Can be null or empty list.
      */
     default List<String> dependOnRefreshServiceInstance(){return null;}
+
+    /**
+     * What to do when {@link DefaultApplicationDeployer#refreshServiceInstance()}.
+     */
+    default void onRefreshServiceInstance(){return;}
+
 }

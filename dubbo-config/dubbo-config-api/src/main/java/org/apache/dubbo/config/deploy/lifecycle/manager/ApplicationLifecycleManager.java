@@ -1,19 +1,21 @@
-package org.apache.dubbo.config.deploy.lifecycle.loader;
+package org.apache.dubbo.config.deploy.lifecycle.manager;
 
 import org.apache.dubbo.common.deploy.DeployState;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.config.deploy.DefaultApplicationDeployer;
 import org.apache.dubbo.config.deploy.lifecycle.ApplicationLifecycle;
+import org.apache.dubbo.config.deploy.lifecycle.loader.AbstractLifecycleManagerLoader;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 
 /**
  * Application Life Manager Loader
  */
-public class ApplicationLifeManagerLoader extends AbstractLifecycleManagerLoader<ApplicationLifecycle> {
+public class ApplicationLifecycleManager extends AbstractLifecycleManagerLoader<ApplicationLifecycle> {
 
     private static final String INIT = "init";
 
@@ -30,31 +32,31 @@ public class ApplicationLifeManagerLoader extends AbstractLifecycleManagerLoader
     private final DefaultApplicationDeployer defaultApplicationDeployer;
 
 
-    public ApplicationLifeManagerLoader(DefaultApplicationDeployer defaultApplicationDeployer) {
+    public ApplicationLifecycleManager(DefaultApplicationDeployer defaultApplicationDeployer) {
         this.defaultApplicationDeployer = defaultApplicationDeployer;
     }
 
-    public void packageRunInit() {
+    public void initialize() {
         getSequenceByOperationName(INIT).forEach(ApplicationLifecycle::initialize);
     }
 
-    public void appRunPreDestroy() {
+    public void preDestroy() {
         getSequenceByOperationName(PRE_DESTROY).forEach(ApplicationLifecycle::preDestroy);
     }
 
-    public void appRunPostDestroy() {
+    public void postDestroy() {
         getSequenceByOperationName(POST_DESTROY).forEach(ApplicationLifecycle::postDestroy);
     }
 
-    public void appRunPreModuleChanged(ModuleModel changedModule, DeployState changedModuleState) {
-        getSequenceByOperationName(PRE_MODULE_CHANGED).forEach(packageLifeManager -> packageLifeManager.preModuleChanged(changedModule, changedModuleState));
+    public void preModuleChanged(ModuleModel changedModule, DeployState changedModuleState, AtomicBoolean hasPreparedApplicationInstance) {
+        getSequenceByOperationName(PRE_MODULE_CHANGED).forEach(packageLifeManager -> packageLifeManager.preModuleChanged(changedModule, changedModuleState,hasPreparedApplicationInstance));
     }
 
-    public void appRunPostModuleChanged(ModuleModel changedModule, DeployState changedModuleState, DeployState applicationNewState) {
+    public void postModuleChanged(ModuleModel changedModule, DeployState changedModuleState, DeployState applicationNewState) {
         getSequenceByOperationName(POST_MODULE_CHANGED).forEach(packageLifeCycleManager -> packageLifeCycleManager.postModuleChanged(changedModule, changedModuleState, applicationNewState));
     }
 
-    public void appRunRefreshServiceInstance(){
+    public void runRefreshServiceInstance(){
         getSequenceByOperationName(REFRESH_SERVICE_INSTANCE).forEach(ApplicationLifecycle:: onRefreshServiceInstance);
     }
 
@@ -74,7 +76,7 @@ public class ApplicationLifeManagerLoader extends AbstractLifecycleManagerLoader
 
     @Override
     protected List<ApplicationLifecycle> loadManagers() {
-        ExtensionLoader<ApplicationLifecycle> loader = defaultApplicationDeployer.getExtensionLoader(ApplicationLifecycle.class);
+        ExtensionLoader<ApplicationLifecycle> loader = defaultApplicationDeployer.getApplicationModel().getExtensionLoader(ApplicationLifecycle.class);
         return loader.getActivateExtensions();
     }
 }
