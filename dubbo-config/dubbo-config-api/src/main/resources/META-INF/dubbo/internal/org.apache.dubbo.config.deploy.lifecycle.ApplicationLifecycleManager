@@ -1,1 +1,1 @@
-default=org.apache.dubbo.config.deploy.lifecycle.manager.DefaultApplicationLifeManager
+default=org.apache.dubbo.config.deploy.DefaultApplicationLifecycle

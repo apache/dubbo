@@ -3,7 +3,7 @@ package org.apache.dubbo.config.deploy.lifecycle.loader;
 import org.apache.dubbo.common.deploy.DeployState;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.config.deploy.DefaultApplicationDeployer;
-import org.apache.dubbo.config.deploy.lifecycle.ApplicationLifecycleManager;
+import org.apache.dubbo.config.deploy.lifecycle.ApplicationLifecycle;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
 import java.util.List;
@@ -13,7 +13,7 @@ import java.util.function.Function;
 /**
  * Application Life Manager Loader
  */
-public class ApplicationLifeManagerLoader extends AbstractLifecycleManagerLoader<ApplicationLifecycleManager> {
+public class ApplicationLifeManagerLoader extends AbstractLifecycleManagerLoader<ApplicationLifecycle> {
 
     private static final String INIT = "init";
 
@@ -35,15 +35,15 @@ public class ApplicationLifeManagerLoader extends AbstractLifecycleManagerLoader
     }
 
     public void packageRunInit() {
-        getSequenceByOperationName(INIT).forEach(ApplicationLifecycleManager::initialize);
+        getSequenceByOperationName(INIT).forEach(ApplicationLifecycle::initialize);
     }
 
     public void appRunPreDestroy() {
-        getSequenceByOperationName(PRE_DESTROY).forEach(ApplicationLifecycleManager::preDestroy);
+        getSequenceByOperationName(PRE_DESTROY).forEach(ApplicationLifecycle::preDestroy);
     }
 
     public void appRunPostDestroy() {
-        getSequenceByOperationName(POST_DESTROY).forEach(ApplicationLifecycleManager::postDestroy);
+        getSequenceByOperationName(POST_DESTROY).forEach(ApplicationLifecycle::postDestroy);
     }
 
     public void appRunPreModuleChanged(ModuleModel changedModule, DeployState changedModuleState) {
@@ -55,7 +55,7 @@ public class ApplicationLifeManagerLoader extends AbstractLifecycleManagerLoader
     }
 
     public void appRunRefreshServiceInstance(){
-        getSequenceByOperationName(REFRESH_SERVICE_INSTANCE).forEach(ApplicationLifecycleManager::onRefreshServiceInstance);
+        getSequenceByOperationName(REFRESH_SERVICE_INSTANCE).forEach(ApplicationLifecycle:: onRefreshServiceInstance);
     }
 
 
@@ -63,18 +63,18 @@ public class ApplicationLifeManagerLoader extends AbstractLifecycleManagerLoader
      * Map method name to the method that provides dependency relations.
      */
     @Override
-    protected void mapOperationsToDependencyProvider(Map<String, Function<ApplicationLifecycleManager, List<String>>> dependencyProviders) {
-        dependencyProviders.put(INIT,ApplicationLifecycleManager::dependOnInit);
-        dependencyProviders.put(PRE_DESTROY,ApplicationLifecycleManager::dependOnPreDestroy);
-        dependencyProviders.put(POST_DESTROY,ApplicationLifecycleManager::postDestroyDependencies);
-        dependencyProviders.put(PRE_MODULE_CHANGED,ApplicationLifecycleManager::dependOnPreModuleChanged);
-        dependencyProviders.put(POST_MODULE_CHANGED,ApplicationLifecycleManager::dependOnPostModuleChanged);
-        dependencyProviders.put(REFRESH_SERVICE_INSTANCE,ApplicationLifecycleManager::dependOnRefreshServiceInstance);
+    protected void mapOperationsToDependencyProvider(Map<String, Function<ApplicationLifecycle, List<String>>> dependencyProviders) {
+        dependencyProviders.put(INIT, ApplicationLifecycle::dependOnInit);
+        dependencyProviders.put(PRE_DESTROY, ApplicationLifecycle::dependOnPreDestroy);
+        dependencyProviders.put(POST_DESTROY, ApplicationLifecycle::postDestroyDependencies);
+        dependencyProviders.put(PRE_MODULE_CHANGED, ApplicationLifecycle::dependOnPreModuleChanged);
+        dependencyProviders.put(POST_MODULE_CHANGED, ApplicationLifecycle::dependOnPostModuleChanged);
+        dependencyProviders.put(REFRESH_SERVICE_INSTANCE, ApplicationLifecycle::dependOnRefreshServiceInstance);
     }
 
     @Override
-    protected List<ApplicationLifecycleManager> loadManagers() {
-        ExtensionLoader<ApplicationLifecycleManager> loader = defaultApplicationDeployer.getExtensionLoader(ApplicationLifecycleManager.class);
+    protected List<ApplicationLifecycle> loadManagers() {
+        ExtensionLoader<ApplicationLifecycle> loader = defaultApplicationDeployer.getExtensionLoader(ApplicationLifecycle.class);
         return loader.getActivateExtensions();
     }
 }

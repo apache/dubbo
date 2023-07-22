@@ -219,6 +219,8 @@ public interface CommonConstants {
 
     String FILTER_KEY = "filter";
 
+    String SERVICE_KEY = "serviceKey";
+
     String DUMP_DIRECTORY = "dump.directory";
 
     String DUMP_ENABLE = "dump.enable";

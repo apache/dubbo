@@ -1,15 +1,12 @@
-package org.apache.dubbo.config.deploy.lifecycle.manager;
+package org.apache.dubbo.config.deploy;
 
-import org.apache.dubbo.common.deploy.DeployListener;
 import org.apache.dubbo.common.deploy.DeployState;
 import org.apache.dubbo.common.deploy.ModuleDeployer;
+import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.lang.ShutdownHookCallbacks;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
-import org.apache.dubbo.config.deploy.DefaultApplicationDeployer;
-import org.apache.dubbo.config.deploy.lifecycle.ApplicationLifecycleManager;
-import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.config.deploy.lifecycle.ApplicationLifecycle;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
 import java.util.Arrays;
@@ -18,11 +15,12 @@ import java.util.concurrent.CompletableFuture;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_START_MODEL;
 
-public class DefaultApplicationLifeManager implements ApplicationLifecycleManager {
+@Activate
+public class DefaultApplicationLifecycle implements ApplicationLifecycle {
 
     private static final String NAME = "default";
 
-    private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(DefaultApplicationLifeManager.class);
+    private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(DefaultApplicationLifecycle.class);
 
     private DefaultApplicationDeployer applicationDeployer;
 
@@ -43,17 +41,17 @@ public class DefaultApplicationLifeManager implements ApplicationLifecycleManage
 
     @Override
     public void initialize() {
-        onInitialize();
+//        onInitialize();
     }
 
     private void onInitialize() {
-        for (DeployListener<ApplicationModel> listener : applicationDeployer.getListeners()) {
-            try {
-                listener.onInitialize(applicationDeployer.getApplicationModel());
-            } catch (Throwable e) {
-                logger.error(CONFIG_FAILED_START_MODEL, "", "", applicationDeployer.getIdentifier() + " an exception occurred when handle initialize event", e);
-            }
-        }
+//        for (DeployListener<ApplicationModel> listener : applicationDeployer.getListeners()) {
+//            try {
+//                listener.onInitialize(applicationDeployer.getApplicationModel());
+//            } catch (Throwable e) {
+//                logger.error(CONFIG_FAILED_START_MODEL, "", "", applicationDeployer.getIdentifier() + " an exception occurred when handle initialize event", e);
+//            }
+//        }
     }
 
     @Override
@@ -167,14 +165,6 @@ public class DefaultApplicationLifeManager implements ApplicationLifecycleManage
     private void executeShutdownCallbacks() {
         ShutdownHookCallbacks shutdownHookCallbacks = applicationDeployer.getApplicationModel().getBeanFactory().getBean(ShutdownHookCallbacks.class);
         shutdownHookCallbacks.callback();
-    }
-
-    private void destroyExecutorRepository() {
-        // shutdown export/refer executor
-        ExecutorRepository executorRepository = applicationDeployer.getExecutorRepository();
-        executorRepository.shutdownServiceExportExecutor();
-        executorRepository.shutdownServiceReferExecutor();
-        ExecutorRepository.getInstance(applicationDeployer.getApplicationModel()).destroyAll();
     }
 
 }

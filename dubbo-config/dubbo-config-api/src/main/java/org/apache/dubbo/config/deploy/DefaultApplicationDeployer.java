@@ -17,7 +17,6 @@
 package org.apache.dubbo.config.deploy;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.config.ReferenceCache;
 import org.apache.dubbo.common.deploy.*;
 import org.apache.dubbo.common.extension.ExtensionLoader;
@@ -38,7 +37,6 @@ import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
@@ -65,13 +63,9 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
     private final ConfigManager configManager;
 
-    private final Environment environment;
-
     private final ReferenceCache referenceCache;
 
     private final FrameworkExecutorRepository frameworkExecutorRepository;
-
-    //TODO: can move to defaultApplicationLifeManager
     private final ExecutorRepository executorRepository;
 
     private final AtomicBoolean hasPreparedApplicationInstance = new AtomicBoolean(false);
@@ -86,7 +80,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
     private final Object internalModuleLock = new Object();
 
-    //TODO: move to RegistryLifeManager
+    //TODO: Moved to RegistryApplicationLifecycle
 //    private final AtomicInteger instanceRefreshScheduleTimes = new AtomicInteger(0);
 
     /**
@@ -100,19 +94,18 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
     private ScheduledFuture<?> asyncMetadataFuture;
 
-    //TODO:  Move to in metrics life manager
+    //TODO: Moved to in metrics life manager
 //    private volatile MetricsServiceExporter metricsServiceExporter;
 
 
     private volatile CompletableFuture<Boolean> startFuture;
+
     private volatile boolean registered;
 
     public DefaultApplicationDeployer(ApplicationModel applicationModel) {
         super(applicationModel);
         this.applicationModel = applicationModel;
         configManager = applicationModel.getApplicationConfigManager();
-        environment = applicationModel.modelEnvironment();
-
         referenceCache = new CompositeReferenceCache(applicationModel);
         frameworkExecutorRepository = applicationModel.getFrameworkModel().getBeanFactory().getBean(FrameworkExecutorRepository.class);
         executorRepository = ExecutorRepository.getInstance(applicationModel);
@@ -185,8 +178,15 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             }
             onInitialize();
 
+            for (DeployListener<ApplicationModel> listener : listeners) {
+                try {
+                    listener.onInitialize(applicationModel);
+                } catch (Throwable e) {
+                    logger.error(CONFIG_FAILED_START_MODEL, "", "", getIdentifier() + " an exception occurred when handle initialize event", e);
+                }
+            }
+//---------------------------------
             applicationLifeManagerLoader.packageRunInit();
-
 //            // register shutdown hook
 //            registerShutdownHook();
 //            //Config
@@ -195,7 +195,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             loadApplicationConfigs();
 
             initModuleDeployers();
-
 
 //            initMetricsReporter();
 //
@@ -206,7 +205,8 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
 //            // @since 2.7.8
 //            startMetadataCenter();
-
+//
+//--------------------------------
             initialized = true;
 
             if (logger.isInfoEnabled()) {
@@ -646,6 +646,8 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
      */
     @Override
     public Future start() {
+
+        //TODO: lifecycle:strat
         synchronized (startLock) {
             if (isStopping() || isStopped() || isFailed()) {
                 throw new IllegalStateException(getIdentifier() + " is stopping or stopped, can not start again");
@@ -758,8 +760,9 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 //        exportMetricsService();
 
         if (isRegisterConsumerInstance()) {
-            //TODO: metadata T
-//            exportMetadataService();
+
+            exportMetadataService();
+
             if (hasPreparedApplicationInstance.compareAndSet(false, true)) {
                 // register the local ServiceInstance if required
                 //TODO: registry T
@@ -1025,23 +1028,26 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             }
             onStopping();
 
-            //TODO: lifeManagerLoader().preDestroy()
+            if (asyncMetadataFuture != null) {
+                asyncMetadataFuture.cancel(true);
+            }
+
             applicationLifeManagerLoader.appRunPreDestroy();
 
             //Registry
-//            offline();
+//          offline();
             //Registry
-//            unregisterMetadataServiceInstance();
+//          unregisterMetadataServiceInstance();
 
             //Metrics
-//            unexportMetricsService();
+//          unexportMetricsService();
 
             unRegisterShutdownHook();
 
             //Metadata
-//            if (asyncMetadataFuture != null) {
-//                asyncMetadataFuture.cancel(true);
-//            }
+//          if (asyncMetadataFuture != null) {
+//              asyncMetadataFuture.cancel(true);
+//          }
         }
     }
 
@@ -1100,12 +1106,21 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         synchronized (stateLock) {
 
             applicationLifeManagerLoader.appRunPreModuleChanged(moduleModel, moduleState);
-//            if (!moduleModel.isInternal() && moduleState == DeployState.STARTED) {
-//                //TODO: lifecycle:preModuleChanged
-//
-//                prepareApplicationInstance();
-//            }
+            if (!moduleModel.isInternal() && moduleState == DeployState.STARTED) {
+                prepareApplicationInstance();
+            }
             DeployState newState = calculateState();
+
+            if (newState.equals(DeployState.STARTED)) {
+                try {
+                    applicationLifeManagerLoader.appRunPostModuleChanged(moduleModel, moduleState, newState);
+                } finally {
+                    startFuture.complete(true);
+                }
+            } else {
+                applicationLifeManagerLoader.appRunPostModuleChanged(moduleModel, moduleState, newState);
+            }
+
 //            switch (newState) {
 //                case STARTED:
 //                    onStarted();
@@ -1138,15 +1153,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 //                    break;
 //            }
 
-            if (newState.equals(DeployState.STARTED)) {
-                try {
-                    applicationLifeManagerLoader.appRunPostModuleChanged(moduleModel, moduleState, newState);
-                } finally {
-                    startFuture.complete(true);
-                }
-            } else {
-                applicationLifeManagerLoader.appRunPostModuleChanged(moduleModel, moduleState, newState);
-            }
         }
     }
 
@@ -1215,21 +1221,21 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         }
     }
 
-    //    private void exportMetadataService() {
-//        if (!isStarting()) {
-//            return;
-//        }
-//        for (DeployListener<ApplicationModel> listener : listeners) {
-//            try {
-//                if (listener instanceof ApplicationDeployListener) {
-//                    ((ApplicationDeployListener) listener).onModuleStarted(applicationModel);
-//                }
-//            } catch (Throwable e) {
-//                logger.error(CONFIG_FAILED_START_MODEL, "", "", getIdentifier() + " an exception occurred when handle starting event", e);
-//            }
-//        }
-//    }
-//
+        private void exportMetadataService() {
+        if (!isStarting()) {
+            return;
+        }
+        for (DeployListener<ApplicationModel> listener : listeners) {
+            try {
+                if (listener instanceof ApplicationDeployListener) {
+                    ((ApplicationDeployListener) listener).onModuleStarted(applicationModel);
+                }
+            } catch (Throwable e) {
+                logger.error(CONFIG_FAILED_START_MODEL, "", "", getIdentifier() + " an exception occurred when handle starting event", e);
+            }
+        }
+    }
+
     private void onStarting() {
         // pending -> starting
         // started -> starting
@@ -1362,31 +1368,31 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     public ConfigManager getConfigManager() {
         return configManager;
     }
-
-    public Environment getEnvironment() {
-        return environment;
-    }
-
+//
+//    public Environment getEnvironment() {
+//        return environment;
+//    }
+//
     public AtomicBoolean getHasPreparedApplicationInstance() {
         return hasPreparedApplicationInstance;
     }
-
-    public boolean registered() {
-        return registered;
-    }
-
-    public void setRegistered(boolean registered) {
-        this.registered = registered;
-    }
-
-    public ScheduledFuture<?> getAsyncMetadataFuture() {
-        return this.asyncMetadataFuture;
-    }
-
+//
+//    public boolean registered() {
+//        return registered;
+//    }
+//
+//    public void setRegistered(boolean registered) {
+//        this.registered = registered;
+//    }
+//
+//    public ScheduledFuture<?> getAsyncMetadataFuture() {
+//        return this.asyncMetadataFuture;
+//    }
+//
     public void setAsyncMetadataFuture(ScheduledFuture<?> scheduledFuture) {
         this.asyncMetadataFuture = scheduledFuture;
     }
-
+//
     public FrameworkExecutorRepository getFrameworkExecutorRepository() {
         return frameworkExecutorRepository;
     }
@@ -1394,16 +1400,16 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     public AtomicInteger getServiceRefreshState() {
         return serviceRefreshState;
     }
-
-    public List<DeployListener<ApplicationModel>> getListeners() {
-        return listeners;
-    }
-
-    public ErrorTypeAwareLogger getLogger() {
-        return DefaultApplicationDeployer.logger;
-    }
-
-    public ExecutorRepository getExecutorRepository() {
-        return executorRepository;
-    }
+//
+//    public List<DeployListener<ApplicationModel>> getListeners() {
+//        return listeners;
+//    }
+//
+//    public ErrorTypeAwareLogger getLogger() {
+//        return DefaultApplicationDeployer.logger;
+//    }
+//
+//    public ExecutorRepository getExecutorRepository() {
+//        return executorRepository;
+//    }
 }

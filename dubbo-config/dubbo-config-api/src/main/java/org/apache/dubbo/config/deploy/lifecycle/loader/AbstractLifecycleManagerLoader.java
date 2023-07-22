@@ -1,18 +1,18 @@
 package org.apache.dubbo.config.deploy.lifecycle.loader;
 
 import org.apache.dubbo.common.utils.Assert;
-import org.apache.dubbo.config.deploy.lifecycle.LifecycleManager;
+import org.apache.dubbo.config.deploy.lifecycle.Lifecycle;
 
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public abstract class AbstractLifecycleManagerLoader<T extends LifecycleManager> {
+public abstract class AbstractLifecycleManagerLoader<T extends Lifecycle> {
 
     private final Map<String, T> managers;
 
     /**
-     *  Map&lt;LifecycleManageOperationName,Function&lt;LifecycleManager,DependencyList&gt;&gt;
+     *  Map&lt;LifecycleManageOperationName,Function&lt;Lifecycle,DependencyList&gt;&gt;
      */
     private final Map<String,Function<T,List<String>>> dependencyProviders;
 
@@ -22,7 +22,7 @@ public abstract class AbstractLifecycleManagerLoader<T extends LifecycleManager>
     private final Map<String,List<T>> sequences;
 
     public AbstractLifecycleManagerLoader() {
-        this.managers = loadManagers().stream().collect(Collectors.toMap(LifecycleManager::name, manager -> manager));
+        this.managers = loadManagers().stream().collect(Collectors.toMap(Lifecycle::name, manager -> manager));
         this.dependencyProviders = new HashMap<>();
         this.sequences = new HashMap<>();
         loadSequence();
@@ -70,8 +70,8 @@ public abstract class AbstractLifecycleManagerLoader<T extends LifecycleManager>
 
                 T manager = managers.get(depend);
 
-                Assert.assertTrue(manager != null, "One of required LifecycleManager not found:" + depend);
-                Assert.assertTrue(manager.needInitialize(), "A required LifecycleManager is not started:" + manager.name());
+                Assert.assertTrue(manager != null, "One of required Lifecycle not found:" + depend);
+                Assert.assertTrue(manager.needInitialize(), "A required Lifecycle is not started:" + manager.name());
                 //dfs
                 getOrderedManagersByDependency(dependencyProvider, manager, processedManagers, orderedManagers);
             }
@@ -83,7 +83,7 @@ public abstract class AbstractLifecycleManagerLoader<T extends LifecycleManager>
         return orderedManagers;
     }
 
-    public LifecycleManager getManager(String name) {
+    public Lifecycle getManager(String name) {
         return managers.get(name);
     }
 
