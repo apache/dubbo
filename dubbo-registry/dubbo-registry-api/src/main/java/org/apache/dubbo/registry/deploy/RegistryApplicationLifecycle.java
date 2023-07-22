@@ -22,7 +22,9 @@ import org.apache.dubbo.rpc.model.ProviderModel;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_REFRESH_INSTANCE_ERROR;
@@ -44,7 +46,9 @@ public class RegistryApplicationLifecycle implements ApplicationLifecycle {
 
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(RegistryApplicationLifecycle.class);
 
-    private boolean registered = false;
+
+
+    private ScheduledFuture<?> asyncMetadataFuture;
 
     @Override
     public void setApplicationDeployer(DefaultApplicationDeployer defaultApplicationDeployer) {
@@ -69,6 +73,10 @@ public class RegistryApplicationLifecycle implements ApplicationLifecycle {
     public void preDestroy() {
         offline();
         unregisterMetadataServiceInstance();
+
+        if (asyncMetadataFuture != null) {
+            asyncMetadataFuture.cancel(true);
+        }
     }
 
     private void offline() {
@@ -91,7 +99,7 @@ public class RegistryApplicationLifecycle implements ApplicationLifecycle {
     }
 
     private void unregisterMetadataServiceInstance() {
-        if (registered) {
+        if (applicationDeployer.isRegistered()) {
             ServiceInstanceMetadataUtils.unregisterMetadataAndInstance(applicationDeployer.getApplicationModel());
         }
     }
@@ -129,12 +137,12 @@ public class RegistryApplicationLifecycle implements ApplicationLifecycle {
      * @param moduleState   moduleState
      */
     @Override
-    public void preModuleChanged(ModuleModel changedModule, DeployState moduleState) {
+    public void preModuleChanged(ModuleModel changedModule, DeployState moduleState, AtomicBoolean hasPreparedApplicationInstance) {
 
         if (!changedModule.isInternal() && moduleState == DeployState.STARTED &&
-            !applicationDeployer.getHasPreparedApplicationInstance().get() &&
+            !hasPreparedApplicationInstance.get() &&
             applicationDeployer.isRegisterConsumerInstance() &&
-            applicationDeployer.getHasPreparedApplicationInstance().compareAndSet(false,true)
+            hasPreparedApplicationInstance.compareAndSet(false,true)
         ) {
             registerServiceInstance();
         }
@@ -143,11 +151,10 @@ public class RegistryApplicationLifecycle implements ApplicationLifecycle {
     private void registerServiceInstance() {
 
         ApplicationModel applicationModel = applicationDeployer.getApplicationModel();
-        FrameworkExecutorRepository frameworkExecutorRepository = applicationDeployer.getFrameworkExecutorRepository();
+        FrameworkExecutorRepository frameworkExecutorRepository = applicationModel.getFrameworkModel().getBeanFactory().getBean(FrameworkExecutorRepository.class);
 
         try {
-            this.registered = true;
-            //通知 Metrics
+            applicationDeployer.setRegistered(true);
             MetricsEventBus.post(RegistryEvent.toRegisterEvent(applicationModel),
                 () -> {
                     ServiceInstanceMetadataUtils.registerMetadataAndInstance(applicationModel);
@@ -158,37 +165,36 @@ public class RegistryApplicationLifecycle implements ApplicationLifecycle {
             logger.error(CONFIG_REGISTER_INSTANCE_ERROR, "configuration server disconnected", "", "Register instance error.", e);
         }
 
-        if (registered) {
+        if (applicationDeployer.isRegistered()) {
             // scheduled task for updating Metadata and ServiceInstance
-            applicationDeployer.setAsyncMetadataFuture(frameworkExecutorRepository.getSharedScheduledExecutor().scheduleWithFixedDelay(() -> {
+            asyncMetadataFuture = frameworkExecutorRepository.getSharedScheduledExecutor().scheduleWithFixedDelay(() -> {
 
-                    // ignore refresh metadata on stopping
-                    if (applicationModel.isDestroyed()) {
-                        return;
-                    }
+                // ignore refresh metadata on stopping
+                if (applicationModel.isDestroyed()) {
+                    return;
+                }
 
-                    // refresh for 30 times (default for 30s) when deployer is not started, prevent submit too many revision
-                    if (instanceRefreshScheduleTimes.incrementAndGet() % 30 != 0 && !applicationDeployer.isStarted()) {
-                        return;
-                    }
-                    AtomicInteger serviceRefreshState = applicationDeployer.getServiceRefreshState();
+                // refresh for 30 times (default for 30s) when deployer is not started, prevent submit too many revision
+                if (instanceRefreshScheduleTimes.incrementAndGet() % 30 != 0 && !applicationDeployer.isStarted()) {
+                    return;
+                }
 
-                    // refresh for 5 times (default for 5s) when services are being updated by other threads, prevent submit too many revision
-                    // note: should not always wait here
-                    if (serviceRefreshState.get() != 0 && instanceRefreshScheduleTimes.get() % 5 != 0) {
-                        return;
+                // refresh for 5 times (default for 5s) when services are being updated by other threads, prevent submit too many revision
+                // note: should not always wait here
+                if (applicationDeployer.getServiceRefreshState() != 0 && instanceRefreshScheduleTimes.get() % 5 != 0) {
+                    return;
+                }
+
+                try {
+                    if (!applicationModel.isDestroyed() && applicationDeployer.isRegistered()) {
+                        ServiceInstanceMetadataUtils.refreshMetadataAndInstance(applicationModel);
                     }
-                    try {
-                        if (!applicationModel.isDestroyed() && registered) {
-                            ServiceInstanceMetadataUtils.refreshMetadataAndInstance(applicationModel);
-                        }
-                    } catch (Exception e) {
-                        if (!applicationModel.isDestroyed()) {
-                            logger.error(CONFIG_REFRESH_INSTANCE_ERROR, "", "", "Refresh instance and metadata error.", e);
-                        }
+                } catch (Exception e) {
+                    if (!applicationModel.isDestroyed()) {
+                        logger.error(CONFIG_REFRESH_INSTANCE_ERROR, "", "", "Refresh instance and metadata error.", e);
                     }
-                }, 0, ConfigurationUtils.get(applicationModel, METADATA_PUBLISH_DELAY_KEY, DEFAULT_METADATA_PUBLISH_DELAY), TimeUnit.MILLISECONDS)
-            );
+                }
+            }, 0, ConfigurationUtils.get(applicationModel, METADATA_PUBLISH_DELAY_KEY, DEFAULT_METADATA_PUBLISH_DELAY), TimeUnit.MILLISECONDS);
         }
     }
 
@@ -206,7 +212,7 @@ public class RegistryApplicationLifecycle implements ApplicationLifecycle {
 
     private void refreshMetadata(){
         try {
-            if (registered) {
+            if (applicationDeployer.isRegistered()) {
                 ServiceInstanceMetadataUtils.refreshMetadataAndInstance(applicationDeployer.getApplicationModel());
             }
         } catch (Exception e) {
