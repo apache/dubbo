@@ -1,1 +1,1 @@
-metrics=org.apache.dubbo.metrics.deploy.MetricsLifeManager
+metrics=org.apache.dubbo.metrics.deploy.MetricsApplicationLifecycle

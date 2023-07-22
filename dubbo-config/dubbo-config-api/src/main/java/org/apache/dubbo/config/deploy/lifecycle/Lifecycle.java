@@ -3,7 +3,7 @@ package org.apache.dubbo.config.deploy.lifecycle;
 /**
  * Lifecycle Manager.
  */
-public interface LifecycleManager {
+public interface Lifecycle {
 
     /**
      * The name of this manager.

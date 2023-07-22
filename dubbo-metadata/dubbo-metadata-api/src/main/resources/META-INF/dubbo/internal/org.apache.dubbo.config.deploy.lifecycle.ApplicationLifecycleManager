@@ -1,1 +1,1 @@
-metadata=org.apache.dubbo.metadata.deploy.MetadataApplicationLifeManager
+metadata=org.apache.dubbo.metadata.deploy.MetadataApplicationLifecycle

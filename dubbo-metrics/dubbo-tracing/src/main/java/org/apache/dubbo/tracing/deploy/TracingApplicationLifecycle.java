@@ -1,20 +1,22 @@
 package org.apache.dubbo.tracing.deploy;
 
+import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.TracingConfig;
 import org.apache.dubbo.config.deploy.DefaultApplicationDeployer;
-import org.apache.dubbo.config.deploy.lifecycle.ApplicationLifecycleManager;
+import org.apache.dubbo.config.deploy.lifecycle.ApplicationLifecycle;
 import org.apache.dubbo.tracing.DubboObservationRegistry;
 import org.apache.dubbo.tracing.utils.ObservationSupportUtil;
 
 import java.util.Optional;
 
-public class TracingApplicationLifecycleManger implements ApplicationLifecycleManager {
+@Activate
+public class TracingApplicationLifecycle implements ApplicationLifecycle {
 
     private static final String NAME = "tracing";
     private DefaultApplicationDeployer defaultApplicationDeployer;
-    private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(TracingApplicationLifecycleManger.class);
+    private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(TracingApplicationLifecycle.class);
 
     @Override
     public void setApplicationDeployer(DefaultApplicationDeployer defaultApplicationDeployer) {

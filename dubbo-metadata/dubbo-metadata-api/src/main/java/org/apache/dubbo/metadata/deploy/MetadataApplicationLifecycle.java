@@ -1,8 +1,7 @@
 package org.apache.dubbo.metadata.deploy;
 
-import org.apache.dubbo.common.deploy.ApplicationDeployListener;
-import org.apache.dubbo.common.deploy.DeployListener;
 import org.apache.dubbo.common.deploy.DeployState;
+import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -10,31 +9,30 @@ import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.MetadataReportConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.context.ConfigManager;
-import org.apache.dubbo.config.deploy.lifecycle.ApplicationLifecycleManager;
 import org.apache.dubbo.config.deploy.DefaultApplicationDeployer;
+import org.apache.dubbo.config.deploy.lifecycle.ApplicationLifecycle;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.metadata.report.MetadataReportFactory;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
-import java.util.*; //TODO: remove *
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_START_MODEL;
 import static org.apache.dubbo.remoting.Constants.CLIENT_KEY;
 
 /**
  * Metadata Package Life Manager
  */
-public class MetadataApplicationLifeManager implements ApplicationLifecycleManager {
+@Activate
+public class MetadataApplicationLifecycle implements ApplicationLifecycle {
 
     private static final String NAME = "metadata";
 
     private DefaultApplicationDeployer applicationDeployer;
 
-    private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(MetadataApplicationLifeManager.class);
+    private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(MetadataApplicationLifecycle.class);
 
     @Override
     public void setApplicationDeployer(DefaultApplicationDeployer defaultApplicationDeployer) {
@@ -199,17 +197,7 @@ public class MetadataApplicationLifeManager implements ApplicationLifecycleManag
         return metadataReportConfig;
     }
 
-    @Override
-    public List<String> dependOnPreDestroy() {
-        return Collections.singletonList("metrics");
-    }
 
-    @Override
-    public void preDestroy() {
-        if (applicationDeployer.getAsyncMetadataFuture() != null) {
-            applicationDeployer.getAsyncMetadataFuture().cancel(true);
-        }
-    }
 
     @Override
     public List<String> postDestroyDependencies() {
@@ -237,23 +225,23 @@ public class MetadataApplicationLifeManager implements ApplicationLifecycleManag
 
     @Override
     public void preModuleChanged(ModuleModel changedModule, DeployState moduleState) {
-        exportMetadataService();
+//        exportMetadataService();
     }
-
-    private void exportMetadataService() {
-        if (!applicationDeployer.isStarting()) {
-            return;
-        }
-        for (DeployListener<ApplicationModel> listener : applicationDeployer.getListeners()) {
-            try {
-                if (listener instanceof ApplicationDeployListener) {
-                    ((ApplicationDeployListener) listener).onModuleStarted(applicationDeployer.getApplicationModel());
-                }
-            } catch (Throwable e) {
-                logger.error(CONFIG_FAILED_START_MODEL, "", "", applicationDeployer.getIdentifier() + " an exception occurred when handle starting event", e);
-            }
-        }
-    }
+//
+//    private void exportMetadataService() {
+//        if (!applicationDeployer.isStarting()) {
+//            return;
+//        }
+//        for (DeployListener<ApplicationModel> listener : applicationDeployer.getListeners()) {
+//            try {
+//                if (listener instanceof ApplicationDeployListener) {
+//                    ((ApplicationDeployListener) listener).onModuleStarted(applicationDeployer.getApplicationModel());
+//                }
+//            } catch (Throwable e) {
+//                logger.error(CONFIG_FAILED_START_MODEL, "", "", applicationDeployer.getIdentifier() + " an exception occurred when handle starting event", e);
+//            }
+//        }
+//    }
 
 
 }

@@ -3,11 +3,12 @@ package org.apache.dubbo.registry.deploy;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.constants.LoggerCodeConstants;
 import org.apache.dubbo.common.deploy.DeployState;
+import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.config.deploy.DefaultApplicationDeployer;
-import org.apache.dubbo.config.deploy.lifecycle.ApplicationLifecycleManager;
+import org.apache.dubbo.config.deploy.lifecycle.ApplicationLifecycle;
 import org.apache.dubbo.metrics.event.MetricsEventBus;
 import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.registry.Registry;
@@ -32,7 +33,8 @@ import static org.apache.dubbo.metadata.MetadataConstants.METADATA_PUBLISH_DELAY
 /**
  * Registry Package Life Manager.
  */
-public class RegistryLifeManager implements ApplicationLifecycleManager {
+@Activate
+public class RegistryApplicationLifecycle implements ApplicationLifecycle {
 
     private static final String NAME = "registry";
 
@@ -40,7 +42,9 @@ public class RegistryLifeManager implements ApplicationLifecycleManager {
 
     private DefaultApplicationDeployer applicationDeployer;
 
-    private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(RegistryLifeManager.class);
+    private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(RegistryApplicationLifecycle.class);
+
+    private boolean registered = false;
 
     @Override
     public void setApplicationDeployer(DefaultApplicationDeployer defaultApplicationDeployer) {
@@ -87,7 +91,7 @@ public class RegistryLifeManager implements ApplicationLifecycleManager {
     }
 
     private void unregisterMetadataServiceInstance() {
-        if (applicationDeployer.registered()) {
+        if (registered) {
             ServiceInstanceMetadataUtils.unregisterMetadataAndInstance(applicationDeployer.getApplicationModel());
         }
     }
@@ -142,7 +146,7 @@ public class RegistryLifeManager implements ApplicationLifecycleManager {
         FrameworkExecutorRepository frameworkExecutorRepository = applicationDeployer.getFrameworkExecutorRepository();
 
         try {
-            applicationDeployer.setRegistered(true);
+            this.registered = true;
             //通知 Metrics
             MetricsEventBus.post(RegistryEvent.toRegisterEvent(applicationModel),
                 () -> {
@@ -154,7 +158,7 @@ public class RegistryLifeManager implements ApplicationLifecycleManager {
             logger.error(CONFIG_REGISTER_INSTANCE_ERROR, "configuration server disconnected", "", "Register instance error.", e);
         }
 
-        if (applicationDeployer.registered()) {
+        if (registered) {
             // scheduled task for updating Metadata and ServiceInstance
             applicationDeployer.setAsyncMetadataFuture(frameworkExecutorRepository.getSharedScheduledExecutor().scheduleWithFixedDelay(() -> {
 
@@ -175,7 +179,7 @@ public class RegistryLifeManager implements ApplicationLifecycleManager {
                         return;
                     }
                     try {
-                        if (!applicationModel.isDestroyed() && applicationDeployer.registered()) {
+                        if (!applicationModel.isDestroyed() && registered) {
                             ServiceInstanceMetadataUtils.refreshMetadataAndInstance(applicationModel);
                         }
                     } catch (Exception e) {
@@ -202,7 +206,7 @@ public class RegistryLifeManager implements ApplicationLifecycleManager {
 
     private void refreshMetadata(){
         try {
-            if (applicationDeployer.registered()) {
+            if (registered) {
                 ServiceInstanceMetadataUtils.refreshMetadataAndInstance(applicationDeployer.getApplicationModel());
             }
         } catch (Exception e) {

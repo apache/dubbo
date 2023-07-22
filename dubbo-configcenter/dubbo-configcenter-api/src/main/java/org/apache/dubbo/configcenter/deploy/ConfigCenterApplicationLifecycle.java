@@ -2,10 +2,12 @@ package org.apache.dubbo.configcenter.deploy;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
+import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.config.configcenter.DynamicConfigurationFactory;
 import org.apache.dubbo.common.config.configcenter.wrapper.CompositeDynamicConfiguration;
+import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -15,7 +17,7 @@ import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ConfigCenterConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.deploy.DefaultApplicationDeployer;
-import org.apache.dubbo.config.deploy.lifecycle.ApplicationLifecycleManager;
+import org.apache.dubbo.config.deploy.lifecycle.ApplicationLifecycle;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.metrics.config.event.ConfigCenterEvent;
 import org.apache.dubbo.metrics.event.MetricsEventBus;
@@ -35,11 +37,12 @@ import static org.apache.dubbo.remoting.Constants.CLIENT_KEY;
 /**
  * Config-center package life cycle manager.
  */
-public class ConfigCenterLifeManager implements ApplicationLifecycleManager {
+@Activate
+public class ConfigCenterApplicationLifecycle implements ApplicationLifecycle {
 
     private static final String NAME = "config_center";
 
-    private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ConfigCenterLifeManager.class);
+    private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ConfigCenterApplicationLifecycle.class);
 
     private DefaultApplicationDeployer applicationDeployer;
 
@@ -92,20 +95,24 @@ public class ConfigCenterLifeManager implements ApplicationLifecycleManager {
         }
 
         if (CollectionUtils.isNotEmpty(configCenters)) {
+
+            Environment environment = applicationDeployer.getApplicationModel().modelEnvironment();
             CompositeDynamicConfiguration compositeDynamicConfiguration = new CompositeDynamicConfiguration();
+
             for (ConfigCenterConfig configCenter : configCenters) {
                 // Pass config from ConfigCenterBean to applicationDeployer.getEnvironment()
-                applicationDeployer.getEnvironment().updateExternalConfigMap(configCenter.getExternalConfiguration());
-                applicationDeployer.getEnvironment().updateAppExternalConfigMap(configCenter.getAppExternalConfiguration());
+
+                environment.updateExternalConfigMap(configCenter.getExternalConfiguration());
+                environment.updateAppExternalConfigMap(configCenter.getAppExternalConfiguration());
 
                 // Fetch config from remote config center
-                compositeDynamicConfiguration.addConfiguration(prepareEnvironment(configCenter));
+                compositeDynamicConfiguration.addConfiguration(prepareEnvironment(configCenter,environment));
             }
-            applicationDeployer.getEnvironment().setDynamicConfiguration(compositeDynamicConfiguration);
+            environment.setDynamicConfiguration(compositeDynamicConfiguration);
         }
     }
 
-    private DynamicConfiguration prepareEnvironment(ConfigCenterConfig configCenter) {
+    private DynamicConfiguration prepareEnvironment(ConfigCenterConfig configCenter,Environment environment) {
 
         if (configCenter.isValid()) {
             if (!configCenter.checkOrUpdateInitialized(true)) {
@@ -145,8 +152,8 @@ public class ConfigCenterLifeManager implements ApplicationLifecycleManager {
                     Map<String, String> configMap = parseProperties(configContent);
                     Map<String, String> appConfigMap = parseProperties(appConfigContent);
 
-                    applicationDeployer.getEnvironment().updateExternalConfigMap(configMap);
-                    applicationDeployer.getEnvironment().updateAppExternalConfigMap(appConfigMap);
+                    environment.updateExternalConfigMap(configMap);
+                    environment.updateAppExternalConfigMap(appConfigMap);
 
                     // Add metrics
                     MetricsEventBus.publish(ConfigCenterEvent.toChangeEvent(applicationModel, configCenter.getConfigFile(), configCenter.getGroup(),
@@ -185,7 +192,7 @@ public class ConfigCenterLifeManager implements ApplicationLifecycleManager {
      */
     private void useRegistryAsConfigCenterIfNecessary() {
         // we use the loading status of DynamicConfiguration to decide whether ConfigCenter has been initiated.
-        if (applicationDeployer.getEnvironment().getDynamicConfiguration().isPresent()) {
+        if (applicationDeployer.getApplicationModel().modelEnvironment().getDynamicConfiguration().isPresent()) {
             return;
         }
 

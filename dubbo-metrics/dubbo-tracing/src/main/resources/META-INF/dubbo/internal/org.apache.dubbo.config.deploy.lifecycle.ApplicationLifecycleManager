@@ -1,1 +1,1 @@
-tracing=org.apache.dubbo.tracing.deploy.TracingApplicationLifecycleManger
+tracing=org.apache.dubbo.tracing.deploy.TracingApplicationLifecycle

@@ -8,7 +8,7 @@ import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.deploy.DefaultApplicationDeployer;
-import org.apache.dubbo.config.deploy.lifecycle.ApplicationLifecycleManager;
+import org.apache.dubbo.config.deploy.lifecycle.ApplicationLifecycle;
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
 import org.apache.dubbo.metrics.report.DefaultMetricsReporterFactory;
 import org.apache.dubbo.metrics.report.MetricsReporter;
@@ -29,11 +29,11 @@ import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMET
 /**
  * metrics package life manager.
  */
-public class MetricsLifeManager implements ApplicationLifecycleManager {
+public class MetricsApplicationLifecycle implements ApplicationLifecycle {
 
     private static final String NAME = "metrics";
 
-    private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(MetricsLifeManager.class);
+    private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(MetricsApplicationLifecycle.class);
 
     private DefaultApplicationDeployer applicationDeployer;
 
@@ -158,7 +158,7 @@ public class MetricsLifeManager implements ApplicationLifecycleManager {
      */
     @Override
     public void preModuleChanged(ModuleModel changedModule, DeployState moduleState) {
-        if (!changedModule.isInternal() && moduleState == DeployState.STARTED && !applicationDeployer.getHasPreparedApplicationInstance().get()) {
+        if (!changedModule.isInternal() && moduleState == DeployState.STARTED && ! applicationDeployer.getHasPreparedApplicationInstance().get()) {
             exportMetricsService();
         }
     }
@@ -192,13 +192,13 @@ public class MetricsLifeManager implements ApplicationLifecycleManager {
     private void startMetricsCollector() {
 
         DefaultMetricsCollector collector = applicationDeployer.getApplicationModel().getBeanFactory().getBean(DefaultMetricsCollector.class);
-        ErrorTypeAwareLogger deployerLogger  = applicationDeployer.getLogger();
+
 
         if (Objects.nonNull(collector) && collector.isThreadpoolCollectEnabled()) {
             collector.registryDefaultSample();
         }
-        if (deployerLogger.isInfoEnabled()) {
-            deployerLogger.info(applicationDeployer.getIdentifier() + " is ready.");
+        if (logger.isInfoEnabled()) {
+            logger.info(applicationDeployer.getIdentifier() + " is ready.");
         }
     }
 

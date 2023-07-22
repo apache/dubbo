@@ -1,1 +1,1 @@
-config-center=org.apache.dubbo.configcenter.deploy.ConfigCenterLifeManager
+config-center=org.apache.dubbo.configcenter.deploy.ConfigCenterApplicationLifecycle

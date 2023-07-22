@@ -8,13 +8,13 @@ import org.apache.dubbo.rpc.model.ModuleModel;
 import java.util.List;
 
 /**
- * ApplicationLifecycleManager.
+ * ApplicationLifecycle.
  * <br>
  * Used in an application Lifecycle managing procedure, and dubbo packages
- * can implement this interface to define what to do when Application start or
- * destroy.
+ * can implement this interface to define what to do when the Application starts or
+ * destroys.
  * <br>
- * In other word , when methods like
+ * In another word, when methods like
  * {@link DefaultApplicationDeployer#initialize()},
  * {@link DefaultApplicationDeployer#preDestroy()},
  * {@link DefaultApplicationDeployer#postDestroy()} and
@@ -22,27 +22,27 @@ import java.util.List;
  *  called, all implementations of this interface will also be called.
  */
 @SPI
-public interface ApplicationLifecycleManager extends LifecycleManager {
+public interface ApplicationLifecycle extends Lifecycle {
 
     /**
      * Set application deployer.
      *
-     * @param defaultApplicationDeployer The ApplicationDeployer that called this ApplicationLifecycleManager.
+     * @param defaultApplicationDeployer The ApplicationDeployer that called this ApplicationLifecycle.
      */
     void setApplicationDeployer(DefaultApplicationDeployer defaultApplicationDeployer);
 
     /**
-     * Specifies which ApplicationLifecycleManager should be called before this one
+     * Specifies which ApplicationLifecycle should be called before this one
      * when {@link DefaultApplicationDeployer#initialize()}. They are guaranteed to
      * be called before this one.
      * <br>
-     * If there have some required ApplicationLifecycleManager not found, or it's needInitialize() returns false,
-     * this ApplicationLifecycleManager will not be called.
+     * If there have some required ApplicationLifecycle not found, or it's needInitialize() returns false,
+     * this ApplicationLifecycle will not be called.
      * <br>
      * Note that if there are cyclic dependencies between
      * PackageLifeManagers, an {@link IllegalStateException} will be thrown.
      *
-     * @return ApplicationLifecycleManager names. Can be null or empty list.
+     * @return ApplicationLifecycle names. Can be null or empty list.
      */
     default List<String> dependOnInit() {
         return null;
@@ -54,12 +54,12 @@ public interface ApplicationLifecycleManager extends LifecycleManager {
     void initialize();
 
     /**
-     * Specifies which ApplicationLifecycleManager should be called before this one
+     * Specifies which ApplicationLifecycle should be called before this one
      * when {@link DefaultApplicationDeployer#preDestroy()}.
      * <br>
-     * Works just like {@link ApplicationLifecycleManager#dependOnInit()}.
+     * Works just like {@link ApplicationLifecycle#dependOnInit()}.
      *
-     * @return ApplicationLifecycleManager names. Can be null or empty list.
+     * @return ApplicationLifecycle names. Can be null or empty list.
      */
     default List<String> dependOnPreDestroy() {
         return null;
@@ -71,12 +71,12 @@ public interface ApplicationLifecycleManager extends LifecycleManager {
     default void preDestroy() {}
 
     /**
-     * Specifies which ApplicationLifecycleManager should be called before this one
+     * Specifies which ApplicationLifecycle should be called before this one
      * when {@link DefaultApplicationDeployer#postDestroy()}.
      * <br>
-     * Works just like {@link ApplicationLifecycleManager#dependOnInit()}.
+     * Works just like {@link ApplicationLifecycle#dependOnInit()}.
      *
-     * @return ApplicationLifecycleManager names. Can be null or empty list.
+     * @return ApplicationLifecycle names. Can be null or empty list.
      */
     default List<String> postDestroyDependencies() {
         return null;
@@ -96,9 +96,9 @@ public interface ApplicationLifecycleManager extends LifecycleManager {
     default void preModuleChanged(ModuleModel changedModule, DeployState moduleState){}
 
     /**
-     * Specifies which ApplicationLifecycleManager should be called before this one when {@link DefaultApplicationDeployer#checkState(ModuleModel, DeployState)}. Works just like dependOnInit().
+     * Specifies which ApplicationLifecycle should be called before this one when {@link DefaultApplicationDeployer#checkState(ModuleModel, DeployState)}. Works just like dependOnInit().
      *
-     * @return ApplicationLifecycleManager names. Can be null or empty list.
+     * @return ApplicationLifecycle names. Can be null or empty list.
      */
     default List<String> dependOnPreModuleChanged(){return null;}
 
@@ -111,9 +111,9 @@ public interface ApplicationLifecycleManager extends LifecycleManager {
     default void postModuleChanged(ModuleModel changedModule,DeployState moduleState, DeployState newState){}
 
     /**
-     * Specifies which ApplicationLifecycleManager should be called before this one after {@link DefaultApplicationDeployer#checkState(ModuleModel, DeployState)}. Works just like dependOnInit().
+     * Specifies which ApplicationLifecycle should be called before this one after {@link DefaultApplicationDeployer#checkState(ModuleModel, DeployState)}. Works just like dependOnInit().
      *
-     * @return ApplicationLifecycleManager names. Can be null or empty list.
+     * @return ApplicationLifecycle names. Can be null or empty list.
      */
     default List<String> dependOnPostModuleChanged(){return null;}
 
@@ -123,9 +123,9 @@ public interface ApplicationLifecycleManager extends LifecycleManager {
     default void onRefreshServiceInstance(){return;}
 
     /**
-     * Specifies which ApplicationLifecycleManager should be called before this one after {@link DefaultApplicationDeployer#refreshServiceInstance()}. Works just like dependOnInit().
+     * Specifies which ApplicationLifecycle should be called before this one after {@link DefaultApplicationDeployer#refreshServiceInstance()}. Works just like dependOnInit().
      *
-     * @return ApplicationLifecycleManager names. Can be null or empty list.
+     * @return ApplicationLifecycle names. Can be null or empty list.
      */
     default List<String> dependOnRefreshServiceInstance(){return null;}
 }
