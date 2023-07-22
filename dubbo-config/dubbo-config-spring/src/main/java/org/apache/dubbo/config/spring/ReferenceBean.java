@@ -32,6 +32,7 @@ import org.apache.dubbo.config.spring.reference.ReferenceBeanSupport;
 import org.apache.dubbo.config.spring.schema.DubboBeanDefinitionParser;
 import org.apache.dubbo.config.spring.util.LazyTargetInvocationHandler;
 import org.apache.dubbo.config.spring.util.LazyTargetSource;
+import org.apache.dubbo.config.spring.util.LockUtils;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.proxy.AbstractProxyFactory;
 
@@ -44,7 +45,6 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
-import org.springframework.beans.factory.support.DefaultSingletonBeanRegistry;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
@@ -399,7 +399,10 @@ public class ReferenceBean<T> implements FactoryBean<T>,
         //Subclasses should synchronize on the given Object if they perform any sort of extended singleton creation phase.
         // In particular, subclasses should not have their own mutexes involved in singleton creation, to avoid the potential for deadlocks in lazy-init situations.
         //The redundant type cast is to be compatible with earlier than spring-4.2
-        synchronized (((DefaultSingletonBeanRegistry) getBeanFactory()).getSingletonMutex()) {
+        if (referenceConfig.configInitialized()) {
+            return referenceConfig.get();
+        }
+        synchronized (LockUtils.getSingletonMutex(applicationContext)) {
             return referenceConfig.get();
         }
     }

@@ -462,6 +462,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
 //        MetricsEventBus.post(RegistryEvent.toRsEvent(module.getApplicationModel(), getUniqueServiceName(), protocols.size() * registryURLs.size()),
 //            () -> {
+      
                 for (ProtocolConfig protocolConfig : protocols) {
                     String pathKey = URL.buildKey(getContextPath(protocolConfig)
                         .map(p -> p + "/" + path)
@@ -473,10 +474,11 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                     }
                     doExportUrlsFor1Protocol(protocolConfig, registryURLs, registerType);
                 }
+      
 //                return null;
 //            }
 //        );
-
+       
         providerModel.setServiceUrls(urls);
     }
 

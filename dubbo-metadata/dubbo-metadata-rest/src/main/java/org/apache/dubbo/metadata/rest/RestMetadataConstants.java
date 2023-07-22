@@ -110,6 +110,11 @@ public interface RestMetadataConstants {
         String CONTROLLER_ANNOTATION_CLASS_NAME = "org.springframework.stereotype.Controller";
 
         /**
+         * The annotation class name of @FeignClient
+         */
+        String FEIGN_CLIENT_CLASS_NAME = "org.springframework.cloud.openfeign.FeignClient";
+
+        /**
          * The annotation class name of @RequestMapping
          */
         String REQUEST_MAPPING_ANNOTATION_CLASS_NAME = "org.springframework.web.bind.annotation.RequestMapping";
@@ -161,5 +166,8 @@ public interface RestMetadataConstants {
          * @since 2.7.9
          */
         Class<?> ANNOTATED_ELEMENT_UTILS_CLASS = resolveClass(ANNOTATED_ELEMENT_UTILS_CLASS_NAME, getClassLoader());
+
+        Class<? extends Annotation> FEIGN_CLIENT_CLASS = (Class<? extends Annotation>) resolveClass(FEIGN_CLIENT_CLASS_NAME, getClassLoader());
+
     }
 }

@@ -30,7 +30,7 @@ public class NoAnnotationBodyParseUtil {
         try {
             Class<?> objectArraysType = Object[].class;
             MediaType mediaType = MediaTypeUtil.convertMediaType(objectArraysType, MediaType.APPLICATION_JSON_VALUE.value);
-            Object[] params = (Object[]) HttpMessageCodecManager.httpMessageDecode(request.getInputStream(), objectArraysType, mediaType);
+            Object[] params = (Object[]) HttpMessageCodecManager.httpMessageDecode(request.getInputStream(), objectArraysType, objectArraysType, mediaType);
             return params;
         } catch (Throwable e) {
             throw new ParamParseException("dubbo rest protocol provider body param parser  error: " + e.getMessage());

@@ -31,6 +31,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Path("/demoService")
 public interface DemoService {
@@ -127,5 +128,25 @@ public interface DemoService {
     @Path("/noBodyArg")
     @Consumes({MediaType.APPLICATION_JSON})
     User noBodyArg(User user);
+
+    @POST
+    @Path("/list")
+    List<User> list(List<User> users);
+
+    @POST
+    @Path("/set")
+    Set<User> set(Set<User> users);
+
+    @POST
+    @Path("/array")
+    User[] array(User[] users);
+
+    @POST
+    @Path("/stringMap")
+    Map<String, User> stringMap(Map<String,User> userMap);
+
+    @POST
+    @Path("/map")
+    Map<User, User> userMap(Map<User,User> userMap);
 
 }

@@ -17,7 +17,6 @@
 
 package org.apache.dubbo.metrics.model;
 
-import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.support.RpcUtils;
@@ -27,7 +26,6 @@ import java.util.Objects;
 
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_GROUP_KEY;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_VERSION_KEY;
-import static org.apache.dubbo.metrics.MetricsConstants.INVOCATION_METRICS_COUNTER;
 
 /**
  * Metric class for method.
@@ -37,7 +35,6 @@ public class MethodMetric extends ServiceKeyMetric {
     private final String methodName;
     private String group;
     private String version;
-    private final MetricSample.Type sampleType;
 
     public MethodMetric(ApplicationModel applicationModel, Invocation invocation) {
         super(applicationModel, MetricsSupport.getInterfaceName(invocation));
@@ -45,11 +42,6 @@ public class MethodMetric extends ServiceKeyMetric {
         this.side = MetricsSupport.getSide(invocation);
         this.group = MetricsSupport.getGroup(invocation);
         this.version = MetricsSupport.getVersion(invocation);
-        this.sampleType = (MetricSample.Type) invocation.get(INVOCATION_METRICS_COUNTER);
-    }
-
-    public MetricSample.Type getSampleType() {
-        return sampleType;
     }
 
     public String getGroup() {
@@ -69,7 +61,7 @@ public class MethodMetric extends ServiceKeyMetric {
     }
 
     public Map<String, String> getTags() {
-        Map<String, String> tags = MetricsSupport.methodTags(getApplicationModel(), getInterfaceName(), methodName);
+        Map<String, String> tags = MetricsSupport.methodTags(getApplicationModel(), getServiceKey(), methodName);
         tags.put(TAG_GROUP_KEY, group);
         tags.put(TAG_VERSION_KEY, version);
         return tags;
@@ -92,7 +84,7 @@ public class MethodMetric extends ServiceKeyMetric {
         return "MethodMetric{" +
                 "applicationName='" + getApplicationName() + '\'' +
                 ", side='" + side + '\'' +
-                ", interfaceName='" + getInterfaceName() + '\'' +
+                ", interfaceName='" + getServiceKey() + '\'' +
                 ", methodName='" + methodName + '\'' +
                 ", group='" + group + '\'' +
                 ", version='" + version + '\'' +
@@ -104,11 +96,15 @@ public class MethodMetric extends ServiceKeyMetric {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         MethodMetric that = (MethodMetric) o;
-        return Objects.equals(getApplicationName(), that.getApplicationName()) && Objects.equals(side, that.side) && Objects.equals(getInterfaceName(), that.getInterfaceName()) && Objects.equals(methodName, that.methodName) && Objects.equals(group, that.group) && Objects.equals(version, that.version);
+        return Objects.equals(getApplicationModel(), that.getApplicationModel()) && Objects.equals(side, that.side) && Objects.equals(getServiceKey(), that.getServiceKey()) && Objects.equals(methodName, that.methodName) && Objects.equals(group, that.group) && Objects.equals(version, that.version);
     }
 
+    private volatile int hashCode = 0;
     @Override
     public int hashCode() {
-        return Objects.hash(getApplicationName(), side, getInterfaceName(), methodName, group, version);
+        if (hashCode == 0) {
+            hashCode = Objects.hash(getApplicationModel(), side, getServiceKey(), methodName, group, version);
+        }
+        return hashCode;
     }
 }
