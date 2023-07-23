@@ -36,7 +36,7 @@ public interface ApplicationLifecycle extends Lifecycle {
     /**
      * {@link ApplicationDeployer#start()}
      */
-    default void start(){
+    default void start(AtomicBoolean hasPreparedApplicationInstance){
         return;
     }
 

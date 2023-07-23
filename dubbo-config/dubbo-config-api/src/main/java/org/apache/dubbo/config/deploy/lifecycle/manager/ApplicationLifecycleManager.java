@@ -36,6 +36,10 @@ public class ApplicationLifecycleManager extends AbstractLifecycleManagerLoader<
         this.defaultApplicationDeployer = defaultApplicationDeployer;
     }
 
+    public void start(AtomicBoolean hasPreparedApplicationInstance){
+        getAll().forEach((name, applicationLifecycle) -> applicationLifecycle.start(hasPreparedApplicationInstance));
+    }
+
     public void initialize() {
         getSequenceByOperationName(INIT).forEach(ApplicationLifecycle::initialize);
     }
@@ -75,7 +79,7 @@ public class ApplicationLifecycleManager extends AbstractLifecycleManagerLoader<
     }
 
     @Override
-    protected List<ApplicationLifecycle> loadManagers() {
+    protected List<ApplicationLifecycle> loadAll() {
         ExtensionLoader<ApplicationLifecycle> loader = defaultApplicationDeployer.getApplicationModel().getExtensionLoader(ApplicationLifecycle.class);
         return loader.getActivateExtensions();
     }

@@ -1,6 +1,7 @@
 package org.apache.dubbo.metrics.deploy;
 
 import org.apache.dubbo.common.constants.LoggerCodeConstants;
+import org.apache.dubbo.common.deploy.ApplicationDeployer;
 import org.apache.dubbo.common.deploy.DeployState;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -53,6 +54,16 @@ public class MetricsApplicationLifecycle implements ApplicationLifecycle {
     @Override
     public boolean needInitialize() {
         return isSupportMetrics();
+    }
+
+    /**
+     * {@link ApplicationDeployer#start()}
+     */
+    @Override
+    public void start(AtomicBoolean hasPreparedApplicationInstance) {
+        if(!hasPreparedApplicationInstance.get()) {
+            exportMetricsService();
+        }
     }
 
     @Override

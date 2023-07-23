@@ -18,6 +18,7 @@ package org.apache.dubbo.config.deploy;
 
 import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.config.ReferenceCache;
+import org.apache.dubbo.common.constants.LoggerCodeConstants;
 import org.apache.dubbo.common.deploy.AbstractDeployer;
 import org.apache.dubbo.common.deploy.ApplicationDeployListener;
 import org.apache.dubbo.common.deploy.ApplicationDeployer;
@@ -662,7 +663,8 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         startModules();
 
         // prepare application instance
-//        prepareApplicationInstance();
+        prepareApplicationInstance();
+        lifecycleManager.start(hasPreparedApplicationInstance);
 
         // Ignore checking new module after start
         executorRepository.getSharedExecutor().submit(() -> {
@@ -702,20 +704,20 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
     @Override
     public void prepareApplicationInstance() {
-//        if (hasPreparedApplicationInstance.get()) {
-//            return;
-//        }
-//        // export MetricsService
+
+        if (hasPreparedApplicationInstance.get()) {
+            return;
+        }
+        // export MetricsService
 //        exportMetricsService();
-//
-//        if (isRegisterConsumerInstance()) {
-//
-//            exportMetadataService();
+
+        if (isRegisterConsumerInstance()) {
+            exportMetadataService();
 //            if (hasPreparedApplicationInstance.compareAndSet(false, true)) {
 //                // register the local ServiceInstance if required
 //                registerServiceInstance();
 //            }
-//        }
+        }
     }
 
     @Override
@@ -743,18 +745,18 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         }
     }
 
-//    private void exportMetricsService() {
-//        boolean exportMetrics = applicationModel.getApplicationConfigManager().getMetrics()
-//            .map(MetricsConfig::getExportMetricsService).orElse(true);
-//        if (exportMetrics) {
-//            try {
-//                metricsServiceExporter.export();
-//            } catch (Exception e) {
-//                logger.error(LoggerCodeConstants.COMMON_METRICS_COLLECTOR_EXCEPTION, "", "",
-//                    "exportMetricsService an exception occurred when handle starting event", e);
-//            }
-//        }
-//    }
+    private void exportMetricsService() {
+        boolean exportMetrics = applicationModel.getApplicationConfigManager().getMetrics()
+            .map(MetricsConfig::getExportMetricsService).orElse(true);
+        if (exportMetrics) {
+            try {
+                metricsServiceExporter.export();
+            } catch (Exception e) {
+                logger.error(LoggerCodeConstants.COMMON_METRICS_COLLECTOR_EXCEPTION, "", "",
+                    "exportMetricsService an exception occurred when handle starting event", e);
+            }
+        }
+    }
 
 //    private void unexportMetricsService() {
 //        if (metricsServiceExporter != null) {
@@ -1044,10 +1046,9 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     public void checkState(ModuleModel moduleModel, DeployState moduleState) {
         synchronized (stateLock) {
 
-//            if (!moduleModel.isInternal() && moduleState == DeployState.STARTED) {
-//                prepareApplicationInstance();
-//            }
-
+            if (!moduleModel.isInternal() && moduleState == DeployState.STARTED) {
+                prepareApplicationInstance();
+            }
             lifecycleManager.preModuleChanged(moduleModel,moduleState,hasPreparedApplicationInstance);
 
             DeployState newState = calculateState();
@@ -1167,20 +1168,20 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         }
     }
 
-//    private void exportMetadataService() {
-//        if (!isStarting()) {
-//            return;
-//        }
-//        for (DeployListener<ApplicationModel> listener : listeners) {
-//            try {
-//                if (listener instanceof ApplicationDeployListener) {
-//                    ((ApplicationDeployListener) listener).onModuleStarted(applicationModel);
-//                }
-//            } catch (Throwable e) {
-//                logger.error(CONFIG_FAILED_START_MODEL, "", "", getIdentifier() + " an exception occurred when handle starting event", e);
-//            }
-//        }
-//    }
+    private void exportMetadataService() {
+        if (!isStarting()) {
+            return;
+        }
+        for (DeployListener<ApplicationModel> listener : listeners) {
+            try {
+                if (listener instanceof ApplicationDeployListener) {
+                    ((ApplicationDeployListener) listener).onModuleStarted(applicationModel);
+                }
+            } catch (Throwable e) {
+                logger.error(CONFIG_FAILED_START_MODEL, "", "", getIdentifier() + " an exception occurred when handle starting event", e);
+            }
+        }
+    }
 
     private void onStarting() {
         // pending -> starting
