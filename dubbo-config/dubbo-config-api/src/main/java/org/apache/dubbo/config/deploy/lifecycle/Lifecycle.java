@@ -1,19 +1,19 @@
 package org.apache.dubbo.config.deploy.lifecycle;
 
 /**
- * Lifecycle Manager.
+ * Lifecycle.
  */
 public interface Lifecycle {
 
     /**
-     * The name of this manager.
+     * The name of this Lifecycle.
      *
      * @return the name of this manager.
      */
     String name();
 
     /**
-     * If this lifecycle manager need to initialize.
+     * If this lifecycle need to initialize.
      */
     boolean needInitialize();
 }
