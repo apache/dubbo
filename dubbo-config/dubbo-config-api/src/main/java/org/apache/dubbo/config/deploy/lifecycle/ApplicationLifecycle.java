@@ -1,5 +1,6 @@
 package org.apache.dubbo.config.deploy.lifecycle;
 
+import org.apache.dubbo.common.deploy.ApplicationDeployer;
 import org.apache.dubbo.common.deploy.DeployState;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.config.deploy.DefaultApplicationDeployer;
@@ -12,10 +13,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * ApplicationLifecycle.
  * <br>
  * Used in an application Lifecycle managing procedure, and dubbo packages
- * can implement this interface to define what to do when the Application starts or
- * destroys.
+ * can implement this interface to define what to do when application status changes.
  * <br>
  * In another word, when methods like
+ * {@link DefaultApplicationDeployer#start()},
  * {@link DefaultApplicationDeployer#initialize()},
  * {@link DefaultApplicationDeployer#preDestroy()},
  * {@link DefaultApplicationDeployer#postDestroy()} and
@@ -32,6 +33,12 @@ public interface ApplicationLifecycle extends Lifecycle {
      */
     void setApplicationDeployer(DefaultApplicationDeployer defaultApplicationDeployer);
 
+    /**
+     * {@link ApplicationDeployer#start()}
+     */
+    default void start(){
+        return;
+    }
 
     /**
      * Specifies which ApplicationLifecycle should be called before this one
@@ -42,7 +49,7 @@ public interface ApplicationLifecycle extends Lifecycle {
      * this ApplicationLifecycle will not be called.
      * <br>
      * Note that if there are cyclic dependencies between
-     * PackageLifeManagers, an {@link IllegalStateException} will be thrown.
+     * PackageLifeManagers, an exception will be thrown.
      *
      * @return ApplicationLifecycle names. Can be null or empty list.
      */
@@ -51,9 +58,9 @@ public interface ApplicationLifecycle extends Lifecycle {
     }
 
     /**
-     * Initialize.
+     * {@link  ApplicationDeployer#initialize()}
      */
-    void initialize();
+    default void initialize(){};
 
     /**
      * Specifies which ApplicationLifecycle should be called before this one
@@ -68,7 +75,7 @@ public interface ApplicationLifecycle extends Lifecycle {
     }
 
     /**
-     * preDestroy.
+     * {@link ApplicationDeployer#preDestroy()}
      */
     default void preDestroy() {}
 
@@ -86,13 +93,13 @@ public interface ApplicationLifecycle extends Lifecycle {
     }
 
     /**
-     * postDestroy.
+     * {@link ApplicationDeployer#postDestroy()}
      */
     default void postDestroy() {}
 
 
     /**
-     * Specifies which ApplicationLifecycle should be called before this one when {@link DefaultApplicationDeployer#checkState(ModuleModel, DeployState)}. Works just like dependOnInit().
+     * Specifies which ApplicationLifecycle should be called before this one when {@link DefaultApplicationDeployer#checkState(ModuleModel, DeployState)}. Works just like {@link ApplicationLifecycle#dependOnInit()}.
      *
      * @return ApplicationLifecycle names. Can be null or empty list.
      */
@@ -108,7 +115,7 @@ public interface ApplicationLifecycle extends Lifecycle {
 
 
     /**
-     * Specifies which ApplicationLifecycle should be called before this one after {@link DefaultApplicationDeployer#checkState(ModuleModel, DeployState)}. Works just like dependOnInit().
+     * Specifies which ApplicationLifecycle should be called before this one after {@link DefaultApplicationDeployer#checkState(ModuleModel, DeployState)}. Works just like {@link ApplicationLifecycle#dependOnInit()}.
      *
      * @return ApplicationLifecycle names. Can be null or empty list.
      */
@@ -124,15 +131,15 @@ public interface ApplicationLifecycle extends Lifecycle {
 
 
     /**
-     * Specifies which ApplicationLifecycle should be called before this one after {@link DefaultApplicationDeployer#refreshServiceInstance()}. Works just like dependOnInit().
+     * Specifies which ApplicationLifecycle should be called before this one after {@link DefaultApplicationDeployer#refreshServiceInstance()}. Works just like {@link ApplicationLifecycle#dependOnInit()}.
      *
      * @return ApplicationLifecycle names. Can be null or empty list.
      */
     default List<String> dependOnRefreshServiceInstance(){return null;}
 
     /**
-     * What to do when {@link DefaultApplicationDeployer#refreshServiceInstance()}.
+     * {@link DefaultApplicationDeployer#refreshServiceInstance()}.
      */
-    default void onRefreshServiceInstance(){return;}
+    default void refreshServiceInstance(){return;}
 
 }

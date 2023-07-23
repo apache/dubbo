@@ -57,7 +57,7 @@ public class ApplicationLifecycleManager extends AbstractLifecycleManagerLoader<
     }
 
     public void runRefreshServiceInstance(){
-        getSequenceByOperationName(REFRESH_SERVICE_INSTANCE).forEach(ApplicationLifecycle:: onRefreshServiceInstance);
+        getSequenceByOperationName(REFRESH_SERVICE_INSTANCE).forEach(ApplicationLifecycle::refreshServiceInstance);
     }
 
 

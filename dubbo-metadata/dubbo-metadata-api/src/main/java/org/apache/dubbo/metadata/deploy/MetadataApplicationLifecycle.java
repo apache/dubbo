@@ -330,7 +330,7 @@ public class MetadataApplicationLifecycle implements ApplicationLifecycle {
 
 
     @Override
-    public void onRefreshServiceInstance() {
+    public void refreshServiceInstance() {
 
         if (applicationDeployer.isRegistered()) {
             try {

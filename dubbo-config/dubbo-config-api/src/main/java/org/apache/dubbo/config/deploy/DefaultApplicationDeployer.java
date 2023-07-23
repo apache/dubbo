@@ -16,10 +16,8 @@
  */
 package org.apache.dubbo.config.deploy;
 
-import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.config.ReferenceCache;
-import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.deploy.AbstractDeployer;
 import org.apache.dubbo.common.deploy.ApplicationDeployListener;
 import org.apache.dubbo.common.deploy.ApplicationDeployer;
@@ -667,27 +665,27 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 //        prepareApplicationInstance();
 
         // Ignore checking new module after start
-//        executorRepository.getSharedExecutor().submit(() -> {
-//            try {
-//                while (isStarting()) {
-//                    // notify when any module state changed
-//                    synchronized (stateLock) {
-//                        try {
-//                            stateLock.wait(500);
-//                        } catch (InterruptedException e) {
-//                            // ignore
-//                        }
-//                    }
-//
-//                    // if has new module, do start again
-//                    if (hasPendingModule()) {
-//                        startModules();
-//                    }
-//                }
-//            } catch (Throwable e) {
-//                onFailed(getIdentifier() + " check start occurred an exception", e);
-//            }
-//        });
+        executorRepository.getSharedExecutor().submit(() -> {
+            try {
+                while (isStarting()) {
+                    // notify when any module state changed
+                    synchronized (stateLock) {
+                        try {
+                            stateLock.wait(500);
+                        } catch (InterruptedException e) {
+                            // ignore
+                        }
+                    }
+
+                    // if has new module, do start again
+                    if (hasPendingModule()) {
+                        startModules();
+                    }
+                }
+            } catch (Throwable e) {
+                onFailed(getIdentifier() + " check start occurred an exception", e);
+            }
+        });
     }
 
     private void startModules() {
@@ -845,13 +843,13 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 //        return null;
 //    }
 
-    /**
-     * Get the instance of {@link DynamicConfiguration} by the specified connection {@link URL} of config-center
-     *
-     * @param connectionURL of config-center
-     * @return non-null
-     * @since 2.7.5
-     */
+//    /**
+//     * Get the instance of {@link DynamicConfiguration} by the specified connection {@link URL} of config-center
+//     *
+//     * @param connectionURL of config-center
+//     * @return non-null
+//     * @since 2.7.5
+//     */
 //    private DynamicConfiguration getDynamicConfiguration(URL connectionURL) {
 //        String protocol = connectionURL.getProtocol();
 //
