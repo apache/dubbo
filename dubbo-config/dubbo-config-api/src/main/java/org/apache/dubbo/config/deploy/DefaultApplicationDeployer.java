@@ -20,13 +20,12 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.config.ReferenceCache;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
-
 import org.apache.dubbo.common.deploy.AbstractDeployer;
 import org.apache.dubbo.common.deploy.ApplicationDeployListener;
 import org.apache.dubbo.common.deploy.ApplicationDeployer;
-import org.apache.dubbo.common.deploy.ModuleDeployer;
-import org.apache.dubbo.common.deploy.DeployState;
 import org.apache.dubbo.common.deploy.DeployListener;
+import org.apache.dubbo.common.deploy.DeployState;
+import org.apache.dubbo.common.deploy.ModuleDeployer;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.lang.ShutdownHookCallbacks;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
@@ -38,7 +37,6 @@ import org.apache.dubbo.config.DubboShutdownHook;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.deploy.lifecycle.manager.ApplicationLifecycleManager;
 import org.apache.dubbo.config.utils.CompositeReferenceCache;
-
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
@@ -52,7 +50,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_START_MODEL;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_REFRESH_INSTANCE_ERROR;
 import static org.apache.dubbo.common.utils.StringUtils.isNotEmpty;
 
 /**

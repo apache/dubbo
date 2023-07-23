@@ -3,7 +3,10 @@ package org.apache.dubbo.config.deploy.lifecycle.loader;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.config.deploy.lifecycle.Lifecycle;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -14,12 +17,12 @@ public abstract class AbstractLifecycleManagerLoader<T extends Lifecycle> {
     /**
      *  Map&lt;LifecycleManageOperationName,Function&lt;Lifecycle,DependencyList&gt;&gt;
      */
-    private final Map<String,Function<T,List<String>>> dependencyProviders;
+    private final Map<String, Function<T,List<String>>> dependencyProviders;
 
     /**
      * Map&lt;LifecycleManageOperationName,LifecycleManagerExecuteSequence&gt;
      */
-    private final Map<String,List<T>> sequences;
+    private final Map<String, List<T>> sequences;
 
     public AbstractLifecycleManagerLoader() {
         this.managers = loadManagers().stream().collect(Collectors.toMap(Lifecycle::name, manager -> manager));
