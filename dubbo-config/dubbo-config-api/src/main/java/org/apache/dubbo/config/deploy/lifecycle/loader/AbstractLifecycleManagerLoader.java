@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 
 public abstract class AbstractLifecycleManagerLoader<T extends Lifecycle> {
 
-    private final Map<String, T> managers;
+    private final Map<String, T> lifecycles;
 
     /**
      *  Map&lt;LifecycleManageOperationName,Function&lt;Lifecycle,DependencyList&gt;&gt;
@@ -25,7 +25,7 @@ public abstract class AbstractLifecycleManagerLoader<T extends Lifecycle> {
     private final Map<String, List<T>> sequences;
 
     public AbstractLifecycleManagerLoader() {
-        this.managers = loadManagers().stream().collect(Collectors.toMap(Lifecycle::name, manager -> manager));
+        this.lifecycles = loadAll().stream().collect(Collectors.toMap(Lifecycle::name, manager -> manager));
         this.dependencyProviders = new HashMap<>();
         this.sequences = new HashMap<>();
         loadSequence();
@@ -41,14 +41,14 @@ public abstract class AbstractLifecycleManagerLoader<T extends Lifecycle> {
      * Load all lifecycle managers.
      * @return lifecycle managers.
      */
-    protected abstract List<T> loadManagers();
+    protected abstract List<T> loadAll();
 
     /**
      * Map method sequences.
      */
     protected void loadSequence(){
 
-        managers.forEach((name, manager) ->
+        lifecycles.forEach((name, manager) ->
 
             dependencyProviders.forEach((operation, dependencyProvider) -> {
 
@@ -71,7 +71,7 @@ public abstract class AbstractLifecycleManagerLoader<T extends Lifecycle> {
 
             for (String depend : depends) {
 
-                T manager = managers.get(depend);
+                T manager = lifecycles.get(depend);
 
                 Assert.assertTrue(manager != null, "One of required Lifecycle not found:" + depend);
                 Assert.assertTrue(manager.needInitialize(), "A required Lifecycle is not started:" + manager.name());
@@ -87,11 +87,15 @@ public abstract class AbstractLifecycleManagerLoader<T extends Lifecycle> {
     }
 
     public Lifecycle get(String name) {
-        return managers.get(name);
+        return lifecycles.get(name);
     }
 
     public List<T> getSequenceByOperationName(String operation){
         return sequences.get(operation);
+    }
+
+    public Map<String,T> getAll(){
+        return lifecycles;
     }
 
 }

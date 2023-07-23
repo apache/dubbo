@@ -1,6 +1,7 @@
 package org.apache.dubbo.metadata.deploy;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.deploy.ApplicationDeployer;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
@@ -62,6 +63,8 @@ public class MetadataApplicationLifecycle implements ApplicationLifecycle {
     public boolean needInitialize() {
         return true;
     }
+
+
 
     @Override
     public List<String> dependOnInit() {
