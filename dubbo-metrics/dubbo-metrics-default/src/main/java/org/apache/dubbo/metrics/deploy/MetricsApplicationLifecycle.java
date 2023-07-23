@@ -28,7 +28,7 @@ import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_DEFAUL
 import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMETHEUS;
 
 /**
- * metrics package life manager.
+ * Metrics lifecycle.
  */
 public class MetricsApplicationLifecycle implements ApplicationLifecycle {
 

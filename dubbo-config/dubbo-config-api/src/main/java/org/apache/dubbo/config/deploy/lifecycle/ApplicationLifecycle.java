@@ -55,7 +55,6 @@ public interface ApplicationLifecycle extends Lifecycle {
      */
     void initialize();
 
-
     /**
      * Specifies which ApplicationLifecycle should be called before this one
      * when {@link DefaultApplicationDeployer#preDestroy()}.

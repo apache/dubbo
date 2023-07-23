@@ -41,7 +41,7 @@ import static org.apache.dubbo.common.utils.StringUtils.isNotEmpty;
 import static org.apache.dubbo.remoting.Constants.CLIENT_KEY;
 
 /**
- * Config-center package life cycle manager.
+ * Config-center lifecycle.
  */
 @Activate
 public class ConfigCenterApplicationLifecycle implements ApplicationLifecycle {
