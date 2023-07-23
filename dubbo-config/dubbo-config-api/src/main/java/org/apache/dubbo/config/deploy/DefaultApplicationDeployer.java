@@ -17,43 +17,33 @@
 package org.apache.dubbo.config.deploy;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.config.ReferenceCache;
-import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
-import org.apache.dubbo.common.config.configcenter.DynamicConfigurationFactory;
-import org.apache.dubbo.common.deploy.*;
+
+import org.apache.dubbo.common.deploy.AbstractDeployer;
+import org.apache.dubbo.common.deploy.ApplicationDeployListener;
+import org.apache.dubbo.common.deploy.ApplicationDeployer;
+import org.apache.dubbo.common.deploy.ModuleDeployer;
+import org.apache.dubbo.common.deploy.DeployState;
+import org.apache.dubbo.common.deploy.DeployListener;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.lang.ShutdownHookCallbacks;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
-import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ApplicationConfig;
-import org.apache.dubbo.config.ConfigCenterConfig;
 import org.apache.dubbo.config.DubboShutdownHook;
-import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.deploy.lifecycle.manager.ApplicationLifecycleManager;
 import org.apache.dubbo.config.utils.CompositeReferenceCache;
-import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
-import org.apache.dubbo.metrics.config.event.ConfigCenterEvent;
-import org.apache.dubbo.metrics.event.MetricsEventBus;
-import org.apache.dubbo.metrics.report.DefaultMetricsReporterFactory;
-import org.apache.dubbo.metrics.report.MetricsReporter;
-import org.apache.dubbo.metrics.report.MetricsReporterFactory;
-import org.apache.dubbo.metrics.service.MetricsServiceExporter;
-import org.apache.dubbo.metrics.utils.MetricsSupportUtil;
-import org.apache.dubbo.registry.Registry;
-import org.apache.dubbo.registry.RegistryFactory;
-import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
-import org.apache.dubbo.rpc.model.*;
 
-import java.io.IOException;
-import java.util.Map;
-import java.util.Optional;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ModuleModel;
+import org.apache.dubbo.rpc.model.ScopeModel;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
+
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
@@ -61,10 +51,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.apache.dubbo.common.config.ConfigurationUtils.parseProperties;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.*;
-import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_DEFAULT;
-import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMETHEUS;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_START_MODEL;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_REFRESH_INSTANCE_ERROR;
 import static org.apache.dubbo.common.utils.StringUtils.isNotEmpty;
 
 /**
@@ -94,7 +82,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
     private final DubboShutdownHook dubboShutdownHook;
 
-    private volatile MetricsServiceExporter metricsServiceExporter;
+
 
     private final ApplicationLifecycleManager lifecycleManager;
 
@@ -346,48 +334,48 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 //        }
 //    }
 
-    private void initMetricsService() {
-        this.metricsServiceExporter = getExtensionLoader(MetricsServiceExporter.class).getDefaultExtension();
-        metricsServiceExporter.init();
-    }
+//    private void initMetricsService() {
+//        this.metricsServiceExporter = getExtensionLoader(MetricsServiceExporter.class).getDefaultExtension();
+//        metricsServiceExporter.init();
+//    }
 
-    private void initMetricsReporter() {
-        if (!MetricsSupportUtil.isSupportMetrics()) {
-            return;
-        }
-        DefaultMetricsCollector collector =
-            applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class);
-        Optional<MetricsConfig> configOptional = configManager.getMetrics();
-        //If no specific metrics type is configured and there is no Prometheus dependency in the dependencies.
-        MetricsConfig metricsConfig = configOptional.orElse(new MetricsConfig(applicationModel));
-        if (StringUtils.isBlank(metricsConfig.getProtocol())) {
-            metricsConfig.setProtocol(MetricsSupportUtil.isSupportPrometheus() ? PROTOCOL_PROMETHEUS : PROTOCOL_DEFAULT);
-        }
-        collector.setCollectEnabled(true);
-        collector.collectApplication();
-        collector.setThreadpoolCollectEnabled(Optional.ofNullable(metricsConfig.getEnableThreadpool()).orElse(true));
-        MetricsReporterFactory metricsReporterFactory = getExtensionLoader(MetricsReporterFactory.class).getAdaptiveExtension();
-        MetricsReporter metricsReporter = null;
-        try {
-            metricsReporter = metricsReporterFactory.createMetricsReporter(metricsConfig.toUrl());
-        } catch (IllegalStateException e) {
-            if (e.getMessage().startsWith("No such extension org.apache.dubbo.metrics.report.MetricsReporterFactory")) {
-                logger.warn(COMMON_METRICS_COLLECTOR_EXCEPTION, "", "", e.getMessage());
-                return;
-            } else {
-                throw e;
-            }
-        }
-        metricsReporter.init();
-        applicationModel.getBeanFactory().registerBean(metricsReporter);
-        //If the protocol is not the default protocol, the default protocol is also initialized.
-        if (!PROTOCOL_DEFAULT.equals(metricsConfig.getProtocol())) {
-            DefaultMetricsReporterFactory defaultMetricsReporterFactory = new DefaultMetricsReporterFactory(applicationModel);
-            MetricsReporter defaultMetricsReporter = defaultMetricsReporterFactory.createMetricsReporter(metricsConfig.toUrl());
-            defaultMetricsReporter.init();
-            applicationModel.getBeanFactory().registerBean(defaultMetricsReporter);
-        }
-    }
+//    private void initMetricsReporter() {
+//        if (!MetricsSupportUtil.isSupportMetrics()) {
+//            return;
+//        }
+//        DefaultMetricsCollector collector =
+//            applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class);
+//        Optional<MetricsConfig> configOptional = configManager.getMetrics();
+//        //If no specific metrics type is configured and there is no Prometheus dependency in the dependencies.
+//        MetricsConfig metricsConfig = configOptional.orElse(new MetricsConfig(applicationModel));
+//        if (StringUtils.isBlank(metricsConfig.getProtocol())) {
+//            metricsConfig.setProtocol(MetricsSupportUtil.isSupportPrometheus() ? PROTOCOL_PROMETHEUS : PROTOCOL_DEFAULT);
+//        }
+//        collector.setCollectEnabled(true);
+//        collector.collectApplication();
+//        collector.setThreadpoolCollectEnabled(Optional.ofNullable(metricsConfig.getEnableThreadpool()).orElse(true));
+//        MetricsReporterFactory metricsReporterFactory = getExtensionLoader(MetricsReporterFactory.class).getAdaptiveExtension();
+//        MetricsReporter metricsReporter = null;
+//        try {
+//            metricsReporter = metricsReporterFactory.createMetricsReporter(metricsConfig.toUrl());
+//        } catch (IllegalStateException e) {
+//            if (e.getMessage().startsWith("No such extension org.apache.dubbo.metrics.report.MetricsReporterFactory")) {
+//                logger.warn(COMMON_METRICS_COLLECTOR_EXCEPTION, "", "", e.getMessage());
+//                return;
+//            } else {
+//                throw e;
+//            }
+//        }
+//        metricsReporter.init();
+//        applicationModel.getBeanFactory().registerBean(metricsReporter);
+//        //If the protocol is not the default protocol, the default protocol is also initialized.
+//        if (!PROTOCOL_DEFAULT.equals(metricsConfig.getProtocol())) {
+//            DefaultMetricsReporterFactory defaultMetricsReporterFactory = new DefaultMetricsReporterFactory(applicationModel);
+//            MetricsReporter defaultMetricsReporter = defaultMetricsReporterFactory.createMetricsReporter(metricsConfig.toUrl());
+//            defaultMetricsReporter.init();
+//            applicationModel.getBeanFactory().registerBean(defaultMetricsReporter);
+//        }
+//    }
 
     /**
      * init ObservationRegistry(Micrometer)
@@ -802,63 +790,63 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         return false;
     }
 
-    private DynamicConfiguration prepareEnvironment(ConfigCenterConfig configCenter) {
-        if (configCenter.isValid()) {
-            if (!configCenter.checkOrUpdateInitialized(true)) {
-                return null;
-            }
-
-            DynamicConfiguration dynamicConfiguration;
-            try {
-                dynamicConfiguration = getDynamicConfiguration(configCenter.toUrl());
-            } catch (Exception e) {
-                if (!configCenter.isCheck()) {
-                    logger.warn(CONFIG_FAILED_INIT_CONFIG_CENTER, "", "", "The configuration center failed to initialize", e);
-                    configCenter.setInitialized(false);
-                    return null;
-                } else {
-                    throw new IllegalStateException(e);
-                }
-            }
-            ApplicationModel applicationModel = getApplicationModel();
-
-            if (StringUtils.isNotEmpty(configCenter.getConfigFile())) {
-                String configContent = dynamicConfiguration.getProperties(configCenter.getConfigFile(), configCenter.getGroup());
-                if (StringUtils.isNotEmpty(configContent)) {
-                    logger.info(String.format("Got global remote configuration from config center with key-%s and group-%s: \n %s", configCenter.getConfigFile(), configCenter.getGroup(), configContent));
-                }
-                String appGroup = getApplication().getName();
-                String appConfigContent = null;
-                String appConfigFile = null;
-                if (isNotEmpty(appGroup)) {
-                    appConfigFile = isNotEmpty(configCenter.getAppConfigFile()) ? configCenter.getAppConfigFile() : configCenter.getConfigFile();
-                    appConfigContent = dynamicConfiguration.getProperties(appConfigFile, appGroup);
-                    if (StringUtils.isNotEmpty(appConfigContent)) {
-                        logger.info(String.format("Got application specific remote configuration from config center with key %s and group %s: \n %s", appConfigFile, appGroup, appConfigContent));
-                    }
-                }
-                try {
-                    Map<String, String> configMap = parseProperties(configContent);
-                    Map<String, String> appConfigMap = parseProperties(appConfigContent);
-
-                    environment.updateExternalConfigMap(configMap);
-                    environment.updateAppExternalConfigMap(appConfigMap);
-
-                    // Add metrics
-                    MetricsEventBus.publish(ConfigCenterEvent.toChangeEvent(applicationModel, configCenter.getConfigFile(), configCenter.getGroup(),
-                        configCenter.getProtocol(), ConfigChangeType.ADDED.name(), configMap.size()));
-                    if (isNotEmpty(appGroup)) {
-                        MetricsEventBus.publish(ConfigCenterEvent.toChangeEvent(applicationModel, appConfigFile, appGroup,
-                            configCenter.getProtocol(), ConfigChangeType.ADDED.name(), appConfigMap.size()));
-                    }
-                } catch (IOException e) {
-                    throw new IllegalStateException("Failed to parse configurations from Config Center.", e);
-                }
-            }
-            return dynamicConfiguration;
-        }
-        return null;
-    }
+//    private DynamicConfiguration prepareEnvironment(ConfigCenterConfig configCenter) {
+//        if (configCenter.isValid()) {
+//            if (!configCenter.checkOrUpdateInitialized(true)) {
+//                return null;
+//            }
+//
+//            DynamicConfiguration dynamicConfiguration;
+//            try {
+//                dynamicConfiguration = getDynamicConfiguration(configCenter.toUrl());
+//            } catch (Exception e) {
+//                if (!configCenter.isCheck()) {
+//                    logger.warn(CONFIG_FAILED_INIT_CONFIG_CENTER, "", "", "The configuration center failed to initialize", e);
+//                    configCenter.setInitialized(false);
+//                    return null;
+//                } else {
+//                    throw new IllegalStateException(e);
+//                }
+//            }
+//            ApplicationModel applicationModel = getApplicationModel();
+//
+//            if (StringUtils.isNotEmpty(configCenter.getConfigFile())) {
+//                String configContent = dynamicConfiguration.getProperties(configCenter.getConfigFile(), configCenter.getGroup());
+//                if (StringUtils.isNotEmpty(configContent)) {
+//                    logger.info(String.format("Got global remote configuration from config center with key-%s and group-%s: \n %s", configCenter.getConfigFile(), configCenter.getGroup(), configContent));
+//                }
+//                String appGroup = getApplication().getName();
+//                String appConfigContent = null;
+//                String appConfigFile = null;
+//                if (isNotEmpty(appGroup)) {
+//                    appConfigFile = isNotEmpty(configCenter.getAppConfigFile()) ? configCenter.getAppConfigFile() : configCenter.getConfigFile();
+//                    appConfigContent = dynamicConfiguration.getProperties(appConfigFile, appGroup);
+//                    if (StringUtils.isNotEmpty(appConfigContent)) {
+//                        logger.info(String.format("Got application specific remote configuration from config center with key %s and group %s: \n %s", appConfigFile, appGroup, appConfigContent));
+//                    }
+//                }
+//                try {
+//                    Map<String, String> configMap = parseProperties(configContent);
+//                    Map<String, String> appConfigMap = parseProperties(appConfigContent);
+//
+//                    environment.updateExternalConfigMap(configMap);
+//                    environment.updateAppExternalConfigMap(appConfigMap);
+//
+//                    // Add metrics
+//                    MetricsEventBus.publish(ConfigCenterEvent.toChangeEvent(applicationModel, configCenter.getConfigFile(), configCenter.getGroup(),
+//                        configCenter.getProtocol(), ConfigChangeType.ADDED.name(), configMap.size()));
+//                    if (isNotEmpty(appGroup)) {
+//                        MetricsEventBus.publish(ConfigCenterEvent.toChangeEvent(applicationModel, appConfigFile, appGroup,
+//                            configCenter.getProtocol(), ConfigChangeType.ADDED.name(), appConfigMap.size()));
+//                    }
+//                } catch (IOException e) {
+//                    throw new IllegalStateException("Failed to parse configurations from Config Center.", e);
+//                }
+//            }
+//            return dynamicConfiguration;
+//        }
+//        return null;
+//    }
 
     /**
      * Get the instance of {@link DynamicConfiguration} by the specified connection {@link URL} of config-center
@@ -867,12 +855,12 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
      * @return non-null
      * @since 2.7.5
      */
-    private DynamicConfiguration getDynamicConfiguration(URL connectionURL) {
-        String protocol = connectionURL.getProtocol();
-
-        DynamicConfigurationFactory factory = ConfigurationUtils.getDynamicConfigurationFactory(applicationModel, protocol);
-        return factory.getDynamicConfiguration(connectionURL);
-    }
+//    private DynamicConfiguration getDynamicConfiguration(URL connectionURL) {
+//        String protocol = connectionURL.getProtocol();
+//
+//        DynamicConfigurationFactory factory = ConfigurationUtils.getDynamicConfigurationFactory(applicationModel, protocol);
+//        return factory.getDynamicConfiguration(connectionURL);
+//    }
 
 
 
@@ -926,13 +914,13 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     public void refreshServiceInstance() {
         lifecycleManager.runRefreshServiceInstance();
 
-        if (registered) {
-            try {
-                ServiceInstanceMetadataUtils.refreshMetadataAndInstance(applicationModel);
-            } catch (Exception e) {
-                logger.error(CONFIG_REFRESH_INSTANCE_ERROR, "", "", "Refresh instance and metadata error.", e);
-            }
-        }
+//        if (registered) {
+//            try {
+//                ServiceInstanceMetadataUtils.refreshMetadataAndInstance(applicationModel);
+//            } catch (Exception e) {
+//                logger.error(CONFIG_REFRESH_INSTANCE_ERROR, "", "", "Refresh instance and metadata error.", e);
+//            }
+//        }
     }
 
     @Override
@@ -1001,13 +989,13 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 //        }
 //    }
 
-    private void doOffline(ProviderModel.RegisterStatedURL statedURL) {
-        RegistryFactory registryFactory =
-            statedURL.getRegistryUrl().getOrDefaultApplicationModel().getExtensionLoader(RegistryFactory.class).getAdaptiveExtension();
-        Registry registry = registryFactory.getRegistry(statedURL.getRegistryUrl());
-        registry.unregister(statedURL.getProviderUrl());
-        statedURL.setRegistered(false);
-    }
+//    private void doOffline(ProviderModel.RegisterStatedURL statedURL) {
+//        RegistryFactory registryFactory =
+//            statedURL.getRegistryUrl().getOrDefaultApplicationModel().getExtensionLoader(RegistryFactory.class).getAdaptiveExtension();
+//        Registry registry = registryFactory.getRegistry(statedURL.getRegistryUrl());
+//        registry.unregister(statedURL.getProviderUrl());
+//        statedURL.setRegistered(false);
+//    }
 
     @Override
     public void postDestroy() {

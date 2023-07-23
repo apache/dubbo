@@ -50,13 +50,13 @@ public abstract class AbstractLifecycleManagerLoader<T extends Lifecycle> {
             dependencyProviders.forEach((operation, dependencyProvider) -> {
 
             List<T> lifeManagers;
-            lifeManagers = getOrderedManagersByDependency(dependencyProvider, manager, new HashMap<>(), new ArrayList<>());
+            lifeManagers = getOrderedLifecycleByDependency(dependencyProvider, manager, new HashMap<>(), new ArrayList<>());
 
             sequences.put(operation,lifeManagers);
         }));
     }
 
-    protected List<T> getOrderedManagersByDependency(Function<T, List<String>> dependencyProvider, T currentManager, Map<String, T> processedManagers, List<T> orderedManagers) {
+    protected List<T> getOrderedLifecycleByDependency(Function<T, List<String>> dependencyProvider, T currentManager, Map<String, T> processedManagers, List<T> orderedManagers) {
 
         List<String> depends = dependencyProvider.apply(currentManager);
 
@@ -73,7 +73,7 @@ public abstract class AbstractLifecycleManagerLoader<T extends Lifecycle> {
                 Assert.assertTrue(manager != null, "One of required Lifecycle not found:" + depend);
                 Assert.assertTrue(manager.needInitialize(), "A required Lifecycle is not started:" + manager.name());
                 //dfs
-                getOrderedManagersByDependency(dependencyProvider, manager, processedManagers, orderedManagers);
+                getOrderedLifecycleByDependency(dependencyProvider, manager, processedManagers, orderedManagers);
             }
         }
         //No more dependencies
@@ -83,7 +83,7 @@ public abstract class AbstractLifecycleManagerLoader<T extends Lifecycle> {
         return orderedManagers;
     }
 
-    public Lifecycle getManager(String name) {
+    public Lifecycle get(String name) {
         return managers.get(name);
     }
 
