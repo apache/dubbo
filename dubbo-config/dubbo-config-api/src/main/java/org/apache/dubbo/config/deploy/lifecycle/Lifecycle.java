@@ -6,13 +6,6 @@ package org.apache.dubbo.config.deploy.lifecycle;
 public interface Lifecycle {
 
     /**
-     * The name of this Lifecycle.
-     *
-     * @return the name of this manager.
-     */
-    String name();
-
-    /**
      * If this lifecycle need to initialize.
      */
     boolean needInitialize();

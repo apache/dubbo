@@ -1,7 +1,6 @@
 package org.apache.dubbo.metadata.deploy;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.deploy.ApplicationDeployer;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
@@ -21,7 +20,6 @@ import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,21 +52,10 @@ public class MetadataApplicationLifecycle implements ApplicationLifecycle {
         this.applicationDeployer = defaultApplicationDeployer;
     }
 
-    @Override
-    public String name() {
-        return NAME;
-    }
 
     @Override
     public boolean needInitialize() {
         return true;
-    }
-
-
-
-    @Override
-    public List<String> dependOnInit() {
-        return Collections.singletonList("metrics");
     }
 
     @Override
@@ -274,12 +261,6 @@ public class MetadataApplicationLifecycle implements ApplicationLifecycle {
         }
         metadataAddressBuilder.append(address);
         return metadataAddressBuilder.toString();
-    }
-
-
-    @Override
-    public List<String> postDestroyDependencies() {
-        return Collections.singletonList("registry");
     }
 
     @Override

@@ -6,7 +6,6 @@ import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.config.deploy.DefaultApplicationDeployer;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
-import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -41,69 +40,19 @@ public interface ApplicationLifecycle extends Lifecycle {
     }
 
     /**
-     * Specifies which ApplicationLifecycle should be called before this one
-     * when {@link DefaultApplicationDeployer#initialize()}. They are guaranteed to
-     * be called before this one.
-     * <br>
-     * If there have some required ApplicationLifecycle not found, or it's needInitialize() returns false,
-     * this ApplicationLifecycle will not be called.
-     * <br>
-     * Note that if there are cyclic dependencies between
-     * PackageLifeManagers, an exception will be thrown.
-     *
-     * @return ApplicationLifecycle names. Can be null or empty list.
-     */
-    default List<String> dependOnInit() {
-        return null;
-    }
-
-    /**
      * {@link  ApplicationDeployer#initialize()}
      */
     default void initialize(){};
-
-    /**
-     * Specifies which ApplicationLifecycle should be called before this one
-     * when {@link DefaultApplicationDeployer#preDestroy()}.
-     * <br>
-     * Works just like {@link ApplicationLifecycle#dependOnInit()}.
-     *
-     * @return ApplicationLifecycle names. Can be null or empty list.
-     */
-    default List<String> dependOnPreDestroy() {
-        return null;
-    }
 
     /**
      * {@link ApplicationDeployer#preDestroy()}
      */
     default void preDestroy() {}
 
-
-    /**
-     * Specifies which ApplicationLifecycle should be called before this one
-     * when {@link DefaultApplicationDeployer#postDestroy()}.
-     * <br>
-     * Works just like {@link ApplicationLifecycle#dependOnInit()}.
-     *
-     * @return ApplicationLifecycle names. Can be null or empty list.
-     */
-    default List<String> postDestroyDependencies() {
-        return null;
-    }
-
     /**
      * {@link ApplicationDeployer#postDestroy()}
      */
     default void postDestroy() {}
-
-
-    /**
-     * Specifies which ApplicationLifecycle should be called before this one when {@link DefaultApplicationDeployer#checkState(ModuleModel, DeployState)}. Works just like {@link ApplicationLifecycle#dependOnInit()}.
-     *
-     * @return ApplicationLifecycle names. Can be null or empty list.
-     */
-    default List<String> dependOnPreModuleChanged(){return null;}
 
     /**
      * What to do when a module changed.
@@ -113,14 +62,6 @@ public interface ApplicationLifecycle extends Lifecycle {
      */
     default void preModuleChanged(ModuleModel changedModule, DeployState moduleState, AtomicBoolean hasPreparedApplicationInstance){}
 
-
-    /**
-     * Specifies which ApplicationLifecycle should be called before this one after {@link DefaultApplicationDeployer#checkState(ModuleModel, DeployState)}. Works just like {@link ApplicationLifecycle#dependOnInit()}.
-     *
-     * @return ApplicationLifecycle names. Can be null or empty list.
-     */
-    default List<String> dependOnPostModuleChanged(){return null;}
-
     /**
      * What to do after a module changed.
      * @param changedModule changed module
@@ -128,14 +69,6 @@ public interface ApplicationLifecycle extends Lifecycle {
      * @param newState new application state
      */
     default void postModuleChanged(ModuleModel changedModule,DeployState moduleState, DeployState newState){}
-
-
-    /**
-     * Specifies which ApplicationLifecycle should be called before this one after {@link DefaultApplicationDeployer#refreshServiceInstance()}. Works just like {@link ApplicationLifecycle#dependOnInit()}.
-     *
-     * @return ApplicationLifecycle names. Can be null or empty list.
-     */
-    default List<String> dependOnRefreshServiceInstance(){return null;}
 
     /**
      * {@link DefaultApplicationDeployer#refreshServiceInstance()}.
