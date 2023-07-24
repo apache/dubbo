@@ -43,7 +43,7 @@ import static org.apache.dubbo.remoting.Constants.CLIENT_KEY;
 /**
  * Config-center lifecycle.
  */
-@Activate
+@Activate(order = -1)
 public class ConfigCenterApplicationLifecycle implements ApplicationLifecycle {
 
     private static final String NAME = "config_center";
@@ -60,11 +60,6 @@ public class ConfigCenterApplicationLifecycle implements ApplicationLifecycle {
     @Override
     public void setApplicationDeployer(DefaultApplicationDeployer defaultApplicationDeployer) {
         this.applicationDeployer = defaultApplicationDeployer;
-    }
-
-    @Override
-    public String name() {
-        return NAME;
     }
 
     @Override

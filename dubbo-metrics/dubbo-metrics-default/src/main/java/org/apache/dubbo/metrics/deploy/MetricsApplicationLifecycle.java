@@ -3,6 +3,7 @@ package org.apache.dubbo.metrics.deploy;
 import org.apache.dubbo.common.constants.LoggerCodeConstants;
 import org.apache.dubbo.common.deploy.ApplicationDeployer;
 import org.apache.dubbo.common.deploy.DeployState;
+import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ClassUtils;
@@ -18,8 +19,6 @@ import org.apache.dubbo.metrics.service.MetricsServiceExporter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -31,9 +30,9 @@ import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMET
 /**
  * Metrics lifecycle.
  */
+@Activate
 public class MetricsApplicationLifecycle implements ApplicationLifecycle {
 
-    private static final String NAME = "metrics";
 
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(MetricsApplicationLifecycle.class);
 
@@ -47,29 +46,20 @@ public class MetricsApplicationLifecycle implements ApplicationLifecycle {
     }
 
     @Override
-    public String name() {
-        return NAME;
-    }
-
-    @Override
     public boolean needInitialize() {
         return isSupportMetrics();
     }
 
     /**
-     * {@link ApplicationDeployer#start()}
-     */
-    @Override
-    public void start(AtomicBoolean hasPreparedApplicationInstance) {
-        if(!hasPreparedApplicationInstance.get()) {
-            exportMetricsService();
-        }
-    }
+//     * {@link ApplicationDeployer#start()}
+//     */
+//    @Override
+//    public void start(AtomicBoolean hasPreparedApplicationInstance) {
+//        if(!hasPreparedApplicationInstance.get()) {
+//            exportMetricsService();
+//        }
+//    }
 
-    @Override
-    public List<String> dependOnInit() {
-        return Collections.singletonList("config_center");
-    }
 
     /**
      * Initialize.
@@ -143,11 +133,6 @@ public class MetricsApplicationLifecycle implements ApplicationLifecycle {
     }
 
     @Override
-    public List<String> dependOnPreDestroy() {
-        return Collections.singletonList("registry");
-    }
-
-    @Override
     public void preDestroy() {
         disableMetricsService();
     }
@@ -190,11 +175,6 @@ public class MetricsApplicationLifecycle implements ApplicationLifecycle {
     }
 
     @Override
-    public List<String> dependOnPostModuleChanged() {
-        return Collections.singletonList("default");
-    }
-
-    @Override
     public void postModuleChanged(ModuleModel changedModule, DeployState moduleState, DeployState newState) {
         if(DeployState.STARTED.equals(newState) && applicationDeployer.isStarting()){
             startMetricsCollector();
@@ -214,4 +194,7 @@ public class MetricsApplicationLifecycle implements ApplicationLifecycle {
         }
     }
 
+    public MetricsServiceExporter getMetricsServiceExporter(){
+        return this.metricsServiceExporter;
+    }
 }

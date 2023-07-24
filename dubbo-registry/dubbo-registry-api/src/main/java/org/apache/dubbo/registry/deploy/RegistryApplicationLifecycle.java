@@ -1,7 +1,6 @@
 package org.apache.dubbo.registry.deploy;
 
 import org.apache.dubbo.common.config.ConfigurationUtils;
-import org.apache.dubbo.common.constants.LoggerCodeConstants;
 import org.apache.dubbo.common.deploy.ApplicationDeployer;
 import org.apache.dubbo.common.deploy.DeployState;
 import org.apache.dubbo.common.extension.Activate;
@@ -12,17 +11,11 @@ import org.apache.dubbo.config.deploy.DefaultApplicationDeployer;
 import org.apache.dubbo.config.deploy.lifecycle.ApplicationLifecycle;
 import org.apache.dubbo.metrics.event.MetricsEventBus;
 import org.apache.dubbo.metrics.registry.event.RegistryEvent;
-import org.apache.dubbo.registry.Registry;
-import org.apache.dubbo.registry.RegistryFactory;
 import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
 import org.apache.dubbo.registry.support.RegistryManager;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
-import org.apache.dubbo.rpc.model.ModuleServiceRepository;
-import org.apache.dubbo.rpc.model.ProviderModel;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -39,15 +32,11 @@ import static org.apache.dubbo.metadata.MetadataConstants.METADATA_PUBLISH_DELAY
 @Activate
 public class RegistryApplicationLifecycle implements ApplicationLifecycle {
 
-    private static final String NAME = "registry";
-
     private final AtomicInteger instanceRefreshScheduleTimes = new AtomicInteger(0);
 
     private DefaultApplicationDeployer applicationDeployer;
 
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(RegistryApplicationLifecycle.class);
-
-
 
     private ScheduledFuture<?> asyncMetadataFuture;
 
@@ -57,19 +46,12 @@ public class RegistryApplicationLifecycle implements ApplicationLifecycle {
     }
 
     @Override
-    public String name() {
-        return NAME;
-    }
-
-    @Override
     public boolean needInitialize() {
         return true;
     }
 
     /**
      * {@link ApplicationDeployer#start()}
-     *
-     * @param hasPreparedApplicationInstance
      */
     @Override
     public void start(AtomicBoolean hasPreparedApplicationInstance) {
@@ -77,49 +59,6 @@ public class RegistryApplicationLifecycle implements ApplicationLifecycle {
             // register the local ServiceInstance if required
             registerServiceInstance();
         }
-    }
-
-    @Override
-    public void preDestroy() {
-        offline();
-        unregisterMetadataServiceInstance();
-
-        if (asyncMetadataFuture != null) {
-            asyncMetadataFuture.cancel(true);
-        }
-    }
-
-    private void offline() {
-        try {
-            for (ModuleModel moduleModel : applicationDeployer.getApplicationModel().getModuleModels()) {
-                ModuleServiceRepository serviceRepository = moduleModel.getServiceRepository();
-                List<ProviderModel> exportedServices = serviceRepository.getExportedServices();
-                for (ProviderModel exportedService : exportedServices) {
-                    List<ProviderModel.RegisterStatedURL> statedUrls = exportedService.getStatedUrl();
-                    for (ProviderModel.RegisterStatedURL statedURL : statedUrls) {
-                        if (statedURL.isRegistered()) {
-                            doOffline(statedURL);
-                        }
-                    }
-                }
-            }
-        } catch (Throwable t) {
-            logger.error(LoggerCodeConstants.INTERNAL_ERROR, "", "", "Exceptions occurred when unregister services.", t);
-        }
-    }
-
-    private void unregisterMetadataServiceInstance() {
-        if (applicationDeployer.isRegistered()) {
-            ServiceInstanceMetadataUtils.unregisterMetadataAndInstance(applicationDeployer.getApplicationModel());
-        }
-    }
-
-    private void doOffline(ProviderModel.RegisterStatedURL statedURL) {
-        RegistryFactory registryFactory =
-            statedURL.getRegistryUrl().getOrDefaultApplicationModel().getExtensionLoader(RegistryFactory.class).getAdaptiveExtension();
-        Registry registry = registryFactory.getRegistry(statedURL.getRegistryUrl());
-        registry.unregister(statedURL.getProviderUrl());
-        statedURL.setRegistered(false);
     }
 
     /**
@@ -132,12 +71,6 @@ public class RegistryApplicationLifecycle implements ApplicationLifecycle {
 
     private void destroyRegistries() {
         RegistryManager.getInstance(applicationDeployer.getApplicationModel()).destroyAll();
-    }
-
-
-    @Override
-    public List<String> dependOnPreModuleChanged() {
-        return Collections.singletonList("metadata");
     }
 
     /**
@@ -209,11 +142,6 @@ public class RegistryApplicationLifecycle implements ApplicationLifecycle {
     }
 
     @Override
-    public List<String> dependOnPostModuleChanged() {
-        return Collections.singletonList("metrics");
-    }
-
-    @Override
     public void postModuleChanged(ModuleModel changedModule, DeployState moduleState, DeployState newState) {
         if(!applicationDeployer.isStarting() && newState.equals(DeployState.STARTED)){
             refreshMetadata();
@@ -230,4 +158,7 @@ public class RegistryApplicationLifecycle implements ApplicationLifecycle {
         }
     }
 
+    public ScheduledFuture<?> getAsyncMetadataFuture() {
+        return asyncMetadataFuture;
+    }
 }

@@ -18,7 +18,6 @@ package org.apache.dubbo.config.deploy;
 
 import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.config.ReferenceCache;
-import org.apache.dubbo.common.constants.LoggerCodeConstants;
 import org.apache.dubbo.common.deploy.AbstractDeployer;
 import org.apache.dubbo.common.deploy.ApplicationDeployListener;
 import org.apache.dubbo.common.deploy.ApplicationDeployer;
@@ -187,11 +186,11 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
             //TODO: tracing
             // @since 3.2.3
-//            initObservationRegistry();
+//           initObservationRegistry();
 
             //TODO: metadata
             // @since 2.7.8
-//            startMetadataCenter();
+//           startMetadataCenter();
 
             initialized = true;
 
@@ -745,18 +744,18 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         }
     }
 
-    private void exportMetricsService() {
-        boolean exportMetrics = applicationModel.getApplicationConfigManager().getMetrics()
-            .map(MetricsConfig::getExportMetricsService).orElse(true);
-        if (exportMetrics) {
-            try {
-                metricsServiceExporter.export();
-            } catch (Exception e) {
-                logger.error(LoggerCodeConstants.COMMON_METRICS_COLLECTOR_EXCEPTION, "", "",
-                    "exportMetricsService an exception occurred when handle starting event", e);
-            }
-        }
-    }
+//    private void exportMetricsService() {
+//        boolean exportMetrics = applicationModel.getApplicationConfigManager().getMetrics()
+//            .map(MetricsConfig::getExportMetricsService).orElse(true);
+//        if (exportMetrics) {
+//            try {
+//                metricsServiceExporter.export();
+//            } catch (Exception e) {
+//                logger.error(LoggerCodeConstants.COMMON_METRICS_COLLECTOR_EXCEPTION, "", "",
+//                    "exportMetricsService an exception occurred when handle starting event", e);
+//            }
+//        }
+//    }
 
 //    private void unexportMetricsService() {
 //        if (metricsServiceExporter != null) {
@@ -958,7 +957,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             //TODO： metrics
 //            unexportMetricsService();
 
-            unRegisterShutdownHook();
+             unRegisterShutdownHook();
 
             //TODO: metadata
 //            if (asyncMetadataFuture != null) {

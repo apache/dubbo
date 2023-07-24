@@ -14,8 +14,8 @@ import java.util.Optional;
 @Activate
 public class TracingApplicationLifecycle implements ApplicationLifecycle {
 
-    private static final String NAME = "tracing";
     private DefaultApplicationDeployer defaultApplicationDeployer;
+
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(TracingApplicationLifecycle.class);
 
     @Override
@@ -51,11 +51,6 @@ public class TracingApplicationLifecycle implements ApplicationLifecycle {
             DubboObservationRegistry dubboObservationRegistry = new DubboObservationRegistry(defaultApplicationDeployer.getApplicationModel(), configManager.get());
             dubboObservationRegistry.initObservationRegistry();
         }
-    }
-
-    @Override
-    public String name() {
-        return NAME;
     }
 
     @Override
