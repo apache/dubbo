@@ -384,50 +384,8 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
 
     private void exportServices() {
         for (ServiceConfigBase sc : configManager.getServices()) {
-            if (checkJsonCompatibility(sc)) {
-                exportServiceInternal(sc);
-            }
+            exportServiceInternal(sc);
         }
-    }
-
-    private boolean checkJsonCompatibility(ServiceConfigBase sc) {
-        ServiceConfig<?> serviceConfig = (ServiceConfig<?>) sc;
-        Object obj = serviceConfig.getRef();
-        Class<?> clazz = obj.getClass();
-        Method[] methods = clazz.getMethods();
-        for (Method method : methods) {
-            Parameter[] parameters = method.getParameters();
-            for (Parameter parameter : parameters) {
-                Class<?> parameterType = parameter.getType();
-                boolean result = check(parameterType);
-                if (!result) {
-                    System.out.printf("%s Not support !%n", sc.getId());
-                    return false;
-                }
-                System.out.println("Parameter Type: " + parameter.getType().getName());
-            }
-            Class<?> returnType =  method.getReturnType();
-            boolean result = check(returnType);
-            if (!result) {
-                System.out.printf("%s Not support !%n", sc.getId());
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private boolean check(Class<?> clazz) {
-        if (clazz.isInterface()) {
-            return false;
-        }
-        if (Modifier.isAbstract(clazz.getModifiers())) {
-            return false;
-        }
-        Type type = clazz.getGenericSuperclass();
-        if (type instanceof ParameterizedType) {
-            return false;
-        }
-        return true;
     }
 
     private void registerServices() {

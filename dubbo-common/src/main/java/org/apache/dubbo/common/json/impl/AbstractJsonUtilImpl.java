@@ -18,7 +18,13 @@ package org.apache.dubbo.common.json.impl;
 
 import org.apache.dubbo.common.json.JsonUtil;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.config.ServiceConfigBase;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.Parameter;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -40,6 +46,46 @@ public abstract class AbstractJsonUtilImpl implements JsonUtil {
         } catch (Throwable t) {
             return false;
         }
+    }
+
+    @Override
+    public boolean checkJsonCompatibility(ServiceConfigBase sc) {
+        Object obj = sc.getRef();
+        Class<?> clazz = obj.getClass();
+        Method[] methods = clazz.getMethods();
+        for (Method method : methods) {
+            Parameter[] parameters = method.getParameters();
+            for (Parameter parameter : parameters) {
+                Class<?> parameterType = parameter.getType();
+                boolean result = check(parameterType);
+                if (!result) {
+                    System.out.printf("%s Not support !%n", sc.getId());
+                    return false;
+                }
+                System.out.println("Parameter Type: " + parameter.getType().getName());
+            }
+            Class<?> returnType =  method.getReturnType();
+            boolean result = check(returnType);
+            if (!result) {
+                System.out.printf("%s Not support !%n", sc.getId());
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean check(Class<?> clazz) {
+        if (clazz.isInterface()) {
+            return false;
+        }
+        if (Modifier.isAbstract(clazz.getModifiers())) {
+            return false;
+        }
+        Type type = clazz.getGenericSuperclass();
+        if (type instanceof ParameterizedType) {
+            return false;
+        }
+        return true;
     }
 
     @Override
