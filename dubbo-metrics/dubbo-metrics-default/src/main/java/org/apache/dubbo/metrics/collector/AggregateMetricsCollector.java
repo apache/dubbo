@@ -188,6 +188,9 @@ public class AggregateMetricsCollector implements MetricsCollector<RequestEvent>
     @Override
     public List<MetricSample> collect() {
         List<MetricSample> list = new ArrayList<>();
+        if (!isCollectEnabled()){
+            return list;
+        }
         collectRequests(list);
         collectQPS(list);
         collectRT(list);
