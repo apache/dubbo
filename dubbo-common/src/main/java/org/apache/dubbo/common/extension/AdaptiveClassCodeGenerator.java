@@ -240,8 +240,11 @@ public class AdaptiveClassCodeGenerator {
             code.append(generateInvocationArgumentNullCheck(method));
 
             code.append(generateExtNameAssignment(value, hasInvocation));
-            // check extName == null?
-            code.append(generateExtNameNullCheck(value));
+            // only defaultExtName is null should check
+            if (null == defaultExtName) {
+                // check extName == null?
+                code.append(generateExtNameNullCheck(value));
+            }
 
             code.append(generateScopeModelAssignment());
             code.append(generateExtensionAssignment());
