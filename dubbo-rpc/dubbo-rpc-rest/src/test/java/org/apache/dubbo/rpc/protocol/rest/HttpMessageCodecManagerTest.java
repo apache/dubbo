@@ -37,7 +37,7 @@ public class HttpMessageCodecManagerTest {
         HttpMessageCodecManager.httpMessageEncode(byteArrayOutputStream,
             registrationResult, null, MediaType.TEXT_XML, null);
 
-        Object o = HttpMessageCodecManager.httpMessageDecode(byteArrayOutputStream.toByteArray(), RegistrationResult.class, MediaType.TEXT_XML);
+        Object o = HttpMessageCodecManager.httpMessageDecode(byteArrayOutputStream.toByteArray(), RegistrationResult.class, RegistrationResult.class, MediaType.TEXT_XML);
 
         Assertions.assertEquals(registrationResult, o);
 

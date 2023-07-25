@@ -121,16 +121,14 @@ public class ServiceInvokeRestFilter implements RestRequestFilter {
                         + "\n message is: " + result.getException().getMessage()
                         + "\n stacktrace is: " + stackTraceToString(exception));
             }
-        } else {
+        }
 
-            try {
-                // invoke the intercept chain before Result  write to  response
-                executeResponseIntercepts(url, request, nettyHttpResponse, result.getValue(), rpcInvocation, serviceDeployer);
-            } catch (Exception exception) {
-                logger.error("", exception.getMessage(), "", "dubbo rest protocol execute ResponseIntercepts error", exception);
-                throw exception;
-            }
-
+        try {
+            // invoke the intercept chain before Result  write to  response
+            executeResponseIntercepts(url, request, nettyHttpResponse, result.getValue(), rpcInvocation, serviceDeployer);
+        } catch (Exception exception) {
+            logger.error("", exception.getMessage(), "", "dubbo rest protocol execute ResponseIntercepts error", exception);
+            throw exception;
         }
     }
 
@@ -144,9 +142,13 @@ public class ServiceInvokeRestFilter implements RestRequestFilter {
      * @param returnType
      * @throws Exception
      */
-    public static void writeResult(NettyHttpResponse nettyHttpResponse, RequestFacade request, URL url, Object value, Class returnType) throws Exception {
+    public static void writeResult(NettyHttpResponse nettyHttpResponse, RequestFacade<?> request, URL url, Object value, Class<?> returnType) throws Exception {
         MediaType mediaType = getAcceptMediaType(request, returnType);
+        writeResult(nettyHttpResponse, url, value, returnType, mediaType);
+    }
 
+
+    public static void writeResult(NettyHttpResponse nettyHttpResponse, URL url, Object value, Class<?> returnType, MediaType mediaType) throws Exception {
         MessageCodecResultPair booleanMediaTypePair = HttpMessageCodecManager.httpMessageEncode(nettyHttpResponse.getOutputStream(), value, url, mediaType, returnType);
 
         nettyHttpResponse.addOutputHeaders(RestHeaderEnum.CONTENT_TYPE.getHeader(), booleanMediaTypePair.getMediaType().value);

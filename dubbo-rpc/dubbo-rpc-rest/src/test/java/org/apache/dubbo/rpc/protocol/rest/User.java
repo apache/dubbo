@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.rest;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 /**
  * User Entity
@@ -61,6 +62,19 @@ public class User implements Serializable {
         user.setName("dubbo");
         user.setId(404l);
         return user;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return Objects.equals(id, user.id) && Objects.equals(name, user.name) && Objects.equals(age, user.age);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name, age);
     }
 
     @Override

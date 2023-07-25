@@ -51,6 +51,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
@@ -481,13 +482,14 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
             }
 
             if (childListener != null) {
-                Runnable task = () -> {
-                    try {
-                        childListener.childChanged(path, client.getChildren().usingWatcher(CuratorWatcherImpl.this).forPath(path));
-                    } catch (Exception e) {
-                        logger.warn(REGISTRY_ZOOKEEPER_EXCEPTION, "", "", "client get children error", e);
-                    }
-                };
+                Runnable task = () -> Optional.ofNullable(childListener)
+                    .ifPresent(c -> {
+                        try {
+                            c.childChanged(path, client.getChildren().usingWatcher(CuratorWatcherImpl.this).forPath(path));
+                        } catch (Exception e) {
+                            logger.warn(REGISTRY_ZOOKEEPER_EXCEPTION, "", "", "client get children error", e);
+                        }
+                    });
                 initExecutorIfNecessary();
                 if (!closed && CURATOR_WATCHER_EXECUTOR_SERVICE != null) {
                     CURATOR_WATCHER_EXECUTOR_SERVICE.execute(task);
