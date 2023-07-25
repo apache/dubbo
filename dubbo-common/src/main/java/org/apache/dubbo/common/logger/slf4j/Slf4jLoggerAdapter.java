@@ -16,21 +16,16 @@
  */
 package org.apache.dubbo.common.logger.slf4j;
 
-import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.Level;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerAdapter;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.slf4j.LoggerFactory;
-
 import java.io.File;
-
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.QOS_UNEXPECTED_EXCEPTION;
 
 public class Slf4jLoggerAdapter implements LoggerAdapter {
     public static final String NAME = "slf4j";
 
-    private static final ErrorTypeAwareLogger logger = org.apache.dubbo.common.logger.LoggerFactory.getErrorTypeAwareLogger(Slf4jLoggerAdapter.class);
     private Level level;
     private File file;
 
@@ -57,7 +52,7 @@ public class Slf4jLoggerAdapter implements LoggerAdapter {
 
     @Override
     public void setLevel(Level level) {
-        logger.warn(QOS_UNEXPECTED_EXCEPTION, "", "", String.format("The level of slf4j logger current can not be set, using the default level: %s", Slf4jLogger.getLevel(ROOT_LOGGER)));
+        System.err.printf("The level of slf4j logger current can not be set, using the default level: %s \n", Slf4jLogger.getLevel(ROOT_LOGGER));
         this.level = level;
     }
 
