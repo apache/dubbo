@@ -656,6 +656,7 @@ class ExtensionLoaderTest {
         Assertions.assertNotNull(injectExtImpl.getSimpleExt());
         Assertions.assertNull(injectExtImpl.getSimpleExt1());
         Assertions.assertNull(injectExtImpl.getGenericType());
+        Assertions.assertNotNull(injectExtImpl.getAdaptiveOneExt());
         Assertions.assertSame(demoBean, injectExtImpl.getDemo());
     }
 

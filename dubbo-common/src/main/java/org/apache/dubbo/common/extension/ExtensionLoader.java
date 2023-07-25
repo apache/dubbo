@@ -1312,6 +1312,10 @@ public class ExtensionLoader<T> {
         }
     }
 
+    public Class<?> getCachedAdaptiveClass() {
+        return cachedAdaptiveClass;
+    }
+
     /**
      * cache Activate class which is annotated with <code>Activate</code>
      * <p>
