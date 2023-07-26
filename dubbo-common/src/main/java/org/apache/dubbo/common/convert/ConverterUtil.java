@@ -17,16 +17,17 @@
 package org.apache.dubbo.common.convert;
 
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
 public class ConverterUtil {
     private final FrameworkModel frameworkModel;
-    private final Map<Class<?>, Map<Class<?>, List<Converter>>> converterCache = new ConcurrentHashMap<>();
+    private final ConcurrentMap<Class<?>, ConcurrentMap<Class<?>, List<Converter>>> converterCache = new ConcurrentHashMap<>();
 
     public ConverterUtil(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
@@ -41,8 +42,8 @@ public class ConverterUtil {
      * @see ExtensionLoader#getSupportedExtensionInstances()
      */
     public Converter<?, ?> getConverter(Class<?> sourceType, Class<?> targetType) {
-        Map<Class<?>, List<Converter>> toTargetMap = converterCache.computeIfAbsent(sourceType, (k) -> new ConcurrentHashMap<>());
-        List<Converter> converters = toTargetMap.computeIfAbsent(targetType, (k) -> frameworkModel.getExtensionLoader(Converter.class)
+        ConcurrentMap<Class<?>, List<Converter>> toTargetMap = ConcurrentHashMapUtils.computeIfAbsent(converterCache, sourceType, (k) -> new ConcurrentHashMap<>());
+        List<Converter> converters = ConcurrentHashMapUtils.computeIfAbsent(toTargetMap, targetType, (k) -> frameworkModel.getExtensionLoader(Converter.class)
             .getSupportedExtensionInstances()
             .stream()
             .filter(converter -> converter.accept(sourceType, targetType))

@@ -19,6 +19,7 @@ package org.apache.dubbo.config.spring.reference;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.Assert;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.spring.ReferenceBean;
@@ -37,6 +38,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_DUBBO_BEAN_INITIALIZER;
 
@@ -46,16 +48,16 @@ public class ReferenceBeanManager implements ApplicationContextAware {
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
 
     //reference key -> reference bean names
-    private Map<String, List<String>> referenceKeyMap = new ConcurrentHashMap<>();
+    private ConcurrentMap<String, List<String>> referenceKeyMap = new ConcurrentHashMap<>();
 
     // reference alias -> reference bean name
-    private Map<String, String> referenceAliasMap = new ConcurrentHashMap<>();
+    private ConcurrentMap<String, String> referenceAliasMap = new ConcurrentHashMap<>();
 
     //reference bean name -> ReferenceBean
-    private Map<String, ReferenceBean> referenceBeanMap = new ConcurrentHashMap<>();
+    private ConcurrentMap<String, ReferenceBean> referenceBeanMap = new ConcurrentHashMap<>();
 
     //reference key -> ReferenceConfig instance
-    private Map<String, ReferenceConfig> referenceConfigMap = new ConcurrentHashMap<>();
+    private ConcurrentMap<String, ReferenceConfig> referenceConfigMap = new ConcurrentHashMap<>();
 
     private ApplicationContext applicationContext;
     private volatile boolean initialized = false;
@@ -105,7 +107,7 @@ public class ReferenceBeanManager implements ApplicationContextAware {
     }
 
     public void registerReferenceKeyAndBeanName(String referenceKey, String referenceBeanNameOrAlias) {
-        List<String> list = referenceKeyMap.computeIfAbsent(referenceKey, (key) -> new ArrayList<>());
+        List<String> list = ConcurrentHashMapUtils.computeIfAbsent(referenceKeyMap, referenceKey, (key) -> new ArrayList<>());
         if (!list.contains(referenceBeanNameOrAlias)) {
             list.add(referenceBeanNameOrAlias);
             // register bean name as alias
@@ -187,6 +189,7 @@ public class ReferenceBeanManager implements ApplicationContextAware {
 
             // register ReferenceConfig
             moduleModel.getConfigManager().addReference(referenceConfig);
+            moduleModel.getDeployer().setPending();
         }
 
         // associate referenceConfig to referenceBean

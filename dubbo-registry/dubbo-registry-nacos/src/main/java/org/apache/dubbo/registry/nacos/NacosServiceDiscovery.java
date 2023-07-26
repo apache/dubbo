@@ -112,20 +112,23 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
             return;
         }
 
-        if (!Objects.equals(oldServiceInstance.getServiceName(), newServiceInstance.getServiceName()) ||
-                !Objects.equals(oldServiceInstance.getAddress(), newServiceInstance.getAddress()) ||
-                !Objects.equals(oldServiceInstance.getPort(), newServiceInstance.getPort())) {
-            // Ignore if host-ip changed. Should unregister first.
+        if (!Objects.equals(newServiceInstance.getHost(), oldServiceInstance.getHost()) ||
+                !Objects.equals(newServiceInstance.getPort(), oldServiceInstance.getPort())) {
+            // Ignore if id changed. Should unregister first.
             super.doUpdate(oldServiceInstance, newServiceInstance);
             return;
         }
 
+        Instance oldInstance = toInstance(oldServiceInstance);
+        Instance newInstance = toInstance(newServiceInstance);
+
         try {
             this.serviceInstance = newServiceInstance;
             reportMetadata(newServiceInstance.getServiceMetadata());
-
-            // override without unregister
-            this.doRegister(newServiceInstance);
+            execute(namingService, service -> {
+                Instance instance = toInstance(serviceInstance);
+                service.updateInstance(instance.getServiceName(), group, oldInstance, newInstance);
+            });
         } catch (Exception e) {
             throw new RpcException(REGISTRY_EXCEPTION, "Failed register instance " + newServiceInstance.toString(), e);
         }

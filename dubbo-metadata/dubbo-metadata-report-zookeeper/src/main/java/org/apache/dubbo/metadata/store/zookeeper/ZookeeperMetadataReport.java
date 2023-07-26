@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.ConfigItem;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.MappingChangedEvent;
@@ -45,6 +46,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ZOOKEEPER_EXCEPTION;
@@ -62,7 +64,7 @@ public class ZookeeperMetadataReport extends AbstractMetadataReport {
 
     ZookeeperClient zkClient;
 
-    private Map<String, MappingDataListener> casListenerMap = new ConcurrentHashMap<>();
+    private ConcurrentMap<String, MappingDataListener> casListenerMap = new ConcurrentHashMap<>();
 
 
     public ZookeeperMetadataReport(URL url, ZookeeperTransporter zookeeperTransporter) {
@@ -156,13 +158,13 @@ public class ZookeeperMetadataReport extends AbstractMetadataReport {
     @Override
     public MetadataInfo getAppMetadata(SubscriberMetadataIdentifier identifier, Map<String, String> instanceMetadata) {
         String content = zkClient.getContent(getNodePath(identifier));
-        return JsonUtils.getJson().toJavaObject(content, MetadataInfo.class);
+        return JsonUtils.toJavaObject(content, MetadataInfo.class);
     }
 
     @Override
     public Set<String> getServiceAppMapping(String serviceKey, MappingListener listener, URL url) {
         String path = buildPathKey(DEFAULT_MAPPING_GROUP, serviceKey);
-        MappingDataListener mappingDataListener = casListenerMap.computeIfAbsent(path, _k -> {
+        MappingDataListener mappingDataListener = ConcurrentHashMapUtils.computeIfAbsent(casListenerMap, path, _k -> {
             MappingDataListener newMappingListener = new MappingDataListener(serviceKey, path);
             zkClient.addDataListener(path, newMappingListener);
             return newMappingListener;

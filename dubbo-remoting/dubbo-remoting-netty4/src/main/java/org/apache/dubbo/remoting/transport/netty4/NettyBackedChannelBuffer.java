@@ -440,6 +440,7 @@ public class NettyBackedChannelBuffer implements ChannelBuffer {
 
     @Override
     public void writerIndex(int writerIndex) {
+        buffer.ensureWritable(writerIndex);
         buffer.writerIndex(writerIndex);
     }
 
@@ -449,7 +450,6 @@ public class NettyBackedChannelBuffer implements ChannelBuffer {
         return ChannelBuffers.compare(this, o);
     }
 
-    @Override
     public void release() {
         ReferenceCountUtil.safeRelease(buffer);
     }

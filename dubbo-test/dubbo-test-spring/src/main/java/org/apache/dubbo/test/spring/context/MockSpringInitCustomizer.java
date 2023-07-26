@@ -16,9 +16,9 @@
  */
 package org.apache.dubbo.test.spring.context;
 
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.config.spring.context.DubboSpringInitContext;
 import org.apache.dubbo.config.spring.context.DubboSpringInitCustomizer;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import org.junit.jupiter.api.Assertions;
 import org.springframework.beans.BeansException;
@@ -61,7 +61,7 @@ public class MockSpringInitCustomizer implements DubboSpringInitCustomizer {
     }
 
     public static void checkCustomizer(ConfigurableApplicationContext applicationContext) {
-        Set<DubboSpringInitCustomizer> customizers = ExtensionLoader
+        Set<DubboSpringInitCustomizer> customizers = FrameworkModel.defaultModel()
             .getExtensionLoader(DubboSpringInitCustomizer.class)
             .getSupportedExtensionInstances();
 

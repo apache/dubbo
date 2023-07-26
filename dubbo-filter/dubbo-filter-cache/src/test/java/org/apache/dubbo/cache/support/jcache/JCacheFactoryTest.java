@@ -32,7 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 class JCacheFactoryTest extends AbstractCacheFactoryTest {
 
     @Test
-    void testJCacheFactory() throws Exception {
+    void testJCacheFactory() {
         Cache cache = super.constructCache();
         assertThat(cache instanceof JCache, is(true));
     }

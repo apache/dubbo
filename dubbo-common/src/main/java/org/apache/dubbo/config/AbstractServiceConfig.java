@@ -17,15 +17,19 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
+import java.beans.Transient;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.Executor;
 
 import static org.apache.dubbo.common.constants.CommonConstants.EXPORTER_LISTENER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.EXPORT_ASYNC_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.SERVICE_EXECUTOR;
 import static org.apache.dubbo.common.constants.CommonConstants.SERVICE_FILTER_KEY;
 
 /**
@@ -122,12 +126,34 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
     private String serialization;
 
     /**
+     * If the parameter has a value, the consumer will read the parameter first.
+     * If the Dubbo Sdk you are using contains the serialization type, the serialization method specified by the argument is used.
+     * <p>
+     * When this parameter is null or the serialization type specified by this parameter does not exist in the Dubbo SDK, the serialization type specified by serialization is used.
+     * If the Dubbo SDK if still does not exist, the default type of the Dubbo SDK is used.
+     * For Dubbo SDK >= 3.2, <code>preferSerialization</code> takes precedence over <code>serialization</code>
+     * <p>
+     * The configuration supports multiple, which are separated by commas.Such as:<code>fastjson2,fastjson,hessian2</code>
+     */
+    private String preferSerialization; // default:fastjson2,hessian2
+
+    /**
      * Weather the service is export asynchronously
      * @deprecated
      * @see ModuleConfig#exportAsync
      */
     @Deprecated
     private Boolean exportAsync;
+
+    /**
+     * used for thread pool isolation between services
+     */
+    private Executor executor;
+
+    /**
+     * Payload max length.
+     */
+    private Integer payload;
 
     public AbstractServiceConfig() {
     }
@@ -144,6 +170,10 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
         }
         if (dynamic == null) {
             dynamic = true;
+        }
+
+        if (StringUtils.isBlank(preferSerialization)) {
+            preferSerialization = serialization;
         }
     }
 
@@ -323,6 +353,14 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
         this.serialization = serialization;
     }
 
+    public String getPreferSerialization() {
+        return preferSerialization;
+    }
+
+    public void setPreferSerialization(String preferSerialization) {
+        this.preferSerialization = preferSerialization;
+    }
+
     @Deprecated
     @Parameter(key = EXPORT_ASYNC_KEY)
     public Boolean getExportAsync() {
@@ -332,5 +370,23 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
     @Deprecated
     public void setExportAsync(Boolean exportAsync) {
         this.exportAsync = exportAsync;
+    }
+
+    public void setExecutor(Executor executor) {
+        this.executor = executor;
+    }
+
+    @Parameter(key = SERVICE_EXECUTOR)
+    @Transient
+    public Executor getExecutor() {
+        return executor;
+    }
+
+    public Integer getPayload() {
+        return payload;
+    }
+
+    public void setPayload(Integer payload) {
+        this.payload = payload;
     }
 }

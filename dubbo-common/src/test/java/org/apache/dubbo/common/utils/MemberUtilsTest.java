@@ -40,7 +40,7 @@ class MemberUtilsTest {
         assertTrue(isPublic(getClass().getMethod("publicMethod")));
     }
 
-    public void noStatic() throws NoSuchMethodException {
+    public void noStatic() {
 
     }
 

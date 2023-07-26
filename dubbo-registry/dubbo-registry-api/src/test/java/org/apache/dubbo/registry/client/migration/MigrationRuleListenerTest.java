@@ -86,12 +86,12 @@ class MigrationRuleListenerTest {
      * Check local rule take effect
      */
     @Test
-    void test() throws InterruptedException {
+    void test() {
         DynamicConfiguration dynamicConfiguration = Mockito.mock(DynamicConfiguration.class);
 
         ApplicationModel.reset();
-        ApplicationModel.defaultModel().getDefaultModule().getModelEnvironment().setDynamicConfiguration(dynamicConfiguration);
-        ApplicationModel.defaultModel().getDefaultModule().getModelEnvironment().setLocalMigrationRule(localRule);
+        ApplicationModel.defaultModel().getDefaultModule().modelEnvironment().setDynamicConfiguration(dynamicConfiguration);
+        ApplicationModel.defaultModel().getDefaultModule().modelEnvironment().setLocalMigrationRule(localRule);
         ApplicationConfig applicationConfig = new ApplicationConfig();
         applicationConfig.setName("demo-consumer");
         ApplicationModel.defaultModel().getApplicationConfigManager().setApplication(applicationConfig);
@@ -134,8 +134,8 @@ class MigrationRuleListenerTest {
      */
     @Test
     void testWithInitAndNoLocalRule() {
-        ApplicationModel.defaultModel().getDefaultModule().getModelEnvironment().setDynamicConfiguration(null);
-        ApplicationModel.defaultModel().getDefaultModule().getModelEnvironment().setLocalMigrationRule("");
+        ApplicationModel.defaultModel().getDefaultModule().modelEnvironment().setDynamicConfiguration(null);
+        ApplicationModel.defaultModel().getDefaultModule().modelEnvironment().setLocalMigrationRule("");
         ApplicationConfig applicationConfig = new ApplicationConfig();
         applicationConfig.setName("demo-consumer");
         ApplicationModel.defaultModel().getApplicationConfigManager().setApplication(applicationConfig);
@@ -166,12 +166,12 @@ class MigrationRuleListenerTest {
      * 2. remote rule change and all invokers gets notified
      */
     @Test
-    void testWithConfigurationListenerAndLocalRule() throws InterruptedException {
+    void testWithConfigurationListenerAndLocalRule() {
         DynamicConfiguration dynamicConfiguration = Mockito.mock(DynamicConfiguration.class);
         Mockito.doReturn(remoteRule).when(dynamicConfiguration).getConfig(Mockito.anyString(), Mockito.anyString());
 
-        ApplicationModel.defaultModel().getDefaultModule().getModelEnvironment().setDynamicConfiguration(dynamicConfiguration);
-        ApplicationModel.defaultModel().getDefaultModule().getModelEnvironment().setLocalMigrationRule(localRule);
+        ApplicationModel.defaultModel().getDefaultModule().modelEnvironment().setDynamicConfiguration(dynamicConfiguration);
+        ApplicationModel.defaultModel().getDefaultModule().modelEnvironment().setLocalMigrationRule(localRule);
         ApplicationConfig applicationConfig = new ApplicationConfig();
         applicationConfig.setName("demo-consumer");
         ApplicationModel.defaultModel().getApplicationConfigManager().setApplication(applicationConfig);

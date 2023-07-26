@@ -1,0 +1,7 @@
+[
+  [
+    "org.apache.dubbo.graalvm.demo.DemoService",
+    "org.apache.dubbo.rpc.service.EchoService",
+    "org.apache.dubbo.rpc.service.Destroyable"
+  ]
+]

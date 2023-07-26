@@ -39,6 +39,7 @@ import org.apache.dubbo.rpc.cluster.Configurator;
 import org.apache.dubbo.rpc.cluster.Constants;
 import org.apache.dubbo.rpc.cluster.RouterChain;
 import org.apache.dubbo.rpc.cluster.RouterFactory;
+import org.apache.dubbo.rpc.cluster.SingleRouterChain;
 import org.apache.dubbo.rpc.cluster.directory.AbstractDirectory;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
 import org.apache.dubbo.rpc.model.ModuleModel;
@@ -46,9 +47,9 @@ import org.apache.dubbo.rpc.model.ModuleModel;
 import java.util.List;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_FAILED_SITE_SELECTION;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_DESTROY_SERVICE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_DESTROY_UNREGISTER_URL;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_FAILED_SITE_SELECTION;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONSUMERS_CATEGORY;
 import static org.apache.dubbo.registry.Constants.REGISTER_KEY;
@@ -81,7 +82,7 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
     /**
      * Initialization at construction time, assertion not null, and always assign non-null value
      */
-    protected final URL directoryUrl;
+    protected volatile URL directoryUrl;
     protected final boolean multiGroup;
 
     /**
@@ -189,7 +190,8 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
     }
 
     @Override
-    public List<Invoker<T>> doList(BitList<Invoker<T>> invokers, Invocation invocation) {
+    public List<Invoker<T>> doList(SingleRouterChain<T> singleRouterChain,
+                                   BitList<Invoker<T>> invokers, Invocation invocation) {
         if (forbidden && shouldFailFast) {
             // 1. No service provider 2. Service providers are disabled
             throw new RpcException(RpcException.FORBIDDEN_EXCEPTION, "No provider available from registry " +
@@ -204,7 +206,7 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
 
         try {
             // Get invokers from cache, only runtime routers will be executed.
-            List<Invoker<T>> result = routerChain.route(getConsumerUrl(), invokers, invocation);
+            List<Invoker<T>> result = singleRouterChain.route(getConsumerUrl(), invokers, invocation);
             return result == null ? BitList.emptyList() : result;
         } catch (Throwable t) {
             // 2-1 - Failed to execute routing.
@@ -232,7 +234,7 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
      */
     @Override
     public URL getConsumerUrl() {
-        return this.consumerUrl;
+        return this.directoryUrl;
     }
 
     /**
@@ -285,8 +287,14 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
         if (isDestroyed() || this.forbidden) {
             return false;
         }
-        return CollectionUtils.isNotEmpty(getValidInvokers())
-            && getValidInvokers().stream().anyMatch(Invoker::isAvailable);
+        for (Invoker<T> validInvoker : getValidInvokers()) {
+            if (validInvoker.isAvailable()) {
+                return true;
+            } else {
+                addInvalidateInvoker(validInvoker);
+            }
+        }
+        return false;
     }
 
     @Override
@@ -374,4 +382,7 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
     }
 
     protected abstract void destroyAllInvokers();
+
+    protected abstract void refreshOverrideAndInvoker(List<URL> urls);
+
 }

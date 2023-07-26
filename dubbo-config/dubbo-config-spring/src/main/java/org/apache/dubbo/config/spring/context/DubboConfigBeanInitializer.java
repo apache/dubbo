@@ -29,6 +29,7 @@ import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.SslConfig;
+import org.apache.dubbo.config.TracingConfig;
 import org.apache.dubbo.config.context.AbstractConfigManager;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.spring.ConfigCenterBean;
@@ -61,7 +62,7 @@ public class DubboConfigBeanInitializer implements BeanFactoryAware, Initializin
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private AtomicBoolean initialized = new AtomicBoolean(false);
+    private final AtomicBoolean initialized = new AtomicBoolean(false);
     private ConfigurableListableBeanFactory beanFactory;
     private ReferenceBeanManager referenceBeanManager;
 
@@ -109,6 +110,7 @@ public class DubboConfigBeanInitializer implements BeanFactoryAware, Initializin
         loadConfigBeansOfType(ConfigCenterBean.class, configManager);
         loadConfigBeansOfType(MetadataReportConfig.class, configManager);
         loadConfigBeansOfType(MetricsConfig.class, configManager);
+        loadConfigBeansOfType(TracingConfig.class, configManager);
         loadConfigBeansOfType(SslConfig.class, configManager);
 
         // load module config beans

@@ -53,11 +53,11 @@ public abstract class AbstractServerCallListener implements AbstractServerCall.L
         RpcContext.restoreCancellationContext(cancellationContext);
         InetSocketAddress remoteAddress = (InetSocketAddress) invocation.getAttributes()
             .remove(AbstractServerCall.REMOTE_ADDRESS_KEY);
-        RpcContext.getServerContext().setRemoteAddress(remoteAddress);
+        RpcContext.getServiceContext().setRemoteAddress(remoteAddress);
         String remoteApp = (String) invocation.getAttributes()
             .remove(TripleHeaderEnum.CONSUMER_APP_NAME_KEY);
         if (null != remoteApp) {
-            RpcContext.getServerContext().setRemoteApplicationName(remoteApp);
+            RpcContext.getServiceContext().setRemoteApplicationName(remoteApp);
             invocation.setAttachmentIfAbsent(REMOTE_APPLICATION_KEY, remoteApp);
         }
         final long stInMillis = System.currentTimeMillis();
@@ -70,7 +70,7 @@ public abstract class AbstractServerCallListener implements AbstractServerCall.L
                     return;
                 }
                 if (response.hasException()) {
-                    responseObserver.onError(response.getException());
+                    doOnResponseHasException(response.getException());
                     return;
                 }
                 final long cost = System.currentTimeMillis() - stInMillis;
@@ -91,6 +91,11 @@ public abstract class AbstractServerCallListener implements AbstractServerCall.L
             RpcContext.removeCancellationContext();
             RpcContext.removeContext();
         }
+    }
+
+
+    protected void doOnResponseHasException(Throwable t) {
+        responseObserver.onError(t);
     }
 
     public abstract void onReturn(Object value);

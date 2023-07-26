@@ -24,23 +24,21 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.serialize.ObjectOutput;
 import org.apache.dubbo.common.serialize.Serialization;
-import org.apache.dubbo.common.serialize.support.DefaultSerializationSelector;
-import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.remoting.Constants;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
+import org.apache.dubbo.remoting.utils.UrlUtils;
 import org.apache.dubbo.rpc.model.FrameworkModel;
-import org.apache.dubbo.rpc.model.FrameworkServiceRepository;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
-import static org.apache.dubbo.common.BaseServiceMetadata.keyWithoutGroup;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_SERIALIZATION;
 
 public class CodecSupport {
@@ -49,7 +47,7 @@ public class CodecSupport {
     private static Map<Byte, String> ID_SERIALIZATIONNAME_MAP = new HashMap<Byte, String>();
     private static Map<String, Byte> SERIALIZATIONNAME_ID_MAP = new HashMap<String, Byte>();
     // Cache null object serialize results, for heartbeat request/response serialize use.
-    private static Map<Byte, byte[]> ID_NULLBYTES_MAP = new ConcurrentHashMap<>();
+    private static ConcurrentMap<Byte, byte[]> ID_NULLBYTES_MAP = new ConcurrentHashMap<>();
 
     private static final ThreadLocal<byte[]> TL_BUFFER = ThreadLocal.withInitial(() -> new byte[1024]);
 
@@ -84,11 +82,10 @@ public class CodecSupport {
     }
 
     public static Serialization getSerialization(URL url) {
-        return url.getOrDefaultFrameworkModel().getExtensionLoader(Serialization.class).getExtension(
-            url.getParameter(Constants.SERIALIZATION_KEY, DefaultSerializationSelector.getDefaultRemotingSerialization()));
+        return url.getOrDefaultFrameworkModel().getExtensionLoader(Serialization.class).getExtension(UrlUtils.serializationOrDefault(url));
     }
 
-    public static Serialization getSerialization(URL url, Byte id) throws IOException {
+    public static Serialization getSerialization(Byte id) throws IOException {
         Serialization result = getSerializationById(id);
         if (result == null) {
             throw new IOException("Unrecognized serialize type from consumer: " + id);
@@ -97,7 +94,7 @@ public class CodecSupport {
     }
 
     public static ObjectInput deserialize(URL url, InputStream is, byte proto) throws IOException {
-        Serialization s = getSerialization(url, proto);
+        Serialization s = getSerialization(proto);
         return s.deserialize(url, is);
     }
 
@@ -109,7 +106,7 @@ public class CodecSupport {
      * @return serialize result of null object
      */
     public static byte[] getNullBytesOf(Serialization s) {
-        return ID_NULLBYTES_MAP.computeIfAbsent(s.getContentTypeId(), k -> {
+        return ConcurrentHashMapUtils.computeIfAbsent(ID_NULLBYTES_MAP, s.getContentTypeId(), k -> {
             //Pre-generated Null object bytes
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             byte[] nullBytes = new byte[0];
@@ -163,32 +160,19 @@ public class CodecSupport {
         return Arrays.equals(payload, getNullBytesOf(getSerializationById(proto)));
     }
 
-    public static void checkSerialization(FrameworkServiceRepository serviceRepository, String path, String version, Byte id) throws IOException {
-        List<URL> urls = serviceRepository.lookupRegisteredProviderUrlsWithoutGroup(keyWithoutGroup(path, version));
-        if (CollectionUtils.isEmpty(urls)) {
-            throw new IOException("Service " + path + " with version " + version + " not found, invocation rejected.");
-        } else {
-            boolean match = false;
-            for (URL url : urls) {
-                String serializationName = url.getParameter(org.apache.dubbo.remoting.Constants.SERIALIZATION_KEY, DefaultSerializationSelector.getDefaultRemotingSerialization());
-                Byte localId = SERIALIZATIONNAME_ID_MAP.get(serializationName);
-                if (localId != null && localId.equals(id)) {
-                    match = true;
-                }
-            }
-            if (!match) {
-                throw new IOException("Unexpected serialization id:" + id + " received from network, please check if the peer send the right id.");
+    public static void checkSerialization(String requestSerializeName, URL url) throws IOException {
+        Collection<String> all = UrlUtils.allSerializations(url);
+        checkSerialization(requestSerializeName, all);
+    }
+
+    public static void checkSerialization(String requestSerializeName, Collection<String> allSerializeName) throws IOException {
+        for (String serialization : allSerializeName) {
+            if (serialization.equals(requestSerializeName)) {
+                return;
             }
         }
-
+        throw new IOException("Unexpected serialization type:" + requestSerializeName + " received from network, please check if the peer send the right id.");
     }
 
 
-    public static void checkSerialization(String expectSerializeName, String actualSerializeName)throws IOException {
-        if (expectSerializeName.equals(actualSerializeName)
-            && SERIALIZATIONNAME_ID_MAP.containsKey(expectSerializeName)) {
-            return;
-        }
-        throw new IOException("Unexpected serialization type:" + actualSerializeName + " received from network, please check if the peer send the right id.");
-    }
 }

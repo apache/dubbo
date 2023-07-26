@@ -162,6 +162,11 @@ class DynamicDirectoryTest {
         }
 
         @Override
+        protected void refreshOverrideAndInvoker(List<URL> urls) {
+
+        }
+
+        @Override
         public boolean isAvailable() {
             return false;
         }

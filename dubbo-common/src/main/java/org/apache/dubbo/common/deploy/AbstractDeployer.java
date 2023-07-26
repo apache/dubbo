@@ -20,8 +20,8 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.model.ScopeModel;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_MONITOR_EXCEPTION;
 import static org.apache.dubbo.common.deploy.DeployState.FAILED;
@@ -41,7 +41,7 @@ public abstract class AbstractDeployer<E extends ScopeModel> implements Deployer
 
     protected volatile boolean initialized = false;
 
-    protected List<DeployListener<E>> listeners = new ArrayList<>();
+    protected List<DeployListener<E>> listeners = new CopyOnWriteArrayList<>();
 
     private E scopeModel;
 

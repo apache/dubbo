@@ -69,7 +69,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class AnnotationUtilsTest {
 
     @Test
-    void testIsType() throws NoSuchMethodException {
+    void testIsType() {
         // null checking
         assertFalse(isType(null));
         // Method checking

@@ -62,6 +62,16 @@ public class ListenerExporterWrapper<T> implements Exporter<T> {
         }
     }
 
+    @Override
+    public void register() {
+        exporter.register();
+    }
+
+    @Override
+    public void unregister() {
+        exporter.unregister();
+    }
+
     private void listenerEvent(Consumer<ExporterListener> consumer) {
         if (CollectionUtils.isNotEmpty(listeners)) {
             RuntimeException exception = null;

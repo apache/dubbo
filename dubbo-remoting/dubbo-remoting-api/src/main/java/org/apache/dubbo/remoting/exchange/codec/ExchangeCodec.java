@@ -32,6 +32,7 @@ import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.buffer.ChannelBuffer;
 import org.apache.dubbo.remoting.buffer.ChannelBufferInputStream;
 import org.apache.dubbo.remoting.buffer.ChannelBufferOutputStream;
+import org.apache.dubbo.remoting.exchange.HeartBeatRequest;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.exchange.support.DefaultFuture;
@@ -187,31 +188,34 @@ public class ExchangeCodec extends TelnetCodec {
             return res;
         } else {
             // decode request.
-            Request req = new Request(id);
-            req.setVersion(Version.getProtocolVersion());
-            req.setTwoWay((flag & FLAG_TWOWAY) != 0);
-            if ((flag & FLAG_EVENT) != 0) {
-                req.setEvent(true);
-            }
+            Request req;
             try {
                 Object data;
-                if (req.isEvent()) {
+                if ((flag & FLAG_EVENT) != 0) {
                     byte[] eventPayload = CodecSupport.getPayload(is);
                     if (CodecSupport.isHeartBeat(eventPayload, proto)) {
                         // heart beat response data is always null;
+                        req = new HeartBeatRequest(id);
+                        ((HeartBeatRequest) req).setProto(proto);
                         data = null;
                     } else {
+                        req = new Request(id);
                         data = decodeEventData(channel, CodecSupport.deserialize(channel.getUrl(), new ByteArrayInputStream(eventPayload), proto), eventPayload);
                     }
+                    req.setEvent(true);
                 } else {
+                    req = new Request(id);
                     data = decodeRequestData(channel, CodecSupport.deserialize(channel.getUrl(), is, proto));
                 }
                 req.setData(data);
             } catch (Throwable t) {
                 // bad request
+                req = new Request(id);
                 req.setBroken(true);
                 req.setData(t);
             }
+            req.setVersion(Version.getProtocolVersion());
+            req.setTwoWay((flag & FLAG_TWOWAY) != 0);
             return req;
         }
     }
@@ -277,7 +281,7 @@ public class ExchangeCodec extends TelnetCodec {
         bos.flush();
         bos.close();
         int len = bos.writtenBytes();
-        checkPayload(channel, len);
+        checkPayload(channel, req.getPayload(), len);
         Bytes.int2bytes(len, header, 12);
 
         // write
@@ -356,6 +360,7 @@ public class ExchangeCodec extends TelnetCodec {
                     logger.warn(TRANSPORT_EXCEED_PAYLOAD_LIMIT, "", "", t.getMessage(), t);
                     try {
                         r.setErrorMessage(t.getMessage());
+                        r.setStatus(Response.SERIALIZATION_ERROR);
                         channel.send(r);
                         return;
                     } catch (RemotingException e) {
@@ -493,12 +498,12 @@ public class ExchangeCodec extends TelnetCodec {
     }
 
     private Object finishRespWhenOverPayload(Channel channel, long size, byte[] header) {
-        int payload = getPayload(channel);
-        boolean overPayload = isOverPayload(payload, size);
-        if (overPayload) {
-            long reqId = Bytes.bytes2long(header, 4);
-            byte flag = header[2];
-            if ((flag & FLAG_REQUEST) == 0) {
+        byte flag = header[2];
+        if ((flag & FLAG_REQUEST) == 0) {
+            int payload = getPayload(channel);
+            boolean overPayload = isOverPayload(payload, size);
+            if (overPayload) {
+                long reqId = Bytes.bytes2long(header, 4);
                 Response res = new Response(reqId);
                 if ((flag & FLAG_EVENT) != 0) {
                     res.setEvent(true);

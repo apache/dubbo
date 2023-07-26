@@ -19,8 +19,10 @@ package com.alibaba.dubbo.rpc;
 
 import org.apache.dubbo.rpc.model.ServiceModel;
 
+import java.beans.Transient;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -183,6 +185,7 @@ public interface Invocation extends org.apache.dubbo.rpc.Invocation {
         }
 
         @Override
+        @Transient
         public Invoker<?> getInvoker() {
             return new Invoker.CompatibleInvoker(delegate.getInvoker());
         }
@@ -215,6 +218,16 @@ public interface Invocation extends org.apache.dubbo.rpc.Invocation {
         @Override
         public org.apache.dubbo.rpc.Invocation getOriginal() {
             return delegate;
+        }
+
+        @Override
+        public void addInvokedInvoker(org.apache.dubbo.rpc.Invoker<?> invoker) {
+            delegate.addInvokedInvoker(invoker);
+        }
+
+        @Override
+        public List<org.apache.dubbo.rpc.Invoker<?>> getInvokedInvokers() {
+            return delegate.getInvokedInvokers();
         }
     }
 }

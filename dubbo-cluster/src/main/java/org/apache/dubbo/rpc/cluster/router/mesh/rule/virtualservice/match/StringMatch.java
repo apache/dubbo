@@ -18,12 +18,15 @@
 package org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.match;
 
 
+import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
+
 public class StringMatch {
     private String exact;
     private String prefix;
     private String regex;
     private String noempty;
     private String empty;
+    private String wildcard;
 
 
     public String getExact() {
@@ -66,6 +69,14 @@ public class StringMatch {
         this.empty = empty;
     }
 
+    public String getWildcard() {
+        return wildcard;
+    }
+
+    public void setWildcard(String wildcard) {
+        this.wildcard = wildcard;
+    }
+
     public boolean isMatch(String input) {
         if (getExact() != null && input != null) {
             return input.equals(getExact());
@@ -73,6 +84,9 @@ public class StringMatch {
             return input.startsWith(getPrefix());
         } else if (getRegex() != null && input != null) {
             return input.matches(getRegex());
+        } else if (getWildcard() != null && input != null) {
+            // only supports "*"
+            return input.equals(getWildcard()) || ANY_VALUE.equals(getWildcard());
         } else if (getEmpty() != null) {
             return input == null || "".equals(input);
         } else if (getNoempty() != null) {
@@ -81,7 +95,6 @@ public class StringMatch {
             return false;
         }
     }
-
 
     @Override
     public String toString() {

@@ -16,11 +16,6 @@
  */
 package org.apache.dubbo.rpc.filter;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Type;
-
 import org.apache.dubbo.common.beanutil.JavaBeanAccessor;
 import org.apache.dubbo.common.beanutil.JavaBeanDescriptor;
 import org.apache.dubbo.common.beanutil.JavaBeanSerializeUtil;
@@ -42,6 +37,11 @@ import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 import org.apache.dubbo.rpc.support.RpcUtils;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE;
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE_ASYNC;
@@ -122,7 +122,7 @@ public class GenericImplFilter implements Filter, Filter.Listener {
                 }
             } else if (ProtocolUtils.isBeanGenericSerialization(generic)) {
                 for (Object arg : args) {
-                    if (!(arg instanceof JavaBeanDescriptor)) {
+                    if (arg != null && !(arg instanceof JavaBeanDescriptor)) {
                         error(generic, JavaBeanDescriptor.class.getName(), arg.getClass().getName());
                     }
                 }
@@ -155,7 +155,7 @@ public class GenericImplFilter implements Filter, Filter.Listener {
                             // find the real interface from url
                             String realInterface = invoker.getUrl().getParameter(Constants.INTERFACE);
                             invokerInterface = ReflectUtils.forName(realInterface);
-                        } catch (Throwable e) {
+                        } catch (Exception e) {
                             // ignore
                         }
                     }
@@ -186,7 +186,7 @@ public class GenericImplFilter implements Filter, Filter.Listener {
                     Throwable targetException = null;
                     Throwable lastException = null;
                     try {
-                        targetException = (Throwable) clazz.newInstance();
+                        targetException = (Throwable) clazz.getDeclaredConstructor().newInstance();
                     } catch (Throwable e) {
                         lastException = e;
                         for (Constructor<?> constructor : clazz.getConstructors()) {

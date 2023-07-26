@@ -28,6 +28,7 @@ import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
 
 import com.alibaba.metrics.FastCompass;
@@ -135,7 +136,7 @@ class MetricsFilterTest {
         }
     }
 
-    private void testConsumerSuccess() throws Exception {
+    private void testConsumerSuccess() {
         IMetricManager metricManager = MetricManager.getIMetricManager();
         metricManager.clear();
         MetricsFilter metricsFilter = new MetricsFilter();
@@ -196,7 +197,7 @@ class MetricsFilterTest {
 
     }
 
-    private void testProviderSuccess() throws Exception {
+    private void testProviderSuccess() {
         IMetricManager metricManager = MetricManager.getIMetricManager();
         metricManager.clear();
         MetricsFilter metricsFilter = new MetricsFilter();
@@ -247,7 +248,7 @@ class MetricsFilterTest {
                 //ignore
             }
         }
-        Protocol protocol = new DubboProtocol();
+        Protocol protocol = new DubboProtocol(FrameworkModel.defaultModel());
         // using host name might cause connection failure because multiple addresses might be configured to the same name!
         url = URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":" + port + "/" + MetricsService.class.getName());
         Invoker<MetricsService> invoker = protocol.refer(MetricsService.class, url);
@@ -306,7 +307,7 @@ class MetricsFilterTest {
             }
         }
 
-        Protocol protocol = new DubboProtocol();
+        Protocol protocol = new DubboProtocol(FrameworkModel.defaultModel());
         // using host name might cause connection failure because multiple addresses might be configured to the same name!
         url = URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":" + port + "/" + MetricsService.class.getName());
         Invoker<MetricsService> invoker = protocol.refer(MetricsService.class, url);

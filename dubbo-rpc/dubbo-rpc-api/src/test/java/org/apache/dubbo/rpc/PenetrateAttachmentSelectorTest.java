@@ -39,10 +39,24 @@ class PenetrateAttachmentSelectorTest {
         Map<String, Object> allSelected = new HashMap<>();
         if (CollectionUtils.isNotEmpty(supportedSelectors)) {
             for (String supportedSelector : supportedSelectors) {
-                Map<String, Object> selected = selectorExtensionLoader.getExtension(supportedSelector).select();
+                Map<String, Object> selected = selectorExtensionLoader.getExtension(supportedSelector).select(null, null, null);
                 allSelected.putAll(selected);
             }
         }
         Assertions.assertEquals(allSelected.get("testKey"), "testVal");
+    }
+
+    @Test
+    public void testSelectReverse() {
+        ExtensionLoader<PenetrateAttachmentSelector> selectorExtensionLoader = ApplicationModel.defaultModel().getExtensionLoader(PenetrateAttachmentSelector.class);
+        Set<String> supportedSelectors = selectorExtensionLoader.getSupportedExtensions();
+        Map<String, Object> allSelected = new HashMap<>();
+        if (CollectionUtils.isNotEmpty(supportedSelectors)) {
+            for (String supportedSelector : supportedSelectors) {
+                Map<String, Object> selected = selectorExtensionLoader.getExtension(supportedSelector).selectReverse(null, null, null);
+                allSelected.putAll(selected);
+            }
+        }
+        Assertions.assertEquals(allSelected.get("reverseKey"), "reverseVal");
     }
 }

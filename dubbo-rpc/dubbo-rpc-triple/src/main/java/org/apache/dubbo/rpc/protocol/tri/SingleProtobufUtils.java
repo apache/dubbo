@@ -17,6 +17,8 @@
 
 package org.apache.dubbo.rpc.protocol.tri;
 
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
+
 import com.google.protobuf.BoolValue;
 import com.google.protobuf.BytesValue;
 import com.google.protobuf.DoubleValue;
@@ -110,7 +112,7 @@ public class SingleProtobufUtils {
     }
 
     private static SingleMessageMarshaller<?> getMarshaller(Class<?> clz) {
-        return MARSHALLER_CACHE.computeIfAbsent(clz, k -> new SingleMessageMarshaller(k));
+        return ConcurrentHashMapUtils.computeIfAbsent(MARSHALLER_CACHE, clz, k -> new SingleMessageMarshaller(k));
     }
 
     public static final class SingleMessageMarshaller<T extends MessageLite> {

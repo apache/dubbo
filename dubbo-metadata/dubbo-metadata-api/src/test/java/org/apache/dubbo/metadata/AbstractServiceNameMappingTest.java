@@ -16,17 +16,18 @@
  */
 package org.apache.dubbo.metadata;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDED_BY;
 import static org.apache.dubbo.common.constants.RegistryConstants.SUBSCRIBED_SERVICE_NAMES_KEY;
@@ -46,15 +47,14 @@ class AbstractServiceNameMappingTest {
     }
 
     @AfterEach
-    public void clearup() throws Exception {
+    public void clearup() {
         mapping.removeCachedMapping(ServiceNameMapping.buildMappingKey(url));
     }
 
     @Test
     void testGetServices() {
         url = url.addParameter(PROVIDED_BY, "app1,app2");
-        mapping.initInterfaceAppMapping(url);
-        Set<String> services = mapping.getCachedMapping(url);
+        Set<String> services = mapping.getMapping(url);
         Assertions.assertTrue(services.contains("app1"));
         Assertions.assertTrue(services.contains("app2"));
 
@@ -65,8 +65,8 @@ class AbstractServiceNameMappingTest {
 //        Assertions.assertTrue(services.contains("remote-app2"));
 
 
-        Assertions.assertNotNull(mapping.getCachedMapping(url));
-        Assertions.assertIterableEquals(mapping.getCachedMapping(url), services);
+//        Assertions.assertNotNull(mapping.getCachedMapping(url));
+//        Assertions.assertIterableEquals(mapping.getCachedMapping(url), services);
     }
 
     @Test

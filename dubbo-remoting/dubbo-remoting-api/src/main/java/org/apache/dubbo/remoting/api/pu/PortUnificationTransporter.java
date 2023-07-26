@@ -21,9 +21,9 @@ import org.apache.dubbo.common.extension.Adaptive;
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.remoting.ChannelHandler;
-import org.apache.dubbo.remoting.Client;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
+import org.apache.dubbo.remoting.api.connection.AbstractConnectionClient;
 
 @SPI(value = "netty4", scope = ExtensionScope.FRAMEWORK)
 public interface PortUnificationTransporter {
@@ -32,6 +32,6 @@ public interface PortUnificationTransporter {
     AbstractPortUnificationServer bind(URL url, ChannelHandler handler) throws RemotingException;
 
     @Adaptive({Constants.CLIENT_KEY, Constants.TRANSPORTER_KEY})
-    Client connect(URL url, ChannelHandler handler) throws RemotingException;
+    AbstractConnectionClient connect(URL url, ChannelHandler handler) throws RemotingException;
 
 }

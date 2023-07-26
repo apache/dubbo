@@ -97,7 +97,7 @@ class CuratorZookeeperClientTest {
         curatorClient.addTargetChildListener(path, new CuratorZookeeperClient.CuratorWatcherImpl() {
 
             @Override
-            public void process(WatchedEvent watchedEvent) throws Exception {
+            public void process(WatchedEvent watchedEvent) {
                 countDownLatch.countDown();
             }
         });
@@ -116,7 +116,7 @@ class CuratorZookeeperClientTest {
 
     @Test
     @Disabled("Global registry center cannot stop")
-    public void testWithStoppedServer() throws IOException {
+    public void testWithStoppedServer() {
         Assertions.assertThrows(IllegalStateException.class, () -> {
             curatorClient.create("/testPath", true, true);
             curatorClient.delete("/testPath");
@@ -225,7 +225,7 @@ class CuratorZookeeperClientTest {
         curatorClient.addTargetDataListener(path + "/d.json", new CuratorZookeeperClient.NodeCacheListenerImpl() {
 
             @Override
-            public void nodeChanged() throws Exception {
+            public void nodeChanged() {
                 atomicInteger.incrementAndGet();
             }
         });
@@ -305,7 +305,7 @@ class CuratorZookeeperClientTest {
     }
 
     @Test
-    void testPersistentCas2() throws Exception {
+    void testPersistentCas2() {
         // test update failed when others create success
         String path = "/dubbo/mapping/org.apache.dubbo.demo.DemoService";
         CuratorZookeeperClient curatorClient = new CuratorZookeeperClient(URL.valueOf(zookeeperConnectionAddress1 + "/org.apache.dubbo.registry.RegistryService"));
@@ -430,7 +430,7 @@ class CuratorZookeeperClientTest {
     }
 
     @Test
-    void testEphemeralCas2() throws Exception {
+    void testEphemeralCas2() {
         // test update failed when others create success
         String path = "/dubbo/mapping/org.apache.dubbo.demo.DemoService";
         CuratorZookeeperClient curatorClient = new CuratorZookeeperClient(URL.valueOf(zookeeperConnectionAddress1 + "/org.apache.dubbo.registry.RegistryService"));

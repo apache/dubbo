@@ -128,7 +128,7 @@ class CacheTest {
     }
 
     @Test
-    void testCacheProvider() throws Exception {
+    void testCacheProvider() {
         CacheFactory cacheFactory = ExtensionLoader.getExtensionLoader(CacheFactory.class).getAdaptiveExtension();
 
         Map<String, String> parameters = new HashMap<String, String>();

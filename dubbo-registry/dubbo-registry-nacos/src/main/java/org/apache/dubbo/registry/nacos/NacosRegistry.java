@@ -29,6 +29,7 @@ import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.RegistryNotifier;
 import org.apache.dubbo.registry.support.FailbackRegistry;
+import org.apache.dubbo.registry.support.SkipFailbackWrapperException;
 import org.apache.dubbo.rpc.RpcException;
 
 import com.alibaba.nacos.api.common.Constants;
@@ -68,6 +69,7 @@ import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONFIGURATORS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONSUMERS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_CATEGORY;
+import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_ENABLE_EMPTY_PROTECTION;
 import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
 import static org.apache.dubbo.common.constants.RegistryConstants.ENABLE_EMPTY_PROTECTION_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDERS_CATEGORY;
@@ -135,10 +137,12 @@ public class NacosRegistry extends FailbackRegistry {
     private final Map<URL, Map<NotifyListener, NacosAggregateListener>> originToAggregateListener = new ConcurrentHashMap<>();
 
     private final Map<URL, Map<NacosAggregateListener, Map<String, EventListener>>> nacosListeners = new ConcurrentHashMap<>();
+    private final boolean supportLegacyServiceName;
 
     public NacosRegistry(URL url, NacosNamingServiceWrapper namingService) {
         super(url);
         this.namingService = namingService;
+        this.supportLegacyServiceName = url.getParameter("nacos.subscribe.legacy-name", true);
     }
 
     @Override
@@ -160,7 +164,9 @@ public class NacosRegistry extends FailbackRegistry {
                 urls.addAll(buildURLs(url, instances));
             }
             return urls;
-        } catch (Throwable cause) {
+        } catch (SkipFailbackWrapperException exception) {
+            throw exception;
+        }  catch (Exception cause) {
             throw new RpcException("Failed to lookup " + url + " from nacos " + getUrl() + ", cause: " + cause.getMessage(), cause);
         }
     }
@@ -182,7 +188,9 @@ public class NacosRegistry extends FailbackRegistry {
             } else {
                 logger.info("Please set 'dubbo.registry.parameters.register-consumer-url=true' to turn on consumer url registration.");
             }
-        } catch (Throwable cause) {
+        } catch (SkipFailbackWrapperException exception) {
+            throw exception;
+        } catch (Exception cause) {
             throw new RpcException("Failed to register " + url + " to nacos " + getUrl() + ", cause: " + cause.getMessage(), cause);
         }
     }
@@ -196,7 +204,9 @@ public class NacosRegistry extends FailbackRegistry {
                 getUrl().getGroup(Constants.DEFAULT_GROUP),
                 instance.getIp()
                 , instance.getPort());
-        } catch (Throwable cause) {
+        } catch (SkipFailbackWrapperException exception) {
+            throw exception;
+        }  catch (Exception cause) {
             throw new RpcException("Failed to unregister " + url + " to nacos " + getUrl() + ", cause: " + cause.getMessage(), cause);
         }
     }
@@ -248,7 +258,9 @@ public class NacosRegistry extends FailbackRegistry {
                     subscribeEventListener(serviceName, subscriberURL, listener);
                 }
             }
-        } catch (Throwable cause) {
+        } catch (SkipFailbackWrapperException exception) {
+            throw exception;
+        }  catch (Throwable cause) {
             throw new RpcException("Failed to subscribe " + url + " to nacos " + getUrl() + ", cause: " + cause.getMessage(), cause);
         }
     }
@@ -325,11 +337,13 @@ public class NacosRegistry extends FailbackRegistry {
         if (serviceName.isConcrete()) { // is the concrete service name
             serviceNames = new LinkedHashSet<>();
             serviceNames.add(serviceName.toString());
-            // Add the legacy service name since 2.7.6
-            String legacySubscribedServiceName = getLegacySubscribedServiceName(url);
-            if (!serviceName.toString().equals(legacySubscribedServiceName)) {
-                //avoid duplicated service names
-                serviceNames.add(legacySubscribedServiceName);
+            if (supportLegacyServiceName) {
+                // Add the legacy service name since 2.7.6
+                String legacySubscribedServiceName = getLegacySubscribedServiceName(url);
+                if (!serviceName.toString().equals(legacySubscribedServiceName)) {
+                    //avoid duplicated service names
+                    serviceNames.add(legacySubscribedServiceName);
+                }
             }
         } else {
             serviceNames = filterServiceNames(serviceName);
@@ -350,7 +364,9 @@ public class NacosRegistry extends FailbackRegistry {
                 .map(NacosServiceName::toString)
                 .collect(Collectors.toList()));
             return serviceNames;
-        } catch (Throwable cause) {
+        } catch (SkipFailbackWrapperException exception) {
+            throw exception;
+        }  catch (Throwable cause) {
             throw new RpcException("Failed to filter serviceName from nacos, url: " + getUrl() + ", serviceName: " + serviceName + ", cause: " + cause.getMessage(), cause);
         }
     }
@@ -453,7 +469,9 @@ public class NacosRegistry extends FailbackRegistry {
                 serviceNames.addAll(listView.getData());
             }
             return serviceNames;
-        } catch (Throwable cause) {
+        } catch (SkipFailbackWrapperException exception) {
+            throw exception;
+        }  catch (Throwable cause) {
             throw new RpcException("Failed to get all serviceName from nacos, url: " + getUrl() + ", cause: " + cause.getMessage(), cause);
         }
     }
@@ -533,7 +551,7 @@ public class NacosRegistry extends FailbackRegistry {
     private List<URL> toUrlWithEmpty(URL consumerURL, Collection<Instance> instances) {
         List<URL> urls = buildURLs(consumerURL, instances);
         // Nacos does not support configurators and routers from registry, so all notifications are of providers type.
-        if (urls.size() == 0 && !getUrl().getParameter(ENABLE_EMPTY_PROTECTION_KEY, true)) {
+        if (urls.size() == 0 && !getUrl().getParameter(ENABLE_EMPTY_PROTECTION_KEY, DEFAULT_ENABLE_EMPTY_PROTECTION)) {
             logger.warn(REGISTRY_NACOS_EXCEPTION, "", "", "Received empty url address list and empty protection is disabled, will clear current available addresses");
             URL empty = URLBuilder.from(consumerURL)
                 .setProtocol(EMPTY_PROTOCOL)

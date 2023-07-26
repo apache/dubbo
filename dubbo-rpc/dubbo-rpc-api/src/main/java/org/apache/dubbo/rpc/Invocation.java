@@ -21,6 +21,8 @@ import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 import org.apache.dubbo.rpc.model.ServiceModel;
 
+import java.beans.Transient;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
@@ -147,6 +149,7 @@ public interface Invocation {
      * @return invoker.
      * @transient
      */
+    @Transient
     Invoker<?> getInvoker();
 
     void setServiceModel(ServiceModel serviceModel);
@@ -162,4 +165,20 @@ public interface Invocation {
     Object get(Object key);
 
     Map<Object, Object> getAttributes();
+
+    /**
+     * To add invoked invokers into invocation. Can be used in ClusterFilter or Filter for tracing or debugging purpose.
+     * Currently, only support in consumer side.
+     *
+     * @param invoker invoked invokers
+     */
+    void addInvokedInvoker(Invoker<?> invoker);
+
+    /**
+     * Get all invoked invokers in current invocation.
+     * NOTICE: A curtain invoker could be invoked for twice or more if retries.
+     *
+     * @return invokers
+     */
+    List<Invoker<?>> getInvokedInvokers();
 }

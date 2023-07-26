@@ -260,7 +260,7 @@ public class ZKTools {
         treeCache.start();
         treeCache.getListenable().addListener(new TreeCacheListener() {
             @Override
-            public void childEvent(CuratorFramework client, TreeCacheEvent event) throws Exception {
+            public void childEvent(CuratorFramework client, TreeCacheEvent event) {
 
                 TreeCacheEvent.Type type = event.getType();
                 ChildData data = event.getData();

@@ -48,6 +48,7 @@ public class RequestMetadata {
     public PackableMethod packableMethod;
     public Map<String, Object> attachments;
     public boolean convertNoLowerHeader;
+    public boolean ignoreDefaultVersion;
 
     public DefaultHttp2Headers toHeaders() {
         DefaultHttp2Headers header = new DefaultHttp2Headers(false);
@@ -58,7 +59,7 @@ public class RequestMetadata {
             .set(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader(), TripleConstant.CONTENT_PROTO)
             .set(HttpHeaderNames.TE, HttpHeaderValues.TRAILERS);
         setIfNotNull(header, TripleHeaderEnum.TIMEOUT.getHeader(), timeout);
-        if (!"1.0.0".equals(version)) {
+        if (!ignoreDefaultVersion || !"1.0.0".equals(version)) {
             setIfNotNull(header, TripleHeaderEnum.SERVICE_VERSION.getHeader(), version);
         }
         setIfNotNull(header, TripleHeaderEnum.SERVICE_GROUP.getHeader(), group);

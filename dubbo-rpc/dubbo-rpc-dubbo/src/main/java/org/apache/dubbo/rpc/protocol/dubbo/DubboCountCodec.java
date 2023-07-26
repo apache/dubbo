@@ -34,17 +34,22 @@ import static org.apache.dubbo.rpc.Constants.OUTPUT_KEY;
 
 public final class DubboCountCodec implements Codec2 {
 
-    private DubboCodec codec;
-    private FrameworkModel frameworkModel;
+    private final DubboCodec codec;
 
     public DubboCountCodec(FrameworkModel frameworkModel) {
-        this.frameworkModel = frameworkModel;
         codec = new DubboCodec(frameworkModel);
     }
 
     @Override
     public void encode(Channel channel, ChannelBuffer buffer, Object msg) throws IOException {
-        codec.encode(channel, buffer, msg);
+        if (msg instanceof MultiMessage) {
+            MultiMessage multiMessage = (MultiMessage) msg;
+            for (Object singleMessage : multiMessage) {
+                codec.encode(channel, buffer, singleMessage);
+            }
+        } else {
+            codec.encode(channel, buffer, msg);
+        }
     }
 
     @Override

@@ -57,7 +57,7 @@ public final class JavaBeanDescriptor implements Serializable, Iterable<Map.Entr
     private String className;
     private int type;
 
-    private Map<Object, Object> properties = new LinkedHashMap<>();
+    private final Map<Object, Object> properties = new LinkedHashMap<>();
 
     public JavaBeanDescriptor() {}
 

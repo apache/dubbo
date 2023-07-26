@@ -36,7 +36,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_PARSE_DYNAMIC_CONFIG;
-import static org.apache.dubbo.rpc.Constants.ACCESS_LOG_KEY;
+import static org.apache.dubbo.rpc.Constants.ACCESS_LOG_FIXED_PATH_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.ROUTER_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.RULE_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.RUNTIME_KEY;
@@ -63,8 +63,8 @@ public abstract class AbstractConfiguratorListener implements ConfigurationListe
     }
 
     private void initSecurityKey() {
-        // accessLogKey and FileRouterFactory key
-        securityKey.add(ACCESS_LOG_KEY);
+        // FileRouterFactory key
+        securityKey.add(ACCESS_LOG_FIXED_PATH_KEY);
         securityKey.add(ROUTER_KEY);
         securityKey.add(RULE_KEY);
         securityKey.add(RUNTIME_KEY);

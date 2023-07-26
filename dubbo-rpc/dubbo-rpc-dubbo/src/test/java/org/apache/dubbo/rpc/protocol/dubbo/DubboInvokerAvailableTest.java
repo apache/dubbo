@@ -25,6 +25,7 @@ import org.apache.dubbo.remoting.exchange.ExchangeClient;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.ProxyFactory;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
 
 import org.junit.jupiter.api.AfterAll;
@@ -35,6 +36,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
+import java.util.List;
 
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
 
@@ -46,12 +48,12 @@ class DubboInvokerAvailableTest {
     private static ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
 
     @BeforeAll
-    public static void setUpBeforeClass() throws Exception {
+    public static void setUpBeforeClass() {
     }
 
     @BeforeEach
     public void setUp() throws Exception {
-        protocol = new DubboProtocol();
+        protocol = new DubboProtocol(FrameworkModel.defaultModel());
     }
 
     @AfterAll
@@ -90,7 +92,7 @@ class DubboInvokerAvailableTest {
 
     @Disabled
     @Test
-    void test_normal_channel_close_wait_gracefully() throws Exception {
+    void test_normal_channel_close_wait_gracefully() {
         int testPort = NetUtils.getAvailablePort();
         URL url = URL.valueOf("dubbo://127.0.0.1:" + testPort + "/org.apache.dubbo.rpc.protocol.dubbo.IDemoService?scope=true&lazy=false");
         Exporter<IDemoService> exporter = ProtocolUtils.export(new DemoServiceImpl(), IDemoService.class, url);
@@ -150,12 +152,33 @@ class DubboInvokerAvailableTest {
         Assertions.assertFalse(invoker.isAvailable());
     }
 
+    /**
+     * The test prefer serialization
+     *
+     * @throws Exception Exception
+     */
+    @Test
+    public void testPreferSerialization() throws Exception {
+        int port = NetUtils.getAvailablePort();
+        URL url = URL.valueOf("dubbo://127.0.0.1:" + port + "/org.apache.dubbo.rpc.protocol.dubbo.IDemoService?lazy=true&connections=1&timeout=10000&serialization=fastjson&prefer_serialization=fastjson2,hessian2");
+        ProtocolUtils.export(new DemoServiceImpl(), IDemoService.class, url);
+
+        Invoker<?> invoker = protocol.refer(IDemoService.class, url);
+        Assertions.assertTrue(invoker.isAvailable());
+        ExchangeClient exchangeClient = getClients((DubboInvoker<?>) invoker)[0];
+        Assertions.assertFalse(exchangeClient.isClosed());
+        //invoke method --> init client
+        IDemoService service = (IDemoService) proxy.getProxy(invoker);
+        Assertions.assertEquals("ok", service.get());
+    }
+
     private ExchangeClient[] getClients(DubboInvoker<?> invoker) throws Exception {
-        Field field = DubboInvoker.class.getDeclaredField("clients");
+        Field field = DubboInvoker.class.getDeclaredField("clientsProvider");
         field.setAccessible(true);
-        ExchangeClient[] clients = (ExchangeClient[]) field.get(invoker);
-        Assertions.assertEquals(1, clients.length);
-        return clients;
+        ClientsProvider clientsProvider = (ClientsProvider) field.get(invoker);
+        List<? extends ExchangeClient> clients = clientsProvider.getClients();
+        Assertions.assertEquals(1, clients.size());
+        return clients.toArray(new ExchangeClient[0]);
     }
 
     public class DemoServiceImpl implements IDemoService {

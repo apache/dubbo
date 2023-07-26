@@ -19,13 +19,13 @@ package org.apache.dubbo.metadata.rest;
 import org.apache.dubbo.config.annotation.DubboService;
 
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -91,5 +91,23 @@ public class SpringRestService implements RestService {
         map.put("name", user.getName());
         map.put("age", user.getAge());
         return map;
+    }
+
+    @PostMapping(value = "/request/body/user/json", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @Override
+    public void noAnnotationJsonBody(User user) {
+
+    }
+
+    @PostMapping(value = "/request/body/user/form", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    @Override
+    public void noAnnotationFormBody(User user) {
+
+    }
+
+    @PostMapping(value = "/request/body/user/param")
+    @Override
+    public void noAnnotationParam(String text) {
+
     }
 }

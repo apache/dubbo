@@ -16,54 +16,48 @@
  */
 package org.apache.dubbo.qos.server.handler;
 
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.util.function.Predicate;
+
+import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.qos.api.QosConfiguration;
+import org.apache.dubbo.qos.common.QosConstants;
+
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
-import org.apache.dubbo.common.utils.NetUtils;
-import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.qos.common.QosConstants;
-
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
-import java.util.Arrays;
-import java.util.function.Predicate;
 
 public class ForeignHostPermitHandler extends ChannelHandlerAdapter {
 
     // true means to accept foreign IP
-    private  boolean acceptForeignIp;
+    private final boolean acceptForeignIp;
 
     // the whitelist of foreign IP when acceptForeignIp = false, the delimiter is colon(,)
     // support specific ip and an ip range from CIDR specification
-    private String acceptForeignIpWhitelist;
-    private Predicate<String> whitelistPredicate = foreignIp -> false;
+    private final String acceptForeignIpWhitelist;
+    private final Predicate<String> whitelistPredicate;
 
-    public ForeignHostPermitHandler(boolean acceptForeignIp, String foreignIpWhitelist) {
-        this.acceptForeignIp = acceptForeignIp;
-        this.acceptForeignIpWhitelist = foreignIpWhitelist;
-        if (StringUtils.isNotEmpty(foreignIpWhitelist)) {
-            whitelistPredicate = Arrays.stream(foreignIpWhitelist.split(","))
-                .map(String::trim)
-                .filter(StringUtils::isNotEmpty)
-                .map(foreignIpPattern -> (Predicate<String>) foreignIp -> {
-                    try {
-                        // hard code port to -1
-                        return NetUtils.matchIpExpression(foreignIpPattern, foreignIp, -1);
-                    } catch (UnknownHostException ignore) {
-                        // ignore illegal CIDR specification
-                    }
-                    return false;
-                })
-                .reduce(Predicate::or).orElse(s -> false);
-        }
+    private final QosConfiguration qosConfiguration;
+
+    public ForeignHostPermitHandler(QosConfiguration qosConfiguration) {
+        this.qosConfiguration = qosConfiguration;
+        this.acceptForeignIp = qosConfiguration.isAcceptForeignIp();
+        this.acceptForeignIpWhitelist = qosConfiguration.getAcceptForeignIpWhitelist();
+        this.whitelistPredicate = qosConfiguration.getAcceptForeignIpWhitelistPredicate();
     }
 
     @Override
     public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
         if (acceptForeignIp) {
+            return;
+        }
+
+        // the anonymous access is enabled by default, permission level is PUBLIC
+        // if allow anonymous access, return
+        if (qosConfiguration.isAllowAnonymousAccess()) {
             return;
         }
 
@@ -77,6 +71,7 @@ public class ForeignHostPermitHandler extends ChannelHandlerAdapter {
         if (checkForeignIpInWhiteList(inetAddress)) {
             return;
         }
+
 
         ByteBuf cb = Unpooled.wrappedBuffer((QosConstants.BR_STR + "Foreign Ip Not Permitted, Consider Config It In Whitelist."
             + QosConstants.BR_STR).getBytes());

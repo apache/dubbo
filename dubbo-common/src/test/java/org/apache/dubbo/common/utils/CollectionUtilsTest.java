@@ -50,7 +50,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class CollectionUtilsTest {
     @Test
-    void testSort() throws Exception {
+    void testSort() {
         List<Integer> list = new ArrayList<Integer>();
         list.add(100);
         list.add(10);
@@ -65,14 +65,14 @@ class CollectionUtilsTest {
     }
 
     @Test
-    void testSortNull() throws Exception {
+    void testSortNull() {
         assertNull(CollectionUtils.sort(null));
 
         assertTrue(CollectionUtils.sort(new ArrayList<Integer>()).isEmpty());
     }
 
     @Test
-    void testSortSimpleName() throws Exception {
+    void testSortSimpleName() {
         List<String> list = new ArrayList<String>();
         list.add("aaa.z");
         list.add("b");
@@ -87,7 +87,7 @@ class CollectionUtilsTest {
     }
 
     @Test
-    void testSortSimpleNameNull() throws Exception {
+    void testSortSimpleNameNull() {
         assertNull(CollectionUtils.sortSimpleName(null));
 
         assertTrue(CollectionUtils.sortSimpleName(new ArrayList<String>()).isEmpty());
@@ -110,7 +110,7 @@ class CollectionUtilsTest {
     }
 
     @Test
-    void testSplitAll() throws Exception {
+    void testSplitAll() {
         assertNull(CollectionUtils.splitAll(null, null));
         assertNull(CollectionUtils.splitAll(null, "-"));
 
@@ -132,7 +132,7 @@ class CollectionUtilsTest {
     }
 
     @Test
-    void testJoinAll() throws Exception {
+    void testJoinAll() {
         assertNull(CollectionUtils.joinAll(null, null));
         assertNull(CollectionUtils.joinAll(null, "-"));
 
@@ -159,7 +159,7 @@ class CollectionUtilsTest {
     }
 
     @Test
-    void testJoinList() throws Exception {
+    void testJoinList() {
         List<String> list = emptyList();
         assertEquals("", CollectionUtils.join(list, "/"));
 
@@ -171,7 +171,7 @@ class CollectionUtilsTest {
     }
 
     @Test
-    void testMapEquals() throws Exception {
+    void testMapEquals() {
         assertTrue(CollectionUtils.mapEquals(null, null));
         assertFalse(CollectionUtils.mapEquals(null, new HashMap<String, String>()));
         assertFalse(CollectionUtils.mapEquals(new HashMap<String, String>(), null));
@@ -181,17 +181,17 @@ class CollectionUtilsTest {
     }
 
     @Test
-    void testStringMap1() throws Exception {
+    void testStringMap1() {
         assertThat(toStringMap("key", "value"), equalTo(Collections.singletonMap("key", "value")));
     }
 
     @Test
-    void testStringMap2() throws Exception {
+    void testStringMap2() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> toStringMap("key", "value", "odd"));
     }
 
     @Test
-    void testToMap1() throws Exception {
+    void testToMap1() {
         assertTrue(CollectionUtils.toMap().isEmpty());
 
         Map<String, Integer> expected = new HashMap<String, Integer>();
@@ -211,19 +211,19 @@ class CollectionUtilsTest {
     }
 
     @Test
-    void testToMap2() throws Exception {
+    void testToMap2() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> toMap("a", "b", "c"));
     }
 
     @Test
-    void testIsEmpty() throws Exception {
+    void testIsEmpty() {
         assertThat(isEmpty(null), is(true));
         assertThat(isEmpty(new HashSet()), is(true));
         assertThat(isEmpty(emptyList()), is(true));
     }
 
     @Test
-    void testIsNotEmpty() throws Exception {
+    void testIsNotEmpty() {
         assertThat(isNotEmpty(singleton("a")), is(true));
     }
 

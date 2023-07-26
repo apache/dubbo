@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.common.url.component.param;
 
-import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.util.Arrays;
 import java.util.Comparator;
@@ -89,7 +89,7 @@ public final class DynamicParamTable {
         keys.add("");
         values.add(new DynamicValues(null));
 
-        ExtensionLoader.getExtensionLoader(DynamicParamSource.class)
+        FrameworkModel.defaultModel().getExtensionLoader(DynamicParamSource.class)
             .getSupportedExtensionInstances().forEach(source -> source.init(keys, values));
 
         TreeMap<String, ParamValue> resultMap = new TreeMap<>(Comparator.comparingInt(System::identityHashCode));

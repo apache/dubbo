@@ -31,6 +31,7 @@ class RequestTest {
         request.setVersion("1.0.0");
         request.setEvent(true);
         request.setData("data");
+        request.setPayload(1024);
 
         Assertions.assertTrue(request.isTwoWay());
         Assertions.assertTrue(request.isBroken());
@@ -38,6 +39,7 @@ class RequestTest {
         Assertions.assertEquals(request.getVersion(), "1.0.0");
         Assertions.assertEquals(request.getData(), "data");
         Assertions.assertEquals(requestStart.getId() + 1, request.getId());
+        Assertions.assertEquals(1024, request.getPayload());
 
         request.setHeartbeat(true);
         Assertions.assertTrue(request.isHeartbeat());

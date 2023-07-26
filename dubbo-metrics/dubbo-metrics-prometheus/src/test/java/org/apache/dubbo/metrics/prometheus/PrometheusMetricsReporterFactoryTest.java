@@ -18,7 +18,7 @@
 package org.apache.dubbo.metrics.prometheus;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.metrics.MetricsReporter;
+import org.apache.dubbo.metrics.report.MetricsReporter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import org.junit.jupiter.api.Assertions;

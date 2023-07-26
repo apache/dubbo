@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.rpc.protocol.tri.call;
 
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.DeadlineFuture;
@@ -27,25 +28,32 @@ public class UnaryClientCallListener implements ClientCall.Listener {
 
     private final DeadlineFuture future;
     private Object appResponse;
+    private int actualContentLength;
 
     public UnaryClientCallListener(DeadlineFuture deadlineFuture) {
         this.future = deadlineFuture;
     }
 
     @Override
-    public void onMessage(Object message) {
+    public void onMessage(Object message, int actualContentLength) {
         this.appResponse = message;
+        this.actualContentLength = actualContentLength;
     }
 
     @Override
-    public void onClose(TriRpcStatus status, Map<String, Object> trailers) {
+    public void onClose(TriRpcStatus status, Map<String, Object> trailers, boolean isReturnTriException) {
         AppResponse result = new AppResponse();
         result.setObjectAttachments(trailers);
         if (status.isOk()) {
-            result.setValue(appResponse);
-        } else {
+            if (isReturnTriException) {
+                result.setException((Exception) appResponse);
+            } else {
+                result.setValue(appResponse);
+            }
+         } else {
             result.setException(status.asException());
         }
+        result.setAttribute(Constants.CONTENT_LENGTH_KEY, actualContentLength);
         future.received(status, result);
     }
 

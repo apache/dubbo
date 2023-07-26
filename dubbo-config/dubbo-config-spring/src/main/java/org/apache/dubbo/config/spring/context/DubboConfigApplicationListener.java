@@ -42,7 +42,7 @@ public class DubboConfigApplicationListener implements ApplicationListener<Dubbo
 
     private ModuleModel moduleModel;
 
-    private AtomicBoolean initialized = new AtomicBoolean();
+    private final AtomicBoolean initialized = new AtomicBoolean();
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {

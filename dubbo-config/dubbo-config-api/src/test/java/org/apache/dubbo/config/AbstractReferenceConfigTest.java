@@ -56,21 +56,21 @@ class AbstractReferenceConfigTest {
     }
 
     @Test
-    void testCheck() throws Exception {
+    void testCheck() {
         ReferenceConfig referenceConfig = new ReferenceConfig();
         referenceConfig.setCheck(true);
         assertThat(referenceConfig.isCheck(), is(true));
     }
 
     @Test
-    void testInit() throws Exception {
+    void testInit() {
         ReferenceConfig referenceConfig = new ReferenceConfig();
         referenceConfig.setInit(true);
         assertThat(referenceConfig.isInit(), is(true));
     }
 
     @Test
-    void testGeneric() throws Exception {
+    void testGeneric() {
         ReferenceConfig referenceConfig = new ReferenceConfig();
         referenceConfig.setGeneric(true);
         assertThat(referenceConfig.isGeneric(), is(true));
@@ -81,14 +81,14 @@ class AbstractReferenceConfigTest {
     }
 
     @Test
-    void testInjvm() throws Exception {
+    void testInjvm() {
         ReferenceConfig referenceConfig = new ReferenceConfig();
         referenceConfig.setInjvm(true);
         assertThat(referenceConfig.isInjvm(), is(true));
     }
 
     @Test
-    void testFilter() throws Exception {
+    void testFilter() {
         ReferenceConfig referenceConfig = new ReferenceConfig();
         referenceConfig.setFilter("mockfilter");
         assertThat(referenceConfig.getFilter(), equalTo("mockfilter"));
@@ -99,7 +99,7 @@ class AbstractReferenceConfigTest {
     }
 
     @Test
-    void testRouter() throws Exception {
+    void testRouter() {
         ReferenceConfig referenceConfig = new ReferenceConfig();
         referenceConfig.setRouter("condition");
         assertThat(referenceConfig.getRouter(), equalTo("condition"));
@@ -119,7 +119,7 @@ class AbstractReferenceConfigTest {
     }
 
     @Test
-    void testListener() throws Exception {
+    void testListener() {
         ReferenceConfig referenceConfig = new ReferenceConfig();
         referenceConfig.setListener("mockinvokerlistener");
         assertThat(referenceConfig.getListener(), equalTo("mockinvokerlistener"));
@@ -130,14 +130,14 @@ class AbstractReferenceConfigTest {
     }
 
     @Test
-    void testLazy() throws Exception {
+    void testLazy() {
         ReferenceConfig referenceConfig = new ReferenceConfig();
         referenceConfig.setLazy(true);
         assertThat(referenceConfig.getLazy(), is(true));
     }
 
     @Test
-    void testOnconnect() throws Exception {
+    void testOnconnect() {
         ReferenceConfig referenceConfig = new ReferenceConfig();
         referenceConfig.setOnconnect("onConnect");
         assertThat(referenceConfig.getOnconnect(), equalTo("onConnect"));
@@ -145,7 +145,7 @@ class AbstractReferenceConfigTest {
     }
 
     @Test
-    void testOndisconnect() throws Exception {
+    void testOndisconnect() {
         ReferenceConfig referenceConfig = new ReferenceConfig();
         referenceConfig.setOndisconnect("onDisconnect");
         assertThat(referenceConfig.getOndisconnect(), equalTo("onDisconnect"));
@@ -153,7 +153,7 @@ class AbstractReferenceConfigTest {
     }
 
     @Test
-    void testStubevent() throws Exception {
+    void testStubevent() {
         ReferenceConfig referenceConfig = new ReferenceConfig();
         referenceConfig.setOnconnect("onConnect");
         Map<String, String> parameters = new HashMap<String, String>();
@@ -162,7 +162,7 @@ class AbstractReferenceConfigTest {
     }
 
     @Test
-    void testReconnect() throws Exception {
+    void testReconnect() {
         ReferenceConfig referenceConfig = new ReferenceConfig();
         referenceConfig.setReconnect("reconnect");
         Map<String, String> parameters = new HashMap<String, String>();
@@ -172,7 +172,7 @@ class AbstractReferenceConfigTest {
     }
 
     @Test
-    void testSticky() throws Exception {
+    void testSticky() {
         ReferenceConfig referenceConfig = new ReferenceConfig();
         referenceConfig.setSticky(true);
         Map<String, String> parameters = new HashMap<String, String>();
@@ -182,14 +182,14 @@ class AbstractReferenceConfigTest {
     }
 
     @Test
-    void testVersion() throws Exception {
+    void testVersion() {
         ReferenceConfig referenceConfig = new ReferenceConfig();
         referenceConfig.setVersion("version");
         assertThat(referenceConfig.getVersion(), equalTo("version"));
     }
 
     @Test
-    void testGroup() throws Exception {
+    void testGroup() {
         ReferenceConfig referenceConfig = new ReferenceConfig();
         referenceConfig.setGroup("group");
         assertThat(referenceConfig.getGroup(), equalTo("group"));

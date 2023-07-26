@@ -21,6 +21,7 @@ import org.apache.dubbo.metadata.rest.RestMethodMetadata;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 
 import static org.apache.dubbo.metadata.rest.RestMetadataConstants.SPRING_MVC.REQUEST_HEADER_ANNOTATION_CLASS_NAME;
 
@@ -30,12 +31,12 @@ import static org.apache.dubbo.metadata.rest.RestMetadataConstants.SPRING_MVC.RE
 public class RequestHeaderParameterProcessor extends AbstractRequestAnnotationParameterProcessor {
 
     @Override
-    public String getAnnotationType() {
+    public String getAnnotationName() {
         return REQUEST_HEADER_ANNOTATION_CLASS_NAME;
     }
 
     @Override
-    protected void process(String name, String defaultValue, Annotation annotation, Object parameter,
+    protected void process(String name, String defaultValue, Annotation annotation, Parameter parameter,
                            int parameterIndex, Method method, RestMethodMetadata restMethodMetadata) {
         restMethodMetadata.getRequest().addHeader(name, defaultValue);
     }

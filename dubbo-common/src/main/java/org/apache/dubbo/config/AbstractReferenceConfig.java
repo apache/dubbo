@@ -21,6 +21,8 @@ import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
+import java.beans.Transient;
+
 import static org.apache.dubbo.common.constants.CommonConstants.INVOKER_LISTENER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REFERENCE_FILTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REFER_ASYNC_KEY;
@@ -181,6 +183,12 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
         } else {
             throw new IllegalArgumentException("Unsupported generic type " + generic);
         }
+    }
+
+    @Override
+    @Transient
+    protected boolean isNeedCheckMethod() {
+        return StringUtils.isEmpty(getGeneric());
     }
 
     /**

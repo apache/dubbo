@@ -26,6 +26,7 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
 import io.netty.handler.codec.MessageToByteEncoder;
+import org.apache.dubbo.remoting.exchange.support.MultiMessage;
 
 import java.io.IOException;
 import java.util.List;
@@ -63,10 +64,27 @@ final public class NettyCodecAdapter {
 
         @Override
         protected void encode(ChannelHandlerContext ctx, Object msg, ByteBuf out) throws Exception {
-            ChannelBuffer buffer = new NettyBackedChannelBuffer(out);
-            Channel ch = ctx.channel();
-            NettyChannel channel = NettyChannel.getOrAddChannel(ch, url, handler);
-            codec.encode(channel, buffer, msg);
+            boolean encoded = false;
+            if (msg instanceof ByteBuf) {
+                out.writeBytes(((ByteBuf) msg));
+                encoded = true;
+            } else if (msg instanceof MultiMessage) {
+                for (Object singleMessage : ((MultiMessage) msg)) {
+                    if (singleMessage instanceof ByteBuf) {
+                        ByteBuf buf = (ByteBuf) singleMessage;
+                        out.writeBytes(buf);
+                        encoded = true;
+                        buf.release();
+                    }
+                }
+            }
+
+            if (!encoded) {
+                ChannelBuffer buffer = new NettyBackedChannelBuffer(out);
+                Channel ch = ctx.channel();
+                NettyChannel channel = NettyChannel.getOrAddChannel(ch, url, handler);
+                codec.encode(channel, buffer, msg);
+            }
         }
     }
 

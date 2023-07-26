@@ -27,7 +27,6 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
@@ -35,6 +34,7 @@ import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 import org.apache.dubbo.rpc.model.ServiceMetadata;
 
+import java.beans.Transient;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -74,7 +74,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     /**
      * The classLoader of interface belong to
      */
-    protected ClassLoader interfaceClassLoader;
+    protected transient ClassLoader interfaceClassLoader;
 
     /**
      * The remote service version the customer/provider side will reference
@@ -208,8 +208,9 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     /**
      * The url of the reference service
      */
-    protected final List<URL> urls = new ArrayList<URL>();
+    protected transient final List<URL> urls = new ArrayList<URL>();
 
+    @Transient
     public List<URL> getExportedUrls() {
         return urls;
     }
@@ -276,9 +277,10 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     protected void appendMetricsCompatible(Map<String, String> map) {
         MetricsConfig metricsConfig = getConfigManager().getMetrics().orElse(null);
         if (metricsConfig != null) {
-            if (metricsConfig.getProtocol() != null && !StringUtils.isEquals(metricsConfig.getProtocol(), PROTOCOL_PROMETHEUS)) {
+            String protocol = Optional.ofNullable(metricsConfig.getProtocol()).orElse(PROTOCOL_PROMETHEUS);
+            if (!StringUtils.isEquals(protocol, PROTOCOL_PROMETHEUS)) {
                 Assert.notEmptyString(metricsConfig.getPort(), "Metrics port cannot be null");
-                map.put("metrics.protocol", metricsConfig.getProtocol());
+                map.put("metrics.protocol", protocol);
                 map.put("metrics.port", metricsConfig.getPort());
             }
         }
@@ -300,7 +302,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     protected Environment getEnvironment() {
-        return getScopeModel().getModelEnvironment();
+        return getScopeModel().modelEnvironment();
     }
 
     @Override
@@ -313,7 +315,8 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                 // There may be no interface class when generic call
                 return;
             }
-            if (!interfaceClass.isInterface()) {
+
+            if (!interfaceClass.isInterface() && !canSkipInterfaceCheck()) {
                 throw new IllegalStateException(interfaceName + " is not an interface");
             }
 
@@ -373,7 +376,17 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     }
 
-    private boolean verifyMethodConfig(MethodConfig methodConfig, Class<?> interfaceClass, boolean ignoreInvalidMethodConfig) {
+    /**
+     * it is used for skipping the check of interface since dubbo 3.2
+     * rest protocol allow the service is implement class
+     *
+     * @return
+     */
+    protected boolean canSkipInterfaceCheck() {
+        return false;
+    }
+
+    protected boolean verifyMethodConfig(MethodConfig methodConfig, Class<?> interfaceClass, boolean ignoreInvalidMethodConfig) {
         String methodName = methodConfig.getName();
         if (StringUtils.isEmpty(methodName)) {
             String msg = "<dubbo:method> name attribute is required! Please check: " +
@@ -395,7 +408,12 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                 logger.warn(CONFIG_NO_METHOD_FOUND, "", "", msg);
                 return false;
             } else {
-                throw new IllegalStateException(msg);
+                if (!isNeedCheckMethod()) {
+                    msg = "Generic call: " + msg;
+                    logger.warn(CONFIG_NO_METHOD_FOUND, "", "", msg);
+                } else {
+                    throw new IllegalStateException(msg);
+                }
             }
         }
         return true;
@@ -410,6 +428,11 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             }
         }
         return null;
+    }
+
+    @Transient
+    protected boolean isNeedCheckMethod() {
+        return true;
     }
 
     private boolean hasArgumentConfigProps(Map<String, String> configProperties, String methodName, int argIndex) {
@@ -643,7 +666,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     /**
      * @param application
-     * @deprecated Use {@link AbstractInterfaceConfig#setScopeModel(ScopeModel)}
+     * @deprecated Use {@link org.apache.dubbo.config.AbstractConfig#setScopeModel(ScopeModel)}
      */
     @Deprecated
     public void setApplication(ApplicationConfig application) {
@@ -662,7 +685,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     /**
      * @param module
-     * @deprecated Use {@link AbstractInterfaceConfig#setScopeModel(ScopeModel)}
+     * @deprecated Use {@link org.apache.dubbo.config.AbstractConfig#setScopeModel(ScopeModel)}
      */
     @Deprecated
     public void setModule(ModuleConfig module) {
@@ -677,7 +700,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     public void setRegistry(RegistryConfig registry) {
-        List<RegistryConfig> registries = new ArrayList<RegistryConfig>(1);
+        List<RegistryConfig> registries = new ArrayList<>(1);
         registries.add(registry);
         setRegistries(registries);
     }
@@ -705,7 +728,6 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         return methods;
     }
 
-    @SuppressWarnings("unchecked")
     public void setMethods(List<? extends MethodConfig> methods) {
         this.methods = (methods != null) ? new ArrayList<>(methods) : null;
     }
@@ -811,7 +833,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     /**
-     * @deprecated Use {@link ConfigManager#getMetadataConfigs()}
+     * @deprecated Use {@link org.apache.dubbo.config.context.ConfigManager#getMetadataConfigs()}
      */
     @Deprecated
     public MetadataReportConfig getMetadataReportConfig() {
@@ -826,7 +848,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     /**
-     * @deprecated Use {@link ConfigManager#addMetadataReport(MetadataReportConfig)}
+     * @deprecated Use {@link org.apache.dubbo.config.context.ConfigManager#addMetadataReport(MetadataReportConfig)}
      */
     @Deprecated
     public void setMetadataReportConfig(MetadataReportConfig metadataReportConfig) {
@@ -904,6 +926,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         this.interfaceName = interfaceName;
     }
 
+    @Transient
     public ClassLoader getInterfaceClassLoader() {
         return interfaceClassLoader;
     }
@@ -911,4 +934,5 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     public void setInterfaceClassLoader(ClassLoader interfaceClassLoader) {
         this.interfaceClassLoader = interfaceClassLoader;
     }
+
 }

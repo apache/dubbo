@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -33,10 +34,10 @@ import java.util.concurrent.atomic.AtomicLong;
 public class RpcStatus {
 
     private static final ConcurrentMap<String, RpcStatus> SERVICE_STATISTICS = new ConcurrentHashMap<String,
-            RpcStatus>();
+        RpcStatus>();
 
     private static final ConcurrentMap<String, ConcurrentMap<String, RpcStatus>> METHOD_STATISTICS =
-            new ConcurrentHashMap<String, ConcurrentMap<String, RpcStatus>>();
+        new ConcurrentHashMap<String, ConcurrentMap<String, RpcStatus>>();
 
     private final ConcurrentMap<String, Object> values = new ConcurrentHashMap<String, Object>();
 
@@ -58,7 +59,7 @@ public class RpcStatus {
      */
     public static RpcStatus getStatus(URL url) {
         String uri = url.toIdentityString();
-        return SERVICE_STATISTICS.computeIfAbsent(uri, key -> new RpcStatus());
+        return ConcurrentHashMapUtils.computeIfAbsent(SERVICE_STATISTICS, uri, key -> new RpcStatus());
     }
 
     /**
@@ -76,8 +77,8 @@ public class RpcStatus {
      */
     public static RpcStatus getStatus(URL url, String methodName) {
         String uri = url.toIdentityString();
-        ConcurrentMap<String, RpcStatus> map = METHOD_STATISTICS.computeIfAbsent(uri, k -> new ConcurrentHashMap<>());
-        return map.computeIfAbsent(methodName, k -> new RpcStatus());
+        ConcurrentMap<String, RpcStatus> map = ConcurrentHashMapUtils.computeIfAbsent(METHOD_STATISTICS, uri, k -> new ConcurrentHashMap<>());
+        return ConcurrentHashMapUtils.computeIfAbsent(map, methodName, k -> new RpcStatus());
     }
 
     /**

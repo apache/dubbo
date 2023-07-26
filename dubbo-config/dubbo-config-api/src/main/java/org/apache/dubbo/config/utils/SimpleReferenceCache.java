@@ -21,6 +21,7 @@ import org.apache.dubbo.common.config.ReferenceCache;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ReferenceConfigBase;
 import org.apache.dubbo.rpc.service.Destroyable;
@@ -70,8 +71,8 @@ public class SimpleReferenceCache implements ReferenceCache {
     private final String name;
     private final KeyGenerator generator;
 
-    private final Map<String, List<ReferenceConfigBase<?>>> referenceKeyMap = new ConcurrentHashMap<>();
-    private final Map<Class<?>, List<ReferenceConfigBase<?>>> referenceTypeMap = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, List<ReferenceConfigBase<?>>> referenceKeyMap = new ConcurrentHashMap<>();
+    private final ConcurrentMap<Class<?>, List<ReferenceConfigBase<?>>> referenceTypeMap = new ConcurrentHashMap<>();
     private final Map<ReferenceConfigBase<?>, Object> references = new ConcurrentHashMap<>();
 
     protected SimpleReferenceCache(String name, KeyGenerator generator) {
@@ -104,12 +105,12 @@ public class SimpleReferenceCache implements ReferenceCache {
      * Create cache if not existed yet.
      */
     public static SimpleReferenceCache getCache(String name, KeyGenerator keyGenerator) {
-        return CACHE_HOLDER.computeIfAbsent(name, k -> new SimpleReferenceCache(k, keyGenerator));
+        return ConcurrentHashMapUtils.computeIfAbsent(CACHE_HOLDER, name, k -> new SimpleReferenceCache(k, keyGenerator));
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public <T> T get(ReferenceConfigBase<T> rc) {
+    public <T> T get(ReferenceConfigBase<T> rc, boolean check) {
         String key = generator.generateKey(rc);
         Class<?> type = rc.getInterfaceClass();
 
@@ -124,11 +125,11 @@ public class SimpleReferenceCache implements ReferenceCache {
         }
 
         if (proxy == null) {
-            List<ReferenceConfigBase<?>> referencesOfType = referenceTypeMap.computeIfAbsent(type, _t -> Collections.synchronizedList(new ArrayList<>()));
+            List<ReferenceConfigBase<?>> referencesOfType = ConcurrentHashMapUtils.computeIfAbsent(referenceTypeMap, type, _t -> Collections.synchronizedList(new ArrayList<>()));
             referencesOfType.add(rc);
-            List<ReferenceConfigBase<?>> referenceConfigList = referenceKeyMap.computeIfAbsent(key, _k -> Collections.synchronizedList(new ArrayList<>()));
+            List<ReferenceConfigBase<?>> referenceConfigList = ConcurrentHashMapUtils.computeIfAbsent(referenceKeyMap, key, _k -> Collections.synchronizedList(new ArrayList<>()));
             referenceConfigList.add(rc);
-            proxy = rc.get();
+            proxy = rc.get(check);
         }
 
         return proxy;
@@ -203,6 +204,29 @@ public class SimpleReferenceCache implements ReferenceCache {
     }
 
     @Override
+    public void check(String key, Class<?> type, long timeout) {
+        List<ReferenceConfigBase<?>> referencesOfKey = referenceKeyMap.get(key);
+        if (CollectionUtils.isEmpty(referencesOfKey)) {
+            return;
+        }
+        List<ReferenceConfigBase<?>> referencesOfType = referenceTypeMap.get(type);
+        if (CollectionUtils.isEmpty(referencesOfType)) {
+            return;
+        }
+        for (ReferenceConfigBase<?> rc : referencesOfKey) {
+            rc.checkOrDestroy(timeout);
+        }
+
+    }
+
+    @Override
+    public <T> void check(ReferenceConfigBase<T> referenceConfig, long timeout) {
+        String key = generator.generateKey(referenceConfig);
+        Class<?> type = referenceConfig.getInterfaceClass();
+        check(key, type, timeout);
+    }
+
+    @Override
     public void destroy(String key, Class<?> type) {
         List<ReferenceConfigBase<?>> referencesOfKey = referenceKeyMap.remove(key);
         if (CollectionUtils.isEmpty(referencesOfKey)) {
@@ -262,7 +286,7 @@ public class SimpleReferenceCache implements ReferenceCache {
 
     private void destroyReference(ReferenceConfigBase<?> rc) {
         Destroyable proxy = (Destroyable) rc.get();
-        if (proxy != null){
+        if (proxy != null) {
             proxy.$destroy();
         }
         rc.destroy();

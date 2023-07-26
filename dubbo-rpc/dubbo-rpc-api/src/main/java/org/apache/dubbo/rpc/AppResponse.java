@@ -56,7 +56,7 @@ public class AppResponse implements Result {
 
     private Map<String, Object> attachments = new HashMap<>();
 
-    private Map<String, Object> attributes = new HashMap<>();
+    private final Map<String, Object> attributes = new HashMap<>();
 
     public AppResponse() {
     }
@@ -84,6 +84,13 @@ public class AppResponse implements Result {
                 }
             } catch (Exception e) {
                 // ignore
+            }
+            if ((exception instanceof RpcException) && !(exception instanceof com.alibaba.dubbo.rpc.RpcException)) {
+                com.alibaba.dubbo.rpc.RpcException recreated =
+                    new com.alibaba.dubbo.rpc.RpcException(((RpcException) exception).getCode(),
+                        exception.getMessage(), exception.getCause());
+                recreated.setStackTrace(exception.getStackTrace());
+                throw recreated;
             }
             throw exception;
         }

@@ -32,7 +32,7 @@ class BytesTest {
     private byte[] bytes2 = {3, 12, 14, 41, 12, 2, 3, 12, 4, 67};
 
     @Test
-    void testMain() throws Exception {
+    void testMain() {
         short s = (short) 0xabcd;
         assertThat(s, is(Bytes.bytes2short(Bytes.short2bytes(s))));
 
@@ -86,7 +86,7 @@ class BytesTest {
     }
 
     @Test
-    void testBase64S2b2sFailCaseLog() throws Exception {
+    void testBase64S2b2sFailCaseLog() {
         String s1 = Bytes.bytes2base64(bytes1);
         byte[] out1 = Bytes.base642bytes(s1);
         assertThat(bytes1, is(out1));

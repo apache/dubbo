@@ -17,6 +17,7 @@
 package org.apache.dubbo.common.bytecode;
 
 import org.apache.dubbo.common.utils.ClassUtils;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 
 import javassist.ClassPool;
@@ -34,6 +35,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Matcher;
 import java.util.stream.Collectors;
@@ -42,7 +44,7 @@ import java.util.stream.Collectors;
  * Wrapper.
  */
 public abstract class Wrapper {
-    private static final Map<Class<?>, Wrapper> WRAPPER_MAP = new ConcurrentHashMap<Class<?>, Wrapper>(); //class wrapper map
+    private static final ConcurrentMap<Class<?>, Wrapper> WRAPPER_MAP = new ConcurrentHashMap<Class<?>, Wrapper>(); //class wrapper map
     private static final String[] EMPTY_STRING_ARRAY = new String[0];
     private static final String[] OBJECT_METHODS = new String[]{"getClass", "hashCode", "toString", "equals"};
     private static final Wrapper OBJECT_WRAPPER = new Wrapper() {
@@ -119,7 +121,7 @@ public abstract class Wrapper {
             return OBJECT_WRAPPER;
         }
 
-        return WRAPPER_MAP.computeIfAbsent(c, Wrapper::makeWrapper);
+        return ConcurrentHashMapUtils.computeIfAbsent(WRAPPER_MAP, c, Wrapper::makeWrapper);
     }
 
     private static Wrapper makeWrapper(Class<?> c) {
@@ -171,16 +173,16 @@ public abstract class Wrapper {
         }
 
         Method[] methods = Arrays.stream(c.getMethods())
-                                 .filter(method -> allMethod.contains(ReflectUtils.getDesc(method)))
-                                 .collect(Collectors.toList())
-                                 .toArray(new Method[] {});
+            .filter(method -> allMethod.contains(ReflectUtils.getDesc(method)))
+            .collect(Collectors.toList())
+            .toArray(new Method[]{});
         // get all public method.
         boolean hasMethod = ClassUtils.hasMethods(methods);
         if (hasMethod) {
             Map<String, Integer> sameNameMethodCount = new HashMap<>((int) (methods.length / 0.75f) + 1);
             for (Method m : methods) {
                 sameNameMethodCount.compute(m.getName(),
-                        (key, oldValue) -> oldValue == null ? 1 : oldValue + 1);
+                    (key, oldValue) -> oldValue == null ? 1 : oldValue + 1);
             }
 
             c3.append(" try{");
@@ -200,7 +202,7 @@ public abstract class Wrapper {
                     if (len > 0) {
                         for (int l = 0; l < len; l++) {
                             c3.append(" && ").append(" $3[").append(l).append("].getName().equals(\"")
-                                    .append(m.getParameterTypes()[l].getName()).append("\")");
+                                .append(m.getParameterTypes()[l].getName()).append("\")");
                         }
                     }
                 }

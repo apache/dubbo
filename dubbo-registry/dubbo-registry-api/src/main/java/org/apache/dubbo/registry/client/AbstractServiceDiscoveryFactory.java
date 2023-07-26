@@ -17,6 +17,7 @@
 package org.apache.dubbo.registry.client;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
 
@@ -49,9 +50,14 @@ public abstract class AbstractServiceDiscoveryFactory implements ServiceDiscover
 
     @Override
     public ServiceDiscovery getServiceDiscovery(URL registryURL) {
-        String key = registryURL.toServiceStringWithoutResolving();
-        return discoveries.computeIfAbsent(key, k -> createDiscovery(registryURL));
+        String key = createRegistryCacheKey(registryURL);
+        return ConcurrentHashMapUtils.computeIfAbsent(discoveries, key, k -> createDiscovery(registryURL));
+    }
+
+    protected String createRegistryCacheKey(URL url) {
+        return url.toServiceStringWithoutResolving();
     }
 
     protected abstract ServiceDiscovery createDiscovery(URL registryURL);
+
 }

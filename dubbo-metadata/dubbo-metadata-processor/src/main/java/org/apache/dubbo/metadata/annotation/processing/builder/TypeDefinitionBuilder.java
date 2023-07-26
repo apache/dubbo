@@ -18,13 +18,12 @@ package org.apache.dubbo.metadata.annotation.processing.builder;
 
 import org.apache.dubbo.common.lang.Prioritized;
 import org.apache.dubbo.metadata.definition.model.TypeDefinition;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
 import java.util.Map;
-
-import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
 
 /**
  * A class builds the instance of {@link TypeDefinition}
@@ -57,7 +56,8 @@ public interface TypeDefinitionBuilder<T extends TypeMirror> extends Prioritized
     static TypeDefinition build(ProcessingEnvironment processingEnv, TypeMirror type, Map<String, TypeDefinition> typeCache) {
         // Build by all instances of TypeDefinitionBuilder that were loaded By Java SPI
 
-        TypeDefinition typeDefinition = getExtensionLoader(TypeBuilder.class)
+        TypeDefinition typeDefinition = ApplicationModel.defaultModel()
+                .getExtensionLoader(TypeBuilder.class)
                 .getSupportedExtensionInstances()
                 .stream()
 //        load(TypeDefinitionBuilder.class, TypeDefinitionBuilder.class.getClassLoader())

@@ -31,8 +31,10 @@ import org.apache.dubbo.config.spring.context.event.DubboConfigInitEvent;
 import org.apache.dubbo.config.spring.reference.ReferenceAttributes;
 import org.apache.dubbo.config.spring.reference.ReferenceBeanManager;
 import org.apache.dubbo.config.spring.reference.ReferenceBeanSupport;
+import org.apache.dubbo.config.spring.util.AnnotationUtils;
 import org.apache.dubbo.config.spring.util.SpringCompatUtils;
 import org.apache.dubbo.rpc.service.GenericService;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.PropertyValue;
 import org.springframework.beans.PropertyValues;
@@ -65,7 +67,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import static com.alibaba.spring.util.AnnotationUtils.getAttribute;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_DUBBO_BEAN_INITIALIZER;
 import static org.apache.dubbo.common.utils.AnnotationUtils.filterDefaultValues;
 import static org.springframework.util.StringUtils.hasText;
@@ -310,10 +311,24 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
         }
     }
 
-    @Override
+    /**
+     * Alternatives to the {@link #postProcessProperties(PropertyValues, Object, String)}, that removed as of Spring
+     * Framework 6.0.0, and in favor of {@link #postProcessProperties(PropertyValues, Object, String)}.
+     * <p>In order to be compatible with the lower version of Spring, it is still retained.
+     * @see #postProcessProperties
+     */
     public PropertyValues postProcessPropertyValues(
         PropertyValues pvs, PropertyDescriptor[] pds, Object bean, String beanName) throws BeansException {
+        return postProcessProperties(pvs, bean, beanName);
+    }
 
+    /**
+     * Alternatives to the {@link #postProcessPropertyValues(PropertyValues, PropertyDescriptor[], Object, String)}.
+     * @see #postProcessPropertyValues
+     */
+    @Override
+    public PropertyValues postProcessProperties(PropertyValues pvs, Object bean, String beanName)
+        throws BeansException {
         try {
             AnnotatedInjectionMetadata metadata = findInjectionMetadata(beanName, bean.getClass(), pvs);
             prepareInjection(metadata);
@@ -369,7 +384,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
 
         boolean renameable = true;
         // referenceBeanName
-        String referenceBeanName = getAttribute(attributes, ReferenceAttributes.ID);
+        String referenceBeanName = AnnotationUtils.getAttribute(attributes, ReferenceAttributes.ID);
         if (hasText(referenceBeanName)) {
             renameable = false;
         } else {
@@ -526,7 +541,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
     /**
      * Gets all beans of {@link ReferenceBean}
      *
-     * @deprecated use {@link ReferenceBeanManager.getReferences()} instead
+     * @deprecated use {@link ReferenceBeanManager#getReferences()} instead
      */
     @Deprecated
     public Collection<ReferenceBean<?>> getReferenceBeans() {

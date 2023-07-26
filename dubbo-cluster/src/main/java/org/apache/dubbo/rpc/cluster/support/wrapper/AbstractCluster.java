@@ -43,7 +43,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.REFERENCE_FILTER
 public abstract class AbstractCluster implements Cluster {
 
     private <T> Invoker<T> buildClusterInterceptors(AbstractClusterInvoker<T> clusterInvoker) {
-//        AbstractClusterInvoker<T> last = clusterInvoker;
         AbstractClusterInvoker<T> last = buildInterceptorInvoker(new ClusterFilterInvoker<>(clusterInvoker));
 
         if (Boolean.parseBoolean(ConfigurationUtils.getProperty(clusterInvoker.getDirectory().getConsumerUrl().getScopeModel(), CLUSTER_INTERCEPTOR_COMPATIBLE_KEY, "false"))) {
@@ -72,7 +71,7 @@ public abstract class AbstractCluster implements Cluster {
     protected abstract <T> AbstractClusterInvoker<T> doJoin(Directory<T> directory) throws RpcException;
 
     static class ClusterFilterInvoker<T> extends AbstractClusterInvoker<T> {
-        private ClusterInvoker<T> filterInvoker;
+        private final ClusterInvoker<T> filterInvoker;
 
         public ClusterFilterInvoker(AbstractClusterInvoker<T> invoker) {
             List<FilterChainBuilder> builders = ScopeModelUtil.getApplicationModel(invoker.getUrl().getScopeModel()).getExtensionLoader(FilterChainBuilder.class).getActivateExtensions();
@@ -191,9 +190,9 @@ public abstract class AbstractCluster implements Cluster {
     @Deprecated
     static class InterceptorInvokerNode<T> extends AbstractClusterInvoker<T> {
 
-        private AbstractClusterInvoker<T> clusterInvoker;
-        private ClusterInterceptor interceptor;
-        private AbstractClusterInvoker<T> next;
+        private final AbstractClusterInvoker<T> clusterInvoker;
+        private final ClusterInterceptor interceptor;
+        private final AbstractClusterInvoker<T> next;
 
         public InterceptorInvokerNode(AbstractClusterInvoker<T> clusterInvoker,
                                       ClusterInterceptor interceptor,

@@ -39,6 +39,7 @@ import org.apache.dubbo.config.ReferenceConfigBase;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfigBase;
 import org.apache.dubbo.config.SslConfig;
+import org.apache.dubbo.config.TracingConfig;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
@@ -69,7 +70,7 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
     private static final String CONFIG_NAME_READ_METHOD = "getName";
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(AbstractConfigManager.class);
-    private static Set<Class<? extends AbstractConfig>> uniqueConfigTypes = new ConcurrentHashSet<>();
+    private static final Set<Class<? extends AbstractConfig>> uniqueConfigTypes = new ConcurrentHashSet<>();
 
     final Map<String, Map<String, AbstractConfig>> configsCache = new ConcurrentHashMap<>();
 
@@ -92,6 +93,7 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
         uniqueConfigTypes.add(ApplicationConfig.class);
         uniqueConfigTypes.add(MonitorConfig.class);
         uniqueConfigTypes.add(MetricsConfig.class);
+        uniqueConfigTypes.add(TracingConfig.class);
         uniqueConfigTypes.add(SslConfig.class);
 
         // unique config in each module
@@ -103,7 +105,7 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
         this.scopeModel = scopeModel;
         this.applicationModel = ScopeModelUtil.getApplicationModel(scopeModel);
         this.supportedConfigTypes = supportedConfigTypes;
-        environment = scopeModel.getModelEnvironment();
+        environment = scopeModel.modelEnvironment();
     }
 
     @Override
@@ -111,7 +113,7 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
         if (!initialized.compareAndSet(false, true)) {
             return;
         }
-        CompositeConfiguration configuration = scopeModel.getModelEnvironment().getConfiguration();
+        CompositeConfiguration configuration = scopeModel.modelEnvironment().getConfiguration();
 
         // dubbo.config.mode
         String configModeStr = (String) configuration.getProperty(ConfigKeys.DUBBO_CONFIG_MODE);
@@ -127,7 +129,7 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
 
         // dubbo.config.ignore-duplicated-interface
         String ignoreDuplicatedInterfaceStr = (String) configuration
-            .getProperty(ConfigKeys.DUBBO_CONFIG_IGNORE_DUPLICATED_INTERFACE);
+                .getProperty(ConfigKeys.DUBBO_CONFIG_IGNORE_DUPLICATED_INTERFACE);
         if (ignoreDuplicatedInterfaceStr != null) {
             this.ignoreDuplicatedInterface = Boolean.parseBoolean(ignoreDuplicatedInterfaceStr);
         }
@@ -192,7 +194,7 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
      * @throws IllegalStateException
      */
     private <C extends AbstractConfig> C addIfAbsent(C config, Map<String, C> configsMap)
-        throws IllegalStateException {
+            throws IllegalStateException {
 
         if (config == null || configsMap == null) {
             return config;
@@ -216,8 +218,8 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
         if (existedConfig != null && !isEquals(existedConfig, config)) {
             String type = config.getClass().getSimpleName();
             logger.warn(COMMON_UNEXPECTED_EXCEPTION, "", "", String.format("Duplicate %s found, there already has one default %s or more than two %ss have the same id, " +
-                    "you can try to give each %s a different id, override previous config with later config. id: %s, prev: %s, later: %s",
-                type, type, type, type, key, existedConfig, config));
+                            "you can try to give each %s a different id, override previous config with later config. id: %s, prev: %s, later: %s",
+                    type, type, type, type, key, existedConfig, config));
         }
 
         // override existed config if any
@@ -252,7 +254,7 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
             return null;
         } else if (size > 1) {
             throw new IllegalStateException("Expected single instance of " + configType + ", but found " + size +
-                " instances, please remove redundant configs. instances: " + configsMap.values());
+                    " instances, please remove redundant configs. instances: " + configsMap.values());
         }
         return (C) configsMap.values().iterator().next();
     }
@@ -335,11 +337,11 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
         // try to find config by name
         if (ReflectUtils.hasMethod(cls, CONFIG_NAME_READ_METHOD)) {
             List<C> list = configsMap.values().stream()
-                .filter(cfg -> name.equals(getConfigName(cfg)))
-                .collect(Collectors.toList());
+                    .filter(cfg -> name.equals(getConfigName(cfg)))
+                    .collect(Collectors.toList());
             if (list.size() > 1) {
                 throw new IllegalStateException("Found more than one config by name: " + name +
-                    ", instances: " + list + ". Please remove redundant configs or get config by id.");
+                        ", instances: " + list + ". Please remove redundant configs or get config by id.");
             } else if (list.size() == 1) {
                 return list.get(0);
             }
@@ -364,8 +366,8 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
 
         // 2. find equal config
         prevConfig = values.stream()
-            .filter(val -> isEquals(val, config))
-            .findFirst();
+                .filter(val -> isEquals(val, config))
+                .findFirst();
         return prevConfig;
     }
 
@@ -408,18 +410,18 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
     static <C extends AbstractConfig> List<C> getDefaultConfigs(Map<String, C> configsMap) {
         // find isDefault() == true
         List<C> list = configsMap.values()
-            .stream()
-            .filter(c -> TRUE.equals(AbstractConfigManager.isDefaultConfig(c)))
-            .collect(Collectors.toList());
+                .stream()
+                .filter(c -> TRUE.equals(AbstractConfigManager.isDefaultConfig(c)))
+                .collect(Collectors.toList());
         if (list.size() > 0) {
             return list;
         }
 
         // find isDefault() == null
         list = configsMap.values()
-            .stream()
-            .filter(c -> AbstractConfigManager.isDefaultConfig(c) == null)
-            .collect(Collectors.toList());
+                .stream()
+                .filter(c -> AbstractConfigManager.isDefaultConfig(c) == null)
+                .collect(Collectors.toList());
         return list;
 
         // exclude isDefault() == false
@@ -430,7 +432,7 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
             C oldOne = configsMap.values().iterator().next();
             String configName = oldOne.getClass().getSimpleName();
             String msgPrefix = "Duplicate Configs found for " + configName + ", only one unique " + configName +
-                " is allowed for one application. previous: " + oldOne + ", later: " + config + ". According to config mode [" + configMode + "], ";
+                    " is allowed for one application. previous: " + oldOne + ", later: " + config + ". According to config mode [" + configMode + "], ";
             switch (configMode) {
                 case STRICT: {
                     if (!isEquals(oldOne, config)) {
@@ -538,7 +540,7 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
     }
 
     private <T extends AbstractConfig> T createConfig(Class<T> cls, ScopeModel scopeModel) throws ReflectiveOperationException {
-        T config = cls.newInstance();
+        T config = cls.getDeclaredConstructor().newInstance();
         config.setScopeModel(scopeModel);
         return config;
     }
@@ -625,9 +627,10 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
      */
     protected <T extends AbstractConfig> boolean isRequired(Class<T> clazz) {
         if (clazz == RegistryConfig.class ||
-            clazz == MetadataReportConfig.class ||
-            clazz == MonitorConfig.class ||
-            clazz == MetricsConfig.class) {
+                clazz == MetadataReportConfig.class ||
+                clazz == MonitorConfig.class ||
+                clazz == MetricsConfig.class ||
+                clazz == TracingConfig.class) {
             return false;
         }
         return true;

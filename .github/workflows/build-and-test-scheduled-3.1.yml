@@ -153,6 +153,14 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
             ${{ runner.os }}-maven-
+      - uses: actions/cache@v3
+        name: "Cache zookeeper binary archive"
+        id: "cache-zookeeper"
+        with:
+          path: ${{ github.workspace }}/.tmp/zookeeper
+          key: zookeeper-${{ runner.os }}-${{ env.ZOOKEEPER_VERSION }}
+          restore-keys: |
+            zookeeper-${{ runner.os }}-
       - name: "Test with Maven with Integration Tests"
         timeout-minutes: 70
         if: ${{ startsWith( matrix.os, 'ubuntu') }}
@@ -193,6 +201,14 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
             ${{ runner.os }}-maven-
+      - uses: actions/cache@v3
+        name: "Cache zookeeper binary archive"
+        id: "cache-zookeeper"
+        with:
+          path: ${{ github.workspace }}/.tmp/zookeeper
+          key: zookeeper-${{ runner.os }}-${{ env.ZOOKEEPER_VERSION }}
+          restore-keys: |
+            zookeeper-${{ runner.os }}-
       - name: "Test with Maven with Integration Tests"
         timeout-minutes: 70
         if: ${{ startsWith( matrix.os, 'ubuntu') }}
@@ -379,8 +395,8 @@ jobs:
       - name: "Compile and run Dubbo demo for native (Linux)"
         run: |
           cd ${{ github.workspace }}/dubbo/dubbo-demo/dubbo-demo-native/dubbo-demo-native-provider
-          ${{ github.workspace }}/dubbo/mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast -T 2C clean package -P native -Dmaven.test.skip=true
+          ${{ github.workspace }}/dubbo/mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast -T 2C clean package -P native -Dmaven.test.skip=true native:compile
           nohup ./target/demo-native-provider &
           cd ${{ github.workspace }}/dubbo/dubbo-demo/dubbo-demo-native/dubbo-demo-native-consumer
-          ${{ github.workspace }}/dubbo/mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast -T 2C clean package -P native -Dmaven.test.skip=true
+          ${{ github.workspace }}/dubbo/mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast -T 2C clean package -P native -Dmaven.test.skip=true native:compile
           ./target/demo-native-consumer

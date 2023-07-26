@@ -91,7 +91,7 @@ class AbstractRegistryFactoryTest {
     }
 
     @Test
-    void testRegistryFactoryCache() throws Exception {
+    void testRegistryFactoryCache() {
         URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostAddress() + ":2233");
         Registry registry1 = registryFactory.getRegistry(url);
         Registry registry2 = registryFactory.getRegistry(url);
@@ -102,14 +102,14 @@ class AbstractRegistryFactoryTest {
      * Registration center address `dubbo` does not resolve
      */
     // @Test
-    public void testRegistryFactoryIpCache() throws Exception {
+    public void testRegistryFactoryIpCache() {
         Registry registry1 = registryFactory.getRegistry(URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":2233"));
         Registry registry2 = registryFactory.getRegistry(URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostAddress() + ":2233"));
         Assertions.assertEquals(registry1, registry2);
     }
 
     @Test
-    void testRegistryFactoryGroupCache() throws Exception {
+    void testRegistryFactoryGroupCache() {
         Registry registry1 = registryFactory.getRegistry(URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":2233?group=aaa"));
         Registry registry2 = registryFactory.getRegistry(URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":2233?group=bbb"));
         Assertions.assertNotSame(registry1, registry2);

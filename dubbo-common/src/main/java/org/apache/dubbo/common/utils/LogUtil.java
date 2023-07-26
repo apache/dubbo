@@ -26,7 +26,7 @@ import java.util.List;
 
 public class LogUtil {
 
-    private static Logger Log = LoggerFactory.getLogger(LogUtil.class);
+    private static final Logger Log = LoggerFactory.getLogger(LogUtil.class);
 
     public static void start() {
         DubboAppender.doStart();

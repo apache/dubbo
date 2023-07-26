@@ -23,6 +23,7 @@ import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.telnet.TelnetHandler;
 import org.apache.dubbo.remoting.telnet.support.Help;
 import org.apache.dubbo.remoting.telnet.support.TelnetUtils;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,11 +37,15 @@ import java.util.WeakHashMap;
 @Help(parameter = "[command]", summary = "Show help.", detail = "Show help.")
 public class HelpTelnetHandler implements TelnetHandler {
 
-    private final ExtensionLoader<TelnetHandler> extensionLoader = ExtensionLoader.getExtensionLoader(TelnetHandler.class);
+    private final ExtensionLoader<TelnetHandler> extensionLoader;
 
     private static final String MAIN_HELP = "mainHelp";
 
     private static Map<String, String> processedTable = new WeakHashMap<>();
+
+    public HelpTelnetHandler(FrameworkModel frameworkModel) {
+        extensionLoader = frameworkModel.getExtensionLoader(TelnetHandler.class);
+    }
 
     @Override
     public String telnet(Channel channel, String message) {

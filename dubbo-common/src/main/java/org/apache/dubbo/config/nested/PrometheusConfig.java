@@ -18,7 +18,9 @@ package org.apache.dubbo.config.nested;
 
 import org.apache.dubbo.config.support.Nested;
 
-public class PrometheusConfig {
+import java.io.Serializable;
+
+public class PrometheusConfig implements Serializable {
 
     /**
      * Prometheus exporter configuration
@@ -48,7 +50,7 @@ public class PrometheusConfig {
         this.pushgateway = pushgateway;
     }
 
-    public static class Exporter {
+    public static class Exporter implements Serializable {
 
         /**
          * Enable prometheus exporter
@@ -64,16 +66,6 @@ public class PrometheusConfig {
          * Http service discovery url
          */
         private String httpServiceDiscoveryUrl;
-
-        /**
-         * When using pull method, which port to expose
-         */
-        private Integer metricsPort;
-
-        /**
-         * When using pull mode, which path to expose metrics
-         */
-        private String metricsPath;
 
         public Boolean getEnabled() {
             return enabled;
@@ -98,25 +90,9 @@ public class PrometheusConfig {
         public void setHttpServiceDiscoveryUrl(String httpServiceDiscoveryUrl) {
             this.httpServiceDiscoveryUrl = httpServiceDiscoveryUrl;
         }
-
-        public Integer getMetricsPort() {
-            return metricsPort;
-        }
-
-        public void setMetricsPort(Integer metricsPort) {
-            this.metricsPort = metricsPort;
-        }
-
-        public String getMetricsPath() {
-            return metricsPath;
-        }
-
-        public void setMetricsPath(String metricsPath) {
-            this.metricsPath = metricsPath;
-        }
     }
 
-    public static class Pushgateway {
+    public static class Pushgateway implements Serializable {
 
         /**
          * Enable publishing via a Prometheus Pushgateway

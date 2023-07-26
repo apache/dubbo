@@ -19,6 +19,7 @@ package org.apache.dubbo.config;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.config.nested.AggregationConfig;
+import org.apache.dubbo.config.nested.HistogramConfig;
 import org.apache.dubbo.config.nested.PrometheusConfig;
 import org.apache.dubbo.config.support.Nested;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -38,7 +39,27 @@ public class MetricsConfig extends AbstractConfig {
     /**
      * Enable jvm metrics when collecting.
      */
-    private Boolean enableJvmMetrics;
+    private Boolean enableJvm;
+
+    /**
+     * Enable threadpool metrics when collecting.
+     */
+    private Boolean enableThreadpool;
+
+    /**
+     * Enable registry metrics.
+     */
+    private Boolean enableRegistry;
+
+    /**
+     * Enable metadata metrics.
+     */
+    private Boolean enableMetadata;
+
+    /**
+     * Export metrics service.
+     */
+    private Boolean exportMetricsService;
 
     /**
      * @deprecated After metrics config is refactored.
@@ -58,6 +79,20 @@ public class MetricsConfig extends AbstractConfig {
      */
     @Nested
     private AggregationConfig aggregation;
+
+    @Nested
+    private HistogramConfig histogram;
+
+    private String exportServiceProtocol;
+
+    private Integer exportServicePort;
+
+    /**
+     * Decide whether to use the global registry of the micrometer.
+     */
+    private Boolean useGlobalRegistry;
+
+    private Boolean enableRpc;
 
     public MetricsConfig() {
     }
@@ -85,12 +120,20 @@ public class MetricsConfig extends AbstractConfig {
         this.protocol = protocol;
     }
 
-    public Boolean getEnableJvmMetrics() {
-        return enableJvmMetrics;
+    public Boolean getEnableJvm() {
+        return enableJvm;
     }
 
-    public void setEnableJvmMetrics(Boolean enableJvmMetrics) {
-        this.enableJvmMetrics = enableJvmMetrics;
+    public void setEnableJvm(Boolean enableJvm) {
+        this.enableJvm = enableJvm;
+    }
+
+    public Boolean getEnableRegistry() {
+        return enableRegistry;
+    }
+
+    public void setEnableRegistry(Boolean enableRegistry) {
+        this.enableRegistry = enableRegistry;
     }
 
     public String getPort() {
@@ -116,5 +159,68 @@ public class MetricsConfig extends AbstractConfig {
     public void setAggregation(AggregationConfig aggregation) {
         this.aggregation = aggregation;
     }
-}
 
+    public HistogramConfig getHistogram() {
+        return histogram;
+    }
+
+    public void setHistogram(HistogramConfig histogram) {
+        this.histogram = histogram;
+    }
+
+    public String getExportServiceProtocol() {
+        return exportServiceProtocol;
+    }
+
+    public void setExportServiceProtocol(String exportServiceProtocol) {
+        this.exportServiceProtocol = exportServiceProtocol;
+    }
+
+    public Integer getExportServicePort() {
+        return exportServicePort;
+    }
+
+    public void setExportServicePort(Integer exportServicePort) {
+        this.exportServicePort = exportServicePort;
+    }
+
+    public Boolean getEnableMetadata() {
+        return enableMetadata;
+    }
+
+    public void setEnableMetadata(Boolean enableMetadata) {
+        this.enableMetadata = enableMetadata;
+    }
+
+    public Boolean getExportMetricsService() {
+        return exportMetricsService;
+    }
+
+    public void setExportMetricsService(Boolean exportMetricsService) {
+        this.exportMetricsService = exportMetricsService;
+    }
+
+    public Boolean getEnableThreadpool() {
+        return enableThreadpool;
+    }
+
+    public void setEnableThreadpool(Boolean enableThreadpool) {
+        this.enableThreadpool = enableThreadpool;
+    }
+
+    public Boolean getUseGlobalRegistry() {
+        return useGlobalRegistry;
+    }
+
+    public void setUseGlobalRegistry(Boolean useGlobalRegistry) {
+        this.useGlobalRegistry = useGlobalRegistry;
+    }
+
+    public Boolean getEnableRpc() {
+        return enableRpc;
+    }
+
+    public void setEnableRpc(Boolean enableRpc) {
+        this.enableRpc = enableRpc;
+    }
+}

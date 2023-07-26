@@ -134,8 +134,6 @@ class DefaultFutureTest {
         Channel channel = new MockedChannel();
         int channelId = 10;
         Request request = new Request(channelId);
-        ExecutorService sharedExecutor = ExtensionLoader.getExtensionLoader(ExecutorRepository.class)
-                .getDefaultExtension().createExecutorIfAbsent(URL.valueOf("dubbo://127.0.0.1:23456"));
         ThreadlessExecutor executor = new ThreadlessExecutor();
         DefaultFuture f = DefaultFuture.newFuture(channel, request, 1000, executor);
         //mark the future is sent
@@ -143,11 +141,15 @@ class DefaultFutureTest {
         // get operate will throw a interrupted exception, because the thread is interrupted.
         try {
             new InterruptThread(Thread.currentThread()).start();
-            executor.waitAndDrain();
+            while (!f. isDone()){
+                executor.waitAndDrain(Long.MAX_VALUE);
+            }
             f.get();
         } catch (Exception e) {
             Assertions.assertTrue(e instanceof InterruptedException, "catch exception is not interrupted exception!");
             System.out.println(e.getMessage());
+        } finally {
+            executor.shutdown();
         }
         //waiting timeout check task finished
         Thread.sleep(1500);
@@ -159,14 +161,24 @@ class DefaultFutureTest {
     }
 
     @Test
-    void testClose() throws Exception {
+    void testClose1() {
         Channel channel = new MockedChannel();
         Request request = new Request(123);
         ExecutorService executor = ExtensionLoader.getExtensionLoader(ExecutorRepository.class)
             .getDefaultExtension().createExecutorIfAbsent(URL.valueOf("dubbo://127.0.0.1:23456"));
         DefaultFuture.newFuture(channel, request, 1000, executor);
-        DefaultFuture.closeChannel(channel);
+        DefaultFuture.closeChannel(channel, 0);
         Assertions.assertFalse(executor.isTerminated());
+    }
+
+    @Test
+    void testClose2() {
+        Channel channel = new MockedChannel();
+        Request request = new Request(123);
+        ThreadlessExecutor threadlessExecutor = new ThreadlessExecutor();
+        DefaultFuture.newFuture(channel, request, 1000, threadlessExecutor);
+        DefaultFuture.closeChannel(channel, 0);
+        Assertions.assertTrue(threadlessExecutor.isTerminated());
     }
 
     /**

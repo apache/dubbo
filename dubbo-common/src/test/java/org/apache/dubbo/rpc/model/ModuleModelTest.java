@@ -40,6 +40,7 @@ class ModuleModelTest {
         Assertions.assertEquals(moduleModel.getApplicationModel(), applicationModel);
         Assertions.assertTrue(applicationModel.getPubModuleModels().contains(moduleModel));
         Assertions.assertNotNull(moduleModel.getInternalId());
+        Assertions.assertFalse(moduleModel.isLifeCycleManagedExternally());
 
         Assertions.assertNotNull(moduleModel.getExtensionDirector());
         Assertions.assertNotNull(moduleModel.getBeanFactory());
@@ -60,7 +61,7 @@ class ModuleModelTest {
         ApplicationModel applicationModel = frameworkModel.newApplication();
         ModuleModel moduleModel = applicationModel.newModule();
 
-        ModuleEnvironment modelEnvironment = moduleModel.getModelEnvironment();
+        ModuleEnvironment modelEnvironment = moduleModel.modelEnvironment();
         Assertions.assertNotNull(modelEnvironment);
 
         frameworkModel.destroy();

@@ -29,4 +29,8 @@ public class RemoteServiceImpl implements RemoteService {
     public String sayHello(String name) throws RemoteException {
         return "hello " + name + "@" + RemoteServiceImpl.class.getName();
     }
+
+    public String sayHello(String name, String arg2) {
+        return "hello " + name + "@" + RemoteServiceImpl.class.getName() + ", arg2 " + arg2;
+    }
 }

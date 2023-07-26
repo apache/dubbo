@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.registry.xds.istio;
 
+import org.apache.dubbo.common.constants.LoggerCodeConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.registry.xds.XdsEnv;
@@ -41,9 +42,7 @@ public class IstioEnv implements XdsEnv {
 
     private String caAddr;
 
-    private String serviceAccount = null;
-
-    private String csrHost;
+    private String jwtPolicy;
 
     private String trustDomain;
 
@@ -59,49 +58,33 @@ public class IstioEnv implements XdsEnv {
 
     private String istioMetaClusterId;
 
-    private String caCert;
+    private String pilotCertProvider;
 
     private IstioEnv() {
-        // read k8s jwt token
-        File saFile = new File(IstioConstant.KUBERNETES_SA_PATH);
-        if (saFile.canRead()) {
-            try {
-                podName = System.getenv("HOSTNAME");
-                serviceAccount = FileUtils.readFileToString(saFile, StandardCharsets.UTF_8);
-                trustDomain = Optional.ofNullable(System.getenv(IstioConstant.TRUST_DOMAIN_KEY)).orElse(IstioConstant.DEFAULT_TRUST_DOMAIN);
-                workloadNameSpace = Optional.ofNullable(System.getenv(IstioConstant.WORKLOAD_NAMESPACE_KEY))
-                    .orElseGet(()->{
-                        File namespaceFile = new File(IstioConstant.KUBERNETES_NAMESPACE_PATH);
-                        if (namespaceFile.canRead()) {
-                            try {
-                                return FileUtils.readFileToString(namespaceFile, StandardCharsets.UTF_8);
-                            } catch (IOException e) {
-                                logger.error(REGISTRY_ERROR_READ_FILE_ISTIO, "", "", "read namespace file error", e);
-                            }
-                        }
-                        return IstioConstant.DEFAULT_WORKLOAD_NAMESPACE;
-                    });
-                // spiffe://<trust_domain>/ns/<namespace>/sa/<service_account>
-                csrHost = SPIFFE + trustDomain + NS + workloadNameSpace + SA + serviceAccount;
-                caAddr = Optional.ofNullable(System.getenv(IstioConstant.CA_ADDR_KEY)).orElse(IstioConstant.DEFAULT_CA_ADDR);
-                rasKeySize = Integer.parseInt(Optional.ofNullable(System.getenv(IstioConstant.RSA_KEY_SIZE_KEY)).orElse(IstioConstant.DEFAULT_RSA_KEY_SIZE));
-                eccSigAlg = Optional.ofNullable(System.getenv(IstioConstant.ECC_SIG_ALG_KEY)).orElse(IstioConstant.DEFAULT_ECC_SIG_ALG);
-                secretTTL = Integer.parseInt(Optional.ofNullable(System.getenv(IstioConstant.SECRET_TTL_KEY)).orElse(IstioConstant.DEFAULT_SECRET_TTL));
-                secretGracePeriodRatio = Float.parseFloat(Optional.ofNullable(System.getenv(IstioConstant.SECRET_GRACE_PERIOD_RATIO_KEY)).orElse(IstioConstant.DEFAULT_SECRET_GRACE_PERIOD_RATIO));
-                istioMetaClusterId = Optional.ofNullable(System.getenv(IstioConstant.ISTIO_META_CLUSTER_ID_KEY)).orElse(IstioConstant.DEFAULT_ISTIO_META_CLUSTER_ID);
-                File caFile = new File(IstioConstant.KUBERNETES_CA_PATH);
-                if (caFile.canRead()) {
+        jwtPolicy = Optional.ofNullable(System.getenv(IstioConstant.JWT_POLICY)).orElse(IstioConstant.DEFAULT_JWT_POLICY);
+        podName = Optional.ofNullable(System.getenv("POD_NAME")).orElse(System.getenv("HOSTNAME"));
+        trustDomain = Optional.ofNullable(System.getenv(IstioConstant.TRUST_DOMAIN_KEY)).orElse(IstioConstant.DEFAULT_TRUST_DOMAIN);
+        workloadNameSpace = Optional.ofNullable(System.getenv(IstioConstant.WORKLOAD_NAMESPACE_KEY))
+            .orElseGet(()->{
+                File namespaceFile = new File(IstioConstant.KUBERNETES_NAMESPACE_PATH);
+                if (namespaceFile.canRead()) {
                     try {
-                        caCert = FileUtils.readFileToString(caFile, StandardCharsets.UTF_8);
+                        return FileUtils.readFileToString(namespaceFile, StandardCharsets.UTF_8);
                     } catch (IOException e) {
-                        logger.error(REGISTRY_ERROR_READ_FILE_ISTIO, "", "", "read ca file error", e);
+                        logger.error(REGISTRY_ERROR_READ_FILE_ISTIO,  "", "", "read namespace file error", e);
                     }
                 }
-            } catch (IOException e) {
-                logger.error(REGISTRY_ERROR_READ_FILE_ISTIO, "", "", "Unable to read token file.", e);
-            }
-        }
-        if (serviceAccount == null) {
+                return IstioConstant.DEFAULT_WORKLOAD_NAMESPACE;
+            });
+        caAddr = Optional.ofNullable(System.getenv(IstioConstant.CA_ADDR_KEY)).orElse(IstioConstant.DEFAULT_CA_ADDR);
+        rasKeySize = Integer.parseInt(Optional.ofNullable(System.getenv(IstioConstant.RSA_KEY_SIZE_KEY)).orElse(IstioConstant.DEFAULT_RSA_KEY_SIZE));
+        eccSigAlg = Optional.ofNullable(System.getenv(IstioConstant.ECC_SIG_ALG_KEY)).orElse(IstioConstant.DEFAULT_ECC_SIG_ALG);
+        secretTTL = Integer.parseInt(Optional.ofNullable(System.getenv(IstioConstant.SECRET_TTL_KEY)).orElse(IstioConstant.DEFAULT_SECRET_TTL));
+        secretGracePeriodRatio = Float.parseFloat(Optional.ofNullable(System.getenv(IstioConstant.SECRET_GRACE_PERIOD_RATIO_KEY)).orElse(IstioConstant.DEFAULT_SECRET_GRACE_PERIOD_RATIO));
+        istioMetaClusterId = Optional.ofNullable(System.getenv(IstioConstant.ISTIO_META_CLUSTER_ID_KEY)).orElse(IstioConstant.DEFAULT_ISTIO_META_CLUSTER_ID);
+        pilotCertProvider = Optional.ofNullable(System.getenv(IstioConstant.PILOT_CERT_PROVIDER_KEY)).orElse("");
+
+        if (getServiceAccount() == null) {
             throw new UnsupportedOperationException("Unable to found kubernetes service account token file. " +
                 "Please check if work in Kubernetes and mount service account token file correctly.");
         }
@@ -120,11 +103,29 @@ public class IstioEnv implements XdsEnv {
     }
 
     public String getServiceAccount() {
-        return serviceAccount;
+        File saFile;
+        switch (jwtPolicy) {
+            case IstioConstant.FIRST_PARTY_JWT:
+                saFile = new File(IstioConstant.KUBERNETES_SA_PATH);
+                break;
+            case IstioConstant.THIRD_PARTY_JWT:
+            default:
+                saFile = new File(IstioConstant.ISTIO_SA_PATH);
+        }
+        if (saFile.canRead()) {
+            try {
+                return FileUtils.readFileToString(saFile, StandardCharsets.UTF_8);
+            } catch (IOException e) {
+                logger.error(LoggerCodeConstants.REGISTRY_ISTIO_EXCEPTION, "File Read Failed", "", "Unable to read token file.", e);
+            }
+        }
+
+        return null;
     }
 
     public String getCsrHost() {
-        return csrHost;
+        // spiffe://<trust_domain>/ns/<namespace>/sa/<service_account>
+        return SPIFFE + trustDomain + NS + workloadNameSpace + SA + getServiceAccount();
     }
 
     public String getTrustDomain() {
@@ -161,6 +162,19 @@ public class IstioEnv implements XdsEnv {
     }
 
     public String getCaCert() {
-        return caCert;
+        File caFile;
+        if (IstioConstant.ISTIO_PILOT_CERT_PROVIDER.equals(pilotCertProvider)) {
+            caFile = new File(IstioConstant.ISTIO_CA_PATH);
+        } else {
+            return null;
+        }
+        if (caFile.canRead()) {
+            try {
+                return FileUtils.readFileToString(caFile, StandardCharsets.UTF_8);
+            } catch (IOException e) {
+                logger.error(LoggerCodeConstants.REGISTRY_ISTIO_EXCEPTION, "File Read Failed", "", "read ca file error", e);
+            }
+        }
+        return null;
     }
 }

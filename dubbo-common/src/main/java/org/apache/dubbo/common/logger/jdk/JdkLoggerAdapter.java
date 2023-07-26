@@ -29,19 +29,23 @@ import java.util.logging.LogManager;
 
 public class JdkLoggerAdapter implements LoggerAdapter {
 
+    public static final String NAME = "jdk";
     private static final String GLOBAL_LOGGER_NAME = "global";
 
     private File file;
+
+    private boolean propertiesLoaded = false;
 
     public JdkLoggerAdapter() {
         try {
             InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream("logging.properties");
             if (in != null) {
                 LogManager.getLogManager().readConfiguration(in);
+                propertiesLoaded = true;
             } else {
                 System.err.println("No such logging.properties in classpath for jdk logging config!");
             }
-        } catch (Throwable t) {
+        } catch (Exception t) {
             System.err.println("Failed to load logging.properties in classpath for jdk logging config, cause: " + t.getMessage());
         }
         try {
@@ -56,7 +60,8 @@ public class JdkLoggerAdapter implements LoggerAdapter {
                     }
                 }
             }
-        } catch (Throwable t) {
+        } catch (Exception ignored) {
+            // ignore
         }
     }
 
@@ -133,7 +138,11 @@ public class JdkLoggerAdapter implements LoggerAdapter {
 
     @Override
     public void setFile(File file) {
-
+        // ignore
     }
 
+    @Override
+    public boolean isConfigured() {
+        return propertiesLoaded;
+    }
 }

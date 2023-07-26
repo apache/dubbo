@@ -29,13 +29,28 @@
     <description>The Apollo implementation of the configcenter api</description>
     <properties>
         <skip_maven_deploy>false</skip_maven_deploy>
-        <apollo_mock_server_version>1.1.1</apollo_mock_server_version>
+        <apollo_mock_server_version>2.1.0</apollo_mock_server_version>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-common</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-metrics-api</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-metrics-default</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-metrics-prometheus</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>
@@ -47,6 +62,11 @@
             <artifactId>apollo-mockserver</artifactId>
             <version>${apollo_mock_server_version}</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-metrics-config-center</artifactId>
+            <version>${project.parent.version}</version>
         </dependency>
     </dependencies>
 </project>

@@ -19,9 +19,10 @@ package org.apache.dubbo.qos.command.impl;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.config.ApplicationConfig;
-import org.apache.dubbo.qos.command.BaseCommand;
-import org.apache.dubbo.qos.command.CommandContext;
-import org.apache.dubbo.qos.command.annotation.Cmd;
+import org.apache.dubbo.qos.api.BaseCommand;
+import org.apache.dubbo.qos.api.CommandContext;
+import org.apache.dubbo.qos.api.Cmd;
+import org.apache.dubbo.qos.api.PermissionLevel;
 import org.apache.dubbo.qos.probe.ReadinessProbe;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
@@ -29,9 +30,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-@Cmd(name = "ready", summary = "Judge if service is ready to work? ")
+@Cmd(name = "ready", summary = "Judge if service is ready to work? ", requiredPermissionLevel = PermissionLevel.PUBLIC)
 public class Ready implements BaseCommand {
-    private FrameworkModel frameworkModel;
+    private final FrameworkModel frameworkModel;
 
     public Ready(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;

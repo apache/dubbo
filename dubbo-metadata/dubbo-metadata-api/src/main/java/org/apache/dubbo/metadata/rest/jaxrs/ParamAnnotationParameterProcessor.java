@@ -23,6 +23,7 @@ import org.apache.dubbo.metadata.rest.RestMethodMetadata;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 
 /**
  * The abstract {@link AnnotatedMethodParameterProcessor} implementation for JAX-RS's @*Param
@@ -30,7 +31,7 @@ import java.lang.reflect.Method;
 public abstract class ParamAnnotationParameterProcessor extends AbstractAnnotatedMethodParameterProcessor {
 
     @Override
-    protected void process(String name, String defaultValue, Annotation annotation, Object parameter,
+    protected void process(String name, String defaultValue, Annotation annotation, Parameter parameter,
                            int parameterIndex, Method method, RestMethodMetadata restMethodMetadata) {
         RequestMetadata requestMetadata = restMethodMetadata.getRequest();
         requestMetadata.addParam(name, defaultValue);

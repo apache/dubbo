@@ -64,7 +64,8 @@ public class SpringMvcServiceRestMetadataResolver extends AbstractServiceRestMet
     }
 
     public static boolean supports(TypeElement serviceType) {
-        return isAnnotationPresent(serviceType, CONTROLLER_ANNOTATION_CLASS_NAME);
+        // class @Controller or @RequestMapping
+        return isAnnotationPresent(serviceType, CONTROLLER_ANNOTATION_CLASS_NAME) || isAnnotationPresent(serviceType, REQUEST_MAPPING_ANNOTATION_CLASS_NAME);
     }
 
     @Override
@@ -131,15 +132,15 @@ public class SpringMvcServiceRestMetadataResolver extends AbstractServiceRestMet
 
     private AnnotationMirror getMappingAnnotation(Element element) {
         return computeIfAbsent(valueOf(element), key ->
-                filterFirst(getAllAnnotations(element), annotation -> {
-                    DeclaredType annotationType = annotation.getAnnotationType();
-                    // try "@RequestMapping" first
-                    if (REQUEST_MAPPING_ANNOTATION_CLASS_NAME.equals(annotationType.toString())) {
-                        return true;
-                    }
-                    // try meta annotation
-                    return isAnnotationPresent(annotationType.asElement(), REQUEST_MAPPING_ANNOTATION_CLASS_NAME);
-                })
+            filterFirst(getAllAnnotations(element), annotation -> {
+                DeclaredType annotationType = annotation.getAnnotationType();
+                // try "@RequestMapping" first
+                if (REQUEST_MAPPING_ANNOTATION_CLASS_NAME.equals(annotationType.toString())) {
+                    return true;
+                }
+                // try meta annotation
+                return isAnnotationPresent(annotationType.asElement(), REQUEST_MAPPING_ANNOTATION_CLASS_NAME);
+            })
         );
     }
 

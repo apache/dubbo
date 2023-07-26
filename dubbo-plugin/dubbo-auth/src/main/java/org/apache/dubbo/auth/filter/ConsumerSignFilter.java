@@ -35,7 +35,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
  */
 @Activate(group = CommonConstants.CONSUMER, value = Constants.SERVICE_AUTH, order = -10000)
 public class ConsumerSignFilter implements Filter {
-    private ApplicationModel applicationModel;
+    private final ApplicationModel applicationModel;
 
     public ConsumerSignFilter(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;

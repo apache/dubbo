@@ -198,7 +198,7 @@ class CacheableFailbackRegistryTest {
         final AtomicReference<List<URL>> currentUrls = new AtomicReference<>();
         final List<URL> EMPTY_LIST = new ArrayList<>();
 
-        registry = new MockCacheableRegistryImpl(registryUrl);
+        registry = new MockCacheableRegistryImpl(registryUrl.addParameter(ENABLE_EMPTY_PROTECTION_KEY, true));
         URL url = URLStrParser.parseEncodedStr(urlStr);
         URL url2 = URLStrParser.parseEncodedStr(urlStr2);
         URL url3 = URLStrParser.parseEncodedStr(urlStr3);
@@ -237,6 +237,53 @@ class CacheableFailbackRegistryTest {
         emptyRegistry.clearChildren();
         assertEquals(0, currentUrls.get().size());
         assertEquals(EMPTY_LIST, currentUrls.get());
+
+    }
+
+    @Test
+    void testNoEmptyProtection() {
+        final AtomicReference<Integer> resCount = new AtomicReference<>(0);
+        final AtomicReference<List<URL>> currentUrls = new AtomicReference<>();
+        final List<URL> EMPTY_LIST = new ArrayList<>();
+
+        registry = new MockCacheableRegistryImpl(registryUrl);
+        URL url = URLStrParser.parseEncodedStr(urlStr);
+        URL url2 = URLStrParser.parseEncodedStr(urlStr2);
+        URL url3 = URLStrParser.parseEncodedStr(urlStr3);
+
+        NotifyListener listener = urls -> {
+            if (CollectionUtils.isEmpty(urls)) {
+                // do nothing
+            } else if (urls.size() == 1 && urls.get(0).getProtocol().equals(EMPTY_PROTOCOL)) {
+                resCount.set(0);
+                currentUrls.set(EMPTY_LIST);
+            } else {
+                resCount.set(urls.size());
+                currentUrls.set(urls);
+            }
+        };
+
+        registry.addChildren(url);
+        registry.addChildren(url2);
+        registry.addChildren(url3);
+
+        registry.subscribe(serviceUrl, listener);
+        assertEquals(3, resCount.get());
+        registry.removeChildren(url);
+        assertEquals(2, resCount.get());
+        registry.clearChildren();
+        assertEquals(0, resCount.get());
+
+        URL emptyRegistryURL = registryUrl.addParameter(ENABLE_EMPTY_PROTECTION_KEY, true);
+        MockCacheableRegistryImpl emptyRegistry = new MockCacheableRegistryImpl(emptyRegistryURL);
+
+        emptyRegistry.addChildren(url);
+        emptyRegistry.addChildren(url2);
+
+        emptyRegistry.subscribe(serviceUrl, listener);
+        assertEquals(2, resCount.get());
+        emptyRegistry.clearChildren();
+        assertEquals(2, currentUrls.get().size());
 
     }
 }

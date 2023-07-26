@@ -18,6 +18,7 @@ package org.apache.dubbo.config.spring.beans.factory.annotation;
 
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.AnnotationUtils;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -30,9 +31,9 @@ import org.apache.dubbo.config.spring.ServiceBean;
 import org.apache.dubbo.config.spring.context.annotation.DubboClassPathBeanDefinitionScanner;
 import org.apache.dubbo.config.spring.schema.AnnotationBeanDefinitionParser;
 import org.apache.dubbo.config.spring.util.DubboAnnotationUtils;
+import org.apache.dubbo.config.spring.util.ObjectUtils;
 import org.apache.dubbo.config.spring.util.SpringCompatUtils;
 
-import com.alibaba.spring.util.AnnotationUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.BeanClassLoaderAware;
@@ -79,11 +80,10 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import static com.alibaba.spring.util.ObjectUtils.of;
 import static java.util.Arrays.asList;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_DUPLICATED_BEAN_DEFINITION;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_NO_ANNOTATIONS_FOUND;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_NO_BEANS_SCANNED;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_DUPLICATED_BEAN_DEFINITION;
 import static org.apache.dubbo.common.utils.AnnotationUtils.filterDefaultValues;
 import static org.apache.dubbo.config.spring.beans.factory.annotation.ServiceBeanNameBuilder.create;
 import static org.apache.dubbo.config.spring.util.DubboAnnotationUtils.resolveInterfaceName;
@@ -428,11 +428,12 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
         BeanDefinitionBuilder builder = rootBeanDefinition(ServiceBean.class);
 
         AbstractBeanDefinition beanDefinition = builder.getBeanDefinition();
+        beanDefinition.setAutowireMode(AbstractBeanDefinition.AUTOWIRE_CONSTRUCTOR);
 
         MutablePropertyValues propertyValues = beanDefinition.getPropertyValues();
 
-        String[] ignoreAttributeNames = of("provider", "monitor", "application", "module", "registry", "protocol",
-                "methods", "interfaceName", "parameters");
+        String[] ignoreAttributeNames = ObjectUtils.of("provider", "monitor", "application", "module", "registry", "protocol",
+                "methods", "interfaceName", "parameters", "executor");
 
         propertyValues.addPropertyValues(new AnnotationPropertyValuesAdapter(serviceAnnotationAttributes, environment, ignoreAttributeNames));
 
@@ -481,6 +482,11 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
         String moduleConfigId = (String) serviceAnnotationAttributes.get("module");
         if (StringUtils.hasText(moduleConfigId)) {
             addPropertyReference(builder, "module", moduleConfigId);
+        }
+
+        String executorBeanName = (String) serviceAnnotationAttributes.get("executor");
+        if (StringUtils.hasText(executorBeanName)) {
+            addPropertyReference(builder, "executor", executorBeanName);
         }
 
         return builder.getBeanDefinition();

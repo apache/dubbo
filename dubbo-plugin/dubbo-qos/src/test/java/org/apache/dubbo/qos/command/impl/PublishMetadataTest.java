@@ -17,7 +17,7 @@
 package org.apache.dubbo.qos.command.impl;
 
 import org.apache.dubbo.config.ApplicationConfig;
-import org.apache.dubbo.qos.command.CommandContext;
+import org.apache.dubbo.qos.api.CommandContext;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 

@@ -577,8 +577,8 @@ class ServiceConfigTest {
             }
 
             @Override
-            public void initInterfaceAppMapping(URL subscribedURL) {
-
+            public Set<String> getMapping(URL consumerURL) {
+                return null;
             }
 
             @Override
@@ -597,22 +597,7 @@ class ServiceConfigTest {
             }
 
             @Override
-            public Set<String> getCachedMapping(String mappingKey) {
-                return null;
-            }
-
-            @Override
-            public Set<String> getCachedMapping(URL consumerURL) {
-                return null;
-            }
-
-            @Override
             public Set<String> getRemoteMapping(URL consumerURL) {
-                return null;
-            }
-
-            @Override
-            public Map<String, Set<String>> getCachedMapping() {
                 return null;
             }
 
@@ -634,7 +619,7 @@ class ServiceConfigTest {
         await().until(() -> count.get() > 10);
         scheduledExecutorService.shutdown();
     }
-    
+
     @Test
     void testMappingNoRetry() {
         FrameworkModel frameworkModel = new FrameworkModel();
@@ -655,11 +640,6 @@ class ServiceConfigTest {
             }
 
             @Override
-            public void initInterfaceAppMapping(URL subscribedURL) {
-
-            }
-
-            @Override
             public Set<String> getAndListen(URL registryURL, URL subscribedURL, MappingListener listener) {
                 return null;
             }
@@ -675,22 +655,12 @@ class ServiceConfigTest {
             }
 
             @Override
-            public Set<String> getCachedMapping(String mappingKey) {
-                return null;
-            }
-
-            @Override
-            public Set<String> getCachedMapping(URL consumerURL) {
+            public Set<String> getMapping(URL consumerURL) {
                 return null;
             }
 
             @Override
             public Set<String> getRemoteMapping(URL consumerURL) {
-                return null;
-            }
-
-            @Override
-            public Map<String, Set<String>> getCachedMapping() {
                 return null;
             }
 
@@ -712,5 +682,21 @@ class ServiceConfigTest {
         verify(scheduledExecutorService, times(0)).schedule((Runnable) any(), anyLong(), any());
 
         scheduledExecutorService.shutdown();
+    }
+
+    @Test
+    void testToString() {
+        ServiceConfig<DemoService> serviceConfig = new ServiceConfig<>();
+        service.setRef(new DemoServiceImpl() {
+            @Override
+            public String toString() {
+                throw new IllegalStateException();
+            }
+        });
+        try {
+            serviceConfig.toString();
+        } catch (Throwable t) {
+            Assertions.fail(t);
+        }
     }
 }

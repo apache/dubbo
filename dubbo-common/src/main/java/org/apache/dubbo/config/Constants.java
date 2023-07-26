@@ -146,4 +146,10 @@ public interface Constants {
     String IGNORE_CHECK_KEYS = "ignoreCheckKeys";
 
     String PARAMETERS = "parameters";
+
+    String SERVER_THREAD_POOL_NAME = "DubboServerHandler";
+
+    String CLIENT_THREAD_POOL_NAME = "DubboClientHandler";
+
+    String REST_PROTOCOL="rest";
 }

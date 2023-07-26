@@ -16,18 +16,43 @@
  */
 package org.apache.dubbo.rpc.cluster.router.tag.model;
 
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.PojoUtils;
+
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_FAILED_RULE_PARSING;
+import static org.apache.dubbo.rpc.cluster.Constants.RULE_VERSION_V30;
+
 public class Tag {
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(Tag.class);
+
     private String name;
+    private List<ParamMatch> match;
     private List<String> addresses;
 
     @SuppressWarnings("unchecked")
-    public static Tag parseFromMap(Map<String, Object> map) {
+    public static Tag parseFromMap(Map<String, Object> map, String version) {
         Tag tag = new Tag();
         tag.setName((String) map.get("name"));
+
+        if (version != null && version.startsWith(RULE_VERSION_V30)) {
+            if (map.get("match") != null) {
+                tag.setMatch(((List<Map<String, Object>>) map.get("match")).stream().map((objectMap) -> {
+                    try {
+                        return PojoUtils.mapToPojo(objectMap, ParamMatch.class);
+                    } catch (ReflectiveOperationException e) {
+                        logger.error(CLUSTER_FAILED_RULE_PARSING, " Failed to parse tag rule ", String.valueOf(objectMap), "Error occurred when parsing rule component.", e);
+                    }
+                    return null;
+                }).collect(Collectors.toList()));
+            } else {
+                logger.warn(CLUSTER_FAILED_RULE_PARSING, "", String.valueOf(map), "It's recommended to use 'match' instead of 'addresses' for v3.0 tag rule.");
+            }
+        }
 
         Object addresses = map.get("addresses");
         if (addresses != null && List.class.isAssignableFrom(addresses.getClass())) {
@@ -52,4 +77,13 @@ public class Tag {
     public void setAddresses(List<String> addresses) {
         this.addresses = addresses;
     }
+
+    public List<ParamMatch> getMatch() {
+        return match;
+    }
+
+    public void setMatch(List<ParamMatch> match) {
+        this.match = match;
+    }
+
 }

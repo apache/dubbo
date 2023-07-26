@@ -75,7 +75,7 @@ class InjvmClassLoaderTest {
         // AtomicReference to cache request/response of provider
         AtomicReference innerRequestReference = new AtomicReference();
         AtomicReference innerResultReference = new AtomicReference();
-        innerResultReference.set(resultClazzCustom1.newInstance());
+        innerResultReference.set(resultClazzCustom1.getDeclaredConstructor().newInstance());
         Constructor<?> declaredConstructor = clazz1impl.getDeclaredConstructor(AtomicReference.class, AtomicReference.class);
 
 
@@ -116,7 +116,7 @@ class InjvmClassLoaderTest {
 
         java.lang.reflect.Method callBean1 = object1.getClass().getDeclaredMethod("call", requestClazzOrigin);
         callBean1.setAccessible(true);
-        Object result1 = callBean1.invoke(object1, requestClazzCustom2.newInstance());
+        Object result1 = callBean1.invoke(object1, requestClazzCustom2.getDeclaredConstructor().newInstance());
 
         // invoke result should load from classLoader3 ( sub classLoader of classLoader2 --> consumer side classLoader)
         Assertions.assertEquals(resultClazzCustom3, result1.getClass());

@@ -184,6 +184,16 @@ public class RegistryConfig extends AbstractConfig {
 
     private Boolean enableEmptyProtection;
 
+    private String secure;
+
+    public String getSecure() {
+        return secure;
+    }
+
+    public void setSecure(String secure) {
+        this.secure = secure;
+    }
+
     public RegistryConfig() {
     }
 
@@ -542,5 +552,11 @@ public class RegistryConfig extends AbstractConfig {
     public boolean isValid() {
         // empty protocol will default to 'dubbo'
         return !StringUtils.isEmpty(address) || !StringUtils.isEmpty(protocol);
+    }
+
+    @Override
+    @Parameter(excluded = true)
+    public Boolean isDefault() {
+        return isDefault;
     }
 }

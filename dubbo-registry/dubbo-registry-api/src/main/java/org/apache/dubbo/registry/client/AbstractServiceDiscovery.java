@@ -16,14 +16,6 @@
  */
 package org.apache.dubbo.registry.client;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
-
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -34,12 +26,22 @@ import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.report.MetadataReport;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
 import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
+import org.apache.dubbo.metrics.event.MetricsEventBus;
+import org.apache.dubbo.metrics.metadata.event.MetadataEvent;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 import org.apache.dubbo.registry.client.metadata.MetadataUtils;
 import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
 import org.apache.dubbo.registry.client.metadata.store.MetaCacheManager;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA_INFO_CACHE_EXPIRE;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA_INFO_CACHE_SIZE;
@@ -130,11 +132,13 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
         if (isDestroy) {
             return;
         }
-        ServiceInstance serviceInstance = createServiceInstance(this.metadataInfo);
-        if (!isValidInstance(serviceInstance)) {
-            return;
+        if (this.serviceInstance == null) {
+            ServiceInstance serviceInstance = createServiceInstance(this.metadataInfo);
+            if (!isValidInstance(serviceInstance)) {
+                return;
+            }
+            this.serviceInstance = serviceInstance;
         }
-        this.serviceInstance = serviceInstance;
         boolean revisionUpdated = calOrUpdateInstanceRevision(this.serviceInstance);
         if (revisionUpdated) {
             reportMetadata(this.metadataInfo);
@@ -220,7 +224,12 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
             // try to load metadata from remote.
             int triedTimes = 0;
             while (triedTimes < 3) {
-                metadata = MetadataUtils.getRemoteMetadata(revision, instances, metadataReport);
+
+                metadata = MetricsEventBus.post(MetadataEvent.toSubscribeEvent(applicationModel),
+                    () -> MetadataUtils.getRemoteMetadata(revision, instances, metadataReport),
+                    result -> result != MetadataInfo.EMPTY
+                );
+
 
                 if (metadata != MetadataInfo.EMPTY) {// succeeded
                     metadata.init();
@@ -349,7 +358,12 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
         if (metadataReport != null) {
             SubscriberMetadataIdentifier identifier = new SubscriberMetadataIdentifier(serviceName, metadataInfo.getRevision());
             if ((DEFAULT_METADATA_STORAGE_TYPE.equals(metadataType) && metadataReport.shouldReportMetadata()) || REMOTE_METADATA_STORAGE_TYPE.equals(metadataType)) {
-                metadataReport.publishAppMetadata(identifier, metadataInfo);
+                MetricsEventBus.post(MetadataEvent.toPushEvent(applicationModel),
+                    () ->
+                    {
+                        metadataReport.publishAppMetadata(identifier, metadataInfo);
+                        return null;
+                    });
             }
         }
         MetadataInfo clonedMetadataInfo = metadataInfo.clone();

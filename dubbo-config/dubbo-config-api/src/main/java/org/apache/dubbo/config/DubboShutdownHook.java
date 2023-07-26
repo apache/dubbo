@@ -18,11 +18,16 @@ package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.constants.LoggerCodeConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.Assert;
+import org.apache.dubbo.rpc.GracefulShutdown;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ModuleModel;
 
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_SHUTDOWN_HOOK;
@@ -77,7 +82,60 @@ public class DubboShutdownHook extends Thread {
     }
 
     private void doDestroy() {
-        applicationModel.destroy();
+        int timeout = ConfigurationUtils.getServerShutdownTimeout(applicationModel);
+        ConfigurationUtils.setExpectedShutdownTime(System.currentTimeMillis() + timeout);
+
+        // send readonly for shutdown hook
+        List<GracefulShutdown> gracefulShutdowns = GracefulShutdown.getGracefulShutdowns(applicationModel.getFrameworkModel());
+        for (GracefulShutdown gracefulShutdown : gracefulShutdowns) {
+            gracefulShutdown.readonly();
+        }
+
+        boolean hasModuleBindSpring = false;
+        // check if any modules are bound to Spring
+        for (ModuleModel module : applicationModel.getModuleModels()) {
+            if (module.isLifeCycleManagedExternally()) {
+                hasModuleBindSpring = true;
+                break;
+            }
+        }
+        if (hasModuleBindSpring) {
+            if (timeout > 0) {
+                long start = System.currentTimeMillis();
+                /*
+                  To avoid shutdown conflicts between Dubbo and Spring,
+                  wait for the modules bound to Spring to be handled by Spring until timeout.
+                 */
+                logger.info("Waiting for modules(" + applicationModel.getDesc() + ") managed by Spring to be shutdown.");
+                while (!applicationModel.isDestroyed() && hasModuleBindSpring
+                    && (System.currentTimeMillis() - start) < timeout) {
+                    try {
+                        TimeUnit.MILLISECONDS.sleep(10);
+                        hasModuleBindSpring = false;
+                        if (!applicationModel.isDestroyed()) {
+                            for (ModuleModel module : applicationModel.getModuleModels()) {
+                                if (module.isLifeCycleManagedExternally()) {
+                                    hasModuleBindSpring = true;
+                                    break;
+                                }
+                            }
+                        }
+                    } catch (InterruptedException e) {
+                        logger.warn(LoggerCodeConstants.INTERNAL_INTERRUPTED, "", "", e.getMessage(), e);
+                        Thread.currentThread().interrupt();
+                    }
+                }
+                if (!applicationModel.isDestroyed()) {
+                    long usage = System.currentTimeMillis() - start;
+                    logger.info("Dubbo wait for application(" + applicationModel.getDesc() + ") managed by Spring to be shutdown failed, " +
+                        "time usage: " + usage + "ms");
+                }
+            }
+        }
+        if (!applicationModel.isDestroyed()) {
+            logger.info("Dubbo shutdown hooks execute now. " + applicationModel.getDesc());
+            applicationModel.destroy();
+        }
     }
 
     /**

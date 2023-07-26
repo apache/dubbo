@@ -49,7 +49,7 @@
         <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-test-spring</artifactId>
-            <version>${project.parent.version}</version>
+            <version>${project.version}</version>
             <scope>test</scope>
         </dependency>        <dependency>
         <groupId>org.apache.curator</groupId>
@@ -82,4 +82,35 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>jdk15ge-simple</id>
+            <activation>
+                <jdk>[15,</jdk>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <useSystemClassLoader>true</useSystemClassLoader>
+                            <forkMode>once</forkMode>
+                            <argLine>${argline} ${jacocoArgLine}
+                                --add-opens java.base/java.lang=ALL-UNNAMED
+                                --add-opens java.base/java.math=ALL-UNNAMED
+                                --add-opens java.base/java.util=ALL-UNNAMED
+                            </argLine>
+                            <systemProperties>
+                                <!-- common shared -->
+                            </systemProperties>
+                            <!-- Activate the use of TCP to transmit events to the plugin to fix Corrupted STDOUT issue -->
+                            <forkNode implementation="org.apache.maven.plugin.surefire.extensions.SurefireForkNodeFactory"/>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

@@ -40,6 +40,7 @@ public class RpcException extends RuntimeException {
     public static final int ROUTER_CACHE_NOT_BUILD = 10;
     public static final int METHOD_NOT_FOUND = 11;
     public static final int VALIDATION_EXCEPTION = 12;
+    public static final int AUTHORIZATION_EXCEPTION = 13;
     private static final long serialVersionUID = 7815426752583648734L;
     /**
      * RpcException cannot be extended, use error code for exception type to keep compatibility
@@ -108,6 +109,10 @@ public class RpcException extends RuntimeException {
 
     public boolean isSerialization() {
         return code == SERIALIZATION_EXCEPTION;
+    }
+
+    public boolean isAuthorization(){
+        return code == AUTHORIZATION_EXCEPTION;
     }
 
     public boolean isNoInvokerAvailableAfterFilter() {

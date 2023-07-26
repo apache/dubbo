@@ -21,6 +21,7 @@ import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.monitor.Monitor;
 import org.apache.dubbo.monitor.MonitorFactory;
@@ -30,6 +31,8 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.model.ProviderModel;
+import org.apache.dubbo.rpc.model.ServiceModel;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -96,6 +99,11 @@ public class MonitorFilter implements Filter, Filter.Listener {
             // count up
             getConcurrent(invoker, invocation).incrementAndGet();
         }
+        ServiceModel serviceModel = invoker.getUrl().getServiceModel();
+        if (serviceModel instanceof ProviderModel) {
+            ((ProviderModel) serviceModel).updateLastInvokeTime();
+        }
+
         // proceed invocation chain
         return invoker.invoke(invocation);
     }
@@ -108,8 +116,8 @@ public class MonitorFilter implements Filter, Filter.Listener {
      * @return
      */
     private AtomicInteger getConcurrent(Invoker<?> invoker, Invocation invocation) {
-        String key = invoker.getInterface().getName() + "." + invocation.getMethodName();
-        return concurrents.computeIfAbsent(key, k -> new AtomicInteger());
+        String key = invoker.getInterface().getName() + "." + RpcUtils.getMethodName(invocation);
+        return ConcurrentHashMapUtils.computeIfAbsent(concurrents, key, k -> new AtomicInteger());
     }
 
     @Override

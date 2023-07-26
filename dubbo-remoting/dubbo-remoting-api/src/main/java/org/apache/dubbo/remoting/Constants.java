@@ -64,6 +64,13 @@ public interface Constants {
     long LEAST_HEARTBEAT_DURATION = 1000;
 
     /**
+     * the least reconnect during is 60000 ms.
+     */
+    long LEAST_RECONNECT_DURATION = 60000;
+
+    String LEAST_RECONNECT_DURATION_KEY = "dubbo.application.least-reconnect-duration";
+
+    /**
      * ticks per wheel.
      */
     int TICKS_PER_WHEEL = 128;
@@ -78,6 +85,11 @@ public interface Constants {
     int DEFAULT_CONNECT_TIMEOUT = 3000;
 
     String SERIALIZATION_KEY = "serialization";
+
+    /**
+     * Prefer serialization
+     */
+    String PREFER_SERIALIZATION_KEY = "prefer.serialization";
 
     String DEFAULT_REMOTING_SERIALIZATION_PROPERTY_KEY = "DUBBO_DEFAULT_SERIALIZATION";
 
@@ -105,9 +117,9 @@ public interface Constants {
 
     int DEFAULT_IO_THREADS = Math.min(Runtime.getRuntime().availableProcessors() + 1, 32);
 
-    String EVENT_LOOP_BOSS_POOL_NAME  = "NettyServerBoss";
+    String EVENT_LOOP_BOSS_POOL_NAME = "NettyServerBoss";
 
-    String EVENT_LOOP_WORKER_POOL_NAME  = "NettyServerWorker";
+    String EVENT_LOOP_WORKER_POOL_NAME = "NettyServerWorker";
 
     String NETTY_EPOLL_ENABLE_KEY = "netty.epoll.enable";
 
@@ -129,6 +141,8 @@ public interface Constants {
 
     int DEFAULT_RECONNECT_PERIOD = 2000;
 
+    String CHANNEL_SHUTDOWN_TIMEOUT_KEY = "channel.shutdown.timeout";
+
     String SEND_RECONNECT_KEY = "send.reconnect";
 
     String CHECK_KEY = "check";
@@ -138,9 +152,26 @@ public interface Constants {
     String DEFAULT_PROMPT = "dubbo>";
     String TELNET_KEY = "telnet";
     String HEARTBEAT_KEY = "heartbeat";
+    String HEARTBEAT_CONFIG_KEY = "dubbo.protocol.default-heartbeat";
+    String CLOSE_TIMEOUT_CONFIG_KEY = "dubbo.protocol.default-close-timeout";
     int DEFAULT_HEARTBEAT = 60 * 1000;
     String HEARTBEAT_TIMEOUT_KEY = "heartbeat.timeout";
+    String CLOSE_TIMEOUT_KEY = "close.timeout";
     String CONNECTIONS_KEY = "connections";
 
     int DEFAULT_BACKLOG = 1024;
+
+    String CONNECTION = "Connection";
+
+    String KEEP_ALIVE = "keep-alive";
+
+    String KEEP_ALIVE_HEADER = "Keep-Alive";
+
+    String OK_HTTP = "ok-http";
+    String URL_CONNECTION = "url-connection";
+    String APACHE_HTTP_CLIENT = "apache-http-client";
+
+    String CONTENT_LENGTH_KEY = "content-length";
+
+    String USE_SECURE_RANDOM_ID = "dubbo.application.use-secure-random-request-id";
 }
