@@ -132,11 +132,13 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
         if (isDestroy) {
             return;
         }
-        ServiceInstance serviceInstance = createServiceInstance(this.metadataInfo);
-        if (!isValidInstance(serviceInstance)) {
-            return;
+        if (this.serviceInstance == null) {
+            ServiceInstance serviceInstance = createServiceInstance(this.metadataInfo);
+            if (!isValidInstance(serviceInstance)) {
+                return;
+            }
+            this.serviceInstance = serviceInstance;
         }
-        this.serviceInstance = serviceInstance;
         boolean revisionUpdated = calOrUpdateInstanceRevision(this.serviceInstance);
         if (revisionUpdated) {
             reportMetadata(this.metadataInfo);
