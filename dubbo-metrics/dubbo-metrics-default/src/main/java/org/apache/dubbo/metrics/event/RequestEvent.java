@@ -41,7 +41,7 @@ import static org.apache.dubbo.metrics.model.key.MetricsKey.METRIC_REQUEST_BUSIN
  */
 public class RequestEvent extends TimeCounterEvent {
     private static final TypeWrapper REQUEST_EVENT = new TypeWrapper(MetricsLevel.SERVICE, METRIC_REQUESTS, METRIC_REQUESTS_SUCCEED, METRIC_REQUEST_BUSINESS_FAILED);
-    private static final TypeWrapper REQUEST_BEFORE_EVENT = new TypeWrapper(MetricsLevel.METHOD, MetricsKey.METRIC_REQUESTS);
+    private static final TypeWrapper REQUEST_ERROR_EVENT = new TypeWrapper(MetricsLevel.METHOD, MetricsKey.METRIC_REQUESTS);
 
     public RequestEvent(ApplicationModel applicationModel, String appName, MetricsDispatcher metricsDispatcher, DefaultMetricsCollector collector, TypeWrapper TYPE_WRAPPER) {
         super(applicationModel, appName, metricsDispatcher, TYPE_WRAPPER);
@@ -80,17 +80,17 @@ public class RequestEvent extends TimeCounterEvent {
     /**
      * Acts on MetricsClusterFilter to monitor exceptions that occur before request execution
      */
-    public static RequestEvent toRequestBeforeEvent(ApplicationModel applicationModel, String appName, MetricsDispatcher metricsDispatcher, Invocation invocation, String side) {
-        RequestEvent event = new RequestEvent(applicationModel, appName, metricsDispatcher, null,  REQUEST_BEFORE_EVENT);
+    public static RequestEvent toRequestErrorEvent(ApplicationModel applicationModel, String appName, MetricsDispatcher metricsDispatcher, Invocation invocation, String side, int code) {
+        RequestEvent event = new RequestEvent(applicationModel, appName, metricsDispatcher, null,  REQUEST_ERROR_EVENT);
         event.putAttachment(ATTACHMENT_KEY_SERVICE, MetricsSupport.getInterfaceName(invocation));
         event.putAttachment(MetricsConstants.INVOCATION_SIDE, side);
         event.putAttachment(MetricsConstants.INVOCATION, invocation);
-        event.putAttachment(MetricsConstants.INVOCATION_REQUEST_BEFORE, "");
+        event.putAttachment(MetricsConstants.INVOCATION_REQUEST_ERROR, code);
         event.putAttachment(MetricsConstants.METHOD_METRICS, new MethodMetric(applicationModel, invocation));
         return event;
     }
 
-    public boolean isRequestBeforeEvent(){
-        return super.getAttachmentValue(MetricsConstants.INVOCATION_REQUEST_BEFORE) != null;
+    public boolean isRequestErrorEvent(){
+        return super.getAttachmentValue(MetricsConstants.INVOCATION_REQUEST_ERROR) != null;
     }
 }

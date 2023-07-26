@@ -73,7 +73,7 @@ public class MetricsClusterFilter implements ClusterFilter, BaseFilter.Listener,
         if (t instanceof RpcException) {
             RpcException e = (RpcException) t;
             if (e.isForbidden()) {
-                MetricsEventBus.publish(RequestEvent.toRequestBeforeEvent(applicationModel, appName, metricsDispatcher, invocation, CONSUMER_SIDE));
+                MetricsEventBus.publish(RequestEvent.toRequestErrorEvent(applicationModel, appName, metricsDispatcher, invocation, CONSUMER_SIDE, e.getCode()));
             }
         }
     }

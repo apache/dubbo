@@ -47,7 +47,7 @@ public final class DefaultSubDispatcher extends SimpleMetricsEventMulticaster {
 
             @Override
             public boolean isSupport(MetricsEvent event) {
-                return event instanceof RequestEvent && ((RequestEvent) event).isRequestBeforeEvent();
+                return event instanceof RequestEvent && ((RequestEvent) event).isRequestErrorEvent();
             }
 
             private final MetricsPlaceValue dynamicPlaceType = MetricsPlaceValue.of(CommonConstants.CONSUMER, MetricsLevel.METHOD);
