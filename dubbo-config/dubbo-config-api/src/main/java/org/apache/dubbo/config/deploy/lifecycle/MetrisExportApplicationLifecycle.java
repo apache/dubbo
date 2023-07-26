@@ -1,4 +1,4 @@
-package org.apache.dubbo.metrics.deploy;
+package org.apache.dubbo.config.deploy.lifecycle;
 
 import org.apache.dubbo.common.constants.LoggerCodeConstants;
 import org.apache.dubbo.common.deploy.ApplicationDeployer;
@@ -7,7 +7,6 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.deploy.DefaultApplicationDeployer;
-import org.apache.dubbo.config.deploy.lifecycle.ApplicationLifecycle;
 import org.apache.dubbo.metrics.service.MetricsServiceExporter;
 
 import java.util.concurrent.atomic.AtomicBoolean;

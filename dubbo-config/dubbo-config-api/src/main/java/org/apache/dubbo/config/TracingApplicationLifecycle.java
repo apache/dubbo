@@ -1,9 +1,8 @@
-package org.apache.dubbo.tracing.deploy;
+package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.config.TracingConfig;
 import org.apache.dubbo.config.deploy.DefaultApplicationDeployer;
 import org.apache.dubbo.config.deploy.lifecycle.ApplicationLifecycle;
 import org.apache.dubbo.tracing.DubboObservationRegistry;

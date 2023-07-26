@@ -1,4 +1,4 @@
-package org.apache.dubbo.registry.deploy;
+package org.apache.dubbo.config.deploy.lifecycle;
 
 import org.apache.dubbo.common.constants.LoggerCodeConstants;
 import org.apache.dubbo.common.deploy.ApplicationDeployer;
@@ -6,7 +6,6 @@ import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.deploy.DefaultApplicationDeployer;
-import org.apache.dubbo.config.deploy.lifecycle.ApplicationLifecycle;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.RegistryFactory;
 import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;

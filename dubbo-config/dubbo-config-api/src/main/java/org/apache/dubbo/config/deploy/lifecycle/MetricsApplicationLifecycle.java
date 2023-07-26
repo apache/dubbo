@@ -1,4 +1,4 @@
-package org.apache.dubbo.metrics.deploy;
+package org.apache.dubbo.config.deploy.lifecycle;
 
 import org.apache.dubbo.common.constants.LoggerCodeConstants;
 import org.apache.dubbo.common.deploy.ApplicationDeployer;
@@ -10,7 +10,6 @@ import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.deploy.DefaultApplicationDeployer;
-import org.apache.dubbo.config.deploy.lifecycle.ApplicationLifecycle;
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
 import org.apache.dubbo.metrics.report.DefaultMetricsReporterFactory;
 import org.apache.dubbo.metrics.report.MetricsReporter;

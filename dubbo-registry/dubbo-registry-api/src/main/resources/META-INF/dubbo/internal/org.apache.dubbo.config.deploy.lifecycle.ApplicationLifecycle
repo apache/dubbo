@@ -1,1 +1,1 @@
-registry=org.apache.dubbo.registry.deploy.RegistryApplicationLifecycle
+registry=org.apache.dubbo.config.deploy.lifecycle.RegistryApplicationLifecycle
