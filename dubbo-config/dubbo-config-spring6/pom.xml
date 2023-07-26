@@ -28,8 +28,8 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <spring.version>6.0.7</spring.version>
-        <spring-boot.version>3.0.4</spring-boot.version>
+        <spring.version>6.0.11</spring.version>
+        <spring-boot.version>3.0.9</spring-boot.version>
     </properties>
 
     <dependencies>
