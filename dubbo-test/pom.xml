@@ -36,6 +36,10 @@
         <module>dubbo-test-spring4.2</module>
         <module>dubbo-dependencies-all</module>
         <module>dubbo-test-modules</module>
+        <module>dubbo-test-base</module>
+        <module>dubbo-test-base/test-interface</module>
+        <module>dubbo-test-base/test-consumer</module>
+        <module>dubbo-test-base/test-provider</module>
     </modules>
 
     <properties>

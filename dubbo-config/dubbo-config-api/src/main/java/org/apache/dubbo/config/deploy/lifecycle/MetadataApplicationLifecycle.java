@@ -1,4 +1,4 @@
-package org.apache.dubbo.metadata.deploy;
+package org.apache.dubbo.config.deploy.lifecycle;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
@@ -12,7 +12,6 @@ import org.apache.dubbo.config.MetadataReportConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.deploy.DefaultApplicationDeployer;
-import org.apache.dubbo.config.deploy.lifecycle.ApplicationLifecycle;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.metadata.report.MetadataReportFactory;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;

@@ -35,9 +35,7 @@ public interface ApplicationLifecycle extends Lifecycle {
     /**
      * {@link ApplicationDeployer#start()}
      */
-    default void start(AtomicBoolean hasPreparedApplicationInstance){
-        return;
-    }
+    default void start(AtomicBoolean hasPreparedApplicationInstance){}
 
     /**
      * {@link  ApplicationDeployer#initialize()}
@@ -73,6 +71,6 @@ public interface ApplicationLifecycle extends Lifecycle {
     /**
      * {@link DefaultApplicationDeployer#refreshServiceInstance()}.
      */
-    default void refreshServiceInstance(){return;}
+    default void refreshServiceInstance(){}
 
 }
