@@ -19,6 +19,7 @@ package org.apache.dubbo.registry.integration;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
+import org.apache.dubbo.common.constants.RegistryConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -130,7 +131,8 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
         }
 
         ApplicationModel applicationModel = url.getApplicationModel();
-        MetricsEventBus.post(RegistryEvent.toSubscribeEvent(applicationModel), () ->
+        String registryClusterName = url.getParameter(RegistryConstants.REGISTRY_CLUSTER_KEY, url.getParameter(PROTOCOL_KEY));
+        MetricsEventBus.post(RegistryEvent.toSubscribeEvent(applicationModel,registryClusterName), () ->
             {
                 super.subscribe(url);
                 return null;

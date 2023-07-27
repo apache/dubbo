@@ -48,32 +48,38 @@ public class RegistrySpecListener {
      * Perform auto-increment on the monitored key,
      * Can use a custom listener instead of this generic operation
      */
-    public static AbstractMetricsKeyListener onPostOfRegister(MetricsKey metricsKey, CombMetricsCollector<?> collector) {
+    public static AbstractMetricsKeyListener onPost(MetricsKey metricsKey, CombMetricsCollector<?> collector) {
         return AbstractMetricsKeyListener.onEvent(metricsKey,
-            event -> ((RegistryMetricsCollector) collector).incrRegisterNum(metricsKey, getRgs(event))
+            event -> ((RegistryMetricsCollector) collector).incrMetricsNum(metricsKey, getRgs(event))
         );
     }
 
-    public static AbstractMetricsKeyListener onFinishOfRegister(MetricsKey metricsKey, CombMetricsCollector<?> collector) {
+    public static AbstractMetricsKeyListener onFinish(MetricsKey metricsKey, CombMetricsCollector<?> collector) {
         return AbstractMetricsKeyListener.onFinish(metricsKey,
             event -> ((RegistryMetricsCollector) collector).incrRegisterFinishNum(metricsKey, OP_TYPE_REGISTER.getType(), getRgs(event), event.getTimePair().calc())
         );
     }
 
-    public static AbstractMetricsKeyListener onErrorOfRegister(MetricsKey metricsKey, CombMetricsCollector<?> collector) {
+    public static AbstractMetricsKeyListener onError(MetricsKey metricsKey, CombMetricsCollector<?> collector) {
         return AbstractMetricsKeyListener.onError(metricsKey,
             event -> ((RegistryMetricsCollector) collector).incrRegisterFinishNum(metricsKey, OP_TYPE_REGISTER.getType(), getRgs(event), event.getTimePair().calc())
         );
     }
 
-    public static AbstractMetricsKeyListener onPostOfServiceRegister(MetricsKey metricsKey, MetricsPlaceValue placeType, CombMetricsCollector<?> collector) {
+    public static AbstractMetricsKeyListener onPostOfService(MetricsKey metricsKey, MetricsPlaceValue placeType, CombMetricsCollector<?> collector) {
         return AbstractMetricsKeyListener.onEvent(metricsKey,
             event -> ((RegistryMetricsCollector) collector).incrServiceRegisterNum(new MetricsKeyWrapper(metricsKey, placeType), getServiceKey(event), getRgs(event), getSize(event))
         );
     }
 
-    public static AbstractMetricsKeyListener onFinishOfServiceRegister(MetricsKey metricsKey, MetricsPlaceValue placeType, CombMetricsCollector<?> collector) {
+    public static AbstractMetricsKeyListener onFinishOfService(MetricsKey metricsKey, MetricsPlaceValue placeType, CombMetricsCollector<?> collector) {
         return AbstractMetricsKeyListener.onFinish(metricsKey,
+            event -> ((RegistryMetricsCollector) collector).incrServiceRegisterFinishNum(new MetricsKeyWrapper(metricsKey, placeType), getServiceKey(event), getRgs(event), getSize(event), event.getTimePair().calc())
+        );
+    }
+
+    public static AbstractMetricsKeyListener onErrorOfService(MetricsKey metricsKey, MetricsPlaceValue placeType, CombMetricsCollector<?> collector) {
+        return AbstractMetricsKeyListener.onError(metricsKey,
             event -> ((RegistryMetricsCollector) collector).incrServiceRegisterFinishNum(new MetricsKeyWrapper(metricsKey, placeType), getServiceKey(event), getRgs(event), getSize(event), event.getTimePair().calc())
         );
     }
@@ -108,11 +114,7 @@ public class RegistrySpecListener {
         );
     }
 
-    public static AbstractMetricsKeyListener onErrorOfServiceRegister(MetricsKey metricsKey, MetricsPlaceValue placeType, CombMetricsCollector<?> collector) {
-        return AbstractMetricsKeyListener.onError(metricsKey,
-            event -> ((RegistryMetricsCollector) collector).incrServiceRegisterFinishNum(new MetricsKeyWrapper(metricsKey, placeType), getServiceKey(event), getRgs(event), getSize(event), event.getTimePair().calc())
-        );
-    }
+
 
     /**
      * Get the number of multiple registries
@@ -131,4 +133,5 @@ public class RegistrySpecListener {
     public static String getServiceKey(MetricsEvent event) {
         return event.getAttachmentValue(ATTACHMENT_KEY_SERVICE);
     }
+
 }

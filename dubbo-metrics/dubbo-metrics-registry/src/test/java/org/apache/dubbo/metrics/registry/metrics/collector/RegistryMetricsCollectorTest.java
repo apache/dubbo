@@ -36,6 +36,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -199,7 +200,7 @@ class RegistryMetricsCollectorTest {
 
         String serviceName = "demo.gameService";
 
-        RegistryEvent subscribeEvent = RegistryEvent.toSsEvent(applicationModel, serviceName);
+        RegistryEvent subscribeEvent = RegistryEvent.toSsEvent(applicationModel, serviceName, Collections.singletonList("demo1"));
         MetricsEventBus.post(subscribeEvent,
             () -> {
                 List<MetricSample> metricSamples = collector.collect();
@@ -219,7 +220,7 @@ class RegistryMetricsCollectorTest {
         Assertions.assertEquals(RegistryMetricsConstants.APP_LEVEL_KEYS.size() + 5 + 2, metricSamples.size());
 
         long c1 = subscribeEvent.getTimePair().calc();
-        subscribeEvent = RegistryEvent.toSsEvent(applicationModel, serviceName);
+        subscribeEvent = RegistryEvent.toSsEvent(applicationModel, serviceName, Collections.singletonList("demo1"));
         TimePair lastTimePair = subscribeEvent.getTimePair();
         MetricsEventBus.post(subscribeEvent,
             () -> {

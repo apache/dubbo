@@ -107,7 +107,7 @@ public class RegistryStatCompositeTest {
 
     @Test
     void testIncrement() {
-        regStatComposite.incrRegisterNum(REGISTER_METRIC_REQUESTS, "beijing");
+        regStatComposite.incrMetricsNum(REGISTER_METRIC_REQUESTS, "beijing");
         ApplicationMetric applicationMetric = new ApplicationMetric(applicationModel);
         applicationMetric.setExtraInfo(MetricsSupport.customExtraInfo(RegistryConstants.REGISTRY_CLUSTER_KEY.toLowerCase(), "beijing"));
         Assertions.assertEquals(1L, regStatComposite.getAppStats().get(REGISTER_METRIC_REQUESTS).get(applicationMetric).get());

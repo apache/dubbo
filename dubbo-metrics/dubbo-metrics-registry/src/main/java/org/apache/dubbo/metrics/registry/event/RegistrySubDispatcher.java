@@ -19,7 +19,6 @@ package org.apache.dubbo.metrics.registry.event;
 
 import org.apache.dubbo.metrics.event.SimpleMetricsEventMulticaster;
 import org.apache.dubbo.metrics.listener.MetricsApplicationListener;
-import org.apache.dubbo.metrics.listener.MetricsServiceListener;
 import org.apache.dubbo.metrics.model.key.CategoryOverall;
 import org.apache.dubbo.metrics.model.key.MetricsCat;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
@@ -73,14 +72,14 @@ public final class RegistrySubDispatcher extends SimpleMetricsEventMulticaster {
      */
     interface MCat {
         // MetricsRegisterListener
-        MetricsCat APPLICATION_REGISTER_POST = new MetricsCat(MetricsKey.REGISTER_METRIC_REQUESTS, RegistrySpecListener::onPostOfRegister);
-        MetricsCat APPLICATION_REGISTER_FINISH = new MetricsCat(MetricsKey.REGISTER_METRIC_REQUESTS_SUCCEED, RegistrySpecListener::onFinishOfRegister);
-        MetricsCat APPLICATION_REGISTER_ERROR = new MetricsCat(MetricsKey.REGISTER_METRIC_REQUESTS_FAILED, RegistrySpecListener::onErrorOfRegister);
+        MetricsCat APPLICATION_REGISTER_POST = new MetricsCat(MetricsKey.REGISTER_METRIC_REQUESTS, RegistrySpecListener::onPost);
+        MetricsCat APPLICATION_REGISTER_FINISH = new MetricsCat(MetricsKey.REGISTER_METRIC_REQUESTS_SUCCEED, RegistrySpecListener::onFinish);
+        MetricsCat APPLICATION_REGISTER_ERROR = new MetricsCat(MetricsKey.REGISTER_METRIC_REQUESTS_FAILED, RegistrySpecListener::onError);
 
         // MetricsSubscribeListener
-        MetricsCat APPLICATION_SUBSCRIBE_POST = new MetricsCat(MetricsKey.SUBSCRIBE_METRIC_NUM, MetricsApplicationListener::onPostEventBuild);
-        MetricsCat APPLICATION_SUBSCRIBE_FINISH = new MetricsCat(MetricsKey.SUBSCRIBE_METRIC_NUM_SUCCEED, MetricsApplicationListener::onFinishEventBuild);
-        MetricsCat APPLICATION_SUBSCRIBE_ERROR = new MetricsCat(MetricsKey.SUBSCRIBE_METRIC_NUM_FAILED, MetricsApplicationListener::onErrorEventBuild);
+        MetricsCat APPLICATION_SUBSCRIBE_POST = new MetricsCat(MetricsKey.SUBSCRIBE_METRIC_NUM, RegistrySpecListener::onPost);
+        MetricsCat APPLICATION_SUBSCRIBE_FINISH = new MetricsCat(MetricsKey.SUBSCRIBE_METRIC_NUM_SUCCEED, RegistrySpecListener::onFinish);
+        MetricsCat APPLICATION_SUBSCRIBE_ERROR = new MetricsCat(MetricsKey.SUBSCRIBE_METRIC_NUM_FAILED, RegistrySpecListener::onError);
 
         // MetricsNotifyListener
         MetricsCat APPLICATION_NOTIFY_POST = new MetricsCat(MetricsKey.NOTIFY_METRIC_REQUESTS, MetricsApplicationListener::onPostEventBuild);
@@ -90,15 +89,15 @@ public final class RegistrySubDispatcher extends SimpleMetricsEventMulticaster {
 
 
         // MetricsServiceRegisterListener
-        MetricsCat SERVICE_REGISTER_POST = new MetricsCat(MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS, RegistrySpecListener::onPostOfServiceRegister);
-        MetricsCat SERVICE_REGISTER_FINISH = new MetricsCat(MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS_SUCCEED, RegistrySpecListener::onFinishOfServiceRegister);
-        MetricsCat SERVICE_REGISTER_ERROR = new MetricsCat(MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS_FAILED, RegistrySpecListener::onErrorOfServiceRegister);
+        MetricsCat SERVICE_REGISTER_POST = new MetricsCat(MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS, RegistrySpecListener::onPostOfService);
+        MetricsCat SERVICE_REGISTER_FINISH = new MetricsCat(MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS_SUCCEED, RegistrySpecListener::onFinishOfService);
+        MetricsCat SERVICE_REGISTER_ERROR = new MetricsCat(MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS_FAILED, RegistrySpecListener::onErrorOfService);
 
 
         // MetricsServiceSubscribeListener
-        MetricsCat SERVICE_SUBSCRIBE_POST = new MetricsCat(MetricsKey.SERVICE_SUBSCRIBE_METRIC_NUM, MetricsServiceListener::onPostEventBuild);
-        MetricsCat SERVICE_SUBSCRIBE_FINISH = new MetricsCat(MetricsKey.SERVICE_SUBSCRIBE_METRIC_NUM_SUCCEED, MetricsServiceListener::onFinishEventBuild);
-        MetricsCat SERVICE_SUBSCRIBE_ERROR = new MetricsCat(MetricsKey.SERVICE_SUBSCRIBE_METRIC_NUM_FAILED, MetricsServiceListener::onErrorEventBuild);
+        MetricsCat SERVICE_SUBSCRIBE_POST = new MetricsCat(MetricsKey.SERVICE_SUBSCRIBE_METRIC_NUM, RegistrySpecListener::onPostOfService);
+        MetricsCat SERVICE_SUBSCRIBE_FINISH = new MetricsCat(MetricsKey.SERVICE_SUBSCRIBE_METRIC_NUM_SUCCEED, RegistrySpecListener::onFinishOfService);
+        MetricsCat SERVICE_SUBSCRIBE_ERROR = new MetricsCat(MetricsKey.SERVICE_SUBSCRIBE_METRIC_NUM_FAILED, RegistrySpecListener::onErrorOfService);
 
 
     }

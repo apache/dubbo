@@ -64,7 +64,7 @@ public class RegistryStatComposite extends AbstractMetricsExport {
         return list;
     }
 
-    public void incrRegisterNum(MetricsKey metricsKey, String name) {
+    public void incrMetricsNum(MetricsKey metricsKey, String name) {
         if (!appStats.containsKey(metricsKey)) {
             return;
         }

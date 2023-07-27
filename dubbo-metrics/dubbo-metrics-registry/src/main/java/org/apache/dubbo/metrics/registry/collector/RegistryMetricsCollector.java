@@ -112,8 +112,8 @@ public class RegistryMetricsCollector extends CombMetricsCollector<RegistryEvent
         return list;
     }
 
-    public void incrRegisterNum(MetricsKey metricsKey, List<String> registryClusterNames) {
-        registryClusterNames.forEach(name -> internalStat.incrRegisterNum(metricsKey, name));
+    public void incrMetricsNum(MetricsKey metricsKey, List<String> registryClusterNames) {
+        registryClusterNames.forEach(name -> internalStat.incrMetricsNum(metricsKey, name));
     }
 
     public void incrRegisterFinishNum(MetricsKey metricsKey, String registryOpType, List<String> registryClusterNames, Long responseTime) {
@@ -121,7 +121,7 @@ public class RegistryMetricsCollector extends CombMetricsCollector<RegistryEvent
         {
             ApplicationMetric applicationMetric = new ApplicationMetric(applicationModel);
             applicationMetric.setExtraInfo(MetricsSupport.customExtraInfo(RegistryConstants.REGISTRY_CLUSTER_KEY.toLowerCase(), name));
-            internalStat.incrRegisterNum(metricsKey, name);
+            internalStat.incrMetricsNum(metricsKey, name);
             getStats().getRtStatComposite().calcServiceKeyRt(registryOpType, responseTime, applicationMetric);
         });
 
