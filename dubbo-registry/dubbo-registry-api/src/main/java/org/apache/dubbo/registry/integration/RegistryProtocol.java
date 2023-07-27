@@ -18,6 +18,7 @@ package org.apache.dubbo.registry.integration;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
+import org.apache.dubbo.common.constants.RegistryConstants;
 import org.apache.dubbo.common.deploy.ApplicationDeployer;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -29,6 +30,8 @@ import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
+import org.apache.dubbo.metrics.event.MetricsEventBus;
+import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.RegistryFactory;
@@ -61,6 +64,7 @@ import org.apache.dubbo.rpc.protocol.InvokerWrapper;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -224,7 +228,12 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         ApplicationDeployer deployer = registeredProviderUrl.getOrDefaultApplicationModel().getDeployer();
         try {
             deployer.increaseServiceRefreshCount();
-            registry.register(registeredProviderUrl);
+            String serviceDiscoveryName = registeredProviderUrl.getParameter(RegistryConstants.REGISTRY_CLUSTER_KEY, registeredProviderUrl.getParameter(PROTOCOL_KEY));
+            MetricsEventBus.post(RegistryEvent.toRsEvent(registeredProviderUrl.getApplicationModel(), registeredProviderUrl.getServiceKey(), 1, Collections.singletonList(serviceDiscoveryName)),
+                () -> {
+                    registry.register(registeredProviderUrl);
+                    return null;
+                });
         } finally {
             deployer.decreaseServiceRefreshCount();
         }

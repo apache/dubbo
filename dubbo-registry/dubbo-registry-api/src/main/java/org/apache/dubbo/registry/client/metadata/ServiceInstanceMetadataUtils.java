@@ -221,7 +221,7 @@ public class ServiceInstanceMetadataUtils {
     private static List<String> getServiceDiscoveryNames(List<ServiceDiscovery> serviceDiscoveries) {
         return serviceDiscoveries
             .stream()
-            .map(sd -> sd.getUrl().getParameter(RegistryConstants.REGISTRY_CLUSTER_KEY))
+            .map(sd -> sd.getUrl().getParameter(RegistryConstants.REGISTRY_CLUSTER_KEY, sd.getUrl().getParameter(PROTOCOL_KEY)))
             .collect(Collectors.toList());
     }
 
