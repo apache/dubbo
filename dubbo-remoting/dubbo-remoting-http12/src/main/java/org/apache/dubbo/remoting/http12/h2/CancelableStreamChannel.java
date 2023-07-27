@@ -18,10 +18,6 @@ package org.apache.dubbo.remoting.http12.h2;
 
 import org.apache.dubbo.remoting.http12.HttpChannel;
 
-/**
- * @author icodening
- * @date 2023.06.01
- */
 public interface CancelableStreamChannel extends HttpChannel {
 
     void cancelByLocal();

@@ -16,10 +16,6 @@
  */
 package org.apache.dubbo.remoting.http12;
 
-/**
- * @author icodening
- * @date 2023.06.03
- */
 public class SimpleHttpMetadata implements HttpMetadata {
 
     private final HttpHeaders headers;

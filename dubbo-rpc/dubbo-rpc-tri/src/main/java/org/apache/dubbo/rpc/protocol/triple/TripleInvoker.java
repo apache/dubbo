@@ -21,12 +21,16 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.api.connection.AbstractConnectionClient;
+import org.apache.dubbo.remoting.http12.h2.Http2MessageSenderFactory;
+import org.apache.dubbo.remoting.http12.message.MethodMetadata;
+import org.apache.dubbo.remoting.http12.netty4.h2.DefaultNettyHttp2MessageSenderFactory;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.model.ConsumerModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
@@ -53,18 +57,24 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
     private final Set<Invoker<?>> invokers;
     private final ExecutorService streamExecutor;
     private final String acceptEncodings;
+    private final Http2MessageSenderFactory factory;
+    private final FrameworkModel frameworkModel;
+
 
     public TripleInvoker(Class<T> serviceType,
                          URL url,
                          String acceptEncodings,
                          AbstractConnectionClient connectionClient,
                          Set<Invoker<?>> invokers,
-                         ExecutorService streamExecutor) {
+                         ExecutorService streamExecutor,
+                         FrameworkModel frameworkModel) {
         super(serviceType, url, new String[]{INTERFACE_KEY, GROUP_KEY, TOKEN_KEY});
         this.invokers = invokers;
         this.connectionClient = connectionClient;
         this.acceptEncodings = acceptEncodings;
         this.streamExecutor = streamExecutor;
+        this.frameworkModel = frameworkModel;
+        this.factory = new DefaultNettyHttp2MessageSenderFactory(frameworkModel, connectionClient);
     }
 
     @Override
@@ -82,6 +92,18 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
             invocation.getMethodName(),
             invocation.getParameterTypes());
         try {
+            switch (methodDescriptor.getRpcType()) {
+                case UNARY:
+                    return invokeUnary(methodDescriptor, invocation);
+                case SERVER_STREAM:
+                    break;
+                case CLIENT_STREAM:
+                case BI_STREAM:
+                    break;
+                default:
+                    throw new IllegalStateException("Can not reach here");
+            }
+
             return null;
 
         } catch (Throwable t) {
@@ -89,6 +111,43 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
             future.completeExceptionally(t);
             return new AsyncRpcResult(future, invocation);
         }
+    }
+
+    private AsyncRpcResult invokeUnary(MethodDescriptor methodDescriptor, Invocation invocation) {
+        MethodMetadata methodMetadata = MethodMetadata.fromMethodDescriptor(methodDescriptor);
+        Class<?> actualResponseType = methodMetadata.getActualResponseType();
+
+//        HttpMessageSender sender = factory.start(new Http2TransportListener() {
+//
+//            @Override
+//            public void onMetadata(Http2Header metadata) {
+//                System.out.println(metadata);
+//            }
+//
+//            @Override
+//            public void onData(Http2Message message) {
+//                InputStream body = message.getBody();
+//                try {
+//                    Object decode = CompatibleLowVersionCodec.INSTANCE.decode(body, actualResponseType);
+//                    System.out.println(decode);
+//                } catch (IOException e) {
+//                    throw new RuntimeException(e);
+//                }
+//            }
+//
+//            @Override
+//            public void cancelByRemote(long errorCode) {
+//
+//            }
+//        });
+//        String methodName = methodDescriptor.getMethodName();
+//        HttpHeaders httpHeaders = new HttpHeaders();
+//        httpHeaders.set(HttpHeaderNames.CONTENT_TYPE.getName(), "application/grpc+proto");
+//        httpHeaders.set(Http2Headers.PATH.getName(), "/" + getUrl().getPath() + "/" + methodName);
+//        sender.sendHeader(httpHeaders);
+//        sender.sendMessage(invocation.getArguments());
+//        sender.complete();
+        return null;
     }
 
 

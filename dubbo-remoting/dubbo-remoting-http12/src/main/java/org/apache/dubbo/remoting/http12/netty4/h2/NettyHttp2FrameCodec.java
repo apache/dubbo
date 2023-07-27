@@ -21,7 +21,6 @@ import io.netty.buffer.ByteBufInputStream;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
-import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http2.DefaultHttp2DataFrame;
 import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.handler.codec.http2.DefaultHttp2HeadersFrame;
@@ -33,16 +32,13 @@ import org.apache.dubbo.remoting.http12.h2.Http2Header;
 import org.apache.dubbo.remoting.http12.h2.Http2Message;
 import org.apache.dubbo.remoting.http12.h2.Http2MessageFrame;
 import org.apache.dubbo.remoting.http12.h2.Http2MetadataFrame;
+import org.apache.dubbo.remoting.http12.h2.Http2OutputMessageFrame;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 
-/**
- * @author icodening
- * @date 2023.05.31
- */
 public class NettyHttp2FrameCodec extends ChannelDuplexHandler {
 
     @Override
@@ -68,7 +64,9 @@ public class NettyHttp2FrameCodec extends ChannelDuplexHandler {
             Http2Message http2Message = (Http2Message) msg;
             Http2DataFrame http2DataFrame = encodeHttp2DataFrame(ctx, http2Message);
             super.write(ctx, http2DataFrame, promise);
-        } else {
+        } else if(msg instanceof Http2OutputMessageFrame){
+
+        }else {
             super.write(ctx, msg, promise);
         }
     }
@@ -91,7 +89,6 @@ public class NettyHttp2FrameCodec extends ChannelDuplexHandler {
     private Http2HeadersFrame encodeHttp2HeadersFrame(Http2Header http2Header) {
         HttpHeaders headers = http2Header.headers();
         DefaultHttp2Headers http2Headers = new DefaultHttp2Headers();
-        http2Headers.status(HttpResponseStatus.OK.codeAsText());
         for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
             String name = entry.getKey();
             List<String> value = entry.getValue();

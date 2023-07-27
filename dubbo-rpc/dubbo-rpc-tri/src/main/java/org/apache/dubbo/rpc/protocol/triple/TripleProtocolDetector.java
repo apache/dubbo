@@ -24,10 +24,6 @@ import org.apache.dubbo.remoting.buffer.ChannelBuffers;
 
 import static java.lang.Math.min;
 
-/**
- * @author icodening
- * @date 2023.06.03
- */
 public class TripleProtocolDetector implements ProtocolDetector {
 
     public static final String HTTP_VERSION = "HTTP_VERSION";

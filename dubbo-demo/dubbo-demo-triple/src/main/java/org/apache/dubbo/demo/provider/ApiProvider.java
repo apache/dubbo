@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.demo.provider;
 
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
@@ -33,7 +34,7 @@ public class ApiProvider {
         DubboBootstrap bootstrap = DubboBootstrap.getInstance();
         bootstrap.application(new ApplicationConfig("dubbo-demo-triple-api-provider"))
             .registry(new RegistryConfig("zookeeper://127.0.0.1:2181"))
-            .protocol(new ProtocolConfig("triple", 50052))
+            .protocol(new ProtocolConfig(CommonConstants.TRIPLE, 50052))
             .service(serviceConfig)
             .start()
             .await();

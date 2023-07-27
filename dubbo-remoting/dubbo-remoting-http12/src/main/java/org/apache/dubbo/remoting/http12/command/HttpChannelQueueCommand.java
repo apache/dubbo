@@ -14,27 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.http12;
+package org.apache.dubbo.remoting.http12.command;
 
-public interface ServerCall {
+import org.apache.dubbo.remoting.http12.HttpChannel;
+import org.apache.dubbo.remoting.http12.HttpChannelHolder;
 
-    interface Listener {
+import java.util.concurrent.CompletableFuture;
 
-        /**
-         * Callback when a request message is received.
-         *
-         * @param message message received
-         */
-        void onMessage(Object message);
+public abstract class HttpChannelQueueCommand extends CompletableFuture<Void> implements QueueCommand, HttpChannelHolder {
 
-        /**
-         * @param code when the call is canceled.
-         */
-        void onCancel(int code);
+    private HttpChannelHolder httpChannelHolder;
 
-        /**
-         * Request completed.
-         */
-        void onComplete();
+    public void setHttpChannel(HttpChannelHolder httpChannelHolder) {
+        this.httpChannelHolder = httpChannelHolder;
     }
+
+    public HttpChannel getHttpChannel() {
+        return httpChannelHolder.getHttpChannel();
+    }
+
 }

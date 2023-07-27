@@ -14,22 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.http12.util;
+package org.apache.dubbo.remoting.http12.h2;
 
-import org.apache.dubbo.remoting.http12.HttpHeaders;
+import org.apache.dubbo.remoting.http12.HttpChannelHolder;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+public interface Http2TransportListener extends CancelableTransportListener<Http2Header, Http2Message>, HttpChannelHolder {
 
-public class RequestUtil {
-
-    public static Map<String, Object> headerToAttachment(HttpHeaders headers) {
-        if (headers == null || headers.isEmpty()) {
-            return Collections.emptyMap();
-        }
-        Map<String, Object> ret = new HashMap<>(headers.toSingleValueMap());
-        //remove exclude
-        return ret;
-    }
+    @Override
+    H2StreamChannel getHttpChannel();
+    
 }

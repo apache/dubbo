@@ -16,13 +16,20 @@
  */
 package org.apache.dubbo.remoting.http12;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
-/**
- * @author icodening
- * @date 2023.05.31
- */
 public interface HttpMessage {
+
+    HttpMessage EMPTY_MESSAGE = new HttpMessage() {
+
+        private final InputStream INPUT_STREAM = new ByteArrayInputStream(new byte[0]);
+
+        @Override
+        public InputStream getBody() {
+            return INPUT_STREAM;
+        }
+    };
 
     InputStream getBody();
 

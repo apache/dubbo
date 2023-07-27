@@ -16,10 +16,6 @@
  */
 package org.apache.dubbo.remoting.http12;
 
-/**
- * @author icodening
- * @date 2023.05.31
- */
 public interface HttpMetadata {
 
     HttpHeaders headers();

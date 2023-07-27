@@ -17,42 +17,50 @@
 package org.apache.dubbo.remoting.http12.message;
 
 
-import java.util.Arrays;
-import java.util.List;
+import java.nio.charset.Charset;
+import java.util.Collections;
+import java.util.Map;
 
-public enum MediaType {
-    ALL_VALUE("*/*"),
-    APPLICATION_JSON_VALUE("application/json"),
-    APPLICATION_GRPC_PROTO_VALUE("application/grpc+proto"),
-    APPLICATION_FORM_URLENCODED_VALUE("application/x-www-form-urlencoded"),
-    TEXT_PLAIN("text/plain"),
-    TEXT_XML("text/xml"),
-    OCTET_STREAM("application/octet-stream"),
-    ;
+public class MediaType {
 
-    MediaType(String name) {
-        this.name = name;
-    }
+    public static final MediaType ALL_VALUE = new MediaType("*", "*");
+
+    public static final MediaType APPLICATION_JSON_VALUE = new MediaType("application", "json");
+
+    public static final MediaType TEXT_EVENT_STREAM_VALUE = new MediaType("text", "event-stream");
 
     private final String name;
+
+    private final String type;
+
+    private final String subType;
+
+    private final Charset charset;
+
+    public MediaType(String type, String subType) {
+        this(type, subType, Collections.singletonMap("charset", "UTF-8"));
+    }
+
+    public MediaType(String type, String subType, Map<String, String> parameters) {
+        this.type = type;
+        this.subType = subType;
+        this.name = type + "/" + subType;
+        this.charset = Charset.forName(parameters.getOrDefault("charset", "UTF-8"));
+    }
 
     public String getName() {
         return name;
     }
 
-    public static String getAllContentType() {
-        MediaType[] values = MediaType.values();
-        StringBuilder stringBuilder = new StringBuilder();
-        for (MediaType mediaType : values) {
-            stringBuilder.append(mediaType.name).append(" ");
-        }
-        return stringBuilder.toString();
+    public String getType() {
+        return type;
     }
 
-    public static List<MediaType> getSupportMediaTypes() {
-        return Arrays.asList(APPLICATION_JSON_VALUE,
-            APPLICATION_FORM_URLENCODED_VALUE,
-            TEXT_PLAIN, TEXT_XML, OCTET_STREAM);
+    public String getSubType() {
+        return subType;
     }
 
+    public Charset getCharset() {
+        return charset;
+    }
 }

@@ -22,10 +22,6 @@ import org.apache.dubbo.remoting.http12.HttpMetadata;
 
 import java.io.InputStream;
 
-/**
- * @author icodening
- * @date 2023.06.03
- */
 public class DefaultHttp1Response implements Http1Response {
 
     private final HttpMetadata httpMetadata;

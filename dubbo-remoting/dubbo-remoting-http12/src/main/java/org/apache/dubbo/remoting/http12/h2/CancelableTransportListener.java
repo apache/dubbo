@@ -18,13 +18,9 @@ package org.apache.dubbo.remoting.http12.h2;
 
 import org.apache.dubbo.remoting.http12.HttpMessage;
 import org.apache.dubbo.remoting.http12.HttpMetadata;
-import org.apache.dubbo.remoting.http12.ServerTransportListener;
+import org.apache.dubbo.remoting.http12.HttpTransportListener;
 
-/**
- * @author icodening
- * @date 2023.05.31
- */
-public interface CancelableTransportListener<HEADER extends HttpMetadata, MESSAGE extends HttpMessage> extends ServerTransportListener<HEADER, MESSAGE> {
+public interface CancelableTransportListener<HEADER extends HttpMetadata, MESSAGE extends HttpMessage> extends HttpTransportListener<HEADER, MESSAGE> {
 
     void cancelByRemote(long errorCode);
 

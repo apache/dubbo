@@ -29,10 +29,19 @@ import java.io.OutputStream;
 @SPI(scope = ExtensionScope.FRAMEWORK)
 public interface HttpMessageCodec {
 
-    void encode(OutputStream body, Object data) throws IOException;
+    void encode(OutputStream outputStream, Object data) throws IOException;
 
-    Object decode(InputStream body, Class<?> targetType) throws IOException;
+    void encode(OutputStream outputStream, Object[] data) throws IOException;
+
+    Object decode(InputStream inputStream, Class<?> targetType) throws IOException;
+
+    Object[] decode(InputStream inputStream, Class<?>[] targetTypes) throws IOException;
 
     MediaType contentType();
+
+    default boolean support(String contentType) {
+        MediaType mediaType = this.contentType();
+        return mediaType.getName().startsWith(contentType);
+    }
 
 }

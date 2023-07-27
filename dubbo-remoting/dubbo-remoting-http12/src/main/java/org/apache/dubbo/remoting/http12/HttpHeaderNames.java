@@ -16,15 +16,13 @@
  */
 package org.apache.dubbo.remoting.http12;
 
-/**
- * @author icodening
- * @date 2023.06.03
- */
 public enum HttpHeaderNames {
 
     CONTENT_TYPE("content-type"),
 
     CONTENT_LENGTH("content-length"),
+
+    TRANSFER_ENCODING("transfer-encoding"),
 
     TE("te");
 

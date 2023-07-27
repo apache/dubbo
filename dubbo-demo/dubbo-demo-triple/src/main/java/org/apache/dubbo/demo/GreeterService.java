@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.demo;
 
+import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.demo.hello.HelloReply;
 import org.apache.dubbo.demo.hello.HelloRequest;
 
@@ -33,5 +34,7 @@ public interface GreeterService {
 
 
     CompletableFuture<String> sayHelloAsync2(String request, User obj);
+
+    void serverStream(String request, StreamObserver<String> responseObserver);
 
 }

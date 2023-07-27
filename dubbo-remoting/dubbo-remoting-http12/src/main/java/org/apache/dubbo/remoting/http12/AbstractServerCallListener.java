@@ -22,7 +22,7 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
 
-public abstract class AbstractServerCallListener implements ServerCall.Listener {
+public abstract class AbstractServerCallListener implements ServerCallListener {
 
     protected final RpcInvocation invocation;
 

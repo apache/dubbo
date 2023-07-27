@@ -16,55 +16,11 @@
  */
 package org.apache.dubbo.remoting.http12.h1;
 
-import org.apache.dubbo.common.stream.StreamObserver;
-import org.apache.dubbo.remoting.http12.AbstractServerTransportListener;
-import org.apache.dubbo.remoting.http12.HttpChannel;
+import org.apache.dubbo.remoting.http12.HttpChannelHolder;
 import org.apache.dubbo.remoting.http12.HttpMessage;
+import org.apache.dubbo.remoting.http12.HttpTransportListener;
 import org.apache.dubbo.remoting.http12.RequestMetadata;
-import org.apache.dubbo.remoting.http12.ServerCall;
-import org.apache.dubbo.remoting.http12.UnaryServerCallListener;
-import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.model.FrameworkModel;
-import org.apache.dubbo.rpc.model.MethodDescriptor;
 
-/**
- * @author icodening
- * @date 2023.06.15
- */
-public class Http1ServerTransportListener extends AbstractServerTransportListener<RequestMetadata, HttpMessage> {
+public interface Http1ServerTransportListener extends HttpTransportListener<RequestMetadata, HttpMessage>, HttpChannelHolder {
 
-    private final Http1ChannelObserver responseObserver;
-
-    public Http1ServerTransportListener(HttpChannel httpChannel, FrameworkModel frameworkModel) {
-        super(frameworkModel);
-        this.responseObserver = new Http1ChannelObserver(httpChannel);
-    }
-
-    @Override
-    public void onMetadata(RequestMetadata metadata) {
-        super.onMetadata(metadata);
-        this.responseObserver.setHttpMessageCodec(getCodec());
-    }
-
-    @Override
-    protected ServerCall.Listener startListener(RpcInvocation invocation,
-                                                MethodDescriptor methodDescriptor,
-                                                Invoker<?> invoker) {
-        //http1 only support unary
-        return new AutoCompleteUnaryServerCallListener(invocation, invoker, this.responseObserver);
-    }
-
-    private static class AutoCompleteUnaryServerCallListener extends UnaryServerCallListener {
-
-        public AutoCompleteUnaryServerCallListener(RpcInvocation invocation, Invoker<?> invoker, StreamObserver<Object> responseObserver) {
-            super(invocation, invoker, responseObserver);
-        }
-
-        @Override
-        public void onMessage(Object message) {
-            super.onMessage(message);
-            super.onComplete();
-        }
-    }
 }

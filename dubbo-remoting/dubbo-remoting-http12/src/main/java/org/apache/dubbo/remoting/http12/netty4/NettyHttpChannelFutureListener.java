@@ -21,10 +21,6 @@ import io.netty.channel.ChannelFutureListener;
 
 import java.util.concurrent.CompletableFuture;
 
-/**
- * @author icodening
- * @date 2023.06.14
- */
 public class NettyHttpChannelFutureListener extends CompletableFuture<Void> implements ChannelFutureListener {
 
     @Override

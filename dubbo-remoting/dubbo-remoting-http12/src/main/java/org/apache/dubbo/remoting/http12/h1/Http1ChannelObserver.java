@@ -30,15 +30,13 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-/**
- * @author icodening
- * @date 2023.06.11
- */
 public class Http1ChannelObserver implements HttpChannelObserver {
 
     private final HttpChannel httpChannel;
 
     private HttpMessageCodec httpMessageCodec;
+
+    private boolean headerSent;
 
     public Http1ChannelObserver(HttpChannel httpChannel) {
         this.httpChannel = httpChannel;
@@ -55,20 +53,39 @@ public class Http1ChannelObserver implements HttpChannelObserver {
 
     @Override
     public void onNext(Object data) {
-        try {
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            this.httpMessageCodec.encode(bos, data);
-            byte[] dataBytes = bos.toByteArray();
-            HttpHeaders httpHeaders = new HttpHeaders();
-            httpHeaders.set(HttpHeaderNames.CONTENT_TYPE.getName(), httpMessageCodec.contentType().getName());
-            httpHeaders.set(HttpHeaderNames.CONTENT_LENGTH.getName(), String.valueOf(dataBytes.length));
-            HttpMetadata httpMetadata = new SimpleHttpMetadata(httpHeaders);
+        if (!headerSent) {
+            HttpMetadata httpMetadata = encodeHttpHeaders(data);
             this.httpChannel.writeHeader(httpMetadata);
-            HttpMessage httpMessage = new SimpleHttpMessage(new ByteArrayInputStream(dataBytes));
+            headerSent = true;
+        }
+        try {
+            HttpMessage httpMessage = encodeHttpMessage(data);
+            prepareWriteMessage(httpMessage);
             this.httpChannel.writeMessage(httpMessage);
+            postWriteMessage(httpMessage);
         } catch (IOException e) {
             onError(e);
         }
+    }
+
+    protected HttpMetadata encodeHttpHeaders(Object data) {
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.set(HttpHeaderNames.CONTENT_TYPE.getName(), httpMessageCodec.contentType().getName());
+        httpHeaders.set(HttpHeaderNames.TRANSFER_ENCODING.getName(), "chunked");
+        return new SimpleHttpMetadata(httpHeaders);
+    }
+
+    protected HttpMessage encodeHttpMessage(Object data) throws IOException {
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        this.httpMessageCodec.encode(bos, data);
+        byte[] dataBytes = bos.toByteArray();
+        return new SimpleHttpMessage(new ByteArrayInputStream(dataBytes));
+    }
+
+    protected void postWriteMessage(HttpMessage httpMessage) {
+    }
+
+    protected void prepareWriteMessage(HttpMessage httpMessage) {
     }
 
     @Override
@@ -78,7 +95,7 @@ public class Http1ChannelObserver implements HttpChannelObserver {
 
     @Override
     public void onCompleted() {
-
+        this.getHttpChannel().writeMessage(HttpMessage.EMPTY_MESSAGE);
     }
 
     @Override

@@ -25,6 +25,8 @@ public interface HttpChannel {
 
     CompletableFuture<Void> writeMessage(HttpMessage httpMessage);
 
+    HttpOutputMessage newOutputMessage();
+
     SocketAddress remoteAddress();
 
 }

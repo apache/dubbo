@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.remoting.http12.h2;
 
-import org.apache.dubbo.remoting.http12.HttpChannel;
 import org.apache.dubbo.remoting.http12.HttpChannelObserver;
 import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.HttpHeaders;
@@ -25,16 +24,17 @@ import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.function.Consumer;
 
-/**
- * @author icodening
- * @date 2023.06.11
- */
 public class Http2ChannelObserver implements HttpChannelObserver {
 
     private final H2StreamChannel h2StreamChannel;
 
     private HttpMessageCodec httpMessageCodec;
+
+    private Consumer<HttpHeaders> onWriteTrailers = (headers -> {});
+
+    private Consumer<HttpHeaders> onWriteHeaders = (headers -> {});
 
     private boolean headerSent;
 
@@ -46,13 +46,22 @@ public class Http2ChannelObserver implements HttpChannelObserver {
         this.httpMessageCodec = httpMessageCodec;
     }
 
+    public void setOnWriteTrailers(Consumer<HttpHeaders> onWriteTrailers) {
+        this.onWriteTrailers = onWriteTrailers;
+    }
+
+    public void setOnWriteHeaders(Consumer<HttpHeaders> onWriteHeaders) {
+        this.onWriteHeaders = onWriteHeaders;
+    }
+
     @Override
     public void onNext(Object data) {
         if (!headerSent) {
             HttpHeaders httpHeaders = new HttpHeaders();
-            httpHeaders.set(":status", "200");
+            httpHeaders.set(Http2Headers.STATUS.getName(), "200");
             httpHeaders.set(HttpHeaderNames.CONTENT_TYPE.getName(), httpMessageCodec.contentType().getName());
             httpHeaders.set(HttpHeaderNames.TE.getName(), "trailers");
+            this.onWriteHeaders.accept(httpHeaders);
             Http2Header http2Header = new Http2MetadataFrame(httpHeaders, false);
             this.headerSent = true;
             this.h2StreamChannel.writeHeader(http2Header);
@@ -77,12 +86,13 @@ public class Http2ChannelObserver implements HttpChannelObserver {
     public void onCompleted() {
         //trailer
         HttpHeaders httpHeaders = new HttpHeaders();
+        this.onWriteTrailers.accept(httpHeaders);
         Http2Header http2Header = new Http2MetadataFrame(httpHeaders, true);
         this.h2StreamChannel.writeHeader(http2Header);
     }
 
     @Override
-    public HttpChannel getHttpChannel() {
+    public H2StreamChannel getHttpChannel() {
         return this.h2StreamChannel;
     }
 }

@@ -20,10 +20,6 @@ import org.apache.dubbo.remoting.http12.HttpChannel;
 
 import java.util.concurrent.CompletableFuture;
 
-/**
- * @author icodening
- * @date 2023.06.13
- */
 public interface H2StreamChannel extends HttpChannel, CancelableStreamChannel {
 
     CompletableFuture<Void> writeResetFrame(long errorCode);

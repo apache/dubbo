@@ -18,10 +18,6 @@ package org.apache.dubbo.remoting.http12;
 
 import java.io.InputStream;
 
-/**
- * @author icodening
- * @date 2023.06.03
- */
 public class SimpleHttpMessage implements HttpMessage {
 
     private final InputStream body;

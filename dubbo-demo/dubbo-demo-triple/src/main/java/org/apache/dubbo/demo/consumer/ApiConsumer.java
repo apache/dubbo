@@ -37,7 +37,7 @@ public class ApiConsumer {
         referenceConfig.setCheck(false);
         referenceConfig.setProtocol(CommonConstants.TRIPLE);
         referenceConfig.setLazy(true);
-        referenceConfig.setTimeout(100000);
+        referenceConfig.setTimeout(1000);
 
         DubboBootstrap bootstrap = DubboBootstrap.getInstance();
         bootstrap.application(new ApplicationConfig("dubbo-demo-triple-api-consumer"))
@@ -49,12 +49,12 @@ public class ApiConsumer {
         GreeterService greeterService = referenceConfig.get();
         System.out.println("dubbo referenceConfig started");
         try {
-            final HelloReply reply = greeterService.sayHello(HelloRequest.newBuilder()
+            HelloRequest triple = HelloRequest.newBuilder()
                 .setName("triple")
-                .build());
+                .build();
+            final HelloReply reply = greeterService.sayHello(triple);
             TimeUnit.SECONDS.sleep(1);
             System.out.println("Reply: " + reply.getMessage());
-
             CompletableFuture<String> sayHelloAsync = greeterService.sayHelloAsync("triple");
             System.out.println("Async Reply: "+sayHelloAsync.get());
         } catch (Throwable t) {

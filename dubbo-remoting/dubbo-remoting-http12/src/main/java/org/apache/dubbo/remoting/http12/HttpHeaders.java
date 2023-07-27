@@ -32,10 +32,6 @@ import java.util.Spliterator;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-/**
- * @author icodening
- * @date 2023.06.03
- */
 public class HttpHeaders implements Map<String, List<String>>, Serializable, Cloneable {
 
     private final LinkedHashMap<String, List<String>> targetMap;

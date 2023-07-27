@@ -16,10 +16,6 @@
  */
 package org.apache.dubbo.remoting.http12.h2;
 
-/**
- * @author icodening
- * @date 2023.05.31
- */
 public interface Http2StreamFrame {
 
     int id();

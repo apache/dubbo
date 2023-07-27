@@ -14,121 +14,178 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.http12;
+package org.apache.dubbo.rpc.protocol.tri.h12;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.remoting.http12.HttpHeaderNames;
+import org.apache.dubbo.remoting.http12.HttpHeaders;
+import org.apache.dubbo.remoting.http12.HttpMessage;
+import org.apache.dubbo.remoting.http12.HttpTransportListener;
+import org.apache.dubbo.remoting.http12.RequestMetadata;
+import org.apache.dubbo.remoting.http12.ServerCallListener;
+import org.apache.dubbo.remoting.http12.exception.DecodeException;
+import org.apache.dubbo.remoting.http12.exception.IllegalPathException;
 import org.apache.dubbo.remoting.http12.exception.UnimplementedException;
 import org.apache.dubbo.remoting.http12.exception.UnsupportedMediaTypeException;
 import org.apache.dubbo.remoting.http12.message.HttpMessageCodec;
-import org.apache.dubbo.remoting.http12.message.JsonMethodDescriptorDecoder;
-import org.apache.dubbo.remoting.http12.util.RequestUtil;
+import org.apache.dubbo.remoting.http12.message.MethodMetadata;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.PathResolver;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
-import org.apache.dubbo.rpc.model.PackableMethod;
 import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
+import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
+import org.apache.dubbo.rpc.protocol.tri.TripleProtocol;
 import org.apache.dubbo.rpc.service.ServiceDescriptorInternalCache;
 import org.apache.dubbo.rpc.stub.StubSuppliers;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
-/**
- * @author icodening
- * @date 2023.05.31
- */
-public abstract class AbstractServerTransportListener<HEADER extends RequestMetadata, MESSAGE extends HttpMessage> implements ServerTransportListener<HEADER, MESSAGE> {
+public abstract class AbstractServerTransportListener<HEADER extends RequestMetadata, MESSAGE extends HttpMessage> implements HttpTransportListener<HEADER, MESSAGE> {
 
     private final PathResolver pathResolver;
 
-    private final Map<String, HttpMessageCodec> codecs;
+    private final List<HttpMessageCodec> codecs;
 
     private final FrameworkModel frameworkModel;
 
     private HttpMessageCodec codec;
 
-    protected ServerCall.Listener serverCallListener;
+    protected ServerCallListener serverCallListener;
 
     private ServiceDescriptor serviceDescriptor;
 
     private MethodDescriptor methodDescriptor;
 
-    private PackableMethod packableMethod;
+    private MethodMetadata methodMetadata;
 
     public AbstractServerTransportListener(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
         this.pathResolver = frameworkModel.getExtensionLoader(PathResolver.class).getDefaultExtension();
-        this.codecs = frameworkModel.getExtensionLoader(HttpMessageCodec.class).getActivateExtensions().stream().collect(Collectors.toMap(httpMessageCodec -> httpMessageCodec.contentType().getName(), Function.identity()));
+        this.codecs = new ArrayList<>(frameworkModel.getExtensionLoader(HttpMessageCodec.class).getSupportedExtensionInstances());
     }
 
+    protected FrameworkModel getFrameworkModel() {
+        return frameworkModel;
+    }
 
     @Override
     public void onMetadata(HEADER metadata) {
-        String method = metadata.method();
         String path = metadata.path();
         HttpHeaders headers = metadata.headers();
         String contentType = headers.getFirst(HttpHeaderNames.CONTENT_TYPE.getName());
+        HttpMessageCodec httpMessageCodec = determineHttpMessageCodec(contentType);
         String[] parts = path.split("/");
-        if (parts.length != 3) {
-            return;
-        }
-        HttpMessageCodec httpMessageCodec = codecs.get(contentType);
         if (httpMessageCodec == null) {
             throw new UnsupportedMediaTypeException(contentType);
+        }
+        if (parts.length != 3) {
+            throw new IllegalPathException(path);
         }
         this.codec = httpMessageCodec;
         String serviceName = parts[1];
         String originalMethodName = parts[2];
         boolean hasStub = pathResolver.hasNativeStub(path);
-        Invoker<?> invoker = pathResolver.resolve(serviceName);
-        Map<String, Object> attachment = RequestUtil.headerToAttachment(headers);
-        //create ServerCallListener
-        ServiceDescriptor serviceDescriptor;
-        MethodDescriptor methodDescriptor;
-        if (hasStub) {
-            serviceDescriptor = getStubServiceDescriptor(invoker.getUrl(), serviceName);
-            if (serviceDescriptor == null) {
-                throw new UnimplementedException("service:" + serviceName);
-            }
-            methodDescriptor = serviceDescriptor.getMethods(originalMethodName).get(0);
-        } else {
-            serviceDescriptor = getReflectionServiceDescriptor(invoker.getUrl());
-            if (serviceDescriptor == null) {
-                throw new UnimplementedException("service:" + serviceName);
-            }
-            methodDescriptor = findReflectionMethodDescriptor(serviceDescriptor, originalMethodName, invoker);
+        Invoker<?> invoker = getInvoker(metadata, serviceName);
+
+        if (invoker == null) {
+            throw new UnimplementedException(serviceName);
         }
-        if (methodDescriptor == null) {
-            throw new UnimplementedException("method:" + originalMethodName);
-        }
+        ServiceDescriptor serviceDescriptor = findServiceDescriptor(invoker, serviceName, hasStub);
+        MethodDescriptor methodDescriptor = findMethodDescriptor(serviceDescriptor, originalMethodName, hasStub);
         this.serviceDescriptor = serviceDescriptor;
         this.methodDescriptor = methodDescriptor;
+        this.methodMetadata = MethodMetadata.fromMethodDescriptor(methodDescriptor);
         RpcInvocation rpcInvocation = buildRpcInvocation(invoker, serviceDescriptor, methodDescriptor);
         this.serverCallListener = startListener(rpcInvocation, methodDescriptor, invoker);
     }
 
+    private Invoker<?> getInvoker(HEADER metadata, String serviceName) {
+        HttpHeaders headers = metadata.headers();
+        final String version =
+            headers.containsKey(TripleHeaderEnum.SERVICE_VERSION.getHeader()) ? headers.get(
+                TripleHeaderEnum.SERVICE_VERSION.getHeader()).toString() : null;
+        final String group =
+            headers.containsKey(TripleHeaderEnum.SERVICE_GROUP.getHeader()) ? headers.get(
+                TripleHeaderEnum.SERVICE_GROUP.getHeader()).toString() : null;
+        final String key = URL.buildKey(serviceName, group, version);
+        Invoker<?> invoker = pathResolver.resolve(key);
+        if (invoker == null && TripleProtocol.RESOLVE_FALLBACK_TO_DEFAULT) {
+            invoker = pathResolver.resolve(URL.buildKey(serviceName, group, "1.0.0"));
+        }
+        if (invoker == null && TripleProtocol.RESOLVE_FALLBACK_TO_DEFAULT) {
+            invoker = pathResolver.resolve(serviceName);
+        }
+        return invoker;
+    }
+
+    protected ServiceDescriptor getServiceDescriptor() {
+        return serviceDescriptor;
+    }
+
+    protected MethodDescriptor getMethodDescriptor() {
+        return methodDescriptor;
+    }
+
+    protected MethodMetadata getMethodMetadata() {
+        return methodMetadata;
+    }
+
+    protected HttpMessageCodec determineHttpMessageCodec(String contentType) {
+        for (HttpMessageCodec httpMessageCodec : this.codecs) {
+            if (httpMessageCodec.support(contentType)) {
+                return httpMessageCodec;
+            }
+        }
+        return null;
+    }
+
+    private static ServiceDescriptor findServiceDescriptor(Invoker<?> invoker, String serviceName, boolean hasStub) throws UnimplementedException {
+        ServiceDescriptor result;
+        if (hasStub) {
+            result = getStubServiceDescriptor(invoker.getUrl(), serviceName);
+        } else {
+            result = getReflectionServiceDescriptor(invoker.getUrl());
+        }
+        if (result == null) {
+            throw new UnimplementedException("service:" + serviceName);
+        }
+        return result;
+    }
+
+    private static MethodDescriptor findMethodDescriptor(ServiceDescriptor serviceDescriptor, String originalMethodName, boolean hasStub) throws UnimplementedException {
+        MethodDescriptor result;
+        if (hasStub) {
+            result = serviceDescriptor.getMethods(originalMethodName).get(0);
+        } else {
+            result = findReflectionMethodDescriptor(serviceDescriptor, originalMethodName);
+        }
+        if (result == null) {
+            throw new UnimplementedException("method:" + originalMethodName);
+        }
+        return result;
+    }
+
+
     @Override
     public void onData(MESSAGE message) {
         //decode message
+        Object[] decodeParameters;
         try {
             InputStream body = message.getBody();
-            //TODO 根据content-type选择对应的
-//            packableMethod.getRequestUnpack().unpack()
-            JsonMethodDescriptorDecoder jsonMethodDescriptorDecoder = new JsonMethodDescriptorDecoder();
-            Object[] decodeParameters = jsonMethodDescriptorDecoder.decode(body, methodDescriptor);
-            this.serverCallListener.onMessage(decodeParameters);
+            Class<?>[] actualRequestTypes = methodMetadata.getActualRequestTypes();
+            decodeParameters = this.codec.decode(body, actualRequestTypes);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new DecodeException(e);
         }
+        this.serverCallListener.onMessage(decodeParameters);
     }
 
     protected RpcInvocation buildRpcInvocation(Invoker<?> invoker,
@@ -146,18 +203,10 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
         return inv;
     }
 
-    private boolean isEcho(String methodName) {
-        return CommonConstants.$ECHO.equals(methodName);
-    }
 
-    private boolean isGeneric(String methodName) {
-        return CommonConstants.$INVOKE.equals(methodName) || CommonConstants.$INVOKE_ASYNC.equals(
-            methodName);
-    }
-
-    protected abstract ServerCall.Listener startListener(RpcInvocation invocation,
-                                                         MethodDescriptor methodDescriptor,
-                                                         Invoker<?> invoker);
+    protected abstract ServerCallListener startListener(RpcInvocation invocation,
+                                                        MethodDescriptor methodDescriptor,
+                                                        Invoker<?> invoker);
 
     protected PathResolver getPathResolver() {
         return pathResolver;
@@ -187,7 +236,16 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
         return providerModel.getServiceModel();
     }
 
-    private MethodDescriptor findReflectionMethodDescriptor(ServiceDescriptor serviceDescriptor, String methodName, Invoker<?> invoker) {
+    private static boolean isEcho(String methodName) {
+        return CommonConstants.$ECHO.equals(methodName);
+    }
+
+    private static boolean isGeneric(String methodName) {
+        return CommonConstants.$INVOKE.equals(methodName) || CommonConstants.$INVOKE_ASYNC.equals(
+            methodName);
+    }
+
+    private static MethodDescriptor findReflectionMethodDescriptor(ServiceDescriptor serviceDescriptor, String methodName) {
         MethodDescriptor methodDescriptor = null;
         if (isGeneric(methodName)) {
             // There should be one and only one

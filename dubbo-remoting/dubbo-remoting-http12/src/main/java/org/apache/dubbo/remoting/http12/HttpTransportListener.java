@@ -14,13 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.http12.h2;
+package org.apache.dubbo.remoting.http12;
 
-/**
- * @author icodening
- * @date 2023.05.31
- */
-public interface Http2ServerTransportListener extends CancelableTransportListener<Http2Header, Http2Message> {
+public interface HttpTransportListener<HEADER extends HttpMetadata, MESSAGE extends HttpMessage> {
 
+    void onMetadata(HEADER metadata);
+
+    void onData(MESSAGE message);
 
 }

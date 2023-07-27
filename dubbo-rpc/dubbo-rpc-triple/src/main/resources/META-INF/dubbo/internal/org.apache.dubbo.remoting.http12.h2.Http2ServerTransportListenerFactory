@@ -1,0 +1,1 @@
+grpc-proto=org.apache.dubbo.rpc.protocol.tri.h12.grpc.GrpcHttp2ServerTransportListenerFactory

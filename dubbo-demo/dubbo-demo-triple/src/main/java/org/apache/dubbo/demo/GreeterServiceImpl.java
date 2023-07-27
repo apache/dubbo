@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.demo;
 
+import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.demo.hello.HelloReply;
 import org.apache.dubbo.demo.hello.HelloRequest;
 
@@ -26,8 +27,8 @@ public class GreeterServiceImpl implements GreeterService {
     @Override
     public HelloReply sayHello(HelloRequest request) {
         return HelloReply.newBuilder()
-                .setMessage("Hello " + request.getName())
-                .build();
+            .setMessage("Hello " + request.getName())
+            .build();
     }
 
     @Override
@@ -37,7 +38,20 @@ public class GreeterServiceImpl implements GreeterService {
 
     @Override
     public CompletableFuture<String> sayHelloAsync2(String request, User obj) {
-        System.out.println("param1:"+request);
+        System.out.println("param1:" + request);
         return CompletableFuture.supplyAsync(obj::toString);
+    }
+
+    @Override
+    public void serverStream(String request, StreamObserver<String> responseObserver) {
+        for (int i = 0; i < 5; i++) {
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+
+            }
+            responseObserver.onNext(request);
+        }
+        responseObserver.onCompleted();
     }
 }

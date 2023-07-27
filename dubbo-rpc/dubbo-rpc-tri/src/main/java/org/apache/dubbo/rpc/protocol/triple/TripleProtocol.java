@@ -47,7 +47,6 @@ import static org.apache.dubbo.rpc.Constants.H2_SUPPORT_NO_LOWER_HEADER_KEY;
 public class TripleProtocol extends AbstractProtocol {
 
 
-    public static final String METHOD_ATTR_PACK = "pack";
     private static final Logger logger = LoggerFactory.getLogger(TripleProtocol.class);
     private final PathResolver pathResolver;
     private final String acceptEncodings;
@@ -117,7 +116,7 @@ public class TripleProtocol extends AbstractProtocol {
             url.getOrDefaultApplicationModel(), url);
         AbstractConnectionClient connectionClient = PortUnificationExchanger.connect(url, new DefaultPuHandler());
         TripleInvoker<T> invoker = new TripleInvoker<>(type, url, acceptEncodings,
-            connectionClient, invokers, streamExecutor);
+            connectionClient, invokers, streamExecutor, frameworkModel);
         invokers.add(invoker);
         return invoker;
     }

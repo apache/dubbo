@@ -17,20 +17,19 @@
 package org.apache.dubbo.remoting.http12.netty4.h2;
 
 
+import io.netty.buffer.ByteBufOutputStream;
 import io.netty.handler.codec.http2.DefaultHttp2ResetFrame;
 import io.netty.handler.codec.http2.Http2StreamChannel;
 import org.apache.dubbo.remoting.http12.HttpMessage;
 import org.apache.dubbo.remoting.http12.HttpMetadata;
+import org.apache.dubbo.remoting.http12.HttpOutputMessage;
+import org.apache.dubbo.remoting.http12.SimpleHttpOutputMessage;
 import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
 import org.apache.dubbo.remoting.http12.netty4.NettyHttpChannelFutureListener;
 
 import java.net.SocketAddress;
 import java.util.concurrent.CompletableFuture;
 
-/**
- * @author icodening
- * @date 2023.06.01
- */
 public class NettyH2StreamChannel implements H2StreamChannel {
 
     //WriteQueue
@@ -55,6 +54,11 @@ public class NettyH2StreamChannel implements H2StreamChannel {
         NettyHttpChannelFutureListener nettyHttpChannelFutureListener = new NettyHttpChannelFutureListener();
         http2StreamChannel.writeAndFlush(httpMessage).addListener(nettyHttpChannelFutureListener);
         return nettyHttpChannelFutureListener;
+    }
+
+    @Override
+    public HttpOutputMessage newOutputMessage() {
+        return new SimpleHttpOutputMessage(new ByteBufOutputStream(http2StreamChannel.alloc().buffer()));
     }
 
     @Override

@@ -16,10 +16,6 @@
  */
 package org.apache.dubbo.remoting.http12.h2;
 
-/**
- * @author icodening
- * @date 2023.06.03
- */
 public enum Http2Headers {
 
     PATH(":path"),

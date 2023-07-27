@@ -18,10 +18,6 @@ package org.apache.dubbo.remoting.http12.h2;
 
 import org.apache.dubbo.remoting.http12.RequestMetadata;
 
-/**
- * @author icodening
- * @date 2023.05.31
- */
 public interface Http2Header extends RequestMetadata, Http2StreamFrame {
 
     @Override

@@ -21,19 +21,20 @@ import io.netty.buffer.ByteBufInputStream;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
-import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.DefaultHttpResponse;
 import io.netty.handler.codec.http.FullHttpRequest;
-import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
-import org.apache.dubbo.remoting.http12.HttpHeaderNames;
+import io.netty.handler.codec.http.LastHttpContent;
+import org.apache.dubbo.remoting.http12.HttpMessage;
+import org.apache.dubbo.remoting.http12.HttpMetadata;
 import org.apache.dubbo.remoting.http12.SimpleHttpMessage;
 import org.apache.dubbo.remoting.http12.h1.DefaultHttp1Request;
 import org.apache.dubbo.remoting.http12.h1.Http1Request;
-import org.apache.dubbo.remoting.http12.h1.Http1Response;
 import org.apache.dubbo.remoting.http12.h1.Http1RequestMetadata;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
@@ -48,7 +49,6 @@ public class NettyHttp1Codec extends ChannelDuplexHandler {
             FullHttpRequest fullHttpRequest = (FullHttpRequest) msg;
             HttpHeaders headers = fullHttpRequest.headers();
             Http1RequestMetadata http1RequestMetadata = new Http1RequestMetadata();
-            http1RequestMetadata.setHeaders(new org.apache.dubbo.remoting.http12.HttpHeaders());
             http1RequestMetadata.setPath(fullHttpRequest.uri());
             http1RequestMetadata.setMethod(fullHttpRequest.method().name());
             org.apache.dubbo.remoting.http12.HttpHeaders httpHeaders = new org.apache.dubbo.remoting.http12.HttpHeaders();
@@ -66,13 +66,32 @@ public class NettyHttp1Codec extends ChannelDuplexHandler {
 
     @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
-        if (!(msg instanceof Http1Response)) {
-            super.write(ctx, msg, promise);
+        if (msg instanceof HttpMetadata) {
+            doWriteHeader(ctx, ((HttpMetadata) msg), promise);
             return;
         }
-        //encode Http1Response
-        Http1Response message = (Http1Response) msg;
-        InputStream body = message.getBody();
+        if (msg instanceof HttpMessage) {
+            doWriteMessage(ctx, ((HttpMessage) msg), promise);
+            return;
+        }
+        super.write(ctx, msg, promise);
+    }
+
+    private void doWriteHeader(ChannelHandlerContext ctx, HttpMetadata msg, ChannelPromise promise) {
+        DefaultHttpResponse defaultHttpResponse = new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
+        HttpHeaders headers = defaultHttpResponse.headers();
+        for (Map.Entry<String, List<String>> entry : msg.headers().entrySet()) {
+            headers.set(entry.getKey(), entry.getValue());
+        }
+        ctx.writeAndFlush(defaultHttpResponse, promise);
+    }
+
+    private void doWriteMessage(ChannelHandlerContext ctx, HttpMessage msg, ChannelPromise promise) throws IOException {
+        if (HttpMessage.EMPTY_MESSAGE == msg) {
+            ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT, promise);
+            return;
+        }
+        InputStream body = msg.getBody();
         ByteBuf buffer = ctx.alloc().buffer(body.available());
         //copy bytes
         byte[] data = new byte[4096];
@@ -80,16 +99,7 @@ public class NettyHttp1Codec extends ChannelDuplexHandler {
         while ((len = body.read(data)) != -1) {
             buffer.writeBytes(data, 0, len);
         }
-        FullHttpResponse fullHttpResponse = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, buffer);
-        HttpHeaders headers = fullHttpResponse.headers();
-        for (Map.Entry<String, List<String>> entry : message.headers().entrySet()) {
-            headers.set(entry.getKey(), entry.getValue());
-        }
-
-        //add default headers
-        if (!headers.contains(HttpHeaderNames.CONTENT_TYPE.getName())) {
-            headers.set(HttpHeaderNames.CONTENT_TYPE.getName(), fullHttpResponse.content().readableBytes());
-        }
-        super.write(ctx, fullHttpResponse, promise);
+        ctx.writeAndFlush(buffer, promise);
     }
+
 }

@@ -14,40 +14,46 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.remoting.http12.h2;
 
-import org.apache.dubbo.common.stream.StreamObserver;
-import org.apache.dubbo.remoting.http12.AbstractServerCallListener;
-import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.RpcInvocation;
+import java.io.OutputStream;
 
-public class ServerStreamServerCallListener extends AbstractServerCallListener {
+public class Http2OutputMessageFrame implements Http2OutputMessage {
 
-    public ServerStreamServerCallListener(RpcInvocation invocation, Invoker<?> invoker,
-                                          StreamObserver<Object> responseObserver) {
-        super(invocation, invoker, responseObserver);
+    private final OutputStream body;
+
+    private final boolean endStream;
+
+    public Http2OutputMessageFrame(OutputStream body) {
+        this(body, false);
+    }
+
+    public Http2OutputMessageFrame(boolean endStream) {
+        this(null, endStream);
+    }
+
+    public Http2OutputMessageFrame(OutputStream body, boolean endStream) {
+        this.body = body;
+        this.endStream = endStream;
     }
 
     @Override
-    public void onReturn(Object value) {
+    public OutputStream getBody() {
+        return body;
     }
 
     @Override
-    public void onMessage(Object message) {
-        if (message instanceof Object[]) {
-            message = ((Object[]) message)[0];
-        }
-        invocation.setArguments(new Object[]{message, responseObserver});
+    public String name() {
+        return "DATA";
     }
 
     @Override
-    public void onCancel(int code) {
-        responseObserver.onError(new RuntimeException("todo"));
+    public int id() {
+        return 0;
     }
 
     @Override
-    public void onComplete() {
-        invoke();
+    public boolean isEndStream() {
+        return endStream;
     }
 }

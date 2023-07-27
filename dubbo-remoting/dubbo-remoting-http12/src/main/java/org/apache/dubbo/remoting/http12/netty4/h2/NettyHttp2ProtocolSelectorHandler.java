@@ -21,19 +21,20 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http2.Http2StreamChannel;
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.HttpHeaders;
 import org.apache.dubbo.remoting.http12.HttpMetadata;
-import org.apache.dubbo.remoting.http12.h2.GenericHttp2ServerTransportListenerFactory;
+import org.apache.dubbo.remoting.http12.exception.UnsupportedMediaTypeException;
 import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
 import org.apache.dubbo.remoting.http12.h2.Http2ServerTransportListenerFactory;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
-import java.util.List;
+import java.util.Set;
 
 public class NettyHttp2ProtocolSelectorHandler extends SimpleChannelInboundHandler<HttpMetadata> {
+
+    private Http2ServerTransportListenerFactory defaultHttp2ServerTransportListenerFactory;
 
     private final URL url;
 
@@ -44,12 +45,24 @@ public class NettyHttp2ProtocolSelectorHandler extends SimpleChannelInboundHandl
         this.frameworkModel = frameworkModel;
     }
 
+    public NettyHttp2ProtocolSelectorHandler(URL url, FrameworkModel frameworkModel, Http2ServerTransportListenerFactory defaultHttp2ServerTransportListenerFactory) {
+        this.url = url;
+        this.frameworkModel = frameworkModel;
+        this.defaultHttp2ServerTransportListenerFactory = defaultHttp2ServerTransportListenerFactory;
+    }
+
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, HttpMetadata metadata) {
         HttpHeaders headers = metadata.headers();
         String contentType = headers.getFirst(HttpHeaderNames.CONTENT_TYPE.getName());
-        Assert.assertTrue(StringUtils.hasText(contentType), "content-type must be not null.");
+        //415
+        if (!StringUtils.hasText(contentType)) {
+            throw new UnsupportedMediaTypeException(contentType);
+        }
         Http2ServerTransportListenerFactory factory = adaptHttp2ServerTransportListenerFactory(contentType);
+        if (factory == null) {
+            throw new UnsupportedMediaTypeException(contentType);
+        }
         H2StreamChannel h2StreamChannel = new NettyH2StreamChannel((Http2StreamChannel) ctx.channel());
         ChannelPipeline pipeline = ctx.pipeline();
         pipeline.addLast(new NettyHttp2FrameHandler(factory.newInstance(h2StreamChannel, url, frameworkModel)));
@@ -58,12 +71,12 @@ public class NettyHttp2ProtocolSelectorHandler extends SimpleChannelInboundHandl
     }
 
     private Http2ServerTransportListenerFactory adaptHttp2ServerTransportListenerFactory(String contentType) {
-        List<Http2ServerTransportListenerFactory> http2ServerTransportListenerFactories = frameworkModel.getExtensionLoader(Http2ServerTransportListenerFactory.class).getActivateExtensions();
+        Set<Http2ServerTransportListenerFactory> http2ServerTransportListenerFactories = frameworkModel.getExtensionLoader(Http2ServerTransportListenerFactory.class).getSupportedExtensionInstances();
         for (Http2ServerTransportListenerFactory factory : http2ServerTransportListenerFactories) {
             if (factory.supportContentType(contentType)) {
                 return factory;
             }
         }
-        return GenericHttp2ServerTransportListenerFactory.INSTANCE;
+        return defaultHttp2ServerTransportListenerFactory;
     }
 }

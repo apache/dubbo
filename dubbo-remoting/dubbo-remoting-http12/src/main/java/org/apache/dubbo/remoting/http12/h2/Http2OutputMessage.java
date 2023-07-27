@@ -14,14 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.http12.message;
+package org.apache.dubbo.remoting.http12.h2;
 
-import org.apache.dubbo.rpc.model.MethodDescriptor;
+import org.apache.dubbo.remoting.http12.HttpOutputMessage;
 
-import java.io.IOException;
-import java.io.InputStream;
+public interface Http2OutputMessage extends HttpOutputMessage, Http2StreamFrame {
 
-public interface MethodDescriptorDecoder {
-
-    Object[] decode(InputStream data, MethodDescriptor md) throws IOException;
 }

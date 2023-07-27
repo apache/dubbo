@@ -16,11 +16,13 @@
  */
 package org.apache.dubbo.remoting.http12.netty4.h1;
 
+import io.netty.buffer.ByteBufOutputStream;
 import io.netty.channel.Channel;
 import org.apache.dubbo.remoting.http12.HttpChannel;
 import org.apache.dubbo.remoting.http12.HttpMessage;
 import org.apache.dubbo.remoting.http12.HttpMetadata;
-import org.apache.dubbo.remoting.http12.h1.DefaultHttp1Response;
+import org.apache.dubbo.remoting.http12.HttpOutputMessage;
+import org.apache.dubbo.remoting.http12.SimpleHttpOutputMessage;
 import org.apache.dubbo.remoting.http12.netty4.NettyHttpChannelFutureListener;
 
 import java.net.SocketAddress;
@@ -30,23 +32,27 @@ public class NettyHttp1Channel implements HttpChannel {
 
     private final Channel channel;
 
-    private HttpMetadata httpMetadata;
-
     public NettyHttp1Channel(Channel channel) {
         this.channel = channel;
     }
 
     @Override
     public CompletableFuture<Void> writeHeader(HttpMetadata httpMetadata) {
-        this.httpMetadata = httpMetadata;
-        return CompletableFuture.completedFuture(null);
+        NettyHttpChannelFutureListener nettyHttpChannelFutureListener = new NettyHttpChannelFutureListener();
+        this.channel.writeAndFlush(httpMetadata).addListener(nettyHttpChannelFutureListener);
+        return nettyHttpChannelFutureListener;
     }
 
     @Override
     public CompletableFuture<Void> writeMessage(HttpMessage httpMessage) {
         NettyHttpChannelFutureListener nettyHttpChannelFutureListener = new NettyHttpChannelFutureListener();
-        this.channel.writeAndFlush(new DefaultHttp1Response(httpMetadata, httpMessage)).addListener(nettyHttpChannelFutureListener);
+        this.channel.writeAndFlush(httpMessage).addListener(nettyHttpChannelFutureListener);
         return nettyHttpChannelFutureListener;
+    }
+
+    @Override
+    public HttpOutputMessage newOutputMessage() {
+        return new SimpleHttpOutputMessage(new ByteBufOutputStream(channel.alloc().buffer()));
     }
 
     @Override

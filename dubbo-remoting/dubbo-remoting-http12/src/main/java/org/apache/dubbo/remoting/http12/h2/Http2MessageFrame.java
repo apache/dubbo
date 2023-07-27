@@ -18,10 +18,6 @@ package org.apache.dubbo.remoting.http12.h2;
 
 import java.io.InputStream;
 
-/**
- * @author icodening
- * @date 2023.05.31
- */
 public class Http2MessageFrame implements Http2Message {
 
     private final InputStream body;

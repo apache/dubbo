@@ -16,14 +16,8 @@
  */
 package org.apache.dubbo.remoting.http12;
 
-/**
- * @author icodening
- * @date 2023.05.31
- */
-public interface ServerTransportListener<HEADER extends HttpMetadata, MESSAGE extends HttpMessage> {
+public interface HttpMessageSenderFactory<LISTENER extends HttpTransportListener<HEADER, MESSAGE>, HEADER extends RequestMetadata, MESSAGE extends HttpMessage> {
 
-    void onMetadata(HEADER metadata);
-
-    void onData(MESSAGE message);
+    HttpMessageSender start(LISTENER responseListener);
 
 }

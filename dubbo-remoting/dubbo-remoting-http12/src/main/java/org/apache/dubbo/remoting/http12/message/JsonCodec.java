@@ -16,18 +16,19 @@
  */
 package org.apache.dubbo.remoting.http12.message;
 
-import org.apache.dubbo.common.extension.Activate;
+import com.alibaba.fastjson2.JSONObject;
 import org.apache.dubbo.common.utils.JsonUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * body is json
  */
-@Activate("json")
 public class JsonCodec implements HttpMessageCodec {
 
     @Override
@@ -36,13 +37,18 @@ public class JsonCodec implements HttpMessageCodec {
     }
 
     @Override
-    public void encode(OutputStream body, Object unSerializedBody) throws IOException {
+    public void encode(OutputStream outputStream, Object unSerializedBody) throws IOException {
         try {
             String jsonString = JsonUtils.toJson(unSerializedBody);
-            body.write(jsonString.getBytes(StandardCharsets.UTF_8));
+            outputStream.write(jsonString.getBytes(StandardCharsets.UTF_8));
         } finally {
-            body.flush();
+            outputStream.flush();
         }
+    }
+
+    @Override
+    public void encode(OutputStream outputStream, Object[] data) throws IOException {
+
     }
 
     @Override
@@ -57,6 +63,35 @@ public class JsonCodec implements HttpMessageCodec {
             return JsonUtils.toJavaObject(builder.toString(), targetType);
         } finally {
             body.close();
+        }
+    }
+
+    @Override
+    public Object[] decode(InputStream dataInputStream, Class<?>[] targetTypes) throws IOException {
+        List<Object> result = new ArrayList<>();
+        try {
+            int len;
+            byte[] data = new byte[4096];
+            StringBuilder builder = new StringBuilder(4096);
+            while ((len = dataInputStream.read(data)) != -1) {
+                builder.append(new String(data, 0, len));
+            }
+            String jsonString = builder.toString();
+            List<Object> jsonObjects = JsonUtils.toJavaList(jsonString, Object.class);
+
+            for (int i = 0; i < targetTypes.length; i++) {
+                Object jsonObject = jsonObjects.get(i);
+                Class<?> type = targetTypes[i];
+                if (jsonObject instanceof JSONObject) {
+                    Object o = ((JSONObject) jsonObject).toJavaObject(type);
+                    result.add(o);
+                } else {
+                    result.add(jsonObject);
+                }
+            }
+            return result.toArray();
+        } finally {
+            dataInputStream.close();
         }
     }
 

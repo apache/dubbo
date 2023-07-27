@@ -14,28 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.http12.h2;
+package org.apache.dubbo.remoting.http12.h1;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.ExtensionScope;
+import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.remoting.http12.HttpChannel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
-/**
- * @author icodening
- * @date 2023.06.13
- */
-public class GenericHttp2ServerTransportListenerFactory implements Http2ServerTransportListenerFactory {
+@SPI(scope = ExtensionScope.FRAMEWORK)
+public interface Http1ServerTransportListenerFactory {
 
-    public static final Http2ServerTransportListenerFactory INSTANCE = new GenericHttp2ServerTransportListenerFactory();
+    Http1ServerTransportListener newInstance(HttpChannel httpChannel, URL url, FrameworkModel frameworkModel);
 
-    @Override
-    public Http2ServerTransportListener newInstance(H2StreamChannel streamChannel,
-                                                    URL url,
-                                                    FrameworkModel frameworkModel) {
-        return new GenericHttp2ServerTransportListener(streamChannel, url, frameworkModel);
-    }
-
-    @Override
-    public boolean supportContentType(String contentType) {
-        return true;
-    }
 }

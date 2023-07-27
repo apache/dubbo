@@ -18,10 +18,6 @@ package org.apache.dubbo.remoting.http12;
 
 import org.apache.dubbo.common.stream.StreamObserver;
 
-/**
- * @author icodening
- * @date 2023.06.11
- */
 public interface HttpChannelObserver extends StreamObserver<Object> {
 
     HttpChannel getHttpChannel();

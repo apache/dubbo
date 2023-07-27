@@ -19,10 +19,6 @@ package org.apache.dubbo.remoting.http12.h1;
 import org.apache.dubbo.remoting.http12.HttpMessage;
 import org.apache.dubbo.remoting.http12.RequestMetadata;
 
-/**
- * @author icodening
- * @date 2023.06.03
- */
 public interface Http1Request extends RequestMetadata, HttpMessage {
 
 }

@@ -20,10 +20,6 @@ import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
 
-/**
- * @author icodening
- * @date 2023.06.03
- */
 public class UnaryServerCallListener extends AbstractServerCallListener {
 
     public UnaryServerCallListener(RpcInvocation invocation,
@@ -48,7 +44,7 @@ public class UnaryServerCallListener extends AbstractServerCallListener {
     }
 
     @Override
-    public void onCancel(int code) {
+    public void onCancel(long code) {
         //ignore
     }
 

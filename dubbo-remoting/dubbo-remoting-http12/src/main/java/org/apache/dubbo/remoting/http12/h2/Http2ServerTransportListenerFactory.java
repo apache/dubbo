@@ -24,7 +24,7 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 @SPI(scope = ExtensionScope.FRAMEWORK)
 public interface Http2ServerTransportListenerFactory {
 
-    Http2ServerTransportListener newInstance(H2StreamChannel streamChannel, URL url, FrameworkModel frameworkModel);
+    Http2TransportListener newInstance(H2StreamChannel streamChannel, URL url, FrameworkModel frameworkModel);
 
     boolean supportContentType(String contentType);
 

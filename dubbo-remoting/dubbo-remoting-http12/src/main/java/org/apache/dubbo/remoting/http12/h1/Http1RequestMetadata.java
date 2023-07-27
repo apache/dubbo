@@ -16,14 +16,9 @@
  */
 package org.apache.dubbo.remoting.http12.h1;
 
-
 import org.apache.dubbo.remoting.http12.HttpHeaders;
 import org.apache.dubbo.remoting.http12.RequestMetadata;
 
-/**
- * @author icodening
- * @date 2023.05.31
- */
 public class Http1RequestMetadata implements RequestMetadata {
 
     private HttpHeaders headers;

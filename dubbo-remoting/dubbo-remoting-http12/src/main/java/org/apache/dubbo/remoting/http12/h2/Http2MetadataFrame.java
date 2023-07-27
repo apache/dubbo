@@ -18,10 +18,6 @@ package org.apache.dubbo.remoting.http12.h2;
 
 import org.apache.dubbo.remoting.http12.HttpHeaders;
 
-/**
- * @author icodening
- * @date 2023.05.31
- */
 public class Http2MetadataFrame implements Http2Header {
 
     private final HttpHeaders headers;
