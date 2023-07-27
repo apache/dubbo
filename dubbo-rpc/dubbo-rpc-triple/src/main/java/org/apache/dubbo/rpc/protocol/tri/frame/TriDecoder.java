@@ -17,12 +17,11 @@
 
 package org.apache.dubbo.rpc.protocol.tri.frame;
 
-import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.protocol.tri.compressor.DeCompressor;
-
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.CompositeByteBuf;
 import io.netty.buffer.Unpooled;
+import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.protocol.tri.compressor.DeCompressor;
 
 public class TriDecoder implements Deframer {
 
@@ -152,6 +151,7 @@ public class TriDecoder implements Deframer {
     private byte[] getUncompressedBody() {
         byte[] data = new byte[requiredLength];
         accumulate.readBytes(data);
+        accumulate.discardReadBytes();
         return data;
     }
 
