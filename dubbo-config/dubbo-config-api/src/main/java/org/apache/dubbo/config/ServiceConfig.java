@@ -78,7 +78,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.SERVICE_NAME_MAP
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.REVISION_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.SERVICE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
@@ -759,8 +758,6 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         if (ref instanceof ServerService) {
             map.put(PROXY_KEY, CommonConstants.NATIVE_STUB);
         }
-
-        map.put(SERVICE_KEY, getUniqueServiceName());
 
         return map;
     }

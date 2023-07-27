@@ -9,7 +9,6 @@ import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import static org.apache.dubbo.common.constants.CommonConstants.SERVICE_KEY;
 
 @Activate(order = 50)
 public class ProtocolRegistryEventWrapper implements Protocol {
@@ -32,8 +31,7 @@ public class ProtocolRegistryEventWrapper implements Protocol {
     public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
         //TODO
         URL url = invoker.getUrl();
-        String serviceKey = (String) url.getAttribute(SERVICE_KEY);
-        url.removeAttribute(SERVICE_KEY);
+        String serviceKey = null;
 
         return MetricsEventBus.post(
             RegistryEvent.toRsEvent(applicationModel, serviceKey, 1),
