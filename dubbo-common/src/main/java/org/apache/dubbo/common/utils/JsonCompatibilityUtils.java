@@ -1,11 +1,33 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.apache.dubbo.common.utils;
+
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 
 import java.lang.reflect.*;
 import java.util.*;
 
 public class JsonCompatibilityUtils {
 
-    private Set<String> unsupportedClasses = new HashSet<>(Arrays.asList("byte", "Byte"));
+    private static final Logger logger = LoggerFactory.getLogger(JsonCompatibilityUtils.class);
+
+    private static final Set<String> unsupportedClasses = new HashSet<>(Arrays.asList("byte", "Byte"));
+
 
     /**
      * Determine whether a Class can be serialized by JSON.
@@ -13,26 +35,66 @@ public class JsonCompatibilityUtils {
      * @return If a Class can be serialized by JSON, return true;
      * else return false.
      */
-    public boolean checkJsonCompatibility(Class<?> clazz) {
+    public static boolean checkClassCompatibility(Class<?> clazz) {
         Method[] methods = clazz.getDeclaredMethods();
 
         boolean result;
 
         for (Method method : methods) {
-            Type[] types = method.getGenericParameterTypes();
-            List<Type> typeList = new ArrayList<>(Arrays.asList(types));
-            Type returnType =  method.getGenericReturnType();
-            typeList.add(returnType);
-            for (Type type : typeList) {
-                result = checkClass(type);
-                if (!result) {
-                    System.out.printf("%s Not support !%n", clazz.getName());
-                    return false;
-                }
-                System.out.println("Parameter Type: " + type.getTypeName());
+            result = checkMethodCompatibility(method);
+            if (!result) {
+                return false;
             }
         }
         return true;
+    }
+
+
+    /**
+     * Determine whether a Method can be serialized by JSON.
+     * @param method Incoming Method.
+     * @return If a Method can be serialized by JSON, return true;
+     * else return false.
+     */
+    public static boolean checkMethodCompatibility(Method method) {
+
+        boolean result;
+
+        Type[] types = method.getGenericParameterTypes();
+        List<Type> typeList = new ArrayList<>(Arrays.asList(types));
+        Type returnType =  method.getGenericReturnType();
+        typeList.add(returnType);
+        for (Type type : typeList) {
+            result = checkType(type);
+            if (!result) {
+                logger.info(String.format("Type of [%s] is not support !", method.getDeclaringClass().getName()));
+                return false;
+            }
+            logger.info(String.format("Type of [%s] is support.", type.getTypeName()));
+        }
+
+        return true;
+    }
+
+
+    /**
+     * Get unsupported methods.
+     * @param clazz
+     * @return If there are unsupported methods, return them by List;
+     * else return null.
+     */
+    public static List<String> getUnsupportedMethods(Class<?> clazz) {
+        ArrayList<String> unsupportedMethods = new ArrayList<>();
+
+        Method[] methods = clazz.getDeclaredMethods();
+
+        for (Method method : methods) {
+            if (!checkMethodCompatibility(method)) {
+                unsupportedMethods.add(method.getName());
+            }
+        }
+
+        return unsupportedMethods.size() > 0 ? unsupportedMethods : null;
     }
 
 
@@ -42,56 +104,54 @@ public class JsonCompatibilityUtils {
      * @return If a Type can be serialized by JSON, return true;
      * else return false.
      */
-    private boolean checkClass(Type classType) {
+    private static boolean checkType(Type classType) {
 
         boolean result;
 
         if (classType instanceof ParameterizedType) {
             Type[] types = ((ParameterizedType) classType).getActualTypeArguments();
+            List<Type> typeList = new ArrayList<>(Arrays.asList(types));
             classType = ((ParameterizedType) classType).getRawType();
-            for (Type type : types) {
-                result = checkClass(type);
+            typeList.add(classType);
+            for (Type type : typeList) {
+                result = checkType(type);
                 if (!result) {
                     return false;
                 }
             }
         } else if (classType instanceof GenericArrayType) {
             Type componentType = ((GenericArrayType) classType).getGenericComponentType();
-            result = checkClass(componentType);
-            if (!result) {
-                return false;
-            }
+            result = checkType(componentType);
+            return result;
         } else if (classType instanceof Class<?>) {
             Class<?> clazz = (Class<?>) classType;
 
             String className = clazz.getName();
-            System.out.println("====::>" + className);
+            logger.info("Current type is " + className);
 
             if (clazz.isArray()) {
                 Type componentType = clazz.getComponentType();
-                result = checkClass(componentType);
-                if (!result) {
-                    return false;
-                }
+                result = checkType(componentType);
+                return result;
             } else if (clazz.isPrimitive()) {
                 // deal with case of basic byte
-                if (this.unsupportedClasses.contains(className)) {
-                    return false;
-                }
+                return !unsupportedClasses.contains(className);
             } else if (className.startsWith("java") || className.startsWith("javax")) {
-                if (this.unsupportedClasses.contains(className)) {
-                    return false;
-                }
+                return !unsupportedClasses.contains(className);
             } else {
                 // deal with case of interface
                 if (clazz.isInterface()) {
+                    return false;
+                }
+                // deal with case of abstract
+                if (Modifier.isAbstract(clazz.getModifiers())) {
                     return false;
                 }
                 // deal with field one by one
                 for (Field field : clazz.getDeclaredFields()) {
                     Type type = field.getGenericType();
                     Class<?> fieldClass = field.getType();
-                    result = checkClass(type);
+                    result = checkType(type);
                     if (!result) {
                         return false;
                     }
