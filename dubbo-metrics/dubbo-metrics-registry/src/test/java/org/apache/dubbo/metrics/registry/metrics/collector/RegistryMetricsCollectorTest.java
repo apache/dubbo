@@ -48,7 +48,7 @@ import static org.apache.dubbo.metrics.registry.RegistryMetricsConstants.APP_LEV
 import static org.apache.dubbo.metrics.registry.RegistryMetricsConstants.OP_TYPE_REGISTER;
 import static org.apache.dubbo.metrics.registry.RegistryMetricsConstants.OP_TYPE_REGISTER_SERVICE;
 import static org.apache.dubbo.metrics.registry.RegistryMetricsConstants.OP_TYPE_SUBSCRIBE_SERVICE;
-import static org.apache.dubbo.metrics.registry.RegistryMetricsConstants.REGISTER_LEVEL_APP_KEYS;
+import static org.apache.dubbo.metrics.registry.RegistryMetricsConstants.REGISTER_LEVEL_KEYS;
 
 
 class RegistryMetricsCollectorTest {
@@ -82,7 +82,7 @@ class RegistryMetricsCollectorTest {
             () -> {
                 List<MetricSample> metricSamples = collector.collect();
                 // push success +1 -> other default 0 = APP_LEVEL_KEYS.size()
-                Assertions.assertEquals(APP_LEVEL_KEYS.size() + REGISTER_LEVEL_APP_KEYS.size(), metricSamples.size());
+                Assertions.assertEquals(APP_LEVEL_KEYS.size() + REGISTER_LEVEL_KEYS.size(), metricSamples.size());
                 Assertions.assertTrue(metricSamples.stream().allMatch(metricSample -> metricSample instanceof GaugeMetricSample));
                 Assertions.assertTrue(metricSamples.stream().anyMatch(metricSample -> ((GaugeMetricSample) metricSample).applyAsDouble() == 1));
                 return null;
@@ -92,7 +92,7 @@ class RegistryMetricsCollectorTest {
         // push finish rt +1
         List<MetricSample> metricSamples = collector.collect();
         // APP_LEVEL_KEYS.size() + rt(5) = 12
-        Assertions.assertEquals(APP_LEVEL_KEYS.size() + REGISTER_LEVEL_APP_KEYS.size() + 5, metricSamples.size());
+        Assertions.assertEquals(APP_LEVEL_KEYS.size() + REGISTER_LEVEL_KEYS.size() + 5, metricSamples.size());
         long c1 = registryEvent.getTimePair().calc();
 
 
@@ -114,7 +114,7 @@ class RegistryMetricsCollectorTest {
         metricSamples = collector.collect();
 
         // num(total+success+error) + rt(5)
-        Assertions.assertEquals(APP_LEVEL_KEYS.size() + REGISTER_LEVEL_APP_KEYS.size() + 5, metricSamples.size());
+        Assertions.assertEquals(APP_LEVEL_KEYS.size() + REGISTER_LEVEL_KEYS.size() + 5, metricSamples.size());
 
         // calc rt
         for (MetricSample sample : metricSamples) {

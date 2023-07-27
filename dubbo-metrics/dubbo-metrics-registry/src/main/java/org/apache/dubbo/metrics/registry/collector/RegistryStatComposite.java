@@ -42,7 +42,7 @@ public class RegistryStatComposite extends AbstractMetricsExport {
 
     public RegistryStatComposite(ApplicationModel applicationModel) {
         super(applicationModel);
-        init(RegistryMetricsConstants.REGISTER_LEVEL_APP_KEYS);
+        init(RegistryMetricsConstants.REGISTER_LEVEL_KEYS);
     }
 
     public void init(List<MetricsKey> appKeys) {

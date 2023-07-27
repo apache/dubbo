@@ -17,6 +17,7 @@
 package org.apache.dubbo.registry.client;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.RegistryConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -33,7 +34,7 @@ import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedLi
 import org.apache.dubbo.registry.support.FailbackRegistry;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -43,6 +44,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_CLUSTER_KEY;
@@ -332,7 +334,9 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
                 serviceInstancesChangedListener.addListenerAndNotify(url, listener);
                 ServiceInstancesChangedListener finalServiceInstancesChangedListener = serviceInstancesChangedListener;
 
-                MetricsEventBus.post(RegistryEvent.toSsEvent(url.getApplicationModel(), serviceKey, new ArrayList<>(serviceNames)),
+                String serviceDiscoveryName = url.getParameter(RegistryConstants.REGISTRY_CLUSTER_KEY, url.getParameter(PROTOCOL_KEY));
+
+                MetricsEventBus.post(RegistryEvent.toSsEvent(url.getApplicationModel(), serviceKey, Collections.singletonList(serviceDiscoveryName)),
                     () -> {
                         serviceDiscovery.addServiceInstancesChangedListener(finalServiceInstancesChangedListener);
                         return null;

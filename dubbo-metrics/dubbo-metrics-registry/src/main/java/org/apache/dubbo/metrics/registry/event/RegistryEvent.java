@@ -63,7 +63,7 @@ public class RegistryEvent extends TimeCounterEvent {
 
     public static RegistryEvent toSubscribeEvent(ApplicationModel applicationModel, String registryClusterName) {
         RegistryEvent ddEvent = new RegistryEvent(applicationModel, SUBSCRIBE_EVENT);
-        ddEvent.putAttachment(RegistryMetricsConstants.ATTACHMENT_KEY_MULTI_REGISTRY, Collections.singleton(registryClusterName));
+        ddEvent.putAttachment(RegistryMetricsConstants.ATTACHMENT_KEY_MULTI_REGISTRY, Collections.singletonList(registryClusterName));
         return ddEvent;
     }
 
@@ -94,6 +94,7 @@ public class RegistryEvent extends TimeCounterEvent {
     public static RegistryEvent toSsEvent(ApplicationModel applicationModel, String serviceKey, List<String> serviceDiscoveryNames) {
         RegistryEvent ddEvent = new RegistryEvent(applicationModel, SS_EVENT);
         ddEvent.putAttachment(ATTACHMENT_KEY_SERVICE, serviceKey);
+        ddEvent.putAttachment(ATTACHMENT_KEY_SIZE, 1);
         ddEvent.putAttachment(RegistryMetricsConstants.ATTACHMENT_KEY_MULTI_REGISTRY, serviceDiscoveryNames);
         return ddEvent;
     }

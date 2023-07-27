@@ -131,7 +131,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
         }
 
         ApplicationModel applicationModel = url.getApplicationModel();
-        String registryClusterName = url.getParameter(RegistryConstants.REGISTRY_CLUSTER_KEY, url.getParameter(PROTOCOL_KEY));
+        String registryClusterName = registry.getUrl().getParameter(RegistryConstants.REGISTRY_CLUSTER_KEY, registry.getUrl().getParameter(PROTOCOL_KEY));
         MetricsEventBus.post(RegistryEvent.toSubscribeEvent(applicationModel,registryClusterName), () ->
             {
                 super.subscribe(url);
