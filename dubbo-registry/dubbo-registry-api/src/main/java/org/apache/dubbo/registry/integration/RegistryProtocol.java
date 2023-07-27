@@ -228,7 +228,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         ApplicationDeployer deployer = registeredProviderUrl.getOrDefaultApplicationModel().getDeployer();
         try {
             deployer.increaseServiceRefreshCount();
-            String serviceDiscoveryName = registry.getUrl().getParameter(RegistryConstants.REGISTRY_CLUSTER_KEY, registeredProviderUrl.getParameter(PROTOCOL_KEY));
+            String serviceDiscoveryName = registry.getUrl().getParameter(RegistryConstants.REGISTRY_CLUSTER_KEY, registry.getUrl().getParameter(PROTOCOL_KEY));
             MetricsEventBus.post(RegistryEvent.toRsEvent(registeredProviderUrl.getApplicationModel(), registeredProviderUrl.getServiceKey(), 1, Collections.singletonList(serviceDiscoveryName)),
                 () -> {
                     registry.register(registeredProviderUrl);
