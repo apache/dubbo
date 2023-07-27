@@ -26,6 +26,7 @@ import org.apache.dubbo.metrics.registry.RegistryMetricsConstants;
 import org.apache.dubbo.metrics.registry.collector.RegistryMetricsCollector;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -62,7 +63,7 @@ public class RegistryEvent extends TimeCounterEvent {
 
     public static RegistryEvent toSubscribeEvent(ApplicationModel applicationModel, String registryClusterName) {
         RegistryEvent ddEvent = new RegistryEvent(applicationModel, SUBSCRIBE_EVENT);
-        ddEvent.putAttachment(RegistryMetricsConstants.ATTACHMENT_KEY_MULTI_REGISTRY, registryClusterName);
+        ddEvent.putAttachment(RegistryMetricsConstants.ATTACHMENT_KEY_MULTI_REGISTRY, Collections.singleton(registryClusterName));
         return ddEvent;
     }
 
