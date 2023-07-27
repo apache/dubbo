@@ -17,7 +17,6 @@
 package org.apache.dubbo.common.json;
 
 import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.config.ServiceConfigBase;
 
 import java.lang.reflect.Type;
 import java.util.List;
