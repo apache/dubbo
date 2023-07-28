@@ -32,9 +32,9 @@ public class ProtocolRegistryEventWrapper implements Protocol {
 
     @Override
     public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
-        //TODO
+
         URL url = invoker.getUrl();
-        String serviceKey = null;
+        String serviceKey = URL.buildKey(url.getServiceInterface(),url.getGroup(),url.getVersion());
 
         return MetricsEventBus.post(
             RegistryEvent.toRsEvent(applicationModel, serviceKey, 1),
