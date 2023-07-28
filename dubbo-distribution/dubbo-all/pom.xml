@@ -77,6 +77,13 @@
         <!-- config-center -->
         <dependency>
             <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-configcenter-api</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-configcenter-file</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
@@ -669,6 +676,7 @@
                                     <include>org.apache.dubbo:dubbo-compatible</include>
                                     <include>org.apache.dubbo:dubbo-config-api</include>
                                     <include>org.apache.dubbo:dubbo-config-spring</include>
+                                    <include>org.apache.dubbo:dubbo-configcenter-api</include>
                                     <include>org.apache.dubbo:dubbo-configcenter-file</include>
                                     <include>org.apache.dubbo:dubbo-configcenter-apollo</include>
                                     <include>org.apache.dubbo:dubbo-configcenter-nacos</include>
@@ -1551,6 +1559,14 @@
                                         META-INF/dubbo/internal/org.apache.dubbo.common.json.JsonUtil
                                     </resource>
                                 </transformer>
+
+                                <transformer
+                                    implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>
+                                        META-INF/dubbo/internal/org.apache.dubbo.config.deploy.lifecycle.ApplicationLifecycle
+                                    </resource>
+                                </transformer>
+
                             </transformers>
                             <filters>
                                 <filter>
