@@ -1,1 +1,2 @@
 metrics=org.apache.dubbo.config.deploy.lifecycle.MetricsApplicationLifecycle
+metrisexport=org.apache.dubbo.config.deploy.lifecycle.MetrisExportApplicationLifecycle
