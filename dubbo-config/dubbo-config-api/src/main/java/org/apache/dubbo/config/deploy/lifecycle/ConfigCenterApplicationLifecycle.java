@@ -45,8 +45,6 @@ import static org.apache.dubbo.remoting.Constants.CLIENT_KEY;
 @Activate(order = -1)
 public class ConfigCenterApplicationLifecycle implements ApplicationLifecycle {
 
-    private static final String NAME = "config_center";
-
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ConfigCenterApplicationLifecycle.class);
 
     private DefaultApplicationDeployer applicationDeployer;

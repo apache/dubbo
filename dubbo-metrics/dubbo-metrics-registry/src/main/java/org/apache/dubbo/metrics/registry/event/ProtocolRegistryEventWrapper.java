@@ -15,10 +15,13 @@ public class ProtocolRegistryEventWrapper implements Protocol {
 
     private final Protocol protocol;
 
-    private final ApplicationModel applicationModel;
+    private ApplicationModel applicationModel;
 
-    public ProtocolRegistryEventWrapper(Protocol protocol,ApplicationModel applicationModel) {
+    public ProtocolRegistryEventWrapper(Protocol protocol) {
         this.protocol = protocol;
+    }
+
+    void setApplicationModel(ApplicationModel applicationModel){
         this.applicationModel = applicationModel;
     }
 

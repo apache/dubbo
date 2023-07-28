@@ -1,1 +1,2 @@
 registry=org.apache.dubbo.config.deploy.lifecycle.RegistryApplicationLifecycle
+applicationoffline=org.apache.dubbo.config.deploy.lifecycle.ApplicationOfflineLifecycle
