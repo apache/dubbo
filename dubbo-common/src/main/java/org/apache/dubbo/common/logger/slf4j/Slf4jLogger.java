@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.common.logger.slf4j;
 
+import org.apache.dubbo.common.logger.Level;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.support.FailsafeLogger;
 
@@ -248,6 +249,29 @@ public class Slf4jLogger implements Logger {
     @Override
     public boolean isErrorEnabled() {
         return logger.isErrorEnabled();
+    }
+
+    public static Level getLevel(org.slf4j.Logger logger) {
+        if (logger.isTraceEnabled()) {
+            return Level.TRACE;
+        }
+        if (logger.isDebugEnabled()) {
+            return Level.DEBUG;
+        }
+        if (logger.isInfoEnabled()) {
+            return Level.INFO;
+        }
+        if (logger.isWarnEnabled()) {
+            return Level.WARN;
+        }
+        if (logger.isErrorEnabled()) {
+            return Level.ERROR;
+        }
+        return Level.OFF;
+    }
+
+    public Level getLevel() {
+        return getLevel(logger);
     }
 
 }
