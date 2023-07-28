@@ -17,7 +17,6 @@
 package org.apache.dubbo.config.deploy.lifecycle;
 
 import org.apache.dubbo.common.constants.LoggerCodeConstants;
-import org.apache.dubbo.common.deploy.ApplicationDeployer;
 import org.apache.dubbo.common.deploy.DeployState;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
@@ -48,7 +47,6 @@ import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMET
 @Activate
 public class MetricsApplicationLifecycle implements ApplicationLifecycle {
 
-
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(MetricsApplicationLifecycle.class);
 
     private DefaultApplicationDeployer applicationDeployer;
@@ -64,17 +62,6 @@ public class MetricsApplicationLifecycle implements ApplicationLifecycle {
     public boolean needInitialize() {
         return isSupportMetrics();
     }
-
-    /**
-//     * {@link ApplicationDeployer#start()}
-//     */
-//    @Override
-//    public void start(AtomicBoolean hasPreparedApplicationInstance) {
-//        if(!hasPreparedApplicationInstance.get()) {
-//            exportMetricsService();
-//        }
-//    }
-
 
     /**
      * Initialize.
