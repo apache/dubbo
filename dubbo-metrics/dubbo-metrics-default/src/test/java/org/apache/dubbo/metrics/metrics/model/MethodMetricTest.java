@@ -73,7 +73,7 @@ class MethodMetricTest {
     @Test
     void test() {
         MethodMetric metric = new MethodMetric(applicationModel, invocation);
-        Assertions.assertEquals(metric.getInterfaceName(), interfaceName);
+        Assertions.assertEquals(metric.getServiceKey(), interfaceName);
         Assertions.assertEquals(metric.getMethodName(), methodName);
         Assertions.assertEquals(metric.getGroup(), group);
         Assertions.assertEquals(metric.getVersion(), version);

@@ -20,12 +20,12 @@ package org.apache.dubbo.metrics.collector;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.config.ApplicationConfig;
-import org.apache.dubbo.metrics.DefaultConstants;
 import org.apache.dubbo.metrics.TestMetricsInvoker;
 import org.apache.dubbo.metrics.event.MetricsDispatcher;
 import org.apache.dubbo.metrics.event.RequestBeforeEvent;
 import org.apache.dubbo.metrics.event.RequestEvent;
 import org.apache.dubbo.metrics.filter.MetricsFilter;
+import org.apache.dubbo.metrics.model.MetricsSupport;
 import org.apache.dubbo.metrics.model.ServiceKeyMetric;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
@@ -43,6 +43,7 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -112,8 +113,8 @@ class DefaultCollectorTest {
     @Test
     void testListener() {
         DefaultMetricsCollector metricsCollector = new DefaultMetricsCollector(applicationModel);
-        RequestEvent event = RequestEvent.toRequestEvent(applicationModel, invocation);
-        RequestBeforeEvent beforeEvent = new RequestBeforeEvent(applicationModel, new TypeWrapper(MetricsLevel.METHOD, MetricsKey.METRIC_REQUESTS));
+        RequestEvent event = RequestEvent.toRequestEvent(applicationModel, null, null, null, invocation, MetricsSupport.getSide(invocation));
+        RequestBeforeEvent beforeEvent = new RequestBeforeEvent(applicationModel, null, null, new TypeWrapper(MetricsLevel.METHOD, MetricsKey.METRIC_REQUESTS));
         Assertions.assertTrue(metricsCollector.isSupport(event));
         Assertions.assertTrue(metricsCollector.isSupport(beforeEvent));
     }
@@ -149,8 +150,8 @@ class DefaultCollectorTest {
 
         // push finish rt +1
         List<MetricSample> metricSamples = collector.collect();
-        //all METHOD_LEVEL_KEYS + rt(5) = 27
-        Assertions.assertEquals(DefaultConstants.METHOD_LEVEL_KEYS.size() + 5, metricSamples.size());
+        //num(total+success+processing) + rt(5) = 8
+        Assertions.assertEquals(8, metricSamples.size());
         List<String> metricsNames = metricSamples.stream().map(MetricSample::getName).collect(Collectors.toList());
         // No error will contain total+success+processing
         String REQUESTS = new MetricsKeyWrapper(METRIC_REQUESTS, MetricsPlaceValue.of(side, MetricsLevel.SERVICE)).targetKey();
@@ -192,7 +193,7 @@ class DefaultCollectorTest {
         metricSamples = collector.collect();
 
         // num(total+success+error+total_error+processing) + rt(5) = 5
-        Assertions.assertEquals(DefaultConstants.METHOD_LEVEL_KEYS.size() + 5, metricSamples.size());
+        Assertions.assertEquals(10, metricSamples.size());
 
         String TIMEOUT = new MetricsKeyWrapper(METRIC_REQUESTS_TIMEOUT, MetricsPlaceValue.of(side, MetricsLevel.SERVICE)).targetKey();
         String TOTAL_FAILED = new MetricsKeyWrapper(METRIC_REQUESTS_TOTAL_FAILED, MetricsPlaceValue.of(side, MetricsLevel.SERVICE)).targetKey();

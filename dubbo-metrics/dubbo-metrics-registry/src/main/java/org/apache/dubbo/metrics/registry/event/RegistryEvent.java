@@ -38,7 +38,7 @@ import static org.apache.dubbo.metrics.MetricsConstants.ATTACHMENT_KEY_SIZE;
  */
 public class RegistryEvent extends TimeCounterEvent {
     public RegistryEvent(ApplicationModel applicationModel, TypeWrapper typeWrapper) {
-        super(applicationModel,typeWrapper);
+        super(applicationModel, typeWrapper);
         ScopeBeanFactory beanFactory = getSource().getBeanFactory();
         RegistryMetricsCollector collector;
         if (!beanFactory.isDestroyed()) {
@@ -47,18 +47,21 @@ public class RegistryEvent extends TimeCounterEvent {
         }
     }
 
+    private static final TypeWrapper REGISTER_EVENT = new TypeWrapper(MetricsLevel.APP, MetricsKey.REGISTER_METRIC_REQUESTS, MetricsKey.REGISTER_METRIC_REQUESTS_SUCCEED, MetricsKey.REGISTER_METRIC_REQUESTS_FAILED);
     public static RegistryEvent toRegisterEvent(ApplicationModel applicationModel) {
-        return new RegistryEvent(applicationModel, new TypeWrapper(MetricsLevel.APP, MetricsKey.REGISTER_METRIC_REQUESTS, MetricsKey.REGISTER_METRIC_REQUESTS_SUCCEED, MetricsKey.REGISTER_METRIC_REQUESTS_FAILED));
+        return new RegistryEvent(applicationModel, REGISTER_EVENT);
     }
 
 
+    private static final TypeWrapper SUBSCRIBE_EVENT = new TypeWrapper(MetricsLevel.APP, MetricsKey.SUBSCRIBE_METRIC_NUM, MetricsKey.SUBSCRIBE_METRIC_NUM_SUCCEED, MetricsKey.SUBSCRIBE_METRIC_NUM_FAILED);
     public static RegistryEvent toSubscribeEvent(ApplicationModel applicationModel) {
-        return new RegistryEvent(applicationModel, new TypeWrapper(MetricsLevel.APP, MetricsKey.SUBSCRIBE_METRIC_NUM, MetricsKey.SUBSCRIBE_METRIC_NUM_SUCCEED, MetricsKey.SUBSCRIBE_METRIC_NUM_FAILED));
+        return new RegistryEvent(applicationModel, SUBSCRIBE_EVENT);
     }
 
 
+    private static final TypeWrapper NOTIFY_EVENT = new TypeWrapper(MetricsLevel.APP, MetricsKey.NOTIFY_METRIC_REQUESTS, MetricsKey.NOTIFY_METRIC_NUM_LAST, (MetricsKey) null);
     public static RegistryEvent toNotifyEvent(ApplicationModel applicationModel) {
-        return new RegistryEvent(applicationModel, new TypeWrapper(MetricsLevel.APP, MetricsKey.NOTIFY_METRIC_REQUESTS, MetricsKey.NOTIFY_METRIC_NUM_LAST, (MetricsKey) null)) {
+        return new RegistryEvent(applicationModel, NOTIFY_EVENT) {
             @Override
             public void customAfterPost(Object postResult) {
                 super.putAttachment(ATTACHMENT_KEY_LAST_NUM_MAP, postResult);
@@ -66,21 +69,24 @@ public class RegistryEvent extends TimeCounterEvent {
         };
     }
 
+    private static final TypeWrapper RS_EVENT = new TypeWrapper(MetricsLevel.SERVICE, MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS, MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS_SUCCEED, MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS_FAILED);
     public static RegistryEvent toRsEvent(ApplicationModel applicationModel, String serviceKey, int size) {
-        RegistryEvent ddEvent = new RegistryEvent(applicationModel, new TypeWrapper(MetricsLevel.SERVICE, MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS, MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS_SUCCEED, MetricsKey.SERVICE_REGISTER_METRIC_REQUESTS_FAILED));
+        RegistryEvent ddEvent = new RegistryEvent(applicationModel, RS_EVENT);
         ddEvent.putAttachment(ATTACHMENT_KEY_SERVICE, serviceKey);
         ddEvent.putAttachment(ATTACHMENT_KEY_SIZE, size);
         return ddEvent;
     }
 
+    private static final TypeWrapper SS_EVENT = new TypeWrapper(MetricsLevel.SERVICE, MetricsKey.SERVICE_SUBSCRIBE_METRIC_NUM, MetricsKey.SERVICE_SUBSCRIBE_METRIC_NUM_SUCCEED, MetricsKey.SERVICE_SUBSCRIBE_METRIC_NUM_FAILED);
     public static RegistryEvent toSsEvent(ApplicationModel applicationModel, String serviceKey) {
-        RegistryEvent ddEvent = new RegistryEvent(applicationModel, new TypeWrapper(MetricsLevel.SERVICE, MetricsKey.SERVICE_SUBSCRIBE_METRIC_NUM, MetricsKey.SERVICE_SUBSCRIBE_METRIC_NUM_SUCCEED, MetricsKey.SERVICE_SUBSCRIBE_METRIC_NUM_FAILED));
+        RegistryEvent ddEvent = new RegistryEvent(applicationModel, SS_EVENT);
         ddEvent.putAttachment(ATTACHMENT_KEY_SERVICE, serviceKey);
         return ddEvent;
     }
 
+    private static final TypeWrapper DIRECTORY_EVENT = new TypeWrapper(MetricsLevel.APP, MetricsKey.DIRECTORY_METRIC_NUM_VALID, null, null);
     public static RegistryEvent refreshDirectoryEvent(ApplicationModel applicationModel, Map<MetricsKey, Map<String, Integer>> summaryMap) {
-        RegistryEvent registryEvent = new RegistryEvent(applicationModel, new TypeWrapper(MetricsLevel.APP, MetricsKey.DIRECTORY_METRIC_NUM_VALID, null, null));
+        RegistryEvent registryEvent = new RegistryEvent(applicationModel, DIRECTORY_EVENT);
         registryEvent.putAttachment(ATTACHMENT_DIRECTORY_MAP, summaryMap);
         return registryEvent;
     }

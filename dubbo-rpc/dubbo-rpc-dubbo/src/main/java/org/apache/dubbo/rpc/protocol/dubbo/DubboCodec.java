@@ -69,6 +69,8 @@ public class DubboCodec extends ExchangeCodec {
     public static final byte RESPONSE_NULL_VALUE_WITH_ATTACHMENTS = 5;
     public static final Object[] EMPTY_OBJECT_ARRAY = new Object[0];
     public static final Class<?>[] EMPTY_CLASS_ARRAY = new Class<?>[0];
+    public static final Class<?>[] GENERIC_PTS_ARRAY = new Class<?>[]{String.class, String[].class, Object[].class};
+    public static final Class<?>[] ECHO_PTS_ARRAY = new Class<?>[]{Object.class};
     private static final ErrorTypeAwareLogger log = LoggerFactory.getErrorTypeAwareLogger(DubboCodec.class);
 
     private static final AtomicBoolean decodeInUserThreadLogged = new AtomicBoolean(false);
@@ -114,14 +116,29 @@ public class DubboCodec extends ExchangeCodec {
                         }
                     } else {
                         DecodeableRpcResult result;
+                        Invocation inv = (Invocation) getRequestData(channel, res, id);
                         if (channel.getUrl().getParameter(DECODE_IN_IO_THREAD_KEY, DEFAULT_DECODE_IN_IO_THREAD)) {
-                            result = new DecodeableRpcResult(channel, res, is,
-                                (Invocation) getRequestData(channel, res, id), proto);
+                            if (customByteAccessor != null) {
+                                result = customByteAccessor.getRpcResult(channel, res,
+                                    new UnsafeByteArrayInputStream(readMessageData(is)),
+                                    inv, proto);
+                            } else {
+                                result = new DecodeableRpcResult(channel, res,
+                                    new UnsafeByteArrayInputStream(readMessageData(is)),
+                                    inv, proto);
+                            }
                             result.decode();
                         } else {
-                            result = new DecodeableRpcResult(channel, res,
-                                new UnsafeByteArrayInputStream(readMessageData(is)),
-                                (Invocation) getRequestData(channel, res, id), proto);
+                            if (customByteAccessor != null) {
+                                result = customByteAccessor.getRpcResult(channel, res,
+                                    new UnsafeByteArrayInputStream(readMessageData(is)),
+                                    inv, proto);
+                            } else {
+                                result = new DecodeableRpcResult(channel, res,
+                                    new UnsafeByteArrayInputStream(readMessageData(is)),
+                                    inv, proto);
+                            }
+
                         }
                         data = result;
                     }

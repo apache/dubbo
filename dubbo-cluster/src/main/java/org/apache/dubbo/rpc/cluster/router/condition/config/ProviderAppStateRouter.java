@@ -53,8 +53,11 @@ public class ProviderAppStateRouter<T> extends ListenableStateRouter<T> {
         String providerApplication = url.getRemoteApplication();
 
         // provider application is empty or equals with the current application
-        if (isEmpty(providerApplication) || providerApplication.equals(currentApplication)) {
+        if (isEmpty(providerApplication)) {
             logger.info("Condition router get providerApplication is empty, will not subscribe to provider app rules. Service Key:" + url.getServiceKey());
+            return;
+        }
+        if (providerApplication.equals(currentApplication)) {
             return;
         }
 

@@ -64,7 +64,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.TAG_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_INIT_SERIALIZATION_OPTIMIZER;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_REFER_INVOKER;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_UNSUPPORTED;
@@ -114,7 +113,6 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
         super(serviceType, url);
         moduleModel = getModuleModel(url.getScopeModel());
         consumerConfigurationListener = getConsumerConfigurationListener(moduleModel);
-
     }
 
     @Override
@@ -132,13 +130,13 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
         }
 
         ApplicationModel applicationModel = url.getApplicationModel();
-        MetricsEventBus.post(RegistryEvent.toSubscribeEvent(applicationModel),() ->
+        MetricsEventBus.post(RegistryEvent.toSubscribeEvent(applicationModel), () ->
             {
                 super.subscribe(url);
                 return null;
             }
         );
-        if (moduleModel.getModelEnvironment().getConfiguration().convert(Boolean.class, org.apache.dubbo.registry.Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
+        if (moduleModel.modelEnvironment().getConfiguration().convert(Boolean.class, org.apache.dubbo.registry.Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
             consumerConfigurationListener.addNotifyListener(this);
             referenceConfigurationListener = new ReferenceConfigurationListener(moduleModel, this, url);
         }
@@ -152,7 +150,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
     @Override
     public void unSubscribe(URL url) {
         super.unSubscribe(url);
-        if (moduleModel.getModelEnvironment().getConfiguration().convert(Boolean.class, org.apache.dubbo.registry.Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
+        if (moduleModel.modelEnvironment().getConfiguration().convert(Boolean.class, org.apache.dubbo.registry.Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
             consumerConfigurationListener.removeNotifyListener(this);
             if (referenceConfigurationListener != null) {
                 referenceConfigurationListener.stop();
@@ -163,7 +161,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
     @Override
     public void destroy() {
         super.destroy();
-        if (moduleModel.getModelEnvironment().getConfiguration().convert(Boolean.class, org.apache.dubbo.registry.Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
+        if (moduleModel.modelEnvironment().getConfiguration().convert(Boolean.class, org.apache.dubbo.registry.Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
             consumerConfigurationListener.removeNotifyListener(this);
             if (referenceConfigurationListener != null) {
                 referenceConfigurationListener.stop();
@@ -183,7 +181,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
             .filter(this::isNotCompatibleFor26x)
             .collect(Collectors.groupingBy(this::judgeCategory));
 
-        if (moduleModel.getModelEnvironment().getConfiguration().convert(Boolean.class, ENABLE_26X_CONFIGURATION_LISTEN, true)) {
+        if (moduleModel.modelEnvironment().getConfiguration().convert(Boolean.class, ENABLE_26X_CONFIGURATION_LISTEN, true)) {
             List<URL> configuratorURLs = categoryUrls.getOrDefault(CONFIGURATORS_CATEGORY, Collections.emptyList());
             this.configurators = Configurator.toConfigurators(configuratorURLs).orElse(this.configurators);
 
@@ -504,7 +502,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
 
         // FIXME, kept for mock
         if (providerUrl.hasParameter(MOCK_KEY) || providerUrl.getAnyMethodParameter(MOCK_KEY) != null) {
-            providerUrl = providerUrl.removeParameter(TAG_KEY);
+            providerUrl = providerUrl.removeParameter(MOCK_KEY);
         }
 
         if ((providerUrl.getPath() == null || providerUrl.getPath()
@@ -699,4 +697,10 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
         }
     }
 
+    @Override
+    public String toString() {
+        return "RegistryDirectory(" +
+            "registry: " + getUrl().getAddress() +
+            ")-" + super.toString();
+    }
 }
