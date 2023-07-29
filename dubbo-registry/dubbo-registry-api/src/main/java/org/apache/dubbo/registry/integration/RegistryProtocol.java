@@ -68,6 +68,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -228,8 +229,11 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         ApplicationDeployer deployer = registeredProviderUrl.getOrDefaultApplicationModel().getDeployer();
         try {
             deployer.increaseServiceRefreshCount();
-            String serviceDiscoveryName = registry.getUrl().getParameter(RegistryConstants.REGISTRY_CLUSTER_KEY, registry.getUrl().getParameter(PROTOCOL_KEY));
-            MetricsEventBus.post(RegistryEvent.toRsEvent(registeredProviderUrl.getApplicationModel(), registeredProviderUrl.getServiceKey(), 1, Collections.singletonList(serviceDiscoveryName)),
+            String registryName = Optional.ofNullable(registry.getUrl())
+                .map(u -> u.getParameter(RegistryConstants.REGISTRY_CLUSTER_KEY, u.getParameter(PROTOCOL_KEY)))
+                .filter(StringUtils::isNotEmpty)
+                .orElse("unknown");
+            MetricsEventBus.post(RegistryEvent.toRsEvent(registeredProviderUrl.getApplicationModel(), registeredProviderUrl.getServiceKey(), 1, Collections.singletonList(registryName)),
                 () -> {
                     registry.register(registeredProviderUrl);
                     return null;
