@@ -35,6 +35,7 @@ import org.apache.dubbo.config.DubboShutdownHook;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.deploy.lifecycle.manager.ApplicationLifecycleManager;
 import org.apache.dubbo.config.utils.CompositeReferenceCache;
+
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ScopeModel;

@@ -37,7 +37,7 @@ public class MetrisExportApplicationLifecycle implements ApplicationLifecycle {
 
     @Override
     public void setApplicationDeployer(DefaultApplicationDeployer defaultApplicationDeployer) {
-         this.applicationDeployer= defaultApplicationDeployer;
+         this.applicationDeployer = defaultApplicationDeployer;
     }
 
     /**
@@ -57,28 +57,18 @@ public class MetrisExportApplicationLifecycle implements ApplicationLifecycle {
      */
     @Override
     public void preModuleChanged(ModuleModel changedModule, DeployState moduleState, AtomicBoolean hasPreparedApplicationInstance) {
-        if (changedModule.isInternal() && moduleState == DeployState.STARTED && !hasPreparedApplicationInstance.get()) {
+        if (!changedModule.isInternal() && moduleState == DeployState.STARTED && !hasPreparedApplicationInstance.get()) {
             exportMetricsService();
         }
     }
 
     private void exportMetricsService() {
-
         boolean exportMetrics = applicationDeployer.getApplicationModel().getApplicationConfigManager().getMetrics()
             .map(MetricsConfig::getExportMetricsService).orElse(true);
-
         if (exportMetrics) {
             try {
-
-                MetricsApplicationLifecycle metricsApplicationLifecycle = applicationDeployer.getApplicationModel().getBeanFactory().getBean(MetricsApplicationLifecycle.class);
-                MetricsServiceExporter metricsServiceExporter = null;
-
-                if(metricsApplicationLifecycle != null){
-                    metricsServiceExporter = metricsApplicationLifecycle.getMetricsServiceExporter();
-                }
-                if(metricsApplicationLifecycle != null) {
-                    metricsServiceExporter.export();
-                }
+                MetricsServiceExporter exporter = applicationDeployer.getApplicationModel().getExtension(MetricsApplicationLifecycle.class,MetricsApplicationLifecycle.getName()).getMetricsServiceExporter();
+                exporter.export();
             } catch (Exception e) {
                 logger.error(LoggerCodeConstants.COMMON_METRICS_COLLECTOR_EXCEPTION, "", "",
                     "exportMetricsService an exception occurred when handle starting event", e);
