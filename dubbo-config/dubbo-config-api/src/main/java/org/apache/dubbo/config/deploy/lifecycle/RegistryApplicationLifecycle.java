@@ -17,7 +17,6 @@
 package org.apache.dubbo.config.deploy.lifecycle;
 
 import org.apache.dubbo.common.config.ConfigurationUtils;
-import org.apache.dubbo.common.deploy.ApplicationDeployer;
 import org.apache.dubbo.common.deploy.DeployState;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
@@ -63,17 +62,6 @@ public class RegistryApplicationLifecycle implements ApplicationLifecycle {
     @Override
     public boolean needInitialize() {
         return true;
-    }
-
-    /**
-     * {@link ApplicationDeployer#start()}
-     */
-    @Override
-    public void start(AtomicBoolean hasPreparedApplicationInstance) {
-        if(!hasPreparedApplicationInstance.get() && hasPreparedApplicationInstance.compareAndSet(false, true)) {
-            // register the local ServiceInstance if required
-            registerServiceInstance();
-        }
     }
 
     /**

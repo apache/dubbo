@@ -281,11 +281,10 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
     private void doStart() {
         startModules();
+        lifecycleManager.start(hasPreparedApplicationInstance);
 
         // prepare application instance
 //        prepareApplicationInstance();
-//        lifecycleManager.start(hasPreparedApplicationInstance);
-
         // Ignore checking new module after start
 //        executorRepository.getSharedExecutor().submit(() -> {
 //            try {
@@ -324,11 +323,9 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
     @Override
     public void prepareApplicationInstance() {
-
         if (hasPreparedApplicationInstance.get()) {
             return;
         }
-
         if (isRegisterConsumerInstance()) {
             exportMetadataService();
         }
@@ -449,16 +446,12 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     @Override
     public void checkState(ModuleModel moduleModel, DeployState moduleState) {
         synchronized (stateLock) {
-
             if (!moduleModel.isInternal() && moduleState == DeployState.STARTED) {
                 prepareApplicationInstance();
             }
             lifecycleManager.preModuleChanged(moduleModel,moduleState,hasPreparedApplicationInstance);
-
             DeployState newState = calculateState();
-
             switch (newState) {
-
                 case STARTED:
                     if (!isStarting()) {
                         break;
@@ -473,7 +466,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                     }
                     setStarted();
                     break;
-
                 case STARTING:
                     onStarting();
                     break;

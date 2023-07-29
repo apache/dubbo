@@ -17,13 +17,14 @@
 package org.apache.dubbo.config.deploy.lifecycle;
 
 import org.apache.dubbo.common.constants.LoggerCodeConstants;
-import org.apache.dubbo.common.deploy.ApplicationDeployer;
+import org.apache.dubbo.common.deploy.DeployState;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.deploy.DefaultApplicationDeployer;
 import org.apache.dubbo.metrics.service.MetricsServiceExporter;
+import org.apache.dubbo.rpc.model.ModuleModel;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -48,13 +49,15 @@ public class MetrisExportApplicationLifecycle implements ApplicationLifecycle {
     }
 
     /**
-     * {@link ApplicationDeployer#start()}
+     * What to do when a module changed.
      *
+     * @param changedModule                  changed module
+     * @param moduleState                    module state
      * @param hasPreparedApplicationInstance
      */
     @Override
-    public void start(AtomicBoolean hasPreparedApplicationInstance) {
-        if(!hasPreparedApplicationInstance.get()) {
+    public void preModuleChanged(ModuleModel changedModule, DeployState moduleState, AtomicBoolean hasPreparedApplicationInstance) {
+        if (changedModule.isInternal() && moduleState == DeployState.STARTED && !hasPreparedApplicationInstance.get()) {
             exportMetricsService();
         }
     }
