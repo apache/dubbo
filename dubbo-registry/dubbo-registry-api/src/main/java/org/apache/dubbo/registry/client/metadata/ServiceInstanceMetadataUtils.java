@@ -206,7 +206,6 @@ public class ServiceInstanceMetadataUtils {
         RegistryManager registryManager = applicationModel.getBeanFactory().getBean(RegistryManager.class);
         // register service instance
         List<ServiceDiscovery> serviceDiscoveries = registryManager.getServiceDiscoveries();
-        serviceDiscoveries.forEach(ServiceDiscovery::register);
         if (serviceDiscoveries.size() > 0) {
             MetricsEventBus.post(RegistryEvent.toRegisterEvent(applicationModel, getServiceDiscoveryNames(serviceDiscoveries)),
                 () -> {

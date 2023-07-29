@@ -16,8 +16,10 @@
  */
 package org.apache.dubbo.metrics.registry.event;
 
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metrics.collector.CombMetricsCollector;
 import org.apache.dubbo.metrics.event.MetricsEvent;
+import org.apache.dubbo.metrics.exception.MetricsNeverHappenException;
 import org.apache.dubbo.metrics.listener.AbstractMetricsKeyListener;
 import org.apache.dubbo.metrics.listener.MetricsApplicationListener;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
@@ -34,6 +36,7 @@ import static org.apache.dubbo.metrics.MetricsConstants.ATTACHMENT_DIRECTORY_MAP
 import static org.apache.dubbo.metrics.MetricsConstants.ATTACHMENT_KEY_LAST_NUM_MAP;
 import static org.apache.dubbo.metrics.MetricsConstants.ATTACHMENT_KEY_SERVICE;
 import static org.apache.dubbo.metrics.MetricsConstants.ATTACHMENT_KEY_SIZE;
+import static org.apache.dubbo.metrics.registry.RegistryMetricsConstants.ATTACHMENT_REGISTRY_SINGLE_KEY;
 import static org.apache.dubbo.metrics.registry.RegistryMetricsConstants.OP_TYPE_DIRECTORY;
 import static org.apache.dubbo.metrics.registry.RegistryMetricsConstants.OP_TYPE_NOTIFY;
 import static org.apache.dubbo.metrics.registry.RegistryMetricsConstants.OP_TYPE_REGISTER;
@@ -106,21 +109,24 @@ public class RegistrySpecListener {
         return AbstractMetricsKeyListener.onEvent(metricsKey,
             event -> {
                 Map<MetricsKey, Map<String, Integer>> summaryMap = event.getAttachmentValue(ATTACHMENT_DIRECTORY_MAP);
+                String registryClusterName = event.getAttachmentValue(ATTACHMENT_REGISTRY_SINGLE_KEY);
+                if (StringUtils.isBlank(registryClusterName)) {
+                    throw new MetricsNeverHappenException("registrySingleKey not exist");
+                }
                 summaryMap.forEach((summaryKey, map) ->
                     map.forEach(
-                        (k, v) -> collector.setNum(new MetricsKeyWrapper(summaryKey, OP_TYPE_DIRECTORY), k, v)));
+                        (k, v) -> ((RegistryMetricsCollector) collector).setNum(new MetricsKeyWrapper(summaryKey, OP_TYPE_DIRECTORY), k, v, registryClusterName)));
 
             }
         );
     }
 
 
-
     /**
      * Get the number of multiple registries
      */
     public static List<String> getRgs(MetricsEvent event) {
-        return event.getAttachmentValue(RegistryMetricsConstants.ATTACHMENT_KEY_MULTI_REGISTRY);
+        return event.getAttachmentValue(RegistryMetricsConstants.ATTACHMENT_REGISTRY_KEY);
     }
 
     /**

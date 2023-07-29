@@ -145,5 +145,9 @@ public class RegistryMetricsCollector extends CombMetricsCollector<RegistryEvent
         );
     }
 
+    public void setNum(MetricsKeyWrapper metricsKey, String serviceKey, int num, String name) {
+        Map<String, String> extraInfo = MetricsSupport.customExtraInfo(RegistryConstants.REGISTRY_CLUSTER_KEY.toLowerCase(), name);
+        this.stats.setServiceKey(metricsKey, serviceKey, num, extraInfo);
+    }
 
 }

@@ -54,7 +54,7 @@ public class RegistryEvent extends TimeCounterEvent {
 
     public static RegistryEvent toRegisterEvent(ApplicationModel applicationModel, List<String> registryClusterNames) {
         RegistryEvent registryEvent = new RegistryEvent(applicationModel, REGISTER_EVENT);
-        registryEvent.putAttachment(RegistryMetricsConstants.ATTACHMENT_KEY_MULTI_REGISTRY, registryClusterNames);
+        registryEvent.putAttachment(RegistryMetricsConstants.ATTACHMENT_REGISTRY_KEY, registryClusterNames);
         return registryEvent;
     }
 
@@ -63,7 +63,7 @@ public class RegistryEvent extends TimeCounterEvent {
 
     public static RegistryEvent toSubscribeEvent(ApplicationModel applicationModel, String registryClusterName) {
         RegistryEvent ddEvent = new RegistryEvent(applicationModel, SUBSCRIBE_EVENT);
-        ddEvent.putAttachment(RegistryMetricsConstants.ATTACHMENT_KEY_MULTI_REGISTRY, Collections.singletonList(registryClusterName));
+        ddEvent.putAttachment(RegistryMetricsConstants.ATTACHMENT_REGISTRY_KEY, Collections.singletonList(registryClusterName));
         return ddEvent;
     }
 
@@ -85,7 +85,7 @@ public class RegistryEvent extends TimeCounterEvent {
         RegistryEvent ddEvent = new RegistryEvent(applicationModel, RS_EVENT);
         ddEvent.putAttachment(ATTACHMENT_KEY_SERVICE, serviceKey);
         ddEvent.putAttachment(ATTACHMENT_KEY_SIZE, size);
-        ddEvent.putAttachment(RegistryMetricsConstants.ATTACHMENT_KEY_MULTI_REGISTRY, serviceDiscoveryNames);
+        ddEvent.putAttachment(RegistryMetricsConstants.ATTACHMENT_REGISTRY_KEY, serviceDiscoveryNames);
         return ddEvent;
     }
 
@@ -95,15 +95,16 @@ public class RegistryEvent extends TimeCounterEvent {
         RegistryEvent ddEvent = new RegistryEvent(applicationModel, SS_EVENT);
         ddEvent.putAttachment(ATTACHMENT_KEY_SERVICE, serviceKey);
         ddEvent.putAttachment(ATTACHMENT_KEY_SIZE, 1);
-        ddEvent.putAttachment(RegistryMetricsConstants.ATTACHMENT_KEY_MULTI_REGISTRY, serviceDiscoveryNames);
+        ddEvent.putAttachment(RegistryMetricsConstants.ATTACHMENT_REGISTRY_KEY, serviceDiscoveryNames);
         return ddEvent;
     }
 
     private static final TypeWrapper DIRECTORY_EVENT = new TypeWrapper(MetricsLevel.APP, MetricsKey.DIRECTORY_METRIC_NUM_VALID, null, null);
 
-    public static RegistryEvent refreshDirectoryEvent(ApplicationModel applicationModel, Map<MetricsKey, Map<String, Integer>> summaryMap) {
+    public static RegistryEvent refreshDirectoryEvent(ApplicationModel applicationModel, Map<MetricsKey, Map<String, Integer>> summaryMap,String serviceDiscoveryName) {
         RegistryEvent registryEvent = new RegistryEvent(applicationModel, DIRECTORY_EVENT);
         registryEvent.putAttachment(ATTACHMENT_DIRECTORY_MAP, summaryMap);
+        registryEvent.putAttachment(RegistryMetricsConstants.ATTACHMENT_REGISTRY_SINGLE_KEY, serviceDiscoveryName);
         return registryEvent;
     }
 

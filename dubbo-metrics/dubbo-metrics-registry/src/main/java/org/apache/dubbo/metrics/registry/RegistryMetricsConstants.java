@@ -47,7 +47,8 @@ import static org.apache.dubbo.metrics.model.key.MetricsKey.SUBSCRIBE_METRIC_NUM
 
 public interface RegistryMetricsConstants {
 
-    String ATTACHMENT_KEY_MULTI_REGISTRY = "multiRegistry";
+    String ATTACHMENT_REGISTRY_KEY = "registryKey";
+    String ATTACHMENT_REGISTRY_SINGLE_KEY = "registrySingleKey";
 
     MetricsPlaceValue OP_TYPE_REGISTER = MetricsPlaceValue.of("register", MetricsLevel.APP);
     MetricsPlaceValue OP_TYPE_SUBSCRIBE = MetricsPlaceValue.of("subscribe", MetricsLevel.APP);
