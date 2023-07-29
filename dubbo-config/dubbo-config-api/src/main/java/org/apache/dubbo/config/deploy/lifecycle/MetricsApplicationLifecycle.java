@@ -47,11 +47,17 @@ import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMET
 @Activate
 public class MetricsApplicationLifecycle implements ApplicationLifecycle {
 
+    private static final String NAME = "metrics";
+
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(MetricsApplicationLifecycle.class);
 
     private DefaultApplicationDeployer applicationDeployer;
 
     private MetricsServiceExporter metricsServiceExporter;
+
+    public static String getName(){
+        return NAME;
+    }
 
     @Override
     public void setApplicationDeployer(DefaultApplicationDeployer defaultApplicationDeployer) {
