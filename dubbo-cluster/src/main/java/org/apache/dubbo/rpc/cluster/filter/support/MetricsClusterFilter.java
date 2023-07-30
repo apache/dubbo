@@ -22,7 +22,7 @@ import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
 import org.apache.dubbo.metrics.event.MetricsDispatcher;
 import org.apache.dubbo.metrics.event.MetricsEventBus;
-import org.apache.dubbo.metrics.event.RequestBeforeEvent;
+import org.apache.dubbo.metrics.event.RequestEvent;
 import org.apache.dubbo.rpc.BaseFilter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -73,7 +73,7 @@ public class MetricsClusterFilter implements ClusterFilter, BaseFilter.Listener,
         if (t instanceof RpcException) {
             RpcException e = (RpcException) t;
             if (e.isForbidden()) {
-                MetricsEventBus.publish(RequestBeforeEvent.toEvent(applicationModel, appName, metricsDispatcher, invocation, CONSUMER_SIDE));
+                MetricsEventBus.publish(RequestEvent.toRequestErrorEvent(applicationModel, appName, metricsDispatcher, invocation, CONSUMER_SIDE, e.getCode()));
             }
         }
     }
