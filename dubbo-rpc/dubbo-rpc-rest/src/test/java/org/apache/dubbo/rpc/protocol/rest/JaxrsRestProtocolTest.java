@@ -736,11 +736,10 @@ class JaxrsRestProtocolTest {
         URL url = this.registerProvider(exportUrl, server, DemoService.class);
 
         URL nettyUrl = url.addParameter(SERVER_KEY, "netty");
-
         Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(server, DemoService.class, nettyUrl));
-        nettyUrl = url.addParameter("SERVER_KEY", "netty");
-        exporter = protocol.export(proxy.getInvoker(server, DemoService.class, nettyUrl));
 
+        nettyUrl = url.addParameter(SERVER_KEY, "netty");
+        exporter = protocol.export(proxy.getInvoker(server, DemoService.class, nettyUrl));
 
         exporter.unexport();
     }

@@ -22,8 +22,11 @@ import org.apache.dubbo.metrics.event.MetricsEventBus;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
+import org.apache.dubbo.rpc.ProtocolServer;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
+import java.util.List;
 
 
 @Activate(order = 50)
@@ -66,5 +69,10 @@ public class ProtocolRegistryEventWrapper implements Protocol {
     @Override
     public void destroy() {
         protocol.destroy();
+    }
+
+    @Override
+    public List<ProtocolServer> getServers() {
+        return protocol.getServers();
     }
 }
