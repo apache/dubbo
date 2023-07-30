@@ -150,4 +150,8 @@ public class RegistryMetricsCollector extends CombMetricsCollector<RegistryEvent
         this.stats.setServiceKey(metricsKey, serviceKey, num, extraInfo);
     }
 
+    public void setNum(MetricsKeyWrapper metricsKey, String serviceKey, int num, Map<String, String> attachments) {
+        this.stats.setServiceKey(metricsKey, serviceKey, num, attachments);
+    }
+
 }

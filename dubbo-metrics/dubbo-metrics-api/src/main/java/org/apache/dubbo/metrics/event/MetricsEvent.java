@@ -23,6 +23,7 @@ import org.apache.dubbo.metrics.model.MethodMetric;
 import org.apache.dubbo.metrics.model.key.TypeWrapper;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
@@ -83,6 +84,10 @@ public abstract class MetricsEvent {
             throw new MetricsNeverHappenException("Attachment key is null");
         }
         return (T) attachment.get(key);
+    }
+
+    public Map<String, Object> getAttachments() {
+        return Collections.unmodifiableMap(attachment);
     }
 
     public void putAttachment(String key, Object value) {

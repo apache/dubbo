@@ -654,7 +654,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
     protected Map<String, String> getDirectoryMeta() {
         String registryKey = Optional.ofNullable(getRegistry())
             .map(Registry::getUrl)
-            .map(url -> url.getParameter(RegistryConstants.REGISTRY_CLUSTER_KEY, url.getParameter(PROTOCOL_KEY)))
+            .map(url -> url.getParameter(RegistryConstants.REGISTRY_CLUSTER_KEY, url.getProtocol()))
             .orElse("unknown");
         Map<String, String> metas = new HashMap<>();
         metas.put(REGISTRY_KEY, registryKey);

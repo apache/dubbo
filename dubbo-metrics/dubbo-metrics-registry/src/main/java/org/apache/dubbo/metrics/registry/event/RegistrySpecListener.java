@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.metrics.registry.event;
 
-import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.metrics.collector.CombMetricsCollector;
 import org.apache.dubbo.metrics.event.MetricsEvent;
 import org.apache.dubbo.metrics.listener.AbstractMetricsKeyListener;
@@ -28,6 +28,7 @@ import org.apache.dubbo.metrics.registry.RegistryMetricsConstants;
 import org.apache.dubbo.metrics.registry.collector.RegistryMetricsCollector;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -35,7 +36,6 @@ import static org.apache.dubbo.metrics.MetricsConstants.ATTACHMENT_DIRECTORY_MAP
 import static org.apache.dubbo.metrics.MetricsConstants.ATTACHMENT_KEY_LAST_NUM_MAP;
 import static org.apache.dubbo.metrics.MetricsConstants.ATTACHMENT_KEY_SERVICE;
 import static org.apache.dubbo.metrics.MetricsConstants.ATTACHMENT_KEY_SIZE;
-import static org.apache.dubbo.metrics.registry.RegistryMetricsConstants.ATTACHMENT_REGISTRY_SINGLE_KEY;
 import static org.apache.dubbo.metrics.registry.RegistryMetricsConstants.OP_TYPE_DIRECTORY;
 import static org.apache.dubbo.metrics.registry.RegistryMetricsConstants.OP_TYPE_NOTIFY;
 import static org.apache.dubbo.metrics.registry.RegistryMetricsConstants.OP_TYPE_REGISTER;
@@ -108,15 +108,20 @@ public class RegistrySpecListener {
         return AbstractMetricsKeyListener.onEvent(metricsKey,
             event -> {
                 Map<MetricsKey, Map<String, Integer>> summaryMap = event.getAttachmentValue(ATTACHMENT_DIRECTORY_MAP);
-                String registryClusterName = event.getAttachmentValue(ATTACHMENT_REGISTRY_SINGLE_KEY);
+                Map<String, String> otherAttachments = new HashMap<>();
+                for (Map.Entry<String, Object> entry : event.getAttachments().entrySet()) {
+                    if (entry.getValue() instanceof String) {
+                        otherAttachments.put(entry.getKey(), (String) entry.getValue());
+                    }
+                }
                 summaryMap.forEach((summaryKey, map) ->
                     map.forEach(
                         (k, v) ->
                         {
-                            if (StringUtils.isBlank(registryClusterName)) {
+                            if (CollectionUtils.isEmptyMap(otherAttachments)) {
                                 collector.setNum(new MetricsKeyWrapper(summaryKey, OP_TYPE_DIRECTORY), k, v);
                             } else {
-                                ((RegistryMetricsCollector) collector).setNum(new MetricsKeyWrapper(summaryKey, OP_TYPE_DIRECTORY), k, v, registryClusterName);
+                                ((RegistryMetricsCollector) collector).setNum(new MetricsKeyWrapper(summaryKey, OP_TYPE_DIRECTORY), k, v, otherAttachments);
                             }
                         }
 

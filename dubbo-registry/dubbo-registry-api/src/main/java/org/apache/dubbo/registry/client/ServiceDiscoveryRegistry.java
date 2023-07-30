@@ -44,7 +44,6 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_CLUSTER_KEY;
@@ -331,7 +330,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
                 serviceInstancesChangedListener.addListenerAndNotify(url, listener);
                 ServiceInstancesChangedListener finalServiceInstancesChangedListener = serviceInstancesChangedListener;
 
-                String serviceDiscoveryName = url.getParameter(RegistryConstants.REGISTRY_CLUSTER_KEY, url.getParameter(PROTOCOL_KEY));
+                String serviceDiscoveryName = url.getParameter(RegistryConstants.REGISTRY_CLUSTER_KEY, url.getProtocol());
 
                 MetricsEventBus.post(RegistryEvent.toSsEvent(url.getApplicationModel(), serviceKey, Collections.singletonList(serviceDiscoveryName)),
                     () -> {
