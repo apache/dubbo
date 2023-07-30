@@ -37,7 +37,7 @@ public class ApplicationLifecycleManager{
     public ApplicationLifecycleManager(DefaultApplicationDeployer defaultApplicationDeployer) {
         this.defaultApplicationDeployer = defaultApplicationDeployer;
         sequences = loadAll();
-        sequences.forEach( applicationLifecycle -> applicationLifecycle.setApplicationDeployer(this.defaultApplicationDeployer));
+        sequences.forEach(applicationLifecycle -> applicationLifecycle.setApplicationDeployer(this.defaultApplicationDeployer));
     }
 
     public void start(AtomicBoolean hasPreparedApplicationInstance){

@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.config.deploy.lifecycle;
 
-import org.apache.dubbo.common.constants.LoggerCodeConstants;
 import org.apache.dubbo.common.deploy.DeployState;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
@@ -35,7 +34,6 @@ import org.apache.dubbo.rpc.model.ModuleModel;
 
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_METRICS_COLLECTOR_EXCEPTION;
 import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_DEFAULT;
@@ -151,33 +149,6 @@ public class MetricsApplicationLifecycle implements ApplicationLifecycle {
                 metricsServiceExporter.unexport();
             } catch (Exception ignored) {
                 // ignored
-            }
-        }
-    }
-
-    /**
-     * What to do when a module changed.
-     *
-     * @param changedModule changedModule
-     * @param moduleState   moduleState
-     */
-    @Override
-    public void preModuleChanged(ModuleModel changedModule, DeployState moduleState, AtomicBoolean hasPreparedApplicationInstance) {
-        if (!changedModule.isInternal() && moduleState == DeployState.STARTED && ! hasPreparedApplicationInstance.get()) {
-            exportMetricsService();
-        }
-    }
-
-    private void exportMetricsService() {
-        boolean exportMetrics = applicationDeployer.getApplicationModel().getApplicationConfigManager().getMetrics()
-            .map(MetricsConfig::getExportMetricsService).orElse(true);
-
-        if (exportMetrics) {
-            try {
-                this.metricsServiceExporter.export();
-            } catch (Exception e) {
-                logger.error(LoggerCodeConstants.COMMON_METRICS_COLLECTOR_EXCEPTION, "", "",
-                    "exportMetricsService an exception occurred when handle starting event", e);
             }
         }
     }
