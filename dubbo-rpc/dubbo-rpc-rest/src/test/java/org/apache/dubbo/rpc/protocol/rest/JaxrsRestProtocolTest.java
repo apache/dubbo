@@ -462,13 +462,18 @@ class JaxrsRestProtocolTest {
 
             Map<PathMatcher, RestMethodMetadata> pathContainPathVariableToServiceMap = serviceRestMetadata.getPathUnContainPathVariableToServiceMap();
 
+            Invoker<TestInterface> invokerNew = proxy.getInvoker(new TestInterface() {
+            }, TestInterface.class, exportUrl);
 
             pathAndInvokerMapper.addPathAndInvoker(pathContainPathVariableToServiceMap, invoker);
-            pathAndInvokerMapper.addPathAndInvoker(pathContainPathVariableToServiceMap, invoker);
+            pathAndInvokerMapper.addPathAndInvoker(pathContainPathVariableToServiceMap, invokerNew);
         });
 
 
     }
+
+    public static interface TestInterface{}
+
 
     @Test
     void testMapParam() {
@@ -721,6 +726,22 @@ class JaxrsRestProtocolTest {
         Map<User, User> maps = new HashMap<>();
         maps.put(User.getInstance(), User.getInstance());
         Assertions.assertEquals(User.getInstance(), demoService.userMap(maps).get(User.getInstance()));
+        exporter.unexport();
+    }
+
+    @Test
+    void testReExport() {
+        DemoService server = new DemoServiceImpl();
+
+        URL url = this.registerProvider(exportUrl, server, DemoService.class);
+
+        URL nettyUrl = url.addParameter(SERVER_KEY, "netty");
+
+        Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(server, DemoService.class, nettyUrl));
+        nettyUrl = url.addParameter("SERVER_KEY", "netty");
+        exporter = protocol.export(proxy.getInvoker(server, DemoService.class, nettyUrl));
+
+
         exporter.unexport();
     }
 
