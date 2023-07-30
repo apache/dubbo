@@ -24,7 +24,6 @@ import org.apache.dubbo.metrics.collector.MethodMetricsCollector;
 import org.apache.dubbo.metrics.collector.ServiceMetricsCollector;
 import org.apache.dubbo.metrics.event.MetricsEvent;
 import org.apache.dubbo.metrics.event.TimeCounterEvent;
-import org.apache.dubbo.metrics.exception.MetricsNeverHappenException;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
 import org.apache.dubbo.metrics.model.key.MetricsPlaceValue;
@@ -84,22 +83,6 @@ public class MetricsSupport {
         Map<String, String> tags = applicationTags(applicationModel, extraInfo);
         tags.put(TAG_INTERFACE_KEY, serviceKey);
         return tags;
-    }
-
-    public static Map<String, String> customExtraInfo(String... args) {
-        if (args.length % 2 != 0) {
-            throw new MetricsNeverHappenException("Number of args must be even.");
-        }
-
-        Map<String, String> map = new HashMap<>();
-
-        for (int i = 0; i < args.length; i += 2) {
-            String key = args[i];
-            String value = args[i + 1];
-            map.put(key, value);
-        }
-
-        return map;
     }
 
     public static Map<String, String> methodTags(ApplicationModel applicationModel, String serviceKey, String methodName) {

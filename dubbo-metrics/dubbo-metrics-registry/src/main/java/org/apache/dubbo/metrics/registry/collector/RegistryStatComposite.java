@@ -29,6 +29,7 @@ import org.apache.dubbo.metrics.report.AbstractMetricsExport;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -69,7 +70,7 @@ public class RegistryStatComposite extends AbstractMetricsExport {
             return;
         }
         ApplicationMetric applicationMetric = new ApplicationMetric(getApplicationModel());
-        applicationMetric.setExtraInfo(MetricsSupport.customExtraInfo(RegistryConstants.REGISTRY_CLUSTER_KEY.toLowerCase(), name));
+        applicationMetric.setExtraInfo(Collections.singletonMap(RegistryConstants.REGISTRY_CLUSTER_KEY.toLowerCase(), name));
         appStats.get(metricsKey).computeIfAbsent(applicationMetric, k -> new AtomicLong(0L)).getAndAdd(SELF_INCREMENT_SIZE);
         MetricsSupport.fillZero(appStats);
     }

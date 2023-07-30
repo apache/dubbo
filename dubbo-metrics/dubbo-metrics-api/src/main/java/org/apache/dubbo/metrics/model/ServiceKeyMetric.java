@@ -44,8 +44,12 @@ public class ServiceKeyMetric extends ApplicationMetric {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof ServiceKeyMetric)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof ServiceKeyMetric)) {
+            return false;
+        }
         ServiceKeyMetric that = (ServiceKeyMetric) o;
         return serviceKey.equals(that.serviceKey) && Objects.equals(extraInfo, that.extraInfo);
     }

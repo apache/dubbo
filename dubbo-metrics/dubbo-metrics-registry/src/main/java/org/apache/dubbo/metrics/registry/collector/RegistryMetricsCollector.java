@@ -28,7 +28,6 @@ import org.apache.dubbo.metrics.data.RtStatComposite;
 import org.apache.dubbo.metrics.data.ServiceStatComposite;
 import org.apache.dubbo.metrics.model.ApplicationMetric;
 import org.apache.dubbo.metrics.model.MetricsCategory;
-import org.apache.dubbo.metrics.model.MetricsSupport;
 import org.apache.dubbo.metrics.model.ServiceKeyMetric;
 import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.key.MetricsKeyWrapper;
@@ -39,6 +38,7 @@ import org.apache.dubbo.metrics.registry.event.RegistrySubDispatcher;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -120,7 +120,7 @@ public class RegistryMetricsCollector extends CombMetricsCollector<RegistryEvent
         registryClusterNames.forEach(name ->
         {
             ApplicationMetric applicationMetric = new ApplicationMetric(applicationModel);
-            applicationMetric.setExtraInfo(MetricsSupport.customExtraInfo(RegistryConstants.REGISTRY_CLUSTER_KEY.toLowerCase(), name));
+            applicationMetric.setExtraInfo(Collections.singletonMap(RegistryConstants.REGISTRY_CLUSTER_KEY.toLowerCase(), name));
             internalStat.incrMetricsNum(metricsKey, name);
             getStats().getRtStatComposite().calcServiceKeyRt(registryOpType, responseTime, applicationMetric);
         });
@@ -129,25 +129,20 @@ public class RegistryMetricsCollector extends CombMetricsCollector<RegistryEvent
 
     public void incrServiceRegisterNum(MetricsKeyWrapper wrapper, String serviceKey, List<String> registryClusterNames, int size) {
         registryClusterNames.forEach(name ->
-            stats.incrementServiceKey(wrapper, serviceKey, MetricsSupport.customExtraInfo(RegistryConstants.REGISTRY_CLUSTER_KEY.toLowerCase(), name), size)
+            stats.incrementServiceKey(wrapper, serviceKey, Collections.singletonMap(RegistryConstants.REGISTRY_CLUSTER_KEY.toLowerCase(), name), size)
         );
     }
 
     public void incrServiceRegisterFinishNum(MetricsKeyWrapper wrapper, String serviceKey, List<String> registryClusterNames, int size, Long responseTime) {
         registryClusterNames.forEach(name ->
             {
-                Map<String, String> extraInfo = MetricsSupport.customExtraInfo(RegistryConstants.REGISTRY_CLUSTER_KEY.toLowerCase(), name);
+                Map<String, String> extraInfo = Collections.singletonMap(RegistryConstants.REGISTRY_CLUSTER_KEY.toLowerCase(), name);
                 ServiceKeyMetric serviceKeyMetric = new ServiceKeyMetric(applicationModel, serviceKey);
                 serviceKeyMetric.setExtraInfo(extraInfo);
                 stats.incrementServiceKey(wrapper, serviceKey, extraInfo, size);
                 getStats().getRtStatComposite().calcServiceKeyRt(wrapper.getType(), responseTime, serviceKeyMetric);
             }
         );
-    }
-
-    public void setNum(MetricsKeyWrapper metricsKey, String serviceKey, int num, String name) {
-        Map<String, String> extraInfo = MetricsSupport.customExtraInfo(RegistryConstants.REGISTRY_CLUSTER_KEY.toLowerCase(), name);
-        this.stats.setServiceKey(metricsKey, serviceKey, num, extraInfo);
     }
 
     public void setNum(MetricsKeyWrapper metricsKey, String serviceKey, int num, Map<String, String> attachments) {

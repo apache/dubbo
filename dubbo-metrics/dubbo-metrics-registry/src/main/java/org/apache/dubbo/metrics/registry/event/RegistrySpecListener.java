@@ -30,6 +30,7 @@ import org.apache.dubbo.metrics.registry.collector.RegistryMetricsCollector;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import static org.apache.dubbo.metrics.MetricsConstants.ATTACHMENT_DIRECTORY_MAP;
@@ -111,7 +112,7 @@ public class RegistrySpecListener {
                 Map<String, String> otherAttachments = new HashMap<>();
                 for (Map.Entry<String, Object> entry : event.getAttachments().entrySet()) {
                     if (entry.getValue() instanceof String) {
-                        otherAttachments.put(entry.getKey(), (String) entry.getValue());
+                        otherAttachments.put(entry.getKey().toLowerCase(Locale.ROOT), (String) entry.getValue());
                     }
                 }
                 summaryMap.forEach((summaryKey, map) ->

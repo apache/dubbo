@@ -53,8 +53,12 @@ public class ApplicationMetric implements Metric {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         ApplicationMetric that = (ApplicationMetric) o;
         return getApplicationName().equals(that.applicationModel.getApplicationName()) && Objects.equals(extraInfo, that.extraInfo);
     }

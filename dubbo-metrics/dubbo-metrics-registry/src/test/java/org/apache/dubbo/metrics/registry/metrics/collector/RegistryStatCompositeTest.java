@@ -26,7 +26,6 @@ import org.apache.dubbo.metrics.data.ServiceStatComposite;
 import org.apache.dubbo.metrics.model.ApplicationMetric;
 import org.apache.dubbo.metrics.model.Metric;
 import org.apache.dubbo.metrics.model.MetricsCategory;
-import org.apache.dubbo.metrics.model.MetricsSupport;
 import org.apache.dubbo.metrics.model.container.LongContainer;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
@@ -34,10 +33,12 @@ import org.apache.dubbo.metrics.registry.RegistryMetricsConstants;
 import org.apache.dubbo.metrics.registry.collector.RegistryStatComposite;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -109,7 +110,7 @@ public class RegistryStatCompositeTest {
     void testIncrement() {
         regStatComposite.incrMetricsNum(REGISTER_METRIC_REQUESTS, "beijing");
         ApplicationMetric applicationMetric = new ApplicationMetric(applicationModel);
-        applicationMetric.setExtraInfo(MetricsSupport.customExtraInfo(RegistryConstants.REGISTRY_CLUSTER_KEY.toLowerCase(), "beijing"));
+        applicationMetric.setExtraInfo(Collections.singletonMap(RegistryConstants.REGISTRY_CLUSTER_KEY.toLowerCase(), "beijing"));
         Assertions.assertEquals(1L, regStatComposite.getAppStats().get(REGISTER_METRIC_REQUESTS).get(applicationMetric).get());
     }
 
