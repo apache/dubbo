@@ -89,6 +89,10 @@ public abstract class MetricsEvent {
         attachment.put(key, value);
     }
 
+    public void putAttachments(Map<String, String> attachments) {
+        this.attachment.putAll(attachments);
+    }
+
     public void setAvailable(boolean available) {
         this.available = available;
     }

@@ -241,6 +241,8 @@ public interface CommonConstants {
 
     String INTERFACE_REGISTER_MODE = "interface";
 
+    String INSTANCE_REGISTER_MODE = "instance";
+
     String DEFAULT_REGISTER_MODE = "all";
 
     String GENERIC_KEY = "generic";
