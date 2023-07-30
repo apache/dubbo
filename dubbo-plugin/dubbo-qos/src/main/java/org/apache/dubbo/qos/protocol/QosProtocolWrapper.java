@@ -23,9 +23,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.qos.api.PermissionLevel;
 import org.apache.dubbo.qos.common.QosConstants;
-import org.apache.dubbo.qos.pu.QosWireProtocol;
 import org.apache.dubbo.qos.server.Server;
-import org.apache.dubbo.remoting.api.WireProtocol;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
@@ -104,10 +102,6 @@ public class QosProtocolWrapper implements Protocol, ScopeModelAware {
             }
 
             boolean qosEnable = url.getParameter(QOS_ENABLE, true);
-            WireProtocol qosWireProtocol = frameworkModel.getExtensionLoader(WireProtocol.class).getExtension("qos");
-            if (qosWireProtocol != null) {
-                ((QosWireProtocol) qosWireProtocol).setQosEnable(qosEnable);
-            }
             if (!qosEnable) {
                 logger.info("qos won't be started because it is disabled. " +
                     "Please check dubbo.application.qos.enable is configured either in system property, " +
