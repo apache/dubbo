@@ -57,7 +57,8 @@ public class PathAndInvokerMapper {
 
 
     /**
-     *  get rest method metadata by path matcher
+     * get rest method metadata by path matcher
+     *
      * @param pathMatcher
      * @return
      */
@@ -100,13 +101,17 @@ public class PathAndInvokerMapper {
 
         if (pathMatcherPairMap.containsKey(pathMatcher)) {
 
-            InvokerAndRestMethodMetadataPair beforeMetadata = pathMatcherPairMap.get(pathMatcher);
+            // cover the old service metadata when  current interface is old interface & current method desc equals old`s method desc,else ,throw double check exception
 
-            throw new DoublePathCheckException(
-                "dubbo rest double path check error, current path is: " + pathMatcher
-                    + " ,and service method is: " + invokerRestMethodMetadataPair.getRestMethodMetadata().getReflectMethod()
-                    + "before service  method is: " + beforeMetadata.getRestMethodMetadata().getReflectMethod()
-            );
+            InvokerAndRestMethodMetadataPair beforeMetadata = pathMatcherPairMap.get(pathMatcher);
+            // true when reExport
+            if (!invokerRestMethodMetadataPair.compareServiceMethod(beforeMetadata)){
+                throw new DoublePathCheckException(
+                    "dubbo rest double path check error, current path is: " + pathMatcher
+                        + " ,and service method is: " + invokerRestMethodMetadataPair.getRestMethodMetadata().getReflectMethod()
+                        + "before service  method is: " + beforeMetadata.getRestMethodMetadata().getReflectMethod()
+                );
+            }
         }
 
         pathMatcherPairMap.put(pathMatcher, invokerRestMethodMetadataPair);
