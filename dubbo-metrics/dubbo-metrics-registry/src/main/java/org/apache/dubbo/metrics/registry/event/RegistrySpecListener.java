@@ -110,12 +110,18 @@ public class RegistrySpecListener {
             event -> {
                 Map<MetricsKey, Map<String, Integer>> summaryMap = event.getAttachmentValue(ATTACHMENT_DIRECTORY_MAP);
                 String registryClusterName = event.getAttachmentValue(ATTACHMENT_REGISTRY_SINGLE_KEY);
-                if (StringUtils.isBlank(registryClusterName)) {
-                    throw new MetricsNeverHappenException("registrySingleKey not exist");
-                }
                 summaryMap.forEach((summaryKey, map) ->
                     map.forEach(
-                        (k, v) -> ((RegistryMetricsCollector) collector).setNum(new MetricsKeyWrapper(summaryKey, OP_TYPE_DIRECTORY), k, v, registryClusterName)));
+                        (k, v) ->
+                        {
+                            if (StringUtils.isBlank(registryClusterName)) {
+                                collector.setNum(new MetricsKeyWrapper(summaryKey, OP_TYPE_DIRECTORY), k, v);
+                            } else {
+                                ((RegistryMetricsCollector) collector).setNum(new MetricsKeyWrapper(summaryKey, OP_TYPE_DIRECTORY), k, v, registryClusterName);
+                            }
+                        }
+
+                    ));
 
             }
         );
