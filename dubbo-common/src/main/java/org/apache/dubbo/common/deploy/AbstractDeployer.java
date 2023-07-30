@@ -103,7 +103,7 @@ public abstract class AbstractDeployer<E extends ScopeModel> implements Deployer
         this.state = PENDING;
     }
 
-    public void setStarting() {
+    protected void setStarting() {
         this.state = STARTING;
         for (DeployListener<E> listener : listeners) {
             try {
@@ -114,7 +114,7 @@ public abstract class AbstractDeployer<E extends ScopeModel> implements Deployer
         }
     }
 
-    public void setStarted() {
+    protected void setStarted() {
         this.state = STARTED;
         for (DeployListener<E> listener : listeners) {
             try {
@@ -125,7 +125,7 @@ public abstract class AbstractDeployer<E extends ScopeModel> implements Deployer
         }
     }
 
-    public void setStopping() {
+    protected void setStopping() {
         this.state = STOPPING;
         for (DeployListener<E> listener : listeners) {
             try {
@@ -136,7 +136,7 @@ public abstract class AbstractDeployer<E extends ScopeModel> implements Deployer
         }
     }
 
-    public void setStopped() {
+    protected void setStopped() {
         this.state = STOPPED;
         for (DeployListener<E> listener : listeners) {
             try {
@@ -147,7 +147,7 @@ public abstract class AbstractDeployer<E extends ScopeModel> implements Deployer
         }
     }
 
-    public void setFailed(Throwable error) {
+    protected void setFailed(Throwable error) {
         this.state = FAILED;
         this.lastError = error;
         for (DeployListener<E> listener : listeners) {
