@@ -523,18 +523,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
     }
 
     private Map<String, Integer> groupByServiceKey(Collection<Invoker<T>> invokers) {
-
-        Map<String, Integer> serviceNumMap = new HashMap<>();
-        for (Invoker<T> invoker : invokers) {
-            if (invoker.getClass().getSimpleName().contains("Mockito")) {
-                return serviceNumMap;
-            }
-        }
-        if (invokers.size() > 0) {
-            serviceNumMap = invokers.stream().filter(invoker -> invoker.getInterface() != null).collect(Collectors.groupingBy(invoker -> invoker.getInterface().getName(), Collectors.reducing(0, e -> 1, Integer::sum)));
-        }
-
-        return serviceNumMap;
+        return Collections.singletonMap(getConsumerUrl().getServiceKey(), invokers.size());
     }
 
     @Override
