@@ -24,6 +24,8 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_METRICS_COLLECTOR_EXCEPTION;
+
 /**
  * Dispatches events to listeners, and provides ways for listeners to register themselves.
  */
@@ -103,7 +105,8 @@ public class MetricsEventBus {
         try {
             runnable.run();
         } catch (Throwable e) {
-            logger.debug("MetricsEventBus tryInvoke error", e);
+            logger.error(COMMON_METRICS_COLLECTOR_EXCEPTION, "" +
+                    "", "", "tryInvoke error" + e.getMessage());
         }
     }
 
