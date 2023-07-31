@@ -29,6 +29,7 @@ import org.apache.dubbo.metrics.report.DefaultMetricsReporterFactory;
 import org.apache.dubbo.metrics.report.MetricsReporter;
 import org.apache.dubbo.metrics.report.MetricsReporterFactory;
 import org.apache.dubbo.metrics.service.MetricsServiceExporter;
+import org.apache.dubbo.metrics.utils.MetricsSupportUtil;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
@@ -77,7 +78,9 @@ public class MetricsApplicationLifecycle implements ApplicationLifecycle {
     }
 
     private void initMetricsReporter() {
-
+        if (!MetricsSupportUtil.isSupportMetrics()) {
+            return;
+        }
         ApplicationModel applicationModel = applicationDeployer.getApplicationModel();
         DefaultMetricsCollector collector = applicationDeployer.getApplicationModel().getBeanFactory().getBean(DefaultMetricsCollector.class);
         Optional<MetricsConfig> configOptional = applicationDeployer.getApplicationModel().getApplicationConfigManager().getMetrics();;
