@@ -1,0 +1,2 @@
+config-pre-handle=org.apache.dubbo.config.deploy.lifecycle.ApplicationConfigPreHandleLifecycle
+config-post-handle=org.apache.dubbo.config.deploy.lifecycle.ApplicationConfigPostHandleLifecycle

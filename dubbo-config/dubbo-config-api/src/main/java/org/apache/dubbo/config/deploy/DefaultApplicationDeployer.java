@@ -30,6 +30,7 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.DubboShutdownHook;
 import org.apache.dubbo.config.context.ConfigManager;
@@ -166,7 +167,15 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             }
             onInitialize();
 
-            loadApplicationConfigs();
+            // load application config
+            configManager.loadConfigsOfTypeFromProps(ApplicationConfig.class);
+
+            // try set model name
+            if (StringUtils.isBlank(applicationModel.getModelName())) {
+                applicationModel.setModelName(applicationModel.tryGetApplicationName());
+            }
+
+//            loadApplicationConfigs();
 
             // register shutdown hook
             registerShutdownHook();
@@ -196,6 +205,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         }
     }
 
+    //happens-before configcenter load
     private void loadApplicationConfigs() {
         configManager.loadConfigs();
     }

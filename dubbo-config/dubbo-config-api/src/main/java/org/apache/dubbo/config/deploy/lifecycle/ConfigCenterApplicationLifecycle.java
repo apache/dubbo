@@ -30,7 +30,6 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ConfigCenterConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.context.ConfigManager;
@@ -58,7 +57,7 @@ import static org.apache.dubbo.remoting.Constants.CLIENT_KEY;
 /**
  * Config-center lifecycle.
  */
-@Activate(order = -1)
+@Activate(order = -3)
 public class ConfigCenterApplicationLifecycle implements ApplicationLifecycle {
 
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ConfigCenterApplicationLifecycle.class);
@@ -78,14 +77,6 @@ public class ConfigCenterApplicationLifecycle implements ApplicationLifecycle {
     @Override
     public void initialize() {
         ConfigManager configManager  = applicationDeployer.getApplicationModel().getApplicationConfigManager();
-
-        // load application config
-        configManager.loadConfigsOfTypeFromProps(ApplicationConfig.class);
-
-        // try set model name
-        if (StringUtils.isBlank(applicationDeployer.getApplicationModel().getModelName())) {
-            applicationDeployer.getApplicationModel().setModelName(applicationDeployer.getApplicationModel().tryGetApplicationName());
-        }
 
         // load config centers
         configManager.loadConfigsOfTypeFromProps(ConfigCenterConfig.class);
