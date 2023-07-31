@@ -99,15 +99,11 @@ public class MetricsEventBus {
         return result;
     }
 
-    interface TryCallBack {
-         void callback();
-    }
-
-    public static void tryInvoke(TryCallBack tryCallBack) {
+    public static void tryInvoke(Runnable runnable) {
         try {
-            tryCallBack.callback();
-        } catch (Throwable e2) {
-            logger.debug("MetricsEventBus tryInvoke error", e2);
+            runnable.run();
+        } catch (Throwable e) {
+            logger.debug("MetricsEventBus tryInvoke error", e);
         }
     }
 
