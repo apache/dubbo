@@ -17,60 +17,64 @@
 
 package org.apache.dubbo.metrics.model.key;
 
+/**
+ * Please follow a unified naming format as follows:
+ * dubbo_type_action_unit_otherfun
+ */
 public enum MetricsKey {
     APPLICATION_METRIC_INFO("dubbo.application.info.total", "Total Application Info"),
 
     CONFIGCENTER_METRIC_TOTAL("dubbo.configcenter.total", "Config Changed Total"),
 
     // provider metrics key
-    METRIC_REQUESTS("dubbo.%s.requests.total", "Total Requests"),
-    METRIC_REQUESTS_SUCCEED("dubbo.%s.requests.succeed.total", "Total Succeed Requests"),
-    METRIC_REQUEST_BUSINESS_FAILED("dubbo.%s.requests.business.failed.total", "Total Failed Business Requests"),
+    METRIC_REQUESTS("dubbo.", ".requests.total", "Total Requests"),
+    METRIC_REQUESTS_SUCCEED("dubbo", "requests.succeed.total", "Total Succeed Requests"),
+    METRIC_REQUEST_BUSINESS_FAILED("dubbo", "requests.business.failed.total", "Total Failed Business Requests"),
 
-    METRIC_REQUESTS_PROCESSING("dubbo.%s.requests.processing.total", "Processing Requests"),
-    METRIC_REQUESTS_TIMEOUT("dubbo.%s.requests.timeout.total", "Total Timeout Failed Requests"),
-    METRIC_REQUESTS_LIMIT("dubbo.%s.requests.limit.total", "Total Limit Failed Requests"),
-    METRIC_REQUESTS_FAILED("dubbo.%s.requests.unknown.failed.total", "Total Unknown Failed Requests"),
-    METRIC_REQUESTS_TOTAL_FAILED("dubbo.%s.requests.failed.total", "Total Failed Requests"),
-    METRIC_REQUESTS_NETWORK_FAILED("dubbo.%s.requests.failed.network.total", "Total network Failed Requests"),
-    METRIC_REQUESTS_SERVICE_UNAVAILABLE_FAILED("dubbo.%s.requests.failed.service.unavailable.total", "Total Service Unavailable Failed Requests"),
-    METRIC_REQUESTS_CODEC_FAILED("dubbo.%s.requests.failed.codec.total", "Total Codec Failed Requests"),
+    METRIC_REQUESTS_PROCESSING("dubbo", "requests.processing.total", "Processing Requests"),
+    METRIC_REQUESTS_TIMEOUT("dubbo", "requests.timeout.total", "Total Timeout Failed Requests"),
+    METRIC_REQUESTS_LIMIT("dubbo", "requests.limit.total", "Total Limit Failed Requests"),
+    METRIC_REQUESTS_FAILED("dubbo", "requests.unknown.failed.total", "Total Unknown Failed Requests"),
+    METRIC_REQUESTS_TOTAL_FAILED("dubbo", "requests.failed.total", "Total Failed Requests"),
+    METRIC_REQUESTS_NETWORK_FAILED("dubbo", "requests.failed.network.total", "Total network Failed Requests"),
+    METRIC_REQUESTS_SERVICE_UNAVAILABLE_FAILED("dubbo", "requests.failed.service.unavailable.total", "Total Service Unavailable Failed Requests"),
+    METRIC_REQUESTS_CODEC_FAILED("dubbo", "requests.failed.codec.total", "Total Codec Failed Requests"),
 
-    METRIC_REQUESTS_TOTAL_AGG("dubbo.%s.requests.total.aggregate", "Aggregated Total Requests"),
-    METRIC_REQUESTS_SUCCEED_AGG("dubbo.%s.requests.succeed.aggregate", "Aggregated Succeed Requests"),
-    METRIC_REQUESTS_FAILED_AGG("dubbo.%s.requests.failed.aggregate", "Aggregated Failed Requests"),
-    METRIC_REQUEST_BUSINESS_FAILED_AGG("dubbo.%s.requests.business.failed.aggregate", "Aggregated Business Failed Requests"),
-    METRIC_REQUESTS_TIMEOUT_AGG("dubbo.%s.requests.timeout.failed.aggregate", "Aggregated timeout Failed Requests"),
-    METRIC_REQUESTS_LIMIT_AGG("dubbo.%s.requests.limit.aggregate", "Aggregated limit Requests"),
-    METRIC_REQUESTS_TOTAL_FAILED_AGG("dubbo.%s.requests.failed.total.aggregate", "Aggregated failed total Requests"),
-    METRIC_REQUESTS_NETWORK_FAILED_AGG("dubbo.%s.requests.failed.network.total.aggregate", "Aggregated failed network total Requests"),
-    METRIC_REQUESTS_CODEC_FAILED_AGG("dubbo.%s.requests.failed.codec.total.aggregate", "Aggregated failed codec total Requests"),
-    METRIC_REQUESTS_TOTAL_SERVICE_UNAVAILABLE_FAILED_AGG("dubbo.%s.requests.failed.service.unavailable.total.aggregate", "Aggregated failed codec total Requests"),
+    METRIC_REQUESTS_TOTAL_AGG("dubbo", "requests.total.aggregate", "Aggregated Total Requests"),
+    METRIC_REQUESTS_SUCCEED_AGG("dubbo", "requests.succeed.aggregate", "Aggregated Succeed Requests"),
+    METRIC_REQUESTS_FAILED_AGG("dubbo", "requests.failed.aggregate", "Aggregated Failed Requests"),
+    METRIC_REQUEST_BUSINESS_FAILED_AGG("dubbo", "requests.business.failed.aggregate", "Aggregated Business Failed Requests"),
+    METRIC_REQUESTS_TIMEOUT_AGG("dubbo", "requests.timeout.failed.aggregate", "Aggregated timeout Failed Requests"),
+    METRIC_REQUESTS_LIMIT_AGG("dubbo", "requests.limit.aggregate", "Aggregated limit Requests"),
+    METRIC_REQUESTS_TOTAL_FAILED_AGG("dubbo", "requests.failed.total.aggregate", "Aggregated failed total Requests"),
+    METRIC_REQUESTS_NETWORK_FAILED_AGG("dubbo", "requests.failed.network.total.aggregate", "Aggregated failed network total Requests"),
+    METRIC_REQUESTS_CODEC_FAILED_AGG("dubbo", "requests.failed.codec.total.aggregate", "Aggregated failed codec total Requests"),
+    METRIC_REQUESTS_TOTAL_SERVICE_UNAVAILABLE_FAILED_AGG("dubbo", "requests.failed.service.unavailable.total.aggregate", "Aggregated failed codec total Requests"),
 
-    METRIC_QPS("dubbo.%s.qps.total", "Query Per Seconds"),
-    METRIC_RT_LAST("dubbo.%s.rt.milliseconds.last", "Last Response Time"),
-    METRIC_RT_MIN("dubbo.%s.rt.milliseconds.min", "Min Response Time"),
-    METRIC_RT_MAX("dubbo.%s.rt.milliseconds.max", "Max Response Time"),
-    METRIC_RT_SUM("dubbo.%s.rt.milliseconds.sum", "Sum Response Time"),
-    METRIC_RT_AVG("dubbo.%s.rt.milliseconds.avg", "Average Response Time"),
-    METRIC_RT_P99("dubbo.%s.rt.milliseconds.p99", "Response Time P99"),
-    METRIC_RT_P95("dubbo.%s.rt.milliseconds.p95", "Response Time P95"),
-    METRIC_RT_P90("dubbo.%s.rt.milliseconds.p90", "Response Time P90"),
-    METRIC_RT_P50("dubbo.%s.rt.milliseconds.p50", "Response Time P50"),
-    METRIC_RT_MIN_AGG("dubbo.%s.rt.min.milliseconds.aggregate", "Aggregated Min Response"),
-    METRIC_RT_MAX_AGG("dubbo.%s.rt.max.milliseconds.aggregate", "Aggregated Max Response"),
-    METRIC_RT_AVG_AGG("dubbo.%s.rt.avg.milliseconds.aggregate", "Aggregated Avg Response"),
+    METRIC_QPS("dubbo", "qps.total", "Query Per Seconds"),
+    METRIC_RT_LAST("dubbo", "rt.milliseconds.last", "Last Response Time"),
+    METRIC_RT_MIN("dubbo", "rt.milliseconds.min", "Min Response Time"),
+    METRIC_RT_MAX("dubbo", "rt.milliseconds.max", "Max Response Time"),
+    METRIC_RT_SUM("dubbo", "rt.milliseconds.sum", "Sum Response Time"),
+    METRIC_RT_AVG("dubbo", "rt.milliseconds.avg", "Average Response Time"),
+    METRIC_RT_P99("dubbo", "rt.milliseconds.p99", "Response Time P99"),
+    METRIC_RT_P95("dubbo", "rt.milliseconds.p95", "Response Time P95"),
+    METRIC_RT_P90("dubbo", "rt.milliseconds.p90", "Response Time P90"),
+    METRIC_RT_P50("dubbo", "rt.milliseconds.p50", "Response Time P50"),
+    METRIC_RT_MIN_AGG("dubbo", "rt.milliseconds.min.aggregate", "Aggregated Min Response"),
+    METRIC_RT_MAX_AGG("dubbo", "rt.milliseconds.max.aggregate", "Aggregated Max Response"),
+    METRIC_RT_AVG_AGG("dubbo", "rt.milliseconds.avg.aggregate", "Aggregated Avg Response"),
 
     // register metrics key
     REGISTER_METRIC_REQUESTS("dubbo.registry.register.requests.total", "Total Register Requests"),
     REGISTER_METRIC_REQUESTS_SUCCEED("dubbo.registry.register.requests.succeed.total", "Succeed Register Requests"),
     REGISTER_METRIC_REQUESTS_FAILED("dubbo.registry.register.requests.failed.total", "Failed Register Requests"),
-    METRIC_RT_HISTOGRAM("dubbo.%s.rt.milliseconds.histogram", "Response Time Histogram"),
+    METRIC_RT_HISTOGRAM("dubbo", "rt.milliseconds.histogram", "Response Time Histogram"),
 
 
-    GENERIC_METRIC_REQUESTS("dubbo.%s.requests.total", "Total %s Requests"),
-    GENERIC_METRIC_REQUESTS_SUCCEED("dubbo.%s.requests.succeed.total", "Succeed %s Requests"),
-    GENERIC_METRIC_REQUESTS_FAILED("dubbo.%s.requests.failed.total", "Failed %s Requests"),
+    GENERIC_METRIC_REQUESTS("dubbo", "requests.total", "Total %s Requests"),
+    GENERIC_METRIC_REQUESTS_SUCCEED("dubbo", "requests.succeed.total", "Succeed %s Requests"),
+    GENERIC_METRIC_REQUESTS_FAILED("dubbo", "requests.failed.total", "Failed %s Requests"),
 
     // subscribe metrics key
     SUBSCRIBE_METRIC_NUM("dubbo.registry.subscribe.num.total", "Total Subscribe Num"),
@@ -125,15 +129,16 @@ public enum MetricsKey {
     INVOKER_NO_AVAILABLE_COUNT("dubbo.consumer.invoker.no.available.count", "Request Throw No Invoker Available Exception Count"),
     ;
 
-    private String name;
+    private String namePrefix;
+    private String nameSuffix;
     private String description;
 
     public final String getName() {
-        return this.name;
+        return this.namePrefix;
     }
 
     public final String getNameByType(String type) {
-        return String.format(name, type);
+        return namePrefix + type + nameSuffix;
     }
 
     public final String getDescription() {
@@ -141,7 +146,13 @@ public enum MetricsKey {
     }
 
     MetricsKey(String name, String description) {
-        this.name = name;
+        this.namePrefix = name;
+        this.description = description;
+    }
+
+    MetricsKey(String namePrefix, String name, String description) {
+        this.namePrefix = namePrefix;
+        this.nameSuffix = name;
         this.description = description;
     }
 }
