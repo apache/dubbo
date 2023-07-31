@@ -105,7 +105,7 @@ public class MetricsEventBus {
         try {
             runnable.run();
         } catch (Throwable e) {
-            logger.error(COMMON_METRICS_COLLECTOR_EXCEPTION, "" +
+            logger.warn(COMMON_METRICS_COLLECTOR_EXCEPTION, "" +
                     "", "", "invoke metric event error" + e.getMessage());
         }
     }
