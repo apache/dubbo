@@ -36,11 +36,11 @@ import org.apache.dubbo.registry.support.RegistryManager;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA_STORAGE_TYPE;
@@ -48,6 +48,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PORT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_KEY;
 import static org.apache.dubbo.common.utils.StringUtils.isBlank;
 import static org.apache.dubbo.registry.integration.InterfaceCompatibleRegistryProtocol.DEFAULT_REGISTER_PROVIDER_KEYS;
 import static org.apache.dubbo.rpc.Constants.DEPRECATED_KEY;
@@ -206,8 +207,9 @@ public class ServiceInstanceMetadataUtils {
         RegistryManager registryManager = applicationModel.getBeanFactory().getBean(RegistryManager.class);
         // register service instance
         List<ServiceDiscovery> serviceDiscoveries = registryManager.getServiceDiscoveries();
-        if (serviceDiscoveries.size() > 0) {
-            MetricsEventBus.post(RegistryEvent.toRegisterEvent(applicationModel, getServiceDiscoveryNames(serviceDiscoveries)),
+        for (ServiceDiscovery serviceDiscovery : serviceDiscoveries) {
+            MetricsEventBus.post(RegistryEvent.toRegisterEvent(applicationModel,
+                    Collections.singletonList(getServiceDiscoveryName(serviceDiscovery))),
                 () -> {
                     // register service instance
                     serviceDiscoveries.forEach(ServiceDiscovery::register);
@@ -217,11 +219,9 @@ public class ServiceInstanceMetadataUtils {
         }
     }
 
-    private static List<String> getServiceDiscoveryNames(List<ServiceDiscovery> serviceDiscoveries) {
-        return serviceDiscoveries
-            .stream()
-            .map(sd -> sd.getUrl().getParameter(RegistryConstants.REGISTRY_CLUSTER_KEY, sd.getUrl().getParameter(PROTOCOL_KEY)))
-            .collect(Collectors.toList());
+    private static String getServiceDiscoveryName(ServiceDiscovery serviceDiscovery) {
+        return serviceDiscovery.getUrl().getParameter(RegistryConstants.REGISTRY_CLUSTER_KEY,
+            serviceDiscovery.getUrl().getParameter(REGISTRY_KEY));
     }
 
     public static void refreshMetadataAndInstance(ApplicationModel applicationModel) {
