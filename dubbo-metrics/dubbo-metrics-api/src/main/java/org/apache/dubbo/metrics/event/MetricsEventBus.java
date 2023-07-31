@@ -17,6 +17,9 @@
 
 package org.apache.dubbo.metrics.event;
 
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -25,6 +28,8 @@ import java.util.function.Supplier;
  * Dispatches events to listeners, and provides ways for listeners to register themselves.
  */
 public class MetricsEventBus {
+
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(MetricsEventBus.class);
 
     /**
      * Posts an event to all registered subscribers and only once.
@@ -63,25 +68,47 @@ public class MetricsEventBus {
      */
     public static <T> T post(MetricsEvent event, Supplier<T> targetSupplier, Function<T, Boolean> trFunction) {
         T result;
-        before(event);
+        tryInvoke(() -> {
+            before(event);
+        });
         if (trFunction == null) {
             try {
                 result = targetSupplier.get();
             } catch (Throwable e) {
-                error(event);
+                tryInvoke(() -> {
+                    error(event);
+                });
                 throw e;
             }
-            after(event, result);
+            tryInvoke(() -> {
+                after(event, result);
+            });
         } else {
             // Custom failure status
             result = targetSupplier.get();
             if (trFunction.apply(result)) {
-                after(event, result);
+                tryInvoke(() -> {
+                    after(event, result);
+                });
             } else {
-                error(event);
+                tryInvoke(() -> {
+                    error(event);
+                });
             }
         }
         return result;
+    }
+
+    interface TryCallBack {
+         void callback();
+    }
+
+    public static void tryInvoke(TryCallBack tryCallBack) {
+        try {
+            tryCallBack.callback();
+        } catch (Throwable e2) {
+            logger.debug("MetricsEventBus tryInvoke error", e2);
+        }
     }
 
     /**
