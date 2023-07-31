@@ -101,10 +101,10 @@ public class RegistryEvent extends TimeCounterEvent {
 
     private static final TypeWrapper DIRECTORY_EVENT = new TypeWrapper(MetricsLevel.APP, MetricsKey.DIRECTORY_METRIC_NUM_VALID, null, null);
 
-    public static RegistryEvent refreshDirectoryEvent(ApplicationModel applicationModel, Map<MetricsKey, Map<String, Integer>> summaryMap, Map<String, String> attachemnts) {
+    public static RegistryEvent refreshDirectoryEvent(ApplicationModel applicationModel, Map<MetricsKey, Map<String, Integer>> summaryMap, Map<String, String> attachments) {
         RegistryEvent registryEvent = new RegistryEvent(applicationModel, DIRECTORY_EVENT);
         registryEvent.putAttachment(ATTACHMENT_DIRECTORY_MAP, summaryMap);
-        registryEvent.putAttachments(attachemnts);
+        registryEvent.putAttachments(attachments);
         return registryEvent;
     }
 
