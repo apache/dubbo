@@ -25,9 +25,7 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
-import org.apache.dubbo.common.utils.AnnotationUtils;
 import org.apache.dubbo.common.utils.ArrayUtils;
-import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -36,6 +34,7 @@ import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
+import org.apache.dubbo.config.utils.FeignClientAnnotationUtil;
 import org.apache.dubbo.registry.client.metadata.MetadataUtils;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
@@ -57,7 +56,6 @@ import org.apache.dubbo.rpc.stub.StubSuppliers;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
 import java.beans.Transient;
-import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -422,7 +420,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         AbstractConfig.appendParameters(map, this);
         appendMetricsCompatible(map);
         // after interface metadata  set
-        appendParametersFromInterfaceClassMetadata(map);
+        FeignClientAnnotationUtil.appendParametersFromInterfaceClassMetadata(this.interfaceClass,map);
 
         String hostToRegistry = ConfigUtils.getSystemProperty(DUBBO_IP_TO_REGISTRY);
         if (StringUtils.isEmpty(hostToRegistry)) {
@@ -449,43 +447,6 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
 
         return map;
     }
-
-    /**
-     * append parameters from interface class metadata
-     * such as FeignClient service as dubbo providedBy
-     *
-     * @param map
-     */
-    private void appendParametersFromInterfaceClassMetadata(Map<String, String> map) {
-
-        if (interfaceClass == null) {
-            return;
-        }
-
-        Class<? extends Annotation> feignClientAnno = (Class<? extends Annotation>) ClassUtils.forNameAndTryCatch("org.springframework.cloud.openfeign.FeignClient");
-
-
-        if (feignClientAnno == null || !AnnotationUtils.isAnnotationPresent(interfaceClass, feignClientAnno)) {
-            return;
-        }
-
-        Annotation annotation = interfaceClass.getAnnotation(feignClientAnno);
-
-        // get feign client service name
-        String serviceName = AnnotationUtils.getAttribute(annotation, "name", "value");
-
-        if (StringUtils.isEmpty(serviceName)) {
-            return;
-        }
-
-        // append old value
-        serviceName = map.containsKey(PROVIDED_BY) ? map.get(PROVIDED_BY) + "," + serviceName : serviceName;
-
-        // cover old value
-        map.put(PROVIDED_BY, serviceName);
-
-    }
-
 
     @SuppressWarnings({"unchecked"})
     private T createProxy(Map<String, String> referenceParameters) {
