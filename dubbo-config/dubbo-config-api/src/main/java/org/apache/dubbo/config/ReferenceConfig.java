@@ -416,12 +416,13 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
             }
         }
 
-        appendParametersFromInterfaceClassMetadata(map);
         AbstractConfig.appendParameters(map, getApplication());
         AbstractConfig.appendParameters(map, getModule());
         AbstractConfig.appendParameters(map, consumer);
         AbstractConfig.appendParameters(map, this);
         appendMetricsCompatible(map);
+        // after interface metadata  set
+        appendParametersFromInterfaceClassMetadata(map);
 
         String hostToRegistry = ConfigUtils.getSystemProperty(DUBBO_IP_TO_REGISTRY);
         if (StringUtils.isEmpty(hostToRegistry)) {
