@@ -199,6 +199,11 @@ public class DubboProtocol extends AbstractProtocol {
         if (isStubServiceInvoke) {
             port = channel.getRemoteAddress().getPort();
         }
+        // if the system environment variable DUBBO_PORT_TO_REGISTRY is added
+        String dubboPortToRegistry = ConfigUtils.getSystemProperty(Constants.DUBBO_PORT_TO_REGISTRY);
+        if(StringUtils.isNotEmpty(dubboPortToRegistry)) {
+            port = Integer.valueOf(dubboPortToRegistry);
+        }
         //callback
         isCallBackServiceInvoke = isClientSide(channel) && !isStubServiceInvoke;
         if (isCallBackServiceInvoke) {
