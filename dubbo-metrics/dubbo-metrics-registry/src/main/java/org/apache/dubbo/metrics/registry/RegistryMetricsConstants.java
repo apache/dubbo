@@ -23,6 +23,7 @@ import org.apache.dubbo.metrics.model.key.MetricsLevel;
 import org.apache.dubbo.metrics.model.key.MetricsPlaceValue;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.apache.dubbo.metrics.model.key.MetricsKey.DIRECTORY_METRIC_NUM_ALL;
@@ -46,17 +47,23 @@ import static org.apache.dubbo.metrics.model.key.MetricsKey.SUBSCRIBE_METRIC_NUM
 
 public interface RegistryMetricsConstants {
 
+    String ATTACHMENT_REGISTRY_KEY = "registryKey";
+    String ATTACHMENT_REGISTRY_SINGLE_KEY = "registrySingleKey";
+
     MetricsPlaceValue OP_TYPE_REGISTER = MetricsPlaceValue.of("register", MetricsLevel.APP);
     MetricsPlaceValue OP_TYPE_SUBSCRIBE = MetricsPlaceValue.of("subscribe", MetricsLevel.APP);
     MetricsPlaceValue OP_TYPE_NOTIFY = MetricsPlaceValue.of("notify", MetricsLevel.APP);
     MetricsPlaceValue OP_TYPE_DIRECTORY = MetricsPlaceValue.of("directory", MetricsLevel.APP);
-    MetricsPlaceValue OP_TYPE_REGISTER_SERVICE = MetricsPlaceValue.of("register.service", MetricsLevel.SERVICE);
+    MetricsPlaceValue OP_TYPE_REGISTER_SERVICE = MetricsPlaceValue.of("register.service", MetricsLevel.REGISTRY);
     MetricsPlaceValue OP_TYPE_SUBSCRIBE_SERVICE = MetricsPlaceValue.of("subscribe.service", MetricsLevel.SERVICE);
 
     // App-level
-    List<MetricsKey> APP_LEVEL_KEYS = Arrays.asList(REGISTER_METRIC_REQUESTS, REGISTER_METRIC_REQUESTS_SUCCEED, REGISTER_METRIC_REQUESTS_FAILED,
-        SUBSCRIBE_METRIC_NUM, SUBSCRIBE_METRIC_NUM_SUCCEED, SUBSCRIBE_METRIC_NUM_FAILED,
-        NOTIFY_METRIC_REQUESTS);
+    List<MetricsKey> APP_LEVEL_KEYS = Collections.singletonList(NOTIFY_METRIC_REQUESTS);
+
+    // Registry-level
+    List<MetricsKey> REGISTER_LEVEL_KEYS = Arrays.asList(REGISTER_METRIC_REQUESTS, REGISTER_METRIC_REQUESTS_SUCCEED, REGISTER_METRIC_REQUESTS_FAILED,
+        SUBSCRIBE_METRIC_NUM, SUBSCRIBE_METRIC_NUM_SUCCEED, SUBSCRIBE_METRIC_NUM_FAILED
+    );
 
     // Service-level
     List<MetricsKeyWrapper> SERVICE_LEVEL_KEYS = Arrays.asList(

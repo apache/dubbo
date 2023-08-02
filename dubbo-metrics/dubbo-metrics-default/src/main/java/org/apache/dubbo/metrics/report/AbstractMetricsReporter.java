@@ -21,7 +21,6 @@ import io.micrometer.core.instrument.FunctionCounter;
 import io.micrometer.core.instrument.binder.MeterBinder;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
-import org.apache.dubbo.common.constants.MetricsConstants;
 import org.apache.dubbo.common.lang.ShutdownHookCallbacks;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -38,7 +37,6 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
-import io.micrometer.core.instrument.Tags;
 import io.micrometer.core.instrument.binder.jvm.ClassLoaderMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics;
@@ -49,7 +47,6 @@ import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -112,21 +109,19 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
     private void addJvmMetrics() {
         boolean enableJvmMetrics = url.getParameter(ENABLE_JVM_METRICS_KEY, false);
         if (enableJvmMetrics) {
-            Tags extraTags = Tags.of(MetricsConstants.TAG_APPLICATION_NAME,
-                Optional.ofNullable(applicationModel.getApplicationName()).orElse(""));
-            new ClassLoaderMetrics(extraTags).bindTo(compositeRegistry);
-            new JvmMemoryMetrics(extraTags).bindTo(compositeRegistry);
+            new ClassLoaderMetrics().bindTo(compositeRegistry);
+            new JvmMemoryMetrics().bindTo(compositeRegistry);
 
             @SuppressWarnings("java:S2095")
             // Do not change JvmGcMetrics to try-with-resources as the JvmGcMetrics will not be available after (auto-)closing.
             // See https://github.com/micrometer-metrics/micrometer/issues/1492
-            JvmGcMetrics jvmGcMetrics = new JvmGcMetrics(extraTags);
+            JvmGcMetrics jvmGcMetrics = new JvmGcMetrics();
             jvmGcMetrics.bindTo(compositeRegistry);
             Runtime.getRuntime().addShutdownHook(new Thread(jvmGcMetrics::close));
 
-            bindTo(new ProcessorMetrics(extraTags));
-            new JvmThreadMetrics(extraTags).bindTo(compositeRegistry);
-            bindTo(new UptimeMetrics(extraTags));
+            bindTo(new ProcessorMetrics());
+            new JvmThreadMetrics().bindTo(compositeRegistry);
+            bindTo(new UptimeMetrics());
         }
     }
 
