@@ -28,10 +28,13 @@ import io.netty.handler.codec.http.HttpHeaders;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.threadpool.ThreadPool;
+import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
+import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.rpc.protocol.rest.RestHeaderEnum;
 import org.apache.dubbo.rpc.protocol.rest.handler.NettyHttpHandler;
 import org.apache.dubbo.rpc.protocol.rest.request.NettyRequestFacade;
+
+import static org.apache.dubbo.config.Constants.SERVER_THREAD_POOL_NAME;
 
 
 public class RestHttpRequestDecoder extends MessageToMessageDecoder<io.netty.handler.codec.http.FullHttpRequest> {
@@ -43,7 +46,7 @@ public class RestHttpRequestDecoder extends MessageToMessageDecoder<io.netty.han
 
     public RestHttpRequestDecoder(NettyHttpHandler handler, URL url) {
         this.handler = handler;
-        executor = url.getOrDefaultFrameworkModel().getExtensionLoader(ThreadPool.class).getAdaptiveExtension().getExecutor(url);
+        executor = ExecutorRepository.getInstance(url.getOrDefaultApplicationModel()).createExecutorIfAbsent(ExecutorUtil.setThreadName(url, SERVER_THREAD_POOL_NAME));
     }
 
 
